@@ -1,0 +1,184 @@
+<?xml version="1.0"?>
+
+<!--                This is an ant build script                   -->
+<!-- You should process this file with ant to compile the project -->
+
+<project name="orekit" basedir="." default="all">
+
+  <!-- Properties setting -->
+  <target name="init">
+
+    <tstamp/>
+
+    <property name="rootpackagename" value="fr.cs.aerospace.orekit" />
+    <property name="copyright"       value="2002-2003 C-S Aerospace" />
+
+    <!-- directories -->
+    <property name="srcdir"      value="src" />
+    <property name="libdir"      value="lib" />
+    <property name="bindir"      value="bin" />
+    <property name="bintestsdir" value="bin-tests" />
+    <property name="docdir"      value="doc" />
+
+    <!-- compilation properties -->
+    <property name="debug"       value="true"/>
+    <property name="deprecation" value="true" />
+
+    <!-- junit related properties -->
+    <property name="test.ui"     value="swingui" />
+    <property name="test.class"  value="${rootpackagename}.AllTests" />
+
+  </target>
+
+  <!-- Classpath setting -->
+  <path id="project.class.path">
+    <!-- external libraries are in the classpath for standalone compilation -->
+    <pathelement path="${java.class.path}" />
+    <!-- or in the NetBeans filesystems if compiling under the IDE -->
+    <pathelement path="${netbeans.filesystems.path}" />
+  </path>
+
+  <!-- Directories preparation -->
+  <target name="prepare" depends="init" description="Create directories">
+    <mkdir dir="${bindir}"      />
+    <mkdir dir="${bintestsdir}" />
+    <mkdir dir="${docdir}"      />
+  </target>
+
+
+  <!-- Compilation -->
+  <target name="compile" depends="init,prepare" description="Compile the library">
+    <javac srcdir="${srcdir}" destdir="${bindir}"
+           debug="${debug}" deprecation="${deprecation}">
+      <classpath refid="project.class.path" />
+      <exclude name="**/CVS/*"       />
+      <exclude name="**/*Test.java"  />
+      <exclude name="**/*Tests.java" />
+      <exclude name="**/Test*.java"  />
+      <exclude name="**/Tests*.java" />
+    </javac>
+  </target>
+
+  <!-- Tests -->
+  <target name="compile-tests" depends="init,compile" description="Compile the tests">
+    <javac srcdir="${srcdir}" destdir="${bintestsdir}"
+           debug="${debug}" deprecation="${deprecation}">
+      <classpath refid="project.class.path" />
+      <exclude name="**/CVS/*"       />
+      <include name="**/*Test.java"  />
+      <include name="**/*Tests.java" />
+      <include name="**/Test*.java"  />
+      <include name="**/Tests*.java" />
+    </javac>
+  </target>
+
+  <target name="test" depends="init,compile-tests" description="Run the tests">
+    <java classname="junit.${test.ui}.TestRunner" fork="yes">
+      <classpath>
+        <path        refid="project.class.path" />
+        <pathelement location="${bindir}"       />
+        <pathelement location="${bintestsdir}"  />
+      </classpath>
+      <arg value="${test.class}" />
+    </java>
+  </target>
+
+  <!-- Documentation -->
+  <target name="javadoc" depends="init" description="Build the documentation">
+
+    <!-- disregard the test files -->
+    <pathconvert pathsep="," property="documentedfiles">
+      <path>
+        <fileset dir="${srcdir}">
+          <include name="**/*.java"      />
+          <exclude name="**/CVS/*"       />
+          <exclude name="**/Test*.java"  />
+          <exclude name="**/Tests*.java" />
+          <exclude name="**/*Test.java"  />
+          <exclude name="**/*Tests.java" />
+        </fileset>
+     </path>
+    </pathconvert>
+
+    <!-- build the documentation -->
+    <javadoc sourcepath="${srcdir}" sourcefiles="${documentedfiles}"
+             destdir="${docdir}"
+             bottom="&lt;i&gt;Copyright &#169; ${copyright}. All Rights Reserved.&lt;/i&gt;">
+      <classpath refid="project.class.path" />
+    </javadoc>
+
+  </target>
+
+  <!-- All: compilation and documentation -->
+  <target name="all" depends="init,compile,javadoc" description="Build everything"/>
+
+  <target name="jar" depends="init,compile" description="Build the archive file">
+    <jar jarfile="${ant.project.name}-${DSTAMP}.jar"
+         compress="true" basedir="${bindir}" />
+  </target>
+
+  <target name="check-zargo" depends="init">
+    <available file="${ant.project.name}.zargo" property="zargo.present" />
+  </target>
+
+  <target name="copy-zargo" depends="check-zargo" if="zargo.present">
+    <copy file="${ant.project.name}.zargo" tofile="${ant.project.name}-${DSTAMP}.zargo"/>
+  </target>
+
+  <!-- Dist : packaging of all -->
+  <target name="dist" depends="init,copy-zargo,jar,javadoc" description="Create distribution files">
+
+    <zip zipfile="${ant.project.name}-${DSTAMP}-doc.zip">
+      <zipfileset dir="${docdir}" prefix="${ant.project.name}-${DSTAMP}-doc" >
+        <exclude name="**/CVS/*" />
+      </zipfileset>
+    </zip>
+
+    <zip zipfile="${ant.project.name}-${DSTAMP}-src.zip">
+      <zipfileset dir="${basedir}" prefix="${ant.project.name}-${DSTAMP}-src" >
+        <exclude name="${ant.project.name}-${DSTAMP}-src.zip" />
+        <exclude name="${ant.project.name}-${DSTAMP}-doc.zip" />
+        <exclude name="${ant.project.name}-${DSTAMP}.jar"     />
+        <exclude name="${ant.project.name}-${DSTAMP}.zargo"   />
+        <exclude name="${ant.project.name}.zargo" />
+        <exclude name="**/CVS/*"  />
+        <exclude name="${bindir}/**" />
+        <exclude name="${bintestsdir}/**" />
+        <exclude name="${docdir}/**" />
+      </zipfileset>
+    </zip>
+
+  </target>
+
+  <!-- Clean targets -->
+  <target name="check-dirs" depends="init">
+    <available file="${bindir}"      property="bindir.present"      />
+    <available file="${bintestsdir}" property="bintestsdir.present" />
+    <available file="${docdir}"      property="docdir.present"      />
+  </target>
+
+  <target name="clean-bindir" depends="init,check-dirs" if="bindir.present">
+    <delete dir="${bindir}" />
+  </target>
+
+  <target name="clean-bintestsdir" depends="init,check-dirs" if="bintestsdir.present">
+    <delete dir="${bintestsdir}" />
+  </target>
+
+  <target name="clean-docdir" depends="init,check-dirs" if="docdir.present">
+    <delete dir="${docdir}" />
+  </target>
+
+  <target name="clean" depends="init,clean-bindir,clean-bintestsdir,clean-docdir"
+          description="Clean everything">
+    <delete>
+      <fileset dir=".">
+        <include name="${ant.project.name}-*.jar"     />
+        <include name="${ant.project.name}-*.zargo"   />
+        <include name="${ant.project.name}-*-src.zip" />
+        <include name="${ant.project.name}-*-doc.zip" />
+      </fileset>
+    </delete>
+  </target>
+
+</project>
