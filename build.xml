@@ -3,51 +3,64 @@
 <!--                This is an ant build script                   -->
 <!-- You should process this file with ant to compile the project -->
 
-<project name="orekit" basedir="." default="all">
+<project name="orekit" basedir="." default="build">
 
   <!-- Properties setting -->
   <target name="init">
 
     <tstamp/>
 
+    <property name="version"         value="${DSTAMP}" />
+
+    <!-- main customization properties -->
     <property name="rootpackagename" value="fr.cs.aerospace.orekit" />
-    <property name="copyright"       value="2002-2003 C-S Aerospace" />
+    <property name="copyright"       value="2002-2005 C-S SI" />
 
     <!-- directories -->
-    <property name="srcdir"      value="src" />
-    <property name="libdir"      value="lib" />
-    <property name="bindir"      value="bin" />
-    <property name="bintestsdir" value="bin-tests" />
-    <property name="docdir"      value="doc" />
+    <property name="srcdir"        value="src" />
+    <property name="docsrcdir"     value="docsrc" />
+    <property name="libdir"        value="lib" />
+    <property name="bindir"        value="bin" />
+    <property name="builddir"      value="build" />
+    <property name="bintestsdir"   value="bin-tests" />
+    <property name="docdir"        value="doc" />
+    <property name="javadocdir"    value="${docdir}/javadoc" />
+    <property name="htmldir"       value="${docdir}/html" />
+
+    <!-- docbook properties -->
+    <property name="docbook.stylesheets.catalog" value="/etc/xml/catalog" />
+
+    <!-- external libraries properties -->
+    <property name="mantissa.jar" value="${libdir}/mantissa.jar"    />
 
     <!-- compilation properties -->
-    <property name="debug"       value="true"/>
+    <property name="debug"       value="true" />
     <property name="deprecation" value="true" />
 
     <!-- junit related properties -->
-    <property name="test.ui"     value="swingui" />
     <property name="test.class"  value="${rootpackagename}.AllTests" />
+
+    <!-- Classpath setting -->
+    <path id="project.class.path">
+      <pathelement location="${mantissa.jar}" />
+      <pathelement path="${java.class.path}"  />
+      <pathelement path="${netbeans.filesystems.path}" />
+    </path>
 
   </target>
 
-  <!-- Classpath setting -->
-  <path id="project.class.path">
-    <!-- external libraries are in the classpath for standalone compilation -->
-    <pathelement path="${java.class.path}" />
-    <!-- or in the NetBeans filesystems if compiling under the IDE -->
-    <pathelement path="${netbeans.filesystems.path}" />
-  </path>
-
   <!-- Directories preparation -->
   <target name="prepare" depends="init" description="Create directories">
+    <mkdir dir="${builddir}"    />
     <mkdir dir="${bindir}"      />
     <mkdir dir="${bintestsdir}" />
-    <mkdir dir="${docdir}"      />
+    <mkdir dir="${javadocdir}"  />
+    <mkdir dir="${htmldir}"     />
   </target>
 
 
   <!-- Compilation -->
-  <target name="compile" depends="init,prepare" description="Compile the library">
+  <target name="compile" depends="prepare" description="Compile the library">
     <javac srcdir="${srcdir}" destdir="${bindir}"
            debug="${debug}" deprecation="${deprecation}">
       <classpath refid="project.class.path" />
@@ -60,7 +73,8 @@
   </target>
 
   <!-- Tests -->
-  <target name="compile-tests" depends="init,compile" description="Compile the tests">
+  <target name="compile-tests" depends="compile"
+          description="Compile the tests">
     <javac srcdir="${srcdir}" destdir="${bintestsdir}"
            debug="${debug}" deprecation="${deprecation}">
       <classpath refid="project.class.path" />
@@ -73,18 +87,20 @@
   </target>
 
   <target name="test" depends="init,compile-tests" description="Run the tests">
-    <java classname="junit.${test.ui}.TestRunner" fork="yes">
+    <junit fork="yes">
       <classpath>
         <path        refid="project.class.path" />
         <pathelement location="${bindir}"       />
         <pathelement location="${bintestsdir}"  />
       </classpath>
-      <arg value="${test.class}" />
-    </java>
+      <formatter type="brief" usefile="false" />
+      <test name="${test.class}" />
+    </junit>
   </target>
 
   <!-- Documentation -->
-  <target name="javadoc" depends="init" description="Build the documentation">
+  <target name="javadoc" depends="init"
+          description="Build javadoc documentation">
 
     <!-- disregard the test files -->
     <pathconvert pathsep="," property="documentedfiles">
@@ -102,19 +118,39 @@
 
     <!-- build the documentation -->
     <javadoc sourcepath="${srcdir}" sourcefiles="${documentedfiles}"
-             destdir="${docdir}"
+             destdir="${javadocdir}"
              bottom="&lt;i&gt;Copyright &#169; ${copyright}. All Rights Reserved.&lt;/i&gt;">
       <classpath refid="project.class.path" />
     </javadoc>
 
   </target>
 
-  <!-- All: compilation and documentation -->
-  <target name="all" depends="init,compile,javadoc" description="Build everything"/>
+  <!-- HTML documentation -->
+  <target name="html" depends="init,prepare"
+          description="Build HTML documentation">
+    <xslt basedir="${docsrcdir}" destdir="${htmldir}"
+          style="${docsrcdir}/custom-html.xsl"
+          in="${docsrcdir}/orekit.xml" out="${htmldir}/index.html">
+      <xmlcatalog>
+        <catalogpath>
+          <pathelement location="${docbook.stylesheets.catalog}"/>
+        </catalogpath>
+      </xmlcatalog>
+    </xslt>
+  </target>
 
-  <target name="jar" depends="init,compile" description="Build the archive file">
-    <jar jarfile="${ant.project.name}-${DSTAMP}.jar"
-         compress="true" basedir="${bindir}" />
+  <!-- Documentation -->
+  <target name="doc" depends="javadoc,html" description="Build documentation"/>
+
+  <!-- All: compilation and documentation -->
+  <target name="all" depends="init,compile,doc" description="Build everything"/>
+
+  <target name="build" depends="init,compile" description="Build the archive file">
+    <jar jarfile="${builddir}/${ant.project.name}-${version}.jar"
+         compress="true" basedir="${bindir}" manifest="manifest" />
+    <copy todir="${builddir}">
+      <fileset dir="${libdir}"/>
+    </copy>
   </target>
 
   <target name="check-zargo" depends="init">
@@ -122,39 +158,49 @@
   </target>
 
   <target name="copy-zargo" depends="check-zargo" if="zargo.present">
-    <copy file="${ant.project.name}.zargo" tofile="${ant.project.name}-${DSTAMP}.zargo"/>
+    <copy file="${ant.project.name}.zargo" tofile="${ant.project.name}-${version}.zargo"/>
   </target>
 
   <!-- Dist : packaging of all -->
-  <target name="dist" depends="init,copy-zargo,jar,javadoc" description="Create distribution files">
-
-    <zip zipfile="${ant.project.name}-${DSTAMP}-doc.zip">
-      <zipfileset dir="${docdir}" prefix="${ant.project.name}-${DSTAMP}-doc" >
-        <exclude name="**/CVS/*" />
-      </zipfileset>
-    </zip>
-
-    <zip zipfile="${ant.project.name}-${DSTAMP}-src.zip">
-      <zipfileset dir="${basedir}" prefix="${ant.project.name}-${DSTAMP}-src" >
-        <exclude name="${ant.project.name}-${DSTAMP}-src.zip" />
-        <exclude name="${ant.project.name}-${DSTAMP}-doc.zip" />
-        <exclude name="${ant.project.name}-${DSTAMP}.jar"     />
-        <exclude name="${ant.project.name}-${DSTAMP}.zargo"   />
+  <target name="dist" depends="init,copy-zargo,build,doc"
+          description="Create distribution files">
+   <zip zipfile="${ant.project.name}-${version}-src.zip">
+      <zipfileset dir="${basedir}" prefix="${ant.project.name}-${version}-src" >
+        <exclude name="${ant.project.name}-${version}-src.zip" />
+        <exclude name="${ant.project.name}-${version}-doc.zip" />
+        <exclude name="${ant.project.name}-${version}-bin.zip" />
+        <exclude name="${ant.project.name}-${version}.zargo"   />
         <exclude name="${ant.project.name}.zargo" />
         <exclude name="**/CVS/*"  />
+        <exclude name="*.jar"  />
+        <exclude name="${builddir}/**" />
         <exclude name="${bindir}/**" />
         <exclude name="${bintestsdir}/**" />
         <exclude name="${docdir}/**" />
       </zipfileset>
     </zip>
-
+    <zip zipfile="${ant.project.name}-${version}-bin.zip">
+      <zipfileset dir="${builddir}" prefix="${ant.project.name}-${version}" >
+        <exclude name="**/CVS/*" />
+      </zipfileset>
+    </zip>
+    <zip zipfile="${ant.project.name}-${version}-doc.zip">
+      <zipfileset dir="${docdir}" prefix="${ant.project.name}-${version}-doc" >
+        <exclude name="**/CVS/*" />
+      </zipfileset>
+    </zip>
   </target>
 
   <!-- Clean targets -->
   <target name="check-dirs" depends="init">
+    <available file="${builddir}"    property="builddir.present"    />
     <available file="${bindir}"      property="bindir.present"      />
     <available file="${bintestsdir}" property="bintestsdir.present" />
     <available file="${docdir}"      property="docdir.present"      />
+  </target>
+
+  <target name="clean-builddir" depends="init,check-dirs" if="builddir.present">
+    <delete dir="${builddir}" />
   </target>
 
   <target name="clean-bindir" depends="init,check-dirs" if="bindir.present">
@@ -169,14 +215,15 @@
     <delete dir="${docdir}" />
   </target>
 
-  <target name="clean" depends="init,clean-bindir,clean-bintestsdir,clean-docdir"
+  <target name="clean"
+          depends="init,clean-builddir,clean-bindir,clean-bintestsdir,clean-docdir"
           description="Clean everything">
     <delete>
       <fileset dir=".">
-        <include name="${ant.project.name}-*.jar"     />
         <include name="${ant.project.name}-*.zargo"   />
         <include name="${ant.project.name}-*-src.zip" />
         <include name="${ant.project.name}-*-doc.zip" />
+        <include name="${ant.project.name}-*-bin.zip" />
       </fileset>
     </delete>
   </target>
