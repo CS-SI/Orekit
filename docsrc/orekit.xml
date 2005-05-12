@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding="ISO-8859-1"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+                         "http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd">
+
+<!-- $Id$ -->
+
+<article lang="fr">
+<articleinfo>
+<title>OREKIT</title>
+<author><firstname>Luc</firstname><surname>Maisonobe</surname></author>
+<pubdate>12 05 2005</pubdate>
+</articleinfo>
+
+<sect1><title><anchor id="Présentation"/>Présentation</title>
+<para>
+<acronym>OREKIT</acronym> (<foreignphrase>ORbit Extrapolation
+KIT)</foreignphrase> est une bibliothèque d'extrapolation d'orbite.
+</para>
+
+</sect1>
+
+</article>
