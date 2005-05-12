@@ -53,7 +53,7 @@ public class MyEllipsoidicBody extends EllipsoidicBody {
          r = r - 2 * Math.PI;
       }
     }
-    return new Rotation(Vector3D.k,r);
+    return new Rotation(Vector3D.plusK,r);
     }
     
 }
