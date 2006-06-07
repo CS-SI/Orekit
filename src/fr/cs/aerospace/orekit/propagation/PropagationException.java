@@ -1,18 +1,18 @@
-package fr.cs.aerospace.orekit.extrapolation;
+package fr.cs.aerospace.orekit.propagation;
 
 import fr.cs.aerospace.orekit.OrekitException;
 /**
  *
  * @author  L. Maisonobe
  */
-public class ExtrapolationException
+public class PropagationException
   extends OrekitException {
     
     /**
      * Creates a new instance of <code>ExtrapolationException</code> without
      * detail message.
      */
-    public ExtrapolationException() {
+    public PropagationException() {
     }
     
     /**
@@ -20,7 +20,7 @@ public class ExtrapolationException
      * specified detail message.
      * @param msg the detail message.
      */
-    public ExtrapolationException(String msg) {
+    public PropagationException(String msg) {
         super(msg);
     }
     
@@ -28,7 +28,7 @@ public class ExtrapolationException
      * Build an exception from a cause
      * @param cause cause of the exception
      */
-    public ExtrapolationException(Throwable cause) {
+    public PropagationException(Throwable cause) {
         super(cause);
     }
 
@@ -37,7 +37,7 @@ public class ExtrapolationException
      * @param message message of the exception
      * @param cause cause of the exception
      */
-    public ExtrapolationException(String message, Throwable cause) {
+    public PropagationException(String message, Throwable cause) {
         super(message, cause);
     }
 

@@ -1,4 +1,4 @@
-package fr.cs.aerospace.orekit.extrapolation;
+package fr.cs.aerospace.orekit.propagation;
 
 import fr.cs.aerospace.orekit.RDate;
 import fr.cs.aerospace.orekit.Orbit;
@@ -31,6 +31,6 @@ public interface Ephemeris {
      * instance or a newly allocated object)
      */    
     public Orbit getOrbit(RDate date, Orbit orbit)
-      throws ExtrapolationException;
+      throws PropagationException;
 
 }

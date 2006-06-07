@@ -1,4 +1,4 @@
-package fr.cs.aerospace.orekit.extrapolation;
+package fr.cs.aerospace.orekit.propagation;
 
 import fr.cs.aerospace.orekit.RDate;
 
