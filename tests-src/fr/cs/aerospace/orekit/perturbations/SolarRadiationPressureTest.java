@@ -1,12 +1,9 @@
 package fr.cs.aerospace.orekit.perturbations;
 
 import fr.cs.aerospace.orekit.*;
-import fr.cs.aerospace.orekit.perturbations.*;
-
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import junit.framework.*;
-import java.util.*;
 
 public class SolarRadiationPressureTest extends TestCase {
 
@@ -17,7 +14,7 @@ public class SolarRadiationPressureTest extends TestCase {
     
 public void testSolarRadiationPressure() throws OrekitException{
     
-    double equatorialRadius = 6378.13E3;
+//    double equatorialRadius = 6378.13E3;
     double mu = 3.98600E14;    
     RDate date = new RDate(RDate.J2000Epoch, 0.0);
     Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
@@ -28,9 +25,9 @@ public void testSolarRadiationPressure() throws OrekitException{
     OrbitDerivativesAdder adder = new CartesianDerivativesAdder(op, mu);
        
     // Acceleration initialisation
-    double xDotDot = 0;
-    double yDotDot = 0;
-    double zDotDot = 0;
+//    double xDotDot = 0;
+//    double yDotDot = 0;
+//    double zDotDot = 0;
         
     // Creation of the solar radiation pressure model
     SolarRadiationPressure SRP = new SolarRadiationPressure();
@@ -43,12 +40,12 @@ public void testSolarRadiationPressure() throws OrekitException{
    public void testSolarRadiationPressureElements() throws OrekitException {
     //----------------------------------
 
-    double equatorialRadius = 6378.13E3;
-    double mu = 3.98600E14;
+//    double equatorialRadius = 6378.13E3;
+//    double mu = 3.98600E14;
     RDate date = new RDate(RDate.J2000Epoch, 0.0);
     Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
     Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);                         
-    Attitude attitude = new Attitude();
+//    Attitude attitude = new Attitude();
     
     // Testing the definition of SolarRadiationPressure
     System.out.println("Testing creation");

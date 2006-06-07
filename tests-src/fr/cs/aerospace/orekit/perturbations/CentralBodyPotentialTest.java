@@ -1,12 +1,7 @@
 package fr.cs.aerospace.orekit.perturbations;
 
 import fr.cs.aerospace.orekit.*;
-import fr.cs.aerospace.orekit.perturbations.*;
-
-import org.spaceroots.mantissa.geometry.Vector3D;
-
 import junit.framework.*;
-import java.util.*;
 
 public class CentralBodyPotentialTest extends TestCase {
 

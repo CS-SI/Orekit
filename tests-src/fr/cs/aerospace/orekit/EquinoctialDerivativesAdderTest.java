@@ -31,12 +31,8 @@ public class EquinoctialDerivativesAdderTest extends TestCase {
     adder.addTNWAcceleration(T, N, W);
 
     // reference derivatives
-    KeplerianParameters keplerianParameters =
-      new KeplerianParameters(orbit.getA(), orbit.getE(),
-                              orbit.getI(), orbit.getPA(),
-                              orbit.getRAAN(), orbit.getTrueAnomaly());
-    OrbitDerivativesAdder keplerianAdder =
-      keplerianParameters.getDerivativesAdder(mu);
+    KeplerianParameters keplerianParameters = new KeplerianParameters(orbit, mu);
+    OrbitDerivativesAdder keplerianAdder = keplerianParameters.getDerivativesAdder(mu);
     double[] yDotKep = new double[6];
     keplerianAdder.initDerivatives(yDotKep);
     keplerianAdder.addTNWAcceleration(T, N, W);
@@ -55,12 +51,8 @@ public class EquinoctialDerivativesAdderTest extends TestCase {
     adder.addQSWAcceleration(Q, S, W);
 
     // reference derivatives
-    KeplerianParameters keplerianParameters =
-      new KeplerianParameters(orbit.getA(), orbit.getE(),
-                              orbit.getI(), orbit.getPA(),
-                              orbit.getRAAN(), orbit.getTrueAnomaly());
-    OrbitDerivativesAdder keplerianAdder =
-      keplerianParameters.getDerivativesAdder(mu);
+    KeplerianParameters keplerianParameters = new KeplerianParameters(orbit, mu);
+    OrbitDerivativesAdder keplerianAdder = keplerianParameters.getDerivativesAdder(mu);
     double[] yDotKep = new double[6];
     keplerianAdder.initDerivatives(yDotKep);
     keplerianAdder.addQSWAcceleration(Q, S, W);
@@ -72,12 +64,12 @@ public class EquinoctialDerivativesAdderTest extends TestCase {
   private void checkWithKeplerian(double[] yDot, double[] yDotKep,
                                   KeplerianParameters keplerianParameters) {
 
-    double a     = keplerianParameters.getA();
+    
     double e     = keplerianParameters.getE();
     double i     = keplerianParameters.getI();
-    double pa    = keplerianParameters.getPA();
-    double raan  = keplerianParameters.getRAAN();
-    double v     = keplerianParameters.getTrueAnomaly();
+    double pa    = keplerianParameters.getPerigeeArgument();
+    double raan  = keplerianParameters.getRightAscensionOfAscendingNode();
+   
 
     double cosPR = Math.cos(pa + raan);
     double sinPR = Math.sin(pa + raan);
@@ -86,26 +78,26 @@ public class EquinoctialDerivativesAdderTest extends TestCase {
     double tan2  = Math.tan(i / 2);
     double tansquare = tan2 * tan2;
 
-    System.out.println("Validation Equinoctial");
-    System.out.println("da/dt : " + yDotKep[0] + " " + yDot[0]);
-    System.out.println("dex/dt : " + (cosPR * yDotKep[1] - e * sinPR * 
-                      (yDotKep[3] + yDotKep[4])) + " " + yDot[1] );
-    System.out.println("dey/dt : " + (sinPR * yDotKep[1] + e * cosPR * (yDotKep[3] + 
-                       yDotKep[4])) + " " + yDot[2] );
+//    System.out.println("Validation Equinoctial");
+//    System.out.println("da/dt : " + yDotKep[0] + " " + yDot[0]);
+//    System.out.println("dex/dt : " + (cosPR * yDotKep[1] - e * sinPR * 
+//                      (yDotKep[3] + yDotKep[4])) + " " + yDot[1] );
+//    System.out.println("dey/dt : " + (sinPR * yDotKep[1] + e * cosPR * (yDotKep[3] + 
+//                       yDotKep[4])) + " " + yDot[2] );
     //System.out.println("dhx/dt : " + ((1 + tan2) * cosR * yDotKep[2]
     //                   - 2 * Math.sqrt(tan2) * sinR * yDotKep[4]) + " " + 
     //                   yDot[3] );
     //System.out.println("dhy/dt : " + ((1 + tan2) * sinR * yDotKep[2]
     //                   + 2 * Math.sqrt(tan2) * cosR * yDotKep[4]) + " " + 
     //                   yDot[4] );
-    System.out.println("dhx/dt : " + (0.5 * (1 + tansquare) * cosR * yDotKep[2]
-                       - tan2 * sinR * yDotKep[4]) + " " + 
-                       yDot[3] );
-    System.out.println("dhy/dt : " + (0.5 * (1 + tansquare) * sinR * yDotKep[2]
-                       + tan2 * cosR * yDotKep[4]) + " " + 
-                       yDot[4] );
-    System.out.println("dl/dt : " + (yDotKep[3] + yDotKep[4] + yDotKep[5]) + " " + 
-                       yDot[5] );
+//    System.out.println("dhx/dt : " + (0.5 * (1 + tansquare) * cosR * yDotKep[2]
+//                       - tan2 * sinR * yDotKep[4]) + " " + 
+//                       yDot[3] );
+//    System.out.println("dhy/dt : " + (0.5 * (1 + tansquare) * sinR * yDotKep[2]
+//                       + tan2 * cosR * yDotKep[4]) + " " + 
+//                       yDot[4] );
+//    System.out.println("dl/dt : " + (yDotKep[3] + yDotKep[4] + yDotKep[5]) + " " + 
+//                       yDot[5] );
         
     assertEquals(yDotKep[0],
                  yDot[0], 1.0e-10);

@@ -8,7 +8,9 @@ public class RDateTest
   public RDateTest(String name) {
     super(name);
   }
-
+  
+// TODO cas tests a verifier si a completer ?
+  
   public void testStandardEpoch() {
     assertEquals(-210866760000000l, RDate.JulianEpoch.getTime());
     assertEquals(-3506716800000l,   RDate.ModifiedJulianEpoch.getTime());
@@ -19,8 +21,10 @@ public class RDateTest
   
   public void testInvariance() {
     RDate t = new RDate(RDate.CNES1950Epoch, 3661.0);
+    
     t.setEpoch(RDate.J2000Epoch);
     assertEquals(-1577876339.0, t.getOffset(), 1.0e-5);
+    
     t.setEpoch(RDate.CNES1950Epoch);
     assertEquals(3661.0, t.getOffset(), 1.0e-5);
   }

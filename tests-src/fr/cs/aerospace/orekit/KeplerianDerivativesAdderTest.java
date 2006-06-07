@@ -130,11 +130,11 @@ public class KeplerianDerivativesAdderTest extends TestCase {
                                   CartesianParameters cartesianParameters) {
 
     double dt = 0.00001;
-    Vector3D oldP = cartesianParameters.getPosition();
+    Vector3D oldP = cartesianParameters.getPosition(mu);
     Vector3D p = new Vector3D(oldP.getX() + dt * (yD2[0] + 0.5 * dt * yD2[3]), 
                               oldP.getY() + dt * (yD2[1] + 0.5 * dt * yD2[4]), 
                               oldP.getZ() + dt * (yD2[2] + 0.5 * dt * yD2[5]));
-    Vector3D oldV = cartesianParameters.getVelocity();
+    Vector3D oldV = cartesianParameters.getVelocity(mu);
     Vector3D v = new Vector3D(oldV.getX() + dt * yD2[3], 
                               oldV.getY() + dt * yD2[4],
                               oldV.getZ() + dt * yD2[5]);
@@ -146,23 +146,23 @@ public class KeplerianDerivativesAdderTest extends TestCase {
     //System.out.println("anomalie vraie orbit: " + orbit.getTrueAnomaly());
     //System.out.println("anomalie vraie new orbit    : " + newOrbit.getTrueAnomaly());
     //
-    System.out.println("Validation Keplerien");
-    System.out.println("da/dt    : " + ((newOrbit.getA() - orbit.getA()) / dt) + " " + yD1[0]);
-    System.out.println("de/dt    : " + ((newOrbit.getE() - orbit.getE()) / dt) + " " + yD1[1]);
-    System.out.println("di/dt    : " + ((newOrbit.getI() - orbit.getI()) / dt) + " " + yD1[2]);
-    System.out.println("dpa/dt   : " + ((newOrbit.getPA() - orbit.getPA()) / dt) + " " + yD1[3]);
-    System.out.println("draan/dt : " + ((newOrbit.getRAAN() - orbit.getRAAN()) / dt) + " " + yD1[4]);
-    System.out.println("dv/dt    : " + ((newOrbit.getTrueAnomaly() - orbit.getTrueAnomaly()) / dt) + " " + yD1[5]);
+//    System.out.println("Validation Keplerien");
+//    System.out.println("da/dt    : " + ((newOrbit.getA() - orbit.getA()) / dt) + " " + yD1[0]);
+//    System.out.println("de/dt    : " + ((newOrbit.getE() - orbit.getE()) / dt) + " " + yD1[1]);
+//    System.out.println("di/dt    : " + ((newOrbit.getI() - orbit.getI()) / dt) + " " + yD1[2]);
+//    System.out.println("dpa/dt   : " + ((newOrbit.getPerigeeArgument() - orbit.getPerigeeArgument()) / dt) + " " + yD1[3]);
+//    System.out.println("draan/dt : " + ((newOrbit.getRightAscensionOfAscendingNode() - orbit.getRightAscensionOfAscendingNode()) / dt) + " " + yD1[4]);
+//    System.out.println("dv/dt    : " + ((newOrbit.getTrueAnomaly() - orbit.getTrueAnomaly()) / dt) + " " + yD1[5]);
     assertEquals((newOrbit.getA() - orbit.getA()) / dt,
                  yD1[0], 1.0e-9 * Math.abs(orbit.getA()));
     assertEquals((newOrbit.getE() - orbit.getE()) / dt,
                  yD1[1], 1.0e-9 * Math.abs(orbit.getE()));
     assertEquals((newOrbit.getI() - orbit.getI()) / dt,
                  yD1[2], 1.0e-9 * Math.abs(orbit.getI()));
-    assertEquals((newOrbit.getPA() - orbit.getPA()) / dt,
-                 yD1[3], 1.0e-9 * Math.abs(orbit.getPA()));
-    assertEquals((newOrbit.getRAAN() - orbit.getRAAN()) / dt,
-                 yD1[4], 1.0e-9 * Math.abs(orbit.getRAAN()));
+    assertEquals((newOrbit.getPerigeeArgument() - orbit.getPerigeeArgument()) / dt,
+                 yD1[3], 1.0e-9 * Math.abs(orbit.getPerigeeArgument()));
+    assertEquals((newOrbit.getRightAscensionOfAscendingNode() - orbit.getRightAscensionOfAscendingNode()) / dt,
+                 yD1[4], 1.0e-9 * Math.abs(orbit.getRightAscensionOfAscendingNode()));
     assertEquals((newOrbit.getTrueAnomaly() - orbit.getTrueAnomaly()) / dt,
                  yD1[5], 1.0e-9 * Math.abs(orbit.getTrueAnomaly()));
 
