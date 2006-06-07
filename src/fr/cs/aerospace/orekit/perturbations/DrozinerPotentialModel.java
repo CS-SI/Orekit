@@ -3,9 +3,6 @@ package fr.cs.aerospace.orekit.perturbations;
 import fr.cs.aerospace.orekit.RDate;
 import fr.cs.aerospace.orekit.Attitude;
 import fr.cs.aerospace.orekit.OrbitDerivativesAdder;
-import fr.cs.aerospace.orekit.CartesianDerivativesAdder;
-import fr.cs.aerospace.orekit.OrbitalParameters;
-import fr.cs.aerospace.orekit.CartesianParameters;
 import fr.cs.aerospace.orekit.Constants;
 import fr.cs.aerospace.orekit.perturbations.EllipsoidicBody;
 import fr.cs.aerospace.orekit.OrekitException;
@@ -31,18 +28,12 @@ public class DrozinerPotentialModel extends CentralBodyPotential {
     /** Ellipsoidic body de reference. */
     private EllipsoidicBody ellipsoidicBody;
     
-    /** Droziner Earth's Mass. */
-    private double drozinerEarthMass;
-    
     /** Droziner Earth's mu. */
     private double drozinerEarthMu;
 
     /** Rotation of the reference body in the inertial frame. */
     private Rotation rot;
     
-    /** Modified time. */
-    private double ke;
-
    /** Creates a new instance of CentralBodyPotential.
    * Build a spherical potential without perturbing acceleration
    * @param name name of the model
@@ -52,7 +43,6 @@ public class DrozinerPotentialModel extends CentralBodyPotential {
         super(name,mu);
         ellipsoidicBody = new MyEllipsoidicBody();
         rot = new Rotation();
-        ke = 0.0;
     }
     
     /** Creates a new instance of CentralBodyPotential.
@@ -68,7 +58,6 @@ public class DrozinerPotentialModel extends CentralBodyPotential {
         super(name,mu,equatorialRadius,J,C,S);
         ellipsoidicBody = new MyEllipsoidicBody("Clarke", 6378249.20, 0.00341);
         rot = new Rotation();
-        ke = Math.sqrt(Constants.G * drozinerEarthMass);
     }
     
     /** Computes the contribution of the central body potential to the
@@ -92,7 +81,6 @@ public class DrozinerPotentialModel extends CentralBodyPotential {
 
     // Modified time
     double offset = t.getOffset();
-    double tau = ke * offset;
 
     // Retrieval of cartesian coordinates
     if (equatorialRadius < Constants.Epsilon) {throw new OrekitException("Equatorial radius is equal to 0");}
@@ -117,15 +105,9 @@ public class DrozinerPotentialModel extends CentralBodyPotential {
     // Definition of the first acceleration terms
     double xDotDotk = 0.0;
     double yDotDotk = 0.0;
-    double zDotDotk = 0.0;
     xDotDotk = - drozinerEarthMu * x / r3;
     yDotDotk = - drozinerEarthMu * y / r3;
-    zDotDotk = - drozinerEarthMu * z / r3;
-
-    // fpot[0] = xDotDotk;
-    // fpot[1] = yDotDotk;
-    // fpot[2] = zDotDotk;
-    
+   
     // Zonal part of acceleration
     if (ndeg != 0) {
         double Sum1 = 0.0;

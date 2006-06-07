@@ -3,15 +3,12 @@ package fr.cs.aerospace.orekit.perturbations;
 import fr.cs.aerospace.orekit.RDate;
 import fr.cs.aerospace.orekit.Attitude;
 import fr.cs.aerospace.orekit.OrbitDerivativesAdder;
-import fr.cs.aerospace.orekit.CartesianDerivativesAdder;
+//import fr.cs.aerospace.orekit.CartesianDerivativesAdder;
 import fr.cs.aerospace.orekit.OrbitalParameters;
 import fr.cs.aerospace.orekit.CartesianParameters;
-import fr.cs.aerospace.orekit.Constants;
-import fr.cs.aerospace.orekit.perturbations.EllipsoidicBody;
 import fr.cs.aerospace.orekit.OrekitException;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
-import org.spaceroots.mantissa.geometry.Rotation;
 /**
  * This class represents the gravitational field of a celestial body.
  
@@ -129,71 +126,26 @@ public abstract class CentralBodyPotential implements ForceModel {
     
     
     public static void main(String args[]){
-                  double equatorialRadius = 6378.13E3;
+//                  double equatorialRadius = 6378.13E3;
        double mu = 3.98600E14;
        
-       RDate date = new RDate(RDate.J2000Epoch, 0.0);
-       
-//       double[] J = new double[50+1];
-//       double[][] C = new double[50+1][50+1];
-//       double[][] S = new double[50+1][50+1];
-//       for (int i = 0; i<=2; i++) {
-//          J[i] = 0.0;
-//           for (int j = 0; j<=2; j++) {
-//           C[i][j] = 0.0;
-//           S[i][j] = 0.0;
-//           }
-//      }
-//
-////      J[1] = 0.0;
-////      J[2] = 0.0;
-////      J[3] = 0.0;
-////      C[0][0] = 1.0;
-////      C[1][0] = - J[1];
-////      C[1][1] = 0.0;
-////      S[1][0] = 0.0;
-////      S[1][1] = 0.0;
-////  
-////      C[2][0] = - J[2];
-////      C[3][0] = - J[3];
-//////      C[2][1] = 1.0;
-//////      S[2][1] = 1.0;
-//////      C[1][2] = 1.0;
-//////      S[1][2] = 1.0;
-////      C[2][2] = 1.0;
-////      S[2][2] = 1.0;
-////      
-//       J[0]=0.0;
-//       C[0][0]=1.0;
-//       J[1]=0.0;
-//       C[1][0]=0.0;
-//       for (int i = 2; i<=50; i++) {
-//          J[i] = 1.0;
-//          C[i][0] = -J[i];
-//           for (int j = 1; j<=50; j++) {
-//           C[i][j] = 1.0;
-//           S[i][j] = 1.0;
-//           }
-//       }
-
        Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
        Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);                         
-       Attitude attitude = new Attitude();
        OrbitalParameters op = new CartesianParameters();
        op.reset(position, velocity, mu);
-       OrbitDerivativesAdder adder = new CartesianDerivativesAdder(op, mu);
+//       OrbitDerivativesAdder adder = new CartesianDerivativesAdder(op, mu);
        
        // Acceleration
-       double xDotDot = 0;
-       double yDotDot = 0;
-       double zDotDot = 0;
+//       double xDotDot = 0;
+//       double yDotDot = 0;
+//       double zDotDot = 0;
 
     PotentialCoefficientsTab GEM10Tab = 
     new PotentialCoefficientsTab("D:\\Mes Documents\\EDelente\\JAVA\\GEM10B.txt");
         
     GEM10Tab.read();
     int ndeg = GEM10Tab.getNdeg();
-    double[] J   = new double[ndeg];
+//    double[] J   = new double[ndeg];
     double[][] C = new double[ndeg][ndeg];
     double[][] S = new double[ndeg][ndeg];
     
@@ -206,8 +158,8 @@ public abstract class CentralBodyPotential implements ForceModel {
         }
     }
     
-    CunninghamPotentialModel CBP = new CunninghamPotentialModel("cbp", mu,
-                                 equatorialRadius, J, C, S);  
+//    CunninghamPotentialModel CBP = new CunninghamPotentialModel("cbp", mu,
+//                                 equatorialRadius, J, C, S);  
        
     }
     /////////////////////////////////////////////////

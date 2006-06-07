@@ -1,10 +1,7 @@
 package fr.cs.aerospace.orekit.perturbations;
 
 import fr.cs.aerospace.orekit.*;
-import fr.cs.aerospace.orekit.perturbations.*;
-
 import org.spaceroots.mantissa.geometry.Vector3D;
-import java.lang.Float;
 
 /**
  * This class represents the atmospheric drag applied to the vehicle.
@@ -65,9 +62,6 @@ public class Drag implements ForceModel {
     SimpleVehicle vehicle = new SimpleVehicle(1500.0, 3.0, 2.0, 0.2, 0.3);
     
     // Calculation of rho
-    double x = position.getX();
-    double y = position.getY();
-    double z = position.getZ();
     double h = position.getNorm() - Constants.CentralBodyradius;
     double rho = 0.0;
     rho = getAtmosphere().getRho(h);    

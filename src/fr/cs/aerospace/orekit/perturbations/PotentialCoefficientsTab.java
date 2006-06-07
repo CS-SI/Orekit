@@ -1,11 +1,7 @@
 package fr.cs.aerospace.orekit.perturbations;
 
 
-import fr.cs.aerospace.orekit.Constants;
-import fr.cs.aerospace.orekit.perturbations.CentralBodyPotential;
-
 import java.io.*;
-import java.util.*;
 import java.util.StringTokenizer;
 import java.util.NoSuchElementException;
 import java.util.Vector;
@@ -72,7 +68,7 @@ public class PotentialCoefficientsTab {
     /** Reading method  */
     public void read(){
     
-        int i, j, l, m;
+        int i, j, l;
         int lDim = 1;
         int mDim = 1;
                 
