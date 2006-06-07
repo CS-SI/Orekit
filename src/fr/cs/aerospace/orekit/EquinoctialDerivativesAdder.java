@@ -1,7 +1,5 @@
 package fr.cs.aerospace.orekit;
 
-import org.spaceroots.mantissa.geometry.Vector3D;
-
 /** This class sums up the contribution of several forces into orbit derivatives.
  *
  * <p>The aim of this class is to gather the contributions of various perturbing
@@ -44,7 +42,7 @@ public class EquinoctialDerivativesAdder
 
   /** Create a new instance
    * @param parameters current orbital parameters
-   * @param mu central body gravitational constant (m^3/s^2)
+   * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
    */
   public EquinoctialDerivativesAdder(OrbitalParameters parameters, double mu) {
     super(parameters, mu);
@@ -62,8 +60,8 @@ public class EquinoctialDerivativesAdder
     EquinoctialParameters equinoctialParameters =
       (EquinoctialParameters) parameters;
     double a =  equinoctialParameters.getA();
-    double ex = equinoctialParameters.getEx();
-    double ey = equinoctialParameters.getEy();
+    double ex = equinoctialParameters.getEquinoctialEx();
+    double ey = equinoctialParameters.getEquinoctialEy();
     double hx = equinoctialParameters.getHx();
     double hy = equinoctialParameters.getHy();
     double lv = equinoctialParameters.getLv();
@@ -80,7 +78,6 @@ public class EquinoctialDerivativesAdder
     }
 
     // intermediate variables
-    double a2          = a * a;
     double oMe2        = (1 - e) * (1 + e);
     double epsilon     = Math.sqrt(oMe2);
     double na          = Math.sqrt(mu / a);
@@ -149,9 +146,9 @@ public class EquinoctialDerivativesAdder
 
   /** Add the contribution of an acceleration expressed in (T, N, W)
    * local orbital frame.
-   * @param t acceleration along the T axis (m/s)
-   * @param n acceleration along the N axis (m/s)
-   * @param w acceleration along the W axis (m/s)
+   * @param t acceleration along the T axis (m/s<sup>2</sup>)
+   * @param n acceleration along the N axis (m/s<sup>2</sup>)
+   * @param w acceleration along the W axis (m/s<sup>2</sup>)
    */
   public void addTNWAcceleration(double t, double n, double w) {
     yDot[0] += aT  * t;
@@ -164,9 +161,9 @@ public class EquinoctialDerivativesAdder
 
   /** Add the contribution of an acceleration expressed in (Q, S, W)
    * local orbital frame.
-   * @param q acceleration along the Q axis (m/s)
-   * @param s acceleration along the S axis (m/s)
-   * @param w acceleration along the W axis (m/s)
+   * @param q acceleration along the Q axis (m/s<sup>2</sup>)
+   * @param s acceleration along the S axis (m/s<sup>2</sup>)
+   * @param w acceleration along the W axis (m/s<sup>2</sup>)
    */
   public void addQSWAcceleration(double q, double s, double w) {
     yDot[0] += aQ  * q + aS  * s;

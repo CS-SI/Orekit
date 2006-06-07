@@ -2,11 +2,10 @@ package fr.cs.aerospace.orekit;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
-/**
- * This class handles cartesian orbital parameters.
+/** This class holds cartesian orbital parameters.
 
  * <p>
- * The parameters used internally are the classical keplerian elements:
+ * The parameters used internally are the cartesian coordinates:
  *   <pre>
  *     x
  *     y
@@ -15,6 +14,15 @@ import org.spaceroots.mantissa.geometry.Vector3D;
  *     yDot
  *     zDot
  *   </pre>
+ * </p>
+
+ * <p>
+ * Note that the implementation of this class delegates all non-cartesian related
+ * computations ({@link #getA()}, {@link #getEquinoctialEx()}, ...) to an underlying
+ * instance of the {@link EquinoctialParameters} class that is lazily built only
+ * as needed. This imply that using this class only for analytical computations which
+ * are always based on non-cartesian parameters is perfectly possible but somewhat
+ * suboptimal. This class is more targeted towards numerical orbit propagation.
  * </p>
 
  * This class implements the
@@ -27,6 +35,7 @@ import org.spaceroots.mantissa.geometry.Vector3D;
  * @see     org.spaceroots.mantissa.utilities.ArraySliceMappable
  * @version $Id$
  * @author  L. Maisonobe
+ * @author  G. Prat
 
  */
 public class CartesianParameters
@@ -37,23 +46,26 @@ public class CartesianParameters
    */
   public CartesianParameters() {
     reset();
+    equinoctial = null;
   }
 
   /** Constructor from cartesian parameters.
    * @param position position in inertial frame (m)
    * @param velocity velocity in inertial frame (m/s)
-   * @param mu central attraction coefficient (m^3/s^2)
+   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public CartesianParameters(Vector3D position, Vector3D velocity,
-                             double mu) {
+  public CartesianParameters(Vector3D position, Vector3D velocity, double mu) {
     reset(position, velocity, mu);
+    equinoctial = null;
   }
 
-  /** Copy-constructor.
-   * @param op orbit parameters to copy
+  /** Constructor from any kind of orbital parameters
+   * @param op orbital parameters to copy
+   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public CartesianParameters(CartesianParameters op) {
-    reset(op);
+  public CartesianParameters(OrbitalParameters op, double mu) {
+    reset(op, mu);
+    equinoctial = null;
   }
 
   /** Copy the instance.
@@ -61,162 +73,138 @@ public class CartesianParameters
   * @return a copy of the instance.
   */
   public Object clone() {
-    return new CartesianParameters(this);
+    return new CartesianParameters(this, getCachedMu());
   }
 
   /** Reset the orbit to default.
    * Reset the orbit with arbitrary default elements.
    */
   public void reset() {
-    cachedMu = 3.986e14;
-    cachedPosition.setCoordinates(7.0e6, 1.0e6, 4.0e6);
-    cachedVelocity.setCoordinates(-500.0, 8000.0, 1000.0);
+    super.reset();
+    equinoctial = null;
   }
 
-  /** Get the position.
-   * @return position vector in inertial frame (reference to an
-   * internally cached vector which can change)
-   */
-  public Vector3D getPosition() {
-    return cachedPosition;
+  protected void doReset(OrbitalParameters op, double mu) {
+    reset(op.getPosition(mu), op.getVelocity(mu), mu);
+    equinoctial = null;
   }
 
-  /** Get the velocity.
-   * @return velocity vector in inertial frame (reference to an
-   * internally cached vector which can change)
-   */
-  public Vector3D getVelocity() {
-    return cachedVelocity;
+  /** Update the parameters from the current position and velocity. */
+  protected void updateFromPositionAndVelocity() {
+    // we do NOT recompute immediately the underlying parameters,
+    // using a lazy evaluation
+    equinoctial = null;
+  }
+
+  /** Lazy evaluation of the equinoctial parameters. */
+  private void lazilyEvaluateEquinoctialParameters() {
+    if (equinoctial == null) {
+      double   mu       = getCachedMu();
+      Vector3D position = getPosition(mu);
+      Vector3D velocity = getVelocity(mu);
+      equinoctial = new EquinoctialParameters(position, velocity, mu);
+    }
   }
 
   /** Get the semi-major axis.
    * @return semi-major axis (m)
    */
   public double getA() {
-    double r  = cachedPosition.getNorm();
-    double V2 = Vector3D.dotProduct(cachedVelocity, cachedVelocity);
-    return r / (2 -  r * V2 / cachedMu);
+    lazilyEvaluateEquinoctialParameters();
+    return equinoctial.getA();
   }
 
   /** Get the eccentricity.
    * @return eccentricity
    */
   public double getE() {
-    double   r       = cachedPosition.getNorm();
-    double   V2      = Vector3D.dotProduct(cachedVelocity, cachedVelocity);
-    double   rV2OnMu = r * V2 / cachedMu;
-    double   muA     = cachedMu * r / (2 -  rV2OnMu);
-    Vector3D w       = Vector3D.crossProduct(cachedPosition, cachedVelocity);
-    double   w2      = Vector3D.dotProduct(w, w);
-    double   eSE     = Vector3D.dotProduct(cachedPosition, cachedVelocity)
-                     / Math.sqrt(muA);
-    double   eCE     = rV2OnMu - 1;
-    return Math.sqrt(eSE * eSE + eCE * eCE);
+    lazilyEvaluateEquinoctialParameters();
+    return equinoctial.getE();
   }
 
   /** Get the inclination.
    * @return inclination (rad)
    */
   public double getI() {
-    Vector3D w = Vector3D.crossProduct(cachedPosition, cachedVelocity);
-    w.normalizeSelf();
-    double x = w.getX();
-    double y = w.getY();
-    double cosI = w.getZ();
-    double sinI = Math.sqrt(x * x + y * y);
-    return (Math.abs(cosI) < 0.99) ? Math.acos(cosI) : Math.asin(sinI);
+    lazilyEvaluateEquinoctialParameters();
+    return equinoctial.getI();
   }
 
-  /** Get the perigee argument.
-   * @return perigee argument (rad)
+  /** Get the first component of the eccentricity vector. 
+   * @return first component of the eccentricity vector
    */
-  public double getPA() {
-    double raan    = getRAAN();
-    double cosRaan = Math.cos(raan);
-    double sinRaan = Math.sin(raan);
-    double i       = getI();
-    double cosI    = Math.cos(i);
-    double sinI    = Math.sin(i);
-    double px = cosRaan * cachedPosition.getX()
-              + sinRaan * cachedPosition.getY();
-    double py = cosI * (cosRaan * cachedPosition.getY()
-                      - sinRaan * cachedPosition.getX())
-              + sinI * cachedPosition.getZ();
-    return Math.atan2(py, px) - getTrueAnomaly();
+  public double getEquinoctialEx() {
+    lazilyEvaluateEquinoctialParameters();
+    return equinoctial.getEquinoctialEx();
+  }
+  
+  /** Get the second component of the eccentricity vector. 
+   * @return second component of the eccentricity vector
+   */
+  public double getEquinoctialEy() {
+    lazilyEvaluateEquinoctialParameters();
+    return equinoctial.getEquinoctialEy();
   }
 
-  /** Get the right ascension of the ascending node.
-   * @return right ascension of the ascending node (rad)
+  /** Get the first component of the inclination vector.
+   * @return first component oof the inclination vector.
    */
-  public double getRAAN() {
-    Vector3D w = Vector3D.crossProduct(cachedPosition, cachedVelocity);
-    w.normalizeSelf();
-    double x = w.getX();
-    double y = w.getY();
-    return (Math.sqrt(x * x + y * y) >= 1.0e-12) ? Math.atan2(x, -y) : 0;
+  public double getHx() {
+    lazilyEvaluateEquinoctialParameters();
+    return equinoctial.getHx();
   }
 
-  /** Get the true anomaly.
-   * @return true anomaly (rad)
+  /** Get the second component of the inclination vector.
+   * @return second component oof the inclination vector.
    */
-  public double getTrueAnomaly() {
-    double E   = getEccentricAnomaly();
-    double e   = getE();
-    double eSE = e * Math.sin(E);
-    double eCE = e * Math.cos(E);
-    double k   = 1 / (1 + Math.sqrt((1 - e) * (1 + e)));
-    return E + 2 * Math.atan(k * eSE / (1 - k *eCE));
+  public double getHy() {
+    lazilyEvaluateEquinoctialParameters();
+    return equinoctial.getHy();
   }
 
-  /** Get the eccentric anomaly.
-   * @return eccentric anomaly (rad)
+  /** Get the true latitude argument.
+   * @return true latitude argument (rad)
    */
-  public double getEccentricAnomaly() {
-    double   r       = cachedPosition.getNorm();
-    double   V2      = Vector3D.dotProduct(cachedVelocity, cachedVelocity);
-    double   rV2OnMu = r * V2 / cachedMu;
-    double   muA     = cachedMu * r / (2 -  rV2OnMu);
-    Vector3D w       = Vector3D.crossProduct(cachedPosition, cachedVelocity);
-    double   w2      = Vector3D.dotProduct(w, w);
-    double   eSE     = Vector3D.dotProduct(cachedPosition, cachedVelocity)
-                     / Math.sqrt(muA);
-    double   eCE     = rV2OnMu - 1;
-    double   e       = Math.sqrt(eSE * eSE + eCE * eCE);
-    return (e < 1.0e-12) ? 0 : Math.atan2(eSE, eCE);
+  public double getLv() {
+    lazilyEvaluateEquinoctialParameters();
+    return equinoctial.getLv();
   }
 
-  /** Get the mean anomaly.
-   * @return mean anomaly (rad)
+  /** Get the eccentric latitude argument.
+   * @return eccentric latitude argument.(rad)
    */
-  public double getMeanAnomaly() {
-    double E = getEccentricAnomaly();
-    return E - getE() * Math.sin(E);
+  public double getLE() {
+    lazilyEvaluateEquinoctialParameters();
+    return equinoctial.getLE();
   }
 
-  /** Compute and cache the cartesian parameters.
-   * @param mu central body gravitational constant (m^3/s^2)
+  /** Get the mean latitude argument.
+   * @return mean latitude argument.(rad)
    */
-  protected void initPositionAndVelocity(double mu) {
-    cachedMu = mu;
+  public double getLM() {
+    lazilyEvaluateEquinoctialParameters();
+    return equinoctial.getLM();
   }
 
   /**  Returns a string representation of this Orbit object
    * @return a string representation of this object
    */
   public String toString() {
+    Vector3D position = getPosition(getCachedMu());
+    Vector3D velocity = getVelocity(getCachedMu());
     StringBuffer sb = new StringBuffer();
     sb.append('{');
-    sb.append(cachedPosition.getX());
+    sb.append(position.getX());
     sb.append(' ');
-    sb.append(cachedPosition.getY());
+    sb.append(position.getY());
     sb.append(' ');
-    sb.append(cachedPosition.getZ());
+    sb.append(position.getZ());
     sb.append(' ');
-    sb.append(cachedVelocity.getX());
+    sb.append(velocity.getX());
     sb.append(' ');
-    sb.append(cachedVelocity.getY());
+    sb.append(velocity.getY());
     sb.append(' ');
-    sb.append(cachedVelocity.getZ());
+    sb.append(velocity.getZ());
     sb.append('}');
     return sb.toString();
   }
@@ -227,7 +215,7 @@ public class CartesianParameters
    * {@link OrbitDerivativesAdder OrbitDerivativesAdder} object, for
    * this class, an {@link CartesianDerivativesAdder
    * CartesianDerivativesAdder} object is built.</p>
-   * @param mu central body gravitational constant (m^3/s^2)
+   * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
    * @return an instance of {@link CartesianDerivativesAdder
    * CartesianDerivativesAdder} associated with this object
    */
@@ -240,12 +228,10 @@ public class CartesianParameters
    * @param array array holding the data to extract (a, e, i, pa, raan, v)
    */
   public void mapStateFromArray(int start, double[] array) {
-    cachedPosition.setCoordinates(array[start],
-                                  array[start + 1],
-                                  array[start + 2]);
-    cachedVelocity.setCoordinates(array[start + 3],
-                                  array[start + 4],
-                                  array[start + 5]);
+    Vector3D position = getPosition(getCachedMu());
+    Vector3D velocity = getVelocity(getCachedMu());
+    position.setCoordinates(array[start],  array[start + 1], array[start + 2]);
+    velocity.setCoordinates(array[start + 3], array[start + 4], array[start + 5]);
   }
 
   /** Store internal state data into the specified array slice.
@@ -253,12 +239,17 @@ public class CartesianParameters
    * @param array array where data should be stored (a, e, i, pa, raan, v)
    */
   public void mapStateToArray(int start, double[] array) {
-    array[start]     = cachedPosition.getX();
-    array[start + 1] = cachedPosition.getY();
-    array[start + 2] = cachedPosition.getZ();
-    array[start + 3] = cachedVelocity.getX();
-    array[start + 4] = cachedVelocity.getY();
-    array[start + 5] = cachedVelocity.getZ();
+    Vector3D position = getPosition(getCachedMu());
+    Vector3D velocity = getVelocity(getCachedMu());
+    array[start]     = position.getX();
+    array[start + 1] = position.getY();
+    array[start + 2] = position.getZ();
+    array[start + 3] = velocity.getX();
+    array[start + 4] = velocity.getY();
+    array[start + 5] = velocity.getZ();
   }
+
+  /** Underlying equinoctial orbit providing non-cartesian elements. */
+  private EquinoctialParameters equinoctial;
 
 }

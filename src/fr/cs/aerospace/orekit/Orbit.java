@@ -1,6 +1,5 @@
 package fr.cs.aerospace.orekit;
 
-import org.spaceroots.mantissa.utilities.ArraySliceMappable;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import java.io.Serializable;
@@ -9,45 +8,43 @@ import java.io.Serializable;
  * This class handles orbits around a central body.
 
  * <p>
- * This class handles periodic orbits (it does not handle parabolic or
+ * In OREKIT architecture, an Orbit is only a state at a specific date.
+ * Orbit evolution is represented by the {@link
+ * fr.cs.aerospace.orekit.propagation.Ephemeris Ephemeris} interface,
+ * which contains only the {@link Ephemeris#getOrbit getOrbit} method to provide
+ * new states for new dates. This interface can be implemented by several means
+ * like file-based interpolation, analytical model or numerical integration.
+ * </p>
+
+ * <p>
+ * This class handles periodic orbits (it does neither handle parabolic nor
  * hyperbolic orbits). Several different internal representations can
- * be used for the parameters, the default one is to used {@link
+ * be used for the parameters, the more general one being {@link
  * EquinoctialParameters equinoctial parameters} which can handle
- * circular and equatorial orbits without problem and has
- * singularities only for purely retrograd orbit (inclination =
- * Pi). Another important parameters set is the traditional {@link
- * KeplerianParameters keplerian parameters}.
+ * circular and equatorial orbits without problem and have
+ * singularities only for purely retrograd orbit (inclination = &pi;).
  * </p>
 
  * <p>
- * For user convenience, the classical keplerian elements can be
- * provided regardlesss of the internal representation. One should be
- * aware, however, that in some cases these elements can vary
- * drastically even for a small change in the orbit. This is due to
- * the singular nature of these elements. In this case, an arbitrary
- * choice is made in the class before providing the elements, no error
- * is triggered.
- * </p>
-
- * <p>
- * The class by itself does not provide any extrapolation method, it only holds
- * one state of the orbit and is not able to change it. Extrapolation is
- * performed by specialized classes that process Orbit instances.
+ * For the sake of numerical stability, only the always non-ambiguous classical
+ * keplerian elements are provided ({@link #getE() eccentricity} and {@link #getI()
+ * inclination}, not the potentialy ambiguous ones like perigee argument or right
+ * ascension of ascending node. If these elements are needed, the user must
+ * explicitely convert the parameters to {@link KeplerianParameters keplerian
+ * parameters}, if he considers the orbit is sufficiently non-circular or
+ * non-equatorial.
  * </p>
 
  * @see     OrbitalParameters
+ * @see     fr.cs.aerospace.orekit.propagation.Ephemeris
  * @version $Id$
  * @author  L. Maisonobe
+ * @author  G. Prat
 
  */
+
 public class Orbit
   implements Serializable {
-
-  /** Date. */
-  private RDate t;
-
-  /** Orbital parameters. */
-  private OrbitalParameters parameters;
 
   /** Default constructor.
    * Build a new instance with arbitrary default elements.
@@ -55,24 +52,6 @@ public class Orbit
   public Orbit() {
     t          = new RDate();
     parameters = new EquinoctialParameters();
-  }
-
-  /** Creates a new instance of Orbit
-   * @param t  date (a reference to this object will be stored in the instance)
-   * @param a  semi-major axis (m)
-   * @param ex first component of the eccentricity vector
-   * @param ey second component of the eccentricity vector
-   * @param hx first component of the inclination vector
-   * @param hy second component of the inclination vector
-   * @param lv latitude argument (rad)
-   */
-  public Orbit(RDate t,
-               double a,
-               double ex, double ey,
-               double hx, double hy,
-               double lv) {
-    this.t = t;
-    parameters = new EquinoctialParameters(a, ex, ey, hx, hy, lv);
   }
 
   /** Create a new instance from date and orbital parameters
@@ -83,17 +62,6 @@ public class Orbit
   public Orbit(RDate t, OrbitalParameters parameters) {
     this.t = t;
     this.parameters = parameters;
-  }
-
-  /** Constructor from cartesian parameters.
-   * @param t date (a reference to this object will be stored in the instance)
-   * @param position position in inertial frame (m)
-   * @param velocity velocity in inertial frame (m/s)
-   * @param mu central attraction coefficient (m^3/s^2)
-   */
-  public Orbit(RDate t, Vector3D position, Vector3D velocity, double mu) {
-    this.t = t;
-    parameters = new EquinoctialParameters(position, velocity, mu);
   }
 
   /** Copy-constructor.
@@ -120,11 +88,12 @@ public class Orbit
    * </p>
    * @param t  date (a reference to this object will be stored in the instance)
    * @param parameters orbital parameters
+   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public void reset(RDate t, OrbitalParameters parameters) {
+  public void reset(RDate t, OrbitalParameters parameters, double mu) {
     this.t.reset(t);
     try {
-      this.parameters.reset(parameters);
+      this.parameters.reset(parameters, mu);
     } catch (ClassCastException cce) {
       this.parameters = (OrbitalParameters) parameters.clone();
     }
@@ -134,7 +103,7 @@ public class Orbit
    * @param t date (a reference to this object will be stored in the instance)
    * @param position position in inertial frame (m)
    * @param velocity velocity in inertial frame (m/s)
-   * @param mu central attraction coefficient (m^3/s^2)
+   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
   public void reset(RDate t, Vector3D position, Vector3D velocity, double mu) {
     this.t = t;
@@ -149,11 +118,12 @@ public class Orbit
    * argument is allocated.
    * </p>
    * @param o orbit to copy
+   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public void reset(Orbit o) {
+  public void reset(Orbit o,double mu) {
     t.reset(t);
     try {
-      parameters.reset(o.parameters);
+      parameters.reset(o.parameters,mu);
     } catch (ClassCastException cce) {
       parameters = (OrbitalParameters) o.parameters.clone();
     }
@@ -188,10 +158,11 @@ public class Orbit
    * allocated.
    * </p>
    * @param parameters orbital parameters
+   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public void setParameters(OrbitalParameters parameters) {
+  public void setParameters(OrbitalParameters parameters,double mu) {
     try {
-      this.parameters.reset(parameters);
+      this.parameters.reset(parameters,mu);
     } catch (ClassCastException cce) {
       this.parameters = (OrbitalParameters) parameters.clone();
     }
@@ -204,8 +175,72 @@ public class Orbit
     return parameters.getA();
   }
 
+  /** Get the first component of the eccentricity vector (as per equinoctial parameters).
+   * @return e cos(&omega; + &Omega;), first component of eccentricity vector
+   * @see #getE()
+   */
+  public double getEx(){
+    return parameters.getEquinoctialEx();
+  }
+
+  /** Get the second component of the eccentricity vector (as per equinoctial parameters).
+   * @return e sin(&omega; + &Omega;), second component of the eccentricity vector
+   * @see #getE()
+   */
+  public double getEy(){
+    return parameters.getEquinoctialEy();
+  }
+
+  /** Get the first component of the inclination vector (as per equinoctial parameters).
+   * @return tan(i/2) cos(&Omega;), first component of the inclination vector
+   * @see #getI()
+   */
+  public double getHx(){
+    return parameters.getHx();
+  }
+  
+  /** Get the second component of the inclination vector (as per equinoctial parameters).
+   * @return tan(i/2) sin(&Omega;), second component of the inclination vector
+   * @see #getI()
+   */
+  public double getHy(){
+    return parameters.getHy();
+  }
+  
+  /** Get the true latitude argument (as per equinoctial parameters).
+   * @return v + &omega; + &Omega; true latitude argument (rad)
+   * @see #getLE()
+   * @see #getLM()
+   */
+  public double getLv(){
+    return parameters.getLv();
+  }
+  
+  /** Get the eccentric latitude argument (as per equinoctial parameters).
+   * @return E + &omega; + &Omega; eccentric latitude argument (rad)
+   * @see #getLv()
+   * @see #getLM()
+   */
+  public double getLE(){
+    return parameters.getLE();
+  }
+  
+  /** Get the mean latitude argument (as per equinoctial parameters).
+   * @return M + &omega; + &Omega; mean latitude argument (rad)
+   * @see #getLv()
+   * @see #getLE()
+   */
+  public double getLM(){
+    return parameters.getLM();
+  }
+  
+  
+  // Additional orbital elements
+  
   /** Get the eccentricity.
    * @return eccentricity
+   * @see #getEx()
+   * @see #getEy()
    */
   public double getE() {
     return parameters.getE();
@@ -213,53 +248,11 @@ public class Orbit
 
   /** Get the inclination.
    * @return inclination (rad)
+   * @see #getHx()
+   * @see #getHy()
    */
   public double getI() {
     return parameters.getI();
-  }
-
-  /** Get the perigee argument.
-   * If the orbit is almost circular (e < 1.0e-6) or equatorial
-   * (i < 1.0e-6), zero is returned
-   * @return perigee argument (rad)
-   */
-  public double getPA() {
-    return parameters.getPA();
-  }
-
-  /** Get the right ascension of the ascending node.
-   * If the orbit is almost equatorial (i < 1.0e-6), zero is returned
-   * @return right ascension of the ascending node (rad)
-   */
-  public double getRAAN() {
-    return parameters.getRAAN();
-  }
-  
-  /** Get the true anomaly.
-   * If the orbit is almost circular (e < 1.0e-6) or equatorial
-   * (i < 1.0e-6), lv is returned
-   * @return true anomaly (rad)
-   */
-  public double getTrueAnomaly() {
-    return parameters.getTrueAnomaly();
-  }
-
-  /** Get the eccentric anomaly.
-   * If the orbit is almost circular (e < 1.0e-6) or equatorial
-   * (i < 1.0e-6), lE is returned
-   * @return eccentric anomaly (rad)
-   */
-  public double getEccentricAnomaly() {
-    return parameters.getEccentricAnomaly();
-  }
-
-  /** Get the meananomaly.
-   * If the orbit is almost circular (e < 1.0e-6) or equatorial
-   * (i < 1.0e-6), lM is returned
-   * @return mean anomaly (rad)
-   */
-  public double getMeanAnomaly() {
-    return parameters.getMeanAnomaly();
   }
 
   /** Get the position.
@@ -269,7 +262,7 @@ public class Orbit
    * provided as a reference to the internally cached vector, so the
    * caller is responsible to copy it in a separate vector if it needs
    * to keep the value for a while.
-   * @param mu central attraction coefficient
+   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    * @return position vector in inertial frame (reference to an
    * internally cached vector which can change)
    */
@@ -284,7 +277,7 @@ public class Orbit
    * provided as a reference to the internally cached vector, so the
    * caller is responsible to copy it in a separate vector if it needs
    * to keep the value for a while.
-   * @param mu central attraction coefficient
+   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    * @return velocity vector in inertial frame (reference to an
    * internally cached vector which can change)
    */
@@ -305,4 +298,10 @@ public class Orbit
     return sb.toString();
   }
 
+  /** Date of the current state. */
+  private RDate t;
+
+  /** Orbital parameters state. */
+  private OrbitalParameters parameters;
+  
 }

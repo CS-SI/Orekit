@@ -60,7 +60,7 @@ public abstract class OrbitDerivativesAdder {
 
   /** Create a new instance
    * @param parameters current orbit parameters
-   * @param mu central body gravitational constant (m^3/s^2)
+   * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
    */
   protected OrbitDerivativesAdder(OrbitalParameters parameters, double mu) {
     this.parameters = parameters;
@@ -116,24 +116,24 @@ public abstract class OrbitDerivativesAdder {
 
   /** Add the contribution of an acceleration expressed in (T, N, W)
    * local orbital frame.
-   * @param t acceleration along the T axis (m/s)
-   * @param n acceleration along the N axis (m/s)
-   * @param w acceleration along the W axis (m/s)
+   * @param t acceleration along the T axis (m/s<sup>2</sup>)
+   * @param n acceleration along the N axis (m/s<sup>2</sup>)
+   * @param w acceleration along the W axis (m/s<sup>2</sup>)
    */
   public abstract void addTNWAcceleration(double t, double n, double w);
 
   /** Add the contribution of an acceleration expressed in (Q, S, W)
    * local orbital frame.
-   * @param q acceleration along the Q axis (m/s)
-   * @param s acceleration along the S axis (m/s)
-   * @param w acceleration along the W axis (m/s)
+   * @param q acceleration along the Q axis (m/s<sup>2</sup>)
+   * @param s acceleration along the S axis (m/s<sup>2</sup>)
+   * @param w acceleration along the W axis (m/s<sup>2</sup>)
    */
   public abstract void addQSWAcceleration(double q, double s, double w);
 
   /** Add the contribution of an acceleration expressed in intertial frame.
-   * @param x acceleration along the X axis (m/s)
-   * @param y acceleration along the Y axis (m/s)
-   * @param z acceleration along the Z axis (m/s)
+   * @param x acceleration along the X axis (m/s<sup>2</sup>)
+   * @param y acceleration along the Y axis (m/s<sup>2</sup>)
+   * @param z acceleration along the Z axis (m/s<sup>2</sup>)
    */
   public void addXYZAcceleration(double x, double y, double z) {
     addTNWAcceleration(x * T.getX() + y * T.getY() + z * T.getZ(),
@@ -142,7 +142,7 @@ public abstract class OrbitDerivativesAdder {
   }
 
   /** Add the contribution of an acceleration expressed in intertial frame.
-   * @param gamma acceleration vector in intertial frame (m/s)
+   * @param gamma acceleration vector in intertial frame (m/s<sup>2</sup>)
    */
   public void addAcceleration(Vector3D gamma) {
     addTNWAcceleration(Vector3D.dotProduct(gamma, T),

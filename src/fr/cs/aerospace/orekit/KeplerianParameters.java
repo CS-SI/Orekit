@@ -11,17 +11,17 @@ import org.spaceroots.mantissa.geometry.Vector3D;
  *     a
  *     e
  *     i
- *     PA
- *     RAAN
+ *     &omega;
+ *     &Omega;
  *     v
  *   </pre>
- * where PA stands for the Perigee Argument (usually small omega) and RAAN
- * stands for the Right Ascension of the Ascending Node (usually big omega).
+ * where &omega; stands for the Perigee Argument, &Omega; stands for the
+ * Right Ascension of the Ascending Node and v stands for the true anomaly.
  * </p>
 
  * This class implements the
- * {@link org.spaceroots.mantissa.utilities.ArraySliceMappable
- * ArraySliceMappable} interface from the <a
+ * {@link org.spaceroots.mantissa.utilities.ArraySliceMappable ArraySliceMappable}
+ * interface from the <a
  * href="http://www.spaceroots.org/archive.htm#MantissaSoftware">mantissa</a>
  * library, hence it can easily be processed by a numerical integrator.
 
@@ -29,29 +29,26 @@ import org.spaceroots.mantissa.geometry.Vector3D;
  * @see     org.spaceroots.mantissa.utilities.ArraySliceMappable
  * @version $Id$
  * @author  L. Maisonobe
+ * @author  G. Prat
 
  */
 public class KeplerianParameters
   extends OrbitalParameters {
 
-  /** Semi-major axis (m). */
-  private double a;
+  /** Identifier for mean anomaly. */
+  public static final int MEAN_ANOMALY = 0;
 
-  /** Eccentricity. */
-  private double e;
+  /** Identifier for eccentric anomaly. */
+  public static final int ECCENTRIC_ANOMALY = 1;
 
-  /** Inclination (rad). */
-  private double i;
+  /** Identifier for true anomaly. */
+  public static final int TRUE_ANOMALY = 2;
 
-  /** Perigee Argument (rad). */
-  private double pa;
-
-  /** Right Ascension of Ascending Node (rad). */
-  private double raan;
-
-  /** True anomaly (rad). */
-  private double v;
-
+  /** Eccentricity threshold for near circular orbits.
+   *  if e < E_CIRC : the orbit is considered circular
+   */
+  public static final double E_CIRC = 1.e-10;
+  
   /** Default constructor.
    * Build a new instance with arbitrary default elements.
    */
@@ -63,30 +60,33 @@ public class KeplerianParameters
    * @param a  semi-major axis (m)
    * @param e eccentricity
    * @param i inclination (rad)
-   * @param pa perigee argument (rad)
-   * @param raan right ascension of ascending node (rad)
-   * @param v true anomaly (rad)
+   * @param pa perigee argument (&omega;, rad)
+   * @param raan right ascension of ascending node (&Omega;, rad)
+   * @param anomaly mean, eccentric or true anomaly (rad)
+   * @param type type of anomaly, must be one of {@link #MEAN_ANOMALY},
+   * {@link #ECCENTRIC_ANOMALY} or  {@link #TRUE_ANOMALY}
    */
   public KeplerianParameters(double a, double e, double i,
-                             double pa, double raan, double v) {
-    reset(a, e, i, pa, raan, v);
+                             double pa, double raan,
+                             double anomaly, int type) {
+    reset(a, e, i, pa, raan, anomaly, type);
   }
 
   /** Constructor from cartesian parameters.
    * @param position position in inertial frame (m)
    * @param velocity velocity in inertial frame (m/s)
-   * @param mu central attraction coefficient (m^3/s^2)
+   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public KeplerianParameters(Vector3D position, Vector3D velocity,
-                             double mu) {
+  public KeplerianParameters(Vector3D position, Vector3D velocity, double mu) {
     reset(position, velocity, mu);
   }
 
-  /** Copy-constructor.
-   * @param op orbit parameters to copy
+  /** Constructor from any kind of orbital parameters.
+   * @param op orbital parameters to copy
+   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public KeplerianParameters(KeplerianParameters op) {
-    reset(op);
+  public KeplerianParameters(OrbitalParameters op, double mu) {
+    reset(op, mu);
   }
 
   /** Copy the instance.
@@ -94,122 +94,109 @@ public class KeplerianParameters
   * @return a copy of the instance.
   */
   public Object clone() {
-    return new KeplerianParameters(this);
+    return new KeplerianParameters(a, e, i, pa, raan, v, TRUE_ANOMALY);
   }
 
   /** Reset the orbit to default.
    * Reset the orbit with arbitrary default elements.
    */
   public void reset() {
-
     a    = 1.0e7;
     e    = 1.0e-3;
     i    = 0.3;
     pa   = 0;
     raan = 0;
-    v    = 0;
-
-    super.reset();
-
+    setTrueAnomaly(0);
   }
 
   /** Reset the orbit from orbital parameters
    * @param a  semi-major axis (m)
    * @param e eccentricity
    * @param i inclination (rad)
-   * @param pa perigee argument (rad)
+   * @param pa perigee argument (&omega;, rad)
    * @param raan right ascension of ascending node (rad)
-   * @param v true anomaly (rad)
+   * @param anomaly mean, eccentric or true anomaly (rad)
+   * @param type type of anomaly, must be one of {@link #MEAN_ANOMALY},
+   * {@link #ECCENTRIC_ANOMALY} or  {@link #TRUE_ANOMALY}
    */
-  public void reset(double a, double e, double i,
-                    double pa, double raan, double v) {
+  public void reset(double a, double e, double i, double pa, double raan,
+                    double anomaly, int type) {
 
     this.a    =    a;
     this.e    =    e;
     this.i    =    i;
     this.pa   =   pa;
     this.raan = raan;
-    this.v    =    v;
 
-    super.reset();
+    switch (type) {
+    case MEAN_ANOMALY :
+      setMeanAnomaly(anomaly);
+      break;
+    case ECCENTRIC_ANOMALY :
+      setEccentricAnomaly(anomaly);
+      break;
+    default :
+      setTrueAnomaly(anomaly);
+    }
 
   }
 
-  /** Reset the orbit from cartesian parameters.
-   * @param position position in inertial frame (m)
-   * @param velocity velocity in inertial frame (m/s)
-   * @param mu central attraction coefficient (m^3/s^2)
-   */
-  public void reset(Vector3D position, Vector3D velocity, double mu) {
+  protected void doReset(OrbitalParameters op, double mu) {
+    a    = op.getA();
+    e    = op.getE();
+    i    = op.getI();
+    raan = Math.atan2(op.getHy(), op.getHx());
+    pa   = Math.atan2(op.getEquinoctialEy(), op.getEquinoctialEx()) - raan;
+    setTrueAnomaly(op.getLv() - (pa + raan));
+  }
 
-    double r  = position.getNorm();
-    double V2 = Vector3D.dotProduct(velocity, velocity);
-    double V  = Math.sqrt(V2);
+  /** Update the parameters from the current position and velocity. */
+  protected void updateFromPositionAndVelocity() {
 
-    double rV2OnMu = r * V2 / mu;
-    a = r / (2 - rV2OnMu);
-    double muA = mu * a;
+    // get cartesian elements
+    double   mu       = getCachedMu();
+    Vector3D position = getPosition(mu);
+    Vector3D velocity = getVelocity(mu);
 
-    Vector3D w   = Vector3D.crossProduct(position, velocity);
-    double   w2  = Vector3D.dotProduct(w, w);
-    double   eSE = Vector3D.dotProduct(position, velocity) / Math.sqrt(muA);
-    double   eCE = rV2OnMu - 1;
-    e = Math.sqrt(eSE * eSE + eCE * eCE);
-    
-    if (e < 1.0e-12) {
+    // compute semi-major axis
+    double r          = position.getNorm();
+    double V2         = Vector3D.dotProduct(velocity, velocity);
+    double rV2OnMu    = r * V2 / mu;
+    a                 = r / (2 - rV2OnMu);
+
+    // compute eccentricity
+    double muA        = mu * a;
+    double eSE        = Vector3D.dotProduct(position, velocity) / Math.sqrt(muA);
+    double eCE        = rV2OnMu - 1;
+    e                 = Math.sqrt(eSE * eSE + eCE * eCE);
+
+    // compute inclination
+    Vector3D momentum = Vector3D.crossProduct(position, velocity);
+    double   m2       = Vector3D.dotProduct(momentum, momentum);
+    i = Vector3D.angle(momentum, Vector3D.plusK);
+
+    // compute right ascension of ascending node
+    Vector3D node     = Vector3D.crossProduct(Vector3D.plusK, momentum);
+    double   n2       = Vector3D.dotProduct(node, node);
+    // the following comparison with 0 IS REALLY numerically justified and stable
+    raan = (n2 == 0) ? 0 : Math.atan2(node.getY(), node.getX());
+
+    // compute true anomaly
+    if (e < E_CIRC) {
       v = 0;
     } else {
       double E = Math.atan2(eSE, eCE);
-      double k = 1 / (1 + Math.sqrt(w2 / muA));
+      double k = 1 / (1 + Math.sqrt(m2 / muA));
       v = E + 2 * Math.atan(k * eSE / (1 - k *eCE));
     }
 
-    w.multiplySelf(1 / Math.sqrt(w2));
-    double x = w.getX();
-    double y = w.getY();
-    double cosI = w.getZ();
-    double sinI = Math.sqrt(x * x + y * y);
-    double cosRaan;
-    double sinRaan;
-    if (Math.abs(cosI) < 0.99) {
-      i = Math.acos(cosI);
-      cosRaan = -y / sinI;
-      sinRaan =  x / sinI;
-    } else {
-      i = Math.asin(sinI);
-      if (sinI < 1.0e-12) {
-        cosRaan = 1;
-        sinRaan = 0;
-      } else {
-        cosRaan = -y / sinI;
-        sinRaan =  x / sinI;
-      }
-    }
-    raan = Math.atan2(sinRaan, cosRaan);
-
+    // compute perigee argument
+    double cosRaan = Math.cos(raan);
+    double sinRaan = Math.sin(raan);
     double px = cosRaan * position.getX() + sinRaan * position.getY();
-    double py = cosI * (cosRaan * position.getY()
-                      - sinRaan * position.getX())
-              + sinI * position.getZ();
+    double py = Math.cos(i) * (cosRaan * position.getY() - sinRaan * position.getX())
+              + Math.sin(i) * position.getZ();
     pa = Math.atan2(py, px) - v;
-
-    super.reset(position, velocity, mu);
-
-  }
-
-  /** Reset the orbit from another one.
-   * @param op orbit parameters to copy
-   */
-  public void reset(KeplerianParameters op) {
-
-    a    = op.a;
-    e    = op.e;
-    i    = op.i;
-    pa   = op.pa;
-    raan = op.raan;
-    v    = op.v;
-
-    super.reset(op);
 
   }
 
@@ -227,8 +214,8 @@ public class KeplerianParameters
 
     this.a = a;
 
-    // force position and velocity recomputation
-    super.reset();
+    // invalidate position and velocity
+    reset();
 
   }
 
@@ -246,7 +233,7 @@ public class KeplerianParameters
 
     this.e = e;
 
-    // force position and velocity recomputation
+    // invalidate position and velocity
     super.reset();
 
   }
@@ -265,7 +252,7 @@ public class KeplerianParameters
 
     this.i = i;
 
-    // force position and velocity recomputation
+    // invalidate position and velocity
     super.reset();
 
   }
@@ -273,18 +260,18 @@ public class KeplerianParameters
   /** Get the perigee argument.
    * @return perigee argument (rad)
    */
-  public double getPA() {
+  public double getPerigeeArgument() {
     return pa;
   }
 
   /** Set the perigee argument.
    * @param pa perigee argument (rad)
    */
-  public void setPA(double pa) {
+  public void setPerigeeArgument(double pa) {
 
     this.pa = pa;
 
-    // force position and velocity recomputation
+    // invalidate position and velocity
     super.reset();
 
   }
@@ -292,18 +279,18 @@ public class KeplerianParameters
   /** Get the right ascension of the ascending node.
    * @return right ascension of the ascending node (rad)
    */
-  public double getRAAN() {
+  public double getRightAscensionOfAscendingNode() {
     return raan;
   }
 
   /** Set the right ascension of ascending node.
    * @param raan right ascension of ascending node (rad)
    */
-  public void setRAAN(double raan) {
+  public void setRightAscensionOfAscendingNode(double raan) {
 
     this.raan = raan;
 
-    // force position and velocity recomputation
+    // invalidate position and velocity
     super.reset();
 
   }
@@ -322,7 +309,7 @@ public class KeplerianParameters
 
     this.v = v;
 
-    // force position and velocity recomputation
+    // invalidate position and velocity
     super.reset();
 
   }
@@ -343,7 +330,7 @@ public class KeplerianParameters
     double beta = e / (1 + Math.sqrt((1 - e) * (1 + e)));
     v = E + 2 * Math.atan(beta * Math.sin(E) / (1 - beta * Math.cos(E)));
 
-    // force position and velocity recomputation
+    // invalidate position and velocity
     super.reset();
 
   }
@@ -360,6 +347,8 @@ public class KeplerianParameters
    * @param M mean anomaly (rad)
    */
   public void setMeanAnomaly (double M) {
+    
+    // resolution of Kepler equation for keplerian parameters
     double E = M;
     double shift = 0.0;
     double EmM   = 0.0;
@@ -375,67 +364,60 @@ public class KeplerianParameters
       EmM -= shift;
       E    = M + EmM;
 
-    } while ((++iter < 10) && (Math.abs(shift) > 1.0e-12));
+    } while ((++iter < 50) && (Math.abs(shift) > 1.0e-12));
 
     setEccentricAnomaly(E);
 
   }
 
-  /** Compute and cache the cartesian parameters.
-   * @param mu central body gravitational constant (m^3/s^2)
+  
+  /** Get the first component of the eccentricity vector. 
+   * @return first component of the eccentricity vector
    */
-  protected void initPositionAndVelocity(double mu) {
+  public double getEquinoctialEx() {
+    return  e * Math.cos(pa + raan);
+  }
 
-    // inclination-related intermediate parameters
-    double cosRaan = Math.cos(raan);
-    double sinRaan = Math.sin(raan);
-    double cosI    = Math.cos(i);
-    double sinI    = Math.sin(i);
+  /** Get the second component of the eccentricity vector. 
+   * @return second component of the eccentricity vector
+   */
+  public double getEquinoctialEy() {
+    return  e * Math.sin(pa + raan);
+  }
 
-    // in-plane parameters
-    double cosPa   = Math.cos(pa);
-    double sinPa   = Math.sin(pa);
+  /** Get the first component of the inclination vector.
+   * @return first component of the inclination vector.
+   */
+  public double getHx() {
+	return  Math.cos(raan) * Math.tan(i / 2);
+  }
 
-    double cpcr    = cosPa * cosRaan;
-    double cpsr    = cosPa * sinRaan;
-    double spcr    = sinPa * cosRaan;
-    double spsr    = sinPa * sinRaan;
+  /** Get the second component of the inclination vector.
+   * @return second component of the inclination vector.
+   */
+  public double getHy() {
+	return  Math.sin(raan) * Math.tan(i / 2);
+  }
 
-    double epsilon = Math.sqrt((1 - e) * (1 + e));
+  /** Get the true latitude argument.
+   * @return true latitude argument (rad)
+   */
+  public double getLv() {
+    return pa + raan + v;
+  }
 
-    // reference axes defining the orbital plane
-    double ux = cpcr - cosI * spsr;
-    double uy = cpsr + cosI * spcr;
-    double uz = sinI * sinPa;
+  /** Get the eccentric latitude argument.
+   * @return eccentric latitude argument.(rad)
+   */
+  public double getLE() {
+    return pa + raan + getEccentricAnomaly();
+  }
 
-    double vx = -spcr - cosI * cpsr;
-    double vy = cosI * cpcr - spsr;
-    double vz = sinI * cosPa;
-
-    // eccentric anomaly
-    double E     = getEccentricAnomaly();
-    double cosE  = Math.cos(E);
-    double sinE  = Math.sin(E);
-
-    // coordinates of position and velocity in the orbital plane
-    double x      = a * (cosE - e);
-    double y      = a * epsilon * sinE;
-
-    double factor = Math.sqrt(mu / a) / (1 - e * cosE);
-    double xdot   = -factor * sinE;
-    double ydot   =  factor * cosE * epsilon;
-
-    // cache the computed values
-    cachedMu = mu;
-
-    cachedPosition.setCoordinates(x * ux + y * vx,
-                                  x * uy + y * vy,
-                                  x * uz + y * vz);
-
-    cachedVelocity.setCoordinates(xdot * ux + ydot * vx,
-                                  xdot * uy + ydot * vy,
-                                  xdot * uz + ydot * vz);
-
+  /** Get the mean latitude argument.
+   * @return mean latitude argument.(rad)
+   */
+  public double getLM() {
+    return pa + raan + getMeanAnomaly();
   }
 
   /**  Returns a string representation of this Orbit object
@@ -465,7 +447,7 @@ public class KeplerianParameters
    * {@link OrbitDerivativesAdder OrbitDerivativesAdder} object, for
    * this class, an {@link KeplerianDerivativesAdder
    * KeplerianDerivativesAdder} object is built.</p>
-   * @param mu central body gravitational constant (m^3/s^2)
+   * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
    * @return an instance of {@link KeplerianDerivativesAdder
    * KeplerianDerivativesAdder} associated with this object
    */
@@ -486,7 +468,7 @@ public class KeplerianParameters
     raan = array[start + 4];
     v    = array[start + 5];
 
-    // force position and velocity recomputation
+    // invalidate position and velocity
     super.reset();
 
   }
@@ -503,5 +485,23 @@ public class KeplerianParameters
     array[start + 4] = raan;
     array[start + 5] = v;
   }
+
+  /** Semi-major axis (m). */
+  private double a;
+
+  /** Eccentricity. */
+  private double e;
+
+  /** Inclination (rad). */
+  private double i;
+
+  /** Perigee Argument (rad). */
+  private double pa;
+
+  /** Right Ascension of Ascending Node (rad). */
+  private double raan;
+
+  /** True anomaly (rad). */
+  private double v;
 
 }
