@@ -40,7 +40,7 @@ public class DragTest extends TestCase {
    public void testDragElements() {       
 //
 //       
-//   System.out.println("Test n°1: ");
+//   System.out.println("Test 1: ");
 //   System.out.println("----------");
 //   
 //   Drag drag = new Drag(0.0004, 42000.0, 7500.0);
