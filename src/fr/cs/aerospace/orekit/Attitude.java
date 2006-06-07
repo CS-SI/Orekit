@@ -1,6 +1,5 @@
 package fr.cs.aerospace.orekit;
 
-import org.spaceroots.mantissa.utilities.ArraySliceMappable;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import org.spaceroots.mantissa.geometry.Rotation;
 import java.io.Serializable;

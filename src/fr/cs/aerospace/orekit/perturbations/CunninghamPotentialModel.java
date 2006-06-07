@@ -3,11 +3,7 @@ package fr.cs.aerospace.orekit.perturbations;
 import fr.cs.aerospace.orekit.RDate;
 import fr.cs.aerospace.orekit.Attitude;
 import fr.cs.aerospace.orekit.OrbitDerivativesAdder;
-import fr.cs.aerospace.orekit.CartesianDerivativesAdder;
-import fr.cs.aerospace.orekit.OrbitalParameters;
-import fr.cs.aerospace.orekit.CartesianParameters;
 import fr.cs.aerospace.orekit.Constants;
-import fr.cs.aerospace.orekit.perturbations.EllipsoidicBody;
 import fr.cs.aerospace.orekit.OrekitException;
 import org.spaceroots.mantissa.geometry.Vector3D;
 

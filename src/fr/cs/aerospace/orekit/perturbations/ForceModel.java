@@ -6,7 +6,6 @@ import fr.cs.aerospace.orekit.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.OrekitException;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
-import org.spaceroots.mantissa.ode.SwitchingFunction;
 
 /** This interface represents a forces model set.
  *

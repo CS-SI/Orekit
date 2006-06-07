@@ -62,7 +62,6 @@ public class Atmosphere {
    */
     public double getRho(double altitude) throws OrekitException {
         if (hscale < Constants.Epsilon) {throw new OrekitException("hscale is equal to 0");}
-        double test = Math.exp( - (altitude - h0) / hscale);
         return rho0 * Math.exp( - (altitude - h0) / hscale);
     }
 }

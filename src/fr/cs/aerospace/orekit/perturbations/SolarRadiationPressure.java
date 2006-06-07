@@ -1,15 +1,12 @@
 package fr.cs.aerospace.orekit.perturbations;
 
 import fr.cs.aerospace.orekit.RDate;
-import fr.cs.aerospace.orekit.Vehicle;
 import fr.cs.aerospace.orekit.Constants;
-import fr.cs.aerospace.orekit.OrbitalParameters;
 import fr.cs.aerospace.orekit.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.Attitude;
 import fr.cs.aerospace.orekit.SimpleVehicle;
 import fr.cs.aerospace.orekit.OrekitException;
 import org.spaceroots.mantissa.geometry.Vector3D;
-import org.spaceroots.mantissa.ode.SwitchingFunction;
 
 /**
  * This class represents the solar radiation pressure of the sun.
@@ -23,9 +20,6 @@ import org.spaceroots.mantissa.ode.SwitchingFunction;
 
 public class SolarRadiationPressure implements ForceModel {
 
-    /** SRP force contribution to the acceleration */
-    private double[] fsrp;
-    
     // SRP Ratio between 0.0 (total eclipse) and 1.0 (full lighting)
     private double ratio;
     
@@ -45,9 +39,6 @@ public class SolarRadiationPressure implements ForceModel {
     */
     public SolarRadiationPressure() {
 
-      /** SRP force contribution to the acceleration */  
-      fsrp = new double[3];
-      
       // SRP Ratio between 0.0 (total eclipse) and 1.0 (full lighting)
       ratio = 1.0;
 
