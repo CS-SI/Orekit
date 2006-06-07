@@ -6,12 +6,6 @@ import java.util.StringTokenizer;
 import java.util.NoSuchElementException;
 import java.util.Vector;
 
-/*
- * TestLecture.java
- *
- * Created on 6 août 2002, 14:14
- */
-
 /** Class TestLecture run the user problem of orbital extrapolation.
  *
  *<p> This class allows the user to choose his extrapolation model (Analytic or numerical model),

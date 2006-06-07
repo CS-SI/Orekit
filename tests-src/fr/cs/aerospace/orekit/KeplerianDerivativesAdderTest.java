@@ -140,19 +140,6 @@ public class KeplerianDerivativesAdderTest extends TestCase {
                               oldV.getZ() + dt * yD2[5]);
     KeplerianParameters newOrbit = new KeplerianParameters(p, v, mu);
 
-    //
-    //System.out.println("excentricité t+dt : " + newOrbit.getE());
-    //System.out.println("excentricité t    : " + orbit.getE());
-    //System.out.println("anomalie vraie orbit: " + orbit.getTrueAnomaly());
-    //System.out.println("anomalie vraie new orbit    : " + newOrbit.getTrueAnomaly());
-    //
-//    System.out.println("Validation Keplerien");
-//    System.out.println("da/dt    : " + ((newOrbit.getA() - orbit.getA()) / dt) + " " + yD1[0]);
-//    System.out.println("de/dt    : " + ((newOrbit.getE() - orbit.getE()) / dt) + " " + yD1[1]);
-//    System.out.println("di/dt    : " + ((newOrbit.getI() - orbit.getI()) / dt) + " " + yD1[2]);
-//    System.out.println("dpa/dt   : " + ((newOrbit.getPerigeeArgument() - orbit.getPerigeeArgument()) / dt) + " " + yD1[3]);
-//    System.out.println("draan/dt : " + ((newOrbit.getRightAscensionOfAscendingNode() - orbit.getRightAscensionOfAscendingNode()) / dt) + " " + yD1[4]);
-//    System.out.println("dv/dt    : " + ((newOrbit.getTrueAnomaly() - orbit.getTrueAnomaly()) / dt) + " " + yD1[5]);
     assertEquals((newOrbit.getA() - orbit.getA()) / dt,
                  yD1[0], 1.0e-9 * Math.abs(orbit.getA()));
     assertEquals((newOrbit.getE() - orbit.getE()) / dt,
