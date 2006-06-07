@@ -1,0 +1,8 @@
+OREKIT is a proprietary product from CS-SI.
+See you particular license contract to see what you can do with it.
+
+OREKIT relies on the following third-party products :
+
+  mantissa from SpaceRoots
+  http://www.spaceroots.org/software/mantissa/index.html
+  released under a BSD-like license, see LICENSE.mantissa
