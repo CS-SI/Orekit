@@ -13,17 +13,16 @@
     <property name="version"         value="1.0" />
 
     <!-- main customization properties -->
-    <property name="root.package.name" value="fr.cs.aerospace.apex" />
+    <property name="root.package.name" value="fr.cs.aerospace.orekit" />
     <property name="copyright"         value="2002-2006 C-S" />
 
     <!-- directories -->
     <property name="src.dir"        value="src" />
     <property name="tests-src.dir"  value="tests-src" />
-    <property name="examples.dir"   value="examples" />
     <property name="lib.dir"        value="lib" />
     <property name="bin.dir"        value="bin" />
     <property name="build.dir"      value="build" />
-    <property name="resources.dir"  value="fr/cs/aerospace/apex/resources" />
+    <property name="resources.dir"  value="fr/cs/aerospace/orekit/resources" />
     <property name="doc.dir"        value="doc" />
     <property name="javadoc.dir"    value="${doc.dir}/javadoc" />
 
@@ -66,18 +65,7 @@
   </target>
 
   <!-- Tests -->
-  <target name="prepare-tests" depends="init"
-          description="Prepare the test files">
-    <copy todir="${examples.dir}">
-      <fileset dir="${examples.dir}"/>
-      <mapper type="glob" from="*.raw" to="*.xml"/>
-      <filterset begintoken="#" endtoken="#">
-        <filter token="basedir" value="${basedir}" />
-      </filterset>
-    </copy>
-  </target>
-
-  <target name="compile-tests" depends="prepare-tests,compile"
+  <target name="compile-tests" depends="compile"
           description="Compile the tests">
     <javac srcdir="${tests-src.dir}" destdir="${bin.dir}"
            debug="${debug}" deprecation="${deprecation}">
@@ -85,7 +73,7 @@
    </javac>
   </target>
 
-  <target name="test" depends="init,prepare-tests,compile-tests"
+  <target name="test" depends="init,compile-tests"
           description="Run the tests">
     <junit fork="yes">
       <classpath>
@@ -180,14 +168,8 @@
     <delete dir="${doc.dir}" />
   </target>
 
-  <target name="clean-examplesdir" depends="init" >
-    <delete>
-      <fileset dir="${examples.dir}" includes="**/*.xml"/>
-    </delete>
-  </target>
-
   <target name="clean"
-          depends="init,clean-builddir,clean-bindir,clean-docdir,clean-examplesdir"
+          depends="init,clean-builddir,clean-bindir,clean-docdir"
           description="Clean everything">
     <delete>
       <fileset dir=".">
