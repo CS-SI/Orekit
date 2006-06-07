@@ -23,7 +23,8 @@ public interface SWF {
 
     /** Compute the value of the switching function. 
      */    
-    public double g(RDate t, Vector3D position, Vector3D velocity) throws OrekitException;
+    public double g(RDate t, Vector3D position, Vector3D velocity)
+      throws OrekitException;
     
     /** Handle an event and choose what to do next.
      */
