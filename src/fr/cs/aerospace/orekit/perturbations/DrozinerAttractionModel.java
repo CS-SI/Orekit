@@ -4,11 +4,10 @@ import fr.cs.aerospace.orekit.RDate;
 import fr.cs.aerospace.orekit.Attitude;
 import fr.cs.aerospace.orekit.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.Constants;
-import fr.cs.aerospace.orekit.perturbations.EllipsoidicBody;
 import fr.cs.aerospace.orekit.OrekitException;
+import fr.cs.aerospace.orekit.bodies.RotatingBody;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
-import org.spaceroots.mantissa.geometry.Rotation;
 
 /**
  * This class represents the gravitational field of a celestial body.
@@ -23,41 +22,25 @@ import org.spaceroots.mantissa.geometry.Rotation;
  * @author E. Delente
  */
 
-public class DrozinerPotentialModel extends CentralBodyPotential {
+public class DrozinerAttractionModel  implements ForceModel  {
 
-    /** Ellipsoidic body de reference. */
-    private EllipsoidicBody ellipsoidicBody;
-    
-    /** Droziner Earth's mu. */
-    private double drozinerEarthMu;
-
-    /** Rotation of the reference body in the inertial frame. */
-    private Rotation rot;
-    
-   /** Creates a new instance of CentralBodyPotential.
-   * Build a spherical potential without perturbing acceleration
-   * @param name name of the model
-   * @param mu central body attraction coefficient
-   */
-    public DrozinerPotentialModel(String name, double mu) {
-        super(name,mu);
-        ellipsoidicBody = new MyEllipsoidicBody();
-        rot = new Rotation();
-    }
-    
     /** Creates a new instance of CentralBodyPotential.
-     * @param name name of the model
      * @param mu central body attraction coefficient
+     * @param body rotating body
      * @param equatorialRadius equatorial radius used for spherical harmonics
      * modelization
      * @param c normalized coefficients array (cosine part)
      * @param s normalized coefficients array (sine part)
      * @param degree degree of potential
      */
-    public DrozinerPotentialModel(String name, double mu, double equatorialRadius, double[] J, double[][] C, double[][] S) {
-        super(name,mu,equatorialRadius,J,C,S);
-        ellipsoidicBody = new MyEllipsoidicBody("Clarke", 6378249.20, 0.00341);
-        rot = new Rotation();
+    public DrozinerAttractionModel(double mu,  RotatingBody body,
+                                   double equatorialRadius,
+                                   double[] J, double[][] C, double[][] S) {
+      this.mu   = mu;
+      this.equatorialRadius = equatorialRadius;
+      this.J    = J;
+      this.C    = C;
+      this.S    = S;
     }
     
     /** Computes the contribution of the central body potential to the
@@ -72,12 +55,11 @@ public class DrozinerPotentialModel extends CentralBodyPotential {
     * @param adder object where the contribution should be added
     */
     
-    public void addContribution(RDate t, Vector3D position, Vector3D velocity, Attitude Attitude, OrbitDerivativesAdder adder) throws OrekitException{
+    public void addContribution(RDate t, Vector3D position, Vector3D velocity,
+                                Attitude Attitude, OrbitDerivativesAdder adder)
+    throws OrekitException{
     
-    ResetPotentialModel();
-    
-    rot = ellipsoidicBody.SideralTime(t,rot);
-    double gst = rot.getAngle();
+    double gst = body.getOrientation(t).getAngle();
 
     // Modified time
     double offset = t.getOffset();
@@ -105,8 +87,8 @@ public class DrozinerPotentialModel extends CentralBodyPotential {
     // Definition of the first acceleration terms
     double xDotDotk = 0.0;
     double yDotDotk = 0.0;
-    xDotDotk = - drozinerEarthMu * x / r3;
-    yDotDotk = - drozinerEarthMu * y / r3;
+    xDotDotk = - mu * x / r3;
+    yDotDotk = - mu * y / r3;
    
     // Zonal part of acceleration
     if (ndeg != 0) {
@@ -127,7 +109,7 @@ public class DrozinerPotentialModel extends CentralBodyPotential {
     double p = - (r / r1) * (r / r1) * Sum1;
     fpot[0] = fpot[0] + xDotDotk * p;
     fpot[1] = fpot[1] + yDotDotk * p;
-    fpot[2] = fpot[2] + drozinerEarthMu * Sum2 / r2;
+    fpot[2] = fpot[2] + mu * Sum2 / r2;
     }
     
     // Tesseral-sectorial part of acceleration
@@ -194,7 +176,7 @@ public class DrozinerPotentialModel extends CentralBodyPotential {
         double p2 = r2Onr12 * yDotDotk;
         fpot[0] = fpot[0] + p1 * Sum[0] - p2 * Sum[2];
         fpot[1] = fpot[1] + p2 * Sum[0] + p1 * Sum[2];
-        fpot[2] = fpot[2] - drozinerEarthMu * Sum[1] / r2;
+        fpot[2] = fpot[2] - mu * Sum[1] / r2;
     }
 
     // Multiplication by the ratio mu/req^2 
@@ -207,14 +189,37 @@ public class DrozinerPotentialModel extends CentralBodyPotential {
     
     // Additition of calculated acceleration to adder
     adder.addXYZAcceleration(fpot[0], fpot[1], fpot[2]);
-}
-    
-    /** Initialize the parameters of an instance of CentralBodyPotential.
-     */
-    public void ResetPotentialModel() {
-        fpot = new double[3];
-        rot = new Rotation();
+
+    }
+
+    public SWF[] getSwitchingFunctions() {
+      return null;
     }
     
+    /** Central body attraction coefficient. */
+    private double mu;
+    
+    /** Equatorial radius of the Central Body. */
+    private double equatorialRadius;
+    
+    /** First normalized potential zonal coefficients array. */    
+    private double[] J;
+    
+    /** First normalized potential tesseral coefficients array. */    
+    private double[][] C;
+    
+    /** Second normalized potential tesseral coefficients array. */    
+    private double[][] S;
+    
+    /** Definition of degree, order and maximum potential size. */
+    private int ndeg;
+    private int nord;
+        
+    /** Initialization of the acceleration. */
+    private double[] fpot;
+    
+    /** Rotating body. */
+    private RotatingBody body;
+
 }
 
