@@ -36,7 +36,10 @@ public interface ForceModel {
     public void addContribution(RDate t, Vector3D position, Vector3D velocity, 
                                 Attitude attitude, OrbitDerivativesAdder adder) throws OrekitException;
 
-    /** Get the switching functions */
+    /** Get the switching functions internally used by the model itself.
+     * @return array of switching functions or null if the model doesn't need
+     * any switching function by itself
+     */
     public SWF[] getSwitchingFunctions();
 
 }
