@@ -5,6 +5,8 @@ import fr.cs.aerospace.orekit.Attitude;
 import fr.cs.aerospace.orekit.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.Constants;
 import fr.cs.aerospace.orekit.OrekitException;
+import fr.cs.aerospace.orekit.bodies.RotatingBody;
+
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 /**
@@ -20,59 +22,29 @@ import org.spaceroots.mantissa.geometry.Vector3D;
  * @author E. Delente
  */
 
-public class CunninghamPotentialModel extends CentralBodyPotential {
-    
-    /** Initialisation of potential array. */
-    private double[][] V;
-        
-    /** Definition of real part and imaginary part of potential derivatives. */
-    private double[] reald;
-    private double[] imd;
-      
-    /** Intermediate variables. */
-    private double[] somf;
-        
-    /** Initialization of the acceleration. */
-    private int ndd;
-    private int nod; 
- 
-   /** Create a new instance of CentralBodyPotential.
-   * Build a spherical potential without perturbing acceleration
-   * @param name name of the model
-   * @param mu central body attraction coefficient
-   */
-    public CunninghamPotentialModel(String name, double mu) {
-        super(name, mu);
-        V = new double[maxpot + 3 + 1][maxpot + 3 + 1];
-        reald = new double[3];
-        imd = new double[3];
-        somf = new double[3];
-        ndd = 0;
-        ndd = 0;
-        nod = 0;
-        nod = 0;
-    }
+public class CunninghamAttractionModel implements ForceModel {
     
     /** Create a new instance of CentralBodyPotential.
-     * @param name name of the model
      * @param mu central body attraction coefficient
+     * @param body rotating body
      * @param equatorialRadius equatorial radius used for spherical harmonics
-     * modeling
+     * modelization
      * @param c normalized coefficients array (cosine part)
      * @param s normalized coefficients array (sine part)
      * @param degree degree of potential
      */
-    public CunninghamPotentialModel(String name, double mu, double equatorialRadius, 
-                               double[] J, double[][] C, double[][] S) {
-        super(name, mu, equatorialRadius, J, C, S);
-        V = new double[maxpot + 3 + 1][maxpot + 3 + 1];
-        reald = new double[3];
-        imd = new double[3];
-        somf = new double[3];
-        ndd = Math.max(ndeg+1,4);
-        ndd = Math.min(ndd,maxpot+2);
-        nod = Math.max(nord+1,4);
-        nod = Math.min(nod,maxpot+2);
+    public CunninghamAttractionModel(double mu,  RotatingBody body,
+                                    double equatorialRadius,
+                                    double[][] C, double[][] S) {
+      maxpot = C.length;
+      V = new double[maxpot + 3 + 1][maxpot + 3 + 1];
+      reald = new double[3];
+      imd = new double[3];
+      somf = new double[3];
+      ndd = Math.max(ndeg+1,4);
+      ndd = Math.min(ndd,maxpot+2);
+      nod = Math.max(nord+1,4);
+      nod = Math.min(nod,maxpot+2);
     }
     
     /** Compute the contribution of the central body potential to the
@@ -87,10 +59,10 @@ public class CunninghamPotentialModel extends CentralBodyPotential {
     * @param adder object where the contribution should be added
     */    
 
-    public void addContribution(RDate t, Vector3D position, Vector3D velocity, Attitude Attitude, OrbitDerivativesAdder adder) throws OrekitException{
+    public void addContribution(RDate t, Vector3D position, Vector3D velocity,
+                                Attitude Attitude, OrbitDerivativesAdder adder)
+    throws OrekitException{
   
-        ResetPotentialModel();
-        
         // Construction of the potential array V(n,m)
         CunninghamPotentialBuilder(ndd, nod, maxpot, position, V);
         
@@ -105,8 +77,7 @@ public class CunninghamPotentialModel extends CentralBodyPotential {
                 int m = mm - 1;
                 // Calculation of real and imaginary parts of the first 
                 // derivative of the Vnm function
-                CunninghamPotentialDerivativesBuilder(n, m, maxpot, V, 
-                                                           reald, imd);
+                CunninghamPotentialDerivativesBuilder(n, m, maxpot, V, reald, imd);
                 for (int j = 0; j <= 2; j++) {
                     somf[j] = somf[j] + reald[j] * C[n][m] + imd[j] * S[n][m];
                 }
@@ -133,7 +104,8 @@ public class CunninghamPotentialModel extends CentralBodyPotential {
      * @param V matrix containing all the elementary potentials
      */
     private void CunninghamPotentialBuilder(int ndeg, int nord, int maxpot, 
-                                           Vector3D position,double[][] V) throws OrekitException{
+                                           Vector3D position,double[][] V)
+      throws OrekitException {
 
         // Retrieval of cartesian coordinates
         double x = position.getX();
@@ -202,7 +174,7 @@ public class CunninghamPotentialModel extends CentralBodyPotential {
      * @param imd imaginary part of first derivative
      */    
     private void CunninghamPotentialDerivativesBuilder(int n, int m, int maxpot, 
-    double[][] V, double[] reald, double[] imd) {        
+                                                       double[][] V, double[] reald, double[] imd) {        
         
         // Zonal terms
         if ( m == 0) {
@@ -249,16 +221,48 @@ public class CunninghamPotentialModel extends CentralBodyPotential {
             reald[2] = - enm * V[n-m+2][n+2];
         }
     }
-    
-    /** Initialize the parameters of an instance of CentralBodyPotential.
-     */
-    public void ResetPotentialModel() {
-        V = new double[maxpot + 3 + 1][maxpot + 3 + 1];
-        reald = new double[3];
-        imd = new double[3];
-        somf = new double[3];
-        fpot = new double[3];
+
+    public SWF[] getSwitchingFunctions() {
+      return null;
     }
     
+    private int maxpot;
+
+    /** Initialisation of potential array. */
+    private double[][] V;
+        
+    /** Definition of real part and imaginary part of potential derivatives. */
+    private double[] reald;
+    private double[] imd;
+      
+    /** Intermediate variables. */
+    private double[] somf;
+        
+    /** Initialization of the acceleration. */
+    private int ndd;
+    private int nod; 
+
+    /** Central body attraction coefficient. */
+    private double mu;
+    
+    /** Equatorial radius of the Central Body. */
+    private double equatorialRadius;
+    
+    /** First normalized potential tesseral coefficients array. */    
+    private double[][] C;
+    
+    /** Second normalized potential tesseral coefficients array. */    
+    private double[][] S;
+    
+    /** Definition of degree, order and maximum potential size. */
+    private int ndeg;
+    private int nord;
+        
+    /** Initialization of the acceleration. */
+    private double[] fpot;
+    
+    /** Rotating body. */
+    private RotatingBody body;
+
 }
 
