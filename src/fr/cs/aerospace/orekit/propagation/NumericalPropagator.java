@@ -97,19 +97,6 @@ public class NumericalPropagator
      */
     public void addForceModel(ForceModel model) {
       forceModels.add(model);
-      SWF[] tab =  model.getSwitchingFunctions();
-      
-      if (tab != null) {
-          MappingSwitchingFunction[] mappingSwitchingFunction = new MappingSwitchingFunction[tab.length];
-          thresholds = new double[tab.length];
-          maxCheckIntervals = new double[tab.length];
-          for (int i = 0; i < tab.length; i++) {
-            mappingSwitchingFunction[i] = new MappingSwitchingFunction(tab[i]);
-            switchingFunctions.add(mappingSwitchingFunction[i]);
-            thresholds[i] = tab[i].getThreshold();
-            maxCheckIntervals[i] = tab[i].getMaxCheckInterval();
-         }
-      }
     }
 
     /** Remove all perturbing force models from the global perturbation model, 
