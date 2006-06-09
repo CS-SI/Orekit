@@ -270,7 +270,8 @@ public class NumericalPropagator
         // compute cartesian coordinates
         Vector3D position = parameters.getPosition(mu);
         Vector3D velocity = parameters.getVelocity(mu);
-        if ((Math.abs(position.getNorm())< Constants.CentralBodyradius)|| (Float.isNaN((float)position.getNorm()))) 
+        if ((Math.abs(position.getNorm())< Constants.CentralBodyradius)
+            || (Double.isNaN(position.getNorm()))) 
         {throw new DerivativeException("Vehicle crashed down", new String[0]);}
         
         // initialize derivatives
