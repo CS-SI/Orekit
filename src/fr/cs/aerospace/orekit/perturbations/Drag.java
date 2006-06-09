@@ -1,7 +1,14 @@
 package fr.cs.aerospace.orekit.perturbations;
 
-import fr.cs.aerospace.orekit.*;
 import org.spaceroots.mantissa.geometry.Vector3D;
+
+import fr.cs.aerospace.orekit.Atmosphere;
+import fr.cs.aerospace.orekit.Attitude;
+import fr.cs.aerospace.orekit.Constants;
+import fr.cs.aerospace.orekit.OrbitDerivativesAdder;
+import fr.cs.aerospace.orekit.OrekitException;
+import fr.cs.aerospace.orekit.RDate;
+import fr.cs.aerospace.orekit.SimpleVehicle;
 
 /**
  * This class represents the atmospheric drag applied to the vehicle.
@@ -56,7 +63,8 @@ public class Drag implements ForceModel {
     * @param adder object where the contribution should be added
     */    
     public void addContribution(RDate t, Vector3D position, Vector3D velocity, 
-                                Attitude Attitude, OrbitDerivativesAdder adder) throws OrekitException {
+                                Attitude Attitude, OrbitDerivativesAdder adder)
+    throws OrekitException {
                                     
     // Creation of a simple vehicle
     SimpleVehicle vehicle = new SimpleVehicle(1500.0, 3.0, 2.0, 0.2, 0.3);
@@ -78,12 +86,9 @@ public class Drag implements ForceModel {
     // Additition of calculated accelration to adder
     adder.addXYZAcceleration(fdrag[0], fdrag[1], fdrag[2]);
     }
-    
-    
-    /** Get the switching functions.
-    */
+
     public SWF[] getSwitchingFunctions() {
-        return null;
+      return null;
     }
     
 }

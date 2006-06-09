@@ -33,8 +33,7 @@ public class SolarRadiationPressure implements ForceModel {
         // This function return a table containing the 2 swithing functions
         return new SWF[] {new Umbraswitch(), new Penumbraswitch()};
     }
-        
-    
+
     /** Create a SRP and define the SRP parameters.
     */
     public SolarRadiationPressure() {

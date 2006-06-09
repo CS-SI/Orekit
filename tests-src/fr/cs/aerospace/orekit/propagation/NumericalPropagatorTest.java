@@ -1,5 +1,7 @@
 package fr.cs.aerospace.orekit.propagation;
 
+import java.io.IOException;
+
 import fr.cs.aerospace.orekit.EquinoctialParameters;
 import fr.cs.aerospace.orekit.Orbit;
 import fr.cs.aerospace.orekit.RDate;
@@ -9,7 +11,9 @@ import org.spaceroots.mantissa.ode.DormandPrince853Integrator;
 import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.IntegratorException;
 import org.spaceroots.mantissa.geometry.Vector3D;
-import fr.cs.aerospace.orekit.perturbations.CunninghamPotentialModel;
+
+import fr.cs.aerospace.orekit.bodies.FixedPoleEarth;
+import fr.cs.aerospace.orekit.perturbations.CunninghamAttractionModel;
 import fr.cs.aerospace.orekit.perturbations.PotentialCoefficientsTab;
 import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
 import fr.cs.aerospace.orekit.OrekitException;
@@ -176,8 +180,8 @@ try {
         J[i] = - C[i][0];
     }
     
-    CunninghamPotentialModel CBP = new CunninghamPotentialModel("cbp", mu,
-                                 equatorialRadius, J, C, S);
+    CunninghamAttractionModel CBP =
+      new CunninghamAttractionModel(mu, new FixedPoleEarth(), equatorialRadius, C, S);
     
     extrapolator.addForceModel(CBP);
     
@@ -195,7 +199,11 @@ try {
 //    double n = Math.sqrt(mu / initialOrbit.getA()) / initialOrbit.getA();
 //    assertEquals(initialOrbit.getMeanAnomaly() + n * dt,
 //                 finalOrbit.getMeanAnomaly(), 4.0e-10);
-   }  catch (OrekitException oe) {System.err.println(oe.getMessage());}
+   }  catch (OrekitException oe) {
+     System.err.println(oe.getMessage());
+   }  catch (IOException ioe) {
+     System.err.println(ioe.getMessage());
+   }
   }
   
   
