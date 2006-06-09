@@ -124,52 +124,5 @@ public abstract class CentralBodyPotential implements ForceModel {
         return null;
     }
     
-    
-    public static void main(String args[]){
-//                  double equatorialRadius = 6378.13E3;
-       double mu = 3.98600E14;
-       
-       Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
-       Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);                         
-       OrbitalParameters op = new CartesianParameters();
-       op.reset(position, velocity, mu);
-//       OrbitDerivativesAdder adder = new CartesianDerivativesAdder(op, mu);
-       
-       // Acceleration
-//       double xDotDot = 0;
-//       double yDotDot = 0;
-//       double zDotDot = 0;
-
-    PotentialCoefficientsTab GEM10Tab = 
-    new PotentialCoefficientsTab("D:\\Mes Documents\\EDelente\\JAVA\\GEM10B.txt");
-        
-    GEM10Tab.read();
-    int ndeg = GEM10Tab.getNdeg();
-//    double[] J   = new double[ndeg];
-    double[][] C = new double[ndeg][ndeg];
-    double[][] S = new double[ndeg][ndeg];
-    
-    C = GEM10Tab.getNormalizedClm();
-    S = GEM10Tab.getNormalizedSlm();
-    for (int i=0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
-            System.out.println("C[" + i + "][" + j + "]= " + C[i][j]);
-            System.out.println("S[" + i + "][" + j + "]= " + S[i][j]);
-        }
-    }
-    
-//    CunninghamPotentialModel CBP = new CunninghamPotentialModel("cbp", mu,
-//                                 equatorialRadius, J, C, S);  
-       
-    }
-    /////////////////////////////////////////////////
-    
-    
-    
-    
-    
-    
-    
-    
 }
 
