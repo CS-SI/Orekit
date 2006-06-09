@@ -1,10 +1,12 @@
 package fr.cs.aerospace.orekit.perturbations;
 
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.StringTokenizer;
-import java.util.NoSuchElementException;
-import java.util.Vector;
+
+
 
 /** Class TestLecture run the user problem of orbital extrapolation.
  *
@@ -60,30 +62,27 @@ public class PotentialCoefficientsTab {
     }
     
     /** Reading method  */
-    public void read(){
+    public void read() throws IOException {
     
         int i, j, l;
         int lDim = 1;
         int mDim = 1;
                 
-        Vector vectorL = new Vector();
-        Vector vectorM = new Vector();
-        Vector vectorClm = new Vector();
-        Vector vectorSlm = new Vector();
-        Vector comment = new Vector();
-        Vector ClmStandardDeviation = new Vector();
-        Vector SlmStandardDeviation = new Vector(); 
+        ArrayList listL = new ArrayList();
+        ArrayList listM = new ArrayList();
+        ArrayList listClm = new ArrayList();
+        ArrayList listSlm = new ArrayList();
+        ArrayList comment = new ArrayList();
+        ArrayList ClmStandardDeviation = new ArrayList();
+        ArrayList SlmStandardDeviation = new ArrayList(); 
          
         i = 0;
         
-        try{
             BufferedReader potentialModel = new BufferedReader(new FileReader(fileName));
-//            System.out.println("passage dans le constructeur de CentralBodyPotential");
             String currentLine;
             while((currentLine = potentialModel.readLine()) != null){
                 j = 0;
                 StringTokenizer st = new StringTokenizer(currentLine);
-//                System.out.println("count tokens = " + st.countTokens());
                 while(st.hasMoreTokens()){
                     if(i ==0 && j == 0){
                         lDim =  Integer.parseInt(st.nextToken()) + 1;
@@ -92,25 +91,25 @@ public class PotentialCoefficientsTab {
                         mDim = Integer.parseInt(st.nextToken()) + 1;
                     }                       
                     if(i >=15 && j == 0){
-                        vectorL.addElement(st.nextToken());
+                        listL.add(st.nextToken());
                     }
                     if(i >=15 && j == 1){
-                         vectorM.addElement(st.nextToken());
+                         listM.add(st.nextToken());
                     }
                     if(i >=15 && j == 2){
-                         vectorClm.addElement(st.nextToken());
+                         listClm.add(st.nextToken());
                     }
                     if(i >=15 && j == 3){
-                         vectorSlm.addElement(st.nextToken());
+                         listSlm.add(st.nextToken());
                     }
                     if(i >=15 && j == 4){
-                         ClmStandardDeviation.addElement(st.nextToken());
+                         ClmStandardDeviation.add(st.nextToken());
                     }                    
                      if(i >=15 && j == 5){
-                         SlmStandardDeviation.addElement(st.nextToken());
+                         SlmStandardDeviation.add(st.nextToken());
                     }                                     
                     if(i >=1 && i < 15){
-                        comment.addElement(st.nextToken());
+                        comment.add(st.nextToken());
                     }
                     j++;                   
                 }
@@ -126,24 +125,11 @@ public class PotentialCoefficientsTab {
                 }
             }
             
-            for(l = 0; l < vectorL.size(); l++){ 
-                 this.normalizedClm[Integer.parseInt(vectorL.get(l).toString())][Integer.parseInt(vectorM.get(l).toString())] = Double.parseDouble(vectorClm.get(l).toString());
-                 this.normalizedSlm[Integer.parseInt(vectorL.get(l).toString())][Integer.parseInt(vectorM.get(l).toString())] = Double.parseDouble(vectorSlm.get(l).toString());                
+            for(l = 0; l < listL.size(); l++){ 
+                 this.normalizedClm[Integer.parseInt(listL.get(l).toString())][Integer.parseInt(listM.get(l).toString())] = Double.parseDouble(listClm.get(l).toString());
+                 this.normalizedSlm[Integer.parseInt(listL.get(l).toString())][Integer.parseInt(listM.get(l).toString())] = Double.parseDouble(listSlm.get(l).toString());                
             }
             
-        }
-        catch(FileNotFoundException fnfe){
-            System.err.println(fnfe);
-        }
-        catch(NoSuchElementException nsee){
-            System.err.println(nsee);
-        }
-        catch (NullPointerException npe){
-            System.err.println(npe);
-        }
-        catch (IOException ioe){
-            System.err.println(ioe);
-        }
         
     this.ndeg = lDim - 1;
     this.nord = mDim - 1;
