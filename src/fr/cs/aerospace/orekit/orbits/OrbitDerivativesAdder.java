@@ -1,4 +1,4 @@
-package fr.cs.aerospace.orekit;
+package fr.cs.aerospace.orekit.orbits;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 

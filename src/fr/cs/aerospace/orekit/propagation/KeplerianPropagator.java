@@ -1,8 +1,9 @@
 package fr.cs.aerospace.orekit.propagation;
 
-import fr.cs.aerospace.orekit.EquinoctialParameters;
-import fr.cs.aerospace.orekit.Orbit;
 import fr.cs.aerospace.orekit.RDate;
+import fr.cs.aerospace.orekit.errors.PropagationException;
+import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
+import fr.cs.aerospace.orekit.orbits.Orbit;
 
 /** Simple keplerian orbit extrapolator.
  * @author G. Prat

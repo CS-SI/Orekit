@@ -1,13 +1,15 @@
 package fr.cs.aerospace.orekit.propagation;
 
-import fr.cs.aerospace.orekit.EquinoctialParameters;
-import fr.cs.aerospace.orekit.KeplerianParameters;
-import fr.cs.aerospace.orekit.Orbit;
 import fr.cs.aerospace.orekit.RDate;
 import fr.cs.aerospace.orekit.Utils;
 
 import junit.framework.*;
 import org.spaceroots.mantissa.geometry.Vector3D;
+
+import fr.cs.aerospace.orekit.errors.PropagationException;
+import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
+import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
+import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.propagation.KeplerianPropagator;
 
 public class KeplerianPropagatorTest extends TestCase {

@@ -1,6 +1,11 @@
-package fr.cs.aerospace.orekit;
+package fr.cs.aerospace.orekit.orbits;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
+
+import fr.cs.aerospace.orekit.orbits.EquinoctialDerivativesAdder;
+import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
+import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
+import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 
 import junit.framework.*;
 

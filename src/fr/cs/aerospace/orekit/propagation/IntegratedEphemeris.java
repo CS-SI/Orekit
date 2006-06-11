@@ -2,9 +2,9 @@ package fr.cs.aerospace.orekit.propagation;
 
 import org.spaceroots.mantissa.ode.ContinuousOutputModel;
 import fr.cs.aerospace.orekit.RDate;
-import fr.cs.aerospace.orekit.Orbit;
+import fr.cs.aerospace.orekit.errors.PropagationException;
+import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.propagation.BoundedEphemeris;
-import fr.cs.aerospace.orekit.propagation.PropagationException;
 
 import java.util.Date;
 
@@ -59,22 +59,17 @@ public class IntegratedEphemeris implements BoundedEphemeris {
    */    
   public Orbit getOrbit(RDate date, Orbit orbit)
   throws PropagationException {
-    try {
+    model.setInterpolatedTime(date.getOffset());
+    double[] state = model.getInterpolatedState();
 
-      model.setInterpolatedTime(date.getOffset());
-      double[] state = model.getInterpolatedState();
-
-      if (orbit == null) {
-        orbit = new Orbit();
-      }
-      orbit.setDate(date);
-      orbit.getParameters().mapStateFromArray(0, state);
-
-      return orbit;
-
-    } catch(IllegalArgumentException iae) {
-      throw new PropagationException(iae);
+    if (orbit == null) {
+      orbit = new Orbit();
     }
+    orbit.setDate(date);
+    orbit.getParameters().mapStateFromArray(0, state);
+
+    return orbit;
+
   }
 
   /** Get the start date of the range.

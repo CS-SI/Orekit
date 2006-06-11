@@ -1,6 +1,7 @@
 package fr.cs.aerospace.orekit.bodies;
 
 import org.spaceroots.mantissa.geometry.Rotation;
+import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.RDate;
 
@@ -15,11 +16,19 @@ import fr.cs.aerospace.orekit.RDate;
  */
 public interface RotatingBody {
 
-  /** Get the orientation of the body at a given date.
+  /** Get the orientation of the body.
    * @param date date to consider
    * @return orientation of the body (rotation transforming a vector projected
    * in intertial frame in the same vector projected in body frame)
    */
   public Rotation getOrientation(RDate date);
+
+  /** Get the current rotation vector.
+   * <p>The rotation vector is the instantaneous rotation axis scaled
+   * such as having the angular rate as its norm.</p>
+   * @param date date to consider
+   * @return current rotation vector in inertial frame
+   */
+  public Vector3D getRotationVector(RDate date);
 
 }

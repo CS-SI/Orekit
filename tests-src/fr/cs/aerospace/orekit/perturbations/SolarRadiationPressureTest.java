@@ -1,6 +1,14 @@
 package fr.cs.aerospace.orekit.perturbations;
 
 import fr.cs.aerospace.orekit.*;
+import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
+import fr.cs.aerospace.orekit.bodies.Sun;
+import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.orbits.CartesianDerivativesAdder;
+import fr.cs.aerospace.orekit.orbits.CartesianParameters;
+import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
+import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
+
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import junit.framework.*;
@@ -30,7 +38,12 @@ public void testSolarRadiationPressure() throws OrekitException{
 //    double zDotDot = 0;
         
     // Creation of the solar radiation pressure model
-    SolarRadiationPressure SRP = new SolarRadiationPressure();
+    SolarRadiationPressure SRP =
+      new SolarRadiationPressure(new Sun(),
+                                 new OneAxisEllipsoid(6378136.46,
+                                                      1.0 / 298.25765),
+                                 new SimpleSpacecraft(1500.0, 50.0,
+                                                      0.5, 0.5, 0.5));
     
     // Add the pressure contribution to the acceleration
     SRP.addContribution(date, position, velocity, attitude, adder);
@@ -50,9 +63,12 @@ public void testSolarRadiationPressure() throws OrekitException{
     // Testing the definition of SolarRadiationPressure
     System.out.println("Testing creation");
     System.out.println("================");
-    SolarRadiationPressure SRP = new SolarRadiationPressure();
-    System.out.println("ratio= " + SRP.getRatio(date, position));
-    System.out.println("Sun radius= " + SRP.getSun().getRadius());
+    SolarRadiationPressure SRP =
+      new SolarRadiationPressure(new Sun(),
+                                 new OneAxisEllipsoid(6378136.46,
+                                                      1.0 / 298.25765),
+                                 new SimpleSpacecraft(1500.0, 50.0,
+                                                      0.5, 0.5, 0.5));
     SWF[] testswf = SRP.getSwitchingFunctions();
     System.out.println("First switching function= " + testswf[0]);
     System.out.println("Second switching function= " + testswf[1]);
@@ -71,13 +87,6 @@ public void testSolarRadiationPressure() throws OrekitException{
 //    System.out.println("========================================");
 //    double angle = SRP.getSatSunSatCentralAngle(date, position);
 //    System.out.println("Sat-Sun / Sat-Central Body angle= " + angle);
-        
-    // Testing the retrieval of ecclipse ratio
-    System.out.println("");
-    System.out.println("Testing the calculation of ecclipse ratio");
-    System.out.println("=========================================");    
-    double ratio = SRP.getRatio(date, position);
-    System.out.println("Ecclipse ratio= " + ratio);
         
     // Testing the retrieval of switching functions
     System.out.println("");

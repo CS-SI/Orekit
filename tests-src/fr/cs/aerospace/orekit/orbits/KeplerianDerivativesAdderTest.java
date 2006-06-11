@@ -1,6 +1,11 @@
-package fr.cs.aerospace.orekit;
+package fr.cs.aerospace.orekit.orbits;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
+
+import fr.cs.aerospace.orekit.orbits.CartesianParameters;
+import fr.cs.aerospace.orekit.orbits.KeplerianDerivativesAdder;
+import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
+import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 
 import junit.framework.*;
 

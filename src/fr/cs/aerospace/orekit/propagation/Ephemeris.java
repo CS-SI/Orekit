@@ -1,7 +1,8 @@
 package fr.cs.aerospace.orekit.propagation;
 
 import fr.cs.aerospace.orekit.RDate;
-import fr.cs.aerospace.orekit.Orbit;
+import fr.cs.aerospace.orekit.errors.PropagationException;
+import fr.cs.aerospace.orekit.orbits.Orbit;
 
 /** This interface provides a continuous ephemeris.
  *

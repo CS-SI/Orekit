@@ -1,7 +1,7 @@
 package fr.cs.aerospace.orekit.perturbations;
 
 import fr.cs.aerospace.orekit.RDate;
-import fr.cs.aerospace.orekit.OrekitException;
+import fr.cs.aerospace.orekit.errors.OrekitException;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 

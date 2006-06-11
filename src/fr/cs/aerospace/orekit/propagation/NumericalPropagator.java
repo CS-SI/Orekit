@@ -15,19 +15,19 @@ import org.spaceroots.mantissa.ode.SwitchingFunction;
 import org.spaceroots.mantissa.utilities.ArrayMapper;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.RDate;
-import fr.cs.aerospace.orekit.Orbit;
-import fr.cs.aerospace.orekit.OrbitalParameters;
-import fr.cs.aerospace.orekit.OrbitDerivativesAdder;
+import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.orbits.Orbit;
+import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
+import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.perturbations.ForceModel;
 import fr.cs.aerospace.orekit.perturbations.SWF;
 import fr.cs.aerospace.orekit.Attitude;
-import fr.cs.aerospace.orekit.OrekitException;
 
 
 import fr.cs.aerospace.orekit.Constants;
 
 /**
- * This class extrapolates an {@link fr.cs.aerospace.orekit.Orbit Orbit}
+ * This class extrapolates an {@link fr.cs.aerospace.orekit.orbits.Orbit Orbit}
  * using numerical integration.
  *
  * <p>The user normally build an extrapolator by specifying the integrator he

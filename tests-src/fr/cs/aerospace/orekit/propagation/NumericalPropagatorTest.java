@@ -2,8 +2,6 @@ package fr.cs.aerospace.orekit.propagation;
 
 import java.io.IOException;
 
-import fr.cs.aerospace.orekit.EquinoctialParameters;
-import fr.cs.aerospace.orekit.Orbit;
 import fr.cs.aerospace.orekit.RDate;
 
 import junit.framework.*;
@@ -13,10 +11,12 @@ import org.spaceroots.mantissa.ode.IntegratorException;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.bodies.FixedPoleEarth;
+import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
+import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.perturbations.CunninghamAttractionModel;
 import fr.cs.aerospace.orekit.perturbations.PotentialCoefficientsTab;
 import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
-import fr.cs.aerospace.orekit.OrekitException;
 
 public class NumericalPropagatorTest extends TestCase {
 

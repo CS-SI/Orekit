@@ -1,6 +1,7 @@
 package fr.cs.aerospace.orekit.perturbations;
 
 import fr.cs.aerospace.orekit.*;
+import fr.cs.aerospace.orekit.errors.OrekitException;
 import junit.framework.*;
 
 public class CentralBodyPotentialTest extends TestCase {

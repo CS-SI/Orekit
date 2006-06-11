@@ -1,8 +1,11 @@
-package fr.cs.aerospace.orekit;
+package fr.cs.aerospace.orekit.orbits;
 
 import junit.framework.*;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
+
+import fr.cs.aerospace.orekit.Utils;
+import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
 
 // $Id$
 public class KeplerianParametersTest extends TestCase {

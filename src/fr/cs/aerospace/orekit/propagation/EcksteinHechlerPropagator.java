@@ -1,28 +1,21 @@
 package fr.cs.aerospace.orekit.propagation;
 
-import fr.cs.aerospace.orekit.CircularParameters;
-import fr.cs.aerospace.orekit.Orbit;
 import fr.cs.aerospace.orekit.RDate;
+import fr.cs.aerospace.orekit.errors.PropagationException;
+import fr.cs.aerospace.orekit.orbits.CircularParameters;
+import fr.cs.aerospace.orekit.orbits.Orbit;
 
-/** This class propagates an {@link fr.cs.aerospace.orekit.Orbit Orbit} using the
+/** This class propagates an {@link fr.cs.aerospace.orekit.orbits.Orbit Orbit} using the
  * analytical Eckstein-Hechler model.
- * 
- * <p>
- * The user performs the propagation given an initial orbit and a target time.
- * The propagation can be performed forward or backward in time.
- * </p>
- * 
+ * <p>The Eckstein-Hechler model is suited for near circular orbits
+ * (e < 0.1, with poor accuracy between 0.005 and 0.1) and inclination
+ * neither equatorial (direct or retrograde) nor critical (direct or
+ * retrograde).</p>
  * @see Orbit
- * 
  * @version $Id$
  * @author G. Prat
  */
 public class EcksteinHechlerPropagator implements Ephemeris {
-
-  /** Threshold for near equatorial orbit.
-   * if sin(i) < SIN_EQUA : the orbit is considered near equatorial
-   */
-  public static final double SIN_EQUA = 1.e-10;
 
   /** Create a new instance.
    * @param referenceRadius reference radius of the Earth for the extrapolation model (m)
@@ -60,7 +53,10 @@ public class EcksteinHechlerPropagator implements Ephemeris {
 
     // safety checks
     if (Math.abs(Math.sin(osculating.getI())) < SIN_EQUA) {
-      throw new PropagationException("Inadequate equatorial inclination for Eckstein-Hechler model.");
+      throw new PropagationException("almost equatorial orbit (i = {0} degrees)",
+                                     new String[] {
+                                       Double.toString(Math.toDegrees(osculating.getI()))
+                                     });
     }
 
     // compute mean parameters
@@ -86,10 +82,10 @@ public class EcksteinHechlerPropagator implements Ephemeris {
 
     // sanity check
     if (osculating.getA() < referenceRadius) {
-      throw new PropagationException("Out of bounds semi major axis with a = "
-                                     + osculating.getA()
-                                     + " and equatorial radius = "
-                                     + referenceRadius);
+      throw new PropagationException("underground trajectory (r = {0})",
+                                     new String[] {
+                                       Double.toString(osculating.getA())
+                                     });
     }
 
     // rough initialization of the mean parameters
@@ -101,7 +97,8 @@ public class EcksteinHechlerPropagator implements Ephemeris {
     double thresholdE      = epsilon * (1 + mean.getE());
     double thresholdAngles = epsilon * Math.PI;
 
-    for (int i = 0; i < 100; ++i) {
+    int i = 0;
+    while (i++ < 100) {
 
       // recompute the osculation parameters from the current mean parameters
       CircularParameters rebuilt = extrapolate(date, date, mean);
@@ -141,7 +138,9 @@ public class EcksteinHechlerPropagator implements Ephemeris {
 
     }
 
-    throw new PropagationException("Unable to converge in analytical extrapolation");
+    throw new PropagationException("unable to compute Eckstein-Hechler mean"
+                                 + " parameters after {0} iterations",
+                                   new String[] { Integer.toString(i) });
 
   }
 
@@ -158,19 +157,24 @@ public class EcksteinHechlerPropagator implements Ephemeris {
     // sanity checks
     double e = mean.getE();
     if (e > 0.1) // e is positive
-      throw new PropagationException("Out of bound eccentricity with e = " + e);
-    // To be noticed: for 0.005 < e < 0.1 the precision of the Eckstein-Hechler
-    // model is poor
+    // if 0.005 < e < 0.1 no error is triggered, but accuracy is poor
+    throw new PropagationException("too excentric orbit (e = {0})",
+                                   new String[] { Double.toString(e) });
 
     double meanI = mean.getI();
-    if ((meanI < 0.) || (meanI > Math.PI) || (Math.abs(Math.sin(meanI)) < SIN_EQUA)) {
-      throw new PropagationException("Out of bound inclination with i = "
-          + Math.toDegrees(meanI));
+    if ((meanI < 0.) || (meanI > Math.PI)
+        || (Math.abs(Math.sin(meanI)) < SIN_EQUA)) {
+      throw new PropagationException("almost equatorial orbit (i = {0} degrees)",
+                                     new String[] {
+                                       Double.toString(Math.toDegrees(meanI))
+                                     });
     }
 
     if ((Math.abs(meanI - 1.1071487) < 1.0e-3) || (Math.abs(meanI - 2.0344439) < 1.0e-3)) {
-      throw new PropagationException("Near critical inclination with i = "
-          + Math.toDegrees(meanI));
+      throw new PropagationException("almost critically inclined orbit (i = {0} degrees)",
+                                     new String[] {
+                                       Double.toString(Math.toDegrees(meanI))
+                                     });
     }
 
     // preliminary processing
@@ -339,5 +343,10 @@ public class EcksteinHechlerPropagator implements Ephemeris {
   private double referenceRadius;
   private double mu;
   private double j2, j3, j4, j5, j6;
+
+  /** Threshold for near equatorial orbit.
+   * if sin(i) < SIN_EQUA : the orbit is considered near equatorial
+   */
+  private static final double SIN_EQUA = 1.e-10;
 
 }

@@ -1,8 +1,12 @@
-package fr.cs.aerospace.orekit;
+package fr.cs.aerospace.orekit.orbits;
 
 import junit.framework.*;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
+
+import fr.cs.aerospace.orekit.Utils;
+import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
+import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
 
 public class EquinoctialParametersTest extends TestCase {
 

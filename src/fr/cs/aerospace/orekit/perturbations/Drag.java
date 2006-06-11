@@ -4,91 +4,59 @@ import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.Atmosphere;
 import fr.cs.aerospace.orekit.Attitude;
-import fr.cs.aerospace.orekit.Constants;
-import fr.cs.aerospace.orekit.OrbitDerivativesAdder;
-import fr.cs.aerospace.orekit.OrekitException;
 import fr.cs.aerospace.orekit.RDate;
-import fr.cs.aerospace.orekit.SimpleVehicle;
+import fr.cs.aerospace.orekit.Spacecraft;
+import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 
-/**
- * This class represents the atmospheric drag applied to the vehicle.
-  
+/** Atmospheric drag force model.
  * @version $Id$
  * @author E. Delente
  */
 
-
 public class Drag implements ForceModel {
-    
-    /** Drag force contribution to the acceleration */
-    private double[] fdrag;
-    
-    /** Atmosphere */
-    private Atmosphere atmosphere;
-    
-    
-   /** Default constructor.
-    * Create a new instance with arbitrary default elements.
-    */
-    public Drag() {
-        fdrag = new double[3];
-        atmosphere = new Atmosphere();
-    }
 
-    
-   /** Constructor from the atmospheric parameters
-    * @param rho0 density at the reference altitude
-    * @param h0 altitude of reference (m)
-    * @param hscale scale factor 
-    */
-    public Drag(double rho0, double h0, double hscale) {
-        fdrag = new double[3];
-        atmosphere = new Atmosphere(rho0, h0, hscale);
-    }
-
-    
-   /** Get the atmospheric model.
-   * @return atmosphere atmosphere
+  /** Simple constructor.
+   * @param atmosphere atmospheric model
+   * @param spacecraft spacecraft
    */
-    public Atmosphere getAtmosphere() {
-        return atmosphere;
-    }
-    
-    
-   /** Compute the contribution of the drag to the perturbing acceleration.
-    * @param t current date
-    * @param position current position(m)
-    * @param velocity current velocity (m/s)
-    * @param Attitude current attitude
-    * @param adder object where the contribution should be added
-    */    
-    public void addContribution(RDate t, Vector3D position, Vector3D velocity, 
-                                Attitude Attitude, OrbitDerivativesAdder adder)
-    throws OrekitException {
-                                    
-    // Creation of a simple vehicle
-    SimpleVehicle vehicle = new SimpleVehicle(1500.0, 3.0, 2.0, 0.2, 0.3);
-    
-    // Calculation of rho
-    double h = position.getNorm() - Constants.CentralBodyradius;
-    double rho = 0.0;
-    rho = getAtmosphere().getRho(h);    
+  public Drag(Atmosphere atmosphere, Spacecraft spacecraft) {
+    this.atmosphere = atmosphere;
+    this.spacecraft = spacecraft;
+  }
 
-    double halfRhoVSCx = 0.5 * rho * velocity.getNorm() * vehicle.getSurface() * 
-              vehicle.getDragCoef();
-    if (vehicle.getMass()< Constants.Epsilon) 
-        {throw new OrekitException("Vehicle's mass is equal to 0");}
-    
-    fdrag[0] = - halfRhoVSCx * velocity.getX() / vehicle.getMass();
-    fdrag[1] = - halfRhoVSCx * velocity.getY() / vehicle.getMass();
-    fdrag[2] = - halfRhoVSCx * velocity.getZ() / vehicle.getMass();
+  /** Compute the contribution of the drag to the perturbing acceleration.
+   * @param date current date
+   * @param position current position(m)
+   * @param velocity current velocity (m/s)
+   * @param Attitude current attitude
+   * @param adder object where the contribution should be added
+   */
+  public void addContribution(RDate date,
+                              Vector3D position, Vector3D velocity,
+                              Attitude Attitude, OrbitDerivativesAdder adder) {
+
+    double   rho       = atmosphere.getDensity(date, position);
+    Vector3D vAtm      = atmosphere.getVelocity(date, position);
+    Vector3D incidence = Vector3D.subtract(vAtm, velocity);
+    double   v2        = Vector3D.dotProduct(incidence, incidence);
+    incidence.normalizeSelf();
+    double   k         = rho * v2 * spacecraft.getSurface(incidence)
+                       / (2 * spacecraft.getMass());
+    Vector3D cD        = spacecraft.getDragCoef(incidence);
 
     // Additition of calculated accelration to adder
-    adder.addXYZAcceleration(fdrag[0], fdrag[1], fdrag[2]);
-    }
+    adder.addXYZAcceleration(k * cD.getX(), k * cD.getY(), k * cD.getZ());
 
-    public SWF[] getSwitchingFunctions() {
-      return null;
-    }
-    
+  }
+
+  public SWF[] getSwitchingFunctions() {
+    return null;
+  }
+
+  /** Atmospheric model */
+  private Atmosphere atmosphere;
+
+  /** Spacecraft. */
+  private Spacecraft spacecraft;
+
 }

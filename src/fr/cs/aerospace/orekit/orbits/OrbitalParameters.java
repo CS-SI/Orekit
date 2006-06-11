@@ -1,4 +1,4 @@
-package fr.cs.aerospace.orekit;
+package fr.cs.aerospace.orekit.orbits;
 
 
 import org.spaceroots.mantissa.utilities.ArraySliceMappable;
@@ -17,11 +17,10 @@ import java.io.Serializable;
  * interpolation equations.</p>
 
  * <p>
- * For user convenience, the classical keplerian elements can be provided by
- * this class. One should be aware, however, that in some cases these elements
- * can vary drastically even for a small change in the orbit. This is due to
- * the singular nature of these elements. In this case, an arbitrary choice is
- * made in the class before providing the elements, no error is triggered.
+ * For user convenience, both the cartesian and the equinoctial elements
+ * are provided by this class, regardless of the canonical representation
+ * implemented in the derived class (which may be classical keplerian
+ * elements for example).
  * </p>
 
  * This class implements the
@@ -36,7 +35,6 @@ import java.io.Serializable;
  * @author  L. Maisonobe
  * @author  G. Prat
  */
-// TODO revoir la description de la classe FAUSSE
 public abstract class OrbitalParameters
   implements ArraySliceMappable, Serializable {
 

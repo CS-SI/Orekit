@@ -1,4 +1,4 @@
-package fr.cs.aerospace.orekit;
+package fr.cs.aerospace.orekit.orbits;
 
 /** This class sums up the contribution of several forces into orbit derivatives.
  *
