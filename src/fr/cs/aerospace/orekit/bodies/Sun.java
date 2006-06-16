@@ -22,17 +22,17 @@ public class Sun extends ThirdBody {
    * @param date date
    * @return position of the sun (m)
    */
-  public Vector3D getPosition(RDate t) {
+  public Vector3D getPosition(RDate date) {
 
-    double date = t.getOffset() - 10000.0;
-    double f = Math.toRadians(225.768 + 13.2293505 * date);
-    double d = Math.toRadians(11.786 + 12.190749 * date);
-    double xlp = Math.toRadians(134.003 + 0.9856 * date);
-    double g = Math.toRadians(282.551 + 0.000047 * date);
-    double e = Math.toRadians(23.44223 - 3.5626E-07 * date);
+    double t = date.minus(reference) / 86400.0;
+    double f = Math.toRadians(225.768 + 13.2293505 * t);
+    double d = Math.toRadians(11.786 + 12.190749 * t);
+    double xlp = Math.toRadians(134.003 + 0.9856 * t);
+    double g = Math.toRadians(282.551 + 0.000047 * t);
+    double e = Math.toRadians(23.44223 - 3.5626E-07 * t);
     double ce = Math.cos(e);
     double se = Math.sin(e);
-    double rot = 0.6119022e-6 * t.getOffset();
+    double rot = 0.6119022e-6 * date.minus(RDate.CNES1950RDate) / 86400.0;
     double cr = Math.cos(rot);
     double sr = Math.sin(rot);
 
@@ -68,5 +68,8 @@ public class Sun extends ThirdBody {
                         centralSun);
 
   }
+
+  /** Reference date. */
+  private static RDate reference = new RDate(RDate.CNES1950Epoch, 864000000.0);
 
 }

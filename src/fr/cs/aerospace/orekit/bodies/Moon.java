@@ -27,17 +27,17 @@ public class Moon extends ThirdBody {
    * @param date current date
    * @return position of the Moon wrt the central body (m)
    */
-  public Vector3D getPosition(RDate t) {
+  public Vector3D getPosition(RDate date) {
 
-    double date = t.getOffset() - 10000.0;
-    double f = Math.toRadians(225.768 + 13.2293505 * date);
-    double xl = Math.toRadians(185.454 + 13.064992 * date);
-    double d = Math.toRadians(11.786 + 12.190749 * date);
-    double xlp = Math.toRadians(134.003 + 0.9856 * date);
-    double e = Math.toRadians(23.44223 - 3.5626e-07 * date);
+    double t = date.minus(reference) / 86400.0;
+    double f = Math.toRadians(225.768 + 13.2293505 * t);
+    double xl = Math.toRadians(185.454 + 13.064992 * t);
+    double d = Math.toRadians(11.786 + 12.190749 * t);
+    double xlp = Math.toRadians(134.003 + 0.9856 * t);
+    double e = Math.toRadians(23.44223 - 3.5626e-07 * t);
     double ce = Math.cos(e);
     double se = Math.sin(e);
-    double rot = 0.6119022E-06 * t.getOffset();
+    double rot = 0.6119022E-06 * date.minus(RDate.CNES1950RDate) / 86400.0;
     double cr = Math.cos(rot);
     double sr = Math.sin(rot);
 
@@ -76,7 +76,7 @@ public class Moon extends ThirdBody {
     b = b + 7.0 * Math.sin(xl + f + d + d);
     b = b * 1.E-05;
 
-    double u = Math.toRadians(68.341 + 13.176397 * date) + dl;
+    double u = Math.toRadians(68.341 + 13.176397 * t) + dl;
     double cu = Math.cos(u);
     double su = Math.sin(u);
     double cb = Math.cos(b);
@@ -109,5 +109,8 @@ public class Moon extends ThirdBody {
                         centralMoon);
 
   }
+
+  /** Reference date. */
+  private static RDate reference = new RDate(RDate.CNES1950Epoch, 864000000.0);
 
 }
