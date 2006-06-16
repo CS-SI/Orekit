@@ -53,13 +53,12 @@ public class FixedPoleEarth implements RotatingBody {
    */
   public Rotation getOrientation(RDate date) {
 
-    // sidereal time upgraded wrt the CNES julian date t
-    // (seconds are expressed in fraction of day)
-    double offset = date.minus(RDate.CNES1950RDate);
+    // CNES sidereal time model (from Veis ?)
+    double offset = date.minus(RDate.CNES1950RDate) / 86400.0;
     double r      = offset - Math.floor(offset);
-
-    double theta  = theta0 + omegaA * offset + omegaB * model.getDTU1(date)
-                  + 2 * Math.PI * r;
+    
+    double theta  = theta0 + omegaB * model.getDTU1(date)
+                  + omegaA * offset + 2 * Math.PI * r;
 
     // rotation around a fixed polar axis
     return new Rotation(Vector3D.plusK, theta);
@@ -85,8 +84,9 @@ public class FixedPoleEarth implements RotatingBody {
   private static double omegaA = 1.7202179573714597e-2;
   private static double omegaB = 7.292115146705e-5;
 
+
   /** Fixed rotation vector. */
   private static Vector3D rotationVector =
-    new Vector3D(omegaA + omegaB, Vector3D.plusK);
+    new Vector3D((omegaA + 2 * Math.PI) / 86400.0, Vector3D.plusK);
 
 }
