@@ -9,6 +9,7 @@ public class AllTests {
     TestSuite suite = new TestSuite("fr.cs.aerospace.orekit"); 
 
     suite.addTest(RDateTest.suite());
+    suite.addTest(fr.cs.aerospace.orekit.bodies.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.orbits.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.propagation.AllTests.suite());
     // TODO activate perturbations tests

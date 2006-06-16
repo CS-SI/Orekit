@@ -1,0 +1,89 @@
+package fr.cs.aerospace.orekit.bodies;
+
+import org.spaceroots.mantissa.geometry.Vector3D;
+
+import fr.cs.aerospace.orekit.Utils;
+import fr.cs.aerospace.orekit.geometry.NearSurfacePoint;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+public class OneAxisEllipsoidTest extends TestCase {
+
+  public OneAxisEllipsoidTest(String name) {
+    super(name);
+  }
+
+  public void testOrigin() {
+    double ae = 6378137.0;
+    checkCartesianToEllipsoidic(ae, 1.0 / 298.257222101,
+                                ae, 0, 0,
+                                0, 0, 0);
+  }
+
+  public void testStandard() {
+    checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
+                                4637885.347, 121344.608, 4362452.869,
+                                0.026157811533131, 0.757987116290729, 260.455572965555);
+  }
+
+  public void testLongitudeZero() {
+    checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
+                                6378400.0, 0, 6379000.0,
+                                0.0, 0.787815771252351, 2653416.77864152);
+  }
+
+  public void testLongitudePi() {
+    checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
+                                -6379999.0, 0, 6379000.0,
+                                3.14159265358979, 0.787690146758403, 2654544.7767725);
+  }
+
+  public void testNorthPole() {
+    checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
+                                0.0, 0.0, 7000000.0,
+                                0.0, 1.57079632679490, 643247.685859644);
+  }
+
+  public void testEquator() {
+    checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
+                                6379888.0, 6377000.0, 0.0,
+                                0.785171775899913, 0.0, 2642345.24279301);
+  }
+
+  public void testInside3Roots() {
+    checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257,
+                                9219.0, -5322.0, 6056743.0,
+                                5.75963470503781, 1.56905114598949, -300000.009586231);
+  }
+
+  public void testInsideLessThan3Roots() {
+    checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257,
+                                1366863.0, -789159.0, -5848.988,
+                                -0.523598928689, -0.00380885831963, -4799808.27951);
+  }
+
+  public void testOutside() {
+    checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257,
+                                5722966.0, -3304156.0, -24621187.0,
+                                5.75958652642615, -1.3089969725151, 19134410.3342696);
+  }
+
+  private void checkCartesianToEllipsoidic(double ae, double f,
+                                           double x, double y, double z,
+                                           double longitude, double latitude,
+                                           double altitude) {
+
+    OneAxisEllipsoid model = new OneAxisEllipsoid(ae, f);
+    NearSurfacePoint nsp = model.transform(new Vector3D(x, y, z));
+    assertEquals(longitude, Utils.trimAngle(nsp.longitude, longitude), 1.0e-10);
+    assertEquals(latitude,  nsp.latitude,  1.0e-10);
+    assertEquals(altitude,  nsp.altitude,  1.0e-10 * Math.abs(altitude));
+  }
+
+  public static Test suite() {
+    return new TestSuite(OneAxisEllipsoidTest.class);
+  }
+
+}
+
