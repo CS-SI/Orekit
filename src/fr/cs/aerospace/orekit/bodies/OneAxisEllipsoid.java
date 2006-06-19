@@ -2,8 +2,7 @@ package fr.cs.aerospace.orekit.bodies;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
-import fr.cs.aerospace.orekit.geometry.Line;
-import fr.cs.aerospace.orekit.geometry.NearSurfacePoint;
+import fr.cs.aerospace.orekit.utils.Line;
 
 /** Modelization of one-axis ellipsoid.
 
@@ -80,16 +79,46 @@ public class OneAxisEllipsoid implements BodyShape {
    * @param intersection point at altitude zero or null if the line does
    * not intersect the surface
    */
-  public NearSurfacePoint getIntersectionPoint(Line line) {
-    // TODO Auto-generated method stub
-    return null;
+  public GeodeticPoint getIntersectionPoint(Line line) {
+
+    // compute some miscellaneous variables outside of the loop
+    Vector3D point    = line.getOrigin();
+    double z          = point.getZ();
+    double z2         = z * z;
+    double r2         = point.getX() * point.getX() + point.getY() * point.getY();
+    double r          = Math.sqrt(r2);
+    double g2r2ma2    = g2 * (r2 - ae2);
+    double g2r2ma2pz2 = g2r2ma2 + z2;
+
+    Vector3D direction = line.getDirection();
+    double cz = Math.sqrt(direction.getX() + direction.getX()
+                        + direction.getY() * direction.getY());
+    double sz = direction.getZ();
+
+    // distance to the ellipse along the current line
+    // as the smallest root of a 2nd degree polynom :
+    // a k^2 - 2 b k + c = 0
+    double a  = 1.0 - e2 * cz * cz;
+    double b  = g2 * r * cz + z * sz;
+    double c  = g2r2ma2pz2;
+    double b2 = b * b;
+    double ac = a * c;
+    if (b2 < ac) {
+      return null;
+    }
+    double k  = c / (b + Math.sqrt(b2 - ac));
+
+    double lambda = Math.atan2(point.getY(), point.getX());
+    double phi    = Math.atan2(z - k * sz, g2 * (r - k * cz));
+    return new GeodeticPoint(lambda, phi, 0.0);
+
   }
 
   /** Transform a surface-relative point to a cartesian point.
    * @param point surface-relative point
    * @return point at the same location but as a cartesian point
    */
-  public Vector3D transform(NearSurfacePoint point) {
+  public Vector3D transform(GeodeticPoint point) {
     double cPhi = Math.cos(point.latitude);
     double sPhi = Math.sin(point.latitude);
     double n    = ae / Math.sqrt(1.0 - e2 * sPhi * sPhi);
@@ -103,7 +132,7 @@ public class OneAxisEllipsoid implements BodyShape {
    * @param point cartesian point
    * @return point at the same location but as a surface-relative point
    */
-  public NearSurfacePoint transform(Vector3D point) {
+  public GeodeticPoint transform(Vector3D point) {
 
     // compute some miscellaneous variables outside of the loop
     double z          = point.getZ();
@@ -112,12 +141,12 @@ public class OneAxisEllipsoid implements BodyShape {
     double r          = Math.sqrt(r2);
     double g2r2ma2    = g2 * (r2 - ae2);
     double g2r2ma2pz2 = g2r2ma2 + z2;
-    double dist       = Math.sqrt(r2 +z2);
+    double dist       = Math.sqrt(r2 + z2);
     boolean inside    = (g2r2ma2pz2 <= 0);
 
     // point at the center
     if (dist < (epsilon * ae)) {
-      return new NearSurfacePoint(0.0, 0.5 * Math.PI, -ae * Math.sqrt(1.0 - e2));
+      return new GeodeticPoint(0.0, 0.5 * Math.PI, -ae * Math.sqrt(1.0 - e2));
     }
 
     double cz = r / dist;
@@ -138,7 +167,7 @@ public class OneAxisEllipsoid implements BodyShape {
 
     // point on the ellipse
     if (Math.abs(k) < (epsilon * dist)) {
-      return new NearSurfacePoint(lambda, phi, k);
+      return new GeodeticPoint(lambda, phi, k);
     }
  
     for (int iterations = 0; iterations < 100; ++iterations) {
@@ -218,7 +247,7 @@ public class OneAxisEllipsoid implements BodyShape {
 
       if (dPhi < angularThreshold) {
         // angular convergence reached
-        return new NearSurfacePoint(lambda, phi,
+        return new GeodeticPoint(lambda, phi,
                                     r * cPhi + z * sPhi - ae * coeff);
       }
       

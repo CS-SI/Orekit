@@ -1,4 +1,4 @@
-package fr.cs.aerospace.orekit.geometry;
+package fr.cs.aerospace.orekit.utils;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
@@ -56,6 +56,13 @@ public class Line {
    */
   public Vector3D getDirection() {
     return direction;
+  }
+
+  /** Get the line point closest to the origin.
+   * @return line point closest to the origin
+   */
+  public Vector3D getOrigin() {
+    return zero;
   }
 
   /** Get the abscissa of a point with respect to the line.

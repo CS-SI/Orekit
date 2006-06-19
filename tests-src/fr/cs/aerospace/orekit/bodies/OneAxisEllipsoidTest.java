@@ -3,7 +3,7 @@ package fr.cs.aerospace.orekit.bodies;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.Utils;
-import fr.cs.aerospace.orekit.geometry.NearSurfacePoint;
+import fr.cs.aerospace.orekit.utils.Line;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -69,16 +69,42 @@ public class OneAxisEllipsoidTest extends TestCase {
                                 5.75958652642615, -1.3089969725151, 19134410.3342696);
   }
 
+  public void testGeoCar() {
+    OneAxisEllipsoid model = new OneAxisEllipsoid(6378137.0, 1.0 / 298.257222101);
+    GeodeticPoint nsp =
+      new GeodeticPoint(0.0423149994747243, 0.852479154923577, 111.6);
+    Vector3D p = model.transform(nsp);
+    assertEquals(4201866.69291890, p.getX(), 1.0e-6);
+    assertEquals(177908.184625686, p.getY(), 1.0e-6);
+    assertEquals(4779203.64408617, p.getZ(), 1.0e-6);
+  }
+
+  public void testLineIntersection() {
+    OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 0.9);
+    Line line = new Line(new Vector3D(0.0, 93.7139699, 3.5930796),
+                         new Vector3D(0.0, 1.0, 1.0));
+    GeodeticPoint gp = model.getIntersectionPoint(line);
+    assertEquals(gp.altitude, 0.0, 1.0e-12);
+    assertTrue(line.contains(model.transform(gp)));
+  }
+
+  public void testNoLineIntersection() {
+    OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 0.9);
+    Line line = new Line(new Vector3D(0.0, 93.7139699, 3.5930796),
+                         new Vector3D(0.0, 9.0, -2.0));
+    assertNull(model.getIntersectionPoint(line));
+  }
+
   private void checkCartesianToEllipsoidic(double ae, double f,
                                            double x, double y, double z,
                                            double longitude, double latitude,
                                            double altitude) {
 
     OneAxisEllipsoid model = new OneAxisEllipsoid(ae, f);
-    NearSurfacePoint nsp = model.transform(new Vector3D(x, y, z));
-    assertEquals(longitude, Utils.trimAngle(nsp.longitude, longitude), 1.0e-10);
-    assertEquals(latitude,  nsp.latitude,  1.0e-10);
-    assertEquals(altitude,  nsp.altitude,  1.0e-10 * Math.abs(altitude));
+    GeodeticPoint gp = model.transform(new Vector3D(x, y, z));
+    assertEquals(longitude, Utils.trimAngle(gp.longitude, longitude), 1.0e-10);
+    assertEquals(latitude,  gp.latitude,  1.0e-10);
+    assertEquals(altitude,  gp.altitude,  1.0e-10 * Math.abs(altitude));
   }
 
   public static Test suite() {

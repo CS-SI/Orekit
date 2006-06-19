@@ -1,12 +1,13 @@
-package fr.cs.aerospace.orekit.geometry;
+package fr.cs.aerospace.orekit.bodies;
 
-/** Simple container for a point near a 2D body surface.
- * <p>This class is a simple container, it does not provide any processing method.</p>
+/** Point location relative to a 2D body surface.
+ * <p>This class is a simple immutable container,
+ * it does not provide any processing method.</p>
+ * @see BodyShape
  * @author Luc Maisonobe
  * $Id$
- *
  */
-public class NearSurfacePoint {
+public class GeodeticPoint {
 
   /** Longitude of the point (rad). */
   public final double longitude;
@@ -22,7 +23,7 @@ public class NearSurfacePoint {
    * @param latitude of the point
    * @param altitude altitude of the point
    */
-  public NearSurfacePoint(double longitude, double latitude, double altitude) {
+  public GeodeticPoint(double longitude, double latitude, double altitude) {
     this.longitude = longitude;
     this.latitude  = latitude;
     this.altitude  = altitude;
