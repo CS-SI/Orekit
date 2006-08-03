@@ -4,9 +4,9 @@ import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.Atmosphere;
 import fr.cs.aerospace.orekit.Attitude;
-import fr.cs.aerospace.orekit.RDate;
 import fr.cs.aerospace.orekit.Spacecraft;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** Atmospheric drag force model.
  * @version $Id$
@@ -31,7 +31,7 @@ public class Drag implements ForceModel {
    * @param Attitude current attitude
    * @param adder object where the contribution should be added
    */
-  public void addContribution(RDate date,
+  public void addContribution(AbsoluteDate date,
                               Vector3D position, Vector3D velocity,
                               Attitude Attitude, OrbitDerivativesAdder adder) {
 

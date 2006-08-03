@@ -3,7 +3,7 @@ package fr.cs.aerospace.orekit.bodies;
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
-import fr.cs.aerospace.orekit.RDate;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** Simple Earth rotation model with a linear sidereal time.
  * @author Luc Maisonobe
@@ -14,10 +14,10 @@ public class FixedPoleEarth implements RotatingBody {
   /** Model for &Delta;TU<sub>1</sub>. */
   public static interface DTU1Model {
     /** Get the &Delta;TU<sub>1</sub> value.
-     * @param RDate date UTC date
+     * @param AbsoluteDate date UTC date
      * @return &Delta;TU<sub>1</sub> (t<sub>UTC</sub> - t<sub>TU1</sub>) in seconds
      */
-    public double getDTU1(RDate date);
+    public double getDTU1(AbsoluteDate date);
   }
 
   /** Build a fixed pole Earth rotation model with null &Delta;TU<sub>1</sub>.
@@ -34,7 +34,7 @@ public class FixedPoleEarth implements RotatingBody {
     if (model == null) {
       // build a constant dTU1 model
       this.model = new DTU1Model() {
-        public double getDTU1(RDate date) {
+        public double getDTU1(AbsoluteDate date) {
           return 0.0;
         }
       };
@@ -51,10 +51,10 @@ public class FixedPoleEarth implements RotatingBody {
    * @return orientation of the body (rotation transforming a vector projected
    * in intertial frame in the same vector projected in body frame)
    */
-  public Rotation getOrientation(RDate date) {
+  public Rotation getOrientation(AbsoluteDate date) {
 
     // CNES sidereal time model (from Veis ?)
-    double offset = date.minus(RDate.CNES1950RDate) / 86400.0;
+    double offset = date.minus(AbsoluteDate.CNES1950Epoch) / 86400.0;
     double r      = offset - Math.floor(offset);
     
     double theta  = theta0 + omegaB * model.getDTU1(date)
@@ -72,7 +72,7 @@ public class FixedPoleEarth implements RotatingBody {
    * @return current rotation vector in inertial frame (fixed in this
    * model)
    */
-  public Vector3D getRotationVector(RDate date) {
+  public Vector3D getRotationVector(AbsoluteDate date) {
     return rotationVector;
   }
 

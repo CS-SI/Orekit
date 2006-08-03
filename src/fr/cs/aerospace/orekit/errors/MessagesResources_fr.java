@@ -35,7 +35,18 @@ public class MessagesResources_fr
     { "unable to compute Eckstein-Hechler mean parameters"
     + " after {0} iterations",
       "impossible de calculer les param\u00e8tres moyens au sens de"
-    + " Eckstein-Hechler apr\u00e8s {0} it\u00e9rations"}
+    + " Eckstein-Hechler apr\u00e8s {0} it\u00e9rations"},
+    { "unexpected element \"{0}\" in UTC/TAI time steps file",
+      "\u00e9l\u00e9 element \u00ab {0} \u00bb inattendu"
+    + " dans le fichier des sauts du TUC" },
+    { "missing attribute \"{0}\" in UTC/TAI time steps file",
+      "attribut \"{0}\" manquant dans le fichier des sauts du TUC" },
+    { "unparsable date in UTC/TAI time steps file ({0})",
+      "date de saut illisible dans le fichier des sauts du TUC ({0})" },
+    { "unparsable step value in UTC/TAI time steps file ({0})",
+      "valeur de saut illisible dans le fichier des sauts du TUC ({0})" },
+    { "non-increasing dates in UTC/TAI time steps file ({0})",
+      "dates non croissantes dans le fichier des sauts du TUC ({0})" }
   };
 
 }

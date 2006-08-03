@@ -1,9 +1,9 @@
 package fr.cs.aerospace.orekit.propagation;
 
-import fr.cs.aerospace.orekit.RDate;
 import fr.cs.aerospace.orekit.errors.PropagationException;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** Simple keplerian orbit extrapolator.
  * @author G. Prat
@@ -18,7 +18,7 @@ public class KeplerianPropagator implements Ephemeris {
     this.mu = mu;
   }
 
-  public Orbit getOrbit(RDate date, Orbit orbit)
+  public Orbit getOrbit(AbsoluteDate date, Orbit orbit)
   throws PropagationException {
     
     // mean motion

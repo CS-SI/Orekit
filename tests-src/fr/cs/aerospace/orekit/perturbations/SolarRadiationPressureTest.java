@@ -1,6 +1,7 @@
 package fr.cs.aerospace.orekit.perturbations;
 
-import fr.cs.aerospace.orekit.*;
+import fr.cs.aerospace.orekit.Attitude;
+import fr.cs.aerospace.orekit.SimpleSpacecraft;
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.bodies.Sun;
 import fr.cs.aerospace.orekit.errors.OrekitException;
@@ -8,6 +9,7 @@ import fr.cs.aerospace.orekit.orbits.CartesianDerivativesAdder;
 import fr.cs.aerospace.orekit.orbits.CartesianParameters;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
@@ -24,7 +26,7 @@ public void testSolarRadiationPressure() throws OrekitException{
     
 //    double equatorialRadius = 6378.13E3;
     double mu = 3.98600E14;    
-    RDate date = new RDate(RDate.J2000Epoch, 0.0);
+    AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0);
     Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
     Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);                         
     Attitude attitude = new Attitude();
@@ -55,7 +57,7 @@ public void testSolarRadiationPressure() throws OrekitException{
 
 //    double equatorialRadius = 6378.13E3;
 //    double mu = 3.98600E14;
-    RDate date = new RDate(RDate.J2000Epoch, 0.0);
+    AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0);
     Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
     Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);                         
 //    Attitude attitude = new Attitude();

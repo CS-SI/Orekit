@@ -34,7 +34,17 @@ public class MessagesResources
     { "unable to compute Eckstein-Hechler mean parameters"
     + " after {0} iterations",
       "unable to compute Eckstein-Hechler mean parameters"
-      + " after {0} iterations"}
+      + " after {0} iterations"},
+    { "unexpected element \"{0}\" in UTC/TAI time steps file",
+      "unexpected element \"{0}\" in UTC/TAI time steps file" },
+    { "missing attribute \"{0}\" in UTC/TAI time steps file",
+      "missing attribute \"{0}\" in UTC/TAI time steps file" },
+    { "unparsable date in UTC/TAI time steps file ({0})",
+      "unparsable date in UTC/TAI time steps file ({0})" },
+    { "unparsable step value in UTC/TAI time steps file ({0})",
+      "unparsable step value in UTC/TAI time steps file ({0})" },
+    { "non-increasing dates in UTC/TAI time steps file ({0})",
+      "non-increasing dates in UTC/TAI time steps file ({0})" }
   };
 
 }

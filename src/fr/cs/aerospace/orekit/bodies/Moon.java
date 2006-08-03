@@ -2,7 +2,7 @@ package fr.cs.aerospace.orekit.bodies;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
-import fr.cs.aerospace.orekit.RDate;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** Moon model.
  * @version $Id: ThirdBody_Moon.java 831 2003-05-12 16:03:04Z internMS $
@@ -27,7 +27,7 @@ public class Moon extends ThirdBody {
    * @param date current date
    * @return position of the Moon wrt the central body (m)
    */
-  public Vector3D getPosition(RDate date) {
+  public Vector3D getPosition(AbsoluteDate date) {
 
     double t = date.minus(reference) / 86400.0;
     double f = Math.toRadians(225.768 + 13.2293505 * t);
@@ -37,7 +37,7 @@ public class Moon extends ThirdBody {
     double e = Math.toRadians(23.44223 - 3.5626e-07 * t);
     double ce = Math.cos(e);
     double se = Math.sin(e);
-    double rot = 0.6119022E-06 * date.minus(RDate.CNES1950RDate) / 86400.0;
+    double rot = 0.6119022E-06 * date.minus(AbsoluteDate.CNES1950Epoch) / 86400.0;
     double cr = Math.cos(rot);
     double sr = Math.sin(rot);
 
@@ -111,6 +111,7 @@ public class Moon extends ThirdBody {
   }
 
   /** Reference date. */
-  private static RDate reference = new RDate(RDate.CNES1950Epoch, 864000000.0);
+  private static AbsoluteDate reference =
+    new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 864000000.0);
 
 }

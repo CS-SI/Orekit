@@ -1,10 +1,10 @@
 package fr.cs.aerospace.orekit.perturbations;
 
-import fr.cs.aerospace.orekit.RDate;
 import fr.cs.aerospace.orekit.Attitude;
 import fr.cs.aerospace.orekit.bodies.RotatingBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
@@ -60,7 +60,7 @@ public class CunninghamAttractionModel implements ForceModel {
    * @param Attitude current attitude
    * @param adder object where the contribution should be added
    */
-  public void addContribution(RDate date, Vector3D position, Vector3D velocity,
+  public void addContribution(AbsoluteDate date, Vector3D position, Vector3D velocity,
                               Attitude Attitude, OrbitDerivativesAdder adder)
       throws OrekitException {
 
@@ -112,7 +112,7 @@ public class CunninghamAttractionModel implements ForceModel {
    * @param position current position (m)
    * @param V matrix containing all the elementary potentials
    */
-  private void buildArray(int ndeg, int nord, RDate date, Vector3D position,
+  private void buildArray(int ndeg, int nord, AbsoluteDate date, Vector3D position,
                           double[][] V) throws OrekitException {
 
     // Retrieval of cartesian coordinates

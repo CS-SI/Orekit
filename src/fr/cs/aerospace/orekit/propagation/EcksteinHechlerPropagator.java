@@ -1,9 +1,9 @@
 package fr.cs.aerospace.orekit.propagation;
 
-import fr.cs.aerospace.orekit.RDate;
 import fr.cs.aerospace.orekit.errors.PropagationException;
 import fr.cs.aerospace.orekit.orbits.CircularParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** This class propagates an {@link fr.cs.aerospace.orekit.orbits.Orbit Orbit} using the
  * analytical Eckstein-Hechler model.
@@ -44,7 +44,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
    * @param orbit initial orbit
    * @return propagated orbit (in circular parameters)
    */
-  public Orbit getOrbit(RDate date, Orbit orbit)
+  public Orbit getOrbit(AbsoluteDate date, Orbit orbit)
       throws PropagationException {
 
     // transformation into circular adapted parameters
@@ -76,7 +76,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
    * @return a mean orbit corresponding to the osculating one
    * @throws PropagationException
    */
-  private CircularParameters computeMeanParameters(RDate date,
+  private CircularParameters computeMeanParameters(AbsoluteDate date,
                                                    CircularParameters osculating)
     throws PropagationException {
 
@@ -150,8 +150,8 @@ public class EcksteinHechlerPropagator implements Ephemeris {
    * @param mean mean orbital parameters
    * @exception PropagationException if some parameters are out of bounds
    */
-  private CircularParameters extrapolate(RDate date,
-                                         RDate meanDate, CircularParameters mean)
+  private CircularParameters extrapolate(AbsoluteDate date,
+                                         AbsoluteDate meanDate, CircularParameters mean)
     throws PropagationException {
 
     // sanity checks

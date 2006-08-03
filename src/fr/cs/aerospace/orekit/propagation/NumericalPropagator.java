@@ -14,13 +14,13 @@ import org.spaceroots.mantissa.ode.IntegratorException;
 import org.spaceroots.mantissa.ode.SwitchingFunction;
 import org.spaceroots.mantissa.utilities.ArrayMapper;
 import org.spaceroots.mantissa.geometry.Vector3D;
-import fr.cs.aerospace.orekit.RDate;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.perturbations.ForceModel;
 import fr.cs.aerospace.orekit.perturbations.SWF;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.Attitude;
 
 
@@ -37,16 +37,16 @@ import fr.cs.aerospace.orekit.Attitude;
  * different ways to better suit user needs.
  * <dl>
  *  <dt>if the user needs only the orbit at the target time</dt>
- *  <dd>he will use {@link #extrapolate(Orbit,RDate,Orbit)}</dd>
+ *  <dd>he will use {@link #extrapolate(Orbit,AbsoluteDate,Orbit)}</dd>
  *  <dt>if the user needs random access to the orbit state at any time between
  *      the initial and target times</dt>
- *  <dd>he will use {@link #extrapolate(Orbit,RDate,IntegratedEphemeris)}</dd>
+ *  <dd>he will use {@link #extrapolate(Orbit,AbsoluteDate,IntegratedEphemeris)}</dd>
  *  <dt>if the user needs to do some action at regular time steps during
  *      integration</dt>
- *  <dd>he will use {@link #extrapolate(Orbit,RDate,double,FixedStepHandler)}</dd>
+ *  <dd>he will use {@link #extrapolate(Orbit,AbsoluteDate,double,FixedStepHandler)}</dd>
  *  <dt>if the user needs to do some action during integration but do not need
  *      specific time steps</dt>
- *  <dd>he will use {@link #extrapolate(Orbit,RDate,StepHandler)}</dd>
+ *  <dd>he will use {@link #extrapolate(Orbit,AbsoluteDate,StepHandler)}</dd>
  * </dl></p>
  *
  * <p>The two first methods are used when the user code needs to drive the
@@ -79,7 +79,8 @@ public class NumericalPropagator
       this.forceModels        = new ArrayList();
       this.switchingFunctions = new ArrayList();
       this.integrator         = integrator;
-      this.date               = new RDate();
+      this.startDate          = new AbsoluteDate();
+      this.date               = new AbsoluteDate();
       this.parameters         = null;
       this.Attitude           = new Attitude();
       this.mapper             = null;
@@ -122,18 +123,18 @@ public class NumericalPropagator
      * @exception IntegratorException if the force models trigger one
      */
     public Orbit extrapolate(Orbit initialOrbit,
-                             RDate finalDate, Orbit finalOrbit)
+                             AbsoluteDate finalDate, Orbit finalOrbit)
       throws DerivativeException, IntegratorException, OrekitException {
 
-     extrapolate(initialOrbit, finalDate, DummyStepHandler.getInstance());
-        if (finalOrbit == null) {
-          finalOrbit = new Orbit(new RDate(date),
-                                 (OrbitalParameters) parameters.clone());
-        } 
-        else {
-          finalOrbit.reset(date, parameters, mu);
-        }
-        return finalOrbit;
+      extrapolate(initialOrbit, finalDate, DummyStepHandler.getInstance());
+      if (finalOrbit == null) {
+        finalOrbit = new Orbit(new AbsoluteDate(date),
+                               (OrbitalParameters) parameters.clone());
+      } 
+      else {
+        finalOrbit.reset(date, parameters, mu);
+      }
+      return finalOrbit;
     }
     
     /** Extrapolate an orbit and store the ephemeris throughout the integration
@@ -150,7 +151,7 @@ public class NumericalPropagator
      * @exception IntegratorException if the force models trigger one
      */
     public IntegratedEphemeris extrapolate(Orbit initialOrbit,
-                                           RDate finalDate,
+                                           AbsoluteDate finalDate,
                                            IntegratedEphemeris ephemeris) 
         throws DerivativeException, IntegratorException, OrekitException {
         
@@ -159,8 +160,8 @@ public class NumericalPropagator
         }
 
         extrapolate(initialOrbit, finalDate, ephemeris.getModel());
+        ephemeris.setDates(initialOrbit.getDate());
 
-        ephemeris.setDates(date.getEpoch());
         return ephemeris;
 
     }        
@@ -175,12 +176,10 @@ public class NumericalPropagator
      * @exception DerivativeException if the force models trigger one
      * @exception IntegratorException if the force models trigger one
      */     
-    public void extrapolate(Orbit initialOrbit, RDate finalDate,
+    public void extrapolate(Orbit initialOrbit, AbsoluteDate finalDate,
                             double h, FixedStepHandler handler)
       throws DerivativeException, IntegratorException, OrekitException {
-
         extrapolate(initialOrbit, finalDate, new StepNormalizer(h, handler));
-
     }
 
     /** Extrapolate an orbit and call a user handler after each successful step.
@@ -192,10 +191,11 @@ public class NumericalPropagator
      * @exception IntegratorException if the force models trigger one
      */    
     public void extrapolate(Orbit initialOrbit,
-                            RDate finalDate, StepHandler handler)
+                            AbsoluteDate finalDate, StepHandler handler)
       throws DerivativeException, IntegratorException, OrekitException {
 
         // space dynamics view
+        startDate.reset(initialOrbit.getDate());
         date.reset(initialOrbit.getDate());
 
         // try to avoid building new objects if possible
@@ -214,8 +214,8 @@ public class NumericalPropagator
         }
 
         // mathematical view
-        double t0 = date.getOffset();
-        double t1 = t0 + finalDate.minus(date);
+        double t0 = 0;
+        double t1 = finalDate.minus(startDate);
         mapper.updateArray();
         
         for( int i = 0; i < switchingFunctions.size(); i++) {
@@ -229,7 +229,7 @@ public class NumericalPropagator
                              t1, mapper.getInternalDataArray());
 
         // back to space dynamics view
-        date.setOffset(t1);
+        date.reset(startDate, t1);
         mapper.updateObjects();
         
 
@@ -279,7 +279,7 @@ public class NumericalPropagator
     private void mapState(double t, double [] y) {
 
       // update space dynamics view
-      date.setOffset(t);
+      date.reset(startDate, t);
       mapper.updateObjects(y);
 
       parameters.mapStateFromArray(0,y);
@@ -330,8 +330,11 @@ public class NumericalPropagator
     /** Maximal time intervals between switching function checks. */
     private double[] maxCheckIntervals;
     
+    /** Start date. */
+    private AbsoluteDate startDate;
+
     /** Current date. */
-    private RDate date;
+    private AbsoluteDate date;
 
     /** Current orbital parameters, updated during the integration process. */
     private OrbitalParameters parameters;

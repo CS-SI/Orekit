@@ -1,6 +1,5 @@
 package fr.cs.aerospace.orekit.propagation;
 
-import fr.cs.aerospace.orekit.RDate;
 import fr.cs.aerospace.orekit.Utils;
 
 import junit.framework.*;
@@ -11,6 +10,7 @@ import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.propagation.KeplerianPropagator;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 public class KeplerianPropagatorTest extends TestCase {
   
@@ -26,7 +26,7 @@ public class KeplerianPropagatorTest extends TestCase {
       Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
       double mu = 3.9860047e14;
       
-      RDate initDate = new RDate(RDate.J2000Epoch, 584.);
+      AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
       Orbit initialOrbit =
         new Orbit(initDate, 
                   new EquinoctialParameters(position, velocity, mu));
@@ -38,7 +38,7 @@ public class KeplerianPropagatorTest extends TestCase {
       // Extrapolation at the initial date
       // ---------------------------------
       double delta_t = 0.0; // extrapolation duration in seconds
-      RDate extrapDate = new RDate(initDate.getEpoch(), initDate.getOffset() + delta_t);
+      AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
       
       Orbit finalOrbit = extrapolator.getOrbit(extrapDate, initialOrbit);
       
@@ -60,7 +60,7 @@ public class KeplerianPropagatorTest extends TestCase {
   public void testSameDateKeplerian() throws PropagationException {
       // Definition of initial conditions with keplerian parameters
       //-----------------------------------------------------------
-      RDate initDate = new RDate(RDate.J2000Epoch, 584.);
+      AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
       Orbit initialOrbit =
         new Orbit(initDate, 
                   new KeplerianParameters(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
@@ -74,7 +74,7 @@ public class KeplerianPropagatorTest extends TestCase {
       // Extrapolation at the initial date
       // ---------------------------------
       double delta_t = 0.0; // extrapolation duration in seconds
-      RDate extrapDate = new RDate(initDate.getEpoch(), initDate.getOffset() + delta_t);
+      AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
 
       Orbit finalOrbit = extrapolator.getOrbit(extrapDate, initialOrbit);
       
@@ -102,7 +102,7 @@ public class KeplerianPropagatorTest extends TestCase {
       Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
       double mu = 3.9860047e14;
       
-      RDate initDate = new RDate(RDate.J2000Epoch, 584.);
+      AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
       Orbit initialOrbit =
         new Orbit(initDate, 
                   new EquinoctialParameters(position, velocity, mu));
@@ -114,7 +114,7 @@ public class KeplerianPropagatorTest extends TestCase {
       // Extrapolation at a final date different from initial date
       // ---------------------------------------------------------
       double delta_t = 100000.0; // extrapolation duration in seconds
-      RDate extrapDate = new RDate(initDate.getEpoch(), initDate.getOffset() + delta_t);
+      AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
       
       Orbit finalOrbit = extrapolator.getOrbit(extrapDate, initialOrbit);
       
@@ -190,7 +190,7 @@ public class KeplerianPropagatorTest extends TestCase {
       
       // Definition of initial conditions with keplerian parameters
       //-----------------------------------------------------------
-      RDate initDate = new RDate(RDate.J2000Epoch, 584.);
+      AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
       Orbit initialOrbit =
         new Orbit(initDate, 
                   new KeplerianParameters(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
@@ -204,7 +204,7 @@ public class KeplerianPropagatorTest extends TestCase {
       // Extrapolation at a final date different from initial date
       // ---------------------------------------------------------
       double delta_t = 100000.0; // extrapolation duration in seconds
-      RDate extrapDate = new RDate(initDate.getEpoch(), initDate.getOffset() + delta_t);
+      AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
       
       Orbit finalOrbit = extrapolator.getOrbit(extrapDate, initialOrbit);
             

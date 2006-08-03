@@ -1,12 +1,12 @@
 package fr.cs.aerospace.orekit.perturbations;
 
-import fr.cs.aerospace.orekit.RDate;
 import fr.cs.aerospace.orekit.Attitude;
 import fr.cs.aerospace.orekit.Spacecraft;
 import fr.cs.aerospace.orekit.bodies.BodyShape;
 import fr.cs.aerospace.orekit.bodies.ThirdBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
@@ -57,7 +57,7 @@ public class SolarRadiationPressure implements ForceModel {
    * @param Attitude current Attitude
    * @param adder object where the contribution should be added
    */
-  public void addContribution(RDate date, Vector3D position, Vector3D velocity,
+  public void addContribution(AbsoluteDate date, Vector3D position, Vector3D velocity,
                               Attitude Attitude, OrbitDerivativesAdder adder)
       throws OrekitException {
 
@@ -88,7 +88,7 @@ public class SolarRadiationPressure implements ForceModel {
    * @param satSunVector satellite to Sun vector
    * @exception OrekitException if the trajectory is inside the Earth
    */
-  private double getLightningRatio(RDate date, Vector3D position,
+  private double getLightningRatio(AbsoluteDate date, Vector3D position,
                                    Vector3D satSunVector)
    throws OrekitException {
 
@@ -151,14 +151,14 @@ public class SolarRadiationPressure implements ForceModel {
    */
   private class Umbraswitch implements SWF {
 
-    public void eventOccurred(RDate t, Vector3D position, Vector3D velocity) {
+    public void eventOccurred(AbsoluteDate t, Vector3D position, Vector3D velocity) {
       // do nothing
     }
 
     /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
      * the Earth's apparent radius
      */
-    public double g(RDate date, Vector3D position, Vector3D velocity)
+    public double g(AbsoluteDate date, Vector3D position, Vector3D velocity)
         throws OrekitException {
       Vector3D satSunVector = Vector3D.subtract(sun.getPosition(date),
                                                 position);
@@ -189,14 +189,14 @@ public class SolarRadiationPressure implements ForceModel {
    */
   private class Penumbraswitch implements SWF {
 
-    public void eventOccurred(RDate t, Vector3D position, Vector3D velocity) {
+    public void eventOccurred(AbsoluteDate t, Vector3D position, Vector3D velocity) {
       // do nothing
     }
 
     /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
      * the sum of the Earth's and Sun's apparent radius
      */
-    public double g(RDate date, Vector3D position, Vector3D velocity)
+    public double g(AbsoluteDate date, Vector3D position, Vector3D velocity)
         throws OrekitException {
       Vector3D satSunVector = Vector3D.subtract(sun.getPosition(date),
                                                 position);

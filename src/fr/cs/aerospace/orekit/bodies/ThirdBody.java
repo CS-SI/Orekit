@@ -1,6 +1,6 @@
 package fr.cs.aerospace.orekit.bodies;
 
-import fr.cs.aerospace.orekit.RDate;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
@@ -24,7 +24,7 @@ public abstract class ThirdBody {
    * @param date current date
    * @return position of the body (m)
    */
-  public abstract Vector3D getPosition(RDate date);
+  public abstract Vector3D getPosition(AbsoluteDate date);
 
   /** Get the equatorial radius of the body.
    * @return equatorial radius of the body (m)

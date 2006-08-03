@@ -3,7 +3,7 @@ package fr.cs.aerospace.orekit.bodies;
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
-import fr.cs.aerospace.orekit.RDate;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** Interface representing a rotating natural body.
  * <p>The orientation of a natural body is similar to the attitude for a satellite,
@@ -21,7 +21,7 @@ public interface RotatingBody {
    * @return orientation of the body (rotation transforming a vector projected
    * in intertial frame in the same vector projected in body frame)
    */
-  public Rotation getOrientation(RDate date);
+  public Rotation getOrientation(AbsoluteDate date);
 
   /** Get the current rotation vector.
    * <p>The rotation vector is the instantaneous rotation axis scaled
@@ -29,6 +29,6 @@ public interface RotatingBody {
    * @param date date to consider
    * @return current rotation vector in inertial frame
    */
-  public Vector3D getRotationVector(RDate date);
+  public Vector3D getRotationVector(AbsoluteDate date);
 
 }

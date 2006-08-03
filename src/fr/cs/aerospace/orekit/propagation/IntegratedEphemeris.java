@@ -1,12 +1,10 @@
 package fr.cs.aerospace.orekit.propagation;
 
 import org.spaceroots.mantissa.ode.ContinuousOutputModel;
-import fr.cs.aerospace.orekit.RDate;
 import fr.cs.aerospace.orekit.errors.PropagationException;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.propagation.BoundedEphemeris;
-
-import java.util.Date;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /**
  * This class stores numerically integrated orbital parameters for
@@ -30,21 +28,23 @@ public class IntegratedEphemeris implements BoundedEphemeris {
    * and empty model.
    */
   public IntegratedEphemeris() {
-    startDate = new RDate(RDate.J2000Epoch, 0.0);
-    endDate   = new RDate(RDate.J2000Epoch, 0.0);
+    startDate = new AbsoluteDate(AbsoluteDate.J2000Epoch);
+    endDate   = new AbsoluteDate(AbsoluteDate.J2000Epoch);
+    epoch     = new AbsoluteDate(AbsoluteDate.J2000Epoch);
     model     = new ContinuousOutputModel();
   }
 
   /** Set the start and end dates from the given epoch and the underlying
    * raw mathematical model.
-   * @param epoch reference epoch to use for all orbit dates
+   * @param epoch reference epoch for the model
    * @see #getModel()
    */
-  public void setDates(Date epoch) {
+  public void setDates(AbsoluteDate epoch) {
     startDate.reset(epoch, model.getInitialTime());
     endDate.reset(epoch, model.getFinalTime());
+    this.epoch.reset(epoch);
     if (endDate.minus(startDate) < 0) {
-      RDate tmpDate = endDate;
+      AbsoluteDate tmpDate = endDate;
       endDate       = startDate;
       startDate     = tmpDate;
     }
@@ -57,9 +57,9 @@ public class IntegratedEphemeris implements BoundedEphemeris {
    * reference to a new object otherwise)
    * @exception PropagationException if the date is outside of the range
    */    
-  public Orbit getOrbit(RDate date, Orbit orbit)
+  public Orbit getOrbit(AbsoluteDate date, Orbit orbit)
   throws PropagationException {
-    model.setInterpolatedTime(date.getOffset());
+    model.setInterpolatedTime(date.minus(epoch));
     double[] state = model.getInterpolatedState();
 
     if (orbit == null) {
@@ -75,16 +75,23 @@ public class IntegratedEphemeris implements BoundedEphemeris {
   /** Get the start date of the range.
    * @return the start date of the range
    */
-  public RDate getStartDate() {
+  public AbsoluteDate getStartDate() {
     return startDate;
   }
 
   /** Get the end date of the range.
    * @return the end date of the range
    */
-  public RDate getEndDate() {
+  public AbsoluteDate getEndDate() {
     return endDate;
   }
+  /** Get the reference epoch for the model.
+   * @return reference epoch for the model
+   */
+  public AbsoluteDate getEpoch() {
+    return epoch;
+  }
+
 
   /** Get the underlying raw continuous model.
    * @return underlying raw continuous model
@@ -94,10 +101,13 @@ public class IntegratedEphemeris implements BoundedEphemeris {
   }
 
   /** Start date of the range. */
-  private RDate startDate;
+  private AbsoluteDate startDate;
 
   /** End date of the range. */
-  private RDate endDate;
+  private AbsoluteDate endDate;
+
+  /** Reference epoch for the model. */
+  private AbsoluteDate epoch;
 
   /** Underlying raw mathematical model. */
   private ContinuousOutputModel model;

@@ -2,7 +2,7 @@ package fr.cs.aerospace.orekit.orbits;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
-import fr.cs.aerospace.orekit.RDate;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 import java.io.Serializable;
 
@@ -52,7 +52,7 @@ public class Orbit
    * Build a new instance with arbitrary default elements.
    */
   public Orbit() {
-    t          = new RDate();
+    t          = new AbsoluteDate();
     parameters = new EquinoctialParameters();
   }
 
@@ -61,7 +61,7 @@ public class Orbit
    * @param parameters orbital parameters (a reference to this object will be
    * stored in the instance)
    */
-  public Orbit(RDate t, OrbitalParameters parameters) {
+  public Orbit(AbsoluteDate t, OrbitalParameters parameters) {
     this.t = t;
     this.parameters = parameters;
   }
@@ -70,7 +70,7 @@ public class Orbit
    * @param o orbit to copy
    */
   public Orbit(Orbit o) {
-    t          = new RDate(o.t);
+    t          = new AbsoluteDate(o.t);
     parameters = (OrbitalParameters) o.parameters.clone();
   }
 
@@ -92,7 +92,7 @@ public class Orbit
    * @param parameters orbital parameters
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public void reset(RDate t, OrbitalParameters parameters, double mu) {
+  public void reset(AbsoluteDate t, OrbitalParameters parameters, double mu) {
     this.t.reset(t);
     try {
       this.parameters.reset(parameters, mu);
@@ -107,7 +107,7 @@ public class Orbit
    * @param velocity velocity in inertial frame (m/s)
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public void reset(RDate t, Vector3D position, Vector3D velocity, double mu) {
+  public void reset(AbsoluteDate t, Vector3D position, Vector3D velocity, double mu) {
     this.t = t;
     parameters.reset(position, velocity, mu);
   }
@@ -134,14 +134,14 @@ public class Orbit
   /** Get the date.
    * @return date
    */
-  public RDate getDate() {
+  public AbsoluteDate getDate() {
     return t;
   }
 
   /** Set the date.
    * @param t date
    */
-  public void setDate(RDate t) {
+  public void setDate(AbsoluteDate t) {
     this.t.reset(t);
   }
 
@@ -301,7 +301,7 @@ public class Orbit
   }
 
   /** Date of the current state. */
-  private RDate t;
+  private AbsoluteDate t;
 
   /** Orbital parameters state. */
   private OrbitalParameters parameters;

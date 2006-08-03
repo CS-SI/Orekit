@@ -2,7 +2,6 @@ package fr.cs.aerospace.orekit.propagation;
 
 import java.io.IOException;
 
-import fr.cs.aerospace.orekit.RDate;
 
 import junit.framework.*;
 import org.spaceroots.mantissa.ode.DormandPrince853Integrator;
@@ -17,6 +16,7 @@ import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.perturbations.CunninghamAttractionModel;
 import fr.cs.aerospace.orekit.perturbations.PotentialCoefficientsTab;
 import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 public class NumericalPropagatorTest extends TestCase {
 
@@ -34,7 +34,7 @@ public class NumericalPropagatorTest extends TestCase {
     Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
     double mu = 3.986e14;
     Orbit initialOrbit =
-      new Orbit(new RDate(RDate.J2000Epoch, 0.0),
+      new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
                 new EquinoctialParameters(position, velocity, mu));
     
     
@@ -93,7 +93,7 @@ try {
     Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
     double mu = 3.986e14;
     Orbit initialOrbit =
-      new Orbit(new RDate(RDate.J2000Epoch, 0.0),
+      new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
                 new EquinoctialParameters(position,  velocity, mu));
     
     // Extrapolator definition
@@ -106,7 +106,7 @@ try {
     // Extrapolation of the initial at t+dt
     // ------------------------------------
     Orbit finalOrbit = extrapolator.extrapolate(initialOrbit,
-                                               new RDate(initialOrbit.getDate(),
+                                               new AbsoluteDate(initialOrbit.getDate(),
                                                          dt), (Orbit) null);
     // Testing the discrepancies
     // -------------------------
@@ -144,7 +144,7 @@ try {
         
     
     Orbit initialOrbit =
-      new Orbit(new RDate(RDate.J2000Epoch, 0.0),
+      new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
                 new EquinoctialParameters(position,  velocity, mu));
     System.out.println("Initial orbit at t = " + initialOrbit.getDate());
     System.out.println("a = " + initialOrbit.getA());
@@ -186,7 +186,7 @@ try {
     extrapolator.addForceModel(CBP);
     
     Orbit finalOrbit = extrapolator.extrapolate(initialOrbit,
-                                               new RDate(initialOrbit.getDate(),
+                                               new AbsoluteDate(initialOrbit.getDate(),
                                                          dt), (Orbit) null);
     // Testing the discrepancies
     // -------------------------

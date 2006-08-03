@@ -4,6 +4,7 @@ import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.bodies.BodyShape;
 import fr.cs.aerospace.orekit.bodies.RotatingBody;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** Simple exponential atmospheric model.
  * <p>This model represents a simple atmosphere with an exponential
@@ -35,7 +36,7 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
    * @param position current position
    * @return local density (kg/m<sup>3</sup>)
    */
-  public double getDensity(RDate date, Vector3D position) {
+  public double getDensity(AbsoluteDate date, Vector3D position) {
     double altitude = shape.transform(position).altitude;
     return rho0 * Math.exp((h0 - altitude) / hscale);
   }
@@ -45,7 +46,7 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
    * @param position current position
    * @return volocity (m/s)
    */
-  public Vector3D getVelocity(RDate date, Vector3D position) {
+  public Vector3D getVelocity(AbsoluteDate date, Vector3D position) {
     return Vector3D.crossProduct(motion.getRotationVector(date), position);
   }
 

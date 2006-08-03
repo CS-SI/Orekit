@@ -1,6 +1,6 @@
 package fr.cs.aerospace.orekit.propagation;
 
-import fr.cs.aerospace.orekit.RDate;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** This interface is intended for ephemerides valid only during a time range.
  *
@@ -18,11 +18,11 @@ public interface BoundedEphemeris extends Ephemeris {
     /** Get the start date of the range.
      * @return the start date of the range
      */
-    RDate getStartDate();
+    AbsoluteDate getStartDate();
     
     /** Get the end date of the range.
      * @return the end date of the range
      */
-    RDate getEndDate();
+    AbsoluteDate getEndDate();
     
 }

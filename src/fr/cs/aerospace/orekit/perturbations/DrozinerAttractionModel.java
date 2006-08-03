@@ -1,10 +1,10 @@
 package fr.cs.aerospace.orekit.perturbations;
 
-import fr.cs.aerospace.orekit.RDate;
 import fr.cs.aerospace.orekit.Attitude;
 import fr.cs.aerospace.orekit.bodies.RotatingBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
@@ -53,7 +53,7 @@ public class DrozinerAttractionModel implements ForceModel {
    * @param adder object where the contribution should be added
    */
 
-  public void addContribution(RDate t, Vector3D position, Vector3D velocity,
+  public void addContribution(AbsoluteDate t, Vector3D position, Vector3D velocity,
                               Attitude Attitude, OrbitDerivativesAdder adder)
       throws OrekitException {
 
