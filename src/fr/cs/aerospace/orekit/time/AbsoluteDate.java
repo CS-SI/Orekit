@@ -170,7 +170,7 @@ public class AbsoluteDate {
       }
       epoch  = parsed.getTime();
       double t = epoch * 0.001;
-      offset = fraction + (timeScale.toTAI(t + fraction) - t);
+      offset = timeScale.toTAI(t + fraction) - t;
     }    
    
     /** Reset the instant from an offset with respect to another instant.

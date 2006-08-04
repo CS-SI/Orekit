@@ -37,6 +37,12 @@ public class AbsoluteDateTest
                  AbsoluteDate.J2000Epoch.toString(UTCScale.getInstance()));
   }
 
+  public void testFraction() throws ParseException {
+    AbsoluteDate d =
+      new AbsoluteDate("2000-01-01T11:59:27.816", TAIScale.getInstance());
+    assertEquals(0, d.minus(AbsoluteDate.J2000Epoch), 1.0e-10);
+  }
+
   public void testScalesOffset() throws ParseException {
     AbsoluteDate date =
       new AbsoluteDate("2006-02-24T15:38:00", UTCScale.getInstance());
