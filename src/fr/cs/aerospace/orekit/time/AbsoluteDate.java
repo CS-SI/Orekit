@@ -147,8 +147,7 @@ public class AbsoluteDate {
      */    
     public void reset(Date location, TimeScale timeScale) {
       epoch  = location.getTime();
-      double t = epoch * 0.001;
-      offset = timeScale.toTAI(t) - t;
+      offset = timeScale.offsetToTAI(epoch * 0.001);
     }    
    
     /** Reset the instant from a location in a {@link TimeScale time scale}.
@@ -169,8 +168,7 @@ public class AbsoluteDate {
           Double.parseDouble(location.substring(position.getIndex()));
       }
       epoch  = parsed.getTime();
-      double t = epoch * 0.001;
-      offset = timeScale.toTAI(t + fraction) - t;
+      offset = fraction + timeScale.offsetToTAI(epoch * 0.001 + fraction);
     }    
    
     /** Reset the instant from an offset with respect to another instant.
@@ -227,7 +225,7 @@ public class AbsoluteDate {
     */
    public double timeScalesOffset(TimeScale scale1, TimeScale scale2) {
      double taiTime = 0.001 * epoch + offset;
-     return scale1.fromTAI(taiTime) - scale2.fromTAI(taiTime);
+     return scale1.offsetFromTAI(taiTime) - scale2.offsetFromTAI(taiTime);
    }
 
    /** Convert the instance to a Java {@link java.util.Date Date}.
@@ -239,8 +237,9 @@ public class AbsoluteDate {
     * of the instant in the time scale
     */
    public Date toDate(TimeScale timeScale) {
-     long time = Math.round(timeScale.fromTAI(0.001 * epoch + offset) * 1000);
-     return new Date(time);
+     double time = 0.001 * epoch + offset;
+     time += timeScale.offsetFromTAI(time);
+     return new Date(Math.round(time * 1000));
    }
    
    /** Get a String representation of the instant location in UTC time scale.
@@ -257,8 +256,7 @@ public class AbsoluteDate {
     * in ISO-8601 format with milliseconds accuracy
     */
    public String toString(TimeScale timeScale) {
-     long time = Math.round(timeScale.fromTAI(0.001 * epoch + offset) * 1000);
-     return output.format(new Date(time));
+     return output.format(toDate(timeScale));
    }
 
    /** Reference epoch in milliseconds from 1970-01-01T00:00:00 TAI. */

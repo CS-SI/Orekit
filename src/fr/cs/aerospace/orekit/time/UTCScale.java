@@ -142,36 +142,36 @@ public class UTCScale extends TimeScale {
     return instance;
   }
 
-  /** Convert a location in {@link TAI} time scale into the instance time scale.
+  /** Get the offset to convert locations from {@link TAI} to instance.
    * @param taiTime location of an event in the {@link TAI} time scale
    * as a seconds index starting at 1970-01-01T00:00:00
-   * @return location of the same event in the instance time scale
-   * as a seconds index starting at 1970-01-01T00:00:00
+   * @return offset to <em>add</em> to taiTime to get a location
+   * in instance time scale
    */
-  public double fromTAI(double taiTime) {
+  public double offsetFromTAI(double taiTime) {
     for (int i = 0; i < leaps.length; ++i) {
       Leap leap = leaps[i];
       if ((taiTime  + (leap.offsetAfter - leap.step)) >= leap.utcTime) {
-        return taiTime + leap.offsetAfter;
+        return leap.offsetAfter;
       }
     }
-    return taiTime;
+    return 0;
   }
 
-  /** Convert a location in this time scale into {@link TAI} time scale.
+  /** Get the offset to convert locations from instance to {@link TAI}.
    * @param instanceTime location of an event in the instance time scale
    * as a seconds index starting at 1970-01-01T00:00:00
-   * @return location of the same event in the {@link TAI} time scale
-   * as a seconds index starting at 1970-01-01T00:00:00
+   * @return offset to <em>add</em> to instanceTime to get a location
+   * in {@link TAI} time scale
    */
-  public double toTAI(double instanceTime) {
+  public double offsetToTAI(double instanceTime) {
     for (int i = 0; i < leaps.length; ++i) {
       Leap leap = leaps[i];
       if (instanceTime >= leap.utcTime) {
-        return instanceTime - leap.offsetAfter;
+        return -leap.offsetAfter;
       }
     }
-    return instanceTime;
+    return 0;
   }
 
   /** XML parsing utility class. */

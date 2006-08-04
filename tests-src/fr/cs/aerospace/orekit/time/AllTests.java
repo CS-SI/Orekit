@@ -10,6 +10,9 @@ public class AllTests {
 
     suite.addTest(AbsoluteDateTest.suite());
     suite.addTest(UTCScaleTest.suite());
+    suite.addTest(TAIScaleTest.suite());
+    suite.addTest(TTScaleTest.suite());
+    suite.addTest(TCGScaleTest.suite());
     return suite; 
 
   }

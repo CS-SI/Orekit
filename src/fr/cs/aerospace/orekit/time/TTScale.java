@@ -26,24 +26,24 @@ public class TTScale extends TimeScale {
     return instance;
   }
 
-  /** Convert a location in {@link TAI} time scale into the instance time scale.
+  /** Get the offset to convert locations from {@link TAI} to instance.
    * @param taiTime location of an event in the {@link TAI} time scale
    * as a seconds index starting at 1970-01-01T00:00:00
-   * @return location of the same event in the instance time scale
-   * as a seconds index starting at 1970-01-01T00:00:00
+   * @return offset to <em>add</em> to taiTime to get a location
+   * in instance time scale
    */
-  public double fromTAI(double taiTime) {
-    return taiTime + 32.184;
+  public double offsetFromTAI(double taiTime) {
+    return 32.184;
   }
 
-  /** Convert a location in this time scale into {@link TAI} time scale.
+  /** Get the offset to convert locations from instance to {@link TAI}.
    * @param instanceTime location of an event in the instance time scale
    * as a seconds index starting at 1970-01-01T00:00:00
-   * @return location of the same event in the {@link TAI} time scale
-   * as a seconds index starting at 1970-01-01T00:00:00
+   * @return offset to <em>add</em> to instanceTime to get a location
+   * in {@link TAI} time scale
    */
-  public double toTAI(double instanceTime) {
-    return instanceTime - 32.184;
+  public double offsetToTAI(double instanceTime) {
+    return -32.184;
   }
 
   /** Uniq instance. */

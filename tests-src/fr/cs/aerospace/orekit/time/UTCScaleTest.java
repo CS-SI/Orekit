@@ -52,6 +52,23 @@ public class UTCScaleTest
     assertEquals("1983-06-30T23:59:59.757", d.toString(UTCScale.getInstance()));
   }
 
+  public void testSymetry() {
+    // the loop is around the 1977-01-01 leap second introduction
+    double tLeap = 220924815;
+    TimeScale scale = UTCScale.getInstance();
+    for (double taiTime = tLeap - 60; taiTime < tLeap + 60; taiTime += 0.3) {
+      double dt1 = scale.offsetFromTAI(taiTime);
+      double dt2 = scale.offsetToTAI(taiTime + dt1);
+      if ((taiTime > tLeap) && (taiTime <= tLeap + 1.0)) {
+        // we are "inside" the leap second, the TAI scale goes on
+        // but the UTC scale "replays" the previous second, before the step
+        assertEquals(-1.0, dt1 + dt2, 1.0e-10);
+      } else {
+        assertEquals( 0.0, dt1 + dt2, 1.0e-10);        
+      }
+    }
+  }
+
   public void testOffsets() throws ParseException {
     checkOffset("1970-01-01",   0);
     checkOffset("1972-03-05", -10);
@@ -67,7 +84,7 @@ public class UTCScaleTest
       format.setTimeZone(TimeZone.getTimeZone("UTC"));
       double time = format.parse(date).getTime() * 0.001;
       assertEquals(offset,
-                   UTCScale.getInstance().fromTAI(time) - time,
+                   UTCScale.getInstance().offsetFromTAI(time),
                    1.0e-10);
     } catch (ParseException pe) {
       fail(pe.getMessage());

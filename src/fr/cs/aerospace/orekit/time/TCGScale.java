@@ -2,7 +2,6 @@ package fr.cs.aerospace.orekit.time;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.TimeZone;
 
 /** Geocentric Coordinate Time.
  * <p>Coordinate time at the center of mass of the Earth.
@@ -14,14 +13,17 @@ import java.util.TimeZone;
  */
 public class TCGScale extends TimeScale {
 
+  // reference time scale
+  private static final TimeScale tt;
+
   // reference time tor TCG is 1977-01-01 (MJD = 43144)
   private static final double reference;
 
   static {
     try {
-      SimpleDateFormat iso8601 = new SimpleDateFormat("yyyy-MM-dd");
-      iso8601.setTimeZone(TimeZone.getTimeZone("UTC"));
-      reference = iso8601.parse("1977-01-01").getTime();
+      tt = TTScale.getInstance();
+      SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+      reference = format.parse("1977-01-01").getTime();
     } catch (ParseException pe) {
       throw new RuntimeException("internal error"); // should not happen
     }
@@ -43,26 +45,26 @@ public class TCGScale extends TimeScale {
     return instance;
   }
 
-  /** Convert a location in {@link TAI} time scale into the instance time scale.
+  /** Get the offset to convert locations from {@link TAI} to instance.
    * @param taiTime location of an event in the {@link TAI} time scale
    * as a seconds index starting at 1970-01-01T00:00:00
-   * @return location of the same event in the instance time scale
-   * as a seconds index starting at 1970-01-01T00:00:00
+   * @return offset to <em>add</em> to taiTime to get a location
+   * in instance time scale
    */
-  public double fromTAI(double taiTime) {
-    double ttTime = TTScale.getInstance().fromTAI(taiTime);
-    return ttTime + lg * (ttTime - reference);
+  public double offsetFromTAI(double taiTime) {
+    double ttOffset = tt.offsetFromTAI(taiTime);
+    return ttOffset + lg * (ttOffset + taiTime - reference);
   }
 
-  /** Convert a location in this time scale into {@link TAI} time scale.
+  /** Get the offset to convert locations from instance to {@link TAI}.
    * @param instanceTime location of an event in the instance time scale
    * as a seconds index starting at 1970-01-01T00:00:00
-   * @return location of the same event in the {@link TAI} time scale
-   * as a seconds index starting at 1970-01-01T00:00:00
+   * @return offset to <em>add</em> to instanceTime to get a location
+   * in {@link TAI} time scale
    */
-  public double toTAI(double instanceTime) {
-    double ttTime = (instanceTime + lg * reference) / (1 + lg);
-    return TTScale.getInstance().toTAI(ttTime);
+  public double offsetToTAI(double instanceTime) {
+    double ttTime = inverse * (instanceTime + lg * reference);
+    return tt.offsetToTAI(ttTime) - lg * inverse * (instanceTime - reference);
   }
 
   /** Uniq instance. */
@@ -70,5 +72,8 @@ public class TCGScale extends TimeScale {
 
   /** LG rate. */
   private static double lg = 6.969290134e-10;
+
+  /** Inverse rate. */
+  private static double inverse = 1.0 / (1.0 + lg);
 
 }
