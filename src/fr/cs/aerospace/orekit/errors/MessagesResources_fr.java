@@ -46,7 +46,19 @@ public class MessagesResources_fr
     { "unparsable step value in UTC/TAI time steps file ({0})",
       "valeur de saut illisible dans le fichier des sauts du TUC ({0})" },
     { "non-increasing dates in UTC/TAI time steps file ({0})",
-      "dates non croissantes dans le fichier des sauts du TUC ({0})" }
+      "dates non croissantes dans le fichier des sauts du TUC ({0})" },
+    { "null parent frame",
+      "rep\u00e8re parent nul" },
+    { "IERS local cache top directory not defined",
+      "r\u00e9pertoire racine de cache local IERS non d\u00e9fini" },
+    { "IERS local cache top directory {0}",
+      "r\u00e9pertoire racine de cache local IERS {0} inexistant" },
+    { "{0} is not a directory",
+      "{0} n''est pas un r\u00e9pertoire" },
+    { "no IERS data file found in local cache {0}",
+      "aucun fichier de donn\u00e9es IERS trouv\u00e9 dans le cache local {0}" },
+    { "missing IERS data between {0} and {1}",
+      "donn\u00e9es IERS manquantes entre {0} et {1}" }
   };
 
 }

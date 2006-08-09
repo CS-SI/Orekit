@@ -44,7 +44,20 @@ public class MessagesResources
     { "unparsable step value in UTC/TAI time steps file ({0})",
       "unparsable step value in UTC/TAI time steps file ({0})" },
     { "non-increasing dates in UTC/TAI time steps file ({0})",
-      "non-increasing dates in UTC/TAI time steps file ({0})" }
+      "non-increasing dates in UTC/TAI time steps file ({0})" },
+    { "null parent frame",
+      "null parent frame" },
+    { "IERS local cache top directory not defined",
+      "IERS local cache top directory not defined" },
+    { "IERS local cache top directory {0}",
+      "IERS local cache top directory {0}" },
+    { "{0} is not a directory",
+      "{0} is not a directory" },
+    { "no IERS data file found in local cache {0}",
+      "no IERS data file found in local cache {0}" },
+    { "missing IERS data between {0} and {1}",
+      "missing IERS data between {0} and {1}" }
+
   };
 
 }
