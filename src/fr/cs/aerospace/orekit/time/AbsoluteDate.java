@@ -38,11 +38,21 @@ import java.text.ParseException;
  *   #reset(AbsoluteDate) reset(instant)}, {@link #minus} and {@link #shift}.</p>
  *   </li>
  * </ul>
+ * <p>Since instances may be changed thanks to the {@link #reset(Date, TimeScale)
+ * reset(location, timeScale)}, {@link #reset(String, TimeScale) reset(location,
+ * timeScale)}, {@link #reset(AbsoluteDate, double) reset(instant, offset)},
+ * {@link #reset(AbsoluteDate) reset(instant)} and {@link #shift} methods, the
+ * {@link #dateChanged() dateChanged} method can be overriden in derived classes
+ * to hook up user code when such changes occur. This method is called at the end
+ * of all instance changing methods, the default implementation does nothing.
+ * An example use of this feature is sharing dates among several related
+ * frames that should be updated together as in the {@link
+ * fr.cs.aerospace.orekit.frames.DateDependantFrame DateDependantFrame} class.</p>
 
  * @author L. Maisonobe
  * @see TimeScale
  */
-public class AbsoluteDate {
+public class AbsoluteDate implements Comparable {
 
     /** Reference epoch for julian dates: -4712-01-01T12:00:00.
      * <p>The java.util.Date class follows the astronomical convention
@@ -148,6 +158,7 @@ public class AbsoluteDate {
     public void reset(Date location, TimeScale timeScale) {
       epoch  = location.getTime();
       offset = timeScale.offsetToTAI(epoch * 0.001);
+      dateChanged();
     }    
    
     /** Reset the instant from a location in a {@link TimeScale time scale}.
@@ -169,6 +180,7 @@ public class AbsoluteDate {
       }
       epoch  = parsed.getTime();
       offset = fraction + timeScale.offsetToTAI(epoch * 0.001 + fraction);
+      dateChanged();
     }    
    
     /** Reset the instant from an offset with respect to another instant.
@@ -185,6 +197,7 @@ public class AbsoluteDate {
     public void reset(AbsoluteDate instant, double offset) {
       epoch = instant.epoch;
       this.offset = instant.offset + offset;
+      dateChanged();
     }    
     
     /** Reset the instant by copy.
@@ -193,6 +206,7 @@ public class AbsoluteDate {
     public void reset(AbsoluteDate instant) {
       epoch  = instant.epoch;
       offset = instant.offset;
+      dateChanged();
     }    
 
    /** Shift an instant.
@@ -200,6 +214,7 @@ public class AbsoluteDate {
     */
    public void shift(double offset) {
      this.offset += offset;
+     dateChanged();
    }
    
    /** Compute the offset between two instant.
@@ -257,6 +272,32 @@ public class AbsoluteDate {
     */
    public String toString(TimeScale timeScale) {
      return output.format(toDate(timeScale));
+   }
+
+   /** Hook method for getting any instance modification.
+    * <p>This method is called at the end of all instance modification
+    * methods, the base class implementation does nothing but derived classes
+    * may add specialized implementation to react to changes.</p>
+    */
+   public void dateChanged() {
+     // nothing done in the base class implementation
+   }
+
+   /** Compare the instance with another date.
+    * @param date other date to compare the instance to
+    * @return a negative integer, zero, or a positive integer as this date
+    * is before, simultaneous, or after the specified date.
+    * @exception ClassCastException if the parameter is not an AbsoluteDate
+    * instance
+    */
+   public int compareTo(Object date) {
+     double delta = minus((AbsoluteDate) date);
+     if (delta < 0) {
+       return -1;
+     } else if (delta > 0) {
+       return +1;
+     }
+     return 0;
    }
 
    /** Reference epoch in milliseconds from 1970-01-01T00:00:00 TAI. */
