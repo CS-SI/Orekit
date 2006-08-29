@@ -2,7 +2,7 @@ package fr.cs.aerospace.orekit.perturbations;
 
 import fr.cs.aerospace.orekit.Attitude;
 import fr.cs.aerospace.orekit.Spacecraft;
-import fr.cs.aerospace.orekit.bodies.BodyShape;
+import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.bodies.ThirdBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
@@ -27,7 +27,7 @@ public class SolarRadiationPressure implements ForceModel {
    * @param earth Earth shape model (for umbra/penumbra computation)
    * @param spacecraft spacecraft
    */
-  public SolarRadiationPressure(ThirdBody sun, BodyShape earth,
+  public SolarRadiationPressure(ThirdBody sun, OneAxisEllipsoid earth,
                                 Spacecraft spacecraft) {
     this(149597870000.0, 4.56e-6, sun, earth, spacecraft);
   }
@@ -40,7 +40,7 @@ public class SolarRadiationPressure implements ForceModel {
    * @param spacecraft spacecraft
    */
   public SolarRadiationPressure(double dRef, double pRef,
-                                ThirdBody sun, BodyShape earth,
+                                ThirdBody sun, OneAxisEllipsoid earth,
                                 Spacecraft spacecraft) {
     this.dRef  = dRef;
     this.pRef  = pRef;
@@ -233,7 +233,7 @@ public class SolarRadiationPressure implements ForceModel {
   private ThirdBody sun;
 
   /** Earth model. */
-  private BodyShape earth;
+  private OneAxisEllipsoid earth;
 
   /** Spacecraft. */
   private Spacecraft spacecraft;

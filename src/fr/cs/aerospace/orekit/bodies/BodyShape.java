@@ -12,11 +12,6 @@ import fr.cs.aerospace.orekit.utils.Line;
  */
 public interface BodyShape {
 
-  /** Get the equatorial radius of the body.
-   * @return equatorial radius of the body (m)
-   */
-  public double getEquatorialRadius();
-
   /** Get the intersection point of a line with the surface of the body.
    * @param line test line in inertial frame (may intersect the body or not)
    * @return intersection point at altitude zero or null if the line does
