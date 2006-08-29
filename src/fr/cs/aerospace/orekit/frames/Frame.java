@@ -1,5 +1,6 @@
 package fr.cs.aerospace.orekit.frames;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import fr.cs.aerospace.orekit.errors.Translator;
@@ -7,12 +8,22 @@ import fr.cs.aerospace.orekit.errors.Translator;
 /** Tridimensional references frames class.
  * <p>This class is the base class for all frames in OREKIT. The frames are
  * linked together in a tree with the J2000 frame as the root of the tree.
- * Each frame is defined by translation/rotation transforms from a reference
- * frame which is its parent frame in the tree structure.</p>
- * <p>The translation/rotation transforms may be constant or varying. For
- * simple fixed transforms, using this base class is sufficient. For varying
- * transforms (time-dependant or telemetry-based for example), it may be
- * useful to define specific subclasses.</p>
+ * Each frame is defined by transforms combining any number of translations and
+ * rotations from a reference frame which is its parent frame in the tree
+ * structure.</p>
+ * <p>When we say a transform t is <em>from frame<sub>A</sub>
+ * to frame<sub>B</sub></em>, we mean that if the coordinates of some absolute
+ * vector (say the direction of a distant star for example) has coordinates
+ * u<sub>A</sub> in frame<sub>A</sub> and u<sub>B</sub> in frame<sub>B</sub>,
+ * then u<sub>B</sub>={@link
+ * fr.cs.aerospace.orekit.frames.Transform#transformDirection(Vector3D)
+ * t(u<sub>A</sub>)}.</p>
+ * <p>The transforms may be constant or varying. For simple fixed transforms,
+ * using this base class is sufficient. For varying transforms (time-dependant
+ * or telemetry-based for example), it may be useful to define specific subclasses
+ * that will add some specific <code>updateFromDate(date)</code> or
+ * <code>updateFromTelemetry(telemetry)</code> methods that will compute the
+ * transform and call internally the {@link #updateTransform(Transform)} method.</p>
  * @author Guylaine Prat
  * @author Luc Maisonobe
  */
@@ -28,11 +39,12 @@ public class Frame {
     return j2000;
   }
 
-  /** Private constructor for the J2000 root frame.
+  /** Private constructor used only for the J2000 root frame.
    */
   private Frame() {
     parent    = null;
     transform = new Transform();
+    commons   = new HashMap();
   }
 
   /** Build a frame from its transform with respect to its parent.
@@ -50,6 +62,7 @@ public class Frame {
 
     this.parent    = parent;
     this.transform = transform;
+    commons        = new HashMap();
 
   }
 
@@ -69,22 +82,22 @@ public class Frame {
     // common ancestor to both frames in the frames tree
     Frame common = findCommon(this, destination);
 
-    // transform from instance up to common
-    Transform instanceToCommon = new Transform();
+    // transform from common to instance
+    Transform commonToInstance = new Transform();
     for (Frame frame = this; frame != common; frame = frame.parent) {
-      instanceToCommon =
-        new Transform(instanceToCommon, frame.transform);
+      commonToInstance =
+        new Transform(frame.transform, commonToInstance);
     }
 
     // transform from destination up to common
-    Transform destinationToCommon = new Transform();
+    Transform commonToDestination = new Transform();
     for (Frame frame = destination; frame != common; frame = frame.parent) {
-      destinationToCommon =
-        new Transform(destinationToCommon, frame.transform);
+      commonToDestination =
+        new Transform(frame.transform, commonToDestination);
     }
 
-    // transform from instance, to common, to destination
-    return new Transform(instanceToCommon, destinationToCommon.getInverse());
+    // transform from instance to destination via common
+    return new Transform(commonToInstance.getInverse(), commonToDestination);
 
   }
 
@@ -95,24 +108,35 @@ public class Frame {
    */
   private static Frame findCommon(Frame from, Frame to) {
 
+    // have we already computed the common frame for this pair ?
+    Frame common = (Frame) from.commons.get(to);
+    if (common != null) {
+      return common;
+    }
+
     // definitions of the path up to the head tree for each frame
     LinkedList pathFrom = from.pathToRoot();
     LinkedList pathTo   = to.pathToRoot();
 
     if (pathFrom.isEmpty()) { // handle root case
       // in this case the common frame is root
-      return from;
+      common = from;
     }
     if (pathTo.isEmpty()) { // handle root case
       // in this case the common frame is root
-      return to;
+      common = to;
+    }
+    if (common != null) {
+      from.commons.put(to, common);
+      to.commons.put(from, common);
+      return common;
     }
 
-    // at this stage pathFrom contains almost one frame
+    // at this stage pathFrom contains at least one frame
     Frame lastFrom = (Frame) pathFrom.removeLast();
-    Frame common   = lastFrom; // common must be one of the instance of Frame already defined
+    common = lastFrom; // common must be one of the instance of Frame already defined
 
-    // at the beginning of the loop pathTo contains almost one frame
+    // at the beginning of the loop pathTo contains at least one frame
     for (Frame lastTo = (Frame) pathTo.removeLast();
          (lastTo == lastFrom) && (lastTo != null) && (lastFrom != null);
          // in order to deal with the end of the list which throwed an exception
@@ -124,6 +148,8 @@ public class Frame {
       lastFrom = (Frame) (pathFrom.isEmpty() ? null : pathFrom.removeLast());
     }
 
+    from.commons.put(to, common);
+    to.commons.put(from, common);
     return common;
 
   }
@@ -145,6 +171,9 @@ public class Frame {
 
   /** Transform from parent frame to instance. */
   private Transform transform;
+
+  /** Map of deepest frames commons with other frames. */
+  private HashMap commons;
 
   /** J2000 root frame. */
   private static Frame j2000 = null;
