@@ -7,10 +7,10 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** Interface representing a rotating natural body.
  * <p>The orientation of a natural body is similar to the attitude for a satellite,
- * it is a 3D rotation that applied to a vector expreseed in inertial frame
+ * it is a 3D rotation that applied to a vector expressed in inertial frame
  * returns the same vector but expressed in the body frame. The rotation may be
  * a simple rotation around an inertially fixed polar axis, or it may take into
- * account more accurate models for precession and nutation).</p>
+ * account more accurate models for precession and nutation.</p>
  * @author Luc Maisonobe
  * $Id$
  */
