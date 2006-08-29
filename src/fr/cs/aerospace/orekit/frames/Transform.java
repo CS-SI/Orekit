@@ -48,8 +48,8 @@ public class Transform {
    * @param second second transform applied
    */
   public Transform(Transform first, Transform second) {
-    this(Vector3D.add(second.translation,
-                      first.rotation.applyTo(first.translation)),
+    this(Vector3D.add(first.translation,
+                      first.rotation.applyInverseTo(second.translation)),
          second.rotation.applyTo(first.rotation));
   }
   
@@ -57,7 +57,7 @@ public class Transform {
    * @return inverse transform of the instance
    */
   public Transform getInverse() {
-    return new Transform(rotation.applyInverseTo(Vector3D.negate(translation)),
+    return new Transform(rotation.applyTo(Vector3D.negate(translation)),
                          rotation.revert());
   }
 
