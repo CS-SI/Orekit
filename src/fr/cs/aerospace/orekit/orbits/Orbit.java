@@ -13,9 +13,11 @@ import java.io.Serializable;
  * In OREKIT architecture, an Orbit is only a state at a specific date.
  * Orbit evolution is represented by the {@link
  * fr.cs.aerospace.orekit.propagation.Ephemeris Ephemeris} interface,
- * which contains only the {@link Ephemeris#getOrbit getOrbit} method to provide
- * new states for new dates. This interface can be implemented by several means
- * like file-based interpolation, analytical model or numerical integration.
+ * which contains only the {@link
+ * fr.cs.aerospace.orekit.propagation.Ephemeris#getOrbit getOrbit} method to
+ * provide new states for new dates. This interface can be implemented by
+ * several means like file-based interpolation, analytical model or numerical
+ * integration.
  * </p>
 
  * <p>

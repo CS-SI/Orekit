@@ -17,7 +17,7 @@ public class SimpleSpacecraft implements Spacecraft {
    * @param mass Mass (kg)
    * @param surface Surface (m<sup>2</sup>)
    * @param dragCoeff Drag coefficient
-   * @param absorpCoeff coefficient Absorption coefficient
+   * @param absorptionCoeff coefficient Absorption coefficient
    * @param reflectionCoeff Specular reflection coefficient
    */
   public SimpleSpacecraft(double mass, double surface, double dragCoeff,
@@ -78,28 +78,28 @@ public class SimpleSpacecraft implements Spacecraft {
   }
 
   /** Set the surface.
-   * @param Surface surface (m<sup>2</sup>)
+   * @param surface surface (m<sup>2</sup>)
    */
   public void setSurface(double surface) {
     this.surface = surface;
   }
 
   /** Set the drag coefficient.
-   * @param drag coefficient drag coefficient
+   * @param dragCoeff coefficient drag coefficient
    */
   public void setDragCoef(double dragCoeff) {
     this.dragCoeff = dragCoeff;
   }
 
   /** Set the absorption coefficient.
-   * @param absorption coefficient absorption coefficient
+   * @param absorptionCoeff coefficient absorption coefficient
    */
   public void setAbsCoef(double absorptionCoeff) {
     this.absorptionCoeff = absorptionCoeff;
   }
 
   /** Set the specular reflection coefficient.
-   * @param absorption coefficient specular reflection coefficient
+   * @param reflectionCoeff coefficient specular reflection coefficient
    */
   public void setReflectionCoef(double reflectionCoeff) {
     this.reflectionCoeff = reflectionCoeff;

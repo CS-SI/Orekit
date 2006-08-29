@@ -14,7 +14,7 @@ public class FixedPoleEarth implements RotatingBody {
   /** Model for &Delta;TU<sub>1</sub>. */
   public static interface DTU1Model {
     /** Get the &Delta;TU<sub>1</sub> value.
-     * @param AbsoluteDate date UTC date
+     * @param date absolute date
      * @return &Delta;TU<sub>1</sub> (t<sub>UTC</sub> - t<sub>TU1</sub>) in seconds
      */
     public double getDTU1(AbsoluteDate date);

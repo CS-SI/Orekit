@@ -76,7 +76,7 @@ public class OneAxisEllipsoid implements BodyShape {
 
   /** Get the intersection point of a line with the surface of the body.
    * @param line test line in inertial frame (may intersect the body or not)
-   * @param intersection point at altitude zero or null if the line does
+   * @return intersection point at altitude zero or null if the line does
    * not intersect the surface
    */
   public GeodeticPoint getIntersectionPoint(Line line) {

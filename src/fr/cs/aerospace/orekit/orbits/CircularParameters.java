@@ -334,7 +334,7 @@ public class CircularParameters
   }
 
   /** Set the mean longitude argument.
-   * @param lM = M + &omega;  mean longitude argument (rad)
+   * @param alphaM = M + &omega;  mean longitude argument (rad)
    */
   public void setAlphaM(double alphaM) {
     // Generalization of Kepler equation to equinoctial parameters

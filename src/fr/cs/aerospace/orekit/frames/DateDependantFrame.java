@@ -12,8 +12,7 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * single frame in a sharing group, knowing that all other frames in the group
  * will be updated too.</p>
  * @author Luc Maisonobe
- * @see GtodFrame
- * @see EcefFrame
+ * @see ITRSFrame
  */
 public abstract class DateDependantFrame extends Frame {
 
@@ -44,10 +43,7 @@ public abstract class DateDependantFrame extends Frame {
    * <p>The object returned is an instance of an internal class that
    * ensures proper updates of all frames sharing this date when the
    * instance is changed thanks to a specialized implementation of
-   * the {@link AbsoluteDate#dateChanged() dateChanged} method. This
-   * means that the following code <em>does<em> update the GTOD frame
-   * and all its related frames (for example ECEF):</p>
-   * <p><code>gtodFrame.getDate().shift(10.0);</code></p>
+   * the {@link AbsoluteDate#dateChanged() dateChanged} method.</p>
    * @return current shared date
    */
   public AbsoluteDate getDate() {

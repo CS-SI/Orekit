@@ -21,19 +21,19 @@ import java.text.ParseException;
  *   <li><p>location view (mainly for input/output or conversions)</p>
  *   <p>locations represent the coordinate of one event with respect to a
  *   {@link TimeScale time scale}. The related methods are {@link
- *   #Instant(Date, TimeScale) Instant(location, timeScale)}, {@link
- *   #Instant(String, TimeScale) Instant(location, timeScale)}, {@link
+ *   #AbsoluteDate(Date, TimeScale) AbsoluteDate(location, timeScale)}, {@link
+ *   #AbsoluteDate(String, TimeScale) AbsoluteDate(location, timeScale)}, {@link
  *   #reset(Date, TimeScale) reset(location, timeScale)}, {@link
  *   #reset(String, TimeScale) reset(location, timeScale)}, {@link #toDate}
  *   , {@link #toString() toString()}, {@link #toString(TimeScale)
- *   toString(timeScale)} and {@link timeScalesOffset}.</p>
+ *   toString(timeScale)} and {@link #timeScalesOffset}.</p>
  *   </li>
  *   <li><p>offset view (mainly for physical computation)</p>
  *   <p>offsets represent either the flow of time between two events
  *   (two instances of the class) or durations. They are counted in seconds,
  *   are continuous and could be measured using only a virtual perfect stopwatch.
- *   The related methods are {@link #Instant(AbsoluteDate, double) Instant(instant,
- *   offset)}, {@link #Instant(AbsoluteDate) Instant(instant)}, {@link
+ *   The related methods are {@link #AbsoluteDate(AbsoluteDate, double) AbsoluteDate(instant,
+ *   offset)}, {@link #AbsoluteDate(AbsoluteDate) AbsoluteDate(instant)}, {@link
  *   #reset(AbsoluteDate, double) reset(instant, offset)}, {@link
  *   #reset(AbsoluteDate) reset(instant)}, {@link #minus} and {@link #shift}.</p>
  *   </li>

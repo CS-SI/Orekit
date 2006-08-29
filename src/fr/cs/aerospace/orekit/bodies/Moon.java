@@ -13,9 +13,6 @@ public class Moon extends ThirdBody {
 
   /**
    * Creates a new instance of ThirdBody_Moon.
-   * @param radius radius of the third body
-   * @param mu mu of the third body
-   * @param position position of the third body
    */
   public Moon() {
     super(1737400.0, 4.9027989e12);

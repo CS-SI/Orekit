@@ -17,7 +17,7 @@ import fr.cs.aerospace.orekit.errors.Translator;
  * u<sub>A</sub> in frame<sub>A</sub> and u<sub>B</sub> in frame<sub>B</sub>,
  * then u<sub>B</sub>={@link
  * fr.cs.aerospace.orekit.frames.Transform#transformDirection(Vector3D)
- * t(u<sub>A</sub>)}.</p>
+ * t.transformDirection(u<sub>A</sub>)}.
  * <p>The transforms may be constant or varying. For simple fixed transforms,
  * using this base class is sufficient. For varying transforms (time-dependant
  * or telemetry-based for example), it may be useful to define specific subclasses
@@ -48,6 +48,13 @@ public class Frame {
   }
 
   /** Build a frame from its transform with respect to its parent.
+   * <p>The convention for the transform is that it is from parent
+   * frame to instance. This means that the two following frames
+   * are similar:</p>
+   * <pre>
+   * Frame frame1 = new Frame(Frame.getJ2000(), new Transform(t1, t2));
+   * Frame frame2 = new Frame(new Frame(Frame.getJ2000(), t1), t2);
+   * </pre>
    * @param parent parent frame (must be non-null)
    * @param transform transform from parent frame to instance
    * @exception IllegalArgumentException if the parent frame is null

@@ -26,9 +26,9 @@ public class DrozinerAttractionModel implements ForceModel {
    * @param mu central body attraction coefficient
    * @param body rotating body
    * @param equatorialRadius reference equatorial radius of the potential
-   * @param c normalized coefficients array (cosine part)
-   * @param s normalized coefficients array (sine part)
-   * @param degree degree of potential
+   * @param J normalized coefficients array (zonal part)
+   * @param C normalized coefficients array (cosine part)
+   * @param S normalized coefficients array (sine part)
    */
   public DrozinerAttractionModel(double mu, RotatingBody body,
                                  double equatorialRadius,

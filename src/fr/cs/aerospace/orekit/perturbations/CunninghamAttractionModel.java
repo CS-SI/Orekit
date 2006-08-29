@@ -27,9 +27,8 @@ public class CunninghamAttractionModel implements ForceModel {
    * @param mu central body attraction coefficient
    * @param body rotating body
    * @param equatorialRadius reference equatorial radius of the potential
-   * @param c normalized coefficients array (cosine part)
-   * @param s normalized coefficients array (sine part)
-   * @param degree degree of potential
+   * @param C normalized coefficients array (cosine part)
+   * @param S normalized coefficients array (sine part)
    */
   public CunninghamAttractionModel(double mu, RotatingBody body,
                                    double equatorialRadius,
