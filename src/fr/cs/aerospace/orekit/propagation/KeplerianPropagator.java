@@ -12,29 +12,33 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
 public class KeplerianPropagator implements Ephemeris {
 
   /** Build a new instance.
+   * @param orbit initial orbit
    * @param mu central acceleration coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public KeplerianPropagator(double mu) {
-    this.mu = mu;
+  public KeplerianPropagator(Orbit orbit, double mu) {
+    this.initialDate = orbit.getDate();
+    this.initialParameters = new EquinoctialParameters(orbit.getParameters(), mu);
+    this.n = Math.sqrt(mu / initialParameters.getA()) / initialParameters.getA();
   }
 
-  public Orbit getOrbit(AbsoluteDate date, Orbit orbit)
+  public Orbit getOrbit(AbsoluteDate date)
   throws PropagationException {
     
-    // mean motion
-    double a = orbit.getA(); 
-    double n = Math.sqrt(mu / a) / a;
-    
     // evaluation of LM = PA + RAAN + M at extrapolated time
-    EquinoctialParameters extrapolated =
-      new EquinoctialParameters(orbit.getParameters(), mu);
-    extrapolated.setLM(extrapolated.getLM() + n * date.minus(orbit.getDate()));
-    
+    EquinoctialParameters extrapolated = (EquinoctialParameters) initialParameters.clone();
+    extrapolated.setLM(extrapolated.getLM() + n * date.minus(initialDate));
+
     return new Orbit(date, extrapolated);
 
   }
 
-  /** Central acceleration coefficient. */
-  private double mu;
-  
+  /** Initial orbit date. */
+  private AbsoluteDate initialDate;
+
+  /** Initial orbit parameters. */
+  private EquinoctialParameters initialParameters;
+
+  /** Mean motion. */
+  private double n;
+
 }

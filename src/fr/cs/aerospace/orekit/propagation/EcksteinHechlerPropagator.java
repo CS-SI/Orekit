@@ -18,6 +18,7 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
 public class EcksteinHechlerPropagator implements Ephemeris {
 
   /** Create a new instance.
+   * @param orbit initial orbit
    * @param referenceRadius reference radius of the Earth for the extrapolation model (m)
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    * @param j2 denormalized zonal coefficient J2 (C20)
@@ -25,10 +26,15 @@ public class EcksteinHechlerPropagator implements Ephemeris {
    * @param j4 denormalized zonal coefficient J4 (C40)
    * @param j5 denormalized zonal coefficient J5 (C50)
    * @param j6 denormalized zonal coefficient J6 (C60)
+   * @exception PropagationException if the mean parameters cannot be computed
    */
-  public EcksteinHechlerPropagator(double referenceRadius, double mu,
+  public EcksteinHechlerPropagator(Orbit orbit,
+                                   double referenceRadius, double mu,
                                    double j2, double j3, double j4, double j5,
-                                   double j6) {
+                                   double j6)
+  throws PropagationException {
+
+    // store model coefficients
     this.referenceRadius = referenceRadius;
     this.mu = mu;
     this.j2 = j2;
@@ -36,48 +42,32 @@ public class EcksteinHechlerPropagator implements Ephemeris {
     this.j4 = j4;
     this.j5 = j5;
     this.j6 = j6;
-  }
-
-  /** Get the orbit extrapolated up to a given date with an analytical model.
-   * The extrapolated parameters are osculating circular parameters.
-   * @param date target date for the propagation
-   * @param orbit initial orbit
-   * @return propagated orbit (in circular parameters)
-   */
-  public Orbit getOrbit(AbsoluteDate date, Orbit orbit)
-      throws PropagationException {
 
     // transformation into circular adapted parameters
     // (used by the Eckstein-Hechler model)
     CircularParameters osculating = new CircularParameters(orbit.getParameters(), mu);
 
-    // safety checks
-    if (Math.abs(Math.sin(osculating.getI())) < SIN_EQUA) {
-      throw new PropagationException("almost equatorial orbit (i = {0} degrees)",
-                                     new String[] {
-                                       Double.toString(Math.toDegrees(osculating.getI()))
-                                     });
-    }
-
     // compute mean parameters
-    CircularParameters mean = computeMeanParameters(orbit.getDate(), osculating);
-
-    // extrapolate at the target date
-    osculating = extrapolate(date, orbit.getDate(), mean);
-
-    // provide the osculating parameters
-    return new Orbit(date, osculating);
+    initialDate = orbit.getDate();
+    computeMeanParameters(osculating);
 
   }
 
+  /** Get the orbit extrapolated up to a given date with an analytical model.
+   * The extrapolated parameters are osculating circular parameters.
+   * @param date target date for the propagation
+   * @return propagated orbit (in circular parameters)
+   */
+  public Orbit getOrbit(AbsoluteDate date)
+      throws PropagationException {
+    return new Orbit(date, extrapolate(date));
+  }
+
   /** Compute mean parameters according to the Eckstein-Hechler analytical model.
-   * @param orbit date (same for osculating and mean parameters)
    * @param osculating osculating orbit
-   * @return a mean orbit corresponding to the osculating one
    * @throws PropagationException
    */
-  private CircularParameters computeMeanParameters(AbsoluteDate date,
-                                                   CircularParameters osculating)
+  private void computeMeanParameters(CircularParameters osculating)
     throws PropagationException {
 
     // sanity check
@@ -89,7 +79,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
     }
 
     // rough initialization of the mean parameters
-    CircularParameters mean = (CircularParameters) osculating.clone();
+    mean = (CircularParameters) osculating.clone();
 
     // threshold for each parameter
     double epsilon         = 1.0e-13;
@@ -100,8 +90,27 @@ public class EcksteinHechlerPropagator implements Ephemeris {
     int i = 0;
     while (i++ < 100) {
 
+      // preliminary processing
+      q = referenceRadius / mean.getA();
+      ql = q * q;
+      g2 = j2 * ql;
+      ql *= q;
+      g3 = j3 * ql;
+      ql *= q;
+      g4 = j4 * ql;
+      ql *= q;
+      g5 = j5 * ql;
+      ql *= q;
+      g6 = j6 * ql;
+
+      cosI1 = Math.cos(mean.getI());
+      sinI1 = Math.sin(mean.getI());
+      sinI2 = sinI1 * sinI1;
+      sinI4 = sinI2 * sinI2;
+      sinI6 = sinI2 * sinI4;
+
       // recompute the osculation parameters from the current mean parameters
-      CircularParameters rebuilt = extrapolate(date, date, mean);
+      CircularParameters rebuilt = extrapolate(initialDate);
 
       // adapted parameters residuals
       double deltaA      = osculating.getA()  - rebuilt.getA();
@@ -133,7 +142,33 @@ public class EcksteinHechlerPropagator implements Ephemeris {
         mean.setRightAscensionOfAscendingNode(trimAngle(mean.getRightAscensionOfAscendingNode(),
                                                         Math.PI));
         mean.setAlphaM(trimAngle(mean.getAlphaM(), Math.PI));
-        return mean;
+
+        // sanity checks
+        double e = mean.getE();
+        if (e > 0.1) {
+          // if 0.005 < e < 0.1 no error is triggered, but accuracy is poor
+          throw new PropagationException("too excentric orbit (e = {0})",
+                                         new String[] { Double.toString(e) });
+        }
+
+        double meanI = mean.getI();
+        if ((meanI < 0.) || (meanI > Math.PI)
+            || (Math.abs(Math.sin(meanI)) < 1.0e-10)) {
+          throw new PropagationException("almost equatorial orbit (i = {0} degrees)",
+                                         new String[] {
+                                           Double.toString(Math.toDegrees(meanI))
+                                         });
+        }
+
+        if ((Math.abs(meanI - 1.1071487) < 1.0e-3) || (Math.abs(meanI - 2.0344439) < 1.0e-3)) {
+          throw new PropagationException("almost critically inclined orbit (i = {0} degrees)",
+                                         new String[] {
+                                           Double.toString(Math.toDegrees(meanI))
+                                         });
+        }
+
+        return;
+
       }
 
     }
@@ -146,58 +181,13 @@ public class EcksteinHechlerPropagator implements Ephemeris {
 
   /** Extrapolate an orbit up to a specific target date.
    * @param targetDate target date for the orbit
-   * @param meanDate mean parameters date
-   * @param mean mean orbital parameters
    * @exception PropagationException if some parameters are out of bounds
    */
-  private CircularParameters extrapolate(AbsoluteDate date,
-                                         AbsoluteDate meanDate, CircularParameters mean)
+  private CircularParameters extrapolate(AbsoluteDate date)
     throws PropagationException {
 
-    // sanity checks
-    double e = mean.getE();
-    if (e > 0.1) // e is positive
-    // if 0.005 < e < 0.1 no error is triggered, but accuracy is poor
-    throw new PropagationException("too excentric orbit (e = {0})",
-                                   new String[] { Double.toString(e) });
-
-    double meanI = mean.getI();
-    if ((meanI < 0.) || (meanI > Math.PI)
-        || (Math.abs(Math.sin(meanI)) < SIN_EQUA)) {
-      throw new PropagationException("almost equatorial orbit (i = {0} degrees)",
-                                     new String[] {
-                                       Double.toString(Math.toDegrees(meanI))
-                                     });
-    }
-
-    if ((Math.abs(meanI - 1.1071487) < 1.0e-3) || (Math.abs(meanI - 2.0344439) < 1.0e-3)) {
-      throw new PropagationException("almost critically inclined orbit (i = {0} degrees)",
-                                     new String[] {
-                                       Double.toString(Math.toDegrees(meanI))
-                                     });
-    }
-
-    // preliminary processing
-    double q = referenceRadius / mean.getA();
-    double ql = q * q;
-    double g2 = j2 * ql;
-    ql *= q;
-    double g3 = j3 * ql;
-    ql *= q;
-    double g4 = j4 * ql;
-    ql *= q;
-    double g5 = j5 * ql;
-    ql *= q;
-    double g6 = j6 * ql;
-
-    double cosI1 = Math.cos(meanI);
-    double sinI1 = Math.sin(meanI);
-    double sinI2 = sinI1 * sinI1;
-    double sinI4 = sinI2 * sinI2;
-    double sinI6 = sinI2 * sinI4;
-
     // keplerian evolution
-    double xnot = date.minus(meanDate) * Math.sqrt(mu / mean.getA()) / mean.getA();
+    double xnot = date.minus(initialDate) * Math.sqrt(mu / mean.getA()) / mean.getA();
 
     // secular effects
 
@@ -219,7 +209,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
     double eym = (1.0 + eps1) * mean.getCircularEx() * sx + (mean.getCircularEy() - eps2) * cx + eps2;
 
     // inclination
-    double xim = meanI;
+    double xim = mean.getI();
 
     // right ascension of ascending node
     q = 1.50 * g2 - 2.25 * g2 * g2 * (2.5 - 19.0 / 6.0 * sinI2) + 0.9375 * g4
@@ -340,13 +330,29 @@ public class EcksteinHechlerPropagator implements Ephemeris {
     return a - twoPi * Math.floor((a + Math.PI - ref) / twoPi);
   }
 
+  /** Initial date. */
+  private AbsoluteDate initialDate;
+
+  /** Mean parameters at the initial date. */
+  private CircularParameters mean;
+
+  /** Preprocessed values. */
+  private double q;
+  private double ql;
+  private double g2;
+  private double g3;
+  private double g4;
+  private double g5;
+  private double g6;
+  private double cosI1;
+  private double sinI1;
+  private double sinI2;
+  private double sinI4;
+  private double sinI6;
+
+  /** Model parameters. */
   private double referenceRadius;
   private double mu;
   private double j2, j3, j4, j5, j6;
-
-  /** Threshold for near equatorial orbit.
-   * if sin(i) < SIN_EQUA : the orbit is considered near equatorial
-   */
-  private static final double SIN_EQUA = 1.e-10;
 
 }

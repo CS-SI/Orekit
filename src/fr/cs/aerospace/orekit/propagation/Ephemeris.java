@@ -27,11 +27,9 @@ public interface Ephemeris {
     
     /** Get the orbit at a specific date.
      * @param date desired date for the orbit
-     * @param orbit placeholder where to put the orbit (may be null)
-     * @return the orbit at the specified date (it is either the specified
-     * instance or a newly allocated object)
+     * @return the orbit at the specified date
      */    
-    public Orbit getOrbit(AbsoluteDate date, Orbit orbit)
+    public Orbit getOrbit(AbsoluteDate date)
       throws PropagationException;
 
 }

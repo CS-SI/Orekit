@@ -36,14 +36,14 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     // Extrapolator definition
     // -----------------------
     EcksteinHechlerPropagator extrapolator =
-      new EcksteinHechlerPropagator(ae, mu, j2, j3, j4, j5, j6);
+      new EcksteinHechlerPropagator(initialOrbit, ae, mu, j2, j3, j4, j5, j6);
 
     // Extrapolation at the initial date
     // ---------------------------------
     double delta_t = 0.0; // extrapolation duration in seconds
     AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
 
-    Orbit finalOrbit = extrapolator.getOrbit(extrapDate, initialOrbit);
+    Orbit finalOrbit = extrapolator.getOrbit(extrapDate);
 
     assertEquals(finalOrbit.getDate().minus(extrapDate), 0.0, Utils.epsilonTest);
     assertEquals(finalOrbit.getA(), initialOrbit.getA(), Utils.epsilonTest
@@ -81,14 +81,14 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     // Extrapolator definition
     // -----------------------
     EcksteinHechlerPropagator extrapolator =
-      new EcksteinHechlerPropagator(ae, mu, j2, j3, j4, j5, j6);
+      new EcksteinHechlerPropagator(initialOrbit, ae, mu, j2, j3, j4, j5, j6);
 
     // Extrapolation at the initial date
     // ---------------------------------
     double delta_t = 0.0; // extrapolation duration in seconds
     AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
 
-    Orbit finalOrbit = extrapolator.getOrbit(extrapDate, initialOrbit);
+    Orbit finalOrbit = extrapolator.getOrbit(extrapDate);
 
     assertEquals(finalOrbit.getDate().minus(extrapDate), 0.0, Utils.epsilonTest);
     assertEquals(finalOrbit.getA(), initialOrbit.getA(), Utils.epsilonTest
@@ -143,16 +143,16 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     // Extrapolators definitions
     // -------------------------
     EcksteinHechlerPropagator extrapolatorAna =
-      new EcksteinHechlerPropagator(ae, mu, zj2, zj3, zj4, zj5, zj6);
-    KeplerianPropagator extrapolatorKep = new KeplerianPropagator(mu);
+      new EcksteinHechlerPropagator(initialOrbit, ae, mu, zj2, zj3, zj4, zj5, zj6);
+    KeplerianPropagator extrapolatorKep = new KeplerianPropagator(initialOrbit, mu);
 
     // Extrapolation at a final date different from initial date
     // ---------------------------------------------------------
     double delta_t = 100.0; // extrapolation duration in seconds
     AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
 
-    Orbit finalOrbitAna = extrapolatorAna.getOrbit(extrapDate, initialOrbit);
-    Orbit finalOrbitKep = extrapolatorKep.getOrbit(extrapDate, initialOrbit);
+    Orbit finalOrbitAna = extrapolatorAna.getOrbit(extrapDate);
+    Orbit finalOrbitKep = extrapolatorKep.getOrbit(extrapDate);
 
     assertEquals(finalOrbitAna.getDate().minus(extrapDate), 0.0,
                  Utils.epsilonTest);
@@ -196,14 +196,14 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     // Extrapolator definition
     // -----------------------
     EcksteinHechlerPropagator extrapolator =
-      new EcksteinHechlerPropagator(ae, mu, j2, j3, j4, j5, j6);
+      new EcksteinHechlerPropagator(initialOrbit, ae, mu, j2, j3, j4, j5, j6);
 
     // Extrapolation at a final date different from initial date
     // ---------------------------------------------------------
     double delta_t = 100000.0; // extrapolation duration in seconds
     AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
 
-    Orbit finalOrbit = extrapolator.getOrbit(extrapDate, initialOrbit);
+    Orbit finalOrbit = extrapolator.getOrbit(extrapDate);
 
     assertEquals(finalOrbit.getDate().minus(extrapDate), 0.0, Utils.epsilonTest);
 
@@ -275,14 +275,14 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     // Extrapolator definition
     // -----------------------
     EcksteinHechlerPropagator extrapolator =
-      new EcksteinHechlerPropagator(ae, mu, j2, j3, j4, j5, j6);
+      new EcksteinHechlerPropagator(initialOrbit, ae, mu, j2, j3, j4, j5, j6);
 
     // Extrapolation at a final date different from initial date
     // ---------------------------------------------------------
     double delta_t = 100000.0; // extrapolation duration in seconds
     AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
 
-    Orbit finalOrbit = extrapolator.getOrbit(extrapDate, initialOrbit);
+    Orbit finalOrbit = extrapolator.getOrbit(extrapDate);
 
     assertEquals(finalOrbit.getDate().minus(extrapDate), 0.0, Utils.epsilonTest);
 
@@ -369,7 +369,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     // Extrapolator definition
     // -----------------------
     EcksteinHechlerPropagator extrapolator =
-      new EcksteinHechlerPropagator(ae, mu, j2, j3, j4, j5, j6);
+      new EcksteinHechlerPropagator(initialOrbit, ae, mu, j2, j3, j4, j5, j6);
 
     // Extrapolation at a final date different from initial date
     // ---------------------------------------------------------
@@ -377,7 +377,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
                                                   // seconds
     AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
 
-    Orbit finalOrbit = extrapolator.getOrbit(extrapDate, initialOrbit);
+    Orbit finalOrbit = extrapolator.getOrbit(extrapDate);
     // the final orbit
 
     a = 7187990.1979844316;
@@ -418,13 +418,13 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
       // Extrapolator definition
       // -----------------------
       EcksteinHechlerPropagator extrapolator =
-        new EcksteinHechlerPropagator(ae, mu, j2, j3, j4, j5, j6);
+        new EcksteinHechlerPropagator(initialOrbit, ae, mu, j2, j3, j4, j5, j6);
 
       // Extrapolation at the initial date
       // ---------------------------------
       double delta_t = 0.0;
       AbsoluteDate extrapDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, delta_t);
-      extrapolator.getOrbit(extrapDate, initialOrbit);
+      extrapolator.getOrbit(extrapDate);
     } catch (PropagationException oe) {
       // expected behaviour
     } catch (Exception e) {
@@ -446,13 +446,13 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
       // Extrapolator definition
       // -----------------------
       EcksteinHechlerPropagator extrapolator =
-        new EcksteinHechlerPropagator(ae, mu, j2, j3, j4, j5, j6);
+        new EcksteinHechlerPropagator(initialOrbit, ae, mu, j2, j3, j4, j5, j6);
 
       // Extrapolation at the initial date
       // ---------------------------------
       double delta_t = 0.0;
       AbsoluteDate extrapDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, delta_t);
-      extrapolator.getOrbit(extrapDate, initialOrbit);
+      extrapolator.getOrbit(extrapDate);
     } catch (PropagationException oe) {
       // expected behaviour
     } catch (Exception e) {

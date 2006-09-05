@@ -194,7 +194,7 @@ public class KeplerianParametersTest extends TestCase {
              pCirEqua.getVelocity(mu).getNorm(),
              Utils.epsilonTest * Math.abs(pCirEqua.getVelocity(mu).getNorm()));
   }
-  
+
   public void testGeometry() {
     double mu = 3.9860047e14;
     

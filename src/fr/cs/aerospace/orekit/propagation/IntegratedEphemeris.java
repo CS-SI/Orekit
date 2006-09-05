@@ -52,19 +52,15 @@ public class IntegratedEphemeris implements BoundedEphemeris {
 
   /** Get the orbit at a specific date.
    * @param date desired date for the orbit
-   * @param orbit reference to the object to initialize (may be null)
-   * @return the orbit at the specified date (reference to orbit if it was non null,
-   * reference to a new object otherwise)
+   * @return the orbit at the specified date
    * @exception PropagationException if the date is outside of the range
    */    
-  public Orbit getOrbit(AbsoluteDate date, Orbit orbit)
+  public Orbit getOrbit(AbsoluteDate date)
   throws PropagationException {
     model.setInterpolatedTime(date.minus(epoch));
     double[] state = model.getInterpolatedState();
 
-    if (orbit == null) {
-      orbit = new Orbit();
-    }
+    Orbit orbit = new Orbit();
     orbit.setDate(date);
     orbit.getParameters().mapStateFromArray(0, state);
 
