@@ -75,6 +75,28 @@ public class Transform {
     return rotation.applyTo(direction);
   }
 
+  /** Get the underlying elementary translation.
+   * <p>A transform can be uniquely represented as an elementary
+   * translation followed by an elementary rotation. This method
+   * returns this unique elementary translation.</p>
+   * @return underlying elementary translation
+   * @see #getRotation()
+   */
+  public Vector3D getTranslation() {
+    return translation;
+  }
+
+  /** Get the underlying elementary rotation.
+   * <p>A transform can be uniquely represented as an elementary
+   * translation followed by an elementary rotation. This method
+   * returns this unique elementary rotation.</p>
+   * @return underlying elementary rotation
+   * @see #getTranslation()
+   */
+  public Rotation getRotation() {
+    return rotation;
+  }
+
   /** Global translation. */
   private Vector3D translation;
 
