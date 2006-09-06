@@ -88,7 +88,7 @@ public class UTCScale extends TimeScale {
     try {
 
       // choose the data source
-      String fileName = System.getProperty("orekit.time-step.file");
+      String fileName = System.getProperty("orekit.time-steps.file");
       InputStream stream;
       if ((fileName != null) && new File(fileName).exists()) {
         // use the user-provided file
