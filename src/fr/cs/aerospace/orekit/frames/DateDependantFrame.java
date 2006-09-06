@@ -12,7 +12,7 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * single frame in a sharing group, knowing that all other frames in the group
  * will be updated too.</p>
  * @author Luc Maisonobe
- * @see ITRSFrame
+ * @see ITRF2000Frame
  */
 public abstract class DateDependantFrame extends Frame {
 
