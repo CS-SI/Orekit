@@ -58,7 +58,19 @@ public class MessagesResources_fr
     { "no IERS data file found in local cache {0}",
       "aucun fichier de donn\u00e9es IERS trouv\u00e9 dans le cache local {0}" },
     { "missing IERS data between {0} and {1}",
-      "donn\u00e9es IERS manquantes entre {0} et {1}" }
+      "donn\u00e9es IERS manquantes entre {0} et {1}" },
+    { "duplicated IERS data at {0}",
+      "donn\u00e9es IERS dupliquées \u00e0 la date {0}" },
+    { "unable to parse line {0} in IERS data file {1}",
+      "impossible d''analyser la ligne {0} du fichier de donn\u00e9es IERS {1}" },
+    { "file {0} is not an IERS data file",
+      "le fichier {0} n''est pas un fichier de donn\u00e9es IERS" },
+    { "missing serie j = {0} in nutation model file {1} (line {2})",
+      "s\u00e9rie j = {0} manquante dans le fichier de mod\u00e8le de nutation {1} (ligne {2})" },
+    { "unexpected end of nutation model file {1} (after line {2})",
+      "fin inattendue du fichier de mod\u00e8le de nutation {1} (apr\u00e8s la ligne {2})" },
+    { "unable to parse line {1} of nutation model file {2}",
+      "impossible d'analyser la ligne {1} du fichier de mod\u00e8le de nutation {2}" }
   };
 
 }
