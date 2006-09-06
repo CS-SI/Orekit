@@ -144,14 +144,21 @@ public class IERSData {
       
     }
 
-    // check for holes in the loaded files
+    // check for duplicated entries or holes in the loaded files
     Iterator iterator = eopc04.iterator();
     next = (EopC04Entry) iterator.next();
-    double margin = 6 * 86400.0;
+    double tooSmall = 1.0;
+    double tooLarge = 6 * 86400.0;
     while (iterator.hasNext()) {
       previous = next;
       next     = (EopC04Entry) iterator.next();
-      if (next.date.minus(previous.date) <= margin) {
+      if (next.date.minus(previous.date) <= tooSmall) {
+        throw new OrekitException("duplicated IERS data at {0}",
+                                  new String[] {
+                                    previous.date.toString(TTScale.getInstance())
+                                  });
+      }
+      if (next.date.minus(previous.date) >= tooLarge) {
         throw new OrekitException("missing IERS data between {0} and {1}",
                                   new String[] {
                                     previous.date.toString(TTScale.getInstance()),
@@ -195,7 +202,7 @@ public class IERSData {
 
       double arcSecondsToRadians = 2 * Math.PI / 1296000;
 
-      // the EOP C 04 yearly data files data lines have the following fixed form:
+      // the data lines in the EOP C 04 yearly data files have the following fixed form:
       // "  JAN   1  52275-0.176980 0.293952-0.1158223   0.0008163    0.00044  0.00071"
       // "  JAN   2  52276-0.177500 0.297468-0.1166973   0.0009382    0.00030  0.00043"
       // the corresponding fortran format is:
@@ -212,20 +219,43 @@ public class IERSData {
                                         + dtU1Field + "  " + lodField
                                         + "  " + deltaField + deltaField);
 
-      // read all file, ignoring malformed lines (typically header)
+      // read all file, ignoring header
       BufferedReader reader = new BufferedReader(new FileReader(file));
+      int lineNumber = 0;
+      boolean inHeader = true;
       for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+        ++lineNumber;
+        boolean parsed = false;
         Matcher matcher = pattern.matcher(line);
         if (matcher.matches()) {
-          // this is a data line, build an entry from the extracted fields
-          int mjd = Integer.parseInt(matcher.group(1));
-          AbsoluteDate date =
-            new AbsoluteDate(AbsoluteDate.J2000Epoch, 86400 * (mjd - 51544.5));
-          double x    = Double.parseDouble(matcher.group(2)) * arcSecondsToRadians;
-          double y    = Double.parseDouble(matcher.group(3)) * arcSecondsToRadians;
-          double dtu1 = Double.parseDouble(matcher.group(4));
-          eopc04.add(new EopC04Entry(date, dtu1, new PoleCorrection(x, y)));
+          inHeader = false;
+          try {
+            // this is a data line, build an entry from the extracted fields
+            int mjd = Integer.parseInt(matcher.group(1));
+            AbsoluteDate date =
+              new AbsoluteDate(AbsoluteDate.J2000Epoch, 86400 * (mjd - 51544.5));
+            double x    = Double.parseDouble(matcher.group(2)) * arcSecondsToRadians;
+            double y    = Double.parseDouble(matcher.group(3)) * arcSecondsToRadians;
+            double dtu1 = Double.parseDouble(matcher.group(4));
+            eopc04.add(new EopC04Entry(date, dtu1, new PoleCorrection(x, y)));
+            parsed = true;
+          } catch (NumberFormatException nfe) {
+            // ignored, will be handled by the parsed boolean
+          }
         }
+        if (! (inHeader || parsed)) {
+          throw new OrekitException("unable to parse line {0} in IERS data file {1}",
+                                    new String[] {
+                                      Integer.toString(lineNumber),
+                                      file.getAbsolutePath()
+                                    });
+        }
+      }
+      if (inHeader) {
+        throw new OrekitException("file {0} is not an IERS data file",
+                                  new String[] {
+                                    file.getAbsolutePath()
+                                  });        
       }
 
     } catch (IOException ioe) {
