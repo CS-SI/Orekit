@@ -10,12 +10,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.TimeZone;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 import fr.cs.aerospace.orekit.errors.OrekitException;
 
@@ -105,7 +107,7 @@ public class UTCScale extends TimeScale {
       }
 
       // read the time-steps data
-      XMLReader reader = XMLReaderFactory.createXMLReader();
+      XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
       TimeStepsHandler handler = new TimeStepsHandler();
       reader.setContentHandler(handler);
       reader.setErrorHandler(handler);
@@ -122,6 +124,8 @@ public class UTCScale extends TimeScale {
 
     } catch (IOException ioe) {
       throw new RuntimeException(ioe);
+    } catch (ParserConfigurationException pce) {
+        throw new RuntimeException(pce);
     } catch (SAXException se) {
       if (se.getCause() != null) {
         // we may have embedded ParseException, OrekitException ...
