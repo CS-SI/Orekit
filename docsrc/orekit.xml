@@ -1,6 +1,6 @@
-<?xml version='1.0' encoding="ISO-8859-1"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-                         "http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd">
+<?xml version='1.0' encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+                         "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
 
 <!-- $Id$ -->
 
@@ -8,13 +8,80 @@
 <articleinfo>
 <title>OREKIT</title>
 <author><firstname>Luc</firstname><surname>Maisonobe</surname></author>
-<pubdate>12 05 2005</pubdate>
+<pubdate>7 09 2006</pubdate>
 </articleinfo>
 
-<sect1><title><anchor id="Pr�sentation"/>Pr�sentation</title>
-<para>
+<sect1><title><anchor id="Présentation"/>Présentation</title> <para>
 <acronym>OREKIT</acronym> (<foreignphrase>ORbit Extrapolation
-KIT)</foreignphrase> est une biblioth�que d'extrapolation d'orbite.
+KIT)</foreignphrase> est une plate-forme d'extrapolation d'orbite
+réutilisable et moderne pouvant être intégrée dans les nombreux
+projets. Cette plate-forme est constituée d'un ensemble cohérent de
+composants Java spécialisés dans les calculs de dynamique spatiale.
+Elle s'appuie sur une unique dépendance externe, la bibliothèque
+mathématique libre de simulation <ulink
+url="http://www.spaceroots.org/software/mantissa/index.html">Mantissa</ulink>,
+elle-même entièrement codée en Java.
+</para>
+
+<para>
+Les principes qui sous-tendent l'architecture de la plate-forme Orekit
+se declinent à la fois dans la thématique de mécanique spatiale et dans
+les technologies mises en œuvre.
+</para>
+
+<para>
+En ce qui concerne la mécanique spatiale, il a été décidé d'offrir les
+algorithmes les plus récents et les plus performants dans le domaine
+du calcul. Ainsi, les intégrateurs numériques ne se limitent pas aux
+classiques Runge-Kutta d'ordre 4 à pas fixes de base. Des intégrateurs
+jusqu'à l'ordre 8 voire à ordre variable, à pas variables contrôlés en
+permanence par l'erreur estimée sont disponibles. Tous les
+intégrateurs proposent naturellement des sorties continues et pas
+seulement aux pas d'intégrations, et tous supportents des fonctions de
+commutations utilisateur multiples permettant par exemple d'arrêter
+l'intégration sur évènement ou de gérer proprement les discontinuités
+(allumage de moteur, passage en éclipse ...). Les modèles dynamiques
+et les standards intégrés dans la plate-forme sont les dernières
+versions des recommandations internationales telles que les <ulink
+url="http://www.iers.org/documents/publications/tn/tn32/tn32.pdf">IERS
+conventions (2003)</ulink>.
+</para>
+
+<para>
+En ce qui concerne les technologies, la conception orientée objet,
+l'utilisation intensive des modèles de conceptions
+(<foreignphrase>design patterns</foreignphrase>) permettent d'offrir
+aux utilisateurs des services très sophistiqués à travers des
+interfaces qui restent très simples, la plupart des composants étant
+capables de s'auto-configurer et n'imposant pas à l'utilisateur de
+gérer ou de faire passer des variables et des notions de trop bas
+niveau ou qu'il ne maîtrise pas. À titre d'exemple, le passage du
+repère terrestre au repère inertiel ne requiert de l'utilisateur que
+la date, donnée simple s'il en est. De façon interne, tous les
+mouvements connus sont pris en compte (mouvement du pôle, effets de
+marée, nutation, précession, échelles de temps TAI, UTC, TT, sauts du
+TUC, correction TU1-TUC ...). Un autre exemple est que grâce à
+l'adoption de hiérarchies d'interfaces soigneusement conçues,
+l'utilisateur peut par exemple utiliser indifféremment des éphémérides
+tabulées, des extrapolateurs élémentaires (Kepler), un peu plus
+élaborés (Eckstein-Hechler) ou très sophistiqués (intégration
+numérique avec un modèle de force très complet et très fin). Le code
+appelant ne change en aucune façon. Ceci permet par exemple de changer
+les méthodes de calculs selon les phases d'analyse mission, le temps
+disponible pour l'étude ou la disponibilité de modèles satellites
+fins.
+</para>
+
+<para>
+La plate-forme Orekit offre avant-tout des services de base
+d'extrapolation et de conversion d'orbites. Elle supporte de nombreux
+types de paramètres orbitaux, des modèles analytiques et numériques,
+et des modèles de forces qui peuvent être enrichis à volonté. Son
+développement sous forme de composants 100% pur Java rend son
+intégration dans un système complet aisée, qu'il s'agisse d'une
+application indépendante, d'un serveur dans un environnement
+distribué, voire d'un greffon (<foreignphrase>plugin</foreignphrase>)
+pour un applicatif existant.
 </para>
 
 </sect1>
