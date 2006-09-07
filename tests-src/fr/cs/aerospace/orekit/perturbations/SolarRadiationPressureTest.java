@@ -5,7 +5,6 @@ import fr.cs.aerospace.orekit.SimpleSpacecraft;
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.bodies.Sun;
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.orbits.CartesianDerivativesAdder;
 import fr.cs.aerospace.orekit.orbits.CartesianParameters;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
@@ -32,7 +31,7 @@ public void testSolarRadiationPressure() throws OrekitException{
     Attitude attitude = new Attitude();
     OrbitalParameters op = new CartesianParameters();
     op.reset(position, velocity, mu);
-    OrbitDerivativesAdder adder = new CartesianDerivativesAdder(op, mu);
+    OrbitDerivativesAdder adder = op.getDerivativesAdder(mu);
        
     // Acceleration initialisation
 //    double xDotDot = 0;
