@@ -1,4 +1,4 @@
-package fr.cs.aerospace.orekit.frames.nutation;
+package fr.cs.aerospace.orekit.frames.series;
 
 /** Elements of the bodies having an effect on nutation.
  * <p>This class is a simple placeholder,

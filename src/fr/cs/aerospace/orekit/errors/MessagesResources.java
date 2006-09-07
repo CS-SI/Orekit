@@ -65,11 +65,12 @@ public class MessagesResources
       "file {0} is not an IERS data file" },
     { "missing serie j = {0} in nutation model file {1} (line {2})",
       "missing serie j = {0} in nutation model file {1} (line {2})" },
-    { "unexpected end of nutation model file {1} (after line {2})",
-      "unexpected end of nutation model file {1} (after line {2})" },
-    { "unable to parse line {1} of nutation model file {2}",
-      "unable to parse line {1} of nutation model file {2}" }
-        
+    { "unexpected end of nutation model file {0} (after line {1})",
+      "unexpected end of nutation model file {0} (after line {1})" },
+    { "unable to parse line {0} of nutation model file {1}:\n{2}",
+      "unable to parse line {0} of nutation model file {1}:\n{2}" },
+    { "unable to find nutation model file {0}",
+      "unable to find nutation model file {0}" }
 
   };
 

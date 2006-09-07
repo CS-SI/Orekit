@@ -1,9 +1,9 @@
-package fr.cs.aerospace.orekit.frames.nutation;
+package fr.cs.aerospace.orekit.frames.series;
 
 /** Class for general terms.
  * @author Luc Maisonobe
  */
-class GeneralTerm extends NutationSerieTerm {
+class GeneralTerm extends SeriesTerm {
 
   public GeneralTerm(double sinCoeff, double cosCoeff,
                      int cL, int cLPrime, int cF, int cD, int cOmega,

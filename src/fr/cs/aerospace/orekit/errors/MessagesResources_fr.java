@@ -67,10 +67,12 @@ public class MessagesResources_fr
       "le fichier {0} n''est pas un fichier de donn\u00e9es IERS" },
     { "missing serie j = {0} in nutation model file {1} (line {2})",
       "s\u00e9rie j = {0} manquante dans le fichier de mod\u00e8le de nutation {1} (ligne {2})" },
-    { "unexpected end of nutation model file {1} (after line {2})",
-      "fin inattendue du fichier de mod\u00e8le de nutation {1} (apr\u00e8s la ligne {2})" },
-    { "unable to parse line {1} of nutation model file {2}",
-      "impossible d'analyser la ligne {1} du fichier de mod\u00e8le de nutation {2}" }
+    { "unexpected end of nutation model file {0} (after line {1})",
+      "fin inattendue du fichier de mod\u00e8le de nutation {0} (apr\u00e8s la ligne {1})" },
+    { "unable to parse line {0} of nutation model file {1}:\n{2}",
+      "impossible d''analyser la ligne {0} du fichier de mod\u00e8le de nutation {1} :\n{2}" },
+    { "unable to find nutation model file {0}",
+      "impossible de trouver le fichier de mod\u00e8le de nutation {0}" }
   };
 
 }

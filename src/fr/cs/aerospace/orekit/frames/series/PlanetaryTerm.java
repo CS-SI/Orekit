@@ -1,9 +1,9 @@
-package fr.cs.aerospace.orekit.frames.nutation;
+package fr.cs.aerospace.orekit.frames.series;
 
 /** Class for planetary only terms.
  * @author Luc Maisonobe
  */
-class PlanetaryTerm extends NutationSerieTerm {
+class PlanetaryTerm extends SeriesTerm {
 
   public PlanetaryTerm(double sinCoeff, double cosCoeff,
                        int cMe, int cVe, int cE, int cMa, int cJu,

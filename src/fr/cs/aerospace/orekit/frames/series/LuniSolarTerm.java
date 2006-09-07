@@ -1,9 +1,9 @@
-package fr.cs.aerospace.orekit.frames.nutation;
+package fr.cs.aerospace.orekit.frames.series;
 
 /** Class for luni-solar only terms.
  * @author Luc Maisonobe
  */
-class LuniSolarTerm extends NutationSerieTerm {
+class LuniSolarTerm extends SeriesTerm {
 
   public LuniSolarTerm(double sinCoeff, double cosCoeff,
                        int cL, int cLPrime, int cF, int cD, int cOmega) {

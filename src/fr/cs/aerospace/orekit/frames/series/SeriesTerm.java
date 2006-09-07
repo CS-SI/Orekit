@@ -1,16 +1,16 @@
-package fr.cs.aerospace.orekit.frames.nutation;
+package fr.cs.aerospace.orekit.frames.series;
 
 /** Base class for nutation series terms.
  * @author Luc Maisonobe
- * @see NutationDevelopment
+ * @see Development
  */
-public abstract class NutationSerieTerm {
+public abstract class SeriesTerm {
 
   /** Simple constructor for the base class.
    * @param sinCoeff coefficient for the sine of the argument
    * @param cosCoeff coefficient for the cosine of the argument
    */
-  protected NutationSerieTerm(double sinCoeff, double cosCoeff) {
+  protected SeriesTerm(double sinCoeff, double cosCoeff) {
     this.sinCoeff = sinCoeff;
     this.cosCoeff = cosCoeff;
   }
@@ -52,7 +52,7 @@ public abstract class NutationSerieTerm {
    * @param cPa coefficient for general accumulated precession in longitude
    * @return a nutation serie term instance well suited for the set of coefficients
    */
-  public static NutationSerieTerm buildTerm(double sinCoeff, double cosCoeff,
+  public static SeriesTerm buildTerm(double sinCoeff, double cosCoeff,
                                             int cL, int cLPrime, int cF,
                                             int cD, int cOmega,
                                             int cMe, int cVe, int cE,
@@ -66,7 +66,7 @@ public abstract class NutationSerieTerm {
       return new LuniSolarTerm(sinCoeff, cosCoeff,
                                cL, cLPrime, cF, cD, cOmega);
     } else if (cLPrime == 0 && cUr == 0 && cNe == 0 && cPa == 0) {
-      return new NoFarPlanetTerm(sinCoeff, cosCoeff,
+      return new NoFarPlanetsTerm(sinCoeff, cosCoeff,
                                  cL, cF, cD, cOmega,
                                  cMe, cVe, cE, cMa, cJu, cSa);
     } else {

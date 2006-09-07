@@ -8,8 +8,10 @@ public class AllTests {
 
     TestSuite suite = new TestSuite("fr.cs.aerospace.orekit.frames"); 
 
+    suite.addTest(fr.cs.aerospace.orekit.frames.series.AllTests.suite());
     suite.addTest(TransformTest.suite());
     suite.addTest(FrameTest.suite());
+    suite.addTest(ITRF2000Test.suite());
     return suite; 
 
   }

@@ -1,9 +1,9 @@
-package fr.cs.aerospace.orekit.frames.nutation;
+package fr.cs.aerospace.orekit.frames.series;
 
 /** Class for terms that do not depend on far planets and some other elements.
  * @author Luc Maisonobe
  */
-class NoFarPlanetTerm extends NutationSerieTerm {
+class NoFarPlanetTerm extends SeriesTerm {
 
   public NoFarPlanetTerm(double sinCoeff, double cosCoeff,
                          int cL, int cF, int cD, int cOmega,

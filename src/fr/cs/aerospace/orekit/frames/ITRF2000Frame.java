@@ -5,8 +5,8 @@ import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.IERSData;
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.frames.nutation.BodiesElements;
-import fr.cs.aerospace.orekit.frames.nutation.NutationDevelopment;
+import fr.cs.aerospace.orekit.frames.series.BodiesElements;
+import fr.cs.aerospace.orekit.frames.series.Development;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** International Terrestrial Reference Frame 2000.
@@ -51,14 +51,26 @@ public class ITRF2000Frame extends DateDependantFrame {
    */
   public ITRF2000Frame(AbsoluteDate date, IERSData iers)
     throws OrekitException {
+
     super (getJ2000(), date);
     this.iers = iers;
-    xDevelopment =
-      new NutationDevelopment(getClass().getResourceAsStream(xModel), xModel);
-    yDevelopment =
-      new NutationDevelopment(getClass().getResourceAsStream(yModel), yModel);
-    sxy2Development =
-      new NutationDevelopment(getClass().getResourceAsStream(sxy2Model), sxy2Model);
+
+    // read and build the file-based models only once ...
+    if ((xDevelopment == null)
+        || (yDevelopment == null)
+        || (sxy2Development == null)) {
+      Class c = getClass();
+
+      // nutation models are in micro arcseconds
+      xDevelopment =
+        new Development(c.getResourceAsStream(xModel), radiansPerArcsecond * 1.0e-6, xModel);
+      yDevelopment =
+        new Development(c.getResourceAsStream(yModel), radiansPerArcsecond * 1.0e-6, yModel);
+      sxy2Development =
+        new Development(c.getResourceAsStream(sxy2Model), radiansPerArcsecond * 1.0e-6, sxy2Model);
+
+    }
+
   }
 
   /** Update the frame to the given (shared) date.
@@ -69,6 +81,9 @@ public class ITRF2000Frame extends DateDependantFrame {
 
     // offset from J2000 epoch
     double t = date.minus(AbsoluteDate.J2000Epoch) * julianCenturyPerSecond;
+
+    // luni-solar and planetary elements
+    BodiesElements elements = computeBodiesElements(t);
 
     // compute Earth Rotation Angle using Nicole Capitaine model (2000)
     double dtu1 = iers.getUT1MinusUTC(date);
@@ -94,7 +109,7 @@ public class ITRF2000Frame extends DateDependantFrame {
     Rotation rRot = new Rotation(Vector3D.plusK, -era);
 
     // precession and nutation effect (pole motion in celestial frame)
-    Rotation qRot = precessionNutationEffect(t);
+    Rotation qRot = precessionNutationEffect(t, elements);
 
     // combined effects
     Rotation combined = qRot.applyTo(rRot.applyTo(wRot)).revert();
@@ -117,31 +132,55 @@ public class ITRF2000Frame extends DateDependantFrame {
    */
   private PoleCorrection tidalCorrection(AbsoluteDate date) {
     // TODO compute tidal correction to pole motion
-    return new PoleCorrection(0, 0);
+   return PoleCorrection.NULL_CORRECTION;
   }
 
-  /** Compute nutation correction to the pole motion.
+  /** Compute nutation correction due to tidal gravity.
    * @param date current date
    * @return nutation correction
    */
   private PoleCorrection nutationCorrection(AbsoluteDate date) {
-    // TODO compute nutation correction to pole motion
+    // this factor seems to be of order of magnitude a few tens of
+    // micro arcseconds. It is computed from the classical approach
+    // (not the new one used here) and hence requires computation
+    // of GST, IAU2000A nutation, equations of equinoxe ...
+    // For now, this term is ignored
     return PoleCorrection.NULL_CORRECTION;
   }
 
   /** Compute precession and nutation effects.
    * @param t offset from J2000.0 epoch in julian centuries
+   * @param elements luni-solar and planetary elements for the current date
    * @return precession and nutation rotation
    */
-  public Rotation precessionNutationEffect(double t) {
+  public Rotation precessionNutationEffect(double t, BodiesElements elements) {
 
-    BodiesElements elements = computeBodiesElements(t);
+    // pole position
     double x =    xDevelopment.value(t, elements);
     double y =    yDevelopment.value(t, elements);
     double s = sxy2Development.value(t, elements) - x * y / 2;
 
-    // TODO implement precession-nutation effect computation
-    return null;
+    // compute harmonic functions for half the E and d angles
+    // we try to use numerically stable expressions
+    double x2 = x * x;
+    double y2 = y * y;
+    double r2 = x2 + y2;
+    double r  = Math.sqrt(r2);
+    double tanHalfE = (Math.abs(x) > Math.abs(y)) ? (r - x) / y : y / (r + x);
+    double cosHalfE = 1 / Math.sqrt(1 + tanHalfE * tanHalfE);
+    double sinHalfE = tanHalfE * cosHalfE;
+    double tanHalfD = r / (1 + Math.sqrt(1 - r2));
+    double cosHalfD = 1 / Math.sqrt(1 + tanHalfD * tanHalfD);
+    double sinHalfD = tanHalfD * cosHalfD;
+
+    // elementary rotations
+    Rotation rpS = new Rotation(Math.cos(s/2), 0, 0, -Math.sin(s/2));
+    Rotation rpE = new Rotation(cosHalfE, 0, 0, -sinHalfE);
+    Rotation rmD = new Rotation(cosHalfD, 0, sinHalfD, 0);
+
+    // combine the 4 rotations (rpE is used twice)
+    // IERS conventions (2003), section 5.3, equation 6
+    return rpE.applyInverseTo(rmD.applyTo(rpE.applyTo(rpS)));
 
   }
 
@@ -173,13 +212,13 @@ public class ITRF2000Frame extends DateDependantFrame {
   private double era;
 
   /** Pole position (X). */
-  private NutationDevelopment xDevelopment;
+  private static Development xDevelopment = null;
 
-  /** Pole position (Y); */
-  private NutationDevelopment yDevelopment;
+  /** Pole position (Y). */
+  private static Development yDevelopment = null;
 
-  /** Pole position (S + XY/2); */
-  private NutationDevelopment sxy2Development;
+  /** Pole position (S + XY/2). */
+  private static Development sxy2Development = null;
 
   /** 2&pi;. */
   private static final double twoPi = 2.0 * Math.PI;
