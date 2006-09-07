@@ -150,9 +150,8 @@ public class Development {
 
     // store the concatenated sign, integer and fractional parts of the monomial coefficient
     ArrayList coeffs = new ArrayList();
-    while (termMatcher.lookingAt()) {
+    while (termMatcher.find()) {
       coeffs.add(termMatcher.group(1) + termMatcher.group(2) + termMatcher.group(3));
-      termMatcher.region(termMatcher.end(), termMatcher.regionEnd());
     }
 
     // parse the coefficients
