@@ -66,7 +66,7 @@ public class FrameTest extends TestCase {
         double q2 = random.nextDouble() * 2 - 1;
         double q3 = random.nextDouble() * 2 - 1;
         double q  = Math.sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
-        Rotation r = new Rotation(q0 / q, q1 / q, q2 / q, q3 / q);
+        Rotation r = new Rotation(q0 / q, q1 / q, q2 / q, q3 / q, false);
         transform = new Transform(transform, new Transform(r));
       }
     }

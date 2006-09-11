@@ -17,7 +17,7 @@ public class TransformTest extends TestCase {
   }
 
   public void testIdentityRotation() {
-    checkNoTransform(new Transform(new Rotation(1, 0, 0, 0)),
+    checkNoTransform(new Transform(new Rotation(1, 0, 0, 0, false)),
                      new Random(0xfd118eac6b5ec136l));
   }
 
@@ -130,7 +130,7 @@ public class TransformTest extends TestCase {
     double q2 = random.nextDouble() * 2 - 1;
     double q3 = random.nextDouble() * 2 - 1;
     double q  = Math.sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
-    return new Rotation(q0 / q, q1 / q, q2 / q, q3 / q);
+    return new Rotation(q0 / q, q1 / q, q2 / q, q3 / q, false);
   }
 
   private void checkNoTransform(Transform transform, Random random) {

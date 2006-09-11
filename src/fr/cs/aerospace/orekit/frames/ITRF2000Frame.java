@@ -174,9 +174,9 @@ public class ITRF2000Frame extends DateDependantFrame {
     double sinHalfD = tanHalfD * cosHalfD;
 
     // elementary rotations
-    Rotation rpS = new Rotation(Math.cos(s/2), 0, 0, -Math.sin(s/2));
-    Rotation rpE = new Rotation(cosHalfE, 0, 0, -sinHalfE);
-    Rotation rmD = new Rotation(cosHalfD, 0, sinHalfD, 0);
+    Rotation rpS = new Rotation(Math.cos(s/2), 0, 0, -Math.sin(s/2), false);
+    Rotation rpE = new Rotation(cosHalfE, 0, 0, -sinHalfE, false);
+    Rotation rmD = new Rotation(cosHalfD, 0, sinHalfD, 0, false);
 
     // combine the 4 rotations (rpE is used twice)
     // IERS conventions (2003), section 5.3, equation 6
