@@ -214,11 +214,10 @@ public class CartesianParameters
    * OrbitDerivativesAdder} associated with this object.
    * <p>This is a factory method allowing to build the right type of
    * {@link OrbitDerivativesAdder OrbitDerivativesAdder} object, for
-   * this class, an {@link CartesianDerivativesAdder
-   * CartesianDerivativesAdder} object is built.</p>
+   * this class, a <code>CartesianDerivativesAdder<code> object is built.</p>
    * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
-   * @return an instance of {@link CartesianDerivativesAdder
-   * CartesianDerivativesAdder} associated with this object
+   * @return an instance of {@link OrbitDerivativesAdder
+   * OrbitDerivativesAdder} associated with this object
    */
   public OrbitDerivativesAdder getDerivativesAdder(double mu) {
     return new CartesianDerivativesAdder(this, mu);

@@ -1,5 +1,4 @@
 package fr.cs.aerospace.orekit.frames;
-
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
@@ -28,31 +27,29 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * not available in the public interface and the parent frame is directly the
  * J2000 frame.</p>
  * <p>Other implementations of the ITRF 2000 are possible by
- * ignoring the B1.8 resolution and using the cmlassical paradigm which
- * is equinox-based and rely on a specifically tuned Greenwich Sidereal Time
- * to achieve the same accuracy if the IAU 2000A precession-nutation model
+ * ignoring the B1.8 resolution and using the classical paradigm which
+ * is equinox-based and rely on a specifically tuned Greenwich Sidereal Time.
+ * It is possible to reach the same accuracy if the IAU 2000A precession-nutation 
  * is used, or a 1 milliarcsecond accuracy if the simplified IAU 2000B
- * precession-nutation model is used. They are not yet available
- * in the OREKIT library yet.</p>
+ * model precession-nutation model is used. They are not yet available
+ * in the OREKIT library.</p>
  * @author Luc Maisonobe
  */
-public class ITRF2000Frame extends DateDependantFrame {
+public class ITRF2000Frame extends SynchronizedFrame {
 
   /** Build an ITRF2000 frame.
-   * @param date current date (a <em>new</em> private instance
-   * will be built from this date value to ensure proper synchronization,
-   * between the instance and all other {@link DateDependantFrame date
-   * dependant frames}. Further changes in the parameter instance will
-   * <em>not</em> automatically update the frames.
+   * @param fSynch the FrameSynchronizer which ensures the synchronization of
+   * all the frames in the the same date-sharing group.
    * @param iers iers data provider
    * @exception OrekitException if the nutation model data embedded in the
    * library cannot be read
    * @see #getDate()
+   * @see FrameSynchronizer
    */
-  public ITRF2000Frame(AbsoluteDate date, IERSData iers)
+  public ITRF2000Frame(FrameSynchronizer fSynch, IERSData iers)
     throws OrekitException {
 
-    super (getJ2000(), date);
+    super (getJ2000(), fSynch, "ITRF2000");
     this.iers = iers;
 
     // read and build the file-based models only once ...

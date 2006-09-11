@@ -456,11 +456,11 @@ public class CircularParameters
    * OrbitDerivativesAdder} associated with this object.
    * <p>This is a factory method allowing to build the right type of
    * {@link OrbitDerivativesAdder OrbitDerivativesAdder} object, for
-   * this class, an {@link CircularDerivativesAdder
-   * CircularDerivativesAdder} object is built.</p>
+   * this class, a <code>CircularDerivativesAdder</code>
+   * object is built.</p>
    * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
-   * @return an instance of {@link CircularDerivativesAdder
-   * EquinoctialDerivativesAdder} associated with this object
+   * @return an instance of {@link OrbitDerivativesAdder
+   * OrbitDerivativesAdder} associated with this object
    */
   public OrbitDerivativesAdder getDerivativesAdder(double mu) {
     return new CircularDerivativesAdder(this, mu);

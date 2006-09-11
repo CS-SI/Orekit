@@ -45,6 +45,7 @@ public class Frame {
     parent    = null;
     transform = new Transform();
     commons   = new HashMap();
+    name      = "J2000";
   }
 
   /** Build a frame from its transform with respect to its parent.
@@ -59,20 +60,41 @@ public class Frame {
    * @param transform transform from parent frame to instance
    * @exception IllegalArgumentException if the parent frame is null
    */
-  public Frame(Frame parent, Transform transform)
+  public Frame(Frame parent, Transform transform, String name)
    throws IllegalArgumentException {
 
     if (parent == null) {
       String message = Translator.getInstance().translate("null parent frame");
       throw new IllegalArgumentException(message);
     }
-
+    this.name      = name;
     this.parent    = parent;
     this.transform = transform;
     commons        = new HashMap();
 
   }
+  
+  /** Get the name.
+   * @return the name 
+   */
+  public String getName() {
+	  return this.name;
+  }
+  
+  /** New definition of the java.util toString() method.
+   * @return the name 
+   */ 
+  public String toString() {
+	  return this.name;
+  }
 
+  /** Get the parent frame
+   * @return parent frame
+   */  
+  public Frame getParent() {
+	  return parent;
+  }
+  
   /** Update the transform from the parent frame to the instance.
    * @param transform new transform from parent frame to instance
    */
@@ -184,5 +206,8 @@ public class Frame {
 
   /** J2000 root frame. */
   private static Frame j2000 = null;
+  
+  /** Instance name. */
+  private String name;
 
 }

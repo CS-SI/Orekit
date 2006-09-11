@@ -47,7 +47,7 @@ import java.text.ParseException;
  * of all instance changing methods, the default implementation does nothing.
  * An example use of this feature is sharing dates among several related
  * frames that should be updated together as in the {@link
- * fr.cs.aerospace.orekit.frames.DateDependantFrame DateDependantFrame} class.</p>
+ * fr.cs.aerospace.orekit.frames.SynchronizedFrame SynchronizedFrame} class.</p>
 
  * @author L. Maisonobe
  * @see TimeScale

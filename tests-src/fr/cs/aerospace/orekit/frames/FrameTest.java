@@ -20,22 +20,22 @@ public class FrameTest extends TestCase {
   public void testSameFrameNoRoot() {
     Random random = new Random(0xc6e88d0f53e29116l);
     Transform t   = randomTransform(random);
-    Frame frame   = new Frame(Frame.getJ2000(), t);
+    Frame frame   = new Frame(Frame.getJ2000(), t, null);
     checkNoTransform(frame.getTransformTo(frame), random);
   }
 
   public void testSimilarFrames() {
     Random random = new Random(0x1b868f67a83666e5l);
     Transform t   = randomTransform(random);
-    Frame frame1  = new Frame(Frame.getJ2000(), t);
-    Frame frame2  = new Frame(Frame.getJ2000(), t);
+    Frame frame1  = new Frame(Frame.getJ2000(), t, null);
+    Frame frame2  = new Frame(Frame.getJ2000(), t, null);
     checkNoTransform(frame1.getTransformTo(frame2), random);
   }
 
   public void testFromParent() {
     Random random = new Random(0xb92fba1183fe11b8l);
     Transform fromJ2000  = randomTransform(random);
-    Frame frame = new Frame(Frame.getJ2000(), fromJ2000);
+    Frame frame = new Frame(Frame.getJ2000(), fromJ2000, null);
     Transform toJ2000 = frame.getTransformTo(Frame.getJ2000());
     checkNoTransform(new Transform(fromJ2000, toJ2000), random);
   }
@@ -46,9 +46,9 @@ public class FrameTest extends TestCase {
     Transform t2  = randomTransform(random);
     Transform t3  = randomTransform(random);
     Frame frame1 =
-      new Frame(Frame.getJ2000(), new Transform(new Transform(t1, t2), t3));
+      new Frame(Frame.getJ2000(), new Transform(new Transform(t1, t2), t3), null);
     Frame frame2 =
-      new Frame(new Frame(new Frame(Frame.getJ2000(), t1), t2), t3);
+      new Frame(new Frame(new Frame(Frame.getJ2000(), t1, null), t2, null), t3, null);
     checkNoTransform(frame1.getTransformTo(frame2), random);
   }
 
