@@ -78,7 +78,7 @@ public class FrameTest extends TestCase {
       Vector3D a = new Vector3D(random.nextDouble(),
                                 random.nextDouble(),
                                 random.nextDouble());
-      Vector3D b = transform.transformDirection(a);
+      Vector3D b = transform.transformVector(a);
       assertEquals(0, Vector3D.subtract(a, b).getNorm(), 1.0e-10);
       Vector3D c = transform.transformPosition(a);
       assertEquals(0, Vector3D.subtract(a, c).getNorm(), 1.0e-10);

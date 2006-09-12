@@ -54,11 +54,11 @@ public class TransformTest extends TestCase {
         Vector3D bRef = a;
         Vector3D cRef = a;
         for (int k = 0; k < n; ++k) {
-          bRef = transforms[k].transformDirection(bRef);
+          bRef = transforms[k].transformVector(bRef);
           cRef = transforms[k].transformPosition(cRef);
         }
 
-        Vector3D bCombined = combined.transformDirection(a);
+        Vector3D bCombined = combined.transformVector(a);
         Vector3D cCombined = combined.transformPosition(a);
 
         assertEquals(0, Vector3D.subtract(bCombined, bRef).getNorm(), 1.0e-11);
@@ -85,7 +85,7 @@ public class TransformTest extends TestCase {
       Transform transform = new Transform(delta);
       for (int j = 0; j < 10; ++j) {
         Vector3D a = new Vector3D(rnd.nextDouble(), rnd.nextDouble(), rnd.nextDouble());
-        Vector3D b = transform.transformDirection(a);
+        Vector3D b = transform.transformVector(a);
         assertEquals(0, Vector3D.subtract(b, a).getNorm(), 1.0e-10);
         Vector3D c = transform.transformPosition(a);
         assertEquals(0,
@@ -106,7 +106,7 @@ public class TransformTest extends TestCase {
       Transform transform = new Transform(r);
       for (int j = 0; j < 10; ++j) {
         Vector3D a = new Vector3D(rnd.nextDouble(), rnd.nextDouble(), rnd.nextDouble());
-        Vector3D b = transform.transformDirection(a);
+        Vector3D b = transform.transformVector(a);
         assertEquals(Vector3D.angle(axis, a), Vector3D.angle(axis, b), 1.0e-13);
         Vector3D aOrtho = Vector3D.crossProduct(axis, a);
         Vector3D bOrtho = Vector3D.crossProduct(axis, b);
@@ -138,7 +138,7 @@ public class TransformTest extends TestCase {
       Vector3D a = new Vector3D(random.nextDouble(),
                                 random.nextDouble(),
                                 random.nextDouble());
-      Vector3D b = transform.transformDirection(a);
+      Vector3D b = transform.transformVector(a);
       assertEquals(0, Vector3D.subtract(a, b).getNorm(), 1.0e-12);
       Vector3D c = transform.transformPosition(a);
       assertEquals(0, Vector3D.subtract(a, c).getNorm(), 1.0e-12);
