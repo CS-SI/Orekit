@@ -4,10 +4,10 @@ import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 /** Transformation class in three dimensional space.
- * <p>This class represent the transformation engine between {@link Frame frames}.
+ * <p>This class represents the transformation engine between {@link Frame frames}.
  * It is used both to define the relationship between each frame and its
- * parent frame and to compute the gather all individual transforms into one
- * operation when converting between frames far away from each other tree-wise.</p>
+ * parent frame and to gather all individual transforms into one
+ * operation when converting between frames far away from each other.</p>
  *  @author Luc Maisonobe
  */
 public class Transform {
@@ -68,11 +68,11 @@ public class Transform {
     return rotation.applyTo(Vector3D.add(translation, position));
   }
 
-  /** Transform a direction vector (ignoring translation effects).
-   * @param direction vector to transform
+  /** Transform a vector (ignoring translation effects).
+   * @param vector vector to transform
    */
-  public Vector3D transformDirection(Vector3D direction) {
-    return rotation.applyTo(direction);
+  public Vector3D transformVector(Vector3D vector) {
+    return rotation.applyTo(vector);
   }
 
   /** Get the underlying elementary translation.
