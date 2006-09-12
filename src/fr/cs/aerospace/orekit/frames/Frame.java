@@ -16,7 +16,7 @@ import fr.cs.aerospace.orekit.errors.Translator;
  * vector (say the direction of a distant star for example) has coordinates
  * u<sub>A</sub> in frame<sub>A</sub> and u<sub>B</sub> in frame<sub>B</sub>,
  * then u<sub>B</sub>={@link
- * fr.cs.aerospace.orekit.frames.Transform#transformVector(Vector3D)
+ * fr.cs.aerospace.orekit.frames.Transform#transformDirection(Vector3D)
  * t.transformDirection(u<sub>A</sub>)}.
  * <p>The transforms may be constant or varying. For simple fixed transforms,
  * using this base class is sufficient. For varying transforms (time-dependant
@@ -34,18 +34,19 @@ public class Frame {
    */
   public static Frame getJ2000() {
     if (j2000 == null) {
-      j2000 = new Frame();
+      j2000 = new Frame("J2000");
     }
     return j2000;
   }
 
   /** Private constructor used only for the J2000 root frame.
+   * @param name name of the frame
    */
-  private Frame() {
+  private Frame(String name) {
     parent    = null;
     transform = new Transform();
     commons   = new HashMap();
-    name      = "J2000";
+    this.name = name;
   }
 
   /** Build a frame from its transform with respect to its parent.

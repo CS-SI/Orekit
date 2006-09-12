@@ -20,8 +20,8 @@ public class FrameSynchronizer {
 	 * @param date the initial date
 	 */
 	public FrameSynchronizer(AbsoluteDate date) {
-		array = new ArrayList(0);
-		this.currentDate = date;		
+		array = new ArrayList();
+		currentDate = date;		
 	}
 	
 	/** Adds a new frame in the group. This method is 
@@ -29,19 +29,19 @@ public class FrameSynchronizer {
 	 * updates immediatly the frame. 
 	 * @param the frame to add
 	 */
-	void addFrame(SynchronizedFrame frame) {
+	protected void addFrame(SynchronizedFrame frame) {
 		array.add(frame);
-		frame.updateFrame(this.currentDate);
+		frame.updateFrame(currentDate);
 	}
 	
 	/** Changes the current date of the synchronizer and updates 
 	 * all the frames in the group.
-	 * @param newdate the new date
+	 * @param date the new date
 	 */
-	public void changeDate(AbsoluteDate newdate) {
-		this.currentDate = newdate;
-		for(int i = 0; i<array.size();i++) {
-			((SynchronizedFrame)array.get(i)).updateFrame(newdate);
+	public void setDate(AbsoluteDate date) {
+		this.currentDate = date;
+		for (int i = 0; i < array.size(); i++) {
+			((SynchronizedFrame) array.get(i)).updateFrame(date);
 		}
 	}
 	
@@ -49,10 +49,10 @@ public class FrameSynchronizer {
 	 * @return the current date.
 	 */
 	public AbsoluteDate getDate() {
-		return this.currentDate;
+		return currentDate;
 	}
 	
-	// arraylist of frames
+	/** List of frames handled by this synchronizer. */
 	private ArrayList array;
 
 	private AbsoluteDate currentDate;

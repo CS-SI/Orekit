@@ -28,7 +28,7 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * J2000 frame.</p>
  * <p>Other implementations of the ITRF 2000 are possible by
  * ignoring the B1.8 resolution and using the classical paradigm which
- * is equinox-based and rely on a specifically tuned Greenwich Sidereal Time.
+ * is equinox-based and relies on a specifically tuned Greenwich Sidereal Time.
  * It is possible to reach the same accuracy if the IAU 2000A precession-nutation 
  * is used, or a 1 milliarcsecond accuracy if the simplified IAU 2000B
  * model precession-nutation model is used. They are not yet available
