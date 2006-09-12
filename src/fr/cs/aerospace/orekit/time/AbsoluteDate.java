@@ -80,9 +80,9 @@ public class AbsoluteDate implements Comparable {
 
     static {
       try {
-        input = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss");
+        input = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         input.setTimeZone(TimeZone.getTimeZone("UTC"));
-        output = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.SSS");
+        output = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         output.setTimeZone(TimeZone.getTimeZone("UTC"));
         TimeScale tt = TTScale.getInstance();
         JulianEpoch         = new AbsoluteDate("-4712-01-01T12:00:00", tt);

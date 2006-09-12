@@ -1,6 +1,7 @@
 package fr.cs.aerospace.orekit.time;
 
 import java.text.ParseException;
+import java.util.Date;
 
 import junit.framework.*;
 
@@ -50,6 +51,18 @@ public class AbsoluteDateTest
                  date.timeScalesOffset(TAIScale.getInstance(),
                                        UTCScale.getInstance()),
                  1.0e-10);
+  }
+
+  public void testUTC() throws ParseException {
+	  AbsoluteDate date =
+		  new AbsoluteDate("2002-01-01T00:00:01", UTCScale.getInstance());
+	  assertEquals("2002-01-01T00:00:01.000", date.toString());
+  }
+  
+  public void test1970() throws ParseException {
+	  AbsoluteDate date =
+		  new AbsoluteDate(new Date(0l), UTCScale.getInstance());
+	  assertEquals("1970-01-01T00:00:00.000", date.toString());
   }
 
   public static Test suite() {
