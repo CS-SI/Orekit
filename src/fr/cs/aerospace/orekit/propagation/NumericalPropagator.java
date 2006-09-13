@@ -41,7 +41,8 @@ import fr.cs.aerospace.orekit.Attitude;
  *  <dd>he will use {@link #extrapolate(Orbit,AbsoluteDate,Orbit)}</dd>
  *  <dt>if the user needs random access to the orbit state at any time between
  *      the initial and target times</dt>
- *  <dd>he will use {@link #extrapolate(Orbit,AbsoluteDate,IntegratedEphemeris)}</dd>
+ *  <dd>he will use {@link #extrapolate(Orbit,AbsoluteDate,ContinuousOutputModel)} and
+ *  {@link IntegratedEphemeris}</dd>
  *  <dt>if the user needs to do some action at regular time steps during
  *      integration</dt>
  *  <dd>he will use {@link #extrapolate(Orbit,AbsoluteDate,double,FixedStepHandler)}</dd>
@@ -94,7 +95,7 @@ public class NumericalPropagator
      * All models added by this method will be considered during integration.
      * If this method is not called at all, the integrated orbit will follow
      * a keplerian evolution only.
-     * @param model perturbing {@Link ForceModel} to add
+     * @param model perturbing {@link ForceModel} to add
      */
     public void addForceModel(ForceModel model) {
       forceModels.add(model);

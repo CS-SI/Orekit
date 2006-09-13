@@ -19,7 +19,7 @@ public class Eopc04Entry implements Comparable {
 
   /** Simple constructor.
    * @param mjd entry date
-   * @param UT1-UTC (seconds)
+   * @param ut1MinusUtc UT1-UTC (seconds)
    * @param pole pole correction
    */
   public Eopc04Entry(int mjd, double ut1MinusUtc, PoleCorrection pole) {

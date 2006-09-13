@@ -49,7 +49,6 @@ public class ITRF2000Frame extends SynchronizedFrame {
    * all the frames in the the same date-sharing group.
    * @exception OrekitException if the nutation model data embedded in the
    * library cannot be read
-   * @see #getDate()
    * @see FrameSynchronizer
    */
   public ITRF2000Frame(FrameSynchronizer fSynch)
