@@ -1,0 +1,20 @@
+
+
+                   INTERNATIONAL EARTH ROTATION SERVICE
+                        EARTH ROTATION PARAMETERS
+                          EOP (IERS) C 04 IAU2000
+
+  
+             FORMAT(2X,A4,I3,2X,I5,2F9.6,F10.7,2X,F10.7,2X,2F9.5)
+******************************************************************************
+  
+    Date    MJD      x        y      UT1-UTC       LOD        dX        dY
+                     "        "         s           s          "         "
+     (0h UTC)
+
+
+  YEAR ==> 2005
+
+  JAN   1  53371 0.149183 0.238009-0.5039024     -0.00008 -0.00099
+  JAN   2  53372 0.148843 0.236710-0.5043356   0.0006566   -0.00013 -0.00101
+  
