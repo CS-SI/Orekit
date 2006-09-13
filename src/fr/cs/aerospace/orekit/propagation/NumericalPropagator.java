@@ -3,6 +3,7 @@ package fr.cs.aerospace.orekit.propagation;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.spaceroots.mantissa.ode.ContinuousOutputModel;
 import org.spaceroots.mantissa.ode.FirstOrderIntegrator;
 import org.spaceroots.mantissa.ode.FirstOrderDifferentialEquations;
 import org.spaceroots.mantissa.ode.StepHandler;
@@ -28,9 +29,9 @@ import fr.cs.aerospace.orekit.Attitude;
  * This class extrapolates an {@link fr.cs.aerospace.orekit.orbits.Orbit Orbit}
  * using numerical integration.
  *
- * <p>The user normally build an extrapolator by specifying the integrator he
+ * <p>The user normally builds an extrapolator by specifying the integrator he
  * wants to use, then adding all the perturbing force models he wants and then
- * performing the integration given an initial orbit and a target time. The same
+ * performing the given integration with an initial orbit and a target time. The same
  * extrapolator can be reused for several orbit extrapolations.</p>
  
  * <p>Several extrapolation methods are available, providing their results in
@@ -92,7 +93,7 @@ public class NumericalPropagator
      * All models added by this method will be considered during integration.
      * If this method is not called at all, the integrated orbit will follow
      * a keplerian evolution only.
-     * @param model perturbing force model to add
+     * @param model perturbing {@Link ForceModel} to add
      */
     public void addForceModel(ForceModel model) {
       forceModels.add(model);
@@ -142,27 +143,27 @@ public class NumericalPropagator
      * @param initialOrbit orbit to extrapolate (this object will not be
      * changed)
      * @param finalDate target date for the orbit
-     * @param ephemeris placeholder where to put the ephemeris (may be null, as
-     * long as null is cast to (IntegratedEphemeris) to avoid ambiguities with
+     * @param model placeholder where to put the ephemeris (may be null, as
+     * long as null is cast to (ContinuousOutputModel) to avoid ambiguities with
      * the other extrapolation methods)
-     * @return integrated ephemeris (reference to ephemeris if it was non null,
+     * @return model (reference to ephemeris if it was non null,
      * reference to a new object otherwise)
      * @exception DerivativeException if the force models trigger one
      * @exception IntegratorException if the force models trigger one
      */
-    public IntegratedEphemeris extrapolate(Orbit initialOrbit,
+    public ContinuousOutputModel extrapolate(Orbit initialOrbit,
                                            AbsoluteDate finalDate,
-                                           IntegratedEphemeris ephemeris) 
+                                           ContinuousOutputModel model) 
         throws DerivativeException, IntegratorException, OrekitException {
-        
-        if (ephemeris == null) {
-          ephemeris = new IntegratedEphemeris();
-        }
+        // TODO validation by the headchief Luc, don't forget to check the javadoc
+    	
+    	if(model == null) {
+    		model = new ContinuousOutputModel();
+    	}
+    	
+        extrapolate(initialOrbit, finalDate, model);
 
-        extrapolate(initialOrbit, finalDate, ephemeris.getModel());
-        ephemeris.setDates(initialOrbit.getDate());
-
-        return ephemeris;
+        return model;
 
     }        
 

@@ -24,22 +24,12 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  */
 public class IntegratedEphemeris implements BoundedEphemeris {
 
-  /** Creates a new instance of IntegratedEphemeris with null time range
-   * and empty model.
+  /** Creates a new instance of IntegratedEphemeris.
+   *  @param model the {@link ContinuousOutputModel} to handle
+   *  @param epoch reference epoch for the model
    */
-  public IntegratedEphemeris() {
-    startDate = new AbsoluteDate(AbsoluteDate.J2000Epoch);
-    endDate   = new AbsoluteDate(AbsoluteDate.J2000Epoch);
-    epoch     = new AbsoluteDate(AbsoluteDate.J2000Epoch);
-    model     = new ContinuousOutputModel();
-  }
-
-  /** Set the start and end dates from the given epoch and the underlying
-   * raw mathematical model.
-   * @param epoch reference epoch for the model
-   * @see #getModel()
-   */
-  public void setDates(AbsoluteDate epoch) {
+  public IntegratedEphemeris(ContinuousOutputModel model, AbsoluteDate epoch) {
+    this.model     = model;
     startDate.reset(epoch, model.getInitialTime());
     endDate.reset(epoch, model.getFinalTime());
     this.epoch.reset(epoch);
@@ -86,14 +76,6 @@ public class IntegratedEphemeris implements BoundedEphemeris {
    */
   public AbsoluteDate getEpoch() {
     return epoch;
-  }
-
-
-  /** Get the underlying raw continuous model.
-   * @return underlying raw continuous model
-   */
-  public ContinuousOutputModel getModel() {
-    return model;
   }
 
   /** Start date of the range. */
