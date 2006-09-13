@@ -59,6 +59,7 @@ public class Frame {
    * </pre>
    * @param parent parent frame (must be non-null)
    * @param transform transform from parent frame to instance
+   * @param name name of the frame
    * @exception IllegalArgumentException if the parent frame is null
    */
   public Frame(Frame parent, Transform transform, String name)

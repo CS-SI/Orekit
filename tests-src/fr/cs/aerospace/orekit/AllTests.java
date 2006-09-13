@@ -8,6 +8,7 @@ public class AllTests {
 
     TestSuite suite = new TestSuite("fr.cs.aerospace.orekit"); 
 
+    suite.addTest(fr.cs.aerospace.orekit.iers.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.time.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.frames.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.bodies.AllTests.suite());

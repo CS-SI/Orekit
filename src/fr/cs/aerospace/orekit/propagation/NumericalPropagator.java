@@ -26,7 +26,7 @@ import fr.cs.aerospace.orekit.Attitude;
 
 
 /**
- * This class extrapolates an {@link fr.cs.aerospace.orekit.orbits.Orbit Orbit}
+ * This class propagates an {@link fr.cs.aerospace.orekit.orbits.Orbit Orbit}
  * using numerical integration.
  *
  * <p>The user normally builds an extrapolator by specifying the integrator he
@@ -58,6 +58,7 @@ import fr.cs.aerospace.orekit.Attitude;
  * @see ForceModel
  * @see StepHandler
  * @see FixedStepHandler
+ * @see IntegratedEphemeris
  *
  * @version $Id$
  * @author  M. Romero
@@ -146,14 +147,14 @@ public class NumericalPropagator
      * @param model placeholder where to put the ephemeris (may be null, as
      * long as null is cast to (ContinuousOutputModel) to avoid ambiguities with
      * the other extrapolation methods)
-     * @return model (reference to ephemeris if it was non null,
+     * @return model (reference to model if it was non null,
      * reference to a new object otherwise)
      * @exception DerivativeException if the force models trigger one
      * @exception IntegratorException if the force models trigger one
      */
     public ContinuousOutputModel extrapolate(Orbit initialOrbit,
-                                           AbsoluteDate finalDate,
-                                           ContinuousOutputModel model) 
+                                             AbsoluteDate finalDate,
+                                             ContinuousOutputModel model) 
         throws DerivativeException, IntegratorException, OrekitException {
         // TODO validation by the headchief Luc, don't forget to check the javadoc
     	

@@ -23,7 +23,6 @@ public abstract class SynchronizedFrame extends Frame {
    * @param synchronizer the frame synchronizer which handles all
    * the frames bound to the same group
    * @param name the instance name
-   * @see #getDate()
    */
   protected SynchronizedFrame(Frame parent, FrameSynchronizer synchronizer,
                               String name) {
@@ -40,10 +39,10 @@ public abstract class SynchronizedFrame extends Frame {
   protected abstract void updateFrame(AbsoluteDate date);
   
   /** Get the synchronizer of the date sharing group 
-   * @return the instance's <code>FrameSynchronizer</code>
+   * @return the instance {@link FrameSynchronizer FrameSynchronizer}
    */
   public FrameSynchronizer getFrameSynchronizer(){
-	  return synchronizer;
+    return synchronizer;
   }
   
   private FrameSynchronizer synchronizer;

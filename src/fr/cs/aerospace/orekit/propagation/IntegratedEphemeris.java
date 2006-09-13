@@ -10,11 +10,12 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * This class stores numerically integrated orbital parameters for
  * later retrieval.
  *
- * <p>Instances of this class are built by {@link NumericalPropagator}
- * objects in order to allow random access to any intermediate state of the
- * orbit throughout the integration range. Numerically integrated orbits can
- * therefore be used by algorithms that need to wander around according to their
- * own algorithm without cumbersome tight link with the integrator.</p>
+ * <p>Instances of this class are built from the results provided
+ * by {@link NumericalPropagator} objects in order to allow random access
+ * to any intermediate state of the orbit throughout the integration range.
+ * Numerically integrated orbits can therefore be used by algorithms that
+ * need to wander around according to their own algorithm without cumbersome
+ * tight link with the integrator.</p>
  *
  * @see NumericalPropagator
  *
@@ -29,15 +30,18 @@ public class IntegratedEphemeris implements BoundedEphemeris {
    *  @param epoch reference epoch for the model
    */
   public IntegratedEphemeris(ContinuousOutputModel model, AbsoluteDate epoch) {
+
     this.model     = model;
+    this.epoch.reset(epoch);
+
     startDate.reset(epoch, model.getInitialTime());
     endDate.reset(epoch, model.getFinalTime());
-    this.epoch.reset(epoch);
     if (endDate.minus(startDate) < 0) {
       AbsoluteDate tmpDate = endDate;
       endDate       = startDate;
       startDate     = tmpDate;
     }
+
   }
 
   /** Get the orbit at a specific date.

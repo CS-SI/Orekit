@@ -6,6 +6,8 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 
+import fr.cs.aerospace.orekit.errors.OrekitException;
+
 /** This class represents a specific instant in time.
 
  * <p>Instances of this class are considered to be absolute in the sense
@@ -262,7 +264,11 @@ public class AbsoluteDate implements Comparable {
     * in ISO-8601 format with milliseconds accuracy
     */
    public String toString() {
-     return toString(UTCScale.getInstance());
+     try {
+       return toString(UTCScale.getInstance());
+     } catch (OrekitException oe) {
+       return toString(TAIScale.getInstance());       
+     }
    }
 
    /** Get a String representation of the instant location.

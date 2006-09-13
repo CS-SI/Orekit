@@ -1,25 +1,8 @@
 package fr.cs.aerospace.orekit.time;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.TimeZone;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
-
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.iers.IERSData;
+import fr.cs.aerospace.orekit.iers.Leap;
 
 /** Coordinated Universal Time.
  * <p>UTC is related to TAI using step adjustments from time to time
@@ -37,109 +20,39 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
  * before 00:00:00 was reached. The standard would have required to have
  * introduced a second corresponding to location 23:59:60, i.e. the
  * last minute of 2005 was 61 seconds long instead of 60 seconds.</p>
- * <p> The OREKIT library embeds current time steps data known at the
- * library publishing date.Users can provide updated data by setting the
- * <code>orekit.time-step.file</code> Java property to the name of an
- * XML file containing such data. The following example shows the
- * format of this file:</p>
- * <pre>
- * <?xml version="1.0"?>
- * 
- * <!-- This file contains the history of time steps between UTC and TAI -->
- * <!-- The data has been retrieved from the IERS site                   -->
- * <!-- http://hpiers.obspm.fr/eoppc/bul/bulc/TimeSteps.history          -->
- * 
- * <time-steps>
- *   <leap date="1972-01-01" step="-10" />
- *   <leap date="1972-07-01" step="-1"  />
- *   <leap date="1973-01-01" step="-1"  />
- *   <leap date="1974-01-01" step="-1"  />
- *   <leap date="1975-01-01" step="-1"  />
- *   <leap date="1976-01-01" step="-1"  />
- *   <leap date="1977-01-01" step="-1"  />
- *   <leap date="1978-01-01" step="-1"  />
- *   <leap date="1979-01-01" step="-1"  />
- *   <leap date="1980-01-01" step="-1"  />
- *   <leap date="1981-07-01" step="-1"  />
- *   <leap date="1982-07-01" step="-1"  />
- *   <leap date="1983-07-01" step="-1"  />
- *   <leap date="1985-07-01" step="-1"  />
- *   <leap date="1988-01-01" step="-1"  />
- *   <leap date="1990-01-01" step="-1"  />
- *   <leap date="1991-01-01" step="-1"  />
- *   <leap date="1992-07-01" step="-1"  />
- *   <leap date="1993-07-01" step="-1"  />
- *   <leap date="1994-07-01" step="-1"  />
- *   <leap date="1996-01-01" step="-1"  />
- *   <leap date="1997-07-01" step="-1"  />
- *   <leap date="1999-01-01" step="-1"  />
- *   <leap date="2006-01-01" step="-1"  />
- * </time-steps>
- * </pre>
+ * <p>The OREKIT library retrieves time steps data thanks to the {@link
+ * fr.cs.aerospace.orekit.iers.IERSData IERSData} class.</p>
  * <p>This is a singleton class, so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
+ * @see fr.cs.aerospace.orekit.iers.IERSData
  */
 public class UTCScale extends TimeScale {
 
   /** Private constructor for the singleton.
+   * @exception OrekitException if the time steps cannot be read
    */
-  private UTCScale() {
+  private UTCScale()
+    throws OrekitException {
     super("UTC");
 
-    try {
-
-      // choose the data source
-      String fileName = System.getProperty("orekit.time-steps.file");
-      InputStream stream;
-      if ((fileName != null) && new File(fileName).exists()) {
-        // use the user-provided file
-        try {
-          stream = new FileInputStream(fileName);
-        } catch (FileNotFoundException fnfe) {
-          // should not happen
-          throw new RuntimeException("internal error");
-        }
-      } else {
-        // use the embedded time steps file
-        stream =
-          getClass().getResourceAsStream("/fr/cs/aerospace/orekit/resources/time-steps.xml");
-      }
-
-      // read the time-steps data
-      XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
-      TimeStepsHandler handler = new TimeStepsHandler();
-      reader.setContentHandler(handler);
-      reader.setErrorHandler(handler);
-      reader.parse(new InputSource(stream));
-
-      // put the most recent leap first,
-      // as it will often be the only one really used
-      leaps = handler.getTimeSteps();
-      for (int i = 0, j = leaps.length - 1; i < j; ++i, --j) {
-        Leap l   = leaps[i];
-        leaps[i] = leaps[j];
-        leaps[j] = l;
-      }
-
-    } catch (IOException ioe) {
-      throw new RuntimeException(ioe);
-    } catch (ParserConfigurationException pce) {
-        throw new RuntimeException(pce);
-    } catch (SAXException se) {
-      if (se.getCause() != null) {
-        // we may have embedded ParseException, OrekitException ...
-        throw new RuntimeException(se.getCause());
-      }
-      throw new RuntimeException(se);
+    // put the most recent leap first,
+    // as it will often be the only one really used
+    leaps = IERSData.getInstance().getTimeSteps();
+    for (int i = 0, j = leaps.length - 1; i < j; ++i, --j) {
+      Leap l   = leaps[i];
+      leaps[i] = leaps[j];
+      leaps[j] = l;
     }
 
   }
 
   /* Get the uniq instance of this class.
    * @return the uniq instance
+   * @exception OrekitException if the time steps cannot be read
    */
-  public static TimeScale getInstance() {
+  public static TimeScale getInstance()
+    throws OrekitException {
     if (instance == null) {
       instance = new UTCScale();
     }
@@ -176,107 +89,6 @@ public class UTCScale extends TimeScale {
       }
     }
     return 0;
-  }
-
-  /** XML parsing utility class. */
-  private class TimeStepsHandler extends DefaultHandler {
-
-    public TimeStepsHandler() {
-      format = new SimpleDateFormat("yyyy-MM-dd");
-      format.setTimeZone(TimeZone.getTimeZone("UTC"));
-      leaps  = new ArrayList();
-      last   = null;
-    }
-
-    public void startElement(String namespaceURI, String localName,
-                             String qName, Attributes attributes)
-      throws SAXException {
-      try {
-        String eltName = "".equals(namespaceURI) ? qName : localName;
-        if (eltName.equals("time-steps")) {
-          // do nothing
-        } else if (eltName.equals("leap")) {
-          String dateString = getAttribute(attributes, "date");
-          String stepString = getAttribute(attributes, "step");
-          try {
-            double utcTime = format.parse(dateString).getTime() * 1.0e-3;
-            double step    = Double.parseDouble(stepString);
-            double offset  = ((last == null) ? 0 : last.offsetAfter) + step;
-            if ((last != null) && (utcTime < last.utcTime)) {
-              throw new OrekitException("non-increasing dates in UTC/TAI"
-                                      + " time steps file ({0})",
-                                        new String[] { dateString });
-            }
-            last = new Leap(utcTime, step, offset);
-            leaps.add(last);
-          } catch (ParseException pe) {
-            throw new OrekitException("unparsable date in UTC/TAI"
-                                    + " time steps file ({0})",
-                                      new String[] { dateString });
-          } catch (NumberFormatException nfe) {
-            throw new OrekitException("unparsable step value in UTC/TAI"
-                                    + " time steps file ({0})",
-                                      new String[] { stepString });
-          }
-        } else {
-          throw new OrekitException("unexpected element \"{0}\""
-                                  + " in UTC/TAI time steps file",
-                                    new String[] { eltName });
-        }
-      } catch (OrekitException oe) {
-        throw new SAXException(oe);
-      }
-    }
-
-    private String getAttribute(Attributes attributes, String name)
-      throws OrekitException {
-      String attribute = attributes.getValue(name);
-      if (attribute == null) {
-        throw new OrekitException(
-          "missing attribute \"{0}\" in UTC/TAI time steps file",
-          new String[] { name });
-      }
-      return attribute;
-    }
-
-    /** Get the time steps.
-     * @return time steps
-     */
-    public Leap[] getTimeSteps() {
-      return (Leap[]) leaps.toArray(new Leap[leaps.size()]);
-    }
-
-    private SimpleDateFormat format;
-    private ArrayList        leaps;
-    private Leap             last;
-
-  }
-
-  /** Time steps.
-   * <p>This class i a simple container.</p>
-   */
-  private static class Leap {
-
-    /** Time in UTC at which the step occurs. */
-    public final double utcTime;
-
-    /** Step value. */
-    public final double step;
-
-    /** Offset in seconds after the leap. */
-    public final double offsetAfter;
-
-    /** Simple constructor.
-     * @param utcTime time in UTC at which the step occurs
-     * @param step step value
-     * @param offsetAfter offset in seconds after the leap
-     */
-    public Leap(double utcTime, double step, double offsetAfter) {
-      this.utcTime      = utcTime;
-      this.step         = step;
-      this.offsetAfter = offsetAfter;
-    }
-
   }
 
   /** Uniq instance. */
