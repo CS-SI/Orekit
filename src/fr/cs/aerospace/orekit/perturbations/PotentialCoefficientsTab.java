@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
 /** Class TestLecture run the user problem of orbital extrapolation.
  *
  *<p> This class allows the user to choose his extrapolation model (Analytic or numerical model),
- * and then to choose the force models he want to add according to his need for precision. When
+ * and then to choose the force models he wants to add according to his need for precision. When
  * creating the initial orbit, an extrapolation method can be applied.</p>
  *
  *@version $Id$
