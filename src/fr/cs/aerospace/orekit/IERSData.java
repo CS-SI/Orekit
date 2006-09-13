@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -13,6 +14,7 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.PoleCorrection;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.TTScale;
+import fr.cs.aerospace.orekit.time.UTCScale;
 
 /** Class allowing access to IERS data.
  * @author Luc Maisonobe
@@ -61,8 +63,8 @@ public class IERSData {
     if (selectEntries(date)) {
       double dtP    = date.minus(previous.date);
       double dtN    = next.date.minus(date);
-      double coeffP = dtN / (dtN + dtP);
-      double coeffN = dtP / (dtN + dtP);
+      double coeffP = dtP/ (dtN + dtP);
+      double coeffN = dtN/ (dtN + dtP);
       return new PoleCorrection(coeffP * previous.pole.xp + coeffN * next.pole.xp,
                                 coeffP * previous.pole.yp + coeffN * next.pole.yp);
     }
@@ -94,7 +96,7 @@ public class IERSData {
 
     // search starting from entries a few steps before the target date
     for (Iterator iterator = eopc04.tailSet(before).iterator();
-         iterator.hasNext() && (next == null);) {
+         (eopc04.tailSet(before) != null) && (iterator.hasNext() && (next == null));) {
       EopC04Entry entry = (EopC04Entry) iterator.next();
       if (date.compareTo(entry.date) > 0) {
         previous = entry;
@@ -102,8 +104,8 @@ public class IERSData {
         next = entry;
       }
     }
-
-    return next != null;
+    
+    return ((next != null) && (previous != null));
 
   }
 
@@ -207,17 +209,17 @@ public class IERSData {
       // "  JAN   2  52276-0.177500 0.297468-0.1166973   0.0009382    0.00030  0.00043"
       // the corresponding fortran format is:
       //  2X,A4,I3,2X,I5,2F9.6,F10.7,2X,F10.7,2X,2F9.5
-      String yearField  = "\\p{Alpha}\\p{Alpha}\\p{Alpha}\\p{Blank}";
-      String dayField   = "\\p{Blank}\\p{Digit}\\p{Digit}";
-      String mjdField   = "\\(\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}\\)";
-      String poleField  = "\\(.........\\)";
-      String dtU1Field  = "\\(..........\\)";
+      String yearField  = "\\p{Upper}\\p{Upper}\\p{Upper}\\p{Blank}";
+      String dayField   = "\\p{Blank}[ 0-9]\\p{Digit}";
+      String mjdField   = "(\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit})";
+      String poleField  = "(.........)";
+      String dtU1Field  = "(..........)";
       String lodField   = "..........";
       String deltaField = ".........";
-      Pattern pattern = Pattern.compile("  " + yearField + dayField + "  "
+      Pattern pattern = Pattern.compile("^  " + yearField + dayField + "  "
                                         + mjdField + poleField + poleField
                                         + dtU1Field + "  " + lodField
-                                        + "  " + deltaField + deltaField);
+                                        + "  " + deltaField + deltaField + "\\p{Blank}*$");
 
       // read all file, ignoring header
       BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -231,9 +233,9 @@ public class IERSData {
           inHeader = false;
           try {
             // this is a data line, build an entry from the extracted fields
-            int mjd = Integer.parseInt(matcher.group(1));
+            long mjd = Long.parseLong(matcher.group(1));
             AbsoluteDate date =
-              new AbsoluteDate(AbsoluteDate.J2000Epoch, 86400 * (mjd - 51544.5));
+              new AbsoluteDate(new Date(86400 * (mjd - 40587) * 1000), UTCScale.getInstance());
             double x    = Double.parseDouble(matcher.group(2)) * arcSecondsToRadians;
             double y    = Double.parseDouble(matcher.group(3)) * arcSecondsToRadians;
             double dtu1 = Double.parseDouble(matcher.group(4));
