@@ -32,6 +32,14 @@ public class IERSDataTest extends TestCase {
     checkFailure("regular-data/UTC-TAI.history");
   }
 
+  public void testMissingMonths() {
+    checkFailure("missing-months");
+  }
+
+  public void testDuplicatedData() {
+    checkFailure("duplicated-data");
+  }
+
   public void testRegular() throws OrekitException {
     checkSuccess("regular-data");
     assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);    

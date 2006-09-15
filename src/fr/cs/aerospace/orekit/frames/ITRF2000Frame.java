@@ -10,7 +10,7 @@ import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.series.BodiesElements;
 import fr.cs.aerospace.orekit.frames.series.Development;
-import fr.cs.aerospace.orekit.iers.Eopc04Entry;
+import fr.cs.aerospace.orekit.iers.EarthOrientationParameters;
 import fr.cs.aerospace.orekit.iers.IERSData;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
@@ -75,9 +75,9 @@ public class ITRF2000Frame extends SynchronizedFrame {
     // convert the mjd dates in the raw entries into AbsoluteDate instances
     if (eop == null) {
       eop = new TreeSet();
-      TreeSet rawEntries = IERSData.getInstance().getEopc04Entries();
+      TreeSet rawEntries = IERSData.getInstance().getEarthOrientationParameters();
       for (Iterator iterator = rawEntries.iterator(); iterator.hasNext();) {
-        eop.add(new AbsoluteEopc04Entry((Eopc04Entry) iterator.next()));
+        eop.add(new DatedEop((EarthOrientationParameters) iterator.next()));
       }
     }
 
@@ -89,7 +89,7 @@ public class ITRF2000Frame extends SynchronizedFrame {
    */
   protected void updateFrame(AbsoluteDate date) {
 
-    // offset from J2000 epoch
+    // offset from J2000 epoch in julian centuries
     double t = date.minus(AbsoluteDate.J2000Epoch) * julianCenturyPerSecond;
 
     // luni-solar and planetary elements
@@ -133,7 +133,7 @@ public class ITRF2000Frame extends SynchronizedFrame {
    * @param  date target date
    * @return true if the date was found in the tables
    */
-  private boolean selectEOPC04Entries(AbsoluteDate date) {
+  private boolean selectEOPEntries(AbsoluteDate date) {
 
     // don't search if the cached selection is fine
     if ((previous != null) && (date.minus(previous.date) >= 0)
@@ -149,14 +149,14 @@ public class ITRF2000Frame extends SynchronizedFrame {
     // depending on IERS products,
     // entries are provided either every day or every five days
     double margin = 6 * 86400;
-    AbsoluteEopc04Entry before =
-      new AbsoluteEopc04Entry(new AbsoluteDate(date, -margin), null);
+    DatedEop before =
+      new DatedEop(new AbsoluteDate(date, -margin), null);
 
     // search starting from entries a few steps before the target date
     SortedSet tailSet = eop.tailSet(before);
     if (tailSet != null) {
       for (Iterator iterator = tailSet.iterator(); iterator.hasNext() && (next == null);) {
-        AbsoluteEopc04Entry entry = (AbsoluteEopc04Entry) iterator.next();
+        DatedEop entry = (DatedEop) iterator.next();
         if ((previous == null) || (date.minus(entry.date) > 0)) {
           previous = entry;
         } else {
@@ -176,7 +176,7 @@ public class ITRF2000Frame extends SynchronizedFrame {
    * @return UT1-UTC in seconds
    */
   private double getUT1MinusUTC(AbsoluteDate date) {
-    if (selectEOPC04Entries(date)) {
+    if (selectEOPEntries(date)) {
       double dtP = date.minus(previous.date);
       double dtN = next.date.minus(date);
       return (dtP * next.rawEntry.ut1MinusUtc + dtN * previous.rawEntry.ut1MinusUtc)
@@ -193,7 +193,7 @@ public class ITRF2000Frame extends SynchronizedFrame {
    * @exception OrekitException if the IERS data cannot be read
    */
   private PoleCorrection getPoleCorrection(AbsoluteDate date) {
-    if (selectEOPC04Entries(date)) {
+    if (selectEOPEntries(date)) {
       double dtP    = date.minus(previous.date);
       double dtN    = next.date.minus(date);
       double coeffP = dtP/ (dtN + dtP);
@@ -292,19 +292,19 @@ public class ITRF2000Frame extends SynchronizedFrame {
                               (f142 * t + f141) * t); // general accumulated precession in longitude
   }
 
-  private static class AbsoluteEopc04Entry implements Comparable {
+  private static class DatedEop implements Comparable {
 
     /** Absolute date. */
     public final AbsoluteDate date;
 
     /** Raw entry. */
-    public final Eopc04Entry rawEntry;
+    public final EarthOrientationParameters rawEntry;
 
     /** Simple constructor.
      * @param date absolute date
      * @param rawEntry raw entry
      */
-    public AbsoluteEopc04Entry(AbsoluteDate date, Eopc04Entry rawEntry) {
+    public DatedEop(AbsoluteDate date, EarthOrientationParameters rawEntry) {
       this.date     = date;
       this.rawEntry = rawEntry;
     }
@@ -313,7 +313,7 @@ public class ITRF2000Frame extends SynchronizedFrame {
      * @param rawEntry raw entry
      * @exception OrekitException if the time steps data cannot be read
      */
-    public AbsoluteEopc04Entry(Eopc04Entry rawEntry)
+    public DatedEop(EarthOrientationParameters rawEntry)
       throws OrekitException {
       long javaTime = (40587 + rawEntry.mjd) * 86400000l;
       this.date     =
@@ -323,7 +323,7 @@ public class ITRF2000Frame extends SynchronizedFrame {
 
     /** Compare an entry with another one, according to date. */
     public int compareTo(Object entry) {
-      return date.compareTo(((AbsoluteEopc04Entry) entry).date);
+      return date.compareTo(((DatedEop) entry).date);
     }
 
   }
@@ -331,11 +331,11 @@ public class ITRF2000Frame extends SynchronizedFrame {
   /** Earth Rotation Angle, in radians. */
   private double era;
 
-  /** Previous EOP C 04 entry. */
-  private AbsoluteEopc04Entry previous;
+  /** Previous EOP entry. */
+  private DatedEop previous;
 
-  /** Next EOP C 04 entry. */
-  private AbsoluteEopc04Entry next;
+  /** Next EOP entry. */
+  private DatedEop next;
 
   /** Pole position (X). */
   private static Development xDevelopment = null;
