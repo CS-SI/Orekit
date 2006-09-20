@@ -53,10 +53,15 @@ public class ITRF2000Frame extends SynchronizedFrame {
    */
   public ITRF2000Frame(FrameSynchronizer fSynch)
     throws OrekitException {
-
     super(getJ2000(), fSynch, "ITRF2000");
+  }
 
-    // read and build the file-based models only once ...
+  /** Read and build the file-based models only once.
+   * @exception OrekitException if the nutation model data embedded in the
+   * library cannot be read
+   */
+  private void initOnce()
+    throws OrekitException {
     if ((xDevelopment == null)
         || (yDevelopment == null)
         || (sxy2Development == null)) {
@@ -86,8 +91,13 @@ public class ITRF2000Frame extends SynchronizedFrame {
   /** Update the frame to the given (shared) date.
    * <p>The update considers the pole motion from IERS data.</p>
    * @param date new value of the shared date
+   * @exception OrekitException if the nutation model data embedded in the
+   * library cannot be read
    */
-  protected void updateFrame(AbsoluteDate date) {
+  protected void updateFrame(AbsoluteDate date)
+    throws OrekitException {
+
+    initOnce();
 
     // offset from J2000 epoch in julian centuries
     double t = date.minus(AbsoluteDate.J2000Epoch) * julianCenturyPerSecond;
@@ -98,7 +108,8 @@ public class ITRF2000Frame extends SynchronizedFrame {
     // compute Earth Rotation Angle using Nicole Capitaine model (2000)
     double dtu1 = getUT1MinusUTC(date);
     double tu   = t * 36525 + dtu1 / 86400;
-    era = era0 + era1A * tu + era1B * tu;
+    era  = era0 + era1A * tu + era1B * tu;
+    era -= twoPi * Math.floor((era + Math.PI) / twoPi);
 
     // get the current IERS pole correction parameters
     PoleCorrection iCorr = getPoleCorrection(date);
@@ -125,7 +136,7 @@ public class ITRF2000Frame extends SynchronizedFrame {
     Rotation combined = qRot.applyTo(rRot.applyTo(wRot)).revert();
 
     // set up the transform from parent GCRS (J2000) to ITRF
-    updateTransform(new Transform(combined));
+    updateTransform(new Transform(combined).getInverse());
 
   }
 
@@ -353,14 +364,14 @@ public class ITRF2000Frame extends SynchronizedFrame {
   private static final double radiansPerArcsecond = twoPi / 1296000;
 
   /** Julian century per second. */
-  private static final double julianCenturyPerSecond = 1.0 / (36525 * 86400);
+  private static final double julianCenturyPerSecond = 1.0 / (36525.0 * 86400.0);
 
   /** Constant term of Capitaine's Earth Rotation Angle model. */
   private static final double era0 = twoPi * 0.7790572732640;
 
   /** Rate term of Capitaine's Earth Rotation Angle model.
    * (radians per day, main part) */
-  private static final double era1A = twoPi * 36525;
+  private static final double era1A = twoPi;
 
   /** Rate term of Capitaine's Earth Rotation Angle model.
    * (radians per day, fractional part) */

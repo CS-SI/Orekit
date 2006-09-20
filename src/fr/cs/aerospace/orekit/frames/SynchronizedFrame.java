@@ -1,5 +1,6 @@
 package fr.cs.aerospace.orekit.frames;
 
+import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** Base class for date-dependant frames.
@@ -23,9 +24,11 @@ public abstract class SynchronizedFrame extends Frame {
    * @param synchronizer the frame synchronizer which handles all
    * the frames bound to the same group
    * @param name the instance name
+   * @exception OrekitException if some frame specific error occurs
    */
   protected SynchronizedFrame(Frame parent, FrameSynchronizer synchronizer,
-                              String name) {
+                              String name)
+    throws OrekitException {
     super(parent, null, name); 
     this.synchronizer = synchronizer;
     synchronizer.addFrame(this);
@@ -35,8 +38,10 @@ public abstract class SynchronizedFrame extends Frame {
    * <p>This method can be called by the instance's {@link FrameSynchronizer
    * FrameSynchronizer} only.</p>
    * @param date new value of the shared date
+   * @exception OrekitException if some frame specific error occurs
    */
-  protected abstract void updateFrame(AbsoluteDate date);
+  protected abstract void updateFrame(AbsoluteDate date)
+    throws OrekitException;
   
   /** Get the synchronizer of the date sharing group 
    * @return the instance {@link FrameSynchronizer FrameSynchronizer}
