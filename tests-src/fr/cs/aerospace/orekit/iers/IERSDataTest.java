@@ -3,10 +3,12 @@ package fr.cs.aerospace.orekit.iers;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
+import java.text.ParseException;
 
 import fr.cs.aerospace.orekit.FindFile;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.iers.IERSData;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
 
 import junit.framework.Test;
@@ -53,6 +55,24 @@ public class IERSDataTest extends TestCase {
   public void testNoData() throws OrekitException {
     checkSuccess("empty-directory");
     assertEquals(0.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);    
+  }
+  
+  public void testFirstDate() throws OrekitException, ParseException {
+	  checkSuccess("regular-data");
+	  double delta = IERSData.getInstance().getFirstDate().minus(new AbsoluteDate("2002-01-01T00:00:00", UTCScale.getInstance()));
+	  assertEquals(0, delta, 0);
+  }
+  
+  public void testEndDate() throws OrekitException, ParseException {
+	  checkSuccess("regular-data");
+	  double delta = IERSData.getInstance().getEndDate().minus(new AbsoluteDate("2005-12-31T00:00:00", UTCScale.getInstance()));
+	  assertEquals(0, delta, 0);
+  }
+  
+  public void testUTCDate() throws OrekitException, ParseException {
+	  checkSuccess("regular-data");
+	  double delta = IERSData.getInstance().getUTCStartDate().minus(new AbsoluteDate("1972-01-01T00:00:00", UTCScale.getInstance()));
+	  assertEquals(0, delta, 0);
   }
 
   private void checkSuccess(String directoryName) {

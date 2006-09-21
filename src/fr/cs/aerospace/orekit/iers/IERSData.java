@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.TreeSet;
@@ -19,6 +20,8 @@ import java.util.zip.GZIPInputStream;
 
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.PoleCorrection;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.time.UTCScale;
 
 /** Class loading IERS data files.
 
@@ -189,6 +192,50 @@ public class IERSData {
     return eop;
   }
 
+  /** Get the first date of the selected EOPC04 files datas
+   * @return the start date of the datas
+   * @throws OrekitException
+   */
+  public AbsoluteDate getFirstDate() throws OrekitException {
+	  
+	  if (firstDate==null){
+		  long javaTime = (((EarthOrientationParameters)eop.first()).mjd - 40587) * 86400000l;
+		  firstDate = new AbsoluteDate(new Date(javaTime), UTCScale.getInstance());
+	  }
+	  return firstDate;
+ 
+  }
+  
+  /** Get the end date of the selected EOPC04 files datas
+   * @return the last date of the datas
+   * @throws OrekitException
+   */
+  public AbsoluteDate getEndDate() throws OrekitException {
+	  
+	  if (endDate==null){
+		  long javaTime = (((EarthOrientationParameters)eop.last()).mjd - 40587) * 86400000l;
+		  endDate = new AbsoluteDate(new Date(javaTime), UTCScale.getInstance());
+	  }
+	  return endDate;
+	  
+  }
+  
+  /** Get the first date of the selected Bulletin B datas
+   * @return the first date
+   * @throws ParseException
+   * @throws OrekitException
+   */
+  public AbsoluteDate getUTCStartDate() throws ParseException, OrekitException {
+	  
+	  if (UTCStartDate==null){
+		  AbsoluteDate ref = new AbsoluteDate("1970-01-01T00:00:00",UTCScale.getInstance());
+		  int i = timeSteps.length;
+		  UTCStartDate = new AbsoluteDate(ref,timeSteps[i-1].utcTime-timeSteps[i-1].step);
+		  // TODO vlidation by the headhief Luc
+	  }
+	  return UTCStartDate;
+  }
+   
   /** Get the year with definitive data from a bulletin B index.
    * @param index bulletin B index
    * @return year with definitive data in the corresponding bulletin B
@@ -376,6 +423,8 @@ public class IERSData {
                                   });        
       }
       timeSteps = (Leap[]) leaps.toArray(new Leap[leaps.size()]);
+      int i = 1;
+      i = i+1;
 
     } catch (ParseException pe) {
       throw new OrekitException(pe.getMessage(), pe);
@@ -581,7 +630,7 @@ public class IERSData {
     public TreeSet bulletinBMonthly;
 
   }
-
+  
   /** Earth Orientation Parameters entries. */
   private TreeSet eop;
 
@@ -602,5 +651,14 @@ public class IERSData {
   /** Bulletin B file names pattern. */
   private static final Pattern monthlyPattern =
     Pattern.compile("^bulletinb_IAU2000-(\\d\\d\\d)\\.txt(?:\\.gz)?$");
+  
+  /** first date of the EOPC04 files datas */
+  private AbsoluteDate firstDate;
+
+  /** final date of the EOPC04 files datas */
+  private AbsoluteDate endDate;
+  
+  /** start of the UTC steps inventory */
+  private AbsoluteDate UTCStartDate;
 
 }

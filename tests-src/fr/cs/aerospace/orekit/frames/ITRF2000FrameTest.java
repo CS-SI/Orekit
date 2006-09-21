@@ -90,11 +90,113 @@ public class ITRF2000FrameTest extends TestCase {
     assertEquals(90, Math.toDegrees(itrf2000.getEarthRotationAngle()), 2.0);
 
   }
+  
+  public void testRoughTransformJ2OOO_ITRF() throws OrekitException, ParseException {
+	  
+	  // test case date : jul1950%jour = 15002_pm_entier
+	  //                  jul1950%sec  = 180._pm_reel
+	  //                  delta_tu1    = .5_pm_reel
+	  //                  delta_tai    = 25._pm_reel
+// TODO check this date convertion
+	  AbsoluteDate date = new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 86400*15002 + 180);
+	  AbsoluteDate date2 = new AbsoluteDate("1991-01-28T00:03:00", UTCScale.getInstance());
+	  double off = date.minus(date2);
+	  System.out.println("offset : "  + off );
+	  FrameSynchronizer fSynch = new FrameSynchronizer(date);
+	  ITRF2000Frame itrf = new ITRF2000Frame(fSynch);	
+	  
+	  Transform trans = itrf.getTransformTo(Frame.getJ2000());
+	  
+	  // Positions
+	  
+	  Vector3D posJ2000 = new Vector3D(991396.024,
+			                           488684.594,
+			                           7109721.509);
+	  
+	  Vector3D posITRF = trans.getInverse().transformPosition(posJ2000);
+	  
+	  Vector3D posTestCase = new Vector3D(-0.221938831683687e06,
+			                              -0.108816598895859e07,
+			                               0.710889981500780e07);
 
-  private void checkSameTransform(Transform transform1, Transform transform2) {	   
+	  // Position tests
+	  assertEquals(posTestCase.getX(), posITRF.getX(), -(posTestCase.getX()*0.3));
+	  assertEquals(posTestCase.getY(), posITRF.getY(), -(posTestCase.getY()*0.01));
+	  assertEquals(posTestCase.getZ(), posITRF.getZ(), (posTestCase.getZ()*0.01));
+	  
+      // Speeds
+	  
+	  Vector3D sJ2000 = new Vector3D( 1963.575,
+			                         -7174.14,
+			                          218.695);
+	  
+	  Vector3D sITRF = trans.getInverse().transformVector(sJ2000);
+	  
+	  Vector3D sTestCase = new Vector3D(-0.696025140792288e04,
+			                             0.284069914312733e04,
+			                             0.216918435606272e03);
+
+	  // Speed tests
+	  assertEquals(sTestCase.getX(), sITRF.getX(), -(sTestCase.getX()*0.02));
+	  assertEquals(sTestCase.getY(), sITRF.getY(), (sTestCase.getY()*0.01));
+	  assertEquals(sTestCase.getZ(), sITRF.getZ(), (sTestCase.getZ()*0.4));
+	  
+  }
+
+  public void testRoughTransformITRF_J2000() throws OrekitException {
+	  
+	  // test case date : jul1950%jour   = 15002_pm_entier
+	  //                  jul1950%sec    = 43200._pm_reel
+	  //                  delta_tu1      = .5_pm_reel
+	  //                  delta_tai      = 25._pm_reel
+
+// TODO check this date convertion 
+	  AbsoluteDate date = new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 86400*15002 + 43200);
+	  FrameSynchronizer fSynch = new FrameSynchronizer(date);
+	  ITRF2000Frame itrf = new ITRF2000Frame(fSynch);	
+	  
+	  Transform trans = itrf.getTransformTo(Frame.getJ2000());
+	  
+	  // Positions
+	  
+	  Vector3D posITRF = new Vector3D(217012.946,
+			                          1089159.055,
+			                          7108899.815);
+	  
+	  Vector3D posJ2000 = trans.transformPosition(posITRF);
+	  
+	  Vector3D posTestCase = new Vector3D( 0.991398101724679e06,
+			                               0.488685294427019e06,
+			                               0.710972117121583e07);
+
+	  // Position tests
+	  assertEquals(posTestCase.getX(), posJ2000.getX(), (posTestCase.getX()*0.05));
+	  assertEquals(posTestCase.getY(), posJ2000.getY(), (posTestCase.getY()*0.3));
+	  assertEquals(posTestCase.getZ(), posJ2000.getZ(), (posTestCase.getZ()*0.01));
+	  
+      // Speeds
+	  
+	  Vector3D sITRF = new Vector3D( 6973.034,
+			                        -2809.178,
+			                          216.918);
+	  
+	  Vector3D sJ2000 = trans.transformVector(sITRF);
+	  
+	  Vector3D sTestCase = new Vector3D( 0.196357458494215e04,
+			                            -0.717414099509734e04,
+			                             0.218694710532406e03);
+
+	  // Speed tests
+	  assertEquals(sTestCase.getX(), sJ2000.getX(), (sTestCase.getX()*0.02));
+	  assertEquals(sTestCase.getY(), sJ2000.getY(), -(sTestCase.getY()*0.02));
+	  assertEquals(sTestCase.getZ(), sJ2000.getZ(), (sTestCase.getZ()*0.4));
+	  
+  }
+  
+/*  private void checkSameTransform(Transform transform1, Transform transform2) {	   
     assertEquals(0, Vector3D.subtract(transform1.getTranslation() , transform2.getTranslation()).getNorm(), 1.0e-10);
     assertEquals(0, transform1.getRotation().applyTo(transform2.getRotation().revert()).getAngle(), 1.0e-10);
-  }
+  }*/
 
   public void setUp() {
     try {

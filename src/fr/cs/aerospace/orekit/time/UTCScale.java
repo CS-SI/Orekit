@@ -47,7 +47,7 @@ public class UTCScale extends TimeScale {
 
   }
 
-  /* Get the uniq instance of this class.
+  /** Get the uniq instance of this class.
    * @return the uniq instance
    * @exception OrekitException if the time steps cannot be read
    */

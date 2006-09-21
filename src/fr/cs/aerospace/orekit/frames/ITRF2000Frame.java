@@ -326,7 +326,7 @@ public class ITRF2000Frame extends SynchronizedFrame {
      */
     public DatedEop(EarthOrientationParameters rawEntry)
       throws OrekitException {
-      long javaTime = (40587 + rawEntry.mjd) * 86400000l;
+      long javaTime = (rawEntry.mjd - 40587) * 86400000l;
       this.date     =
         new AbsoluteDate(new Date(javaTime), UTCScale.getInstance());
       this.rawEntry = rawEntry;
