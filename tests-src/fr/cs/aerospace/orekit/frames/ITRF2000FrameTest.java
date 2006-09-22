@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
 import java.text.ParseException;
 
+import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.FindFile;
@@ -98,7 +99,7 @@ public class ITRF2000FrameTest extends TestCase {
 	  //                  delta_tu1    = .5_pm_reel
 	  //                  delta_tai    = 25._pm_reel
 // TODO check this date convertion
-	  AbsoluteDate date = new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 86400*15002 + 180);
+	  AbsoluteDate date = new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 86400.0 * 15002 + 180);
 	  AbsoluteDate date2 = new AbsoluteDate("1991-01-28T00:03:00", UTCScale.getInstance());
 	  double off = date.minus(date2);
 	  System.out.println("offset : "  + off );
@@ -120,7 +121,12 @@ public class ITRF2000FrameTest extends TestCase {
 			                               0.710889981500780e07);
 
 	  // Position tests
-	  assertEquals(posTestCase.getX(), posITRF.getX(), -(posTestCase.getX()*0.3));
+      Vector3D d = Vector3D.subtract(posITRF, posTestCase);
+      System.out.println("écarts en mètres " + d.getX() + " " + d.getY() + " " + d.getZ() + " " + d.getNorm());
+      Rotation r = new Rotation(posITRF, posTestCase);
+      System.out.println("axe " + r.getAxis().getX() + " " + r.getAxis().getY() + " " + r.getAxis().getZ());
+      System.out.println("angle " + Math.toDegrees(r.getAngle()));
+      assertEquals(posTestCase.getX(), posITRF.getX(), -(posTestCase.getX()*0.3));
 	  assertEquals(posTestCase.getY(), posITRF.getY(), -(posTestCase.getY()*0.01));
 	  assertEquals(posTestCase.getZ(), posITRF.getZ(), (posTestCase.getZ()*0.01));
 	  

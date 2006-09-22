@@ -119,15 +119,15 @@ public class ITRF2000Frame extends SynchronizedFrame {
     PoleCorrection nCorr = nutationCorrection(date);
 
     // elementary rotations due to pole motion in terrestrial frame
-    Rotation r1 = new Rotation(Vector3D.plusI, iCorr.yp + tCorr.yp + nCorr.yp);
-    Rotation r2 = new Rotation(Vector3D.plusJ, iCorr.xp + tCorr.xp + nCorr.xp);
-    Rotation r3 = new Rotation(Vector3D.plusK, -sPrimeRate * t);
+    Rotation r1 = new Rotation(Vector3D.plusI, -(iCorr.yp + tCorr.yp + nCorr.yp));
+    Rotation r2 = new Rotation(Vector3D.plusJ, -(iCorr.xp + tCorr.xp + nCorr.xp));
+    Rotation r3 = new Rotation(Vector3D.plusK, sPrimeRate * t);
 
     // complete pole motion in terrestrial frame
     Rotation wRot = r3.applyTo(r2.applyTo(r1));
 
     // simple rotation around the Celestial Intermediate Pole
-    Rotation rRot = new Rotation(Vector3D.plusK, -era);
+    Rotation rRot = new Rotation(Vector3D.plusK, era);
 
     // precession and nutation effect (pole motion in celestial frame)
     Rotation qRot = precessionNutationEffect(t, elements);
@@ -136,7 +136,7 @@ public class ITRF2000Frame extends SynchronizedFrame {
     Rotation combined = qRot.applyTo(rRot.applyTo(wRot)).revert();
 
     // set up the transform from parent GCRS (J2000) to ITRF
-    updateTransform(new Transform(combined).getInverse());
+    updateTransform(new Transform(combined));
 
   }
 
@@ -258,23 +258,14 @@ public class ITRF2000Frame extends SynchronizedFrame {
     double y =    yDevelopment.value(t, elements);
     double s = sxy2Development.value(t, elements) - x * y / 2;
 
-    // compute harmonic functions for half the E and d angles
-    // we try to use numerically stable expressions
     double x2 = x * x;
     double y2 = y * y;
     double r2 = x2 + y2;
-    double r  = Math.sqrt(r2);
-    double tanHalfE = (Math.abs(x) > Math.abs(y)) ? (r - x) / y : y / (r + x);
-    double cosHalfE = 1 / Math.sqrt(1 + tanHalfE * tanHalfE);
-    double sinHalfE = tanHalfE * cosHalfE;
-    double tanHalfD = r / (1 + Math.sqrt(1 - r2));
-    double cosHalfD = 1 / Math.sqrt(1 + tanHalfD * tanHalfD);
-    double sinHalfD = tanHalfD * cosHalfD;
-
-    // elementary rotations
-    Rotation rpS = new Rotation(Math.cos(s/2), 0, 0, -Math.sin(s/2), false);
-    Rotation rpE = new Rotation(cosHalfE, 0, 0, -sinHalfE, false);
-    Rotation rmD = new Rotation(cosHalfD, 0, sinHalfD, 0, false);
+    double e = Math.atan2(y, x);
+    double d = Math.acos(Math.sqrt(1 - r2));
+    Rotation rpS = new Rotation(Vector3D.plusK, -s);
+    Rotation rpE = new Rotation(Vector3D.plusK, -e);
+    Rotation rmD = new Rotation(Vector3D.plusJ, +d);
 
     // combine the 4 rotations (rpE is used twice)
     // IERS conventions (2003), section 5.3, equation 6
