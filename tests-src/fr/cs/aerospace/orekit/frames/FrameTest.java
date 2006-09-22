@@ -51,6 +51,17 @@ public class FrameTest extends TestCase {
       new Frame(new Frame(new Frame(Frame.getJ2000(), t1, null), t2, null), t3, null);
     checkNoTransform(frame1.getTransformTo(frame2), random);
   }
+  
+ /* public void testFindCommon() {
+	  
+	  Frame R1 = new Frame(Frame.getJ2000(),new Transform(new Vector3D(1,0,0)),"R1");
+	  Frame R2 = new Frame(R1,new Transform(new Vector3D(1,0,0)),"R2");
+	  Frame R3 = new Frame(R2,new Transform(new Vector3D(1,0,0)),"R3");
+	  
+	  Transform T = R3.getTransformTo(R1);
+	  
+	  assertEquals(2, T.getTranslation().getNorm(), 0);
+  }*/
 
   private Transform randomTransform(Random random) {
     Transform transform = new Transform();
