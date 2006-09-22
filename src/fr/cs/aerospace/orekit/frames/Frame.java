@@ -149,12 +149,10 @@ public class Frame {
     LinkedList pathFrom = from.pathToRoot();
     LinkedList pathTo   = to.pathToRoot();
 
-    if (pathFrom.isEmpty()) { // handle root case
-      // in this case the common frame is root
+    if (pathFrom.isEmpty()||pathTo.contains(from)) { // handle root case and same branch case
       common = from;
     }
-    if (pathTo.isEmpty()) { // handle root case
-      // in this case the common frame is root
+    if (pathTo.isEmpty()||pathFrom.contains(to)) { // handle root case and same branch case
       common = to;
     }
     if (common != null) {
@@ -162,7 +160,7 @@ public class Frame {
       to.commons.put(from, common);
       return common;
     }
-
+  
     // at this stage pathFrom contains at least one frame
     Frame lastFrom = (Frame) pathFrom.removeLast();
     common = lastFrom; // common must be one of the instance of Frame already defined
