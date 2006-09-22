@@ -192,8 +192,11 @@ public class IERSData {
     return eop;
   }
 
-  /** Get the first date of the selected EOPC04 files datas
-   * @return the start date of the datas
+  /** Get the date of the first available Earth Orientation Parameters.
+   *  <p>The Earth Orientation Parameters are extracted from the
+   * <code>eopc04_IAU2000.*[.gz]</code> yearly files chosen by the user.
+   * 
+   * @return the start date of the available datas
    * @throws OrekitException
    */
   public AbsoluteDate getFirstDate() throws OrekitException {
@@ -206,8 +209,11 @@ public class IERSData {
  
   }
   
-  /** Get the end date of the selected EOPC04 files datas
-   * @return the last date of the datas
+  /** Get the date of the last available Earth Orientation Parameters.
+   *  <p>The Earth Orientation Parameters are extracted from the
+   * <code>eopc04_IAU2000.*[.gz]</code> yearly files chosen by the user.
+   * 
+   * @return the end date of the available datas
    * @throws OrekitException
    */
   public AbsoluteDate getEndDate() throws OrekitException {
@@ -220,8 +226,10 @@ public class IERSData {
 	  
   }
   
-  /** Get the first date of the selected Bulletin B datas
-   * @return the first date
+  /** Get the date of the first available known TUC steps.
+   *  <p>The Steps are extracted from the 
+   * <code>bulletinb_IAU2000-*.txt[.gz]</code> monthly files.</p>
+   * @return the start date of the available datas
    * @throws ParseException
    * @throws OrekitException
    */
@@ -231,7 +239,6 @@ public class IERSData {
 		  AbsoluteDate ref = new AbsoluteDate("1970-01-01T00:00:00",UTCScale.getInstance());
 		  int i = timeSteps.length;
 		  UTCStartDate = new AbsoluteDate(ref,timeSteps[i-1].utcTime-timeSteps[i-1].step);
-		  // TODO vlidation by the headhief Luc
 	  }
 	  return UTCStartDate;
   }
