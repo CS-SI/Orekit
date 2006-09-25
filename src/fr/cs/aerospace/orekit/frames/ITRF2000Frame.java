@@ -13,6 +13,7 @@ import fr.cs.aerospace.orekit.frames.series.Development;
 import fr.cs.aerospace.orekit.iers.EarthOrientationParameters;
 import fr.cs.aerospace.orekit.iers.IERSData;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.time.TTScale;
 import fr.cs.aerospace.orekit.time.UTCScale;
 
 /** International Terrestrial Reference Frame 2000.
@@ -100,14 +101,21 @@ public class ITRF2000Frame extends SynchronizedFrame {
     initOnce();
 
     // offset from J2000 epoch in julian centuries
-    double t = date.minus(AbsoluteDate.J2000Epoch) * julianCenturyPerSecond;
+    double tts = date.minus(AbsoluteDate.J2000Epoch);
+    double ttc =  tts * julianCenturyPerSecond;
 
+  //  System.out.println(" t ds update frame  " + (tt-0.037823408624229979466));
+    
     // luni-solar and planetary elements
-    BodiesElements elements = computeBodiesElements(t);
+    BodiesElements elements = computeBodiesElements(ttc);
 
     // compute Earth Rotation Angle using Nicole Capitaine model (2000)
     double dtu1 = getUT1MinusUTC(date);
-    double tu   = t * 36525 + dtu1 / 86400;
+    
+    double taiMinusTT = TTScale.getInstance().offsetToTAI(tts);
+    double utcMinusTAI = UTCScale.getInstance().offsetFromTAI(tts+taiMinusTT);
+    
+    double tu   = (tts + (dtu1 + utcMinusTAI + taiMinusTT)) / 86400;
     era  = era0 + era1A * tu + era1B * tu;
     era -= twoPi * Math.floor((era + Math.PI) / twoPi);
 
@@ -121,7 +129,7 @@ public class ITRF2000Frame extends SynchronizedFrame {
     // elementary rotations due to pole motion in terrestrial frame
     Rotation r1 = new Rotation(Vector3D.plusI, -(iCorr.yp + tCorr.yp + nCorr.yp));
     Rotation r2 = new Rotation(Vector3D.plusJ, -(iCorr.xp + tCorr.xp + nCorr.xp));
-    Rotation r3 = new Rotation(Vector3D.plusK, sPrimeRate * t);
+    Rotation r3 = new Rotation(Vector3D.plusK, sPrimeRate * ttc);
 
     // complete pole motion in terrestrial frame
     Rotation wRot = r3.applyTo(r2.applyTo(r1));
@@ -130,7 +138,7 @@ public class ITRF2000Frame extends SynchronizedFrame {
     Rotation rRot = new Rotation(Vector3D.plusK, era);
 
     // precession and nutation effect (pole motion in celestial frame)
-    Rotation qRot = precessionNutationEffect(t, elements);
+    Rotation qRot = precessionNutationEffect(ttc, elements);
 
     // combined effects
     Rotation combined = qRot.applyTo(rRot.applyTo(wRot)).revert();
@@ -274,24 +282,24 @@ public class ITRF2000Frame extends SynchronizedFrame {
   }
 
   /** Compute the nutation elements.
-   * @param t offset from J2000.0 epoch in julian centuries
+   * @param tt offset from J2000.0 epoch in julian centuries
    * @return luni-solar and planetary elements
    */
-  private BodiesElements computeBodiesElements(double t) {
-    return new BodiesElements((((f14 * t + f13) * t + f12) * t + f11) * t + f10, // mean anomaly of the Moon
-                              (((f24 * t + f23) * t + f22) * t + f21) * t + f20, // mean anomaly of the Sun
-                              (((f34 * t + f33) * t + f32) * t + f31) * t + f30, // L - &Omega; where L is the mean longitude of the Moon
-                              (((f44 * t + f43) * t + f42) * t + f41) * t + f40, // mean elongation of the Moon from the Sun
-                              (((f54 * t + f53) * t + f52) * t + f51) * t + f50, // mean longitude of the ascending node of the Moon
-                              f61  * t +  f60, // mean Mercury longitude
-                              f71  * t +  f70, // mean Venus longitude
-                              f81  * t +  f80, // mean Earth longitude
-                              f91  * t +  f90, // mean Mars longitude
-                              f101 * t + f100, // mean Jupiter longitude
-                              f111 * t + f110, // mean Saturn longitude
-                              f121 * t + f120, // mean Uranus longitude
-                              f131 * t + f130, // mean Neptune longitude
-                              (f142 * t + f141) * t); // general accumulated precession in longitude
+  private BodiesElements computeBodiesElements(double tt) {
+    return new BodiesElements((((f14 * tt + f13) * tt + f12) * tt + f11) * tt + f10, // mean anomaly of the Moon
+                              (((f24 * tt + f23) * tt + f22) * tt + f21) * tt + f20, // mean anomaly of the Sun
+                              (((f34 * tt + f33) * tt + f32) * tt + f31) * tt + f30, // L - &Omega; where L is the mean longitude of the Moon
+                              (((f44 * tt + f43) * tt + f42) * tt + f41) * tt + f40, // mean elongation of the Moon from the Sun
+                              (((f54 * tt + f53) * tt + f52) * tt + f51) * tt + f50, // mean longitude of the ascending node of the Moon
+                              f61  * tt +  f60, // mean Mercury longitude
+                              f71  * tt +  f70, // mean Venus longitude
+                              f81  * tt +  f80, // mean Earth longitude
+                              f91  * tt +  f90, // mean Mars longitude
+                              f101 * tt + f100, // mean Jupiter longitude
+                              f111 * tt + f110, // mean Saturn longitude
+                              f121 * tt + f120, // mean Uranus longitude
+                              f131 * tt + f130, // mean Neptune longitude
+                              (f142 * tt + f141) * tt); // general accumulated precession in longitude
   }
 
   private static class DatedEop implements Comparable {
