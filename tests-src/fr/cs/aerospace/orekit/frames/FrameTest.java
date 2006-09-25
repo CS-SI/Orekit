@@ -54,15 +54,31 @@ public class FrameTest extends TestCase {
   
   public void testFindCommon() {
 	  
-	  Frame R1 = new Frame(Frame.getJ2000(),new Transform(new Vector3D(1,0,0)),"R1");
-	  Frame R2 = new Frame(R1,new Transform(new Vector3D(1,0,0)),"R2");
-	  Frame R3 = new Frame(R2,new Transform(new Vector3D(1,0,0)),"R3");
+    Random random = new Random(0xb7d1a155e726da57l);
+    Transform t1  = randomTransform(random);
+    Transform t2  = randomTransform(random);
+    Transform t3  = randomTransform(random);    
+    
+	Frame R1 = new Frame(Frame.getJ2000(),t1,"R1");
+	Frame R2 = new Frame(R1,t2,"R2");
+	Frame R3 = new Frame(R2,t3,"R3");
 	  
-	  Transform T = Frame.getJ2000().getTransformTo(R3);
+	  Transform T = R1.getTransformTo(R3);
+      
+      Transform S = new Transform(t2,t3);
 	  
-	  assertEquals(3, T.getTranslation().getNorm(), 0);
+      checkSameTransform(T,S);
+      
+      T = R3.getTransformTo(Frame.getJ2000());
+      
+      S = new Transform(S,t1);
   }
 
+  private void checkSameTransform(Transform transform1, Transform transform2) {    
+  assertEquals(0, Vector3D.subtract(transform1.getTranslation() , transform2.getTranslation()).getNorm(), 1.0e-10);
+  assertEquals(0, transform1.getRotation().applyTo(transform2.getRotation().revert()).getAngle(), 1.0e-10);
+  }
+  
   private Transform randomTransform(Random random) {
     Transform transform = new Transform();
     for (int i = random.nextInt(10); i > 0; --i) {

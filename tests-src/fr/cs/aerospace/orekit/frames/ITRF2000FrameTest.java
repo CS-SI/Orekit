@@ -94,9 +94,9 @@ public class ITRF2000FrameTest extends TestCase {
   
   public void testRoughTransformJ2OOO_TerVrai() throws OrekitException, ParseException {
 	  
-//	  date 14 Octobre 2003 à 02h00 UTC
+//	  date 14 Octobre 2003 ï¿½ 02h00 UTC
 //	  (soit j = 19644, s = 7200.0)
-//	 pos = (6500000.0, -1234567.0, 4000000.0) en mètres
+//	 pos = (6500000.0, -1234567.0, 4000000.0) en mï¿½tres
 
 //
 //	 UT1 - UTC = -0.362603591667 s
@@ -136,7 +136,7 @@ public class ITRF2000FrameTest extends TestCase {
       assertEquals(posTestCase.getNorm(),posITRF.getNorm(),10e-5);
 	  
       // Speeds
-// 	 vit = (3609.28229, 3322.88979, -7083.95061) en mètres par secondes
+// 	 vit = (3609.28229, 3322.88979, -7083.95061) en mï¿½tres par secondes
       
 	  Vector3D sJ2000 = new Vector3D( 4410.401666575693,
 			                         -1033.6270182391435,
@@ -164,9 +164,9 @@ public class ITRF2000FrameTest extends TestCase {
   }
 
   public void testRoughTransformJ2000_TerRef() throws OrekitException, ParseException {
-//	  date 14 Octobre 2003 à 02h00 UTC
+//	  date 14 Octobre 2003 ï¿½ 02h00 UTC
 //	  (soit j = 19644, s = 7200.0)
-//	 pos = (6500000.0, -1234567.0, 4000000.0) en mètres
+//	 pos = (6500000.0, -1234567.0, 4000000.0) en mï¿½tres
 
 //
 //	 UT1 - UTC = -0.362603591667 s
@@ -205,7 +205,7 @@ public class ITRF2000FrameTest extends TestCase {
       assertEquals(posTestCase.getNorm(),posITRF.getNorm(),10e-5);
 	  
       // Speeds
-// 	 vit = (3609.28229, 3322.88979, -7083.95061) en mètres par secondes
+// 	 vit = (3609.28229, 3322.88979, -7083.95061) en mï¿½tres par secondes
       
 	  Vector3D sJ2000 = new Vector3D( 3609.28229,
 			                          3322.88979,
@@ -230,12 +230,7 @@ public class ITRF2000FrameTest extends TestCase {
 //      assertEquals(0, d.getZ(), 100);
       assertEquals(sTestCase.getNorm(),sITRF.getNorm(),10e-5);
   }
-  
-/*  private void checkSameTransform(Transform transform1, Transform transform2) {	   
-    assertEquals(0, Vector3D.subtract(transform1.getTranslation() , transform2.getTranslation()).getNorm(), 1.0e-10);
-    assertEquals(0, transform1.getRotation().applyTo(transform2.getRotation().revert()).getAngle(), 1.0e-10);
-  }*/
-
+ 
   public void setUp() {
     try {
       System.setProperty("orekit.iers.directory",
