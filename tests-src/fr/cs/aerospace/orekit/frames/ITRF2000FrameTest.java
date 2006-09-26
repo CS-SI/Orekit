@@ -12,7 +12,7 @@ import fr.cs.aerospace.orekit.FindFile;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.iers.IERSData;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
-import fr.cs.aerospace.orekit.time.TAIScale;
+import fr.cs.aerospace.orekit.time.TTScale;
 import fr.cs.aerospace.orekit.time.UTCScale;
 
 import junit.framework.Test;
@@ -93,77 +93,9 @@ public class ITRF2000FrameTest extends TestCase {
 
   }
   
-//  public void testRoughTransformJ2OOO_TerVrai_one() throws OrekitException, ParseException {
-//	  	  
-//	  AbsoluteDate date = new AbsoluteDate("2003-10-14T02:00:00", TAIScale.getInstance());
-//
-//	  FrameSynchronizer fSynch = new FrameSynchronizer(date);
-//	  ITRF2000Frame itrf = new ITRF2000Frame(fSynch);	
-//	  
-//	  Transform trans = Frame.getJ2000().getTransformTo(itrf);
-//	  
-//	  // Positions
-//	  
-//	  Vector3D posJ2000 = new Vector3D(6500000.0,
-//			                          -1234567.0,
-//			                           4000000.0);
-//	  
-//	  Vector3D posITRF = trans.transformPosition(posJ2000);
-//	  
-//	  Vector3D posTestCase = new Vector3D(3011109.360780633,
-//			                             -5889822.669411588,
-//			                              4002170.0385907636);
-//
-//	  // Position tests
-//	  
-//	/*  System.out.println("------------------------------------------");
-//	  System.out.println("");
-//	  System.out.println("tests position Ter Vrai");
-//	  
-//      Vector3D d = Vector3D.subtract(posITRF, posTestCase);
-//      System.out.println("Ecarts position en metres " + d.getX() + " " + d.getY() + " " + d.getZ() + " " + d.getNorm());
-//      Rotation r = new Rotation(posITRF, posTestCase);
-//      System.out.println("axe rotation position" + r.getAxis().getX() + " " + r.getAxis().getY() + " " + r.getAxis().getZ());
-//      System.out.println("angle rotation position " + Math.toDegrees(r.getAngle()));
-//    
-//      checkClosePosition(posITRF, posTestCase, 2e-5, 100.0, 100.0);
-//      
-//      // speed tests
-//      
-//      Vector3D speedJ2000 = new Vector3D(3609.28229,
-//    		                             3322.88979,
-//                                     	-7083.950661);
-//      
-//      Vector3D speedTestCase = new Vector3D(4410.401666334629,
-//    		                               -1033.6270183038084,
-//                                 ss          -7082.627462818678);
-//      
-//      Vector3D axe= trans.getRotation().getAxis();
-//      
-//      fSynch.setDate(new AbsoluteDate("2003-10-14T01:59:27.500", TAIScale.getInstance()));
-//      
-//      double A = Frame.getJ2000().getTransformTo(itrf).getRotation().getAngle();
-//      
-//      fSynch.setDate(new AbsoluteDate("2003-10-14T01:59:28.500", TAIScale.getInstance()));
-//      
-//      double w = Frame.getJ2000().getTransformTo(itrf).getRotation().getAngle() - A ;
-//      
-//      System.out.println("omega : " + w);
-//      
-//      Vector3D rot = Vector3D.multiply(w,axe);
-//      
-//      
-//      Vector3D speedITRF = trans.transformVector(Vector3D.add(speedJ2000,Vector3D.crossProduct(rot,posJ2000)));
-//      
-//      System.out.println("vit en metres " + speedITRF.getX() + " " + speedITRF.getY() + " " + speedITRF.getZ());
-//
-//      checkClosePosition(speedITRF, speedTestCase, 1e-3, 1.0, 1.0);*/
-//      	  
-//  }
-
-  public void testRoughTransformJ2000_TerRef_one() throws OrekitException, ParseException {
-
-	  AbsoluteDate date = new AbsoluteDate("2003-10-14T02:00:00", TAIScale.getInstance());
+  public void testRoughTransformJ2OOO_TerVrai_one() throws OrekitException, ParseException {
+	  	  
+	  AbsoluteDate date = new AbsoluteDate("2003-10-14T02:00:00", TTScale.getInstance());
 
 	  FrameSynchronizer fSynch = new FrameSynchronizer(date);
 	  ITRF2000Frame itrf = new ITRF2000Frame(fSynch);	
@@ -178,48 +110,140 @@ public class ITRF2000FrameTest extends TestCase {
 	  
 	  Vector3D posITRF = trans.transformPosition(posJ2000);
 	  
-	  Vector3D posTestCase = new Vector3D(3011113.9704794497,
-			                               -5889820.819968201,
-			                               4002169.292139155);
+	  Vector3D posTestCase = new Vector3D(3011109.360780633,
+			                             -5889822.669411588,
+			                              4002170.0385907636);
+
+	  // Position tests
+	  
+//	  System.out.println("------------------------------------------");
+//	  System.out.println("");
+//	  System.out.println("tests position Ter Vrai");
+//	  
+//      Vector3D d = Vector3D.subtract(posITRF, posTestCase);
+//      System.out.println("Ecarts position en metres " + d.getX() + " " + d.getY() + " " + d.getZ() + " " + d.getNorm());
+//      Rotation r = new Rotation(posITRF, posTestCase);
+//      System.out.println("axe rotation position" + r.getAxis().getX() + " " + r.getAxis().getY() + " " + r.getAxis().getZ());
+//      System.out.println("angle rotation position " + Math.toDegrees(r.getAngle()));
+    
+      checkClosePosition(posITRF, posTestCase, 2e-5, 12.0, 14.0);
+      	  
+  }
+
+  public void testRoughTransformJ2000_TerRef_one() throws OrekitException, ParseException {
+
+	  System.out.println("bête test : ");
+	  
+	  AbsoluteDate test = new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 19644*86400+7200.0);
+	  AbsoluteDate nous = new AbsoluteDate("2003-10-14T02:00:00", TTScale.getInstance());
+	  
+	  System.out.println("date donnée :   " + test);
+	  System.out.println("date nous :   " + nous);
+	  
+	  AbsoluteDate date = new AbsoluteDate("2003-10-14T01:58:55.816", UTCScale.getInstance());
+
+	  FrameSynchronizer fSynch = new FrameSynchronizer(date);
+	  ITRF2000Frame itrf = new ITRF2000Frame(fSynch);	
+	  
+	  Transform trans = Frame.getJ2000().getTransformTo(itrf);
+	  
+	  // Positions
+	  
+	  Vector3D posJ2000 = new Vector3D(6500000.0,
+			                          -1234567.0,
+			                           4000000.0);
+	  
+	  Vector3D posITRF = trans.transformPosition(posJ2000);
+	  
+	  Vector3D posTestCase = new Vector3D(3011113.9718319275,
+			                             -5889820.8187575004,
+			                              4002169.292903322);
 
 	  // Position tests
 	  
 	  System.out.println("------------------------------------------");
 	  System.out.println("");
-	  System.out.println("tests position Ter Ref");
+	  System.out.println("tests position Ter Ref i =  ");
 	  
       Vector3D d = Vector3D.subtract(posITRF, posTestCase);
       System.out.println("Ecarts position en metres " + d.getX() + " " + d.getY() + " " + d.getZ() + " " + d.getNorm());
       Rotation r = new Rotation(posITRF, posTestCase);
       System.out.println("axe rotation position" + r.getAxis().getX() + " " + r.getAxis().getY() + " " + r.getAxis().getZ());
       System.out.println("angle rotation position " + Math.toDegrees(r.getAngle()));
-      
-      checkClosePosition(posITRF, posTestCase, 2e-5, 100.0, 100.0);
 	  
+      checkClosePosition(posITRF, posTestCase, 2e-6, 12.0, 14.0);
+      
+     // speed tests
+      
+      Vector3D speedJ2000 = new Vector3D(3609.28229,
+    		                             3322.88979,
+                                     	-7083.950661);
+      
+      Vector3D speedTestCase = new Vector3D(4410.401666334629,
+    		                               -1033.6270183038084,
+                                          -7082.627462818678);
+      
+      Vector3D axe= trans.getRotation().getAxis();
+            
+      double h = 0.5;
+ 
+      fSynch.setDate(new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 19644*86400+7200.0+h));
+      
+      double A = Frame.getJ2000().getTransformTo(itrf).getRotation().getAngle();
+      
+      fSynch.setDate(new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 19644*86400+7200.0-h));
+      
+      double B = Frame.getJ2000().getTransformTo(itrf).getRotation().getAngle();
+
+      fSynch.setDate(new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 19644*86400+7200.0+2*h));
+      
+      double C = Frame.getJ2000().getTransformTo(itrf).getRotation().getAngle();
+    
+      fSynch.setDate(new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 19644*86400+7200.0-2*h));
+      
+      double D = Frame.getJ2000().getTransformTo(itrf).getRotation().getAngle();
+      
+      double w = (1/(12*h))*(8*(A-B)-(C-D));
+      
+//     System.out.println("omega : " + w);
+      
+      Vector3D rot = Vector3D.multiply(w,axe);
+      
+      Vector3D speedITRF = trans.transformVector(Vector3D.add(speedJ2000,Vector3D.crossProduct(rot,posJ2000)));
+
+	  System.out.println("------------------------------------------");
+	  System.out.println("");
+	  System.out.println("tests vitesse Ter Ref ");
+	  
+      Vector3D v = Vector3D.subtract(speedITRF, speedTestCase);
+      System.out.println("Ecarts vitesse en metres seconde " + v.getX() + " " + v.getY() + " " + v.getZ() + " " + v.getNorm());
+         
+      checkClosePosition(speedITRF, speedTestCase, 1e-5, 0.2, 0.2);	  
+      
   }
    
-//  public void testRoughTransformJ2000_TerVrai1991() throws OrekitException, ParseException {
-//	  
-//	  AbsoluteDate date = new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 15002*86400 + 180);
-//
-//	  FrameSynchronizer fSynch = new FrameSynchronizer(date);
-//	  ITRF2000Frame itrf = new ITRF2000Frame(fSynch);	
-//	  
-//	  Transform trans = Frame.getJ2000().getTransformTo(itrf);
-//	  
-//	  // Positions
-//	  
-//	  Vector3D posJ2000 = new Vector3D(991396.024,
-//			                           488684.594,
-//			                           7109721.509);
-//	  
-//	  Vector3D posITRF = trans.transformPosition(posJ2000);
-//	  	  
-//	  Vector3D posTestCase = new Vector3D(-0.221938831683687e06,
-//                                          -0.108816598895859e07,
-//                           			       0.710889981500780e07);
-//
-//	  // Position tests
+  public void testRoughTransformJ2000_TerVrai1991() throws OrekitException, ParseException {
+	  
+	  AbsoluteDate date = new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 15002*86400 + 180);
+
+	  FrameSynchronizer fSynch = new FrameSynchronizer(date);
+	  ITRF2000Frame itrf = new ITRF2000Frame(fSynch);	
+	  
+	  Transform trans = Frame.getJ2000().getTransformTo(itrf);
+	  
+	  // Positions
+	  
+	  Vector3D posJ2000 = new Vector3D(991396.024,
+			                           488684.594,
+			                           7109721.509);
+	  
+	  Vector3D posITRF = trans.transformPosition(posJ2000);
+	  	  
+	  Vector3D posTestCase = new Vector3D(-0.221938831683687e06,
+                                          -0.108816598895859e07,
+                           			       0.710889981500780e07);
+
+	  // Position tests
 //	  System.out.println("------------------------------------------");
 //	  System.out.println("");
 //	  System.out.println("tests position 1991");
@@ -229,10 +253,10 @@ public class ITRF2000FrameTest extends TestCase {
 //      Rotation r = new Rotation(posITRF, posTestCase);
 //      System.out.println("axe rotation position" + r.getAxis().getX() + " " + r.getAxis().getY() + " " + r.getAxis().getZ());
 //      System.out.println("angle rotation position " + Math.toDegrees(r.getAngle()));
-//      
-//      checkClosePosition(posITRF, posTestCase, 1e-4, 500.0, 600.0);
-//
-//  }
+      
+      checkClosePosition(posITRF, posTestCase, 1e-4, 500.0, 600.0);
+
+  }
   
   public void setUp() {
     try {
