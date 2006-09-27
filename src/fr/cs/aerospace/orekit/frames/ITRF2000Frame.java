@@ -102,8 +102,6 @@ public class ITRF2000Frame extends SynchronizedFrame {
 
     // offset from J2000 epoch in julian centuries
     double tts = date.minus(AbsoluteDate.J2000Epoch);
-    
-    
     double ttc =  tts * julianCenturyPerSecond;
     
     // luni-solar and planetary elements
@@ -111,9 +109,9 @@ public class ITRF2000Frame extends SynchronizedFrame {
 
     // compute Earth Rotation Angle using Nicole Capitaine model (2000)
     double dtu1 = getUT1MinusUTC(date);
-      
-    double tu = (tts + dtu1) / 86400 ;
-    
+    double taiMinusTt  = TTScale.getInstance().offsetToTAI(tts + j2000MinusJava);
+    double utcMinusTai = UTCScale.getInstance().offsetFromTAI(tts + taiMinusTt + j2000MinusJava);
+    double tu = (tts + taiMinusTt + utcMinusTai + dtu1) / 86400 ;
     era  = era0 + era1A * tu + era1B * tu;
     era -= twoPi * Math.floor((era + Math.PI) / twoPi);
 
@@ -362,6 +360,10 @@ public class ITRF2000Frame extends SynchronizedFrame {
 
   /** Julian century per second. */
   private static final double julianCenturyPerSecond = 1.0 / (36525.0 * 86400.0);
+
+  /** Offset between J2000.0 epoch and Java epoch in seconds. */
+  private static final double j2000MinusJava =
+    AbsoluteDate.J2000Epoch.minus(AbsoluteDate.JavaEpoch);
 
   /** Constant term of Capitaine's Earth Rotation Angle model. */
   private static final double era0 = twoPi * 0.7790572732640;

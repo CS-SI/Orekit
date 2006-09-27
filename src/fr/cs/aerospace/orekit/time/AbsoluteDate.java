@@ -76,6 +76,9 @@ public class AbsoluteDate implements Comparable {
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 TT. */
     public static final AbsoluteDate J2000Epoch;
 
+    /** Java Reference epoch: 1970-01-01T00:00:00 TT. */
+    public static final AbsoluteDate JavaEpoch;
+
     /** Date formats to use for string conversion. */
     private static SimpleDateFormat input  = null;
     private static SimpleDateFormat output = null;
@@ -91,6 +94,7 @@ public class AbsoluteDate implements Comparable {
         ModifiedJulianEpoch = new AbsoluteDate("1858-11-17T00:00:00",  tt);
         CNES1950Epoch       = new AbsoluteDate("1950-01-01T00:00:00",  tt);
         GPSEpoch            = new AbsoluteDate("1980-01-06T00:00:00",  tt);
+        JavaEpoch           = new AbsoluteDate("1970-01-01T00:00:00",  tt);
         J2000Epoch          = new AbsoluteDate("2000-01-01T12:00:00",  tt);
       } catch (ParseException pe) {
         // should not happen
