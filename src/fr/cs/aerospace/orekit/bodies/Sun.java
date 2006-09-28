@@ -2,6 +2,8 @@ package fr.cs.aerospace.orekit.bodies;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** Sun model.
@@ -17,7 +19,7 @@ public class Sun extends ThirdBody {
     super(6.96e8, 1.32712440e20);
   }
 
-  /** Gets the position of the Sun wrt to the central body.
+  /** Gets the position of the Sun in J2000 frame.
    * <p>The position model is the Newcomb theory
    * as used in the MSLIB library.</p>
    * @param date date
@@ -59,19 +61,23 @@ public class Sun extends ThirdBody {
     double q = Math.sqrt(cl * cl + sl * sl);
     double sx = cl / q;
     double sy = sl * ce / q;
-    Vector3D centralSun = new Vector3D(sx * cr + sy * sr,
-                                       sy * cr - sx * sr,
-                                       sl * se / q);
+    Vector3D centralSun =
+      transform.transformVector(new Vector3D(sx * cr + sy * sr,
+                                             sy * cr - sx * sr,
+                                             sl * se / q));
     double dasr = 1672.2 * Math.cos(xlp) + 28.0 * Math.cos(xlp + xlp)
                 - 0.35 * Math.cos(d);
 
-    return new Vector3D(1000.0 * 149597870.0 / (1.0 + 1.E-05 * dasr),
-                        centralSun);
+    return new Vector3D(1000.0 * 149597870.0 / (1.0 + 1.E-05 * dasr), centralSun);
 
   }
 
   /** Reference date. */
   private static AbsoluteDate reference =
     new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 864000000.0);
+
+  /** Transform from Veis1950 to J2000. */
+  private static Transform transform =
+    Frame.getVeis1950().getTransformTo(Frame.getJ2000());
 
 }

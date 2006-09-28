@@ -20,7 +20,7 @@ public abstract class ThirdBody {
     this.mu = mu;
   }
 
-  /** Get the position of the body.
+  /** Get the position of the body in the J2000 frame.
    * @param date current date
    * @return position of the body (m)
    */

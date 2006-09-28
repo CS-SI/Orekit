@@ -2,6 +2,8 @@ package fr.cs.aerospace.orekit.bodies;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** Moon model.
@@ -18,7 +20,7 @@ public class Moon extends ThirdBody {
     super(1737400.0, 4.9027989e12);
   }
 
-  /** Gets the position of the Moon wrt the central body.
+  /** Gets the position of the Moon in J2000 frame.
    * <p>The position model is the Brown theory
    * as used in the MSLIB library.</p>
    * @param date current date
@@ -81,9 +83,10 @@ public class Moon extends ThirdBody {
     double rx = cu * cb;
     double ry = su * cb * ce - sb * se;
 
-    Vector3D centralMoon = new Vector3D(rx * cr + ry * sr,
-                                        ry * cr - rx * sr,
-                                        sb * ce + su * cb * se);
+    Vector3D centralMoon =
+      transform.transformVector(new Vector3D(rx * cr + ry * sr,
+                                             ry * cr - rx * sr,
+                                             sb * ce + su * cb * se));
 
     double dasr = 5450.0 * Math.cos(xl) + 1002.0 * Math.cos(xl - d - d) + 825.0
                   * Math.cos(d + d);
@@ -110,5 +113,9 @@ public class Moon extends ThirdBody {
   /** Reference date. */
   private static AbsoluteDate reference =
     new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 864000000.0);
+
+  /** Transform from Veis1950 to J2000. */
+  private static Transform transform =
+    Frame.getVeis1950().getTransformTo(Frame.getJ2000());
 
 }

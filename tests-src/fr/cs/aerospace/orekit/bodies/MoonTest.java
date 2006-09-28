@@ -2,6 +2,7 @@ package fr.cs.aerospace.orekit.bodies;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -31,6 +32,7 @@ public class MoonTest extends TestCase {
 
   public void checkDirection(double offsetJ2000, double x, double y, double z) {
     Vector3D moon = new Moon().getPosition(new AbsoluteDate(AbsoluteDate.J2000Epoch, offsetJ2000));
+    moon = Frame.getJ2000().getTransformTo(Frame.getVeis1950()).transformPosition(moon);
     moon.normalizeSelf();
     assertEquals(x, moon.getX(), 1.0e-7);
     assertEquals(y, moon.getY(), 1.0e-7);
