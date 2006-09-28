@@ -666,10 +666,6 @@ public class KeplerianParameters
      yDot[5] += vQ * q + vS * s;
    }
       
-   protected PVCoordinates getPVCoordinates(double mu) {
-	   return getPVCoordinates(mu);
-   }
-
  }
 
 }
