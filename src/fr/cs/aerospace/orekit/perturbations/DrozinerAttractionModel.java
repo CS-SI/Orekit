@@ -5,6 +5,7 @@ import fr.cs.aerospace.orekit.bodies.RotatingBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
@@ -47,20 +48,19 @@ public class DrozinerAttractionModel implements ForceModel {
    * acceleration (mu/r^2 term) is not computed here, only the
    * <em>perturbing</em> acceleration is considered, not the main part.
    * @param t current date
-   * @param position current position (m)
-   * @param velocity current velocity (m/s)
+   * @param pvCoordinates the {@link PVCoordinates}
    * @param Attitude current Attitude
    * @param adder object where the contribution should be added
    */
 
-  public void addContribution(AbsoluteDate t, Vector3D position, Vector3D velocity,
+  public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates,
                               Attitude Attitude, OrbitDerivativesAdder adder)
       throws OrekitException {
 
     // Retrieval of cartesian coordinates
-    double x = position.getX() / equatorialRadius;
-    double y = position.getY() / equatorialRadius;
-    double z = position.getZ() / equatorialRadius;
+    double x = pvCoordinates.getPosition().getX() / equatorialRadius;
+    double y = pvCoordinates.getPosition().getY() / equatorialRadius;
+    double z = pvCoordinates.getPosition().getZ() / equatorialRadius;
 
     // Calculation of useful variables
     double r1 = Math.sqrt(x * x + y * y);

@@ -17,6 +17,7 @@ import fr.cs.aerospace.orekit.perturbations.CunninghamAttractionModel;
 import fr.cs.aerospace.orekit.perturbations.PotentialCoefficientsTab;
 import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 public class NumericalPropagatorTest extends TestCase {
 
@@ -35,7 +36,7 @@ public class NumericalPropagatorTest extends TestCase {
     double mu = 3.986e14;
     Orbit initialOrbit =
       new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
-                new EquinoctialParameters(position, velocity, mu));
+                new EquinoctialParameters(new PVCoordinates(position, velocity), mu));
     
     
     // Extrapolator definition
@@ -50,12 +51,12 @@ public class NumericalPropagatorTest extends TestCase {
                                                 initialOrbit.getDate(),
                                                 (Orbit) null);
     // Initial orbit definition
-    Vector3D initialPosition = initialOrbit.getPosition(mu);
-    Vector3D initialVelocity = initialOrbit.getVelocity(mu);
+    Vector3D initialPosition = initialOrbit.getPVCoordinates(mu).getPosition();
+    Vector3D initialVelocity = initialOrbit.getPVCoordinates(mu).getVelocity();
     
     // Final orbit definition
-    Vector3D finalPosition   = finalOrbit.getPosition(mu);
-    Vector3D finalVelocity   = finalOrbit.getVelocity(mu);
+    Vector3D finalPosition   = finalOrbit.getPVCoordinates(mu).getPosition();
+    Vector3D finalVelocity   = finalOrbit.getPVCoordinates(mu).getVelocity();
     
     // Testing and printing the discrepancies
     // --------------------------------------
@@ -94,7 +95,7 @@ try {
     double mu = 3.986e14;
     Orbit initialOrbit =
       new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
-                new EquinoctialParameters(position,  velocity, mu));
+                new EquinoctialParameters(new PVCoordinates(position,  velocity), mu));
     
     // Extrapolator definition
     // -----------------------
@@ -145,7 +146,7 @@ try {
     
     Orbit initialOrbit =
       new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
-                new EquinoctialParameters(position,  velocity, mu));
+                new EquinoctialParameters(new PVCoordinates(position,  velocity), mu));
     System.out.println("Initial orbit at t = " + initialOrbit.getDate());
     System.out.println("a = " + initialOrbit.getA());
     System.out.println("e = " + initialOrbit.getE());

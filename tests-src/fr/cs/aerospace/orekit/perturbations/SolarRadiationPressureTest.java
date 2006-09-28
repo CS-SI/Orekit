@@ -9,6 +9,7 @@ import fr.cs.aerospace.orekit.orbits.CartesianParameters;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
@@ -30,7 +31,7 @@ public void testSolarRadiationPressure() throws OrekitException{
     Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);                         
     Attitude attitude = new Attitude();
     OrbitalParameters op = new CartesianParameters();
-    op.reset(position, velocity, mu);
+    op.reset(new PVCoordinates(position, velocity), mu);
     OrbitDerivativesAdder adder = op.getDerivativesAdder(mu);
        
     // Acceleration initialisation
@@ -47,7 +48,7 @@ public void testSolarRadiationPressure() throws OrekitException{
                                                       0.5, 0.5, 0.5));
     
     // Add the pressure contribution to the acceleration
-    SRP.addContribution(date, position, velocity, attitude, adder);
+    SRP.addContribution(date, new PVCoordinates(position, velocity), attitude, adder);
 
   } 
     
@@ -94,8 +95,8 @@ public void testSolarRadiationPressure() throws OrekitException{
     System.out.println("Testing the retrieval of switching functions");
     System.out.println("============================================");
     SWF[] switches = SRP.getSwitchingFunctions();
-    System.out.println("g de Switchingfunction 1= " + switches[0].g(date, position, velocity));
-    System.out.println("g de Switchingfunction 2= " + switches[1].g(date, position, velocity));
+    System.out.println("g de Switchingfunction 1= " + switches[0].g(date, new PVCoordinates(position, velocity)));
+    System.out.println("g de Switchingfunction 2= " + switches[1].g(date, new PVCoordinates(position, velocity)));
   }
     
   public static Test suite() {

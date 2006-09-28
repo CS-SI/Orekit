@@ -2,6 +2,8 @@ package fr.cs.aerospace.orekit.orbits;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
+
 /**
  * This class handles circular orbital parameters.
 
@@ -66,12 +68,11 @@ public class CircularParameters
   }
 
   /** Constructor from cartesian parameters.
-   * @param position position in inertial frame (m)
-   * @param velocity velocity in inertial frame (m/s)
+   * @param pvCoordinates the {@link PVCoordinates} in inertial frame
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public CircularParameters(Vector3D position, Vector3D velocity, double mu) {
-    reset(position, velocity, mu);
+  public CircularParameters(PVCoordinates pvCoordinates, double mu) {
+    reset(pvCoordinates, mu);
   }
 
   /** Constructor from any kind of orbital parameters
@@ -149,21 +150,20 @@ public class CircularParameters
   }
 
   /** Update the parameters from the current position and velocity. */
-  protected void updateFromPositionAndVelocity() {
+  protected void updateFromPVCoordinates() {
 
     // get cartesian elements
     double   mu       = getCachedMu();
-    Vector3D position = getPosition(mu);
-    Vector3D velocity = getVelocity(mu);
+    PVCoordinates pvCoordinates = getPVCoordinates(mu);
     
     // compute semi-major axis
-    double r          = position.getNorm();
-    double V2         = Vector3D.dotProduct(velocity, velocity);
+    double r          = pvCoordinates.getPosition().getNorm();
+    double V2         = Vector3D.dotProduct(pvCoordinates.getVelocity(), pvCoordinates.getVelocity());
     double rV2OnMu    = r * V2 / mu;
     a                 = r / (2 - rV2OnMu);
 
     // compute inclination
-    Vector3D momentum = Vector3D.crossProduct(position, velocity);
+    Vector3D momentum = Vector3D.crossProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity());
     i                 = Vector3D.angle(momentum, Vector3D.plusK);
 
     // compute right ascension of ascending node
@@ -179,11 +179,11 @@ public class CircularParameters
     double sinI    = Math.sin(i);
     Vector3D rVec  = new Vector3D(cosRaan, Math.sin(raan), 0);
     Vector3D sVec  = new Vector3D(-cosI * sinRaan, cosI * cosRaan, sinI);
-    double x2      = Vector3D.dotProduct(position, rVec) / a;
-    double y2      = Vector3D.dotProduct(position, sVec) / a;
+    double x2      = Vector3D.dotProduct(pvCoordinates.getPosition(), rVec) / a;
+    double y2      = Vector3D.dotProduct(pvCoordinates.getPosition(), sVec) / a;
 
     // compute eccentricity vector
-    double eSE    = Vector3D.dotProduct(position, velocity) / Math.sqrt(mu * a);
+    double eSE    = Vector3D.dotProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity()) / Math.sqrt(mu * a);
     double eCE    = rV2OnMu - 1;
     double e2     = eCE * eCE + eSE * eSE;
     double f      = eCE - e2;

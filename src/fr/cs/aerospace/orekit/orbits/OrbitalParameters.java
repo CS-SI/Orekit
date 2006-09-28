@@ -4,6 +4,8 @@ package fr.cs.aerospace.orekit.orbits;
 import org.spaceroots.mantissa.utilities.ArraySliceMappable;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
+
 import java.io.Serializable;
 
 /**
@@ -42,8 +44,6 @@ public abstract class OrbitalParameters
    * Build a new instance with arbitrary default elements.
    */
   protected OrbitalParameters() {
-    cachedPosition = new Vector3D(Double.NaN, Double.NaN, Double.NaN);
-    cachedVelocity = new Vector3D(Double.NaN, Double.NaN, Double.NaN);
     reset();
   }
 
@@ -58,22 +58,19 @@ public abstract class OrbitalParameters
    */
   public void reset() {
     cachedMu = Double.NaN;
-    cachedPosition.setCoordinates(Double.NaN, Double.NaN, Double.NaN);
-    cachedVelocity.setCoordinates(Double.NaN, Double.NaN, Double.NaN);
+    cachedPVCoordinates = new PVCoordinates();
     dirtyCache = true;
   }
 
   /** Reset the orbit from cartesian parameters.
-   * @param position position in inertial frame (m)
-   * @param velocity velocity in inertial frame (m/s)
+   * @param pvCoordinates the position and velocity in the inertial frame
    * @param mu central attraction coefficient (m^3/s^2)
    */
-  public void reset(Vector3D position, Vector3D velocity, double mu) {
+  public void reset(PVCoordinates pvCoordinates, double mu) {
     cachedMu = mu;
-    cachedPosition.reset(position);
-    cachedVelocity.reset(velocity);
+    cachedPVCoordinates = pvCoordinates;
     dirtyCache = false;
-    updateFromPositionAndVelocity();
+    updateFromPVCoordinates();
   }
 
   /** Reset the orbit from another one.
@@ -85,10 +82,10 @@ public abstract class OrbitalParameters
     doReset(op, mu);
   }
 
-  /** Update the canonical orbital parameters from the cached position/velocity.
+  /** Update the canonical orbital parameters from the cached PVCoordinates.
    * <p>The cache is <em>guaranteed</em> to be clean when this method is called.</p>
    */
-  protected abstract void updateFromPositionAndVelocity();
+  protected abstract void updateFromPVCoordinates();
 
   /** Reset the orbit from another one.
    * @param op orbit parameters to copy
@@ -148,7 +145,7 @@ public abstract class OrbitalParameters
    */
   public abstract double getI() ;
 
-  private void initPositionAndVelocity(double mu) {
+  private void initPVCoordinates(double mu) {
 
     // get equinoctial parameters
     double a  = getA();
@@ -196,13 +193,13 @@ public abstract class OrbitalParameters
     // cache the computed values
     cachedMu = mu;
 
-    cachedPosition.setCoordinates(x * ux + y * vx,
-                                  x * uy + y * vy,
-                                  x * uz + y * vz);
+    cachedPVCoordinates.setPosition(new Vector3D(x * ux + y * vx,
+                                                 x * uy + y * vy,
+                                                 x * uz + y * vz));
 
-    cachedVelocity.setCoordinates(xdot * ux + ydot * vx,
-                                  xdot * uy + ydot * vy,
-                                  xdot * uz + ydot * vz);
+    cachedPVCoordinates.setVelocity(new Vector3D(xdot * ux + ydot * vx,
+                                                 xdot * uy + ydot * vy,
+                                                 xdot * uz + ydot * vz));
 
     dirtyCache = false;
 
@@ -221,41 +218,23 @@ public abstract class OrbitalParameters
   protected double getCachedMu() {
     return cachedMu;
   }
-
-  /** Get the position.
-   * Compute the position of the satellite. This method caches its
+  
+  /** Get the {@link PVCoordinates}.
+   * Compute the position and velocity of the satellite. This method caches its
    * results, and recompute them only when the orbit is changed or if
    * the method is called with a new value for mu. The result is
-   * provided as a reference to the internally cached vector, so the
-   * caller is responsible to copy it in a separate vector if it needs
+   * provided as a reference to the internally cached {@link PVCoordinates}, so the
+   * caller is responsible to copy it in a separate {@link PVCoordinates} if it needs
    * to keep the value for a while.
-   * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
-   * @return position vector (m) in inertial frame (reference to an
-   * internally cached vector which can change)
+   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+   * @return pvCoordinates in inertial frame (reference to an
+   * internally cached pvCoordinates which can change)
    */
-  public Vector3D getPosition(double mu) {
-    if (dirtyCache || (mu != cachedMu)) {
-      initPositionAndVelocity(mu);
-    }
-    return cachedPosition;
-  }
-
-  /** Get the velocity.
-   * Compute the velocity of the satellite. This method caches its
-   * results, and recompute them only when the orbit is changed or if
-   * the method is called with a new value for mu. The result is
-   * provided as a reference to the internally cached vector, so the
-   * caller is responsible to copy it in a separate vector if it needs
-   * to keep the value for a while.
-   * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
-   * @return velocity vector (m/s) in inertial frame (reference to an
-   * internally cached vector which can change)
-   */
-  public Vector3D getVelocity(double mu) {
-    if (dirtyCache || (mu != cachedMu)) {
-      initPositionAndVelocity(mu);
-    }
-    return cachedVelocity;
+  public PVCoordinates getPVCoordinates(double mu) {
+	 if (dirtyCache || (mu != cachedMu)) {
+		 initPVCoordinates(mu);
+	 }
+	      return cachedPVCoordinates;	  
   }
 
   /** Build an instance of {@link OrbitDerivativesAdder
@@ -293,13 +272,10 @@ public abstract class OrbitalParameters
   /** Last value of mu used to compute position and velocity (m<sup>3</sup>/s<sup>2</sup>). */
   private double cachedMu;
 
-  /** Last computed position (m). */
-  private Vector3D cachedPosition;
-
-  /** Last computed velocity (m/s). */
-  private Vector3D cachedVelocity;
-
-  /** Indicator for dirty position/velocity cache. */
+  /** Las computed PVCoordinates. */
+  private PVCoordinates cachedPVCoordinates; 
+  
+  /** Indicator for dirty PVCoordinates cache. */
   private boolean dirtyCache;
 
 }

@@ -11,6 +11,7 @@ import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.propagation.KeplerianPropagator;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 public class KeplerianPropagatorTest extends TestCase {
   
@@ -29,7 +30,7 @@ public class KeplerianPropagatorTest extends TestCase {
       AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
       Orbit initialOrbit =
         new Orbit(initDate, 
-                  new EquinoctialParameters(position, velocity, mu));
+                  new EquinoctialParameters(new PVCoordinates(position, velocity), mu));
       
       // Extrapolator definition
       // -----------------------
@@ -105,7 +106,7 @@ public class KeplerianPropagatorTest extends TestCase {
       AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
       Orbit initialOrbit =
         new Orbit(initDate, 
-                  new EquinoctialParameters(position, velocity, mu));
+                  new EquinoctialParameters(new PVCoordinates(position, velocity), mu));
       
       // Extrapolator definition
       // -----------------------
@@ -183,7 +184,7 @@ public class KeplerianPropagatorTest extends TestCase {
       
       Vector3D r = new Vector3D(finalOrbit.getA(),(new Vector3D(x3,U,y3,V)));
       
-      assertEquals(finalOrbit.getPosition(mu).getNorm(), r.getNorm(), Utils.epsilonTest * r.getNorm());    
+      assertEquals(finalOrbit.getPVCoordinates(mu).getPosition().getNorm(), r.getNorm(), Utils.epsilonTest * r.getNorm());    
       
     }
     
@@ -273,7 +274,7 @@ public class KeplerianPropagatorTest extends TestCase {
       
       Vector3D r = new Vector3D(finalOrbit.getA(),(new Vector3D(x3,U,y3,V)));
       
-      assertEquals(finalOrbit.getPosition(mu).getNorm(), r.getNorm(), Utils.epsilonTest * r.getNorm());    
+      assertEquals(finalOrbit.getPVCoordinates(mu).getPosition().getNorm(), r.getNorm(), Utils.epsilonTest * r.getNorm());    
       
     }
   

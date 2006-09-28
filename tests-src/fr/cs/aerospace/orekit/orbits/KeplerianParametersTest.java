@@ -6,6 +6,7 @@ import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.Utils;
 import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 // $Id$
 public class KeplerianParametersTest extends TestCase {
@@ -22,10 +23,10 @@ public class KeplerianParametersTest extends TestCase {
                               0.048363, KeplerianParameters.MEAN_ANOMALY);
     double mu = 3.9860047e14;
     
-    Vector3D pos = kep.getPosition(mu);
-    Vector3D vit = kep.getVelocity(mu);
+    Vector3D pos = kep.getPVCoordinates(mu).getPosition();
+    Vector3D vit = kep.getPVCoordinates(mu).getVelocity();
     
-    KeplerianParameters param = new KeplerianParameters(pos,vit,mu);
+    KeplerianParameters param = new KeplerianParameters(new PVCoordinates(pos,vit),mu);
     assertEquals(param.getA(), kep.getA(), Utils.epsilonTest * kep.getA());
     assertEquals(param.getE(), kep.getE(), Utils.epsilonE * Math.abs(kep.getE()));
     assertEquals(Utils.trimAngle(param.getI(), kep.getI()), kep.getI(), Utils.epsilonAngle * Math.abs(kep.getI()));
@@ -38,10 +39,10 @@ public class KeplerianParametersTest extends TestCase {
       new KeplerianParameters(24464560.0, 0.0, 0.122138, 3.10686, 1.00681,
                               0.048363, KeplerianParameters.MEAN_ANOMALY);
     
-    Vector3D posCir = kepCir.getPosition(mu);
-    Vector3D vitCir = kepCir.getVelocity(mu);
+    Vector3D posCir = kepCir.getPVCoordinates(mu).getPosition();
+    Vector3D vitCir = kepCir.getPVCoordinates(mu).getVelocity();
     
-    KeplerianParameters paramCir = new KeplerianParameters(posCir,vitCir,mu);
+    KeplerianParameters paramCir = new KeplerianParameters(new PVCoordinates(posCir,vitCir),mu);
     assertEquals(paramCir.getA(), kepCir.getA(), Utils.epsilonTest * kepCir.getA());
     assertEquals(paramCir.getE(), kepCir.getE(), Utils.epsilonE * Math.max(1.,Math.abs(kepCir.getE())));
     assertEquals(Utils.trimAngle(paramCir.getI(), kepCir.getI()), kepCir.getI(), Utils.epsilonAngle * Math.abs(kepCir.getI()));
@@ -58,8 +59,8 @@ public class KeplerianParametersTest extends TestCase {
                               0.048363, KeplerianParameters.MEAN_ANOMALY);
     double mu = 3.9860047e14;
     
-    Vector3D pos = kep.getPosition(mu);
-    Vector3D vit = kep.getVelocity(mu);
+    Vector3D pos = kep.getPVCoordinates(mu).getPosition();
+    Vector3D vit = kep.getPVCoordinates(mu).getVelocity();
     assertEquals(-0.107622532467967e+07, pos.getX(), Utils.epsilonTest * Math.abs(pos.getX()));
     assertEquals(-0.676589636432773e+07, pos.getY(), Utils.epsilonTest * Math.abs(pos.getY()));
     assertEquals(-0.332308783350379e+06, pos.getZ(), Utils.epsilonTest * Math.abs(pos.getZ()));
@@ -89,7 +90,7 @@ public class KeplerianParametersTest extends TestCase {
     Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
     double mu = 3.9860047e14;
     
-    KeplerianParameters p = new KeplerianParameters(position, velocity, mu);
+    KeplerianParameters p = new KeplerianParameters(new PVCoordinates(position, velocity), mu);
 
     // elliptic orbit
     double e = p.getE();
@@ -161,13 +162,13 @@ public class KeplerianParametersTest extends TestCase {
 
     // validation of: r = a .(1 - e2) / (1 + e.cos(v))
     assertEquals(a * epsilon * epsilon / ksi,
-                 p.getPosition(mu).getNorm(),
-                 Utils.epsilonTest * Math.abs(p.getPosition(mu).getNorm()));
+                 p.getPVCoordinates(mu).getPosition().getNorm(),
+                 Utils.epsilonTest * Math.abs(p.getPVCoordinates(mu).getPosition().getNorm()));
     
     // validation of: V = sqrt(mu.(1+2e.cos(v)+e2)/a.(1-e2) ) 
     assertEquals(na * Math.sqrt(ksi * ksi + nu * nu) / epsilon,
-                 p.getVelocity(mu).getNorm(),
-                 Utils.epsilonTest * Math.abs(p.getVelocity(mu).getNorm()));
+                 p.getPVCoordinates(mu).getVelocity().getNorm(),
+                 Utils.epsilonTest * Math.abs(p.getPVCoordinates(mu).getVelocity().getNorm()));
 
     
     //  circular and equatorial orbit
@@ -186,13 +187,13 @@ public class KeplerianParametersTest extends TestCase {
 
     // validation of: r = a .(1 - e2) / (1 + e.cos(v))
     assertEquals(a * epsilon * epsilon / ksi,
-             pCirEqua.getPosition(mu).getNorm(),
-             Utils.epsilonTest * Math.abs(pCirEqua.getPosition(mu).getNorm()));
+             pCirEqua.getPVCoordinates(mu).getPosition().getNorm(),
+             Utils.epsilonTest * Math.abs(pCirEqua.getPVCoordinates(mu).getPosition().getNorm()));
     
     // validation of: V = sqrt(mu.(1+2e.cos(v)+e2)/a.(1-e2) ) 
     assertEquals(na * Math.sqrt(ksi * ksi + nu * nu) / epsilon,
-             pCirEqua.getVelocity(mu).getNorm(),
-             Utils.epsilonTest * Math.abs(pCirEqua.getVelocity(mu).getNorm()));
+             pCirEqua.getPVCoordinates(mu).getVelocity().getNorm(),
+             Utils.epsilonTest * Math.abs(pCirEqua.getPVCoordinates(mu).getVelocity().getNorm()));
   }
 
   public void testGeometry() {
@@ -203,8 +204,8 @@ public class KeplerianParametersTest extends TestCase {
       new KeplerianParameters(24464560.0, 0.7311, 2.1, 3.10686, 1.00681,
                               0.67, KeplerianParameters.TRUE_ANOMALY);
     
-    Vector3D position = p.getPosition(mu);
-    Vector3D velocity = p.getVelocity(mu);
+    Vector3D position = p.getPVCoordinates(mu).getPosition();
+    Vector3D velocity = p.getPVCoordinates(mu).getVelocity();
     Vector3D momentum = Vector3D.crossProduct(position,velocity);
     momentum.normalizeSelf();
     
@@ -213,14 +214,14 @@ public class KeplerianParametersTest extends TestCase {
     
     for (double lv = 0; lv <= 2 * Math.PI; lv += 2 * Math.PI/100.) {
       p.setTrueAnomaly(lv);
-      position = p.getPosition(mu);
+      position = p.getPVCoordinates(mu).getPosition();
       
       // test if the norm of the position is in the range [perigee radius, apogee radius]
       assertTrue((position.getNorm() - apogeeRadius)  <= (  apogeeRadius * Utils.epsilonTest));
       assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
       
       position.normalizeSelf();
-      velocity = p.getVelocity(mu);
+      velocity = p.getPVCoordinates(mu).getVelocity();
       velocity.normalizeSelf();
       
       // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
@@ -234,21 +235,21 @@ public class KeplerianParametersTest extends TestCase {
     
     // apsides
     p.setTrueAnomaly(0);
-    assertEquals(p.getPosition(mu).getNorm(), perigeeRadius, perigeeRadius * Utils.epsilonTest);
+    assertEquals(p.getPVCoordinates(mu).getPosition().getNorm(), perigeeRadius, perigeeRadius * Utils.epsilonTest);
     
     p.setTrueAnomaly(Math.PI);
-    assertEquals(p.getPosition(mu).getNorm(), apogeeRadius, apogeeRadius * Utils.epsilonTest);
+    assertEquals(p.getPVCoordinates(mu).getPosition().getNorm(), apogeeRadius, apogeeRadius * Utils.epsilonTest);
     
     // nodes
     // descending node
     p.setTrueAnomaly(Math.PI - p.getPerigeeArgument());
-    assertTrue(Math.abs(p.getPosition(mu).getZ()) < p.getPosition(mu).getNorm() * Utils.epsilonTest);
-    assertTrue(p.getVelocity(mu).getZ() < 0);
+    assertTrue(Math.abs(p.getPVCoordinates(mu).getPosition().getZ()) < p.getPVCoordinates(mu).getPosition().getNorm() * Utils.epsilonTest);
+    assertTrue(p.getPVCoordinates(mu).getVelocity().getZ() < 0);
     
     // ascending node
     p.setTrueAnomaly(2.0 * Math.PI - p.getPerigeeArgument());
-    assertTrue(Math.abs(p.getPosition(mu).getZ()) < p.getPosition(mu).getNorm() * Utils.epsilonTest);
-    assertTrue(p.getVelocity(mu).getZ() > 0);
+    assertTrue(Math.abs(p.getPVCoordinates(mu).getPosition().getZ()) < p.getPVCoordinates(mu).getPosition().getNorm() * Utils.epsilonTest);
+    assertTrue(p.getPVCoordinates(mu).getVelocity().getZ() > 0);
  
     
     //  circular and equatorial orbit
@@ -256,8 +257,8 @@ public class KeplerianParametersTest extends TestCase {
       new KeplerianParameters(24464560.0, 0.1e-10, 0.1e-8, 3.10686, 1.00681,
                               0.67, KeplerianParameters.TRUE_ANOMALY);
    
-    position = pCirEqua.getPosition(mu);
-    velocity = pCirEqua.getVelocity(mu);
+    position = pCirEqua.getPVCoordinates(mu).getPosition();
+    velocity = pCirEqua.getPVCoordinates(mu).getVelocity();
     momentum = Vector3D.crossProduct(position,velocity);
     momentum.normalizeSelf();
     
@@ -268,7 +269,7 @@ public class KeplerianParametersTest extends TestCase {
  
     for (double lv = 0; lv <= 2 * Math.PI; lv += 2 * Math.PI/100.) {
       pCirEqua.setTrueAnomaly(lv);
-      position = pCirEqua.getPosition(mu);
+      position = pCirEqua.getPVCoordinates(mu).getPosition();
       
       // test if the norm pf the position is in the range [perigee radius, apogee radius]
       // Warning: these tests are without absolute value by choice
@@ -276,7 +277,7 @@ public class KeplerianParametersTest extends TestCase {
       assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
       
       position.normalizeSelf();
-      velocity = pCirEqua.getVelocity(mu);
+      velocity = pCirEqua.getPVCoordinates(mu).getVelocity();
       velocity.normalizeSelf();
       
       // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
@@ -296,9 +297,9 @@ public class KeplerianParametersTest extends TestCase {
     Vector3D velocity = new Vector3D(-2079., 5291., -7842.);
     double mu = 3.9860047e14;
     
-    KeplerianParameters p = new KeplerianParameters(position, velocity, mu);
-    Vector3D positionOffset = new Vector3D(p.getPosition(mu));
-    Vector3D velocityOffset = new Vector3D(p.getVelocity(mu));
+    KeplerianParameters p = new KeplerianParameters(new PVCoordinates(position, velocity), mu);
+    Vector3D positionOffset = new Vector3D(p.getPVCoordinates(mu).getPosition());
+    Vector3D velocityOffset = new Vector3D(p.getPVCoordinates(mu).getVelocity());
     
     positionOffset.subtractFromSelf(position);
     velocityOffset.subtractFromSelf(velocity);
@@ -311,9 +312,9 @@ public class KeplerianParametersTest extends TestCase {
     velocity = new Vector3D(4026.2, 287.479, -3.e-6);
    
     
-    p = new KeplerianParameters(position, velocity, mu);
-    positionOffset = new Vector3D(p.getPosition(mu));
-    velocityOffset = new Vector3D(p.getVelocity(mu));
+    p = new KeplerianParameters(new PVCoordinates(position, velocity), mu);
+    positionOffset = new Vector3D(p.getPVCoordinates(mu).getPosition());
+    velocityOffset = new Vector3D(p.getPVCoordinates(mu).getVelocity());
     
     positionOffset.subtractFromSelf(position);
     velocityOffset.subtractFromSelf(velocity);

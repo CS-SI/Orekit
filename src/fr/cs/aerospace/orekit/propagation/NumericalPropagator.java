@@ -22,6 +22,7 @@ import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.perturbations.ForceModel;
 import fr.cs.aerospace.orekit.perturbations.SWF;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
 import fr.cs.aerospace.orekit.Attitude;
 
 
@@ -258,17 +259,14 @@ public class NumericalPropagator
         mapState(t, y);
         
         // compute cartesian coordinates
-        Vector3D position = parameters.getPosition(mu);
-        Vector3D velocity = parameters.getVelocity(mu);
+        PVCoordinates pvCoordinates = parameters.getPVCoordinates(mu);
         
         // initialize derivatives
         adder.initDerivatives(yDot);
         
         // compute the contributions of all perturbing forces
         for (Iterator iter = forceModels.iterator(); iter.hasNext();) {
-            ((ForceModel) iter.next()).addContribution(date, position, velocity, 
-                                                      Attitude, adder);
-
+            ((ForceModel) iter.next()).addContribution(date, pvCoordinates, Attitude, adder);
         }
         
         // finalize derivatives by adding the Kepler contribution
@@ -298,7 +296,7 @@ public class NumericalPropagator
       public double g(double t, double[] y){
           mapState(t, y);
           try {
-            return swf.g(date, parameters.getPosition(mu), parameters.getVelocity(mu));
+            return swf.g(date, parameters.getPVCoordinates(mu));
           } catch (OrekitException oe) {
             // TODO provide the exception to the surrounding NumericalPropagator instance
             throw new RuntimeException("... TODO ...");
@@ -307,7 +305,7 @@ public class NumericalPropagator
       
       public int eventOccurred(double t, double[] y) {
           mapState(t, y);
-          swf.eventOccurred(date, parameters.getPosition(mu), parameters.getVelocity(mu));
+          swf.eventOccurred(date, parameters.getPVCoordinates(mu));
           return CONTINUE;
       }
       

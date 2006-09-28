@@ -3,6 +3,7 @@ package fr.cs.aerospace.orekit.orbits;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 import java.io.Serializable;
 
@@ -105,13 +106,12 @@ public class Orbit
 
   /** Reset the orbit from cartesian parameters.
    * @param t date (a reference to this object will be stored in the instance)
-   * @param position position in inertial frame (m)
-   * @param velocity velocity in inertial frame (m/s)
+   * @param pvCoordinates the pvCoordinates of the satellite
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public void reset(AbsoluteDate t, Vector3D position, Vector3D velocity, double mu) {
+  public void reset(AbsoluteDate t, PVCoordinates pvCoordinates, double mu) {
     this.t = t;
-    parameters.reset(position, velocity, mu);
+    parameters.reset(pvCoordinates, mu);
   }
 
   /** Reset the orbit from another one.
@@ -259,34 +259,19 @@ public class Orbit
     return parameters.getI();
   }
 
-  /** Get the position.
-   * Compute the position of the satellite. This method caches its
-   * results, and recompute them only when the orbit is changed or if
-   * the method is called with a new value for mu. The result is
-   * provided as a reference to the internally cached vector, so the
-   * caller is responsible to copy it in a separate vector if it needs
-   * to keep the value for a while.
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   * @return position vector in inertial frame (reference to an
-   * internally cached vector which can change)
-   */
-  public Vector3D getPosition(double mu) {
-    return parameters.getPosition(mu);
-  }
-
-  /** Get the velocity.
-   * Compute the velocity of the satellite. This method caches its
-   * results, and recompute them only when the orbit is changed or if
-   * the method is called with a new value for mu. The result is
-   * provided as a reference to the internally cached vector, so the
-   * caller is responsible to copy it in a separate vector if it needs
-   * to keep the value for a while.
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   * @return velocity vector in inertial frame (reference to an
-   * internally cached vector which can change)
-   */
-  public Vector3D getVelocity(double mu) {
-    return parameters.getVelocity(mu);
+  /** Get the {@link PVCoordinates}.
+  * Compute the position and velocity of the satellite. This method caches its
+  * results, and recompute them only when the orbit is changed or if
+  * the method is called with a new value for mu. The result is
+  * provided as a reference to the internally cached {@link PVCoordinates}, so the
+  * caller is responsible to copy it in a separate {@link PVCoordinates} if it needs
+  * to keep the value for a while.
+  * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+  * @return pvCoordinates in inertial frame (reference to an
+  * internally cached pvCoordinates which can change)
+  */
+  public PVCoordinates getPVCoordinates(double mu) {
+	  return parameters.getPVCoordinates(mu);
   }
 
   /**  Returns a string representation of this Orbit object

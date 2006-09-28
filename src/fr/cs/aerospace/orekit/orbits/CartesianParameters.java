@@ -2,6 +2,8 @@ package fr.cs.aerospace.orekit.orbits;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
+
 
 /** This class holds cartesian orbital parameters.
 
@@ -15,6 +17,7 @@ import org.spaceroots.mantissa.geometry.Vector3D;
  *     yDot
  *     zDot
  *   </pre>
+ * contained in {@link PVCoordinates}.
  * </p>
 
  * <p>
@@ -51,12 +54,11 @@ public class CartesianParameters
   }
 
   /** Constructor from cartesian parameters.
-   * @param position position in inertial frame (m)
-   * @param velocity velocity in inertial frame (m/s)
+   * @param pvCoordinates the position and velocity of the satellite. 
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public CartesianParameters(Vector3D position, Vector3D velocity, double mu) {
-    reset(position, velocity, mu);
+  public CartesianParameters(PVCoordinates pvCoordinates, double mu) {
+    reset(pvCoordinates, mu);
     equinoctial = null;
   }
 
@@ -86,12 +88,12 @@ public class CartesianParameters
   }
 
   protected void doReset(OrbitalParameters op, double mu) {
-    reset(op.getPosition(mu), op.getVelocity(mu), mu);
+    reset(op.getPVCoordinates(mu), mu);
     equinoctial = null;
   }
 
   /** Update the parameters from the current position and velocity. */
-  protected void updateFromPositionAndVelocity() {
+  protected void updateFromPVCoordinates() {
     // we do NOT recompute immediately the underlying parameters,
     // using a lazy evaluation
     equinoctial = null;
@@ -101,9 +103,8 @@ public class CartesianParameters
   private void lazilyEvaluateEquinoctialParameters() {
     if (equinoctial == null) {
       double   mu       = getCachedMu();
-      Vector3D position = getPosition(mu);
-      Vector3D velocity = getVelocity(mu);
-      equinoctial = new EquinoctialParameters(position, velocity, mu);
+      PVCoordinates pvCoordinates = getPVCoordinates(mu);
+      equinoctial = new EquinoctialParameters(pvCoordinates, mu);
     }
   }
 
@@ -191,23 +192,7 @@ public class CartesianParameters
    * @return a string representation of this object
    */
   public String toString() {
-    Vector3D position = getPosition(getCachedMu());
-    Vector3D velocity = getVelocity(getCachedMu());
-    StringBuffer sb = new StringBuffer();
-    sb.append('{');
-    sb.append(position.getX());
-    sb.append(' ');
-    sb.append(position.getY());
-    sb.append(' ');
-    sb.append(position.getZ());
-    sb.append(' ');
-    sb.append(velocity.getX());
-    sb.append(' ');
-    sb.append(velocity.getY());
-    sb.append(' ');
-    sb.append(velocity.getZ());
-    sb.append('}');
-    return sb.toString();
+	  return getPVCoordinates(getCachedMu()).toString();
   }
 
   /** Build an instance of {@link OrbitDerivativesAdder
@@ -228,10 +213,8 @@ public class CartesianParameters
    * @param array array holding the data to extract (a, e, i, pa, raan, v)
    */
   public void mapStateFromArray(int start, double[] array) {
-    Vector3D position = getPosition(getCachedMu());
-    Vector3D velocity = getVelocity(getCachedMu());
-    position.setCoordinates(array[start],  array[start + 1], array[start + 2]);
-    velocity.setCoordinates(array[start + 3], array[start + 4], array[start + 5]);
+    getPVCoordinates(getCachedMu()).setPosition(new Vector3D(array[start],  array[start + 1], array[start + 2]));
+    getPVCoordinates(getCachedMu()).setVelocity(new Vector3D(array[start + 3], array[start + 4], array[start + 5]));    
   }
 
   /** Store internal state data into the specified array slice.
@@ -239,14 +222,13 @@ public class CartesianParameters
    * @param array array where data should be stored (a, e, i, pa, raan, v)
    */
   public void mapStateToArray(int start, double[] array) {
-    Vector3D position = getPosition(getCachedMu());
-    Vector3D velocity = getVelocity(getCachedMu());
-    array[start]     = position.getX();
-    array[start + 1] = position.getY();
-    array[start + 2] = position.getZ();
-    array[start + 3] = velocity.getX();
-    array[start + 4] = velocity.getY();
-    array[start + 5] = velocity.getZ();
+    PVCoordinates pvCoordinates = getPVCoordinates(getCachedMu());
+    array[start]     = pvCoordinates.getPosition().getX();
+    array[start + 1] = pvCoordinates.getPosition().getY();
+    array[start + 2] = pvCoordinates.getPosition().getZ();
+    array[start + 3] = pvCoordinates.getVelocity().getX();
+    array[start + 4] = pvCoordinates.getVelocity().getY();
+    array[start + 5] = pvCoordinates.getVelocity().getZ();
   }
 
   /** Underlying equinoctial orbit providing non-cartesian elements. */
@@ -282,20 +264,19 @@ public class CartesianParameters
     */
    public void addKeplerContribution() {
 
-     Vector3D position = getPosition(mu);
-     Vector3D velocity = getVelocity(mu);
+     PVCoordinates pvCoordinates = getPVCoordinates(mu);
 
      // central body acceleration coefficient
-     double r2 = Vector3D.dotProduct(position, position);
+     double r2 = Vector3D.dotProduct(pvCoordinates.getPosition(), pvCoordinates.getPosition());
      double factor = -mu / (r2 * Math.sqrt(r2));
 
      // Kepler natural evolution
-     yDot[0] += velocity.getX();
-     yDot[1] += velocity.getY();
-     yDot[2] += velocity.getZ();
-     yDot[3] += factor * position.getX();
-     yDot[4] += factor * position.getY();
-     yDot[5] += factor * position.getZ();
+     yDot[0] += pvCoordinates.getVelocity().getX();
+     yDot[1] += pvCoordinates.getVelocity().getY();
+     yDot[2] += pvCoordinates.getVelocity().getZ();
+     yDot[3] += factor * pvCoordinates.getPosition().getX();
+     yDot[4] += factor * pvCoordinates.getPosition().getY();
+     yDot[5] += factor * pvCoordinates.getPosition().getZ();
 
    }
 

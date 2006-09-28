@@ -2,6 +2,8 @@ package fr.cs.aerospace.orekit.orbits;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
+
 /** This class sums up the contribution of several forces into orbit derivatives.
  *
  * <p>The aim of this class is to gather the contributions of various perturbing
@@ -75,17 +77,16 @@ public abstract class OrbitDerivativesAdder {
   
   /** Update the orbital frames. */
   private void updateOrbitalFrames() {
-    Vector3D position = parameters.getPosition(mu);
-    Vector3D velocity = parameters.getVelocity(mu);
+    PVCoordinates pvCoordinates = parameters.getPVCoordinates(mu);
         
-    W.setToCrossProduct(position, velocity);
+    W.setToCrossProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity());
     W.normalizeSelf();
 
-    T.reset(velocity);
+    T.reset(pvCoordinates.getVelocity());
     T.normalizeSelf();
     N.setToCrossProduct(W, T);
 
-    Q.reset(position);
+    Q.reset(pvCoordinates.getPosition());
     Q.normalizeSelf();
     S.setToCrossProduct(W, Q);
   }

@@ -7,6 +7,7 @@ import fr.cs.aerospace.orekit.Attitude;
 import fr.cs.aerospace.orekit.Spacecraft;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /** Atmospheric drag force model.
  * @version $Id$
@@ -32,12 +33,12 @@ public class Drag implements ForceModel {
    * @param adder object where the contribution should be added
    */
   public void addContribution(AbsoluteDate date,
-                              Vector3D position, Vector3D velocity,
+		                      PVCoordinates pvCoordinates,
                               Attitude Attitude, OrbitDerivativesAdder adder) {
 
-    double   rho       = atmosphere.getDensity(date, position);
-    Vector3D vAtm      = atmosphere.getVelocity(date, position);
-    Vector3D incidence = Vector3D.subtract(vAtm, velocity);
+    double   rho       = atmosphere.getDensity(date, pvCoordinates.getPosition());
+    Vector3D vAtm      = atmosphere.getVelocity(date, pvCoordinates.getPosition());
+    Vector3D incidence = Vector3D.subtract(vAtm, pvCoordinates.getVelocity());
     double   v2        = Vector3D.dotProduct(incidence, incidence);
     incidence.normalizeSelf();
     double   k         = rho * v2 * spacecraft.getSurface(incidence)

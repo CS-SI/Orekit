@@ -8,6 +8,7 @@ import fr.cs.aerospace.orekit.Utils;
 import fr.cs.aerospace.orekit.orbits.CircularParameters;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 public class CircularParametersTest extends TestCase {
 
@@ -27,10 +28,12 @@ public class CircularParametersTest extends TestCase {
       new CircularParameters(42166.712, 0.5, -0.5, i, raan,
                              5.300 - raan, CircularParameters.MEAN_LONGITUDE_ARGUMENT);
     double mu = 3.9860047e14;
-    Vector3D pos = circ.getPosition(mu);
-    Vector3D vit = circ.getVelocity(mu);
+    Vector3D pos = circ.getPVCoordinates(mu).getPosition();
+    Vector3D vit = circ.getPVCoordinates(mu).getVelocity();
+    
+    PVCoordinates pvCoordinates = new PVCoordinates( pos, vit);
   
-    EquinoctialParameters param = new EquinoctialParameters(pos,vit,mu);
+    EquinoctialParameters param = new EquinoctialParameters(pvCoordinates,mu);
     assertEquals(param.getA(),  circ.getA(), Utils.epsilonTest * circ.getA());
     assertEquals(param.getEquinoctialEx(), circ.getEquinoctialEx(), Utils.epsilonE * Math.abs(circ.getE()));
     assertEquals(param.getEquinoctialEy(), circ.getEquinoctialEy(), Utils.epsilonE * Math.abs(circ.getE()));
@@ -52,10 +55,12 @@ public class CircularParametersTest extends TestCase {
       new EquinoctialParameters(42166.712, 0.1e-10, -0.1e-10, i, raan,
                                 5.300 - raan, CircularParameters.MEAN_LONGITUDE_ARGUMENT);
     double mu = 3.9860047e14;
-    Vector3D posCir = circCir.getPosition(mu);
-    Vector3D vitCir = circCir.getVelocity(mu);
+    Vector3D posCir = circCir.getPVCoordinates(mu).getPosition();
+    Vector3D vitCir = circCir.getPVCoordinates(mu).getVelocity();
+    
+    PVCoordinates pvCoordinates = new PVCoordinates( posCir, vitCir);
   
-    EquinoctialParameters paramCir = new EquinoctialParameters(posCir,vitCir,mu);
+    EquinoctialParameters paramCir = new EquinoctialParameters(pvCoordinates,mu);
     assertEquals(paramCir.getA(), circCir.getA(), Utils.epsilonTest * circCir.getA());
     assertEquals(paramCir.getEquinoctialEx(), circCir.getEquinoctialEx(), Utils.epsilonEcir * Math.abs(circCir.getE()));
     assertEquals(paramCir.getEquinoctialEy(), circCir.getEquinoctialEy(), Utils.epsilonEcir * Math.abs(circCir.getE()));
@@ -82,8 +87,8 @@ public class CircularParametersTest extends TestCase {
       new CircularParameters(42166.712, ex, ey, i, raan,
                              5.300 - raan, CircularParameters.MEAN_LONGITUDE_ARGUMENT); 
     double mu = 3.9860047e14;
-    Vector3D pos = circ.getPosition(mu);
-    Vector3D vel = circ.getVelocity(mu);
+    Vector3D pos = circ.getPVCoordinates(mu).getPosition();
+    Vector3D vel = circ.getPVCoordinates(mu).getVelocity();
 
     // check 1/a = 2/r  - V2/mu
     double r = pos.getNorm();
@@ -141,7 +146,9 @@ public class CircularParametersTest extends TestCase {
     Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
     double mu = 3.9860047e14;
     
-    CircularParameters  p   = new CircularParameters(position, velocity, mu);
+    PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
+    
+    CircularParameters  p   = new CircularParameters(pvCoordinates, mu);
     KeplerianParameters kep = new KeplerianParameters(p, 3.9860047e14);
 
     double e       = p.getE();
@@ -177,8 +184,9 @@ public class CircularParametersTest extends TestCase {
 
     Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
     Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
+    PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
     double mu = 3.9860047e14;
-    CircularParameters  p = new CircularParameters(position, velocity, mu);
+    CircularParameters  p = new CircularParameters(pvCoordinates, mu);
     double raan = p.getRightAscensionOfAscendingNode();
 
     // circular orbit
@@ -232,11 +240,11 @@ public class CircularParametersTest extends TestCase {
     double na = Math.sqrt(mu / a);
 
     assertEquals(a * epsilon * epsilon / ksi,
-                 p.getPosition(mu).getNorm(),
-                 Utils.epsilonTest * Math.abs(p.getPosition(mu).getNorm()));
+                 p.getPVCoordinates(mu).getPosition().getNorm(),
+                 Utils.epsilonTest * Math.abs(p.getPVCoordinates(mu).getPosition().getNorm()));
     assertEquals(na * Math.sqrt(ksi * ksi + nu * nu) / epsilon,
-                 p.getVelocity(mu).getNorm(),
-                 Utils.epsilonTest * Math.abs(p.getVelocity(mu).getNorm()));
+    		p.getPVCoordinates(mu).getVelocity().getNorm(),
+                 Utils.epsilonTest * Math.abs(p.getPVCoordinates(mu).getVelocity().getNorm()));
 
   }
 
@@ -262,13 +270,13 @@ public class CircularParametersTest extends TestCase {
     
     double a  = pCirEqua.getA();
     double na = Math.sqrt(mu / a);
-
+    
     assertEquals(a * epsilon * epsilon / ksi,
-                 pCirEqua.getPosition(mu).getNorm(),
-                 Utils.epsilonTest * Math.abs(pCirEqua.getPosition(mu).getNorm()));
+                 pCirEqua.getPVCoordinates(mu).getPosition().getNorm(),
+                 Utils.epsilonTest * Math.abs(pCirEqua.getPVCoordinates(mu).getPosition().getNorm()));
     assertEquals(na * Math.sqrt(ksi * ksi + nu * nu) / epsilon,
-                 pCirEqua.getVelocity(mu).getNorm(),
-                 Utils.epsilonTest * Math.abs(pCirEqua.getVelocity(mu).getNorm()));
+                 pCirEqua.getPVCoordinates(mu).getVelocity().getNorm(),
+                 Utils.epsilonTest * Math.abs(pCirEqua.getPVCoordinates(mu).getVelocity().getNorm()));
   }
 
   public void testGeometryEll() {
@@ -283,8 +291,8 @@ public class CircularParametersTest extends TestCase {
       new CircularParameters(42166.712, 0.5, -0.5, i, raan,
                                 0.67 - raan, CircularParameters.TRUE_LONGITUDE_ARGUMENT);
     
-    Vector3D position = p.getPosition(mu);
-    Vector3D velocity = p.getVelocity(mu);
+    Vector3D position = p.getPVCoordinates(mu).getPosition();
+    Vector3D velocity = p.getPVCoordinates(mu).getVelocity();
  
     Vector3D momentum = Vector3D.crossProduct(position,velocity);
     momentum.normalizeSelf();
@@ -294,7 +302,7 @@ public class CircularParametersTest extends TestCase {
     
     for (double alphaV = 0; alphaV <= 2 * Math.PI; alphaV += 2 * Math.PI/100.) {
       p.setAlphaV(alphaV);
-      position = p.getPosition(mu);
+      position = p.getPVCoordinates(mu).getPosition();
       
       // test if the norm of the position is in the range [perigee radius, apogee radius]
       // Warning: these tests are without absolute value by choice
@@ -302,7 +310,7 @@ public class CircularParametersTest extends TestCase {
       assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
       
       position.normalizeSelf();
-      velocity = p.getVelocity(mu);
+      velocity = p.getPVCoordinates(mu).getVelocity();
       velocity.normalizeSelf();
       
       // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
@@ -326,8 +334,8 @@ public class CircularParametersTest extends TestCase {
       new CircularParameters(42166.712, 0.1e-8, 0.1e-8, i, raan,
                                 0.67 - raan, CircularParameters.TRUE_LONGITUDE_ARGUMENT);
     
-    Vector3D position = pCirEqua.getPosition(mu);
-    Vector3D velocity = pCirEqua.getVelocity(mu);
+    Vector3D position = pCirEqua.getPVCoordinates(mu).getPosition();
+    Vector3D velocity = pCirEqua.getPVCoordinates(mu).getVelocity();
     
     Vector3D momentum = Vector3D.crossProduct(position,velocity);
     momentum.normalizeSelf();
@@ -339,14 +347,14 @@ public class CircularParametersTest extends TestCase {
  
     for (double alphaV = 0; alphaV <= 2 * Math.PI; alphaV += 2 * Math.PI/100.) {
       pCirEqua.setAlphaV(alphaV);
-      position = pCirEqua.getPosition(mu);
+      position = pCirEqua.getPVCoordinates(mu).getPosition();
       
       // test if the norm pf the position is in the range [perigee radius, apogee radius]
       assertTrue((position.getNorm() - apogeeRadius)  <= (  apogeeRadius * Utils.epsilonTest));
       assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
       
       position.normalizeSelf();
-      velocity = pCirEqua.getVelocity(mu);
+      velocity = pCirEqua.getPVCoordinates(mu).getVelocity();
       velocity.normalizeSelf();
       
       // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
@@ -364,12 +372,13 @@ public class CircularParametersTest extends TestCase {
     // elliptic and non equatorail orbit
      Vector3D position = new Vector3D(4512.9, 18260., -5127.);
      Vector3D velocity = new Vector3D(134664.6, 90066.8, 72047.6);
+     PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
      double mu = 3.9860047e14;
      
-     CircularParameters p = new CircularParameters(position, velocity, mu);
+     CircularParameters p = new CircularParameters(pvCoordinates, mu);
 
-     Vector3D positionOffset = new Vector3D(p.getPosition(mu));
-     Vector3D velocityOffset = new Vector3D(p.getVelocity(mu));
+     Vector3D positionOffset = new Vector3D(p.getPVCoordinates(mu).getPosition());
+     Vector3D velocityOffset = new Vector3D(p.getPVCoordinates(mu).getVelocity());
      
      positionOffset.subtractFromSelf(position);
      velocityOffset.subtractFromSelf(velocity);
@@ -383,12 +392,13 @@ public class CircularParametersTest extends TestCase {
      // circular and equatorial orbit
     Vector3D position = new Vector3D(33051.2, 26184.9, -1.3E-5);
     Vector3D velocity = new Vector3D(-60376.2, 76208., 2.7E-4);
+    PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
     double mu = 3.9860047e14;
     
-    CircularParameters p = new CircularParameters(position, velocity, mu);
+    CircularParameters p = new CircularParameters(pvCoordinates, mu);
 
-     Vector3D positionOffset = new Vector3D(p.getPosition(mu));
-     Vector3D velocityOffset = new Vector3D(p.getVelocity(mu));
+     Vector3D positionOffset = new Vector3D(p.getPVCoordinates(mu).getPosition());
+     Vector3D velocityOffset = new Vector3D(p.getPVCoordinates(mu).getVelocity());
      
      positionOffset.subtractFromSelf(position);
      velocityOffset.subtractFromSelf(velocity);

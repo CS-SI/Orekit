@@ -2,6 +2,8 @@ package fr.cs.aerospace.orekit.orbits;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
+
 /**
  * This class handles keplerian orbital parameters.
 
@@ -73,12 +75,11 @@ public class KeplerianParameters
   }
 
   /** Constructor from cartesian parameters.
-   * @param position position in inertial frame (m)
-   * @param velocity velocity in inertial frame (m/s)
+   * @param pvCoordinates the PVCoordinates of the satellite
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public KeplerianParameters(Vector3D position, Vector3D velocity, double mu) {
-    reset(position, velocity, mu);
+  public KeplerianParameters(PVCoordinates pvCoordinates, double mu) {
+    reset(pvCoordinates, mu);
   }
 
   /** Constructor from any kind of orbital parameters.
@@ -151,27 +152,26 @@ public class KeplerianParameters
   }
 
   /** Update the parameters from the current position and velocity. */
-  protected void updateFromPositionAndVelocity() {
+  protected void updateFromPVCoordinates() {
 
     // get cartesian elements
     double   mu       = getCachedMu();
-    Vector3D position = getPosition(mu);
-    Vector3D velocity = getVelocity(mu);
+    PVCoordinates pvCoordinates = getPVCoordinates(mu);
 
     // compute semi-major axis
-    double r          = position.getNorm();
-    double V2         = Vector3D.dotProduct(velocity, velocity);
+    double r          = pvCoordinates.getPosition().getNorm();
+    double V2         = Vector3D.dotProduct(pvCoordinates.getVelocity(), pvCoordinates.getVelocity());
     double rV2OnMu    = r * V2 / mu;
     a                 = r / (2 - rV2OnMu);
 
     // compute eccentricity
     double muA        = mu * a;
-    double eSE        = Vector3D.dotProduct(position, velocity) / Math.sqrt(muA);
+    double eSE        = Vector3D.dotProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity()) / Math.sqrt(muA);
     double eCE        = rV2OnMu - 1;
     e                 = Math.sqrt(eSE * eSE + eCE * eCE);
 
     // compute inclination
-    Vector3D momentum = Vector3D.crossProduct(position, velocity);
+    Vector3D momentum = Vector3D.crossProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity());
     double   m2       = Vector3D.dotProduct(momentum, momentum);
     i = Vector3D.angle(momentum, Vector3D.plusK);
 
@@ -193,9 +193,9 @@ public class KeplerianParameters
     // compute perigee argument
     double cosRaan = Math.cos(raan);
     double sinRaan = Math.sin(raan);
-    double px = cosRaan * position.getX() + sinRaan * position.getY();
-    double py = Math.cos(i) * (cosRaan * position.getY() - sinRaan * position.getX())
-              + Math.sin(i) * position.getZ();
+    double px = cosRaan * pvCoordinates.getPosition().getX() + sinRaan * pvCoordinates.getPosition().getY();
+    double py = Math.cos(i) * (cosRaan * pvCoordinates.getPosition().getY() - sinRaan * pvCoordinates.getPosition().getX())
+              + Math.sin(i) * pvCoordinates.getPosition().getZ();
     pa = Math.atan2(py, px) - v;
 
   }
@@ -665,17 +665,9 @@ public class KeplerianParameters
      yDot[4] += raanW * w;
      yDot[5] += vQ * q + vS * s;
    }
-   
-   /** Get the position */
-   protected Vector3D getSatPosition(double mu) {
-	   System.out.println(getClass().getName());
-	   System.out.println(this);
-	   return getPosition(mu); 
-   }
-   
-   /** Get the velocity */
-   protected Vector3D getSatVelocity(double mu){
-	   return getVelocity(mu);
+      
+   protected PVCoordinates getPVCoordinates(double mu) {
+	   return getPVCoordinates(mu);
    }
 
  }

@@ -2,6 +2,8 @@ package fr.cs.aerospace.orekit.orbits;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
+
 /**
  * This class handles equinoctial orbital parameters.
 
@@ -73,8 +75,8 @@ public class EquinoctialParameters
    * @param velocity velocity in inertial frame (m/s)
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public EquinoctialParameters(Vector3D position, Vector3D velocity, double mu) {
-    reset(position, velocity, mu);
+  public EquinoctialParameters(PVCoordinates pvCoordinates, double mu) {
+    reset(pvCoordinates, mu);
   }
 
   /** Constructor from any kind of orbital parameters
@@ -148,33 +150,32 @@ public class EquinoctialParameters
   }
 
   /** Update the parameters from the current position and velocity. */
-  protected void updateFromPositionAndVelocity() {
+  protected void updateFromPVCoordinates() {
 
     // get cartesian elements
     double   mu       = getCachedMu();
-    Vector3D position = getPosition(mu);
-    Vector3D velocity = getVelocity(mu);
+    PVCoordinates pvCoordinates = getPVCoordinates(mu);
 
     // compute semi-major axis
-    double r       = position.getNorm();
-    double V2      = Vector3D.dotProduct(velocity, velocity);
+    double r       = pvCoordinates.getPosition().getNorm();
+    double V2      = Vector3D.dotProduct(pvCoordinates.getVelocity(), pvCoordinates.getVelocity());
     double rV2OnMu = r * V2 / mu;
     a              = r / (2 - rV2OnMu);
 
     // compute inclination vector
-    Vector3D w = Vector3D.crossProduct(position, velocity);
+    Vector3D w = Vector3D.crossProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity());
     w.normalizeSelf();
     double d = 1. / (1 + w.getZ());
     hx = -d * w.getY();
     hy =  d * w.getX();
 
     // compute true latitude argument
-    double cLv = (position.getX() - d * position.getZ() * w.getX()) / r;
-    double sLv = (position.getY() - d * position.getZ() * w.getY()) / r;
+    double cLv = (pvCoordinates.getPosition().getX() - d * pvCoordinates.getPosition().getZ() * w.getX()) / r;
+    double sLv = (pvCoordinates.getPosition().getY() - d * pvCoordinates.getPosition().getZ() * w.getY()) / r;
     lv = Math.atan2(sLv, cLv);
 
     // compute eccentricity vector
-    double eSE = Vector3D.dotProduct(position, velocity) / Math.sqrt(mu * a);
+    double eSE = Vector3D.dotProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity()) / Math.sqrt(mu * a);
     double eCE = rV2OnMu - 1;
     double e2  = eCE * eCE + eSE * eSE;
     double f   = eCE - e2;

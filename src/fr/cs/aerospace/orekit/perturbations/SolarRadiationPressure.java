@@ -7,6 +7,7 @@ import fr.cs.aerospace.orekit.bodies.ThirdBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
@@ -52,21 +53,20 @@ public class SolarRadiationPressure implements ForceModel {
    * Compute the contribution of the solar radiation pressure to the perturbing
    * acceleration.
    * @param date current date
-   * @param position current position (m)
-   * @param velocity current velocity (m/s)
+   * @param pvCoordinates
    * @param Attitude current Attitude
    * @param adder object where the contribution should be added
    */
-  public void addContribution(AbsoluteDate date, Vector3D position, Vector3D velocity,
+  public void addContribution(AbsoluteDate date, PVCoordinates pvCoordinates,
                               Attitude Attitude, OrbitDerivativesAdder adder)
       throws OrekitException {
 
     // raw radiation pressure
     Vector3D satSunVector = Vector3D.subtract(sun.getPosition(date),
-                                              position);
+                                              pvCoordinates.getPosition());
     double dRatio = dRef / satSunVector.getNorm();
     double rawP   = pRef * dRatio * dRatio
-                  * getLightningRatio(date, position, satSunVector);
+                  * getLightningRatio(date, pvCoordinates.getPosition(), satSunVector);
 
     // spacecraft characteristics effects
     Vector3D u = new Vector3D(satSunVector);
@@ -151,19 +151,19 @@ public class SolarRadiationPressure implements ForceModel {
    */
   private class Umbraswitch implements SWF {
 
-    public void eventOccurred(AbsoluteDate t, Vector3D position, Vector3D velocity) {
+    public void eventOccurred(AbsoluteDate t, PVCoordinates pvCoordinates) {
       // do nothing
     }
 
     /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
      * the Earth's apparent radius
      */
-    public double g(AbsoluteDate date, Vector3D position, Vector3D velocity)
+    public double g(AbsoluteDate date, PVCoordinates pvCoordinates)
         throws OrekitException {
       Vector3D satSunVector = Vector3D.subtract(sun.getPosition(date),
-                                                position);
-      double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, position);
-      double r = position.getNorm();
+                                                pvCoordinates.getPosition());
+      double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pvCoordinates.getPosition());
+      double r = pvCoordinates.getPosition().getNorm();
       if (r <= earth.getEquatorialRadius()) {
         throw new OrekitException("underground trajectory (r = {0})",
                                   new String[] { Double.toString(r) });
@@ -189,19 +189,19 @@ public class SolarRadiationPressure implements ForceModel {
    */
   private class Penumbraswitch implements SWF {
 
-    public void eventOccurred(AbsoluteDate t, Vector3D position, Vector3D velocity) {
+    public void eventOccurred(AbsoluteDate t, PVCoordinates pvCoordinates) {
       // do nothing
     }
 
     /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
      * the sum of the Earth's and Sun's apparent radius
      */
-    public double g(AbsoluteDate date, Vector3D position, Vector3D velocity)
+    public double g(AbsoluteDate date, PVCoordinates pvCoordinates)
         throws OrekitException {
       Vector3D satSunVector = Vector3D.subtract(sun.getPosition(date),
-                                                position);
-      double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, position);
-      double r = position.getNorm();
+                                                pvCoordinates.getPosition());
+      double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pvCoordinates.getPosition());
+      double r = pvCoordinates.getPosition().getNorm();
       if (r <= earth.getEquatorialRadius()) {
         throw new OrekitException("underground trajectory (r = {0})",
                                   new String[] { Double.toString(r) });

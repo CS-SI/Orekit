@@ -12,6 +12,7 @@ import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.propagation.EcksteinHechlerPropagator;
 import fr.cs.aerospace.orekit.propagation.KeplerianPropagator;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 // $Id$
 public class EcksteinHechlerPropagatorTest extends TestCase {
@@ -31,7 +32,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
     AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
     Orbit initialOrbit =
-      new Orbit(initDate, new EquinoctialParameters(position, velocity, mu));
+      new Orbit(initDate, new EquinoctialParameters(new PVCoordinates(position, velocity), mu));
 
     // Extrapolator definition
     // -----------------------
@@ -126,7 +127,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
     Orbit initialOrbit =
       new Orbit(initDate,
-                new EquinoctialParameters(position, velocity, mu));
+                new EquinoctialParameters(new PVCoordinates(position, velocity), mu));
 
     // Initialisation to simulate a keplerian extrapolation
     // To be noticed: in order to simulate a keplerian extrapolation with the
@@ -191,7 +192,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
     Orbit initialOrbit =
       new Orbit(initDate,
-                new EquinoctialParameters(position, velocity, mu));
+                new EquinoctialParameters(new PVCoordinates(position, velocity), mu));
 
     // Extrapolator definition
     // -----------------------
@@ -258,7 +259,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
     Vector3D r = new Vector3D(finalOrbit.getA(), (new Vector3D(x3, U, y3, V)));
 
-    assertEquals(finalOrbit.getPosition(mu).getNorm(), r.getNorm(),
+    assertEquals(finalOrbit.getPVCoordinates(mu).getPosition().getNorm(), r.getNorm(),
                  Utils.epsilonTest * r.getNorm());
 
   }
@@ -337,7 +338,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
     Vector3D r = new Vector3D(finalOrbit.getA(), (new Vector3D(x3, U, y3, V)));
 
-    assertEquals(finalOrbit.getPosition(mu).getNorm(), r.getNorm(),
+    assertEquals(finalOrbit.getPVCoordinates(mu).getPosition().getNorm(), r.getNorm(),
                  Utils.epsilonTest * r.getNorm());
 
   }
@@ -413,7 +414,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
       Orbit initialOrbit =
         new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
-                  new EquinoctialParameters(position, velocity, mu));
+                  new EquinoctialParameters(new PVCoordinates(position, velocity), mu));
 
       // Extrapolator definition
       // -----------------------
@@ -441,7 +442,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
       Orbit initialOrbit =
         new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
-                  new EquinoctialParameters(position, velocity, mu));
+                  new EquinoctialParameters(new PVCoordinates(position, velocity), mu));
 
       // Extrapolator definition
       // -----------------------

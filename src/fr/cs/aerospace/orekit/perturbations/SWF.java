@@ -2,6 +2,7 @@ package fr.cs.aerospace.orekit.perturbations;
 
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
@@ -23,12 +24,12 @@ public interface SWF {
 
     /** Compute the value of the switching function. 
      */    
-    public double g(AbsoluteDate t, Vector3D position, Vector3D velocity)
+    public double g(AbsoluteDate t, PVCoordinates pvCoordinates)
       throws OrekitException;
     
     /** Handle an event and choose what to do next.
      */
-    public void eventOccurred(AbsoluteDate t, Vector3D position, Vector3D velocity);
+    public void eventOccurred(AbsoluteDate t, PVCoordinates pvCoordinates);
     
     /** Get the convergence threshold in the event time search.
      */

@@ -3,6 +3,8 @@ package fr.cs.aerospace.orekit.frames;
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
+
 /** Transformation class in three dimensional space.
  * <p>This class represents the transformation engine between {@link Frame frames}.
  * It is used both to define the relationship between each frame and its
@@ -73,6 +75,10 @@ public class Transform {
    */
   public Vector3D transformVector(Vector3D vector) {
     return rotation.applyTo(vector);
+  } 
+  
+  public PVCoordinates transformPVCoordinates(PVCoordinates pvCoordinates) {
+	return null;  
   }
 
   /** Get the underlying elementary translation.

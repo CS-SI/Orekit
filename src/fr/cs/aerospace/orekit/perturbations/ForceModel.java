@@ -4,6 +4,7 @@ import fr.cs.aerospace.orekit.Attitude;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
@@ -29,11 +30,10 @@ public interface ForceModel {
     /** Compute the contribution of the force model to the perturbing
      * acceleration.
      * @param t current date
-     * @param position current position (m)
-     * @param velocity current velocity (m/s)
+     * @param pvCoordinates the {@link PVCoordinates}
      * @param adder object where the contribution should be added
      */
-    public void addContribution(AbsoluteDate t, Vector3D position, Vector3D velocity, 
+    public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, 
                                 Attitude attitude, OrbitDerivativesAdder adder) throws OrekitException;
 
     /** Get the switching functions internally used by the model itself.
