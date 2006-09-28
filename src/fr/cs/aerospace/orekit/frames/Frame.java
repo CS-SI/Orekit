@@ -3,6 +3,8 @@ package fr.cs.aerospace.orekit.frames;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import org.spaceroots.mantissa.geometry.Rotation;
+
 import fr.cs.aerospace.orekit.errors.Translator;
 
 /** Tridimensional references frames class.
@@ -37,6 +39,25 @@ public class Frame {
       j2000 = new Frame("J2000");
     }
     return j2000;
+  }
+
+  /** Get the uniq Veis 1950 frame.
+   * <p>This frame is sometimes refered to as
+   * <em>&gamma;<sub>50</sub> CNES</em></p>
+   * @return the uniq instance of the Veis 1950 frame
+   */
+  public static Frame getVeis1950() {
+    if (veis1950 == null) {
+      double q1 = -2.01425201682020570e-5;
+      double q2 = -2.43283773387856897e-3;
+      double q3 =  5.59078052583013584e-3;
+      double q0 = Math.sqrt(1.0 - q1 * q1 - q2 * q2 - q3 * q3);
+      veis1950 =
+        new Frame(getJ2000(),
+                  new Transform(new Rotation(q0, q1, q2, q3, true)),
+                  "Veis1950");
+    }
+    return veis1950;
   }
 
   /** Private constructor used only for the J2000 root frame.
@@ -206,6 +227,9 @@ public class Frame {
 
   /** J2000 root frame. */
   private static Frame j2000 = null;
+  
+  /** Mean equator 1950 frame. */
+  private static Frame veis1950 = null;
   
   /** Instance name. */
   private String name;

@@ -74,6 +74,25 @@ public class FrameTest extends TestCase {
       S = new Transform(S,t1);
   }
 
+  public void testVeis1950() {
+    Transform t = Frame.getVeis1950().getTransformTo(Frame.getJ2000());
+    Vector3D i50    = t.transformVector(Vector3D.plusI);
+    Vector3D j50    = t.transformVector(Vector3D.plusJ);
+    Vector3D k50    = t.transformVector(Vector3D.plusK);
+    Vector3D i50Ref = new Vector3D( 0.9999256489473456,
+                                    0.011181451214217871,
+                                    4.8653597990872734e-3);
+    Vector3D j50Ref = new Vector3D(-0.011181255200285388,
+                                    0.9999374855347822,
+                                   -6.748721516262951e-5);
+    Vector3D k50Ref = new Vector3D(-4.865810248725263e-3,
+                                    1.3081367862337385e-5,
+                                    0.9999881617896792);
+    assertEquals(0, Vector3D.subtract(i50, i50Ref).getNorm(), 1.0e-15);
+    assertEquals(0, Vector3D.subtract(j50, j50Ref).getNorm(), 1.0e-15);
+    assertEquals(0, Vector3D.subtract(k50, k50Ref).getNorm(), 1.0e-15);
+  }
+
   private void checkSameTransform(Transform transform1, Transform transform2) {    
   assertEquals(0, Vector3D.subtract(transform1.getTranslation() , transform2.getTranslation()).getNorm(), 1.0e-10);
   assertEquals(0, transform1.getRotation().applyTo(transform2.getRotation().revert()).getAngle(), 1.0e-10);
