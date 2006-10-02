@@ -13,6 +13,7 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.iers.IERSData;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -176,12 +177,19 @@ public class ITRF2000FrameTest extends TestCase {
       Vector3D axis = Vector3D.add(Vector3D.add(axisM2h, axisM1h), Vector3D.add(axisP1h, axisP2h));
       axis.normalizeSelf();
       
-      Vector3D speedITRF =
-        trans.transformVector(Vector3D.add(speedJ2000,
-                                           new Vector3D(w, Vector3D.crossProduct(axis, posJ2000))));
-
-      checkVectors(speedITRF, speedTestCase, 1e-4, 0.2, 0.2);	  
+      Transform tr = new Transform(trans.getRotation() , axis, w);
       
+      PVCoordinates pv = new PVCoordinates(posJ2000 , speedJ2000);
+      
+      PVCoordinates result = tr.transformPVCoordinates(pv);
+      
+//      Vector3D speedITRF =
+//        trans.transformVector(Vector3D.add(speedJ2000,
+//                                           new Vector3D(w, Vector3D.crossProduct(axis, posJ2000))));
+//
+//      checkVectors(speedITRF, speedTestCase, 1e-4, 0.2, 0.2);	  
+      
+      checkVectors(result.getVelocity(), speedTestCase, 1e-4, 0.2, 0.2);	
   }
    
   public void testRoughTransformJ2000_TerVrai1991() throws OrekitException, ParseException {
