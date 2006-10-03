@@ -5,6 +5,7 @@ import fr.cs.aerospace.orekit.SimpleSpacecraft;
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.bodies.Sun;
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.CartesianParameters;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
@@ -31,7 +32,7 @@ public void testSolarRadiationPressure() throws OrekitException{
     Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);                         
     Attitude attitude = new Attitude();
     OrbitalParameters op = new CartesianParameters();
-    op.reset(new PVCoordinates(position, velocity), mu);
+    op.reset(new PVCoordinates(position, velocity),Frame.getJ2000(), mu);
     OrbitDerivativesAdder adder = op.getDerivativesAdder(mu);
        
     // Acceleration initialisation

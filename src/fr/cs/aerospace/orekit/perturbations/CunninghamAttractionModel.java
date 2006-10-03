@@ -55,8 +55,7 @@ public class CunninghamAttractionModel implements ForceModel {
    * computed here, only the <em>perturbing</em> acceleration is considered.
    * </p>
    * @param date current date
-   * @param position current position (m)
-   * @param velocity current velocity (m/s)
+   * @param pvCoordinates the position end velocity
    * @param Attitude current attitude
    * @param adder object where the contribution should be added
    */

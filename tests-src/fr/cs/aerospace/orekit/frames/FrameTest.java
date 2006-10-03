@@ -67,7 +67,7 @@ public class FrameTest extends TestCase {
       
       Transform S = new Transform(t2,t3);
 	  
-      checkSameTransform(T,S);
+      checkNoTransform(new Transform(T, S.getInverse()) , random);
       
       T = R3.getTransformTo(Frame.getJ2000());
       
@@ -91,11 +91,6 @@ public class FrameTest extends TestCase {
     assertEquals(0, Vector3D.subtract(i50, i50Ref).getNorm(), 1.0e-15);
     assertEquals(0, Vector3D.subtract(j50, j50Ref).getNorm(), 1.0e-15);
     assertEquals(0, Vector3D.subtract(k50, k50Ref).getNorm(), 1.0e-15);
-  }
-
-  private void checkSameTransform(Transform transform1, Transform transform2) {    
-  assertEquals(0, Vector3D.subtract(transform1.getTranslation() , transform2.getTranslation()).getNorm(), 1.0e-10);
-  assertEquals(0, transform1.getRotation().applyTo(transform2.getRotation().revert()).getAngle(), 1.0e-10);
   }
   
   private Transform randomTransform(Random random) {

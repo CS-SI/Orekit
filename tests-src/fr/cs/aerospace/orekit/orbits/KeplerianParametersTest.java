@@ -5,6 +5,7 @@ import junit.framework.*;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.Utils;
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
@@ -26,7 +27,7 @@ public class KeplerianParametersTest extends TestCase {
     Vector3D pos = kep.getPVCoordinates(mu).getPosition();
     Vector3D vit = kep.getPVCoordinates(mu).getVelocity();
     
-    KeplerianParameters param = new KeplerianParameters(new PVCoordinates(pos,vit),mu);
+    KeplerianParameters param = new KeplerianParameters(new PVCoordinates(pos,vit), Frame.getJ2000(),mu);
     assertEquals(param.getA(), kep.getA(), Utils.epsilonTest * kep.getA());
     assertEquals(param.getE(), kep.getE(), Utils.epsilonE * Math.abs(kep.getE()));
     assertEquals(Utils.trimAngle(param.getI(), kep.getI()), kep.getI(), Utils.epsilonAngle * Math.abs(kep.getI()));
@@ -42,7 +43,7 @@ public class KeplerianParametersTest extends TestCase {
     Vector3D posCir = kepCir.getPVCoordinates(mu).getPosition();
     Vector3D vitCir = kepCir.getPVCoordinates(mu).getVelocity();
     
-    KeplerianParameters paramCir = new KeplerianParameters(new PVCoordinates(posCir,vitCir),mu);
+    KeplerianParameters paramCir = new KeplerianParameters(new PVCoordinates(posCir,vitCir),  Frame.getJ2000(),mu);
     assertEquals(paramCir.getA(), kepCir.getA(), Utils.epsilonTest * kepCir.getA());
     assertEquals(paramCir.getE(), kepCir.getE(), Utils.epsilonE * Math.max(1.,Math.abs(kepCir.getE())));
     assertEquals(Utils.trimAngle(paramCir.getI(), kepCir.getI()), kepCir.getI(), Utils.epsilonAngle * Math.abs(kepCir.getI()));
@@ -90,7 +91,7 @@ public class KeplerianParametersTest extends TestCase {
     Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
     double mu = 3.9860047e14;
     
-    KeplerianParameters p = new KeplerianParameters(new PVCoordinates(position, velocity), mu);
+    KeplerianParameters p = new KeplerianParameters(new PVCoordinates(position, velocity), Frame.getJ2000(), mu);
 
     // elliptic orbit
     double e = p.getE();
@@ -297,7 +298,7 @@ public class KeplerianParametersTest extends TestCase {
     Vector3D velocity = new Vector3D(-2079., 5291., -7842.);
     double mu = 3.9860047e14;
     
-    KeplerianParameters p = new KeplerianParameters(new PVCoordinates(position, velocity), mu);
+    KeplerianParameters p = new KeplerianParameters(new PVCoordinates(position, velocity),  Frame.getJ2000(), mu);
     Vector3D positionOffset = new Vector3D(p.getPVCoordinates(mu).getPosition());
     Vector3D velocityOffset = new Vector3D(p.getPVCoordinates(mu).getVelocity());
     
@@ -312,7 +313,7 @@ public class KeplerianParametersTest extends TestCase {
     velocity = new Vector3D(4026.2, 287.479, -3.e-6);
    
     
-    p = new KeplerianParameters(new PVCoordinates(position, velocity), mu);
+    p = new KeplerianParameters(new PVCoordinates(position, velocity),  Frame.getJ2000(), mu);
     positionOffset = new Vector3D(p.getPVCoordinates(mu).getPosition());
     velocityOffset = new Vector3D(p.getPVCoordinates(mu).getVelocity());
     

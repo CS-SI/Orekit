@@ -2,6 +2,7 @@ package fr.cs.aerospace.orekit.orbits;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /**
@@ -71,12 +72,12 @@ public class EquinoctialParameters
   }
 
   /** Constructor from cartesian parameters.
-   * @param position position in inertial frame (m)
-   * @param velocity velocity in inertial frame (m/s)
+   * @param pvCoordinates the position end velocity
+   * @param frame the frame in which are expressed the {@link PVCoordinates} 
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public EquinoctialParameters(PVCoordinates pvCoordinates, double mu) {
-    reset(pvCoordinates, mu);
+  public EquinoctialParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
+    reset(pvCoordinates, frame,  mu);
   }
 
   /** Constructor from any kind of orbital parameters

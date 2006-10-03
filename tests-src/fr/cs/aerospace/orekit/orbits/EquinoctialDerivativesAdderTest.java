@@ -2,6 +2,7 @@ package fr.cs.aerospace.orekit.orbits;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
@@ -132,7 +133,7 @@ public class EquinoctialDerivativesAdderTest extends TestCase {
     Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
     PVCoordinates pvCoordinates = new PVCoordinates(position , velocity);
     mu = 3.986e14;
-    orbit = new EquinoctialParameters(pvCoordinates, mu);
+    orbit = new EquinoctialParameters(pvCoordinates, Frame.getJ2000(), mu);
     adder = orbit.getDerivativesAdder(mu);
   }
   

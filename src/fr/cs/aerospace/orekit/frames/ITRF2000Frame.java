@@ -114,7 +114,7 @@ public class ITRF2000Frame extends SynchronizedFrame {
     double tu = (tts + taiMinusTt + utcMinusTai + dtu1) / 86400 ;
     era  = era0 + era1A * tu + era1B * tu;
     era -= twoPi * Math.floor((era + Math.PI) / twoPi);
-
+// vrot = era A + era B
     // get the current IERS pole correction parameters
     PoleCorrection iCorr = getPoleCorrection(date);
 
@@ -138,9 +138,12 @@ public class ITRF2000Frame extends SynchronizedFrame {
 
     // combined effects
     Rotation combined = qRot.applyTo(rRot.applyTo(wRot)).revert();
-
+    
     // set up the transform from parent GCRS (J2000) to ITRF
-    updateTransform(new Transform(combined));
+    
+    Vector3D rotationRate = new Vector3D((era1A + era1B)/(86400), rRot.revert().getAxis());
+    
+    updateTransform(new Transform(combined , rotationRate));
 
   }
 

@@ -11,6 +11,7 @@ import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.bodies.FixedPoleEarth;
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.perturbations.CunninghamAttractionModel;
@@ -36,7 +37,7 @@ public class NumericalPropagatorTest extends TestCase {
     double mu = 3.986e14;
     Orbit initialOrbit =
       new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
-                new EquinoctialParameters(new PVCoordinates(position, velocity), mu));
+                new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
     
     
     // Extrapolator definition
@@ -95,7 +96,7 @@ try {
     double mu = 3.986e14;
     Orbit initialOrbit =
       new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
-                new EquinoctialParameters(new PVCoordinates(position,  velocity), mu));
+                new EquinoctialParameters(new PVCoordinates(position,  velocity),Frame.getJ2000(), mu));
     
     // Extrapolator definition
     // -----------------------
@@ -146,7 +147,7 @@ try {
     
     Orbit initialOrbit =
       new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
-                new EquinoctialParameters(new PVCoordinates(position,  velocity), mu));
+                new EquinoctialParameters(new PVCoordinates(position,  velocity),Frame.getJ2000(), mu));
     System.out.println("Initial orbit at t = " + initialOrbit.getDate());
     System.out.println("a = " + initialOrbit.getA());
     System.out.println("e = " + initialOrbit.getE());

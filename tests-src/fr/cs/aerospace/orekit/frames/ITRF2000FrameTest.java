@@ -14,6 +14,7 @@ import fr.cs.aerospace.orekit.iers.IERSData;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
+import fr.cs.aerospace.orekit.utils.Vector;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -43,9 +44,11 @@ public class ITRF2000FrameTest extends TestCase {
     Transform t1 = itrf2000.getTransformTo(Frame.getJ2000());
     Transform evolution = new Transform(t0.getInverse(), t1);
 
-    assertEquals(0.0, evolution.getTranslation().getNorm(), 1.0e-10);
-    assertTrue(Vector3D.angle(Vector3D.plusK, evolution.getRotation().getAxis()) < Math.toRadians(1.0));
-    assertEquals(2 * Math.PI * dt / 86164, evolution.getRotation().getAngle(), 1.0e-9);
+    assertEquals(0.0, evolution.transformPosition(new Vector3D(0,0,0)).getNorm(), 1.0e-10);
+    assertTrue(Vector3D.dotProduct(Vector3D.plusK, evolution.transformVector(new Vector3D(6000,6000,0))) < 0.01);
+    assertEquals(2 * Math.PI * dt / 86164, Vector3D.angle(
+    		t0.transformVector(new Vector3D(6000,6000,0)), t1.transformVector(new Vector3D(6000,6000,0))), 
+    		 																			1.0e-9);
     
   }
 
@@ -156,6 +159,7 @@ public class ITRF2000FrameTest extends TestCase {
       Rotation r0 = trans.getRotation();
 
       // compute local evolution using finite differences
+      
       double h = 0.1;
       fSynch.setDate(new AbsoluteDate(t0, -2 * h));
       Rotation evoM2h = Frame.getJ2000().getTransformTo(itrf).getRotation().applyTo(r0.revert());
@@ -176,20 +180,25 @@ public class ITRF2000FrameTest extends TestCase {
       double w = (8 * (alphaP1h - alphaM1h) - (alphaP2h - alphaM2h)) / (12 * h);
       Vector3D axis = Vector3D.add(Vector3D.add(axisM2h, axisM1h), Vector3D.add(axisP1h, axisP2h));
       axis.normalizeSelf();
+     
+      Transform tr = new Transform(trans.getRotation() , new Vector3D(w ,axis));
       
-//      Transform tr = new Transform(trans.getRotation() , axis, w);
-//      
-//      PVCoordinates pv = new PVCoordinates(posJ2000 , speedJ2000);
-//      
-//      PVCoordinates result = tr.transformPVCoordinates(pv);
+      PVCoordinates pv = new PVCoordinates(posJ2000 , speedJ2000);
       
-      Vector3D speedITRF =
-        trans.transformVector(Vector3D.add(speedJ2000,
-                                           new Vector3D(w, Vector3D.crossProduct(axis, posJ2000))));
-
-      checkVectors(speedITRF, speedTestCase, 1e-4, 0.2, 0.2);	  
+      PVCoordinates result = tr.transformPVCoordinates(pv);
       
-      //checkVectors(result.getVelocity(), speedTestCase, 1e-4, 0.2, 0.2);	
+      checkVectors(result.getVelocity(), speedTestCase, 1e-5, 0.02, 0.02);	
+      
+      //    compute local evolution using the ITRF2000Frame transform
+      
+      result = trans.transformPVCoordinates(pv);
+//      System.out.println(" vel test " + Vector.toString(speedTestCase));
+//      System.out.println(" vel result " + Vector.toString(result.getVelocity()));
+//      System.out.println(" w passe " + w );
+//      System.out.println(" w passe pas " + trans.getRotAxis().getNorm() );
+      checkVectors(result.getVelocity(), speedTestCase, 1e-5, 0.01, 0.02);
+      
+      
   }
    
   public void testRoughTransformJ2000_TerVrai1991() throws OrekitException, ParseException {

@@ -2,6 +2,7 @@ package fr.cs.aerospace.orekit.orbits;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.CartesianParameters;
 import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
@@ -95,7 +96,7 @@ public class KeplerianDerivativesAdderTest extends TestCase {
     // reference derivatives
     CartesianParameters cartesianParameters =
       new CartesianParameters(new PVCoordinates(orbit.getPVCoordinates(mu).getPosition(),
-                              orbit.getPVCoordinates(mu).getVelocity()),
+                              orbit.getPVCoordinates(mu).getVelocity()), Frame.getJ2000(),
                               mu);
     OrbitDerivativesAdder cartesianAdder =
       cartesianParameters.getDerivativesAdder(mu);
@@ -119,7 +120,7 @@ public class KeplerianDerivativesAdderTest extends TestCase {
     // reference derivatives
     CartesianParameters cartesianParameters =
       new CartesianParameters(new PVCoordinates(orbit.getPVCoordinates(mu).getPosition(),
-                              orbit.getPVCoordinates(mu).getVelocity()),
+                              orbit.getPVCoordinates(mu).getVelocity()), Frame.getJ2000(),
                               mu);
     OrbitDerivativesAdder cartesianAdder =
       cartesianParameters.getDerivativesAdder(mu);
@@ -143,7 +144,7 @@ public class KeplerianDerivativesAdderTest extends TestCase {
     Vector3D v = new Vector3D(oldV.getX() + dt * yD2[3], 
                               oldV.getY() + dt * yD2[4],
                               oldV.getZ() + dt * yD2[5]);
-    KeplerianParameters newOrbit = new KeplerianParameters(new PVCoordinates(p, v), mu);
+    KeplerianParameters newOrbit = new KeplerianParameters(new PVCoordinates(p, v), Frame.getJ2000(), mu);
 
     assertEquals((newOrbit.getA() - orbit.getA()) / dt,
                  yD1[0], 1.0e-9 * Math.abs(orbit.getA()));
@@ -164,7 +165,7 @@ public class KeplerianDerivativesAdderTest extends TestCase {
     Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
     Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
     mu = 3.986e14;
-    orbit = new KeplerianParameters(new PVCoordinates(position, velocity), mu);
+    orbit = new KeplerianParameters(new PVCoordinates(position, velocity), Frame.getJ2000(), mu);
     adder = orbit.getDerivativesAdder(mu);
   }
   

@@ -6,6 +6,7 @@ import junit.framework.*;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.errors.PropagationException;
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
@@ -30,7 +31,7 @@ public class KeplerianPropagatorTest extends TestCase {
       AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
       Orbit initialOrbit =
         new Orbit(initDate, 
-                  new EquinoctialParameters(new PVCoordinates(position, velocity), mu));
+                  new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
       
       // Extrapolator definition
       // -----------------------
@@ -106,7 +107,7 @@ public class KeplerianPropagatorTest extends TestCase {
       AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
       Orbit initialOrbit =
         new Orbit(initDate, 
-                  new EquinoctialParameters(new PVCoordinates(position, velocity), mu));
+                  new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
       
       // Extrapolator definition
       // -----------------------

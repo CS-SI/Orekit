@@ -12,6 +12,7 @@ import fr.cs.aerospace.orekit.utils.Vector;
  * parent frame and to gather all individual transforms into one
  * operation when converting between frames far away from each other.</p>
  *  @author Luc Maisonobe
+ *  @author Fabien Maussion
  */
 public class Transform {
 
@@ -38,7 +39,7 @@ public class Transform {
   /** Build a translation transform.
    * @param translation translation to apply (i.e. coordinates of
    * the transformed origin, or coordinates of the origin of the
-   * new frame in the old frame)
+   * old frame in the new frame)
    */
   public Transform(Vector3D translation) {
     this(translation, new Vector3D(), new Rotation(), new Vector3D());
@@ -51,10 +52,22 @@ public class Transform {
     this(new Vector3D(), new Vector3D(), rotation, new Vector3D());
   }
 
+  /** Build a translation transform, with its first time derivative.
+   * @param translation translation to apply (i.e. coordinates of
+   * the transformed origin, or coordinates of the origin of the
+   * old frame in the new frame) 
+   * @param velocity the velocity of the translation (i.e. velocity 
+   * of the transformed origin, or velo
+   */
   public Transform(Vector3D translation, Vector3D velocity) {
 	  this(translation, velocity, new Rotation(), new Vector3D());
   }
   
+  /** Build a rotation transform.
+   * @param rotation rotation to apply
+   * @param rotationRate the axis of the instant rotation
+   *  expressed in the new frame. (norm representing angular rate) 
+   */
   public Transform(Rotation rotation, Vector3D rotationRate) {
 	  this(new Vector3D(), new Vector3D(), rotation, rotationRate);
   }
@@ -67,23 +80,24 @@ public class Transform {
     this(compositeTranslation(first, second), compositeVelocity(first, second),
          compositeRotation(first, second), compositeRotationRate(first, second));
   }
-
+  
+  /** The new translation */ 
   private static Vector3D compositeTranslation(Transform first, Transform second) {
     return Vector3D.add(first.translation,
                         first.rotation.applyInverseTo(second.translation));
   }
-  
+  /** The new velocity */ 
   private static Vector3D compositeVelocity(Transform first, Transform second) {
     return Vector3D.add(first.velocity,
                         first.rotation.applyInverseTo(Vector3D.subtract(second.velocity,
                                                                         Vector3D.crossProduct(first.rotationRate,
                                                                                               second.translation))));
   }
-  
+  /** The new rotation */ 
   private static Rotation compositeRotation(Transform first, Transform second) {
     return second.rotation.applyTo(first.rotation);
   }
-  
+  /** The new rotation rate */ 
   private static Vector3D compositeRotationRate(Transform first, Transform second) {
     return Vector3D.add(second.rotationRate, second.rotation.applyTo(first.rotationRate));
   }
@@ -114,6 +128,9 @@ public class Transform {
     return rotation.applyTo(vector);
   } 
   
+  /** Transform {@link PVCoordinates} including cinematic effects.
+   * @param pv the couple position-velocity to tranform.
+   */
   public PVCoordinates transformPVCoordinates(PVCoordinates pv) {
     Vector3D p = pv.getPosition();
     Vector3D v = pv.getVelocity();

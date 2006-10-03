@@ -5,6 +5,7 @@ import junit.framework.*;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.Utils;
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.CartesianParameters;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
@@ -23,7 +24,7 @@ public class CartesianParametersTest extends TestCase {
     PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
     double mu = 3.9860047e14;
     
-    CartesianParameters p = new CartesianParameters(pvCoordinates, mu);
+    CartesianParameters p = new CartesianParameters(pvCoordinates, Frame.getJ2000(), mu);
     
     assertEquals(p.getPVCoordinates(mu).getPosition().getX(), pvCoordinates.getPosition().getX(), Utils.epsilonTest * Math.abs(pvCoordinates.getPosition().getX()));
     assertEquals(p.getPVCoordinates(mu).getPosition().getY(), pvCoordinates.getPosition().getY(), Utils.epsilonTest * Math.abs(pvCoordinates.getPosition().getY()));
@@ -40,7 +41,7 @@ public class CartesianParametersTest extends TestCase {
     PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
     double mu = 3.9860047e14;
     
-    CartesianParameters p = new CartesianParameters(pvCoordinates, mu);
+    CartesianParameters p = new CartesianParameters(pvCoordinates, Frame.getJ2000(), mu);
     
     assertEquals(42255170.0028257,  p.getA(), Utils.epsilonTest * p.getA());
     assertEquals(0.592732497856475e-03,  p.getEquinoctialEx(), Utils.epsilonE * Math.abs(p.getE()));
@@ -57,7 +58,7 @@ public class CartesianParametersTest extends TestCase {
     PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
     double mu = 3.9860047e14;
     
-    CartesianParameters p = new CartesianParameters(pvCoordinates, mu);
+    CartesianParameters p = new CartesianParameters(pvCoordinates, Frame.getJ2000(),  mu);
     KeplerianParameters kep = new KeplerianParameters(p, mu);
     
     assertEquals(22979265.3030773,  p.getA(), Utils.epsilonTest  * p.getA());
@@ -81,7 +82,7 @@ public class CartesianParametersTest extends TestCase {
     PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
     double mu = 3.9860047e14;
     
-    CartesianParameters p = new CartesianParameters(pvCoordinates, mu);
+    CartesianParameters p = new CartesianParameters(pvCoordinates, Frame.getJ2000(), mu);
     
     double e       = p.getE();
     double v       = new KeplerianParameters(p, mu).getTrueAnomaly();
@@ -114,7 +115,7 @@ public class CartesianParametersTest extends TestCase {
     Vector3D momentum = Vector3D.crossProduct(position, velocity);
     momentum.normalizeSelf();
 
-    EquinoctialParameters p = new EquinoctialParameters(pvCoordinates, mu);
+    EquinoctialParameters p = new EquinoctialParameters(pvCoordinates, Frame.getJ2000(), mu);
     
     double apogeeRadius  = p.getA() * (1 + p.getE());
     double perigeeRadius = p.getA() * (1 - p.getE());

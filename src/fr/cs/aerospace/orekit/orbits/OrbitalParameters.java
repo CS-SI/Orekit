@@ -4,6 +4,8 @@ package fr.cs.aerospace.orekit.orbits;
 import org.spaceroots.mantissa.utilities.ArraySliceMappable;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 import java.io.Serializable;
@@ -59,16 +61,19 @@ public abstract class OrbitalParameters
   public void reset() {
     cachedMu = Double.NaN;
     cachedPVCoordinates = new PVCoordinates();
+    frame =  Frame.getJ2000();
     dirtyCache = true;
   }
 
   /** Reset the orbit from cartesian parameters.
    * @param pvCoordinates the position and velocity in the inertial frame
+   * @param frame the frame in which are expressed the {@link PVCoordinates}
    * @param mu central attraction coefficient (m^3/s^2)
    */
-  public void reset(PVCoordinates pvCoordinates, double mu) {
+  public void reset(PVCoordinates pvCoordinates, Frame frame, double mu) {
     cachedMu = mu;
     cachedPVCoordinates = pvCoordinates;
+    this.frame = frame;
     dirtyCache = false;
     updateFromPVCoordinates();
   }
@@ -254,7 +259,14 @@ public abstract class OrbitalParameters
   public int getStateDimension() {
     return 6;
   }
-
+  
+  /** Get the frame in which are expressed the orbital parameters.
+   * @return frame the frame
+   */
+  public Frame getFrame() {
+		return frame;
+  }
+		
   /** Reinitialize internal state from the specified array slice data.
    * @param start start index in the array
    * @param array array holding the data to extract (a, ex, ey, hx, hy, lv)
@@ -266,7 +278,6 @@ public abstract class OrbitalParameters
    * @param array array where data should be stored (a, ex, ey, hx, hy, lv)
    */
   public abstract void mapStateToArray(int start, double[] array);
-
   
   
   /** Last value of mu used to compute position and velocity (m<sup>3</sup>/s<sup>2</sup>). */
@@ -277,5 +288,8 @@ public abstract class OrbitalParameters
   
   /** Indicator for dirty PVCoordinates cache. */
   private boolean dirtyCache;
+  
+  /** Frame in wich are expressed the orbital parameters */
+  protected Frame frame;
 
 }

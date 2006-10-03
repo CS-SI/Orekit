@@ -5,6 +5,7 @@ import junit.framework.*;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.Utils;
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -33,7 +34,7 @@ public class EquinoctialParametersTest extends TestCase {
     
     PVCoordinates pvCoordinates = new PVCoordinates(pos,vit);
 
-    EquinoctialParameters param = new EquinoctialParameters(pvCoordinates, mu);
+    EquinoctialParameters param = new EquinoctialParameters(pvCoordinates, Frame.getJ2000(), mu);
     assertEquals(param.getA(), equi.getA(), Utils.epsilonTest * equi.getA());
     assertEquals(param.getEquinoctialEx(), equi.getEquinoctialEx(),
                  Utils.epsilonE * Math.abs(equi.getE()));
@@ -66,7 +67,7 @@ public class EquinoctialParametersTest extends TestCase {
     
     PVCoordinates pvCoordinates = new PVCoordinates(posCir,vitCir);
 
-    EquinoctialParameters paramCir = new EquinoctialParameters(pvCoordinates,
+    EquinoctialParameters paramCir = new EquinoctialParameters(pvCoordinates, Frame.getJ2000(),
                                                                mu);
     assertEquals(paramCir.getA(), equiCir.getA(), Utils.epsilonTest
         * equiCir.getA());
@@ -155,7 +156,7 @@ public class EquinoctialParametersTest extends TestCase {
     Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
     double mu = 3.9860047e14;
 
-    EquinoctialParameters p = new EquinoctialParameters(new PVCoordinates(position, velocity), mu);
+    EquinoctialParameters p = new EquinoctialParameters(new PVCoordinates(position, velocity), Frame.getJ2000(), mu);
     KeplerianParameters kep = new KeplerianParameters(p, 3.9860047e14);
 
     double e = p.getE();
@@ -345,7 +346,7 @@ public class EquinoctialParametersTest extends TestCase {
     Vector3D velocity = new Vector3D(134664.6, 90066.8, 72047.6);
     double mu = 3.9860047e14;
 
-    EquinoctialParameters p = new EquinoctialParameters(new PVCoordinates(position, velocity), mu);
+    EquinoctialParameters p = new EquinoctialParameters(new PVCoordinates(position, velocity), Frame.getJ2000(), mu);
 
     Vector3D positionOffset = new Vector3D(p.getPVCoordinates(mu).getPosition());
     Vector3D velocityOffset = new Vector3D(p.getPVCoordinates(mu).getVelocity());
@@ -360,7 +361,7 @@ public class EquinoctialParametersTest extends TestCase {
     position = new Vector3D(33051.2, 26184.9, -1.3E-5);
     velocity = new Vector3D(-60376.2, 76208., 2.7E-4);
 
-    p = new EquinoctialParameters(new PVCoordinates(position, velocity), mu);
+    p = new EquinoctialParameters(new PVCoordinates(position, velocity), Frame.getJ2000(), mu);
 
     positionOffset = new Vector3D(p.getPVCoordinates(mu).getPosition());
     velocityOffset = new Vector3D(p.getPVCoordinates(mu).getVelocity());

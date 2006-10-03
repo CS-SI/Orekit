@@ -2,6 +2,7 @@ package fr.cs.aerospace.orekit.orbits;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /**
@@ -69,10 +70,11 @@ public class CircularParameters
 
   /** Constructor from cartesian parameters.
    * @param pvCoordinates the {@link PVCoordinates} in inertial frame
+   * @param frame the frame in which are expressed the {@link PVCoordinates} 
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public CircularParameters(PVCoordinates pvCoordinates, double mu) {
-    reset(pvCoordinates, mu);
+  public CircularParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
+    reset(pvCoordinates, frame, mu);
   }
 
   /** Constructor from any kind of orbital parameters

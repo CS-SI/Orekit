@@ -6,6 +6,7 @@ import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.errors.PropagationException;
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
@@ -32,7 +33,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
     AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
     Orbit initialOrbit =
-      new Orbit(initDate, new EquinoctialParameters(new PVCoordinates(position, velocity), mu));
+      new Orbit(initDate, new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
 
     // Extrapolator definition
     // -----------------------
@@ -127,7 +128,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
     Orbit initialOrbit =
       new Orbit(initDate,
-                new EquinoctialParameters(new PVCoordinates(position, velocity), mu));
+                new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
 
     // Initialisation to simulate a keplerian extrapolation
     // To be noticed: in order to simulate a keplerian extrapolation with the
@@ -192,7 +193,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
     Orbit initialOrbit =
       new Orbit(initDate,
-                new EquinoctialParameters(new PVCoordinates(position, velocity), mu));
+                new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
 
     // Extrapolator definition
     // -----------------------
@@ -414,7 +415,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
       Orbit initialOrbit =
         new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
-                  new EquinoctialParameters(new PVCoordinates(position, velocity), mu));
+                  new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
 
       // Extrapolator definition
       // -----------------------
@@ -442,7 +443,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
       Orbit initialOrbit =
         new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
-                  new EquinoctialParameters(new PVCoordinates(position, velocity), mu));
+                  new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
 
       // Extrapolator definition
       // -----------------------
