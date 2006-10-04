@@ -560,6 +560,7 @@ public class CircularParameters
    public void addKeplerContribution() {
      // TODO implement Gauss equations for circular orbits
      //yDot[5] += alphaVKepler;
+	
    }
 
    /** Add the contribution of an acceleration expressed in (T, N, W)

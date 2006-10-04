@@ -86,7 +86,7 @@ public class NumericalPropagator
       this.startDate          = new AbsoluteDate();
       this.date               = new AbsoluteDate();
       this.parameters         = null;
-      this.Attitude           = new Attitude();
+      this.attitude           = new Attitude();
       this.mapper             = null;
       this.adder              = null;
     }
@@ -126,19 +126,13 @@ public class NumericalPropagator
      * @exception DerivativeException if the force models trigger one
      * @exception IntegratorException if the force models trigger one
      */
-    public Orbit extrapolate(Orbit initialOrbit,
+    public void extrapolate(Orbit initialOrbit,
                              AbsoluteDate finalDate, Orbit finalOrbit)
       throws DerivativeException, IntegratorException, OrekitException {
 
       extrapolate(initialOrbit, finalDate, DummyStepHandler.getInstance());
-      if (finalOrbit == null) {
-        finalOrbit = new Orbit(new AbsoluteDate(date),
-                               (OrbitalParameters) parameters.clone());
-      } 
-      else {
-        finalOrbit.reset(date, parameters, mu);
-      }
-      return finalOrbit;
+      finalOrbit.reset(date, parameters, mu);
+
     }
     
     /** Extrapolate an orbit and store the ephemeris throughout the integration
@@ -149,25 +143,15 @@ public class NumericalPropagator
      * @param model placeholder where to put the ephemeris (may be null, as
      * long as null is cast to (ContinuousOutputModel) to avoid ambiguities with
      * the other extrapolation methods)
-     * @return model (reference to model if it was non null,
-     * reference to a new object otherwise)
      * @exception DerivativeException if the force models trigger one
      * @exception IntegratorException if the force models trigger one
      */
-    public ContinuousOutputModel extrapolate(Orbit initialOrbit,
+    public void extrapolate(Orbit initialOrbit,
                                              AbsoluteDate finalDate,
                                              ContinuousOutputModel model) 
-        throws DerivativeException, IntegratorException, OrekitException {
-        // TODO validation by the headchief Luc, don't forget to check the javadoc
-    	
-    	if(model == null) {
-    		model = new ContinuousOutputModel();
-    	}
-    	
-        extrapolate(initialOrbit, finalDate, model);
-
-        return model;
-
+        throws DerivativeException, IntegratorException, OrekitException {    	
+    	model.reset();
+        extrapolate(initialOrbit, finalDate, (StepHandler)model);
     }        
 
     /** Extrapolate an orbit and call a user handler at fixed time during
@@ -266,7 +250,7 @@ public class NumericalPropagator
         
         // compute the contributions of all perturbing forces
         for (Iterator iter = forceModels.iterator(); iter.hasNext();) {
-            ((ForceModel) iter.next()).addContribution(date, pvCoordinates, Attitude, adder);
+            ((ForceModel) iter.next()).addContribution(date, pvCoordinates, attitude, adder);
         }
         
         // finalize derivatives by adding the Kepler contribution
@@ -341,7 +325,7 @@ public class NumericalPropagator
     private OrbitalParameters parameters;
     
     /** Current attitude. */
-    private Attitude Attitude;
+    private Attitude attitude;
     
     /** Mapper between the orbit domain object and flat state array. */
     private ArrayMapper mapper;
