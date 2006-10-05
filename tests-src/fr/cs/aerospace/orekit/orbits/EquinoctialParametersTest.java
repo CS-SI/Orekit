@@ -27,7 +27,7 @@ public class EquinoctialParametersTest extends TestCase {
     // elliptic orbit
     EquinoctialParameters equi =
       new EquinoctialParameters(42166.712, 0.5, -0.5, hx, hy,
-                                5.300, EquinoctialParameters.MEAN_LATITUDE_ARGUMENT);
+                                5.300, EquinoctialParameters.MEAN_LATITUDE_ARGUMENT, Frame.getJ2000());
     double mu = 3.9860047e14;
     Vector3D pos = equi.getPVCoordinates(mu).getPosition();
     Vector3D vit = equi.getPVCoordinates(mu).getVelocity();
@@ -60,7 +60,7 @@ public class EquinoctialParametersTest extends TestCase {
     // circular orbit
     EquinoctialParameters equiCir =
       new EquinoctialParameters(42166.712, 0.1e-10, -0.1e-10, hx, hy,
-                                5.300, EquinoctialParameters.MEAN_LATITUDE_ARGUMENT);
+                                5.300, EquinoctialParameters.MEAN_LATITUDE_ARGUMENT, Frame.getJ2000());
     double mu = 3.9860047e14;
     Vector3D posCir = equiCir.getPVCoordinates(mu).getPosition();
     Vector3D vitCir = equiCir.getPVCoordinates(mu).getVelocity();
@@ -94,7 +94,7 @@ public class EquinoctialParametersTest extends TestCase {
 
     EquinoctialParameters equi =
       new EquinoctialParameters(42166.712, -7.900e-06, 1.100e-04, hx, hy,
-                                5.300, EquinoctialParameters.MEAN_LATITUDE_ARGUMENT);
+                                5.300, EquinoctialParameters.MEAN_LATITUDE_ARGUMENT, Frame.getJ2000());
     double mu = 3.9860047e14;
     Vector3D pos = equi.getPVCoordinates(mu).getPosition();
     Vector3D vit = equi.getPVCoordinates(mu).getVelocity();
@@ -129,7 +129,7 @@ public class EquinoctialParametersTest extends TestCase {
 
     EquinoctialParameters equi =
       new EquinoctialParameters(42166.712, -7.900e-6, 1.100e-4, hx, hy,
-                                5.300, EquinoctialParameters.MEAN_LATITUDE_ARGUMENT);
+                                5.300, EquinoctialParameters.MEAN_LATITUDE_ARGUMENT, Frame.getJ2000());
     KeplerianParameters kep = new KeplerianParameters(equi, 3.9860047e14);
 
     assertEquals(42166.71200, equi.getA(), Utils.epsilonTest * kep.getA());
@@ -218,7 +218,7 @@ public class EquinoctialParametersTest extends TestCase {
     // elliptic and non equatorial (i retrograde) orbit
     EquinoctialParameters p =
       new EquinoctialParameters(42166.712, 0.5, -0.5, 1.200, 2.1,
-                                0.67, EquinoctialParameters.TRUE_LATITUDE_ARGUMENT);
+                                0.67, EquinoctialParameters.TRUE_LATITUDE_ARGUMENT, Frame.getJ2000());
 
     double ex = p.getEquinoctialEx();
     double ey = p.getEquinoctialEy();
@@ -239,7 +239,7 @@ public class EquinoctialParametersTest extends TestCase {
     // circular and equatorial orbit
     EquinoctialParameters pCirEqua =
       new EquinoctialParameters(42166.712, 0.1e-8, 0.1e-8, 0.1e-8, 0.1e-8,
-                                0.67, EquinoctialParameters.TRUE_LATITUDE_ARGUMENT);
+                                0.67, EquinoctialParameters.TRUE_LATITUDE_ARGUMENT, Frame.getJ2000());
 
     ex = pCirEqua.getEquinoctialEx();
     ey = pCirEqua.getEquinoctialEy();
@@ -265,7 +265,7 @@ public class EquinoctialParametersTest extends TestCase {
     // elliptic and non equatorial (i retrograde) orbit
     EquinoctialParameters p =
       new EquinoctialParameters(42166.712, 0.5, -0.5, 1.200, 2.1,
-                                0.67, EquinoctialParameters.TRUE_LATITUDE_ARGUMENT);
+                                0.67, EquinoctialParameters.TRUE_LATITUDE_ARGUMENT, Frame.getJ2000());
 
     Vector3D position = p.getPVCoordinates(mu).getPosition();
     Vector3D velocity = p.getPVCoordinates(mu).getVelocity();
@@ -302,7 +302,7 @@ public class EquinoctialParametersTest extends TestCase {
     // circular and equatorial orbit
     EquinoctialParameters pCirEqua =
       new EquinoctialParameters(42166.712, 0.1e-8, 0.1e-8, 0.1e-8, 0.1e-8,
-                                0.67, EquinoctialParameters.TRUE_LATITUDE_ARGUMENT);
+                                0.67, EquinoctialParameters.TRUE_LATITUDE_ARGUMENT, Frame.getJ2000());
 
     position = pCirEqua.getPVCoordinates(mu).getPosition();
     velocity = pCirEqua.getPVCoordinates(mu).getVelocity();

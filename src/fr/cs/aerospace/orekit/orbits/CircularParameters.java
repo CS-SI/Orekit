@@ -62,10 +62,11 @@ public class CircularParameters
    * @param alpha  an + &omega;, mean, eccentric or true longitude argument (rad)
    * @param type type of longitude argument, must be one of {@link #MEAN_LONGITUDE_ARGUMENT},
    * {@link #ECCENTRIC_LONGITUDE_ARGUMENT} or  {@link #TRUE_LONGITUDE_ARGUMENT}
+   * @param frame the frame in which are expressed the parameters
    */
   public CircularParameters(double a, double ex, double ey, double i, double raan,
-                            double alpha, int type) {
-    reset(a, ex, ey, i, raan, alpha, type);
+                            double alpha, int type, Frame frame) {
+    reset(a, ex, ey, i, raan, alpha, type, frame);
   }
 
   /** Constructor from cartesian parameters.
@@ -90,7 +91,7 @@ public class CircularParameters
   * @return a copy of the instance.
   */
   public Object clone() {
-    return new CircularParameters(a, ex, ey, i, raan, alphaV, TRUE_LONGITUDE_ARGUMENT);
+    return new CircularParameters(a, ex, ey, i, raan, alphaV, TRUE_LONGITUDE_ARGUMENT, frame);
   }
 
   /** Reset the orbit to default.
@@ -102,6 +103,7 @@ public class CircularParameters
     ey   = 0;
     i    = 0.3;
     raan = 0;
+    frame = Frame.getJ2000();
     setAlphaV(0);
   }
 
@@ -114,16 +116,18 @@ public class CircularParameters
    * @param alpha  an + &omega;, mean, eccentric or true longitude argument (rad)
    * @param type type of longitude argument, must be one of {@link #MEAN_LONGITUDE_ARGUMENT},
    * {@link #ECCENTRIC_LONGITUDE_ARGUMENT} or  {@link #TRUE_LONGITUDE_ARGUMENT}
+   * @param frame the frame in which are expressed the parameters
    */
   public void reset(double a, double ex, double ey, double i, double raan,
-                    double alpha, int type) {
+                    double alpha, int type, Frame frame) {
 
     this.a    =  a;
     this.ex   = ex;
     this.ey   = ey;
     this.i    = i;
     this.raan = raan;
-
+    this.frame = frame;
+    
     switch (type) {
     case MEAN_LONGITUDE_ARGUMENT :
       setAlphaM(alpha);
@@ -148,6 +152,7 @@ public class CircularParameters
     double equiEy = op.getEquinoctialEy();
     ex   = equiEx * cosRaan + equiEy * sinRaan;
     ey   = equiEy * cosRaan - equiEx * sinRaan;
+    frame = op.getFrame();
     setAlphaV(op.getLv() - raan);
   }
 
@@ -593,6 +598,12 @@ public class CircularParameters
 //     yDot[3] += hxW * w;
 //     yDot[4] += hyW * w;
 //     yDot[5] += lvW * w;
+   }
+   /** Get the frame where are expressed the XYZ coordinates.
+    * @return the frame.
+    */
+   public Frame getFrame() {
+	   return this.getFrame();
    }
 
  }

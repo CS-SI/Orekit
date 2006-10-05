@@ -3,6 +3,7 @@ package fr.cs.aerospace.orekit.propagation;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+
 import org.spaceroots.mantissa.ode.ContinuousOutputModel;
 import org.spaceroots.mantissa.ode.FirstOrderIntegrator;
 import org.spaceroots.mantissa.ode.FirstOrderDifferentialEquations;
@@ -15,6 +16,7 @@ import org.spaceroots.mantissa.ode.IntegratorException;
 import org.spaceroots.mantissa.ode.SwitchingFunction;
 import org.spaceroots.mantissa.utilities.ArrayMapper;
 import org.spaceroots.mantissa.geometry.Vector3D;
+
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
@@ -23,7 +25,6 @@ import fr.cs.aerospace.orekit.perturbations.ForceModel;
 import fr.cs.aerospace.orekit.perturbations.SWF;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
-import fr.cs.aerospace.orekit.Attitude;
 
 
 /**
@@ -86,7 +87,6 @@ public class NumericalPropagator
       this.startDate          = new AbsoluteDate();
       this.date               = new AbsoluteDate();
       this.parameters         = null;
-      this.attitude           = new Attitude();
       this.mapper             = null;
       this.adder              = null;
     }
@@ -250,7 +250,7 @@ public class NumericalPropagator
         
         // compute the contributions of all perturbing forces
         for (Iterator iter = forceModels.iterator(); iter.hasNext();) {
-            ((ForceModel) iter.next()).addContribution(date, pvCoordinates, attitude, adder);
+            ((ForceModel) iter.next()).addContribution(date, pvCoordinates, parameters.getFrame() ,adder);
         }
         
         // finalize derivatives by adding the Kepler contribution
@@ -323,10 +323,7 @@ public class NumericalPropagator
 
     /** Current orbital parameters, updated during the integration process. */
     private OrbitalParameters parameters;
-    
-    /** Current attitude. */
-    private Attitude attitude;
-    
+        
     /** Mapper between the orbit domain object and flat state array. */
     private ArrayMapper mapper;
     

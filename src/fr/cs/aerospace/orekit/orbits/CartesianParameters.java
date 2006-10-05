@@ -326,6 +326,12 @@ public class CartesianParameters
      yDot[5] += gamma.getZ();
    }
 
+   /** Get the frame where are expressed the XYZ coordinates.
+    * @return the frame.
+    */
+   public Frame getFrame() {
+	   return this.getFrame();
+   }
  }
 
 }

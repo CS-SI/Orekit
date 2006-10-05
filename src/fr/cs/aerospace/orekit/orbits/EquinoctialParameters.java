@@ -64,11 +64,12 @@ public class EquinoctialParameters
    * @param l  an + &omega; + &Omega;, mean, eccentric or true latitude argument (rad)
    * @param type type of latitude argument, must be one of {@link #MEAN_LATITUDE_ARGUMENT},
    * {@link #ECCENTRIC_LATITUDE_ARGUMENT} or  {@link #TRUE_LATITUDE_ARGUMENT}
+   * @param frame the frame in which are expressed the parameters
    */
   public EquinoctialParameters(double a, double ex, double ey,
                                double hx, double hy,
-                               double l, int type) {
-    reset(a, ex, ey, hx, hy, l, type);
+                               double l, int type, Frame frame) {
+    reset(a, ex, ey, hx, hy, l, type, frame);
   }
 
   /** Constructor from cartesian parameters.
@@ -93,7 +94,7 @@ public class EquinoctialParameters
   * @return a copy of the instance.
   */
   public Object clone() {
-    return new EquinoctialParameters(a, ex, ey, hx, hy, lv, TRUE_LATITUDE_ARGUMENT);
+    return new EquinoctialParameters(a, ex, ey, hx, hy, lv, TRUE_LATITUDE_ARGUMENT, frame);
   }
 
   /** Reset the orbit to default.
@@ -105,6 +106,7 @@ public class EquinoctialParameters
     ey = 0;
     hx = 0.15;
     hy = 0;
+    frame = Frame.getJ2000();
     setLv(0);
   }
 
@@ -117,15 +119,17 @@ public class EquinoctialParameters
    * @param l  an + &omega; + &Omega;, mean, eccentric or true latitude argument (rad)
    * @param type type of latitude argument, must be one of {@link #MEAN_LATITUDE_ARGUMENT},
    * {@link #ECCENTRIC_LATITUDE_ARGUMENT} or  {@link #TRUE_LATITUDE_ARGUMENT}
+   * @param frame the frame in which are expressed the parameters.
    */
   public void reset(double a, double ex, double ey,
-                    double hx, double hy, double l, int type) {
+                    double hx, double hy, double l, int type, Frame frame) {
 
     this.a  =  a;
     this.ex = ex;
     this.ey = ey;
     this.hx = hx;
     this.hy = hy;
+    this.frame = frame;
 
     switch (type) {
     case MEAN_LATITUDE_ARGUMENT :
@@ -148,6 +152,7 @@ public class EquinoctialParameters
     hx = op.getHx();
     hy = op.getHy();
     lv = op.getLv();
+    frame = op.getFrame();
   }
 
   /** Update the parameters from the current position and velocity. */
@@ -624,7 +629,13 @@ public class EquinoctialParameters
      yDot[4] += hyW * w;
      yDot[5] += lvW * w;
    }
-
+   
+   /** Get the frame where are expressed the XYZ coordinates.
+    * @return the frame.
+    */
+   public Frame getFrame() {
+	   return this.getFrame();
+   }
  }
 
 }

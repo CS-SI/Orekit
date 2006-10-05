@@ -21,7 +21,7 @@ public class KeplerianParametersTest extends TestCase {
     // elliptic orbit
     KeplerianParameters kep =
       new KeplerianParameters(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
-                              0.048363, KeplerianParameters.MEAN_ANOMALY);
+                              0.048363, KeplerianParameters.MEAN_ANOMALY, Frame.getJ2000());
     double mu = 3.9860047e14;
     
     Vector3D pos = kep.getPVCoordinates(mu).getPosition();
@@ -38,7 +38,7 @@ public class KeplerianParametersTest extends TestCase {
     // circular orbit
     KeplerianParameters kepCir =
       new KeplerianParameters(24464560.0, 0.0, 0.122138, 3.10686, 1.00681,
-                              0.048363, KeplerianParameters.MEAN_ANOMALY);
+                              0.048363, KeplerianParameters.MEAN_ANOMALY, Frame.getJ2000());
     
     Vector3D posCir = kepCir.getPVCoordinates(mu).getPosition();
     Vector3D vitCir = kepCir.getPVCoordinates(mu).getVelocity();
@@ -57,7 +57,7 @@ public class KeplerianParametersTest extends TestCase {
     
     KeplerianParameters kep =
       new KeplerianParameters(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
-                              0.048363, KeplerianParameters.MEAN_ANOMALY);
+                              0.048363, KeplerianParameters.MEAN_ANOMALY, Frame.getJ2000());
     double mu = 3.9860047e14;
     
     Vector3D pos = kep.getPVCoordinates(mu).getPosition();
@@ -75,7 +75,7 @@ public class KeplerianParametersTest extends TestCase {
     
     KeplerianParameters kep =
       new KeplerianParameters(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
-                              0.048363, KeplerianParameters.MEAN_ANOMALY);
+                              0.048363, KeplerianParameters.MEAN_ANOMALY, Frame.getJ2000());
     
     assertEquals(24464560.0, kep.getA(), Utils.epsilonTest * kep.getA());
     assertEquals(-0.412036802887626, kep.getEquinoctialEx(), Utils.epsilonE * Math.abs(kep.getE()));
@@ -150,7 +150,7 @@ public class KeplerianParametersTest extends TestCase {
     // elliptic and non equatorial orbit 
     KeplerianParameters p =
       new KeplerianParameters(24464560.0, 0.7311, 2.1, 3.10686, 1.00681,
-                              0.67, KeplerianParameters.TRUE_ANOMALY);
+                              0.67, KeplerianParameters.TRUE_ANOMALY, Frame.getJ2000());
   
     double e       = p.getE();
     double v       = p.getTrueAnomaly();
@@ -175,7 +175,7 @@ public class KeplerianParametersTest extends TestCase {
     //  circular and equatorial orbit
     KeplerianParameters pCirEqua =
       new KeplerianParameters(24464560.0, 0.1e-10, 0.1e-8, 3.10686, 1.00681,
-                              0.67, KeplerianParameters.TRUE_ANOMALY);
+                              0.67, KeplerianParameters.TRUE_ANOMALY, Frame.getJ2000());
 
     e       = pCirEqua.getE();
     v       = pCirEqua.getTrueAnomaly();
@@ -203,7 +203,7 @@ public class KeplerianParametersTest extends TestCase {
     // elliptic and non equatorial orbit 
     KeplerianParameters p =
       new KeplerianParameters(24464560.0, 0.7311, 2.1, 3.10686, 1.00681,
-                              0.67, KeplerianParameters.TRUE_ANOMALY);
+                              0.67, KeplerianParameters.TRUE_ANOMALY, Frame.getJ2000());
     
     Vector3D position = p.getPVCoordinates(mu).getPosition();
     Vector3D velocity = p.getPVCoordinates(mu).getVelocity();
@@ -256,7 +256,7 @@ public class KeplerianParametersTest extends TestCase {
     //  circular and equatorial orbit
     KeplerianParameters pCirEqua =
       new KeplerianParameters(24464560.0, 0.1e-10, 0.1e-8, 3.10686, 1.00681,
-                              0.67, KeplerianParameters.TRUE_ANOMALY);
+                              0.67, KeplerianParameters.TRUE_ANOMALY, Frame.getJ2000());
    
     position = pCirEqua.getPVCoordinates(mu).getPosition();
     velocity = pCirEqua.getPVCoordinates(mu).getVelocity();

@@ -68,11 +68,12 @@ public class KeplerianParameters
    * @param anomaly mean, eccentric or true anomaly (rad)
    * @param type type of anomaly, must be one of {@link #MEAN_ANOMALY},
    * {@link #ECCENTRIC_ANOMALY} or  {@link #TRUE_ANOMALY}
+   * @param frame the frame in which are expressed the parameters
    */
   public KeplerianParameters(double a, double e, double i,
                              double pa, double raan,
-                             double anomaly, int type) {
-    reset(a, e, i, pa, raan, anomaly, type);
+                             double anomaly, int type, Frame frame) {
+    reset(a, e, i, pa, raan, anomaly, type, frame);
   }
 
   /** Constructor from cartesian parameters.
@@ -97,7 +98,7 @@ public class KeplerianParameters
   * @return a copy of the instance.
   */
   public Object clone() {
-    return new KeplerianParameters(a, e, i, pa, raan, v, TRUE_ANOMALY);
+    return new KeplerianParameters(a, e, i, pa, raan, v, TRUE_ANOMALY, frame);
   }
 
   /** Reset the orbit to default.
@@ -109,6 +110,7 @@ public class KeplerianParameters
     i    = 0.3;
     pa   = 0;
     raan = 0;
+    frame = Frame.getJ2000();
     setTrueAnomaly(0);
   }
 
@@ -121,15 +123,17 @@ public class KeplerianParameters
    * @param anomaly mean, eccentric or true anomaly (rad)
    * @param type type of anomaly, must be one of {@link #MEAN_ANOMALY},
    * {@link #ECCENTRIC_ANOMALY} or  {@link #TRUE_ANOMALY}
+   * @param frame the frame in which are expressed the parameters
    */
   public void reset(double a, double e, double i, double pa, double raan,
-                    double anomaly, int type) {
+                    double anomaly, int type, Frame frame) {
 
     this.a    =    a;
     this.e    =    e;
     this.i    =    i;
     this.pa   =   pa;
     this.raan = raan;
+    this.frame = frame;
 
     switch (type) {
     case MEAN_ANOMALY :
@@ -151,6 +155,7 @@ public class KeplerianParameters
     raan = Math.atan2(op.getHy(), op.getHx());
     pa   = Math.atan2(op.getEquinoctialEy(), op.getEquinoctialEx()) - raan;
     setTrueAnomaly(op.getLv() - (pa + raan));
+    frame = op.frame;
   }
 
   /** Update the parameters from the current position and velocity. */
@@ -668,6 +673,12 @@ public class KeplerianParameters
      yDot[5] += vQ * q + vS * s;
    }
       
+   /** Get the frame where are expressed the XYZ coordinates.
+    * @return the frame.
+    */
+   public Frame getFrame() {
+	   return this.getFrame();
+   }
  }
 
 }

@@ -2,6 +2,7 @@ package fr.cs.aerospace.orekit.orbits;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /** This class sums up the contribution of several forces into orbit derivatives.
@@ -131,7 +132,9 @@ public abstract class OrbitDerivativesAdder {
    */
   public abstract void addQSWAcceleration(double q, double s, double w);
 
-  /** Add the contribution of an acceleration expressed in intertial frame.
+  /** Add the contribution of an acceleration expressed in the inertial frame 
+   *  (it is important to make sure this acceleration is expressed in the 
+   *  same frame as the orbit) .
    * @param x acceleration along the X axis (m/s<sup>2</sup>)
    * @param y acceleration along the Y axis (m/s<sup>2</sup>)
    * @param z acceleration along the Z axis (m/s<sup>2</sup>)
@@ -142,14 +145,21 @@ public abstract class OrbitDerivativesAdder {
                        x * W.getX() + y * W.getY() + z * W.getZ());
   }
 
-  /** Add the contribution of an acceleration expressed in intertial frame.
-   * @param gamma acceleration vector in intertial frame (m/s<sup>2</sup>)
+  /** Add the contribution of an acceleration expressed in inertial frame
+   *  (it is important to make sure this acceleration is expressed in the 
+   *  same frame as the orbit) .
+   * @param gamma acceleration vector in the intertial frame (m/s<sup>2</sup>)
    */
   public void addAcceleration(Vector3D gamma) {
     addTNWAcceleration(Vector3D.dotProduct(gamma, T),
                        Vector3D.dotProduct(gamma, N),
                        Vector3D.dotProduct(gamma, W));
   }
+  
+  /** Get the frame where are expressed the XYZ coordinates.
+   * @return the frame.
+   */
+  public abstract Frame getFrame();
 
   /** Get the first vector of the (Q, S, W) local orbital frame.
    * @return first vector of the (Q, S, W) local orbital frame */

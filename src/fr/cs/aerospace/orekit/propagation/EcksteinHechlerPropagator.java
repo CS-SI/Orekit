@@ -130,7 +130,8 @@ public class EcksteinHechlerPropagator implements Ephemeris {
                  mean.getI()          + deltaI,
                  mean.getRightAscensionOfAscendingNode() + deltaRAAN,
                  mean.getAlphaM()     + deltaAlphaM,
-                 CircularParameters.MEAN_LONGITUDE_ARGUMENT);
+                 CircularParameters.MEAN_LONGITUDE_ARGUMENT,
+                 mean.getFrame());
 
       // check convergence
       if ((Math.abs(deltaA)         < thresholdA)
@@ -320,7 +321,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
     return new CircularParameters(mean.getA() * (1.0 + rda), exm + rdex, eym + rdey,
                                   xim + rdxi, trimAngle(omm + rdom, Math.PI),
                                   trimAngle(xlm + rdxl, Math.PI),
-                                  CircularParameters.MEAN_LONGITUDE_ARGUMENT);
+                                  CircularParameters.MEAN_LONGITUDE_ARGUMENT, mean.getFrame());
 
   }
 
