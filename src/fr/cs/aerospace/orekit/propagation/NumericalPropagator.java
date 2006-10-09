@@ -15,8 +15,6 @@ import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.IntegratorException;
 import org.spaceroots.mantissa.ode.SwitchingFunction;
 import org.spaceroots.mantissa.utilities.ArrayMapper;
-import org.spaceroots.mantissa.geometry.Vector3D;
-
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
@@ -280,7 +278,7 @@ public class NumericalPropagator
       public double g(double t, double[] y){
           mapState(t, y);
           try {
-            return swf.g(date, parameters.getPVCoordinates(mu));
+            return swf.g(date, parameters.getPVCoordinates(mu), parameters.getFrame());
           } catch (OrekitException oe) {
             // TODO provide the exception to the surrounding NumericalPropagator instance
             throw new RuntimeException("... TODO ...");
@@ -289,7 +287,7 @@ public class NumericalPropagator
       
       public int eventOccurred(double t, double[] y) {
           mapState(t, y);
-          swf.eventOccurred(date, parameters.getPVCoordinates(mu));
+          swf.eventOccurred(date, parameters.getPVCoordinates(mu), parameters.getFrame());
           return CONTINUE;
       }
       
