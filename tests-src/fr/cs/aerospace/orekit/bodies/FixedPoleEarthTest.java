@@ -1,5 +1,7 @@
 package fr.cs.aerospace.orekit.bodies;
 
+import models.bodies.FixedPoleEarth;
+
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 

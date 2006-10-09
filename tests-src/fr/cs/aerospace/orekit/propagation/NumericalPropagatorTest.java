@@ -4,12 +4,13 @@ import java.io.IOException;
 
 
 import junit.framework.*;
+import models.bodies.FixedPoleEarth;
+
 import org.spaceroots.mantissa.ode.DormandPrince853Integrator;
 import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.IntegratorException;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
-import fr.cs.aerospace.orekit.bodies.FixedPoleEarth;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;

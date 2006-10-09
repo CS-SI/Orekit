@@ -77,7 +77,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     Orbit initialOrbit =
       new Orbit(initDate,
                 new KeplerianParameters(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
-                                        6.2, KeplerianParameters.TRUE_ANOMALY));
+                                        6.2, KeplerianParameters.TRUE_ANOMALY, Frame.getJ2000()));
     double mu = 3.9860047e14;
 
     // Extrapolator definition
@@ -272,7 +272,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     Orbit initialOrbit =
       new Orbit(initDate,
                 new KeplerianParameters(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
-                                        6.2, KeplerianParameters.TRUE_ANOMALY));
+                                        6.2, KeplerianParameters.TRUE_ANOMALY, Frame.getJ2000()));
 
     // Extrapolator definition
     // -----------------------
@@ -367,7 +367,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
                                           Math.tan(i / 2) * Math.cos(gom),
                                           Math.tan(i / 2) * Math.sin(gom),
                                           pso_M + gom,
-                                          EquinoctialParameters.MEAN_LATITUDE_ARGUMENT));
+                                          EquinoctialParameters.MEAN_LATITUDE_ARGUMENT, Frame.getJ2000()));
     // Extrapolator definition
     // -----------------------
     EcksteinHechlerPropagator extrapolator =

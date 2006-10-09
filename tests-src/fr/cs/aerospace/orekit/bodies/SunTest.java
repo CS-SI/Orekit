@@ -1,5 +1,7 @@
 package fr.cs.aerospace.orekit.bodies;
 
+import models.bodies.Sun;
+
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.frames.Frame;
@@ -31,7 +33,7 @@ public class SunTest extends TestCase {
   }
 
   public void checkDirection(double offsetJ2000, double x, double y, double z) {
-    Vector3D sun = new Sun().getPosition(new AbsoluteDate(AbsoluteDate.J2000Epoch, offsetJ2000));
+    Vector3D sun = new Sun().getPosition(new AbsoluteDate(AbsoluteDate.J2000Epoch, offsetJ2000), Frame.getJ2000());
     sun = Frame.getJ2000().getTransformTo(Frame.getVeis1950()).transformPosition(sun);
     sun.normalizeSelf();
     assertEquals(x, sun.getX(), 1.0e-7);
