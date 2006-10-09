@@ -5,7 +5,6 @@ import org.spaceroots.mantissa.utilities.ArraySliceMappable;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 import java.io.Serializable;

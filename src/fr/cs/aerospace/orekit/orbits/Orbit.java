@@ -1,7 +1,5 @@
 package fr.cs.aerospace.orekit.orbits;
 
-import org.spaceroots.mantissa.geometry.Vector3D;
-
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
