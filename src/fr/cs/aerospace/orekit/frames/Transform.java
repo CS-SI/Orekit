@@ -4,7 +4,6 @@ import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
-import fr.cs.aerospace.orekit.utils.Vector;
 
 /** Transformation class in three dimensional space.
  * <p>This class represents the transformation engine between {@link Frame frames}.
