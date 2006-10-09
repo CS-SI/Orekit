@@ -1,13 +1,11 @@
 package fr.cs.aerospace.orekit.perturbations;
 
-import fr.cs.aerospace.orekit.Attitude;
 import fr.cs.aerospace.orekit.bodies.RotatingBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
-
-import org.spaceroots.mantissa.geometry.Vector3D;
 
 /** This class represents the gravitational field of a celestial body.
  * <p>
@@ -53,8 +51,8 @@ public class DrozinerAttractionModel implements ForceModel {
    * @param adder object where the contribution should be added
    */
 
-  public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates,
-                              Attitude Attitude, OrbitDerivativesAdder adder)
+  public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, Frame frame,
+                              OrbitDerivativesAdder adder)
       throws OrekitException {
 
     // Retrieval of cartesian coordinates

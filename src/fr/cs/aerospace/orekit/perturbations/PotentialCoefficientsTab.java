@@ -14,7 +14,7 @@ import java.util.StringTokenizer;
  * and then to choose the force models he wants to add according to his need for precision. When
  * creating the initial orbit, an extrapolation method can be applied.</p>
  *
- *@version $Id$
+ *@version $Id: PotentialCoefficientsTab.java 1013 2006-09-13 10:08:23 +0000 (mer., 13 sept. 2006) fabien $
  * @author  M. Romero
  * @author  E. Delente
  */

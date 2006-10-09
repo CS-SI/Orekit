@@ -1,12 +1,10 @@
 package fr.cs.aerospace.orekit.perturbations;
 
-import fr.cs.aerospace.orekit.Attitude;
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
-
-import org.spaceroots.mantissa.geometry.Vector3D;
 
 /** This interface represents a forces model set.
  *
@@ -19,7 +17,7 @@ import org.spaceroots.mantissa.geometry.Vector3D;
  * in the partial derivatives coming from the Gauss equations or the Lagrange's
  * planetary equations.</p>
  *
- * @version $Id$
+ * @version $Id: ForceModel.java 1032 2006-09-28 08:25:21 +0000 (jeu., 28 sept. 2006) fabien $
  * @author M. Romero
  * @author L. Maisonobe
  */
@@ -31,10 +29,11 @@ public interface ForceModel {
      * acceleration.
      * @param t current date
      * @param pvCoordinates the {@link PVCoordinates}
+     * @param frame the frame in which are expressed the coordinates.
      * @param adder object where the contribution should be added
      */
-    public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, 
-                                Attitude attitude, OrbitDerivativesAdder adder) throws OrekitException;
+    public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, Frame frame, 
+                             OrbitDerivativesAdder adder) throws OrekitException;
 
     /** Get the switching functions internally used by the model itself.
      * @return array of switching functions or null if the model doesn't need
