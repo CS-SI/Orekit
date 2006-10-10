@@ -1,4 +1,4 @@
-package models.satellite;
+package fr.cs.aerospace.orekit.models.spacecraft;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 

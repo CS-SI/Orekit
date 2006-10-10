@@ -1,10 +1,10 @@
 package fr.cs.aerospace.orekit.bodies;
 
-import models.bodies.Moon;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.models.bodies.Moon;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import junit.framework.Test;
 import junit.framework.TestCase;

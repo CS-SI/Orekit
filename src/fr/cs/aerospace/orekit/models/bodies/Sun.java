@@ -1,4 +1,4 @@
-package models.bodies;
+package fr.cs.aerospace.orekit.models.bodies;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
@@ -29,7 +29,7 @@ public class Sun extends ThirdBody {
    */
   public Vector3D getPosition(AbsoluteDate date, Frame frame) {
     
-	if (posInJ2OO0 == null) {  
+	
     double t = date.minus(reference) / 86400.0;
     double f = Math.toRadians(225.768 + 13.2293505 * t);
     double d = Math.toRadians(11.786 + 12.190749 * t);
@@ -71,7 +71,7 @@ public class Sun extends ThirdBody {
     double dasr = 1672.2 * Math.cos(xlp) + 28.0 * Math.cos(xlp + xlp)
                 - 0.35 * Math.cos(d);
     posInJ2OO0 = new Vector3D(1000.0 * 149597870.0 / (1.0 + 1.E-05 * dasr), centralSun);
-	}
+	
     return Frame.getJ2000().getTransformTo(frame).transformPosition(posInJ2OO0);
 
   }

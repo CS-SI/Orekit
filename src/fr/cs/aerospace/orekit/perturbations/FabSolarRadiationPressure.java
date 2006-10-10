@@ -2,18 +2,18 @@ package fr.cs.aerospace.orekit.perturbations;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
-import models.satellite.SolarRadiationPressureSatellite;
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.bodies.ThirdBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.models.spacecraft.SolarRadiationPressureSatellite;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /** Solar radiation pressure force model.
  * 
- * @author F. Maussion
+ * @author F. Maussion , E.Delente
  */
 
 public class FabSolarRadiationPressure implements ForceModel {
@@ -25,7 +25,7 @@ public class FabSolarRadiationPressure implements ForceModel {
 	 *   <li>p<sub>ref</sub> = 4.56 10<sup>-6</sup> N/m<sup>2</sup></li>
 	 * </ul>
 	 * @param sun Sun model
-	 * @param earth Earth shape model (for umbra/penumbra computation)
+	 * @param centralBody centralBody shape model (for umbra/penumbra computation)
 	 * @param spacecraft spacecraft
 	 */
 	public FabSolarRadiationPressure(ThirdBody sun, OneAxisEllipsoid centralBody,
@@ -67,7 +67,7 @@ public class FabSolarRadiationPressure implements ForceModel {
 	    
 	    double dRatio = dRef / satSunVector.getNorm();
 	    double rawP   = pRef * dRatio * dRatio
-	                  * getLightningRatio(pvCoordinates.getPosition(), satSunVector);
+	                  * getLightningRatio(pvCoordinates.getPosition(), t, frame);
 
 	    // spacecraft characteristics effects
 	    Vector3D u = new Vector3D(satSunVector);
@@ -86,13 +86,15 @@ public class FabSolarRadiationPressure implements ForceModel {
 	}
 
 	/** Get the lightning ratio.
-	   * @param position the satellite's position (make sure it is expressed in an inertial and earth centered frame)
-	   * @param satSunVector satellite to Sun vector
+	   * @param position the satellite's position 
+	   * @param date the date
+	   * @param frame in which position is defined
 	   * @exception OrekitException if the trajectory is inside the Earth
 	   */
-	  public double getLightningRatio(Vector3D position, Vector3D satSunVector)
+	  public double getLightningRatio(Vector3D position, AbsoluteDate date, Frame frame)
 	   throws OrekitException {
-
+		  Vector3D satSunVector = Vector3D.subtract(sun.getPosition(date, frame),
+                  position);
             // Earth apparent radius
 		    double r = position.getNorm();
 		    if (r <= centralBody.getEquatorialRadius()) {
@@ -109,6 +111,7 @@ public class FabSolarRadiationPressure implements ForceModel {
 		    double sunEarthAngle = Vector3D.angle(satSunVector, Vector3D.negate(position));
 
 		    double result = 1.0;
+		    
             // Is the satellite is in complete penumbra ?
 		    if (sunEarthAngle - alphaEarth + alphaSun < 0.0) {
 		        result = 0.0;
@@ -116,8 +119,25 @@ public class FabSolarRadiationPressure implements ForceModel {
 		    // Compute a lightning ratio in penumbra
 		    if ((sunEarthAngle - alphaEarth + alphaSun >= 0.0)&&((sunEarthAngle - alphaEarth - alphaSun <= 0.0))) {
 	    	
-	    		result = (alphaSun + sunEarthAngle - alphaEarth) / (2*alphaSun);
+	    		//result = (alphaSun + sunEarthAngle - alphaEarth) / (2*alphaSun);
 		    
+	            double alpha1 = (sunEarthAngle * sunEarthAngle
+	                       - (alphaEarth - alphaSun) * (alphaSun + alphaEarth))
+	                      / (2 * sunEarthAngle);
+
+	            double alpha2 = (sunEarthAngle * sunEarthAngle
+	                       + (alphaEarth - alphaSun) * (alphaSun + alphaEarth))
+	                      / (2 * sunEarthAngle);
+
+	            double P1 = Math.PI * alphaSun * alphaSun
+	                  - alphaSun * alphaSun * Math.acos(alpha1 / alphaSun)
+	                  + alpha1 * Math.sqrt(alphaSun * alphaSun - alpha1 * alpha1);
+
+	            double P2 = alphaEarth * alphaEarth * Math.acos(alpha2 / alphaEarth)
+	                  - alpha2 * Math.sqrt(alphaEarth * alphaEarth - alpha2 * alpha2);
+
+	            result =  (P1 - P2) / (Math.PI * alphaSun * alphaSun);
+	    		
 		    	
 		    }
 		    

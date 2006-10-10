@@ -11,11 +11,11 @@ public class AllTests {
     suite.addTest(fr.cs.aerospace.orekit.iers.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.time.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.frames.AllTests.suite());
+    suite.addTest(fr.cs.aerospace.orekit.frames.series.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.bodies.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.orbits.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.propagation.AllTests.suite());
-    // TODO activate perturbations tests
-    //suite.addTest(fr.cs.aerospace.orekit.perturbations.AllTests.suite());
+    suite.addTest(fr.cs.aerospace.orekit.perturbations.AllTests.suite());
     return suite; 
 
   }

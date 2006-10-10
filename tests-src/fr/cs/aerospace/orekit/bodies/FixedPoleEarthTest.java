@@ -1,10 +1,10 @@
 package fr.cs.aerospace.orekit.bodies;
 
-import models.bodies.FixedPoleEarth;
 
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.models.bodies.FixedPoleEarth;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import junit.framework.Test;
 import junit.framework.TestCase;

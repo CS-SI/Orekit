@@ -1,4 +1,4 @@
-package models.perturbations;
+package fr.cs.aerospace.orekit.models.perturbations;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 

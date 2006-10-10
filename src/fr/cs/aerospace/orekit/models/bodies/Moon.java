@@ -1,4 +1,4 @@
-package models.bodies;
+package fr.cs.aerospace.orekit.models.bodies;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 

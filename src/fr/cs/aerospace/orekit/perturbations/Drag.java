@@ -1,9 +1,9 @@
 package fr.cs.aerospace.orekit.perturbations;
 
-import models.perturbations.Atmosphere;
-import models.satellite.AtmosphereDragSatellite;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.models.perturbations.Atmosphere;
+import fr.cs.aerospace.orekit.models.spacecraft.AtmosphereDragSatellite;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;

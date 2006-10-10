@@ -138,9 +138,7 @@ public class NumericalPropagator
      * @param initialOrbit orbit to extrapolate (this object will not be
      * changed)
      * @param finalDate target date for the orbit
-     * @param model placeholder where to put the ephemeris (may be null, as
-     * long as null is cast to (ContinuousOutputModel) to avoid ambiguities with
-     * the other extrapolation methods)
+     * @param model placeholder where to put the ephemeris
      * @exception DerivativeException if the force models trigger one
      * @exception IntegratorException if the force models trigger one
      */
