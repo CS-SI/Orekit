@@ -5,7 +5,7 @@ import java.text.ParseException;
 
 import fr.cs.aerospace.orekit.models.bodies.Sun;
 import fr.cs.aerospace.orekit.models.spacecraft.SimpleSpacecraft;
-import fr.cs.aerospace.orekit.models.spacecraft.SolarRadiationPressureSatellite;
+import fr.cs.aerospace.orekit.models.spacecraft.SolarRadiationPressureSpacecraft;
 import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.FirstOrderIntegrator;
 import org.spaceroots.mantissa.ode.FixedStepHandler;
@@ -38,7 +38,7 @@ public class FabSolarRadiationPressureTest extends TestCase {
 	    OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765);
 	    FabSolarRadiationPressure SRP =  new FabSolarRadiationPressure(
 	    		sun , earth ,
-	    	              (SolarRadiationPressureSatellite)new SimpleSpacecraft(1500.0, 50.0,
+	    	              (SolarRadiationPressureSpacecraft)new SimpleSpacecraft(1500.0, 50.0,
 	                            	  0.5, 0.5, 0.5));
         
         double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/mu);
@@ -84,7 +84,7 @@ public class FabSolarRadiationPressureTest extends TestCase {
 	    // creation of the force model
 		FabSolarRadiationPressure SRP =  new FabSolarRadiationPressure(
 	    		sun , new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765),
-	    	              (SolarRadiationPressureSatellite)new SimpleSpacecraft(1500.0, 500.0,
+	    	              (SolarRadiationPressureSpacecraft)new SimpleSpacecraft(1500.0, 500.0,
 	                            	  0.7, 0.7, 0.7));
 		
 		double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/mu);

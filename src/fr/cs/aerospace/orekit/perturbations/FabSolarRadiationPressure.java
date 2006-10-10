@@ -6,7 +6,7 @@ import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.bodies.ThirdBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.models.spacecraft.SolarRadiationPressureSatellite;
+import fr.cs.aerospace.orekit.models.spacecraft.SolarRadiationPressureSpacecraft;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -29,7 +29,7 @@ public class FabSolarRadiationPressure implements ForceModel {
 	 * @param spacecraft spacecraft
 	 */
 	public FabSolarRadiationPressure(ThirdBody sun, OneAxisEllipsoid centralBody,
-			  SolarRadiationPressureSatellite satellite) {
+			  SolarRadiationPressureSpacecraft satellite) {
 		this(149597870000.0, 4.56e-6, sun, centralBody, satellite);
 	}
 	
@@ -38,10 +38,10 @@ public class FabSolarRadiationPressure implements ForceModel {
 	 * @param pRef reference radiation pressure at dRef (N/m<sup>2</sup>)
 	 * @param sun Sun model
 	 * @param earth Earth shape model (for umbra/penumbra computation)
-	 * @param satellite a {@link SolarRadiationPressureSatellite}
+	 * @param satellite a {@link SolarRadiationPressureSpacecraft}
 	 */
 	public FabSolarRadiationPressure(double dRef, double pRef, ThirdBody sun, 
-			OneAxisEllipsoid centralBody, SolarRadiationPressureSatellite satellite) {
+			OneAxisEllipsoid centralBody, SolarRadiationPressureSpacecraft satellite) {
 	    this.dRef  = dRef;
 	    this.pRef  = pRef;
 	    this.sun   = sun;
@@ -241,5 +241,5 @@ public class FabSolarRadiationPressure implements ForceModel {
 	  private OneAxisEllipsoid centralBody;
 
 	  /** Spacecraft. */
-	  private SolarRadiationPressureSatellite spacecraft;
+	  private SolarRadiationPressureSpacecraft spacecraft;
 }

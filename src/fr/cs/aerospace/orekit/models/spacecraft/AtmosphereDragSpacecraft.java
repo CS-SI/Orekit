@@ -3,7 +3,7 @@ package fr.cs.aerospace.orekit.models.spacecraft;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
-public interface SolarRadiationPressureSatellite {
+public interface AtmosphereDragSpacecraft {
 	  /** Get the mass.
 	   * @return mass (kg)
 	   */
@@ -15,17 +15,11 @@ public interface SolarRadiationPressureSatellite {
 	   */
 	  public double getSurface(Vector3D direction, AbsoluteDate t);
 
-	  /** Get the absorption coefficients vector.
-	   * @param direction direction of the light flux
-	   * @return absorption coefficients vector
+	  /** Get the drag coefficients vector.
+	   * @param direction direction of the atmospheric flux
+	   * @return drag coefficients vector
 	   */
-	  public Vector3D getAbsCoef(Vector3D direction, AbsoluteDate t);
-
-	  /** Get the specular reflection coefficients vector.
-	   * @param direction direction of the light flux
-	   * @return specular reflection coefficients vector
-	   */
-	  public Vector3D getReflectionCoef(Vector3D direction, AbsoluteDate t);
+	  public Vector3D getDragCoef(Vector3D direction, AbsoluteDate t);
 
 	  /** Set the mass.
 	   * @param mass new mass (kg)

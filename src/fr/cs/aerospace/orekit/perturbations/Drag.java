@@ -3,7 +3,7 @@ package fr.cs.aerospace.orekit.perturbations;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.models.perturbations.Atmosphere;
-import fr.cs.aerospace.orekit.models.spacecraft.AtmosphereDragSatellite;
+import fr.cs.aerospace.orekit.models.spacecraft.AtmosphereDragSpacecraft;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -19,7 +19,7 @@ public class Drag implements ForceModel {
    * @param atmosphere atmospheric model
    * @param spacecraft spacecraft
    */
-  public Drag(Atmosphere atmosphere, AtmosphereDragSatellite spacecraft) {
+  public Drag(Atmosphere atmosphere, AtmosphereDragSpacecraft spacecraft) {
     this.atmosphere = atmosphere;
     this.spacecraft = spacecraft;
   }
@@ -56,6 +56,6 @@ public class Drag implements ForceModel {
   private Atmosphere atmosphere;
 
   /** Spacecraft. */
-  private AtmosphereDragSatellite spacecraft;
+  private AtmosphereDragSpacecraft spacecraft;
 
 }

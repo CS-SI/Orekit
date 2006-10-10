@@ -1,6 +1,6 @@
 package fr.cs.aerospace.orekit.models.spacecraft;
 
-public interface KeplerianSatellite {
+public interface KeplerianSpacecraft {
 	  /** Get the mass.
 	   * @return mass (kg)
 	   */
