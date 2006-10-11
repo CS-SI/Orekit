@@ -2,8 +2,6 @@ package fr.cs.aerospace.orekit.utils;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
-import fr.cs.aerospace.orekit.frames.Frame;
-
 /** The class represent lines in a three dimensional space.
 
  * <p>Each oriented line is intrinsically associated with an abscissa
@@ -26,26 +24,23 @@ public class Line {
   /** Build a line from a point and a direction.
    * @param p point belonging to the line (this can be any point)
    * @param direction direction of the line
-   * @param frame the frame where the position is expressed.
    * @exception IllegalArgumentException if the direction norm is too small
    */
-  public Line(Vector3D p, Vector3D direction, Frame frame) {
-    reset(p, direction, frame);
+  public Line(Vector3D p, Vector3D direction) {
+    reset(p, direction);
   }
 
   /** Reset the instance as if built from a point and a normal.
    * @param p point belonging to the line (this can be any point)
    * @param direction direction of the line
-   * @param frame the frame where the position is expressed.
    * @exception IllegalArgumentException if the direction norm is too small
    */
-  public void reset(Vector3D p, Vector3D direction, Frame frame) {
+  public void reset(Vector3D p, Vector3D direction) {
     double norm = direction.getNorm();
     if (norm < 1.0e-10) {
       throw new IllegalArgumentException("null norm");
     }
     this.direction = new Vector3D(1.0 / norm, direction);
-    this.frame = frame;
     zero = new Vector3D(1.0, p,
                         -Vector3D.dotProduct(p, this.direction), this.direction);
   }
@@ -107,21 +102,11 @@ public class Line {
     Vector3D n = new Vector3D(1.0, d, -Vector3D.dotProduct(d, direction), direction);
     return n.getNorm();
   }
-  
-  /** Get the frame .
-   * @return the frame
-   */  
-  public Frame getFrame() {
-	  return frame;
-  }
 
  /** Line direction. */
   private Vector3D direction;
 
   /** Line point closest to the origin. */
   private Vector3D zero;
-  
-  /** The frame */
-  private Frame frame;
 
 }

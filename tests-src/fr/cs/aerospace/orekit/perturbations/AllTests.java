@@ -8,7 +8,7 @@ public class AllTests {
     TestSuite suite = new TestSuite("fr.cs.aerospace.orekit.perturbations"); 
    // suite.addTest(CentralBodyPotentialTest.suite());
     suite.addTest(DragTest.suite());
-    suite.addTest(FabSolarRadiationPressureTest.suite());
+    suite.addTest(SolarRadiationPressureTest.suite());
     return suite; 
   }
 }

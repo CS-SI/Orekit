@@ -15,14 +15,14 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  */
 public interface BoundedEphemeris extends Ephemeris {
     
-    /** Get the start date of the range.
-     * @return the start date of the range
+    /** Get the first date of the range.
+     * @return the first date of the range
      */
-    AbsoluteDate getStartDate();
+    public AbsoluteDate getMinDate();
     
-    /** Get the end date of the range.
-     * @return the end date of the range
+    /** Get the last date of the range.
+     * @return the last date of the range
      */
-    AbsoluteDate getEndDate();
+    public AbsoluteDate getMaxDate();
     
 }

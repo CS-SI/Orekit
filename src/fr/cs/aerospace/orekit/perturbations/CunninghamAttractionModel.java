@@ -2,7 +2,6 @@ package fr.cs.aerospace.orekit.perturbations;
 
 import fr.cs.aerospace.orekit.bodies.RotatingBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -57,11 +56,10 @@ public class CunninghamAttractionModel implements ForceModel {
    * </p>
    * @param date current date
    * @param pvCoordinates the position end velocity
-   * @param Attitude current attitude
    * @param adder object where the contribution should be added
    */
   public void addContribution(AbsoluteDate date, PVCoordinates pvCoordinates,
-		  Frame frame , OrbitDerivativesAdder adder)
+		   OrbitDerivativesAdder adder)
       throws OrekitException {
 
     // Construction of the potential array V(n,m)

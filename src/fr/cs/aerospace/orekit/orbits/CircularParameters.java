@@ -62,7 +62,7 @@ public class CircularParameters
    * @param alpha  an + &omega;, mean, eccentric or true longitude argument (rad)
    * @param type type of longitude argument, must be one of {@link #MEAN_LONGITUDE_ARGUMENT},
    * {@link #ECCENTRIC_LONGITUDE_ARGUMENT} or  {@link #TRUE_LONGITUDE_ARGUMENT}
-   * @param frame the frame in which are expressed the parameters
+   * @param frame the frame in which are defined the parameters
    */
   public CircularParameters(double a, double ex, double ey, double i, double raan,
                             double alpha, int type, Frame frame) {
@@ -71,7 +71,7 @@ public class CircularParameters
 
   /** Constructor from cartesian parameters.
    * @param pvCoordinates the {@link PVCoordinates} in inertial frame
-   * @param frame the frame in which are expressed the {@link PVCoordinates} 
+   * @param frame the frame in which are defined the {@link PVCoordinates} 
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
   public CircularParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
@@ -116,7 +116,7 @@ public class CircularParameters
    * @param alpha  an + &omega;, mean, eccentric or true longitude argument (rad)
    * @param type type of longitude argument, must be one of {@link #MEAN_LONGITUDE_ARGUMENT},
    * {@link #ECCENTRIC_LONGITUDE_ARGUMENT} or  {@link #TRUE_LONGITUDE_ARGUMENT}
-   * @param frame the frame in which are expressed the parameters
+   * @param frame the frame in which are defined the parameters
    */
   public void reset(double a, double ex, double ey, double i, double raan,
                     double alpha, int type, Frame frame) {
@@ -599,11 +599,11 @@ public class CircularParameters
 //     yDot[4] += hyW * w;
 //     yDot[5] += lvW * w;
    }
-   /** Get the frame where are expressed the XYZ coordinates.
+   /** Get the frame where are defined the XYZ coordinates.
     * @return the frame.
     */
    public Frame getFrame() {
-	   return this.getFrame();
+	   return CircularParameters.this.getFrame();
    }
 
  }

@@ -21,16 +21,14 @@ public class Moon extends ThirdBody {
     super(1737400.0, 4.9027989e12);
   }
 
-  /** Gets the position of the Moon in the selected frame.
+  /** Gets the position of the Moon in the J2000 frame.
    * <p>The position model is the Brown theory
    * as used in the MSLIB library.</p>
    * @param date current date
-   * @param frame the frame where should be expressed the position
-   * @return position of the Moon wrt the central body (m)
+   * @return position of the Moon wrt the central body in the J2000 Frame (m)
    */
-  public Vector3D getPosition(AbsoluteDate date , Frame frame) {
+  public Vector3D getPosition(AbsoluteDate date) {
 
-	if(posInJ2OO0==null) {	  
     double t = date.minus(reference) / 86400.0;
     double f = Math.toRadians(225.768 + 13.2293505 * t);
     double xl = Math.toRadians(185.454 + 13.064992 * t);
@@ -108,11 +106,8 @@ public class Moon extends ThirdBody {
            * Math.cos(xl + xl + d + d);
     dasr = dasr + 8.0 * Math.cos(4.0 * d);
     
-    posInJ2OO0 = new Vector3D(1000.0 * 384389.3 / (1.0 + 1.E-05 * dasr),
-            centralMoon);    
-	}
-	  
-    return Frame.getJ2000().getTransformTo(frame).transformPosition(posInJ2OO0);
+    return new Vector3D(1000.0 * 384389.3 / (1.0 + 1.E-05 * dasr),
+            centralMoon); 
 
   }
 
@@ -123,8 +118,5 @@ public class Moon extends ThirdBody {
   /** Transform from Veis1950 to J2000. */
   private static Transform transform =
     Frame.getVeis1950().getTransformTo(Frame.getJ2000());
-  
-  /** The position in the J2000 frame. */
-  private Vector3D posInJ2OO0;
 
 }

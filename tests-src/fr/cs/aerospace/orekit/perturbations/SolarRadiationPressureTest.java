@@ -25,7 +25,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-public class FabSolarRadiationPressureTest extends TestCase {
+public class SolarRadiationPressureTest extends TestCase {
 
 	public void testLightning() throws OrekitException, ParseException, DerivativeException, IntegratorException{
 	    // Initialization
@@ -36,7 +36,7 @@ public class FabSolarRadiationPressureTest extends TestCase {
 	    Orbit orbit = new Orbit(date , op);
 	    Sun sun = new Sun();
 	    OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765);
-	    FabSolarRadiationPressure SRP =  new FabSolarRadiationPressure(
+	    SolarRadiationPressure SRP =  new SolarRadiationPressure(
 	    		sun , earth ,
 	    	              (SolarRadiationPressureSpacecraft)new SimpleSpacecraft(1500.0, 50.0,
 	                            	  0.5, 0.5, 0.5));
@@ -56,7 +56,7 @@ public class FabSolarRadiationPressureTest extends TestCase {
 			currentDate = new AbsoluteDate(date , t);
 			try {				
 
-				double ratio = SRP.getLightningRatio(k.getOrbit(currentDate).getPVCoordinates(mu).getPosition(),currentDate ,Frame.getJ2000());
+				double ratio = SRP.getLightningRatio(k.getOrbit(currentDate).getPVCoordinates(mu).getPosition(),currentDate );
 					
 				if(Math.floor(ratio)!=changed) {
 					changed = Math.floor(ratio);
@@ -82,7 +82,7 @@ public class FabSolarRadiationPressureTest extends TestCase {
 	    Sun sun = new Sun();
 	    
 	    // creation of the force model
-		FabSolarRadiationPressure SRP =  new FabSolarRadiationPressure(
+		SolarRadiationPressure SRP =  new SolarRadiationPressure(
 	    		sun , new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765),
 	    	              (SolarRadiationPressureSpacecraft)new SimpleSpacecraft(1500.0, 500.0,
 	                            	  0.7, 0.7, 0.7));
@@ -99,7 +99,7 @@ public class FabSolarRadiationPressureTest extends TestCase {
 
 		SolarStepHandler sh = new SolarStepHandler();
         AbsoluteDate finalDate = new AbsoluteDate(date , 365*period);
-		calc.extrapolate(orbit , finalDate, Math.floor(15*period), sh );
+		calc.propagate(orbit , finalDate, Math.floor(15*period), sh );
 		
 	}
 	
@@ -125,7 +125,7 @@ public class FabSolarRadiationPressureTest extends TestCase {
 	}  	  
 
 	public static Test suite() {
-		return new TestSuite(FabSolarRadiationPressureTest.class);
+		return new TestSuite(SolarRadiationPressureTest.class);
 	}
 
 }

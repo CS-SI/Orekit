@@ -133,7 +133,7 @@ public abstract class OrbitDerivativesAdder {
   public abstract void addQSWAcceleration(double q, double s, double w);
 
   /** Add the contribution of an acceleration expressed in the inertial frame 
-   *  (it is important to make sure this acceleration is expressed in the 
+   *  (it is important to make sure this acceleration is defined in the 
    *  same frame as the orbit) .
    * @param x acceleration along the X axis (m/s<sup>2</sup>)
    * @param y acceleration along the Y axis (m/s<sup>2</sup>)

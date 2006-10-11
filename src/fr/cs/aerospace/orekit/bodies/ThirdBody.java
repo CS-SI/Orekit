@@ -1,8 +1,6 @@
 package fr.cs.aerospace.orekit.bodies;
 
-import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
-
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 /** This class represents an attracting body different from the central one.
@@ -21,12 +19,11 @@ public abstract class ThirdBody {
     this.mu = mu;
   }
 
-  /** Get the position of the body in the selected frame.
+  /** Get the position of the body.
    * @param date current date
-   * @param frame the frame where should be expressed the position
    * @return position of the body (m)
    */
-  public abstract Vector3D getPosition(AbsoluteDate date , Frame frame);
+  public abstract Vector3D getPosition(AbsoluteDate date);
 
   /** Get the equatorial radius of the body.
    * @return equatorial radius of the body (m)

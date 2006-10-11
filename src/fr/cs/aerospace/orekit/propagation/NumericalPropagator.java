@@ -38,17 +38,17 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * different ways to better suit user needs.
  * <dl>
  *  <dt>if the user needs only the orbit at the target time</dt>
- *  <dd>he will use {@link #extrapolate(Orbit,AbsoluteDate,Orbit)}</dd>
+ *  <dd>he will use {@link #propagate(Orbit,AbsoluteDate,Orbit)}</dd>
  *  <dt>if the user needs random access to the orbit state at any time between
  *      the initial and target times</dt>
- *  <dd>he will use {@link #extrapolate(Orbit,AbsoluteDate,ContinuousOutputModel)} and
+ *  <dd>he will use {@link #propagate(Orbit,AbsoluteDate,IntegratedEphemeris)} and
  *  {@link IntegratedEphemeris}</dd>
  *  <dt>if the user needs to do some action at regular time steps during
  *      integration</dt>
- *  <dd>he will use {@link #extrapolate(Orbit,AbsoluteDate,double,FixedStepHandler)}</dd>
+ *  <dd>he will use {@link #propagate(Orbit,AbsoluteDate,double,FixedStepHandler)}</dd>
  *  <dt>if the user needs to do some action during integration but do not need
  *      specific time steps</dt>
- *  <dd>he will use {@link #extrapolate(Orbit,AbsoluteDate,StepHandler)}</dd>
+ *  <dd>he will use {@link #propagate(Orbit,AbsoluteDate,StepHandler)}</dd>
  * </dl></p>
  *
  * <p>The two first methods are used when the user code needs to drive the
@@ -111,7 +111,7 @@ public class NumericalPropagator
       switchingFunctions.clear();
     }
 
-    /** Extrapolate an orbit up to a specific target date.
+    /** Propagate an orbit up to a specific target date.
      * @param initialOrbit orbit to extrapolate (this object will not be
      * changed except if finalOrbit is also reference to it)
      * @param finalDate target date for the orbit
@@ -124,33 +124,34 @@ public class NumericalPropagator
      * @exception DerivativeException if the force models trigger one
      * @exception IntegratorException if the force models trigger one
      */
-    public void extrapolate(Orbit initialOrbit,
+    public void propagate(Orbit initialOrbit,
                              AbsoluteDate finalDate, Orbit finalOrbit)
       throws DerivativeException, IntegratorException, OrekitException {
 
-      extrapolate(initialOrbit, finalDate, DummyStepHandler.getInstance());
+      propagate(initialOrbit, finalDate, DummyStepHandler.getInstance());
       finalOrbit.reset(date, parameters, mu);
 
     }
     
-    /** Extrapolate an orbit and store the ephemeris throughout the integration
+    /** Propagate an orbit and store the ephemeris throughout the integration
      * range.
      * @param initialOrbit orbit to extrapolate (this object will not be
      * changed)
      * @param finalDate target date for the orbit
-     * @param model placeholder where to put the ephemeris
+     * @param ephemeris placeholder where to put the results
      * @exception DerivativeException if the force models trigger one
      * @exception IntegratorException if the force models trigger one
      */
-    public void extrapolate(Orbit initialOrbit,
+    public void propagate(Orbit initialOrbit,
                                              AbsoluteDate finalDate,
-                                             ContinuousOutputModel model) 
-        throws DerivativeException, IntegratorException, OrekitException {    	
-    	model.reset();
-        extrapolate(initialOrbit, finalDate, (StepHandler)model);
+                                             IntegratedEphemeris ephemeris) 
+        throws DerivativeException, IntegratorException, OrekitException {    
+    	ContinuousOutputModel model = new ContinuousOutputModel();
+    	propagate(initialOrbit, finalDate, (StepHandler)model);
+    	ephemeris.initialize(model , initialOrbit.getDate());
     }        
 
-    /** Extrapolate an orbit and call a user handler at fixed time during
+    /** Propagate an orbit and call a user handler at fixed time during
      * integration.
      * @param initialOrbit orbit to extrapolate (this object will not be
      * changed)
@@ -160,13 +161,13 @@ public class NumericalPropagator
      * @exception DerivativeException if the force models trigger one
      * @exception IntegratorException if the force models trigger one
      */     
-    public void extrapolate(Orbit initialOrbit, AbsoluteDate finalDate,
+    public void propagate(Orbit initialOrbit, AbsoluteDate finalDate,
                             double h, FixedStepHandler handler)
       throws DerivativeException, IntegratorException, OrekitException {
-        extrapolate(initialOrbit, finalDate, new StepNormalizer(h, handler));
+        propagate(initialOrbit, finalDate, new StepNormalizer(h, handler));
     }
 
-    /** Extrapolate an orbit and call a user handler after each successful step.
+    /** Propagate an orbit and call a user handler after each successful step.
      * @param initialOrbit orbit to extrapolate (this object will not be
      * changed)
      * @param finalDate target date for the orbit
@@ -174,7 +175,7 @@ public class NumericalPropagator
      * @exception DerivativeException if the force models trigger one
      * @exception IntegratorException if the force models trigger one
      */    
-    public void extrapolate(Orbit initialOrbit,
+    public void propagate(Orbit initialOrbit,
                             AbsoluteDate finalDate, StepHandler handler)
       throws DerivativeException, IntegratorException, OrekitException {
 
@@ -246,7 +247,7 @@ public class NumericalPropagator
         
         // compute the contributions of all perturbing forces
         for (Iterator iter = forceModels.iterator(); iter.hasNext();) {
-            ((ForceModel) iter.next()).addContribution(date, pvCoordinates, parameters.getFrame() ,adder);
+            ((ForceModel) iter.next()).addContribution(date, pvCoordinates, adder);
         }
         
         // finalize derivatives by adding the Kepler contribution

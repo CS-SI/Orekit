@@ -23,12 +23,18 @@ import java.io.Serializable;
  * For user convenience, both the cartesian and the equinoctial elements
  * are provided by this class, regardless of the canonical representation
  * implemented in the derived class (which may be classical keplerian
- * elements for example).
+ * elements for example). 
+ * </p>
+
+ * <p>
+ * The parameters are defined in a frame specified by the user. It is important 
+ * to make sure this frame is coherent : it probably is inertial and centered 
+ * on the central body. This information is used for example by some 
+ * force models.
  * </p>
 
  * This class implements the
- * {@link org.spaceroots.mantissa.utilities.ArraySliceMappable
- * ArraySliceMappable} interface from the <a
+ * {@link org.spaceroots.mantissa.utilities.ArraySliceMappable ArraySliceMappable} interface from the <a
  * href="http://www.spaceroots.org/archive.htm#MantissaSoftware">mantissa</a>
  * library, hence it can easily be processed by a numerical integrator.
 
@@ -66,7 +72,7 @@ public abstract class OrbitalParameters
 
   /** Reset the orbit from cartesian parameters.
    * @param pvCoordinates the position and velocity in the inertial frame
-   * @param frame the frame in which are expressed the {@link PVCoordinates}
+   * @param frame the frame in which are defined the {@link PVCoordinates}
    * @param mu central attraction coefficient (m^3/s^2)
    */
   public void reset(PVCoordinates pvCoordinates, Frame frame, double mu) {
@@ -259,7 +265,7 @@ public abstract class OrbitalParameters
     return 6;
   }
   
-  /** Get the frame in which are expressed the orbital parameters.
+  /** Get the frame in which are defined the orbital parameters.
    * @return frame the frame
    */
   public Frame getFrame() {
@@ -288,7 +294,7 @@ public abstract class OrbitalParameters
   /** Indicator for dirty PVCoordinates cache. */
   private boolean dirtyCache;
   
-  /** Frame in wich are expressed the orbital parameters */
+  /** Frame in wich are defined the orbital parameters */
   protected Frame frame;
 
 }

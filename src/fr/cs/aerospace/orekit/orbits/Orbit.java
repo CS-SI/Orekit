@@ -106,7 +106,7 @@ public class Orbit
   /** Reset the orbit from cartesian parameters.
    * @param t date (a reference to this object will be stored in the instance)
    * @param pvCoordinates the pvCoordinates of the satellite
-   * @param frame the frame in which are expressed the {@link PVCoordinates}
+   * @param frame the frame in which are defined the {@link PVCoordinates}
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
   public void reset(AbsoluteDate t, PVCoordinates pvCoordinates, Frame frame, double mu) {

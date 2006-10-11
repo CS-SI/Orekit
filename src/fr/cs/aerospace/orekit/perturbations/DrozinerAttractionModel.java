@@ -2,7 +2,6 @@ package fr.cs.aerospace.orekit.perturbations;
 
 import fr.cs.aerospace.orekit.bodies.RotatingBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -47,11 +46,10 @@ public class DrozinerAttractionModel implements ForceModel {
    * <em>perturbing</em> acceleration is considered, not the main part.
    * @param t current date
    * @param pvCoordinates the {@link PVCoordinates}
-   * @param Attitude current Attitude
    * @param adder object where the contribution should be added
    */
 
-  public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, Frame frame,
+  public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, 
                               OrbitDerivativesAdder adder)
       throws OrekitException {
 

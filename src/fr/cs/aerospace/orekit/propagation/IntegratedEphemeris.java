@@ -10,12 +10,15 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * This class stores numerically integrated orbital parameters for
  * later retrieval.
  *
- * <p>Instances of this class are built from the results provided
- * by {@link NumericalPropagator} objects in order to allow random access
- * to any intermediate state of the orbit throughout the integration range.
+ * <p>Instances of this class are built and then must be filled with the results
+ * provided by {@link NumericalPropagator} objects in order to allow random 
+ * access to any intermediate state of the orbit throughout the integration range.
  * Numerically integrated orbits can therefore be used by algorithms that
  * need to wander around according to their own algorithm without cumbersome
  * tight link with the integrator.</p>
+ * 
+ * <p> This class handles a {@link ContinuousOutputModel} and can be very
+ *  voluminous. Refer to {@link ContinuousOutputModel} for more information.</p>
  *
  * @see NumericalPropagator
  *
@@ -25,73 +28,74 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  */
 public class IntegratedEphemeris implements BoundedEphemeris {
 
-  /** Creates a new instance of IntegratedEphemeris.
-   *  @param model the {@link ContinuousOutputModel} to handle
-   *  @param epoch reference epoch for the model
+  /** Creates a new instance of IntegratedEphemeris wich must be 
+   *  filled by the propagator. 
    */
-  public IntegratedEphemeris(ContinuousOutputModel model, AbsoluteDate epoch) {
-
-    this.model     = model;
-    this.epoch.reset(epoch);
-
-    startDate.reset(epoch, model.getInitialTime());
-    endDate.reset(epoch, model.getFinalTime());
-    if (endDate.minus(startDate) < 0) {
-      AbsoluteDate tmpDate = endDate;
-      endDate       = startDate;
-      startDate     = tmpDate;
-    }
-
+  public IntegratedEphemeris() {
+	  isInitialized = false;
+  }
+  
+  /** This method is called by the propagator.
+   */
+  protected void initialize(ContinuousOutputModel model, AbsoluteDate epoch) {
+      this.model     = model;
+      startDate = new AbsoluteDate(epoch, model.getInitialTime());
+      maxDate = new AbsoluteDate(epoch, model.getFinalTime());
+      if (maxDate.minus(startDate) < 0) {
+          minDate = maxDate;
+    	  maxDate = startDate;
+      }
+      this.isInitialized = true;
   }
 
   /** Get the orbit at a specific date.
    * @param date desired date for the orbit
-   * @return the orbit at the specified date
+   * @return the orbit at the specified date and null if not initialized.
    * @exception PropagationException if the date is outside of the range
    */    
   public Orbit getOrbit(AbsoluteDate date)
   throws PropagationException {
-    model.setInterpolatedTime(date.minus(epoch));
-    double[] state = model.getInterpolatedState();
+	if(isInitialized) {
+		model.setInterpolatedTime(date.minus(startDate));
+	    double[] state = model.getInterpolatedState();
 
-    Orbit orbit = new Orbit();
-    orbit.setDate(date);
-    orbit.getParameters().mapStateFromArray(0, state);
+	    Orbit orbit = new Orbit();
+	    orbit.setDate(date);
+	    orbit.getParameters().mapStateFromArray(0, state);
 
-    return orbit;
-
+	    return orbit;
+	}
+	else {
+		return null;
+	}
   }
 
-  /** Get the start date of the range.
-   * @return the start date of the range
+  /** Get the first date of the range.
+   * @return the first date of the range
    */
-  public AbsoluteDate getStartDate() {
-    return startDate;
+  public AbsoluteDate getMinDate() {
+    return minDate;
   }
 
-  /** Get the end date of the range.
-   * @return the end date of the range
+  /** Get the last date of the range.
+   * @return the last date of the range
    */
-  public AbsoluteDate getEndDate() {
-    return endDate;
-  }
-  /** Get the reference epoch for the model.
-   * @return reference epoch for the model
-   */
-  public AbsoluteDate getEpoch() {
-    return epoch;
+  public AbsoluteDate getMaxDate() {
+    return maxDate;
   }
 
-  /** Start date of the range. */
+  /** Start date of the integration (can be min or max). */
   private AbsoluteDate startDate;
+  
+  /** First date of the range. */
+  private AbsoluteDate minDate;
 
-  /** End date of the range. */
-  private AbsoluteDate endDate;
-
-  /** Reference epoch for the model. */
-  private AbsoluteDate epoch;
+  /** Last date of the range. */
+  private AbsoluteDate maxDate;
 
   /** Underlying raw mathematical model. */
   private ContinuousOutputModel model;
+  
+  private boolean isInitialized;
 
 }

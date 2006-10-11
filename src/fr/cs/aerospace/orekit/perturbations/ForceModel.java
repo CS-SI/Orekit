@@ -1,7 +1,6 @@
 package fr.cs.aerospace.orekit.perturbations;
 
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -27,13 +26,14 @@ public interface ForceModel {
 
     /** Compute the contribution of the force model to the perturbing
      * acceleration.
+     * </p> The PVCoordinates and the adder must be defined in the same frame. 
+     * The propagator handles correctly the frames and coordinates.</p>
      * @param t current date
      * @param pvCoordinates the {@link PVCoordinates}
-     * @param frame the frame in which are expressed the coordinates.
      * @param adder object where the contribution should be added
      */
-    public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, Frame frame, 
-                             OrbitDerivativesAdder adder) throws OrekitException;
+    public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, 
+    		               OrbitDerivativesAdder adder) throws OrekitException;
 
     /** Get the switching functions internally used by the model itself.
      * @return array of switching functions or null if the model doesn't need

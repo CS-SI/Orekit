@@ -56,7 +56,7 @@ public class CartesianParameters
 
   /** Constructor from cartesian parameters.
    * @param pvCoordinates the position and velocity of the satellite. 
-   * @param frame the frame in which are expressed the {@link PVCoordinates}
+   * @param frame the frame in which are defined the {@link PVCoordinates}
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
   public CartesianParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
@@ -306,7 +306,7 @@ public class CartesianParameters
      yDot[5] += Q.getZ() * q + S.getZ() * s + W.getZ() * w;
    }
 
-   /** Add the contribution of an acceleration expressed in intertial frame.
+   /** Add the contribution of an acceleration expressed in inertial frame.
     * @param x acceleration along the X axis (m/s<sup>2</sup>)
     * @param y acceleration along the Y axis (m/s<sup>2</sup>)
     * @param z acceleration along the Z axis (m/s<sup>2</sup>)
@@ -317,7 +317,7 @@ public class CartesianParameters
      yDot[5] += z;
    }
 
-   /** Add the contribution of an acceleration expressed in intertial frame.
+   /** Add the contribution of an acceleration expressed in inertial frame.
     * @param gamma acceleration vector in intertial frame (m/s<sup>2</sup>)
     */
    public void addAcceleration(Vector3D gamma) {
@@ -326,11 +326,11 @@ public class CartesianParameters
      yDot[5] += gamma.getZ();
    }
 
-   /** Get the frame where are expressed the XYZ coordinates.
+   /** Get the frame in which are defined the XYZ coordinates.
     * @return the frame.
     */
    public Frame getFrame() {
-	   return this.getFrame();
+	   return CartesianParameters.this.getFrame();
    }
  }
 

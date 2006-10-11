@@ -68,7 +68,7 @@ public class KeplerianParameters
    * @param anomaly mean, eccentric or true anomaly (rad)
    * @param type type of anomaly, must be one of {@link #MEAN_ANOMALY},
    * {@link #ECCENTRIC_ANOMALY} or  {@link #TRUE_ANOMALY}
-   * @param frame the frame in which are expressed the parameters
+   * @param frame the frame in which are defined the parameters
    */
   public KeplerianParameters(double a, double e, double i,
                              double pa, double raan,
@@ -78,7 +78,7 @@ public class KeplerianParameters
 
   /** Constructor from cartesian parameters.
    * @param pvCoordinates the PVCoordinates of the satellite
-   * @param frame the frame in which are expressed the {@link PVCoordinates}  
+   * @param frame the frame in which are defined the {@link PVCoordinates}  
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
   public KeplerianParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
@@ -123,7 +123,7 @@ public class KeplerianParameters
    * @param anomaly mean, eccentric or true anomaly (rad)
    * @param type type of anomaly, must be one of {@link #MEAN_ANOMALY},
    * {@link #ECCENTRIC_ANOMALY} or  {@link #TRUE_ANOMALY}
-   * @param frame the frame in which are expressed the parameters
+   * @param frame the frame in which are defined the parameters
    */
   public void reset(double a, double e, double i, double pa, double raan,
                     double anomaly, int type, Frame frame) {
@@ -673,11 +673,11 @@ public class KeplerianParameters
      yDot[5] += vQ * q + vS * s;
    }
       
-   /** Get the frame where are expressed the XYZ coordinates.
+   /** Get the frame where are defined the XYZ coordinates.
     * @return the frame.
     */
    public Frame getFrame() {
-	   return this.getFrame();
+	   return KeplerianParameters.this.getFrame();
    }
  }
 

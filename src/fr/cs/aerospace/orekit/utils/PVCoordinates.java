@@ -63,7 +63,7 @@ public class PVCoordinates {
 	    sb.append(position.getY());
 	    sb.append(' ');
 	    sb.append(position.getZ());
-	    sb.append(' ');
+	    sb.append(';');
 	    sb.append(velocity.getX());
 	    sb.append(' ');
 	    sb.append(velocity.getY());
