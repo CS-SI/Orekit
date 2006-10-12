@@ -105,7 +105,7 @@ public class IntegratedEphemerisTest extends TestCase {
 		// test inv
 		intermediateDate = new AbsoluteDate(initDate , 41589);
 		keplerIntermediateOrbit = keplerEx.getOrbit(intermediateDate);
-		initialOrbit.setDate(finalDate);
+		initialOrbit = keplerEx.getOrbit(finalDate);
 		numericEx.propagate(initialOrbit , initDate , ephemeris );
 		numericIntermediateOrbit = ephemeris.getOrbit(intermediateDate);
 
