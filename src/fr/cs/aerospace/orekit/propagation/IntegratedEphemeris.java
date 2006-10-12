@@ -37,13 +37,16 @@ public class IntegratedEphemeris implements BoundedEphemeris {
   
   /** This method is called by the propagator.
    */
-  protected void initialize(ContinuousOutputModel model, AbsoluteDate epoch) {
+  protected void initialize(ContinuousOutputModel model, AbsoluteDate ref) {
       this.model     = model;
-      startDate = new AbsoluteDate(epoch, model.getInitialTime());
-      maxDate = new AbsoluteDate(epoch, model.getFinalTime());
+      startDate = new AbsoluteDate(ref, model.getInitialTime());
+      maxDate = new AbsoluteDate(ref, model.getFinalTime());
       if (maxDate.minus(startDate) < 0) {
           minDate = maxDate;
     	  maxDate = startDate;
+      }
+      else {
+    	  minDate = startDate;
       }
       this.isInitialized = true;
   }

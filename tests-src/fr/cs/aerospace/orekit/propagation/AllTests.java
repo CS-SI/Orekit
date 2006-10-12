@@ -12,6 +12,7 @@ public class AllTests {
     suite.addTest(EcksteinHechlerPropagatorTest.suite());
     // TODO valider ces tests ...
     suite.addTest(NumericalPropagatorTest.suite());
+    suite.addTest(IntegratedEphemerisTest.suite());
 
     return suite; 
 
