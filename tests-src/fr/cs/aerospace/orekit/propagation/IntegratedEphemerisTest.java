@@ -1,9 +1,6 @@
 package fr.cs.aerospace.orekit.propagation;
 
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
-
 import org.spaceroots.mantissa.geometry.Vector3D;
 import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.FirstOrderIntegrator;

@@ -189,9 +189,7 @@ public class TransformTest extends TestCase {
 	      Rotation instantRot    = randomRotation(rnd);
 	      Vector3D normAxis = instantRot.getAxis();
 	      double w  = Math.abs(instantRot.getAngle())/86400;
-	      
-	      Vector3D instAxis = new Vector3D(w , normAxis);
-	      
+	            
 	      // random rotation
 	      Rotation rot    = randomRotation(rnd);
 
@@ -204,24 +202,10 @@ public class TransformTest extends TestCase {
 	      
 	      PVCoordinates pvOne = new PVCoordinates(pos,vel);
 	      
-	      // we should have
-	            
-	      double dt = 1 ;
-	      
-	      // rotation effects
-	      
-	      Vector3D r = Vector3D.crossProduct(Vector3D.negate(instAxis) , tr.transformPosition(pos) );
-	      
-	      Vector3D good = Vector3D.add(Vector3D.add( tr.transformPosition(pos), new Vector3D( dt , tr.transformVector(vel))) , r);
-	     
 	      // we obtain
 	      
 	      PVCoordinates pvTwo = tr.transformPVCoordinates(pvOne);
-	      
-	      Vector3D result  = (Vector3D.add(pvTwo.getPosition(), new Vector3D(dt ,pvTwo.getVelocity()))); 
-//	    FIXME erreur de precision, etrange, de 0.3 environ
-	     // checkVectors( good , result);
-	      
+	      	      
 	      // test inverse
 
 	      Vector3D resultvel = tr.getInverse().transformPVCoordinates(pvTwo).getVelocity();

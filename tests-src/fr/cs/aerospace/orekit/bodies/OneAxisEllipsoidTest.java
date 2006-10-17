@@ -4,7 +4,6 @@ package fr.cs.aerospace.orekit.bodies;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.Utils;
-import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.utils.Line;
 import junit.framework.Test;
 import junit.framework.TestCase;
