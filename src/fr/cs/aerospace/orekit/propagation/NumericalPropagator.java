@@ -207,7 +207,9 @@ implements FirstOrderDifferentialEquations {
     // back to space dynamics view
     date = new AbsoluteDate(startDate, t1);
     
-    parameters = new EquinoctialParameters(state[0], state[1],state[2],state[3],state[4],state[5], EquinoctialParameters.TRUE_LATITUDE_ARGUMENT , parameters.getFrame());
+    parameters = new EquinoctialParameters(state[0], state[1],state[2],state[3],
+                       state[4],state[5], EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
+                                parameters.getFrame());
     
     
   }
@@ -255,7 +257,9 @@ implements FirstOrderDifferentialEquations {
     // update space dynamics view
     date = new AbsoluteDate(startDate, t);
     
-    parameters = new EquinoctialParameters(y[0], y[1],y[2],y[3],y[4],y[5], EquinoctialParameters.TRUE_LATITUDE_ARGUMENT , parameters.getFrame());
+    parameters = new EquinoctialParameters(y[0], y[1],y[2],y[3],y[4],y[5],
+                                           EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
+                                               parameters.getFrame());
     
   }
   
