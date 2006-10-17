@@ -49,10 +49,9 @@ public class NumericalPropagatorTest extends TestCase {
     
     // Extrapolation of the initial at the initial date
     // ------------------------------------------------
-    Orbit finalOrbit = new Orbit();
-    extrapolator.propagate(initialOrbit,
-                                                initialOrbit.getDate(),
-                                                      finalOrbit);
+    Orbit finalOrbit = extrapolator.propagate(initialOrbit,
+                                                initialOrbit.getDate()
+                                                 );
     // Initial orbit definition
     Vector3D initialPosition = initialOrbit.getPVCoordinates(mu).getPosition();
     Vector3D initialVelocity = initialOrbit.getPVCoordinates(mu).getVelocity();
@@ -109,10 +108,8 @@ try {
     
     // Extrapolation of the initial at t+dt
     // ------------------------------------
-    Orbit finalOrbit = new Orbit();
-    extrapolator.propagate(initialOrbit,
-                                               new AbsoluteDate(initialOrbit.getDate(),
-                                                         dt), finalOrbit);
+    Orbit finalOrbit =  extrapolator.propagate(initialOrbit,
+                 new AbsoluteDate(initialOrbit.getDate(),dt));
     // Testing the discrepancies
     // -------------------------
 //    System.out.println("Initial orbit at t = " + initialOrbit.getDate());
@@ -190,10 +187,10 @@ try {
     
     extrapolator.addForceModel(CBP);
     
-    Orbit finalOrbit = new Orbit(); 
+    Orbit finalOrbit =  
     extrapolator.propagate(initialOrbit,
                                                new AbsoluteDate(initialOrbit.getDate(),
-                                                         dt),finalOrbit);
+                                                         dt));
     // Testing the discrepancies
     // -------------------------
     assertEquals(initialOrbit.getA(),    finalOrbit.getA(),    1.0e-10);

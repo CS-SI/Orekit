@@ -27,6 +27,16 @@ public class PVCoordinates {
 		
 	}
 	
+	/** Builds a PVCoordinates couple by copying an other.
+	 * @param pv the {@link PVCoordinates} to copy.
+	 */
+	public PVCoordinates(PVCoordinates pv) {
+		
+		position = pv.position;
+		velocity = pv.velocity;
+		
+	}
+	
 	/** Gets the position.
 	 * @return the position vector (m).
 	 */
@@ -34,25 +44,11 @@ public class PVCoordinates {
 		return position;
 	}
 
-	/** Sets the position.
-	 * @param position the new position (m).
-	 */
-	public void setPosition(Vector3D position) {
-		this.position = position;
-	}
-
 	/** Gets the velocity
 	 * @return the velocity vector (m/s).
 	 */
 	public Vector3D getVelocity() {
 		return velocity;
-	}
-
-	/** Sets the velocity
-	 * @param velocity the new velocity (m/s).
-	 */
-	public void setVelocity(Vector3D velocity) {
-		this.velocity = velocity;
 	}
 	
     public String toString() {

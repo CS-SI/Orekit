@@ -121,7 +121,8 @@ public class CartesianParametersTest extends TestCase {
     double perigeeRadius = p.getA() * (1 - p.getE());
     
     for (double lv = 0; lv <= 2 * Math.PI; lv += 2 * Math.PI/100.) {
-      p.setLv(lv);
+      p = new EquinoctialParameters(p.getA(), p.getEquinoctialEx(), p.getEquinoctialEy(),
+    		                        p.getHx(), p.getHy(), lv, 2, p.getFrame());
       position = p.getPVCoordinates(mu).getPosition();
       
       // test if the norm of the position is in the range [perigee radius, apogee radius]

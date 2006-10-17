@@ -1,12 +1,9 @@
 package fr.cs.aerospace.orekit.orbits;
 
 
-import org.spaceroots.mantissa.utilities.ArraySliceMappable;
 import org.spaceroots.mantissa.geometry.Vector3D;
-
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
-
 import java.io.Serializable;
 
 /**
@@ -32,50 +29,40 @@ import java.io.Serializable;
  * on the central body. This information is used for example by some 
  * force models.
  * </p>
-
- * This class implements the
- * {@link org.spaceroots.mantissa.utilities.ArraySliceMappable ArraySliceMappable} interface from the <a
- * href="http://www.spaceroots.org/archive.htm#MantissaSoftware">mantissa</a>
- * library, hence it can easily be processed by a numerical integrator.
-
  * @see     Orbit
- * @see     org.spaceroots.mantissa.utilities.ArraySliceMappable
  * @version $Id$
  * @author  L. Maisonobe
  * @author  G. Prat
+ * @author  F.Maussion
  */
 public abstract class OrbitalParameters
-  implements ArraySliceMappable, Serializable {
+  implements Serializable {
 
   /** Default constructor.
    * Build a new instance with arbitrary default elements.
    */
   protected OrbitalParameters() {
-    reset();
+	    cachedMu = Double.NaN;
+	    cachedPVCoordinates = new PVCoordinates();
+	    frame =  Frame.getJ2000();
+	    dirtyCache = true;
   }
-
-  /** Copy the instance.
-  * <p>This method has been redeclared as public instead of protected.</p>
-  * @return a copy of the instance.
-  */
-  public abstract Object clone();
-
-  /** Reset the orbit to default.
-   * Reset the orbit with arbitrary default elements.
+    
+  /** Builds OrbitalParameters by copying other ones.
+   * @param op orbit parameters to copy
+   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public void reset() {
-    cachedMu = Double.NaN;
-    cachedPVCoordinates = new PVCoordinates();
-    frame =  Frame.getJ2000();
+  protected OrbitalParameters(OrbitalParameters op, double mu) {
     dirtyCache = true;
+    init(op, mu);
   }
-
+  
   /** Reset the orbit from cartesian parameters.
    * @param pvCoordinates the position and velocity in the inertial frame
    * @param frame the frame in which are defined the {@link PVCoordinates}
    * @param mu central attraction coefficient (m^3/s^2)
    */
-  public void reset(PVCoordinates pvCoordinates, Frame frame, double mu) {
+  protected OrbitalParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
     cachedMu = mu;
     cachedPVCoordinates = pvCoordinates;
     this.frame = frame;
@@ -83,14 +70,11 @@ public abstract class OrbitalParameters
     updateFromPVCoordinates();
   }
 
-  /** Reset the orbit from another one.
-   * @param op orbit parameters to copy
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   */
-  public void reset(OrbitalParameters op, double mu) {
-    dirtyCache = true;
-    doReset(op, mu);
-  }
+  /** Copy the instance.
+  * <p>This method has been redeclared as public instead of protected.</p>
+  * @return a copy of the instance.
+  */
+  public abstract Object clone();
 
   /** Update the canonical orbital parameters from the cached PVCoordinates.
    * <p>The cache is <em>guaranteed</em> to be clean when this method is called.</p>
@@ -101,7 +85,7 @@ public abstract class OrbitalParameters
    * @param op orbit parameters to copy
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  protected abstract void doReset(OrbitalParameters op, double mu); 
+  protected abstract void init(OrbitalParameters op, double mu); 
 
   /** Get the semi-major axis.
    * @return semi-major axis (m)
@@ -203,14 +187,17 @@ public abstract class OrbitalParameters
     // cache the computed values
     cachedMu = mu;
 
-    cachedPVCoordinates.setPosition(new Vector3D(x * ux + y * vx,
+    
+    
+    Vector3D position = new Vector3D(x * ux + y * vx,
                                                  x * uy + y * vy,
-                                                 x * uz + y * vz));
+                                                 x * uz + y * vz);
 
-    cachedPVCoordinates.setVelocity(new Vector3D(xdot * ux + ydot * vx,
+    Vector3D velocity = new Vector3D(xdot * ux + ydot * vx,
                                                  xdot * uy + ydot * vy,
-                                                 xdot * uz + ydot * vz));
-
+                                                 xdot * uz + ydot * vz);
+                                                 
+    cachedPVCoordinates = new PVCoordinates(position, velocity);
     dirtyCache = false;
 
   }
@@ -246,24 +233,6 @@ public abstract class OrbitalParameters
 	 }
 	      return cachedPVCoordinates;	  
   }
-
-  /** Build an instance of {@link OrbitDerivativesAdder
-   * OrbitDerivativesAdder} associated with this object.
-   * <p>This is a factory method allowing to build the right type of
-   * {@link OrbitDerivativesAdder OrbitDerivativesAdder} object
-   * depending on the type of the instance.</p>
-   * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
-   * @return an instance of {@link OrbitDerivativesAdder
-   * OrbitDerivativesAdder} associated with this object
-   */
-  public abstract OrbitDerivativesAdder getDerivativesAdder(double mu);
-
-  /** Get the dimension of the state vector associated with the instance.
-   * @return state vector dimension (which is always 6)
-   */
-  public int getStateDimension() {
-    return 6;
-  }
   
   /** Get the frame in which are defined the orbital parameters.
    * @return frame the frame
@@ -271,19 +240,6 @@ public abstract class OrbitalParameters
   public Frame getFrame() {
 		return frame;
   }
-		
-  /** Reinitialize internal state from the specified array slice data.
-   * @param start start index in the array
-   * @param array array holding the data to extract (a, ex, ey, hx, hy, lv)
-   */
-  public abstract void mapStateFromArray(int start, double[] array);
-
-  /** Store internal state data into the specified array slice.
-   * @param start start index in the array
-   * @param array array where data should be stored (a, ex, ey, hx, hy, lv)
-   */
-  public abstract void mapStateToArray(int start, double[] array);
-  
   
   /** Last value of mu used to compute position and velocity (m<sup>3</sup>/s<sup>2</sup>). */
   private double cachedMu;

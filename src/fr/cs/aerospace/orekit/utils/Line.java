@@ -27,28 +27,19 @@ public class Line {
    * @exception IllegalArgumentException if the direction norm is too small
    */
   public Line(Vector3D p, Vector3D direction) {
-    reset(p, direction);
+	  double norm = direction.getNorm();
+	    if (norm < 1.0e-10) {
+	      throw new IllegalArgumentException("null norm");
+	    }
+	    this.direction = new Vector3D(1.0 / norm, direction);
+	    zero = new Vector3D(1.0, p,
+	                        -Vector3D.dotProduct(p, this.direction), this.direction);
   }
-
-  /** Reset the instance as if built from a point and a normal.
-   * @param p point belonging to the line (this can be any point)
-   * @param direction direction of the line
-   * @exception IllegalArgumentException if the direction norm is too small
-   */
-  public void reset(Vector3D p, Vector3D direction) {
-    double norm = direction.getNorm();
-    if (norm < 1.0e-10) {
-      throw new IllegalArgumentException("null norm");
-    }
-    this.direction = new Vector3D(1.0 / norm, direction);
-    zero = new Vector3D(1.0, p,
-                        -Vector3D.dotProduct(p, this.direction), this.direction);
-  }
-
+  
   /** Revert the line direction.
    */
-  public void revertSelf() {
-    direction.negateSelf();
+  public Line revert() {
+    return new Line(zero , Vector3D.negate(direction));
   }
 
   /** Get the normalized direction vector.

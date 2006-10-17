@@ -3,7 +3,7 @@ package fr.cs.aerospace.orekit.perturbations;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.models.perturbations.Atmosphere;
 import fr.cs.aerospace.orekit.models.spacecraft.AtmosphereDragSpacecraft;
-import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
+import fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
@@ -30,7 +30,7 @@ public class Drag implements ForceModel {
    */
   public void addContribution(AbsoluteDate date,
 		                      PVCoordinates pvCoordinates, 
-                              OrbitDerivativesAdder adder) {
+                              EquinoctialGaussEquations adder) {
 
     double   rho       = atmosphere.getDensity(date, pvCoordinates.getPosition());
     Vector3D vAtm      = atmosphere.getVelocity(date, pvCoordinates.getPosition());

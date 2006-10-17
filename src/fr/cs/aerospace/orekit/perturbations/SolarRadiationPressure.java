@@ -7,7 +7,7 @@ import fr.cs.aerospace.orekit.bodies.ThirdBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.models.spacecraft.SolarRadiationPressureSpacecraft;
-import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
+import fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
@@ -26,11 +26,11 @@ public class SolarRadiationPressure implements ForceModel {
 	 * </ul>
 	 * @param sun Sun model
 	 * @param centralBody centralBody shape model (for umbra/penumbra computation)
-	 * @param satellite a {@link SolarRadiationPressureSpacecraft}
+	 * @param spacecraft the object which is pertubated by the pressure
 	 */
 	public SolarRadiationPressure(ThirdBody sun, OneAxisEllipsoid centralBody,
-			  SolarRadiationPressureSpacecraft satellite) {
-		this(149597870000.0, 4.56e-6, sun, centralBody, satellite);
+			  SolarRadiationPressureSpacecraft spacecraft) {
+		this(149597870000.0, 4.56e-6, sun, centralBody, spacecraft);
 	}
 	
 	/** Complete constructor.
@@ -38,15 +38,15 @@ public class SolarRadiationPressure implements ForceModel {
 	 * @param pRef reference radiation pressure at dRef (N/m<sup>2</sup>)
 	 * @param sun Sun model
 	 * @param centralBody centralBody shape model (for umbra/penumbra computation)
-	 * @param satellite a {@link SolarRadiationPressureSpacecraft}
+	 * @param spacecraft the object which is pertubated by the pressure
 	 */
 	public SolarRadiationPressure(double dRef, double pRef, ThirdBody sun, 
-			OneAxisEllipsoid centralBody, SolarRadiationPressureSpacecraft satellite) {
+			OneAxisEllipsoid centralBody, SolarRadiationPressureSpacecraft spacecraft) {
 	    this.dRef  = dRef;
 	    this.pRef  = pRef;
 	    this.sun   = sun;
 	    this.centralBody = centralBody;
-	    this.spacecraft = satellite;
+	    this.spacecraft = spacecraft;
 	}
 	
 	/**
@@ -57,18 +57,17 @@ public class SolarRadiationPressure implements ForceModel {
 	* @param adder object where the contribution should be added
 	*/	
 	public void addContribution(AbsoluteDate date, PVCoordinates pvCoordinates, 
-			 OrbitDerivativesAdder adder)
+			 EquinoctialGaussEquations adder)
 			throws OrekitException {
 
 	    // raw radiation pressure
-	    Vector3D satSunVector = Vector3D.subtract(
-	    		Frame.getJ2000().getTransformTo(adder.getFrame()).transformPosition(sun.getPosition(date)),
+	    Vector3D satSunVector = Vector3D.subtract(sun.getPosition(date , adder.getFrame()),
 	                                              pvCoordinates.getPosition());
 	    
 	    double dRatio = dRef / satSunVector.getNorm();
 	    double rawP   = pRef * dRatio * dRatio
 	                  * getLightningRatio(
-	                		  adder.getFrame().getTransformTo(Frame.getJ2000()).transformPosition(pvCoordinates.getPosition()), date);
+	                		  pvCoordinates.getPosition(), adder.getFrame(), date);
 
 	    // spacecraft characteristics effects
 	    Vector3D u = new Vector3D(satSunVector);
@@ -87,13 +86,14 @@ public class SolarRadiationPressure implements ForceModel {
 	}
 
 	/** Get the lightning ratio.
-	   * @param position the satellite's position in the J2000 frame.
+	   * @param position the satellite's position in the selected frame.
+	   * @param frame in which is defined the position
 	   * @param date the date
 	   * @exception OrekitException if the trajectory is inside the Earth
 	   */
-	  public double getLightningRatio(Vector3D position, AbsoluteDate date)
+	  public double getLightningRatio(Vector3D position, Frame frame, AbsoluteDate date)
 	   throws OrekitException {
-		  Vector3D satSunVector = Vector3D.subtract(sun.getPosition(date),
+		  Vector3D satSunVector = Vector3D.subtract(sun.getPosition(date, frame),
                   position);
             // Earth apparent radius
 		    double r = position.getNorm();
@@ -166,7 +166,7 @@ public class SolarRadiationPressure implements ForceModel {
 	     */
 	    public double g(AbsoluteDate date, PVCoordinates pvCoordinates, Frame frame)
 	        throws OrekitException {
-	      Vector3D satSunVector = Vector3D.subtract(sun.getPosition(date),
+	      Vector3D satSunVector = Vector3D.subtract(sun.getPosition(date, frame),
 	                                                pvCoordinates.getPosition());
 	      double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pvCoordinates.getPosition());
 	      double r = pvCoordinates.getPosition().getNorm();
@@ -204,7 +204,7 @@ public class SolarRadiationPressure implements ForceModel {
 	     */
 	    public double g(AbsoluteDate date, PVCoordinates pvCoordinates, Frame frame)
 	        throws OrekitException {
-	      Vector3D satSunVector = Vector3D.subtract(sun.getPosition(date),
+	      Vector3D satSunVector = Vector3D.subtract(sun.getPosition(date , frame),
 	                                                pvCoordinates.getPosition());
 	      double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pvCoordinates.getPosition());
 	      double r = pvCoordinates.getPosition().getNorm();

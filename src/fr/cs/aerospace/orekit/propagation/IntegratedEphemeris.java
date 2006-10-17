@@ -2,7 +2,10 @@ package fr.cs.aerospace.orekit.propagation;
 
 import org.spaceroots.mantissa.ode.ContinuousOutputModel;
 import fr.cs.aerospace.orekit.errors.PropagationException;
+import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
+import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.propagation.BoundedEphemeris;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
@@ -37,8 +40,9 @@ public class IntegratedEphemeris implements BoundedEphemeris {
   
   /** This method is called by the propagator.
    */
-  protected void initialize(ContinuousOutputModel model, AbsoluteDate ref) {
+  protected void initialize(ContinuousOutputModel model, AbsoluteDate ref, Frame frame) {
       this.model     = model;
+      this.frame = frame;
       startDate = new AbsoluteDate(ref, model.getInitialTime());
       maxDate = new AbsoluteDate(ref, model.getFinalTime());
       if (maxDate.minus(startDate) < 0) {
@@ -62,11 +66,10 @@ public class IntegratedEphemeris implements BoundedEphemeris {
 		model.setInterpolatedTime(date.minus(startDate));
 	    double[] state = model.getInterpolatedState();
 
-	    Orbit orbit = new Orbit();
-	    orbit.setDate(date);
-	    orbit.getParameters().mapStateFromArray(0, state);
-
-	    return orbit;
+	    EquinoctialParameters eq = new EquinoctialParameters(state[0],state[1],state[2],
+	    		state[3], state[4],state[5], 2, frame);
+	    
+	    return new Orbit(date , (OrbitalParameters)eq);
 	}
 	else {
 		return null;
@@ -98,6 +101,9 @@ public class IntegratedEphemeris implements BoundedEphemeris {
 
   /** Underlying raw mathematical model. */
   private ContinuousOutputModel model;
+  
+  /** Frame */
+  private Frame frame;
   
   private boolean isInitialized;
 

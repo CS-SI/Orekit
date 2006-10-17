@@ -2,7 +2,7 @@ package fr.cs.aerospace.orekit.perturbations;
 
 import fr.cs.aerospace.orekit.bodies.RotatingBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
+import fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
@@ -50,7 +50,7 @@ public class DrozinerAttractionModel implements ForceModel {
    */
 
   public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, 
-                              OrbitDerivativesAdder adder)
+                              EquinoctialGaussEquations adder)
       throws OrekitException {
 
     // Retrieval of cartesian coordinates

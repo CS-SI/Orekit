@@ -1,7 +1,6 @@
 package fr.cs.aerospace.orekit.orbits;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
-
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
@@ -21,20 +20,12 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * where &omega; stands for the Perigee Argument and &Omega; stands for the
  * Right Ascension of the Ascending Node.
  * </p>
-
- * This class implements the
- * {@link org.spaceroots.mantissa.utilities.ArraySliceMappable
- * ArraySliceMappable} interface from the <a
- * href="http://www.spaceroots.org/archive.htm#MantissaSoftware">mantissa</a>
- * library, hence it can easily be processed by a numerical integrator.
-
  * @see     Orbit
- * @see     org.spaceroots.mantissa.utilities.ArraySliceMappable
  * @version $Id$
  * @author  M. Romero
  * @author  L. Maisonobe
  * @author  G. Prat
-
+ * @author  F.Maussion
  */
 public class EquinoctialParameters
   extends OrbitalParameters {
@@ -52,7 +43,14 @@ public class EquinoctialParameters
    * Build a new instance with arbitrary default elements.
    */
   public EquinoctialParameters() {
-    reset();
+	    super();
+	    a  = 1.0e7;
+	    ex = 1.0e-3;
+	    ey = 0;
+	    hx = 0.15;
+	    hy = 0;
+	    frame = Frame.getJ2000();
+	    setLv(0);
   }
 
   /** Creates a new instance
@@ -69,7 +67,25 @@ public class EquinoctialParameters
   public EquinoctialParameters(double a, double ex, double ey,
                                double hx, double hy,
                                double l, int type, Frame frame) {
-    reset(a, ex, ey, hx, hy, l, type, frame);
+	    super();
+	    this.a  =  a;
+	    this.ex = ex;
+	    this.ey = ey;
+	    this.hx = hx;
+	    this.hy = hy;
+	    this.frame = frame;
+
+	    switch (type) {
+	    case MEAN_LATITUDE_ARGUMENT :
+	      setLM(l);
+	      break;
+	    case ECCENTRIC_LATITUDE_ARGUMENT :
+	      setLE(l);
+	      break;
+	    default :
+	      setLv(l);
+	    }
+
   }
 
   /** Constructor from cartesian parameters.
@@ -78,7 +94,7 @@ public class EquinoctialParameters
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
   public EquinoctialParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
-    reset(pvCoordinates, frame,  mu);
+	  super(pvCoordinates, frame,  mu);
   }
 
   /** Constructor from any kind of orbital parameters
@@ -86,7 +102,7 @@ public class EquinoctialParameters
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
   public EquinoctialParameters(OrbitalParameters op, double mu) {
-    reset(op, mu);
+	  super(op, mu);
   }
 
   /** Copy the instance.
@@ -97,55 +113,11 @@ public class EquinoctialParameters
     return new EquinoctialParameters(a, ex, ey, hx, hy, lv, TRUE_LATITUDE_ARGUMENT, frame);
   }
 
-  /** Reset the orbit to default.
-   * Reset the orbit with arbitrary default elements.
+  /** Intitialize the parameters from other ones 
+   * @param op the {@link OrbitalParameters} to copy
+   * @param mu
    */
-  public void reset() {
-    a  = 1.0e7;
-    ex = 1.0e-3;
-    ey = 0;
-    hx = 0.15;
-    hy = 0;
-    frame = Frame.getJ2000();
-    setLv(0);
-  }
-
-  /** Reset the orbit from orbital parameters
-   * @param a  semi-major axis (m)
-   * @param ex e cos(&omega; + &Omega;), first component of eccentricity vector
-   * @param ey e sin(&omega; + &Omega;), second component of eccentricity vector
-   * @param hx tan(i/2) cos(&Omega;), first component of inclination vector
-   * @param hy tan(i/2) sin(&Omega;), second component of inclination vector
-   * @param l  an + &omega; + &Omega;, mean, eccentric or true latitude argument (rad)
-   * @param type type of latitude argument, must be one of {@link #MEAN_LATITUDE_ARGUMENT},
-   * {@link #ECCENTRIC_LATITUDE_ARGUMENT} or  {@link #TRUE_LATITUDE_ARGUMENT}
-   * @param frame the frame in which are defined the parameters.
-   */
-  public void reset(double a, double ex, double ey,
-                    double hx, double hy, double l, int type, Frame frame) {
-
-    this.a  =  a;
-    this.ex = ex;
-    this.ey = ey;
-    this.hx = hx;
-    this.hy = hy;
-    this.frame = frame;
-
-    switch (type) {
-    case MEAN_LATITUDE_ARGUMENT :
-      setLM(l);
-      break;
-    case ECCENTRIC_LATITUDE_ARGUMENT :
-      setLE(l);
-      break;
-    default :
-      setLv(l);
-    }
-
-
-  }
-
-  protected void doReset(OrbitalParameters op, double mu) {
+  protected void init(OrbitalParameters op, double mu) {
     a  = op.getA();
     ex = op.getEquinoctialEx();
     ey = op.getEquinoctialEy();
@@ -198,35 +170,11 @@ public class EquinoctialParameters
     return a;
   }
 
-  /** Set the semi-major axis.
-   * @param a semi-major axis (m)
-   */
-  public void setA(double a) {
-
-    this.a = a;
-
-    // invalidate position and velocity
-    super.reset();
-
-  }
-
   /** Get the first component of the eccentricity vector.
    * @return e cos(&omega; + &Omega;), first component of the eccentricity vector
    */
   public double getEquinoctialEx() {
     return ex;
-  }
-
-  /** Set the first component of the eccentricity vector.
-   * @param ex = e cos(&omega; + &Omega;), first component of the eccentricity vector
-   */
-  public void setEquinoctialEx(double ex) {
-
-    this.ex = ex;
-
-    // invalidate position and velocity
-    super.reset();
-
   }
 
   /** Get the second component of the eccentricity vector.
@@ -236,18 +184,6 @@ public class EquinoctialParameters
     return ey;
   }
 
-  /** Set the second component of the eccentricity vector.
-   * @param ey = e sin(&omega; + &Omega;), second component of the eccentricity vector
-   */
-  public void setEquinoctialEy(double ey) {
-
-    this.ey = ey;
-
-    // invalidate position and velocity
-    super.reset();
-
-  }
-
   /** Get the first component of the inclination vector.
    * @return tan(i/2) cos(&Omega;), first component of the inclination vector
    */
@@ -255,35 +191,11 @@ public class EquinoctialParameters
     return hx;
   }
 
-  /** Set the first component of the inclination vector.
-   * @param hx = tan(i/2) cos(&Omega;), first component of the inclination vector
-   */
-  public void setHx(double hx) {
-
-    this.hx = hx;
-
-    // invalidate position and velocity
-    super.reset();
-
-  }
-
   /** Get the second component of the inclination vector.
    * @return tan(i/2) sin(&Omega;), second component of the inclination vector
    */
   public double getHy() {
     return hy;
-  }
-
-  /** Set the second component of the inclination vector.
-   * @param hy = tan(i/2) sin(&Omega;), second component of the inclination vector
-   */
-  public void setHy(double hy) {
-
-    this.hy = hy;
-
-    // invalidate position and velocity
-    super.reset();
-
   }
 
   /** Get the true latitude argument.
@@ -296,12 +208,9 @@ public class EquinoctialParameters
   /** Set the true latitude argument.
    * @param lv = v + &omega; + &Omega; true latitude argument (rad)
    */
-  public void setLv(double lv) {
+  private void setLv(double lv) {
 
     this.lv = lv;
-
-    // invalidate position and velocity
-    super.reset();
 
   }
 
@@ -319,7 +228,7 @@ public class EquinoctialParameters
   /** Set the eccentric latitude argument.
    * @param lE = E + &omega; + &Omega; eccentric latitude argument (rad)
    */
-  public void setLE(double lE) {
+  private void setLE(double lE) {
     double epsilon = Math.sqrt(1 - ex * ex - ey * ey);
     double cosLE   = Math.cos(lE);
     double sinLE   = Math.sin(lE);
@@ -338,7 +247,7 @@ public class EquinoctialParameters
   /** Set the mean latitude argument.
    * @param lM = M + &omega; + &Omega; mean latitude argument (rad)
    */
-  public void setLM(double lM) {
+  private void setLM(double lM) {
     // Generalization of Kepler equation to equinoctial parameters
     // with lE = PA + RAAN + E and 
     //      lM = PA + RAAN + M = lE - ex.sin(lE) + ey.cos(lE)
@@ -402,52 +311,6 @@ public class EquinoctialParameters
     return sb.toString();
   }
 
-  /** Build an instance of {@link OrbitDerivativesAdder
-   * OrbitDerivativesAdder} associated with this object.
-   * <p>This is a factory method allowing to build the right type of
-   * {@link OrbitDerivativesAdder OrbitDerivativesAdder} object, for
-   * this class, an <code>EquinoctialDerivativesAdder</code>
-   * object is built.</p>
-   * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
-   * @return an instance of {@link OrbitDerivativesAdder
-   * OrbitDerivativesAdder} associated with this object
-   */
-  public OrbitDerivativesAdder getDerivativesAdder(double mu) {
-    return new EquinoctialDerivativesAdder(this, mu);
-  }
-
-  /** Reinitialize internal state from the specified array slice data.
-   * @param start start index in the array
-   * @param array array holding the data to extract (a, ex, ey, hx, hy, lv)
-   */
-  public void mapStateFromArray(int start, double[] array) {
-
-    a  = array[start];
-    ex = array[start + 1];
-    ey = array[start + 2];
-    hx = array[start + 3];
-    hy = array[start + 4];
-    lv = array[start + 5];
-
-    // invalidate position and velocity
-    super.reset();
-
-  }
-
-  /** Store internal state data into the specified array slice.
-   * @param start start index in the array
-   * @param array array where data should be stored (a, ex, ey, hx, hy, lv)
-   */
-  public void mapStateToArray(int start, double[] array) {
-    array[start]     = a;
-    array[start + 1] = ex;
-    array[start + 2] = ey;
-    array[start + 3] = hx;
-    array[start + 4] = hy;
-    array[start + 5] = lv;
-  }
-
-  
   /** Semi-major axis (m). */
   private double a;
 
@@ -466,176 +329,4 @@ public class EquinoctialParameters
   /** True latitude argument (rad). */
   private double lv;
   
-  /** This internal class sums up the contribution of several forces into orbit derivatives.
-  *
-  * <p>The aim of this class is to gather the contributions of various perturbing
-  * forces expressed as accelerations into one set of time-derivatives of
-  * orbital parameters. It implements Gauss equations for equinoctial parameters.
-  * </p>
-  *
-  * @version $Id$
-  * @author M. Romero
-  * @author L. Maisonobe
-  *
-  */
- private class EquinoctialDerivativesAdder
-   extends OrbitDerivativesAdder {
-
-   /** Multiplicative coefficients for the perturbing accelerations. */
-   private double aT;
-   private double exT;
-   private double eyT;
-
-   private double aQ;
-   private double exQ;
-   private double eyQ;
-
-   private double exN;
-   private double eyN;
-
-   private double aS;
-   private double exS;
-   private double eyS;
-
-   private double eyW;
-   private double exW;
-   private double hxW;
-   private double hyW;
-   private double lvW;
-
-   /** Kepler evolution on true latitude argument. */
-   private double lvKepler;
-
-   /** Create a new instance
-    * @param parameters current orbital parameters
-    * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
-    */
-   public EquinoctialDerivativesAdder(OrbitalParameters parameters, double mu) {
-     super(parameters, mu);
-   }
-
-   /** Initialize all derivatives to zero.
-    * @param yDot reference to the array where to put the derivatives.
-    */
-   public void initDerivatives(double[] yDot) {
-
-     // store orbit parameters
-     super.initDerivatives(yDot);
-
-     // intermediate variables
-     double ex2 = ex * ex;
-     double ey2 = ey * ey;
-     double e2  = ex2 + ey2;
-     double e   = Math.sqrt(e2);
-     if (e > 1) {
-       throw new IllegalArgumentException("Eccentricity is becoming"
-                                          + " greater than 1."
-                                          + " Unable to continue.");
-     }
-
-     // intermediate variables
-     double oMe2        = (1 - e) * (1 + e);
-     double epsilon     = Math.sqrt(oMe2);
-     double na          = Math.sqrt(mu / a);
-     double n           = na / a;
-     double cLv         = Math.cos(lv);
-     double sLv         = Math.sin(lv);
-     double excLv       = ex * cLv;
-     double eysLv       = ey * sLv;
-     double excLvPeysLv = excLv + eysLv;
-     double ksi         = 1 + excLvPeysLv;
-     double nu          = ex * sLv - ey * cLv;
-     double sqrt        = Math.sqrt(ksi * ksi + nu * nu);
-     double oPksi       = 2 + excLvPeysLv;
-     double h2          = hx * hx + hy * hy;
-     double oPh2        = 1 + h2;
-     double hxsLvMhycLv = hx * sLv - hy * cLv;
-
-     double epsilonOnNA        = epsilon / na;
-     double epsilonOnNAKsi     = epsilonOnNA / ksi;
-     double epsilonOnNAKsiSqrt = epsilonOnNAKsi / sqrt;
-     double tOnEpsilonN        = 2 / (n * epsilon);
-     double tEpsilonOnNASqrt   = 2 * epsilonOnNA / sqrt;
-     double epsilonOnNAKsit    = epsilonOnNA / (2 * ksi);
-     
-     // Kepler natural evolution
-     lvKepler = n * ksi * ksi / (oMe2 * epsilon);
-
-     // coefficients along T
-     aT  = tOnEpsilonN * sqrt;
-     exT = tEpsilonOnNASqrt * (ex + cLv);
-     eyT = tEpsilonOnNASqrt * (ey + sLv);
-         
-     // coefficients along N
-     exN = -epsilonOnNAKsiSqrt * (2 * ey * ksi + oMe2 * sLv);
-     eyN =  epsilonOnNAKsiSqrt * (2 * ex * ksi + oMe2 * cLv);
-                 
-     // coefficients along Q
-     aQ  =  tOnEpsilonN * nu;
-     exQ =  epsilonOnNA * sLv;
-     eyQ = -epsilonOnNA * cLv;
-         
-     // coefficients along S
-     aS  = tOnEpsilonN * ksi;
-     exS = epsilonOnNAKsi * (ex + oPksi * cLv);
-     eyS = epsilonOnNAKsi * (ey + oPksi * sLv);
-         
-     // coefficients along W
-     lvW =  epsilonOnNAKsi * hxsLvMhycLv;
-     exW = -ey * lvW;
-     eyW =  ex * lvW;
-     hxW =  epsilonOnNAKsit * oPh2 * cLv;
-     hyW =  epsilonOnNAKsit * oPh2 * sLv;
-     //hxW =  epsilonOnNAKsi * oPh2 * cLv;
-     //hyW =  epsilonOnNAKsi * oPh2 * sLv;
-     
-   }
-
-   /** Add the contribution of the Kepler evolution.
-    * <p>Since the Kepler evolution if the most important, it should
-    * be added after all the other ones, in order to improve
-    * numerical accuracy.</p>
-    */
-   public void addKeplerContribution() {
-     yDot[5] += lvKepler;
-   }
-
-   /** Add the contribution of an acceleration expressed in (T, N, W)
-    * local orbital frame.
-    * @param t acceleration along the T axis (m/s<sup>2</sup>)
-    * @param n acceleration along the N axis (m/s<sup>2</sup>)
-    * @param w acceleration along the W axis (m/s<sup>2</sup>)
-    */
-   public void addTNWAcceleration(double t, double n, double w) {
-     yDot[0] += aT  * t;
-     yDot[1] += exT * t + exN * n + exW * w;
-     yDot[2] += eyT * t + eyN * n + eyW * w;
-     yDot[3] += hxW * w;
-     yDot[4] += hyW * w;
-     yDot[5] += lvW * w;
-   }
-
-   /** Add the contribution of an acceleration expressed in (Q, S, W)
-    * local orbital frame.
-    * @param q acceleration along the Q axis (m/s<sup>2</sup>)
-    * @param s acceleration along the S axis (m/s<sup>2</sup>)
-    * @param w acceleration along the W axis (m/s<sup>2</sup>)
-    */
-   public void addQSWAcceleration(double q, double s, double w) {
-     yDot[0] += aQ  * q + aS  * s;
-     yDot[1] += exQ * q + exS * s + exW * w;
-     yDot[2] += eyQ * q + eyS * s + eyW * w;
-     yDot[3] += hxW * w;
-     yDot[4] += hyW * w;
-     yDot[5] += lvW * w;
-   }
-   
-   /** Get the frame where are defined the XYZ coordinates.
-    * @return the frame.
-    */
-   public Frame getFrame() {
-	   return EquinoctialParameters.this.getFrame();
-   }
- }
-
 }

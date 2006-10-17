@@ -25,9 +25,14 @@ public class KeplerianPropagator implements Ephemeris {
   throws PropagationException {
     
     // evaluation of LM = PA + RAAN + M at extrapolated time
-    EquinoctialParameters extrapolated = (EquinoctialParameters) initialParameters.clone();
-    extrapolated.setLM(extrapolated.getLM() + n * date.minus(initialDate));
-
+        
+    EquinoctialParameters extrapolated = new EquinoctialParameters(
+    		 initialParameters.getA(), initialParameters.getEquinoctialEx(),
+    		 initialParameters.getEquinoctialEy(), initialParameters.getHx(),
+    		 initialParameters.getHy(), 
+    		 initialParameters.getLM() + n * date.minus(initialDate) ,
+    		 0, initialParameters.getFrame());
+    
     return new Orbit(date, extrapolated);
 
   }

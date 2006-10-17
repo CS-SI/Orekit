@@ -51,19 +51,19 @@ public class UTCScaleTest
   public void testDuringLeap() throws ParseException {
     AbsoluteDate d = new AbsoluteDate("1983-06-30T23:59:59", utc);
     assertEquals("1983-06-30T23:59:59.000", d.toString(utc));
-    d.shift(0.251);
+    d = new AbsoluteDate(d ,0.251);
     assertEquals("1983-06-30T23:59:59.251", d.toString(utc));
-    d.shift(0.251);
+    d = new AbsoluteDate(d ,0.251);
     assertEquals("1983-06-30T23:59:59.502", d.toString(utc));
-    d.shift(0.251);
+    d = new AbsoluteDate(d ,0.251);
     assertEquals("1983-06-30T23:59:59.753", d.toString(utc));
-    d.shift(0.251);
+    d = new AbsoluteDate(d ,0.251);
     assertEquals("1983-06-30T23:59:59.004", d.toString(utc));
-    d.shift(0.251);
+    d = new AbsoluteDate(d ,0.251);
     assertEquals("1983-06-30T23:59:59.255", d.toString(utc));
-    d.shift(0.251);
+    d = new AbsoluteDate(d ,0.251);
     assertEquals("1983-06-30T23:59:59.506", d.toString(utc));
-    d.shift(0.251);
+    d = new AbsoluteDate(d ,0.251);
     assertEquals("1983-06-30T23:59:59.757", d.toString(utc));
   }
 

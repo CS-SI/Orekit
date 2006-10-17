@@ -24,10 +24,8 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
  *   <p>locations represent the coordinate of one event with respect to a
  *   {@link TimeScale time scale}. The related methods are {@link
  *   #AbsoluteDate(Date, TimeScale) AbsoluteDate(location, timeScale)}, {@link
- *   #AbsoluteDate(String, TimeScale) AbsoluteDate(location, timeScale)}, {@link
- *   #reset(Date, TimeScale) reset(location, timeScale)}, {@link
- *   #reset(String, TimeScale) reset(location, timeScale)}, {@link #toDate}
- *   , {@link #toString() toString()}, {@link #toString(TimeScale)
+ *   #AbsoluteDate(String, TimeScale) AbsoluteDate(location, timeScale)},
+ *    {@link #toDate}, {@link #toString() toString()}, {@link #toString(TimeScale)
  *   toString(timeScale)} and {@link #timeScalesOffset}.</p>
  *   </li>
  *   <li><p>offset view (mainly for physical computation)</p>
@@ -35,22 +33,10 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
  *   (two instances of the class) or durations. They are counted in seconds,
  *   are continuous and could be measured using only a virtual perfect stopwatch.
  *   The related methods are {@link #AbsoluteDate(AbsoluteDate, double) AbsoluteDate(instant,
- *   offset)}, {@link #AbsoluteDate(AbsoluteDate) AbsoluteDate(instant)}, {@link
- *   #reset(AbsoluteDate, double) reset(instant, offset)}, {@link
- *   #reset(AbsoluteDate) reset(instant)}, {@link #minus} and {@link #shift}.</p>
+ *   offset)}, {@link #AbsoluteDate(AbsoluteDate) AbsoluteDate(instant)},
+ *   {@link #minus} and {@link #shift}.</p>
  *   </li>
  * </ul>
- * <p>Since instances may be changed thanks to the {@link #reset(Date, TimeScale)
- * reset(location, timeScale)}, {@link #reset(String, TimeScale) reset(location,
- * timeScale)}, {@link #reset(AbsoluteDate, double) reset(instant, offset)},
- * {@link #reset(AbsoluteDate) reset(instant)} and {@link #shift} methods, the
- * {@link #dateChanged() dateChanged} method can be overriden in derived classes
- * to hook up user code when such changes occur. This method is called at the end
- * of all instance changing methods, the default implementation does nothing.
- * An example use of this feature is sharing dates among several related
- * frames that should be updated together as in the {@link
- * fr.cs.aerospace.orekit.frames.SynchronizedFrame SynchronizedFrame} class.</p>
-
  * @author L. Maisonobe
  * @see TimeScale
  */
@@ -105,7 +91,8 @@ public class AbsoluteDate implements Comparable {
     /** Create an instance with a default value ({@link #J2000Epoch}).
      */    
     public AbsoluteDate() {
-      reset();
+      epoch  = J2000Epoch.epoch;
+      offset = J2000Epoch.offset;
     }
 
     /** Build an instant from a location in a {@link TimeScale time scale}.
@@ -113,7 +100,8 @@ public class AbsoluteDate implements Comparable {
      * @param timeScale time scale
      */    
     public AbsoluteDate(Date location, TimeScale timeScale) {
-      reset(location, timeScale);
+      epoch  = location.getTime();
+      offset = timeScale.offsetToTAI(epoch * 0.001);
     }    
     
     /** Build an instant from a location in a {@link TimeScale time scale}.
@@ -126,7 +114,15 @@ public class AbsoluteDate implements Comparable {
      */    
     public AbsoluteDate(String location, TimeScale timeScale)
       throws ParseException {
-      reset(location, timeScale);
+            ParsePosition position = new ParsePosition(0);
+            Date parsed = input.parse(location, position);
+            double fraction = 0;
+            if (position.getIndex() < location.length()) {
+              fraction =
+                Double.parseDouble(location.substring(position.getIndex()));
+            }
+            epoch  = parsed.getTime();
+            offset = fraction + timeScale.offsetToTAI(epoch * 0.001 + fraction);
     }    
     
     /** Build an instant from an offset with respect to another instant.
@@ -141,88 +137,15 @@ public class AbsoluteDate implements Comparable {
      * separating the two instants)
      */    
     public AbsoluteDate(AbsoluteDate instant, double offset) {
-      reset(instant, offset);
+        epoch = instant.epoch;
+        this.offset = instant.offset + offset;
     }    
     
-    /** Copy constructor.
-     * @param i instant to copy values from
-     */    
-    public AbsoluteDate(AbsoluteDate i) {
-      reset(i);
-    }    
-
-    /** Reset the instant to a default value ({@link #J2000Epoch}).
-     */    
-    public void reset() {
-      reset(J2000Epoch);
+    public AbsoluteDate(AbsoluteDate date) {
+    	epoch = date.epoch;
+    	offset = date.offset;
     }
-
-    /** Reset the instant from a location in a {@link TimeScale time scale}.
-     * @param location location in the time scale
-     * @param timeScale time scale
-     */    
-    public void reset(Date location, TimeScale timeScale) {
-      epoch  = location.getTime();
-      offset = timeScale.offsetToTAI(epoch * 0.001);
-      dateChanged();
-    }    
-   
-    /** Reset the instant from a location in a {@link TimeScale time scale}.
-     * <p>The recognized format is only a subset of ISO-8601. It is
-     * yyyy-mm-ddThh:mm:ss[.sss] where the fractional part of the second
-     * is optional. Timezones are explicitely <em>not</em> supported.</p>
-     * @param location location in the time scale in a subset ISO-8601 format
-     * @param timeScale time scale
-     * @exception ParseException if the string cannot be parsed
-     */    
-    public void reset(String location, TimeScale timeScale)
-      throws ParseException {
-      ParsePosition position = new ParsePosition(0);
-      Date parsed = input.parse(location, position);
-      double fraction = 0;
-      if (position.getIndex() < location.length()) {
-        fraction =
-          Double.parseDouble(location.substring(position.getIndex()));
-      }
-      epoch  = parsed.getTime();
-      offset = fraction + timeScale.offsetToTAI(epoch * 0.001 + fraction);
-      dateChanged();
-    }    
-   
-    /** Reset the instant from an offset with respect to another instant.
-     * <p>It is important to note that the <code>offset</code> is <em>not</em>
-     * the difference between two readings on a time scale. As an example,
-     * the offset between the two instants leading to the readings
-     * 2005-12-31T23:59:59 and 2006-01-01T00:00:00 on {@link UTCScale UTC}
-     * time scale is <em>not</em> 1 second, but 2 seconds because a leap
-     * second has been introduced at the end of 2005 in this time scale.</p>
-     * @param instant reference instant
-     * @param offset offset from the reference instant (seconds physically
-     * separating the two instants)
-     */    
-    public void reset(AbsoluteDate instant, double offset) {
-      epoch = instant.epoch;
-      this.offset = instant.offset + offset;
-      dateChanged();
-    }    
-    
-    /** Reset the instant by copy.
-     * @param instant instant to copy values from
-     */    
-    public void reset(AbsoluteDate instant) {
-      epoch  = instant.epoch;
-      offset = instant.offset;
-      dateChanged();
-    }    
-
-   /** Shift an instant.
-    * @param offset time shift in seconds
-    */
-   public void shift(double offset) {
-     this.offset += offset;
-     dateChanged();
-   }
-   
+       
    /** Compute the offset between two instant.
     * <p>The offset is the number of seconds physically elapsed
     * between the two instants.</p>
@@ -282,15 +205,6 @@ public class AbsoluteDate implements Comparable {
     */
    public String toString(TimeScale timeScale) {
      return output.format(toDate(timeScale));
-   }
-
-   /** Hook method for getting any instance modification.
-    * <p>This method is called at the end of all instance modification
-    * methods, the base class implementation does nothing but derived classes
-    * may add specialized implementation to react to changes.</p>
-    */
-   public void dateChanged() {
-     // nothing done in the base class implementation
    }
 
    /** Compare the instance with another date.

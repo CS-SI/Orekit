@@ -1,9 +1,7 @@
 package fr.cs.aerospace.orekit.orbits;
 
-import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
-
 import java.io.Serializable;
 
 /**
@@ -44,6 +42,7 @@ import java.io.Serializable;
  * @version $Id$
  * @author  L. Maisonobe
  * @author  G. Prat
+ * @author  F.Maussion
 
  */
 
@@ -76,63 +75,6 @@ public class Orbit
     parameters = (OrbitalParameters) o.parameters.clone();
   }
 
-  /** Reset the orbit to default.
-   * Reset the orbit with arbitrary default elements.
-   */
-  public void reset() {
-    t.reset();
-    parameters.reset();
-  }
-
-  /** Reset the orbit from date and orbital parameters.
-   * <p>
-   * If the internal representation of the parameters is the same as the
-   * argument, the internal object is reused. If there is a type mismatch,
-   * a new object which is a copy of the argument is allocated.
-   * </p>
-   * @param t  date (a reference to this object will be stored in the instance)
-   * @param parameters orbital parameters
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   */
-  public void reset(AbsoluteDate t, OrbitalParameters parameters, double mu) {
-    this.t.reset(t);
-    try {
-      this.parameters.reset(parameters, mu);
-    } catch (ClassCastException cce) {
-      this.parameters = (OrbitalParameters) parameters.clone();
-    }
-  }
-
-  /** Reset the orbit from cartesian parameters.
-   * @param t date (a reference to this object will be stored in the instance)
-   * @param pvCoordinates the pvCoordinates of the satellite
-   * @param frame the frame in which are defined the {@link PVCoordinates}
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   */
-  public void reset(AbsoluteDate t, PVCoordinates pvCoordinates, Frame frame, double mu) {
-    this.t = t;
-    parameters.reset(pvCoordinates, frame, mu);
-  }
-
-  /** Reset the orbit from another one.
-   * <p>
-   * If the internal representation of the parameters is the same as
-   * the one used in the argument, the internal object is reused. If
-   * there is a type mismatch, a new object which is a copy of the
-   * argument is allocated.
-   * </p>
-   * @param o orbit to copy
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   */
-  public void reset(Orbit o,double mu) {
-    t.reset(t);
-    try {
-      parameters.reset(o.parameters,mu);
-    } catch (ClassCastException cce) {
-      parameters = (OrbitalParameters) o.parameters.clone();
-    }
-  }
-
   /** Get the date.
    * @return date
    */
@@ -140,36 +82,11 @@ public class Orbit
     return t;
   }
 
-  /** Set the date.
-   * @param t date
-   */
-  public void setDate(AbsoluteDate t) {
-    this.t.reset(t);
-  }
-
   /** Get the orbital parameters.
    * @return orbital parameters
    */
   public OrbitalParameters getParameters() {
     return parameters;
-  }
-
-  /** Set the orbital parameters.
-   * <p>
-   * If the internal representation of the parameters is the same as
-   * the argument, the internal object is reused. If there is a type
-   * mismatch, a new object which is a copy of the argument is
-   * allocated.
-   * </p>
-   * @param parameters orbital parameters
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   */
-  public void setParameters(OrbitalParameters parameters,double mu) {
-    try {
-      this.parameters.reset(parameters,mu);
-    } catch (ClassCastException cce) {
-      this.parameters = (OrbitalParameters) parameters.clone();
-    }
   }
 
   /** Get the semi-major axis.
@@ -261,11 +178,10 @@ public class Orbit
 
   /** Get the {@link PVCoordinates}.
   * Compute the position and velocity of the satellite. This method caches its
-  * results, and recompute them only when the orbit is changed or if
-  * the method is called with a new value for mu. The result is
-  * provided as a reference to the internally cached {@link PVCoordinates}, so the
-  * caller is responsible to copy it in a separate {@link PVCoordinates} if it needs
-  * to keep the value for a while.
+  * results, and recompute them only when the method is called with a new value
+  * for mu. The result is provided as a reference to the internally cached 
+  * {@link PVCoordinates}, so the caller is responsible to copy it in a separate
+  * {@link PVCoordinates} if it needs to keep the value for a while.
   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
   * @return pvCoordinates in inertial frame (reference to an
   * internally cached pvCoordinates which can change)

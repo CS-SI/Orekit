@@ -6,7 +6,7 @@
 	<classpathentry sourcepath="ECLIPSE_HOME/plugins/org.eclipse.jdt.source_3.1.0/src/org.junit_3.8.1/junitsrc.zip" kind="var" path="JUNIT_HOME/junit.jar"/>
 	<classpathentry kind="lib" path="lib/mantissa-6.3.jar">
 		<attributes>
-			<attribute value="http://www.spaceroots.org/mantissa-doc/index.html" name="javadoc_location"/>
+			<attribute value="jar:file:/home/fab/workspace/mantissa-6.3-doc.zip!/mantissa-6.3-doc" name="javadoc_location"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="output" path="bin"/>

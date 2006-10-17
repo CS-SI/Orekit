@@ -5,8 +5,8 @@ import fr.cs.aerospace.orekit.orbits.CircularParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
-/** This class propagates an {@link fr.cs.aerospace.orekit.orbits.Orbit Orbit} using the
- * analytical Eckstein-Hechler model.
+/** This class propagates an {@link fr.cs.aerospace.orekit.orbits.Orbit Orbit}
+ *  using the analytical Eckstein-Hechler model.
  * <p>The Eckstein-Hechler model is suited for near circular orbits
  * (e < 0.1, with poor accuracy between 0.005 and 0.1) and inclination
  * neither equatorial (direct or retrograde) nor critical (direct or
@@ -60,7 +60,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
    */
   public Orbit getOrbit(AbsoluteDate date)
       throws PropagationException {
-    return new Orbit(date, extrapolate(date));
+    return new Orbit(date, propagate(date));
   }
 
   /** Compute mean parameters according to the Eckstein-Hechler analytical model.
@@ -110,7 +110,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
       sinI6 = sinI2 * sinI4;
 
       // recompute the osculation parameters from the current mean parameters
-      CircularParameters rebuilt = extrapolate(initialDate);
+      CircularParameters rebuilt = propagate(initialDate);
 
       // adapted parameters residuals
       double deltaA      = osculating.getA()  - rebuilt.getA();
@@ -124,7 +124,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
                                         0.0);
 
       // update mean parameters
-      mean.reset(mean.getA()          + deltaA,
+      mean= new CircularParameters(mean.getA()          + deltaA,
                  mean.getCircularEx() + deltaEx,
                  mean.getCircularEy() + deltaEy,
                  mean.getI()          + deltaI,
@@ -140,9 +140,6 @@ public class EcksteinHechlerPropagator implements Ephemeris {
           && (Math.abs(deltaI)      < thresholdAngles)
           && (Math.abs(deltaRAAN)   < thresholdAngles)
           && (Math.abs(deltaAlphaM) < thresholdAngles)) {
-        mean.setRightAscensionOfAscendingNode(trimAngle(mean.getRightAscensionOfAscendingNode(),
-                                                        Math.PI));
-        mean.setAlphaM(trimAngle(mean.getAlphaM(), Math.PI));
 
         // sanity checks
         double e = mean.getE();
@@ -184,7 +181,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
    * @param targetDate target date for the orbit
    * @exception PropagationException if some parameters are out of bounds
    */
-  private CircularParameters extrapolate(AbsoluteDate date)
+  private CircularParameters propagate(AbsoluteDate date)
     throws PropagationException {
 
     // keplerian evolution

@@ -2,8 +2,6 @@ package fr.cs.aerospace.orekit.propagation;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-
-
 import org.spaceroots.mantissa.ode.ContinuousOutputModel;
 import org.spaceroots.mantissa.ode.FirstOrderIntegrator;
 import org.spaceroots.mantissa.ode.FirstOrderDifferentialEquations;
@@ -14,11 +12,9 @@ import org.spaceroots.mantissa.ode.StepNormalizer;
 import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.IntegratorException;
 import org.spaceroots.mantissa.ode.SwitchingFunction;
-import org.spaceroots.mantissa.utilities.ArrayMapper;
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
-import fr.cs.aerospace.orekit.orbits.OrbitDerivativesAdder;
-import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.perturbations.ForceModel;
 import fr.cs.aerospace.orekit.perturbations.SWF;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
@@ -60,6 +56,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * @see StepHandler
  * @see FixedStepHandler
  * @see IntegratedEphemeris
+ * @see fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations
  *
  * @version $Id$
  * @author  M. Romero
@@ -85,8 +82,8 @@ public class NumericalPropagator
       this.startDate          = new AbsoluteDate();
       this.date               = new AbsoluteDate();
       this.parameters         = null;
-      this.mapper             = null;
       this.adder              = null;
+      this.state = new double[6];
     }
 
     /** Add a force model to the global perturbation model. The associated 
@@ -115,22 +112,18 @@ public class NumericalPropagator
      * @param initialOrbit orbit to extrapolate (this object will not be
      * changed except if finalOrbit is also reference to it)
      * @param finalDate target date for the orbit
-     * @param finalOrbit placeholder where to put the final orbit (may be a
-     * reference to initialOrbit and may be null, as long as null is cast to
-     *
-     * (Orbit) to avoid ambiguities with the other extrapolation methods)
      * @return orbit at the final date (reference to finalOrbit if it was non
      * null, reference to a new object otherwise)
      * @exception DerivativeException if the force models trigger one
      * @exception IntegratorException if the force models trigger one
      */
-    public void propagate(Orbit initialOrbit,
-                             AbsoluteDate finalDate, Orbit finalOrbit)
+    public Orbit propagate(Orbit initialOrbit,
+                             AbsoluteDate finalDate)
       throws DerivativeException, IntegratorException, OrekitException {
 
       propagate(initialOrbit, finalDate, DummyStepHandler.getInstance());
-      finalOrbit.reset(date, parameters, mu);
 
+      return new Orbit(date , parameters);
     }
     
     /** Propagate an orbit and store the ephemeris throughout the integration
@@ -148,7 +141,8 @@ public class NumericalPropagator
         throws DerivativeException, IntegratorException, OrekitException {    
     	ContinuousOutputModel model = new ContinuousOutputModel();
     	propagate(initialOrbit, finalDate, (StepHandler)model);
-    	ephemeris.initialize(model , initialOrbit.getDate());
+    	ephemeris.initialize(model , initialOrbit.getDate(), 
+    			initialOrbit.getParameters().getFrame());
     }        
 
     /** Propagate an orbit and call a user handler at fixed time during
@@ -180,28 +174,25 @@ public class NumericalPropagator
       throws DerivativeException, IntegratorException, OrekitException {
 
         // space dynamics view
-        startDate.reset(initialOrbit.getDate());
-        date.reset(initialOrbit.getDate());
+        startDate = new AbsoluteDate(initialOrbit.getDate());
+        date = new AbsoluteDate(initialOrbit.getDate());
 
-        // try to avoid building new objects if possible
-        if (parameters != null) {
-          try {
-            parameters.reset(initialOrbit.getParameters(), mu);
-          } 
-          catch (ClassCastException cce) {
-            parameters = null;
-          }
-        }
-        if (parameters == null) {
-          parameters = (OrbitalParameters) initialOrbit.getParameters().clone();
-          mapper     = new ArrayMapper(parameters);
-          adder      = parameters.getDerivativesAdder(mu);
-        }
+        parameters = new EquinoctialParameters(initialOrbit.getParameters() , mu);
+
+        adder      = new EquinoctialGaussEquations(parameters , mu);
+
 
         // mathematical view
         double t0 = 0;
         double t1 = finalDate.minus(startDate);
-        mapper.updateArray();
+
+        // Map state to array
+        state[0] = parameters.getA();
+        state[1] = parameters.getEquinoctialEx();
+        state[2] = parameters.getEquinoctialEy();
+        state[3] = parameters.getHx();
+        state[4] = parameters.getHy();
+        state[5] = parameters.getLv();
         
         for( int i = 0; i < switchingFunctions.size(); i++) {
           integrator.addSwitchingFunction((MappingSwitchingFunction) switchingFunctions.get(i), 
@@ -210,18 +201,19 @@ public class NumericalPropagator
         
         // mathematical integration
         integrator.setStepHandler(handler);
-        integrator.integrate(this, t0, mapper.getInternalDataArray(),
-                             t1, mapper.getInternalDataArray());
+        integrator.integrate(this, t0, state,
+                             t1, state);
 
         // back to space dynamics view
-        date.reset(startDate, t1);
-        mapper.updateObjects();
+        date = new AbsoluteDate(startDate, t1);
+        
+        parameters = new EquinoctialParameters(state[0], state[1],state[2],state[3],state[4],state[5], EquinoctialParameters.TRUE_LATITUDE_ARGUMENT , parameters.getFrame());
         
 
     }
 
      public int getDimension() {
-      return parameters.getStateDimension();
+      return 6;
     }
 
     /** Computes the orbit time derivative.
@@ -243,7 +235,7 @@ public class NumericalPropagator
         PVCoordinates pvCoordinates = parameters.getPVCoordinates(mu);
         
         // initialize derivatives
-        adder.initDerivatives(yDot);
+        adder.initDerivatives(yDot , parameters);
         
         // compute the contributions of all perturbing forces
         for (Iterator iter = forceModels.iterator(); iter.hasNext();) {
@@ -261,10 +253,9 @@ public class NumericalPropagator
     private void mapState(double t, double [] y) {
 
       // update space dynamics view
-      date.reset(startDate, t);
-      mapper.updateObjects(y);
-
-      parameters.mapStateFromArray(0,y);
+      date = new AbsoluteDate(startDate, t);
+      
+      parameters = new EquinoctialParameters(y[0], y[1],y[2],y[3],y[4],y[5], 2 , parameters.getFrame());
 
     }
 
@@ -291,6 +282,7 @@ public class NumericalPropagator
       }
       
       public void resetState(double t, double[] y) {
+    	  //FIXME
       }
       
       private SWF swf;
@@ -312,22 +304,22 @@ public class NumericalPropagator
     /** Maximal time intervals between switching function checks. */
     private double[] maxCheckIntervals;
     
+    /** State vector */ 
+    private double[] state;
+    
     /** Start date. */
     private AbsoluteDate startDate;
 
     /** Current date. */
     private AbsoluteDate date;
 
-    /** Current orbital parameters, updated during the integration process. */
-    private OrbitalParameters parameters;
-        
-    /** Mapper between the orbit domain object and flat state array. */
-    private ArrayMapper mapper;
-    
+    /** Current EquinoctialParameters, updated during the integration process. */
+    private EquinoctialParameters parameters;
+            
     /** Integrator selected by the user for the orbital extrapolation process. */
     private FirstOrderIntegrator integrator;
 
     /** Gauss equations handler. */
-    private OrbitDerivativesAdder adder;
+    private EquinoctialGaussEquations adder;
 
 }

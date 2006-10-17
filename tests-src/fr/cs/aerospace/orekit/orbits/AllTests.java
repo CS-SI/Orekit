@@ -12,11 +12,7 @@ public class AllTests {
     suite.addTest(KeplerianParametersTest.suite());
     suite.addTest(EquinoctialParametersTest.suite());
     suite.addTest(CircularParametersTest.suite());
-    
-    // TODO a valider
-    suite.addTest(KeplerianDerivativesAdderTest.suite());
-    suite.addTest(EquinoctialDerivativesAdderTest.suite());
-    
+        
     return suite; 
 
   }

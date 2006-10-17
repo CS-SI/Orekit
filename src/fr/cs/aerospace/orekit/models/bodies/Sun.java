@@ -19,13 +19,14 @@ public class Sun extends ThirdBody {
     super(6.96e8, 1.32712440e20);
   }
 
-  /** Gets the position of the Sun in the J2000 Frame.
+  /** Gets the position of the Sun in the selected Frame.
    * <p>The position model is the Newcomb theory
    * as used in the MSLIB library.</p>
    * @param date date
+   * @param frame the frame where to define the position
    * @return position of the sun (m) in the J2000 Frame
    */
-  public Vector3D getPosition(AbsoluteDate date) {
+  public Vector3D getPosition(AbsoluteDate date, Frame frame) {
     
 	
     double t = date.minus(reference) / 86400.0;
@@ -69,8 +70,9 @@ public class Sun extends ThirdBody {
     double dasr = 1672.2 * Math.cos(xlp) + 28.0 * Math.cos(xlp + xlp)
                 - 0.35 * Math.cos(d);
     	
-    return new Vector3D(1000.0 * 149597870.0 / (1.0 + 1.E-05 * dasr), centralSun);
+    Vector3D posInJ2000 =  new Vector3D(1000.0 * 149597870.0 / (1.0 + 1.E-05 * dasr), centralSun);
 	
+    return Frame.getJ2000().getTransformTo(frame).transformPosition(posInJ2000);
   }
 
   /** Reference date. */
