@@ -5,7 +5,6 @@ import fr.cs.aerospace.orekit.errors.PropagationException;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
-import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.propagation.BoundedEphemeris;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
@@ -69,7 +68,7 @@ public class IntegratedEphemeris implements BoundedEphemeris {
 	    EquinoctialParameters eq = new EquinoctialParameters(state[0],state[1],state[2],
 	    		state[3], state[4],state[5], 2, frame);
 	    
-	    return new Orbit(date , (OrbitalParameters)eq);
+	    return new Orbit(date , eq);
 	}
 	else {
 		return null;

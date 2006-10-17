@@ -6,7 +6,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /**
  * This class handles equinoctial orbital parameters.
-
+ 
  * <p>
  * The parameters used internally are the equinoctial elements defined as follows:
  *   <pre>
@@ -28,31 +28,31 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * @author  F.Maussion
  */
 public class EquinoctialParameters
-  extends OrbitalParameters {
+extends OrbitalParameters {
 
   /** Identifier for mean latitude argument. */
   public static final int MEAN_LATITUDE_ARGUMENT = 0;
-
+  
   /** Identifier for eccentric latitude argument. */
   public static final int ECCENTRIC_LATITUDE_ARGUMENT = 1;
-
+  
   /** Identifier for true latitude argument. */
   public static final int TRUE_LATITUDE_ARGUMENT = 2;
-
+  
   /** Default constructor.
    * Build a new instance with arbitrary default elements.
    */
   public EquinoctialParameters() {
-	    super();
-	    a  = 1.0e7;
-	    ex = 1.0e-3;
-	    ey = 0;
-	    hx = 0.15;
-	    hy = 0;
-	    frame = Frame.getJ2000();
-	    setLv(0);
+    super();
+    a  = 1.0e7;
+    ex = 1.0e-3;
+    ey = 0;
+    hx = 0.15;
+    hy = 0;
+    frame = Frame.getJ2000();
+    setLv(0);
   }
-
+  
   /** Creates a new instance
    * @param a  semi-major axis (m)
    * @param ex e cos(&omega; + &Omega;), first component of eccentricity vector
@@ -67,53 +67,53 @@ public class EquinoctialParameters
   public EquinoctialParameters(double a, double ex, double ey,
                                double hx, double hy,
                                double l, int type, Frame frame) {
-	    super();
-	    this.a  =  a;
-	    this.ex = ex;
-	    this.ey = ey;
-	    this.hx = hx;
-	    this.hy = hy;
-	    this.frame = frame;
-
-	    switch (type) {
-	    case MEAN_LATITUDE_ARGUMENT :
-	      setLM(l);
-	      break;
-	    case ECCENTRIC_LATITUDE_ARGUMENT :
-	      setLE(l);
-	      break;
-	    default :
-	      setLv(l);
-	    }
-
+    super();
+    this.a  =  a;
+    this.ex = ex;
+    this.ey = ey;
+    this.hx = hx;
+    this.hy = hy;
+    this.frame = frame;
+    
+    switch (type) {
+    case MEAN_LATITUDE_ARGUMENT :
+      setLM(l);
+      break;
+    case ECCENTRIC_LATITUDE_ARGUMENT :
+      setLE(l);
+      break;
+    default :
+      setLv(l);
+    }
+    
   }
-
+  
   /** Constructor from cartesian parameters.
    * @param pvCoordinates the position end velocity
    * @param frame the frame in which are defined the {@link PVCoordinates} 
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
   public EquinoctialParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
-	  super(pvCoordinates, frame,  mu);
+    super(pvCoordinates, frame,  mu);
   }
-
+  
   /** Constructor from any kind of orbital parameters
    * @param op orbital parameters to copy
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
   public EquinoctialParameters(OrbitalParameters op, double mu) {
-	  super(op, mu);
+    super(op, mu);
   }
-
+  
   /** Copy the instance.
-  * <p>This method has been redeclared as public instead of protected.</p>
-  * @return a copy of the instance.
-  */
-  public Object clone() {
+   * <p>This method has been redeclared as public instead of protected.</p>
+   * @return a copy of the instance.
+   */
+  protected Object clone() {
     return new EquinoctialParameters(a, ex, ey, hx, hy, lv, TRUE_LATITUDE_ARGUMENT, frame);
   }
-
-  /** Intitialize the parameters from other ones 
+  
+  /** Initialize the parameters from other ones 
    * @param op the {@link OrbitalParameters} to copy
    * @param mu
    */
@@ -126,32 +126,32 @@ public class EquinoctialParameters
     lv = op.getLv();
     frame = op.getFrame();
   }
-
+  
   /** Update the parameters from the current position and velocity. */
   protected void updateFromPVCoordinates() {
-
+    
     // get cartesian elements
     double   mu       = getCachedMu();
     PVCoordinates pvCoordinates = getPVCoordinates(mu);
-
+    
     // compute semi-major axis
     double r       = pvCoordinates.getPosition().getNorm();
     double V2      = Vector3D.dotProduct(pvCoordinates.getVelocity(), pvCoordinates.getVelocity());
     double rV2OnMu = r * V2 / mu;
     a              = r / (2 - rV2OnMu);
-
+    
     // compute inclination vector
     Vector3D w = Vector3D.crossProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity());
     w.normalizeSelf();
     double d = 1. / (1 + w.getZ());
     hx = -d * w.getY();
     hy =  d * w.getX();
-
+    
     // compute true latitude argument
     double cLv = (pvCoordinates.getPosition().getX() - d * pvCoordinates.getPosition().getZ() * w.getX()) / r;
     double sLv = (pvCoordinates.getPosition().getY() - d * pvCoordinates.getPosition().getZ() * w.getY()) / r;
     lv = Math.atan2(sLv, cLv);
-
+    
     // compute eccentricity vector
     double eSE = Vector3D.dotProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity()) / Math.sqrt(mu * a);
     double eCE = rV2OnMu - 1;
@@ -160,60 +160,60 @@ public class EquinoctialParameters
     double g   = Math.sqrt(1 - e2) * eSE;
     ex = a * (f * cLv + g * sLv) / r;
     ey = a * (f * sLv - g * cLv) / r;
-
+    
   }
-
+  
   /** Get the semi-major axis.
    * @return semi-major axis (m)
    */
   public double getA() {
     return a;
   }
-
+  
   /** Get the first component of the eccentricity vector.
    * @return e cos(&omega; + &Omega;), first component of the eccentricity vector
    */
   public double getEquinoctialEx() {
     return ex;
   }
-
+  
   /** Get the second component of the eccentricity vector.
    * @return e sin(&omega; + &Omega;), second component of the eccentricity vector
    */
   public double getEquinoctialEy() {
     return ey;
   }
-
+  
   /** Get the first component of the inclination vector.
    * @return tan(i/2) cos(&Omega;), first component of the inclination vector
    */
   public double getHx() {
     return hx;
   }
-
+  
   /** Get the second component of the inclination vector.
    * @return tan(i/2) sin(&Omega;), second component of the inclination vector
    */
   public double getHy() {
     return hy;
   }
-
+  
   /** Get the true latitude argument.
    * @return v + &omega; + &Omega; true latitude argument (rad)
    */
   public double getLv() {
     return lv;
   }
-
+  
   /** Set the true latitude argument.
    * @param lv = v + &omega; + &Omega; true latitude argument (rad)
    */
   private void setLv(double lv) {
-
+    
     this.lv = lv;
-
+    
   }
-
+  
   /** Get the eccentric latitude argument.
    * @return E + &omega; + &Omega; eccentric latitude argument (rad)
    */
@@ -222,9 +222,9 @@ public class EquinoctialParameters
     double cosLv   = Math.cos(lv);
     double sinLv   = Math.sin(lv);
     return lv + 2 * Math.atan((ey * cosLv - ex * sinLv)
-                            / (epsilon + 1 + ex * cosLv + ey * sinLv));
+                              / (epsilon + 1 + ex * cosLv + ey * sinLv));
   }
-
+  
   /** Set the eccentric latitude argument.
    * @param lE = E + &omega; + &Omega; eccentric latitude argument (rad)
    */
@@ -233,9 +233,9 @@ public class EquinoctialParameters
     double cosLE   = Math.cos(lE);
     double sinLE   = Math.sin(lE);
     setLv(lE + 2 * Math.atan((ex * sinLE - ey * cosLE)
-                           / (epsilon + 1 - ex * cosLE - ey * sinLE)));
+                             / (epsilon + 1 - ex * cosLE - ey * sinLE)));
   }
-
+  
   /** Get the mean latitude argument.
    * @return M + &omega; + &Omega; mean latitude argument (rad)
    */
@@ -243,7 +243,7 @@ public class EquinoctialParameters
     double lE = getLE();
     return lE - ex * Math.sin(lE) + ey * Math.cos(lE);
   }
-
+  
   /** Set the mean latitude argument.
    * @param lM = M + &omega; + &Omega; mean latitude argument (rad)
    */
@@ -261,35 +261,35 @@ public class EquinoctialParameters
       double f2 = ex * sinLE - ey * cosLE;
       double f1 = 1.0 - ex * cosLE - ey * sinLE;
       double f0 = lEmlM - f2;
-
+      
       double f12 = 2.0 * f1;
       shift = f0 * f12 / (f1 * f12 - f0 * f2);
-
+      
       lEmlM -= shift;
       lE     = lM + lEmlM;
       cosLE  = Math.cos(lE);
       sinLE  = Math.sin(lE);
-
+      
     } while ((++iter < 50) && (Math.abs(shift) > 1.0e-12));
-
+    
     setLE(lE); // which set the lv parameter
-
+    
   }
-
+  
   /** Get the eccentricity.
    * @return eccentricity
    */
   public double getE() {
     return Math.sqrt(ex * ex + ey * ey);
   }
-
+  
   /** Get the inclination.
    * @return inclination (rad)
    */
   public double getI() {
     return 2 * Math.atan(Math.sqrt(hx * hx + hy * hy));
   }
-
+  
   /**  Returns a string representation of this Orbit object
    * @return a string representation of this object
    */
@@ -310,23 +310,24 @@ public class EquinoctialParameters
     sb.append('}');
     return sb.toString();
   }
-
+  
   /** Semi-major axis (m). */
   private double a;
-
+  
   /** First component of the eccentricity vector. */
   private double ex;
-
+  
   /** Second component of the eccentricity vector. */
   private double ey;
-
+  
   /** First component of the inclination vector. */
   private double hx;
-
+  
   /** Second component of the inclination vector. */
   private double hy;
-
+  
   /** True latitude argument (rad). */
   private double lv;
   
+  private static final long serialVersionUID = -6671885168854533487L;
 }

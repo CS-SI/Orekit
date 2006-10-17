@@ -31,7 +31,7 @@ public class KeplerianPropagator implements Ephemeris {
     		 initialParameters.getEquinoctialEy(), initialParameters.getHx(),
     		 initialParameters.getHy(), 
     		 initialParameters.getLM() + n * date.minus(initialDate) ,
-    		 0, initialParameters.getFrame());
+    		 EquinoctialParameters.MEAN_LATITUDE_ARGUMENT, initialParameters.getFrame());
     
     return new Orbit(date, extrapolated);
 

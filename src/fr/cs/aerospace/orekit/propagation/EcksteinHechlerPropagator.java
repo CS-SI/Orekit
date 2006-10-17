@@ -79,7 +79,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
     }
 
     // rough initialization of the mean parameters
-    mean = (CircularParameters) osculating.clone();
+    mean = new CircularParameters(osculating , mu);
 
     // threshold for each parameter
     double epsilon         = 1.0e-13;
