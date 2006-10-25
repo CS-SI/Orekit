@@ -96,7 +96,7 @@ public class Frame {
     commons        = new HashMap();
 
   }
-  
+    
   /** Get the name.
    * @return the name 
    */
@@ -126,6 +126,11 @@ public class Frame {
   }
 
   /** Get the transform from the instance to another frame.
+   * <p> This method should not be called if the instance is a 
+   * {@link SynchronizedFrame}. It is more sure to use the
+   * {@link SynchronizedFrame.getTransformTo(Frame destination, AbsoluteDate date)}
+   * which ensures all the transforms are up to date. 
+   * </p>
    * @param destination destination frame to which we want to transform vectors
    * @return transform from the instance to the destination frame
    */

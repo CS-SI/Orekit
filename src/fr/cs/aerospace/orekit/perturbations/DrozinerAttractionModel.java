@@ -1,10 +1,18 @@
 package fr.cs.aerospace.orekit.perturbations;
 
+import org.spaceroots.mantissa.geometry.Vector3D;
+
 import fr.cs.aerospace.orekit.bodies.RotatingBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.frames.FrameSynchronizer;
+import fr.cs.aerospace.orekit.frames.ITRF2000Frame;
+import fr.cs.aerospace.orekit.frames.SynchronizedFrame;
+import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
+import fr.cs.aerospace.orekit.utils.Vector;
 
 /** This class represents the gravitational field of a celestial body.
  * <p>
@@ -27,16 +35,20 @@ public class DrozinerAttractionModel implements ForceModel {
    * @param J normalized coefficients array (zonal part)
    * @param C normalized coefficients array (cosine part)
    * @param S normalized coefficients array (sine part)
+   * @throws OrekitException 
    */
-  public DrozinerAttractionModel(double mu, RotatingBody body,
+  public DrozinerAttractionModel(double mu, SynchronizedFrame centralBodyFrame, 
                                  double equatorialRadius,
-                                 double[] J, double[][] C, double[][] S) {
+                                 double[] J, double[][] C, double[][] S) throws OrekitException {
 
     this.mu = mu;
     this.equatorialRadius = equatorialRadius;
     this.J = J;
     this.C = C;
     this.S = S;
+    this.ndeg = J.length;
+    this.nord = C.length;
+    this.centralBodyFrame = centralBodyFrame;
   }
 
   /**
@@ -52,33 +64,40 @@ public class DrozinerAttractionModel implements ForceModel {
   public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, 
                               EquinoctialGaussEquations adder)
       throws OrekitException {
-
-    // Retrieval of cartesian coordinates
-    double x = pvCoordinates.getPosition().getX() / equatorialRadius;
-    double y = pvCoordinates.getPosition().getY() / equatorialRadius;
-    double z = pvCoordinates.getPosition().getZ() / equatorialRadius;
-
+    
+    // Coordinates in centralBodyFrame
+    
+    Transform inertToBody = centralBodyFrame.getTransformTo(adder.getFrame(), t)
+                                  .getInverse();
+    Vector3D posInBody = inertToBody.transformVector(pvCoordinates.getPosition());
+    
+    double xBody = posInBody.getX();// / equatorialRadius;
+    double yBody = posInBody.getY();// / equatorialRadius;
+    double zBody = posInBody.getZ();// / equatorialRadius;
+    
     // Calculation of useful variables
-    double r1 = Math.sqrt(x * x + y * y);
-    if (r1 == 0) {
-      throw new OrekitException("polar trajectory (r = {0})",
+    
+    double r1 = Math.sqrt(xBody * xBody + yBody * yBody);
+    if (r1 <= 10e-2) {
+      throw new OrekitException("polar trajectory (r1 = {0})",
                                 new String[] { Double.toString(r1) });
     }
-    double r = Math.sqrt(x * x + y * y + z * z);
-    if (r == 0) {
+    double r2 = xBody * xBody + yBody * yBody + zBody * zBody;
+    
+    double r   = Math.sqrt(r2);
+    if (r <= equatorialRadius) {
       throw new OrekitException("underground trajectory (r = {0})",
                                 new String[] { Double.toString(r) });
     }
-    double r2    = r   * r;
     double r3    = r2  * r;
-    double aeOnr = 1.0 / r;
-    double zOnr  = z   / r;
+    double aeOnr = equatorialRadius / r;
+    double zOnr  = zBody   / r;
     double r1Onr = r1  / r;
 
     // Definition of the first acceleration terms
-    double xDotDotk = -mu * x / r3;
-    double yDotDotk = -mu * y / r3;
-
+    double xDotDotk = -mu * xBody / r3;
+    double yDotDotk = -mu * yBody / r3;
+    
     // Zonal part of acceleration
     double aX = 0.0;
     double aY = 0.0;
@@ -91,12 +110,12 @@ public class DrozinerAttractionModel implements ForceModel {
       B[0] = zOnr;
       B[1] = aeOnr * (3 * B[0] * B[0] - 1.0);
       for (int k = 2; k <= ndeg; k++) {
-        double p = ((double) (1 + k)) / k;
+        double p = ((1 + k)) / k;
         B[k] = aeOnr * ((1 + p) * zOnr * B[k - 1]
-             - ((double) k) / (k - 1) * aeOnr * B[k - 2]);
+             - (k) / (k - 1) * aeOnr * B[k - 2]);
         A[k] = p * aeOnr * B[k - 1] - zOnr * B[k];
-        sum1 += J[k] * A[k];
-        sum2 += J[k] * B[k];
+        sum1 += J[k-1] * A[k];
+        sum2 += J[k-1] * B[k];
       }
       double p = -(r / r1) * (r / r1) * sum1;
       aX += xDotDotk * p;
@@ -106,13 +125,16 @@ public class DrozinerAttractionModel implements ForceModel {
 
     // Tessereal-sectorial part of acceleration
     if (nord != 0) {
-      double gst = body.getOrientation(t).getAngle();
-      double singst = Math.sin(gst);
-      double cosgst = Math.cos(gst);
-      double xOnr1 = x / r1;
-      double yOnr1 = y / r1;
-      double sinl = -xOnr1 * singst + yOnr1 * cosgst;
-      double cosl = xOnr1 * cosgst + yOnr1 * singst;
+      // Determine the longitude
+//      double gst = body.getOrientation(t).getAngle();
+//      double singst = Math.sin(gst);
+//      double cosgst = Math.cos(gst);
+//      double xOnr1 = xInert / r1;
+//      double yOnr1 = yInert / r1;
+//      double sinl = -xOnr1 * singst + yOnr1 * cosgst;
+//      double cosl = xOnr1 * cosgst + yOnr1 * singst;
+      double cosl = xBody/r1;  
+      double sinl = yBody/r1;    
       double[][] A = new double[nord + 1][nord + 1];
       double[][] B = new double[nord + 1][nord + 1];
       double[] beta = new double[nord + 1];
@@ -136,28 +158,28 @@ public class DrozinerAttractionModel implements ForceModel {
         double innerSumY = 0.0;
         double innerSumZ = 0.0;
         for (int j = 1; j <= k; j++) {
-          H[k][j] = C[k][j] * coskl[j] + S[k][j] * sinkl[j];
-          Hb[k][j] = C[k][j] * sinkl[j] - S[k][j] * coskl[j];
+          H[k][j] = C[k-1][j-1] * coskl[j] + S[k-1][j-1] * sinkl[j];
+          Hb[k][j] = C[k-1][j-1] * sinkl[j] - S[k-1][j-1] * coskl[j];
           if ((j >= 1) && (j <= (k - 2))) {
             B[k][j] =
-              aeOnr * ((double) (2 * k + 1)) / (k - j) * zOnr * B[k - 1][j]
-            - aeOnr * ((double) (k + j)) / (k - 1 - j) * B[k - 2][j];
+              aeOnr * (2 * k + 1) / (k - j) * zOnr * B[k - 1][j]
+            - aeOnr * (k + j) / (k - 1 - j) * B[k - 2][j];
             A[k][j] =
-              aeOnr * ((double) (k + 1)) / (k - j) * B[k - 1][j]
+              aeOnr * (k + 1) / (k - j) * B[k - 1][j]
             - zOnr * B[k][j];
           }
           if (j == (k - 1)) {
-            beta[k] = (double) (2 * k - 1) * r1Onr * aeOnr * beta[k - 1];
-            B[k][k - 1] = (double) (2 * k + 1) * aeOnr * zOnr * B[k - 1][k - 1]
+            beta[k] = (2 * k - 1) * r1Onr * aeOnr * beta[k - 1];
+            B[k][k - 1] = (2 * k + 1) * aeOnr * zOnr * B[k - 1][k - 1]
                         - beta[k];
-            A[k][k - 1] = (double) (k + 1) * aeOnr * B[k - 1][k - 1]
+            A[k][k - 1] = (k + 1) * aeOnr * B[k - 1][k - 1]
                         - zOnr * B[k][k - 1];
           }
           if (j == k) {
-            B[k][k] = (double) (2 * k + 1) * aeOnr * r1Onr * B[k - 1][k - 1];
-            A[k][k] = (double) (k + 1) * r1Onr * beta[k] - zOnr * B[k][k];
+            B[k][k] = (2 * k + 1) * aeOnr * r1Onr * B[k - 1][k - 1];
+            A[k][k] = (k + 1) * r1Onr * beta[k] - zOnr * B[k][k];
           }
-          D[k][j] = ((double) j) / (k + 1) * (A[k][j] + zOnr * B[k][j]);
+          D[k][j] =  j / (k + 1) * (A[k][j] + zOnr * B[k][j]);
           innerSumX += A[k][j] * H[k][j];
           innerSumY += B[k][j] * H[k][j];
           innerSumZ += D[k][j] * Hb[k][j];
@@ -175,8 +197,12 @@ public class DrozinerAttractionModel implements ForceModel {
     }
 
     // provide the perturbing acceleration to the derivatives adder
-    double coeff = mu / (equatorialRadius * equatorialRadius);
-    adder.addXYZAcceleration(aX * coeff, aY * coeff, aZ * coeff);
+
+    Vector3D accInBody = new Vector3D(aX, aY, aZ);
+    Vector3D accInInert = inertToBody.getInverse().transformVector
+                          (accInBody);
+
+    adder.addXYZAcceleration(accInInert.getX(), accInInert.getY(), accInInert.getZ());
 
   }
 
@@ -203,8 +229,8 @@ public class DrozinerAttractionModel implements ForceModel {
   private int          ndeg;
 
   private int          nord;
-
-  /** Rotating body. */
-  private RotatingBody body;
+  
+  /** Frame ITRF */  
+  private SynchronizedFrame centralBodyFrame;
 
 }

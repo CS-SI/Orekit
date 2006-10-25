@@ -34,6 +34,20 @@ public abstract class SynchronizedFrame extends Frame {
     synchronizer.addFrame(this);
   }
 
+  /** Get the transform from the instance to another frame at a specific date.
+   * <p> It is important to specify the date so the method will call its 
+   * {@link FrameSynchronizer} to update all the frames of the instance's 
+   * date-sharing group.   
+   * </p>
+   * @param destination destination frame to which we want to transform vectors
+   * @param date the date when has to be calculated the transform. 
+   * @return transform from the instance to the destination frame
+   */
+  public Transform getTransformTo(Frame destination, AbsoluteDate date) throws OrekitException {
+    synchronizer.setDate(date);
+    return this.getTransformTo(destination);
+  }
+  
   /** Update the frame to the given date.
    * <p>This method can be called by the instance's {@link FrameSynchronizer
    * FrameSynchronizer} only.</p>
@@ -42,14 +56,7 @@ public abstract class SynchronizedFrame extends Frame {
    */
   protected abstract void updateFrame(AbsoluteDate date)
     throws OrekitException;
-  
-  /** Get the synchronizer of the date sharing group 
-   * @return the instance {@link FrameSynchronizer FrameSynchronizer}
-   */
-  public FrameSynchronizer getFrameSynchronizer(){
-    return synchronizer;
-  }
-  
+
   private FrameSynchronizer synchronizer;
 
 }

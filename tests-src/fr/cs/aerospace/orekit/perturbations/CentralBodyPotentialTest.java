@@ -1,6 +1,15 @@
 package fr.cs.aerospace.orekit.perturbations;
 
+import org.spaceroots.mantissa.geometry.Vector3D;
+
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.orbits.CartesianParameters;
+import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
+import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
+import fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -133,16 +142,16 @@ public class CentralBodyPotentialTest extends TestCase {
   }
    
   public void aaatestPotentialDerivatives() throws OrekitException {       
-    //----------------------------------
+//    //----------------------------------
 //       double mu = 1.0;
 //       double equatorialRadius = 1.0;
-//       RDate date = new RDate(RDate.J2000Epoch, 0.0);
+//       AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0);
 //       Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
 //       Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);                         
-//       Attitude attitude = new Attitude();
-//       OrbitalParameters op = new CartesianParameters();
-//       op.reset(position, velocity, mu);
-//       OrbitDerivativesAdder adder = new CartesianDerivativesAdder(op, mu);
+//       EquinoctialParameters op = new EquinoctialParameters(
+//                  new PVCoordinates(position, velocity), Frame.getJ2000(),mu);
+//
+//    //   EquinoctialGaussEquations adder = new EquinoctialGaussEquations(op, mu);
 //       double[] J = new double[10+1];
 //       double[][] C = new double[10+1][10+1];
 //       double[][] S = new double[10+1][10+1];  
@@ -162,10 +171,10 @@ public class CentralBodyPotentialTest extends TestCase {
 //       double[][] V = new double[13+1][13+1];
 //       double[] reald = new double[3];
 //       double[] imd = new double[3];
-//     CunninghamPotentialModel CBP = new CunninghamPotentialModel("cbp", mu,
-//                                 equatorialRadius, J, C, S);
-//     CBP.CunninghamPotentialBuilder(10, 10, 10, position, V);
-//     CBP.CunninghamPotentialDerivativesBuilder(1, 1, 13, V, reald, imd);
+////     CunninghamAttractionModel CBP = new CunninghamAttractionModel("cbp", mu,
+////                                 equatorialRadius, J, C, S);
+////     CBP.CunninghamPotentialBuilder(10, 10, 10, position, V);
+////     CBP.CunninghamPotentialDerivativesBuilder(1, 1, 13, V, reald, imd);
 //       
 //        System.out.println("reald[0] = " + reald[0]);
 //        System.out.println("reald[1] = " + reald[1]);

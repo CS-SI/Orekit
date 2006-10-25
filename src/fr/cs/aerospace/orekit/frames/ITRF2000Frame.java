@@ -19,7 +19,7 @@ import fr.cs.aerospace.orekit.time.UTCScale;
 /** International Terrestrial Reference Frame 2000.
  * <p>This frame is the current (as of 2006) reference realization of
  * the International Terrestrial Reference System produced by IERS.
- * It is described in <a
+ * It is described in <a>
  * href="http://www.iers.org/documents/publications/tn/tn32/tn32.pdf">
  * IERS conventions (2003)</a>. It replaces the Earth Centered Earth Fixed
  * frame which is the reference frame for GPS satellites.</p>

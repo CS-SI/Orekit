@@ -17,6 +17,14 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  */
 public class FrameSynchronizer {
 	
+    /** Build a new and empty date-sharing group with a default date
+     *  (J2000Epoch). 
+     */
+    public FrameSynchronizer() {
+        array = new ArrayList();
+        currentDate = AbsoluteDate.J2000Epoch;     
+    }
+    
 	/** Build a new and empty date-sharing group. 
 	 * @param date the initial date
 	 */
@@ -42,7 +50,7 @@ public class FrameSynchronizer {
 	 * @param date the new date
      * @exception OrekitException if some frame specific error occurs
 	 */
-	public void setDate(AbsoluteDate date)
+	protected void setDate(AbsoluteDate date)
       throws OrekitException {
 		this.currentDate = date;
 		for (int i = 0; i < array.size(); i++) {

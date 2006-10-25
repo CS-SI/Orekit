@@ -9,6 +9,7 @@ public class AllTests {
    // suite.addTest(CentralBodyPotentialTest.suite());
     suite.addTest(DragTest.suite());
     suite.addTest(SolarRadiationPressureTest.suite());
+    suite.addTest(ThirdBodyAttractionTest.suite());
     return suite; 
   }
 }

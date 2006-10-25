@@ -1,0 +1,6 @@
+FIRST                                     SH     GFZ POTSDAM  20050315
+CMMNT Combined gravity model CHAMP+GRACE+terrestrial/altimetry EIGEN-CG03C
+CMMNT Reported standard deviations are formal (not calibrated)
+EARTH 0.3986004415D+15 0.6378136460D+07
+SHM     360  360 1.00 fully normalized exclusive permanent tide
+GRCOF2    0    0 0.100000000000D+01 0.000000000000D+00 0.0000D+00 0.0000D+00                             nnnn
