@@ -4,18 +4,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import fr.cs.aerospace.orekit.errors.OrekitException;
 
 
-/**This reader is adapted to the SHM Format.
- * 
- * <p> This format is used to describe the gravity field of EIGEN models, 
- * edited by the GFZ Postdam.  
- * It is described in <a> href="http://www.gfz-potsdam.de/grace/results/"
- *  </a>.
- * 
- * <p> The proper way to use this interface is to call the 
+/**This reader is adapted to the EGM Format.
+ *  
+ * <p> The proper way to use this class is to call the 
  *  {@link fr.cs.aerospace.orekit.potential.PotentialReaderFactory}
  *  which will determine which reader to use with the selected potential
  *  coefficients file <p>
@@ -45,27 +43,32 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
     int lineIndex = 0;
     int c = 1;
     // read the first lines to detect the format
-    for (String line = r.readLine(); iKnow!=true; line=r.readLine()) {   
-//      String[] tab = line.split("\\s+");
-//      // check there is at least two coef line
-//      if(c<27){
-//        if (tab.length==6&&tab[1].equals()) {
-//          lineIndex++;
-//        }
-//        if ("GRCOF2".equals(line.substring(0,6))) {
-//          lineIndex++;
-//        }
-//        
-//      }
-//      if (c>=27&&lineIndex<2) {
-//        iKnow = true;
-//      }
-//      // if everything is OK, accept
-//      if (earth==true&&lineIndex>=2){
-//        iKnow = true;
-//        fileIsOK = true;         
-//      }
-//      c++;
+    for (String line = r.readLine(); iKnow!=true; line=r.readLine()) {  
+      if (line==null) {
+        iKnow = true;
+      }
+      else {
+        String integerField = " +[0-9]+";
+        String realField = " +[-+0-9.e.E]+";
+        
+        Pattern regularPattern =
+          Pattern.compile("^" + integerField + integerField + realField
+                          + realField + realField + realField
+                          + " *$");
+        Matcher matcher = regularPattern.matcher(line);
+        if (matcher.matches()) {
+          lineIndex++;
+        }
+        if (lineIndex==c&&c>2) {
+          iKnow = true;
+          fileIsOK = true;
+        }
+        if (lineIndex!=c&&c>2) {
+          iKnow = true;
+          fileIsOK = false;
+        }
+        c++;
+      }      
     }
     return fileIsOK;
   }
@@ -82,44 +85,32 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
       throw new OrekitException("the reader is not adapted to the format " , new String[0]);
     }
     BufferedReader r = new BufferedReader(new InputStreamReader(in));
+    Cl = new ArrayList(); 
+    Sl = new ArrayList(); 
     for (String line = r.readLine();line!=null; line=r.readLine()) { 
-      if(line.length()>=6) {
-        String[] tab = line.split("\\s+");
-        // read the earth values
-        if("EARTH".equals(tab[0])) {
-          tab[1] = tab[1].replace('D','E');
-          tab[2] = tab[2].replace('D','E');
-          mu = Double.parseDouble(tab[1]);
-          ae = Double.parseDouble(tab[2]);
-        }
-        if("SHM".equals(tab[0])) {
-          C = new double[Integer.parseInt(tab[1])+1]
-                         [Integer.parseInt(tab[2])+1];
-          S = new double[Integer.parseInt(tab[1])+1]
-                         [Integer.parseInt(tab[2])+1];
-        }
-        if("GRCOEF".equals(line.substring(0,6))) {
-          tab[3] = tab[3].replace('D','E');
-          tab[4] = tab[4].replace('D','E');
-          C[Integer.parseInt(tab[1])]
-            [Integer.parseInt(tab[2])] =
-              Double.parseDouble(tab[3]);
-          S[Integer.parseInt(tab[1])]
-            [Integer.parseInt(tab[2])] =
-              Double.parseDouble(tab[4]);
-        }
-        if("GRCOF2".equals(tab[0])) {
-          tab[3] = tab[3].replace('D','E');
-          tab[4] = tab[4].replace('D','E');
-          C[Integer.parseInt(tab[1])]
-            [Integer.parseInt(tab[2])] =
-              Double.parseDouble(tab[3]);
-          S[Integer.parseInt(tab[1])]
-            [Integer.parseInt(tab[2])] =
-              Double.parseDouble(tab[4]);
-        }
-      }      
-    }    
+      if(line.length()>=15) {
+        String[] tab = line.trim().split("\\s+");
+        
+        fillArray(Integer.parseInt(tab[0]), Integer.parseInt(tab[1]), 
+             Double.parseDouble(tab[2])*Math.sqrt(2*Integer.parseInt(tab[0])+1), 
+             Double.parseDouble(tab[3])*Math.sqrt(2*Integer.parseInt(tab[0])+1));
+      }  
+    }
+    C = (double[][])Cl.toArray(new double[Cl.size()][]);
+    S = (double[][])Sl.toArray(new double[Sl.size()][]);
+  }
+  
+  private void fillArray(int i, int j, double c, double s) {
+    while(Cl.size()<=i) {
+      double[] row = new double[Cl.size()+1];
+      Cl.add(row);
+    }
+    while(Sl.size()<=i) {
+      double[] row = new double[Sl.size()+1];
+      Sl.add(row);
+    }
+    ((double[])Cl.get(i))[j] = c;
+    ((double[])Sl.get(i))[j] = s;
   }
     
   /** Get the zonal coefficients.
@@ -128,7 +119,7 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
   public double[] getJ() {
     if (J==null) {
       for(int i = 0; i<C.length; i++){
-        J[i]=C[i][0];
+        J[i]=-C[i][0];
       }
     }
     return J;
@@ -169,10 +160,10 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
   private InputStream in;
   
   /**  Earth Equatorial Radius */
-  private double ae;
+  private double ae = 6378136.3;
   
   /** Mu */
-  private double mu;
+  private double mu = 3986004.415E+8;
   
   /** zonal coefficients array */
   private double[] J;
@@ -182,5 +173,8 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
   
   /** tesseral-secorial coefficients matrix */
   private double[][] S;
+  
+  private ArrayList Cl;
+  private ArrayList Sl; 
   
 }

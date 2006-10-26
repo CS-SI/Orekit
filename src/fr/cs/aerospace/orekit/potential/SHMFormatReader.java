@@ -13,7 +13,7 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
  * It is described in <a> href="http://www.gfz-potsdam.de/grace/results/"
  *  </a>.
  * 
- * <p> The proper way to use this interface is to call the 
+ * <p> The proper way to use this class is to call the 
  *  {@link fr.cs.aerospace.orekit.potential.PotentialReaderFactory}
  *  which will determine which reader to use with the selected potential
  *  coefficients file <p>
@@ -47,40 +47,45 @@ public class SHMFormatReader implements PotentialCoefficientsReader {
     // read the first lines to detect the format
     for (String line = r.readLine(); iKnow!=true; line=r.readLine()) {   
       // check the first line
-      if (c==1) {
-        if (("FIRST ".equals(line.substring(0,6)))&&"SHM    ".equals(line.substring(49,56))) {
-        } else {
-          iKnow = true;  
-        }
-      }
-      // check for the earth line
-      if ((line.length()>=6)&&earth==false&&c>1&&c<25) {
-        if ("EARTH ".equals(line.substring(0,6))){
-          earth = true;
-        } 
-      }
-      if (c>=25&&earth==false) {
+      if (line==null) {
         iKnow = true;
       }
-      // check there is at least two coef line
-      if((line.length()>=6)&&earth==true&&c>2&&c<27){
-        if ("GRCOEF".equals(line.substring(0,6))) {
-          lineIndex++;
+      else {
+        if (c==1) {
+          if (("FIRST ".equals(line.substring(0,6)))&&"SHM    ".equals(line.substring(49,56))) {
+          } else {
+            iKnow = true;  
+          }
         }
-        if ("GRCOF2".equals(line.substring(0,6))) {
-          lineIndex++;
+        // check for the earth line
+        if ((line.length()>=6)&&earth==false&&c>1&&c<25) {
+          if ("EARTH ".equals(line.substring(0,6))){
+            earth = true;
+          } 
         }
-        
-      }
-      if (c>=27&&lineIndex<2) {
-        iKnow = true;
-      }
-      // if everything is OK, accept
-      if (earth==true&&lineIndex>=2){
-        iKnow = true;
-        fileIsOK = true;         
-      }
-      c++;
+        if (c>=25&&earth==false) {
+          iKnow = true;
+        }
+        // check there is at least two coef line
+        if((line.length()>=6)&&earth==true&&c>2&&c<27){
+          if ("GRCOEF".equals(line.substring(0,6))) {
+            lineIndex++;
+          }
+          if ("GRCOF2".equals(line.substring(0,6))) {
+            lineIndex++;
+          }
+          
+        }
+        if (c>=27&&lineIndex<2) {
+          iKnow = true;
+        }
+        // if everything is OK, accept
+        if (earth==true&&lineIndex>=2){
+          iKnow = true;
+          fileIsOK = true;         
+        }
+        c++; 
+      }      
     }
     return fileIsOK;
   }
@@ -107,31 +112,35 @@ public class SHMFormatReader implements PotentialCoefficientsReader {
           mu = Double.parseDouble(tab[1]);
           ae = Double.parseDouble(tab[2]);
         }
+        // initialize the arrays
         if("SHM".equals(tab[0])) {
-          C = new double[Integer.parseInt(tab[1])+1]
-                         [Integer.parseInt(tab[2])+1];
-          S = new double[Integer.parseInt(tab[1])+1]
-                         [Integer.parseInt(tab[2])+1];
+          C = new double[Integer.parseInt(tab[1])+1][];
+          S = new double[Integer.parseInt(tab[1])+1][];
+          for(int i =0; i< C.length ; i++) {
+            C[i]= new double[i+1];
+            S[i]= new double[i+1];
+          }
         }
+        // fill the arrays
         if("GRCOEF".equals(line.substring(0,6))) {
           tab[3] = tab[3].replace('D','E');
           tab[4] = tab[4].replace('D','E');
           C[Integer.parseInt(tab[1])]
             [Integer.parseInt(tab[2])] =
-              Double.parseDouble(tab[3]);
+              Math.sqrt(2*Integer.parseInt(tab[1])+1)*Double.parseDouble(tab[3]);
           S[Integer.parseInt(tab[1])]
             [Integer.parseInt(tab[2])] =
-              Double.parseDouble(tab[4]);
+              Math.sqrt(2*Integer.parseInt(tab[1])+1)*Double.parseDouble(tab[4]);
         }
         if("GRCOF2".equals(tab[0])) {
           tab[3] = tab[3].replace('D','E');
           tab[4] = tab[4].replace('D','E');
           C[Integer.parseInt(tab[1])]
             [Integer.parseInt(tab[2])] =
-              Double.parseDouble(tab[3]);
+              Math.sqrt(2*Integer.parseInt(tab[1])+1)*Double.parseDouble(tab[3]);
           S[Integer.parseInt(tab[1])]
             [Integer.parseInt(tab[2])] =
-              Double.parseDouble(tab[4]);
+              Math.sqrt(2*Integer.parseInt(tab[1])+1)*Double.parseDouble(tab[4]);
         }
       }      
     }    
@@ -143,7 +152,7 @@ public class SHMFormatReader implements PotentialCoefficientsReader {
   public double[] getJ() {
     if (J==null) {
       for(int i = 0; i<C.length; i++){
-        J[i]=C[i][0];
+        J[i]=-C[i][0];
       }
     }
     return J;

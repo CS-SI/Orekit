@@ -38,13 +38,18 @@ public class PotentialReaderFactory {
     }
     filter.mark(1024*1024);
     PotentialCoefficientsReader result = null;
-    SHMFormatReader test = new SHMFormatReader();
-    if (test.isFileOK(filter)){
-      result = test;
-      filter.reset();
+    
+    SHMFormatReader test1 = new SHMFormatReader();
+    if (test1.isFileOK(filter)){
+      result = test1;
     }
+    filter.reset();
+    EGMFormatReader test2 = new EGMFormatReader();
+    if (test2.isFileOK(filter)){
+      result = test2;
+    }
+    filter.reset();
     if (result==null) {
-      filter.reset();
       throw new OrekitException("no known reader can read this file " , new String[0]);
     }
     
