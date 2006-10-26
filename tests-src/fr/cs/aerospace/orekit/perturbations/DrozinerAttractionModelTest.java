@@ -1,6 +1,9 @@
 package fr.cs.aerospace.orekit.perturbations;
 
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.ParseException;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
@@ -31,25 +34,17 @@ import junit.framework.TestSuite;
 
 public class DrozinerAttractionModelTest extends TestCase {
   
-  public void testJ2SpotOrbit()
+  public void testHelioSynchronous()
     throws ParseException, FileNotFoundException,
            OrekitException, DerivativeException, IntegratorException {
 
-    // J2 only model, with Eigen coefficients
-    double mu = 0.3986004415e15;
-    double ae = 6378136.460;
-    double j2 =  1.0826263130255071506e-3;
-    double j3 = 0.0;
-    double j4 = 0.0;
-    double j5 = 0.0;
-    double j6 = 0.0;
-
     // initialization
+    double mu = 0.3986004415e15;
     final AbsoluteDate date = new AbsoluteDate("2000-07-01T13:59:27.816" , UTCScale.getInstance());
     double i     = Math.toRadians(98.7);
     double omega = Math.toRadians(93.0);
     double OMEGA = Math.toRadians(15.0 * 22.5);
-    OrbitalParameters op = new KeplerianParameters(7200000, 1e-3, i , omega, OMEGA, 
+    OrbitalParameters op = new KeplerianParameters(7201009.7124401, 1e-3, i , omega, OMEGA, 
                                                    0, KeplerianParameters.MEAN_ANOMALY, Frame.getJ2000());
     Orbit orbit = new Orbit(date , op);       
      
@@ -57,18 +52,18 @@ public class DrozinerAttractionModelTest extends TestCase {
     FrameSynchronizer fSynch = new FrameSynchronizer(date);
     DrozinerAttractionModel droziner =
       new DrozinerAttractionModel(mu, new ITRF2000Frame(fSynch, true), 
-                                  ae, new double[] { 0, j2, j3, j4, j5, j6 },
+                                  6378136.460, new double[] { 0, 1.082626e-3 },
                                   new double[0][], new double[0][]);
     
-    double terPeriod = 86164; 
+    double day = 86400; 
     
     // creation of the propagator
-    FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, terPeriod, 0, 10e-10);
+    FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, day, 0, 1.0e-4);
     NumericalPropagator propagator = new NumericalPropagator(mu, integrator);
     propagator.addForceModel(droziner);
     
-    propagator.propagate(orbit, new AbsoluteDate(date , 60 * terPeriod),
-                         terPeriod, new SpotStepHandler(date, mu));
+    propagator.propagate(orbit, new AbsoluteDate(date , 7 * day),
+                         day, new SpotStepHandler(date, mu));
   }
 
   private static class SpotStepHandler implements FixedStepHandler {
@@ -76,7 +71,8 @@ public class DrozinerAttractionModelTest extends TestCase {
     public SpotStepHandler(AbsoluteDate date, double mu) {
       this.date = date;
       this.mu   = mu;
-      sun       = new Sun();   
+      sun       = new Sun();
+      previous  = Double.NaN;
     }
 
     public void handleStep(double t, double[] y, boolean isLastStep) {
@@ -88,20 +84,23 @@ public class DrozinerAttractionModelTest extends TestCase {
       Vector3D vel = op.getPVCoordinates(mu).getVelocity();
       AbsoluteDate current = new AbsoluteDate(date, t);
       Vector3D sunPos = sun.getPosition(current , Frame.getJ2000());
-      Vector3D normal = Vector3D.crossProduct(pos,vel); 
-      sunPos.normalizeSelf();
-      normal.normalizeSelf();
-      System.out.print(current + " pos : " + pos.getNorm() + "   ");
-      System.out.println(Vector3D.dotProduct(sunPos , normal));
+      Vector3D normal = Vector3D.crossProduct(pos,vel);
+      double dot = Vector3D.dotProduct(sunPos , normal)
+                 / (sunPos.getNorm() * normal.getNorm());
+      if (! Double.isNaN(previous)) {
+        assertEquals(previous, dot, 0.0003);
+      }
+      previous = dot;
     }
 
     private AbsoluteDate date;
     private double mu;
     private Sun sun;
+    private double previous;
 
   }
   
-  public void aaatestJ2CloseFromEcksteinHechler()
+  public void testEcksteinHechlerReference()
     throws ParseException, FileNotFoundException,
            OrekitException, DerivativeException, IntegratorException {
 
@@ -137,10 +136,10 @@ public class DrozinerAttractionModelTest extends TestCase {
     NumericalPropagator propagator = new NumericalPropagator(mu, integrator);
     propagator.addForceModel(droziner);
     
-    AbsoluteDate finalDate = new AbsoluteDate(date , 10000);
+    AbsoluteDate finalDate = new AbsoluteDate(date , 50000);
     propagator.propagate(initialOrbit, finalDate, 20,
                          new EckStepHandler(initialOrbit, mu, ae,
-                                            j2, j3, j4, j5, j6));
+                                            -j2, -j3, -j4, -j5, -j6));
     
   }
   
@@ -153,7 +152,12 @@ public class DrozinerAttractionModelTest extends TestCase {
       this.mu = mu;
       referencePropagator =
         new EcksteinHechlerPropagator(initialOrbit, ae,
-                                      mu, j2, j3, j4, j5, j6); 
+                                      mu, j2, j3, j4, j5, j6);
+      try {
+      w = new PrintWriter(new FileWriter(System.getProperty("user.home") + "/x.dat"));
+      } catch (IOException ioe) {
+        throw new OrekitException("", ioe);
+      }
     }
     
     public void handleStep(double t, double[] y, boolean isLastStep) {
@@ -175,17 +179,18 @@ public class DrozinerAttractionModelTest extends TestCase {
         Vector3D W = new Vector3D(1 / cross.getNorm() , cross);
         Vector3D N = Vector3D.crossProduct(W,T);
 
-        System.out.print(t + " ");
-        System.out.print(Vector3D.dotProduct(dif , T) + " ");   
-        System.out.print(Vector3D.dotProduct(dif , N) + " ");
-        System.out.print(Vector3D.dotProduct(dif , W) + " ");
-        System.out.println();
+        w.print(t + " ");
+        w.print(Vector3D.dotProduct(dif , T) + " ");   
+        w.print(Vector3D.dotProduct(dif , N) + " ");
+        w.print(Vector3D.dotProduct(dif , W) + " ");
+        w.println();
+        w.flush();
 
       } catch (PropagationException e) {
         e.printStackTrace();
       }
     }
-    
+    private PrintWriter w;
     private AbsoluteDate date;
     private double mu;
     private EcksteinHechlerPropagator referencePropagator;
