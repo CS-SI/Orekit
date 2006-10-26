@@ -43,8 +43,6 @@ public class DrozinerAttractionModel implements ForceModel {
     this.J = J;
     this.C = C;
     this.S = S;
-    this.degree = J.length;
-    this.order = C.length;
     this.centralBodyFrame = centralBodyFrame;
   }
 
@@ -66,81 +64,81 @@ public class DrozinerAttractionModel implements ForceModel {
     Transform bodyToInertial = centralBodyFrame.getTransformTo(adder.getFrame(), t);
     Vector3D posInBody =
       bodyToInertial.getInverse().transformVector(pvCoordinates.getPosition());
-    double xBody = posInBody.getX();// / equatorialRadius;
-    double yBody = posInBody.getY();// / equatorialRadius;
-    double zBody = posInBody.getZ();// / equatorialRadius;
+    double xBody = posInBody.getX();
+    double yBody = posInBody.getY();
+    double zBody = posInBody.getZ();
     
     // Computation of intermediate variables
-    double r1 = Math.sqrt(xBody * xBody + yBody * yBody);
+    double r12 = xBody * xBody + yBody * yBody;
+    double r1 = Math.sqrt(r12);
     if (r1 <= 10e-2) {
-      System.out.println("exception polaire");
       throw new OrekitException("polar trajectory (r1 = {0})",
                                 new String[] { Double.toString(r1) });
     }
-    double r2 = xBody * xBody + yBody * yBody + zBody * zBody;
-    
-    double r   = Math.sqrt(r2);
+
+    double r2 = r12 + zBody * zBody;
+    double r  = Math.sqrt(r2);
     if (r <= equatorialRadius) {
-      System.out.println("exception souterraine");
       throw new OrekitException("underground trajectory (r = {0})",
                                 new String[] { Double.toString(r) });
     }
     double r3    = r2  * r;
     double aeOnr = equatorialRadius / r;
-    double zOnr  = zBody   / r;
-    double r1Onr = r1  / r;
+    double zOnr  = zBody/ r;
+    double r1Onr = r1 / r;
 
     // Definition of the first acceleration terms
-    double xDotDotk = -mu * xBody / r3;
-    double yDotDotk = -mu * yBody / r3;
+    double mMuOnr3  = -mu / r3;
+    double xDotDotk = xBody * mMuOnr3;
+    double yDotDotk = yBody * mMuOnr3;
     
     // Zonal part of acceleration
     double aX = 0.0;
     double aY = 0.0;
     double aZ = 0.0;
-    if (degree != 0) {
+    if (J.length != 0) {
       double sum1 = 0.0;
       double sum2 = 0.0;
-      double[] A = new double[degree + 1];
-      double[] B = new double[degree + 1];
-      B[0] = zOnr;
-      B[1] = aeOnr * (3 * B[0] * B[0] - 1.0);
-      for (int k = 2; k <= degree; k++) {
-        double p = ((1 + k)) / k;
-        B[k] = aeOnr * ((1 + p) * zOnr * B[k - 1]
-             - (k) / (k - 1) * aeOnr * B[k - 2]);
-        A[k] = p * aeOnr * B[k - 1] - zOnr * B[k];
-        sum1 += J[k-1] * A[k];
-        sum2 += J[k-1] * B[k];
+      double bk1 = zOnr;
+      double bk0 = aeOnr * (3 * bk1 * bk1 - 1.0);
+      for (int k = 2; k <= J.length; k++) {
+        double bk2 = bk1;
+        bk1 = bk0;
+        double p = (1.0 + k) / k;
+        bk0 = aeOnr * ((1 + p) * zOnr * bk1 - (k * aeOnr * bk2) / (k - 1));
+        double ak0 = p * aeOnr * bk1 - zOnr * bk0;
+        double jk = J[k-1];
+        sum1 += jk * ak0;
+        sum2 += jk * bk0;
       }
-      double p = -(r / r1) * (r / r1) * sum1;
-      aX += xDotDotk * p;
-      aY += yDotDotk * p;
-      aZ += mu * sum2 / r2;
+      double p = -sum1 / (r1Onr * r1Onr);
+      aX = xDotDotk * p;
+      aY = yDotDotk * p;
+      aZ = mu * sum2 / r2;
     }
 
     // Tessereal-sectorial part of acceleration
-    if (order != 0) {
+    if (C.length != 0) {
       // Determine the longitude
       double cosl = xBody / r1;  
       double sinl = yBody / r1;    
-      double[][] A = new double[order + 1][order + 1];
-      double[][] B = new double[order + 1][order + 1];
-      double[] beta = new double[order + 1];
+      double[][] A = new double[C.length + 1][C.length + 1];
+      double[][] B = new double[C.length + 1][C.length + 1];
+      double[] beta = new double[C.length + 1];
       beta[1] = aeOnr;
       B[1][1] = 3 * beta[1] * zOnr * r1Onr;
-      double[] sinkl = new double[order + 1];
-      double[] coskl = new double[order + 1];
+      double[] sinkl = new double[C.length + 1];
+      double[] coskl = new double[C.length + 1];
       sinkl[1] = sinl;
       coskl[1] = cosl;
-      double[][] H = new double[order + 1][order + 1];
-      double[][] Hb = new double[order + 1][order + 1];
-      double[][] D = new double[order + 1][order + 1];
+      double[][] H = new double[C.length + 1][C.length + 1];
+      double[][] Hb = new double[C.length + 1][C.length + 1];
+      double[][] D = new double[C.length + 1][C.length + 1];
 
       double sumX = 0.0;
       double sumY = 0.0;
       double sumZ = 0.0;
-      for (int k = 2; k <= order; k++) {
+      for (int k = 2; k <= C.length; k++) {
         sinkl[k] = sinkl[k - 1] * cosl + coskl[k - 1] * sinl;
         coskl[k] = coskl[k - 1] * cosl - sinkl[k - 1] * sinl;
         double innerSumX = 0.0;
@@ -210,11 +208,6 @@ public class DrozinerAttractionModel implements ForceModel {
   /** Second normalized potential tesseral coefficients array. */
   private double[][]   S;
 
-  /** Definition of degree, order and maximum potential size. */
-  private int          degree;
-
-  private int          order;
-  
   /** Frame for the central body. */  
   private SynchronizedFrame centralBodyFrame;
 

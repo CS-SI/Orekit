@@ -6,9 +6,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
 
+import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import org.spaceroots.mantissa.ode.DerivativeException;
-import org.spaceroots.mantissa.ode.FirstOrderIntegrator;
 import org.spaceroots.mantissa.ode.FixedStepHandler;
 import org.spaceroots.mantissa.ode.GraggBulirschStoerIntegrator;
 import org.spaceroots.mantissa.ode.IntegratorException;
@@ -18,6 +18,8 @@ import fr.cs.aerospace.orekit.errors.PropagationException;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.frames.FrameSynchronizer;
 import fr.cs.aerospace.orekit.frames.ITRF2000Frame;
+import fr.cs.aerospace.orekit.frames.SynchronizedFrame;
+import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.models.bodies.Sun;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
@@ -39,31 +41,35 @@ public class DrozinerAttractionModelTest extends TestCase {
            OrekitException, DerivativeException, IntegratorException {
 
     // initialization
-    double mu = 0.3986004415e15;
     final AbsoluteDate date = new AbsoluteDate("2000-07-01T13:59:27.816" , UTCScale.getInstance());
+    Transform itrfToJ2000  = itrf2000.getTransformTo(Frame.getJ2000(), date);
+    Vector3D pole          = itrfToJ2000.transformVector(Vector3D.plusK);
+    Frame poleAligned      = new Frame(Frame.getJ2000(),
+                                       new Transform(new Rotation(pole, Vector3D.plusK)),
+                                       "pole aligned");
+
+    double mu = 0.3986004415e15;
     double i     = Math.toRadians(98.7);
     double omega = Math.toRadians(93.0);
     double OMEGA = Math.toRadians(15.0 * 22.5);
     OrbitalParameters op = new KeplerianParameters(7201009.7124401, 1e-3, i , omega, OMEGA, 
-                                                   0, KeplerianParameters.MEAN_ANOMALY, Frame.getJ2000());
+                                                   0, KeplerianParameters.MEAN_ANOMALY,
+                                                   poleAligned);
     Orbit orbit = new Orbit(date , op);       
      
     // creation of the force model
-    FrameSynchronizer fSynch = new FrameSynchronizer(date);
     DrozinerAttractionModel droziner =
-      new DrozinerAttractionModel(mu, new ITRF2000Frame(fSynch, true), 
-                                  6378136.460, new double[] { 0, 1.082626e-3 },
+      new DrozinerAttractionModel(mu, itrf2000,  6378136.460, new double[] { 0, 1.082626e-3 },
                                   new double[0][], new double[0][]);
     
-    double day = 86400; 
-    
     // creation of the propagator
-    FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, day, 0, 1.0e-4);
-    NumericalPropagator propagator = new NumericalPropagator(mu, integrator);
+    NumericalPropagator propagator =
+      new NumericalPropagator(mu,
+                              new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
     propagator.addForceModel(droziner);
     
-    propagator.propagate(orbit, new AbsoluteDate(date , 7 * day),
-                         day, new SpotStepHandler(date, mu));
+    propagator.propagate(orbit, new AbsoluteDate(date , 7 * 86400),
+                         86400, new SpotStepHandler(date, mu));
   }
 
   private static class SpotStepHandler implements FixedStepHandler {
@@ -117,23 +123,27 @@ public class DrozinerAttractionModelTest extends TestCase {
     AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
     Vector3D position = new Vector3D(3220103., 69623., 6449822.);
     Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
-    
+
+    Transform itrfToJ2000  = itrf2000.getTransformTo(Frame.getJ2000(), date);
+    Vector3D pole          = itrfToJ2000.transformVector(Vector3D.plusK);
+    Frame poleAligned      = new Frame(Frame.getJ2000(),
+                                       new Transform(new Rotation(pole, Vector3D.plusK)),
+                                       "pole aligned");
+
     Orbit initialOrbit =
       new Orbit(date,
-                new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
+                new EquinoctialParameters(new PVCoordinates(position, velocity),
+                                          poleAligned, mu));
     
     // creation of the force model
-    FrameSynchronizer fSynch = new FrameSynchronizer(date);
     DrozinerAttractionModel droziner =
-      new DrozinerAttractionModel(mu, new ITRF2000Frame(fSynch, true),
-                                  ae, new double[] { 0, j2, j3, j4, j5, j6 },
+      new DrozinerAttractionModel(mu, itrf2000, ae, new double[] { 0, j2, j3, j4, j5, j6 },
                                   new double[0][], new double[0][]);
     
-    double terPeriod = 86164; 
-    
     // creation of the propagator
-    FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, terPeriod, 0, 10e-10);
-    NumericalPropagator propagator = new NumericalPropagator(mu, integrator);
+    NumericalPropagator propagator =
+      new NumericalPropagator(mu,
+                              new GraggBulirschStoerIntegrator(1, 1000, 0, 10e-10));
     propagator.addForceModel(droziner);
     
     AbsoluteDate finalDate = new AbsoluteDate(date , 50000);
@@ -148,8 +158,10 @@ public class DrozinerAttractionModelTest extends TestCase {
     private EckStepHandler(Orbit initialOrbit,  double mu, double ae,
                            double j2, double j3, double j4, double j5, double j6)
       throws FileNotFoundException, OrekitException {
+
       date = initialOrbit.getDate();
       this.mu = mu;
+
       referencePropagator =
         new EcksteinHechlerPropagator(initialOrbit, ae,
                                       mu, j2, j3, j4, j5, j6);
@@ -197,9 +209,23 @@ public class DrozinerAttractionModelTest extends TestCase {
     
   }
 
+  protected void setUp() {
+    try {
+      itrf2000 = new ITRF2000Frame(new FrameSynchronizer(), true);
+    } catch (OrekitException oe) {
+      fail(oe.getMessage());
+    }
+  }
+
+  protected void tearDown() {
+    itrf2000 = null;
+  }
+
   public static Test suite() {
     return new TestSuite(DrozinerAttractionModelTest.class);
   }
+
+  private SynchronizedFrame itrf2000;
 
 }
 

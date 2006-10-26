@@ -33,7 +33,7 @@ public interface ForceModel {
      * @param adder object where the contribution should be added
      */
     public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, 
-    		               EquinoctialGaussEquations adder) throws OrekitException;
+                                EquinoctialGaussEquations adder) throws OrekitException;
 
     /** Get the switching functions internally used by the model itself.
      * @return array of switching functions or null if the model doesn't need
