@@ -1,15 +1,6 @@
 package fr.cs.aerospace.orekit.perturbations;
 
-import org.spaceroots.mantissa.geometry.Vector3D;
-
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.orbits.CartesianParameters;
-import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
-import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
-import fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations;
-import fr.cs.aerospace.orekit.time.AbsoluteDate;
-import fr.cs.aerospace.orekit.utils.PVCoordinates;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
