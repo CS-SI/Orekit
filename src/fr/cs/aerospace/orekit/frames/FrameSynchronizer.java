@@ -33,16 +33,14 @@ public class FrameSynchronizer {
 		currentDate = date;		
 	}
 	
-	/** Adds a new frame in the group. This method is 
-	 * called by the just created SynchronizedFrame instance, and 
-	 * updates immediatly the frame. 
+	/** Adds a new frame in the group.
+     * <p>The frame is <em>not</em> automatically synchronized.</p>
 	 * @param frame the frame to add
 	 * @exception OrekitException if some frame specific error occurs
 	 */
 	protected void addFrame(SynchronizedFrame frame)
-      throws OrekitException {
-		array.add(frame);
-		frame.updateFrame(currentDate);
+	  throws OrekitException {
+	  array.add(frame);
 	}
 	
 	/** Changes the current date of the synchronizer and updates 

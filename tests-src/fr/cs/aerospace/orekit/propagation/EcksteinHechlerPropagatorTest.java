@@ -15,7 +15,6 @@ import fr.cs.aerospace.orekit.propagation.KeplerianPropagator;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
-// $Id$
 public class EcksteinHechlerPropagatorTest extends TestCase {
 
   public EcksteinHechlerPropagatorTest(String name) {
@@ -38,7 +37,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     // Extrapolator definition
     // -----------------------
     EcksteinHechlerPropagator extrapolator =
-      new EcksteinHechlerPropagator(initialOrbit, ae, mu, j2, j3, j4, j5, j6);
+      new EcksteinHechlerPropagator(initialOrbit, ae, mu, c20, c30, c40, c50, c60);
 
     // Extrapolation at the initial date
     // ---------------------------------
@@ -83,7 +82,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     // Extrapolator definition
     // -----------------------
     EcksteinHechlerPropagator extrapolator =
-      new EcksteinHechlerPropagator(initialOrbit, ae, mu, j2, j3, j4, j5, j6);
+      new EcksteinHechlerPropagator(initialOrbit, ae, mu, c20, c30, c40, c50, c60);
 
     // Extrapolation at the initial date
     // ---------------------------------
@@ -136,16 +135,16 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     // extrapolator, one should put the zonal coefficients to 0. But due to
     // numerical pbs
     // one must put a non 0 value.
-    double zj2 = 0.1e-10;
-    double zj3 = 0.1e-13;
-    double zj4 = 0.1e-13;
-    double zj5 = 0.1e-14;
-    double zj6 = 0.1e-14;
+    double zc20 = 0.1e-10;
+    double zc30 = 0.1e-13;
+    double zc40 = 0.1e-13;
+    double zc50 = 0.1e-14;
+    double zc60 = 0.1e-14;
 
     // Extrapolators definitions
     // -------------------------
     EcksteinHechlerPropagator extrapolatorAna =
-      new EcksteinHechlerPropagator(initialOrbit, ae, mu, zj2, zj3, zj4, zj5, zj6);
+      new EcksteinHechlerPropagator(initialOrbit, ae, mu, zc20, zc30, zc40, zc50, zc60);
     KeplerianPropagator extrapolatorKep = new KeplerianPropagator(initialOrbit, mu);
 
     // Extrapolation at a final date different from initial date
@@ -198,7 +197,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     // Extrapolator definition
     // -----------------------
     EcksteinHechlerPropagator extrapolator =
-      new EcksteinHechlerPropagator(initialOrbit, ae, mu, j2, j3, j4, j5, j6);
+      new EcksteinHechlerPropagator(initialOrbit, ae, mu, c20, c30, c40, c50, c60);
 
     // Extrapolation at a final date different from initial date
     // ---------------------------------------------------------
@@ -277,7 +276,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     // Extrapolator definition
     // -----------------------
     EcksteinHechlerPropagator extrapolator =
-      new EcksteinHechlerPropagator(initialOrbit, ae, mu, j2, j3, j4, j5, j6);
+      new EcksteinHechlerPropagator(initialOrbit, ae, mu, c20, c30, c40, c50, c60);
 
     // Extrapolation at a final date different from initial date
     // ---------------------------------------------------------
@@ -371,7 +370,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     // Extrapolator definition
     // -----------------------
     EcksteinHechlerPropagator extrapolator =
-      new EcksteinHechlerPropagator(initialOrbit, ae, mu, j2, j3, j4, j5, j6);
+      new EcksteinHechlerPropagator(initialOrbit, ae, mu, c20, c30, c40, c50, c60);
 
     // Extrapolation at a final date different from initial date
     // ---------------------------------------------------------
@@ -420,7 +419,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
       // Extrapolator definition
       // -----------------------
       EcksteinHechlerPropagator extrapolator =
-        new EcksteinHechlerPropagator(initialOrbit, ae, mu, j2, j3, j4, j5, j6);
+        new EcksteinHechlerPropagator(initialOrbit, ae, mu, c20, c30, c40, c50, c60);
 
       // Extrapolation at the initial date
       // ---------------------------------
@@ -448,7 +447,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
       // Extrapolator definition
       // -----------------------
       EcksteinHechlerPropagator extrapolator =
-        new EcksteinHechlerPropagator(initialOrbit, ae, mu, j2, j3, j4, j5, j6);
+        new EcksteinHechlerPropagator(initialOrbit, ae, mu, c20, c30, c40, c50, c60);
 
       // Extrapolation at the initial date
       // ---------------------------------
@@ -475,31 +474,31 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
   }
 
   public void setUp() {
-    mu = 3.9860047e14;
-    ae = 6.378137e6;
-    j2 = -1.08263e-3;
-    j3 = 2.54e-6;
-    j4 = 1.62e-6;
-    j5 = 2.3e-7;
-    j6 = -5.5e-7;
+    mu  = 3.9860047e14;
+    ae  = 6.378137e6;
+    c20 = -1.08263e-3;
+    c30 = 2.54e-6;
+    c40 = 1.62e-6;
+    c50 = 2.3e-7;
+    c60 = -5.5e-7;
   }
 
   public void tearDown() {
-    mu = Double.NaN;
-    ae = Double.NaN;
-    j2 = Double.NaN;
-    j3 = Double.NaN;
-    j4 = Double.NaN;
-    j5 = Double.NaN;
-    j6 = Double.NaN;
+    mu  = Double.NaN;
+    ae  = Double.NaN;
+    c20 = Double.NaN;
+    c30 = Double.NaN;
+    c40 = Double.NaN;
+    c50 = Double.NaN;
+    c60 = Double.NaN;
   }
 
   private double mu;
   private double ae;
-  private double j2;
-  private double j3;
-  private double j4;
-  private double j5;
-  private double j6;
+  private double c20;
+  private double c30;
+  private double c40;
+  private double c50;
+  private double c60;
 
 }

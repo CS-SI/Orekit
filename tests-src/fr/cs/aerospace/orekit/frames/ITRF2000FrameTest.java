@@ -35,7 +35,7 @@ public class ITRF2000FrameTest extends TestCase {
     FrameSynchronizer synchronizer =
       new FrameSynchronizer(new AbsoluteDate("2006-02-24T15:38:00",
                                              UTCScale.getInstance()));
-    ITRF2000Frame itrf2000 = new ITRF2000Frame(synchronizer);
+    ITRF2000Frame itrf2000 = new ITRF2000Frame(synchronizer, true);
     Transform t0 = itrf2000.getTransformTo(Frame.getJ2000());
 
     double dt = 10.0;
@@ -56,7 +56,7 @@ public class ITRF2000FrameTest extends TestCase {
     FrameSynchronizer synchronizer =
       new FrameSynchronizer(new AbsoluteDate("2001-03-21T00:00:00",
                                              UTCScale.getInstance()));
-    ITRF2000Frame itrf2000 = new ITRF2000Frame(synchronizer);
+    ITRF2000Frame itrf2000 = new ITRF2000Frame(synchronizer, true);
 
     Vector3D u = itrf2000.getTransformTo(Frame.getJ2000()).transformVector(Vector3D.plusI);
     assertTrue(Vector3D.angle(u, Vector3D.minusI) < Math.toRadians(2));
@@ -80,7 +80,7 @@ public class ITRF2000FrameTest extends TestCase {
     FrameSynchronizer synchronizer =
       new FrameSynchronizer(new AbsoluteDate("2001-03-21T00:00:00",
                                              UTCScale.getInstance()));
-    ITRF2000Frame itrf2000 = new ITRF2000Frame(synchronizer);
+    ITRF2000Frame itrf2000 = new ITRF2000Frame(synchronizer, true);
 
     assertEquals(180, Math.toDegrees(itrf2000.getEarthRotationAngle()), 2.0);
 
@@ -100,7 +100,7 @@ public class ITRF2000FrameTest extends TestCase {
 	  AbsoluteDate date = new AbsoluteDate("2003-10-14T02:00:00", UTCScale.getInstance());
 
 	  FrameSynchronizer fSynch = new FrameSynchronizer(date);
-	  ITRF2000Frame itrf = new ITRF2000Frame(fSynch);	
+	  ITRF2000Frame itrf = new ITRF2000Frame(fSynch, true);	
 	  
 	  Transform trans = Frame.getJ2000().getTransformTo(itrf);
 	  
@@ -117,7 +117,7 @@ public class ITRF2000FrameTest extends TestCase {
 			                              4002170.0385907636);
 
 	  // Position tests
-      checkVectors(posITRF, posTestCase, 2e-5, 12.0, 14.0);
+      checkVectors(posITRF, posTestCase, 2e-5, 12.0, 15.0);
       	  
   }
 
@@ -126,7 +126,7 @@ public class ITRF2000FrameTest extends TestCase {
 	  AbsoluteDate t0 = new AbsoluteDate("2003-10-14T02:00:00", UTCScale.getInstance());
 
 	  FrameSynchronizer fSynch = new FrameSynchronizer(t0);
-	  ITRF2000Frame itrf = new ITRF2000Frame(fSynch);	
+	  ITRF2000Frame itrf = new ITRF2000Frame(fSynch, true);	
 	  
 	  Transform trans = Frame.getJ2000().getTransformTo(itrf);
 	  
@@ -205,7 +205,7 @@ public class ITRF2000FrameTest extends TestCase {
 	  AbsoluteDate date = new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 15002 * 86400 + 180 + 32.184 + 26);
 
 	  FrameSynchronizer fSynch = new FrameSynchronizer(date);
-	  ITRF2000Frame itrf = new ITRF2000Frame(fSynch);	
+	  ITRF2000Frame itrf = new ITRF2000Frame(fSynch, true);	
 	  
 	  Transform trans = Frame.getJ2000().getTransformTo(itrf);
 	  
@@ -266,7 +266,7 @@ public class ITRF2000FrameTest extends TestCase {
       assertEquals(0, d.getX(), deltaPos);
       assertEquals(0, d.getY(), deltaPos);
       assertEquals(0, d.getZ(), deltaPos);
-      assertEquals(0,d.getNorm(),deltaNorm);
+      assertEquals(0, d.getNorm(), deltaNorm);
       
       assertEquals(0,r.getAngle(),deltaAngle);
     

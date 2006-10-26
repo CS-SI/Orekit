@@ -29,63 +29,62 @@ import fr.cs.aerospace.orekit.time.UTCScale;
  * Pole (IRP).</p>
  * <p>This implementation follows the new non-rotating origin paradigm
  * mandated by IAU 2000 resolution B1.8. It is therefore based on
- * Celestial Ephemeris Origin (CEO-based) and Earth Rotating Angle. It is
- * consistent to the complete IAU 2000A precession-nutation model and its
- * accuracy level is 0.2 milliarcsecond. The intermediate frames used are
+ * Celestial Ephemeris Origin (CEO-based) and Earth Rotating Angle. Depending
+ * on user choice at construction, it is either consistent to the complete IAU
+ * 2000A precession-nutation model with an accuracy level is 0.2 milliarcsecond
+ * or consistent to the reduced IAU 2000B precession-nutation model with an
+ * accuracy level is 1.0 milliarcsecond. The intermediate frames used are
  * not available in the public interface and the parent frame is directly the
  * J2000 frame.</p>
  * <p>Other implementations of the ITRF 2000 are possible by
  * ignoring the B1.8 resolution and using the classical paradigm which
  * is equinox-based and relies on a specifically tuned Greenwich Sidereal Time.
- * It is possible to reach the same accuracy if the IAU 2000A precession-nutation 
- * is used, or a 1 milliarcsecond accuracy if the simplified IAU 2000B
- * model precession-nutation model is used. They are not yet available
- * in the OREKIT library.</p>
+ * They are not yet available in the OREKIT library.</p>
  * @author Luc Maisonobe
  */
 public class ITRF2000Frame extends SynchronizedFrame {
 
   /** Build an ITRF2000 frame.
+   * <p>If the <code>useIAU2000B</code> boolean parameter is true (which is the
+   * recommended value) the reduced IAU2000B precession-nutation model will be
+   * used, otherwise the complete IAU2000A precession-nutation model will be used.
+   * The IAU2000B is recommended for most applications since it is <strong>far
+   * less</strong> computation intensive than the IAU2000A model and its accuracy
+   * is only slightly degraded (1 milliarcsecond instead of 0.2 milliarcsecond).</p>
    * @param fSynch the FrameSynchronizer which ensures the synchronization of
    * all the frames in the the same date-sharing group.
+   * @param useIAU2000B if true (recommended value), the IAU2000B model will be used
    * @exception OrekitException if the nutation model data embedded in the
    * library cannot be read
    * @see FrameSynchronizer
    */
-  public ITRF2000Frame(FrameSynchronizer fSynch)
+  public ITRF2000Frame(FrameSynchronizer fSynch, boolean useIAU2000B)
     throws OrekitException {
+
     super(getJ2000(), fSynch, "ITRF2000");
-  }
+    this.useIAU2000B = useIAU2000B;
 
-  /** Read and build the file-based models only once.
-   * @exception OrekitException if the nutation model data embedded in the
-   * library cannot be read
-   */
-  private void initOnce()
-    throws OrekitException {
-    if ((xDevelopment == null)
-        || (yDevelopment == null)
-        || (sxy2Development == null)) {
-      Class c = getClass();
-
-      // nutation models are in micro arcseconds
-      xDevelopment =
-        new Development(c.getResourceAsStream(xModel), radiansPerArcsecond * 1.0e-6, xModel);
-      yDevelopment =
-        new Development(c.getResourceAsStream(yModel), radiansPerArcsecond * 1.0e-6, yModel);
-      sxy2Development =
-        new Development(c.getResourceAsStream(sxy2Model), radiansPerArcsecond * 1.0e-6, sxy2Model);
-
-    }
+    // nutation models are in micro arcseconds
+    Class c = getClass();
+    String xModel = useIAU2000B ? xModel2000B : xModel2000A;
+    xDevelopment =
+      new Development(c.getResourceAsStream(xModel), radiansPerArcsecond * 1.0e-6, xModel);
+    String yModel = useIAU2000B ? yModel2000B : yModel2000A;
+    yDevelopment =
+      new Development(c.getResourceAsStream(yModel), radiansPerArcsecond * 1.0e-6, yModel);
+    String sxy2Model = useIAU2000B ? sxy2Model2000B : sxy2Model2000A;
+    sxy2Development =
+      new Development(c.getResourceAsStream(sxy2Model), radiansPerArcsecond * 1.0e-6, sxy2Model);
 
     // convert the mjd dates in the raw entries into AbsoluteDate instances
-    if (eop == null) {
-      eop = new TreeSet();
-      TreeSet rawEntries = IERSData.getInstance().getEarthOrientationParameters();
-      for (Iterator iterator = rawEntries.iterator(); iterator.hasNext();) {
-        eop.add(new DatedEop((EarthOrientationParameters) iterator.next()));
-      }
+    eop = new TreeSet();
+    TreeSet rawEntries = IERSData.getInstance().getEarthOrientationParameters();
+    for (Iterator iterator = rawEntries.iterator(); iterator.hasNext();) {
+      eop.add(new DatedEop((EarthOrientationParameters) iterator.next()));
     }
+
+    // everything is in place, we can now synchronize the frame
+    updateFrame(fSynch.getDate());
 
   }
 
@@ -97,8 +96,6 @@ public class ITRF2000Frame extends SynchronizedFrame {
    */
   protected void updateFrame(AbsoluteDate date)
     throws OrekitException {
-
-    initOnce();
 
     // offset from J2000 epoch in julian centuries
     double tts = date.minus(AbsoluteDate.J2000Epoch);
@@ -114,7 +111,7 @@ public class ITRF2000Frame extends SynchronizedFrame {
     double tu = (tts + taiMinusTt + utcMinusTai + dtu1) / 86400 ;
     era  = era0 + era1A * tu + era1B * tu;
     era -= twoPi * Math.floor((era + Math.PI) / twoPi);
-// vrot = era A + era B
+
     // get the current IERS pole correction parameters
     PoleCorrection iCorr = getPoleCorrection(date);
 
@@ -140,9 +137,7 @@ public class ITRF2000Frame extends SynchronizedFrame {
     Rotation combined = qRot.applyTo(rRot.applyTo(wRot)).revert();
     
     // set up the transform from parent GCRS (J2000) to ITRF
-    
-    Vector3D rotationRate = new Vector3D((era1A + era1B)/(86400), rRot.revert().getAxis());
-    
+    Vector3D rotationRate = new Vector3D((era1A + era1B) / -86400, rRot.getAxis());
     updateTransform(new Transform(combined , rotationRate));
 
   }
@@ -214,8 +209,9 @@ public class ITRF2000Frame extends SynchronizedFrame {
     if (selectEOPEntries(date)) {
       double dtP    = date.minus(previous.date);
       double dtN    = next.date.minus(date);
-      double coeffP = dtP/ (dtN + dtP);
-      double coeffN = dtN/ (dtN + dtP);
+      double sum    = dtN + dtP;
+      double coeffP = dtP / sum;
+      double coeffN = dtN / sum;
       return new PoleCorrection(coeffP * previous.rawEntry.pole.xp
                               + coeffN * next.rawEntry.pole.xp,
                                 coeffP * previous.rawEntry.pole.yp
@@ -285,20 +281,28 @@ public class ITRF2000Frame extends SynchronizedFrame {
    * @return luni-solar and planetary elements
    */
   private BodiesElements computeBodiesElements(double tt) {
-    return new BodiesElements((((f14 * tt + f13) * tt + f12) * tt + f11) * tt + f10, // mean anomaly of the Moon
-                              (((f24 * tt + f23) * tt + f22) * tt + f21) * tt + f20, // mean anomaly of the Sun
-                              (((f34 * tt + f33) * tt + f32) * tt + f31) * tt + f30, // L - &Omega; where L is the mean longitude of the Moon
-                              (((f44 * tt + f43) * tt + f42) * tt + f41) * tt + f40, // mean elongation of the Moon from the Sun
-                              (((f54 * tt + f53) * tt + f52) * tt + f51) * tt + f50, // mean longitude of the ascending node of the Moon
-                              f61  * tt +  f60, // mean Mercury longitude
-                              f71  * tt +  f70, // mean Venus longitude
-                              f81  * tt +  f80, // mean Earth longitude
-                              f91  * tt +  f90, // mean Mars longitude
-                              f101 * tt + f100, // mean Jupiter longitude
-                              f111 * tt + f110, // mean Saturn longitude
-                              f121 * tt + f120, // mean Uranus longitude
-                              f131 * tt + f130, // mean Neptune longitude
-                              (f142 * tt + f141) * tt); // general accumulated precession in longitude
+    return useIAU2000B
+      ? new BodiesElements(f11 * tt + f10, // mean anomaly of the Moon
+                           f21 * tt + f20, // mean anomaly of the Sun
+                           f31 * tt + f30, // L - &Omega; where L is the mean longitude of the Moon
+                           f41 * tt + f40, // mean elongation of the Moon from the Sun
+                           f51 * tt + f50, // mean longitude of the ascending node of the Moon
+                           Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
+                           Double.NaN, Double.NaN, Double.NaN, Double.NaN)
+      : new BodiesElements((((f14 * tt + f13) * tt + f12) * tt + f11) * tt + f10, // mean anomaly of the Moon
+                           (((f24 * tt + f23) * tt + f22) * tt + f21) * tt + f20, // mean anomaly of the Sun
+                           (((f34 * tt + f33) * tt + f32) * tt + f31) * tt + f30, // L - &Omega; where L is the mean longitude of the Moon
+                           (((f44 * tt + f43) * tt + f42) * tt + f41) * tt + f40, // mean elongation of the Moon from the Sun
+                           (((f54 * tt + f53) * tt + f52) * tt + f51) * tt + f50, // mean longitude of the ascending node of the Moon
+                           f61  * tt +  f60, // mean Mercury longitude
+                           f71  * tt +  f70, // mean Venus longitude
+                           f81  * tt +  f80, // mean Earth longitude
+                           f91  * tt +  f90, // mean Mars longitude
+                           f101 * tt + f100, // mean Jupiter longitude
+                           f111 * tt + f110, // mean Saturn longitude
+                           f121 * tt + f120, // mean Uranus longitude
+                           f131 * tt + f130, // mean Neptune longitude
+                           (f142 * tt + f141) * tt); // general accumulated precession in longitude
   }
 
   private static class DatedEop implements Comparable {
@@ -346,14 +350,20 @@ public class ITRF2000Frame extends SynchronizedFrame {
   /** Next EOP entry. */
   private DatedEop next;
 
+  /** Indicator for complete or reduced precession-nutation model. */
+  private boolean useIAU2000B;
+
   /** Pole position (X). */
-  private static Development xDevelopment = null;
+  private Development xDevelopment = null;
 
   /** Pole position (Y). */
-  private static Development yDevelopment = null;
+  private Development yDevelopment = null;
 
   /** Pole position (S + XY/2). */
-  private static Development sxy2Development = null;
+  private Development sxy2Development = null;
+
+  /** Earth Orientation Parameters. */
+  private TreeSet eop = null;
 
   /** 2&pi;. */
   private static final double twoPi = 2.0 * Math.PI;
@@ -444,15 +454,15 @@ public class ITRF2000Frame extends SynchronizedFrame {
   private static final double f142 = 0.00000538691;
 
   /** Resources for IERS table 5.2a from IERS conventions (2003). */
-  private static final String xModel    = "/fr/cs/aerospace/orekit/resources/tab5.2a.txt";
+  private static final String xModel2000A    = "/fr/cs/aerospace/orekit/resources/tab5.2a.txt";
+  private static final String xModel2000B    = "/fr/cs/aerospace/orekit/resources/tab5.2a.reduced.txt";
 
   /** Resources for IERS table 5.2b from IERS conventions (2003). */
-  private static final String yModel    = "/fr/cs/aerospace/orekit/resources/tab5.2b.txt";
+  private static final String yModel2000A    = "/fr/cs/aerospace/orekit/resources/tab5.2b.txt";
+  private static final String yModel2000B    = "/fr/cs/aerospace/orekit/resources/tab5.2b.reduced.txt";
 
   /** Resources for IERS table 5.2c from IERS conventions (2003). */
-  private static final String sxy2Model = "/fr/cs/aerospace/orekit/resources/tab5.2c.txt";
-
-  /** Earth Orientation Parameters. */
-  private static TreeSet eop = null;
+  private static final String sxy2Model2000A = "/fr/cs/aerospace/orekit/resources/tab5.2c.txt";
+  private static final String sxy2Model2000B = "/fr/cs/aerospace/orekit/resources/tab5.2c.reduced.txt";
 
 }

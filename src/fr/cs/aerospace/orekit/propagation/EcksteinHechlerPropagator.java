@@ -18,30 +18,36 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
 public class EcksteinHechlerPropagator implements Ephemeris {
 
   /** Create a new instance.
+   * <p>The Cn0 coefficients are the denormalized zonal coefficients, they
+   * are related to both the normalized coefficients C~n0 and the Jn one
+   * as follows:</p>
+   * <pre>
+   *   C<sub>n,0</sub> = &radic;(2n+1) C~<sub>n,0</sub>
+   *   C<sub>n,0</sub> = -J<sub>n</sub>
+   * </pre>
    * @param orbit initial orbit
    * @param referenceRadius reference radius of the Earth for the extrapolation model (m)
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   * @param j2 denormalized zonal coefficient J2 (C20)
-   * @param j3 denormalized zonal coefficient J3 (C30)
-   * @param j4 denormalized zonal coefficient J4 (C40)
-   * @param j5 denormalized zonal coefficient J5 (C50)
-   * @param j6 denormalized zonal coefficient J6 (C60)
+   * @param c20 denormalized zonal coefficient (about -1.08e-3 for Earth)
+   * @param c30 denormalized zonal coefficient (about +2.53e-6 for Earth)
+   * @param c40 denormalized zonal coefficient (about +1.62e-6 for Earth)
+   * @param c50 denormalized zonal coefficient (about +2.28e-7 for Earth)
+   * @param c60 denormalized zonal coefficient (about -5.41e-7 for Earth)
    * @exception PropagationException if the mean parameters cannot be computed
    */
-  public EcksteinHechlerPropagator(Orbit orbit,
-                                   double referenceRadius, double mu,
-                                   double j2, double j3, double j4, double j5,
-                                   double j6)
+  public EcksteinHechlerPropagator(Orbit orbit, double referenceRadius, double mu,
+                                   double c20, double c30, double c40,
+                                   double c50, double c60)
   throws PropagationException {
 
     // store model coefficients
     this.referenceRadius = referenceRadius;
-    this.mu = mu;
-    this.j2 = j2;
-    this.j3 = j3;
-    this.j4 = j4;
-    this.j5 = j5;
-    this.j6 = j6;
+    this.mu  = mu;
+    this.c20 = c20;
+    this.c30 = c30;
+    this.c40 = c40;
+    this.c50 = c50;
+    this.c60 = c60;
 
     // transformation into circular adapted parameters
     // (used by the Eckstein-Hechler model)
@@ -93,15 +99,15 @@ public class EcksteinHechlerPropagator implements Ephemeris {
       // preliminary processing
       q = referenceRadius / mean.getA();
       ql = q * q;
-      g2 = j2 * ql;
+      g2 = c20 * ql;
       ql *= q;
-      g3 = j3 * ql;
+      g3 = c30 * ql;
       ql *= q;
-      g4 = j4 * ql;
+      g4 = c40 * ql;
       ql *= q;
-      g5 = j5 * ql;
+      g5 = c50 * ql;
       ql *= q;
-      g6 = j6 * ql;
+      g6 = c60 * ql;
 
       cosI1 = Math.cos(mean.getI());
       sinI1 = Math.sin(mean.getI());
@@ -351,6 +357,6 @@ public class EcksteinHechlerPropagator implements Ephemeris {
   /** Model parameters. */
   private double referenceRadius;
   private double mu;
-  private double j2, j3, j4, j5, j6;
+  private double c20, c30, c40, c50, c60;
 
 }

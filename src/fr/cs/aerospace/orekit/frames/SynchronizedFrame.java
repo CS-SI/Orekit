@@ -45,7 +45,7 @@ public abstract class SynchronizedFrame extends Frame {
    */
   public Transform getTransformTo(Frame destination, AbsoluteDate date) throws OrekitException {
     synchronizer.setDate(date);
-    return this.getTransformTo(destination);
+    return getTransformTo(destination);
   }
   
   /** Update the frame to the given date.
