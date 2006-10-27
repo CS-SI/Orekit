@@ -33,7 +33,7 @@ import junit.framework.TestSuite;
 
 public class DrozinerAttractionModelTest extends TestCase {
   
-  public void aaatestHelioSynchronous()
+  public void testHelioSynchronous()
     throws ParseException, FileNotFoundException,
            OrekitException, DerivativeException, IntegratorException {
 
