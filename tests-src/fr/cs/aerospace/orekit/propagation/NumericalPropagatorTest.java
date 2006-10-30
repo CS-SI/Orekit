@@ -12,7 +12,8 @@ import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.models.bodies.FixedPoleEarth;
+import fr.cs.aerospace.orekit.frames.FrameSynchronizer;
+import fr.cs.aerospace.orekit.frames.ITRF2000Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.perturbations.CunninghamAttractionModel;
@@ -183,7 +184,8 @@ try {
     }
     
     CunninghamAttractionModel CBP =
-      new CunninghamAttractionModel(mu, new FixedPoleEarth(), equatorialRadius, C, S);
+      new CunninghamAttractionModel(mu, new ITRF2000Frame(new FrameSynchronizer(), true),
+                                    equatorialRadius, C, S);
     
     extrapolator.addForceModel(CBP);
     

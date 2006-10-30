@@ -54,8 +54,9 @@ public class DrozinerAttractionModelTest extends TestCase {
     Orbit orbit = new Orbit(date , op);
 
     propagator.addForceModel(new DrozinerAttractionModel(mu, itrf2000,
-                                                         6378136.460, new double[] { 0, -c20 },
-                                                         new double[0][], new double[0][]));
+                                                         6378136.460,
+                                                         new double[][] { { 1.0 }, { 0.0 }, { c20 } },
+                                                         new double[][] { { 0.0 }, { 0.0 }, { 0.0 } }));
 
     // let the step handler perform the test
     propagator.propagate(orbit, new AbsoluteDate(date , 7 * 86400),
@@ -117,8 +118,14 @@ public class DrozinerAttractionModelTest extends TestCase {
                                           poleAligned, mu));
 
     propagator.addForceModel(new DrozinerAttractionModel(mu, itrf2000, ae,
-                                                         new double[] { 0, -c20, -c30, -c40, -c50, -c60 },
-                                                         new double[0][], new double[0][]));
+                                                         new double[][] {
+                                                           { 1.0 }, { 0.0 }, { c20 }, { c30 },
+                                                           { c40 }, { c50 }, { c60 },
+                                                         },
+                                                         new double[][] {
+                                                           { 0.0 }, { 0.0 }, { 0.0 }, { 0.0 },
+                                                           { 0.0 }, { 0.0 }, { 0.0 },
+                                                         }));
     
     // let the step handler perform the test
     propagator.propagate(initialOrbit, new AbsoluteDate(date , 50000), 20,

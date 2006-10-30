@@ -2,6 +2,7 @@ package fr.cs.aerospace.orekit.perturbations;
 
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.SynchronizedFrame;
+import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -10,66 +11,60 @@ import org.spaceroots.mantissa.geometry.Vector3D;
 
 /**
  * This class represents the gravitational field of a celestial body.
- * <p>
- * The gravitational field of a central body is split in two parts. The first
- * one is the central attraction which is a single coefficient. The second one
- * is the perturbing acceleration which is expressed using spherical harmonics.
- * </p>
- * 
- * @version $Id$
+ * <p>The algorithm implemented in this class has been designed by
+ * Leland E. Cunningham (Lockheed Missiles and Space Company, Sunnyvale
+ * and Astronomy Department University of California, Berkeley) in
+ * his 1969 paper: <em>On the computation of the spherical harmonic
+ * terms needed during the numerical integration of the orbital motion
+ * of an artificial satellite</em> (Celestial Mechanics 2, 1970).</p>
+  * 
+ * @author F. Maussion
  * @author L. Maisonobe
- * @author E. Delente
  */
 
 public class CunninghamAttractionModel implements ForceModel {
   
-  /**
-   * Creates a new instance of CentralBodyPotential.
+  /** Creates a new instance.
    * 
    * @param mu central body attraction coefficient
    * @param centralBodyFrame rotating body frame
    * @param equatorialRadius reference equatorial radius of the potential
-   * @param C normalized coefficients array (cosine part)
-   * @param S normalized coefficients array (sine part)
+   * @param C denormalized coefficients array (cosine part)
+   * @param S denormalized coefficients array (sine part)
    */
   public CunninghamAttractionModel(double mu, SynchronizedFrame centralBodyFrame,
-                                      double equatorialRadius, double[][] C,
-                                      double[][] S) {
-    
-    
+                                   double equatorialRadius, double[][] C, double[][] S) {
+
     this.bodyFrame = centralBodyFrame;
     this.equatorialRadius = equatorialRadius;
     this.mu = mu;
-    this.C = C;
-    this.S = S;
-    ndeg = C.length - 1;
-    mord = C[ndeg].length - 1;
+    this.C  = C;
+    this.S  = S;
+    degree  = C.length - 1;
+    order   = C[degree].length - 1;
     
-    Vi = new double[C.length][];
-    Vr = new double[C.length][];
+    vi = new double[C.length][];
+    vr = new double[C.length][];
     
-    ViderX= new double[C.length][];
-    ViderY= new double[C.length][];
-    ViderZ= new double[C.length][];
+    gradXi= new double[C.length][];
+    gradYi= new double[C.length][];
+    gradZi= new double[C.length][];
     
-    VrderX= new double[C.length][];
-    VrderY= new double[C.length][];
-    VrderZ= new double[C.length][]; 
+    gradXr= new double[C.length][];
+    gradYr= new double[C.length][];
+    gradZr= new double[C.length][]; 
     
-    int j = 0;
-    
-    for(int i =0; i< C.length ; i++) { 
-
-      Vi[i]= new double[i+1];
-      Vr[i]= new double[i+1];
+    for (int i = 0; i < C.length; i++) { 
+      vi[i]= new double[i+1];
+      vr[i]= new double[i+1];
       
-      ViderX[i]= new double[i+1];
-      ViderY[i]= new double[i+1];
-      ViderZ[i]= new double[i+1];
+      gradXi[i]= new double[i+1];
+      gradYi[i]= new double[i+1];
+      gradZi[i]= new double[i+1];
       
-      VrderX[i]= new double[i+1];
-      VrderY[i]= new double[i+1];
-      VrderZ[i]= new double[i+1]; 
+      gradXr[i]= new double[i+1];
+      gradYr[i]= new double[i+1];
+      gradZr[i]= new double[i+1]; 
     }
     
   }
@@ -77,7 +72,7 @@ public class CunninghamAttractionModel implements ForceModel {
   /**
    * Compute the contribution of the central body potential to the perturbing
    * acceleration.
-   * <p>
+  * <p>
    * The central part of the acceleration (mu/r<sup>2</sup> term) is not
    * computed here, only the <em>perturbing</em> acceleration is considered.
    * </p>
@@ -90,184 +85,283 @@ public class CunninghamAttractionModel implements ForceModel {
                               EquinoctialGaussEquations adder)
   throws OrekitException {
     
-    // Construction of the potential array V(n,m)
-    Vector3D relative = bodyFrame.getTransformTo(adder.getFrame() , date)
-    .getInverse().transformPosition(pvCoordinates.getPosition());
-    
+    // get the position in body frame
+    Transform fromBodyFrame = bodyFrame.getTransformTo(adder.getFrame(), date);
+    Transform toBodyFrame   = fromBodyFrame.getInverse();
+    Vector3D relative = toBodyFrame.transformPosition(pvCoordinates.getPosition());
     double x = relative.getX();
     double y = relative.getY();
     double z = relative.getZ();
     
-    // Definition of intermediate variables
-    double r2 =x * x + y * y + z * z;
-    
+    double x2 = x * x;
+    double y2 = y * y;
+    double z2 = z * z;
+    double r2 = x2 + y2 + z2;
     double r = Math.sqrt(r2);
     if (r <= equatorialRadius) {
-      throw new OrekitException("underground trajectory (r = {0})",
-                                new String[] {
-          Double.toString(r)
-      });
-    }
-    double onr2 = 1/r2;
-    double xonr2 = x / r2;
-    double yonr2 = y / r2;
-    double zonr2 = z / r2;
-    
-    // diagonal and diagonal + 1 
-    Vr[0][0] = 1.0 / r;
-    Vi[0][0] = 0;
-    for (int n = 1; n<= mord; n++) {
-      Vr[n][n] = ( 2*n - 1 )  * ( xonr2*Vr[n-1][n-1] - yonr2*Vi[n-1][n-1] );
-      Vi[n][n] = ( 2*n - 1 )  * ( yonr2*Vr[n-1][n-1] + xonr2*Vi[n-1][n-1] ); 
-      Vr[n][n-1] = ( 2*n - 1 ) * zonr2 * Vr[n-1][n-1];
-      Vi[n][n-1] = ( 2*n - 1 ) * zonr2 * Vi[n-1][n-1];
-      
+      throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
+                                new String[] { Double.toString(r) });
     }
 
-    // columns
-    
-    for (int m = 0; m<= mord; m++) {
-      for (int n = m+2; n<= ndeg; n++) {
-        Vr[n][m] = ((2*n - 1)*zonr2*Vr[n-1][m] - (n+m-1)* onr2 *Vr[n-2][m])/(n-m);
-        Vi[n][m] = ((2*n - 1)*zonr2*Vi[n-1][m] - (n+m-1)* onr2 *Vi[n-2][m])/(n-m);
-      }
+    // define of some intermediate variables
+    double onR2 = 1 / r2;
+    double onR3 = onR2 / r;
+    double onR4 = onR2 * onR2;
+    double cx   = -x * onR2;
+    double cy   = -y * onR2;
+    double cz   = -z * onR2;
+    double dx   = -2 * cx;
+    double dy   = -2 * cy;
+    double dz   = -2 * cz;
+
+    // intermediate variables gradients
+    // since dcy/dx = dcx/dy, dcz/dx = dcx/dz and dcz/dy = dcy/dz,
+    // we reuse the existing variables
+    double dcxdx = (y2 + z2 - x2) * onR4;
+    double dcxdy = dx * y * onR2;
+    double dcxdz = dx * z * onR2;
+    double dcydy = (x2 + z2 - y2) * onR4;
+    double dcydz = dy * z * onR2;
+    double dczdz = (x2 + y2 - z2) * onR4;
+    double ddxdx = -2 * dcxdx;
+    double ddxdy = -2 * dcxdy;
+    double ddxdz = -2 * dcxdz;
+    double ddydy = -2 * dcydy;
+    double ddydz = -2 * dcydz;
+    double ddzdz = -2 * dczdz;
+
+    double donr2dx = dx * onR2;
+    double donr2dy = dy * onR2;
+    double donr2dz = dz * onR2;
+
+    // initialize term (0,0) of the potential
+    double curVr = 1.0 / r;
+    double curVi = 0.0;
+    vr[0][0] = curVr;
+    vi[0][0] = curVi;
+
+    // initialize term (0,0) of the potential gradient
+    double curGradXr = -x * onR3;
+    double curGradXi = 0;
+    double curGradYr = -y * onR3;
+    double curGradYi = 0;
+    double curGradZr = -z * onR3;
+    double curGradZi = 0;
+    gradXr[0][0] = curGradXr;
+    gradXi[0][0] = curGradXi;
+    gradYr[0][0] = curGradYr;
+    gradYi[0][0] = curGradYi;
+    gradZr[0][0] = curGradZr;
+    gradZi[0][0] = curGradZi;
+
+    // compute the two first diagonals, terms (n,n) and (n,n-1)
+    for (int n = 1; n <= order; ++n) {
+
+      // update potential coefficients for current iteration
+      double prevVr = curVr;
+      double prevVi = curVi;
+      cx += dx;
+      cy += dy;
+      cz += dz;
+
+      // potential
+      curVr = cx * prevVr - cy * prevVi;
+      curVi = cy * prevVr + cx * prevVi;
+      double[] vrn = vr[n];
+      double[] vin = vi[n];
+      vrn[n]   = curVr;
+      vin[n]   = curVi; 
+      vrn[n-1] = cz * prevVr;
+      vin[n-1] = cz * prevVi;
+
+      // update potential gradient coefficients for current iteration
+      double prevGradXr = curGradXr;
+      double prevGradXi = curGradXi;
+      double prevGradYr = curGradYr;
+      double prevGradYi = curGradYi;
+      double prevGradZr = curGradZr;
+      double prevGradZi = curGradZi;
+      dcxdx += ddxdx;
+      dcxdy += ddxdy;
+      dcxdz += ddxdz;
+      dcydy += ddydy;
+      dcydz += ddydz;
+      dczdz += ddzdz;
+
+      // gradient along X
+      curGradXr = cx * prevGradXr - cy * prevGradXi + dcxdx * prevVr - dcxdy * prevVi;
+      curGradXi = cy * prevGradXr + cx * prevGradXi + dcxdy * prevVr - dcxdx * prevVi;
+      double[] xrn = gradXr[n];
+      double[] xin = gradXi[n];
+      xrn[n]   = curGradXr;
+      xin[n]   = curGradXi; 
+      xrn[n-1] = cz * prevGradXr + dcxdz * prevVr;
+      xin[n-1] = cz * prevGradXi + dcxdz * prevVi;
+
+      // gradient along Y
+      curGradYr = cx * prevGradYr - cy * prevGradYi + dcxdy * prevVr - dcydy * prevVi;
+      curGradYi = cy * prevGradYr + cx * prevGradYi + dcydy * prevVr - dcxdy * prevVi;
+      double[] yrn = gradYr[n];
+      double[] yin = gradYi[n];
+      yrn[n]   = curGradYr;
+      yin[n]   = curGradYi; 
+      yrn[n-1] = cz * prevGradYr + dcydz * prevVr;
+      yin[n-1] = cz * prevGradYi + dcydz * prevVi;
+
+      // gradient along Z
+      curGradZr = cx * prevGradZr - cy * prevGradZi + dcxdz * prevVr - dcydz * prevVi;
+      curGradZi = cy * prevGradZr + cx * prevGradZi + dcydz * prevVr - dcxdz * prevVi;
+      double[] zrn = gradZr[n];
+      double[] zin = gradZi[n];
+      zrn[n]   = curGradZr;
+      zin[n]   = curGradZi; 
+      zrn[n-1] = cz * prevGradZr + dczdz * prevVr;
+      zin[n-1] = cz * prevGradZi + dczdz * prevVi;
+
     }
 
-    
-    //-********************************************************************************************/
-    
-    double r3 = r2*r;
-    double r4 = r2*r2;
-    
-    double x2 = x*x;
-    double y2 = y*y;
-    double z2 = z*z;
-    
-    double rx = (y2+z2-x2)/r4;
-    double ix = -2*x*y/r4;
-    
-    double c1x = -2*x*z/r4;
-    double c2x = -2*x/r4;
-    
-    double ry = -(y*x)/r4;
-    double iy = (x2+z2-y2)/r4;
-    
-    double c1y = -2*y*z/r4;
-    double c2y = -2*y/r4;
-    
-    double rz = -2*z*x/r4;
-    double iz = -2*z*y/r4;
-    
-    double c1z = (x2+y2-z2)/r4;
-    double c2z = -2*z/r4;
-//    double calc =  3 * x * (4*z2 -  (x2+y2) )/(2*r3*r4) ;
-    double sigma = x2 +y2;
-    double calc20 = (2*z2 - sigma) / (2*r3*r2);
-    //    System.out.println("V21   :  " +  calc);
-    // diagonal  
-    
-    VrderX[0][0] = -x / r3;
-    ViderX[0][0] = 0;
-    VrderY[0][0] = -y / r3;
-    ViderY[0][0] = 0;
-    VrderZ[0][0] = -z / r3;
-    ViderZ[0][0] = 0;
-    
-    for (int n = 1; n<= mord; n++) {
-      VrderX[n][n] = (2*n-1)*(Vr[n-1][n-1]*rx-Vi[n-1][n-1]*ix +
-                              xonr2*VrderX[n-1][n-1]-yonr2*ViderX[n-1][n-1]);
-      
-      ViderX[n][n] = (2*n-1)*(Vr[n-1][n-1]*ix+Vi[n-1][n-1]*rx + 
-                              yonr2*VrderX[n-1][n-1]+xonr2*ViderX[n-1][n-1]);
-      
-      VrderY[n][n] = (2*n-1)*(Vr[n-1][n-1]*ry-Vi[n-1][n-1]*iy +
-                              xonr2*VrderY[n-1][n-1]-yonr2*ViderY[n-1][n-1]);                                                                      
-      
-      ViderY[n][n] = (2*n-1)*(Vr[n-1][n-1]*iy+Vi[n-1][n-1]*ry + 
-                              yonr2*VrderY[n-1][n-1]+xonr2*ViderY[n-1][n-1]);              
-      
-      VrderZ[n][n] = (2*n-1)*(Vr[n-1][n-1]*rz-Vi[n-1][n-1]*iz + 
-                              xonr2*VrderZ[n-1][n-1]-yonr2*ViderZ[n-1][n-1]);
-      
-      ViderZ[n][n] = (2*n-1)*(Vr[n-1][n-1]*iz+Vi[n-1][n-1]*rz + 
-                              yonr2*VrderZ[n-1][n-1]+xonr2*ViderZ[n-1][n-1]);
-      
-      VrderX[n][n-1] = ( 2 * n - 1 ) * ( c1x* Vr[n-1][n-1] + zonr2*VrderX[n-1][n-1]);
-      ViderX[n][n-1] = ( 2 * n - 1 ) * ( c1x* Vi[n-1][n-1] + zonr2*ViderX[n-1][n-1]);        
-      VrderY[n][n-1] = ( 2 * n - 1 ) * ( c1y* Vr[n-1][n-1] + zonr2*VrderY[n-1][n-1]);
-      ViderY[n][n-1] = ( 2 * n - 1 ) * ( c1y* Vi[n-1][n-1] + zonr2*ViderY[n-1][n-1]);        
-      VrderZ[n][n-1] = ( 2 * n - 1 ) * ( c1z* Vr[n-1][n-1] + zonr2*VrderZ[n-1][n-1]);
-      ViderZ[n][n-1] = ( 2 * n - 1 ) * ( c1z* Vi[n-1][n-1] + zonr2*ViderZ[n-1][n-1]);      
-    }
-    
-    // columns
-    
-    for (int m = 0; m<= mord; m++) {
-      for (int n = m+2; n<= ndeg; n++) {
-        VrderX[n][m] = (2.0*n - 1)/(n - m) * ( c1x* Vr[n-1][m] + zonr2*VrderX[n-1][m]) - (n+m-1.0)/(n-m)*(c2x*Vr[n-2][m] + zonr2*VrderX[n-2][m]);
-        ViderX[n][m] = (2.0*n - 1)/(n - m) * ( c1x* Vi[n-1][m] + zonr2*ViderX[n-1][m]) - (n+m-1.0)/(n-m)*(c2x*Vi[n-2][m] + zonr2*ViderX[n-2][m]);
-        VrderY[n][m] = (2.0*n - 1)/(n - m) * ( c1y* Vr[n-1][m] + zonr2*VrderY[n-1][m]) - (n+m-1.0)/(n-m)*(c2y*Vr[n-2][m] + zonr2*VrderY[n-2][m]);
-        ViderY[n][m] = (2.0*n - 1)/(n - m) * ( c1y* Vi[n-1][m] + zonr2*ViderY[n-1][m]) - (n+m-1.0)/(n-m)*(c2y*Vi[n-2][m] + zonr2*ViderY[n-2][m]);
-        VrderZ[n][m] = (2.0*n - 1)/(n - m) * ( c1z* Vr[n-1][m] + zonr2*VrderZ[n-1][m]) - (n+m-1.0)/(n-m)*(c2z*Vr[n-2][m] + zonr2*VrderZ[n-2][m]);
-        ViderZ[n][m] = (2.0*n - 1)/(n - m) * ( c1z* Vi[n-1][m] + zonr2*ViderZ[n-1][m]) - (n+m-1.0)/(n-m)*(c2z*Vi[n-2][m] + zonr2*ViderZ[n-2][m]);
+    // compute the remaining elements, terms (n,m) with m < n-1
+    cz    = -z * onR2;
+    dcxdz = dx * z * onR2;
+    dcydz = dy * z * onR2;
+    dczdz = (x2 + y2 - z2) * onR4;
+    double[] vrn1 = vr[0];
+    double[] vin1 = vi[0];
+    double[] vrn  = vr[1];
+    double[] vin  = vi[1];
+    double[] xrn1 = gradXr[0];
+    double[] xin1 = gradXi[0];
+    double[] xrn  = gradXr[1];
+    double[] xin  = gradXi[1];
+    double[] yrn1 = gradYr[0];
+    double[] yin1 = gradYi[0];
+    double[] yrn  = gradYr[1];
+    double[] yin  = gradYi[1];
+    double[] zrn1 = gradZr[0];
+    double[] zin1 = gradZi[0];
+    double[] zrn  = gradZr[1];
+    double[] zin  = gradZi[1];
+    for (int n = 2; n <= degree; ++n) {
+
+      // update potential coefficients for current iteration
+      cz += dz;
+
+      // update potential gradients coefficients for current iteration
+      dcxdz += ddxdz;
+      dcydz += ddydz;
+      dczdz += ddzdz;
+
+      double[] vrn2 = vrn1;
+      double[] vin2 = vin1;
+      vrn1 = vrn;
+      vin1 = vin;
+      vrn  = vr[n];
+      vin  = vi[n];
+      double[] xrn2 = xrn1;
+      double[] xin2 = xin1;
+      xrn1 = xrn;
+      xin1 = xin;
+      xrn  = gradXr[n];
+      xin  = gradXi[n];
+      double[] yrn2 = yrn1;
+      double[] yin2 = yin1;
+      yrn1 = yrn;
+      yin1 = yin;
+      yrn  = gradYr[n];
+      yin  = gradYi[n];
+      double[] zrn2 = zrn1;
+      double[] zin2 = zin1;
+      zrn1 = zrn;
+      zin1 = zin;
+      zrn  = gradZr[n];
+      zin  = gradZi[n];
+      for (int m = 0; m <= n - 2; ++m) {
+
+        double inv   = 1.0 / (n - m);
+        double coeff = n + m - 1;
+
+        // potential
+        vrn[m] = (cz * vrn1[m] - coeff * onR2 * vrn2[m]) * inv;
+        vin[m] = (cz * vin1[m] - coeff * onR2 * vin2[m]) * inv;
+
+        // gradient
+        xrn[m] = (cz * xrn1[m] - coeff * onR2 * xrn2[m] + dcxdz * vrn1[m] - coeff * donr2dx * vrn2[m]) * inv;
+        xin[m] = (cz * xin1[m] - coeff * onR2 * xin2[m] + dcxdz * vin1[m] - coeff * donr2dx * vin2[m]) * inv;
+        yrn[m] = (cz * yrn1[m] - coeff * onR2 * yrn2[m] + dcydz * vrn1[m] - coeff * donr2dy * vrn2[m]) * inv;
+        yin[m] = (cz * yin1[m] - coeff * onR2 * yin2[m] + dcydz * vin1[m] - coeff * donr2dy * vin2[m]) * inv;
+        zrn[m] = (cz * zrn1[m] - coeff * onR2 * zrn2[m] + dczdz * vrn1[m] - coeff * donr2dz * vrn2[m]) * inv;
+        zin[m] = (cz * zin1[m] - coeff * onR2 * zin2[m] + dczdz * vin1[m] - coeff * donr2dz * vin2[m]) * inv;
+
       }
+
     }
-    
-    //******************-**********************************************************************
-    
+
+    // compute acceleration in body frame using the potential model coefficients
     double vdX = 0.0;
     double vdY = 0.0;
     double vdZ = 0.0;
     double rn = 1.0;
-    for (int n=0 ; n<=ndeg ; n++) {
-      for (int m=0 ; m<=n ; m++) {
-        vdX += rn*(C[n][m]*VrderX[n][m]+S[n][m]*ViderX[n][m]);
-        vdY += rn*(C[n][m]*VrderY[n][m]+S[n][m]*ViderY[n][m]);
-        vdZ += rn*(C[n][m]*VrderZ[n][m]+S[n][m]*ViderZ[n][m]);
+    for (int n = 1; n <= degree; ++n) {
+      double[] cn  = C[n];
+      double[] sn  = S[n];
+      xrn = gradXr[n];
+      xin = gradXi[n];
+      yrn = gradYr[n];
+      yin = gradYi[n];
+      zrn = gradZr[n];
+      zin = gradZi[n];
+      for (int m = 0; m < cn.length; ++m) {
+        double cnm = cn[m];
+        double snm = sn[m];
+        vdX += rn * (cnm * xrn[m] + snm * xin[m]);
+        vdY += rn * (cnm * yrn[m] + snm * yin[m]);
+        vdZ += rn * (cnm * zrn[m] + snm * zin[m]);
       }
       rn *= equatorialRadius;
     }
-    Vector3D accInBody = new Vector3D(mu*vdX,mu*vdY,mu*vdZ);
-    Vector3D accInInert = bodyFrame.getTransformTo(adder.getFrame(), date).transformVector(accInBody);
-    adder.addXYZAcceleration(accInInert.getX(), accInInert.getY(), accInInert.getZ());
+
+    // compute acceleration in inertial frame
+    Vector3D acceleration =
+      fromBodyFrame.transformVector(new Vector3D(mu * vdX, mu * vdY, mu * vdZ));
+    adder.addXYZAcceleration(acceleration.getX(), acceleration.getY(), acceleration.getZ());
     
   }
- 
-  
+
   public SWF[] getSwitchingFunctions() {
     return null;
   }
   
-  /** Initialisation of potential array. */
-  
-  private double[][] Vi;
-  private double[][] Vr;
-  
-  private double[][] ViderX;
-  private double[][] VrderX;
-  private double[][] ViderY;
-  private double[][] VrderY;
-  private double[][] ViderZ;
-  private double[][] VrderZ;
-  
+  /** Potential arrays. */
+  private double[][] vr;
+  private double[][] vi;
+
+  /** Potential gradient arrays. */
+  private double[][] gradXr;
+  private double[][] gradXi;
+  private double[][] gradYr;
+  private double[][] gradYi;
+  private double[][] gradZr;
+  private double[][] gradZi;
+
   /** Equatorial radius of the Central Body. */
   private double equatorialRadius;
-  
-  /** Intermediate variables. */
+
+  /** Central attraction. */
   private double mu;
-  
+
   /** First normalized potential tesseral coefficients array. */
   private double[][] C;
-  
+
   /** Second normalized potential tesseral coefficients array. */
   private double[][] S;
-  
-  /** Definition of degree, order and maximum potential size. */
-  private int ndeg;
-  
-  private int mord;
-  
+
+  /** Degree of potential. */
+  private int degree;
+
+  /** Order of potential. */
+  private int order;
+
   /** Rotating body. */
   private SynchronizedFrame bodyFrame;
-  
+
 }

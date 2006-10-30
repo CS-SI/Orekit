@@ -21,8 +21,8 @@ public class MessagesResources
   static final Object[][] contents = {
     { "unable to converge after {0} iterations",
       "unable to converge after {0} iterations" },
-    { "underground trajectory (r = {0})",
-      "underground trajectory (r = {0})" },
+    { "trajectory inside the Brillouin sphere (r = {0})",
+      "trajectory inside the Brillouin sphere (r = {0})" },
     { "polar trajectory (r = {0})",
       "polar trajectory (r = {0})" },
     { "too excentric orbit (e = {0})",

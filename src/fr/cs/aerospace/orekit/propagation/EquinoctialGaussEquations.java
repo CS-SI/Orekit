@@ -1,5 +1,7 @@
 package fr.cs.aerospace.orekit.propagation;
 
+import java.util.Arrays;
+
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
@@ -83,13 +85,13 @@ public class EquinoctialGaussEquations {
     this.yDot = yDot;
 
     // initialize derivatives to zero
-    for (int i = 0; i < 6; i++) {
-      yDot[i] = 0;
-    }
+    Arrays.fill(yDot, 0.0);
     
     // intermediate variables
-    double ex2 = parameters.getEquinoctialEx() * parameters.getEquinoctialEx();
-    double ey2 = parameters.getEquinoctialEy() * parameters.getEquinoctialEy();
+    double ex  = parameters.getEquinoctialEx();
+    double ey  = parameters.getEquinoctialEy();
+    double ex2 = ex * ex;
+    double ey2 = ey * ey;
     double e2  = ex2 + ey2;
     double e   = Math.sqrt(e2);
     if (e > 1) {
@@ -100,20 +102,24 @@ public class EquinoctialGaussEquations {
     // intermediate variables
     double oMe2        = (1 - e) * (1 + e);
     double epsilon     = Math.sqrt(oMe2);
-    double na          = Math.sqrt(mu / parameters.getA());
-    double n           = na / parameters.getA();
-    double cLv         = Math.cos(parameters.getLv());
-    double sLv         = Math.sin(parameters.getLv());
-    double excLv       = parameters.getEquinoctialEx() * cLv;
-    double eysLv       = parameters.getEquinoctialEy() * sLv;
+    double a           = parameters.getA();
+    double na          = Math.sqrt(mu / a);
+    double n           = na / a;
+    double lv          = parameters.getLv();
+    double cLv         = Math.cos(lv);
+    double sLv         = Math.sin(lv);
+    double excLv       = ex * cLv;
+    double eysLv       = ey * sLv;
     double excLvPeysLv = excLv + eysLv;
     double ksi         = 1 + excLvPeysLv;
-    double nu          = parameters.getEquinoctialEx() * sLv - parameters.getEquinoctialEy() * cLv;
+    double nu          = ex * sLv - ey * cLv;
     double sqrt        = Math.sqrt(ksi * ksi + nu * nu);
     double oPksi       = 2 + excLvPeysLv;
-    double h2          = parameters.getHx() * parameters.getHx()  + parameters.getHy() * parameters.getHy() ;
+    double hx          = parameters.getHx();
+    double hy          = parameters.getHy();
+    double h2          = hx * hx  + hy * hy ;
     double oPh2        = 1 + h2;
-    double hxsLvMhycLv = parameters.getHx() * sLv - parameters.getHy() * cLv;
+    double hxsLvMhycLv = hx * sLv - hy * cLv;
 
     double epsilonOnNA        = epsilon / na;
     double epsilonOnNAKsi     = epsilonOnNA / ksi;
@@ -127,12 +133,12 @@ public class EquinoctialGaussEquations {
 
     // coefficients along T
     aT  = tOnEpsilonN * sqrt;
-    exT = tEpsilonOnNASqrt * (parameters.getEquinoctialEx() + cLv);
-    eyT = tEpsilonOnNASqrt * (parameters.getEquinoctialEy() + sLv);
+    exT = tEpsilonOnNASqrt * (ex + cLv);
+    eyT = tEpsilonOnNASqrt * (ey + sLv);
         
     // coefficients along N
-    exN = -epsilonOnNAKsiSqrt * (2 * parameters.getEquinoctialEy() * ksi + oMe2 * sLv);
-    eyN =  epsilonOnNAKsiSqrt * (2 * parameters.getEquinoctialEx() * ksi + oMe2 * cLv);
+    exN = -epsilonOnNAKsiSqrt * (2 * ey * ksi + oMe2 * sLv);
+    eyN =  epsilonOnNAKsiSqrt * (2 * ex * ksi + oMe2 * cLv);
                 
     // coefficients along Q
     aQ  =  tOnEpsilonN * nu;
@@ -141,13 +147,13 @@ public class EquinoctialGaussEquations {
         
     // coefficients along S
     aS  = tOnEpsilonN * ksi;
-    exS = epsilonOnNAKsi * (parameters.getEquinoctialEx() + oPksi * cLv);
-    eyS = epsilonOnNAKsi * (parameters.getEquinoctialEy() + oPksi * sLv);
+    exS = epsilonOnNAKsi * (ex + oPksi * cLv);
+    eyS = epsilonOnNAKsi * (ey + oPksi * sLv);
         
     // coefficients along W
     lvW =  epsilonOnNAKsi * hxsLvMhycLv;
-    exW = -parameters.getEquinoctialEy() * lvW;
-    eyW =  parameters.getEquinoctialEx() * lvW;
+    exW = -ey * lvW;
+    eyW =  ex * lvW;
     hxW =  epsilonOnNAKsit * oPh2 * cLv;
     hyW =  epsilonOnNAKsit * oPh2 * sLv;
 

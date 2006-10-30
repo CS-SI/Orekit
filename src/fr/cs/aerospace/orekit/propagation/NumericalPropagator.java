@@ -172,16 +172,13 @@ implements FirstOrderDifferentialEquations {
   public void propagate(Orbit initialOrbit,
                         AbsoluteDate finalDate, StepHandler handler)
   throws DerivativeException, IntegratorException, OrekitException {
-    
+
     // space dynamics view
-    startDate = new AbsoluteDate(initialOrbit.getDate());
-    date = new AbsoluteDate(initialOrbit.getDate());
-    
-    parameters = new EquinoctialParameters(initialOrbit.getParameters() , mu);
-    
+    startDate  = initialOrbit.getDate();
+    date       = startDate;
+    parameters = new EquinoctialParameters(initialOrbit.getParameters(), mu);
     adder      = new EquinoctialGaussEquations(parameters , mu);
-    
-    
+
     // mathematical view
     double t0 = 0;
     double t1 = finalDate.minus(startDate);
@@ -201,8 +198,7 @@ implements FirstOrderDifferentialEquations {
     
     // mathematical integration
     integrator.setStepHandler(handler);
-    integrator.integrate(this, t0, state,
-                         t1, state);
+    integrator.integrate(this, t0, state, t1, state);
     
     // back to space dynamics view
     date = new AbsoluteDate(startDate, t1);

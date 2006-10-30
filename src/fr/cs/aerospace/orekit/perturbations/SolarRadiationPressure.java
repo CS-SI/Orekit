@@ -98,7 +98,7 @@ public class SolarRadiationPressure implements ForceModel {
             // Earth apparent radius
 		    double r = position.getNorm();
 		    if (r <= centralBody.getEquatorialRadius()) {
-		      throw new OrekitException("underground trajectory (r = {0})",
+		      throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
 		                                new String[] { Double.toString(r) });
 		    }
 		    
@@ -171,7 +171,7 @@ public class SolarRadiationPressure implements ForceModel {
 	      double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pvCoordinates.getPosition());
 	      double r = pvCoordinates.getPosition().getNorm();
 	      if (r <= centralBody.getEquatorialRadius()) {
-	        throw new OrekitException("underground trajectory (r = {0})",
+	        throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
 	                                  new String[] { Double.toString(r) });
 	      }
 	      double alphaEarth = centralBody.getEquatorialRadius() / r;
@@ -209,7 +209,7 @@ public class SolarRadiationPressure implements ForceModel {
 	      double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pvCoordinates.getPosition());
 	      double r = pvCoordinates.getPosition().getNorm();
 	      if (r <= centralBody.getEquatorialRadius()) {
-	        throw new OrekitException("underground trajectory (r = {0})",
+	        throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
 	                                  new String[] { Double.toString(r) });
 	      }
 	      double alphaEarth = centralBody.getEquatorialRadius() / r;

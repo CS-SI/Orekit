@@ -26,7 +26,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
    *   C<sub>n,0</sub> = -J<sub>n</sub>
    * </pre>
    * @param orbit initial orbit
-   * @param referenceRadius reference radius of the Earth for the extrapolation model (m)
+   * @param referenceRadius reference radius of the Earth for the potential model (m)
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    * @param c20 denormalized zonal coefficient (about -1.08e-3 for Earth)
    * @param c30 denormalized zonal coefficient (about +2.53e-6 for Earth)
@@ -78,7 +78,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
 
     // sanity check
     if (osculating.getA() < referenceRadius) {
-      throw new PropagationException("underground trajectory (r = {0})",
+      throw new PropagationException("trajectory inside the Brillouin sphere (r = {0})",
                                      new String[] {
                                        Double.toString(osculating.getA())
                                      });
