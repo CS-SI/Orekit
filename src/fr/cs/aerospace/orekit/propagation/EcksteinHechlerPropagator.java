@@ -28,11 +28,11 @@ public class EcksteinHechlerPropagator implements Ephemeris {
    * @param orbit initial orbit
    * @param referenceRadius reference radius of the Earth for the potential model (m)
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   * @param c20 denormalized zonal coefficient (about -1.08e-3 for Earth)
-   * @param c30 denormalized zonal coefficient (about +2.53e-6 for Earth)
-   * @param c40 denormalized zonal coefficient (about +1.62e-6 for Earth)
-   * @param c50 denormalized zonal coefficient (about +2.28e-7 for Earth)
-   * @param c60 denormalized zonal coefficient (about -5.41e-7 for Earth)
+   * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+   * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+   * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+   * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+   * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
    * @exception PropagationException if the mean parameters cannot be computed
    */
   public EcksteinHechlerPropagator(Orbit orbit, double referenceRadius, double mu,

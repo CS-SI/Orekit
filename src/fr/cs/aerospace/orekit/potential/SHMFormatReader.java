@@ -126,31 +126,28 @@ public class SHMFormatReader implements PotentialCoefficientsReader {
           tab[3] = tab[3].replace('D','E');
           tab[4] = tab[4].replace('D','E');
           C[Integer.parseInt(tab[1])]
-            [Integer.parseInt(tab[2])] =
-              Math.sqrt(2*Integer.parseInt(tab[1])+1)*Double.parseDouble(tab[3]);
+            [Integer.parseInt(tab[2])] =Double.parseDouble(tab[3]);
           S[Integer.parseInt(tab[1])]
-            [Integer.parseInt(tab[2])] =
-              Math.sqrt(2*Integer.parseInt(tab[1])+1)*Double.parseDouble(tab[4]);
+            [Integer.parseInt(tab[2])] =Double.parseDouble(tab[4]);
         }
         if("GRCOF2".equals(tab[0])) {
           tab[3] = tab[3].replace('D','E');
           tab[4] = tab[4].replace('D','E');
           C[Integer.parseInt(tab[1])]
-            [Integer.parseInt(tab[2])] =
-              Math.sqrt(2*Integer.parseInt(tab[1])+1)*Double.parseDouble(tab[3]);
+            [Integer.parseInt(tab[2])] =Double.parseDouble(tab[3]);
           S[Integer.parseInt(tab[1])]
-            [Integer.parseInt(tab[2])] =
-              Math.sqrt(2*Integer.parseInt(tab[1])+1)*Double.parseDouble(tab[4]);
+            [Integer.parseInt(tab[2])] =Double.parseDouble(tab[4]);
         }
       }      
     }    
   }
     
-  /** Get the zonal coefficients.
+  /** Get the fully normalized zonal coefficients.
    * @return J the zonal coefficients array.
    */
-  public double[] getJ() {
+  public double[] getNormJ() {
     if (J==null) {
+      J = new double[C.length];
       for(int i = 0; i<C.length; i++){
         J[i]=-C[i][0];
       }
@@ -158,18 +155,98 @@ public class SHMFormatReader implements PotentialCoefficientsReader {
     return J;
   }
   
-  /** Get the tesseral-secorial and zonal coefficients. 
+  /** Get the fully normalized tesseral-secorial and zonal coefficients. 
    * @return C the coefficients matrix
    */
-  public double[][] getC() {
+  public double[][] getNormC() {
     return C;
   }
   
-  /** Get the tesseral-secorial coefficients. 
+  /** Get the fully normalized tesseral-secorial coefficients. 
    * @return S the coefficients matrix
    */
-  public double[][] getS() {
+  public double[][] getNormS() {
     return S;
+  }
+  
+  /** Get the un-normalized  zonal coefficients.
+   * @return J the zonal coefficients array.
+   */
+  public double[] getUnNormJ() {
+    if (UJ==null) {
+      getUnNormC();
+      UJ = new double[UC.length];
+      for(int i = 0; i<UC.length; i++){
+        UJ[i]=-UC[i][0];
+      }
+    }
+    return UJ;
+  }
+  
+  /** Get the un-normalized tesseral-secorial and zonal coefficients. 
+   * @return C the coefficients matrix
+   */
+  public double[][] getUnNormC() {
+    // calculate only if asked
+    if (UC==null) {
+      UC = new double[C.length][];
+      for(int i =0; i< C.length ; i++) {
+        UC[i]= new double[i+1];
+      }
+      // initialization
+      double normCoef = 0.0;
+      double factN = 1.0;
+      double mfactNMinusM = 1.0;
+      double mfactNPlusM = 1.0;
+      UC[0][0] = C[0][0];
+      
+      for (int n=1; n<C.length; n++ ) {
+        factN *= n;
+        mfactNMinusM = factN;
+        mfactNPlusM = factN;
+        UC[n][0] = Math.sqrt(2.0*n+1)*C[n][0];
+        for (int m=1; m<C[n].length; m++) {
+          mfactNPlusM *= (n+m);
+          mfactNMinusM /= (n-m+1);
+          normCoef = Math.sqrt(2*(2.0*n+1)*mfactNMinusM/mfactNPlusM);
+          UC[n][m] = normCoef*C[n][m];
+        }
+      }
+    }
+    return UC;
+  }
+  
+  /** Get the un-normalized tesseral-secorial coefficients. 
+   * @return S the coefficients matrix
+   */
+  public double[][] getUnNormS() {
+    // calculate only if asked
+    if (US==null) {
+      US = new double[S.length][];
+      for(int i =0; i< S.length ; i++) {
+        US[i]= new double[i+1];
+      }
+      // initialization
+      double normCoef = 0.0;
+      double factN = 1.0;
+      double mfactNMinusM = 1.0;
+      double mfactNPlusM = 1.0;
+      US[0][0] = S[0][0];
+      
+      for (int n=1; n<S.length; n++ ) {
+        factN *= n;
+        mfactNMinusM = factN;
+        mfactNPlusM = factN;
+        US[n][0] = Math.sqrt(2.0*n+1)*S[n][0];
+        for (int m=1; m<S[n].length; m++) {
+          mfactNPlusM *= (n+m);
+          mfactNMinusM /= (n-m+1);
+          normCoef = Math.sqrt(2*(2.0*n+1)*mfactNMinusM/mfactNPlusM);
+          US[n][m] = normCoef*S[n][m];
+        }
+      }
+    }
+    return US;
   }
   
   /** Get the value of mu associtated to the other coefficients.
@@ -198,13 +275,22 @@ public class SHMFormatReader implements PotentialCoefficientsReader {
   /** Mu */
   private double mu;
   
-  /** zonal coefficients array */
+  /** fully normalized zonal coefficients array */
   private double[] J;
   
-  /** tesseral-secorial coefficients matrix */
+  /** fully normalized tesseral-secorial coefficients matrix */
   private double[][] C;
   
-  /** tesseral-secorial coefficients matrix */
+  /** fully normalized tesseral-secorial coefficients matrix */
   private double[][] S;
+  
+  /** un-normalized zonal coefficients array */
+  private double[] UJ;
+  
+  /** un-normalized tesseral-secorial coefficients matrix */
+  private double[][] UC;
+  
+  /** un-normalized tesseral-secorial coefficients matrix */
+  private double[][] US;
   
 }

@@ -32,20 +32,35 @@ public interface PotentialCoefficientsReader {
    */
   public void read() throws OrekitException, IOException ;
   
-  /** Get the zonal coefficients.
+  /** Get the fully normalized  zonal coefficients.
    * @return J the zonal coefficients array.
    */
-  public double[] getJ();
+  public double[] getNormJ();
   
-  /** Get the tesseral-secorial and zonal coefficients. 
+  /** Get the fully normalized tesseral-secorial and zonal coefficients. 
    * @return C the coefficients matrix
    */
-  public double[][] getC();
+  public double[][] getNormC();
   
-  /** Get the tesseral-secorial coefficients. 
+  /** Get the fully normalized tesseral-secorial coefficients. 
    * @return S the coefficients matrix
    */
-  public double[][] getS();
+  public double[][] getNormS();
+  
+  /** Get the un-normalized  zonal coefficients.
+   * @return J the zonal coefficients array.
+   */
+  public double[] getUnNormJ();
+  
+  /** Get the un-normalized tesseral-secorial and zonal coefficients. 
+   * @return C the coefficients matrix
+   */
+  public double[][] getUnNormC();
+  
+  /** Get the un-normalized tesseral-secorial coefficients. 
+   * @return S the coefficients matrix
+   */
+  public double[][] getUnNormS();
   
   /** Get the value of mu associtated to the other coefficients.
    * @return mu (m³/s²)

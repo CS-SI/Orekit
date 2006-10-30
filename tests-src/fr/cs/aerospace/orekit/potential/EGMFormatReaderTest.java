@@ -21,13 +21,29 @@ public class EGMFormatReaderTest extends TestCase {
     
     PotentialCoefficientsReader reader = PotentialReaderFactory.getPotentialReader(in);
     reader.read();
-    double[][] C = reader.getC();
-    double[][] S = reader.getS();    
-    assertEquals(0.957254173792E-06*Math.sqrt(2*3+1) ,C[3][0],  0);
-    assertEquals(-0.447516389678E-24*Math.sqrt(2*360+1),C[360][360],  0);
+    double[][] C = reader.getNormC();
+    double[][] S = reader.getNormS();    
+    assertEquals(0.957254173792E-06 ,C[3][0],  0);
+    assertEquals(-0.447516389678E-24,C[360][360],  0);
     assertEquals(0, S[4][0],  0);
-    assertEquals(-0.524580548778E-09*Math.sqrt(2*89+1) ,S[89][89],  0);
+    assertEquals(-0.524580548778E-09,S[89][89],  0);
    
+    double[][] UC = reader.getUnNormC();
+    double a = (-0.267133325490e-06);
+    double b = 11*10*9*8*7*6*5*4*3*2;
+    double c = 2*13/b;
+    double result = a*Math.sqrt(c);
+    
+    assertEquals(result,UC[6][5],  0);
+    
+    a = -0.188560802735E-06;
+    b = 8*7*6*5*4*3*2;
+    c=2*9/b;
+    result = a*Math.sqrt(c);
+    assertEquals(result,UC[4][4],  0);
+    
+    assertEquals(1.0826266835531513e-3, reader.getUnNormJ()[2],0);
+    
   }
     
   public void testExeption() throws FileNotFoundException {
