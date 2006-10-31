@@ -16,7 +16,6 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * acceleration</em> (artificial satellites, Vol. 12, No 2, June 1977).</p>
  * @version $Id$
  * @author L. Maisonobe
- * @author E. Delente
  * @author F. Maussion
  */
 
@@ -99,6 +98,7 @@ public class DrozinerAttractionModel implements ForceModel {
     double sum2 = 0.0;
     double bk1 = zOnr;
     double bk0 = aeOnr * (3 * bk1 * bk1 - 1.0);
+    
     for (int k = 2; k < C.length; k++) {
       double bk2 = bk1;
       bk1 = bk0;
@@ -109,65 +109,97 @@ public class DrozinerAttractionModel implements ForceModel {
       sum1 += jk * ak0;
       sum2 += jk * bk0;
     }
+    
+    
     double p = -sum1 / (r1Onr * r1Onr);
     double aX = xDotDotk * p;
     double aY = yDotDotk * p;
     double aZ = mu * sum2 / r2;
 
     // Tessereal-sectorial part of acceleration
+    
     double cosl = xBody / r1;  
-    double sinl = yBody / r1;    
-    double[][] A = new double[C.length][C.length];
-    double[][] B = new double[C.length][C.length];
-    double[] beta = new double[C.length];
-    beta[1] = aeOnr;
-    B[1][1] = 3 * beta[1] * zOnr * r1Onr;
-    double[] sinkl = new double[C.length];
-    double[] coskl = new double[C.length];
-    sinkl[1] = sinl;
-    coskl[1] = cosl;
-    double[][] H = new double[C.length][C.length];
-    double[][] Hb = new double[C.length][C.length];
-    double[][] D = new double[C.length][C.length];
+    double sinl = yBody / r1; 
+    
+    double sinJ, sinJminusOne;
+    double cosJ, cosJminusOne;
+    
+    sinJ = sinl;
+    cosJ = cosl;
+    sinJminusOne = sinJ;
+    cosJminusOne = cosJ;
 
+    double Bkj = 0;
+    double Akj = 0;
+    double betaKminus1 = aeOnr;
+    double Bkminus1j = 3 * betaKminus1 * zOnr * r1Onr;
+    double Bkminus2j = 0;
+    double Bkminus1kminus1 = 0;
+    double betaK = 0;
     double sumX = 0.0;
     double sumY = 0.0;
     double sumZ = 0.0;
+    double Dkj;
+    double innerSumX;
+    double innerSumY;
+    double innerSumZ;
+    
+    double Gkj;
+    double Hkj;
+    
     for (int k = 2; k < C.length; k++) {
-      sinkl[k] = sinkl[k] * cosl + coskl[k] * sinl;
-      coskl[k] = coskl[k] * cosl - sinkl[k] * sinl;
-      double innerSumX = 0.0;
-      double innerSumY = 0.0;
-      double innerSumZ = 0.0;
-      for (int j = 1; j < C[k].length; j++) {
-        H[k][j] = C[k][j] * coskl[j] + S[k][j] * sinkl[j];
-        Hb[k][j] = C[k][j] * sinkl[j] - S[k][j] * coskl[j];
-        if ((j >= 1) && (j <= (k - 2))) {
-          B[k][j] = aeOnr * (2 * k + 1) / (k - j) * zOnr * B[k - 1][j]
-                  - aeOnr * (k + j) / (k - 1 - j) * B[k - 2][j];
-          A[k][j] = aeOnr * (k + 1) / (k - j) * B[k - 1][j]
-                  - zOnr * B[k][j];
+
+      innerSumX = 0.0;
+      innerSumY = 0.0;
+      innerSumZ = 0.0;
+      
+      for (int j = 1; j <= k; j++) {
+        if (j<C[k].length) {
+          if (j!=1) {
+            sinJ = sinJminusOne * cosl + cosJminusOne * sinl;
+            cosJ = cosJminusOne * cosl - sinJminusOne * sinl;
+          }
+          cosJminusOne = cosJ;
+          sinJminusOne = sinJ;
+          
+          Gkj = C[k][j] * cosJ + S[k][j] * sinJ;
+          Hkj = C[k][j] * sinJ - S[k][j] * cosJ;
+          
+          if ((j >= 1) && (j <= (k - 2))) {
+            
+            Bkj = aeOnr * (2.0 * k + 1) / (k - j) * zOnr * Bkminus1j
+                    - aeOnr * (k + j) / (k - 1 - j) * Bkminus2j;
+            Akj = aeOnr * (k + 1.0) / (k - j) * Bkminus1j
+                    - zOnr * Bkj;
+            
+          }
+          if (j == (k - 1)) {
+            betaK = (2 * k - 1) * r1Onr * aeOnr * betaKminus1;
+            Bkj = (2 * k + 1) * aeOnr * zOnr * Bkminus1j - betaK;
+            Akj = (k + 1) * aeOnr * Bkminus1j - zOnr * Bkj;
+            Bkminus1kminus1 = Bkj;
+            betaKminus1 = betaK;          
+          }
+          if (j == k) {
+            Bkj = (2 * k + 1) * aeOnr * r1Onr * Bkminus1kminus1;
+            Akj = (k + 1) * r1Onr * betaK - zOnr * Bkj;
+          }
+          Bkminus2j = Bkminus1j;
+          Bkminus1j = Bkj;        
+          
+          Dkj =  j / (k + 1) * (Akj + zOnr * Bkj);
+          
+          innerSumX += Akj * Gkj;
+          innerSumY += Bkj * Gkj;
+          innerSumZ += Dkj * Hkj;
         }
-        if (j == (k - 1)) {
-          beta[k] = (2 * k - 1) * r1Onr * aeOnr * beta[k - 1];
-          B[k][k - 1] = (2 * k + 1) * aeOnr * zOnr * B[k - 1][k - 1]
-                                                              - beta[k];
-          A[k][k - 1] = (k + 1) * aeOnr * B[k - 1][k - 1]
-                                                   - zOnr * B[k][k - 1];
-        }
-        if (j == k) {
-          B[k][k] = (2 * k + 1) * aeOnr * r1Onr * B[k - 1][k - 1];
-          A[k][k] = (k + 1) * r1Onr * beta[k] - zOnr * B[k][k];
-        }
-        D[k][j] =  j / (k + 1) * (A[k][j] + zOnr * B[k][j]);
-        innerSumX += A[k][j] * H[k][j];
-        innerSumY += B[k][j] * H[k][j];
-        innerSumZ += D[k][j] * Hb[k][j];
+
       }
       sumX += innerSumX;
       sumY += innerSumY;
       sumZ += innerSumZ;
     }
+    
     double r2Onr12 = r2 / (r1 * r1);
     double p1 = r2Onr12 * xDotDotk;
     double p2 = r2Onr12 * yDotDotk;

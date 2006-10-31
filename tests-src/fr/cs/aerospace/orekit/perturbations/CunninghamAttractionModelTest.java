@@ -6,14 +6,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
-
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.FixedStepHandler;
 import org.spaceroots.mantissa.ode.GraggBulirschStoerIntegrator;
 import org.spaceroots.mantissa.ode.IntegratorException;
-
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.errors.PropagationException;
 import fr.cs.aerospace.orekit.frames.Frame;
@@ -57,7 +55,11 @@ public class CunninghamAttractionModelTest extends TestCase {
                                                    poleAligned);
     Orbit orbit = new Orbit(date , op);
 
-    propagator.addForceModel(new CunninghamAttractionModel(mu, itrf2000, 6378136.460, C, S));
+    double[][] c = new double[3][1];
+    c[0][0] = 1.0;
+    c[2][0] = C[2][0];
+    double[][] s = new double[3][1];
+    propagator.addForceModel(new CunninghamAttractionModel(mu, itrf2000, 6378136.460, c, s));
 
     // let the step handler perform the test
     propagator.propagate(orbit, new AbsoluteDate(date , 7 * 86400),
@@ -86,7 +88,7 @@ public class CunninghamAttractionModelTest extends TestCase {
       Vector3D normal = Vector3D.crossProduct(pos,vel);
       double angle = Vector3D.angle(sunPos , normal);
       if (! Double.isNaN(previous)) {
-        assertEquals(previous, angle, 0.02);
+        assertEquals(previous, angle, 0.016);
       }
       previous = angle;
     }
@@ -187,6 +189,31 @@ public class CunninghamAttractionModelTest extends TestCase {
     private EcksteinHechlerPropagator referencePropagator;
     private PrintWriter w;
     
+  }
+  
+  public void testWithTessereal() throws  OrekitException, ParseException, DerivativeException, IntegratorException {
+    //  initialization
+    AbsoluteDate date = new AbsoluteDate("2000-07-01T13:59:27.816" , UTCScale.getInstance());
+    Transform itrfToJ2000  = itrf2000.getTransformTo(Frame.getJ2000(), date);
+    Vector3D pole          = itrfToJ2000.transformVector(Vector3D.plusK);
+    Frame poleAligned      = new Frame(Frame.getJ2000(),
+                                       new Transform(new Rotation(pole, Vector3D.plusK)),
+                                       "pole aligned");
+
+    double i     = Math.toRadians(98.7);
+    double omega = Math.toRadians(93.0);
+    double OMEGA = Math.toRadians(15.0 * 22.5);
+    OrbitalParameters op = new KeplerianParameters(7201009.7124401, 1e-3, i , omega, OMEGA, 
+                                                   0, KeplerianParameters.MEAN_ANOMALY,
+                                                   poleAligned);
+    Orbit orbit = new Orbit(date , op);
+
+    propagator.addForceModel(new CunninghamAttractionModel(mu, itrf2000, 6378136.460, C, S));
+
+    // let the step handler perform the test
+    Orbit finalOrbit = propagator.propagate(orbit, new AbsoluteDate(date , 7 * 86400));
+    
+    System.out.println(orbit.getA()-finalOrbit.getA());
   }
 
   protected void setUp() {

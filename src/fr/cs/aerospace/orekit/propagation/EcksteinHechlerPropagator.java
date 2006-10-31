@@ -18,21 +18,22 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
 public class EcksteinHechlerPropagator implements Ephemeris {
 
   /** Create a new instance.
-   * <p>The Cn0 coefficients are the denormalized zonal coefficients, they
-   * are related to both the normalized coefficients C~n0 and the Jn one
+   * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
+   * are related to both the normalized coefficients <span style="text-decoration: overline">C</span><sub>n,0</sub>
+   *  and the J<sub>n</sub> one
    * as follows:</p>
    * <pre>
-   *   C<sub>n,0</sub> = &radic;(2n+1) C~<sub>n,0</sub>
+   *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup><span style="text-decoration: overline">C</span><sub>n,0</sub>
    *   C<sub>n,0</sub> = -J<sub>n</sub>
    * </pre>
    * @param orbit initial orbit
    * @param referenceRadius reference radius of the Earth for the potential model (m)
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
-   * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
-   * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
-   * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-   * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+   * @param C<sub>2,0</sub> un-normalized zonal coefficient (about -1.08e-3 for Earth)
+   * @param C<sub>3,0</sub> un-normalized zonal coefficient (about +2.53e-6 for Earth)
+   * @param C<sub>4,0</sub> un-normalized zonal coefficient (about +1.62e-6 for Earth)
+   * @param C<sub>5,0</sub> un-normalized zonal coefficient (about +2.28e-7 for Earth)
+   * @param C<sub>6,0</sub> un-normalized zonal coefficient (about -5.41e-7 for Earth)
    * @exception PropagationException if the mean parameters cannot be computed
    */
   public EcksteinHechlerPropagator(Orbit orbit, double referenceRadius, double mu,

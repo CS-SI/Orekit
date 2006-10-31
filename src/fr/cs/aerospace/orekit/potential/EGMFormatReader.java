@@ -221,6 +221,54 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
     return US;
   }
   
+  public double[][] getNormC(int n, int m) throws OrekitException {
+    if(n>=C.length) throw new OrekitException(
+        "the argument degree (n = {0}) is too big (max = {1} " , 
+        new String[] { Integer.toString(n), Integer.toString(C.length-1) });
+    if(m>=C[C.length-1].length) throw new OrekitException(
+        "the argument order (n = {0}) is too big (max = {1}) " , 
+        new String[] { Integer.toString(n), Integer.toString(C[C.length-1].length-1) });
+    
+    double[][] c = new double[n+1][];
+    for (int i=0; i<=n; i++) {
+      for (int j=0; j<=m; j++) {
+        if (i<=m) {
+          c[i] = new double[i+1];
+        } 
+        else {
+          c[i] = new double[m+1];
+        }
+        c[i][j] = C[i][j];        
+      }
+    }
+    return null;
+  }
+
+  public double[] getNormJ(int n, int m) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public double[][] getNormS(int n, int m) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public double[][] getUnNormC(int n, int m) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public double[] getUnNormJ(int n, int m) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public double[][] getUnNormS(int n, int m) {
+    // TODO Auto-generated method stub
+    return null;
+  } 
+  
   /** Get the value of mu associtated to the other coefficients.
    * @return mu (m³/s²)
    */
@@ -266,6 +314,6 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
   private double[][] US;
   
   private ArrayList Cl;
-  private ArrayList Sl; 
+  private ArrayList Sl;
   
 }

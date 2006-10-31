@@ -292,5 +292,35 @@ public class SHMFormatReader implements PotentialCoefficientsReader {
   
   /** un-normalized tesseral-secorial coefficients matrix */
   private double[][] US;
+
+  public double[][] getNormC(int n, int m) throws OrekitException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public double[] getNormJ(int n, int m) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public double[][] getNormS(int n, int m) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public double[][] getUnNormC(int n, int m) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public double[] getUnNormJ(int n, int m) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public double[][] getUnNormS(int n, int m) {
+    // TODO Auto-generated method stub
+    return null;
+  }
   
 }
