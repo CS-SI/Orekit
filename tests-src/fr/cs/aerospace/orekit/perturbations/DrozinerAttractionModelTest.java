@@ -3,8 +3,10 @@ package fr.cs.aerospace.orekit.perturbations;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.text.ParseException;
 
 import org.spaceroots.mantissa.geometry.Rotation;
@@ -33,6 +35,7 @@ import fr.cs.aerospace.orekit.propagation.EcksteinHechlerPropagator;
 import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
+import fr.cs.aerospace.orekit.utils.Angle;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -40,7 +43,7 @@ import junit.framework.TestSuite;
 
 public class DrozinerAttractionModelTest extends TestCase {
   
-  public void aatestHelioSynchronous()
+  public void testHelioSynchronous()
     throws ParseException, FileNotFoundException,
            OrekitException, DerivativeException, IntegratorException {
 
@@ -104,7 +107,7 @@ public class DrozinerAttractionModelTest extends TestCase {
 
   }
   
-  public void aatestEcksteinHechlerReference()
+  public void testEcksteinHechlerReference()
     throws ParseException, FileNotFoundException,
            OrekitException, DerivativeException, IntegratorException {
 
@@ -147,6 +150,12 @@ public class DrozinerAttractionModelTest extends TestCase {
       date = initialOrbit.getDate();
       referencePropagator =
         new EcksteinHechlerPropagator(initialOrbit, ae, mu, c20, c30, c40, c50, c60);
+      try {
+        w = new PrintWriter(new FileWriter(new File(new File(System.getProperty("user.home")), "drozi.dat")));
+      } catch (IOException ioe) {
+        ioe.printStackTrace(System.out);
+        System.exit(1);
+      }
     }
     
     public void handleStep(double t, double[] y, boolean isLastStep) {
@@ -167,7 +176,11 @@ public class DrozinerAttractionModelTest extends TestCase {
         Vector3D W = Vector3D.crossProduct(posEHP, velEHP);
         W.normalizeSelf();
         Vector3D N = Vector3D.crossProduct(W, T);
-
+        w.println(t + " " + dif.getNorm()
+                  + " " + Vector3D.dotProduct(dif, T)
+                  + " " + Vector3D.dotProduct(dif, N)
+                  + " " + Vector3D.dotProduct(dif, W));
+        w.flush();
         assertTrue(dif.getNorm() < 104);
         assertTrue(Math.abs(Vector3D.dotProduct(dif, T)) < 104);
         assertTrue(Math.abs(Vector3D.dotProduct(dif, N)) <  53);
@@ -179,88 +192,36 @@ public class DrozinerAttractionModelTest extends TestCase {
     }
     private AbsoluteDate date;
     private EcksteinHechlerPropagator referencePropagator;
-    
+    private PrintWriter w;
   }
   
-  public void testWithTessereal() throws OrekitException, IOException, DerivativeException, IntegratorException, ParseException {
-    //  initialization
+  public void testZonalWithDrozinerReference()
+  throws OrekitException, IOException, DerivativeException, IntegratorException, ParseException {
+//  initialization
     AbsoluteDate date = new AbsoluteDate("2000-07-01T13:59:27.816" , UTCScale.getInstance());
-    Transform itrfToJ2000  = itrf2000.getTransformTo(Frame.getJ2000(), date);
-    Vector3D pole          = itrfToJ2000.transformVector(Vector3D.plusK);
-    Frame poleAligned      = new Frame(Frame.getJ2000(),
-                                       new Transform(new Rotation(pole, Vector3D.plusK)),
-                                       "pole aligned");
-
     double i     = Math.toRadians(98.7);
     double omega = Math.toRadians(93.0);
     double OMEGA = Math.toRadians(15.0 * 22.5);
     OrbitalParameters op = new KeplerianParameters(7201009.7124401, 1e-3, i , omega, OMEGA, 
                                                    0, KeplerianParameters.MEAN_ANOMALY,
-                                                   poleAligned);
+                                                   Frame.getJ2000());
     Orbit orbit = new Orbit(date , op);
 
-    propagator.addForceModel(new DrozinerAttractionModel(mu, itrf2000,
-                                                         6378136.460,
-                                                         C, S ));
+    propagator.addForceModel(new CunninghamAttractionModel(mu, itrf2000, ae,C, S));
+//  let the step handler perform the test
+    Orbit cunnOrb = propagator.propagate(orbit, new AbsoluteDate(date ,  86400));
+
+    propagator.removeForceModels();
+    
+    propagator.addForceModel(new DrozinerAttractionModel(mu, itrf2000, ae,
+                                                         C, S));
 
     // let the step handler perform the test
-    Orbit finalOrbit = propagator.propagate(orbit, new AbsoluteDate(date , 7 * 86400));
-    System.out.println(orbit.getA()-finalOrbit.getA());
-  }
-  
-private class TesserealStepHandler implements FixedStepHandler {
+    Orbit drozOrb = propagator.propagate(orbit, new AbsoluteDate(date ,  86400));
     
-    private TesserealStepHandler(Orbit initialOrbit)
-      throws FileNotFoundException, OrekitException {
-      startOrbit = initialOrbit;
-      date = initialOrbit.getDate();
-      referencePropagator =
-          new NumericalPropagator(mu,
-                                  new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
-      referencePropagator.addForceModel(new CunninghamAttractionModel(mu, itrf2000, ae,
-                                                                     C, S ));
-    }
+    Vector3D dif = Vector3D.subtract(cunnOrb.getPVCoordinates(mu).getPosition(),drozOrb.getPVCoordinates(mu).getPosition());
     
-    public void handleStep(double t, double[] y, boolean isLastStep) {
-      try {
-        OrbitalParameters op =
-          new EquinoctialParameters(y[0], y[1], y[2], y[3], y[4], y[5],
-                                    EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                    Frame.getJ2000());
-        AbsoluteDate current = new AbsoluteDate(date, t);
-
-        Orbit CUNOrbit   = referencePropagator.propagate(startOrbit , current);
-        Vector3D posCUN  = CUNOrbit.getPVCoordinates(mu).getPosition();
-        Vector3D posDROZ = op.getPVCoordinates(mu).getPosition();
-        Vector3D velCUN  = CUNOrbit.getPVCoordinates(mu).getVelocity();
-        Vector3D dif     = Vector3D.subtract(posCUN, posDROZ);
-
-        Vector3D T = new Vector3D(1 / velCUN.getNorm(), velCUN);
-        Vector3D W = Vector3D.crossProduct(posCUN, velCUN);
-        W.normalizeSelf();
-        Vector3D N = Vector3D.crossProduct(W, T);
-System.out.println(dif.getNorm());
-//        assertTrue(dif.getNorm() < 104);
-//        assertTrue(Math.abs(Vector3D.dotProduct(dif, T)) < 104);
-//        assertTrue(Math.abs(Vector3D.dotProduct(dif, N)) <  53);
-//        assertTrue(Math.abs(Vector3D.dotProduct(dif, W)) <  12);
-
-      } catch (PropagationException e) {
-        e.printStackTrace();
-      } catch (DerivativeException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      } catch (IntegratorException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      } catch (OrekitException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      }
-    }
-    private AbsoluteDate date;
-    private NumericalPropagator referencePropagator;
-    private Orbit startOrbit;
+    System.out.println(dif.getNorm());
     
   }
 
@@ -310,7 +271,7 @@ System.out.println(dif.getNorm());
       {  2.278882644141e-07, -2.086346283172e-07,  2.162761961684e-06, -1.498655671702e-06,
         -9.794826452868e-07,  5.797035241535e-07 },
       { -5.406186013322e-07, -2.736882085330e-07,  1.754209863998e-07,  2.063640268613e-07,
-        -3.101287736303e-07, -9.633248308263e-07,  3.414597413636e-8 }
+        -3.101287736303e-07, -9.633248308263e-07,  3.414597413636e-08 }
     };
   private double[][] S  = new double[][] {
       {  0.000000000000e+00 },

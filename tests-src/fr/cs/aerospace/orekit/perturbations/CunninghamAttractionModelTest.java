@@ -81,6 +81,7 @@ public class CunninghamAttractionModelTest extends TestCase {
         new EquinoctialParameters(y[0], y[1], y[2], y[3], y[4], y[5],
                                   EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
                                   Frame.getJ2000());
+
       Vector3D pos = op.getPVCoordinates(mu).getPosition();
       Vector3D vel = op.getPVCoordinates(mu).getVelocity();
       AbsoluteDate current = new AbsoluteDate(date, t);
@@ -88,7 +89,7 @@ public class CunninghamAttractionModelTest extends TestCase {
       Vector3D normal = Vector3D.crossProduct(pos,vel);
       double angle = Vector3D.angle(sunPos , normal);
       if (! Double.isNaN(previous)) {
-        assertEquals(previous, angle, 0.016);
+        assertEquals(previous, angle, 0.0005);
       }
       previous = angle;
     }
@@ -121,14 +122,14 @@ public class CunninghamAttractionModelTest extends TestCase {
                                           poleAligned, mu));
 
     propagator.addForceModel(new CunninghamAttractionModel(mu, itrf2000, ae,
-                                                           new double[][] {
-                                                             { C[0][0] }, { C[1][0] }, { C[2][0] }, { C[3][0] },
-                                                             { C[4][0] }, { C[5][0] }, { C[6][0] }
-                                                           },
-                                                           new double[][] {
-                                                             { S[0][0] }, { S[1][0] }, { S[2][0] }, { S[3][0] },
-                                                             { S[4][0] }, { S[5][0] }, { S[6][0] }
-                                                           }));
+                                                         new double[][] {
+                                                           { 0.0 }, { 0.0 }, { c20 }, { c30 },
+                                                           { c40 }, { c50 }, { c60 },
+                                                         },
+                                                         new double[][] {
+                                                           { 0.0 }, { 0.0 }, { 0.0 }, { 0.0 },
+                                                           { 0.0 }, { 0.0 }, { 0.0 },
+                                                         }));
     
     // let the step handler perform the test
     propagator.propagate(initialOrbit, new AbsoluteDate(date , 50000), 20,
@@ -142,10 +143,9 @@ public class CunninghamAttractionModelTest extends TestCase {
       throws FileNotFoundException, OrekitException {
       date = initialOrbit.getDate();
       referencePropagator =
-        new EcksteinHechlerPropagator(initialOrbit, ae, mu,
-                                      C[2][0], C[3][0], C[4][0], C[5][0], C[6][0]);
+        new EcksteinHechlerPropagator(initialOrbit, ae, mu, c20, c30, c40, c50, c60);
       try {
-        w = new PrintWriter(new FileWriter(new File(new File(System.getProperty("user.home")), "x.dat")));
+        w = new PrintWriter(new FileWriter(new File(new File(System.getProperty("user.home")), "cunning.dat")));
       } catch (IOException ioe) {
         ioe.printStackTrace(System.out);
         System.exit(1);
@@ -176,10 +176,10 @@ public class CunninghamAttractionModelTest extends TestCase {
                   + " " + Vector3D.dotProduct(dif, N)
                   + " " + Vector3D.dotProduct(dif, W));
         w.flush();
-//        assertTrue(dif.getNorm() < 103);
-//        assertTrue(Math.abs(Vector3D.dotProduct(dif, T)) < 103);
-//        assertTrue(Math.abs(Vector3D.dotProduct(dif, N)) <  53);
-//        assertTrue(Math.abs(Vector3D.dotProduct(dif, W)) <  12);
+        assertTrue(dif.getNorm() < 103);
+        assertTrue(Math.abs(Vector3D.dotProduct(dif, T)) < 103);
+        assertTrue(Math.abs(Vector3D.dotProduct(dif, N)) <  53);
+        assertTrue(Math.abs(Vector3D.dotProduct(dif, W)) <  12);
 
       } catch (PropagationException e) {
         e.printStackTrace();
@@ -191,29 +191,50 @@ public class CunninghamAttractionModelTest extends TestCase {
     
   }
   
-  public void testWithTessereal() throws  OrekitException, ParseException, DerivativeException, IntegratorException {
-    //  initialization
+  public void testZonalWithDrozinerReference()
+  throws OrekitException, IOException, DerivativeException, IntegratorException, ParseException {
+//  initialization
     AbsoluteDate date = new AbsoluteDate("2000-07-01T13:59:27.816" , UTCScale.getInstance());
-    Transform itrfToJ2000  = itrf2000.getTransformTo(Frame.getJ2000(), date);
-    Vector3D pole          = itrfToJ2000.transformVector(Vector3D.plusK);
-    Frame poleAligned      = new Frame(Frame.getJ2000(),
-                                       new Transform(new Rotation(pole, Vector3D.plusK)),
-                                       "pole aligned");
-
     double i     = Math.toRadians(98.7);
     double omega = Math.toRadians(93.0);
     double OMEGA = Math.toRadians(15.0 * 22.5);
     OrbitalParameters op = new KeplerianParameters(7201009.7124401, 1e-3, i , omega, OMEGA, 
                                                    0, KeplerianParameters.MEAN_ANOMALY,
-                                                   poleAligned);
+                                                   Frame.getJ2000());
     Orbit orbit = new Orbit(date , op);
 
-    propagator.addForceModel(new CunninghamAttractionModel(mu, itrf2000, 6378136.460, C, S));
+    propagator.addForceModel(new CunninghamAttractionModel(mu, itrf2000, ae,
+                                                           new double[][] {
+        { 0.0 }, { 0.0 }, { c20 }, { c30 },
+        { c40 }, { c50 }, { c60 },
+    },
+    new double[][] {
+        { 0.0 }, { 0.0 }, { 0.0 }, { 0.0 },
+        { 0.0 }, { 0.0 }, { 0.0 },
+    }));
+
+//  let the step handler perform the test
+    Orbit cunnOrb = propagator.propagate(orbit, new AbsoluteDate(date ,  86400));
+
+    propagator.removeForceModels();
+    
+    propagator.addForceModel(new DrozinerAttractionModel(mu, itrf2000, ae,
+                                                         new double[][] {
+                                                           { 0.0 }, { 0.0 }, { c20 }, { c30 },
+                                                           { c40 }, { c50 }, { c60 },
+                                                         },
+                                                         new double[][] {
+                                                           { 0.0 }, { 0.0 }, { 0.0 }, { 0.0 },
+                                                           { 0.0 }, { 0.0 }, { 0.0 },
+                                                         }));
 
     // let the step handler perform the test
-    Orbit finalOrbit = propagator.propagate(orbit, new AbsoluteDate(date , 7 * 86400));
+    Orbit drozOrb = propagator.propagate(orbit, new AbsoluteDate(date ,  86400));
     
-    System.out.println(orbit.getA()-finalOrbit.getA());
+    Vector3D dif = Vector3D.subtract(cunnOrb.getPVCoordinates(mu).getPosition(),drozOrb.getPVCoordinates(mu).getPosition());
+    
+    System.out.println(dif.getNorm());
+    
   }
 
   protected void setUp() {
@@ -221,6 +242,11 @@ public class CunninghamAttractionModelTest extends TestCase {
       // Eigen c1 model truncated to degree and order 6
       mu =  3.986004415e+14;
       ae =  6378136.460;
+      c20 = -1.08262631303e-3;
+      c30 =  2.53248017972e-6;
+      c40 =  1.61994537014e-6;
+      c50 =  2.27888264414e-7;
+      c60 = -5.40618601332e-7;
       C  = new double[][] {
         {  1.000000000000e+00 },
         { -1.863039013786e-09, -5.934448524722e-10 },
@@ -262,7 +288,11 @@ public class CunninghamAttractionModelTest extends TestCase {
   public static Test suite() {
     return new TestSuite(CunninghamAttractionModelTest.class);
   }
-
+  private double c20;
+  private double c30;
+  private double c40;
+  private double c50;
+  private double c60;
   private double mu;
   private double ae;
   private double[][] C;
