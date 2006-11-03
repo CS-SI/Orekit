@@ -101,18 +101,21 @@ public class DrozinerAttractionModel implements ForceModel {
     double sumB = 0.0;
     double bk1 = zOnr;
     double bk0 = aeOnr * (3 * bk1 * bk1 - 1.0);
-
+    double jk = -C[1][0];
+    
+    sumA += jk *( 2 * aeOnr * bk1 - zOnr * bk0);
+    sumB += jk * bk0;
+    
     for (int k = 2; k <= degree; k++) {
       double bk2 = bk1;
       bk1 = bk0;
       double p = (1.0 + k) / k;
       bk0 = aeOnr * ((1 + p) * zOnr * bk1 - (k * aeOnr * bk2) / (k - 1));
       double ak0 = p * aeOnr * bk1 - zOnr * bk0;
-      double jk = -C[k][0];
+      jk = -C[k][0];
       sumA += jk * ak0;
       sumB += jk * bk0;
     }
-
 
     double p = -sumA / (r1Onr * r1Onr);
     double aX = xDotDotk * p;
@@ -155,8 +158,17 @@ public class DrozinerAttractionModel implements ForceModel {
 
       double Bkminus1kminus1 = Bkm1[1];
       
+      Gkj = C[1][1] * cosL + S[1][1] * sinL;
+      Hkj = C[1][1] * sinL - S[1][1] * cosL;   
       
+      Akj = 2*r1Onr*betaKminus1-zOnr*Bkminus1kminus1;
+      
+      Dkj =  (Akj + zOnr * Bkminus1kminus1 ) * 0.5 ;
 
+      sum1 += Akj * Gkj;
+      sum2 += Bkminus1kminus1 * Gkj;
+      sum3 += Dkj * Hkj;
+      
       for (int k = 2; k <= degree; k++) {
 
         innerSum1 = 0.0;

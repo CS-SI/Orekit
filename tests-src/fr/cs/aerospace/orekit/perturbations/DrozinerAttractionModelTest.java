@@ -207,7 +207,7 @@ public class DrozinerAttractionModelTest extends TestCase {
                                                    0, KeplerianParameters.MEAN_ANOMALY,
                                                    Frame.getJ2000());
     Orbit orbit = new Orbit(date , op);
-
+    
     propagator.addForceModel(new CunninghamAttractionModel(mu, itrf2000, ae,C, S));
 
     Orbit cunnOrb = propagator.propagate(orbit, new AbsoluteDate(date ,  86400));
@@ -221,10 +221,12 @@ public class DrozinerAttractionModelTest extends TestCase {
     
     Vector3D dif = Vector3D.subtract(cunnOrb.getPVCoordinates(mu).getPosition(),drozOrb.getPVCoordinates(mu).getPosition());
     
-    assertTrue(dif.getNorm() < 3.1);
-    assertTrue(Math.abs(dif.getX()) < 1.4);
-    assertTrue(Math.abs(dif.getY()) < 1.0); 
-    assertTrue(Math.abs(dif.getZ()) < 2.7);
+    assertTrue(dif.getNorm() < 10e-5);
+    assertTrue(Math.abs(dif.getX()) < 3.1e-5);
+    assertTrue(Math.abs(dif.getY()) < 2.9e-5); 
+    assertTrue(Math.abs(dif.getZ()) < 9e-5);
+    
+    System.out.println(Vector.toString(dif));
   }
 
   protected void setUp() {

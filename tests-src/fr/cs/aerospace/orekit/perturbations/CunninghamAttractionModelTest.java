@@ -237,6 +237,8 @@ public class CunninghamAttractionModelTest extends TestCase {
     assertTrue(Math.abs(dif.getY()) < 6e-9); 
     assertTrue(Math.abs(dif.getZ()) < 9e-8);
     
+    System.out.println(Vector.toString(dif));
+    
   }
 
   protected void setUp() {
