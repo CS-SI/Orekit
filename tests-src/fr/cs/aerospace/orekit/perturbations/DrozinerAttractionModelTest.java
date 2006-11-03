@@ -37,6 +37,7 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
 import fr.cs.aerospace.orekit.utils.Angle;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
+import fr.cs.aerospace.orekit.utils.Vector;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -195,7 +196,7 @@ public class DrozinerAttractionModelTest extends TestCase {
     private PrintWriter w;
   }
   
-  public void testZonalWithDrozinerReference()
+  public void testTesserealWithCunninghamReference()
   throws OrekitException, IOException, DerivativeException, IntegratorException, ParseException {
 //  initialization
     AbsoluteDate date = new AbsoluteDate("2000-07-01T13:59:27.816" , UTCScale.getInstance());
@@ -208,7 +209,7 @@ public class DrozinerAttractionModelTest extends TestCase {
     Orbit orbit = new Orbit(date , op);
 
     propagator.addForceModel(new CunninghamAttractionModel(mu, itrf2000, ae,C, S));
-//  let the step handler perform the test
+
     Orbit cunnOrb = propagator.propagate(orbit, new AbsoluteDate(date ,  86400));
 
     propagator.removeForceModels();
@@ -216,13 +217,14 @@ public class DrozinerAttractionModelTest extends TestCase {
     propagator.addForceModel(new DrozinerAttractionModel(mu, itrf2000, ae,
                                                          C, S));
 
-    // let the step handler perform the test
     Orbit drozOrb = propagator.propagate(orbit, new AbsoluteDate(date ,  86400));
     
     Vector3D dif = Vector3D.subtract(cunnOrb.getPVCoordinates(mu).getPosition(),drozOrb.getPVCoordinates(mu).getPosition());
     
-    System.out.println(dif.getNorm());
-    
+    assertTrue(dif.getNorm() < 3.1);
+    assertTrue(Math.abs(dif.getX()) < 1.4);
+    assertTrue(Math.abs(dif.getY()) < 1.0); 
+    assertTrue(Math.abs(dif.getZ()) < 2.7);
   }
 
   protected void setUp() {

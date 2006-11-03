@@ -41,6 +41,8 @@ public class DrozinerAttractionModel implements ForceModel {
     this.C = C;
     this.S = S;
     this.centralBodyFrame = centralBodyFrame;
+    this.degree = C.length - 1;
+    this.order = C[degree].length-1;
   }
 
   /**
@@ -79,7 +81,7 @@ public class DrozinerAttractionModel implements ForceModel {
 
     double r2 = r12 + zBody * zBody;
     double r  = Math.sqrt(r2);
-    
+
     if (r <= equatorialRadius) {
       throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
                                 new String[] { Double.toString(r) });
@@ -100,7 +102,7 @@ public class DrozinerAttractionModel implements ForceModel {
     double bk1 = zOnr;
     double bk0 = aeOnr * (3 * bk1 * bk1 - 1.0);
 
-    for (int k = 2; k < C.length; k++) {
+    for (int k = 2; k <= degree; k++) {
       double bk2 = bk1;
       bk1 = bk0;
       double p = (1.0 + k) / k;
@@ -118,7 +120,8 @@ public class DrozinerAttractionModel implements ForceModel {
     double aZ = mu * sumB / r2;
 
     // Tessereal-sectorial part of acceleration
-    if (C[C.length-1].length>1) {
+    if (order>0) {
+
       double cosL = xBody / r1;
       double sinL = yBody / r1;
 
@@ -140,19 +143,21 @@ public class DrozinerAttractionModel implements ForceModel {
       double innerSum3;
 
 
-      
+
       double Gkj;
       double Hkj;
-      
-      double[] Bkm2 = new double[C[C.length-1].length]; 
+
+      double[] Bkm2 = new double[order+1]; 
       // as we only need bkm2 once, it is also used as Bk
-      double[] Bkm1 = new double[C[C.length-1].length];
-      
+      double[] Bkm1 = new double[order+1];
+
       Bkm1[1] = 3 * betaKminus1 * zOnr * r1Onr;
-      
+
       double Bkminus1kminus1 = Bkm1[1];
       
-      for (int k = 2; k < C.length; k++) {
+      
+
+      for (int k = 2; k <= degree; k++) {
 
         innerSum1 = 0.0;
         innerSum2 = 0.0;
@@ -162,49 +167,46 @@ public class DrozinerAttractionModel implements ForceModel {
         cosl[k] = cosl[k-1]*cosL - sinl[k-1]*sinL;      
 
         for (int j = 1; j <= k; j++) {
-          if (j<C[k].length) {          
+          if (j<=order) {          
             Gkj = C[k][j] * cosl[j] + S[k][j] * sinl[j];
             Hkj = C[k][j] * sinl[j] - S[k][j] * cosl[j];          
-          }
-          else{
-            Gkj = 0.0;
-            Hkj = 0.0;        
-          }
-          if (j <= (k - 2)) {
 
-            Bkm2[j] = aeOnr * zOnr * Bkm1[j] * (2.0 * k + 1) / (double)(k - j)
-            - aeOnr * Bkm2[j] * (k + j) / (double)(k - 1 - j) ;
-            Akj = aeOnr * Bkm1[j] * (k + 1.0) / (double)(k - j) - zOnr * Bkm2[j];
+            if (j <= (k - 2)) {
 
-          }
-          if (j == (k - 1)) {
-            betaK =  aeOnr * (2 * k - 1) * r1Onr * betaKminus1;
-            Bkm2[j] = aeOnr * (2 * k + 1) * zOnr * Bkm1[j] - betaK;
-            Akj = aeOnr *  (k + 1.0) * Bkm1[j] - zOnr * Bkm2[j];          
-            betaKminus1 = betaK; 
-          }
-          if (j == k) {
-            Bkm2[j] = (2 * k + 1) * aeOnr * r1Onr * Bkminus1kminus1;
-            Akj = (k + 1) * r1Onr * betaK - zOnr * Bkm2[j];
-            Bkminus1kminus1 = Bkm2[j];
-          }
-          Dkj =  (Akj + zOnr * Bkm2[j]) * j / (k + 1.0) ;
+              Bkm2[j] = aeOnr * ( zOnr * Bkm1[j] * (2.0 * k + 1.0) / (k - j)
+                  - aeOnr * Bkm2[j] * (k + j) / (k - 1 - j) ) ;
+              Akj = aeOnr * Bkm1[j] * (k + 1.0) / (k - j) - zOnr * Bkm2[j];
 
-          innerSum1 += Akj * Gkj;
-          innerSum2 += Bkm2[j] * Gkj;
-          innerSum3 += Dkj * Hkj;
+            }
+            if (j == (k - 1)) {
+              betaK =  aeOnr * (2.0 * k - 1.0) * r1Onr * betaKminus1;
+              Bkm2[j] = aeOnr * (2.0 * k + 1.0) * zOnr * Bkm1[j] - betaK;
+              Akj = aeOnr *  (k + 1.0) * Bkm1[j] - zOnr * Bkm2[j];          
+              betaKminus1 = betaK; 
+            }
+            if (j == k) {
+              Bkm2[j] = (2 * k + 1) * aeOnr * r1Onr * Bkminus1kminus1;
+              Akj = (k + 1) * r1Onr * betaK - zOnr * Bkm2[j];
+              Bkminus1kminus1 = Bkm2[j];
+            }
+            Dkj =  (Akj + zOnr * Bkm2[j]) * j / (k + 1.0) ;
+
+            innerSum1 += Akj * Gkj;
+            innerSum2 += Bkm2[j] * Gkj;
+            innerSum3 += Dkj * Hkj;
+          }
         }
-        
+
         double[] temp = Bkm1;
         Bkm1 = Bkm2;
         Bkm2 = temp;
-        
+
         sum1 += innerSum1;
         sum2 += innerSum2;
         sum3 += innerSum3;
 
       }
-      
+
       double r2Onr12 = r2 / (r1 * r1);
       double p1 = r2Onr12 * xDotDotk;
       double p2 = r2Onr12 * yDotDotk;
@@ -212,7 +214,7 @@ public class DrozinerAttractionModel implements ForceModel {
       aY += p2 * sum1 + p1 * sum3;
       aZ -= mu * sum2 / r2;
     }
-    
+
     // provide the perturbing acceleration to the derivatives adder
     Vector3D accInInert = bodyToInertial.transformVector(new Vector3D(aX, aY, aZ));
     adder.addXYZAcceleration(accInInert.getX(), accInInert.getY(), accInInert.getZ());
@@ -237,5 +239,11 @@ public class DrozinerAttractionModel implements ForceModel {
 
   /** Frame for the central body. */  
   private SynchronizedFrame centralBodyFrame;
-  
+
+  /** Number of zonal coefficients */
+  private int degree;
+
+  /** Number of tessereal coefficients. */
+  private int order;
+
 }

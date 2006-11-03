@@ -91,6 +91,10 @@ public class CunninghamAttractionModel implements ForceModel {
                               EquinoctialGaussEquations adder)
   throws OrekitException {
     
+    if (C.length == 0) {
+      return;
+    }
+    
     // get the position in body frame
     Transform fromBodyFrame = bodyFrame.getTransformTo(adder.getFrame(), date);
     Transform toBodyFrame   = fromBodyFrame.getInverse();
