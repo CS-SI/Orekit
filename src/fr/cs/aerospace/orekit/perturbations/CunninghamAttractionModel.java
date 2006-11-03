@@ -320,80 +320,6 @@ public class CunninghamAttractionModel implements ForceModel {
 
     }
     
-////    tests
-//     
-//    // Potential V
-//    double VR44 = x*x*x*x - 6*x*x*y*y + y*y*y*y;
-//    VR44 = VR44*105*onR4*onR3*onR2;
-//    double VI44 = 4*x*y*(x*x-y*y);
-//    VI44 = VI44*105*onR4*onR3*onR2;
-//    double VR40 = 8*z*z*z*z - 24*z*z*(x*x+y*y) - 3*(x*x+y*y)*(x*x+y*y); 
-//    VR40 = VR40/8*onR4*onR3*onR2;
-//    double VR20 = 2*z*z - (x*x+y*y); 
-//    VR20 = VR20/2*onR3*onR2;
-//    double VR10 = z; 
-//    VR10 = z*onR3;
-//    // derivatives : 
-//    double DVRX33 = -vr[4][4]/2 + vr[4][2]; 
-//    double DVRX41 = -vr[5][2]/2 + 5.0*4.0*vr[5][0]/2.0; 
-//    double DVRZ40 = -vr[5][0]*5.0; 
-//    double DVRZ10 = -vr[2][0]*2.0; 
-//    double DVRZ32 = -vr[4][2]*2.0;
-//    double DVRZ33 = -vr[4][3];
-//    
-////    if ( ((VR44-vr[4][4])*10e36>=10e-10)||((VR44-vr[4][4])*10e36<=-10e-10) ) {
-////      throw new OrekitException("putain fais chier VR44 : {0}",
-////                                new String[] {Double.toString((VR44-vr[4][4])*10e36)});
-////    }
-////    if ( ((VI44-vi[4][4])*10e36>=10e-10)||((VI44-vi[4][4])*10e36<=-10e-10) ) {
-////      throw new OrekitException("putain fais chier VI44 : {0}",
-////                                new String[] {Double.toString((VI44-vi[4][4])*10e36)});
-////    }    
-//
-//    if ( ((VR10-vr[1][0])>=10e-30)||((VR10-vr[1][0])<=-10e-30) ) {
-//      throw new OrekitException("putain fais chier VR10 : {0} ",
-//                                new String[] {Double.toString(VR10-vr[1][0])});
-//    }
-//    if ( ((VR20-vr[2][0])*10e21>=10e-10)||((VR20-vr[2][0])*10e21<=-10e-10) ) {
-//      throw new OrekitException("putain fais chier VR20 : {0} ",
-//                                new String[] {Double.toString( VR20-vr[2][0])});
-//    }
-//    
-//
-//
-//    if ( ((DVRZ10-gradZr[1][0])*1e21>=1e-10)||((DVRZ10-gradZr[1][0])*1e21<=-1e-10) ) {
-//      throw new OrekitException("putain fais chier DVRZ10 : {0} " + "  gradZ  : " + "{1}",
-//                                new String[] {Double.toString( DVRZ10),
-//                                                    Double.toString( gradZr[1][0])  });
-//    }
-//    
-//    if ( ((DVRZ40-gradZr[4][0])*10e42>=10e-10)||((DVRZ40-gradZr[4][0])*10e42<=-10e-10) ) {
-//      throw new OrekitException("putain fais chier DVRZ40 : {0} " + "  gradZ  : " + "{1}",
-//                                new String[] {Double.toString( DVRZ40),
-//                                                    Double.toString( gradZr[4][0])  });
-//    }
-//    
-////    if ( ((DVRZ33-gradZr[3][3])*1e36>=1e-10)||((DVRZ33-gradZr[3][3])*1e36<=-1e-10) ) {
-////      throw new OrekitException("putain fais chier DVRZ33 : {0} " + "  gradZ  : " + "{1}",
-////                                new String[] {Double.toString( DVRZ33),
-////                                                    Double.toString( gradZr[3][3])  });
-////    }
-////    if ( ((DVRZ32-gradZr[3][2])*1e34>=1e-10)||((DVRZ32-gradZr[3][2])*1e34<=-1e-10) ) {
-////      throw new OrekitException("putain fais chier DVRZ32 : {0} " + "  gradZ  : " + "{1}",
-////                                new String[] {Double.toString( DVRZ32),
-////                                                    Double.toString( gradZr[3][2])  });
-////    }
-////    if ( ((DVRX33-gradXr[3][3])*10e35>=10e-10)||((DVRX33-gradXr[3][3])*10e35<=-10e-10) ) {
-////      throw new OrekitException("putain fais chier DVRX33 : {0} " + "  gradX  : " + "{1}",
-////                                new String[] {Double.toString( DVRX33),
-////                                                    Double.toString( gradXr[3][3])  });
-////    }
-////    if ( ((DVRX41-gradXr[4][1])*10e41>=1e-10)||((DVRX41-gradXr[4][1])*10e41<=-1e-10) ) {
-////      throw new OrekitException("putain fais chier DVRX41 : {0} " + "  gradX  : " + "{1}",
-////                                new String[] {Double.toString( DVRX41),
-////                                                    Double.toString( gradXr[4][1])  });
-////    }
-//    
     // compute acceleration in body frame using the potential model coefficients
     double vdX = 0.0;
     double vdY = 0.0;
@@ -463,3 +389,80 @@ public class CunninghamAttractionModel implements ForceModel {
   private SynchronizedFrame bodyFrame;
 
 }
+
+////tests
+//
+//// Potential V
+//double VR44 = x*x*x*x - 6*x*x*y*y + y*y*y*y;
+//VR44 = VR44*105*onR4*onR3*onR2;
+//double VI44 = 4*x*y*(x*x-y*y);
+//VI44 = VI44*105*onR4*onR3*onR2;
+//double VR40 = 8*z*z*z*z - 24*z*z*(x*x+y*y) - 3*(x*x+y*y)*(x*x+y*y); 
+//VR40 = VR40/8*onR4*onR3*onR2;
+//double VR20 = 2*z*z - (x*x+y*y); 
+//VR20 = VR20/2*onR3*onR2;
+//double VR10 = z; 
+//VR10 = z*onR3;
+//// derivatives : 
+//double DVRX33 = -vr[4][4]/2 + vr[4][2]; 
+//double DVRX41 = -vr[5][2]/2 + 5.0*4.0*vr[5][0]/2.0; 
+//double DVRZ40 = -vr[5][0]*5.0; 
+//double DVRZ10 = -vr[2][0]*2.0; 
+//double DVRZ32 = -vr[4][2]*2.0;
+//double DVRZ33 = -vr[4][3];
+//
+////if ( ((VR44-vr[4][4])*10e36>=10e-10)||((VR44-vr[4][4])*10e36<=-10e-10) ) {
+////throw new OrekitException("putain fais chier VR44 : {0}",
+////                         new String[] {Double.toString((VR44-vr[4][4])*10e36)});
+////}
+////if ( ((VI44-vi[4][4])*10e36>=10e-10)||((VI44-vi[4][4])*10e36<=-10e-10) ) {
+////throw new OrekitException("putain fais chier VI44 : {0}",
+////                         new String[] {Double.toString((VI44-vi[4][4])*10e36)});
+////}    
+//
+//if ( ((VR10-vr[1][0])>=10e-30)||((VR10-vr[1][0])<=-10e-30) ) {
+//throw new OrekitException("putain fais chier VR10 : {0} ",
+//                         new String[] {Double.toString(VR10-vr[1][0])});
+//}
+//if ( ((VR20-vr[2][0])*10e21>=10e-10)||((VR20-vr[2][0])*10e21<=-10e-10) ) {
+//throw new OrekitException("putain fais chier VR20 : {0} ",
+//                         new String[] {Double.toString( VR20-vr[2][0])});
+//}
+//
+//
+//
+//if ( ((DVRZ10-gradZr[1][0])*1e21>=1e-10)||((DVRZ10-gradZr[1][0])*1e21<=-1e-10) ) {
+//throw new OrekitException("putain fais chier DVRZ10 : {0} " + "  gradZ  : " + "{1}",
+//                         new String[] {Double.toString( DVRZ10),
+//                                             Double.toString( gradZr[1][0])  });
+//}
+//
+//if ( ((DVRZ40-gradZr[4][0])*10e42>=10e-10)||((DVRZ40-gradZr[4][0])*10e42<=-10e-10) ) {
+//throw new OrekitException("putain fais chier DVRZ40 : {0} " + "  gradZ  : " + "{1}",
+//                         new String[] {Double.toString( DVRZ40),
+//                                             Double.toString( gradZr[4][0])  });
+//}
+//
+////if ( ((DVRZ33-gradZr[3][3])*1e36>=1e-10)||((DVRZ33-gradZr[3][3])*1e36<=-1e-10) ) {
+////throw new OrekitException("putain fais chier DVRZ33 : {0} " + "  gradZ  : " + "{1}",
+////                         new String[] {Double.toString( DVRZ33),
+////                                             Double.toString( gradZr[3][3])  });
+////}
+////if ( ((DVRZ32-gradZr[3][2])*1e34>=1e-10)||((DVRZ32-gradZr[3][2])*1e34<=-1e-10) ) {
+////throw new OrekitException("putain fais chier DVRZ32 : {0} " + "  gradZ  : " + "{1}",
+////                         new String[] {Double.toString( DVRZ32),
+////                                             Double.toString( gradZr[3][2])  });
+////}
+////if ( ((DVRX33-gradXr[3][3])*10e35>=10e-10)||((DVRX33-gradXr[3][3])*10e35<=-10e-10) ) {
+////throw new OrekitException("putain fais chier DVRX33 : {0} " + "  gradX  : " + "{1}",
+////                         new String[] {Double.toString( DVRX33),
+////                                             Double.toString( gradXr[3][3])  });
+////}
+////if ( ((DVRX41-gradXr[4][1])*10e41>=1e-10)||((DVRX41-gradXr[4][1])*10e41<=-1e-10) ) {
+////throw new OrekitException("putain fais chier DVRX41 : {0} " + "  gradX  : " + "{1}",
+////                         new String[] {Double.toString( DVRX41),
+////                                             Double.toString( gradXr[4][1])  });
+////}
+//
+
+

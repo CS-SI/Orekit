@@ -57,8 +57,8 @@ public class CunninghamAttractionModelTest extends TestCase {
     Orbit orbit = new Orbit(date , op);
 
     double[][] c = new double[3][1];
-    c[0][0] = 1.0;
-    c[2][0] = C[2][0];
+    c[0][0] = 0.0;
+    c[2][0] = c20;
     double[][] s = new double[3][1];
     propagator.addForceModel(new CunninghamAttractionModel(mu, itrf2000, 6378136.460, c, s));
 
@@ -232,12 +232,12 @@ public class CunninghamAttractionModelTest extends TestCase {
     
     Vector3D dif = Vector3D.subtract(cunnOrb.getPVCoordinates(mu).getPosition(),drozOrb.getPVCoordinates(mu).getPosition());
     
+    System.out.println(Vector.toString(dif));
     assertTrue(dif.getNorm() < 10e-8);
     assertTrue(Math.abs(dif.getX()) < 5e-8);
     assertTrue(Math.abs(dif.getY()) < 6e-9); 
     assertTrue(Math.abs(dif.getZ()) < 9e-8);
-    
-    System.out.println(Vector.toString(dif));
+
     
   }
 
@@ -251,30 +251,7 @@ public class CunninghamAttractionModelTest extends TestCase {
       c40 =  1.61994537014e-6;
       c50 =  2.27888264414e-7;
       c60 = -5.40618601332e-7;
-      C  = new double[][] {
-        {  1.000000000000e+00 },
-        { -1.863039013786e-09, -5.934448524722e-10 },
-        { -1.082626313026e-03, -5.880684168557e-10,  5.454582196865e-06 },
-        {  2.532480179720e-06,  5.372084926301e-06,  2.393880978120e-06,  1.908327022943e-06 },
-        {  1.619945370141e-06, -1.608435522852e-06,  1.051465706331e-06,  2.972622682182e-06,
-          -5.654946679590e-07 },
-        {  2.278882644141e-07, -2.086346283172e-07,  2.162761961684e-06, -1.498655671702e-06,
-          -9.794826452868e-07,  5.797035241535e-07 },
-        { -5.406186013322e-07, -2.736882085330e-07,  1.754209863998e-07,  2.063640268613e-07,
-          -3.101287736303e-07, -9.633248308263e-07,  3.414597413636e-8 }
-      };
-      S  = new double[][] {
-        {  0.000000000000e+00 },
-        {  0.000000000000e+00,  1.953002572897e-10 },
-        {  0.000000000000e+00,  3.277637296181e-09, -3.131184828481e-06 },
-        {  0.000000000000e+00,  6.566367025901e-07, -1.637705321455e-06,  3.742073902553e-06 },
-        {  0.000000000000e+00, -1.420694191113e-06,  1.987395414651e-06, -6.029325532200e-07,
-           9.265045448070e-07 },
-        {  0.000000000000e+00, -3.130219048314e-07, -1.072392243018e-06, -7.130099408898e-07,
-           1.651623310985e-07, -2.220047616004e-06 },
-        {  0.000000000000e+00,  9.562397128532e-08, -1.347688934659e-06,  3.220292843428e-08,
-          -1.699735804354e-06, -1.934323349167e-06, -8.559943406892e-07 }
-      };
+     
       itrf2000 = new ITRF2000Frame(new FrameSynchronizer(), true);
       propagator =
         new NumericalPropagator(mu,
@@ -299,8 +276,6 @@ public class CunninghamAttractionModelTest extends TestCase {
   private double c60;
   private double mu;
   private double ae;
-  private double[][] C;
-  private double[][] S;
 
   private SynchronizedFrame   itrf2000;
   private NumericalPropagator propagator;

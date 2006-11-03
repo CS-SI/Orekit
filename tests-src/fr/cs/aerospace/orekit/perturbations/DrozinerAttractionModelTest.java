@@ -1,22 +1,17 @@
 package fr.cs.aerospace.orekit.perturbations;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.text.ParseException;
-
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.FixedStepHandler;
 import org.spaceroots.mantissa.ode.GraggBulirschStoerIntegrator;
 import org.spaceroots.mantissa.ode.IntegratorException;
-
-import fr.cs.aerospace.orekit.FindFile;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.errors.PropagationException;
 import fr.cs.aerospace.orekit.frames.Frame;
@@ -29,13 +24,10 @@ import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
-import fr.cs.aerospace.orekit.potential.PotentialCoefficientsReader;
-import fr.cs.aerospace.orekit.potential.PotentialReaderFactory;
 import fr.cs.aerospace.orekit.propagation.EcksteinHechlerPropagator;
 import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
-import fr.cs.aerospace.orekit.utils.Angle;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 import fr.cs.aerospace.orekit.utils.Vector;
 import junit.framework.Test;
@@ -220,13 +212,13 @@ public class DrozinerAttractionModelTest extends TestCase {
     Orbit drozOrb = propagator.propagate(orbit, new AbsoluteDate(date ,  86400));
     
     Vector3D dif = Vector3D.subtract(cunnOrb.getPVCoordinates(mu).getPosition(),drozOrb.getPVCoordinates(mu).getPosition());
-    
-    assertTrue(dif.getNorm() < 10e-5);
-    assertTrue(Math.abs(dif.getX()) < 3.1e-5);
-    assertTrue(Math.abs(dif.getY()) < 2.9e-5); 
-    assertTrue(Math.abs(dif.getZ()) < 9e-5);
-    
     System.out.println(Vector.toString(dif));
+    assertTrue(dif.getNorm() < 1.50e-4);
+    assertTrue(Math.abs(dif.getX()) < 5e-5);
+    assertTrue(Math.abs(dif.getY()) < 5e-5); 
+    assertTrue(Math.abs(dif.getZ()) < 1.4e-4);
+    
+
   }
 
   protected void setUp() {
@@ -241,7 +233,7 @@ public class DrozinerAttractionModelTest extends TestCase {
       itrf2000 = new ITRF2000Frame(new FrameSynchronizer(), true);
       propagator =
         new NumericalPropagator(mu,
-                                new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
+                                new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-7));
       
     } catch (OrekitException oe) {
       fail(oe.getMessage());
