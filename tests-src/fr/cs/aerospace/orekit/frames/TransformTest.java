@@ -60,7 +60,6 @@ public class TransformTest extends TestCase {
 
         Vector3D bCombined = combined.transformVector(a);
         Vector3D cCombined = combined.transformPosition(a);
-//      TODO toute êtite erreur de precision, de 3e-11 environ    
         assertEquals(0, Vector3D.subtract(bCombined, bRef).getNorm(), 1.0e-11);
         assertEquals(0, Vector3D.subtract(cCombined, cRef).getNorm(), 3.0e-11);
 
@@ -76,7 +75,6 @@ public class TransformTest extends TestCase {
     Transform t3  = new Transform(randomVector(random));
     Transform t   = new Transform(new Transform(t1, t2), t3);
 
-//  TODO toute êtite erreur de precision, de 10e-12 environ
     checkNoTransform(new Transform(t, t.getInverse()), random);
     
   }

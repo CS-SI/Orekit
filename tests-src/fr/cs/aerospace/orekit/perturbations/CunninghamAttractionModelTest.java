@@ -36,6 +36,7 @@ import junit.framework.TestSuite;
 
 public class CunninghamAttractionModelTest extends TestCase {
   
+  // rough test to determine if J2 alone creates heliosynchronism
   public void testHelioSynchronous()
     throws ParseException, FileNotFoundException,
            OrekitException, DerivativeException, IntegratorException {
@@ -101,7 +102,7 @@ public class CunninghamAttractionModelTest extends TestCase {
     private double previous;
 
   }
-  
+  // test the difference with the analytical extrapolator Eckstein Hechler
   public void testEcksteinHechlerReference()
     throws ParseException, FileNotFoundException,
            OrekitException, DerivativeException, IntegratorException {
@@ -191,7 +192,7 @@ public class CunninghamAttractionModelTest extends TestCase {
     private PrintWriter w;
     
   }
-  
+  // test the difference with the Cunningham model
   public void testZonalWithDrozinerReference()
   throws OrekitException, IOException, DerivativeException, IntegratorException, ParseException {
 //  initialization

@@ -32,7 +32,6 @@ public class ThirdBodyAttraction implements ForceModel {
 	}
 
 	public SWF[] getSwitchingFunctions() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

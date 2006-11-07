@@ -36,6 +36,7 @@ import junit.framework.TestSuite;
 
 public class DrozinerAttractionModelTest extends TestCase {
   
+  // rough test to determine if J2 alone creates heliosynchronism
   public void testHelioSynchronous()
     throws ParseException, FileNotFoundException,
            OrekitException, DerivativeException, IntegratorException {
@@ -99,7 +100,7 @@ public class DrozinerAttractionModelTest extends TestCase {
     private double previous;
 
   }
-  
+  // test the difference with the analytical extrapolator Eckstein Hechler
   public void testEcksteinHechlerReference()
     throws ParseException, FileNotFoundException,
            OrekitException, DerivativeException, IntegratorException {
@@ -188,9 +189,10 @@ public class DrozinerAttractionModelTest extends TestCase {
     private PrintWriter w;
   }
   
+  // test the difference with the Cunningham model
   public void testTesserealWithCunninghamReference()
   throws OrekitException, IOException, DerivativeException, IntegratorException, ParseException {
-//  initialization
+    //  initialization
     AbsoluteDate date = new AbsoluteDate("2000-07-01T13:59:27.816" , UTCScale.getInstance());
     double i     = Math.toRadians(98.7);
     double omega = Math.toRadians(93.0);
@@ -213,10 +215,10 @@ public class DrozinerAttractionModelTest extends TestCase {
     
     Vector3D dif = Vector3D.subtract(cunnOrb.getPVCoordinates(mu).getPosition(),drozOrb.getPVCoordinates(mu).getPosition());
     System.out.println(Vector.toString(dif));
-    assertTrue(dif.getNorm() < 1.50e-4);
-    assertTrue(Math.abs(dif.getX()) < 5e-5);
-    assertTrue(Math.abs(dif.getY()) < 5e-5); 
-    assertTrue(Math.abs(dif.getZ()) < 1.4e-4);
+    assertTrue(dif.getNorm() < 1.70e-4);
+    assertTrue(Math.abs(dif.getX()) < 5.9e-5);
+    assertTrue(Math.abs(dif.getY()) < 5.4e-5); 
+    assertTrue(Math.abs(dif.getZ()) < 1.5e-4);
     
 
   }
@@ -233,7 +235,7 @@ public class DrozinerAttractionModelTest extends TestCase {
       itrf2000 = new ITRF2000Frame(new FrameSynchronizer(), true);
       propagator =
         new NumericalPropagator(mu,
-                                new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-7));
+                                new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
       
     } catch (OrekitException oe) {
       fail(oe.getMessage());

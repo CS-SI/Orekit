@@ -15,8 +15,8 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * his 1976 paper: <em>An algorithm for recurrent calculation of gravitational
  * acceleration</em> (artificial satellites, Vol. 12, No 2, June 1977).</p>
  * @version $Id$
- * @author L. Maisonobe
  * @author F. Maussion
+ * @author L. Maisonobe
  */
 
 public class DrozinerAttractionModel implements ForceModel {
@@ -36,30 +36,33 @@ public class DrozinerAttractionModel implements ForceModel {
                                  double[][] C, double[][] S)
   throws OrekitException {
 
+    if (C.length!=S.length||C[C.length-1].length!=S[S.length-1].length) {
+      throw new OrekitException("C and S should have the same size :" +
+                                " (C = [{0}][{1}] ; S = [{2}][{3}])",
+                                new String[] { Integer.toString(C.length) , 
+          Integer.toString(C[degree].length) , 
+          Integer.toString(S.length) ,           
+          Integer.toString(S[degree].length) });
+    }
+
     this.mu = mu;
     this.equatorialRadius = equatorialRadius;
-    this.centralBodyFrame = centralBodyFrame;
-    this.degree = C.length - 1;
-    this.order = C[degree].length-1;
-    
-    // in line seeking optimization 
-    if ((C.length == 0)||(S.length == 0)) {
-      this.C = new double[0][0];
-      this.S = new double[0][0];
-    }
-    else {
-      this.C = new double[C[degree].length][C.length];
-      this.S = new double[S[degree].length][S.length];
-      for (int i=0; i<=degree; i++) {
-        double[] cT = C[i];
-        double[] sT = S[i];      
-        for (int j=0; j<cT.length; j++) {
-          this.C[j][i] = cT[j];
-          this.S[j][i] = sT[j];
-        }
+    this.centralBodyFrame = centralBodyFrame;    
+    degree = C.length - 1;
+    order = C[degree].length-1;    
+
+    // invert the arrays (optimization for later "line per line" seeking)
+    this.C = new double[C[degree].length][C.length];
+    this.S = new double[S[degree].length][S.length];
+    for (int i=0; i<=degree; i++) {
+      double[] cT = C[i];
+      double[] sT = S[i];
+      for (int j=0; j<cT.length; j++) {
+        this.C[j][i] = cT[j];
+        this.S[j][i] = sT[j];
+
       }
     }
-    
   }
 
   /**
@@ -76,7 +79,7 @@ public class DrozinerAttractionModel implements ForceModel {
                               EquinoctialGaussEquations adder)
   throws OrekitException {
 
-    // Coordinates in centralBodyFrame
+    // Get the position in body frame
     Transform bodyToInertial = centralBodyFrame.getTransformTo(adder.getFrame(), t);
     Vector3D posInBody =
       bodyToInertial.getInverse().transformVector(pvCoordinates.getPosition());
@@ -91,10 +94,8 @@ public class DrozinerAttractionModel implements ForceModel {
       throw new OrekitException("polar trajectory (r1 = {0})",
                                 new String[] { Double.toString(r1) });
     }
-
     double r2 = r12 + zBody * zBody;
     double r  = Math.sqrt(r2);
-
     if (r <= equatorialRadius) {
       throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
                                 new String[] { Double.toString(r) });
@@ -133,18 +134,19 @@ public class DrozinerAttractionModel implements ForceModel {
       sumB += jk * bk0;
     }
 
+    // calculate the acceleration
     double p = -sumA / (r1Onr * r1Onr);
     double aX = xDotDotk * p;
     double aY = yDotDotk * p;
     double aZ = mu * sumB / r2;
 
-    
+
     // Tessereal-sectorial part of acceleration
     if (order>0) {
-
+      // latitude and longitude in body frame
       double cosL = xBody / r1;
       double sinL = yBody / r1;
-
+      // intermediate variables
       double Akj = 0;
       double betaKminus1 = aeOnr;
       double betaK = 0;
@@ -157,9 +159,7 @@ public class DrozinerAttractionModel implements ForceModel {
       double innerSum3;
       double Gkj;
       double Hkj;
-
       
-
       double cosjm1L = cosL;
       double sinjm1L = sinL;
 
@@ -172,10 +172,9 @@ public class DrozinerAttractionModel implements ForceModel {
       double Bkminus1kminus1 = Bkm1j;
 
       // first terms
-      
       Gkj = C[1][1] * cosL + S[1][1] * sinL;
       Hkj = C[1][1] * sinL - S[1][1] * cosL;   
-      
+
       Akj = 2*r1Onr*betaKminus1-zOnr*Bkminus1kminus1;
       Dkj =  (Akj + zOnr * Bkminus1kminus1 ) * 0.5 ;
       sum1 += Akj * Gkj;
@@ -188,43 +187,42 @@ public class DrozinerAttractionModel implements ForceModel {
         innerSum1 = 0.0;
         innerSum2 = 0.0;
         innerSum3 = 0.0;
-        
+
         double[] cJ = C[j];
         double[] sJ = S[j];
-        
+
         for(int k=2; k<=degree; k++) {
 
           if (k<cJ.length) {
-            
+
             Gkj = cJ[k] * cosjL + sJ[k] * sinjL;
             Hkj = cJ[k] * sinjL - sJ[k] * cosjL;     
-          
-          if (j <= (k - 2)) {
-            Bkj = aeOnr * ( zOnr * Bkm1j * (2.0 * k + 1.0) / (k - j)
-                - aeOnr * Bkm2j * (k + j) / (k - 1 - j) ) ;
-            Akj = aeOnr * Bkm1j * (k + 1.0) / (k - j) - zOnr * Bkj;
-          }
-          if (j == (k - 1)) {
-            betaK =  aeOnr * (2.0 * k - 1.0) * r1Onr * betaKminus1;
-            Bkj = aeOnr * (2.0 * k + 1.0) * zOnr * Bkm1j - betaK;
-            Akj = aeOnr *  (k + 1.0) * Bkm1j - zOnr * Bkj;          
-            betaKminus1 = betaK; 
-          }
 
-          if (j == k) {
-            Bkj = (2 * k + 1) * aeOnr * r1Onr * Bkminus1kminus1;
-            Akj = (k + 1) * r1Onr * betaK - zOnr * Bkj;
-            Bkminus1kminus1 = Bkj;
-          }
+            if (j <= (k - 2)) {
+              Bkj = aeOnr * ( zOnr * Bkm1j * (2.0 * k + 1.0) / (k - j)
+                  - aeOnr * Bkm2j * (k + j) / (k - 1 - j) ) ;
+              Akj = aeOnr * Bkm1j * (k + 1.0) / (k - j) - zOnr * Bkj;
+            }
+            if (j == (k - 1)) {
+              betaK =  aeOnr * (2.0 * k - 1.0) * r1Onr * betaKminus1;
+              Bkj = aeOnr * (2.0 * k + 1.0) * zOnr * Bkm1j - betaK;
+              Akj = aeOnr *  (k + 1.0) * Bkm1j - zOnr * Bkj;          
+              betaKminus1 = betaK; 
+            }
+            if (j == k) {
+              Bkj = (2 * k + 1) * aeOnr * r1Onr * Bkminus1kminus1;
+              Akj = (k + 1) * r1Onr * betaK - zOnr * Bkj;
+              Bkminus1kminus1 = Bkj;
+            }
 
-          Dkj =  (Akj + zOnr * Bkj) * j / (k + 1.0) ;
+            Dkj =  (Akj + zOnr * Bkj) * j / (k + 1.0) ;
 
-          Bkm2j = Bkm1j;
-          Bkm1j = Bkj;
+            Bkm2j = Bkm1j;
+            Bkm1j = Bkj;
 
-          innerSum1 += Akj * Gkj;
-          innerSum2 += Bkj * Gkj;
-          innerSum3 += Dkj * Hkj;
+            innerSum1 += Akj * Gkj;
+            innerSum2 += Bkj * Gkj;
+            innerSum3 += Dkj * Hkj;
           }  
         }
 
@@ -237,7 +235,7 @@ public class DrozinerAttractionModel implements ForceModel {
         sinjm1L = sinjL;
         cosjm1L = cosjL;
       }
-      
+      // calculate the acceleration
       double r2Onr12 = r2 / (r1 * r1);
       double p1 = r2Onr12 * xDotDotk;
       double p2 = r2Onr12 * yDotDotk;
@@ -246,7 +244,7 @@ public class DrozinerAttractionModel implements ForceModel {
       aZ -= mu * sum2 / r2;
     }
 
-    // provide the perturbing acceleration to the derivatives adder
+    // provide the perturbing acceleration to the derivatives adder in inertial frame
     Vector3D accInInert = bodyToInertial.transformVector(new Vector3D(aX, aY, aZ));
     adder.addXYZAcceleration(accInInert.getX(), accInInert.getY(), accInInert.getZ());
 

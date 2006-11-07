@@ -6,7 +6,7 @@ import junit.framework.TestSuite;
 
 public class AllTests {
   public static Test suite() { 
-    TestSuite suite = new TestSuite("fr.cs.aerospace.orekit.perturbations"); 
+    TestSuite suite = new TestSuite("fr.cs.aerospace.orekit.potential"); 
     suite.addTest(SHMFormatReaderTest.suite());
     suite.addTest(EGMFormatReaderTest.suite());
 
