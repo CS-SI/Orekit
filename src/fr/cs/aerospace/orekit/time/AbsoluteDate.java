@@ -34,7 +34,7 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
  *   are continuous and could be measured using only a virtual perfect stopwatch.
  *   The related methods are {@link #AbsoluteDate(AbsoluteDate, double) AbsoluteDate(instant,
  *   offset)}, {@link #AbsoluteDate(AbsoluteDate) AbsoluteDate(instant)},
- *   {@link #minus} and {@link #shift}.</p>
+ *   {@link #minus}.</p>
  *   </li>
  * </ul>
  * @author L. Maisonobe

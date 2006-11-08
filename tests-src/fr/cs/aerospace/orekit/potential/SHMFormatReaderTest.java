@@ -23,8 +23,8 @@ public class SHMFormatReaderTest extends TestCase {
     
     PotentialCoefficientsReader reader = PotentialReaderFactory.getPotentialReader(in);
     reader.read();
-    double[][] C = reader.getNormC();
-    double[][] S = reader.getNormS();
+    double[][] C = reader.getC(true , 360, 360);
+    double[][] S = reader.getS(true , 360, 360);
     
     assertEquals(0.957187536534E-06,C[3][0],  0);
     assertEquals(-.600855921000E-12,C[360][360],  0);
@@ -38,8 +38,8 @@ public class SHMFormatReaderTest extends TestCase {
     in = new FileInputStream(rootDir.getAbsolutePath());
     reader = PotentialReaderFactory.getPotentialReader(in);
     reader.read();
-    C = reader.getNormC();
-    S = reader.getNormS();
+    C = reader.getC(true , 360, 360);;
+    S = reader.getS(true , 360, 360);
     
     assertEquals(0.957201462136E-06,C[3][0],  0);
     assertEquals(-.600855921000E-12,C[360][360],  0);
@@ -56,8 +56,8 @@ public class SHMFormatReaderTest extends TestCase {
     InputStream in = new FileInputStream(rootDir.getAbsolutePath());
     PotentialCoefficientsReader reader = PotentialReaderFactory.getPotentialReader(in);
     reader.read();
-    double[][] C = reader.getNormC();
-    double[][] S = reader.getNormS();
+    double[][] C = reader.getC(true , 360, 360);;
+    double[][] S = reader.getS(true , 360, 360);;
     
     assertEquals(0.957187536534E-06,C[3][0],  0);
     assertEquals(-.600855921000E-12,C[360][360],  0);
@@ -71,8 +71,8 @@ public class SHMFormatReaderTest extends TestCase {
     in = new FileInputStream(rootDir.getAbsolutePath());
     reader = PotentialReaderFactory.getPotentialReader(in);
     reader.read();
-    C = reader.getNormC();
-    S = reader.getNormS();
+    C = reader.getC(true , 360, 360);;
+    S = reader.getS(true , 360, 360);;
     
     assertEquals(0.957201462136E-06,C[3][0],  0);
     assertEquals(-.600855921000E-12,C[360][360],  0);

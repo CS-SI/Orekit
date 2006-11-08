@@ -20,7 +20,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * <ul>
  *   <li>
  *     reinitialize the instance using the
- *     {@link #initDerivatives initDerivatives} method
+ *     {@link #initDerivatives(double[] yDot , EquinoctialParameters parameters)} method
  *   </li>
  *   <li>
  *     pass the instance to each force model in turn so that they can put their

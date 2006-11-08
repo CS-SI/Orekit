@@ -32,78 +32,31 @@ public interface PotentialCoefficientsReader {
    */
   public void read() throws OrekitException, IOException ;
 
-  /** Get the fully normalized  zonal coefficients.
-   * @return J the zonal coefficients array.
-   */
-  public double[] getNormJ();
-
-  /** Get the fully normalized  zonal coefficients.
+  /** Get the zonal coefficients.
+   * @param normalized (true) or un-normalized (false) 
    * @param n the degree
    * @param m the order 
    * @return J the zonal coefficients array.
+   * @throws OrekitException 
    */
-  public double[] getNormJ(int n, int m);
+  public double[] getJ(boolean normalized, int n, int m) throws OrekitException;
 
-  /** Get the fully normalized tesseral-secorial and zonal coefficients. 
-   * @return C the coefficients matrix
-   */
-  public double[][] getNormC();
-
-  /** Get the fully normalized tesseral-secorial and zonal coefficients.
+  /** Get the tesseral-secorial and zonal coefficients.
+   * @param normalized (true) or un-normalized (false) 
    * @param n the degree
    * @param m the order 
    * @return C the coefficients matrix
    * @throws OrekitException 
    */
-  public double[][] getNormC(int n, int m) throws OrekitException;
+  public double[][] getC(boolean normalized, int n, int m) throws OrekitException;
 
-  /** Get the fully normalized tesseral-secorial coefficients. 
-   * @return S the coefficients matrix
-   */
-  public double[][] getNormS();
-
-  /** Get the fully normalized tesseral-secorial coefficients. 
+  /** Get tesseral-secorial coefficients. 
+   * @param normalized (true) or un-normalized (false) 
    * @param n the degree
    * @param m the order 
    * @return S the coefficients matrix
    */
-  public double[][] getNormS(int n, int m);
-
-  /** Get the un-normalized  zonal coefficients.
-   * @return J the zonal coefficients array.
-   */
-  public double[] getUnNormJ();
-
-  /** Get the un-normalized  zonal coefficients.
-   * @param n the degree
-   * @param m the order
-   * @return J the zonal coefficients array.
-   */
-  public double[] getUnNormJ(int n, int m );
-
-  /** Get the un-normalized tesseral-secorial and zonal coefficients. 
-   * @return C the coefficients matrix
-   */
-  public double[][] getUnNormC();
-
-  /** Get the un-normalized tesseral-secorial and zonal coefficients. 
-   * @param n the degree
-   * @param m the order 
-   * @return C the coefficients matrix
-   */
-  public double[][] getUnNormC(int n, int m );
-
-  /** Get the un-normalized tesseral-secorial coefficients. 
-   * @return S the coefficients matrix
-   */
-  public double[][] getUnNormS();
-
-  /** Get the un-normalized tesseral-secorial coefficients. 
-   * @param n the degree
-   * @param m the order 
-   * @return S the coefficients matrix
-   */
-  public double[][] getUnNormS(int n, int m );
+  public double[][] getS(boolean normalized, int n, int m) throws OrekitException;
 
   /** Get the value of mu associtated to the other coefficients.
    * @return mu (m³/s²)

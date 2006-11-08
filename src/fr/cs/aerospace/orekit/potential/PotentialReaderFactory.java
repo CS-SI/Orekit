@@ -13,7 +13,7 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
 public class PotentialReaderFactory {
   
   /** Determines the proper reader to use wich the selected file.
-   * @param in the file to check
+   * @param in the file to check (it can be compressed)
    * @return the proper reader
    * @throws OrekitException when no known reader can read the file
    * @throws IOException when the {@link InputStream} is not valid. 

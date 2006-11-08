@@ -22,20 +22,20 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
  * @author F. Maussion
  */
 public class EGMFormatReader implements PotentialCoefficientsReader {
-  
+
   /** Simple constructor (the first method to call then is <code>isFileOK</code>).
    */
   protected EGMFormatReader() {
     fileIsOK = false;
   }
-  
+
   /** Check the file to determine if its format is understood by the reader or not.
    * @param in the input to check
    * @return true if it is readable, false if not.
    * @throws IOException when the {@link InputStream} cannot be buffered.
    */
   public boolean isFileOK(InputStream in) throws IOException {
-    
+
     this.in = in;
     BufferedReader r = new BufferedReader(new InputStreamReader(in));
     // tests variables
@@ -50,7 +50,7 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
       else {
         String integerField = " +[0-9]+";
         String realField = " +[-+0-9.e.E]+";
-        
+
         Pattern regularPattern =
           Pattern.compile("^" + integerField + integerField + realField
                           + realField + realField + realField
@@ -72,7 +72,7 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
     }
     return fileIsOK;
   }
-  
+
   /** Computes the coefficients by reading the selected (and tested) file 
    * @throws OrekitException when the file has not been initialized or checked.
    * @throws IOException when the file is corrupted.
@@ -87,20 +87,20 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
     BufferedReader r = new BufferedReader(new InputStreamReader(in));
     Cl = new ArrayList(); 
     Sl = new ArrayList(); 
-   
+
     for (String line = r.readLine();line!=null; line=r.readLine()) { 
       if(line.length()>=15) {
         String[] tab = line.trim().split("\\s+");
-        
+
         fillArray(Integer.parseInt(tab[0]), Integer.parseInt(tab[1]), 
-             Double.parseDouble(tab[2]), 
-             Double.parseDouble(tab[3]));
+                  Double.parseDouble(tab[2]), 
+                  Double.parseDouble(tab[3]));
       }  
     }
     C = (double[][])Cl.toArray(new double[Cl.size()][]);
     S = (double[][])Sl.toArray(new double[Sl.size()][]);
   }
-  
+
   private void fillArray(int i, int j, double c, double s) {
     while(Cl.size()<=i) {
       double[] row = new double[Cl.size()+1];
@@ -113,11 +113,121 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
     ((double[])Cl.get(i))[j] = c;
     ((double[])Sl.get(i))[j] = s;
   }
-    
+
+  /** Get the zonal coefficients.
+   * @param normalized (true) or un-normalized (false) 
+   * @param n the degree
+   * @param m the order 
+   * @return J the zonal coefficients array.
+   * @throws OrekitException 
+   */
+  public double[] getJ(boolean normalized, int n, int m) throws OrekitException {
+    if(n>=C.length) throw new OrekitException(
+                                              "the argument degree (n = {0}) is too big (max = {1} " , 
+                                              new String[] { Integer.toString(n), Integer.toString(C.length-1) });
+
+    double[] j;
+
+    if (normalized) {
+      j = getNormJ();
+    } 
+    else {
+      j = getUnNormJ();
+    }
+
+    double[] result = new double[n+1];
+    for (int i=0; i<=n; i++) {
+        result[i] = j[i];     
+    }
+    return result;
+  }
+
+  /** Get the tesseral-secorial and zonal coefficients.
+   * @param normalized (true) or un-normalized (false) 
+   * @param n the degree
+   * @param m the order 
+   * @return C the coefficients matrix
+   * @throws OrekitException 
+   */
+  public double[][] getC(boolean normalized, int n, int m) throws OrekitException {
+
+    if(n>=C.length) throw new OrekitException(
+                                              "the argument degree (n = {0}) is too big (max = {1} " , 
+                                              new String[] { Integer.toString(n), Integer.toString(C.length-1) });
+    if(m>=C[C.length-1].length) throw new OrekitException(
+                                                          "the argument order (m = {0}) is too big (max = {1}) " , 
+                                                          new String[] { Integer.toString(n), Integer.toString(C[C.length-1].length-1) });
+
+    double[][] c;
+
+    if (normalized) {
+      c = getNormC();
+    } 
+    else {
+      c = getUnNormC();
+    }
+
+    double[][] result = new double[n+1][];
+    for (int i=0; i<=n; i++) {
+      if (i<=m) {
+        result[i] = new double[i+1];
+      }
+      else {
+        result[i] = new double[m+1];
+      }      
+      for (int j=0; j<=i; j++) {
+        if (j<=m) {
+          result[i][j] = c[i][j];     
+        }       
+      }
+    }
+    return result;
+  }
+
+  /** Get tesseral-secorial coefficients. 
+   * @param normalized (true) or un-normalized (false) 
+   * @param n the degree
+   * @param m the order 
+   * @return S the coefficients matrix
+   */
+  public double[][] getS(boolean normalized, int n, int m) throws OrekitException {
+    if(n>=S.length) throw new OrekitException(
+                                              "the argument degree (n = {0}) is too big (max = {1} " , 
+                                              new String[] { Integer.toString(n), Integer.toString(S.length-1) });
+    if(m>=S[S.length-1].length) throw new OrekitException(
+                                                          "the argument order (m = {0}) is too big (max = {1}) " , 
+                                                          new String[] { Integer.toString(n), Integer.toString(S[S.length-1].length-1) });
+
+    double[][] s;
+
+    if (normalized) {
+      s = getNormS();
+    } 
+    else {
+      s = getUnNormS();
+    }
+
+    double[][] result = new double[n+1][];
+    for (int i=0; i<=n; i++) {
+      if (i<=m) {
+        result[i] = new double[i+1];
+      }
+      else {
+        result[i] = new double[m+1];
+      }      
+      for (int j=0; j<=i; j++) {
+        if (j<=m) {
+          result[i][j] = s[i][j];     
+        }       
+      }
+    }
+    return result;
+  }
+
   /** Get the fully normalized zonal coefficients.
    * @return J the zonal coefficients array.
    */
-  public double[] getNormJ() {
+  private double[] getNormJ() {
     if (J==null) {
       J = new double[C.length];
       for(int i = 0; i<C.length; i++){
@@ -126,25 +236,25 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
     }
     return J;
   }
-  
+
   /** Get the fully normalized tesseral-secorial and zonal coefficients. 
    * @return C the coefficients matrix
    */
-  public double[][] getNormC() {
+  private double[][] getNormC() {
     return C;
   }
-  
+
   /** Get the fully normalized tesseral-secorial coefficients. 
    * @return S the coefficients matrix
    */
-  public double[][] getNormS() {
+  private double[][] getNormS() {
     return S;
   }
-  
+
   /** Get the un-normalized  zonal coefficients.
    * @return J the zonal coefficients array.
    */
-  public double[] getUnNormJ() {
+  private double[] getUnNormJ() {
     if (UJ==null) {
       getUnNormC();
       UJ = new double[UC.length];
@@ -154,11 +264,11 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
     }
     return UJ;
   }
-  
+
   /** Get the un-normalized tesseral-secorial and zonal coefficients. 
    * @return C the coefficients matrix
    */
-  public double[][] getUnNormC() {
+  private double[][] getUnNormC() {
     // calculate only if asked
     if (UC==null) {
       UC = new double[C.length][];
@@ -171,7 +281,7 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
       double mfactNMinusM = 1.0;
       double mfactNPlusM = 1.0;
       UC[0][0] = C[0][0];
-      
+
       for (int n=1; n<C.length; n++ ) {
         factN *= n;
         mfactNMinusM = factN;
@@ -187,11 +297,11 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
     }
     return UC;
   }
-  
+
   /** Get the un-normalized tesseral-secorial coefficients. 
    * @return S the coefficients matrix
    */
-  public double[][] getUnNormS() {
+  private double[][] getUnNormS() {
     // calculate only if asked
     if (US==null) {
       US = new double[S.length][];
@@ -204,7 +314,7 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
       double mfactNMinusM = 1.0;
       double mfactNPlusM = 1.0;
       US[0][0] = S[0][0];
-      
+
       for (int n=1; n<S.length; n++ ) {
         factN *= n;
         mfactNMinusM = factN;
@@ -220,100 +330,52 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
     }
     return US;
   }
-  
-  public double[][] getNormC(int n, int m) throws OrekitException {
-    if(n>=C.length) throw new OrekitException(
-        "the argument degree (n = {0}) is too big (max = {1} " , 
-        new String[] { Integer.toString(n), Integer.toString(C.length-1) });
-    if(m>=C[C.length-1].length) throw new OrekitException(
-        "the argument order (n = {0}) is too big (max = {1}) " , 
-        new String[] { Integer.toString(n), Integer.toString(C[C.length-1].length-1) });
-    
-    double[][] c = new double[n+1][];
-    for (int i=0; i<=n; i++) {
-      for (int j=0; j<=m; j++) {
-        if (i<=m) {
-          c[i] = new double[i+1];
-        } 
-        else {
-          c[i] = new double[m+1];
-        }
-        c[i][j] = C[i][j];        
-      }
-    }
-    return null;
-  }
 
-  public double[] getNormJ(int n, int m) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  public double[][] getNormS(int n, int m) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  public double[][] getUnNormC(int n, int m) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  public double[] getUnNormJ(int n, int m) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  public double[][] getUnNormS(int n, int m) {
-    // TODO Auto-generated method stub
-    return null;
-  } 
-  
   /** Get the value of mu associtated to the other coefficients.
    * @return mu (m³/s²)
    */
   public double getMu() {
     return mu;
   }
-  
+
   /** Get the value of the Earth Equatorial Radius.
    * @return ae (m)
    */
   public double getAe() {
     return ae;
   }
-  
+
   /** is file ok? */
   private boolean fileIsOK;
-  
+
   /** The input to check and read */
   private InputStream in;
-  
+
   /**  Earth Equatorial Radius */
   private double ae = 6378136.3;
-  
+
   /** Mu */
   private double mu = 3986004.415E+8;
-  
+
   /** fully normalized zonal coefficients array */
   private double[] J;
-  
+
   /** fully normalized tesseral-secorial coefficients matrix */
   private double[][] C;
-  
+
   /** fully normalized tesseral-secorial coefficients matrix */
   private double[][] S;
-  
+
   /** un-normalized zonal coefficients array */
   private double[] UJ;
-  
+
   /** un-normalized tesseral-secorial coefficients matrix */
   private double[][] UC;
-  
+
   /** un-normalized tesseral-secorial coefficients matrix */
   private double[][] US;
-  
+
   private ArrayList Cl;
   private ArrayList Sl;
-  
+
 }

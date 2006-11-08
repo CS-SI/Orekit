@@ -21,14 +21,14 @@ public class EGMFormatReaderTest extends TestCase {
     
     PotentialCoefficientsReader reader = PotentialReaderFactory.getPotentialReader(in);
     reader.read();
-    double[][] C = reader.getNormC();
-    double[][] S = reader.getNormS();    
+    double[][] C = reader.getC(true , 360, 360);
+    double[][] S = reader.getS(true , 360, 360);    
     assertEquals(0.957254173792E-06 ,C[3][0],  0);
     assertEquals(-0.447516389678E-24,C[360][360],  0);
     assertEquals(0, S[4][0],  0);
     assertEquals(-0.524580548778E-09,S[89][89],  0);
    
-    double[][] UC = reader.getUnNormC();
+    double[][] UC = reader.getC(false , 360, 360);
     double a = (-0.267133325490e-06);
     double b = 11*10*9*8*7*6*5*4*3*2;
     double c = 2*13/b;
@@ -42,7 +42,7 @@ public class EGMFormatReaderTest extends TestCase {
     result = a*Math.sqrt(c);
     assertEquals(result,UC[4][4],  0);
     
-    assertEquals(1.0826266835531513e-3, reader.getUnNormJ()[2],0);
+    assertEquals(1.0826266835531513e-3, reader.getJ(false, 2, 0)[2],0);
     
   }
     

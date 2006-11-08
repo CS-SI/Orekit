@@ -104,7 +104,6 @@ extends OrbitalParameters {
   }
   
   /** Copy the instance.
-   * <p>This method has been redeclared as public instead of protected.</p>
    * @return a copy of the instance.
    */
   protected Object clone() {

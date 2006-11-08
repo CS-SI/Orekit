@@ -21,14 +21,13 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 public class DrozinerAttractionModel implements ForceModel {
 
-  /**
-   * Creates a new instance of CentralBodyPotential.
+  /** Creates a new instance.
+   * 
    * @param mu central body attraction coefficient
-   * @param centralBodyFrame frame for the central body
-   * @param body rotating body
+   * @param centralBodyFrame rotating body frame
    * @param equatorialRadius reference equatorial radius of the potential
-   * @param C denormalized coefficients array (cosine part)
-   * @param S denormalized coefficients array (sine part)
+   * @param C un-normalized coefficients array (cosine part)
+   * @param S un-normalized coefficients array (sine part)
    * @throws OrekitException 
    */
   public DrozinerAttractionModel(double mu, SynchronizedFrame centralBodyFrame, 
@@ -51,18 +50,24 @@ public class DrozinerAttractionModel implements ForceModel {
     degree = C.length - 1;
     order = C[degree].length-1;    
 
-    // invert the arrays (optimization for later "line per line" seeking)
-    this.C = new double[C[degree].length][C.length];
-    this.S = new double[S[degree].length][S.length];
-    for (int i=0; i<=degree; i++) {
-      double[] cT = C[i];
-      double[] sT = S[i];
-      for (int j=0; j<cT.length; j++) {
-        this.C[j][i] = cT[j];
-        this.S[j][i] = sT[j];
-
-      }
+    if(C.length<1) {
+      this.C = new double[1][1];
+      this.S = new double[1][1];
     }
+    else {
+      // invert the arrays (optimization for later "line per line" seeking)
+      this.C = new double[C[degree].length][C.length];
+      this.S = new double[S[degree].length][S.length];
+      for (int i=0; i<=degree; i++) {
+        double[] cT = C[i];
+        double[] sT = S[i];
+        for (int j=0; j<cT.length; j++) {
+          this.C[j][i] = cT[j];
+          this.S[j][i] = sT[j];
+
+        }
+      }
+    }    
   }
 
   /**

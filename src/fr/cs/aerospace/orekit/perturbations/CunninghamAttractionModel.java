@@ -52,17 +52,23 @@ public class CunninghamAttractionModel implements ForceModel {
     degree  = C.length - 1;
     order   = C[degree].length - 1;
 
-    // invert the arrays (optimization for later "line per line" seeking) 
-    this.C = new double[C[degree].length][C.length];
-    this.S = new double[S[degree].length][S.length];
-    
-    for (int i=0; i<=degree; i++) {
-      double[] cT = C[i];
-      double[] sT = S[i];
-      for (int j=0; j<cT.length; j++) {
-        this.C[j][i] = cT[j];
-        this.S[j][i] = sT[j];
+    if(C.length<1) {
+      this.C = new double[1][1];
+      this.S = new double[1][1];
+    }
+    else {
+      // invert the arrays (optimization for later "line per line" seeking) 
+      this.C = new double[C[degree].length][C.length];
+      this.S = new double[S[degree].length][S.length];
 
+      for (int i=0; i<=degree; i++) {
+        double[] cT = C[i];
+        double[] sT = S[i];
+        for (int j=0; j<cT.length; j++) {
+          this.C[j][i] = cT[j];
+          this.S[j][i] = sT[j];
+
+        }
       }
     }
 

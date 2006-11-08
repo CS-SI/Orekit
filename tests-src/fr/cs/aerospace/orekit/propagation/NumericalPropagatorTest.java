@@ -1,23 +1,14 @@
 package fr.cs.aerospace.orekit.propagation;
 
-import java.io.IOException;
-
-
 import junit.framework.*;
-
 import org.spaceroots.mantissa.ode.DormandPrince853Integrator;
 import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.IntegratorException;
 import org.spaceroots.mantissa.geometry.Vector3D;
-
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.frames.FrameSynchronizer;
-import fr.cs.aerospace.orekit.frames.ITRF2000Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
-import fr.cs.aerospace.orekit.perturbations.CunninghamAttractionModel;
-import fr.cs.aerospace.orekit.perturbations.PotentialCoefficientsTab;
 import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -136,79 +127,79 @@ try {
    
   public void aaatestExtrapolatorWithPotential()
     throws DerivativeException, IntegratorException {
-   try{
-    // Definition of initial conditions
-    // --------------------------------
-    Vector3D position = new Vector3D(1.0e7, 0.0, 0.0);
-    Vector3D velocity = new Vector3D(0.0, 8000.0, 0.0);
-    //Attitude attitude = new Attitude();
-    double mu = 3.986e14;
-    double equatorialRadius = 6378.13E3;
-        
-    
-    Orbit initialOrbit =
-      new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
-                new EquinoctialParameters(new PVCoordinates(position,  velocity),Frame.getJ2000(), mu));
-    System.out.println("Initial orbit at t = " + initialOrbit.getDate());
-    System.out.println("a = " + initialOrbit.getA());
-    System.out.println("e = " + initialOrbit.getE());
-    System.out.println("i = " + initialOrbit.getI());
-    
-    // Extrapolator definition
-    // -----------------------
-    NumericalPropagator extrapolator =
-      new NumericalPropagator(mu, new DormandPrince853Integrator(0.0, 10000.0,
-                                1.0e-8, 1.0e-8));
-    double dt = 60;
+//   try{
+//    // Definition of initial conditions
+//    // --------------------------------
+//    Vector3D position = new Vector3D(1.0e7, 0.0, 0.0);
+//    Vector3D velocity = new Vector3D(0.0, 8000.0, 0.0);
+//    //Attitude attitude = new Attitude();
+//    double mu = 3.986e14;
+//    double equatorialRadius = 6378.13E3;
+//        
+//    
+//    Orbit initialOrbit =
+//      new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
+//                new EquinoctialParameters(new PVCoordinates(position,  velocity),Frame.getJ2000(), mu));
+//    System.out.println("Initial orbit at t = " + initialOrbit.getDate());
+//    System.out.println("a = " + initialOrbit.getA());
+//    System.out.println("e = " + initialOrbit.getE());
+//    System.out.println("i = " + initialOrbit.getI());
+//    
+//    // Extrapolator definition
+//    // -----------------------
+//    NumericalPropagator extrapolator =
+//      new NumericalPropagator(mu, new DormandPrince853Integrator(0.0, 10000.0,
+//                                1.0e-8, 1.0e-8));
+//    double dt = 60;
     
     // Extrapolation of the initial at t+dt
     // ------------------------------------
     // Add Forces
 
-    PotentialCoefficientsTab GEM10Tab = 
-    new PotentialCoefficientsTab("D:\\Mes Documents\\EDelente\\JAVA\\GEM10B.txt");
-    
-    GEM10Tab.read();
-    int ndeg = GEM10Tab.getNdeg();
-    double[] J   = new double[ndeg];
-    double[][] C = new double[ndeg][ndeg];
-    double[][] S = new double[ndeg][ndeg];
-    
-    C = GEM10Tab.getNormalizedClm();
-    S = GEM10Tab.getNormalizedSlm();
-
-    J[0] = 0.0;
-    J[1] = 0.0;
-    for (int i = 2; i < ndeg; i++) {
-        J[i] = - C[i][0];
-    }
-    
-    CunninghamAttractionModel CBP =
-      new CunninghamAttractionModel(mu, new ITRF2000Frame(new FrameSynchronizer(), true),
-                                    equatorialRadius, C, S);
-    
-    extrapolator.addForceModel(CBP);
-    
-    Orbit finalOrbit =  
-    extrapolator.propagate(initialOrbit,
-                                               new AbsoluteDate(initialOrbit.getDate(),
-                                                         dt));
-    // Testing the discrepancies
-    // -------------------------
-    assertEquals(initialOrbit.getA(),    finalOrbit.getA(),    1.0e-10);
-    assertEquals(initialOrbit.getE(),    finalOrbit.getE(),    1.0e-10);
-    assertEquals(initialOrbit.getI(),    finalOrbit.getI(),    1.0e-10);
-    // TODO a voir ...
-//    assertEquals(initialOrbit.getPA(),   finalOrbit.getPA(),   1.0e-10);
-//    assertEquals(initialOrbit.getRAAN(), finalOrbit.getRAAN(), 1.0e-10);
-//    double n = Math.sqrt(mu / initialOrbit.getA()) / initialOrbit.getA();
-//    assertEquals(initialOrbit.getMeanAnomaly() + n * dt,
-//                 finalOrbit.getMeanAnomaly(), 4.0e-10);
-   }  catch (OrekitException oe) {
-     System.err.println(oe.getMessage());
-   }  catch (IOException ioe) {
-     System.err.println(ioe.getMessage());
-   }
+//    PotentialCoefficientsTab GEM10Tab = 
+//    new PotentialCoefficientsTab("D:\\Mes Documents\\EDelente\\JAVA\\GEM10B.txt");
+//    
+//    GEM10Tab.read();
+//    int ndeg = GEM10Tab.getNdeg();
+//    double[] J   = new double[ndeg];
+//    double[][] C = new double[ndeg][ndeg];
+//    double[][] S = new double[ndeg][ndeg];
+//    
+//    C = GEM10Tab.getNormalizedClm();
+//    S = GEM10Tab.getNormalizedSlm();
+//
+//    J[0] = 0.0;
+//    J[1] = 0.0;
+//    for (int i = 2; i < ndeg; i++) {
+//        J[i] = - C[i][0];
+//    }
+//    
+//    CunninghamAttractionModel CBP =
+//      new CunninghamAttractionModel(mu, new ITRF2000Frame(new FrameSynchronizer(), true),
+//                                    equatorialRadius, C, S);
+//    
+//    extrapolator.addForceModel(CBP);
+//    
+//    Orbit finalOrbit =  
+//    extrapolator.propagate(initialOrbit,
+//                                               new AbsoluteDate(initialOrbit.getDate(),
+//                                                         dt));
+//    // Testing the discrepancies
+//    // -------------------------
+//    assertEquals(initialOrbit.getA(),    finalOrbit.getA(),    1.0e-10);
+//    assertEquals(initialOrbit.getE(),    finalOrbit.getE(),    1.0e-10);
+//    assertEquals(initialOrbit.getI(),    finalOrbit.getI(),    1.0e-10);
+//    // TODO a voir ...
+////    assertEquals(initialOrbit.getPA(),   finalOrbit.getPA(),   1.0e-10);
+////    assertEquals(initialOrbit.getRAAN(), finalOrbit.getRAAN(), 1.0e-10);
+////    double n = Math.sqrt(mu / initialOrbit.getA()) / initialOrbit.getA();
+////    assertEquals(initialOrbit.getMeanAnomaly() + n * dt,
+////                 finalOrbit.getMeanAnomaly(), 4.0e-10);
+//   }  catch (OrekitException oe) {
+//     System.err.println(oe.getMessage());
+//   }  catch (IOException ioe) {
+//     System.err.println(ioe.getMessage());
+//   }
   }
   
   

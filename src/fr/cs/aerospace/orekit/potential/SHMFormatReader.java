@@ -142,10 +142,120 @@ public class SHMFormatReader implements PotentialCoefficientsReader {
     }    
   }
     
+  /** Get the zonal coefficients.
+   * @param normalized (true) or un-normalized (false) 
+   * @param n the degree
+   * @param m the order 
+   * @return J the zonal coefficients array.
+   * @throws OrekitException 
+   */
+  public double[] getJ(boolean normalized, int n, int m) throws OrekitException {
+    if(n>=C.length) throw new OrekitException(
+                                              "the argument degree (n = {0}) is too big (max = {1} " , 
+                                              new String[] { Integer.toString(n), Integer.toString(C.length-1) });
+
+    double[] j;
+
+    if (normalized) {
+      j = getNormJ();
+    } 
+    else {
+      j = getUnNormJ();
+    }
+
+    double[] result = new double[n+1];
+    for (int i=0; i<=n; i++) {
+        result[i] = j[i];     
+    }
+    return result;
+  }
+
+  /** Get the tesseral-secorial and zonal coefficients.
+   * @param normalized (true) or un-normalized (false) 
+   * @param n the degree
+   * @param m the order 
+   * @return C the coefficients matrix
+   * @throws OrekitException 
+   */
+  public double[][] getC(boolean normalized, int n, int m) throws OrekitException {
+
+    if(n>=C.length) throw new OrekitException(
+                                              "the argument degree (n = {0}) is too big (max = {1} " , 
+                                              new String[] { Integer.toString(n), Integer.toString(C.length-1) });
+    if(m>=C[C.length-1].length) throw new OrekitException(
+                                                          "the argument order (m = {0}) is too big (max = {1}) " , 
+                                                          new String[] { Integer.toString(n), Integer.toString(C[C.length-1].length-1) });
+
+    double[][] c;
+
+    if (normalized) {
+      c = getNormC();
+    } 
+    else {
+      c = getUnNormC();
+    }
+
+    double[][] result = new double[n+1][];
+    for (int i=0; i<=n; i++) {
+      if (i<=m) {
+        result[i] = new double[i+1];
+      }
+      else {
+        result[i] = new double[m+1];
+      }      
+      for (int j=0; j<=i; j++) {
+        if (j<=m) {
+          result[i][j] = c[i][j];     
+        }       
+      }
+    }
+    return result;
+  }
+
+  /** Get tesseral-secorial coefficients. 
+   * @param normalized (true) or un-normalized (false) 
+   * @param n the degree
+   * @param m the order 
+   * @return S the coefficients matrix
+   */
+  public double[][] getS(boolean normalized, int n, int m) throws OrekitException {
+    if(n>=S.length) throw new OrekitException(
+                                              "the argument degree (n = {0}) is too big (max = {1} " , 
+                                              new String[] { Integer.toString(n), Integer.toString(S.length-1) });
+    if(m>=S[S.length-1].length) throw new OrekitException(
+                                                          "the argument order (m = {0}) is too big (max = {1}) " , 
+                                                          new String[] { Integer.toString(n), Integer.toString(S[S.length-1].length-1) });
+
+    double[][] s;
+
+    if (normalized) {
+      s = getNormS();
+    } 
+    else {
+      s = getUnNormS();
+    }
+
+    double[][] result = new double[n+1][];
+    for (int i=0; i<=n; i++) {
+      if (i<=m) {
+        result[i] = new double[i+1];
+      }
+      else {
+        result[i] = new double[m+1];
+      }      
+      for (int j=0; j<=i; j++) {
+        if (j<=m) {
+          result[i][j] = s[i][j];     
+        }       
+      }
+    }
+    return result;
+  }
+
   /** Get the fully normalized zonal coefficients.
    * @return J the zonal coefficients array.
    */
-  public double[] getNormJ() {
+  private double[] getNormJ() {
     if (J==null) {
       J = new double[C.length];
       for(int i = 0; i<C.length; i++){
@@ -154,25 +264,25 @@ public class SHMFormatReader implements PotentialCoefficientsReader {
     }
     return J;
   }
-  
+
   /** Get the fully normalized tesseral-secorial and zonal coefficients. 
    * @return C the coefficients matrix
    */
-  public double[][] getNormC() {
+  private double[][] getNormC() {
     return C;
   }
-  
+
   /** Get the fully normalized tesseral-secorial coefficients. 
    * @return S the coefficients matrix
    */
-  public double[][] getNormS() {
+  private double[][] getNormS() {
     return S;
   }
-  
+
   /** Get the un-normalized  zonal coefficients.
    * @return J the zonal coefficients array.
    */
-  public double[] getUnNormJ() {
+  private double[] getUnNormJ() {
     if (UJ==null) {
       getUnNormC();
       UJ = new double[UC.length];
@@ -182,11 +292,11 @@ public class SHMFormatReader implements PotentialCoefficientsReader {
     }
     return UJ;
   }
-  
+
   /** Get the un-normalized tesseral-secorial and zonal coefficients. 
    * @return C the coefficients matrix
    */
-  public double[][] getUnNormC() {
+  private double[][] getUnNormC() {
     // calculate only if asked
     if (UC==null) {
       UC = new double[C.length][];
@@ -199,7 +309,7 @@ public class SHMFormatReader implements PotentialCoefficientsReader {
       double mfactNMinusM = 1.0;
       double mfactNPlusM = 1.0;
       UC[0][0] = C[0][0];
-      
+
       for (int n=1; n<C.length; n++ ) {
         factN *= n;
         mfactNMinusM = factN;
@@ -215,11 +325,11 @@ public class SHMFormatReader implements PotentialCoefficientsReader {
     }
     return UC;
   }
-  
+
   /** Get the un-normalized tesseral-secorial coefficients. 
    * @return S the coefficients matrix
    */
-  public double[][] getUnNormS() {
+  private double[][] getUnNormS() {
     // calculate only if asked
     if (US==null) {
       US = new double[S.length][];
@@ -232,7 +342,7 @@ public class SHMFormatReader implements PotentialCoefficientsReader {
       double mfactNMinusM = 1.0;
       double mfactNPlusM = 1.0;
       US[0][0] = S[0][0];
-      
+
       for (int n=1; n<S.length; n++ ) {
         factN *= n;
         mfactNMinusM = factN;
@@ -248,14 +358,14 @@ public class SHMFormatReader implements PotentialCoefficientsReader {
     }
     return US;
   }
-  
+
   /** Get the value of mu associtated to the other coefficients.
    * @return mu (m³/s²)
    */
   public double getMu() {
     return mu;
   }
-  
+
   /** Get the value of the Earth Equatorial Radius.
    * @return ae (m)
    */
@@ -293,34 +403,4 @@ public class SHMFormatReader implements PotentialCoefficientsReader {
   /** un-normalized tesseral-secorial coefficients matrix */
   private double[][] US;
 
-  public double[][] getNormC(int n, int m) throws OrekitException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  public double[] getNormJ(int n, int m) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  public double[][] getNormS(int n, int m) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  public double[][] getUnNormC(int n, int m) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  public double[] getUnNormJ(int n, int m) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  public double[][] getUnNormS(int n, int m) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-  
 }

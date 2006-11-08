@@ -34,7 +34,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * different ways to better suit user needs.
  * <dl>
  *  <dt>if the user needs only the orbit at the target time</dt>
- *  <dd>he will use {@link #propagate(Orbit,AbsoluteDate,Orbit)}</dd>
+ *  <dd>he will use {@link #propagate(Orbit,AbsoluteDate)}</dd>
  *  <dt>if the user needs random access to the orbit state at any time between
  *      the initial and target times</dt>
  *  <dd>he will use {@link #propagate(Orbit,AbsoluteDate,IntegratedEphemeris)} and
