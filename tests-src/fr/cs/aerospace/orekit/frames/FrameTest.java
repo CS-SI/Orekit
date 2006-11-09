@@ -5,42 +5,45 @@ import java.util.Random;
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 public class FrameTest extends TestCase {
   
-  public void testSameFrameRoot() {
+  public void testSameFrameRoot() throws OrekitException {
     Random random = new Random(0x29448c7d58b95565l);
     Frame  frame  = Frame.getJ2000();
-    checkNoTransform(frame.getTransformTo(frame), random);
+    checkNoTransform(frame.getTransformTo(frame, new AbsoluteDate()), random);
   }
   
-  public void testSameFrameNoRoot() {
+  public void testSameFrameNoRoot() throws OrekitException {
     Random random = new Random(0xc6e88d0f53e29116l);
     Transform t   = randomTransform(random);
     Frame frame   = new Frame(Frame.getJ2000(), t, null);
-    checkNoTransform(frame.getTransformTo(frame), random);
+    checkNoTransform(frame.getTransformTo(frame, new AbsoluteDate()), random);
   }
 
-  public void testSimilarFrames() {
+  public void testSimilarFrames() throws OrekitException {
     Random random = new Random(0x1b868f67a83666e5l);
     Transform t   = randomTransform(random);
     Frame frame1  = new Frame(Frame.getJ2000(), t, null);
     Frame frame2  = new Frame(Frame.getJ2000(), t, null);
-    checkNoTransform(frame1.getTransformTo(frame2), random);
+    checkNoTransform(frame1.getTransformTo(frame2, new AbsoluteDate()), random);
   }
 
-  public void testFromParent() {
+  public void testFromParent() throws OrekitException {
     Random random = new Random(0xb92fba1183fe11b8l);
     Transform fromJ2000  = randomTransform(random);
     Frame frame = new Frame(Frame.getJ2000(), fromJ2000, null);
-    Transform toJ2000 = frame.getTransformTo(Frame.getJ2000());
+    Transform toJ2000 = frame.getTransformTo(Frame.getJ2000(), new AbsoluteDate());
     checkNoTransform(new Transform(fromJ2000, toJ2000), random);
   }
 
-  public void testDecomposedTransform() {
+  public void testDecomposedTransform() throws OrekitException {
     Random random = new Random(0xb7d1a155e726da57l);
     Transform t1  = randomTransform(random);
     Transform t2  = randomTransform(random);
@@ -49,10 +52,10 @@ public class FrameTest extends TestCase {
       new Frame(Frame.getJ2000(), new Transform(new Transform(t1, t2), t3), null);
     Frame frame2 =
       new Frame(new Frame(new Frame(Frame.getJ2000(), t1, null), t2, null), t3, null);
-    checkNoTransform(frame1.getTransformTo(frame2), random);
+    checkNoTransform(frame1.getTransformTo(frame2, new AbsoluteDate()), random);
   }
   
-  public void testFindCommon() {
+  public void testFindCommon() throws OrekitException {
 	  
     Random random = new Random(0xb7d1a155e726da57l);
     Transform t1  = randomTransform(random);
@@ -63,19 +66,19 @@ public class FrameTest extends TestCase {
 	Frame R2 = new Frame(R1,t2,"R2");
 	Frame R3 = new Frame(R2,t3,"R3");
 	  
-	  Transform T = R1.getTransformTo(R3);
+	  Transform T = R1.getTransformTo(R3, new AbsoluteDate());
       
       Transform S = new Transform(t2,t3);
 	  
       checkNoTransform(new Transform(T, S.getInverse()) , random);
       
-      T = R3.getTransformTo(Frame.getJ2000());
+      T = R3.getTransformTo(Frame.getJ2000(), new AbsoluteDate());
       
       S = new Transform(S,t1);
   }
 
-  public void testVeis1950() {
-    Transform t = Frame.getVeis1950().getTransformTo(Frame.getJ2000());
+  public void testVeis1950() throws OrekitException {
+    Transform t = Frame.getVeis1950().getTransformTo(Frame.getJ2000(), new AbsoluteDate());
     Vector3D i50    = t.transformVector(Vector3D.plusI);
     Vector3D j50    = t.transformVector(Vector3D.plusJ);
     Vector3D k50    = t.transformVector(Vector3D.plusK);

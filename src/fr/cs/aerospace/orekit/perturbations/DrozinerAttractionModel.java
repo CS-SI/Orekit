@@ -3,7 +3,7 @@ package fr.cs.aerospace.orekit.perturbations;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.frames.SynchronizedFrame;
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
@@ -30,7 +30,7 @@ public class DrozinerAttractionModel implements ForceModel {
    * @param S un-normalized coefficients array (sine part)
    * @throws OrekitException 
    */
-  public DrozinerAttractionModel(double mu, SynchronizedFrame centralBodyFrame, 
+  public DrozinerAttractionModel(double mu, Frame centralBodyFrame, 
                                  double equatorialRadius,
                                  double[][] C, double[][] S)
   throws OrekitException {
@@ -272,7 +272,7 @@ public class DrozinerAttractionModel implements ForceModel {
   private double[][]   S;
 
   /** Frame for the central body. */  
-  private SynchronizedFrame centralBodyFrame;
+  private Frame centralBodyFrame;
 
   /** Number of zonal coefficients */
   private int degree;

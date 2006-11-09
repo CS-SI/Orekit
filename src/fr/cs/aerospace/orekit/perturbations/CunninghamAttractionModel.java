@@ -1,7 +1,7 @@
 package fr.cs.aerospace.orekit.perturbations;
 
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.frames.SynchronizedFrame;
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
@@ -33,7 +33,7 @@ public class CunninghamAttractionModel implements ForceModel {
    * @param S un-normalized coefficients array (sine part)
    * @throws OrekitException 
    */
-  public CunninghamAttractionModel(double mu, SynchronizedFrame centralBodyFrame,
+  public CunninghamAttractionModel(double mu, Frame centralBodyFrame,
                                    double equatorialRadius, double[][] C, double[][] S)
   throws OrekitException {
 
@@ -369,7 +369,7 @@ public class CunninghamAttractionModel implements ForceModel {
   private int order;
 
   /** Rotating body. */
-  private SynchronizedFrame bodyFrame;
+  private Frame bodyFrame;
 
 }
 

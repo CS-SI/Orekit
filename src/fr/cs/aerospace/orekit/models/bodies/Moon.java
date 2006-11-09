@@ -3,6 +3,7 @@ package fr.cs.aerospace.orekit.models.bodies;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.bodies.ThirdBody;
+import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
@@ -19,6 +20,16 @@ public class Moon extends ThirdBody {
    */
   public Moon() {
     super(1737400.0, 4.9027989e12);
+    
+      try {
+        transform  =
+          Frame.getVeis1950().getTransformTo(Frame.getJ2000(), reference);
+      } catch (OrekitException e) {
+        // should not happen
+        transform = new Transform();
+      }
+    
+    
   }
 
   /** Gets the position of the Moon in the selected frame.
@@ -27,8 +38,9 @@ public class Moon extends ThirdBody {
    * @param date current date
    * @param frame the frame where to define the position
    * @return position of the Moon wrt the central body in the J2000 Frame (m)
+   * @throws OrekitException 
    */
-  public Vector3D getPosition(AbsoluteDate date, Frame frame) {
+  public Vector3D getPosition(AbsoluteDate date, Frame frame) throws OrekitException {
 
     double t = date.minus(reference) / 86400.0;
     double f = Math.toRadians(225.768 + 13.2293505 * t);
@@ -110,7 +122,7 @@ public class Moon extends ThirdBody {
     Vector3D posInJ2000 = new Vector3D(1000.0 * 384389.3 / (1.0 + 1.E-05 * dasr),
             centralMoon);
     
-    return Frame.getJ2000().getTransformTo(frame).transformPosition(posInJ2000);
+    return Frame.getJ2000().getTransformTo(frame, date).transformPosition(posInJ2000);
 
   }
 
@@ -119,7 +131,6 @@ public class Moon extends ThirdBody {
     new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 864000000.0);
 
   /** Transform from Veis1950 to J2000. */
-  private static Transform transform =
-    Frame.getVeis1950().getTransformTo(Frame.getJ2000());
+  private static Transform transform;
 
 }

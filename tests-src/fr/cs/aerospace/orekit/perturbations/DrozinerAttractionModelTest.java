@@ -15,9 +15,7 @@ import org.spaceroots.mantissa.ode.IntegratorException;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.errors.PropagationException;
 import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.frames.FrameSynchronizer;
 import fr.cs.aerospace.orekit.frames.ITRF2000Frame;
-import fr.cs.aerospace.orekit.frames.SynchronizedFrame;
 import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.models.bodies.Sun;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
@@ -85,7 +83,14 @@ public class DrozinerAttractionModelTest extends TestCase {
       Vector3D pos = op.getPVCoordinates(mu).getPosition();
       Vector3D vel = op.getPVCoordinates(mu).getVelocity();
       AbsoluteDate current = new AbsoluteDate(date, t);
-      Vector3D sunPos = sun.getPosition(current , Frame.getJ2000());
+      Vector3D sunPos;
+      try {
+        sunPos = sun.getPosition(current , Frame.getJ2000());
+      } catch (OrekitException e) {
+        sunPos = new Vector3D();
+        System.out.println("exception during sun.getPosition");
+        e.printStackTrace();
+      }
       Vector3D normal = Vector3D.crossProduct(pos,vel);
       double angle = Vector3D.angle(sunPos , normal);
       if (! Double.isNaN(previous)) {
@@ -232,7 +237,7 @@ public class DrozinerAttractionModelTest extends TestCase {
       c40 =  1.61994537014e-6;
       c50 =  2.27888264414e-7;
       c60 = -5.40618601332e-7;
-      itrf2000 = new ITRF2000Frame(new FrameSynchronizer(), true);
+      itrf2000 = new ITRF2000Frame(new AbsoluteDate(), true);
       propagator =
         new NumericalPropagator(mu,
                                 new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
@@ -284,7 +289,7 @@ public class DrozinerAttractionModelTest extends TestCase {
         -1.699735804354e-06, -1.934323349167e-06, -8.559943406892e-07 }
     };
   
-  private SynchronizedFrame   itrf2000;
+  private Frame   itrf2000;
   private NumericalPropagator propagator;
 
 }

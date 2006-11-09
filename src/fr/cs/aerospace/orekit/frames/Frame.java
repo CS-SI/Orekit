@@ -5,7 +5,9 @@ import java.util.LinkedList;
 
 import org.spaceroots.mantissa.geometry.Rotation;
 
+import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.errors.Translator;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** Tridimensional references frames class.
  * <p>This class is the base class for all frames in OREKIT. The frames are
@@ -126,15 +128,13 @@ public class Frame {
   }
 
   /** Get the transform from the instance to another frame.
-   * <p> This method should not be called if the instance is a 
-   * {@link SynchronizedFrame}. It is more sure to use the
-   * {@link #orekit.src.fr.cs.aerospace.orekit.frames.SynchronizedFrame.getTransformTo[Frame destination, AbsoluteDate date)}
-   * which ensures all the transforms are up to date. 
-   * </p>
    * @param destination destination frame to which we want to transform vectors
+   * @param date the date (can be null if it is sure than no date dependant frame is used)
    * @return transform from the instance to the destination frame
+   * @throws OrekitException 
    */
-  public Transform getTransformTo(Frame destination) {
+  public Transform getTransformTo(Frame destination, AbsoluteDate date)
+    throws OrekitException {
 
     // common ancestor to both frames in the frames tree
     Frame common = findCommon(this, destination);
@@ -142,6 +142,7 @@ public class Frame {
     // transform from common to instance
     Transform commonToInstance = new Transform();
     for (Frame frame = this; frame != common; frame = frame.parent) {
+      frame.updateFrame(date);
       commonToInstance =
         new Transform(frame.transform, commonToInstance);
     }
@@ -149,6 +150,7 @@ public class Frame {
     // transform from destination up to common
     Transform commonToDestination = new Transform();
     for (Frame frame = destination; frame != common; frame = frame.parent) {
+      frame.updateFrame(date);
       commonToDestination =
         new Transform(frame.transform, commonToDestination);
     }
@@ -157,7 +159,18 @@ public class Frame {
     return new Transform(commonToInstance.getInverse(), commonToDestination);
 
   }
-
+  
+  /** Update the frame to the given date.
+   * <p>This method is called each time {@link #getTransformTo(Frame, AbsoluteDate)}
+   * is called. Default behaviour is to do nothing. The proper way to build
+   * a date-dependant frame is to extend {@link Frame} and implement this method </p>
+   * @param date new value of the  date
+   * @exception OrekitException if some frame specific error occurs
+   */
+  protected void updateFrame(AbsoluteDate date) throws OrekitException {
+    
+  }
+  
   /** Find the deepest common ancestor of two frames in the frames tree.
    * @param from origin frame
    * @param to destination frame

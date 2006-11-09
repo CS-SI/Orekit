@@ -1,5 +1,6 @@
 package fr.cs.aerospace.orekit.bodies;
 
+import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import org.spaceroots.mantissa.geometry.Vector3D;
@@ -24,8 +25,9 @@ public abstract class ThirdBody {
    * @param date current date
    * @param frame the frame where to define the position
    * @return position of the body (m)
+   * @throws OrekitException 
    */
-  public abstract Vector3D getPosition(AbsoluteDate date , Frame frame);
+  public abstract Vector3D getPosition(AbsoluteDate date , Frame frame) throws OrekitException;
 
   /** Get the equatorial radius of the body.
    * @return equatorial radius of the body (m)

@@ -42,7 +42,7 @@ import fr.cs.aerospace.orekit.time.UTCScale;
  * They are not yet available in the OREKIT library.</p>
  * @author Luc Maisonobe
  */
-public class ITRF2000Frame extends SynchronizedFrame {
+public class ITRF2000Frame extends Frame {
 
   /** Build an ITRF2000 frame.
    * <p>If the <code>useIAU2000B</code> boolean parameter is true (which is the
@@ -58,10 +58,11 @@ public class ITRF2000Frame extends SynchronizedFrame {
    * library cannot be read
    * @see FrameSynchronizer
    */
-  public ITRF2000Frame(FrameSynchronizer fSynch, boolean useIAU2000B)
+  public ITRF2000Frame(AbsoluteDate date, boolean useIAU2000B)
     throws OrekitException {
 
-    super(getJ2000(), fSynch, "ITRF2000");
+    super(getJ2000(), null , "ITRF2000");
+
     this.useIAU2000B = useIAU2000B;
 
     // nutation models are in micro arcseconds
@@ -84,62 +85,65 @@ public class ITRF2000Frame extends SynchronizedFrame {
     }
 
     // everything is in place, we can now synchronize the frame
-    updateFrame(fSynch.getDate());
+    updateFrame(date);
 
   }
 
-  /** Update the frame to the given (shared) date.
+  /** Update the frame to the given date.
    * <p>The update considers the pole motion from IERS data.</p>
-   * @param date new value of the shared date
+   * @param date new value of the date
    * @exception OrekitException if the nutation model data embedded in the
    * library cannot be read
    */
   protected void updateFrame(AbsoluteDate date)
     throws OrekitException {
-
-    // offset from J2000 epoch in julian centuries
-    double tts = date.minus(AbsoluteDate.J2000Epoch);
-    double ttc =  tts * julianCenturyPerSecond;
     
-    // luni-solar and planetary elements
-    BodiesElements elements = computeBodiesElements(ttc);
+    if (cachedDate == null||cachedDate!=date) {
+      //    offset from J2000 epoch in julian centuries
+      double tts = date.minus(AbsoluteDate.J2000Epoch);
+      double ttc =  tts * julianCenturyPerSecond;
+      
+      // luni-solar and planetary elements
+      BodiesElements elements = computeBodiesElements(ttc);
 
-    // compute Earth Rotation Angle using Nicole Capitaine model (2000)
-    double dtu1 = getUT1MinusUTC(date);
-    double taiMinusTt  = TTScale.getInstance().offsetToTAI(tts + j2000MinusJava);
-    double utcMinusTai = UTCScale.getInstance().offsetFromTAI(tts + taiMinusTt + j2000MinusJava);
-    double tu = (tts + taiMinusTt + utcMinusTai + dtu1) / 86400 ;
-    era  = era0 + era1A * tu + era1B * tu;
-    era -= twoPi * Math.floor((era + Math.PI) / twoPi);
+      // compute Earth Rotation Angle using Nicole Capitaine model (2000)
+      double dtu1 = getUT1MinusUTC(date);
+      double taiMinusTt  = TTScale.getInstance().offsetToTAI(tts + j2000MinusJava);
+      double utcMinusTai = UTCScale.getInstance().offsetFromTAI(tts + taiMinusTt + j2000MinusJava);
+      double tu = (tts + taiMinusTt + utcMinusTai + dtu1) / 86400 ;
+      era  = era0 + era1A * tu + era1B * tu;
+      era -= twoPi * Math.floor((era + Math.PI) / twoPi);
 
-    // get the current IERS pole correction parameters
-    PoleCorrection iCorr = getPoleCorrection(date);
+      // get the current IERS pole correction parameters
+      PoleCorrection iCorr = getPoleCorrection(date);
 
-    // compute the additional terms not included in IERS data
-    PoleCorrection tCorr = tidalCorrection(date);
-    PoleCorrection nCorr = nutationCorrection(date);
+      // compute the additional terms not included in IERS data
+      PoleCorrection tCorr = tidalCorrection(date);
+      PoleCorrection nCorr = nutationCorrection(date);
 
-    // elementary rotations due to pole motion in terrestrial frame
-    Rotation r1 = new Rotation(Vector3D.plusI, -(iCorr.yp + tCorr.yp + nCorr.yp));
-    Rotation r2 = new Rotation(Vector3D.plusJ, -(iCorr.xp + tCorr.xp + nCorr.xp));
-    Rotation r3 = new Rotation(Vector3D.plusK, sPrimeRate * ttc);
+      // elementary rotations due to pole motion in terrestrial frame
+      Rotation r1 = new Rotation(Vector3D.plusI, -(iCorr.yp + tCorr.yp + nCorr.yp));
+      Rotation r2 = new Rotation(Vector3D.plusJ, -(iCorr.xp + tCorr.xp + nCorr.xp));
+      Rotation r3 = new Rotation(Vector3D.plusK, sPrimeRate * ttc);
 
-    // complete pole motion in terrestrial frame
-    Rotation wRot = r3.applyTo(r2.applyTo(r1));
+      // complete pole motion in terrestrial frame
+      Rotation wRot = r3.applyTo(r2.applyTo(r1));
 
-    // simple rotation around the Celestial Intermediate Pole
-    Rotation rRot = new Rotation(Vector3D.plusK, era);
+      // simple rotation around the Celestial Intermediate Pole
+      Rotation rRot = new Rotation(Vector3D.plusK, era);
 
-    // precession and nutation effect (pole motion in celestial frame)
-    Rotation qRot = precessionNutationEffect(ttc, elements);
+      // precession and nutation effect (pole motion in celestial frame)
+      Rotation qRot = precessionNutationEffect(ttc, elements);
 
-    // combined effects
-    Rotation combined = qRot.applyTo(rRot.applyTo(wRot)).revert();
-    
-    // set up the transform from parent GCRS (J2000) to ITRF
-    Vector3D rotationRate = new Vector3D((era1A + era1B) / -86400, rRot.getAxis());
-    updateTransform(new Transform(combined , rotationRate));
-
+      // combined effects
+      Rotation combined = qRot.applyTo(rRot.applyTo(wRot)).revert();
+      
+      // set up the transform from parent GCRS (J2000) to ITRF
+      Vector3D rotationRate = new Vector3D((era1A + era1B) / -86400, rRot.getAxis());
+      updateTransform(new Transform(combined , rotationRate)); 
+      
+      cachedDate = date;
+    }
   }
 
   /** Select the entries bracketing a specified date.
@@ -221,9 +225,12 @@ public class ITRF2000Frame extends SynchronizedFrame {
   }
 
   /** Get the Earth Rotation Angle at the current date.
+   * @param the date
    * @return Earth Rotation Angle at the current date in radians
+   * @throws OrekitException 
    */
-  public double getEarthRotationAngle() {
+  public double getEarthRotationAngle(AbsoluteDate date) throws OrekitException {
+    updateFrame(date);
     return era;
   }
 
@@ -364,6 +371,9 @@ public class ITRF2000Frame extends SynchronizedFrame {
 
   /** Earth Orientation Parameters. */
   private TreeSet eop = null;
+  
+  /** Cached date to avoid useless calculus */
+  private AbsoluteDate cachedDate;
 
   /** 2&pi;. */
   private static final double twoPi = 2.0 * Math.PI;

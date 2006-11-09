@@ -32,15 +32,14 @@ public class ITRF2000FrameTest extends TestCase {
 
   public void testRoughRotation() throws ParseException, OrekitException {
 
-    FrameSynchronizer synchronizer =
-      new FrameSynchronizer(new AbsoluteDate("2006-02-24T15:38:00",
-                                             UTCScale.getInstance()));
-    ITRF2000Frame itrf2000 = new ITRF2000Frame(synchronizer, true);
-    Transform t0 = itrf2000.getTransformTo(Frame.getJ2000());
+    AbsoluteDate date1 =new AbsoluteDate("2006-02-24T15:38:00",
+                                             UTCScale.getInstance());
+    ITRF2000Frame itrf2000 = new ITRF2000Frame(date1, true);
+    Transform t0 = itrf2000.getTransformTo(Frame.getJ2000(), date1 );
 
     double dt = 10.0;
-    synchronizer.setDate(new AbsoluteDate(synchronizer.getDate(), dt));
-    Transform t1 = itrf2000.getTransformTo(Frame.getJ2000());
+    AbsoluteDate date2 = new AbsoluteDate(date1, dt);
+    Transform t1 = itrf2000.getTransformTo(Frame.getJ2000(), date2);
     Transform evolution = new Transform(t0.getInverse(), t1);
 
     assertEquals(0.0, evolution.transformPosition(new Vector3D(0,0,0)).getNorm(), 1.0e-10);
@@ -53,45 +52,43 @@ public class ITRF2000FrameTest extends TestCase {
 
   public void testRoughOrientation() throws ParseException, OrekitException {
 
-    FrameSynchronizer synchronizer =
-      new FrameSynchronizer(new AbsoluteDate("2001-03-21T00:00:00",
-                                             UTCScale.getInstance()));
-    ITRF2000Frame itrf2000 = new ITRF2000Frame(synchronizer, true);
+    AbsoluteDate date = new AbsoluteDate("2001-03-21T00:00:00",
+                                             UTCScale.getInstance());
+    ITRF2000Frame itrf2000 = new ITRF2000Frame(date, true);
 
-    Vector3D u = itrf2000.getTransformTo(Frame.getJ2000()).transformVector(Vector3D.plusI);
+    Vector3D u = itrf2000.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.plusI);
     assertTrue(Vector3D.angle(u, Vector3D.minusI) < Math.toRadians(2));
 
-    synchronizer.setDate(new AbsoluteDate(synchronizer.getDate(), 6 * 3600));
-    u = itrf2000.getTransformTo(Frame.getJ2000()).transformVector(Vector3D.plusI);
+    date = new AbsoluteDate(date, 6 * 3600);
+    u = itrf2000.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.plusI);
     assertTrue(Vector3D.angle(u, Vector3D.minusJ) < Math.toRadians(2));
 
-    synchronizer.setDate(new AbsoluteDate(synchronizer.getDate(), 6 * 3600));
-    u = itrf2000.getTransformTo(Frame.getJ2000()).transformVector(Vector3D.plusI);
+    date = new AbsoluteDate(date, 6 * 3600);
+    u = itrf2000.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.plusI);
     assertTrue(Vector3D.angle(u, Vector3D.plusI) < Math.toRadians(2));
 
-    synchronizer.setDate(new AbsoluteDate(synchronizer.getDate(), 6 * 3600));
-    u = itrf2000.getTransformTo(Frame.getJ2000()).transformVector(Vector3D.plusI);
+    date = new AbsoluteDate(date, 6 * 3600);
+    u = itrf2000.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.plusI);
     assertTrue(Vector3D.angle(u, Vector3D.plusJ) < Math.toRadians(2));
 
   }
 
   public void testRoughERA() throws ParseException, OrekitException {
   
-    FrameSynchronizer synchronizer =
-      new FrameSynchronizer(new AbsoluteDate("2001-03-21T00:00:00",
-                                             UTCScale.getInstance()));
-    ITRF2000Frame itrf2000 = new ITRF2000Frame(synchronizer, true);
+    AbsoluteDate date = new AbsoluteDate("2001-03-21T00:00:00",
+                                             UTCScale.getInstance());
+    ITRF2000Frame itrf2000 = new ITRF2000Frame(date, true);
 
-    assertEquals(180, Math.toDegrees(itrf2000.getEarthRotationAngle()), 2.0);
+    assertEquals(180, Math.toDegrees(itrf2000.getEarthRotationAngle(date)), 2.0);
 
-    synchronizer.setDate(new AbsoluteDate(synchronizer.getDate(), 6 * 3600));
-    assertEquals(-90, Math.toDegrees(itrf2000.getEarthRotationAngle()), 2.0);
+    date = new AbsoluteDate(date, 6 * 3600);
+    assertEquals(-90, Math.toDegrees(itrf2000.getEarthRotationAngle(date)), 2.0);
 
-    synchronizer.setDate(new AbsoluteDate(synchronizer.getDate(), 6 * 3600));
-    assertEquals(0, Math.toDegrees(itrf2000.getEarthRotationAngle()), 2.0);
+    date = new AbsoluteDate(date, 6 * 3600);
+    assertEquals(0, Math.toDegrees(itrf2000.getEarthRotationAngle(date)), 2.0);
 
-    synchronizer.setDate(new AbsoluteDate(synchronizer.getDate(), 6 * 3600));
-    assertEquals(90, Math.toDegrees(itrf2000.getEarthRotationAngle()), 2.0);
+    date = new AbsoluteDate(date, 6 * 3600);
+    assertEquals(90, Math.toDegrees(itrf2000.getEarthRotationAngle(date)), 2.0);
 
   }
   
@@ -99,10 +96,9 @@ public class ITRF2000FrameTest extends TestCase {
 	  	  
 	  AbsoluteDate date = new AbsoluteDate("2003-10-14T02:00:00", UTCScale.getInstance());
 
-	  FrameSynchronizer fSynch = new FrameSynchronizer(date);
-	  ITRF2000Frame itrf = new ITRF2000Frame(fSynch, true);	
+	  ITRF2000Frame itrf = new ITRF2000Frame(date, true);	
 	  
-	  Transform trans = Frame.getJ2000().getTransformTo(itrf);
+	  Transform trans = Frame.getJ2000().getTransformTo(itrf, date);
 	  
 	  // Positions
 	  
@@ -125,10 +121,9 @@ public class ITRF2000FrameTest extends TestCase {
 
 	  AbsoluteDate t0 = new AbsoluteDate("2003-10-14T02:00:00", UTCScale.getInstance());
 
-	  FrameSynchronizer fSynch = new FrameSynchronizer(t0);
-	  ITRF2000Frame itrf = new ITRF2000Frame(fSynch, true);	
+	  ITRF2000Frame itrf = new ITRF2000Frame(t0, true);	
 	  
-	  Transform trans = Frame.getJ2000().getTransformTo(itrf);
+	  Transform trans = Frame.getJ2000().getTransformTo(itrf, t0);
 	  
 	  // Positions
 	  
@@ -160,20 +155,20 @@ public class ITRF2000FrameTest extends TestCase {
       // compute local evolution using finite differences
       
       double h = 0.1;
-      fSynch.setDate(new AbsoluteDate(t0, -2 * h));
-      Rotation evoM2h = Frame.getJ2000().getTransformTo(itrf).getRotation().applyTo(r0.revert());
+      AbsoluteDate date = new AbsoluteDate(t0, -2 * h);
+      Rotation evoM2h = Frame.getJ2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
       double alphaM2h = -evoM2h.getAngle();
       Vector3D axisM2h = Vector3D.negate(evoM2h.getAxis());
-      fSynch.setDate(new AbsoluteDate(t0, -h));
-      Rotation evoM1h = Frame.getJ2000().getTransformTo(itrf).getRotation().applyTo(r0.revert());
+      date = new AbsoluteDate(t0, -h);
+      Rotation evoM1h = Frame.getJ2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
       double alphaM1h = -evoM1h.getAngle();
       Vector3D axisM1h = Vector3D.negate(evoM1h.getAxis());
-      fSynch.setDate(new AbsoluteDate(t0,  h));
-      Rotation evoP1h = Frame.getJ2000().getTransformTo(itrf).getRotation().applyTo(r0.revert());
+      date = new AbsoluteDate(t0,  h);
+      Rotation evoP1h = Frame.getJ2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
       double alphaP1h =  evoP1h.getAngle();
       Vector3D axisP1h = evoP1h.getAxis();
-      fSynch.setDate(new AbsoluteDate(t0, 2 * h));
-      Rotation evoP2h = Frame.getJ2000().getTransformTo(itrf).getRotation().applyTo(r0.revert());
+      date = new AbsoluteDate(t0, 2 * h);
+      Rotation evoP2h = Frame.getJ2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
       double alphaP2h =  evoP2h.getAngle();
       Vector3D axisP2h = evoP2h.getAxis();
       double w = (8 * (alphaP1h - alphaM1h) - (alphaP2h - alphaM2h)) / (12 * h);
@@ -204,10 +199,9 @@ public class ITRF2000FrameTest extends TestCase {
 	  
 	  AbsoluteDate date = new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 15002 * 86400 + 180 + 32.184 + 26);
 
-	  FrameSynchronizer fSynch = new FrameSynchronizer(date);
-	  ITRF2000Frame itrf = new ITRF2000Frame(fSynch, true);	
+	  ITRF2000Frame itrf = new ITRF2000Frame(date, true);	
 	  
-	  Transform trans = Frame.getJ2000().getTransformTo(itrf);
+	  Transform trans = Frame.getJ2000().getTransformTo(itrf, date);
 	  
 	  // Positions
 	  

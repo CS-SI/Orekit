@@ -2,6 +2,7 @@ package fr.cs.aerospace.orekit.models.bodies;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.bodies.ThirdBody;
+import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
@@ -17,6 +18,13 @@ public class Sun extends ThirdBody {
    */
   public Sun() {
     super(6.96e8, 1.32712440e20);
+    try {
+      transform  =
+        Frame.getVeis1950().getTransformTo(Frame.getJ2000(), reference);
+    } catch (OrekitException e) {
+      // should not happen
+      transform = new Transform();
+    }
   }
 
   /** Gets the position of the Sun in the selected Frame.
@@ -25,8 +33,9 @@ public class Sun extends ThirdBody {
    * @param date date
    * @param frame the frame where to define the position
    * @return position of the sun (m) in the J2000 Frame
+   * @throws OrekitException 
    */
-  public Vector3D getPosition(AbsoluteDate date, Frame frame) {
+  public Vector3D getPosition(AbsoluteDate date, Frame frame) throws OrekitException {
     
 	
     double t = date.minus(reference) / 86400.0;
@@ -72,7 +81,7 @@ public class Sun extends ThirdBody {
     	
     Vector3D posInJ2000 =  new Vector3D(1000.0 * 149597870.0 / (1.0 + 1.E-05 * dasr), centralSun);
 	
-    return Frame.getJ2000().getTransformTo(frame).transformPosition(posInJ2000);
+    return Frame.getJ2000().getTransformTo(frame, date).transformPosition(posInJ2000);
   }
 
   /** Reference date. */
@@ -80,7 +89,6 @@ public class Sun extends ThirdBody {
     new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 864000000.0);
 
   /** Transform from Veis1950 to J2000. */
-  private static Transform transform =
-    Frame.getVeis1950().getTransformTo(Frame.getJ2000());
+  private static Transform transform; 
 
 }
