@@ -13,10 +13,10 @@ import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.IntegratorException;
 import org.spaceroots.mantissa.ode.SwitchingFunction;
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.forces.ForceModel;
+import fr.cs.aerospace.orekit.forces.SWF;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
-import fr.cs.aerospace.orekit.perturbations.ForceModel;
-import fr.cs.aerospace.orekit.perturbations.SWF;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
