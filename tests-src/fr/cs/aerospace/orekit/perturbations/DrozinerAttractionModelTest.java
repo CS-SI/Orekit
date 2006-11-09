@@ -14,6 +14,8 @@ import org.spaceroots.mantissa.ode.GraggBulirschStoerIntegrator;
 import org.spaceroots.mantissa.ode.IntegratorException;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.errors.PropagationException;
+import fr.cs.aerospace.orekit.forces.perturbations.CunninghamAttractionModel;
+import fr.cs.aerospace.orekit.forces.perturbations.DrozinerAttractionModel;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.frames.ITRF2000Frame;
 import fr.cs.aerospace.orekit.frames.Transform;

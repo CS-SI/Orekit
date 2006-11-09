@@ -8,6 +8,7 @@ import org.spaceroots.mantissa.ode.FixedStepHandler;
 import org.spaceroots.mantissa.ode.GraggBulirschStoerIntegrator;
 import org.spaceroots.mantissa.ode.IntegratorException;
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.forces.perturbations.ThirdBodyAttraction;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.models.bodies.Moon;
 import fr.cs.aerospace.orekit.models.bodies.Sun;
