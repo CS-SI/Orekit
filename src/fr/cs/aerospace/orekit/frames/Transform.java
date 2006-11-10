@@ -10,8 +10,8 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * It is used both to define the relationship between each frame and its
  * parent frame and to gather all individual transforms into one
  * operation when converting between frames far away from each other.</p>
- *  @author Luc Maisonobe
- *  @author Fabien Maussion
+ *  @author L. Maisonobe
+ *  @author F. Maussion
  */
 public class Transform {
 
@@ -56,7 +56,7 @@ public class Transform {
    * the transformed origin, or coordinates of the origin of the
    * old frame in the new frame) 
    * @param velocity the velocity of the translation (i.e. velocity 
-   * of the transformed origin, or velo
+   * of the transformed origin)
    */
   public Transform(Vector3D translation, Vector3D velocity) {
 	  this(translation, velocity, new Rotation(), new Vector3D());

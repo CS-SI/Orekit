@@ -10,6 +10,7 @@ import fr.cs.aerospace.orekit.errors.Translator;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** Tridimensional references frames class.
+ * 
  * <p>This class is the base class for all frames in OREKIT. The frames are
  * linked together in a tree with the J2000 frame as the root of the tree.
  * Each frame is defined by transforms combining any number of translations and
@@ -25,11 +26,13 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * <p>The transforms may be constant or varying. For simple fixed transforms,
  * using this base class is sufficient. For varying transforms (time-dependant
  * or telemetry-based for example), it may be useful to define specific subclasses
- * that will add some specific <code>updateFromDate(date)</code> or
- * <code>updateFromTelemetry(telemetry)</code> methods that will compute the
- * transform and call internally the {@link #updateTransform(Transform)} method.</p>
- * @author Guylaine Prat
- * @author Luc Maisonobe
+ * that will implement {@link #updateFrame(AbsoluteDate)} or that will 
+ * add some specific <code>updateFromTelemetry(telemetry)</code>
+ * methods that will compute the transform and call internally 
+ * the {@link #updateTransform(Transform)} method.</p>
+ * 
+ * @author G. Prat
+ * @author L. Maisonobe
  */
 public class Frame {
 
