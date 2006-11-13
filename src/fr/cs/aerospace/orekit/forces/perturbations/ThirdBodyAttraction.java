@@ -6,7 +6,7 @@ import fr.cs.aerospace.orekit.bodies.ThirdBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
-import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
+import fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
@@ -17,7 +17,7 @@ public class ThirdBodyAttraction implements ForceModel {
 	}
 	
 	public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates,
-			TimeDerivativesEquations adder) throws OrekitException {
+			EquinoctialGaussEquations adder) throws OrekitException {
 		
 		Vector3D otherBody = new Vector3D(body.getPosition(t, adder.getFrame()));
 		

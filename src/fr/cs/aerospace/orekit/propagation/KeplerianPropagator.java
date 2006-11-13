@@ -19,7 +19,6 @@ public class KeplerianPropagator implements Ephemeris {
     this.initialDate = orbit.getDate();
     this.initialParameters = new EquinoctialParameters(orbit.getParameters(), mu);
     this.n = Math.sqrt(mu / initialParameters.getA()) / initialParameters.getA();
-    this.mass = orbit.getMass();
   }
 
   public Orbit getOrbit(AbsoluteDate date)
@@ -34,7 +33,7 @@ public class KeplerianPropagator implements Ephemeris {
     		 initialParameters.getLM() + n * date.minus(initialDate) ,
     		 EquinoctialParameters.MEAN_LATITUDE_ARGUMENT, initialParameters.getFrame());
     
-    return new Orbit(date, extrapolated, mass);
+    return new Orbit(date, extrapolated);
 
   }
 
@@ -46,8 +45,5 @@ public class KeplerianPropagator implements Ephemeris {
 
   /** Mean motion. */
   private double n;
-  
-  /** Mass. */
-  private double mass;
 
 }

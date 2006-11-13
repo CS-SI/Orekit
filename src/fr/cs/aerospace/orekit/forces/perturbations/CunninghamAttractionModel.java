@@ -5,7 +5,7 @@ import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.frames.Transform;
-import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
+import fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
@@ -43,9 +43,9 @@ public class CunninghamAttractionModel implements ForceModel {
       throw new OrekitException("C and S should have the same size :" +
                                 " (C = [{0}][{1}] ; S = [{2}][{3}])",
                                 new String[] { Integer.toString(C.length) , 
-                                               Integer.toString(C[degree].length) , 
-                                               Integer.toString(S.length) ,           
-                                               Integer.toString(S[degree].length) });
+          Integer.toString(C[degree].length) , 
+          Integer.toString(S.length) ,           
+          Integer.toString(S[degree].length) });
     }
 
     this.bodyFrame = centralBodyFrame;
@@ -59,7 +59,7 @@ public class CunninghamAttractionModel implements ForceModel {
       this.S = new double[1][1];
     }
     else {
-      // invert the arrays (optimization for further "line per line" seeking) 
+      // invert the arrays (optimization for later "line per line" seeking) 
       this.C = new double[C[degree].length][C.length];
       this.S = new double[S[degree].length][S.length];
 
@@ -69,6 +69,7 @@ public class CunninghamAttractionModel implements ForceModel {
         for (int j=0; j<cT.length; j++) {
           this.C[j][i] = cT[j];
           this.S[j][i] = sT[j];
+
         }
       }
     }
@@ -91,7 +92,7 @@ public class CunninghamAttractionModel implements ForceModel {
    * @param adder object where the contribution should be added
    */
   public void addContribution(AbsoluteDate date, PVCoordinates pvCoordinates,
-                              TimeDerivativesEquations adder)
+                              EquinoctialGaussEquations adder)
   throws OrekitException {
 
     // get the position in body frame

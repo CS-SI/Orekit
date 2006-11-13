@@ -2,12 +2,11 @@ package fr.cs.aerospace.orekit.orbits;
 
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
-
 import java.io.Serializable;
 
 /**
  * This class handles orbits around a central body.
-
+ 
  * <p>
  * In OREKIT architecture, an Orbit is only a state at a specific date.
  * Orbit evolution is represented by the {@link
@@ -18,7 +17,7 @@ import java.io.Serializable;
  * several means like file-based interpolation, analytical model or numerical
  * integration.
  * </p>
-
+ 
  * <p>
  * This class handles periodic orbits (it does neither handle parabolic nor
  * hyperbolic orbits). Several different internal representations can
@@ -27,7 +26,7 @@ import java.io.Serializable;
  * circular and equatorial orbits without problem and have
  * singularities only for purely retrograd orbit (inclination = &pi;).
  * </p>
-
+ 
  * <p>
  * For the sake of numerical stability, only the always non-ambiguous classical
  * keplerian elements are provided ({@link #getE() eccentricity} and {@link #getI()
@@ -37,28 +36,27 @@ import java.io.Serializable;
  * parameters}, if he considers the orbit is sufficiently non-circular or
  * non-equatorial.
  * </p>
-
+ 
  * @see     OrbitalParameters
  * @see     fr.cs.aerospace.orekit.propagation.Ephemeris
  * @version $Id$
  * @author  L. Maisonobe
  * @author  G. Prat
- * @author  F. Maussion
-
+ * @author  F.Maussion
+ 
  */
 
 public class Orbit
 implements Serializable {
-
+  
   /** Default constructor.
    * Build a new instance with arbitrary default elements.
    */
   public Orbit() {
     t          = new AbsoluteDate();
     parameters = new EquinoctialParameters();
-    this.mass = -1.0;
   }
-
+  
   /** Create a new instance from date and orbital parameters
    * @param t  date (a reference to this object will be stored in the instance)
    * @param parameters orbital parameters (a reference to this object will be
@@ -67,21 +65,8 @@ implements Serializable {
   public Orbit(AbsoluteDate t, OrbitalParameters parameters) {
     this.t = t;
     this.parameters = parameters;
-    this.mass = -1.0;
   }
-
-  /** Create a new instance from date and orbital parameters
-   * @param t  date (a reference to this object will be stored in the instance)
-   * @param parameters orbital parameters (a reference to this object will be
-   * stored in the instance)
-   * @param mass the mass (kg)
-   */
-  public Orbit(AbsoluteDate t, OrbitalParameters parameters, double mass) {
-    this.t = t;
-    this.parameters = parameters;
-    this.mass = mass;
-  }
-
+  
   /** Copy-constructor.
    * @param o orbit to copy
    */
@@ -89,28 +74,28 @@ implements Serializable {
     t          = new AbsoluteDate(o.t);
     parameters = (OrbitalParameters) o.parameters.clone();
   }
-
+  
   /** Get the date.
    * @return date
    */
   public AbsoluteDate getDate() {
     return t;
   }
-
+  
   /** Get the orbital parameters.
    * @return orbital parameters
    */
   public OrbitalParameters getParameters() {
     return parameters;
   }
-
+  
   /** Get the semi-major axis.
    * @return semi-major axis (m)
    */
   public double getA() {
     return parameters.getA();
   }
-
+  
   /** Get the first component of the eccentricity vector (as per equinoctial parameters).
    * @return e cos(&omega; + &Omega;), first component of eccentricity vector
    * @see #getE()
@@ -118,7 +103,7 @@ implements Serializable {
   public double getEx(){
     return parameters.getEquinoctialEx();
   }
-
+  
   /** Get the second component of the eccentricity vector (as per equinoctial parameters).
    * @return e sin(&omega; + &Omega;), second component of the eccentricity vector
    * @see #getE()
@@ -126,7 +111,7 @@ implements Serializable {
   public double getEy(){
     return parameters.getEquinoctialEy();
   }
-
+  
   /** Get the first component of the inclination vector (as per equinoctial parameters).
    * @return tan(i/2) cos(&Omega;), first component of the inclination vector
    * @see #getI()
@@ -134,7 +119,7 @@ implements Serializable {
   public double getHx(){
     return parameters.getHx();
   }
-
+  
   /** Get the second component of the inclination vector (as per equinoctial parameters).
    * @return tan(i/2) sin(&Omega;), second component of the inclination vector
    * @see #getI()
@@ -142,7 +127,7 @@ implements Serializable {
   public double getHy(){
     return parameters.getHy();
   }
-
+  
   /** Get the true latitude argument (as per equinoctial parameters).
    * @return v + &omega; + &Omega; true latitude argument (rad)
    * @see #getLE()
@@ -151,7 +136,7 @@ implements Serializable {
   public double getLv(){
     return parameters.getLv();
   }
-
+  
   /** Get the eccentric latitude argument (as per equinoctial parameters).
    * @return E + &omega; + &Omega; eccentric latitude argument (rad)
    * @see #getLv()
@@ -160,7 +145,7 @@ implements Serializable {
   public double getLE(){
     return parameters.getLE();
   }
-
+  
   /** Get the mean latitude argument (as per equinoctial parameters).
    * @return M + &omega; + &Omega; mean latitude argument (rad)
    * @see #getLv()
@@ -169,10 +154,10 @@ implements Serializable {
   public double getLM(){
     return parameters.getLM();
   }
-
-
+  
+  
   // Additional orbital elements
-
+  
   /** Get the eccentricity.
    * @return eccentricity
    * @see #getEx()
@@ -181,7 +166,7 @@ implements Serializable {
   public double getE() {
     return parameters.getE();
   }
-
+  
   /** Get the inclination.
    * @return inclination (rad)
    * @see #getHx()
@@ -190,7 +175,7 @@ implements Serializable {
   public double getI() {
     return parameters.getI();
   }
-
+  
   /** Get the {@link PVCoordinates}.
    * Compute the position and velocity of the satellite. This method caches its
    * results, and recompute them only when the method is called with a new value
@@ -204,14 +189,7 @@ implements Serializable {
   public PVCoordinates getPVCoordinates(double mu) {
     return parameters.getPVCoordinates(mu);
   }
-
-  /** Get the mass.
-   * @return the mass.
-   */
-  public double getMass() {
-    return mass;
-  }
-
+  
   /**  Returns a string representation of this Orbit object
    * @return a string representation of this object
    */
@@ -224,16 +202,13 @@ implements Serializable {
     sb.append('}');
     return sb.toString();
   }
-
+  
   /** Date of the current state. */
   private AbsoluteDate t;
-
+  
   /** Orbital parameters state. */
   private OrbitalParameters parameters;
-
-  /** Mass */
-  private double mass;
-
+  
   private static final long serialVersionUID = 7165778593185551534L;
-
+  
 }

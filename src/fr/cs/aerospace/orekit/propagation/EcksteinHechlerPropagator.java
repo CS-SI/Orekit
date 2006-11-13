@@ -58,7 +58,6 @@ public class EcksteinHechlerPropagator implements Ephemeris {
     initialDate = orbit.getDate();
     computeMeanParameters(osculating);
 
-    this.mass = orbit.getMass();
   }
 
   /** Get the orbit extrapolated up to a given date with an analytical model.
@@ -68,7 +67,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
    */
   public Orbit getOrbit(AbsoluteDate date)
       throws PropagationException {
-    return new Orbit(date, propagate(date), mass);
+    return new Orbit(date, propagate(date));
   }
 
   /** Compute mean parameters according to the Eckstein-Hechler analytical model.
@@ -361,6 +360,4 @@ public class EcksteinHechlerPropagator implements Ephemeris {
   private double mu;
   private double c20, c30, c40, c50, c60;
 
-  /** Mass. */
-  private double mass;
 }

@@ -3,7 +3,7 @@ package fr.cs.aerospace.orekit.models.spacecraft;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
-public interface AtmosphereDragSpacecraft extends Spacecraft{
+public interface AtmosphereDragSpacecraft {
 	  /** Get the mass.
 	   * @return mass (kg)
 	   */

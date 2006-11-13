@@ -1,10 +1,7 @@
-package fr.cs.aerospace.orekit.utils;
+package fr.cs.aerospace.orekit.models.spacecraft;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
-import fr.cs.aerospace.orekit.models.spacecraft.AtmosphereDragSpacecraft;
-import fr.cs.aerospace.orekit.models.spacecraft.ManeuverSpacecraft;
-import fr.cs.aerospace.orekit.models.spacecraft.SolarRadiationPressureSpacecraft;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** This class represents the features of a simplified spacecraft.
@@ -16,7 +13,7 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * @author E. Delente
  */
 
-public class SimpleSpacecraft implements SolarRadiationPressureSpacecraft, AtmosphereDragSpacecraft, ManeuverSpacecraft {
+public class SimpleSpacecraft implements SolarRadiationPressureSpacecraft, AtmosphereDragSpacecraft, KeplerianSpacecraft {
 
   /** Simple constructor.
    * @param mass Mass (kg)
@@ -26,17 +23,13 @@ public class SimpleSpacecraft implements SolarRadiationPressureSpacecraft, Atmos
    * @param reflectionCoeff Specular reflection coefficient
    */
   public SimpleSpacecraft(double mass, double surface, double dragCoeff,
-                          double absorptionCoeff, double reflectionCoeff,
-                          double isp, double outFlow, double g0) {
+                          double absorptionCoeff, double reflectionCoeff) {
 
     this.mass = mass;
     this.surface = surface;
     this.dragCoeff = dragCoeff;
     this.absorptionCoeff = absorptionCoeff;
     this.reflectionCoeff = reflectionCoeff;
-    this.isp = isp;
-    this.outFlow = outFlow;
-    this.g0 = g0;
   }
 
   /** Get the mass.
@@ -85,22 +78,35 @@ public class SimpleSpacecraft implements SolarRadiationPressureSpacecraft, Atmos
   public void setMass(double mass) {
     this.mass = mass;
   }
-  
-  /** Get the Isp.
-   * @return Isp (s)
+
+  /** Set the surface.
+   * @param surface surface (m<sup>2</sup>)
    */
-  public double getIsp() {
-    return isp;
-  }
-  
-  /** Get the outflow.
-   * @return outflow (kg/s)
-   */
-  public double getOutFlow() {
-    return outFlow;
+  public void setSurface(double surface) {
+    this.surface = surface;
   }
 
-  
+  /** Set the drag coefficient.
+   * @param dragCoeff coefficient drag coefficient
+   */
+  public void setDragCoef(double dragCoeff) {
+    this.dragCoeff = dragCoeff;
+  }
+
+  /** Set the absorption coefficient.
+   * @param absorptionCoeff coefficient absorption coefficient
+   */
+  public void setAbsCoef(double absorptionCoeff) {
+    this.absorptionCoeff = absorptionCoeff;
+  }
+
+  /** Set the specular reflection coefficient.
+   * @param reflectionCoeff coefficient specular reflection coefficient
+   */
+  public void setReflectionCoef(double reflectionCoeff) {
+    this.reflectionCoeff = reflectionCoeff;
+  }
+
   /** Mass (kg). */
   private double mass;
 
@@ -115,18 +121,5 @@ public class SimpleSpacecraft implements SolarRadiationPressureSpacecraft, Atmos
 
   /** Specular reflection coefficient. */
   private double reflectionCoeff;
-  
-  /** Isp (s). */
-  private double isp;
-  
-  /** outflow. */
-  private double outFlow;
-  
-  /** g0 associated to the Isp. */
-  private double g0;
-
-  public double getg0() {
-    return g0;
-  }
 
 }

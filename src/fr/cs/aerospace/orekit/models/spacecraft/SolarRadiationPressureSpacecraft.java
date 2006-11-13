@@ -3,7 +3,7 @@ package fr.cs.aerospace.orekit.models.spacecraft;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
-public interface SolarRadiationPressureSpacecraft extends Spacecraft {
+public interface SolarRadiationPressureSpacecraft {
 	  /** Get the mass.
 	   * @return mass (kg)
 	   */

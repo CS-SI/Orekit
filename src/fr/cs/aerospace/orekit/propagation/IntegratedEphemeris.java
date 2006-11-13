@@ -68,7 +68,7 @@ public class IntegratedEphemeris implements BoundedEphemeris {
 	    EquinoctialParameters eq = new EquinoctialParameters(state[0],state[1],state[2],
 	    		state[3], state[4],state[5], 2, frame);
 	    
-	    return new Orbit(date , eq, state[6]);
+	    return new Orbit(date , eq);
 	}
 	else {
 		return null;

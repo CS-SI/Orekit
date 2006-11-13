@@ -29,7 +29,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * wants to use, then adding all the perturbing force models he wants and then
  * performing the given integration with an initial orbit and a target time. The same
  * extrapolator can be reused for several orbit extrapolations.</p>
-
+ 
  * <p>Several extrapolation methods are available, providing their results in
  * different ways to better suit user needs.
  * <dl>
@@ -50,24 +50,13 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * <p>The two first methods are used when the user code needs to drive the
  * integration process, whereas the two last methods are used when the
  * integration process needs to drive the user code.
- * For the two lasts methods, the form of the handled state is :
- *   <pre>
- *     y[0] = a
- *     y[1] = ex 
- *     y[2] = ey
- *     y[3] = hx
- *     y[4] = hy 
- *     y[5] = lv 
- *     y[6] = mass
- * </pre>
- * </p>
  *
  * @see Orbit
  * @see ForceModel
  * @see StepHandler
  * @see FixedStepHandler
  * @see IntegratedEphemeris
- * @see fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations
+ * @see fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations
  *
  * @version $Id$
  * @author  M. Romero
@@ -76,7 +65,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  */
 public class NumericalPropagator
 implements FirstOrderDifferentialEquations {
-
+  
   /** Create a new instance of NumericalExtrapolationModel.
    * After creation, the instance is empty, i.e. there is no perturbing force
    * at all. This means that if {@link #addForceModel addForceModel} is not
@@ -94,11 +83,9 @@ implements FirstOrderDifferentialEquations {
     this.date               = new AbsoluteDate();
     this.parameters         = null;
     this.adder              = null;
-    this.mass = -1.0;
-    this.state = new double[7];
-
+    this.state = new double[6];
   }
-
+  
   /** Add a force model to the global perturbation model. The associated 
    * switching function is added to the switching functions vector.
    * All models added by this method will be considered during integration.
@@ -115,7 +102,7 @@ implements FirstOrderDifferentialEquations {
       }  
     }      
   }
-
+  
   /** Remove all perturbing force models from the global perturbation model, 
    * and associated switching functions.
    * Once all perturbing forces have been removed (and as long as no new force
@@ -126,26 +113,29 @@ implements FirstOrderDifferentialEquations {
     forceModels.clear();
     forceSwf.clear();
   }
-
+  
   /** Propagate an orbit up to a specific target date.
-   * @param initialOrbit orbit to extrapolate 
+   * @param initialOrbit orbit to extrapolate (this object will not be
+   * changed except if finalOrbit is also reference to it)
    * @param finalDate target date for the orbit
-   * @return the orbit at the final date 
+   * @return orbit at the final date (reference to finalOrbit if it was non
+   * null, reference to a new object otherwise)
    * @exception DerivativeException if the force models trigger one
    * @exception IntegratorException if the force models trigger one
    */
   public Orbit propagate(Orbit initialOrbit,
                          AbsoluteDate finalDate)
   throws DerivativeException, IntegratorException, OrekitException {
-
+    
     propagate(initialOrbit, finalDate, DummyStepHandler.getInstance());
-
-    return new Orbit(date , parameters, mass);
+    
+    return new Orbit(date , parameters);
   }
-
+  
   /** Propagate an orbit and store the ephemeris throughout the integration
    * range.
-   * @param initialOrbit orbit to extrapolate 
+   * @param initialOrbit orbit to extrapolate (this object will not be
+   * changed)
    * @param finalDate target date for the orbit
    * @param ephemeris placeholder where to put the results
    * @exception DerivativeException if the force models trigger one
@@ -160,10 +150,11 @@ implements FirstOrderDifferentialEquations {
     ephemeris.initialize(model , initialOrbit.getDate(), 
                          initialOrbit.getParameters().getFrame());
   }        
-
+  
   /** Propagate an orbit and call a user handler at fixed time during
    * integration.
-   * @param initialOrbit orbit to extrapolate 
+   * @param initialOrbit orbit to extrapolate (this object will not be
+   * changed)
    * @param finalDate target date for the orbit
    * @param h fixed stepsize (s)
    * @param handler object to call at fixed time steps
@@ -175,9 +166,10 @@ implements FirstOrderDifferentialEquations {
   throws DerivativeException, IntegratorException, OrekitException {
     propagate(initialOrbit, finalDate, new StepNormalizer(h, handler));
   }
-
+  
   /** Propagate an orbit and call a user handler after each successful step.
-   * @param initialOrbit orbit to extrapolate 
+   * @param initialOrbit orbit to extrapolate (this object will not be
+   * changed)
    * @param finalDate target date for the orbit
    * @param handler object to call at the end of each successful step
    * @exception DerivativeException if the force models trigger one
@@ -191,13 +183,12 @@ implements FirstOrderDifferentialEquations {
     startDate  = initialOrbit.getDate();
     date       = startDate;
     parameters = new EquinoctialParameters(initialOrbit.getParameters(), mu);
-    mass       = initialOrbit.getMass();
-    adder      = new TimeDerivativesEquations(parameters , mass , mu);
+    adder      = new EquinoctialGaussEquations(parameters , mu);
 
     // mathematical view
     double t0 = 0;
     double t1 = finalDate.minus(startDate);
-
+    
     // Map state to array
     state[0] = parameters.getA();
     state[1] = parameters.getEquinoctialEx();
@@ -205,7 +196,6 @@ implements FirstOrderDifferentialEquations {
     state[3] = parameters.getHx();
     state[4] = parameters.getHy();
     state[5] = parameters.getLv();
-    state[6] = mass;
 
     // Add the switching functions
     for( int i = 0; i < forceSwf.size(); i++) {
@@ -213,26 +203,25 @@ implements FirstOrderDifferentialEquations {
       integrator.addSwitchingFunction(new MappingSwitchingFunction(swf), 
                                       swf.getMaxCheckInterval(), swf.getThreshold());
     }
-
+    
     // mathematical integration
     integrator.setStepHandler(handler);
     integrator.integrate(this, t0, state, t1, state);
-
-    // back to space dynamics view : state at the end of the integration
+    
+    // back to space dynamics view
     date = new AbsoluteDate(startDate, t1);
-
+    
     parameters = new EquinoctialParameters(state[0], state[1],state[2],state[3],
-                                           state[4],state[5], EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                           parameters.getFrame());
-    mass = state[6];
-
-
+                       state[4],state[5], EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
+                                parameters.getFrame());
+    
+    
   }
-
+  
   public int getDimension() {
-    return 7;
+    return 6;
   }
-
+  
   /** Computes the orbit time derivative.
    * @param t current time offset from the reference epoch (s)
    * @param y array containing the current value of the orbit state vector
@@ -243,49 +232,47 @@ implements FirstOrderDifferentialEquations {
    */
   public void computeDerivatives(double t, double[] y, double[] yDot)
   throws DerivativeException {
-
+    
     try {
       // update space dynamics view
       mapState(t, y);
-
+      
       // compute cartesian coordinates
       PVCoordinates pvCoordinates = parameters.getPVCoordinates(mu);
-
+      
       // initialize derivatives
-      adder.initDerivatives(yDot , parameters, mass);
-
+      adder.initDerivatives(yDot , parameters);
+      
       // compute the contributions of all perturbing forces
       for (Iterator iter = forceModels.iterator(); iter.hasNext();) {
         ((ForceModel) iter.next()).addContribution(date, pvCoordinates, adder);
       }
-
+      
       // finalize derivatives by adding the Kepler contribution
       adder.addKeplerContribution();
-
     } catch (OrekitException oe) {
       throw new DerivativeException(oe.getMessage(), new String[0]);
     }
-
+    
   }
-
+  
   private void mapState(double t, double [] y) {
-
+    
     // update space dynamics view
     date = new AbsoluteDate(startDate, t);
-
+    
     parameters = new EquinoctialParameters(y[0], y[1],y[2],y[3],y[4],y[5],
                                            EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                           parameters.getFrame());
-    mass = y[6];
-
+                                               parameters.getFrame());
+    
   }
-
+  
   private class MappingSwitchingFunction implements SwitchingFunction {
-
+    
     public MappingSwitchingFunction(SWF swf) {
       this.swf = swf;
     }
-
+    
     public double g(double t, double[] y){
       mapState(t, y);
       try {
@@ -295,49 +282,46 @@ implements FirstOrderDifferentialEquations {
         throw new RuntimeException("... TODO ...");
       }
     }
-
+    
     public int eventOccurred(double t, double[] y) {
       mapState(t, y);
       swf.eventOccurred(date, parameters.getPVCoordinates(mu), parameters.getFrame());
       return CONTINUE;
     }
-
+    
     public void resetState(double t, double[] y) {
       // never called since eventOccured never returns CallResetState
     }
-
+    
     private SWF swf;
-
+    
   }
-
+  
   /** Central body gravitational constant. */
   private double mu;
-
+  
   /** Force models used during the extrapolation of the Orbit. */
   private ArrayList forceModels;
-
+  
   /** Switching functions used during the extrapolation of the Orbit. */
   private ArrayList forceSwf;
 
   /** State vector */ 
   private double[] state;
-
+  
   /** Start date. */
   private AbsoluteDate startDate;
-
+  
   /** Current date. */
   private AbsoluteDate date;
-
-  /** current mass, updated during the integration process */
-  private double mass;
-
+  
   /** Current EquinoctialParameters, updated during the integration process. */
   private EquinoctialParameters parameters;
-
+  
   /** Integrator selected by the user for the orbital extrapolation process. */
   private FirstOrderIntegrator integrator;
-
+  
   /** Gauss equations handler. */
-  private TimeDerivativesEquations adder;
-
+  private EquinoctialGaussEquations adder;
+  
 }
