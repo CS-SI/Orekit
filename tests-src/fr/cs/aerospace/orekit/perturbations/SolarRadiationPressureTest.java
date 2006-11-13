@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.text.ParseException;
 
 import fr.cs.aerospace.orekit.models.bodies.Sun;
-import fr.cs.aerospace.orekit.models.spacecraft.SimpleSpacecraft;
 import fr.cs.aerospace.orekit.models.spacecraft.SolarRadiationPressureSpacecraft;
 import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.FirstOrderIntegrator;
@@ -22,6 +21,7 @@ import fr.cs.aerospace.orekit.propagation.KeplerianPropagator;
 import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
+import fr.cs.aerospace.orekit.utils.SimpleSpacecraft;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -34,13 +34,13 @@ public class SolarRadiationPressureTest extends TestCase {
 	    OrbitalParameters op = new EquinoctialParameters(42164000,10e-3,10e-3,
 	    		Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
                 0.1, 2, Frame.getJ2000());
-	    Orbit orbit = new Orbit(date , op);
+	    Orbit orbit = new Orbit(date , op, 1500.0);
 	    Sun sun = new Sun();
 	    OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765);
 	    SolarRadiationPressure SRP =  new SolarRadiationPressure(
 	    		sun , earth ,
 	    	              (SolarRadiationPressureSpacecraft)new SimpleSpacecraft(1500.0, 50.0,
-	                            	  0.5, 0.5, 0.5));
+	                            	  0.5, 0.5, 0.5, 0.0, 0.0, 0.0));
         
         double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/mu);
         assertEquals(86164, period,1);
@@ -79,14 +79,14 @@ public class SolarRadiationPressureTest extends TestCase {
 	    OrbitalParameters op = new EquinoctialParameters(42164000,10e-3,10e-3,
 	    		Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
                 0.1, 2, Frame.getJ2000());
-	    Orbit orbit = new Orbit(date , op);
+	    Orbit orbit = new Orbit(date , op, 1500);
 	    Sun sun = new Sun();
 	    
 	    // creation of the force model
 		SolarRadiationPressure SRP =  new SolarRadiationPressure(
 	    		sun , new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765),
 	    	              (SolarRadiationPressureSpacecraft)new SimpleSpacecraft(1500.0, 500.0,
-	                            	  0.7, 0.7, 0.7));
+	                            	  0.7, 0.7, 0.7, 0.0, 0.0, 0.0));
 		
 		double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/mu);
         

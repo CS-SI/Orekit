@@ -9,7 +9,7 @@ import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.models.spacecraft.SolarRadiationPressureSpacecraft;
-import fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations;
+import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
@@ -50,16 +50,15 @@ public class SolarRadiationPressure implements ForceModel {
 	    this.centralBody = centralBody;
 	    this.spacecraft = spacecraft;
 	}
-	
-	/**
-	* Compute the contribution of the solar radiation pressure to the perturbing
+		
+	/** Compute the contribution of the solar radiation pressure to the perturbing
 	* acceleration.
 	* @param date current date
 	* @param pvCoordinates
 	* @param adder object where the contribution should be added
 	*/	
 	public void addContribution(AbsoluteDate date, PVCoordinates pvCoordinates, 
-			 EquinoctialGaussEquations adder)
+			 TimeDerivativesEquations adder)
 			throws OrekitException {
 
 	    // raw radiation pressure
@@ -77,7 +76,7 @@ public class SolarRadiationPressure implements ForceModel {
 	    double kd = (1.0 - spacecraft.getAbsCoef(u, date).getNorm())
 	              * (1.0 - spacecraft.getReflectionCoef(u, date).getNorm());
 	    double acceleration = rawP * (1 + kd * 4.0 / 9.0 )
-	                        * spacecraft.getSurface(u, date) / spacecraft.getMass();
+	                        * spacecraft.getSurface(u, date) / adder.getMass();
 	 
 	    // provide the perturbing acceleration to the derivatives adder
 

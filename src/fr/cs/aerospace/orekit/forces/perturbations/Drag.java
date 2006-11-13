@@ -6,7 +6,7 @@ import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
 import fr.cs.aerospace.orekit.models.perturbations.Atmosphere;
 import fr.cs.aerospace.orekit.models.spacecraft.AtmosphereDragSpacecraft;
-import fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations;
+import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
@@ -33,7 +33,7 @@ public class Drag implements ForceModel {
    */
   public void addContribution(AbsoluteDate date,
 		                      PVCoordinates pvCoordinates, 
-                              EquinoctialGaussEquations adder) {
+                              TimeDerivativesEquations adder) {
 
     double   rho       = atmosphere.getDensity(date, pvCoordinates.getPosition());
     Vector3D vAtm      = atmosphere.getVelocity(date, pvCoordinates.getPosition());
@@ -41,7 +41,7 @@ public class Drag implements ForceModel {
     double   v2        = Vector3D.dotProduct(incidence, incidence);
     incidence.normalizeSelf();
     double   k         = rho * v2 * spacecraft.getSurface(incidence, date)
-                       / (2 * spacecraft.getMass());
+                       / (2 * adder.getMass());
     Vector3D cD        = spacecraft.getDragCoef(incidence, date);
 
     // Additition of calculated accelration to adder
