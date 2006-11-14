@@ -98,7 +98,15 @@ public class IERSDataTest extends TestCase {
     }
   }
 
+  public void setUp() {
+    init();
+  }
   public void tearDown() {
+    System.setProperty("orekit.iers.directory",
+    "");
+    init();
+  }
+    public void init() {
     try {
       // resetting the singletons to null
       Field instance = UTCScale.class.getDeclaredField("instance");

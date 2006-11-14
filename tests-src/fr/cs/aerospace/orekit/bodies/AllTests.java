@@ -8,7 +8,6 @@ public class AllTests {
 
     TestSuite suite = new TestSuite("fr.cs.aerospace.orekit.bodies"); 
 
-    suite.addTest(FixedPoleEarthTest.suite());
     suite.addTest(OneAxisEllipsoidTest.suite());
     suite.addTest(SunTest.suite());
     suite.addTest(MoonTest.suite());

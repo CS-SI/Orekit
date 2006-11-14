@@ -9,8 +9,8 @@ public class AllTests {
     suite.addTest(DragTest.suite());
     suite.addTest(SolarRadiationPressureTest.suite());
     suite.addTest(ThirdBodyAttractionTest.suite());
-    suite.addTest(DrozinerAttractionModelTest.suite());
     suite.addTest(CunninghamAttractionModelTest.suite());
+    suite.addTest(DrozinerAttractionModelTest.suite());
     return suite; 
   }
 }

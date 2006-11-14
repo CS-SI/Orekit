@@ -24,7 +24,7 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
 public class EGMFormatReader implements PotentialCoefficientsReader {
 
   /** Simple constructor (the first method to call after construction is 
-   * {@link #isFileOK(InputStream)}).
+   * {@link #isFileOK(InputStream)}. It is done automaticaly by the factory).
    */
   protected EGMFormatReader() {
     fileIsOK = false;

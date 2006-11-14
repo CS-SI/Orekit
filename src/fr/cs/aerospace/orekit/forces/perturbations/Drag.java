@@ -2,6 +2,7 @@ package fr.cs.aerospace.orekit.forces.perturbations;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
 import fr.cs.aerospace.orekit.models.perturbations.Atmosphere;
@@ -36,7 +37,13 @@ public class Drag implements ForceModel {
                               EquinoctialGaussEquations adder) {
 
     double   rho       = atmosphere.getDensity(date, pvCoordinates.getPosition());
-    Vector3D vAtm      = atmosphere.getVelocity(date, pvCoordinates.getPosition());
+    Vector3D vAtm;
+    try {
+      vAtm = atmosphere.getVelocity(date, pvCoordinates.getPosition(), adder.getFrame());
+    } catch (OrekitException e) {
+      vAtm = new Vector3D();
+      e.printStackTrace();
+    }
     Vector3D incidence = Vector3D.subtract(vAtm, pvCoordinates.getVelocity());
     double   v2        = Vector3D.dotProduct(incidence, incidence);
     incidence.normalizeSelf();

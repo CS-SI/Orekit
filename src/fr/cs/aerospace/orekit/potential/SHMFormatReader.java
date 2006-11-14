@@ -24,7 +24,8 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
 public class SHMFormatReader implements PotentialCoefficientsReader {
   
   
-  /** Simple constructor (the first method to call then is <code>isFileOK</code>).
+  /** Simple constructor (the first method to call then is <code>isFileOK</code>.
+   *  It is done automaticaly by the factory).
    */
   protected SHMFormatReader() {
     fileIsOK = false;

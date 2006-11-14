@@ -21,5 +21,9 @@ public class Utils {
     double twoPi = 2 * Math.PI;
     return a - twoPi * Math.floor ((a + Math.PI - ref) / twoPi);
   }
+  
+  public static double ae =  6378136.460;
+  public static double mu =  3.986004415e+14;
+  
 
 }

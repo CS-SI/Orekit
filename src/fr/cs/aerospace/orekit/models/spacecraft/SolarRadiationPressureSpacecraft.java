@@ -1,10 +1,18 @@
 package fr.cs.aerospace.orekit.models.spacecraft;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
+
+import fr.cs.aerospace.orekit.forces.perturbations.SolarRadiationPressure;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
+/** Adapted container for the SolarRadiationPressure force model.
+ * 
+ * @see SolarRadiationPressure
+ * @author F. Maussion
+ */
 public interface SolarRadiationPressureSpacecraft {
-	  /** Get the mass.
+	  
+  /** Get the mass.
 	   * @return mass (kg)
 	   */
 	  public double getMass();

@@ -3,29 +3,32 @@ package fr.cs.aerospace.orekit.models.perturbations;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.bodies.BodyShape;
-import fr.cs.aerospace.orekit.bodies.RotatingBody;
+import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /** Simple exponential atmospheric model.
  * <p>This model represents a simple atmosphere with an exponential
  * density and rigidly bound to the underlying rotating body.</p>
  * @version $Id: Atmosphere.java 840 2006-06-07 09:41:38Z internMS $
- * @author E. Delente
- * @author Luc Maisonobe
+ * @author F.Maussion
+ * @author L.Maisonobe
  */
 public class SimpleExponentialAtmosphere implements Atmosphere {
 
   /** Create an exponential atmosphere.
    * @param shape body shape model
-   * @param motion body rotation model
+   * @param bodyFrame body rotation frame
    * @param rho0 Density at the altitude h0
    * @param h0 Altitude of reference (m)
    * @param hscale Scale factor
    */
-  public SimpleExponentialAtmosphere(BodyShape shape, RotatingBody motion,
+  public SimpleExponentialAtmosphere(BodyShape shape, Frame bodyFrame,
                                      double rho0, double h0, double hscale) {
     this.shape  = shape;
-    this.motion = motion;
+    this.bodyFrame = bodyFrame;
     this.rho0   = rho0;
     this.h0     = h0;
     this.hscale = hscale;
@@ -43,15 +46,22 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
 
   /** Get the inertial velocity of atmosphere modecules.
    * @param date current date
-   * @param position current position
-   * @return volocity (m/s)
+   * @param position current position in frame
+   * @param frame the frame in which is defined the position
+   * @return velocity (m/s) (defined in the same frame à the position
+   * @throws OrekitException 
    */
-  public Vector3D getVelocity(AbsoluteDate date, Vector3D position) {
-    return Vector3D.crossProduct(motion.getRotationVector(date), position);
+  public Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame) 
+    throws OrekitException {
+    Transform frameToBody = frame.getTransformTo(bodyFrame, date);
+    PVCoordinates pv = new PVCoordinates(position , new Vector3D());
+    pv = frameToBody.transformPVCoordinates(pv);
+    return frameToBody.getInverse().transformVector
+                           (pv.getVelocity());
   }
 
   private BodyShape    shape;
-  private RotatingBody motion;
+  private Frame        bodyFrame;
   private double       rho0;
   private double       h0;
   private double       hscale;

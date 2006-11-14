@@ -29,7 +29,6 @@ import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
-import fr.cs.aerospace.orekit.utils.Vector;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -221,11 +220,11 @@ public class DrozinerAttractionModelTest extends TestCase {
     Orbit drozOrb = propagator.propagate(orbit, new AbsoluteDate(date ,  86400));
     
     Vector3D dif = Vector3D.subtract(cunnOrb.getPVCoordinates(mu).getPosition(),drozOrb.getPVCoordinates(mu).getPosition());
-    System.out.println(Vector.toString(dif));
-    assertTrue(dif.getNorm() < 1.70e-4);
-    assertTrue(Math.abs(dif.getX()) < 5.9e-5);
-    assertTrue(Math.abs(dif.getY()) < 5.4e-5); 
-    assertTrue(Math.abs(dif.getZ()) < 1.5e-4);
+
+    assertTrue(dif.getNorm() < 1.6e-4);
+    assertTrue(Math.abs(dif.getX()) < 5.6e-5);
+    assertTrue(Math.abs(dif.getY()) < 4.9e-5); 
+    assertTrue(Math.abs(dif.getZ()) < 1.4e-4);
     
 
   }

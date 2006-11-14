@@ -13,7 +13,8 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * @author E. Delente
  */
 
-public class SimpleSpacecraft implements SolarRadiationPressureSpacecraft, AtmosphereDragSpacecraft, KeplerianSpacecraft {
+public class SimpleSpacecraft 
+  implements SolarRadiationPressureSpacecraft, AtmosphereDragSpacecraft {
 
   /** Simple constructor.
    * @param mass Mass (kg)

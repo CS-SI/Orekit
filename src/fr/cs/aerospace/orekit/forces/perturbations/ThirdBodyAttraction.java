@@ -6,16 +6,32 @@ import fr.cs.aerospace.orekit.bodies.ThirdBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
+import fr.cs.aerospace.orekit.models.bodies.Moon;
+import fr.cs.aerospace.orekit.models.bodies.Sun;
 import fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
+/** Third body attraction force model.
+ *  
+ * @author F. Maussion , E.Delente
+ */
 public class ThirdBodyAttraction implements ForceModel {
 
+    /** Simple constructor.
+     * @param body the third body to consider 
+     * (ex: {@link Sun} or {@link Moon})
+     */
 	public ThirdBodyAttraction(ThirdBody body) {
 		this.body = body;
 	}
 	
+    /** Compute the contribution of the body attraction to the perturbing
+    * acceleration.
+    * @param t current date
+    * @param pvCoordinates
+    * @param adder object where the contribution should be added
+    */  
 	public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates,
 			EquinoctialGaussEquations adder) throws OrekitException {
 		
@@ -33,10 +49,14 @@ public class ThirdBodyAttraction implements ForceModel {
 		adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
 	}
 
+   /** Ther are no SwitchingFunctions for this model.
+    * @return null
+    */
 	public SWF[] getSwitchingFunctions() {
 		return null;
 	}
-
+    
+    /** The body to consider */
 	private ThirdBody body;
 	
 }

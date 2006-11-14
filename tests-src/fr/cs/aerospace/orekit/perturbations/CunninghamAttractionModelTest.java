@@ -29,7 +29,6 @@ import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
-import fr.cs.aerospace.orekit.utils.Vector;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -239,17 +238,17 @@ public class CunninghamAttractionModelTest extends TestCase {
     Orbit drozOrb = propagator.propagate(orbit, new AbsoluteDate(date ,  86400));
     
     Vector3D dif = Vector3D.subtract(cunnOrb.getPVCoordinates(mu).getPosition(),drozOrb.getPVCoordinates(mu).getPosition());
-    
-    System.out.println(Vector.toString(dif));
-    assertTrue(dif.getNorm() < 10e-8);
-    assertTrue(Math.abs(dif.getX()) < 5e-8);
-    assertTrue(Math.abs(dif.getY()) < 6e-9); 
-    assertTrue(Math.abs(dif.getZ()) < 9e-8);
+
+    assertTrue(dif.getNorm() < 9.6e-8);
+    assertTrue(Math.abs(dif.getX()) < 4.4e-8);
+    assertTrue(Math.abs(dif.getY()) < 5.4e-9); 
+    assertTrue(Math.abs(dif.getZ()) < 8.53e-8);
 
     
   }
 
   protected void setUp() {
+    System.out.println(System.getProperty("orekit.iers.directory"));
     try {
       // Eigen c1 model truncated to degree and order 6
       mu =  3.986004415e+14;

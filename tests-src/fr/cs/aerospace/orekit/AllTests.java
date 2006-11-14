@@ -14,8 +14,8 @@ public class AllTests {
     suite.addTest(fr.cs.aerospace.orekit.frames.series.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.bodies.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.orbits.AllTests.suite());
-    suite.addTest(fr.cs.aerospace.orekit.propagation.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.perturbations.AllTests.suite());
+    suite.addTest(fr.cs.aerospace.orekit.propagation.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.potential.AllTests.suite());
     return suite; 
 

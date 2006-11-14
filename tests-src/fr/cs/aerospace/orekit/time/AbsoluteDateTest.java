@@ -82,10 +82,13 @@ public class AbsoluteDateTest
   public void setUp() throws OrekitException {
     System.setProperty("orekit.iers.directory",
                        new File(rootDir, "regular-data").getAbsolutePath());
+//    System.out.println(System.getProperty("orekit.iers.directory"));
     utc = UTCScale.getInstance();
   }
 
   public void tearDown() {
+    System.setProperty("orekit.iers.directory",
+                       "");
     try {
       // resetting the singletons to null
       utc = null;
@@ -99,6 +102,7 @@ public class AbsoluteDateTest
       instance.set(null, null);
       instance.setAccessible(false);
 
+     
     } catch (Exception e) {
       // ignored
     }

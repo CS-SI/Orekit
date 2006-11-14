@@ -1,10 +1,16 @@
 package fr.cs.aerospace.orekit.models.spacecraft;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
+import fr.cs.aerospace.orekit.forces.perturbations.Drag;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
+/** Adapted container for the Atmosphere drag force model.
+ * @see Drag
+ * @author F. Maussion
+ */
 public interface AtmosphereDragSpacecraft {
-	  /** Get the mass.
+	  
+  /** Get the mass.
 	   * @return mass (kg)
 	   */
 	  public double getMass();

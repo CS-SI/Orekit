@@ -51,12 +51,11 @@ public class ITRF2000Frame extends Frame {
    * The IAU2000B is recommended for most applications since it is <strong>far
    * less</strong> computation intensive than the IAU2000A model and its accuracy
    * is only slightly degraded (1 milliarcsecond instead of 0.2 milliarcsecond).</p>
-   * @param fSynch the FrameSynchronizer which ensures the synchronization of
-   * all the frames in the the same date-sharing group.
+   * @param date the date.
    * @param useIAU2000B if true (recommended value), the IAU2000B model will be used
    * @exception OrekitException if the nutation model data embedded in the
    * library cannot be read
-   * @see FrameSynchronizer
+   * @see Frame
    */
   public ITRF2000Frame(AbsoluteDate date, boolean useIAU2000B)
     throws OrekitException {
@@ -225,7 +224,7 @@ public class ITRF2000Frame extends Frame {
   }
 
   /** Get the Earth Rotation Angle at the current date.
-   * @param the date
+   * @param  date the date
    * @return Earth Rotation Angle at the current date in radians
    * @throws OrekitException 
    */

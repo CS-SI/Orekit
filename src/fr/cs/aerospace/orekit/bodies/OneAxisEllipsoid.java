@@ -14,14 +14,17 @@ import fr.cs.aerospace.orekit.utils.Line;
  * <p>This class is a simple adaptation of the <a
  * href="http://www.spaceroots.org/documents/distance/Ellipsoid.java">Ellipsoid</a>
  * example class implementing the algorithms described in the paper <a
- * href="http://www.spaceroots.org/documents/distance/distance-to-ellipse.pdf">Quick
- * computation of the distance between a point and an ellipse</a>. The original
- * class is distributed under a BSD-like license.</p>
-
+ * href="http://www.spaceroots.org/documents/distance/distance-to-ellipse.pdf"> Quick
+ * computation of the distance between a point and an ellipse</a>.</p>
+ *
  * @author Luc Maisonobe
  */
 public class OneAxisEllipsoid implements BodyShape {
 
+  /** Simple constructor
+   * @param ae earth equatorial radius
+   * @param f 
+   */
   public OneAxisEllipsoid(double ae, double f) {
     this.ae = ae;
     e2      = f * (2.0 - f);

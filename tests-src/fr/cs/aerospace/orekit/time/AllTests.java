@@ -13,6 +13,7 @@ public class AllTests {
     suite.addTest(TAIScaleTest.suite());
     suite.addTest(TTScaleTest.suite());
     suite.addTest(TCGScaleTest.suite());
+    
     return suite; 
 
   }

@@ -113,6 +113,8 @@ public class UTCScaleTest
   }
 
   public void tearDown() {
+    System.setProperty("orekit.iers.directory",
+    "");
     try {
       // resetting the singletons to null
       utc = null;

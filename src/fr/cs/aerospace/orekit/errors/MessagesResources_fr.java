@@ -22,6 +22,10 @@ public class MessagesResources_fr
   static final Object[][] contents = {
     { "unable to converge after {0} iterations",
       "impossible de converger apr\u00e8s {0} it\u00e9rations" },
+    { "C and S should have the same size :" +
+        " (C = [{0}][{1}] ; S = [{2}][{3}])",
+        "C et S doivent avoir la même taille :" +
+        " (C = [{0}][{1}] ; S = [{2}][{3}])" },
     { "trajectory inside the Brillouin sphere (r = {0})",
       "trajectoire int\u00e9rieure \u00e0 la sph\u00e8re de Brillouin (r = {0})" },
     { "polar trajectory (r = {0})",

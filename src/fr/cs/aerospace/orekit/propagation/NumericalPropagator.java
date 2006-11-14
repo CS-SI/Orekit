@@ -49,7 +49,17 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  *
  * <p>The two first methods are used when the user code needs to drive the
  * integration process, whereas the two last methods are used when the
- * integration process needs to drive the user code.
+ * integration process needs to drive the user code. To use the step handler, 
+ * the user must know the format of the handled state used internally, 
+ * which is expressed in equinoctial parameters : 
+ *  <pre>
+ *     y[0] = a
+ *     y[1] = ex
+ *     y[2] = ey
+ *     y[3] = hx
+ *     y[4] = hy
+ *     y[5] = lv
+ *   </pre>
  *
  * @see Orbit
  * @see ForceModel
@@ -115,11 +125,9 @@ implements FirstOrderDifferentialEquations {
   }
   
   /** Propagate an orbit up to a specific target date.
-   * @param initialOrbit orbit to extrapolate (this object will not be
-   * changed except if finalOrbit is also reference to it)
+   * @param initialOrbit orbit to extrapolate 
    * @param finalDate target date for the orbit
-   * @return orbit at the final date (reference to finalOrbit if it was non
-   * null, reference to a new object otherwise)
+   * @return orbit at the final date 
    * @exception DerivativeException if the force models trigger one
    * @exception IntegratorException if the force models trigger one
    */
@@ -134,14 +142,14 @@ implements FirstOrderDifferentialEquations {
   
   /** Propagate an orbit and store the ephemeris throughout the integration
    * range.
-   * @param initialOrbit orbit to extrapolate (this object will not be
-   * changed)
+   * @param initialOrbit orbit to extrapolate 
    * @param finalDate target date for the orbit
    * @param ephemeris placeholder where to put the results
+   * @return orbit at the final date 
    * @exception DerivativeException if the force models trigger one
    * @exception IntegratorException if the force models trigger one
    */
-  public void propagate(Orbit initialOrbit,
+  public Orbit propagate(Orbit initialOrbit,
                         AbsoluteDate finalDate,
                         IntegratedEphemeris ephemeris) 
   throws DerivativeException, IntegratorException, OrekitException {    
@@ -149,33 +157,35 @@ implements FirstOrderDifferentialEquations {
     propagate(initialOrbit, finalDate, (StepHandler)model);
     ephemeris.initialize(model , initialOrbit.getDate(), 
                          initialOrbit.getParameters().getFrame());
+    return new Orbit(date , parameters);
   }        
   
   /** Propagate an orbit and call a user handler at fixed time during
    * integration.
-   * @param initialOrbit orbit to extrapolate (this object will not be
-   * changed)
+   * @param initialOrbit orbit to extrapolate
    * @param finalDate target date for the orbit
    * @param h fixed stepsize (s)
    * @param handler object to call at fixed time steps
+   * @return orbit at the final date 
    * @exception DerivativeException if the force models trigger one
    * @exception IntegratorException if the force models trigger one
    */     
-  public void propagate(Orbit initialOrbit, AbsoluteDate finalDate,
+  public Orbit propagate(Orbit initialOrbit, AbsoluteDate finalDate,
                         double h, FixedStepHandler handler)
   throws DerivativeException, IntegratorException, OrekitException {
     propagate(initialOrbit, finalDate, new StepNormalizer(h, handler));
+    return new Orbit(date , parameters);
   }
   
   /** Propagate an orbit and call a user handler after each successful step.
-   * @param initialOrbit orbit to extrapolate (this object will not be
-   * changed)
+   * @param initialOrbit orbit to extrapolate
    * @param finalDate target date for the orbit
    * @param handler object to call at the end of each successful step
+   * @return orbit at the final date 
    * @exception DerivativeException if the force models trigger one
    * @exception IntegratorException if the force models trigger one
    */    
-  public void propagate(Orbit initialOrbit,
+  public Orbit propagate(Orbit initialOrbit,
                         AbsoluteDate finalDate, StepHandler handler)
   throws DerivativeException, IntegratorException, OrekitException {
 
@@ -214,7 +224,7 @@ implements FirstOrderDifferentialEquations {
     parameters = new EquinoctialParameters(state[0], state[1],state[2],state[3],
                        state[4],state[5], EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
                                 parameters.getFrame());
-    
+    return new Orbit(date , parameters);
     
   }
   

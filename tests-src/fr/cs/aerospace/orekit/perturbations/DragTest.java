@@ -1,5 +1,16 @@
 package fr.cs.aerospace.orekit.perturbations;
 
+import org.spaceroots.mantissa.geometry.Vector3D;
+
+import fr.cs.aerospace.orekit.Utils;
+import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
+import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.frames.ITRF2000Frame;
+import fr.cs.aerospace.orekit.frames.Transform;
+import fr.cs.aerospace.orekit.models.perturbations.SimpleExponentialAtmosphere;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
+
 import junit.framework.*;
 
 public class DragTest extends TestCase {
@@ -8,87 +19,24 @@ public class DragTest extends TestCase {
     super(name);
   }
    
-    public void aaatestDrag() {       
-//    //----------------------------------
-//
-//
-//       
-//       Drag drag = new Drag(0.0004, 42000.0, 7500.0);
-//       System.out.println("rho(5000000m) = : " + drag.getAtmosphere().getRho(5000000.0));
-//       System.out.println("hscale = : " + drag.getAtmosphere().getHscale());
-//       double equatorialRadius = 6378.13E3;
-//       double mu = 3.98600E14;
-//       RDate date = new RDate(RDate.J2000Epoch, 0.0);
-//
-//       Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
-//       Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);                         
-//       Attitude attitude = new Attitude();
-//
-//       OrbitalParameters op = new CartesianParameters();
-//       op.reset(position, velocity, mu);
-//       OrbitDerivativesAdder adder = new CartesianDerivativesAdder(op, mu);
-//           
-//       // Acceleration
-//       double xDotDot = 0;
-//       double yDotDot = 0;
-//       double zDotDot = 0;
-//
-//     drag.addContribution(date, position, velocity, attitude, adder);
-       
-  } 
-
-   public void testDragElements() {       
-//
-//       
-//   System.out.println("Test 1: ");
-//   System.out.println("----------");
-//   
-//   Drag drag = new Drag(0.0004, 42000.0, 7500.0);
-//   System.out.println("rho(5000000m) = : " + drag.getAtmosphere().getRho(5000000.0));
-//   System.out.println("hscale = : " + drag.getAtmosphere().getHscale());
-//   
-//   double equatorialRadius = 6378.13E3;
-//   double mu = 3.98600E14;
-//   RDate date = new RDate(RDate.J2000Epoch, 0.0);
-//
-//   Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
-//   Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);                         
-//   Attitude attitude = new Attitude();
-//    
-//    // Creation of a simple vehicle
-//    SimpleVehicle vehicle = new SimpleVehicle(1500.0, 3.0, 2.0, 0.2, 0.3);
-//    System.out.println("Ref coeff = : " + vehicle.getReflCoef());    
-//    System.out.println("Drag coeff = : " + vehicle.getDragCoef());
-//    
-//    // Calculation of rho
-//    double x = position.getX();
-//    double y = position.getY();
-//    double z = position.getZ();
-//    double h = position.getNorm() - Constants.CentralBodyradius;
-//    double rho = drag.getAtmosphere().getRho(h);
-//    
-//    // Acceleration
-//    double xDotDot = 0;
-//    double yDotDot = 0;
-//    double zDotDot = 0;
-//    
-//    // Definition of the SRP force
-//    double[] Fsrp = new double[3];
-//
-//    double halfRhoVSCx = 0.5 * rho * velocity.getNorm() * vehicle.getSurface() * 
-//                         vehicle.getDragCoef();
-//
-//    Fsrp[0] = - halfRhoVSCx * velocity.getX();
-//    Fsrp[1] = - halfRhoVSCx * velocity.getY();
-//    Fsrp[2] = - halfRhoVSCx * velocity.getZ();
-//
-//    // Retrieval of the acceleration
-//    xDotDot = - Fsrp[0] / vehicle.getMass();
-//    yDotDot = - Fsrp[1] / vehicle.getMass();
-//    zDotDot = - Fsrp[2] / vehicle.getMass();
-
+    public void testExpAtmosphere() throws OrekitException {
+      Vector3D posInJ2000 = new Vector3D(10000,Vector3D.plusI);
+      AbsoluteDate date = AbsoluteDate.J2000Epoch;
+      Frame itrf = new ITRF2000Frame(date, true);
+      SimpleExponentialAtmosphere atm = new SimpleExponentialAtmosphere(
+                    new OneAxisEllipsoid(Utils.ae, 1.0 / 298.257222101), itrf,
+                    0.0004, 42000.0, 7500.0);
+      Vector3D vel = atm.getVelocity(date, posInJ2000, Frame.getJ2000());
+            
+      Transform toBody = Frame.getJ2000().getTransformTo(itrf, date);
+      Vector3D test = Vector3D.crossProduct(toBody.getRotAxis(),posInJ2000);
+      
+      test = Vector3D.subtract(test, vel);
+      
+      assertEquals(0, test.getNorm(), 2.1e-5);
+           
    }
-   
+       
   public static Test suite() {
     return new TestSuite(DragTest.class);
   }

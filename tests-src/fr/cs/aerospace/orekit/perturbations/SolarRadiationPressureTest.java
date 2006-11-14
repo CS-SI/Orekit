@@ -11,6 +11,7 @@ import org.spaceroots.mantissa.ode.FirstOrderIntegrator;
 import org.spaceroots.mantissa.ode.FixedStepHandler;
 import org.spaceroots.mantissa.ode.GraggBulirschStoerIntegrator;
 import org.spaceroots.mantissa.ode.IntegratorException;
+
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.perturbations.SolarRadiationPressure;
@@ -92,14 +93,14 @@ public class SolarRadiationPressureTest extends TestCase {
         
         assertEquals(86164, period,1);
 		// creation of the propagator
-		FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, period/4, 0, 10e-5);
+		FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, period/4, 0, 10e-4);
 		NumericalPropagator calc = new NumericalPropagator(mu, integrator);
 		calc.addForceModel(SRP);
 		
 		// Step Handler
 
 		SolarStepHandler sh = new SolarStepHandler();
-        AbsoluteDate finalDate = new AbsoluteDate(date , 365*period);
+        AbsoluteDate finalDate = new AbsoluteDate(date , 90*period);
 		calc.propagate(orbit , finalDate, Math.floor(15*period), sh );
 		
 	}
