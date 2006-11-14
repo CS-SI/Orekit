@@ -1,10 +1,7 @@
 package fr.cs.aerospace.orekit.perturbations;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.ParseException;
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
@@ -150,12 +147,6 @@ public class DrozinerAttractionModelTest extends TestCase {
       date = initialOrbit.getDate();
       referencePropagator =
         new EcksteinHechlerPropagator(initialOrbit, ae, mu, c20, c30, c40, c50, c60);
-      try {
-        w = new PrintWriter(new FileWriter(new File(new File(System.getProperty("user.home")), "drozi.dat")));
-      } catch (IOException ioe) {
-        ioe.printStackTrace(System.out);
-        System.exit(1);
-      }
     }
     
     public void handleStep(double t, double[] y, boolean isLastStep) {
@@ -176,11 +167,7 @@ public class DrozinerAttractionModelTest extends TestCase {
         Vector3D W = Vector3D.crossProduct(posEHP, velEHP);
         W.normalizeSelf();
         Vector3D N = Vector3D.crossProduct(W, T);
-        w.println(t + " " + dif.getNorm()
-                  + " " + Vector3D.dotProduct(dif, T)
-                  + " " + Vector3D.dotProduct(dif, N)
-                  + " " + Vector3D.dotProduct(dif, W));
-        w.flush();
+        
         assertTrue(dif.getNorm() < 104);
         assertTrue(Math.abs(Vector3D.dotProduct(dif, T)) < 104);
         assertTrue(Math.abs(Vector3D.dotProduct(dif, N)) <  53);
@@ -192,7 +179,6 @@ public class DrozinerAttractionModelTest extends TestCase {
     }
     private AbsoluteDate date;
     private EcksteinHechlerPropagator referencePropagator;
-    private PrintWriter w;
   }
   
   // test the difference with the Cunningham model
