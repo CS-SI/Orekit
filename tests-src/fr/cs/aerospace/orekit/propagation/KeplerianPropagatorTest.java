@@ -35,14 +35,14 @@ public class KeplerianPropagatorTest extends TestCase {
       
       // Extrapolator definition
       // -----------------------
-      KeplerianPropagator extrapolator = new KeplerianPropagator(initialOrbit, mu);
+      KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(initialOrbit), mu);
       
       // Extrapolation at the initial date
       // ---------------------------------
       double delta_t = 0.0; // extrapolation duration in seconds
       AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
       
-      Orbit finalOrbit = extrapolator.getOrbit(extrapDate);
+      SpacecraftState finalOrbit = extrapolator.getSpacecraftState(extrapDate);
       
       double a = finalOrbit.getA();
       // another way to compute n
@@ -71,14 +71,14 @@ public class KeplerianPropagatorTest extends TestCase {
        
       // Extrapolator definition
       // -----------------------
-      KeplerianPropagator extrapolator = new KeplerianPropagator(initialOrbit, mu);
+      KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(initialOrbit), mu);
       
       // Extrapolation at the initial date
       // ---------------------------------
       double delta_t = 0.0; // extrapolation duration in seconds
       AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
 
-      Orbit finalOrbit = extrapolator.getOrbit(extrapDate);
+      SpacecraftState finalOrbit = extrapolator.getSpacecraftState(extrapDate);
       
       double a = finalOrbit.getA();
       // another way to compute n
@@ -111,14 +111,14 @@ public class KeplerianPropagatorTest extends TestCase {
       
       // Extrapolator definition
       // -----------------------
-      KeplerianPropagator extrapolator = new KeplerianPropagator(initialOrbit, mu);
+      KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(initialOrbit), mu);
       
       // Extrapolation at a final date different from initial date
       // ---------------------------------------------------------
       double delta_t = 100000.0; // extrapolation duration in seconds
       AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
       
-      Orbit finalOrbit = extrapolator.getOrbit(extrapDate);
+      SpacecraftState finalOrbit = extrapolator.getSpacecraftState(extrapDate);
       
       
       // computation of (M final - M initial) with another method
@@ -202,14 +202,14 @@ public class KeplerianPropagatorTest extends TestCase {
            
       // Extrapolator definition
       // -----------------------
-      KeplerianPropagator extrapolator = new KeplerianPropagator(initialOrbit, mu);
+      KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(initialOrbit), mu);
       
       // Extrapolation at a final date different from initial date
       // ---------------------------------------------------------
       double delta_t = 100000.0; // extrapolation duration in seconds
       AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
       
-      Orbit finalOrbit = extrapolator.getOrbit(extrapDate);
+      SpacecraftState finalOrbit = extrapolator.getSpacecraftState(extrapDate);
             
       
       // computation of (M final - M initial) with another method

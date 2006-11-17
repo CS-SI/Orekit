@@ -9,11 +9,6 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * @author F. Maussion
  */
 public interface AtmosphereDragSpacecraft {
-	  
-  /** Get the mass.
-	   * @return mass (kg)
-	   */
-	  public double getMass();
 
 	  /** Get the surface.
 	   * @param direction direction of the flux
@@ -27,8 +22,4 @@ public interface AtmosphereDragSpacecraft {
 	   */
 	  public Vector3D getDragCoef(Vector3D direction, AbsoluteDate t);
 
-	  /** Set the mass.
-	   * @param mass new mass (kg)
-	   */
-	  public void setMass(double mass);
 }

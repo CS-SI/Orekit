@@ -16,6 +16,7 @@ import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
+import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
 import junit.framework.Test;
@@ -48,7 +49,7 @@ public class ThirdBodyAttractionTest extends TestCase {
     
     TBAStepHandler sh = new TBAStepHandler(TBAStepHandler.SUN);
     AbsoluteDate finalDate = new AbsoluteDate(date , 2*365*period);
-    calc.propagate(orbit , finalDate, Math.floor(period), sh );
+    calc.propagate(new SpacecraftState(orbit) , finalDate, Math.floor(period), sh );
     
   }
   public void testMoonContrib() throws ParseException, OrekitException, DerivativeException, IntegratorException, FileNotFoundException {
@@ -75,7 +76,7 @@ public class ThirdBodyAttractionTest extends TestCase {
     
     TBAStepHandler sh = new TBAStepHandler(TBAStepHandler.MOON);
     AbsoluteDate finalDate = new AbsoluteDate(date , 365*period);
-    calc.propagate(orbit , finalDate, Math.floor(period), sh );
+    calc.propagate(new SpacecraftState(orbit) , finalDate, Math.floor(period), sh );
     
   }
   

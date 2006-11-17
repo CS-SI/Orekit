@@ -12,16 +12,17 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
 public class KeplerianPropagator implements Ephemeris {
 
   /** Build a new instance.
-   * @param orbit initial orbit
+   * @param initialState initial state
    * @param mu central acceleration coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
-  public KeplerianPropagator(Orbit orbit, double mu) {
-    this.initialDate = orbit.getDate();
-    this.initialParameters = new EquinoctialParameters(orbit.getParameters(), mu);
+  public KeplerianPropagator(SpacecraftState initialState, double mu) {
+    this.initialDate = initialState.getDate();
+    this.initialParameters = new EquinoctialParameters(initialState.getParameters(), mu);
+    this.mass = initialState.getMass();
     this.n = Math.sqrt(mu / initialParameters.getA()) / initialParameters.getA();
   }
 
-  public Orbit getOrbit(AbsoluteDate date)
+  public SpacecraftState getSpacecraftState(AbsoluteDate date)
   throws PropagationException {
     
     // evaluation of LM = PA + RAAN + M at extrapolated time
@@ -33,7 +34,7 @@ public class KeplerianPropagator implements Ephemeris {
     		 initialParameters.getLM() + n * date.minus(initialDate) ,
     		 EquinoctialParameters.MEAN_LATITUDE_ARGUMENT, initialParameters.getFrame());
     
-    return new Orbit(date, extrapolated);
+    return new SpacecraftState(new Orbit(date, extrapolated), mass);
 
   }
 
@@ -42,6 +43,9 @@ public class KeplerianPropagator implements Ephemeris {
 
   /** Initial orbit parameters. */
   private EquinoctialParameters initialParameters;
+  
+  /** Initial mass. */
+  private double mass;
 
   /** Mean motion. */
   private double n;

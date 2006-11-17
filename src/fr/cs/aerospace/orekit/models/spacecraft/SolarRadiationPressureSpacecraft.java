@@ -11,11 +11,6 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * @author F. Maussion
  */
 public interface SolarRadiationPressureSpacecraft {
-	  
-  /** Get the mass.
-	   * @return mass (kg)
-	   */
-	  public double getMass();
 
 	  /** Get the surface.
 	   * @param direction direction of the flux
@@ -35,8 +30,4 @@ public interface SolarRadiationPressureSpacecraft {
 	   */
 	  public Vector3D getReflectionCoef(Vector3D direction, AbsoluteDate t);
 
-	  /** Set the mass.
-	   * @param mass new mass (kg)
-	   */
-	  public void setMass(double mass);
 }

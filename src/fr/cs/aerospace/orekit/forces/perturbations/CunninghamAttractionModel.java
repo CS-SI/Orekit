@@ -5,7 +5,7 @@ import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.frames.Transform;
-import fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations;
+import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
@@ -91,7 +91,7 @@ public class CunninghamAttractionModel implements ForceModel {
    * @param adder object where the contribution should be added
    */
   public void addContribution(AbsoluteDate date, PVCoordinates pvCoordinates,
-                              EquinoctialGaussEquations adder)
+                              TimeDerivativesEquations adder)
   throws OrekitException {
 
     // get the position in body frame

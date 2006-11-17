@@ -48,7 +48,7 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
    * @param date current date
    * @param position current position in frame
    * @param frame the frame in which is defined the position
-   * @return velocity (m/s) (defined in the same frame à the position
+   * @return velocity (m/s) (defined in the same frame than the position)
    * @throws OrekitException 
    */
   public Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame) 

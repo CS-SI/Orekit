@@ -17,6 +17,7 @@ public class AllTests {
     suite.addTest(fr.cs.aerospace.orekit.perturbations.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.propagation.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.potential.AllTests.suite());
+    suite.addTest(fr.cs.aerospace.orekit.maneuvers.AllTests.suite());
     return suite; 
 
   }

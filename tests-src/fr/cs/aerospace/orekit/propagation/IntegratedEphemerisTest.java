@@ -28,13 +28,13 @@ public class IntegratedEphemerisTest extends TestCase {
 	      double mu = 3.9860047e14;
 	      
 	      AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
-	      Orbit initialOrbit =
-	        new Orbit(initDate, 
-	                  new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
+	      SpacecraftState initialOrbit =
+	        new SpacecraftState(new Orbit(initDate, 
+	                  new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu)));
 	      
 	      // Keplerian propagator definition
 
-	      KeplerianPropagator keplerEx = new KeplerianPropagator(initialOrbit, mu);
+	      KeplerianPropagator keplerEx = new KeplerianPropagator(new SpacecraftState(initialOrbit), mu);
 		
 		 // Numerical propagator definition
 	     
@@ -48,9 +48,9 @@ public class IntegratedEphemerisTest extends TestCase {
 		// Propagation
 		
 		AbsoluteDate finalDate = new AbsoluteDate(initDate , 86400);
-		numericEx.propagate(initialOrbit , finalDate , ephemeris );
-		Orbit keplerIntermediateOrbit;
-		Orbit numericIntermediateOrbit;
+		numericEx.propagate(new SpacecraftState(initialOrbit) , finalDate , ephemeris );
+		SpacecraftState keplerIntermediateOrbit;
+		SpacecraftState numericIntermediateOrbit;
 		AbsoluteDate intermediateDate;
 //		// Print
 //		
@@ -61,8 +61,8 @@ public class IntegratedEphemerisTest extends TestCase {
 		
 		for (int i = 1; i<=86400; i++) {
 			intermediateDate = new AbsoluteDate(initDate , i);
-			keplerIntermediateOrbit = keplerEx.getOrbit(intermediateDate);
-			numericIntermediateOrbit = ephemeris.getOrbit(intermediateDate);
+			keplerIntermediateOrbit = keplerEx.getSpacecraftState(intermediateDate);
+			numericIntermediateOrbit = ephemeris.getSpacecraftState(intermediateDate);
 
 			Vector3D test = Vector3D.subtract(keplerIntermediateOrbit.getPVCoordinates(mu).getPosition(),
 					numericIntermediateOrbit.getPVCoordinates(mu).getPosition());
@@ -101,10 +101,10 @@ public class IntegratedEphemerisTest extends TestCase {
 		
 		// test inv
 		intermediateDate = new AbsoluteDate(initDate , 41589);
-		keplerIntermediateOrbit = keplerEx.getOrbit(intermediateDate);
-		initialOrbit = keplerEx.getOrbit(finalDate);
-		numericEx.propagate(initialOrbit , initDate , ephemeris );
-		numericIntermediateOrbit = ephemeris.getOrbit(intermediateDate);
+		keplerIntermediateOrbit = keplerEx.getSpacecraftState(intermediateDate);
+		initialOrbit = keplerEx.getSpacecraftState(finalDate);
+		numericEx.propagate(new SpacecraftState(initialOrbit) , initDate , ephemeris );
+		numericIntermediateOrbit = ephemeris.getSpacecraftState(intermediateDate);
 
 		Vector3D test = Vector3D.subtract(keplerIntermediateOrbit.getPVCoordinates(mu).getPosition(),
 				numericIntermediateOrbit.getPVCoordinates(mu).getPosition());

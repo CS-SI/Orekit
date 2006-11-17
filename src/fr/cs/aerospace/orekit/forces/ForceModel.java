@@ -1,7 +1,7 @@
 package fr.cs.aerospace.orekit.forces;
 
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations;
+import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
@@ -33,7 +33,7 @@ public interface ForceModel {
      * @param adder object where the contribution should be added
      */
     public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, 
-                                EquinoctialGaussEquations adder) throws OrekitException;
+                                TimeDerivativesEquations adder) throws OrekitException;
 
     /** Get the switching functions internally used by the model itself.
      * @return array of switching functions or null if the model doesn't need

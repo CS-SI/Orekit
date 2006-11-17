@@ -134,7 +134,7 @@ public class Frame {
    * @param destination destination frame to which we want to transform vectors
    * @param date the date (can be null if it is sure than no date dependant frame is used)
    * @return transform from the instance to the destination frame
-   * @throws OrekitException 
+   * @throws OrekitException if some frame specific error occurs
    */
   public Transform getTransformTo(Frame destination, AbsoluteDate date)
     throws OrekitException {
@@ -166,7 +166,8 @@ public class Frame {
   /** Update the frame to the given date.
    * <p>This method is called each time {@link #getTransformTo(Frame, AbsoluteDate)}
    * is called. Default behaviour is to do nothing. The proper way to build
-   * a date-dependant frame is to extend {@link Frame} and implement this method </p>
+   * a date-dependant frame is to extend {@link Frame} and implement this method which
+   * will have to call {@link #updateTransform(Transform)} with the new transform </p>
    * @param date new value of the  date
    * @exception OrekitException if some frame specific error occurs
    */

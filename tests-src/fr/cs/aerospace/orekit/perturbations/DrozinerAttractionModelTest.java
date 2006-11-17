@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
+import org.spaceroots.mantissa.ode.ClassicalRungeKuttaIntegrator;
 import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.FixedStepHandler;
 import org.spaceroots.mantissa.ode.GraggBulirschStoerIntegrator;
@@ -23,9 +24,11 @@ import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.propagation.EcksteinHechlerPropagator;
 import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
+import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
+import fr.cs.aerospace.orekit.utils.Vector;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -59,7 +62,7 @@ public class DrozinerAttractionModelTest extends TestCase {
                                                          new double[][] { { 0.0 }, { 0.0 }, { 0.0 } }));
 
     // let the step handler perform the test
-    propagator.propagate(orbit, new AbsoluteDate(date , 7 * 86400),
+    propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date , 7 * 86400),
                          86400, new SpotStepHandler(date, mu));
 
   }
@@ -135,7 +138,7 @@ public class DrozinerAttractionModelTest extends TestCase {
                                                          }));
     
     // let the step handler perform the test
-    propagator.propagate(initialOrbit, new AbsoluteDate(date , 50000), 20,
+    propagator.propagate(new SpacecraftState(initialOrbit), new AbsoluteDate(date , 50000), 20,
                          new EckStepHandler(initialOrbit));
     
   }
@@ -146,7 +149,7 @@ public class DrozinerAttractionModelTest extends TestCase {
       throws FileNotFoundException, OrekitException {
       date = initialOrbit.getDate();
       referencePropagator =
-        new EcksteinHechlerPropagator(initialOrbit, ae, mu, c20, c30, c40, c50, c60);
+        new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit), ae, mu, c20, c30, c40, c50, c60);
     }
     
     public void handleStep(double t, double[] y, boolean isLastStep) {
@@ -156,8 +159,7 @@ public class DrozinerAttractionModelTest extends TestCase {
                                     EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
                                     Frame.getJ2000());
         AbsoluteDate current = new AbsoluteDate(date, t);
-
-        Orbit EHPOrbit   = referencePropagator.getOrbit(current);
+        SpacecraftState EHPOrbit   = referencePropagator.getSpacecraftState(current);
         Vector3D posEHP  = EHPOrbit.getPVCoordinates(mu).getPosition();
         Vector3D posDROZ = op.getPVCoordinates(mu).getPosition();
         Vector3D velEHP  = EHPOrbit.getPVCoordinates(mu).getVelocity();
@@ -193,26 +195,25 @@ public class DrozinerAttractionModelTest extends TestCase {
                                                    0, KeplerianParameters.MEAN_ANOMALY,
                                                    Frame.getJ2000());
     Orbit orbit = new Orbit(date , op);
-    
+    propagator = new NumericalPropagator(mu,
+                                         new ClassicalRungeKuttaIntegrator(100));
     propagator.addForceModel(new CunninghamAttractionModel(mu, itrf2000, ae,C, S));
 
-    Orbit cunnOrb = propagator.propagate(orbit, new AbsoluteDate(date ,  86400));
+    SpacecraftState cunnOrb = propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date ,  86400));
 
     propagator.removeForceModels();
     
     propagator.addForceModel(new DrozinerAttractionModel(mu, itrf2000, ae,
                                                          C, S));
 
-    Orbit drozOrb = propagator.propagate(orbit, new AbsoluteDate(date ,  86400));
+    SpacecraftState drozOrb = propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date ,  86400));
     
     Vector3D dif = Vector3D.subtract(cunnOrb.getPVCoordinates(mu).getPosition(),drozOrb.getPVCoordinates(mu).getPosition());
-
+    System.out.println(Vector.toString(dif));
     assertTrue(dif.getNorm() < 1.6e-4);
     assertTrue(Math.abs(dif.getX()) < 5.6e-5);
     assertTrue(Math.abs(dif.getY()) < 4.9e-5); 
     assertTrue(Math.abs(dif.getZ()) < 1.4e-4);
-    
-
   }
 
   protected void setUp() {

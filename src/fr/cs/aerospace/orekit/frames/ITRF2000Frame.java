@@ -139,8 +139,7 @@ public class ITRF2000Frame extends Frame {
       
       // set up the transform from parent GCRS (J2000) to ITRF
       Vector3D rotationRate = new Vector3D((era1A + era1B) / -86400, rRot.getAxis());
-      updateTransform(new Transform(combined , rotationRate)); 
-      
+      updateTransform(new Transform(combined , rotationRate));      
       cachedDate = date;
     }
   }

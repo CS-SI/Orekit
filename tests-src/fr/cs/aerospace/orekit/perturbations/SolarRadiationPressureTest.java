@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 import java.text.ParseException;
 
 import fr.cs.aerospace.orekit.models.bodies.Sun;
-import fr.cs.aerospace.orekit.models.spacecraft.SimpleSpacecraft;
+import fr.cs.aerospace.orekit.models.spacecraft.SphericalSpacecraft;
 import fr.cs.aerospace.orekit.models.spacecraft.SolarRadiationPressureSpacecraft;
 import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.FirstOrderIntegrator;
@@ -21,6 +21,7 @@ import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.propagation.KeplerianPropagator;
 import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
+import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
 import junit.framework.Test;
@@ -40,14 +41,14 @@ public class SolarRadiationPressureTest extends TestCase {
 	    OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765);
 	    SolarRadiationPressure SRP =  new SolarRadiationPressure(
 	    		sun , earth ,
-	    	              (SolarRadiationPressureSpacecraft)new SimpleSpacecraft(1500.0, 50.0,
+	    	              (SolarRadiationPressureSpacecraft)new SphericalSpacecraft(50.0,
 	                            	  0.5, 0.5, 0.5));
         
         double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/mu);
         assertEquals(86164, period,1);
 	    
 		// creation of the propagator
-		KeplerianPropagator k = new KeplerianPropagator(orbit, mu);
+		KeplerianPropagator k = new KeplerianPropagator(new SpacecraftState(orbit, 1500.0), mu);
 		
 		// intermediate variables
 		AbsoluteDate currentDate;
@@ -58,7 +59,7 @@ public class SolarRadiationPressureTest extends TestCase {
 			currentDate = new AbsoluteDate(date , t);
 			try {				
 
-				double ratio = SRP.getLightningRatio(k.getOrbit(currentDate).getPVCoordinates(mu).getPosition(),Frame.getJ2000(), currentDate );
+				double ratio = SRP.getLightningRatio(k.getSpacecraftState(currentDate).getPVCoordinates(mu).getPosition(),Frame.getJ2000(), currentDate );
 					
 				if(Math.floor(ratio)!=changed) {
 					changed = Math.floor(ratio);
@@ -86,7 +87,7 @@ public class SolarRadiationPressureTest extends TestCase {
 	    // creation of the force model
 		SolarRadiationPressure SRP =  new SolarRadiationPressure(
 	    		sun , new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765),
-	    	              (SolarRadiationPressureSpacecraft)new SimpleSpacecraft(1500.0, 500.0,
+	    	              (SolarRadiationPressureSpacecraft)new SphericalSpacecraft(500.0,
 	                            	  0.7, 0.7, 0.7));
 		
 		double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/mu);
@@ -101,7 +102,7 @@ public class SolarRadiationPressureTest extends TestCase {
 
 		SolarStepHandler sh = new SolarStepHandler();
         AbsoluteDate finalDate = new AbsoluteDate(date , 90*period);
-		calc.propagate(orbit , finalDate, Math.floor(15*period), sh );
+		calc.propagate(new SpacecraftState(orbit, 1500.0) , finalDate, Math.floor(15*period), sh );
 		
 	}
 	

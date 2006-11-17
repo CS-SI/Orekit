@@ -1,7 +1,6 @@
 package fr.cs.aerospace.orekit.propagation;
 
 import fr.cs.aerospace.orekit.errors.PropagationException;
-import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** This interface provides a continuous ephemeris.
@@ -29,7 +28,7 @@ public interface Ephemeris {
      * @param date desired date for the orbit
      * @return the orbit at the specified date
      */    
-    public Orbit getOrbit(AbsoluteDate date)
+    public SpacecraftState getSpacecraftState(AbsoluteDate date)
       throws PropagationException;
 
 }

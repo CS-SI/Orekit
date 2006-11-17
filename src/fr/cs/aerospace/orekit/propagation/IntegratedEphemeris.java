@@ -56,11 +56,11 @@ public class IntegratedEphemeris implements BoundedEphemeris {
 
   /** Get the orbit at a specific date.
    * @param date desired date for the orbit
-   * @return the orbit at the specified date and null if not initialized.
+   * @return the {@link SpacecraftState} at the specified date and null if not initialized.
    * @exception PropagationException if the date is outside of the range
    */    
-  public Orbit getOrbit(AbsoluteDate date)
-  throws PropagationException {
+  public SpacecraftState getSpacecraftState(AbsoluteDate date)
+   throws PropagationException {
 	if(isInitialized) {
 		model.setInterpolatedTime(date.minus(startDate));
 	    double[] state = model.getInterpolatedState();
@@ -68,7 +68,9 @@ public class IntegratedEphemeris implements BoundedEphemeris {
 	    EquinoctialParameters eq = new EquinoctialParameters(state[0],state[1],state[2],
 	    		state[3], state[4],state[5], 2, frame);
 	    
-	    return new Orbit(date , eq);
+        double mass = state[6];
+        
+	    return new SpacecraftState(new Orbit(date , eq), mass);
 	}
 	else {
 		return null;

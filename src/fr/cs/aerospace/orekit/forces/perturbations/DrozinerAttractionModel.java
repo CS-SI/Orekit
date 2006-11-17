@@ -7,7 +7,7 @@ import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.frames.Transform;
-import fr.cs.aerospace.orekit.propagation.EquinoctialGaussEquations;
+import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
@@ -83,7 +83,7 @@ public class DrozinerAttractionModel implements ForceModel {
    */
 
   public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, 
-                              EquinoctialGaussEquations adder)
+                              TimeDerivativesEquations adder)
   throws OrekitException {
 
     // Get the position in body frame
@@ -203,7 +203,7 @@ public class DrozinerAttractionModel implements ForceModel {
           if (k<cJ.length) {
 
             Gkj = cJ[k] * cosjL + sJ[k] * sinjL;
-            Hkj = cJ[k] * sinjL - sJ[k] * cosjL;     
+            Hkj = cJ[k] * sinjL - sJ[k] * cosjL;  
 
             if (j <= (k - 2)) {
               Bkj = aeOnr * ( zOnr * Bkm1j * (2.0 * k + 1.0) / (k - j)

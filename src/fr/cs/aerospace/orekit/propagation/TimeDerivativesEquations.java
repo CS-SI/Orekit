@@ -7,13 +7,26 @@ import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
-/** This class sums up the contribution of several forces into orbit derivatives.
+/** This class sums up the contribution of several forces into orbit and mass derivatives.
  *
  * <p>The aim of this class is to gather the contributions of various perturbing
  * forces expressed as accelerations into one set of time-derivatives of
- * {@link fr.cs.aerospace.orekit.orbits.EquinoctialParameters}. It implements
- * Gauss equations for the orbit model considered.</p>
- *
+ * {@link fr.cs.aerospace.orekit.orbits.EquinoctialParameters} plus one mass derivatives.
+ * It implements Gauss equations for the equinoctial parameters.</p>
+ * * <p>
+ * The state vector handled internally has the form that follows:
+ *   <pre>
+ *     y[0] = a
+ *     y[1] = ex 
+ *     y[2] = ey 
+ *     y[3] = hx
+ *     y[4] = hy 
+ *     y[5] = lv
+ *     y[6] = mass
+ *   </pre>
+ * where the six firsts paramters stands for the equinoctial parameters and the 7th
+ * for the mass (kg) at the current time.
+ * </p>
  * <p>The proper way to use this class is to have the object implementing the
  * FirstOrderDifferentialEquations interface do the following calls each time
  * the computeDerivatives method is called:
@@ -39,15 +52,17 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * @author F.Maussion
  *
  */
-public class EquinoctialGaussEquations {
+public class TimeDerivativesEquations {
 
   /** Create a new instance
    * @param parameters current orbit parameters
    * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
+   * @param mass (kg)
    */
-  protected EquinoctialGaussEquations(EquinoctialParameters parameters, double mu) {
+  protected TimeDerivativesEquations(EquinoctialParameters parameters, double mu, double mass) {
     this.parameters = parameters;
     this.mu = mu;
+    this.mass = mass;
     Q = new Vector3D();    
     S = new Vector3D();    
     T = new Vector3D();    
@@ -74,11 +89,15 @@ public class EquinoctialGaussEquations {
 
   /** Initialize all derivatives to zero.
    * @param yDot reference to the array where to put the derivatives.
+   * @param parameters current orbit parameters
+   * @param mass current mass (kg)
    */
-  protected void initDerivatives(double[] yDot , EquinoctialParameters parameters) {
+  protected void initDerivatives(double[] yDot ,
+                               EquinoctialParameters parameters, double mass) {
 
 
     this.parameters = parameters;
+    this.mass = mass;
     updateOrbitalFrames();
 
     // store derivatives array reference
@@ -98,6 +117,9 @@ public class EquinoctialGaussEquations {
       throw new IllegalArgumentException("Eccentricity is becoming"
                                          + " greater than 1."
                                          + " Unable to continue.");
+    }    
+    if (mass <= 0.0) {
+      throw new IllegalArgumentException("Mass is becoming negative");
     }    
     // intermediate variables
     double oMe2        = (1 - e) * (1 + e);
@@ -157,13 +179,6 @@ public class EquinoctialGaussEquations {
     hxW =  epsilonOnNAKsit * oPh2 * cLv;
     hyW =  epsilonOnNAKsit * oPh2 * sLv;
 
-  }
-  
-  /** Get the frame where are defined the XYZ coordinates.
-   * @return the frame.
-   */
-  public Frame getFrame() {
-	   return parameters.getFrame();
   }
 
   /** Add the contribution of the Kepler evolution.
@@ -230,6 +245,13 @@ public class EquinoctialGaussEquations {
                        Vector3D.dotProduct(gamma, W));
   }
   
+  /** Add the contribution of the flow rate (dm/dt).
+   * @param gamma acceleration vector in the intertial frame (m/s<sup>2</sup>)
+   */
+  public void addMassDerivative(double dMass) {
+    yDot[6] += dMass;
+  }
+  
   /** Get the first vector of the (Q, S, W) local orbital frame.
    * @return first vector of the (Q, S, W) local orbital frame */
   public Vector3D getQ() {
@@ -263,9 +285,26 @@ public class EquinoctialGaussEquations {
     return W;
   }
   
+  
+  /** Get the frame where are defined the XYZ coordinates.
+   * @return the frame.
+   */
+  public Frame getFrame() {
+       return parameters.getFrame();
+  }
+  
+  /** Get the current mass.
+   * @return the mass (kg)
+   */
+  public double getMass() {
+    return mass;
+  }
 
   /** Orbital parameters. */
   private EquinoctialParameters parameters;
+    
+  /** Mass (kg). */
+  private double mass;
     
   /** Reference to the derivatives array to initialize. */
   private double[] yDot;
@@ -312,6 +351,5 @@ public class EquinoctialGaussEquations {
 
   /** Kepler evolution on true latitude argument. */
   private double lvKepler;
-
   
 }

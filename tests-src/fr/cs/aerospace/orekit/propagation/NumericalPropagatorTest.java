@@ -41,7 +41,7 @@ public class NumericalPropagatorTest extends TestCase {
     
     // Extrapolation of the initial at the initial date
     // ------------------------------------------------
-    Orbit finalOrbit = extrapolator.propagate(initialOrbit,
+    SpacecraftState finalOrbit = extrapolator.propagate(new SpacecraftState(initialOrbit),
                                                 initialOrbit.getDate()
                                                  );
     // Initial orbit definition
@@ -100,7 +100,7 @@ try {
     
     // Extrapolation of the initial at t+dt
     // ------------------------------------
-    Orbit finalOrbit =  extrapolator.propagate(initialOrbit,
+    SpacecraftState finalOrbit =  extrapolator.propagate(new SpacecraftState(initialOrbit),
                  new AbsoluteDate(initialOrbit.getDate(),dt));
     // Testing the discrepancies
     // -------------------------

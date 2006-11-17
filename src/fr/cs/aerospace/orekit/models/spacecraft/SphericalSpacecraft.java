@@ -13,31 +13,22 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * @author E. Delente
  */
 
-public class SimpleSpacecraft 
+public class SphericalSpacecraft 
   implements SolarRadiationPressureSpacecraft, AtmosphereDragSpacecraft {
 
   /** Simple constructor.
-   * @param mass Mass (kg)
    * @param surface Surface (m<sup>2</sup>)
    * @param dragCoeff Drag coefficient
    * @param absorptionCoeff coefficient Absorption coefficient
    * @param reflectionCoeff Specular reflection coefficient
    */
-  public SimpleSpacecraft(double mass, double surface, double dragCoeff,
+  public SphericalSpacecraft(double surface, double dragCoeff,
                           double absorptionCoeff, double reflectionCoeff) {
 
-    this.mass = mass;
     this.surface = surface;
     this.dragCoeff = dragCoeff;
     this.absorptionCoeff = absorptionCoeff;
     this.reflectionCoeff = reflectionCoeff;
-  }
-
-  /** Get the mass.
-   * @return mass (kg)
-   */
-  public double getMass() {
-    return this.mass;
   }
 
   /** Get the surface.
@@ -73,13 +64,6 @@ public class SimpleSpacecraft
     return new Vector3D(reflectionCoeff, direction);
   }
 
-  /** Set the mass.
-   * @param mass new mass (kg)
-   */
-  public void setMass(double mass) {
-    this.mass = mass;
-  }
-
   /** Set the surface.
    * @param surface surface (m<sup>2</sup>)
    */
@@ -107,9 +91,6 @@ public class SimpleSpacecraft
   public void setReflectionCoef(double reflectionCoeff) {
     this.reflectionCoeff = reflectionCoeff;
   }
-
-  /** Mass (kg). */
-  private double mass;
 
   /** Surface (m<sup>2</sup>). */
   private double surface;

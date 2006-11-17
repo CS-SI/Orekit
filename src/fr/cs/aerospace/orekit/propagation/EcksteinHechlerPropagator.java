@@ -36,7 +36,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
    * @param C<sub>6,0</sub> un-normalized zonal coefficient (about -5.41e-7 for Earth)
    * @exception PropagationException if the mean parameters cannot be computed
    */
-  public EcksteinHechlerPropagator(Orbit orbit, double referenceRadius, double mu,
+  public EcksteinHechlerPropagator(SpacecraftState initialState, double referenceRadius, double mu,
                                    double c20, double c30, double c40,
                                    double c50, double c60)
   throws PropagationException {
@@ -52,22 +52,23 @@ public class EcksteinHechlerPropagator implements Ephemeris {
 
     // transformation into circular adapted parameters
     // (used by the Eckstein-Hechler model)
-    CircularParameters osculating = new CircularParameters(orbit.getParameters(), mu);
+    CircularParameters osculating = new CircularParameters(initialState.getParameters(), mu);
 
     // compute mean parameters
-    initialDate = orbit.getDate();
+    initialDate = initialState.getDate();
+    mass = initialState.getMass();
     computeMeanParameters(osculating);
 
   }
 
-  /** Get the orbit extrapolated up to a given date with an analytical model.
+  /** Get the state extrapolated up to a given date with an analytical model.
    * The extrapolated parameters are osculating circular parameters.
    * @param date target date for the propagation
-   * @return propagated orbit (in circular parameters)
+   * @return propagated state (in circular parameters)
    */
-  public Orbit getOrbit(AbsoluteDate date)
+  public SpacecraftState getSpacecraftState(AbsoluteDate date)
       throws PropagationException {
-    return new Orbit(date, propagate(date));
+    return new SpacecraftState(new Orbit(date, propagate(date)), mass);
   }
 
   /** Compute mean parameters according to the Eckstein-Hechler analytical model.
@@ -359,5 +360,6 @@ public class EcksteinHechlerPropagator implements Ephemeris {
   private double referenceRadius;
   private double mu;
   private double c20, c30, c40, c50, c60;
+  private double mass;
 
 }
