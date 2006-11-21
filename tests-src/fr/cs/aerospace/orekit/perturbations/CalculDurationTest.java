@@ -96,12 +96,10 @@ private class MassHandler implements StepHandler {
     
     private MassHandler(Orbit initialOrbit)
       throws FileNotFoundException, OrekitException {
-      date = initialOrbit.getDate();
       w = new PrintWriter(new FileOutputStream("/home/fab/mass.dat"));
       c = 0;
     }
     int c;
-    private AbsoluteDate date;
     private PrintWriter w;
 
     public void handleStep(StepInterpolator inter, boolean isLastStep) throws DerivativeException {
@@ -133,12 +131,10 @@ private class NoMassHandler implements StepHandler {
   
   private NoMassHandler(Orbit initialOrbit)
     throws FileNotFoundException, OrekitException {
-    date = initialOrbit.getDate();
     w = new PrintWriter(new FileOutputStream("/home/fab/nomass.dat"));
     c = 0;
   }
   int c;
-  private AbsoluteDate date;
   private PrintWriter w;
 
   public void handleStep(StepInterpolator inter, boolean isLastStep) throws DerivativeException {
@@ -202,7 +198,6 @@ private class noMassStepHandler implements FixedStepHandler {
     
     private noMassStepHandler(Orbit initialOrbit)
       throws FileNotFoundException, OrekitException {
-      date = initialOrbit.getDate();
       w = new PrintWriter(new FileOutputStream("/home/fab/nomassfixed.dat"));
       }
     
@@ -212,14 +207,12 @@ private class noMassStepHandler implements FixedStepHandler {
         new EquinoctialParameters(y[0], y[1], y[2], y[3], y[4], y[5],
                                   EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
                                   Frame.getJ2000());
-      AbsoluteDate current = new AbsoluteDate(date, t);
       Vector3D pos = op.getPVCoordinates(mu).getPosition();
       w.println(t + "  " +  pos.getNorm());
       if(isLastStep) {
         w.close();
       }
     }
-    private AbsoluteDate date;
     private PrintWriter w;
     
   }
@@ -227,7 +220,6 @@ private class MassStepHandler implements FixedStepHandler {
   
   private MassStepHandler(Orbit initialOrbit)
     throws FileNotFoundException, OrekitException {
-    date = initialOrbit.getDate();
     w = new PrintWriter(new FileOutputStream("/home/fab/massfixed.dat"));
     }
   
@@ -237,14 +229,12 @@ private class MassStepHandler implements FixedStepHandler {
       new EquinoctialParameters(y[0], y[1], y[2], y[3], y[4], y[5],
                                 EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
                                 Frame.getJ2000());
-    AbsoluteDate current = new AbsoluteDate(date, t);
     Vector3D pos = op.getPVCoordinates(mu).getPosition();
     w.println(t + "  " +  pos.getNorm());
     if(isLastStep) {
       w.close();
     }
   }
-  private AbsoluteDate date;
   private PrintWriter w;
   
 }
