@@ -24,7 +24,7 @@ public class MessagesResources_fr
       "impossible de converger apr\u00e8s {0} it\u00e9rations" },
     { "C and S should have the same size :" +
         " (C = [{0}][{1}] ; S = [{2}][{3}])",
-        "C et S doivent avoir la même taille :" +
+        "C et S doivent avoir la m\u00eame taille :" +
         " (C = [{0}][{1}] ; S = [{2}][{3}])" },
     { "trajectory inside the Brillouin sphere (r = {0})",
       "trajectoire int\u00e9rieure \u00e0 la sph\u00e8re de Brillouin (r = {0})" },
@@ -36,8 +36,8 @@ public class MessagesResources_fr
       "La masse devient n\u00e9gative" },
     { "Mass is null or negative",
       "La masse est nulle ou n\u00e9gative" },
-    { "No known reader can read this file. ",
-      "Aucun lecteur connu ne peut lire ce fichier. " },
+    { "Unknown file format. ",
+      "Format de fichier inconnu. " },
     { "almost equatorial orbit (i = {0} degrees)",
       "orbite quasiment \u00e9quatoriale (i = {0} degr\u00e9s)" },
     { "almost critically inclined orbit (i = {0} degrees)",

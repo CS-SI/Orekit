@@ -200,5 +200,5 @@ public class ConstantThrustManeuver implements ForceModel {
   private ThrustForceDirection variableDir;
   
   /** Earth gravity acceleration constant (m.s²) */
-  private static double g0 = 9.80665;
+  private static final double g0 = 9.80665;
 }
