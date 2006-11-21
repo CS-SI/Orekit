@@ -222,8 +222,9 @@ extends OrbitalParameters {
                                   / (epsilon + 1 + ex * cosAlphaV + ey * sinAlphaV));
   }
   
-  /** Set the eccentric longitude argument.
+  /** Computes the eccentric longitude argument.
    * @param alphaE = E + &omega; eccentric longitude argument (rad)
+   * @return the true longitude argument.
    */
   private double computeAlphaE(double alphaE) {
     double epsilon   = Math.sqrt(1 - ex * ex - ey * ey);
@@ -241,8 +242,9 @@ extends OrbitalParameters {
     return alphaE - ex * Math.sin(alphaE) + ey * Math.cos(alphaE);
   }
   
-  /** Set the mean longitude argument.
+  /** Computes the mean longitude argument.
    * @param alphaM = M + &omega;  mean longitude argument (rad)
+   * @return the true longitude argument.
    */
   private double computeAlphaM(double alphaM) {
     // Generalization of Kepler equation to equinoctial parameters

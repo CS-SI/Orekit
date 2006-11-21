@@ -76,7 +76,7 @@ public class ConstantThrustManeuver implements ForceModel {
   }
   
     /** Compute the contribution of maneuver to the global acceleration.
-    * @param date current date
+    * @param t the current date
     * @param pvCoordinates
     * @param adder object where the contribution should be added
     */  

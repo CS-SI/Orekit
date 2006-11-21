@@ -239,7 +239,7 @@ public class Frame {
   }
 
   /**  parent frame (only J2000 doesn't have a parent). */
-  private Frame parent;
+  private final Frame parent;
 
   /** Transform from parent frame to instance. */
   private Transform transform;
@@ -254,6 +254,6 @@ public class Frame {
   private static Frame veis1950 = null;
   
   /** Instance name. */
-  private String name;
+  private final String name;
 
 }

@@ -37,6 +37,9 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
  *   {@link #minus}.</p>
  *   </li>
  * </ul>
+ * <p>
+ * The instance <code>AbsoluteDate</code> is guaranted to be immutable.
+ * </p>
  * @author L. Maisonobe
  * @see TimeScale
  */
@@ -225,9 +228,9 @@ public class AbsoluteDate implements Comparable {
    }
 
    /** Reference epoch in milliseconds from 1970-01-01T00:00:00 TAI. */
-   private long epoch;
+   private final long epoch;
    
    /** Offset from the reference epoch in milliseconds. */
-   private double offset;
+   private final double offset;
 
 }

@@ -246,9 +246,11 @@ public class TimeDerivativesEquations {
   }
   
   /** Add the contribution of the flow rate (dm/dt).
-   * @param gamma acceleration vector in the intertial frame (m/s<sup>2</sup>)
+   * @param dMass the flow rate (dm/dt)
    */
   public void addMassDerivative(double dMass) {
+    if(dMass>0) throw new IllegalArgumentException(
+                  " Flow rate (dm/dt) is positive : " + dMass + " kg/s");
     yDot[6] += dMass;
   }
   

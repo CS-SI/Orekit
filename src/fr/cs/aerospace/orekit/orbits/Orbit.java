@@ -1,5 +1,6 @@
 package fr.cs.aerospace.orekit.orbits;
 
+import fr.cs.aerospace.orekit.propagation.Ephemeris;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 import java.io.Serializable;
@@ -11,8 +12,7 @@ import java.io.Serializable;
  * In OREKIT architecture, an Orbit is only a state at a specific date.
  * Orbit evolution is represented by the {@link
  * fr.cs.aerospace.orekit.propagation.Ephemeris Ephemeris} interface,
- * which contains only the {@link
- * fr.cs.aerospace.orekit.propagation.Ephemeris#getOrbit getOrbit} method to
+ * which contains only the {@link Ephemeris#getSpacecraftState(AbsoluteDate)} method to
  * provide new states for new dates. This interface can be implemented by
  * several means like file-based interpolation, analytical model or numerical
  * integration.
