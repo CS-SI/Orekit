@@ -85,6 +85,7 @@ public class Transform {
     return Vector3D.add(first.translation,
                         first.rotation.applyInverseTo(second.translation));
   }
+  
   /** The new velocity */ 
   private static Vector3D compositeVelocity(Transform first, Transform second) {
     return Vector3D.add(first.velocity,
@@ -92,10 +93,12 @@ public class Transform {
                                                                         Vector3D.crossProduct(first.rotationRate,
                                                                                               second.translation))));
   }
+  
   /** The new rotation */ 
   private static Rotation compositeRotation(Transform first, Transform second) {
     return second.rotation.applyTo(first.rotation);
   }
+  
   /** The new rotation rate */ 
   private static Vector3D compositeRotationRate(Transform first, Transform second) {
     return Vector3D.add(second.rotationRate, second.rotation.applyTo(first.rotationRate));

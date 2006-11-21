@@ -22,6 +22,7 @@ import junit.framework.TestSuite;
 
 
 public class ConstantThrustManeuverTest extends TestCase {
+  
   public void testRoughBehaviour() throws DerivativeException, IntegratorException, OrekitException, ParseException {
     double mu =  3.9860064e+14;
     double isp = 318;
@@ -54,23 +55,16 @@ public class ConstantThrustManeuverTest extends TestCase {
     ConstantThrustManeuver man = new ConstantThrustManeuver(fireDate,
                                                       duration, f, isp, dir , ConstantThrustManeuver.INERTIAL);
     GraggBulirschStoerIntegrator gragg = new GraggBulirschStoerIntegrator(1e-50, 1000, 0, 1e-08);
-    gragg.setStabilityCheck(false, -1, 4, -1);
-    NumericalPropagator pro = new NumericalPropagator(mu, gragg);
-                     
+
+    NumericalPropagator pro = new NumericalPropagator(mu, gragg);                     
     
     pro.addForceModel(man);
     
     SpacecraftState finalorb = pro.propagate(transOrb, new AbsoluteDate(fireDate, 3800));
-    
-//    
-//    System.out.println("mass : " + finalorb .getMass() );
-//    System.out.println("a : " + finalorb.getA()/1000 );
-//    System.out.println("e : " + finalorb.getE() );
-//    System.out.println("i : " + Math.toDegrees(Utils.trimAngle(finalorb.getI(), Math.PI)) );
-//    System.out.println("omega : " + Math.toDegrees(Utils.trimAngle(fine.getPerigeeArgument(), Math.PI)) );
-//    System.out.println("OMEGA : " + Math.toDegrees(Utils.trimAngle(fine.getRightAscensionOfAscendingNode(), Math.PI)) );
-    assertEquals( 2007.88, finalorb .getMass(), 1e-2);
+
+    assertEquals(2007.882454, finalorb .getMass(), 1e-6);
     assertEquals(2.6792, Math.toDegrees(Utils.trimAngle(finalorb.getI(), Math.PI)), 1e-4);
+    assertEquals(28969, finalorb.getA()/1000, 1);
     
   }
   

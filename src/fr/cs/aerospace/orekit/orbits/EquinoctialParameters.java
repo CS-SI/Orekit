@@ -20,6 +20,9 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * where &omega; stands for the Perigee Argument and &Omega; stands for the
  * Right Ascension of the Ascending Node.
  * </p>
+ * <p>
+ * The instance <code>EquinoctialParameters</code> is guaranted to be immutable.
+ * </p>
  * @see     Orbit
  * @version $Id$
  * @author  M. Romero
@@ -43,14 +46,13 @@ extends OrbitalParameters {
    * Build a new instance with arbitrary default elements.
    */
   public EquinoctialParameters() {
-    super();
+    super(Frame.getJ2000());
     a  = 1.0e7;
     ex = 1.0e-3;
     ey = 0;
     hx = 0.15;
     hy = 0;
-    frame = Frame.getJ2000();
-    setLv(0);
+    lv = 0;
   }
   
   /** Creates a new instance
@@ -67,23 +69,22 @@ extends OrbitalParameters {
   public EquinoctialParameters(double a, double ex, double ey,
                                double hx, double hy,
                                double l, int type, Frame frame) {
-    super();
+    super(frame);
     this.a  =  a;
     this.ex = ex;
     this.ey = ey;
     this.hx = hx;
     this.hy = hy;
-    this.frame = frame;
     
     switch (type) {
     case MEAN_LATITUDE_ARGUMENT :
-      setLM(l);
+      this.lv = computeLM(l);
       break;
     case ECCENTRIC_LATITUDE_ARGUMENT :
-      setLE(l);
+      this.lv = computeLE(l);
       break;
     default :
-      setLv(l);
+      this.lv = l;
     }
     
   }
@@ -95,45 +96,8 @@ extends OrbitalParameters {
    */
   public EquinoctialParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
     super(pvCoordinates, frame,  mu);
-  }
-  
-  /** Constructor from any kind of orbital parameters
-   * @param op orbital parameters to copy
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   */
-  public EquinoctialParameters(OrbitalParameters op, double mu) {
-    super(op, mu);
-  }
-  
-  /** Copy the instance.
-   * @return a copy of the instance.
-   */
-  protected Object clone() {
-    return new EquinoctialParameters(a, ex, ey, hx, hy, lv, TRUE_LATITUDE_ARGUMENT, frame);
-  }
-  
-  /** Initialize the parameters from other ones 
-   * @param op the {@link OrbitalParameters} to copy
-   * @param mu
-   */
-  protected void init(OrbitalParameters op, double mu) {
-    a  = op.getA();
-    ex = op.getEquinoctialEx();
-    ey = op.getEquinoctialEy();
-    hx = op.getHx();
-    hy = op.getHy();
-    lv = op.getLv();
-    frame = op.getFrame();
-  }
-  
-  /** Update the parameters from the current position and velocity. */
-  protected void updateFromPVCoordinates() {
     
-    // get cartesian elements
-    double   mu       = getCachedMu();
-    PVCoordinates pvCoordinates = getPVCoordinates(mu);
-    
-    // compute semi-major axis
+    //  compute semi-major axis
     double r       = pvCoordinates.getPosition().getNorm();
     double V2      = Vector3D.dotProduct(pvCoordinates.getVelocity(), pvCoordinates.getVelocity());
     double rV2OnMu = r * V2 / mu;
@@ -159,7 +123,20 @@ extends OrbitalParameters {
     double g   = Math.sqrt(1 - e2) * eSE;
     ex = a * (f * cLv + g * sLv) / r;
     ey = a * (f * sLv - g * cLv) / r;
-    
+  }
+  
+  /** Constructor from any kind of orbital parameters
+   * @param op orbital parameters to copy
+   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+   */
+  public EquinoctialParameters(OrbitalParameters op, double mu) {
+    super(op.frame);
+    a  = op.getA();
+    ex = op.getEquinoctialEx();
+    ey = op.getEquinoctialEy();
+    hx = op.getHx();
+    hy = op.getHy();
+    lv = op.getLv();
   }
   
   /** Get the semi-major axis.
@@ -204,15 +181,6 @@ extends OrbitalParameters {
     return lv;
   }
   
-  /** Set the true latitude argument.
-   * @param lv = v + &omega; + &Omega; true latitude argument (rad)
-   */
-  private void setLv(double lv) {
-    
-    this.lv = lv;
-    
-  }
-  
   /** Get the eccentric latitude argument.
    * @return E + &omega; + &Omega; eccentric latitude argument (rad)
    */
@@ -224,15 +192,16 @@ extends OrbitalParameters {
                               / (epsilon + 1 + ex * cosLv + ey * sinLv));
   }
   
-  /** Set the eccentric latitude argument.
+  /** Computes the eccentric latitude argument.
    * @param lE = E + &omega; + &Omega; eccentric latitude argument (rad)
+   * @return the true latitude argument
    */
-  private void setLE(double lE) {
+  private double computeLE(double lE) {
     double epsilon = Math.sqrt(1 - ex * ex - ey * ey);
     double cosLE   = Math.cos(lE);
     double sinLE   = Math.sin(lE);
-    setLv(lE + 2 * Math.atan((ex * sinLE - ey * cosLE)
-                             / (epsilon + 1 - ex * cosLE - ey * sinLE)));
+    return lE + 2 * Math.atan((ex * sinLE - ey * cosLE)
+                             / (epsilon + 1 - ex * cosLE - ey * sinLE));
   }
   
   /** Get the mean latitude argument.
@@ -243,10 +212,11 @@ extends OrbitalParameters {
     return lE - ex * Math.sin(lE) + ey * Math.cos(lE);
   }
   
-  /** Set the mean latitude argument.
+  /** Computes the mean latitude argument.
    * @param lM = M + &omega; + &Omega; mean latitude argument (rad)
+   * @return the true latitude argument
    */
-  private void setLM(double lM) {
+  private double computeLM(double lM) {
     // Generalization of Kepler equation to equinoctial parameters
     // with lE = PA + RAAN + E and 
     //      lM = PA + RAAN + M = lE - ex.sin(lE) + ey.cos(lE)
@@ -271,7 +241,7 @@ extends OrbitalParameters {
       
     } while ((++iter < 50) && (Math.abs(shift) > 1.0e-12));
     
-    setLE(lE); // which set the lv parameter
+    return computeLE(lE); // which set the lv parameter
     
   }
   
@@ -311,22 +281,22 @@ extends OrbitalParameters {
   }
   
   /** Semi-major axis (m). */
-  private double a;
+  private final double a;
   
   /** First component of the eccentricity vector. */
-  private double ex;
+  private final double ex;
   
   /** Second component of the eccentricity vector. */
-  private double ey;
+  private final double ey;
   
   /** First component of the inclination vector. */
-  private double hx;
+  private final double hx;
   
   /** Second component of the inclination vector. */
-  private double hy;
+  private final double hy;
   
   /** True latitude argument (rad). */
-  private double lv;
+  private final double lv;
   
   private static final long serialVersionUID = -6671885168854533487L;
 }

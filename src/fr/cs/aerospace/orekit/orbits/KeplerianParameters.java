@@ -20,6 +20,9 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * where &omega; stands for the Perigee Argument, &Omega; stands for the
  * Right Ascension of the Ascending Node and v stands for the true anomaly.
  * </p>
+ * <p>
+ * The instance <code>KeplerianParameters</code> is guaranted to be immutable.
+ * </p>
  * @see     Orbit
  * @version $Id$
  * @author  L. Maisonobe
@@ -47,14 +50,13 @@ extends OrbitalParameters {
    * Build a new instance with arbitrary default elements.
    */
   public KeplerianParameters() {
-    super();
+    super(Frame.getJ2000());
     a    = 1.0e7;
     e    = 1.0e-3;
     i    = 0.3;
     pa   = 0;
     raan = 0;
-    frame = Frame.getJ2000();
-    setTrueAnomaly(0);
+    v = 0;
   }
   
   /** Creates a new instance
@@ -71,23 +73,22 @@ extends OrbitalParameters {
   public KeplerianParameters(double a, double e, double i,
                              double pa, double raan,
                              double anomaly, int type, Frame frame) {
-    super();
+    super(frame);
     this.a    =    a;
     this.e    =    e;
     this.i    =    i;
     this.pa   =   pa;
     this.raan = raan;
-    this.frame = frame;
     
     switch (type) {
     case MEAN_ANOMALY :
-      setMeanAnomaly(anomaly);
+      this.v = computeMeanAnomaly(anomaly);
       break;
     case ECCENTRIC_ANOMALY :
-      setEccentricAnomaly(anomaly);
+      this.v = computeEccentricAnomaly(anomaly);
       break;
     default :
-      setTrueAnomaly(anomaly);
+      this.v = anomaly;
     }
   }
   
@@ -98,43 +99,6 @@ extends OrbitalParameters {
    */
   public KeplerianParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
     super(pvCoordinates, frame, mu);
-  }
-  
-  /** Constructor from any kind of orbital parameters.
-   * @param op orbital parameters to copy
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   */
-  public KeplerianParameters(OrbitalParameters op, double mu) {
-    super(op, mu);
-  }
-  
-  /** Copy the instance.
-   * @return a copy of the instance.
-   */
-  protected Object clone() {
-    return new KeplerianParameters(a, e, i, pa, raan, v, TRUE_ANOMALY, frame);
-  }
-  
-  /** Initialize the parameters from other ones 
-   * @param op the {@link OrbitalParameters} to copy
-   * @param mu
-   */
-  protected void init(OrbitalParameters op, double mu) {
-    a    = op.getA();
-    e    = op.getE();
-    i    = op.getI();
-    raan = Math.atan2(op.getHy(), op.getHx());
-    pa   = Math.atan2(op.getEquinoctialEy(), op.getEquinoctialEx()) - raan;
-    setTrueAnomaly(op.getLv() - (pa + raan));
-    frame = op.frame;
-  }
-  
-  /** Update the parameters from the current position and velocity. */
-  protected void updateFromPVCoordinates() {
-    
-    // get cartesian elements
-    double   mu       = getCachedMu();
-    PVCoordinates pvCoordinates = getPVCoordinates(mu);
     
     // compute semi-major axis
     double r          = pvCoordinates.getPosition().getNorm();
@@ -175,7 +139,20 @@ extends OrbitalParameters {
     double py = Math.cos(i) * (cosRaan * pvCoordinates.getPosition().getY() - sinRaan * pvCoordinates.getPosition().getX())
     + Math.sin(i) * pvCoordinates.getPosition().getZ();
     pa = Math.atan2(py, px) - v;
-    
+  }
+  
+  /** Constructor from any kind of orbital parameters.
+   * @param op orbital parameters to copy
+   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+   */
+  public KeplerianParameters(OrbitalParameters op, double mu) {
+    super(op.frame);
+    a    = op.getA();
+    e    = op.getE();
+    i    = op.getI();
+    raan = Math.atan2(op.getHy(), op.getHx());
+    pa   = Math.atan2(op.getEquinoctialEy(), op.getEquinoctialEx()) - raan;
+    v    = op.getLv() - (pa + raan);
   }
   
   /** Get the semi-major axis.
@@ -219,16 +196,7 @@ extends OrbitalParameters {
   public double getTrueAnomaly() {
     return v;
   }
-  
-  /** Set the true anomaly.
-   * @param v true anomaly (rad)
-   */
-  private void setTrueAnomaly (double v) {
     
-    this.v = v;
-    
-  }
-  
   /** Get the eccentric anomaly.
    * @return eccentric anomaly (rad)
    */
@@ -237,13 +205,14 @@ extends OrbitalParameters {
     return v - 2 * Math.atan(beta * Math.sin(v) / (1 + beta * Math.cos(v)));
   }
   
-  /** Set the eccentric anomaly.
+  /** Computes the eccentric anomaly.
    * @param E eccentric anomaly (rad)
+   * @return v the true anomaly
    */
-  private void setEccentricAnomaly (double E) {
+  private double computeEccentricAnomaly (double E) {
     
     double beta = e / (1 + Math.sqrt((1 - e) * (1 + e)));
-    v = E + 2 * Math.atan(beta * Math.sin(E) / (1 - beta * Math.cos(E)));
+    return E + 2 * Math.atan(beta * Math.sin(E) / (1 - beta * Math.cos(E)));
     
   }
   
@@ -255,10 +224,11 @@ extends OrbitalParameters {
     return E - e * Math.sin(E);
   }
   
-  /** Set the mean anomaly.
+  /** Computes the mean anomaly.
    * @param M mean anomaly (rad)
+   * @return v the true anomaly
    */
-  private void setMeanAnomaly (double M) {
+  private double computeMeanAnomaly (double M) {
     
     // resolution of Kepler equation for keplerian parameters
     double E = M;
@@ -278,7 +248,7 @@ extends OrbitalParameters {
       
     } while ((++iter < 50) && (Math.abs(shift) > 1.0e-12));
     
-    setEccentricAnomaly(E);
+    return computeEccentricAnomaly(E);
     
   }
   
@@ -353,22 +323,22 @@ extends OrbitalParameters {
   }
   
   /** Semi-major axis (m). */
-  private double a;
+  private final double a;
   
   /** Eccentricity. */
-  private double e;
+  private final double e;
   
   /** Inclination (rad). */
-  private double i;
+  private final double i;
   
   /** Perigee Argument (rad). */
-  private double pa;
+  private final double pa;
   
   /** Right Ascension of Ascending Node (rad). */
-  private double raan;
+  private final double raan;
   
   /** True anomaly (rad). */
-  private double v;    
+  private final double v;    
   
   private static final long serialVersionUID = -2635247116374550475L;
 }

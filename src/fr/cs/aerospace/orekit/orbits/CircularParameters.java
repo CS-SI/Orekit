@@ -20,6 +20,9 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * where &Omega; stands for the Right Ascension of the Ascending Node and
  * &alpha;<sub>v</sub> stands for the true longitude argument
  * </p>
+ * <p>
+ * The instance <code>CircularParameters</code> is guaranted to be immutable.
+ * </p>
  * @see     Orbit
  * @version $Id$
  * @author  L. Maisonobe
@@ -42,14 +45,13 @@ extends OrbitalParameters {
    * Build a new instance with arbitrary default elements.
    */
   public CircularParameters() {
-    super();
+    super(Frame.getJ2000());
     a    = 1.0e7;
     ex   = 1.0e-3;
     ey   = 0;
     i    = 0.3;
     raan = 0;
-    frame = Frame.getJ2000();
-    setAlphaV(0);
+    this.alphaV = 0;
   }
   
   /** Creates a new instance
@@ -65,23 +67,22 @@ extends OrbitalParameters {
    */
   public CircularParameters(double a, double ex, double ey, double i, double raan,
                             double alpha, int type, Frame frame) {
-    super();
+    super(frame);
     this.a    =  a;
     this.ex   = ex;
     this.ey   = ey;
     this.i    = i;
     this.raan = raan;
-    this.frame = frame;
-    
+
     switch (type) {
     case MEAN_LONGITUDE_ARGUMENT :
-      setAlphaM(alpha);
+      this.alphaV = computeAlphaM(alpha);
       break;
     case ECCENTRIC_LONGITUDE_ARGUMENT :
-      setAlphaE(alpha);
+      this.alphaV = computeAlphaE(alpha);
       break;
     default :
-      setAlphaV(alpha);
+      this.alphaV = alpha;
     }
     
   }
@@ -93,47 +94,6 @@ extends OrbitalParameters {
    */
   public CircularParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
     super(pvCoordinates, frame, mu);
-  }
-  
-  /** Constructor from any kind of orbital parameters
-   * @param op orbital parameters to copy
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   */
-  public CircularParameters(OrbitalParameters op, double mu) {
-    super(op, mu);
-  }
-  
-  /** Copy the instance.
-   * @return a copy of the instance.
-   */
-  protected Object clone() {
-    return new CircularParameters(a, ex, ey, i, raan, alphaV, TRUE_LONGITUDE_ARGUMENT, frame);
-  }
-  
-  /** Initialize the parameters from other ones 
-   * @param op the {@link OrbitalParameters} to copy
-   * @param mu
-   */
-  protected void init(OrbitalParameters op, double mu) {
-    a    = op.getA();
-    i    = op.getI();
-    raan = Math.atan2(op.getHy(), op.getHx());
-    double cosRaan = Math.cos(raan);
-    double sinRaan = Math.sin(raan);
-    double equiEx = op.getEquinoctialEx();
-    double equiEy = op.getEquinoctialEy();
-    ex   = equiEx * cosRaan + equiEy * sinRaan;
-    ey   = equiEy * cosRaan - equiEx * sinRaan;
-    frame = op.getFrame();
-    setAlphaV(op.getLv() - raan);
-  }
-  
-  /** Update the parameters from the current position and velocity. */
-  protected void updateFromPVCoordinates() {
-    
-    // get cartesian elements
-    double   mu       = getCachedMu();
-    PVCoordinates pvCoordinates = getPVCoordinates(mu);
     
     // compute semi-major axis
     double r          = pvCoordinates.getPosition().getNorm();
@@ -174,10 +134,27 @@ extends OrbitalParameters {
     
     // compute longitude argument
     double beta = 1 / (1 + Math.sqrt(1 - ex * ex - ey * ey));
-    setAlphaE(Math.atan2(y2 + ey + eSE * beta * ex, x2 + ex - eSE * beta * ey));
-    
+    alphaV = computeAlphaE(Math.atan2(y2 + ey + eSE * beta * ex, x2 + ex - eSE * beta * ey));
   }
   
+  /** Constructor from any kind of orbital parameters
+   * @param op orbital parameters to copy
+   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+   */
+  public CircularParameters(OrbitalParameters op, double mu) {
+    super(op.frame);
+    a    = op.getA();
+    i    = op.getI();
+    raan = Math.atan2(op.getHy(), op.getHx());
+    double cosRaan = Math.cos(raan);
+    double sinRaan = Math.sin(raan);
+    double equiEx = op.getEquinoctialEx();
+    double equiEy = op.getEquinoctialEy();
+    ex   = equiEx * cosRaan + equiEy * sinRaan;
+    ey   = equiEy * cosRaan - equiEx * sinRaan;
+    this.alphaV = op.getLv() - raan;
+  }
+
   /** Get the semi-major axis.
    * @return semi-major axis (m)
    */
@@ -233,16 +210,7 @@ extends OrbitalParameters {
   public double getAlphaV() {
     return alphaV;
   }
-  
-  /** Set the true longitude argument.
-   * @param alphaV = v + &omega; true longitude argument (rad)
-   */
-  private void setAlphaV(double alphaV) {
     
-    this.alphaV = alphaV;
-    
-  }
-  
   /** Get the eccentric longitude argument.
    * @return E + &omega; eccentric longitude argument (rad)
    */
@@ -257,12 +225,12 @@ extends OrbitalParameters {
   /** Set the eccentric longitude argument.
    * @param alphaE = E + &omega; eccentric longitude argument (rad)
    */
-  private void setAlphaE(double alphaE) {
+  private double computeAlphaE(double alphaE) {
     double epsilon   = Math.sqrt(1 - ex * ex - ey * ey);
     double cosAlphaE = Math.cos(alphaE);
     double sinAlphaE = Math.sin(alphaE);
-    setAlphaV(alphaE + 2 * Math.atan((ex * sinAlphaE - ey * cosAlphaE)
-                                     / (epsilon + 1 - ex * cosAlphaE - ey * sinAlphaE)));
+    return alphaE + 2 * Math.atan((ex * sinAlphaE - ey * cosAlphaE)
+                                     / (epsilon + 1 - ex * cosAlphaE - ey * sinAlphaE));
   }
   
   /** Get the mean longitude argument.
@@ -276,7 +244,7 @@ extends OrbitalParameters {
   /** Set the mean longitude argument.
    * @param alphaM = M + &omega;  mean longitude argument (rad)
    */
-  private void setAlphaM(double alphaM) {
+  private double computeAlphaM(double alphaM) {
     // Generalization of Kepler equation to equinoctial parameters
     // with alphaE = PA + E and 
     //      alphaM = PA + M = alphaE - ex.sin(alphaE) + ey.cos(alphaE)
@@ -301,7 +269,7 @@ extends OrbitalParameters {
       
     } while ((++iter < 50) && (Math.abs(shift) > 1.0e-12));
     
-    setAlphaE(alphaE); // which set the alphaV parameter
+    return computeAlphaE(alphaE); // which set the alphaV parameter
     
   }
   
@@ -369,22 +337,22 @@ extends OrbitalParameters {
   }
   
   /** Semi-major axis (m). */
-  private double a;
+  private final double a;
   
   /** First component of the circular eccentricity vector. */
-  private double ex;
+  private final double ex;
   
   /** Second component of the circular eccentricity vector. */
-  private double ey;
+  private final double ey;
   
   /** Inclination (rad). */
-  private double i;
+  private final double i;
   
   /** Right Ascension of Ascending Node (rad). */
-  private double raan;
+  private final double raan;
   
   /** True longitude argument (rad). */
-  private double alphaV;
+  private final double alphaV;
   
   private static final long serialVersionUID = -6724645584654038446L;
   

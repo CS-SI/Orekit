@@ -1,6 +1,5 @@
 package fr.cs.aerospace.orekit.orbits;
 
-
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -22,12 +21,14 @@ import java.io.Serializable;
  * implemented in the derived class (which may be classical keplerian
  * elements for example). 
  * </p>
- 
  * <p>
  * The parameters are defined in a frame specified by the user. It is important 
  * to make sure this frame is coherent : it probably is inertial and centered 
  * on the central body. This information is used for example by some 
  * force models.
+ * </p>
+ * <p>
+ * The object <code>OrbitalParameters</code> is guaranted to be immutable.
  * </p>
  * @see     Orbit
  * @version $Id$
@@ -37,27 +38,19 @@ import java.io.Serializable;
  */
 public abstract class OrbitalParameters
 implements Serializable {
-  
+   
   /** Default constructor.
    * Build a new instance with arbitrary default elements.
+   * @param frame the inertial frame
    */
-  protected OrbitalParameters() {
+  protected OrbitalParameters(Frame frame) {
     cachedMu = Double.NaN;
     cachedPVCoordinates = new PVCoordinates();
-    frame =  Frame.getJ2000();
+    this.frame =  frame;
     dirtyCache = true;
   }
   
-  /** Builds OrbitalParameters by copying other ones.
-   * @param op orbit parameters to copy
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   */
-  protected OrbitalParameters(OrbitalParameters op, double mu) {
-    dirtyCache = true;
-    init(op, mu);
-  }
-  
-  /** Reset the orbit from cartesian parameters.
+  /** Set the orbit from cartesian parameters.
    * @param pvCoordinates the position and velocity in the inertial frame
    * @param frame the frame in which are defined the {@link PVCoordinates}
    * @param mu central attraction coefficient (m^3/s^2)
@@ -67,26 +60,8 @@ implements Serializable {
     cachedPVCoordinates = pvCoordinates;
     this.frame = frame;
     dirtyCache = false;
-    updateFromPVCoordinates();
   }
-  
-  /** Copy the instance.
-   * <p>This method has been redeclared as public instead of protected.</p>
-   * @return a copy of the instance.
-   */
-  protected abstract Object clone();
-  
-  /** Update the canonical orbital parameters from the cached PVCoordinates.
-   * <p>The cache is <em>guaranteed</em> to be clean when this method is called.</p>
-   */
-  protected abstract void updateFromPVCoordinates();
-  
-  /** Reset the orbit from another one.
-   * @param op orbit parameters to copy
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   */
-  protected abstract void init(OrbitalParameters op, double mu); 
-  
+    
   /** Get the semi-major axis.
    * @return semi-major axis (m)
    */
@@ -251,6 +226,6 @@ implements Serializable {
   private boolean dirtyCache;
   
   /** Frame in wich are defined the orbital parameters */
-  protected Frame frame;
+  protected final Frame frame;
   
 }

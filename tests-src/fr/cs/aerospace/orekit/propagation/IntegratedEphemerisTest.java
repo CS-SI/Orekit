@@ -34,7 +34,7 @@ public class IntegratedEphemerisTest extends TestCase {
 	      
 	      // Keplerian propagator definition
 
-	      KeplerianPropagator keplerEx = new KeplerianPropagator(new SpacecraftState(initialOrbit), mu);
+	      KeplerianPropagator keplerEx = new KeplerianPropagator(initialOrbit, mu);
 		
 		 // Numerical propagator definition
 	     
@@ -48,7 +48,7 @@ public class IntegratedEphemerisTest extends TestCase {
 		// Propagation
 		
 		AbsoluteDate finalDate = new AbsoluteDate(initDate , 86400);
-		numericEx.propagate(new SpacecraftState(initialOrbit) , finalDate , ephemeris );
+		numericEx.propagate(initialOrbit , finalDate , ephemeris );
 		SpacecraftState keplerIntermediateOrbit;
 		SpacecraftState numericIntermediateOrbit;
 		AbsoluteDate intermediateDate;
@@ -103,7 +103,7 @@ public class IntegratedEphemerisTest extends TestCase {
 		intermediateDate = new AbsoluteDate(initDate , 41589);
 		keplerIntermediateOrbit = keplerEx.getSpacecraftState(intermediateDate);
 		initialOrbit = keplerEx.getSpacecraftState(finalDate);
-		numericEx.propagate(new SpacecraftState(initialOrbit) , initDate , ephemeris );
+		numericEx.propagate(initialOrbit , initDate , ephemeris );
 		numericIntermediateOrbit = ephemeris.getSpacecraftState(intermediateDate);
 
 		Vector3D test = Vector3D.subtract(keplerIntermediateOrbit.getPVCoordinates(mu).getPosition(),

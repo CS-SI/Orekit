@@ -9,9 +9,11 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * {@link NumericalPropagator}.
  *  
  * <p> It contains an {@link OrbitalParameters orbital state} at a current 
- * {@link AbsoluteDate} both handled by an {@link Orbit} plus the current mass.
+ * {@link AbsoluteDate} both handled by an {@link Orbit} and the current mass.
  * </p>
- *   
+ * <p>
+ * The instance <code>SpacecraftState</code> is guaranted to be immutable.
+ * </p>
  * @see NumericalPropagator
  * @author F. Maussion
  */
@@ -33,14 +35,6 @@ public class SpacecraftState {
   public SpacecraftState(Orbit orbit) {
     this.orbit = orbit;
     this.mass  = 1000;
-  }
-  
-   /** Copy-constructor.
-   * @param s SpacecraftState to copy
-   */
-  public SpacecraftState(SpacecraftState s) {
-    this.orbit = new Orbit(s.getOrbit());
-    this.mass  = s.mass;
   }
   
   /** Gets the current orbit.
@@ -173,10 +167,10 @@ public class SpacecraftState {
   }
   
   /** Orbital state */
-  private Orbit orbit;
+  private final Orbit orbit;
   
   /** Current mass (kg)*/
-  private double mass;
+  private final double mass;
 
   
 }

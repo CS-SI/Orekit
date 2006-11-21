@@ -27,6 +27,9 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * are always based on non-cartesian parameters is perfectly possible but somewhat
  * suboptimal. This class is more targeted towards numerical orbit propagation.
  * </p>
+ * <p>
+ * The instance <code>CartesianParameters</code> is guaranted to be immutable.
+ * </p>
  * @see     Orbit
  * @version $Id$
  * @author  L. Maisonobe
@@ -40,8 +43,10 @@ extends OrbitalParameters {
    * Build a new instance with arbitrary default elements.
    */
   public CartesianParameters() {
-    super();
-    equinoctial = null;
+    super(Frame.getJ2000());
+    double   mu       = getCachedMu();
+    PVCoordinates pvCoordinates = getPVCoordinates(mu);
+    equinoctial = new EquinoctialParameters(pvCoordinates, frame, mu);
   }
   
   /** Constructor from cartesian parameters.
@@ -51,7 +56,7 @@ extends OrbitalParameters {
    */
   public CartesianParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
     super(pvCoordinates, frame, mu);
-    equinoctial = null;
+    equinoctial = new EquinoctialParameters(pvCoordinates, frame, mu);
   }
   
   /** Constructor from any kind of orbital parameters
@@ -59,47 +64,15 @@ extends OrbitalParameters {
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    */
   public CartesianParameters(OrbitalParameters op, double mu) {
-    super(op, mu);
-    equinoctial = null;
-  }
-  
-  /** Copy the instance.
-   * @return a copy of the instance.
-   */
-  protected Object clone() {
-    return new CartesianParameters(this, getCachedMu());
-  }
-  
-  /** Initialize the parameters from other ones 
-   * @param op the {@link OrbitalParameters} to copy
-   * @param mu
-   */
-  protected void init(OrbitalParameters op, double mu) {
-    equinoctial =
-      new EquinoctialParameters(op.getPVCoordinates(mu), op.getFrame(),  mu);
-  }
-  
-  /** Update the parameters from the current position and velocity. */
-  protected void updateFromPVCoordinates() {
-    // we do NOT recompute immediately the underlying parameters,
-    // using a lazy evaluation
-    equinoctial = null;
-  }
-  
-  /** Lazy evaluation of the equinoctial parameters. */
-  private void lazilyEvaluateEquinoctialParameters() {
-    if (equinoctial == null) {
-      double   mu       = getCachedMu();
-      PVCoordinates pvCoordinates = getPVCoordinates(mu);
-      equinoctial = new EquinoctialParameters(pvCoordinates, frame, mu);
-    }
+    super(op.frame);
+    PVCoordinates pvCoordinates = getPVCoordinates(mu);
+    equinoctial = new EquinoctialParameters(pvCoordinates, frame, mu);
   }
   
   /** Get the semi-major axis.
    * @return semi-major axis (m)
    */
   public double getA() {
-    lazilyEvaluateEquinoctialParameters();
     return equinoctial.getA();
   }
   
@@ -107,7 +80,6 @@ extends OrbitalParameters {
    * @return eccentricity
    */
   public double getE() {
-    lazilyEvaluateEquinoctialParameters();
     return equinoctial.getE();
   }
   
@@ -115,7 +87,6 @@ extends OrbitalParameters {
    * @return inclination (rad)
    */
   public double getI() {
-    lazilyEvaluateEquinoctialParameters();
     return equinoctial.getI();
   }
   
@@ -123,7 +94,6 @@ extends OrbitalParameters {
    * @return first component of the eccentricity vector
    */
   public double getEquinoctialEx() {
-    lazilyEvaluateEquinoctialParameters();
     return equinoctial.getEquinoctialEx();
   }
   
@@ -131,7 +101,6 @@ extends OrbitalParameters {
    * @return second component of the eccentricity vector
    */
   public double getEquinoctialEy() {
-    lazilyEvaluateEquinoctialParameters();
     return equinoctial.getEquinoctialEy();
   }
   
@@ -139,7 +108,6 @@ extends OrbitalParameters {
    * @return first component oof the inclination vector.
    */
   public double getHx() {
-    lazilyEvaluateEquinoctialParameters();
     return equinoctial.getHx();
   }
   
@@ -147,7 +115,6 @@ extends OrbitalParameters {
    * @return second component oof the inclination vector.
    */
   public double getHy() {
-    lazilyEvaluateEquinoctialParameters();
     return equinoctial.getHy();
   }
   
@@ -155,7 +122,6 @@ extends OrbitalParameters {
    * @return true latitude argument (rad)
    */
   public double getLv() {
-    lazilyEvaluateEquinoctialParameters();
     return equinoctial.getLv();
   }
   
@@ -163,7 +129,6 @@ extends OrbitalParameters {
    * @return eccentric latitude argument.(rad)
    */
   public double getLE() {
-    lazilyEvaluateEquinoctialParameters();
     return equinoctial.getLE();
   }
   
@@ -171,7 +136,6 @@ extends OrbitalParameters {
    * @return mean latitude argument.(rad)
    */
   public double getLM() {
-    lazilyEvaluateEquinoctialParameters();
     return equinoctial.getLM();
   }
   
@@ -183,7 +147,7 @@ extends OrbitalParameters {
   }
   
   /** Underlying equinoctial orbit providing non-cartesian elements. */
-  private EquinoctialParameters equinoctial;
+  private final EquinoctialParameters equinoctial;
   
   private static final long serialVersionUID = -1349581125178017277L;
   

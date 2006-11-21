@@ -36,7 +36,9 @@ import java.io.Serializable;
  * parameters}, if he considers the orbit is sufficiently non-circular or
  * non-equatorial.
  * </p>
- 
+ * <p>
+ * The instance <code>Orbit</code> is guaranted to be immutable.
+ * </p>
  * @see     OrbitalParameters
  * @see     fr.cs.aerospace.orekit.propagation.Ephemeris
  * @version $Id$
@@ -58,21 +60,12 @@ implements Serializable {
   }
   
   /** Create a new instance from date and orbital parameters
-   * @param t  date (a reference to this object will be stored in the instance)
-   * @param parameters orbital parameters (a reference to this object will be
-   * stored in the instance)
+   * @param t  date
+   * @param parameters orbital parameters
    */
   public Orbit(AbsoluteDate t, OrbitalParameters parameters) {
     this.t = t;
     this.parameters = parameters;
-  }
-  
-  /** Copy-constructor.
-   * @param o orbit to copy
-   */
-  public Orbit(Orbit o) {
-    t          = new AbsoluteDate(o.t);
-    parameters = (OrbitalParameters) o.parameters.clone();
   }
   
   /** Get the date.
@@ -204,10 +197,10 @@ implements Serializable {
   }
   
   /** Date of the current state. */
-  private AbsoluteDate t;
+  private final AbsoluteDate t;
   
   /** Orbital parameters state. */
-  private OrbitalParameters parameters;
+  private final OrbitalParameters parameters;
   
   private static final long serialVersionUID = 7165778593185551534L;
   

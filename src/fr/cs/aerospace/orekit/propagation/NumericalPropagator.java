@@ -303,7 +303,7 @@ implements FirstOrderDifferentialEquations {
     public int eventOccurred(double t, double[] y) {
       mapState(t, y);
       swf.eventOccurred(date, parameters.getPVCoordinates(mu), parameters.getFrame());
-      return CONTINUE;
+      return RESET_DERIVATIVES;
     }
     
     public void resetState(double t, double[] y) {

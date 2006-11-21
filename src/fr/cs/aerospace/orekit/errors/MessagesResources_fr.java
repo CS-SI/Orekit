@@ -36,6 +36,8 @@ public class MessagesResources_fr
       "La masse devient n\u00e9gative" },
     { "Mass is null or negative",
       "La masse est nulle ou n\u00e9gative" },
+    { "No known reader can read this file. ",
+      "Aucun lecteur connu ne peut lire ce fichier. " },
     { "almost equatorial orbit (i = {0} degrees)",
       "orbite quasiment \u00e9quatoriale (i = {0} degr\u00e9s)" },
     { "almost critically inclined orbit (i = {0} degrees)",

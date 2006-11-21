@@ -50,7 +50,7 @@ public class PotentialReaderFactory {
     }
     filter.reset();
     if (result==null) {
-      throw new OrekitException("no known reader can read this file " , new String[0]);
+      throw new OrekitException("No known reader can read this file. " , new String[0]);
     }
     
     return result;
