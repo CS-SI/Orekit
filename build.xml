@@ -27,7 +27,7 @@
     <property name="javadoc.dir"    value="${doc.dir}/javadoc" />
 
     <!-- external libraries properties -->
-    <property name="mantissa.jar" value="${lib.dir}/mantissa-6.3.jar" />
+    <property name="mantissa.jar" value="${user.home}/lib/java/mantissa-6.4.jar" />
 
     <!-- compilation properties -->
     <property name="debug"       value="true" />
