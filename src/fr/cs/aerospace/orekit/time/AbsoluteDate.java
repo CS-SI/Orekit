@@ -228,6 +228,14 @@ public class AbsoluteDate implements Comparable, Serializable {
      return 0;
    }
 
+   /** Check if the instance represent the same time as another instance.
+    * @param date other date
+    * @return true if the instance and the other date refer to the same instant
+    */
+   public boolean equals(Object date) {
+     return minus((AbsoluteDate) date) == 0;
+   }
+
    /** Reference epoch in milliseconds from 1970-01-01T00:00:00 TAI. */
    private final long epoch;
    
