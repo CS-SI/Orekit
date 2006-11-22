@@ -1,5 +1,6 @@
 package fr.cs.aerospace.orekit.frames;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -34,7 +35,7 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * @author G. Prat
  * @author L. Maisonobe
  */
-public class Frame {
+public class Frame implements Serializable {
 
   /** Get the uniq J2000 frame.
    * @return the uniq instance of the J2000 frame
@@ -256,4 +257,5 @@ public class Frame {
   /** Instance name. */
   private final String name;
 
+  private static final long serialVersionUID = 2071889292905823128L;
 }

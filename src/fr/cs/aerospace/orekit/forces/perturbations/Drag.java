@@ -57,7 +57,7 @@ public class Drag implements ForceModel {
   }
 
   public SWF[] getSwitchingFunctions() {
-    return null;
+    return new SWF[0];
   }
 
   /** Atmospheric model */

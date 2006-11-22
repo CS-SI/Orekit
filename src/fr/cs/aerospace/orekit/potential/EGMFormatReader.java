@@ -123,9 +123,11 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
    * @throws OrekitException 
    */
   public double[] getJ(boolean normalized, int n, int m) throws OrekitException {
-    if(n>=C.length) throw new OrekitException(
-                                              "the argument degree (n = {0}) is too big (max = {1} " , 
-                                              new String[] { Integer.toString(n), Integer.toString(C.length-1) });
+    if(n>=C.length) {
+      throw new OrekitException(
+                                                "the argument degree (n = {0}) is too big (max = {1} " , 
+                                                new String[] { Integer.toString(n), Integer.toString(C.length-1) });
+    }
 
     double[] j;
 
@@ -152,12 +154,16 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
    */
   public double[][] getC(boolean normalized, int n, int m) throws OrekitException {
 
-    if(n>=C.length) throw new OrekitException(
-                 "the argument degree (n = {0}) is too big (max = {1} " , 
-                 new String[] { Integer.toString(n), Integer.toString(C.length-1) });
-    if(m>=C[C.length-1].length) throw new OrekitException(
-                 "the argument order (m = {0}) is too big (max = {1}) " , 
-                    new String[] { Integer.toString(n), Integer.toString(C[C.length-1].length-1) });
+    if(n>=C.length) {
+      throw new OrekitException(
+                   "the argument degree (n = {0}) is too big (max = {1} " , 
+                   new String[] { Integer.toString(n), Integer.toString(C.length-1) });
+    }
+    if(m>=C[C.length-1].length) {
+      throw new OrekitException(
+                   "the argument order (m = {0}) is too big (max = {1}) " , 
+                      new String[] { Integer.toString(n), Integer.toString(C[C.length-1].length-1) });
+    }
 
     double[][] c;
 
@@ -192,12 +198,16 @@ public class EGMFormatReader implements PotentialCoefficientsReader {
    * @return S the coefficients matrix
    */
   public double[][] getS(boolean normalized, int n, int m) throws OrekitException {
-    if(n>=S.length) throw new OrekitException(
-                                              "the argument degree (n = {0}) is too big (max = {1} " , 
-                                              new String[] { Integer.toString(n), Integer.toString(S.length-1) });
-    if(m>=S[S.length-1].length) throw new OrekitException(
-                                                          "the argument order (m = {0}) is too big (max = {1}) " , 
-                                                          new String[] { Integer.toString(n), Integer.toString(S[S.length-1].length-1) });
+    if(n>=S.length) {
+      throw new OrekitException(
+                                                "the argument degree (n = {0}) is too big (max = {1} " , 
+                                                new String[] { Integer.toString(n), Integer.toString(S.length-1) });
+    }
+    if(m>=S[S.length-1].length) {
+      throw new OrekitException(
+                                                            "the argument order (m = {0}) is too big (max = {1}) " , 
+                                                            new String[] { Integer.toString(n), Integer.toString(S[S.length-1].length-1) });
+    }
 
     double[][] s;
 

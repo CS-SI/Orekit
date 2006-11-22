@@ -1,20 +1,22 @@
 package fr.cs.aerospace.orekit.utils;
 
+import java.io.Serializable;
+
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 /** Simple container of the cinematic couple Position (m) and Velocity (m/s).
  * 
  * @author F Maussion
  */
-public class PVCoordinates {
+public class PVCoordinates implements Serializable {
 
-	/** Simple constructor.
-	 * <p> Sets the Coordinates to default.
-	 */
-	public PVCoordinates() {
-	    position = new Vector3D(Double.NaN, Double.NaN, Double.NaN);
-	    velocity = new Vector3D(Double.NaN, Double.NaN, Double.NaN);
-	}
+//  /** Simple constructor.
+//	 * <p> Sets the Coordinates to default.
+//	 */
+//	public PVCoordinates() {
+//	    position = new Vector3D(Double.NaN, Double.NaN, Double.NaN);
+//	    velocity = new Vector3D(Double.NaN, Double.NaN, Double.NaN);
+//	}
 	
 	/** Builds a PVCoordinates couple.
 	 * @param position the position vector (m)
@@ -71,10 +73,11 @@ public class PVCoordinates {
 	
 	/** The position. 
 	 */
-	private Vector3D position;
+	private final Vector3D position;
 	
 	/** The velocity. 
 	 */
-	private Vector3D velocity;
-	
+	private final Vector3D velocity;
+
+    private static final long serialVersionUID = -8311737465010015024L;
 }

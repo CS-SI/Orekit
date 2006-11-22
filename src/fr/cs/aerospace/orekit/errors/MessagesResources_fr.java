@@ -77,7 +77,10 @@ public class MessagesResources_fr
     { "unable to parse line {0} of nutation model file {1}:\n{2}",
       "impossible d''analyser la ligne {0} du fichier de mod\u00e8le de nutation {1} :\n{2}" },
     { "unable to find nutation model file {0}",
-      "impossible de trouver le fichier de mod\u00e8le de nutation {0}" }
+      "impossible de trouver le fichier de mod\u00e8le de nutation {0}" },
+    { "Eccentricity is becoming greater than 1. Unable to continue." , 
+      "L'eccentricité devient plus grande que 1. Impossible de continuer" }
+ 
   };
 
 }

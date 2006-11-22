@@ -348,7 +348,7 @@ public class CunninghamAttractionModel implements ForceModel {
   }
 
   public SWF[] getSwitchingFunctions() {
-    return null;
+    return new SWF[0];
   }
 
   /** Equatorial radius of the Central Body. */

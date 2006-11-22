@@ -258,7 +258,7 @@ public class DrozinerAttractionModel implements ForceModel {
   }
 
   public SWF[] getSwitchingFunctions() {
-    return null;
+    return new SWF[0];
   }
 
   /** Central body attraction coefficient. */

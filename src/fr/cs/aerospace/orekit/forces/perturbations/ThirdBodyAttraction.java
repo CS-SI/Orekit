@@ -53,7 +53,7 @@ public class ThirdBodyAttraction implements ForceModel {
     * @return null
     */
 	public SWF[] getSwitchingFunctions() {
-		return null;
+		return new SWF[0];
 	}
     
     /** The body to consider */

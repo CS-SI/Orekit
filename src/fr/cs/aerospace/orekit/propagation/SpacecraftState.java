@@ -1,5 +1,7 @@
 package fr.cs.aerospace.orekit.propagation;
 
+import java.io.Serializable;
+
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
@@ -17,7 +19,8 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * @see NumericalPropagator
  * @author F. Maussion
  */
-public class SpacecraftState {
+public class SpacecraftState 
+ implements Serializable {
 
   /** Create a new instance from orbital state and mass.
    * @param orbit the orbit
@@ -172,5 +175,6 @@ public class SpacecraftState {
   /** Current mass (kg)*/
   private final double mass;
 
-  
+  private static final long serialVersionUID = 4660942382447513104L;
+
 }

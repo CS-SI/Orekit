@@ -31,7 +31,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * @author  F.Maussion
  */
 public class EquinoctialParameters
-extends OrbitalParameters {
+ extends OrbitalParameters {
 
   /** Identifier for mean latitude argument. */
   public static final int MEAN_LATITUDE_ARGUMENT = 0;
@@ -41,20 +41,7 @@ extends OrbitalParameters {
   
   /** Identifier for true latitude argument. */
   public static final int TRUE_LATITUDE_ARGUMENT = 2;
-  
-  /** Default constructor.
-   * Build a new instance with arbitrary default elements.
-   */
-  public EquinoctialParameters() {
-    super(Frame.getJ2000());
-    a  = 1.0e7;
-    ex = 1.0e-3;
-    ey = 0;
-    hx = 0.15;
-    hy = 0;
-    lv = 0;
-  }
-  
+    
   /** Creates a new instance
    * @param a  semi-major axis (m)
    * @param ex e cos(&omega; + &Omega;), first component of eccentricity vector
@@ -85,6 +72,7 @@ extends OrbitalParameters {
       break;
     default :
       this.lv = l;
+    break;
     }
     
   }

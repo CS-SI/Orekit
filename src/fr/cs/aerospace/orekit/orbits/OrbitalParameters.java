@@ -37,7 +37,7 @@ import java.io.Serializable;
  * @author  F.Maussion
  */
 public abstract class OrbitalParameters
-implements Serializable {
+  implements Serializable {
    
   /** Default constructor.
    * Build a new instance with arbitrary default elements.
@@ -45,7 +45,8 @@ implements Serializable {
    */
   protected OrbitalParameters(Frame frame) {
     cachedMu = Double.NaN;
-    cachedPVCoordinates = new PVCoordinates();
+    cachedPVCoordinates = new PVCoordinates(new Vector3D(Double.NaN, Double.NaN, Double.NaN),
+                                            new Vector3D(Double.NaN, Double.NaN, Double.NaN));
     this.frame =  frame;
     dirtyCache = true;
   }
@@ -227,5 +228,5 @@ implements Serializable {
   
   /** Frame in wich are defined the orbital parameters */
   protected final Frame frame;
-  
+
 }

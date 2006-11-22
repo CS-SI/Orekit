@@ -46,19 +46,6 @@ extends OrbitalParameters {
    */
   public static final double E_CIRC = 1.e-10;
   
-  /** Default constructor.
-   * Build a new instance with arbitrary default elements.
-   */
-  public KeplerianParameters() {
-    super(Frame.getJ2000());
-    a    = 1.0e7;
-    e    = 1.0e-3;
-    i    = 0.3;
-    pa   = 0;
-    raan = 0;
-    v = 0;
-  }
-  
   /** Creates a new instance
    * @param a  semi-major axis (m)
    * @param e eccentricity
@@ -89,6 +76,7 @@ extends OrbitalParameters {
       break;
     default :
       this.v = anomaly;
+    break;
     }
   }
   

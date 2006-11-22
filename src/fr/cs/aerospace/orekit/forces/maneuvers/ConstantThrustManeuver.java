@@ -33,7 +33,6 @@ public class ConstantThrustManeuver implements ForceModel {
    * @param direction the acceleration direction in choosed frame.
    * @param frameType the frame in which is defined the direction,
    *  must be one of {@link #TNW}, {@link #QSW} or  {@link #INERTIAL}
-   *  (any other value sets the frame to default : {@link #INERTIAL})
    */
   public ConstantThrustManeuver(AbsoluteDate startDate, double duration,
                   double force, double isp, Vector3D direction, int frameType) {
@@ -47,12 +46,6 @@ public class ConstantThrustManeuver implements ForceModel {
       this.endDate = startDate;
       this.startDate = new AbsoluteDate(startDate , duration);
       this.duration = - duration;
-    }
-    if (frameType<0||frameType>2) {
-      this.frameType = INERTIAL;
-    }
-    else {
-      this.frameType = frameType;
     }
     this.force = force;
     this.flowRate = -force/(g0*isp);
@@ -106,6 +99,8 @@ public class ConstantThrustManeuver implements ForceModel {
         adder.addXYZAcceleration(acceleration.getX(),
                                  acceleration.getY(), acceleration.getZ());
         break;
+      default :
+        throw new IllegalArgumentException(" Frame type is not correct ");
       }            
       adder.addMassDerivative(flowRate);
     }

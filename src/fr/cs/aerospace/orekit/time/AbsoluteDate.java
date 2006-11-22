@@ -2,6 +2,7 @@ package fr.cs.aerospace.orekit.time;
 
 import java.util.Date;
 import java.util.TimeZone;
+import java.io.Serializable;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
@@ -43,7 +44,7 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
  * @author L. Maisonobe
  * @see TimeScale
  */
-public class AbsoluteDate implements Comparable {
+public class AbsoluteDate implements Comparable, Serializable {
 
     /** Reference epoch for julian dates: -4712-01-01T12:00:00.
      * <p>The java.util.Date class follows the astronomical convention
@@ -232,5 +233,7 @@ public class AbsoluteDate implements Comparable {
    
    /** Offset from the reference epoch in milliseconds. */
    private final double offset;
+
+   private static final long serialVersionUID = -4127860894692239957L;
 
 }

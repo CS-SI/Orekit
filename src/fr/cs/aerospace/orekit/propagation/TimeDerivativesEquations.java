@@ -3,6 +3,8 @@ package fr.cs.aerospace.orekit.propagation;
 import java.util.Arrays;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
+
+import fr.cs.aerospace.orekit.errors.Translator;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -114,12 +116,14 @@ public class TimeDerivativesEquations {
     double e2  = ex2 + ey2;
     double e   = Math.sqrt(e2);
     if (e > 1) {
-      throw new IllegalArgumentException("Eccentricity is becoming"
-                                         + " greater than 1."
-                                         + " Unable to continue.");
+      String message = Translator.getInstance().translate("Eccentricity is becoming"
+                                                          + " greater than 1."
+                                                          + " Unable to continue.");
+      throw new IllegalArgumentException(message);
     }    
     if (mass <= 0.0) {
-      throw new IllegalArgumentException("Mass is becoming negative");
+      String message = Translator.getInstance().translate("Mass is becoming negative");
+      throw new IllegalArgumentException(message);
     }    
     // intermediate variables
     double oMe2        = (1 - e) * (1 + e);
@@ -249,8 +253,10 @@ public class TimeDerivativesEquations {
    * @param dMass the flow rate (dm/dt)
    */
   public void addMassDerivative(double dMass) {
-    if(dMass>0) throw new IllegalArgumentException(
-                  " Flow rate (dm/dt) is positive : " + dMass + " kg/s");
+    if(dMass>0) {
+      throw new IllegalArgumentException(
+                    " Flow rate (dm/dt) is positive : " + dMass + " kg/s");
+    }
     yDot[6] += dMass;
   }
   

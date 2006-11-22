@@ -37,18 +37,8 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * @author  F.Maussion
  */
 public class CartesianParameters
-extends OrbitalParameters {
+ extends OrbitalParameters {
 
-  /** Default constructor.
-   * Build a new instance with arbitrary default elements.
-   */
-  public CartesianParameters() {
-    super(Frame.getJ2000());
-    double   mu       = getCachedMu();
-    PVCoordinates pvCoordinates = getPVCoordinates(mu);
-    equinoctial = new EquinoctialParameters(pvCoordinates, frame, mu);
-  }
-  
   /** Constructor from cartesian parameters.
    * @param pvCoordinates the position and velocity of the satellite. 
    * @param frame the frame in which are defined the {@link PVCoordinates}

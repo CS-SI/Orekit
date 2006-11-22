@@ -37,9 +37,11 @@ public class Line {
   }
   
   /** Revert the line direction.
+   * @param line the line to revert
+   * @return a new instance of Line wich is the reverse of line 
    */
-  public Line revert() {
-    return new Line(zero , Vector3D.negate(direction));
+  public static Line revert(Line line) {
+    return new Line(line.zero , Vector3D.negate(line.direction));
   }
 
   /** Get the normalized direction vector.

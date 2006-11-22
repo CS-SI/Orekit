@@ -473,4 +473,5 @@ public class ITRF2000Frame extends Frame {
   private static final String sxy2Model2000A = "/fr/cs/aerospace/orekit/resources/tab5.2c.txt";
   private static final String sxy2Model2000B = "/fr/cs/aerospace/orekit/resources/tab5.2c.reduced.txt";
 
+  private static final long serialVersionUID = -2361037148063033307L;
 }

@@ -30,7 +30,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  */
 
 public class CircularParameters
-extends OrbitalParameters {
+ extends OrbitalParameters {
 
   /** Identifier for mean longitude argument. */
   public static final int MEAN_LONGITUDE_ARGUMENT = 0;
@@ -40,20 +40,7 @@ extends OrbitalParameters {
   
   /** Identifier for true longitude argument. */
   public static final int TRUE_LONGITUDE_ARGUMENT = 2;
-  
-  /** Default constructor.
-   * Build a new instance with arbitrary default elements.
-   */
-  public CircularParameters() {
-    super(Frame.getJ2000());
-    a    = 1.0e7;
-    ex   = 1.0e-3;
-    ey   = 0;
-    i    = 0.3;
-    raan = 0;
-    this.alphaV = 0;
-  }
-  
+    
   /** Creates a new instance
    * @param a  semi-major axis (m)
    * @param ex e cos(&omega;), first component of circular eccentricity vector
@@ -83,6 +70,7 @@ extends OrbitalParameters {
       break;
     default :
       this.alphaV = alpha;
+    break;
     }
     
   }

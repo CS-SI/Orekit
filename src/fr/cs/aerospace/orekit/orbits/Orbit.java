@@ -50,15 +50,7 @@ import java.io.Serializable;
 
 public class Orbit
 implements Serializable {
-  
-  /** Default constructor.
-   * Build a new instance with arbitrary default elements.
-   */
-  public Orbit() {
-    t          = new AbsoluteDate();
-    parameters = new EquinoctialParameters();
-  }
-  
+    
   /** Create a new instance from date and orbital parameters
    * @param t  date
    * @param parameters orbital parameters
