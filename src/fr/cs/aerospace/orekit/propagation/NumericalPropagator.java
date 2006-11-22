@@ -134,7 +134,7 @@ implements FirstOrderDifferentialEquations {
    */
   public SpacecraftState propagate(SpacecraftState initialState,
                                    AbsoluteDate finalDate)
-  throws DerivativeException, IntegratorException, OrekitException {
+  throws OrekitException {
     return propagate(initialState, finalDate, DummyStepHandler.getInstance());
   }
 
@@ -149,7 +149,7 @@ implements FirstOrderDifferentialEquations {
   public SpacecraftState propagate(SpacecraftState initialState,
                                    AbsoluteDate finalDate,
                                    IntegratedEphemeris ephemeris) 
-  throws DerivativeException, IntegratorException, OrekitException {    
+  throws OrekitException {    
     ContinuousOutputModel model = new ContinuousOutputModel();
     SpacecraftState finalState = propagate(initialState, finalDate, (StepHandler)model);
     ephemeris.initialize(model , initialState.getDate(), 
@@ -168,7 +168,7 @@ implements FirstOrderDifferentialEquations {
    */     
   public SpacecraftState propagate(SpacecraftState initialState, AbsoluteDate finalDate,
                                    double h, FixedStepHandler handler)
-  throws DerivativeException, IntegratorException, OrekitException {
+  throws OrekitException {
     return propagate(initialState, finalDate, new StepNormalizer(h, handler));
   }
 
@@ -182,6 +182,11 @@ implements FirstOrderDifferentialEquations {
   public SpacecraftState propagate(SpacecraftState initialState,
                                    AbsoluteDate finalDate, StepHandler handler)
   throws OrekitException {
+
+    if (initialState.getDate().equals(finalDate)) {
+      // don't extrapolate
+      return initialState;
+    }
 
     // space dynamics view
     startDate  = initialState.getDate();
