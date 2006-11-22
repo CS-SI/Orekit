@@ -83,7 +83,7 @@ public class SHMFormatReaderTest extends TestCase {
     
   }
   
-  public void testExeption() throws FileNotFoundException {
+  public void testException() throws FileNotFoundException, IOException {
     
     PotentialCoefficientsReader reader;
     int c = 0;
@@ -95,8 +95,6 @@ public class SHMFormatReaderTest extends TestCase {
     } catch (OrekitException e) {
       c++;
       // expected behaviour
-    } catch (IOException e) {
-      e.printStackTrace();
     }
     try {
       File rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data" +
@@ -106,8 +104,6 @@ public class SHMFormatReaderTest extends TestCase {
     } catch (OrekitException e) {
       c++;
       // expected behaviour
-    } catch (IOException e) {
-      e.printStackTrace();
     }
     try {
       File rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data" +
@@ -117,8 +113,6 @@ public class SHMFormatReaderTest extends TestCase {
     } catch (OrekitException e) {
       c++;
       // expected behaviour
-    } catch (IOException e) {
-      e.printStackTrace();
     }
     
     try {
@@ -127,9 +121,6 @@ public class SHMFormatReaderTest extends TestCase {
     } catch (OrekitException e) {
       c++;
       // expected behaviour
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
     }
     
     assertEquals(4 , c);   
