@@ -28,7 +28,6 @@ import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
-import fr.cs.aerospace.orekit.utils.Vector;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -227,7 +226,6 @@ public class CunninghamAttractionModelTest extends TestCase {
     SpacecraftState drozOrb = propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date ,  86400));
     
     Vector3D dif = Vector3D.subtract(cunnOrb.getPVCoordinates(mu).getPosition(),drozOrb.getPVCoordinates(mu).getPosition());
-    System.out.println(Vector.toString(dif));
     assertTrue(dif.getNorm() < 9.6e-8);
     assertTrue(Math.abs(dif.getX()) < 4.4e-8);
     assertTrue(Math.abs(dif.getY()) < 5.4e-9); 
