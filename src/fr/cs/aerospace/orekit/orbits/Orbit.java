@@ -1,5 +1,6 @@
 package fr.cs.aerospace.orekit.orbits;
 
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.propagation.Ephemeris;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -72,6 +73,13 @@ implements Serializable {
    */
   public OrbitalParameters getParameters() {
     return parameters;
+  }
+  
+  /** Get the inertial frame.
+   * @return the frame
+   */
+  public Frame getFrame() {
+    return parameters.getFrame();
   }
   
   /** Get the semi-major axis.

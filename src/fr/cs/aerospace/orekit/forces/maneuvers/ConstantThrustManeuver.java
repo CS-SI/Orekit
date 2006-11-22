@@ -51,6 +51,7 @@ public class ConstantThrustManeuver implements ForceModel {
     this.flowRate = -force/(g0*isp);
     this.direction = new Vector3D(direction);
     this.direction.normalizeSelf();
+    this.frameType = frameType;
     firing = false;     
   }
   

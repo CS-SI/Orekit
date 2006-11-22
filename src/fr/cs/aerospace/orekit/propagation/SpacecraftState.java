@@ -2,6 +2,7 @@ package fr.cs.aerospace.orekit.propagation;
 
 import java.io.Serializable;
 
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
@@ -66,6 +67,13 @@ public class SpacecraftState
    */
   public OrbitalParameters getParameters() {
     return orbit.getParameters();
+  }
+  
+  /** Get the inertial frame.
+   * @return the frame
+   */
+  public Frame getFrame() {
+    return orbit.getFrame();
   }
   
   /** Get the semi-major axis.
