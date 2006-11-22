@@ -53,7 +53,8 @@ public class SHMFormatReader implements PotentialCoefficientsReader {
       }
       else {
         if (c==1) {
-          if (("FIRST ".equals(line.substring(0,6)))&&"SHM    ".equals(line.substring(49,56))==false) {
+          if (! ("FIRST ".equals(line.substring(0,6))
+              && "SHM    ".equals(line.substring(49,56)))) {
             iKnow = true;  
           }
         }
