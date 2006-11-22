@@ -117,13 +117,10 @@ private class MassHandler implements StepHandler {
     }
 
     public boolean requiresDenseOutput() {
-      // TODO Auto-generated method stub
       return true;
     }
 
     public void reset() {
-      // TODO Auto-generated method stub
-      
     }
   }
   
@@ -152,13 +149,10 @@ private class NoMassHandler implements StepHandler {
   }
 
   public boolean requiresDenseOutput() {
-    // TODO Auto-generated method stub
     return true;
   }
 
   public void reset() {
-    // TODO Auto-generated method stub
-    
   }
 } 
   
