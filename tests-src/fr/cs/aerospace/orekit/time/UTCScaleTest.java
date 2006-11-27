@@ -115,22 +115,29 @@ public class UTCScaleTest
   public void tearDown() {
     System.setProperty("orekit.iers.directory",
     "");
-    try {
       // resetting the singletons to null
       utc = null;
-      Field instance = UTCScale.class.getDeclaredField("instance");
-      instance.setAccessible(true);
-      instance.set(null, null);
-      instance.setAccessible(false);
+      Field instance;
+      try {
+        instance = UTCScale.class.getDeclaredField("instance");
+        instance.setAccessible(true);
+        instance.set(null, null);
+        instance.setAccessible(false);
 
-      instance = IERSData.class.getDeclaredField("instance");
-      instance.setAccessible(true);
-      instance.set(null, null);
-      instance.setAccessible(false);
+        instance = IERSData.class.getDeclaredField("instance");
+        instance.setAccessible(true);
+        instance.set(null, null);
+        instance.setAccessible(false);
+      } catch (SecurityException e) {
+        e.printStackTrace();
+      } catch (NoSuchFieldException e) {
+        e.printStackTrace();
+      } catch (IllegalArgumentException e) {
+        e.printStackTrace();
+      } catch (IllegalAccessException e) {
+        e.printStackTrace();
+      }
 
-    } catch (Exception e) {
-      // ignored
-    }
   }
 
   public static Test suite() {
