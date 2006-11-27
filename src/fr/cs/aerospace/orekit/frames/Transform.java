@@ -1,5 +1,7 @@
 package fr.cs.aerospace.orekit.frames;
 
+import java.io.Serializable;
+
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
@@ -13,7 +15,8 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  *  @author L. Maisonobe
  *  @author F. Maussion
  */
-public class Transform {
+public class Transform 
+ implements Serializable {
 
   /** Build a transform from its primitive operations.
    * @param translation first primitive operation to apply
@@ -190,5 +193,6 @@ public class Transform {
 
   /** First time derivative of the rotation (norm representing angular rate). */
   private Vector3D rotationRate;
-  
+
+  private static final long serialVersionUID = -4819571244806665519L;
 }

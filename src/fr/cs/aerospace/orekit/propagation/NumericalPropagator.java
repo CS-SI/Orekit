@@ -193,7 +193,8 @@ implements FirstOrderDifferentialEquations {
     date       = startDate;
     parameters = new EquinoctialParameters(initialState.getParameters(), mu);
     mass       = initialState.getMass();
-    adder      = new TimeDerivativesEquations(parameters , mu, mass);
+    adder      = new TimeDerivativesEquations(parameters , mu, mass, 
+                                              initialState.getAttitudeProvider());
 
     if (mass <= 0.0) {
       throw new IllegalArgumentException("Mass is null or negative");
@@ -243,8 +244,9 @@ implements FirstOrderDifferentialEquations {
                                            state[4],state[5], EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
                                            parameters.getFrame());
     mass = state[6];  
-
-    return new SpacecraftState(new Orbit(date , parameters), mass);    
+    
+    return new SpacecraftState(new Orbit(date , parameters), mass, 
+                                initialState.getAttitudeProvider());    
   }
 
   /** Gets the dimension of the handled state vecor (always 7). 

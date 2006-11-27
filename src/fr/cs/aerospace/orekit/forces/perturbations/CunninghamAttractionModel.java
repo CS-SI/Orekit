@@ -39,6 +39,12 @@ public class CunninghamAttractionModel implements ForceModel {
                                    double equatorialRadius, double[][] C, double[][] S)
   throws OrekitException {
 
+    this.bodyFrame = centralBodyFrame;
+    this.equatorialRadius = equatorialRadius;
+    this.mu = mu;
+    degree  = C.length - 1;
+    order   = C[degree].length - 1;
+
     if (C.length!=S.length||C[C.length-1].length!=S[S.length-1].length) {
       throw new OrekitException("C and S should have the same size :" +
                                 " (C = [{0}][{1}] ; S = [{2}][{3}])",
@@ -47,13 +53,7 @@ public class CunninghamAttractionModel implements ForceModel {
                                                Integer.toString(S.length) ,           
                                                Integer.toString(S[degree].length) });
     }
-
-    this.bodyFrame = centralBodyFrame;
-    this.equatorialRadius = equatorialRadius;
-    this.mu = mu;
-    degree  = C.length - 1;
-    order   = C[degree].length - 1;
-
+    
     if(C.length<1) {
       this.C = new double[1][1];
       this.S = new double[1][1];

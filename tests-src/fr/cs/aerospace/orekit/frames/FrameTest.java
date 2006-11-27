@@ -71,10 +71,7 @@ public class FrameTest extends TestCase {
       Transform S = new Transform(t2,t3);
 	  
       checkNoTransform(new Transform(T, S.getInverse()) , random);
-      
-      T = R3.getTransformTo(Frame.getJ2000(), new AbsoluteDate());
-      
-      S = new Transform(S,t1);
+
   }
 
   public void testVeis1950() throws OrekitException {

@@ -37,6 +37,12 @@ public class DrozinerAttractionModel implements ForceModel {
                                  double[][] C, double[][] S)
   throws OrekitException {
 
+    this.mu = mu;
+    this.equatorialRadius = equatorialRadius;
+    this.centralBodyFrame = centralBodyFrame;    
+    degree = C.length - 1;
+    order = C[degree].length-1;    
+    
     if (C.length!=S.length||C[C.length-1].length!=S[S.length-1].length) {
       throw new OrekitException("C and S should have the same size :" +
                                 " (C = [{0}][{1}] ; S = [{2}][{3}])",
@@ -45,12 +51,6 @@ public class DrozinerAttractionModel implements ForceModel {
           Integer.toString(S.length) ,           
           Integer.toString(S[degree].length) });
     }
-
-    this.mu = mu;
-    this.equatorialRadius = equatorialRadius;
-    this.centralBodyFrame = centralBodyFrame;    
-    degree = C.length - 1;
-    order = C[degree].length-1;    
 
     if(C.length<1) {
       this.C = new double[1][1];

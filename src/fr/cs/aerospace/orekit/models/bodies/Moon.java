@@ -131,6 +131,6 @@ public class Moon extends ThirdBody {
     new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 864000000.0);
 
   /** Transform from Veis1950 to J2000. */
-  private static Transform transform;
+  private Transform transform;
 
 }

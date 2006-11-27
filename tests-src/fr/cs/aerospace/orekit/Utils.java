@@ -1,5 +1,7 @@
 package fr.cs.aerospace.orekit;
 
+import org.spaceroots.mantissa.geometry.Vector3D;
+
 
 public class Utils {
   
@@ -22,8 +24,13 @@ public class Utils {
     return a - twoPi * Math.floor ((a + Math.PI - ref) / twoPi);
   }
   
-  public static double ae =  6378136.460;
-  public static double mu =  3.986004415e+14;
+  public static String vectorToString(Vector3D v) {
+    String s = " X : " + v.getX() + "; Y :  " + v.getY() + "; Z : " + v.getZ() + ";" + " norme  : " + v.getNorm();
+    return s;
+  }
+  
+  public static final double ae =  6378136.460;
+  public static final double mu =  3.986004415e+14;
   
 
 }

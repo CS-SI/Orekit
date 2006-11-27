@@ -6,7 +6,6 @@ import java.io.Serializable;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
-
 import fr.cs.aerospace.orekit.errors.OrekitException;
 
 /** This class represents a specific instant in time.
@@ -233,8 +232,18 @@ public class AbsoluteDate implements Comparable, Serializable {
     * @return true if the instance and the other date refer to the same instant
     */
    public boolean equals(Object date) {
-     return minus((AbsoluteDate) date) == 0;
+     try {
+       return minus((AbsoluteDate)date) == 0;
+     } catch(ClassCastException cce) {
+       return false;
+     }     
    }
+   
+   public int hashCode() {
+     long l = Double.doubleToLongBits(minus(J2000Epoch));     
+     return (int)(l^(l>>>32));
+   }
+   
 
    /** Reference epoch in milliseconds from 1970-01-01T00:00:00 TAI. */
    private final long epoch;

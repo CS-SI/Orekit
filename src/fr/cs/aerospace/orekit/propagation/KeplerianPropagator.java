@@ -1,5 +1,6 @@
 package fr.cs.aerospace.orekit.propagation;
 
+import fr.cs.aerospace.orekit.attitudes.AttitudeProvider;
 import fr.cs.aerospace.orekit.errors.PropagationException;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
@@ -20,6 +21,7 @@ public class KeplerianPropagator implements Ephemeris {
     this.initialParameters = new EquinoctialParameters(initialState.getParameters(), mu);
     this.mass = initialState.getMass();
     this.n = Math.sqrt(mu / initialParameters.getA()) / initialParameters.getA();
+    this.attitude = initialState.getAttitudeProvider();
   }
 
   public SpacecraftState getSpacecraftState(AbsoluteDate date)
@@ -34,7 +36,7 @@ public class KeplerianPropagator implements Ephemeris {
     		 initialParameters.getLM() + n * date.minus(initialDate) ,
     		 EquinoctialParameters.MEAN_LATITUDE_ARGUMENT, initialParameters.getFrame());
     
-    return new SpacecraftState(new Orbit(date, extrapolated), mass);
+    return new SpacecraftState(new Orbit(date, extrapolated), mass, attitude);
 
   }
 
@@ -46,6 +48,9 @@ public class KeplerianPropagator implements Ephemeris {
   
   /** Initial mass. */
   private double mass;
+
+  /** Initial attitude. */
+  private AttitudeProvider attitude;
 
   /** Mean motion. */
   private double n;

@@ -179,7 +179,9 @@ public class IERSData {
    * @return UTC time steps in chronological order
    */
   public Leap[] getTimeSteps() {
-    return timeSteps;
+    Leap[] l = new Leap[timeSteps.length];
+    System.arraycopy(timeSteps, 0, l, 0, timeSteps.length);
+    return l;
   }
 
   /** Get the Earth Orientation Parameter entries.
@@ -237,8 +239,7 @@ public class IERSData {
 	  
 	  if (UTCStartDate==null){
 		  AbsoluteDate ref = new AbsoluteDate("1970-01-01T00:00:00",UTCScale.getInstance());
-		  int i = timeSteps.length;
-		  UTCStartDate = new AbsoluteDate(ref,timeSteps[i-1].utcTime-timeSteps[i-1].step);
+		  UTCStartDate = new AbsoluteDate(ref,timeSteps[0].utcTime-timeSteps[0].step);
 	  }
 	  return UTCStartDate;
   }

@@ -80,7 +80,7 @@ public class ConstantThrustManeuver implements ForceModel {
     
     if(firing) {      
       if (variableDir!=null) {
-        direction = new Vector3D(variableDir.getDirection(t, pvCoordinates, adder.getFrame()));
+        direction = new Vector3D(variableDir.getDirection(t, pvCoordinates, adder));
         direction.normalizeSelf();
       }
       

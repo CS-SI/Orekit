@@ -26,7 +26,6 @@ import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
 import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
-import fr.cs.aerospace.orekit.utils.Vector;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -89,7 +88,7 @@ public class CalculDurationTest extends TestCase {
             new AbsoluteDate(date ,  86400), new NoMassHandler(orbit));
     System.out.println(massOrb.getMass());
     Vector3D dif = Vector3D.subtract(massOrb.getPVCoordinates(mu).getPosition(),nomassOrb.getPVCoordinates(mu).getPosition());
-    System.out.println(Vector.toString(dif));
+
   }
   
 private class MassHandler implements StepHandler {
@@ -185,7 +184,7 @@ private class NoMassHandler implements StepHandler {
           new AbsoluteDate(date ,  86400),100 ,new noMassStepHandler(orbit));
   
   Vector3D dif = Vector3D.subtract(massOrb.getPVCoordinates(mu).getPosition(),nomassOrb.getPVCoordinates(mu).getPosition());
-  System.out.println(Vector.toString(dif));
+
 }
 
 private class noMassStepHandler implements FixedStepHandler {

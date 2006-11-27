@@ -1,5 +1,6 @@
 package fr.cs.aerospace.orekit.propagation;
 
+import fr.cs.aerospace.orekit.attitudes.AttitudeProvider;
 import fr.cs.aerospace.orekit.errors.PropagationException;
 import fr.cs.aerospace.orekit.orbits.CircularParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
@@ -57,6 +58,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
     // compute mean parameters
     initialDate = initialState.getDate();
     mass = initialState.getMass();
+    this.attitude = initialState.getAttitudeProvider();
     computeMeanParameters(osculating);
 
   }
@@ -68,7 +70,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
    */
   public SpacecraftState getSpacecraftState(AbsoluteDate date)
       throws PropagationException {
-    return new SpacecraftState(new Orbit(date, propagate(date)), mass);
+    return new SpacecraftState(new Orbit(date, propagate(date)), mass, attitude);
   }
 
   /** Compute mean parameters according to the Eckstein-Hechler analytical model.
@@ -341,6 +343,9 @@ public class EcksteinHechlerPropagator implements Ephemeris {
 
   /** Mean parameters at the initial date. */
   private CircularParameters mean;
+
+  /** Attitude. */
+  private AttitudeProvider attitude;
 
   /** Preprocessed values. */
   private double q;

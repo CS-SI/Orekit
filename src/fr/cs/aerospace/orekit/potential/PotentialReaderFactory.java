@@ -26,8 +26,7 @@ public class PotentialReaderFactory {
     
     boolean isCompressed = false;
     try {
-      new GZIPInputStream(filter).read(new byte[256]);
-      isCompressed = true;
+      isCompressed = (new GZIPInputStream(filter).read() != -1);
     } catch (IOException e) {
       isCompressed = false;
     }

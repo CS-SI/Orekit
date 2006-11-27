@@ -2,6 +2,11 @@ package fr.cs.aerospace.orekit.propagation;
 
 import java.io.Serializable;
 
+import org.spaceroots.mantissa.geometry.Rotation;
+import org.spaceroots.mantissa.geometry.Vector3D;
+
+import fr.cs.aerospace.orekit.attitudes.AttitudeProvider;
+import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
@@ -21,68 +26,114 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * @author F. Maussion
  */
 public class SpacecraftState 
- implements Serializable {
+implements Serializable {
 
   /** Create a new instance from orbital state and mass.
+   * @param orbit the orbit
+   * @param mass the mass (kg)
+   */
+  public SpacecraftState(Orbit orbit, double mass, AttitudeProvider attitude) {
+    this.orbit = orbit;
+    this.mass  = mass;
+    this.attitude = attitude;
+  }
+
+  /** Create a new instance from orbital state and mass.
+   * Initialize the attitude at null.
    * @param orbit the orbit
    * @param mass the mass (kg)
    */
   public SpacecraftState(Orbit orbit, double mass) {
     this.orbit = orbit;
     this.mass  = mass;
+    this.attitude = null;
   }
 
   /** Create a new instance from orbital state only 
-   * (gives an arbitrary value for the mass).
+   * (gives an arbitrary value for the mass and <code>null</code> for the attitude).
    * @param orbit the orbit
    */
   public SpacecraftState(Orbit orbit) {
     this.orbit = orbit;
     this.mass  = 1000;
+    this.attitude = null;
   }
-  
+
   /** Gets the current orbit.
    * @return the orbit
    */
   public Orbit getOrbit() {
     return orbit;
   }
-  
+
   /** Gets the current mass.
    * @return the mass (kg)
    */
   public double getMass() {
     return mass;
   }
-  
+
   /** Get the date.
    * @return date
    */
   public AbsoluteDate getDate() {
     return orbit.getDate();
   }
-  
+
   /** Get the orbital parameters.
    * @return orbital parameters
    */
   public OrbitalParameters getParameters() {
     return orbit.getParameters();
   }
-  
+
   /** Get the inertial frame.
    * @return the frame
    */
   public Frame getFrame() {
     return orbit.getFrame();
   }
-  
+
+  /** Gets the {@link AttitudeProvider attitude provider}.
+   * @return the attitude provider (null if not initialized).
+   */
+  public AttitudeProvider getAttitudeProvider() {
+    return attitude;
+  }
+
+  /** Get the attitude quaternion.
+   * <p> The {@link Rotation} returned by this method represents the rotation
+   * to apply to a vector expressed in spacecraft frame to obtain the same vector 
+   * defined in the orbit inertial frame </p> 
+   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+   * @return the attitude rotation of the spacecraft
+   * @throws OrekitException if some specific error occurs.
+   */
+  public Rotation getAttitude(double mu)
+  throws OrekitException {
+    return attitude.getAttitude(getDate(), getPVCoordinates(mu), getFrame());
+  }
+
+  /** Get the attitute rotation derivative.
+   * <p> The {@link Vector3D} returned by this method represents the instant rotation
+   * to apply to a velocity vector expressed in spacecraft frame to obtain the same
+   * vector defined in the orbit inertial frame </p> 
+   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+   * @return the instant rotation of the spacecraft
+   * @throws OrekitException if some specific error occurs.
+   */
+  public Vector3D getInstantRotAxis(double mu)
+  throws OrekitException {
+    return attitude.getInstantRotAxis(getDate(), getPVCoordinates(mu), getFrame());    
+  }
+
   /** Get the semi-major axis.
    * @return semi-major axis (m)
    */
   public double getA() {
     return orbit.getA();
   }
-  
+
   /** Get the first component of the eccentricity vector (as per equinoctial parameters).
    * @return e cos(&omega; + &Omega;), first component of eccentricity vector
    * @see #getE()
@@ -90,7 +141,7 @@ public class SpacecraftState
   public double getEx(){
     return orbit.getParameters().getEquinoctialEx();
   }
-  
+
   /** Get the second component of the eccentricity vector (as per equinoctial parameters).
    * @return e sin(&omega; + &Omega;), second component of the eccentricity vector
    * @see #getE()
@@ -98,7 +149,7 @@ public class SpacecraftState
   public double getEy(){
     return orbit.getParameters().getEquinoctialEy();
   }
-  
+
   /** Get the first component of the inclination vector (as per equinoctial parameters).
    * @return tan(i/2) cos(&Omega;), first component of the inclination vector
    * @see #getI()
@@ -106,7 +157,7 @@ public class SpacecraftState
   public double getHx(){
     return orbit.getHx();
   }
-  
+
   /** Get the second component of the inclination vector (as per equinoctial parameters).
    * @return tan(i/2) sin(&Omega;), second component of the inclination vector
    * @see #getI()
@@ -114,7 +165,7 @@ public class SpacecraftState
   public double getHy(){
     return orbit.getHy();
   }
-  
+
   /** Get the true latitude argument (as per equinoctial parameters).
    * @return v + &omega; + &Omega; true latitude argument (rad)
    * @see #getLE()
@@ -123,7 +174,7 @@ public class SpacecraftState
   public double getLv(){
     return orbit.getLv();
   }
-  
+
   /** Get the eccentric latitude argument (as per equinoctial parameters).
    * @return E + &omega; + &Omega; eccentric latitude argument (rad)
    * @see #getLv()
@@ -132,7 +183,7 @@ public class SpacecraftState
   public double getLE(){
     return orbit.getLE();
   }
-  
+
   /** Get the mean latitude argument (as per equinoctial parameters).
    * @return M + &omega; + &Omega; mean latitude argument (rad)
    * @see #getLv()
@@ -140,11 +191,10 @@ public class SpacecraftState
    */
   public double getLM(){
     return orbit.getLM();
-  }
-  
-  
+  }  
+
   // Additional orbital elements
-  
+
   /** Get the eccentricity.
    * @return eccentricity
    * @see #getEx()
@@ -153,7 +203,7 @@ public class SpacecraftState
   public double getE() {
     return orbit.getE();
   }
-  
+
   /** Get the inclination.
    * @return inclination (rad)
    * @see #getHx()
@@ -162,7 +212,7 @@ public class SpacecraftState
   public double getI() {
     return orbit.getI();
   }
-  
+
   /** Get the {@link PVCoordinates}.
    * Compute the position and velocity of the satellite. This method caches its
    * results, and recompute them only when the method is called with a new value
@@ -176,12 +226,15 @@ public class SpacecraftState
   public PVCoordinates getPVCoordinates(double mu) {
     return orbit.getPVCoordinates(mu);
   }
-  
+
   /** Orbital state */
   private final Orbit orbit;
-  
+
   /** Current mass (kg)*/
   private final double mass;
+
+  /** Attitude */
+  private final AttitudeProvider attitude;
 
   private static final long serialVersionUID = 4660942382447513104L;
 

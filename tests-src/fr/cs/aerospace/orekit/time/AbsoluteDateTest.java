@@ -39,18 +39,18 @@ public class AbsoluteDateTest
   
   public void testOutput() {
     TimeScale tt = TTScale.getInstance();
-    assertEquals(new String("1950-01-01T01:01:01.000"),
+    assertEquals("1950-01-01T01:01:01.000",
                  new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 3661.0).toString(tt));
-    assertEquals(new String("2000-01-01T13:01:01.000"),
+    assertEquals("2000-01-01T13:01:01.000",
                  new AbsoluteDate(AbsoluteDate.J2000Epoch, 3661.0).toString(tt));
   }
   
   public void testJ2000() {
-    assertEquals(new String("2000-01-01T12:00:00.000"),
+    assertEquals("2000-01-01T12:00:00.000",
                  AbsoluteDate.J2000Epoch.toString(TTScale.getInstance()));
-    assertEquals(new String("2000-01-01T11:59:27.816"),
+    assertEquals("2000-01-01T11:59:27.816",
                  AbsoluteDate.J2000Epoch.toString(TAIScale.getInstance()));
-    assertEquals(new String("2000-01-01T11:58:55.816"),
+    assertEquals("2000-01-01T11:58:55.816",
                  AbsoluteDate.J2000Epoch.toString(utc));
   }
 
@@ -89,23 +89,26 @@ public class AbsoluteDateTest
   public void tearDown() {
     System.setProperty("orekit.iers.directory",
                        "");
-    try {
-      // resetting the singletons to null
+
       utc = null;
-      Field instance = UTCScale.class.getDeclaredField("instance");
-      instance.setAccessible(true);
-      instance.set(null, null);
-      instance.setAccessible(false);
+      Field instance;
+      try {
+        instance = UTCScale.class.getDeclaredField("instance");
+        instance.setAccessible(true);
+        instance.set(null, null);
+        instance.setAccessible(false);
 
-      instance = IERSData.class.getDeclaredField("instance");
-      instance.setAccessible(true);
-      instance.set(null, null);
-      instance.setAccessible(false);
+        instance = IERSData.class.getDeclaredField("instance");
+        instance.setAccessible(true);
+        instance.set(null, null);
+        instance.setAccessible(false);
+      } catch (SecurityException e) {
+      } catch (NoSuchFieldException e) {
+      } catch (IllegalArgumentException e) {
+      } catch (IllegalAccessException e) {
+      }
 
-     
-    } catch (Exception e) {
-      // ignored
-    }
+
   }
 
   public static Test suite() {

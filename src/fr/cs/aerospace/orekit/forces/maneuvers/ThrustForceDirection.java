@@ -2,7 +2,7 @@ package fr.cs.aerospace.orekit.forces.maneuvers;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
@@ -26,9 +26,8 @@ public abstract class ThrustForceDirection {
   /** Simple constructor.
    * @param frameType the frame in which is defined the direction,
    *  must be one of {@link #TNW}, {@link #QSW} or  {@link #INERTIAL}
-   *  (any other value sets the frame to default : {@link #INERTIAL})
    */
-  public ThrustForceDirection(int frameType) {
+  protected ThrustForceDirection(int frameType) {
     if (frameType<0||frameType>2) {
       this.frameType = INERTIAL;
     }
@@ -52,7 +51,8 @@ public abstract class ThrustForceDirection {
    * @throws OrekitException if some specifice error occurs
    */
   public abstract Vector3D getDirection(AbsoluteDate date, 
-                                         PVCoordinates pvCoordinates, Frame frame)
+                                         PVCoordinates pvCoordinates,
+                                           TimeDerivativesEquations adder)
                                              throws OrekitException;
   
   /** The frame type : ({@link #TNW}, {@link #QSW} or {@link #INERTIAL}) */

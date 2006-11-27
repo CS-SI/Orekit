@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.attitudes.AttitudeProvider;
 import fr.cs.aerospace.orekit.errors.Translator;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
@@ -61,10 +62,12 @@ public class TimeDerivativesEquations {
    * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
    * @param mass (kg)
    */
-  protected TimeDerivativesEquations(EquinoctialParameters parameters, double mu, double mass) {
+  protected TimeDerivativesEquations(EquinoctialParameters parameters, double mu, double mass,
+                                     AttitudeProvider attitude) {
     this.parameters = parameters;
     this.mu = mu;
     this.mass = mass;
+    this.attitude = attitude;
     Q = new Vector3D();    
     S = new Vector3D();    
     T = new Vector3D();    
@@ -96,7 +99,7 @@ public class TimeDerivativesEquations {
    */
   protected void initDerivatives(double[] yDot ,
                                EquinoctialParameters parameters, double mass) {
-
+                                
 
     this.parameters = parameters;
     this.mass = mass;
@@ -260,6 +263,12 @@ public class TimeDerivativesEquations {
     yDot[6] += dMass;
   }
   
+  /** Get the spacecraft attitude provider.
+   * @return the attitude*/
+  public AttitudeProvider getAttitudeProvider() {
+    return attitude;
+  }
+  
   /** Get the first vector of the (Q, S, W) local orbital frame.
    * @return first vector of the (Q, S, W) local orbital frame */
   public Vector3D getQ() {
@@ -313,6 +322,9 @@ public class TimeDerivativesEquations {
     
   /** Mass (kg). */
   private double mass;
+    
+  /** Attitude. */
+  private AttitudeProvider attitude;
     
   /** Reference to the derivatives array to initialize. */
   private double[] yDot;

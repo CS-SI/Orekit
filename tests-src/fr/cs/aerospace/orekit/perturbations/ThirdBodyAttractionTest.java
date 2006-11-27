@@ -82,7 +82,7 @@ public class ThirdBodyAttractionTest extends TestCase {
   
   private double mu = 3.98600E14;
   
-  private class TBAStepHandler implements FixedStepHandler {
+  private static class TBAStepHandler implements FixedStepHandler {
     
     public static final int MOON = 1;
     public static final int SUN = 2;

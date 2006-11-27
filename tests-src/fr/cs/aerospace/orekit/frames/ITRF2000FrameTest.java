@@ -233,22 +233,29 @@ public class ITRF2000FrameTest extends TestCase {
   public void tearDown() {
     System.setProperty("orekit.iers.directory",
     "");
-    try {
-
       // resetting the singletons to null
-      Field instance = UTCScale.class.getDeclaredField("instance");
-      instance.setAccessible(true);
-      instance.set(null, null);
-      instance.setAccessible(false);
+      Field instance;
+      try {
+        instance = UTCScale.class.getDeclaredField("instance");
+        instance.setAccessible(true);
+        instance.set(null, null);
+        instance.setAccessible(false);
 
-      instance = IERSData.class.getDeclaredField("instance");
-      instance.setAccessible(true);
-      instance.set(null, null);
-      instance.setAccessible(false);
+        instance = IERSData.class.getDeclaredField("instance");
+        instance.setAccessible(true);
+        instance.set(null, null);
+        instance.setAccessible(false);
+      } catch (SecurityException e) {
 
-    } catch (Exception e) {
-      // ignored
-    }
+      } catch (NoSuchFieldException e) {
+
+      } catch (IllegalArgumentException e) {
+
+      } catch (IllegalAccessException e) {
+
+      }
+
+
   }
   
   private void checkVectors(Vector3D pos1 , Vector3D pos2,
