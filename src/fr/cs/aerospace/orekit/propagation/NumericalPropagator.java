@@ -366,6 +366,7 @@ implements FirstOrderDifferentialEquations {
   /** Gauss equations handler. */
   private TimeDerivativesEquations adder;
 
+  /** Switching functions exception. */
   private OrekitException swfException;
 
 }

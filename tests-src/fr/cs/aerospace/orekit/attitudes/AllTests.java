@@ -10,7 +10,7 @@ public class AllTests extends TestCase {
 
     TestSuite suite = new TestSuite("fr.cs.aerospace.orekit.attitudes"); 
 
-    suite.addTest(SunPointingAttitudeTest.suite());
+    suite.addTest(ThirdBodyPointingAttitudeTest.suite());
 
     return suite; 
 

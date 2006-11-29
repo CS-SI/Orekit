@@ -179,9 +179,7 @@ public class IERSData {
    * @return UTC time steps in chronological order
    */
   public Leap[] getTimeSteps() {
-    Leap[] l = new Leap[timeSteps.length];
-    System.arraycopy(timeSteps, 0, l, 0, timeSteps.length);
-    return l;
+    return (Leap[])timeSteps.clone();
   }
 
   /** Get the Earth Orientation Parameter entries.
