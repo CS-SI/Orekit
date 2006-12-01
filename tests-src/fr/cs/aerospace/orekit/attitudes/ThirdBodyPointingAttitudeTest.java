@@ -1,12 +1,8 @@
 package fr.cs.aerospace.orekit.attitudes;
 
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
 import java.text.ParseException;
-
 import org.spaceroots.mantissa.geometry.Vector3D;
-
 import fr.cs.aerospace.orekit.Utils;
 import fr.cs.aerospace.orekit.bodies.ThirdBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
@@ -50,24 +46,25 @@ public class ThirdBodyPointingAttitudeTest extends TestCase {
     final double spin = 2*Math.PI/period;    
     final ThirdBody sun = new Sun();
     
-    AttitudeProvider att = 
+    AttitudeKinematicsProvider att = 
       new ThirdBodyPointingAttitude(sun, initDate, o.getPVCoordinates(mu),
                                          Frame.getJ2000(), spin,
                                     Vector3D.plusI, Vector3D.plusJ, Vector3D.plusJ);
     
-    final SpacecraftState initState = new SpacecraftState(o, 1000, att);
+    final SpacecraftState initState = new SpacecraftState(o, 1000, 
+                                  att.getAttitudeKinematics(initDate, o.getPVCoordinates(mu), 
+                                                            o.getFrame()));
     
     KeplerianPropagator kep = new KeplerianPropagator(initState, mu);
-    
+    kep.setAkProvider(att);
     // Spin tests
-   PrintWriter w = new PrintWriter(new FileOutputStream("/home/fab/att.dat"));
    AbsoluteDate interDate;
    SpacecraftState interState;
    Vector3D interJtrans;
    for(int i=0; i<=period; i++) {
      interDate= new AbsoluteDate(initDate, i);
      interState = kep.getSpacecraftState(interDate);
-     interJtrans = interState.getAttitude(mu).applyInverseTo(Vector3D.plusJ); 
+     interJtrans = interState.getAttitude().applyInverseTo(Vector3D.plusJ); 
      assertEquals(0, (interJtrans.getY()-Math.cos(i/(period)*2*Math.PI)), 5e-05);
      assertEquals(0, (interJtrans.getZ()+Math.sin(i/(period)*2*Math.PI)), 1);
    }
@@ -80,14 +77,14 @@ public class ThirdBodyPointingAttitudeTest extends TestCase {
    
    Vector3D sunPos = Vector3D.subtract(sun.getPosition(medDate, Frame.getJ2000()) ,
                                        medState.getPVCoordinates(mu).getPosition());
-   Vector3D transX = medState.getAttitude(mu).applyInverseTo(Vector3D.plusI);
+   Vector3D transX = medState.getAttitude().applyInverseTo(Vector3D.plusI);
    assertEquals(0, Vector3D.angle(transX , sunPos), 1e-15);
    
    final SpacecraftState finState = kep.getSpacecraftState(finDate);    
    sunPos = Vector3D.subtract(sun.getPosition(finDate, Frame.getJ2000()) ,
                               finState.getPVCoordinates(mu).getPosition());
    
-   transX = finState.getAttitude(mu).applyInverseTo(Vector3D.plusI);
+   transX = finState.getAttitude().applyInverseTo(Vector3D.plusI);
    assertEquals(0, Vector3D.angle(transX , sunPos), 1e-10);
   }
   

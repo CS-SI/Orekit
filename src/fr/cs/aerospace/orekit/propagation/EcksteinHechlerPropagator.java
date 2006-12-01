@@ -1,9 +1,12 @@
 package fr.cs.aerospace.orekit.propagation;
 
-import fr.cs.aerospace.orekit.attitudes.AttitudeProvider;
+import fr.cs.aerospace.orekit.attitudes.AttitudeKinematicsProvider;
+import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.errors.PropagationException;
+import fr.cs.aerospace.orekit.models.attitudes.IdentityAttitude;
 import fr.cs.aerospace.orekit.orbits.CircularParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
+import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** This class propagates an {@link fr.cs.aerospace.orekit.orbits.Orbit Orbit}
@@ -16,13 +19,13 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * @version $Id$
  * @author G. Prat
  */
-public class EcksteinHechlerPropagator implements Ephemeris {
+public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator {
 
   /** Create a new instance.
    * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
-   * are related to both the normalized coefficients <span style="text-decoration: overline">C</span><sub>n,0</sub>
-   *  and the J<sub>n</sub> one
-   * as follows:</p>
+   * are related to both the normalized coefficients 
+   * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+   *  and the J<sub>n</sub> one as follows:</p>
    * <pre>
    *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup><span style="text-decoration: overline">C</span><sub>n,0</sub>
    *   C<sub>n,0</sub> = -J<sub>n</sub>
@@ -58,7 +61,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
     // compute mean parameters
     initialDate = initialState.getDate();
     mass = initialState.getMass();
-    this.attitude = initialState.getAttitudeProvider();
+    this.akProvider = new IdentityAttitude();
     computeMeanParameters(osculating);
 
   }
@@ -70,7 +73,16 @@ public class EcksteinHechlerPropagator implements Ephemeris {
    */
   public SpacecraftState getSpacecraftState(AbsoluteDate date)
       throws PropagationException {
-    return new SpacecraftState(new Orbit(date, propagate(date)), mass, attitude);
+    OrbitalParameters op = propagate(date);
+    try {
+      return new SpacecraftState(new Orbit(date, op), mass, 
+                                          akProvider.getAttitudeKinematics(date, 
+                                                  op.getPVCoordinates(mu), op.getFrame()));
+    } catch (OrekitException e) {
+      // FIXME EXCETPION PB
+      e.printStackTrace();
+      return new SpacecraftState(new Orbit(date, op), mass);
+    }
   }
 
   /** Compute mean parameters according to the Eckstein-Hechler analytical model.
@@ -337,15 +349,19 @@ public class EcksteinHechlerPropagator implements Ephemeris {
     double twoPi = 2 * Math.PI;
     return a - twoPi * Math.floor((a + Math.PI - ref) / twoPi);
   }
-
+  
+  public void setAkProvider(AttitudeKinematicsProvider akProvider) {
+    this.akProvider = akProvider;
+  }
+  
+  /** Attitude provider */
+  private AttitudeKinematicsProvider akProvider;
+  
   /** Initial date. */
   private AbsoluteDate initialDate;
 
   /** Mean parameters at the initial date. */
   private CircularParameters mean;
-
-  /** Attitude. */
-  private AttitudeProvider attitude;
 
   /** Preprocessed values. */
   private double q;

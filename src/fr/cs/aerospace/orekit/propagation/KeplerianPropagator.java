@@ -1,7 +1,9 @@
 package fr.cs.aerospace.orekit.propagation;
 
-import fr.cs.aerospace.orekit.attitudes.AttitudeProvider;
+import fr.cs.aerospace.orekit.attitudes.AttitudeKinematicsProvider;
+import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.errors.PropagationException;
+import fr.cs.aerospace.orekit.models.attitudes.IdentityAttitude;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
@@ -10,7 +12,7 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * @author G. Prat
  * @version $Id$
  */
-public class KeplerianPropagator implements Ephemeris {
+public class KeplerianPropagator implements Ephemeris, AttitudePropagator {
 
   /** Build a new instance.
    * @param initialState initial state
@@ -21,7 +23,8 @@ public class KeplerianPropagator implements Ephemeris {
     this.initialParameters = new EquinoctialParameters(initialState.getParameters(), mu);
     this.mass = initialState.getMass();
     this.n = Math.sqrt(mu / initialParameters.getA()) / initialParameters.getA();
-    this.attitude = initialState.getAttitudeProvider();
+    this.akProvider = new IdentityAttitude();
+    this.mu = mu;
   }
 
   public SpacecraftState getSpacecraftState(AbsoluteDate date)
@@ -36,10 +39,26 @@ public class KeplerianPropagator implements Ephemeris {
     		 initialParameters.getLM() + n * date.minus(initialDate) ,
     		 EquinoctialParameters.MEAN_LATITUDE_ARGUMENT, initialParameters.getFrame());
     
-    return new SpacecraftState(new Orbit(date, extrapolated), mass, attitude);
+    try {
+      return new SpacecraftState(new Orbit(date, extrapolated), mass, 
+                                akProvider.getAttitudeKinematics(date, 
+                                                                 extrapolated.getPVCoordinates(mu),
+                                                                 extrapolated.getFrame()));
+    } catch (OrekitException e) {
+      // FIXME PROBLEM WITH EXEPTION
+      e.printStackTrace();
+      return new SpacecraftState(new Orbit(date, extrapolated), mass);
+    }
 
   }
-
+  
+  public void setAkProvider(AttitudeKinematicsProvider akProvider) {
+    this.akProvider = akProvider;
+  }
+  
+  /** Attitude provider */
+  private AttitudeKinematicsProvider akProvider;
+  
   /** Initial orbit date. */
   private AbsoluteDate initialDate;
 
@@ -49,8 +68,8 @@ public class KeplerianPropagator implements Ephemeris {
   /** Initial mass. */
   private double mass;
 
-  /** Initial attitude. */
-  private AttitudeProvider attitude;
+  /** Mu. */
+  private double mu;
 
   /** Mean motion. */
   private double n;

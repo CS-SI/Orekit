@@ -46,7 +46,7 @@ public abstract class ThrustForceDirection {
   /** Get the acceleration direction at a specific time and location.
    * @param date the current date
    * @param pvCoordinates the coordinates
-   * @param frame the frame in which are defined the coordinates
+   * @param adder object where to find spatial informations
    * @return the acceleration direction in selected frame
    * @throws OrekitException if some specifice error occurs
    */

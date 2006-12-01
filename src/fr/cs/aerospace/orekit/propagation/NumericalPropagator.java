@@ -12,14 +12,16 @@ import org.spaceroots.mantissa.ode.StepNormalizer;
 import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.IntegratorException;
 import org.spaceroots.mantissa.ode.SwitchingFunction;
+
+import fr.cs.aerospace.orekit.attitudes.AttitudeKinematicsProvider;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
+import fr.cs.aerospace.orekit.models.attitudes.IdentityAttitude;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
-
 
 /** This class propagates an {@link fr.cs.aerospace.orekit.orbits.Orbit Orbit}
  * using numerical integration.
@@ -74,7 +76,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * @author  G. Prat
  */
 public class NumericalPropagator
-implements FirstOrderDifferentialEquations {
+implements FirstOrderDifferentialEquations, AttitudePropagator {
 
   /** Create a new instance of NumericalExtrapolationModel.
    * After creation, the instance is empty, i.e. there is no perturbing force
@@ -94,7 +96,8 @@ implements FirstOrderDifferentialEquations {
     this.parameters         = null;
     this.adder              = null;
     this.mass               = Double.NaN;
-    this.state              = new double[7];
+    this.akProvider         = new IdentityAttitude();
+    this.state              = new double[getDimension()];
     this.swfException       = null;
   }
 
@@ -153,7 +156,8 @@ implements FirstOrderDifferentialEquations {
     ContinuousOutputModel model = new ContinuousOutputModel();
     SpacecraftState finalState = propagate(initialState, finalDate, (StepHandler)model);
     ephemeris.initialize(model , initialState.getDate(), 
-                         initialState.getParameters().getFrame());
+                         initialState.getParameters().getFrame(),
+                         akProvider, mu);
     return finalState;
   }        
 
@@ -194,7 +198,7 @@ implements FirstOrderDifferentialEquations {
     parameters = new EquinoctialParameters(initialState.getParameters(), mu);
     mass       = initialState.getMass();
     adder      = new TimeDerivativesEquations(parameters , mu, mass, 
-                                              initialState.getAttitudeProvider());
+                                              akProvider);
 
     if (mass <= 0.0) {
       throw new IllegalArgumentException("Mass is null or negative");
@@ -246,7 +250,8 @@ implements FirstOrderDifferentialEquations {
     mass = state[6];  
     
     return new SpacecraftState(new Orbit(date , parameters), mass, 
-                                initialState.getAttitudeProvider());    
+                                akProvider.getAttitudeKinematics(date,
+                                 parameters.getPVCoordinates(mu), parameters.getFrame()));    
   }
 
   /** Gets the dimension of the handled state vecor (always 7). 
@@ -336,6 +341,13 @@ implements FirstOrderDifferentialEquations {
 
   }
 
+  public void setAkProvider(AttitudeKinematicsProvider akProvider) {
+    this.akProvider = akProvider;
+  }
+  
+  /** Attitude provider */
+  private AttitudeKinematicsProvider akProvider;
+  
   /** Central body gravitational constant. */
   private double mu;
 

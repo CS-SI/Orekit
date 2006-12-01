@@ -1,11 +1,9 @@
 package fr.cs.aerospace.orekit.propagation;
 
 import java.io.Serializable;
-
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
-
-import fr.cs.aerospace.orekit.attitudes.AttitudeProvider;
+import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.Orbit;
@@ -17,7 +15,8 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * {@link NumericalPropagator}.
  *  
  * <p> It contains an {@link OrbitalParameters orbital state} at a current 
- * {@link AbsoluteDate} both handled by an {@link Orbit} and the current mass.
+ * {@link AbsoluteDate} both handled by an {@link Orbit}, the current mass and
+ * attitude.
  * </p>
  * <p>
  * The instance <code>SpacecraftState</code> is guaranted to be immutable.
@@ -31,32 +30,34 @@ implements Serializable {
   /** Create a new instance from orbital state and mass.
    * @param orbit the orbit
    * @param mass the mass (kg)
+   * @param ak the attitude kinematics
    */
-  public SpacecraftState(Orbit orbit, double mass, AttitudeProvider attitude) {
+  public SpacecraftState(Orbit orbit, double mass, AttitudeKinematics ak) {
     this.orbit = orbit;
     this.mass  = mass;
-    this.attitude = attitude;
+    this.attitude = ak;
   }
 
   /** Create a new instance from orbital state and mass.
-   * Initialize the attitude at null.
+   * Initialize the attitude at the identity.
    * @param orbit the orbit
    * @param mass the mass (kg)
    */
   public SpacecraftState(Orbit orbit, double mass) {
     this.orbit = orbit;
     this.mass  = mass;
-    this.attitude = null;
+    this.attitude = new AttitudeKinematics(new Rotation() , new Vector3D());
   }
 
   /** Create a new instance from orbital state only 
-   * (gives an arbitrary value for the mass and <code>null</code> for the attitude).
+   * (gives an arbitrary value (1000 kg) for the mass and 
+   * initialize the attitude at the identity).
    * @param orbit the orbit
    */
   public SpacecraftState(Orbit orbit) {
     this.orbit = orbit;
     this.mass  = 1000;
-    this.attitude = null;
+    this.attitude = new AttitudeKinematics(new Rotation() , new Vector3D());
   }
 
   /** Gets the current orbit.
@@ -94,10 +95,10 @@ implements Serializable {
     return orbit.getFrame();
   }
 
-  /** Gets the {@link AttitudeProvider attitude provider}.
-   * @return the attitude provider (null if not initialized).
+  /** Gets the attitude representation.
+   * @return the attitude kinematics.
    */
-  public AttitudeProvider getAttitudeProvider() {
+  public AttitudeKinematics getAttitudeKinematics() {
     return attitude;
   }
 
@@ -105,26 +106,22 @@ implements Serializable {
    * <p> The {@link Rotation} returned by this method represents the rotation
    * to apply to a vector expressed in spacecraft frame to obtain the same vector 
    * defined in the orbit inertial frame </p> 
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    * @return the attitude rotation of the spacecraft
    * @throws OrekitException if some specific error occurs.
    */
-  public Rotation getAttitude(double mu)
-  throws OrekitException {
-    return attitude.getAttitude(getDate(), getPVCoordinates(mu), getFrame());
+  public Rotation getAttitude() {
+    return attitude.getAttitude();
   }
 
   /** Get the attitute rotation derivative.
    * <p> The {@link Vector3D} returned by this method represents the instant rotation
    * to apply to a velocity vector expressed in spacecraft frame to obtain the same
    * vector defined in the orbit inertial frame </p> 
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    * @return the instant rotation of the spacecraft
    * @throws OrekitException if some specific error occurs.
    */
-  public Vector3D getInstantRotAxis(double mu)
-  throws OrekitException {
-    return attitude.getInstantRotAxis(getDate(), getPVCoordinates(mu), getFrame());    
+  public Vector3D getspinAxis() {
+    return attitude.getspinAxis();    
   }
 
   /** Get the semi-major axis.
@@ -234,7 +231,7 @@ implements Serializable {
   private final double mass;
 
   /** Attitude */
-  private final AttitudeProvider attitude;
+  private final AttitudeKinematics attitude;
 
   private static final long serialVersionUID = 4660942382447513104L;
 

@@ -3,8 +3,7 @@ package fr.cs.aerospace.orekit.propagation;
 import java.util.Arrays;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
-
-import fr.cs.aerospace.orekit.attitudes.AttitudeProvider;
+import fr.cs.aerospace.orekit.attitudes.AttitudeKinematicsProvider;
 import fr.cs.aerospace.orekit.errors.Translator;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
@@ -63,11 +62,11 @@ public class TimeDerivativesEquations {
    * @param mass (kg)
    */
   protected TimeDerivativesEquations(EquinoctialParameters parameters, double mu, double mass,
-                                     AttitudeProvider attitude) {
+                                     AttitudeKinematicsProvider akProvider) {
     this.parameters = parameters;
     this.mu = mu;
     this.mass = mass;
-    this.attitude = attitude;
+    this.akProvider = akProvider;
     Q = new Vector3D();    
     S = new Vector3D();    
     T = new Vector3D();    
@@ -263,12 +262,20 @@ public class TimeDerivativesEquations {
     yDot[6] += dMass;
   }
   
-  /** Get the spacecraft attitude provider.
-   * @return the attitude*/
-  public AttitudeProvider getAttitudeProvider() {
-    return attitude;
+  /** Sets the attitude provider.
+   * @param akProvider the attitude provider to use
+   */
+  protected void setAkProvider(AttitudeKinematicsProvider akProvider) {
+    this.akProvider = akProvider;
   }
-  
+
+  /** Get the attitude provider.
+   * @return akProvider the attitude provider
+   */
+  public AttitudeKinematicsProvider getAkProvider() {
+    return akProvider;
+  }
+
   /** Get the first vector of the (Q, S, W) local orbital frame.
    * @return first vector of the (Q, S, W) local orbital frame */
   public Vector3D getQ() {
@@ -323,9 +330,9 @@ public class TimeDerivativesEquations {
   /** Mass (kg). */
   private double mass;
     
-  /** Attitude. */
-  private AttitudeProvider attitude;
-    
+  /** Attitude provider */
+  private AttitudeKinematicsProvider akProvider;
+      
   /** Reference to the derivatives array to initialize. */
   private double[] yDot;
     

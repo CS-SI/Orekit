@@ -1,6 +1,9 @@
 package fr.cs.aerospace.orekit.propagation;
 
 import org.spaceroots.mantissa.ode.ContinuousOutputModel;
+
+import fr.cs.aerospace.orekit.attitudes.AttitudeKinematicsProvider;
+import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.errors.PropagationException;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
@@ -39,9 +42,12 @@ public class IntegratedEphemeris implements BoundedEphemeris {
   
   /** This method is called by the propagator.
    */
-  protected void initialize(ContinuousOutputModel model, AbsoluteDate ref, Frame frame) {
+  protected void initialize(ContinuousOutputModel model, AbsoluteDate ref, Frame frame,
+                            AttitudeKinematicsProvider akProvider, double mu) {
       this.model     = model;
       this.frame = frame;
+      this.akProvider = akProvider;
+      this.mu = mu;
       startDate = new AbsoluteDate(ref, model.getInitialTime());
       maxDate = new AbsoluteDate(ref, model.getFinalTime());
       if (maxDate.minus(startDate) < 0) {
@@ -70,7 +76,14 @@ public class IntegratedEphemeris implements BoundedEphemeris {
 	    
         double mass = state[6];
         
-	    return new SpacecraftState(new Orbit(date , eq), mass);
+	    try {
+        return new SpacecraftState(new Orbit(date , eq), mass, 
+                                     akProvider.getAttitudeKinematics(date, eq.getPVCoordinates(mu), frame));
+      } catch (OrekitException e) {
+        // FIXME exception
+        e.printStackTrace();
+        return new SpacecraftState(new Orbit(date , eq), mass);
+      }
 	}
 	else {
 		return null;
@@ -90,6 +103,12 @@ public class IntegratedEphemeris implements BoundedEphemeris {
   public AbsoluteDate getMaxDate() {
     return maxDate;
   }
+  
+  /** Central body gravitational constant. */
+  private double mu;
+  
+  /** Attitude provider */
+  private AttitudeKinematicsProvider akProvider;
 
   /** Start date of the integration (can be min or max). */
   private AbsoluteDate startDate;
