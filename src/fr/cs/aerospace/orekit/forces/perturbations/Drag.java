@@ -2,9 +2,11 @@ package fr.cs.aerospace.orekit.forces.perturbations;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.models.perturbations.Atmosphere;
 import fr.cs.aerospace.orekit.models.spacecraft.AtmosphereDragSpacecraft;
 import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
@@ -28,18 +30,18 @@ public class Drag implements ForceModel {
   }
 
   /** Compute the contribution of the drag to the perturbing acceleration.
-   * @param date current date
    * @param pvCoordinates the position end velocity
    * @param adder object where the contribution should be added
+   * @param date current date
    */
   public void addContribution(AbsoluteDate date,
 		                      PVCoordinates pvCoordinates, 
-                              TimeDerivativesEquations adder) {
+                              Frame frame, double mass, AttitudeKinematics ak, TimeDerivativesEquations adder) {
 
     double   rho       = atmosphere.getDensity(date, pvCoordinates.getPosition());
     Vector3D vAtm;
     try {
-      vAtm = atmosphere.getVelocity(date, pvCoordinates.getPosition(), adder.getFrame());
+      vAtm = atmosphere.getVelocity(date, pvCoordinates.getPosition(), frame);
     } catch (OrekitException e) {
       vAtm = new Vector3D();
       e.printStackTrace();
@@ -48,7 +50,7 @@ public class Drag implements ForceModel {
     double   v2        = Vector3D.dotProduct(incidence, incidence);
     incidence.normalizeSelf();
     double   k         = rho * v2 * spacecraft.getSurface(incidence, date)
-                       / (2 * adder.getMass());
+                       / (2 * mass);
     Vector3D cD        = spacecraft.getDragCoef(incidence, date);
 
     // Additition of calculated acceleration to adder

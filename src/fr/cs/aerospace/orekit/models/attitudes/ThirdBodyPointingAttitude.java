@@ -48,7 +48,8 @@ public class ThirdBodyPointingAttitude implements AttitudeKinematicsProvider {
     this.initDate = initDate;
     this.initFrame = frame;
     Vector3D initBodyDir = Vector3D.subtract(
-                                             body.getPosition(initDate, frame), pv.getPosition());
+                                             body.getPosition(initDate, frame),
+                                             pv.getPosition());
     this.R0 = new Rotation(initBodyDir, inertial, this.rotAxis, spacecraft);
 
   } 
@@ -60,9 +61,11 @@ public class ThirdBodyPointingAttitude implements AttitudeKinematicsProvider {
    * @return the attitude representation of the spacecraft
    * @throws OrekitException if some specific error occurs.
    */
-  public AttitudeKinematics getAttitudeKinematics(AbsoluteDate date, PVCoordinates pv, Frame frame)
+  public AttitudeKinematics getAttitudeKinematics(AbsoluteDate date, 
+                                                  PVCoordinates pv, Frame frame)
     throws OrekitException {
-    return new AttitudeKinematics(getAttitude(date, pv, frame), new Vector3D(spin, rotAxis));
+    return new AttitudeKinematics(getAttitude(date, pv, frame),
+                                    new Vector3D(spin, rotAxis));
   }
 
   /** Get the attitude rotation.
@@ -74,7 +77,7 @@ public class ThirdBodyPointingAttitude implements AttitudeKinematicsProvider {
   throws OrekitException {
 
     Vector3D newBodyDir = Vector3D.subtract(
-                                            body.getPosition(date, frame), pv.getPosition());
+                                body.getPosition(date, frame), pv.getPosition());
 
     newBodyDir = R0.applyTo(newBodyDir);
 

@@ -16,7 +16,6 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * neither equatorial (direct or retrograde) nor critical (direct or
  * retrograde).</p>
  * @see Orbit
- * @version $Id$
  * @author G. Prat
  */
 public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator {

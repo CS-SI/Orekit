@@ -1,6 +1,7 @@
 package fr.cs.aerospace.orekit.forces.maneuvers;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
+import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
@@ -71,20 +72,22 @@ public class ConstantThrustManeuver implements ForceModel {
   
     /** Compute the contribution of maneuver to the global acceleration.
     * @param t the current date
-    * @param pvCoordinates
-    * @param adder object where the contribution should be added
+     * @param pvCoordinates
+     * @param adder object where the contribution should be added
     */  
   public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates,
-                              TimeDerivativesEquations adder)
+                              Frame frame, double mass,
+                              AttitudeKinematics ak, TimeDerivativesEquations adder)
       throws OrekitException {
     
     if(firing) {      
       if (variableDir!=null) {
-        direction = new Vector3D(variableDir.getDirection(t, pvCoordinates, adder));
+        direction = new Vector3D(variableDir.getDirection(t, pvCoordinates,
+                                                          frame, mass, ak));
         direction.normalizeSelf();
       }
       
-      double acc = force/adder.getMass();        
+      double acc = force/mass;        
       Vector3D acceleration = new Vector3D(acc, direction);
       
       switch (frameType) {
@@ -120,13 +123,13 @@ public class ConstantThrustManeuver implements ForceModel {
    */
   private class StartSwitch implements SWF {
 
-    public void eventOccurred(AbsoluteDate t, PVCoordinates pvCoordinates, Frame frame) {
+    public void eventOccurred(AbsoluteDate t, PVCoordinates pvCoordinates, Frame frame, double mass, AttitudeKinematics ak) {
       firing = true;
     }
 
     /** The G-function is the difference between the start date and the currentdate. 
      */
-    public double g(AbsoluteDate date, PVCoordinates pvCoordinates, Frame frame)
+    public double g(AbsoluteDate date, PVCoordinates pvCoordinates, Frame frame, double mass, AttitudeKinematics ak)
         throws OrekitException {
       return startDate.minus(date);
       
@@ -149,13 +152,13 @@ public class ConstantThrustManeuver implements ForceModel {
    */
   private class EndSwitch implements SWF {
 
-    public void eventOccurred(AbsoluteDate t, PVCoordinates pvCoordinates, Frame frame) {
+    public void eventOccurred(AbsoluteDate t, PVCoordinates pvCoordinates, Frame frame, double mass, AttitudeKinematics ak) {
       firing = false;
     }
 
     /** The G-function is the difference between the end date and the currentdate. 
      */
-    public double g(AbsoluteDate date, PVCoordinates pvCoordinates, Frame frame)
+    public double g(AbsoluteDate date, PVCoordinates pvCoordinates, Frame frame, double mass, AttitudeKinematics ak)
         throws OrekitException {   
       return endDate.minus(date);
     }

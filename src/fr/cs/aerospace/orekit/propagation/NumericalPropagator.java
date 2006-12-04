@@ -15,6 +15,7 @@ import org.spaceroots.mantissa.ode.SwitchingFunction;
 
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematicsProvider;
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.errors.Translator;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
 import fr.cs.aerospace.orekit.models.attitudes.IdentityAttitude;
@@ -68,12 +69,13 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * @see StepHandler
  * @see FixedStepHandler
  * @see IntegratedEphemeris
- * @see fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations
+ * @see AttitudeKinematicsProvider
+ * @see TimeDerivativesEquations
  *
- * @version $Id$
  * @author  M. Romero
  * @author  L. Maisonobe
  * @author  G. Prat
+ * @author  F. Maussion
  */
 public class NumericalPropagator
 implements FirstOrderDifferentialEquations, AttitudePropagator {
@@ -128,7 +130,16 @@ implements FirstOrderDifferentialEquations, AttitudePropagator {
     forceModels.clear();
     forceSwf.clear();
   }
-
+  
+  /** Sets the attitude provider of the propagator.
+   * <p> If this method is never called before extrapolation, the attitude is 
+   * set to default : {@link IdentityAttitude} <p> 
+   * @param akProvider the attitude to propagate
+   */
+  public void setAkProvider(AttitudeKinematicsProvider akProvider) {
+    this.akProvider = akProvider;
+  }
+  
   /** Propagate an orbit up to a specific target date.
    * @param initialState state to extrapolate 
    * @param finalDate target date for the orbit
@@ -197,8 +208,7 @@ implements FirstOrderDifferentialEquations, AttitudePropagator {
     date       = startDate;
     parameters = new EquinoctialParameters(initialState.getParameters(), mu);
     mass       = initialState.getMass();
-    adder      = new TimeDerivativesEquations(parameters , mu, mass, 
-                                              akProvider);
+    adder      = new TimeDerivativesEquations(parameters , mu);
 
     if (mass <= 0.0) {
       throw new IllegalArgumentException("Mass is null or negative");
@@ -281,13 +291,18 @@ implements FirstOrderDifferentialEquations, AttitudePropagator {
 
       // compute cartesian coordinates
       PVCoordinates pvCoordinates = parameters.getPVCoordinates(mu);
-
+      if (mass <= 0.0) {
+        String message = Translator.getInstance().translate("Mass is becoming negative");
+        throw new IllegalArgumentException(message);
+      }    
       // initialize derivatives
-      adder.initDerivatives(yDot , parameters, mass);
+      adder.initDerivatives(yDot , parameters);
 
       // compute the contributions of all perturbing forces
       for (Iterator iter = forceModels.iterator(); iter.hasNext();) {
-        ((ForceModel) iter.next()).addContribution(date, pvCoordinates, adder);
+        ((ForceModel) iter.next()).addContribution(date, pvCoordinates, parameters.getFrame(), mass, 
+                              akProvider.getAttitudeKinematics(
+                                                date, pvCoordinates, parameters.getFrame()), adder);
       }
 
       // finalize derivatives by adding the Kepler contribution
@@ -297,7 +312,11 @@ implements FirstOrderDifferentialEquations, AttitudePropagator {
     }
 
   }
-
+ 
+  /** Convert state array to space mecanics objects (AbsoluteDate and OrbitalParameters)
+   * @param t integration time (s)
+   * @param y state array
+   */
   private void mapState(double t, double [] y) {
 
     // update space dynamics view
@@ -309,6 +328,9 @@ implements FirstOrderDifferentialEquations, AttitudePropagator {
     mass = y[6];
   }
 
+  
+  /** Converts OREKIT switching functions to MANTISSA interface
+   */
   private class MappingSwitchingFunction implements SwitchingFunction {
 
     public MappingSwitchingFunction(SWF swf) {
@@ -318,7 +340,10 @@ implements FirstOrderDifferentialEquations, AttitudePropagator {
     public double g(double t, double[] y){
       mapState(t, y);
       try {
-        return swf.g(date, parameters.getPVCoordinates(mu), parameters.getFrame());
+        PVCoordinates pv = parameters.getPVCoordinates(mu);
+        return swf.g(date, pv , parameters.getFrame(),mass, 
+                     akProvider.getAttitudeKinematics(
+                                             date, pv, parameters.getFrame()));
       } catch (OrekitException oe) {
         if (swfException==null) {
           swfException = oe;
@@ -329,7 +354,16 @@ implements FirstOrderDifferentialEquations, AttitudePropagator {
 
     public int eventOccurred(double t, double[] y) {
       mapState(t, y);
-      swf.eventOccurred(date, parameters.getPVCoordinates(mu), parameters.getFrame());
+      PVCoordinates pv = parameters.getPVCoordinates(mu);
+      try {
+        swf.eventOccurred(date, pv , parameters.getFrame(),mass, 
+                          akProvider.getAttitudeKinematics(
+                                             date, pv, parameters.getFrame()));
+      } catch (OrekitException oe) {
+        if (swfException==null) {
+          swfException = oe;
+        }
+      }
       return RESET_DERIVATIVES;
     }
 
@@ -339,10 +373,6 @@ implements FirstOrderDifferentialEquations, AttitudePropagator {
 
     private SWF swf;
 
-  }
-
-  public void setAkProvider(AttitudeKinematicsProvider akProvider) {
-    this.akProvider = akProvider;
   }
   
   /** Attitude provider */

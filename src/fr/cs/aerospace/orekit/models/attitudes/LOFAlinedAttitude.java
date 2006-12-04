@@ -26,7 +26,7 @@ public class LOFAlinedAttitude implements AttitudeKinematicsProvider {
 
   /** Simple constructor. 
    * 
-   * <p> The XYZ satellite frame is defined as follows in QSW frame:
+   * <p> The XYZ satellite frame is arbitrary defined as follows in QSW frame:
    *   <pre>
    *     X = - Q ( earth centered )
    *     Y = - W ( reversed angular momentum)

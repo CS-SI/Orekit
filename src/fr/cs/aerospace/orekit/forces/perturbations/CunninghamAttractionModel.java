@@ -1,5 +1,6 @@
 package fr.cs.aerospace.orekit.forces.perturbations;
 
+import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
@@ -85,17 +86,16 @@ public class CunninghamAttractionModel implements ForceModel {
    * The central part of the acceleration (mu/r<sup>2</sup> term) is not
    * computed here, only the <em>perturbing</em> acceleration is considered.
    * </p>
-   * 
-   * @param date current date
    * @param pvCoordinates the position end velocity
    * @param adder object where the contribution should be added
+   * @param date current date
    */
   public void addContribution(AbsoluteDate date, PVCoordinates pvCoordinates,
-                              TimeDerivativesEquations adder)
+                              Frame frame, double mass, AttitudeKinematics ak, TimeDerivativesEquations adder)
   throws OrekitException {
 
     // get the position in body frame
-    Transform fromBodyFrame = bodyFrame.getTransformTo(adder.getFrame(), date);
+    Transform fromBodyFrame = bodyFrame.getTransformTo(frame, date);
     Transform toBodyFrame   = fromBodyFrame.getInverse();
     Vector3D relative = toBodyFrame.transformPosition(pvCoordinates.getPosition());
 

@@ -10,6 +10,7 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  */
 public interface AtmosphereDragSpacecraft {
 
+//TODO Define correctly the signature of these methods (currently wrong)
 	  /** Get the surface.
 	   * @param direction direction of the flux
 	   * @return surface (m<sup>2</sup>)

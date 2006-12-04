@@ -2,6 +2,7 @@ package fr.cs.aerospace.orekit.forces.perturbations;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
@@ -83,11 +84,11 @@ public class DrozinerAttractionModel implements ForceModel {
    */
 
   public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, 
-                              TimeDerivativesEquations adder)
+                              Frame frame, double mass, AttitudeKinematics ak, TimeDerivativesEquations adder)
   throws OrekitException {
 
     // Get the position in body frame
-    Transform bodyToInertial = centralBodyFrame.getTransformTo(adder.getFrame(), t);
+    Transform bodyToInertial = centralBodyFrame.getTransformTo(frame, t);
     Vector3D posInBody =
       bodyToInertial.getInverse().transformVector(pvCoordinates.getPosition());
     double xBody = posInBody.getX();

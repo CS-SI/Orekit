@@ -11,8 +11,7 @@ import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.propagation.BoundedEphemeris;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
-/**
- * This class stores numerically integrated orbital parameters for
+/** This class stores numerically integrated orbital parameters for
  * later retrieval.
  *
  * <p>Instances of this class are built and then must be filled with the results

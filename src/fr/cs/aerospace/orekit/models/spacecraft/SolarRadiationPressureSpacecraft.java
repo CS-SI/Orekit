@@ -11,7 +11,8 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * @author F. Maussion
  */
 public interface SolarRadiationPressureSpacecraft {
-
+  
+// TODO Define correctly the signature of these methods (currently wrong)
 	  /** Get the surface.
 	   * @param direction direction of the flux
 	   * @return surface (m<sup>2</sup>)

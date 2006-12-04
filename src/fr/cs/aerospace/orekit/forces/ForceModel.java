@@ -1,6 +1,8 @@
 package fr.cs.aerospace.orekit.forces;
 
+import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -30,10 +32,13 @@ public interface ForceModel {
      * The propagator handles correctly the frames and coordinates.</p>
      * @param t current date
      * @param pvCoordinates the {@link PVCoordinates}
+     * @param frame in which are defined the coordinates
+     * @param mass the current mass (kg)
+     * @param ak the attitude representation
      * @param adder object where the contribution should be added
      */
     public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, 
-                                TimeDerivativesEquations adder) throws OrekitException;
+                                Frame frame, double mass, AttitudeKinematics ak, TimeDerivativesEquations adder) throws OrekitException;
 
     /** Get the switching functions internally used by the model itself.
      * @return array of switching functions or null if the model doesn't need

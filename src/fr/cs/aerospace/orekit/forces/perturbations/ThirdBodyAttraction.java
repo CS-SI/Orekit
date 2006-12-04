@@ -2,10 +2,12 @@ package fr.cs.aerospace.orekit.forces.perturbations;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.bodies.ThirdBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.models.bodies.Moon;
 import fr.cs.aerospace.orekit.models.bodies.Sun;
 import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
@@ -29,13 +31,13 @@ public class ThirdBodyAttraction implements ForceModel {
     /** Compute the contribution of the body attraction to the perturbing
     * acceleration.
     * @param t current date
-    * @param pvCoordinates
-    * @param adder object where the contribution should be added
+     * @param pvCoordinates
+     * @param adder object where the contribution should be added
     */  
 	public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates,
-			TimeDerivativesEquations adder) throws OrekitException {
+			Frame frame, double mass, AttitudeKinematics ak, TimeDerivativesEquations adder) throws OrekitException {
 		
-		Vector3D otherBody = new Vector3D(body.getPosition(t, adder.getFrame()));
+		Vector3D otherBody = new Vector3D(body.getPosition(t, frame));
 		
 		Vector3D centralBody = new Vector3D(-1.0 , pvCoordinates.getPosition());
 		centralBody = Vector3D.add(centralBody,otherBody);

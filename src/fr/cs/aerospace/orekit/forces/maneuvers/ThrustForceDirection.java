@@ -1,8 +1,10 @@
 package fr.cs.aerospace.orekit.forces.maneuvers;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
+
+import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
@@ -46,13 +48,16 @@ public abstract class ThrustForceDirection {
   /** Get the acceleration direction at a specific time and location.
    * @param date the current date
    * @param pvCoordinates the coordinates
-   * @param adder object where to find spatial informations
+   * @param frame in which are defined the coordinates  
+   * @param mass current mass
+   * @param ak current attitude representation
    * @return the acceleration direction in selected frame
-   * @throws OrekitException if some specifice error occurs
+   * @throws OrekitException if some specific error occurs
    */
   public abstract Vector3D getDirection(AbsoluteDate date, 
                                          PVCoordinates pvCoordinates,
-                                           TimeDerivativesEquations adder)
+                                           Frame frame, double mass, 
+                                             AttitudeKinematics ak)
                                              throws OrekitException;
   
   /** The frame type : ({@link #TNW}, {@link #QSW} or {@link #INERTIAL}) */

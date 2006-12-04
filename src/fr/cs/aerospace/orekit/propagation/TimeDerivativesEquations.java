@@ -1,11 +1,8 @@
 package fr.cs.aerospace.orekit.propagation;
 
 import java.util.Arrays;
-
 import org.spaceroots.mantissa.geometry.Vector3D;
-import fr.cs.aerospace.orekit.attitudes.AttitudeKinematicsProvider;
 import fr.cs.aerospace.orekit.errors.Translator;
-import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
@@ -59,14 +56,10 @@ public class TimeDerivativesEquations {
   /** Create a new instance
    * @param parameters current orbit parameters
    * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
-   * @param mass (kg)
    */
-  protected TimeDerivativesEquations(EquinoctialParameters parameters, double mu, double mass,
-                                     AttitudeKinematicsProvider akProvider) {
+  protected TimeDerivativesEquations(EquinoctialParameters parameters, double mu) {
     this.parameters = parameters;
     this.mu = mu;
-    this.mass = mass;
-    this.akProvider = akProvider;
     Q = new Vector3D();    
     S = new Vector3D();    
     T = new Vector3D();    
@@ -97,11 +90,10 @@ public class TimeDerivativesEquations {
    * @param mass current mass (kg)
    */
   protected void initDerivatives(double[] yDot ,
-                               EquinoctialParameters parameters, double mass) {
+                               EquinoctialParameters parameters) {
                                 
 
     this.parameters = parameters;
-    this.mass = mass;
     updateOrbitalFrames();
 
     // store derivatives array reference
@@ -123,10 +115,7 @@ public class TimeDerivativesEquations {
                                                           + " Unable to continue.");
       throw new IllegalArgumentException(message);
     }    
-    if (mass <= 0.0) {
-      String message = Translator.getInstance().translate("Mass is becoming negative");
-      throw new IllegalArgumentException(message);
-    }    
+
     // intermediate variables
     double oMe2        = (1 - e) * (1 + e);
     double epsilon     = Math.sqrt(oMe2);
@@ -262,20 +251,6 @@ public class TimeDerivativesEquations {
     yDot[6] += dMass;
   }
   
-  /** Sets the attitude provider.
-   * @param akProvider the attitude provider to use
-   */
-  protected void setAkProvider(AttitudeKinematicsProvider akProvider) {
-    this.akProvider = akProvider;
-  }
-
-  /** Get the attitude provider.
-   * @return akProvider the attitude provider
-   */
-  public AttitudeKinematicsProvider getAkProvider() {
-    return akProvider;
-  }
-
   /** Get the first vector of the (Q, S, W) local orbital frame.
    * @return first vector of the (Q, S, W) local orbital frame */
   public Vector3D getQ() {
@@ -308,31 +283,10 @@ public class TimeDerivativesEquations {
   public Vector3D getW() {
     return W;
   }
-  
-  
-  /** Get the frame where are defined the XYZ coordinates.
-   * @return the frame.
-   */
-  public Frame getFrame() {
-       return parameters.getFrame();
-  }
-  
-  /** Get the current mass.
-   * @return the mass (kg)
-   */
-  public double getMass() {
-    return mass;
-  }
 
   /** Orbital parameters. */
   private EquinoctialParameters parameters;
-    
-  /** Mass (kg). */
-  private double mass;
-    
-  /** Attitude provider */
-  private AttitudeKinematicsProvider akProvider;
-      
+          
   /** Reference to the derivatives array to initialize. */
   private double[] yDot;
     
