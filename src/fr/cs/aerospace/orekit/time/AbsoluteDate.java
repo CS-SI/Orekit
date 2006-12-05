@@ -232,11 +232,14 @@ public class AbsoluteDate implements Comparable, Serializable {
     * @return true if the instance and the other date refer to the same instant
     */
    public boolean equals(Object date) {
-     try {
-       return minus((AbsoluteDate)date) == 0;
-     } catch(ClassCastException cce) {
-       return false;
-     }     
+     if ((date != null) && (date instanceof AbsoluteDate)) {
+       try {
+         return minus((AbsoluteDate)date) == 0;
+       } catch(ClassCastException cce) {
+         // ignored
+       }
+     }
+     return false;
    }
    
    public int hashCode() {

@@ -3,6 +3,8 @@ package fr.cs.aerospace.orekit.time;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
@@ -27,6 +29,7 @@ public class UTCScaleTest
 
   public UTCScaleTest(String name) {
     super(name);
+    utc = null;
   }
   
   public void testNoLeap() throws ParseException {
@@ -109,17 +112,20 @@ public class UTCScaleTest
   public void setUp() throws OrekitException {
     System.setProperty("orekit.iers.directory",
                        new File(rootDir, "regular-data").getAbsolutePath());
+    AccessController.doPrivileged(new SingletonResetter());
     utc = UTCScale.getInstance();
   }
 
   public void tearDown() {
-    System.setProperty("orekit.iers.directory",
-    "");
-      // resetting the singletons to null
-      utc = null;
-      Field instance;
+    System.setProperty("orekit.iers.directory", "");
+    AccessController.doPrivileged(new SingletonResetter());
+    utc = null;
+  }
+
+  private static class SingletonResetter implements PrivilegedAction {
+    public Object run() {
       try {
-        instance = UTCScale.class.getDeclaredField("instance");
+        Field instance = UTCScale.class.getDeclaredField("instance");
         instance.setAccessible(true);
         instance.set(null, null);
         instance.setAccessible(false);
@@ -137,7 +143,8 @@ public class UTCScaleTest
       } catch (IllegalAccessException e) {
         e.printStackTrace();
       }
-
+      return null;
+    }
   }
 
   public static Test suite() {

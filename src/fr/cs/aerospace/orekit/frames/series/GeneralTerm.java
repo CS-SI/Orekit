@@ -51,4 +51,6 @@ class GeneralTerm extends SeriesTerm {
   private final int cNe; 
   private final int cPa; 
 
+  private static final long serialVersionUID = 2084933766306957711L;
+
 }

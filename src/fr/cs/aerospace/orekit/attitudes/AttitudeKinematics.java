@@ -1,5 +1,7 @@
 package fr.cs.aerospace.orekit.attitudes;
 
+import java.io.Serializable;
+
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
@@ -12,7 +14,7 @@ import org.spaceroots.mantissa.geometry.Vector3D;
  * @see AttitudeKinematicsProvider
  * @author F. Maussion
  */
-public class AttitudeKinematics {
+public class AttitudeKinematics implements Serializable {
   
   /** Simple constructor.
    * @param attitude the attitude rotation
@@ -47,4 +49,7 @@ public class AttitudeKinematics {
   
   /** Spin */
   private final Vector3D spin;
+
+  private static final long serialVersionUID = -5881827398498909034L;
+
 }

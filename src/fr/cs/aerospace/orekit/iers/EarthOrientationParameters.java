@@ -1,5 +1,7 @@
 package fr.cs.aerospace.orekit.iers;
 
+import java.io.Serializable;
+
 import fr.cs.aerospace.orekit.frames.PoleCorrection;
 
 /** Container class for Earth Orientation Parameters provided by IERS.
@@ -9,7 +11,8 @@ import fr.cs.aerospace.orekit.frames.PoleCorrection;
  * @see IERSData
  * @see fr.cs.aerospace.orekit.frames.ITRF2000Frame
  */
-public class EarthOrientationParameters implements Comparable {
+public class EarthOrientationParameters
+  implements Comparable, Serializable {
 
   /** Entry date (modified julian day, 00h00 UTC scale). */
   public final int mjd;
@@ -37,5 +40,7 @@ public class EarthOrientationParameters implements Comparable {
   public int compareTo(Object entry) {
     return mjd - ((EarthOrientationParameters) entry).mjd;
   }
+
+  private static final long serialVersionUID = -2068124502946328146L;
 
 }

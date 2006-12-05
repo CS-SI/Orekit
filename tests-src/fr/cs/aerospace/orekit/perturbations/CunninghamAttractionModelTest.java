@@ -33,7 +33,14 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 public class CunninghamAttractionModelTest extends TestCase {
+
   
+  public CunninghamAttractionModelTest(String name) {
+    super(name);
+    itrf2000   = null;
+    propagator = null;
+  }
+
   // rough test to determine if J2 alone creates heliosynchronism
   public void testHelioSynchronous()
     throws ParseException, FileNotFoundException,
@@ -234,7 +241,7 @@ public class CunninghamAttractionModelTest extends TestCase {
     
   }
 
-  protected void setUp() {
+  public void setUp() {
     try {
       // Eigen c1 model truncated to degree and order 6
       mu =  3.986004415e+14;
@@ -254,7 +261,7 @@ public class CunninghamAttractionModelTest extends TestCase {
     }
   }
 
-  protected void tearDown() {
+  public void tearDown() {
     itrf2000   = null;
     propagator = null;
   }

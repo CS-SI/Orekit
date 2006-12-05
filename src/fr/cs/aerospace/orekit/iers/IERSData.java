@@ -144,8 +144,8 @@ public class IERSData {
       }
 
       // load UTC-TAI history
-      if (files.UtcTaiHistory != null) {
-        loadTimeStepsFile(files.UtcTaiHistory);
+      if (files.utcTaiHistory != null) {
+        loadTimeStepsFile(files.utcTaiHistory);
       }
 
       // load EOP C 04 data      
@@ -284,14 +284,14 @@ public class IERSData {
         // recurse in the sub-directory
         findIERSFiles(files, list[i]);
       } else  if (tuctaiPattern.matcher(list[i].getName()).matches()) {
-        if (files.UtcTaiHistory != null) {
+        if (files.utcTaiHistory != null) {
           throw new OrekitException("several IERS UTC-TAI history files found: {0} and {1}",
                                     new String[] {
-                                      files.UtcTaiHistory.getAbsolutePath(),
+                                      files.utcTaiHistory.getAbsolutePath(),
                                       list[i].getAbsolutePath()
                                     });
         } else {
-          files.UtcTaiHistory = list[i];
+          files.utcTaiHistory = list[i];
         }
       } else  if (yearlyPattern.matcher(list[i].getName()).matches()) {
         files.eopc04Yearly.add(list[i]);
@@ -429,8 +429,6 @@ public class IERSData {
                                   });        
       }
       timeSteps = (Leap[]) leaps.toArray(new Leap[leaps.size()]);
-      int i = 1;
-      i = i+1;
 
     } catch (ParseException pe) {
       throw new OrekitException(pe.getMessage(), pe);
@@ -602,32 +600,36 @@ public class IERSData {
     /** Simple constructor.
      */
     public FoundFiles() {
-      eopc04Yearly = new TreeSet(new Comparator() {
-        public int compare(Object arg0, Object arg1) {
-          Matcher matcher0 = yearlyPattern.matcher(((File) arg0).getName());
-          matcher0.matches();
-          int year0 = Integer.parseInt(matcher0.group(1));
-          Matcher matcher1 = yearlyPattern.matcher(((File) arg1).getName());
-          matcher1.matches();
-          int year1 = Integer.parseInt(matcher1.group(1));
-          return year0 - year1;
-        }
-      });
-      bulletinBMonthly = new TreeSet(new Comparator() {
-        public int compare(Object arg0, Object arg1) {
-          Matcher matcher0 = monthlyPattern.matcher(((File) arg0).getName());
-          matcher0.matches();
-          int year0 = Integer.parseInt(matcher0.group(1));
-          Matcher matcher1 = monthlyPattern.matcher(((File) arg1).getName());
-          matcher1.matches();
-          int year1 = Integer.parseInt(matcher1.group(1));
-          return year0 - year1;
-        }
-      });
+      eopc04Yearly     = new TreeSet(new YearlyFilesComparator());
+      bulletinBMonthly = new TreeSet(new MonthlyFilesComparator());
+    }
+
+    private static class YearlyFilesComparator implements Comparator {
+      public int compare(Object arg0, Object arg1) {
+        Matcher matcher0 = yearlyPattern.matcher(((File) arg0).getName());
+        matcher0.matches();
+        int year0 = Integer.parseInt(matcher0.group(1));
+        Matcher matcher1 = yearlyPattern.matcher(((File) arg1).getName());
+        matcher1.matches();
+        int year1 = Integer.parseInt(matcher1.group(1));
+        return year0 - year1;
+      }
+    }
+    
+    private static class MonthlyFilesComparator implements Comparator {
+      public int compare(Object arg0, Object arg1) {
+        Matcher matcher0 = monthlyPattern.matcher(((File) arg0).getName());
+        matcher0.matches();
+        int year0 = Integer.parseInt(matcher0.group(1));
+        Matcher matcher1 = monthlyPattern.matcher(((File) arg1).getName());
+        matcher1.matches();
+        int year1 = Integer.parseInt(matcher1.group(1));
+        return year0 - year1;
+      }
     }
 
     /** UTC-TAI history file. */
-    public File UtcTaiHistory;
+    public File utcTaiHistory;
 
     /** EOP C 04 yearly files. */
     public TreeSet eopc04Yearly;

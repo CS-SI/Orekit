@@ -38,12 +38,12 @@ public class PotentialReaderFactory {
     filter.mark(1024*1024);
     PotentialCoefficientsReader result = null;
     
-    SHMFormatReader test1 = new SHMFormatReader();
+    PotentialCoefficientsReader test1 = new SHMFormatReader();
     if (test1.isFileOK(filter)){
       result = test1;
     }
     filter.reset();
-    EGMFormatReader test2 = new EGMFormatReader();
+    PotentialCoefficientsReader test2 = new EGMFormatReader();
     if (test2.isFileOK(filter)){
       result = test2;
     }

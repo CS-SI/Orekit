@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,7 +24,7 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
  * @author Luc Maisonobe
  * @see SeriesTerm
  */
-public class Development {
+public class Development implements Serializable {
 
   /** Build a development from an IERS table file.
    * @param stream stream containing the IERS table
@@ -281,5 +282,7 @@ public class Development {
 
   /** Non-polynomial series. */
   private SeriesTerm[][] series;
+
+  private static final long serialVersionUID = -3022140412788385100L;
 
 }

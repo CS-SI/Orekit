@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
 import java.text.ParseException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
@@ -221,21 +223,20 @@ public class ITRF2000FrameTest extends TestCase {
   }
   
   public void setUp() {
-    try {
-      System.setProperty("orekit.iers.directory",
-                         new File(rootDir, "compressed-data").getAbsolutePath());
-      assertNotNull(IERSData.getInstance());
-    } catch (OrekitException e) {
-      fail(e.getMessage());
-    }
+    System.setProperty("orekit.iers.directory",
+                       new File(rootDir, "compressed-data").getAbsolutePath());
+    AccessController.doPrivileged(new SingletonResetter());
   }
 
   public void tearDown() {
-    System.setProperty("orekit.iers.directory",
-    "");
-      // resetting the singletons to null
-      Field instance;
+    System.setProperty("orekit.iers.directory", "");
+    AccessController.doPrivileged(new SingletonResetter());
+  }
+
+  private static class SingletonResetter implements PrivilegedAction {
+    public Object run() {
       try {
+        Field instance;
         instance = UTCScale.class.getDeclaredField("instance");
         instance.setAccessible(true);
         instance.set(null, null);
@@ -254,10 +255,10 @@ public class ITRF2000FrameTest extends TestCase {
       } catch (IllegalAccessException e) {
 
       }
-
-
+      return null;
+    }
   }
-  
+
   private void checkVectors(Vector3D pos1 , Vector3D pos2,
                             double deltaAngle, double deltaPos, double deltaNorm) {
 	  

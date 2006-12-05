@@ -26,4 +26,6 @@ class LuniSolarTerm extends SeriesTerm {
   private final int cD; 
   private final int cOmega; 
 
+  private static final long serialVersionUID = -6395662779814025756L;
+
 }

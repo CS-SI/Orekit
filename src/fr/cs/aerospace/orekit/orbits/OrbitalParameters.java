@@ -204,7 +204,7 @@ public abstract class OrbitalParameters
    * internally cached pvCoordinates which can change)
    */
   public PVCoordinates getPVCoordinates(double mu) {
-    if (dirtyCache || (mu != cachedMu)) {
+    if (dirtyCache || ((mu - cachedMu) != 0)) {
       initPVCoordinates(mu);
     }
     return cachedPVCoordinates;	  

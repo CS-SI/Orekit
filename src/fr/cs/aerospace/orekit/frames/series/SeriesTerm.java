@@ -1,10 +1,12 @@
 package fr.cs.aerospace.orekit.frames.series;
 
+import java.io.Serializable;
+
 /** Base class for nutation series terms.
  * @author Luc Maisonobe
  * @see Development
  */
-public abstract class SeriesTerm {
+public abstract class SeriesTerm implements Serializable {
 
   /** Simple constructor for the base class.
    * @param sinCoeff coefficient for the sine of the argument

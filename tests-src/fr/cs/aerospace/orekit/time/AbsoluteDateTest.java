@@ -3,6 +3,8 @@ package fr.cs.aerospace.orekit.time;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.text.ParseException;
 import java.util.Date;
 
@@ -87,13 +89,15 @@ public class AbsoluteDateTest
   }
 
   public void tearDown() {
-    System.setProperty("orekit.iers.directory",
-                       "");
+    System.setProperty("orekit.iers.directory", "");
+    AccessController.doPrivileged(new SingletonResetter());
+    utc = null;
+  }
 
-      utc = null;
-      Field instance;
+  private static class SingletonResetter implements PrivilegedAction {
+    public Object run() {
       try {
-        instance = UTCScale.class.getDeclaredField("instance");
+        Field instance = UTCScale.class.getDeclaredField("instance");
         instance.setAccessible(true);
         instance.set(null, null);
         instance.setAccessible(false);
@@ -107,8 +111,8 @@ public class AbsoluteDateTest
       } catch (IllegalArgumentException e) {
       } catch (IllegalAccessException e) {
       }
-
-
+      return null;
+    }
   }
 
   public static Test suite() {

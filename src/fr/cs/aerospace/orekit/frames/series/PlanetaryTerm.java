@@ -37,4 +37,6 @@ class PlanetaryTerm extends SeriesTerm {
   private final int cNe; 
   private final int cPa; 
 
+  private static final long serialVersionUID = -4604270587132683569L;
+
 }

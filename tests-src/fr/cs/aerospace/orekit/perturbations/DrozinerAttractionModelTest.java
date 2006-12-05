@@ -33,7 +33,13 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 public class DrozinerAttractionModelTest extends TestCase {
-  
+
+  public DrozinerAttractionModelTest(String name) {
+    super(name);
+    itrf2000   = null;
+    propagator = null;
+  }
+
   // rough test to determine if J2 alone creates heliosynchronism
   public void testHelioSynchronous()
     throws ParseException, FileNotFoundException,
@@ -214,7 +220,7 @@ public class DrozinerAttractionModelTest extends TestCase {
     assertTrue(Math.abs(dif.getZ()) < 1.4e-4);
   }
 
-  protected void setUp() {
+  public void setUp() {
     try {
       mu  =  3.986004415e+14;
       ae  =  6378136.460;
@@ -233,7 +239,7 @@ public class DrozinerAttractionModelTest extends TestCase {
     }
   }
 
-  protected void tearDown() {
+  public void tearDown() {
     itrf2000   = null;
     propagator = null;
   }

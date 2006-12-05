@@ -40,4 +40,6 @@ class NoFarPlanetsTerm extends SeriesTerm {
   private final int cJu; 
   private final int cSa; 
 
+  private static final long serialVersionUID = 3105481273138507585L;
+
 }

@@ -25,7 +25,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * @author F. Maussion
  */
 public class SpacecraftState 
-implements Serializable {
+  implements Serializable {
 
   /** Create a new instance from orbital state and mass.
    * @param orbit the orbit

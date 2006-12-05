@@ -1,4 +1,5 @@
 package fr.cs.aerospace.orekit.frames;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.SortedSet;
@@ -310,7 +311,9 @@ public class ITRF2000Frame extends Frame {
                            (f142 * tt + f141) * tt); // general accumulated precession in longitude
   }
 
-  private static class DatedEop implements Comparable {
+  private static class DatedEop implements Comparable, Serializable {
+
+    private static final long serialVersionUID = -6893523591361188479L;
 
     /** Absolute date. */
     public final AbsoluteDate date;

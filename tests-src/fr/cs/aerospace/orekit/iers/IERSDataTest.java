@@ -3,6 +3,8 @@ package fr.cs.aerospace.orekit.iers;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.text.ParseException;
 
 import fr.cs.aerospace.orekit.FindFile;
@@ -99,19 +101,18 @@ public class IERSDataTest extends TestCase {
   }
 
   public void setUp() {
-    init();
+    AccessController.doPrivileged(new SingletonResetter());
   }
   public void tearDown() {
-    System.setProperty("orekit.iers.directory",
-    "");
-    init();
+    System.setProperty("orekit.iers.directory", "");
+    AccessController.doPrivileged(new SingletonResetter());
   }
-    public void init() {
 
-      // resetting the singletons to null
-      Field instance;
+  private static class SingletonResetter implements PrivilegedAction {
+    public Object run() {
       try {
-        instance = UTCScale.class.getDeclaredField("instance");
+
+        Field instance = UTCScale.class.getDeclaredField("instance");
         instance.setAccessible(true);
         instance.set(null, null);
         instance.setAccessible(false);
@@ -120,17 +121,18 @@ public class IERSDataTest extends TestCase {
         instance.setAccessible(true);
         instance.set(null, null);
         instance.setAccessible(false);
+
       } catch (SecurityException e) {
       } catch (NoSuchFieldException e) {
       } catch (IllegalArgumentException e) {
       } catch (IllegalAccessException e) {
       }
-   
+      return null;
+    }
   }
 
   public static Test suite() {
     return new TestSuite(IERSDataTest.class);
   }
-  
-  
+
 }

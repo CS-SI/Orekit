@@ -26,12 +26,12 @@ public class ThirdBodyPointingAttitudeTest extends TestCase {
   public void testSimpleBehaviour() throws ParseException, OrekitException, FileNotFoundException {
     
     // parameters
-    final double a = 12000000;
-    final double ex = 1e-3;
-    final double ey = 1e-3;
-    final double OMEGA = 0;
-    final double l = 0;
-    final double mu = Utils.mu;
+    double a = 12000000;
+    double ex = 1e-3;
+    double ey = 1e-3;
+    double OMEGA = 0;
+    double l = 0;
+    double mu = Utils.mu;
     
     final OrbitalParameters op = new CircularParameters(a, ex, ey, 0, OMEGA, l, 
                                                   CircularParameters.TRUE_LONGITUDE_ARGUMENT
