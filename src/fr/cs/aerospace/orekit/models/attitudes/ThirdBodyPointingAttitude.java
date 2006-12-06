@@ -21,8 +21,8 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
 public class ThirdBodyPointingAttitude implements AttitudeKinematicsProvider {
 
   /** Initializes the first rotation. 
-   * <p> The initial attidute of the spacecraft is defined by the rotation axis
-   *  of the spacecraft and two planes. They are defined by the third body direction
+   * <p> The initial attidute of the spacecraft is defined by the rotation axis (it is the axis wich is 
+   * pointing to the sun) of the spacecraft and two planes. They are defined by the third body direction
    *  and the same vector expressed in inertial frame and in the spacecraft frame (approximatively). 
    *  In fact, the correct vector will be calculated internaly, the important information is
    *  a correct definition of the planes : see 

@@ -29,7 +29,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
    *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup><span style="text-decoration: overline">C</span><sub>n,0</sub>
    *   C<sub>n,0</sub> = -J<sub>n</sub>
    * </pre>
-   * @param orbit initial orbit
+   * @param initialState initial state
    * @param referenceRadius reference radius of the Earth for the potential model (m)
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    * @param C<sub>2,0</sub> un-normalized zonal coefficient (about -1.08e-3 for Earth)

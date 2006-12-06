@@ -4,7 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.GZIPInputStream;
-
 import fr.cs.aerospace.orekit.errors.OrekitException;
 
 /** This pattern determines which reader to use with the selected file.

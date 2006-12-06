@@ -11,6 +11,8 @@ public class AllTests extends TestCase {
     TestSuite suite = new TestSuite("fr.cs.aerospace.orekit.attitudes"); 
 
     suite.addTest(ThirdBodyPointingAttitudeTest.suite());
+    suite.addTest(NadirPointingAttitudeTest.suite());
+    suite.addTest(LOFAlinedAttitudeTest.suite());
 
     return suite; 
 

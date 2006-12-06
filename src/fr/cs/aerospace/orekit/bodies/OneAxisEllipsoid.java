@@ -1,7 +1,6 @@
 package fr.cs.aerospace.orekit.bodies;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
-
 import fr.cs.aerospace.orekit.utils.Line;
 
 /** Modelization of one-axis ellipsoid.
@@ -21,9 +20,15 @@ import fr.cs.aerospace.orekit.utils.Line;
  */
 public class OneAxisEllipsoid implements BodyShape {
 
-  /** Simple constructor
+  /** Simple constructor.
+   * <p> Freqently used parameters for earth are :
+   * <pre>
+   * ae = 6378136.460 m
+   * f  = 1 / 298.257222101
+   * </pre>
+   * </p>
    * @param ae earth equatorial radius
-   * @param f 
+   * @param f the flatening ( f = (a-b)/a )
    */
   public OneAxisEllipsoid(double ae, double f) {
     this.ae = ae;
@@ -38,7 +43,7 @@ public class OneAxisEllipsoid implements BodyShape {
   /** Set the close approach threshold.
    * <p>The close approach threshold is a ratio used to identify
    * special cases in the {@link #transform(Vector3D)} method.</p>
-   * <p>Let d = &sqrt;x<sup>2</sup>+y<sup>2</sup>+z<sup>2</sup>
+   * <p>Let d = (x<sup>2</sup>+y<sup>2</sup>+z<sup>2</sup>)<sup>&frac12;</sup>
    * be the distance between the point and the ellipsoid center.</p>
    * <ul>
    *   <li>all points such that d&lt;&epsilon; a<sub>e</sub> where
@@ -67,7 +72,7 @@ public class OneAxisEllipsoid implements BodyShape {
    * @param angularThreshold angular convergence threshold (rad)
    */
   public void setAngularThreshold(double angularThreshold) {
-    this.angularThreshold = epsilon;
+    this.angularThreshold = angularThreshold;
   }
 
   /** Get the equatorial radius of the body.
@@ -94,7 +99,7 @@ public class OneAxisEllipsoid implements BodyShape {
     double g2r2ma2pz2 = g2r2ma2 + z2;
 
     Vector3D direction = line.getDirection();
-    double cz = Math.sqrt(direction.getX() + direction.getX()
+    double cz = Math.sqrt(direction.getX() * direction.getX()
                         + direction.getY() * direction.getY());
     double sz = direction.getZ();
 
@@ -112,7 +117,9 @@ public class OneAxisEllipsoid implements BodyShape {
     double k  = c / (b + Math.sqrt(b2 - ac));
 
     double lambda = Math.atan2(point.getY(), point.getX());
-    double phi    = Math.atan2(z - k * sz, g2 * (r - k * cz));
+    double y = (z - k * sz);
+    double x = g2 * (r - k * cz);
+    double phi    = Math.atan2(y, x);
     return new GeodeticPoint(lambda, phi, 0.0);
 
   }
@@ -270,12 +277,22 @@ public class OneAxisEllipsoid implements BodyShape {
 
   }
 
+  /** Equatorial radius */
   private final double ae;
+  
+  /** Eccentricity power 2 */
   private final double e2;
+  
+  /** 1 minus flatness */
   private final double g;
+  
+  /** g * g */
   private final double g2;
+  
+  /** Equatorial radius power 2 */
   private final double ae2;
 
+  /** Convergence limits */
   private double epsilon;
   private double angularThreshold;
 

@@ -29,7 +29,6 @@ public interface SWF {
      * @param frame in which are defined the coordinates
      * @param mass the current mass (kg)
      * @param ak the attitude representation
-     * @param adder object where the contribution should be added
      * @return the value of the switching function
      * @throws OrekitException
      */
@@ -43,7 +42,6 @@ public interface SWF {
      * @param frame in which are defined the coordinates
      * @param mass the current mass (kg)
      * @param ak the attitude representation
-     * @param adder object where the contribution should be added
      * @return the value of the switching function
      */
     public void eventOccurred(AbsoluteDate t, PVCoordinates pvCoordinates,

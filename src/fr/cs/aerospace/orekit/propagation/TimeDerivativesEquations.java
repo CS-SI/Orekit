@@ -87,7 +87,6 @@ public class TimeDerivativesEquations {
   /** Initialize all derivatives to zero.
    * @param yDot reference to the array where to put the derivatives.
    * @param parameters current orbit parameters
-   * @param mass current mass (kg)
    */
   protected void initDerivatives(double[] yDot ,
                                EquinoctialParameters parameters) {

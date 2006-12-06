@@ -100,7 +100,7 @@ public class LOFAlinedAttitude implements AttitudeKinematicsProvider {
     EquinoctialParameters ep = new EquinoctialParameters(pv ,frame, mu);    
     a = ep.getA();
     
-    spin = new Vector3D(Math.sqrt(mu/a*a*a), spin); 
+    spin = new Vector3D(Math.sqrt(mu/(a*a*a)), spin); 
 
     return new AttitudeKinematics(R , spin);
     

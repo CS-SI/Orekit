@@ -87,6 +87,34 @@ public class OneAxisEllipsoidTest extends TestCase {
     GeodeticPoint gp = model.getIntersectionPoint(line);
     assertEquals(gp.altitude, 0.0, 1.0e-12);
     assertTrue(line.contains(model.transform(gp)));
+    
+    model = new OneAxisEllipsoid(100.0, 0.9);
+    line = new Line(new Vector3D(0.0, -93.7139699, -3.5930796),
+                         new Vector3D(0.0, -1.0, -1.0));
+    gp = model.getIntersectionPoint(line);
+    assertTrue(line.contains(model.transform(gp)));
+    
+    model = new OneAxisEllipsoid(100.0, 0.9);
+    line = new Line(new Vector3D(0.0, -93.7139699, 3.5930796),
+                         new Vector3D(0.0, -1.0, 1.0));
+    gp = model.getIntersectionPoint(line);
+    assertTrue(line.contains(model.transform(gp)));
+    
+    model = new OneAxisEllipsoid(100.0, 0.9);
+    line = new Line(new Vector3D(-93.7139699, 0.0, 3.5930796),
+                         new Vector3D(-1.0, 0.0, 1.0));
+    gp = model.getIntersectionPoint(line);
+    assertTrue(line.contains(model.transform(gp)));
+    
+    line = new Line(new Vector3D(0.0, 0.0, 110),
+                    new Vector3D(0.0, 0.0, 1.0));
+    gp = model.getIntersectionPoint(line);
+    assertEquals(gp.latitude, Math.PI/2, 1.0e-12);
+    line = new Line(new Vector3D(0.0, 110, 0),
+                    new Vector3D(0.0, 1.0, 0.0));
+    gp = model.getIntersectionPoint(line);
+    assertEquals(gp.latitude,0, 1.0e-12);
+    
   }
 
   public void testNoLineIntersection() {
