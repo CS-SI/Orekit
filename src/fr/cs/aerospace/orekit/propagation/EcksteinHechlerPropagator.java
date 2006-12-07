@@ -77,10 +77,8 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
       return new SpacecraftState(new Orbit(date, op), mass, 
                                           akProvider.getAttitudeKinematics(date, 
                                                   op.getPVCoordinates(mu), op.getFrame()));
-    } catch (OrekitException e) {
-      // FIXME EXCETPION PB
-      e.printStackTrace();
-      return new SpacecraftState(new Orbit(date, op), mass);
+    } catch (OrekitException oe) {
+      throw new PropagationException(oe.getMessage(), oe);
     }
   }
 

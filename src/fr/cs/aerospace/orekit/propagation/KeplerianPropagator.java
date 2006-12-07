@@ -44,10 +44,8 @@ public class KeplerianPropagator implements Ephemeris, AttitudePropagator {
                                 akProvider.getAttitudeKinematics(date, 
                                                                  extrapolated.getPVCoordinates(mu),
                                                                  extrapolated.getFrame()));
-    } catch (OrekitException e) {
-      // FIXME PROBLEM WITH EXEPTION
-      e.printStackTrace();
-      return new SpacecraftState(new Orbit(date, extrapolated), mass);
+    } catch (OrekitException oe) {
+      throw new PropagationException(oe.getMessage(), oe);
     }
 
   }

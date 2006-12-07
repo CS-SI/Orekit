@@ -7,9 +7,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import fr.cs.aerospace.orekit.errors.OrekitException;
-
 
 /**This reader is adapted to the EGM Format.
  *  
@@ -27,10 +25,10 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
    * {@link #isFileOK(InputStream)}. It is done automaticaly by the factory).
    */
   protected EGMFormatReader() {
-    in       = null;
+    in = null;
     fileIsOK = false;
-    ae       = 6378136.3;
-    mu       = 398600.4415e8;
+    ae = 6378136.3;
+    mu = 398600.4415e8;
   }
 
   /** Check the file to determine if its format is understood by the reader or not.
@@ -50,14 +48,12 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
 
     // set up the regular expressions
     String integerField = " +[0-9]+";
-    String realField    = " +[-+0-9.e.E]+";
-    Pattern regularPattern =
-      Pattern.compile("^" + integerField + integerField + realField
-                      + realField + realField + realField
-                      + " *$");
+    String realField = " +[-+0-9.e.E]+";
+    Pattern regularPattern = Pattern.compile("^" + integerField + integerField
+        + realField + realField + realField + realField + " *$");
 
     // read the first lines to detect the format
-    for (String line = r.readLine(); ! iKnow; line = r.readLine()) {  
+    for (String line = r.readLine(); !iKnow; line = r.readLine()) {
       if (line == null) {
         iKnow = true;
       } else {
@@ -74,7 +70,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
           fileIsOK = false;
         }
         c++;
-      }      
+      }
     }
     return fileIsOK;
   }
@@ -86,16 +82,18 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
   public void read() throws OrekitException, IOException {
 
     if (in == null) {
-      throw new OrekitException("the reader has not been tested " , new String[0]);
+      throw new OrekitException("the reader has not been tested ",
+                                new String[0]);
     }
-    if (! fileIsOK) {
-      throw new OrekitException("the reader is not adapted to the format " , new String[0]);
+    if (!fileIsOK) {
+      throw new OrekitException("the reader is not adapted to the format ",
+                                new String[0]);
     }
     BufferedReader r = new BufferedReader(new InputStreamReader(in));
 
-    ArrayList cl = new ArrayList(); 
-    ArrayList sl = new ArrayList(); 
-    for (String line = r.readLine(); line != null; line = r.readLine()) { 
+    ArrayList cl = new ArrayList();
+    ArrayList sl = new ArrayList();
+    for (String line = r.readLine(); line != null; line = r.readLine()) {
       if (line.length() >= 15) {
 
         // get the fields defining the current the potential terms
@@ -121,7 +119,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
         ((double[]) cl.get(i))[j] = c;
         ((double[]) sl.get(i))[j] = s;
 
-      }  
+      }
     }
 
     // convert to simple triangular arrays

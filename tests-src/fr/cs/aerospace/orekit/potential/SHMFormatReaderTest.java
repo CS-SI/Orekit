@@ -20,8 +20,8 @@ public class SHMFormatReaderTest extends TestCase {
     File rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data" +
                                  "/potential/shm-format/g003_eigen-cg01c_coef", "/");
     InputStream in = new FileInputStream(rootDir.getAbsolutePath());
-    
-    PotentialCoefficientsReader reader = PotentialReaderFactory.getPotentialReader(in);
+    PotentialReaderFactory factory = new PotentialReaderFactory();
+    PotentialCoefficientsReader reader = factory.getPotentialReader(in);
     reader.read();
     double[][] C = reader.getC(360 , 360, true);
     double[][] S = reader.getS(360 , 360, true);
@@ -36,7 +36,7 @@ public class SHMFormatReaderTest extends TestCase {
     rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data" +
                             "/potential/shm-format/eigen_cg03c_coef", "/");
     in = new FileInputStream(rootDir.getAbsolutePath());
-    reader = PotentialReaderFactory.getPotentialReader(in);
+    reader = factory.getPotentialReader(in);
     reader.read();
     C = reader.getC(360 , 360, true);;
     S = reader.getS(360 , 360, true);
@@ -54,7 +54,8 @@ public class SHMFormatReaderTest extends TestCase {
     File rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data" +
                                  "/potential/shm-format-compressed/eigen-cg01c_coef.gz", "/");
     InputStream in = new FileInputStream(rootDir.getAbsolutePath());
-    PotentialCoefficientsReader reader = PotentialReaderFactory.getPotentialReader(in);
+    PotentialReaderFactory factory = new PotentialReaderFactory();
+    PotentialCoefficientsReader reader = factory.getPotentialReader(in);
     reader.read();
     double[][] C = reader.getC(360 , 360, true);;
     double[][] S = reader.getS(360 , 360, true);;
@@ -69,7 +70,7 @@ public class SHMFormatReaderTest extends TestCase {
     rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data" +
                             "/potential/shm-format-compressed/eigen_cg03c_coef.gz", "/");
     in = new FileInputStream(rootDir.getAbsolutePath());
-    reader = PotentialReaderFactory.getPotentialReader(in);
+    reader = factory.getPotentialReader(in);
     reader.read();
     C = reader.getC(360 , 360, true);;
     S = reader.getS(360 , 360, true);;
@@ -87,11 +88,12 @@ public class SHMFormatReaderTest extends TestCase {
     
     PotentialCoefficientsReader reader;
     int c = 0;
+    PotentialReaderFactory factory = new PotentialReaderFactory();
     try {
       File rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data" +
                                    "/potential/shm-format-corrupted/fakeeigen1", "/");
       InputStream in = new FileInputStream(rootDir.getAbsolutePath());
-      reader = PotentialReaderFactory.getPotentialReader(in);
+      reader = factory.getPotentialReader(in);
     } catch (OrekitException e) {
       c++;
       // expected behaviour
@@ -100,7 +102,7 @@ public class SHMFormatReaderTest extends TestCase {
       File rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data" +
                                    "/potential/shm-format-corrupted/fakeeigen2", "/");
       InputStream in = new FileInputStream(rootDir.getAbsolutePath());
-      reader = PotentialReaderFactory.getPotentialReader(in);
+      reader = factory.getPotentialReader(in);
     } catch (OrekitException e) {
       c++;
       // expected behaviour
@@ -109,7 +111,7 @@ public class SHMFormatReaderTest extends TestCase {
       File rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data" +
                                    "/potential/shm-format-corrupted/fakeeigen3", "/");
       InputStream in = new FileInputStream(rootDir.getAbsolutePath());
-      reader = PotentialReaderFactory.getPotentialReader(in);
+      reader = factory.getPotentialReader(in);
     } catch (OrekitException e) {
       c++;
       // expected behaviour

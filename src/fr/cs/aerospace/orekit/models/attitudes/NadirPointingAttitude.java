@@ -9,43 +9,64 @@ import fr.cs.aerospace.orekit.bodies.GeodeticPoint;
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
-
+//TODO Approximative Javadoc
 /** Nadir pointing attitute representation.
  * 
- * <p> It ensures that the X axis of the specraft is pointing verticaly of the 
- *  given {@link BodyShape} surface, and that the Z axis is as close as possible of the
- *  spacecraft velocity direction. <p> 
+ * <p> Two simple ways to define this attitude have been implemented :
+ * 
+ *  <p> - The first one ({@link #PURENADIR}) ensures that the Z axis of
+ *  the specraft is pointing orthogonaly on the given {@link BodyShape} surface, 
+ *  and that the X axis is as close as possible of the spacecraft velocity direction,
+ *  but not necessarily in the orbital plane. Actually, this direction depends
+ *  on the bodyshape and the orbit inclination </p> 
+ *  
+ *  <p> - The second one ({@link #ORBITALPLANE}) ensures that the Y axis of 
+ *  the specraft is exactly orthogonal to the orbital plane, wich contains
+ *  the X and Z axis. So the Z axis direction is as close as possible of 
+ *  the {@link BodyShape} surface normale, and the X axis is close to the
+ *  spacecraft velocity. </p> 
+ *   
+ * </p>
  * 
  * <p> Perfectly automatised attitude, as it does not consider the
  *  perturbing couples, the captors and spacecraft dynamic.</p>
- *    
+ * 
  * @author F. Maussion
  */
 public class NadirPointingAttitude implements AttitudeKinematicsProvider {
 
+  /** Identifier for the pure Nadir attitude. */
+  public static final int PURENADIR = 0;
+
+  /** Identifier for the "orbital plane oriented" attitude. */
+  public static final int ORBITALPLANE = 1;
+
   /** Constructor with any {@link BodyShape}.
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   * @param body the body shpae to point at
+   * @param body the body shape to point at
+   * @param type, {@link #PURENADIR} or {@link #ORBITALPLANE}
    */
-  public NadirPointingAttitude(double mu, BodyShape body) {
+  public NadirPointingAttitude(double mu, BodyShape body, int type) {
     this.body = body;
     this.mu = mu;
+    this.type = type;
   }
-  
+
   /** Simple constructor with a classical ellipsoid earth.
    * <p> The earth {@link BodyShape} is a {@link OneAxisEllipsoid}
    * with a equatorial radius of 6378136.460 m and a flatness of 
    * 1.0 / 298.257222101 <p>
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+   * @param type, {@link #PURENADIR} or {@link #ORBITALPLANE}
    */
-  public NadirPointingAttitude(double mu) {
+  public NadirPointingAttitude(double mu, int type) {
     this.body = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101);
     this.mu = mu;
+    this.type = type;
   }
-  
+
   /** Get the attitude representation in the selected frame.
    * @param date the current date
    * @param pv the coordinates in the inertial frame
@@ -55,29 +76,45 @@ public class NadirPointingAttitude implements AttitudeKinematicsProvider {
    */
   public AttitudeKinematics getAttitudeKinematics(AbsoluteDate date,
                                                   PVCoordinates pv, Frame frame)
-      throws OrekitException {
-    
-    GeodeticPoint geo = body.transform(pv.getPosition());
-    
-    Vector3D direction = new Vector3D(-Math.cos(geo.longitude)*Math.cos(geo.latitude),
-                                      -Math.sin(geo.longitude)*Math.cos(geo.latitude), 
-                                      -Math.sin(geo.latitude));
-    
-    Rotation R = new Rotation(direction , pv.getVelocity()  ,
-                              Vector3D.plusI, Vector3D.plusK);
-    
-    EquinoctialParameters ep = new EquinoctialParameters(pv ,frame, mu);    
-    
-    double a = ep.getA();
-    
+  throws OrekitException {
+
+    // define nadir pointing attitude
+    GeodeticPoint geo = body.transform(pv.getPosition());    
+    Vector3D direction = new Vector3D(geo.longitude,geo.latitude);
+    Rotation R;
+    switch (type) {
+    case PURENADIR :
+      R = new Rotation(direction , pv.getVelocity()  ,
+                       Vector3D.minusK, Vector3D.plusI);
+      break;
+    case ORBITALPLANE :
+      Vector3D angMom = Vector3D.crossProduct(pv.getVelocity(), pv.getPosition());
+      R = new Rotation(angMom , direction  ,
+                       Vector3D.plusJ, Vector3D.minusK);
+      break;
+    default :
+      throw new IllegalArgumentException(" Attitude type is not correct ");
+    }
+
+    //  compute semi-major axis
+    double r       = pv.getPosition().getNorm();
+    double V2      = Vector3D.dotProduct(pv.getVelocity(), pv.getVelocity());
+    double rV2OnMu = r * V2 / mu;
+    double a       = r / (2 - rV2OnMu);
+
+    // TODO Spin is not rigorously exact
     Vector3D spin = new Vector3D(Math.sqrt(mu/(a*a*a)), Vector3D.plusJ); 
+
     return new AttitudeKinematics(R, spin);
-    
+
   }
 
   /** The body to point at. */
   private BodyShape body;
-  
-  /** Central body gravitation coefficient */
+
+  /** Type of attitude. */
+  private int type;
+
+  /** Central body gravitation constant */
   private double mu;
 }

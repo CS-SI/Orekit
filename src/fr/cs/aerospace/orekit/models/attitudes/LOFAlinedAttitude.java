@@ -2,15 +2,12 @@ package fr.cs.aerospace.orekit.models.attitudes;
 
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
-
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematicsProvider;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
-
 
 /** This attitude is alined on the Local Orbital Frame. 
  * 
@@ -29,7 +26,7 @@ public class LOFAlinedAttitude implements AttitudeKinematicsProvider {
    * <p> The XYZ satellite frame is arbitrary defined as follows in QSW frame:
    *   <pre>
    *     X = - Q ( earth centered )
-   *     Y = - W ( reversed angular momentum)
+   *     Y =   W ( angular momentum)
    *     Z =   S 
    *   </pre>
    *  and in TNW frame:
@@ -60,11 +57,9 @@ public class LOFAlinedAttitude implements AttitudeKinematicsProvider {
   throws OrekitException {
 
     Rotation R;
-    Vector3D spin;
-    double a;
+    
     Vector3D W = Vector3D.crossProduct(pv.getPosition(),pv.getVelocity());
     W.normalizeSelf();
-
 
     switch (frameType) {
 
@@ -77,7 +72,6 @@ public class LOFAlinedAttitude implements AttitudeKinematicsProvider {
       Vector3D S = Vector3D.crossProduct(W,Q);      
 
       R = new Rotation(Q , S, Vector3D.minusI, Vector3D.plusK);
-      spin = Vector3D.minusJ;
       
       break; // end QSW
 
@@ -90,17 +84,19 @@ public class LOFAlinedAttitude implements AttitudeKinematicsProvider {
       Vector3D N = Vector3D.crossProduct(W,T);     
 
       R = new Rotation(N , T, Vector3D.plusI, Vector3D.plusK);
-      spin = Vector3D.plusJ;
+      
       break; // end TNW
 
     default :
       throw new IllegalArgumentException(" Frame type is not correct ");
     }
 
-    EquinoctialParameters ep = new EquinoctialParameters(pv ,frame, mu);    
-    a = ep.getA();
-    
-    spin = new Vector3D(Math.sqrt(mu/(a*a*a)), spin); 
+    //  compute semi-major axis
+    double r       = pv.getPosition().getNorm();
+    double V2      = Vector3D.dotProduct(pv.getVelocity(), pv.getVelocity());
+    double rV2OnMu = r * V2 / mu;
+    double a       = r / (2 - rV2OnMu);
+    Vector3D spin = new Vector3D(Math.sqrt(mu/(a*a*a)), Vector3D.plusJ); 
 
     return new AttitudeKinematics(R , spin);
     

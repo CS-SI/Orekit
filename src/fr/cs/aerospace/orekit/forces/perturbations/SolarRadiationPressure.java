@@ -74,10 +74,11 @@ public class SolarRadiationPressure implements ForceModel {
     // spacecraft characteristics effects
     Vector3D u = new Vector3D(satSunVector);
     u.normalizeSelf();
-    double kd = (1.0 - spacecraft.getAbsCoef(u, date).getNorm())
-    * (1.0 - spacecraft.getReflectionCoef(u, date).getNorm());
+    Vector3D inSpacecraft = ak.getAttitude().applyTo(u);
+    double kd = (1.0 - spacecraft.getAbsCoef(inSpacecraft).getNorm())
+    * (1.0 - spacecraft.getReflectionCoef(inSpacecraft).getNorm());
     double acceleration = rawP * (1 + kd * 4.0 / 9.0 )
-    * spacecraft.getSurface(u, date) / mass;
+    * spacecraft.getSurface(inSpacecraft) / mass;
 
     // provide the perturbing acceleration to the derivatives adder
 

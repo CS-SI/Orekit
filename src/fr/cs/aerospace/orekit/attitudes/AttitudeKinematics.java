@@ -15,7 +15,7 @@ import org.spaceroots.mantissa.geometry.Vector3D;
  * @author F. Maussion
  */
 public class AttitudeKinematics implements Serializable {
-  
+
   /** Simple constructor.
    * @param attitude the attitude rotation
    * @param spinAxis the spin
@@ -24,7 +24,7 @@ public class AttitudeKinematics implements Serializable {
     this.attitude = attitude;
     this.spin = spinAxis;
   }
-  
+
   /** Get the attitude rotation.
    * <p> The {@link Rotation} returned by this method represents the rotation
    * to apply to a vector expressed in the inertial frame to obtain the same vector 
@@ -43,10 +43,10 @@ public class AttitudeKinematics implements Serializable {
   public Vector3D getspinAxis() {
     return spin;
   }
-  
+
   /** Attitude quaternion */
   private final Rotation attitude;
-  
+
   /** Spin */
   private final Vector3D spin;
 

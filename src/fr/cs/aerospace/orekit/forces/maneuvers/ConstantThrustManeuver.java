@@ -19,13 +19,13 @@ public class ConstantThrustManeuver implements ForceModel {
 
   /** Identifier for TNW frame. */
   public static final int TNW = 0;
-  
+
   /** Identifier for QSW frame. */
   public static final int QSW = 1;
-  
+
   /** Identifier for inertial frame. */
   public static final int INERTIAL = 2;
-  
+
   /** Simple constructor for a constant direction and constant thrust.
    * @param startDate the instant of ignition
    * @param duration the duration of the thrust (s)
@@ -36,8 +36,8 @@ public class ConstantThrustManeuver implements ForceModel {
    *  must be one of {@link #TNW}, {@link #QSW} or  {@link #INERTIAL}
    */
   public ConstantThrustManeuver(AbsoluteDate startDate, double duration,
-                  double force, double isp, Vector3D direction, int frameType) {
-    
+                                double force, double isp, Vector3D direction, int frameType) {
+
     if (duration>=0) {
       this.startDate = startDate;
       this.endDate = new AbsoluteDate(startDate , duration);
@@ -55,7 +55,7 @@ public class ConstantThrustManeuver implements ForceModel {
     this.frameType = frameType;
     firing = false;     
   }
-  
+
   /** Constructor for a variable direction and constant thrust.
    * @param startDate the instant of ignition
    * @param duration the duration of the thrust (s)
@@ -64,32 +64,32 @@ public class ConstantThrustManeuver implements ForceModel {
    * @param direction the variable acceleration direction.
    */
   public ConstantThrustManeuver(AbsoluteDate startDate, double duration,
-                  double force, double isp, ThrustForceDirection direction) {
-    
+                                double force, double isp, ThrustForceDirection direction) {
+
     this(startDate, duration, force, isp, null, direction.getType());
     this.variableDir = direction;   
   }
-  
-    /** Compute the contribution of maneuver to the global acceleration.
-    * @param t the current date
-     * @param pvCoordinates
-     * @param adder object where the contribution should be added
-    */  
+
+  /** Compute the contribution of maneuver to the global acceleration.
+   * @param t the current date
+   * @param pvCoordinates
+   * @param adder object where the contribution should be added
+   */  
   public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates,
                               Frame frame, double mass,
                               AttitudeKinematics ak, TimeDerivativesEquations adder)
-      throws OrekitException {
-    
+  throws OrekitException {
+
     if(firing) {      
       if (variableDir!=null) {
         direction = new Vector3D(variableDir.getDirection(t, pvCoordinates,
                                                           frame, mass, ak));
         direction.normalizeSelf();
       }
-      
+
       double acc = force/mass;        
       Vector3D acceleration = new Vector3D(acc, direction);
-      
+
       switch (frameType) {
       case TNW :
         adder.addTNWAcceleration(acceleration.getX(),
@@ -130,9 +130,9 @@ public class ConstantThrustManeuver implements ForceModel {
     /** The G-function is the difference between the start date and the currentdate. 
      */
     public double g(AbsoluteDate date, PVCoordinates pvCoordinates, Frame frame, double mass, AttitudeKinematics ak)
-        throws OrekitException {
+    throws OrekitException {
       return startDate.minus(date);
-      
+
     }
 
     public double getMaxCheckInterval() {
@@ -159,7 +159,7 @@ public class ConstantThrustManeuver implements ForceModel {
     /** The G-function is the difference between the end date and the currentdate. 
      */
     public double g(AbsoluteDate date, PVCoordinates pvCoordinates, Frame frame, double mass, AttitudeKinematics ak)
-        throws OrekitException {   
+    throws OrekitException {   
       return endDate.minus(date);
     }
 
@@ -173,31 +173,31 @@ public class ConstantThrustManeuver implements ForceModel {
     }
 
   }
-  
+
   /** state of the engine */
   private boolean firing;
-  
+
   /** Frame type */
   private int frameType;
-  
+
   /** start of the maneuver */
   private AbsoluteDate startDate;
-  
+
   /** end of the maneuver */
   private AbsoluteDate endDate;
-  
+
   /** duration (s) */
   private double duration;
 
   /** The engine caracteristics */
   private double force;
   private double flowRate;
-  
+
   /** Direction of the acceleration in selected frame */
   private Vector3D direction;
-  
+
   private ThrustForceDirection variableDir;
-  
+
   /** Earth gravity acceleration constant (m.s²) */
   private static final double g0 = 9.80665;
 }

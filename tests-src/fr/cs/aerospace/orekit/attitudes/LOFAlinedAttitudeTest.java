@@ -51,7 +51,7 @@ public class LOFAlinedAttitudeTest extends TestCase {
     
     KeplerianPropagator kep = new KeplerianPropagator(initState, mu);
     kep.setAkProvider(att);
-    SpacecraftState medState = new SpacecraftState(o);
+    SpacecraftState medState;
     AbsoluteDate medDate;
     
     for (int j=0 ; j<= period; j++) {
@@ -65,6 +65,7 @@ public class LOFAlinedAttitudeTest extends TestCase {
       assertEquals(0, Vector3D.dotProduct(pos, dir), 1e-4);
     }
   }
+  
 public void testSimpleBehaviourTNW() throws ParseException, OrekitException, FileNotFoundException {
     
     // parameters
@@ -95,7 +96,7 @@ public void testSimpleBehaviourTNW() throws ParseException, OrekitException, Fil
     
     KeplerianPropagator kep = new KeplerianPropagator(initState, mu);
     kep.setAkProvider(att);
-    SpacecraftState medState = new SpacecraftState(o);
+    SpacecraftState medState;
     AbsoluteDate medDate;
     
     for (int j=0 ; j<= period; j++) {

@@ -3,9 +3,7 @@ package fr.cs.aerospace.orekit.attitudes;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.propagation.EcksteinHechlerPropagator;
-import fr.cs.aerospace.orekit.propagation.KeplerianPropagator;
-import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
+import fr.cs.aerospace.orekit.propagation.AttitudePropagator;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
@@ -19,14 +17,12 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  *  specific and perfectly automatised attitudes, as they do not consider for 
  *  the moment the perturbing couples, the captors and spacecraft dynamic.</p> 
  *  
- * @see NumericalPropagator#setAkProvider(AttitudeKinematicsProvider)
- * @see KeplerianPropagator#setAkProvider(AttitudeKinematicsProvider)
- * @see EcksteinHechlerPropagator#setAkProvider(AttitudeKinematicsProvider)
+ * @see AttitudePropagator#setAkProvider(AttitudeKinematicsProvider)
  * 
  * @author F. Maussion
  */
 public interface AttitudeKinematicsProvider {
-  
+
   /** Get the attitude representation in the selected frame.
    * @param date the current date
    * @param pv the coordinates in the inertial frame
@@ -34,7 +30,8 @@ public interface AttitudeKinematicsProvider {
    * @return the attitude representation of the spacecraft
    * @throws OrekitException if some specific error occurs.
    */
-  public AttitudeKinematics getAttitudeKinematics(AbsoluteDate date, PVCoordinates pv, Frame frame)
-   throws OrekitException;
-  
+  public AttitudeKinematics getAttitudeKinematics(AbsoluteDate date,
+                                                  PVCoordinates pv, Frame frame)
+      throws OrekitException;
+
 }

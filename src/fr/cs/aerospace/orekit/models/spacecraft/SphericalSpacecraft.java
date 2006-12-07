@@ -2,8 +2,6 @@ package fr.cs.aerospace.orekit.models.spacecraft;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
-import fr.cs.aerospace.orekit.time.AbsoluteDate;
-
 /** This class represents the features of a simplified spacecraft.
  * <p>The model of this spacecraft is a simple spherical model, this
  * means that all coefficients are constant and do not depend of
@@ -36,7 +34,7 @@ public class SphericalSpacecraft
    * (ignored in this implementation)
    * @return surface (m<sup>2</sup>)
    */
-  public double getSurface(Vector3D direction, AbsoluteDate t) {
+  public double getSurface(Vector3D direction) {
     return surface;
   }
 
@@ -44,7 +42,7 @@ public class SphericalSpacecraft
    * @param direction direction of the atmospheric flux
    * @return drag coefficients vector
    */
-  public Vector3D getDragCoef(Vector3D direction, AbsoluteDate t) {
+  public Vector3D getDragCoef(Vector3D direction) {
     return new Vector3D(dragCoeff, direction);
   }
 
@@ -52,7 +50,7 @@ public class SphericalSpacecraft
    * @param direction direction of the light flux
    * @return absorption coefficients vector
    */
-  public Vector3D getAbsCoef(Vector3D direction, AbsoluteDate t) {
+  public Vector3D getAbsCoef(Vector3D direction) {
     return new Vector3D(absorptionCoeff, direction);
   }
 
@@ -60,7 +58,7 @@ public class SphericalSpacecraft
    * @param direction direction of the light flux
    * @return specular reflection coefficients vector
    */
-  public Vector3D getReflectionCoef(Vector3D direction, AbsoluteDate t) {
+  public Vector3D getReflectionCoef(Vector3D direction) {
     return new Vector3D(reflectionCoeff, direction);
   }
 

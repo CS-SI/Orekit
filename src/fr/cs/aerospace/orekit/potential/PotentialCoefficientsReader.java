@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 
-
 /**This abstract class represents a Gravitational Potential Coefficients file reader.
  * 
  * <p> As it exits many different coefficients models and containers this
@@ -23,9 +22,9 @@ public abstract class PotentialCoefficientsReader {
    * <p>Build an uninitialized reader.</p>
    */
   protected PotentialCoefficientsReader() {
-    normalizedJ   = null;
-    normalizedC   = null;
-    normalizedS   = null;
+    normalizedJ = null;
+    normalizedC = null;
+    normalizedS = null;
     unNormalizedJ = null;
     unNormalizedC = null;
     unNormalizedS = null;
@@ -52,21 +51,22 @@ public abstract class PotentialCoefficientsReader {
    */
   public double[] getJ(boolean normalized, int n) throws OrekitException {
     if (n >= normalizedC.length) {
-      throw new OrekitException("too large degree (n = {0}), potential maximal degree is {1})" , 
+      throw new OrekitException(
+                                "too large degree (n = {0}), potential maximal degree is {1})",
                                 new String[] {
-                                  Integer.toString(n),
-                                  Integer.toString(normalizedC.length-1)
+                                    Integer.toString(n),
+                                    Integer.toString(normalizedC.length - 1)
                                 });
     }
-  
-    double[] completeJ = normalized ? getNormalizedJ(): getUnNormalizedJ();
-  
+
+    double[] completeJ = normalized ? getNormalizedJ() : getUnNormalizedJ();
+
     // truncate the array as per caller request
     double[] result = new double[n + 1];
     System.arraycopy(completeJ, 0, result, 0, n + 1);
-    
+
     return result;
-  
+
   }
 
   /** Get the tesseral-sectorial and zonal coefficients.
@@ -76,8 +76,10 @@ public abstract class PotentialCoefficientsReader {
    * @return the cosines coefficients matrix
    * @throws OrekitException 
    */
-  public double[][] getC(int n, int m, boolean normalized) throws OrekitException {
-    return truncateArray(n, m, normalized ? getNormalizedC() : getUnNormalizedC());
+  public double[][] getC(int n, int m, boolean normalized)
+      throws OrekitException {
+    return truncateArray(n, m, normalized ? getNormalizedC()
+        : getUnNormalizedC());
   }
 
   /** Get tesseral-sectorial coefficients. 
@@ -86,8 +88,10 @@ public abstract class PotentialCoefficientsReader {
    * @param normalized (true) or un-normalized (false) 
    * @return the sines coefficients matrix
    */
-  public double[][] getS(int n, int m, boolean normalized) throws OrekitException {
-    return truncateArray(n, m, normalized ? getNormalizedS() : getUnNormalizedS());
+  public double[][] getS(int n, int m, boolean normalized)
+      throws OrekitException {
+    return truncateArray(n, m, normalized ? getNormalizedS()
+        : getUnNormalizedS());
   }
 
   /** Get the tesseral-sectorial and zonal coefficients.
@@ -98,26 +102,29 @@ public abstract class PotentialCoefficientsReader {
    * @throws OrekitException 
    */
   private double[][] truncateArray(int n, int m, double[][] complete)
-    throws OrekitException {
+      throws OrekitException {
 
     // safety checks
     if (n >= complete.length) {
-      throw new OrekitException("too large degree (n = {0}), potential maximal degree is {1})",
+      throw new OrekitException(
+                                "too large degree (n = {0}), potential maximal degree is {1})",
                                 new String[] {
-                                  Integer.toString(n),
-                                  Integer.toString(complete.length-1)
+                                    Integer.toString(n),
+                                    Integer.toString(complete.length - 1)
                                 });
     }
-    if (m >= complete[complete.length-1].length) {
-      throw new OrekitException("too large order (m = {0}), potential maximal order is {1})",
+    if (m >= complete[complete.length - 1].length) {
+      throw new OrekitException(
+                                "too large order (m = {0}), potential maximal order is {1})",
                                 new String[] {
-                                  Integer.toString(m),
-                                  Integer.toString(complete[complete.length-1].length-1)
+                                    Integer.toString(m),
+                                    Integer
+                                        .toString(complete[complete.length - 1].length - 1)
                                 });
     }
 
     // truncate each array row in turn
-    double[][] result = new double[n+1][];
+    double[][] result = new double[n + 1][];
     for (int i = 0; i <= n; i++) {
       double[] ri = new double[Math.min(i, m) + 1];
       System.arraycopy(complete[i], 0, ri, 0, ri.length);
@@ -199,24 +206,26 @@ public abstract class PotentialCoefficientsReader {
 
     // allocate a triangular array
     double[][] unNormalized = new double[normalized.length][];
-    unNormalized[0] = new double[] { normalized[0][0] };
+    unNormalized[0] = new double[] {
+      normalized[0][0]
+    };
 
     // initialization
-    double factN        = 1.0;
+    double factN = 1.0;
     double mfactNMinusM = 1.0;
-    double mfactNPlusM  = 1.0;
+    double mfactNPlusM = 1.0;
 
     // unnormalize the coefficients
     for (int n = 1; n < normalized.length; n++) {
       double[] uRow = new double[n + 1];
       double[] nRow = normalized[n];
       double coeffN = 2.0 * (2 * n + 1);
-      factN        *= n;
-      mfactNMinusM  = factN;
-      mfactNPlusM   = factN;
-      uRow[0]       = Math.sqrt(2 * n + 1) * normalized[n][0];
+      factN *= n;
+      mfactNMinusM = factN;
+      mfactNPlusM = factN;
+      uRow[0] = Math.sqrt(2 * n + 1) * normalized[n][0];
       for (int m = 1; m < nRow.length; m++) {
-        mfactNPlusM  *= (n + m);
+        mfactNPlusM *= (n + m);
         mfactNMinusM /= (n - m + 1);
         uRow[m] = Math.sqrt((coeffN * mfactNMinusM) / mfactNPlusM) * nRow[m];
       }
@@ -242,7 +251,7 @@ public abstract class PotentialCoefficientsReader {
   }
 
   /** fully normalized zonal coefficients array */
-  protected double[]   normalizedJ;
+  protected double[] normalizedJ;
 
   /** fully normalized tesseral-sectorial coefficients matrix */
   protected double[][] normalizedC;
@@ -251,7 +260,7 @@ public abstract class PotentialCoefficientsReader {
   protected double[][] normalizedS;
 
   /** un-normalized zonal coefficients array */
-  private double[]   unNormalizedJ;
+  private double[] unNormalizedJ;
 
   /** un-normalized tesseral-sectorial coefficients matrix */
   private double[][] unNormalizedC;
