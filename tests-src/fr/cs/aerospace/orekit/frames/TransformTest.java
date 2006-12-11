@@ -116,7 +116,7 @@ public class TransformTest extends TestCase {
 	  // rotation transform test
 	  PVCoordinates pointP3 = new PVCoordinates(Vector3D.plusJ, new Vector3D(-2, 1, 0));
 	  Rotation R = new Rotation(Vector3D.plusK, Math.PI/2);	  
-	  Transform R1toR3 = new Transform(R, new Vector3D(0, 0, 2));
+	  Transform R1toR3 = new Transform(R, new Vector3D(0, 0, -2));
 	  PVCoordinates result2 = R1toR3.transformPVCoordinates(pointP1);
 	  checkVectors(pointP3.getPosition(), result2.getPosition());
       checkVectors(pointP3.getVelocity(), result2.getVelocity());
@@ -138,7 +138,7 @@ public class TransformTest extends TestCase {
 	  // combine 2 rotation tranform
 	  PVCoordinates pointP5 = new PVCoordinates(new Vector3D(-1,0,0),new Vector3D(-1 , 0 , 3));
 	  Rotation R2 = new Rotation( new Vector3D(0,0,1), Math.PI );	  
-	  Transform R1toR5 = new Transform(R2 , new Vector3D(0, 3, 0));
+	  Transform R1toR5 = new Transform(R2 , new Vector3D(0, -3, 0));
 	  Transform R3toR5 = new Transform (R3toR1, R1toR5);
 	  PVCoordinates combResult = R3toR5.transformPVCoordinates(pointP3);
 	  checkVectors(pointP5.getPosition() , combResult.getPosition());

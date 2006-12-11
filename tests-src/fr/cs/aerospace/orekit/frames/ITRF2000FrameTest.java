@@ -160,23 +160,22 @@ public class ITRF2000FrameTest extends TestCase {
       AbsoluteDate date = new AbsoluteDate(t0, -2 * h);
       Rotation evoM2h = Frame.getJ2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
       double alphaM2h = -evoM2h.getAngle();
-      Vector3D axisM2h = Vector3D.negate(evoM2h.getAxis());
+      Vector3D axisM2h = evoM2h.getAxis();
       date = new AbsoluteDate(t0, -h);
       Rotation evoM1h = Frame.getJ2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
       double alphaM1h = -evoM1h.getAngle();
-      Vector3D axisM1h = Vector3D.negate(evoM1h.getAxis());
+      Vector3D axisM1h = evoM1h.getAxis();
       date = new AbsoluteDate(t0,  h);
       Rotation evoP1h = Frame.getJ2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
       double alphaP1h =  evoP1h.getAngle();
-      Vector3D axisP1h = evoP1h.getAxis();
+      Vector3D axisP1h = Vector3D.negate(evoP1h.getAxis());
       date = new AbsoluteDate(t0, 2 * h);
       Rotation evoP2h = Frame.getJ2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
       double alphaP2h =  evoP2h.getAngle();
-      Vector3D axisP2h = evoP2h.getAxis();
+      Vector3D axisP2h = Vector3D.negate(evoP2h.getAxis());
       double w = (8 * (alphaP1h - alphaM1h) - (alphaP2h - alphaM2h)) / (12 * h);
       Vector3D axis = Vector3D.add(Vector3D.add(axisM2h, axisM1h), Vector3D.add(axisP1h, axisP2h));
       axis.normalizeSelf();
-     
       Transform tr = new Transform(trans.getRotation() , new Vector3D(w ,axis));
       
       PVCoordinates pv = new PVCoordinates(posJ2000 , speedJ2000);
@@ -185,13 +184,7 @@ public class ITRF2000FrameTest extends TestCase {
       
       checkVectors(result.getVelocity(), speedTestCase, 1e-5, 0.02, 0.02);	
       
-      //    compute local evolution using the ITRF2000Frame transform
-      
       result = trans.transformPVCoordinates(pv);
-//      System.out.println(" vel test " + Vector.toString(speedTestCase));
-//      System.out.println(" vel result " + Vector.toString(result.getVelocity()));
-//      System.out.println(" w passe " + w );
-//      System.out.println(" w passe pas " + trans.getRotAxis().getNorm() );
       checkVectors(result.getVelocity(), speedTestCase, 1e-5, 0.01, 0.02);
       
       
@@ -222,6 +215,36 @@ public class ITRF2000FrameTest extends TestCase {
 
   }
   
+  public void testGMS1() throws OrekitException, ParseException {
+    AbsoluteDate date = new AbsoluteDate("2006-05-14T00:08:51.423", UTCScale.getInstance());
+    ITRF2000Frame itrf = new ITRF2000Frame(date, false);   
+    Transform trans = itrf.getTransformTo(Frame.getJ2000(), date);
+    Vector3D posITRF = new Vector3D(6770000.000, -144000.000, 488000.000);
+    Vector3D velITRF = new Vector3D(530.000, 4260.000, -5980.000);
+    PVCoordinates pv2000 = trans.transformPVCoordinates(new PVCoordinates(posITRF, velITRF));
+    assertEquals(-4120240.360036977,  pv2000.getPosition().getX(), 1.0e-10);
+    assertEquals(-5373504.716481836,  pv2000.getPosition().getY(), 1.0e-10);
+    assertEquals(490761.07982380746,  pv2000.getPosition().getZ(), 1.0e-10);
+    assertEquals(3509.5443642075716,  pv2000.getVelocity().getX(), 1.0e-10);
+    assertEquals(-3247.8483989909146, pv2000.getVelocity().getY(), 1.0e-10);
+    assertEquals(-5982.019512837689,  pv2000.getVelocity().getZ(), 1.0e-10);
+  }
+
+  public void testGMS2() throws OrekitException, ParseException {
+    AbsoluteDate date = new AbsoluteDate("2006-05-14T00:16:08.631", UTCScale.getInstance());
+    ITRF2000Frame itrf = new ITRF2000Frame(date, true);   
+    Transform trans = itrf.getTransformTo(Frame.getJ2000(), date);
+    Vector3D posITRF = new Vector3D(6254020.457, 1663297.258, -2070251.762);
+    Vector3D velITRF = new Vector3D(-2861.533, 3913.691, -5536.168);
+    PVCoordinates pv2000 = trans.transformPVCoordinates(new PVCoordinates(posITRF, velITRF));
+    assertEquals(-2166074.5292187054,  pv2000.getPosition().getX(), 1.0e-10);
+    assertEquals(-6098691.112316115,  pv2000.getPosition().getY(), 1.0e-10);
+    assertEquals(-2068661.3675358547,  pv2000.getPosition().getZ(), 1.0e-10);
+    assertEquals(5287.320112599562,  pv2000.getVelocity().getX(), 1.0e-10);
+    assertEquals(-11.208557244797248, pv2000.getVelocity().getY(), 1.0e-10);
+    assertEquals(-5539.41752885036,  pv2000.getVelocity().getZ(), 1.0e-10);
+  }
+
   public void setUp() {
     System.setProperty("orekit.iers.directory",
                        new File(rootDir, "compressed-data").getAbsolutePath());

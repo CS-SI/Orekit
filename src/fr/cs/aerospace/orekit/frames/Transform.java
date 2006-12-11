@@ -92,9 +92,9 @@ public class Transform
   /** The new velocity */ 
   private static Vector3D compositeVelocity(Transform first, Transform second) {
     return Vector3D.add(first.velocity,
-                        first.rotation.applyInverseTo(Vector3D.subtract(second.velocity,
-                                                                        Vector3D.crossProduct(first.rotationRate,
-                                                                                              second.translation))));
+                        first.rotation.applyInverseTo(Vector3D.add(second.velocity,
+                                                                   Vector3D.crossProduct(first.rotationRate,
+                                                                                         second.translation))));
   }
   
   /** The new rotation */ 
@@ -113,7 +113,7 @@ public class Transform
   public Transform getInverse() {
 	Vector3D reversedTranslation = rotation.applyTo(Vector3D.negate(translation));
     return new Transform(reversedTranslation, 
-                         Vector3D.subtract(Vector3D.crossProduct(rotationRate, reversedTranslation),
+                         Vector3D.subtract(Vector3D.crossProduct(reversedTranslation, rotationRate),
                                            rotation.applyTo(velocity)),
                          rotation.revert(),
                          rotation.applyInverseTo(Vector3D.negate(rotationRate)));
@@ -141,8 +141,8 @@ public class Transform
     Vector3D v = pv.getVelocity();
     Vector3D transformedP = rotation.applyTo(Vector3D.add(translation, p));
     return new PVCoordinates(transformedP,
-                             Vector3D.add(Vector3D.crossProduct(rotationRate, transformedP),
-                                          rotation.applyTo(Vector3D.add(v, velocity))));
+                             Vector3D.subtract(rotation.applyTo(Vector3D.add(v, velocity)),
+                                               Vector3D.crossProduct(rotationRate, transformedP)));
   }
 
   /** Get the underlying elementary translation.

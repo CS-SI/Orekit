@@ -30,7 +30,6 @@ public class DragTest extends TestCase {
             
       Transform toBody = Frame.getJ2000().getTransformTo(itrf, date);
       Vector3D test = Vector3D.crossProduct(toBody.getRotAxis(),posInJ2000);
-      
       test = Vector3D.subtract(test, vel);
       
       assertEquals(0, test.getNorm(), 2.1e-5);

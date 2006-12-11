@@ -53,11 +53,11 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
    */
   public Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame) 
     throws OrekitException {
-    Transform frameToBody = frame.getTransformTo(bodyFrame, date);
-    PVCoordinates pv = new PVCoordinates(position , new Vector3D());
-    pv = frameToBody.transformPVCoordinates(pv);
-    return frameToBody.getInverse().transformVector
-                           (pv.getVelocity());
+    Transform bodyToFrame = bodyFrame.getTransformTo(frame, date);
+    Vector3D posInBody = bodyToFrame.getInverse().transformPosition(position);
+    PVCoordinates pvBody = new PVCoordinates(posInBody, new Vector3D(0, 0, 0));
+    PVCoordinates pvFrame = bodyToFrame.transformPVCoordinates(pvBody);
+    return pvFrame.getVelocity();
   }
 
   private BodyShape    shape;
