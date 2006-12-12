@@ -2,7 +2,7 @@ package fr.cs.aerospace.orekit.models.spacecraft;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.forces.perturbations.SolarRadiationPressure;
-
+//TODO clarify these notions
 /** Adapted container for the SolarRadiationPressure force model.
  * 
  * @see SolarRadiationPressure
@@ -18,13 +18,13 @@ public interface SolarRadiationPressureSpacecraft {
 
   /** Get the absorption coefficients vector.
    * @param direction direction of the light flux in the spacecraft frame
-   * @return absorption coefficients vector
+   * @return absorption coefficients vector in the spacecraft frame
    */
   public Vector3D getAbsCoef(Vector3D direction);
 
   /** Get the specular reflection coefficients vector.
    * @param direction direction of the light flux in the spacecraft frame
-   * @return specular reflection coefficients vector
+   * @return specular reflection coefficients vector in the spacecraft frame
    */
   public Vector3D getReflectionCoef(Vector3D direction);
 

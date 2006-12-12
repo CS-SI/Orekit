@@ -1,7 +1,6 @@
 package fr.cs.aerospace.orekit.forces.perturbations;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
-
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.bodies.ThirdBody;
@@ -72,11 +71,13 @@ public class SolarRadiationPressure implements ForceModel {
                         pvCoordinates.getPosition(), frame, date);
 
     // spacecraft characteristics effects
+//  TODO clarify these notions
     Vector3D u = new Vector3D(satSunVector);
     u.normalizeSelf();
     Vector3D inSpacecraft = ak.getAttitude().applyTo(u);
     double kd = (1.0 - spacecraft.getAbsCoef(inSpacecraft).getNorm())
     * (1.0 - spacecraft.getReflectionCoef(inSpacecraft).getNorm());
+ 
     double acceleration = rawP * (1 + kd * 4.0 / 9.0 )
     * spacecraft.getSurface(inSpacecraft) / mass;
 
@@ -115,7 +116,7 @@ public class SolarRadiationPressure implements ForceModel {
 
     double result = 1.0;
 
-    // Is the satellite is in complete penumbra ?
+    // Is the satellite in complete penumbra ?
     if (sunEarthAngle - alphaEarth + alphaSun < 0.0) {
       result = 0.0;
     }

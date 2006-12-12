@@ -8,7 +8,6 @@ import fr.cs.aerospace.orekit.utils.Line;
  * <p>The shape is not provided as a single complete geometrical
  * model, but single points can be queried ({@link #getIntersectionPoint}).</p>
  * @author Luc Maisonobe
- * $Id$
  */
 public interface BodyShape {
 

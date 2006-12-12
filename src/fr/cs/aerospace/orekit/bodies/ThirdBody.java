@@ -6,7 +6,6 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
 /** This class represents an attracting body different from the central one.
- * @version $Id$
  * @author E. Delente
  */
 

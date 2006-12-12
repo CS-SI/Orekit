@@ -16,7 +16,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /** Third body attraction force model.
  *  
- * @author F. Maussion , E.Delente
+ * @author F. Maussion
  */
 public class ThirdBodyAttraction implements ForceModel {
 
@@ -42,8 +42,8 @@ public class ThirdBodyAttraction implements ForceModel {
 		Vector3D centralBody = new Vector3D(-1.0 , pvCoordinates.getPosition());
 		centralBody = Vector3D.add(centralBody,otherBody);
 		
-		centralBody = Vector3D.multiply(1/Math.pow(centralBody.getNorm(), 3),centralBody);
-		otherBody = Vector3D.multiply(1/Math.pow(otherBody.getNorm(), 3),otherBody);
+		centralBody = Vector3D.multiply(1.0/Math.pow(centralBody.getNorm(), 3),centralBody);
+		otherBody = Vector3D.multiply(1.0/Math.pow(otherBody.getNorm(), 3),otherBody);
 		
 		Vector3D gamma = Vector3D.subtract(centralBody, otherBody);
 		gamma = Vector3D.multiply(body.getMu(), gamma);

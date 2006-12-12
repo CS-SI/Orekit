@@ -8,15 +8,54 @@ import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /** Transformation class in three dimensional space.
+ * 
  * <p>This class represents the transformation engine between {@link Frame frames}.
  * It is used both to define the relationship between each frame and its
  * parent frame and to gather all individual transforms into one
  * operation when converting between frames far away from each other.</p>
+ * <p> The convention used in OREKIT is vectorial transformation. It means
+ * that a transformation is defined as a transform to apply to the
+ * coordinates of a vector expressed in the old frame to obtain the 
+ * same vector expressed in the new frame. <p>
+ * <pre> 
+ * 
+ * 1 ) Example of translation from R<sub>A</sub> to R<sub>B</sub>:
+ * We want to transform the {@link PVCoordinates} PV<sub>A</sub> to PV<sub>B</sub>.
+ * 
+ * With :  PV<sub>A</sub> = ( {1,0,0} , {1,0,0} );
+ * and  :  PV<sub>B</sub> = ( {0,0,0} , {0,0,0} );
+ * 
+ * The transform to apply then is defined as follows :
+ * 
+ * Vector3D translation = new Vector3D(-1,0,0);
+ * Vector3D velocity = new Vector3D(-1,0,0);
+ * 
+ * Transform RAtoRB = new Transform(translation , Velocity); 
+ * 
+ * PV<sub>B</sub> = R1toR2.transformPVCoordinates(PV<sub>A</sub>);
+ * 
+ *
+ * 2 ) Example of rotation from R<sub>A</sub> to R<sub>B</sub>:
+ * We want to transform the {@link PVCoordinates} PV<sub>A</sub> to PV<sub>B</sub>.
+ * 
+ * With :  PV<sub>A</sub> = ( {1,0,0} , {1,0,0} );
+ * and  :  PV<sub>B</sub> = ( {0,1,0} , {-2,1,0} );
+ * 
+ * The transform to apply then is defined as follows :
+ * 
+ * Rotation rotation = new Roation(new Vector3D(0,0,1), Math.PI/2);
+ * Vector3D rotationRate = new Vector3D(0, 0, -2));
+ * 
+ * Transform R1toR2 = new Transform(rotation , rotationRate); 
+ * 
+ * PV<sub>B</sub> = R1toR2.transformPVCoordinates(PV<sub>A</sub>);
+ * 
+ * </pre>
+ * 
  *  @author L. Maisonobe
  *  @author F. Maussion
  */
-public class Transform 
- implements Serializable {
+public class Transform implements Serializable {
 
   /** Build a transform from its primitive operations.
    * @param translation first primitive operation to apply
@@ -48,7 +87,9 @@ public class Transform
   }
 
   /** Build a rotation transform.
-   * @param rotation rotation to apply
+   * @param rotation rotation to apply ( i.e. rotation to apply to the
+   * coordinates of a vector expressed in the old frame to obtain the 
+   * same vector expressed in the new frame )
    */
   public Transform(Rotation rotation) {
     this(new Vector3D(), new Vector3D(), rotation, new Vector3D());
@@ -58,22 +99,24 @@ public class Transform
    * @param translation translation to apply (i.e. coordinates of
    * the transformed origin, or coordinates of the origin of the
    * old frame in the new frame) 
-   * @param velocity the velocity of the translation (i.e. velocity 
-   * of the transformed origin)
+   * @param velocity the velocity of the translation (i.e. origin 
+   * of the old frame velocity in the new frame)
    */
   public Transform(Vector3D translation, Vector3D velocity) {
-	  this(translation, velocity, new Rotation(), new Vector3D());
+    this(translation, velocity, new Rotation(), new Vector3D());
   }
-  
+
   /** Build a rotation transform.
-   * @param rotation rotation to apply
+   * @param rotation rotation to apply ( i.e. rotation to apply to the
+   * coordinates of a vector expressed in the old frame to obtain the 
+   * same vector expressed in the new frame )
    * @param rotationRate the axis of the instant rotation
-   *  expressed in the new frame. (norm representing angular rate) 
+   * expressed in the new frame. (norm representing angular rate) 
    */
   public Transform(Rotation rotation, Vector3D rotationRate) {
-	  this(new Vector3D(), new Vector3D(), rotation, rotationRate);
+    this(new Vector3D(), new Vector3D(), rotation, rotationRate);
   }
-  
+
   /** Build a transform by combining two existing ones.
    * @param first first transform applied
    * @param second second transform applied
@@ -82,13 +125,13 @@ public class Transform
     this(compositeTranslation(first, second), compositeVelocity(first, second),
          compositeRotation(first, second), compositeRotationRate(first, second));
   }
-  
+
   /** The new translation */ 
   private static Vector3D compositeTranslation(Transform first, Transform second) {
     return Vector3D.add(first.translation,
                         first.rotation.applyInverseTo(second.translation));
   }
-  
+
   /** The new velocity */ 
   private static Vector3D compositeVelocity(Transform first, Transform second) {
     return Vector3D.add(first.velocity,
@@ -96,27 +139,27 @@ public class Transform
                                                                    Vector3D.crossProduct(first.rotationRate,
                                                                                          second.translation))));
   }
-  
+
   /** The new rotation */ 
   private static Rotation compositeRotation(Transform first, Transform second) {
     return second.rotation.applyTo(first.rotation);
   }
-  
+
   /** The new rotation rate */ 
   private static Vector3D compositeRotationRate(Transform first, Transform second) {
     return Vector3D.add(second.rotationRate, second.rotation.applyTo(first.rotationRate));
   }
-  
+
   /** Get the inverse transform of the instance.
    * @return inverse transform of the instance
    */
   public Transform getInverse() {
-	Vector3D reversedTranslation = rotation.applyTo(Vector3D.negate(translation));
+    Vector3D reversedTranslation = rotation.applyTo(Vector3D.negate(translation));
     return new Transform(reversedTranslation, 
                          Vector3D.subtract(Vector3D.crossProduct(reversedTranslation, rotationRate),
                                            rotation.applyTo(velocity)),
-                         rotation.revert(),
-                         rotation.applyInverseTo(Vector3D.negate(rotationRate)));
+                                           rotation.revert(),
+                                           rotation.applyInverseTo(Vector3D.negate(rotationRate)));
   }
 
   /** Transform a position vector (including translation effects).
@@ -132,7 +175,7 @@ public class Transform
   public Vector3D transformVector(Vector3D vector) {
     return rotation.applyTo(vector);
   } 
-  
+
   /** Transform {@link PVCoordinates} including cinematic effects.
    * @param pv the couple position-velocity to tranform.
    */
@@ -179,7 +222,7 @@ public class Transform
    * @return First time derivative of the rotation
    */
   public Vector3D getRotAxis() {
-  	return rotationRate;
+    return rotationRate;
   }
 
   /** Global translation. */
@@ -187,7 +230,7 @@ public class Transform
 
   /** First time derivative of the translation. */
   private Vector3D velocity;
-  
+
   /** Global rotation. */
   private Rotation rotation;
 

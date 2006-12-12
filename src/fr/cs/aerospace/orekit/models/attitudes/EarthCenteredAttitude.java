@@ -12,7 +12,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
 /** Earth centered attitute representation.
  * 
  * <p> It ensures that the Z axis of the specraft is pointing on the inertial
- * frame origin, and that the X axis is alined on the spacecraft velocity. <p> 
+ * frame origin, and that the Y axis is orthogonal to the orbital plane. <p> 
  * 
  * <p> Perfectly automatised attitude, as it does not consider the
  *  perturbing couples, the captors and spacecraft dynamic.</p>
@@ -44,7 +44,8 @@ public class EarthCenteredAttitude implements AttitudeKinematicsProvider {
     pos.normalizeSelf();
     Vector3D vel = pv.getPosition();
     vel.normalizeSelf();
-    Rotation R = new Rotation(pos , vel , Vector3D.plusK, Vector3D.plusI);
+    Rotation R = new Rotation(pos , Vector3D.crossProduct(vel, pos),
+                              Vector3D.plusK, Vector3D.plusJ);
     
     //  compute semi-major axis
     double r       = pv.getPosition().getNorm();

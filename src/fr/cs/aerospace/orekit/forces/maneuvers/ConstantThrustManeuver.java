@@ -136,13 +136,12 @@ public class ConstantThrustManeuver implements ForceModel {
     }
 
     public double getMaxCheckInterval() {
-      // we dont wan't to miss the fire
       return duration;
     }
 
     public double getThreshold() {
       // convergence threshold in seconds
-      return 1.0e-3;
+      return 1.0e-4;
     }
 
   }
@@ -169,7 +168,7 @@ public class ConstantThrustManeuver implements ForceModel {
 
     public double getThreshold() {
       // convergence threshold in seconds
-      return 1.0e-3;
+      return 1.0e-4;
     }
 
   }

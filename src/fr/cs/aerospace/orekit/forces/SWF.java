@@ -15,7 +15,6 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * <p>Switching functions are a useful solution to meet the requirements of 
  * integrators concerning discontinuities problems.</p>
  *
- * @version $Id: SWF.java 1032 2006-09-28 08:25:21 +0000 (jeu., 28 sept. 2006) fabien $
  * @author F. Maussion
  * @author E. Delente
  */

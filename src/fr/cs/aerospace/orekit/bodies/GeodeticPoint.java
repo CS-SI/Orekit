@@ -5,7 +5,6 @@ package fr.cs.aerospace.orekit.bodies;
  * it does not provide any processing method.</p>
  * @see BodyShape
  * @author Luc Maisonobe
- * $Id$
  */
 public class GeodeticPoint {
 

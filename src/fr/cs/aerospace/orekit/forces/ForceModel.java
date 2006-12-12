@@ -23,27 +23,28 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * @author L. Maisonobe
  */
 
-
 public interface ForceModel {
 
-    /** Compute the contribution of the force model to the perturbing
-     * acceleration.
-     * </p> The PVCoordinates and the adder must be defined in the same frame. 
-     * The propagator handles correctly the frames and coordinates.</p>
-     * @param t current date
-     * @param pvCoordinates the {@link PVCoordinates}
-     * @param frame in which are defined the coordinates
-     * @param mass the current mass (kg)
-     * @param ak the attitude representation
-     * @param adder object where the contribution should be added
-     */
-    public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, 
-                                Frame frame, double mass, AttitudeKinematics ak, TimeDerivativesEquations adder) throws OrekitException;
+  /** Compute the contribution of the force model to the perturbing
+   * acceleration.
+   * </p> The PVCoordinates and the adder must be defined in the same frame. 
+   * The propagator handles correctly the frames and coordinates.</p>
+   * @param t current date
+   * @param pvCoordinates the {@link PVCoordinates}
+   * @param frame in which are defined the coordinates
+   * @param mass the current mass (kg)
+   * @param ak the attitude representation
+   * @param adder object where the contribution should be added
+   */
+  public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates,
+                              Frame frame, double mass, AttitudeKinematics ak,
+                              TimeDerivativesEquations adder)
+      throws OrekitException;
 
-    /** Get the switching functions internally used by the model itself.
-     * @return array of switching functions or null if the model doesn't need
-     * any switching function by itself
-     */
-    public SWF[] getSwitchingFunctions();
+  /** Get the switching functions internally used by the model itself.
+   * @return array of switching functions or null if the model doesn't need
+   * any switching function by itself
+   */
+  public SWF[] getSwitchingFunctions();
 
 }

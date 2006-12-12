@@ -25,8 +25,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  *  <p> - The second one ({@link #ORBITALPLANE}) ensures that the Y axis of 
  *  the specraft is exactly orthogonal to the orbital plane, wich contains
  *  the X and Z axis. So the Z axis direction is as close as possible of 
- *  the {@link BodyShape} surface normale, and the X axis is close to the
- *  spacecraft velocity. </p> 
+ *  the {@link BodyShape} surface normale. </p>
  *   
  * </p>
  * 
@@ -47,11 +46,16 @@ public class NadirPointingAttitude implements AttitudeKinematicsProvider {
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    * @param body the body shape to point at
    * @param type, {@link #PURENADIR} or {@link #ORBITALPLANE}
+   * @param pitchBias the bias around Y
+   * @param rollBias the bias around K (applied after the pitch)
    */
-  public NadirPointingAttitude(double mu, BodyShape body, int type) {
+  public NadirPointingAttitude(double mu, BodyShape body, int type, 
+                               double pitchBias, double rollBias) {
     this.body = body;
     this.mu = mu;
     this.type = type;
+    this.roll = rollBias;
+    this.pitch = pitchBias;
   }
 
   /** Simple constructor with a classical ellipsoid earth.
@@ -60,11 +64,16 @@ public class NadirPointingAttitude implements AttitudeKinematicsProvider {
    * 1.0 / 298.257222101 <p>
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    * @param type, {@link #PURENADIR} or {@link #ORBITALPLANE}
+   * @param pitchBias the bias around Y
+   * @param rollBias the bias around K (applied after the pitch)
    */
-  public NadirPointingAttitude(double mu, int type) {
+  public NadirPointingAttitude(double mu, int type, 
+                               double pitchBias, double rollBias) {
     this.body = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101);
     this.mu = mu;
     this.type = type;
+    this.roll = rollBias;
+    this.pitch = pitchBias;
   }
 
   /** Get the attitude representation in the selected frame.
@@ -96,6 +105,10 @@ public class NadirPointingAttitude implements AttitudeKinematicsProvider {
       throw new IllegalArgumentException(" Attitude type is not correct ");
     }
 
+    Rotation pitch = new Rotation(Vector3D.plusJ, this.pitch);
+    Rotation roll = new Rotation(Vector3D.plusK, this.roll);
+    R = roll.applyTo(pitch.applyTo(R));
+    
     //  compute semi-major axis
     double r       = pv.getPosition().getNorm();
     double V2      = Vector3D.dotProduct(pv.getVelocity(), pv.getVelocity());
@@ -117,4 +130,8 @@ public class NadirPointingAttitude implements AttitudeKinematicsProvider {
 
   /** Central body gravitation constant */
   private double mu;
+  
+  /** Bias */
+  private double roll;
+  private double pitch;
 }

@@ -33,27 +33,26 @@ public class Drag implements ForceModel {
    * @param pvCoordinates the position end velocity
    * @param adder object where the contribution should be added
    * @param date current date
+   * @throws OrekitException 
    */
-  public void addContribution(AbsoluteDate date,
-		                      PVCoordinates pvCoordinates, 
-                              Frame frame, double mass, AttitudeKinematics ak, TimeDerivativesEquations adder) {
+  public void addContribution(AbsoluteDate date, PVCoordinates pvCoordinates,
+                              Frame frame, double mass, AttitudeKinematics ak,
+                              TimeDerivativesEquations adder)
+      throws OrekitException {
 
-    double   rho       = atmosphere.getDensity(date, pvCoordinates.getPosition());
+    double rho = atmosphere.getDensity(date, pvCoordinates.getPosition());
     Vector3D vAtm;
-    try {
-      vAtm = atmosphere.getVelocity(date, pvCoordinates.getPosition(), frame);
-    } catch (OrekitException e) {
-      vAtm = new Vector3D();
-      e.printStackTrace();
-    }
+
+    vAtm = atmosphere.getVelocity(date, pvCoordinates.getPosition(), frame);
+
     Vector3D incidence = Vector3D.subtract(vAtm, pvCoordinates.getVelocity());
-    double   v2        = Vector3D.dotProduct(incidence, incidence);
+    double v2 = Vector3D.dotProduct(incidence, incidence);
     incidence.normalizeSelf();
-    
+
     Vector3D inSpacecraft = ak.getAttitude().applyTo(incidence);
-    double   k         = rho * v2 * spacecraft.getSurface(inSpacecraft)
-                       / (2 * mass);
-    Vector3D cD        = spacecraft.getDragCoef(inSpacecraft);
+    double k = rho * v2 * spacecraft.getSurface(inSpacecraft) / (2 * mass);
+    Vector3D cD = spacecraft.getDragCoef(inSpacecraft);
+    ak.getAttitude().applyInverseTo(cD);
 
     // Additition of calculated acceleration to adder
     adder.addXYZAcceleration(k * cD.getX(), k * cD.getY(), k * cD.getZ());
