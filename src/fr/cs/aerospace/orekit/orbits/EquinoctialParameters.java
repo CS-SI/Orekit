@@ -92,8 +92,7 @@ public class EquinoctialParameters
     a              = r / (2 - rV2OnMu);
     
     // compute inclination vector
-    Vector3D w = Vector3D.crossProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity());
-    w.normalizeSelf();
+    Vector3D w = Vector3D.crossProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity()).normalize();
     double d = 1. / (1 + w.getZ());
     hx = -d * w.getY();
     hy =  d * w.getX();

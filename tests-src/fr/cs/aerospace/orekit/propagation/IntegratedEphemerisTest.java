@@ -58,7 +58,7 @@ public class IntegratedEphemerisTest extends TestCase {
       keplerIntermediateOrbit = keplerEx.getSpacecraftState(intermediateDate);
       numericIntermediateOrbit = ephemeris.getSpacecraftState(intermediateDate);
 
-      Vector3D test = Vector3D.subtract(keplerIntermediateOrbit.getPVCoordinates(mu).getPosition(),
+      Vector3D test = keplerIntermediateOrbit.getPVCoordinates(mu).getPosition().subtract(
                                         numericIntermediateOrbit.getPVCoordinates(mu).getPosition());
       assertEquals(0, test.getNorm(), 10e-2);
     }
@@ -70,7 +70,7 @@ public class IntegratedEphemerisTest extends TestCase {
     numericEx.propagate(initialOrbit , initDate , ephemeris );
     numericIntermediateOrbit = ephemeris.getSpacecraftState(intermediateDate);
 
-    Vector3D test = Vector3D.subtract(keplerIntermediateOrbit.getPVCoordinates(mu).getPosition(),
+    Vector3D test = keplerIntermediateOrbit.getPVCoordinates(mu).getPosition().subtract(
                                       numericIntermediateOrbit.getPVCoordinates(mu).getPosition());
     assertEquals(0, test.getNorm(), 10e-2);
 

@@ -88,9 +88,9 @@ public class FrameTest extends TestCase {
     Vector3D k50Ref = new Vector3D(-4.865810248725263e-3,
                                     1.3081367862337385e-5,
                                     0.9999881617896792);
-    assertEquals(0, Vector3D.subtract(i50, i50Ref).getNorm(), 1.0e-15);
-    assertEquals(0, Vector3D.subtract(j50, j50Ref).getNorm(), 1.0e-15);
-    assertEquals(0, Vector3D.subtract(k50, k50Ref).getNorm(), 1.0e-15);
+    assertEquals(0, i50.subtract(i50Ref).getNorm(), 1.0e-15);
+    assertEquals(0, j50.subtract(j50Ref).getNorm(), 1.0e-15);
+    assertEquals(0, k50.subtract(k50Ref).getNorm(), 1.0e-15);
   }
   
   private Transform randomTransform(Random random) {
@@ -120,9 +120,9 @@ public class FrameTest extends TestCase {
                                 random.nextDouble(),
                                 random.nextDouble());
       Vector3D b = transform.transformVector(a);
-      assertEquals(0, Vector3D.subtract(a, b).getNorm(), 1.0e-10);
+      assertEquals(0, a.subtract(b).getNorm(), 1.0e-10);
       Vector3D c = transform.transformPosition(a);
-      assertEquals(0, Vector3D.subtract(a, c).getNorm(), 1.0e-10);
+      assertEquals(0, a.subtract(c).getNorm(), 1.0e-10);
     }
   }
   

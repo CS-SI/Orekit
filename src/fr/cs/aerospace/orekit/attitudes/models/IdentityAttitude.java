@@ -1,4 +1,4 @@
-package fr.cs.aerospace.orekit.models.attitudes;
+package fr.cs.aerospace.orekit.attitudes.models;
 
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;

@@ -62,8 +62,8 @@ public class SolarRadiationPressure implements ForceModel {
   throws OrekitException {
 
     // raw radiation pressure
-    Vector3D satSunVector = Vector3D.subtract(sun.getPosition(date , frame),
-                                              pvCoordinates.getPosition());
+    Vector3D satSunVector = sun.getPosition(date , frame).subtract(
+                                                          pvCoordinates.getPosition());
 
     double dRatio = dRef / satSunVector.getNorm();
     double rawP   = pRef * dRatio * dRatio
@@ -72,8 +72,7 @@ public class SolarRadiationPressure implements ForceModel {
 
     // spacecraft characteristics effects
 //  TODO clarify these notions
-    Vector3D u = new Vector3D(satSunVector);
-    u.normalizeSelf();
+    Vector3D u = satSunVector.normalize();
     Vector3D inSpacecraft = ak.getAttitude().applyTo(u);
     double kd = (1.0 - spacecraft.getAbsCoef(inSpacecraft).getNorm())
     * (1.0 - spacecraft.getReflectionCoef(inSpacecraft).getNorm());
@@ -97,8 +96,7 @@ public class SolarRadiationPressure implements ForceModel {
    */
   public double getLightningRatio(Vector3D position, Frame frame, AbsoluteDate date)
   throws OrekitException {
-    Vector3D satSunVector = Vector3D.subtract(sun.getPosition(date, frame),
-                                              position);
+    Vector3D satSunVector = sun.getPosition(date, frame).subtract(position);
     // Earth apparent radius
     double r = position.getNorm();
     if (r <= centralBody.getEquatorialRadius()) {
@@ -112,7 +110,7 @@ public class SolarRadiationPressure implements ForceModel {
     double alphaSun = sun.getRadius() / satSunVector.getNorm();
 
     // Retrieve the Sat-Sun / Sat-Central body angle
-    double sunEarthAngle = Vector3D.angle(satSunVector, Vector3D.negate(position));
+    double sunEarthAngle = Vector3D.angle(satSunVector, position.negate());
 
     double result = 1.0;
 
@@ -170,7 +168,7 @@ public class SolarRadiationPressure implements ForceModel {
      */
     public double g(AbsoluteDate date, PVCoordinates pvCoordinates, Frame frame, double mass, AttitudeKinematics ak)
     throws OrekitException {
-      Vector3D satSunVector = Vector3D.subtract(sun.getPosition(date, frame),
+      Vector3D satSunVector = sun.getPosition(date, frame).subtract(
                                                 pvCoordinates.getPosition());
       double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pvCoordinates.getPosition());
       double r = pvCoordinates.getPosition().getNorm();
@@ -208,8 +206,8 @@ public class SolarRadiationPressure implements ForceModel {
      */
     public double g(AbsoluteDate date, PVCoordinates pvCoordinates, Frame frame, double mass, AttitudeKinematics ak)
     throws OrekitException {
-      Vector3D satSunVector = Vector3D.subtract(sun.getPosition(date , frame),
-                                                pvCoordinates.getPosition());
+      Vector3D satSunVector = sun.getPosition(date , frame).subtract(
+                                                     pvCoordinates.getPosition());
       double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pvCoordinates.getPosition());
       double r = pvCoordinates.getPosition().getNorm();
       if (r <= centralBody.getEquatorialRadius()) {

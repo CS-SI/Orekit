@@ -172,11 +172,10 @@ public class CunninghamAttractionModelTest extends TestCase {
         Vector3D posEHP  = EHPOrbit.getPVCoordinates(mu).getPosition();
         Vector3D posDROZ = op.getPVCoordinates(mu).getPosition();
         Vector3D velEHP  = EHPOrbit.getPVCoordinates(mu).getVelocity();
-        Vector3D dif     = Vector3D.subtract(posEHP, posDROZ);
+        Vector3D dif     = posEHP.subtract(posDROZ);
 
         Vector3D T = new Vector3D(1 / velEHP.getNorm(), velEHP);
-        Vector3D W = Vector3D.crossProduct(posEHP, velEHP);
-        W.normalizeSelf();
+        Vector3D W = Vector3D.crossProduct(posEHP, velEHP).normalize();
         Vector3D N = Vector3D.crossProduct(W, T);
 
         assertTrue(dif.getNorm() < 103);
@@ -232,7 +231,7 @@ public class CunninghamAttractionModelTest extends TestCase {
 
     SpacecraftState drozOrb = propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date ,  86400));
     
-    Vector3D dif = Vector3D.subtract(cunnOrb.getPVCoordinates(mu).getPosition(),drozOrb.getPVCoordinates(mu).getPosition());
+    Vector3D dif = cunnOrb.getPVCoordinates(mu).getPosition().subtract(drozOrb.getPVCoordinates(mu).getPosition());
     assertTrue(dif.getNorm() < 9.6e-8);
     assertTrue(Math.abs(dif.getX()) < 4.4e-8);
     assertTrue(Math.abs(dif.getY()) < 5.4e-9); 

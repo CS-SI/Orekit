@@ -50,8 +50,7 @@ public class ConstantThrustManeuver implements ForceModel {
     }
     this.force = force;
     this.flowRate = -force/(g0*isp);
-    this.direction = new Vector3D(direction);
-    this.direction.normalizeSelf();
+    this.direction = direction.normalize();
     this.frameType = frameType;
     firing = false;     
   }
@@ -82,9 +81,8 @@ public class ConstantThrustManeuver implements ForceModel {
 
     if(firing) {      
       if (variableDir!=null) {
-        direction = new Vector3D(variableDir.getDirection(t, pvCoordinates,
-                                                          frame, mass, ak));
-        direction.normalizeSelf();
+        direction = variableDir.getDirection(t, pvCoordinates,
+                                                          frame, mass, ak).normalize();
       }
 
       double acc = force/mass;        

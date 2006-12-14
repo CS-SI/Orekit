@@ -1,4 +1,4 @@
-package fr.cs.aerospace.orekit.models.attitudes;
+package fr.cs.aerospace.orekit.attitudes.models;
 
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
@@ -43,13 +43,10 @@ public class ThirdBodyPointingAttitude implements AttitudeKinematicsProvider {
 
     this.spin = spin;
     this.body = body;
-    this.rotAxis = new Vector3D(rotAxis);
-    this.rotAxis.normalizeSelf();
+    this.rotAxis = rotAxis.normalize();
     this.initDate = initDate;
     this.initFrame = frame;
-    Vector3D initBodyDir = Vector3D.subtract(
-                                             body.getPosition(initDate, frame),
-                                             pv.getPosition());
+    Vector3D initBodyDir = body.getPosition(initDate, frame).subtract(pv.getPosition());
     this.R0 = new Rotation(initBodyDir, inertial, this.rotAxis, spacecraft);
 
   } 
@@ -76,8 +73,7 @@ public class ThirdBodyPointingAttitude implements AttitudeKinematicsProvider {
   private Rotation getAttitude(AbsoluteDate date, PVCoordinates pv, Frame frame)
   throws OrekitException {
 
-    Vector3D newBodyDir = Vector3D.subtract(
-                                body.getPosition(date, frame), pv.getPosition());
+    Vector3D newBodyDir = body.getPosition(date, frame).subtract(pv.getPosition());
 
     newBodyDir = R0.applyTo(newBodyDir);
 

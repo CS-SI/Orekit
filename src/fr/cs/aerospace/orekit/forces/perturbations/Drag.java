@@ -45,11 +45,10 @@ public class Drag implements ForceModel {
 
     vAtm = atmosphere.getVelocity(date, pvCoordinates.getPosition(), frame);
 
-    Vector3D incidence = Vector3D.subtract(vAtm, pvCoordinates.getVelocity());
+    Vector3D incidence = vAtm.subtract(pvCoordinates.getVelocity());
     double v2 = Vector3D.dotProduct(incidence, incidence);
-    incidence.normalizeSelf();
-
-    Vector3D inSpacecraft = ak.getAttitude().applyTo(incidence);
+    
+    Vector3D inSpacecraft = ak.getAttitude().applyTo(incidence.normalize());
     double k = rho * v2 * spacecraft.getSurface(inSpacecraft) / (2 * mass);
     Vector3D cD = spacecraft.getDragCoef(inSpacecraft);
     ak.getAttitude().applyInverseTo(cD);

@@ -72,16 +72,15 @@ public class TimeDerivativesEquations {
   private void updateOrbitalFrames() {
     PVCoordinates pvCoordinates = parameters.getPVCoordinates(mu);
         
-    W.setToCrossProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity());
-    W.normalizeSelf();
+    W = Vector3D.crossProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity()).normalize();
+  
+    T = pvCoordinates.getVelocity().normalize();
+    
+    N = Vector3D.crossProduct(W, T);
 
-    T.reset(pvCoordinates.getVelocity());
-    T.normalizeSelf();
-    N.setToCrossProduct(W, T);
-
-    Q.reset(pvCoordinates.getPosition());
-    Q.normalizeSelf();
-    S.setToCrossProduct(W, Q);
+    Q = pvCoordinates.getPosition().normalize();
+   
+    S = Vector3D.crossProduct(W, Q);
   }
 
   /** Initialize all derivatives to zero.

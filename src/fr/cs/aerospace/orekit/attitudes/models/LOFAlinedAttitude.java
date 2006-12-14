@@ -1,4 +1,4 @@
-package fr.cs.aerospace.orekit.models.attitudes;
+package fr.cs.aerospace.orekit.attitudes.models;
 
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
@@ -58,16 +58,14 @@ public class LOFAlinedAttitude implements AttitudeKinematicsProvider {
 
     Rotation R;
     
-    Vector3D W = Vector3D.crossProduct(pv.getPosition(),pv.getVelocity());
-    W.normalizeSelf();
+    Vector3D W = Vector3D.crossProduct(pv.getPosition(),pv.getVelocity()).normalize();
 
     switch (frameType) {
 
     // if frame = QSW ----------------------------------------- 
     case QSW :
 
-      Vector3D Q = new Vector3D(pv.getPosition());
-      Q.normalizeSelf();
+      Vector3D Q = pv.getPosition().normalize();
 
       Vector3D S = Vector3D.crossProduct(W,Q);      
 
@@ -78,8 +76,7 @@ public class LOFAlinedAttitude implements AttitudeKinematicsProvider {
     // if frame = TNW ----------------------------------------- 
     case TNW :
 
-      Vector3D T = new Vector3D(pv.getVelocity());  
-      T.normalizeSelf();
+      Vector3D T = pv.getVelocity().normalize();  
 
       Vector3D N = Vector3D.crossProduct(W,T);     
 

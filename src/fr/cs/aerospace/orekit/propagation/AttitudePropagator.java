@@ -2,8 +2,8 @@ package fr.cs.aerospace.orekit.propagation;
 
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematicsProvider;
+import fr.cs.aerospace.orekit.attitudes.models.IdentityAttitude;
 import fr.cs.aerospace.orekit.forces.ForceModel;
-import fr.cs.aerospace.orekit.models.attitudes.IdentityAttitude;
 
 
 /** Every class implementing this interface realises a contract, which is

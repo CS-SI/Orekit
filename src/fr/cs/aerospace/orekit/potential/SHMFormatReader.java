@@ -10,15 +10,15 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
  * 
  * <p> This format is used to describe the gravity field of EIGEN models, 
  * edited by the GFZ Postdam.  
- * It is described in <a> href="http://www.gfz-potsdam.de/grace/results/"
- *  </a>.
+ * It is described in <ahref="http://www.gfz-potsdam.de/grace/results/">
+ * Potsdam university website </a>
  * 
  * <p> The proper way to use this class is to call the 
- *  {@link fr.cs.aerospace.orekit.potential.PotentialReaderFactory}
+ *  {@link PotentialReaderFactory}
  *  which will determine which reader to use with the selected potential
  *  coefficients file <p>
  *   
- * @see fr.cs.aerospace.orekit.potential.PotentialReaderFactory
+ * @see PotentialReaderFactory
  * @author F. Maussion
  */
 public class SHMFormatReader extends PotentialCoefficientsReader {

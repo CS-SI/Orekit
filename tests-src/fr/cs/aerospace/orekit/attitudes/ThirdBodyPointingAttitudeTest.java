@@ -4,10 +4,10 @@ import java.io.FileNotFoundException;
 import java.text.ParseException;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.Utils;
+import fr.cs.aerospace.orekit.attitudes.models.ThirdBodyPointingAttitude;
 import fr.cs.aerospace.orekit.bodies.ThirdBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.models.attitudes.ThirdBodyPointingAttitude;
 import fr.cs.aerospace.orekit.models.bodies.Sun;
 import fr.cs.aerospace.orekit.orbits.CircularParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
@@ -75,13 +75,13 @@ public class ThirdBodyPointingAttitudeTest extends TestCase {
    final AbsoluteDate medDate = new AbsoluteDate(initDate , finDate.minus(initDate)/2);
    final SpacecraftState medState = kep.getSpacecraftState(medDate);
    
-   Vector3D sunPos = Vector3D.subtract(sun.getPosition(medDate, Frame.getJ2000()) ,
+   Vector3D sunPos = sun.getPosition(medDate, Frame.getJ2000()).subtract(
                                        medState.getPVCoordinates(mu).getPosition());
    Vector3D transX = medState.getAttitude().applyInverseTo(Vector3D.plusI);
    assertEquals(0, Vector3D.angle(transX , sunPos), 1e-15);
    
    final SpacecraftState finState = kep.getSpacecraftState(finDate);    
-   sunPos = Vector3D.subtract(sun.getPosition(finDate, Frame.getJ2000()) ,
+   sunPos = sun.getPosition(finDate, Frame.getJ2000()).subtract(
                               finState.getPVCoordinates(mu).getPosition());
    
    transX = finState.getAttitude().applyInverseTo(Vector3D.plusI);

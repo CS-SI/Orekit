@@ -14,11 +14,11 @@ import org.spaceroots.mantissa.ode.IntegratorException;
 import org.spaceroots.mantissa.ode.SwitchingFunction;
 
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematicsProvider;
+import fr.cs.aerospace.orekit.attitudes.models.IdentityAttitude;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.errors.Translator;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
-import fr.cs.aerospace.orekit.models.attitudes.IdentityAttitude;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
@@ -372,6 +372,9 @@ implements FirstOrderDifferentialEquations, AttitudePropagator {
     }
 
     private SWF swf;
+
+    private static final long serialVersionUID = 2902410850401460548L;
+
 
   }
   

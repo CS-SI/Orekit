@@ -27,7 +27,7 @@ public class TransformTest extends TestCase {
                     new Transform(Vector3D.plusI));
     Vector3D u = transform.transformPosition(new Vector3D(1.0, 1.0, 1.0));
     Vector3D v = new Vector3D(0.0, 1.0, 1.0);
-    assertEquals(0, Vector3D.subtract(u, v).getNorm(), 1.0e-15);
+    assertEquals(0, u.subtract(v).getNorm(), 1.0e-15);
   }
 
   public void testRandomComposition() {
@@ -60,8 +60,8 @@ public class TransformTest extends TestCase {
 
         Vector3D bCombined = combined.transformVector(a);
         Vector3D cCombined = combined.transformPosition(a);
-        assertEquals(0, Vector3D.subtract(bCombined, bRef).getNorm(), 1.0e-11);
-        assertEquals(0, Vector3D.subtract(cCombined, cRef).getNorm(), 3.0e-11);
+        assertEquals(0, bCombined.subtract(bRef).getNorm(), 1.0e-11);
+        assertEquals(0, cCombined.subtract(cRef).getNorm(), 3.0e-11);
 
       }
     }
@@ -87,10 +87,10 @@ public class TransformTest extends TestCase {
       for (int j = 0; j < 10; ++j) {
         Vector3D a = new Vector3D(rnd.nextDouble(), rnd.nextDouble(), rnd.nextDouble());
         Vector3D b = transform.transformVector(a);
-        assertEquals(0, Vector3D.subtract(b, a).getNorm(), 1.0e-10);
+        assertEquals(0, b.subtract(a).getNorm(), 1.0e-10);
         Vector3D c = transform.transformPosition(a);
         assertEquals(0,
-                     Vector3D.subtract(Vector3D.subtract(c, a), delta).getNorm(),
+                     c.subtract(a).subtract(delta).getNorm(),
                      1.0e-13);
       }
     }
@@ -236,12 +236,13 @@ public class TransformTest extends TestCase {
 	      
 	  // we should obtain :    
 	      
-	      Vector3D good =(Vector3D.add(tr.transformPosition(Vector3D.add( pos, new Vector3D( dt , vel))), new Vector3D(dt, transVel )));
+	      Vector3D good =(tr.transformPosition(
+                pos.add(new Vector3D( dt , vel))).add(new Vector3D(dt, transVel)));
 	    
 	  // we have :
 	      
 	      PVCoordinates pvTwo = tr.transformPVCoordinates(pvOne);	      
-	      Vector3D result  = (Vector3D.add(pvTwo.getPosition(), 
+	      Vector3D result  = (pvTwo.getPosition().add( 
 	    		  new Vector3D(dt ,pvTwo.getVelocity()))); 	    
           checkVectors( good , result);
 	      
@@ -272,7 +273,7 @@ public class TransformTest extends TestCase {
         Vector3D bOrtho = Vector3D.crossProduct(axis, b);
         assertEquals(angle, Vector3D.angle(aOrtho, bOrtho), 1.0e-13);
         Vector3D c = transform.transformPosition(a);
-        assertEquals(0, Vector3D.subtract(c, b).getNorm(), 1.0e-13);
+        assertEquals(0, c.subtract(b).getNorm(), 1.0e-13);
       }
 
     }
@@ -280,7 +281,7 @@ public class TransformTest extends TestCase {
   
   private void checkVectors(Vector3D v1 , Vector3D v2) {
 	  
-	  Vector3D d = Vector3D.subtract(v1, v2);
+	  Vector3D d = v1.subtract(v2);
 
 	  assertEquals(0,d.getX(),1.0e-8);
 	  assertEquals(0,d.getY(),1.0e-8);
@@ -318,9 +319,9 @@ public class TransformTest extends TestCase {
                                 random.nextDouble(),
                                 random.nextDouble());
       Vector3D b = transform.transformVector(a);
-      assertEquals(0, Vector3D.subtract(a, b).getNorm(), 1.0e-12);
+      assertEquals(0, a.subtract(b).getNorm(), 1.0e-12);
       Vector3D c = transform.transformPosition(a);
-      assertEquals(0, Vector3D.subtract(a, c).getNorm(), 2.0e-12);
+      assertEquals(0, a.subtract(c).getNorm(), 2.0e-12);
     }
   }
   

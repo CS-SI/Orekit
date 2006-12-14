@@ -37,16 +37,16 @@ public class ThirdBodyAttraction implements ForceModel {
 	public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates,
 			Frame frame, double mass, AttitudeKinematics ak, TimeDerivativesEquations adder) throws OrekitException {
 		
-		Vector3D otherBody = new Vector3D(body.getPosition(t, frame));
+		Vector3D otherBody = body.getPosition(t, frame);
 		
 		Vector3D centralBody = new Vector3D(-1.0 , pvCoordinates.getPosition());
-		centralBody = Vector3D.add(centralBody,otherBody);
+		centralBody = centralBody.add(otherBody);
+        centralBody = centralBody.multiply(1.0/Math.pow(centralBody.getNorm(), 3));
+   
+		otherBody = otherBody.multiply(1.0/Math.pow(otherBody.getNorm(), 3));
 		
-		centralBody = Vector3D.multiply(1.0/Math.pow(centralBody.getNorm(), 3),centralBody);
-		otherBody = Vector3D.multiply(1.0/Math.pow(otherBody.getNorm(), 3),otherBody);
-		
-		Vector3D gamma = Vector3D.subtract(centralBody, otherBody);
-		gamma = Vector3D.multiply(body.getMu(), gamma);
+		Vector3D gamma = centralBody.subtract(otherBody);
+		gamma = gamma.multiply(body.getMu());
 		
 		adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
 	}

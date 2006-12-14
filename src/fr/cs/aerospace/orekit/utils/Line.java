@@ -41,7 +41,7 @@ public class Line {
    * @return a new instance of Line wich is the reverse of line 
    */
   public static Line revert(Line line) {
-    return new Line(line.zero , Vector3D.negate(line.direction));
+    return new Line(line.zero , line.direction.negate());
   }
 
   /** Get the normalized direction vector.
@@ -66,7 +66,7 @@ public class Line {
    * @return abscissa of the point
    */
   public double getAbscissa(Vector3D point) {
-    return Vector3D.dotProduct(Vector3D.subtract( point, zero), direction);
+    return Vector3D.dotProduct(point.subtract(zero), direction);
   }
 
   /** Get one point from the line.
@@ -91,7 +91,7 @@ public class Line {
    * @return distance between the instance and the point
    */
   public double distance(Vector3D p) {
-    Vector3D d = Vector3D.subtract(p, zero);
+    Vector3D d = p.subtract(zero);
     Vector3D n = new Vector3D(1.0, d, -Vector3D.dotProduct(d, direction), direction);
     return n.getNorm();
   }

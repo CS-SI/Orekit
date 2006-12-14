@@ -1,4 +1,4 @@
-package fr.cs.aerospace.orekit.models.attitudes;
+package fr.cs.aerospace.orekit.attitudes.models;
 
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
@@ -39,12 +39,9 @@ public class EarthCenteredAttitude implements AttitudeKinematicsProvider {
                                                   PVCoordinates pv, Frame frame)
       throws OrekitException {
     
-    Vector3D pos = pv.getPosition();
-    pos.negateSelf();
-    pos.normalizeSelf();
+    Vector3D pos = pv.getPosition().negate();
     Vector3D vel = pv.getPosition();
-    vel.normalizeSelf();
-    Rotation R = new Rotation(pos , Vector3D.crossProduct(vel, pos),
+    Rotation R = new Rotation(pos , Vector3D.crossProduct(pos, vel),
                               Vector3D.plusK, Vector3D.plusJ);
     
     //  compute semi-major axis

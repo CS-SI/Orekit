@@ -112,8 +112,7 @@ public class CartesianParametersTest extends TestCase {
     PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
     double mu = 3.9860047e14;
     
-    Vector3D momentum = Vector3D.crossProduct(position, velocity);
-    momentum.normalizeSelf();
+    Vector3D momentum = Vector3D.crossProduct(position, velocity).normalize();
 
     EquinoctialParameters p = new EquinoctialParameters(pvCoordinates, Frame.getJ2000(), mu);
     
@@ -132,9 +131,8 @@ public class CartesianParametersTest extends TestCase {
       // assertTrue(position.getNorm() <= apogeeRadius);
       // assertTrue(position.getNorm() >= perigeeRadius);
       
-      position.normalizeSelf();
-      velocity = p.getPVCoordinates(mu).getVelocity();
-      velocity.normalizeSelf();
+      position= position.normalize();
+      velocity = p.getPVCoordinates(mu).getVelocity().normalize();
       
       // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
       

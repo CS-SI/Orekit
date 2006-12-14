@@ -4,9 +4,9 @@ import java.io.FileNotFoundException;
 import java.text.ParseException;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.Utils;
+import fr.cs.aerospace.orekit.attitudes.models.LOFAlinedAttitude;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.models.attitudes.LOFAlinedAttitude;
 import fr.cs.aerospace.orekit.orbits.CircularParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
@@ -58,8 +58,7 @@ public class LOFAlinedAttitudeTest extends TestCase {
     for (int j=0 ; j<= period; j++) {
       medDate = new AbsoluteDate(initDate , j);
       medState = kep.getSpacecraftState(medDate);
-      Vector3D pos = new Vector3D(medState.getPVCoordinates(mu).getPosition());
-      pos.negateSelf();
+      Vector3D pos = medState.getPVCoordinates(mu).getPosition().negate();
       // X is earth centered :
       Vector3D dir = medState.getAttitude().applyInverseTo(Vector3D.plusI);
       assertEquals(0, Vector3D.angle(pos, dir), 10e-10);
@@ -91,8 +90,7 @@ public class LOFAlinedAttitudeTest extends TestCase {
     for (int j=0 ; j<= period; j++) {
       medDate = new AbsoluteDate(initDate , j);
       medState = kep.getSpacecraftState(medDate);
-      Vector3D pos = new Vector3D(medState.getPVCoordinates(mu).getPosition());
-      pos.negateSelf();
+      Vector3D pos = medState.getPVCoordinates(mu).getPosition().negate();
       // X is earth centered :
       Vector3D dir = medState.getAttitude().applyInverseTo(Vector3D.plusI);
       assertEquals(0, Vector3D.angle(pos, dir), 10e-10);
@@ -138,7 +136,7 @@ public class LOFAlinedAttitudeTest extends TestCase {
     for (int j=0 ; j<= period; j++) {
       medDate = new AbsoluteDate(initDate , j);
       medState = kep.getSpacecraftState(medDate);
-      Vector3D vel = new Vector3D(medState.getPVCoordinates(mu).getVelocity());
+      Vector3D vel = medState.getPVCoordinates(mu).getVelocity();
       Vector3D dir = medState.getAttitude().applyInverseTo(Vector3D.plusK);
       // K is alined with the velocity
       assertEquals(0, Vector3D.angle(vel, dir), 10e-8);

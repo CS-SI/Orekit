@@ -168,14 +168,13 @@ public class ITRF2000FrameTest extends TestCase {
       date = new AbsoluteDate(t0,  h);
       Rotation evoP1h = Frame.getJ2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
       double alphaP1h =  evoP1h.getAngle();
-      Vector3D axisP1h = Vector3D.negate(evoP1h.getAxis());
+      Vector3D axisP1h = evoP1h.getAxis().negate();
       date = new AbsoluteDate(t0, 2 * h);
       Rotation evoP2h = Frame.getJ2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
       double alphaP2h =  evoP2h.getAngle();
-      Vector3D axisP2h = Vector3D.negate(evoP2h.getAxis());
+      Vector3D axisP2h = evoP2h.getAxis().negate();
       double w = (8 * (alphaP1h - alphaM1h) - (alphaP2h - alphaM2h)) / (12 * h);
-      Vector3D axis = Vector3D.add(Vector3D.add(axisM2h, axisM1h), Vector3D.add(axisP1h, axisP2h));
-      axis.normalizeSelf();
+      Vector3D axis = axisM2h.add(axisM1h).add(axisP1h.add(axisP2h)).normalize();
       Transform tr = new Transform(trans.getRotation() , new Vector3D(w ,axis));
       
       PVCoordinates pv = new PVCoordinates(posJ2000 , speedJ2000);
@@ -285,7 +284,7 @@ public class ITRF2000FrameTest extends TestCase {
   private void checkVectors(Vector3D pos1 , Vector3D pos2,
                             double deltaAngle, double deltaPos, double deltaNorm) {
 	  
-	  Vector3D d = Vector3D.subtract(pos1, pos2);
+	  Vector3D d = pos1.subtract(pos2);
       Rotation r = new Rotation(pos1, pos2);
       
       assertEquals(pos1.getNorm(),pos2.getNorm(),1.0);

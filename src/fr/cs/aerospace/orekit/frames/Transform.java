@@ -128,16 +128,16 @@ public class Transform implements Serializable {
 
   /** The new translation */ 
   private static Vector3D compositeTranslation(Transform first, Transform second) {
-    return Vector3D.add(first.translation,
+    return first.translation.add(
                         first.rotation.applyInverseTo(second.translation));
   }
 
   /** The new velocity */ 
   private static Vector3D compositeVelocity(Transform first, Transform second) {
-    return Vector3D.add(first.velocity,
-                        first.rotation.applyInverseTo(Vector3D.add(second.velocity,
-                                                                   Vector3D.crossProduct(first.rotationRate,
-                                                                                         second.translation))));
+    return first.velocity.add(
+                        first.rotation.applyInverseTo(second.velocity.add(
+                                              Vector3D.crossProduct(first.rotationRate,
+                                                                second.translation))));
   }
 
   /** The new rotation */ 
@@ -147,26 +147,26 @@ public class Transform implements Serializable {
 
   /** The new rotation rate */ 
   private static Vector3D compositeRotationRate(Transform first, Transform second) {
-    return Vector3D.add(second.rotationRate, second.rotation.applyTo(first.rotationRate));
+    return second.rotationRate.add(second.rotation.applyTo(first.rotationRate));
   }
 
   /** Get the inverse transform of the instance.
    * @return inverse transform of the instance
    */
   public Transform getInverse() {
-    Vector3D reversedTranslation = rotation.applyTo(Vector3D.negate(translation));
+    Vector3D reversedTranslation = rotation.applyTo(translation.negate());
     return new Transform(reversedTranslation, 
-                         Vector3D.subtract(Vector3D.crossProduct(reversedTranslation, rotationRate),
+                         Vector3D.crossProduct(reversedTranslation, rotationRate).subtract(
                                            rotation.applyTo(velocity)),
                                            rotation.revert(),
-                                           rotation.applyInverseTo(Vector3D.negate(rotationRate)));
+                                           rotation.applyInverseTo(rotationRate.negate()));
   }
 
   /** Transform a position vector (including translation effects).
    * @param position vector to transform
    */
   public Vector3D transformPosition(Vector3D position) {
-    return rotation.applyTo(Vector3D.add(translation, position));
+    return rotation.applyTo(translation.add(position));
   }
 
   /** Transform a vector (ignoring translation effects).
@@ -182,9 +182,9 @@ public class Transform implements Serializable {
   public PVCoordinates transformPVCoordinates(PVCoordinates pv) {
     Vector3D p = pv.getPosition();
     Vector3D v = pv.getVelocity();
-    Vector3D transformedP = rotation.applyTo(Vector3D.add(translation, p));
+    Vector3D transformedP = rotation.applyTo(translation.add(p));
     return new PVCoordinates(transformedP,
-                             Vector3D.subtract(rotation.applyTo(Vector3D.add(v, velocity)),
+                             rotation.applyTo(v.add(velocity)).subtract(
                                                Vector3D.crossProduct(rotationRate, transformedP)));
   }
 

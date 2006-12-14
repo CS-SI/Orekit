@@ -1,9 +1,9 @@
 package fr.cs.aerospace.orekit.propagation;
 
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematicsProvider;
+import fr.cs.aerospace.orekit.attitudes.models.IdentityAttitude;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.errors.PropagationException;
-import fr.cs.aerospace.orekit.models.attitudes.IdentityAttitude;
 import fr.cs.aerospace.orekit.orbits.CircularParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;

@@ -4,12 +4,12 @@ import java.io.FileNotFoundException;
 import java.text.ParseException;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.Utils;
+import fr.cs.aerospace.orekit.attitudes.models.NadirPointingAttitude;
 import fr.cs.aerospace.orekit.bodies.BodyShape;
 import fr.cs.aerospace.orekit.bodies.GeodeticPoint;
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.models.attitudes.NadirPointingAttitude;
 import fr.cs.aerospace.orekit.orbits.CircularParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
@@ -62,7 +62,7 @@ public class NadirPointingAttitudeTest extends TestCase {
     for (int j=0 ; j<= period; j++) {
       medDate = new AbsoluteDate(initDate , j);
       medState = kep.getSpacecraftState(medDate);
-      Vector3D pos = new Vector3D(medState.getPVCoordinates(mu).getPosition());
+      Vector3D pos = medState.getPVCoordinates(mu).getPosition().negate();
       Vector3D dir = medState.getAttitude().applyInverseTo(Vector3D.minusK);
       Line orto = new Line(pos , dir);
       GeodeticPoint geo = earth.transform(pos);
@@ -109,7 +109,7 @@ public class NadirPointingAttitudeTest extends TestCase {
     for (int j=0 ; j<= period; j++) {
       medDate = new AbsoluteDate(initDate , j);
       medState = kep.getSpacecraftState(medDate);
-      Vector3D pos = new Vector3D(medState.getPVCoordinates(mu).getPosition());
+      Vector3D pos = medState.getPVCoordinates(mu).getPosition();
       Vector3D dir = medState.getAttitude().applyInverseTo(Vector3D.minusK);
       Line orto = new Line(pos , dir);
       GeodeticPoint geo = earth.transform(pos);
@@ -136,7 +136,7 @@ public class NadirPointingAttitudeTest extends TestCase {
     for (int j=0 ; j<= period; j++) {
       medDate = new AbsoluteDate(initDate , j);
       medState = kep.getSpacecraftState(medDate);
-      Vector3D pos = new Vector3D(medState.getPVCoordinates(mu).getPosition());
+      Vector3D pos = medState.getPVCoordinates(mu).getPosition();
       Vector3D dir = medState.getAttitude().applyInverseTo(Vector3D.minusK);
       Line orto = new Line(pos , dir);
       GeodeticPoint geo = earth.transform(pos);
@@ -183,7 +183,7 @@ public class NadirPointingAttitudeTest extends TestCase {
 
     medDate = new AbsoluteDate(initDate , period/6);
     medState = kep.getSpacecraftState(medDate);
-    Vector3D pos = new Vector3D(medState.getPVCoordinates(mu).getPosition());
+    Vector3D pos = medState.getPVCoordinates(mu).getPosition();
     Vector3D dir = medState.getAttitude().applyInverseTo(Vector3D.plusJ);
     assertEquals(0, Vector3D.dotProduct(dir, pos), 1e-7);    
     dir = medState.getAttitude().applyInverseTo(Vector3D.minusK);
