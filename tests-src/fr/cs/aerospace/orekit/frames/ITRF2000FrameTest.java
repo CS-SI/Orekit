@@ -244,6 +244,21 @@ public class ITRF2000FrameTest extends TestCase {
     assertEquals(-5539.41752885036,  pv2000.getVelocity().getZ(), 1.0e-10);
   }
 
+  public void testGMS3() throws OrekitException, ParseException {
+    AbsoluteDate date = new AbsoluteDate("2006-05-14T00:26:06.833", UTCScale.getInstance());
+    ITRF2000Frame itrf = new ITRF2000Frame(date, true);   
+    Transform trans = itrf.getTransformTo(Frame.getJ2000(), date);
+    Vector3D posITRF = new Vector3D(3376169.673, 3578504.767, -4685496.977);
+    Vector3D velITRF = new Vector3D(-6374.220, 2284.616, -2855.447);
+    PVCoordinates pv2000 = trans.transformPVCoordinates(new PVCoordinates(posITRF, velITRF));
+    assertEquals(1247881.068,  pv2000.getPosition().getX(), 100.0);
+    assertEquals(-4758546.914, pv2000.getPosition().getY(), 250.0);
+    assertEquals(-4686066.307, pv2000.getPosition().getZ(),   5.0);
+    assertEquals(5655.84583,   pv2000.getVelocity().getX(),   0.1);
+    assertEquals(4291.97158,   pv2000.getVelocity().getY(),   0.1);
+    assertEquals(-2859.11413,  pv2000.getVelocity().getZ(),   0.01);
+  }
+
   public void setUp() {
     System.setProperty("orekit.iers.directory",
                        new File(rootDir, "compressed-data").getAbsolutePath());
