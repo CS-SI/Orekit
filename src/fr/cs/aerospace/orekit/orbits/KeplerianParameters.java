@@ -293,20 +293,22 @@ extends OrbitalParameters {
    * @return a string representation of this object
    */
   public String toString() {
-    StringBuffer sb = new StringBuffer();    
+    StringBuffer sb = new StringBuffer();
+    sb.append("keplerian parameters: ");
     sb.append('{');
+    sb.append("a: ");
     sb.append(a);
-    sb.append(' ');
+    sb.append("; e: ");
     sb.append(e);
-    sb.append(' ');
+    sb.append("; i: ");
     sb.append(Math.toDegrees(i));
-    sb.append(' ');
+    sb.append("; pa: ");
     sb.append(Math.toDegrees(pa));
-    sb.append(' ');
+    sb.append("; raan: ");
     sb.append(Math.toDegrees(raan));
-    sb.append(' ');
+    sb.append("; lv: ");
     sb.append(Math.toDegrees(v));
-    sb.append('}');
+    sb.append(";}");
     return sb.toString();
   }
   

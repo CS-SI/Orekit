@@ -45,7 +45,7 @@ public class NadirPointingAttitude implements AttitudeKinematicsProvider {
   /** Constructor with any {@link BodyShape}.
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    * @param body the body shape to point at
-   * @param type, {@link #PURENADIR} or {@link #ORBITALPLANE}
+   * @param type {@link #PURENADIR} or {@link #ORBITALPLANE}
    * @param pitchBias the bias around Y
    * @param rollBias the bias around K (applied after the pitch)
    */
@@ -63,7 +63,7 @@ public class NadirPointingAttitude implements AttitudeKinematicsProvider {
    * with a equatorial radius of 6378136.460 m and a flatness of 
    * 1.0 / 298.257222101 <p>
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   * @param type, {@link #PURENADIR} or {@link #ORBITALPLANE}
+   * @param type {@link #PURENADIR} or {@link #ORBITALPLANE}
    * @param pitchBias the bias around Y
    * @param rollBias the bias around K (applied after the pitch)
    */

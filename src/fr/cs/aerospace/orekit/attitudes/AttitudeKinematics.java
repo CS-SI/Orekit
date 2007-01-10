@@ -15,6 +15,13 @@ import org.spaceroots.mantissa.geometry.Vector3D;
  * @author F. Maussion
  */
 public class AttitudeKinematics implements Serializable {
+  
+  /** Simple constructor for identity attitude.
+   */
+  public AttitudeKinematics() {
+    this.attitude = new Rotation();
+    this.spin = new Vector3D();
+  }
 
   /** Simple constructor.
    * @param attitude the attitude rotation

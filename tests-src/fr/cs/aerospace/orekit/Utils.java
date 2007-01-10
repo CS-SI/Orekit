@@ -24,9 +24,9 @@ public class Utils {
     return a - twoPi * Math.floor ((a + Math.PI - ref) / twoPi);
   }
   
-  public static String vectorToString(Vector3D v) {
+  public static void vectorToString(String comment, Vector3D v) {
     String s = " X : " + v.getX() + "; Y :  " + v.getY() + "; Z : " + v.getZ() + ";" + " norme  : " + v.getNorm();
-    return s;
+    System.out.println(comment + " " + s);
   }
   
   public static final double ae =  6378136.460;

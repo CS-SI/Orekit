@@ -10,13 +10,13 @@ import org.spaceroots.mantissa.geometry.Vector3D;
  */
 public class PVCoordinates implements Serializable {
 
-//  /** Simple constructor.
-//	 * <p> Sets the Coordinates to default.
-//	 */
-//	public PVCoordinates() {
-//	    position = new Vector3D(Double.NaN, Double.NaN, Double.NaN);
-//	    velocity = new Vector3D(Double.NaN, Double.NaN, Double.NaN);
-//	}
+    /** Simple constructor.
+	 * <p> Sets the Coordinates to default : (0 0 0) (0 0 0).
+	 */
+	public PVCoordinates() {
+	    position = new Vector3D();
+	    velocity = new Vector3D();
+	}
 	
 	/** Builds a PVCoordinates couple.
 	 * @param position the position vector (m)
@@ -26,16 +26,6 @@ public class PVCoordinates implements Serializable {
 		
 		this.position = position;
 		this.velocity = velocity;
-		
-	}
-	
-	/** Builds a PVCoordinates couple by copying an other.
-	 * @param pv the {@link PVCoordinates} to copy.
-	 */
-	public PVCoordinates(PVCoordinates pv) {
-		
-		position = pv.position;
-		velocity = pv.velocity;
 		
 	}
 	
@@ -56,18 +46,19 @@ public class PVCoordinates implements Serializable {
     public String toString() {
 	    StringBuffer sb = new StringBuffer();
 	    sb.append('{');
+        sb.append("X: ");
 	    sb.append(position.getX());
-	    sb.append(' ');
+        sb.append("; Y: ");
 	    sb.append(position.getY());
-	    sb.append(' ');
+        sb.append("; Z: ");
 	    sb.append(position.getZ());
-	    sb.append(';');
-	    sb.append(velocity.getX());
-	    sb.append(' ');
+        sb.append("; XDot: ");
+        sb.append(velocity.getX());
+        sb.append("; YDot: ");
 	    sb.append(velocity.getY());
-	    sb.append(' ');
+        sb.append("; ZDot: ");
 	    sb.append(velocity.getZ());
-	    sb.append('}');
+        sb.append(";}");
 	    return sb.toString();
 	}
 	

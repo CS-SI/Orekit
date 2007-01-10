@@ -1,6 +1,6 @@
 package fr.cs.aerospace.orekit.time;
 
-/** Terrestrial Time as defined by IAU(1991) recommandation IV.
+/** Terrestrial Time as defined by IAU(1991) recommendation IV.
  * <p>Coordinate time at the surface of the Earth. IT is the
  * successor of Ephemeris Time TE.</p>
  * <p>By convention, TT = TAI + 32.184 s.</p>
@@ -16,8 +16,8 @@ public class TTScale extends TimeScale {
     super("TT");
   }
 
-  /* Get the uniq instance of this class.
-   * @return the uniq instance
+  /** Get the unique instance of this class.
+   * @return the unique instance
    */
   public static TimeScale getInstance() {
     if (instance == null) {

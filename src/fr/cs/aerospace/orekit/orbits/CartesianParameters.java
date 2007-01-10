@@ -133,7 +133,8 @@ public class CartesianParameters
    * @return a string representation of this object
    */
   public String toString() {
-    return getPVCoordinates(getCachedMu()).toString();
+    String str = getPVCoordinates(getCachedMu()).toString();
+    return "cartesian parameters: "+str;
   }
   
   /** Underlying equinoctial orbit providing non-cartesian elements. */

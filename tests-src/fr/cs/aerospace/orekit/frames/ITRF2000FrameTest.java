@@ -6,17 +6,14 @@ import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
-
 import fr.cs.aerospace.orekit.FindFile;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.iers.IERSData;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
-
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -116,7 +113,7 @@ public class ITRF2000FrameTest extends TestCase {
 
 	  // Position tests
       checkVectors(posITRF, posTestCase, 2e-5, 12.0, 15.0);
-      	  
+  
   }
 
   public void testRoughTransformJ2000_TerRef_one() throws OrekitException, ParseException {
@@ -134,24 +131,24 @@ public class ITRF2000FrameTest extends TestCase {
 			                           4000000.0);
 	  
 	  Vector3D posITRF = trans.transformPosition(posJ2000);
-	  
-	  Vector3D posTestCase = new Vector3D(3011113.9718319275,
-			                             -5889820.8187575004,
-			                              4002169.292903322);
 
-	  // Position tests
-      checkVectors(posITRF, posTestCase, 2e-6, 12.0, 14.0);
+      Vector3D posTestCaseRef = new Vector3D(3011113.9827935155,
+                                             -5889827.778873265,
+                                             4002159.0417332426);
       
+	  // Position tests
+      checkVectors(posITRF, posTestCaseRef, 1.4e-7, 0.9, 1.06);
+          
      // velocity tests
       
       Vector3D speedJ2000 = new Vector3D(3609.28229,
     		                             3322.88979,
                                      	-7083.950661);
       
-      Vector3D speedTestCase = new Vector3D(4410.401666334629,
-    		                               -1033.6270183038084,
-                                          -7082.627462818678);
-      
+      Vector3D speedTestCase = new Vector3D(4410.393570255204,
+                                            -1033.6179053914564,
+                                            -7082.6338343187035);
+
       Rotation r0 = trans.getRotation();
 
       // compute local evolution using finite differences
@@ -181,10 +178,10 @@ public class ITRF2000FrameTest extends TestCase {
       
       PVCoordinates result = tr.transformPVCoordinates(pv);
       
-      checkVectors(result.getVelocity(), speedTestCase, 1e-5, 0.02, 0.02);	
+      checkVectors(result.getVelocity(), speedTestCase, 1.9e-7, 0.0013, 0.0016);	
       
       result = trans.transformPVCoordinates(pv);
-      checkVectors(result.getVelocity(), speedTestCase, 1e-5, 0.01, 0.02);
+      checkVectors(result.getVelocity(), speedTestCase, 1.9e-7, 0.0013, 0.0016);
       
       
   }
@@ -296,6 +293,13 @@ public class ITRF2000FrameTest extends TestCase {
     }
   }
 
+  /** Compare and asserts two vectors.
+   * @param pos1 first vector
+   * @param pos2 second vector
+   * @param deltaAngle the delta angle
+   * @param deltaPos the delta coord max
+   * @param deltaNorm the delta norm
+   */
   private void checkVectors(Vector3D pos1 , Vector3D pos2,
                             double deltaAngle, double deltaPos, double deltaNorm) {
 	  

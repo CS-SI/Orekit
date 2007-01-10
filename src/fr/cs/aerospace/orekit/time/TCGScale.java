@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat;
 
 /** Geocentric Coordinate Time.
  * <p>Coordinate time at the center of mass of the Earth.
- * This time scale depends linearily from {@link TTScale
+ * This time scale depends linearly from {@link TTScale
  * Terrestrial Time}.</p>
  * <p>This is a singleton class, so there is no public constructor.</p>
  * @author Luc Maisonobe
@@ -35,8 +35,8 @@ public class TCGScale extends TimeScale {
     super("TCG");
   }
 
-  /* Get the uniq instance of this class.
-   * @return the uniq instance
+  /** Get the unique instance of this class.
+   * @return the unique instance
    */
   public static TimeScale getInstance() {
     if (instance == null) {

@@ -251,19 +251,21 @@ public class EquinoctialParameters
    */
   public String toString() {
     StringBuffer sb = new StringBuffer();
+    sb.append("equinoctial parameters: ");
     sb.append('{');
+    sb.append("a: ");
     sb.append(a);
-    sb.append(' ');
+    sb.append("; ex: ");
     sb.append(ex);
-    sb.append(' ');
+    sb.append("; ey: ");
     sb.append(ey);
-    sb.append(' ');
+    sb.append("; hx: ");
     sb.append(hx);
-    sb.append(' ');
+    sb.append("; hy: ");
     sb.append(hy);
-    sb.append(' ');
+    sb.append("; lv: ");
     sb.append(Math.toDegrees(lv));
-    sb.append('}');
+    sb.append(";}");
     return sb.toString();
   }
   

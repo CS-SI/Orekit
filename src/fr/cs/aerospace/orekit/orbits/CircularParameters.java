@@ -310,19 +310,21 @@ public class CircularParameters
    */
   public String toString() {
     StringBuffer sb = new StringBuffer();
+    sb.append("circular parameters: ");
     sb.append('{');
+    sb.append("a: ");
     sb.append(a);
-    sb.append(' ');
+    sb.append(";ex: ");
     sb.append(ex);
-    sb.append(' ');
+    sb.append(";ey: ");
     sb.append(ey);
-    sb.append(' ');
+    sb.append(";i: ");
     sb.append(i);
-    sb.append(' ');
+    sb.append(";raan: ");
     sb.append(raan);
-    sb.append(' ');
+    sb.append(";alphaV: ");
     sb.append(Math.toDegrees(alphaV));
-    sb.append('}');
+    sb.append(";}");
     return sb.toString();
   }
   

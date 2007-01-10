@@ -477,4 +477,20 @@ public class ITRF2000Frame extends Frame {
   private static final String sxy2Model2000B = "/fr/cs/aerospace/orekit/resources/tab5.2c.reduced.txt";
 
   private static final long serialVersionUID = -2361037148063033307L;
+  
+  public static final class NutationModel {
+    
+    public static IAU2000A IAU2000A() {
+      return a;
+    }
+    public static IAU2000B IAU2000B() {
+      return b;
+    }
+    
+    private static final IAU2000A a = new IAU2000A();
+    private static final IAU2000B b = new IAU2000B();
+    
+    private static final class IAU2000A {}
+    private static final class IAU2000B {}
+  }
 }

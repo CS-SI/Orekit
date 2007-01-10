@@ -1,0 +1,27 @@
+<html>
+<body>
+This independant package provides classes to handle frames and transforms between them.
+	
+<p> The {@link fr.cs.aerospace.orekit.frames.Transform} class represents a full transform : rotation and 
+   translation, and its first time derivative to handle kinematics. 
+</p>
+
+<p> A {@link fr.cs.aerospace.orekit.frames.Frame} is then defined with a transform from an other one, called 
+    Parent Frame. So the user can build its own frame tree and then OREKIT 
+    can calculate any transform between frames. The first root of the tree 
+    is necessarily the J2000 inertial frame, which is a singleton. 
+    In that way, there can be no exception and every couple of frame has at
+    least a common root in the frame tree which is the J2000 reference.
+</p>  
+<p>
+	OREKIT provides one specific Earth fixed frame, the {@link fr.cs.aerospace.orekit.frames.ITRF2000Frame}
+	(International 
+	Terrestrial Reference Frame fixed by the IERS conventions 2003). 
+</p>
+
+
+@author L. Maisonobe
+@author F. Maussion
+
+</body>
+</html>

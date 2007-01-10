@@ -33,7 +33,7 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
  *   (two instances of the class) or durations. They are counted in seconds,
  *   are continuous and could be measured using only a virtual perfect stopwatch.
  *   The related methods are {@link #AbsoluteDate(AbsoluteDate, double) AbsoluteDate(instant,
- *   offset)}, {@link #AbsoluteDate(AbsoluteDate) AbsoluteDate(instant)},
+ *   offset)},
  *   {@link #minus}.</p>
  *   </li>
  * </ul>
@@ -143,12 +143,7 @@ public class AbsoluteDate implements Comparable, Serializable {
         epoch = instant.epoch;
         this.offset = instant.offset + offset;
     }    
-    
-    public AbsoluteDate(AbsoluteDate date) {
-    	epoch = date.epoch;
-    	offset = date.offset;
-    }
-       
+           
    /** Compute the offset between two instant.
     * <p>The offset is the number of seconds physically elapsed
     * between the two instants.</p>

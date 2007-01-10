@@ -27,8 +27,6 @@ public interface ForceModel {
 
   /** Compute the contribution of the force model to the perturbing
    * acceleration.
-   * </p> The PVCoordinates and the adder must be defined in the same frame. 
-   * The propagator handles correctly the frames and coordinates.</p>
    * @param t current date
    * @param pvCoordinates the {@link PVCoordinates}
    * @param frame in which are defined the coordinates

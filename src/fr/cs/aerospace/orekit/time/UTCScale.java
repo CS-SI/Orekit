@@ -6,7 +6,7 @@ import fr.cs.aerospace.orekit.iers.Leap;
 
 /** Coordinated Universal Time.
  * <p>UTC is related to TAI using step adjustments from time to time
- * according to IERS (International Earth Rotation Service) rules. This
+ * according to IERS (International Earth Rotation Service) rules. These
  * adjustments require introduction of leap seconds.</p>
  * <p>The handling of time <em>during</em> the leap seconds insertion has
  * been adapted from the standard in order to compensate for the lack of
@@ -47,8 +47,8 @@ public class UTCScale extends TimeScale {
 
   }
 
-  /** Get the uniq instance of this class.
-   * @return the uniq instance
+  /** Get the unique instance of this class.
+   * @return the unique instance
    * @exception OrekitException if the time steps cannot be read
    */
   public static TimeScale getInstance()

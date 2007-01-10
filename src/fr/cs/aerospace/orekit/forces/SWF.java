@@ -14,9 +14,8 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  *
  * <p>Switching functions are a useful solution to meet the requirements of 
  * integrators concerning discontinuities problems.</p>
- *
- * @author F. Maussion
- * @author E. Delente
+ * 
+ * @author L. Maisonobe
  */
 
 
@@ -41,7 +40,6 @@ public interface SWF {
      * @param frame in which are defined the coordinates
      * @param mass the current mass (kg)
      * @param ak the attitude representation
-     * @return the value of the switching function
      */
     public void eventOccurred(AbsoluteDate t, PVCoordinates pvCoordinates,
                               Frame frame, double mass, AttitudeKinematics ak);

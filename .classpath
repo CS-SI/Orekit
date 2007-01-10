@@ -4,9 +4,9 @@
 	<classpathentry kind="src" path="tests-src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="JUNIT_HOME/junit.jar" sourcepath="ECLIPSE_HOME/plugins/org.eclipse.jdt.source_3.1.0/src/org.junit_3.8.1/junitsrc.zip"/>
-	<classpathentry kind="var" path="MANTISSA_HOME/mantissa-6.4.jar" sourcepath="/MANTISSA_HOME/mantissa-6.4-src.zip">
+	<classpathentry kind="var" path="MANTISSA_HOME/mantissa-7.0.jar" sourcepath="/MANTISSA_HOME/mantissa-7.0-src.zip">
 		<attributes>
-			<attribute name="javadoc_location" value="jar:file:/home/luc/lib/java/mantissa/mantissa-6.4-doc.zip!/"/>
+			<attribute name="javadoc_location" value="jar:file:/home/fab/lib/java/mantissa/mantissa-7.0-doc.zip!/mantissa-7.0-doc"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="output" path="bin"/>

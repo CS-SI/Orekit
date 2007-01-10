@@ -13,8 +13,8 @@ public class TAIScale extends TimeScale {
     super("TAI");
   }
 
-  /* Get the uniq instance of this class.
-   * @return the uniq instance
+  /** Get the unique instance of this class.
+   * @return the unique instance
    */
   public static TimeScale getInstance() {
     if (instance == null) {
