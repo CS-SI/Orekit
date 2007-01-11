@@ -14,10 +14,10 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * 
  * <p>This class is the base class for all frames in OREKIT. The frames are
  * linked together in a tree with the J2000 frame as the root of the tree.
- * Each frame is defined by transforms combining any number of translations and
+ * Each frame is defined by {@link Transform transforms} combining any number of translations and
  * rotations from a reference frame which is its parent frame in the tree
  * structure.</p>
- * <p>When we say a transform t is <em>from frame<sub>A</sub>
+ * <p>When we say a {@link Transform transform} t is <em>from frame<sub>A</sub>
  * to frame<sub>B</sub></em>, we mean that if the coordinates of some absolute
  * vector (say the direction of a distant star for example) has coordinates
  * u<sub>A</sub> in frame<sub>A</sub> and u<sub>B</sub> in frame<sub>B</sub>,

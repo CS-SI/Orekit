@@ -4,7 +4,6 @@ import java.io.Serializable;
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
-import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
@@ -15,8 +14,8 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * {@link NumericalPropagator}.
  *  
  * <p> It contains an {@link OrbitalParameters orbital state} at a current 
- * {@link AbsoluteDate} both handled by an {@link Orbit}, the current mass and
- * attitude.
+ * {@link AbsoluteDate} both handled by an {@link Orbit}, plus the current
+ * mass and attitude.
  * </p>
  * <p>
  * The instance <code>SpacecraftState</code> is guaranted to be immutable.
@@ -39,25 +38,25 @@ public class SpacecraftState
   }
 
   /** Create a new instance from orbital state and mass.
-   * Initialize the attitude at the identity.
+   * Initialize the attitude to the identity.
    * @param orbit the orbit
    * @param mass the mass (kg)
    */
   public SpacecraftState(Orbit orbit, double mass) {
     this.orbit = orbit;
     this.mass  = mass;
-    this.attitude = new AttitudeKinematics(new Rotation() , new Vector3D());
+    this.attitude = new AttitudeKinematics();
   }
 
   /** Create a new instance from orbital state only 
    * (gives an arbitrary value (1000 kg) for the mass and 
-   * initialize the attitude at the identity).
+   * initialize the attitude to the identity).
    * @param orbit the orbit
    */
   public SpacecraftState(Orbit orbit) {
     this.orbit = orbit;
     this.mass  = 1000;
-    this.attitude = new AttitudeKinematics(new Rotation() , new Vector3D());
+    this.attitude = new AttitudeKinematics();
   }
 
   /** Gets the current orbit.
@@ -107,7 +106,6 @@ public class SpacecraftState
    * to apply to a vector expressed in spacecraft frame to obtain the same vector 
    * defined in the orbit inertial frame </p> 
    * @return the attitude rotation of the spacecraft
-   * @throws OrekitException if some specific error occurs.
    */
   public Rotation getAttitude() {
     return attitude.getAttitude();
@@ -118,7 +116,6 @@ public class SpacecraftState
    * to apply to a velocity vector expressed in spacecraft frame to obtain the same
    * vector defined in the orbit inertial frame </p> 
    * @return the instant rotation of the spacecraft
-   * @throws OrekitException if some specific error occurs.
    */
   public Vector3D getspinAxis() {
     return attitude.getspinAxis();    

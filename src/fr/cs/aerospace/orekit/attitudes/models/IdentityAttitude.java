@@ -1,7 +1,5 @@
 package fr.cs.aerospace.orekit.attitudes.models;
 
-import org.spaceroots.mantissa.geometry.Rotation;
-import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematicsProvider;
 import fr.cs.aerospace.orekit.errors.OrekitException;
@@ -18,7 +16,7 @@ public class IdentityAttitude implements AttitudeKinematicsProvider {
   /** Simple constructor. 
    */
   public IdentityAttitude() {
-    ak = new AttitudeKinematics(new Rotation(), new Vector3D());
+    ak = new AttitudeKinematics();
   }
   
   /** Get the attitude representation in the selected frame.

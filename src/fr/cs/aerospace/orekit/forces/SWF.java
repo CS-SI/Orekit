@@ -12,9 +12,19 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * <p>It should be implemented by all real force models before they
  * can be taken into account by the orbit extrapolation methods.</p>
  *
- * <p>Switching functions are a useful solution to meet the requirements of 
- * integrators concerning discontinuities problems.</p>
+ * <p>  Switching functions are a useful solution to meet the requirements 
+ * of integrators concerning discontinuities problems. The value of the 
+ * switching function is asked by the integrator at each step. When the 
+ * value of the g function changes of sign, the step is rejected and reduced,
+ * until the roots of the function is reached with the {@link #getThreshold()}
+ * precision. </p>
  * 
+ * <p> Once the g function root is reached, we are sure the integrator
+ *  won't miss the event relative to this date : a discontinuity in
+ *  acceleration, a change in the state... This event can be initiated
+ *  by the {@link #eventOccurred(AbsoluteDate, PVCoordinates, Frame, double, AttitudeKinematics)}
+ *  method, wich is called when the step is placed on the wanted date. <p> 
+ *
  * @author L. Maisonobe
  */
 
@@ -22,6 +32,8 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
 public interface SWF {
 
     /** Compute the value of the switching function. 
+     * This function must be continuous (at least in its roots neighborhood),
+     * as the integrator will need to find its roots to locate the events.
      * @param t current date
      * @param pvCoordinates the {@link PVCoordinates}
      * @param frame in which are defined the coordinates

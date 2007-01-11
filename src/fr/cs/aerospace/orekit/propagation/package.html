@@ -2,7 +2,60 @@
 <body>
 This package provides tools to propagate orbital states with different methods.
 	
-<p>  </p>
+<p> Propagation is the prediction of the evolution of an initial state.
+ This initial state is represented in OREKIT by a 
+ {@link fr.cs.aerospace.orekit.propagation.SpacecraftState}, which is a 
+ simple container for all needed information : mass, 
+ {@link fr.cs.aerospace.orekit.utils.PVCoordinates kinematics}, 
+ {@link fr.cs.aerospace.orekit.attitudes.AttitudeKinematics attitude}, 
+ {@link fr.cs.aerospace.orekit.time.AbsoluteDate date}, 
+ {@link fr.cs.aerospace.orekit.frames.Frame frame}. Several ways to 
+ calculate this prediction and store its results are proposed to the user.
+</p>
+
+<p> <h5> Keplerian propagation </h5> The {@link fr.cs.aerospace.orekit.propagation.KeplerianPropagator}
+ implements the {@link fr.cs.aerospace.orekit.propagation.Ephemeris} 
+ interface, which ensures that we can obtain a propagated SpacecraftState 
+ at any time once the instance is initialized with an initial state. 
+ This extrapolation is not a problem with a simple 
+ {@link fr.cs.aerospace.orekit.orbits.EquinoctialParameters} 
+ representation: only the mean anomaly value changes.
+</p>
+
+	
+
+<p> <h5> Eckstein-Hechler propagation </h5>	
+  This analytical model is suited for near circular orbits and inclination
+  neither equatorial nor critical. It considers J2 to J6 potential 
+  coefficients correctors, and uses mean parameters to compute the new 
+  position. As the keplerian propagator, it implements the ephemeris 
+  interface. 
+</p>
+	
+<p> <h5> Numerical propagation </h5> It is the most important part of the OREKIT project. Based on MANTISSA
+ integrators, the {@link fr.cs.aerospace.orekit.propagation.NumericalPropagator}
+ class realizes the interface between space mechanics and mathematical 
+ resolutions. If its utilization seems difficult on first sight, it is in 
+ fact quite clear and intuitive.
+ </p>
+
+<p> The problem to integrate is a seven dimension time derivative equations
+ system. The six first equations are given by the Gauss equations (expressed
+ in {@link fr.cs.aerospace.orekit.orbits.EquinoctialParameters}) and the 
+ seventh is simply the flow rate and mass equation. This first order 
+ system is computed by the 
+ {@link fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations} class.
+ It will be instanced by the propagator and then be modified at each step 
+ (a fixed t value) by all the needed 
+ {@link fr.cs.aerospace.orekit.forces.ForceModel force models} which
+  will add their contribution, the perturbing acceleration.
+</p>
+	
+<p>	The {@link org.spaceroots.mantissa.ode.FirstOrderIntegrator integrators}
+ provided by MANTISSA need the state vector at t0, the state vector first 
+ time derivate at t0, and then calculates the next step state vector, and 
+ ask for the next first time derivative, etc. until it reaches the final 
+ asked date. </p>
 
 @author L. Maisonobe
 @author F. Maussion

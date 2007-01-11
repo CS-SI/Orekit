@@ -2,9 +2,23 @@
 <body>
 This package provides classes to represent simple attitudes.
 	
-<p>  </p>
+<p> 
+Some force models such as the atmospheric drag or the maneuvers need to
+know more precisely the spacecraft orientation in inertial frame. 
+OREKIT uses a standard container for 
+{@link fr.cs.aerospace.orekit.attitudes.AttitudeKinematics attitude kinematics}
+(attitude rotation quaternion and instant spin axis) which permits to 
+convert vectors from inertial frame to spacecraft frame. 
+</p>
+<p>
+OREKIT does not for the moment propagate or retrieve real attitudes 
+with captors information. But it proposes an interface, 
+{@link fr.cs.aerospace.orekit.attitudes.AttitudeKinematicsProvider}, which computes
+attitudes depending on time and position. Several ideal attitudes are 
+already implemented in OREKIT library in package 
+{@link fr.cs.aerospace.orekit.attitudes.models} </p>
 
-@author L. Maisonobe
+@author F. Maussion
 
 </body>
 </html>

@@ -24,7 +24,7 @@ import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
-/** This class propagates an {@link fr.cs.aerospace.orekit.orbits.Orbit Orbit}
+/** This class propagates a {@link fr.cs.aerospace.orekit.propagation.SpacecraftState}
  * using numerical integration.
  *
  * <p>The user normally builds an extrapolator by specifying the integrator he
@@ -47,7 +47,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  *  <dt>if the user needs to do some action during integration but do not need
  *      specific time steps</dt>
  *  <dd>he will use {@link #propagate(SpacecraftState,AbsoluteDate,StepHandler)}</dd>
- * </dl></p>
+ * </dl></p> 
  *
  * <p>The two first methods are used when the user code needs to drive the
  * integration process, whereas the two last methods are used when the
@@ -63,7 +63,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  *     y[5] = lv
  *     y[6] = mass (kg)
  *   </pre>
- *
+ * 
  * @see SpacecraftState
  * @see ForceModel
  * @see StepHandler

@@ -12,7 +12,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * forces expressed as accelerations into one set of time-derivatives of
  * {@link fr.cs.aerospace.orekit.orbits.EquinoctialParameters} plus one mass derivatives.
  * It implements Gauss equations for the equinoctial parameters.</p>
- * * <p>
+ *  <p>
  * The state vector handled internally has the form that follows:
  *   <pre>
  *     y[0] = a
@@ -53,7 +53,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  */
 public class TimeDerivativesEquations {
 
-  /** Create a new instance
+  /** Create a new instance.
    * @param parameters current orbit parameters
    * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
    */

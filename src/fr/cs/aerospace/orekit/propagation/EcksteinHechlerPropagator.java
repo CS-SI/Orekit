@@ -9,7 +9,7 @@ import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
-/** This class propagates an {@link fr.cs.aerospace.orekit.orbits.Orbit Orbit}
+/** This class propagates a {@link fr.cs.aerospace.orekit.propagation.SpacecraftState}
  *  using the analytical Eckstein-Hechler model.
  * <p>The Eckstein-Hechler model is suited for near circular orbits
  * (e < 0.1, with poor accuracy between 0.005 and 0.1) and inclination
