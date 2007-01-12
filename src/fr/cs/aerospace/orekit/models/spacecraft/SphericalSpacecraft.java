@@ -7,10 +7,10 @@ import org.spaceroots.mantissa.geometry.Vector3D;
  * means that all coefficients are constant and do not depend of
  * the direction. As such, it is a simple container that returns the
  * values set in the constructor.</p>
- * @version $Id: SimpleVehicle.java 831 2003-05-12 16:03:04Z internMS $
+ * 
  * @author E. Delente
+ * @author F. Maussion
  */
-
 public class SphericalSpacecraft 
   implements SolarRadiationPressureSpacecraft, AtmosphereDragSpacecraft {
 

@@ -14,7 +14,7 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /** Atmospheric drag force model.
- * @version $Id: Drag.java 1038 2006-10-03 08:03:34 +0000 (mar., 03 oct. 2006) fabien $
+ * 
  * @author E. Delente
  */
 
@@ -22,7 +22,7 @@ public class Drag implements ForceModel {
 
   /** Simple constructor.
    * @param atmosphere atmospheric model
-   * @param spacecraft spacecraft
+   * @param spacecraft the object physical and geometrical information
    */
   public Drag(Atmosphere atmosphere, AtmosphereDragSpacecraft spacecraft) {
     this.atmosphere = atmosphere;
@@ -30,10 +30,13 @@ public class Drag implements ForceModel {
   }
 
   /** Compute the contribution of the drag to the perturbing acceleration.
-   * @param pvCoordinates the position end velocity
-   * @param adder object where the contribution should be added
    * @param date current date
-   * @throws OrekitException 
+   * @param pvCoordinates the position and velocity
+   * @param frame in which are defined the coordinates
+   * @param mass the current mass (kg)
+   * @param ak the attitude representation
+   * @param adder object where the contribution should be added
+   * @throws OrekitException if some specific error occurs
    */
   public void addContribution(AbsoluteDate date, PVCoordinates pvCoordinates,
                               Frame frame, double mass, AttitudeKinematics ak,

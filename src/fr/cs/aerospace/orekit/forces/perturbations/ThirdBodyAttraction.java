@@ -20,45 +20,50 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  */
 public class ThirdBodyAttraction implements ForceModel {
 
-    /** Simple constructor.
-     * @param body the third body to consider 
-     * (ex: {@link Sun} or {@link Moon})
-     */
-	public ThirdBodyAttraction(ThirdBody body) {
-		this.body = body;
-	}
-	
-    /** Compute the contribution of the body attraction to the perturbing
-    * acceleration.
-    * @param t current date
-     * @param pvCoordinates
-     * @param adder object where the contribution should be added
-    */  
-	public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates,
-			Frame frame, double mass, AttitudeKinematics ak, TimeDerivativesEquations adder) throws OrekitException {
-		
-		Vector3D otherBody = body.getPosition(t, frame);
-		
-		Vector3D centralBody = new Vector3D(-1.0 , pvCoordinates.getPosition());
-		centralBody = centralBody.add(otherBody);
-        centralBody = centralBody.multiply(1.0/Math.pow(centralBody.getNorm(), 3));
-   
-		otherBody = otherBody.multiply(1.0/Math.pow(otherBody.getNorm(), 3));
-		
-		Vector3D gamma = centralBody.subtract(otherBody);
-		gamma = gamma.multiply(body.getMu());
-		
-		adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
-	}
+  /** Simple constructor.
+   * @param body the third body to consider 
+   * (ex: {@link Sun} or {@link Moon})
+   */
+  public ThirdBodyAttraction(ThirdBody body) {
+    this.body = body;
+  }
 
-   /** Ther are no SwitchingFunctions for this model.
-    * @return null
-    */
-	public SWF[] getSwitchingFunctions() {
-		return new SWF[0];
-	}
-    
-    /** The body to consider */
-	private ThirdBody body;
-	
+  /** Compute the contribution of the body attraction to the perturbing
+   * acceleration.
+   * @param t current date
+   * @param pvCoordinates the position and velocity
+   * @param frame in which are defined the coordinates
+   * @param mass the current mass (kg)
+   * @param ak the attitude representation
+   * @param adder object where the contribution should be added
+   * @throws OrekitException if some specific error occurs
+   */  
+  public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates,
+                              Frame frame, double mass, AttitudeKinematics ak, TimeDerivativesEquations adder) 
+    throws OrekitException {
+
+    Vector3D otherBody = body.getPosition(t, frame);
+
+    Vector3D centralBody = new Vector3D(-1.0 , pvCoordinates.getPosition());
+    centralBody = centralBody.add(otherBody);
+    centralBody = centralBody.multiply(1.0/Math.pow(centralBody.getNorm(), 3));
+
+    otherBody = otherBody.multiply(1.0/Math.pow(otherBody.getNorm(), 3));
+
+    Vector3D gamma = centralBody.subtract(otherBody);
+    gamma = gamma.multiply(body.getMu());
+
+    adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
+  }
+
+  /** Ther are no SwitchingFunctions for this model.
+   * @return null
+   */
+  public SWF[] getSwitchingFunctions() {
+    return new SWF[0];
+  }
+
+  /** The body to consider */
+  private ThirdBody body;
+
 }

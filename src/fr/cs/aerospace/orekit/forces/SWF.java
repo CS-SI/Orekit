@@ -40,7 +40,7 @@ public interface SWF {
      * @param mass the current mass (kg)
      * @param ak the attitude representation
      * @return the value of the switching function
-     * @throws OrekitException
+     * @throws OrekitException if some specific error occurs
      */
     public double g(AbsoluteDate t, PVCoordinates pvCoordinates, Frame frame,
                       double mass, AttitudeKinematics ak)

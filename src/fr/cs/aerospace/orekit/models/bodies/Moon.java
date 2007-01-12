@@ -9,15 +9,14 @@ import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** Moon model.
- * @version $Id: ThirdBody_Moon.java 831 2003-05-12 16:03:04Z internMS $
+ * The position model is the Brown theory.
+ * 
  * @author E. Delente
  */
 
 public class Moon extends ThirdBody {
 
-  /**
-   * Creates a new instance of ThirdBody_Moon.
-   */
+  /** Creates a new instance of ThirdBody Moon.  */
   public Moon() {
     super(1737400.0, 4.9027989e12);
     

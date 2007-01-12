@@ -7,7 +7,7 @@ import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
-/** This interface represents a forces model set.
+/** This interface represents a force model set.
  *
  * <p>It should be implemented by all real force models before they
  * can be taken into account by the orbit extrapolation methods.</p>
@@ -18,7 +18,6 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * in the partial derivatives coming from the Gauss equations or the Lagrange's
  * planetary equations.</p>
  *
- * @version $Id: ForceModel.java 1032 2006-09-28 08:25:21 +0000 (jeu., 28 sept. 2006) fabien $
  * @author M. Romero
  * @author L. Maisonobe
  */
@@ -28,11 +27,12 @@ public interface ForceModel {
   /** Compute the contribution of the force model to the perturbing
    * acceleration.
    * @param t current date
-   * @param pvCoordinates the {@link PVCoordinates}
+   * @param pvCoordinates the position and velocity
    * @param frame in which are defined the coordinates
    * @param mass the current mass (kg)
    * @param ak the attitude representation
    * @param adder object where the contribution should be added
+   * @throws OrekitException if some specific error occurs
    */
   public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates,
                               Frame frame, double mass, AttitudeKinematics ak,

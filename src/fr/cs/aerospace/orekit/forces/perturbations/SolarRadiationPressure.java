@@ -15,12 +15,12 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /** Solar radiation pressure force model.
  * 
- * @author F. Maussion , E.Delente
+ * @author F. Maussion 
+ * @author E.Delente
  */
-
 public class SolarRadiationPressure implements ForceModel {
 
-  /** Simple constructor.
+  /** Simple constructor with default reference values.
    * <p>When this constructor is used, the reference values are:</p>
    * <ul>
    *   <li>d<sub>ref</sub> = 149597870000.0 m</li>
@@ -28,7 +28,7 @@ public class SolarRadiationPressure implements ForceModel {
    * </ul>
    * @param sun Sun model
    * @param centralBody centralBody shape model (for umbra/penumbra computation)
-   * @param spacecraft the object which is pertubated by the pressure
+   * @param spacecraft the object physical and geometrical information
    */
   public SolarRadiationPressure(ThirdBody sun, OneAxisEllipsoid centralBody,
                                 SolarRadiationPressureSpacecraft spacecraft) {
@@ -40,7 +40,7 @@ public class SolarRadiationPressure implements ForceModel {
    * @param pRef reference radiation pressure at dRef (N/m<sup>2</sup>)
    * @param sun Sun model
    * @param centralBody centralBody shape model (for umbra/penumbra computation)
-   * @param spacecraft the object which is pertubated by the pressure
+   * @param spacecraft the object physical and geometrical information
    */
   public SolarRadiationPressure(double dRef, double pRef, ThirdBody sun, 
                                 OneAxisEllipsoid centralBody, SolarRadiationPressureSpacecraft spacecraft) {
@@ -53,9 +53,13 @@ public class SolarRadiationPressure implements ForceModel {
 
   /** Compute the contribution of the solar radiation pressure to the perturbing
    * acceleration.
-   * @param pvCoordinates
-   * @param adder object where the contribution should be added
    * @param date current date
+   * @param pvCoordinates the position and velocity
+   * @param frame in which are defined the coordinates
+   * @param mass the current mass (kg)
+   * @param ak the attitude representation
+   * @param adder object where the contribution should be added
+   * @throws OrekitException if some specific error occurs
    */	
   public void addContribution(AbsoluteDate date, PVCoordinates pvCoordinates, 
                               Frame frame, double mass, AttitudeKinematics ak, TimeDerivativesEquations adder)
@@ -71,7 +75,7 @@ public class SolarRadiationPressure implements ForceModel {
                         pvCoordinates.getPosition(), frame, date);
 
     // spacecraft characteristics effects
-//  TODO clarify these notions
+
     Vector3D u = satSunVector.normalize();
     Vector3D inSpacecraft = ak.getAttitude().applyTo(u);
     double kd = (1.0 - spacecraft.getAbsCoef(inSpacecraft).getNorm())
@@ -88,7 +92,7 @@ public class SolarRadiationPressure implements ForceModel {
 
   }
 
-  /** Get the lightning ratio.
+  /** Get the lightning ratio ([0-1]).
    * @param position the satellite's position in the selected frame.
    * @param frame in which is defined the position
    * @param date the date
@@ -230,6 +234,7 @@ public class SolarRadiationPressure implements ForceModel {
     }
 
   }
+  
   /** Reference distance (m). */
   private double dRef;
 

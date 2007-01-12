@@ -13,11 +13,13 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  *  This interface will be used as a parameter to represent a state during 
  *  numerical propagation, as some {@link ForceModel force models} need it.<p>
  *  
- *  <p> Orekit will propose several implemented attitude interfaces, providing 
- *  specific and perfectly automatised attitudes, as they do not consider for 
- *  the moment the perturbing couples, the captors and spacecraft dynamic.</p> 
+ *  <p> Orekit will propose several implemented attitude representations, 
+ *  providing specific and perfectly automatised attitudes, as they do not
+ *  consider for the moment the perturbing couples, the captors and
+ *  spacecraft dynamic.</p> 
  *  
  * @see AttitudePropagator#setAkProvider(AttitudeKinematicsProvider)
+ * @see AttitudeKinematics
  * 
  * @author F. Maussion
  */

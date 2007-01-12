@@ -70,9 +70,13 @@ public class ConstantThrustManeuver implements ForceModel {
   }
 
   /** Compute the contribution of maneuver to the global acceleration.
-   * @param t the current date
-   * @param pvCoordinates
+   * @param t current date
+   * @param pvCoordinates the position and velocity
+   * @param frame in which are defined the coordinates
+   * @param mass the current mass (kg)
+   * @param ak the attitude representation
    * @param adder object where the contribution should be added
+   * @throws OrekitException if some specific error occurs
    */  
   public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates,
                               Frame frame, double mass,

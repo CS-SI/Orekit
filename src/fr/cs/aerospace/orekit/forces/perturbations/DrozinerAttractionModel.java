@@ -17,7 +17,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * Andrzej Droziner (Institute of Mathematical Machines, Warsaw) in
  * his 1976 paper: <em>An algorithm for recurrent calculation of gravitational
  * acceleration</em> (artificial satellites, Vol. 12, No 2, June 1977).</p>
- * @version $Id$
+ * 
  * @author F. Maussion
  * @author L. Maisonobe
  */
@@ -79,8 +79,12 @@ public class DrozinerAttractionModel implements ForceModel {
    * acceleration (&mu;/r<sup>2</sup> term) is not computed here, only the
    * <em>perturbing</em> acceleration is considered, not the main part.
    * @param t current date
-   * @param pvCoordinates the {@link PVCoordinates}
+   * @param pvCoordinates the position and velocity
+   * @param frame in which are defined the coordinates
+   * @param mass the current mass (kg)
+   * @param ak the attitude representation
    * @param adder object where the contribution should be added
+   * @throws OrekitException if some specific error occurs
    */
 
   public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, 

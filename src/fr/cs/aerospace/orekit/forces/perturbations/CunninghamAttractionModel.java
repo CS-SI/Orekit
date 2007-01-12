@@ -12,8 +12,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
-/**
- * This class represents the gravitational field of a celestial body.
+/** This class represents the gravitational field of a celestial body.
  * <p>The algorithm implemented in this class has been designed by
  * Leland E. Cunningham (Lockheed Missiles and Space Company, Sunnyvale
  * and Astronomy Department University of California, Berkeley) in
@@ -86,9 +85,13 @@ public class CunninghamAttractionModel implements ForceModel {
    * The central part of the acceleration (mu/r<sup>2</sup> term) is not
    * computed here, only the <em>perturbing</em> acceleration is considered.
    * </p>
-   * @param pvCoordinates the position end velocity
-   * @param adder object where the contribution should be added
    * @param date current date
+   * @param pvCoordinates the position and velocity
+   * @param frame in which are defined the coordinates
+   * @param mass the current mass (kg)
+   * @param ak the attitude representation
+   * @param adder object where the contribution should be added
+   * @throws OrekitException if some specific error occurs
    */
   public void addContribution(AbsoluteDate date, PVCoordinates pvCoordinates,
                               Frame frame, double mass, AttitudeKinematics ak, TimeDerivativesEquations adder)

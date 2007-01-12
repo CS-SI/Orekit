@@ -4,12 +4,14 @@ This package provides interfaces that will be used by the
 {@link fr.cs.aerospace.orekit.propagation.NumericalPropagator}.
 
 <p>
-The {@link fr.cs.aerospace.orekit.forces.ForceModel} instance is added the the propagator before
-the extrapolation. The propagator calls at each step the addContribution method of the 
-force model, giving all the state information it needs : date, position, velocity, frame, 
-attitude, mass and above all the TimeDerivativeEquations instance. The selected force model 
+The {@link fr.cs.aerospace.orekit.forces.ForceModel} instance is added to the propagator 
+before the extrapolation. The propagator calls at each step the 
+{@link fr.cs.aerospace.orekit.forces.ForceModel#addContribution(AbsoluteDate, PVCoordinates, Frame, double, AttitudeKinematics, fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations)}
+method, giving all the state information it needs : date, position, velocity, frame, 
+attitude, mass and above all the {@link fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations}
+ instance. The selected force model 
 calculates then the acceleration relative to the model and state, and adds it to the 
-{@link fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations}. 
+Gauss equations. 
 </p>
 <p>
 A useful object has been developed to handle the discontinuities of the acceleration 

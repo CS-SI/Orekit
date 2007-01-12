@@ -8,7 +8,7 @@ import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** Sun model.
- * @version $Id: ThirdBody_Sun.java 831 2003-05-12 16:03:04Z internMS $
+ * The position model is the Newcomb theory.
  * @author E. Delente
  */
 
