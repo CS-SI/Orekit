@@ -35,7 +35,8 @@ public class SunTest extends TestCase {
 
   public void checkDirection(double offsetJ2000, double x, double y, double z) throws OrekitException {
     Vector3D sun = new Sun().getPosition(new AbsoluteDate(AbsoluteDate.J2000Epoch, offsetJ2000), Frame.getJ2000());
-    sun = Frame.getJ2000().getTransformTo(Frame.getVeis1950(), new AbsoluteDate(AbsoluteDate.J2000Epoch, offsetJ2000)).transformPosition(sun);
+    AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000Epoch, offsetJ2000);
+    sun = Frame.getJ2000().getTransformTo(Frame.getReferenceFrame(Frame.veis1950, date), date).transformPosition(sun);
     sun = sun.normalize();
     assertEquals(x, sun.getX(), 1.0e-7);
     assertEquals(y, sun.getY(), 1.0e-7);

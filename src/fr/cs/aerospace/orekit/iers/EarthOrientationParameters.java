@@ -9,7 +9,7 @@ import fr.cs.aerospace.orekit.frames.PoleCorrection;
  * EOP C 04 yearly files or the bulletin B monthly files.</p>
  * @author Luc Maisonobe
  * @see IERSData
- * @see fr.cs.aerospace.orekit.frames.ITRF2000Frame
+ * @see fr.cs.aerospace.orekit.frames.Frame
  */
 public class EarthOrientationParameters
   implements Comparable, Serializable {

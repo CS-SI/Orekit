@@ -54,7 +54,7 @@ import fr.cs.aerospace.orekit.time.UTCScale;
  * </ul>
  * 
  * <p>
- * This is a singleton class, so there is no public constructor.
+ * This is a singleton class since it handles voluminous datas. There is no public constructor.
  * </p>
  * 
  * @author Luc Maisonobe

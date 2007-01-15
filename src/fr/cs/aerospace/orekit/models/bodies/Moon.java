@@ -22,7 +22,7 @@ public class Moon extends ThirdBody {
     
       try {
         transform  =
-          Frame.getVeis1950().getTransformTo(Frame.getJ2000(), reference);
+          Frame.getReferenceFrame(Frame.veis1950, reference).getTransformTo(Frame.getJ2000(), reference);
       } catch (OrekitException e) {
         // should not happen
         transform = new Transform();

@@ -15,7 +15,6 @@ import fr.cs.aerospace.orekit.errors.PropagationException;
 import fr.cs.aerospace.orekit.forces.perturbations.CunninghamAttractionModel;
 import fr.cs.aerospace.orekit.forces.perturbations.DrozinerAttractionModel;
 import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.frames.ITRF2000Frame;
 import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.models.bodies.Sun;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
@@ -228,7 +227,7 @@ public class DrozinerAttractionModelTest extends TestCase {
       c40 =  1.61994537014e-6;
       c50 =  2.27888264414e-7;
       c60 = -5.40618601332e-7;
-      itrf2000 = new ITRF2000Frame(new AbsoluteDate(), true);
+      itrf2000 = Frame.getReferenceFrame(Frame.itrf2000B, new AbsoluteDate());
       propagator =
         new NumericalPropagator(mu,
                                 new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));

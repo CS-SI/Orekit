@@ -5,13 +5,11 @@ import java.text.ParseException;
 import org.spaceroots.mantissa.ode.FirstOrderIntegrator;
 import org.spaceroots.mantissa.ode.FixedStepHandler;
 import org.spaceroots.mantissa.ode.GraggBulirschStoerIntegrator;
-
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.perturbations.CunninghamAttractionModel;
 import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.frames.ITRF2000Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
@@ -32,7 +30,7 @@ public class NumericalPropagation {
     double mu =  3.9860064e+14; // gravitation coefficient
     double ae =  6378136.460; // equatorial radius in meter
     double c20 = -1.08262631303e-3; // J2 potential coefficent
-    Frame itrf2000 = new ITRF2000Frame(new AbsoluteDate(), true); // terrestrial frame at an arbitrary date
+    Frame itrf2000 = Frame.getReferenceFrame(Frame.itrf2000B, new AbsoluteDate()); // terrestrial frame at an arbitrary date
     
     
     //  Initial state definition :    
@@ -105,7 +103,7 @@ public class NumericalPropagation {
     double mu =  3.9860064e+14; // gravitation coefficient
     double ae =  6378136.460; // equatorial radius in meter
     double c20 = -1.08262631303e-3; // J2 potential coefficent
-    Frame itrf2000 = new ITRF2000Frame(new AbsoluteDate(), true); // terrestrial frame at an arbitrary date
+    Frame itrf2000 = Frame.getReferenceFrame(Frame.itrf2000B, new AbsoluteDate()); // terrestrial frame at an arbitrary date
     
     
     //  Initial state definition :    

@@ -1,12 +1,10 @@
 package fr.cs.aerospace.orekit.perturbations;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
-
 import fr.cs.aerospace.orekit.Utils;
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.frames.ITRF2000Frame;
 import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.models.perturbations.SimpleExponentialAtmosphere;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
@@ -22,7 +20,7 @@ public class DragTest extends TestCase {
     public void testExpAtmosphere() throws OrekitException {
       Vector3D posInJ2000 = new Vector3D(10000,Vector3D.plusI);
       AbsoluteDate date = AbsoluteDate.J2000Epoch;
-      Frame itrf = new ITRF2000Frame(date, true);
+      Frame itrf = Frame.getReferenceFrame(Frame.itrf2000B, date);
       SimpleExponentialAtmosphere atm = new SimpleExponentialAtmosphere(
                     new OneAxisEllipsoid(Utils.ae, 1.0 / 298.257222101), itrf,
                     0.0004, 42000.0, 7500.0);

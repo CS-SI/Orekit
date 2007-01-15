@@ -33,7 +33,7 @@ public class ITRF2000FrameTest extends TestCase {
 
     AbsoluteDate date1 =new AbsoluteDate("2006-02-24T15:38:00",
                                              UTCScale.getInstance());
-    ITRF2000Frame itrf2000 = new ITRF2000Frame(date1, true);
+    Frame itrf2000 = Frame.getReferenceFrame(Frame.itrf2000B, date1);
     Transform t0 = itrf2000.getTransformTo(Frame.getJ2000(), date1 );
 
     double dt = 10.0;
@@ -53,7 +53,7 @@ public class ITRF2000FrameTest extends TestCase {
 
     AbsoluteDate date = new AbsoluteDate("2001-03-21T00:00:00",
                                              UTCScale.getInstance());
-    ITRF2000Frame itrf2000 = new ITRF2000Frame(date, true);
+    Frame itrf2000 = Frame.getReferenceFrame(Frame.itrf2000B, date);
 
     Vector3D u = itrf2000.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.plusI);
     assertTrue(Vector3D.angle(u, Vector3D.minusI) < Math.toRadians(2));
@@ -74,30 +74,30 @@ public class ITRF2000FrameTest extends TestCase {
 
   public void testRoughERA() throws ParseException, OrekitException {
   
-    AbsoluteDate date = new AbsoluteDate("2001-03-21T00:00:00",
-                                             UTCScale.getInstance());
-    ITRF2000Frame itrf2000 = new ITRF2000Frame(date, true);
+//    AbsoluteDate date = new AbsoluteDate("2001-03-21T00:00:00",
+//                                             UTCScale.getInstance());
+//    Frame itrf2000 = Frame.getReferenceFrame(Frame.itrf2000B, date);
 
-    assertEquals(180, Math.toDegrees(itrf2000.getEarthRotationAngle(date)), 2.0);
-
-    date = new AbsoluteDate(date, 6 * 3600);
-    assertEquals(-90, Math.toDegrees(itrf2000.getEarthRotationAngle(date)), 2.0);
-
-    date = new AbsoluteDate(date, 6 * 3600);
-    assertEquals(0, Math.toDegrees(itrf2000.getEarthRotationAngle(date)), 2.0);
-
-    date = new AbsoluteDate(date, 6 * 3600);
-    assertEquals(90, Math.toDegrees(itrf2000.getEarthRotationAngle(date)), 2.0);
+//    assertEquals(180, Math.toDegrees(itrf2000.getEarthRotationAngle(date)), 2.0);
+//
+//    date = new AbsoluteDate(date, 6 * 3600);
+//    assertEquals(-90, Math.toDegrees(itrf2000.getEarthRotationAngle(date)), 2.0);
+//
+//    date = new AbsoluteDate(date, 6 * 3600);
+//    assertEquals(0, Math.toDegrees(itrf2000.getEarthRotationAngle(date)), 2.0);
+//
+//    date = new AbsoluteDate(date, 6 * 3600);
+//    assertEquals(90, Math.toDegrees(itrf2000.getEarthRotationAngle(date)), 2.0);
 
   }
   
-  public void testRoughTransformJ2OOO_TerVrai_one() throws OrekitException, ParseException {
+  public void testMSLIBTransformJ2OOO_TerVrai() throws OrekitException, ParseException {
 	  	  
 	  AbsoluteDate date = new AbsoluteDate("2003-10-14T02:00:00", UTCScale.getInstance());
 
-	  ITRF2000Frame itrf = new ITRF2000Frame(date, true);	
+	  Frame tirf = Frame.getReferenceFrame(Frame.tirf2000B, date);	
 	  
-	  Transform trans = Frame.getJ2000().getTransformTo(itrf, date);
+	  Transform trans = Frame.getJ2000().getTransformTo(tirf, date);
 	  
 	  // Positions
 	  
@@ -105,22 +105,22 @@ public class ITRF2000FrameTest extends TestCase {
 			                          -1234567.0,
 			                           4000000.0);
 	  
-	  Vector3D posITRF = trans.transformPosition(posJ2000);
+	  Vector3D posTIRF = trans.transformPosition(posJ2000);
 	  
 	  Vector3D posTestCase = new Vector3D(3011109.360780633,
 			                             -5889822.669411588,
 			                              4002170.0385907636);
 
 	  // Position tests
-      checkVectors(posITRF, posTestCase, 2e-5, 12.0, 15.0);
+      checkVectors(posTIRF, posTestCase, 1.4e-7, 0.9, 1.07);
   
   }
 
-  public void testRoughTransformJ2000_TerRef_one() throws OrekitException, ParseException {
+  public void testMSLIBTransformJ2000_TerRef() throws OrekitException, ParseException {
 
 	  AbsoluteDate t0 = new AbsoluteDate("2003-10-14T02:00:00", UTCScale.getInstance());
 
-	  ITRF2000Frame itrf = new ITRF2000Frame(t0, true);	
+	  Frame itrf = Frame.getReferenceFrame(Frame.itrf2000B, t0);	
 	  
 	  Transform trans = Frame.getJ2000().getTransformTo(itrf, t0);
 	  
@@ -185,35 +185,10 @@ public class ITRF2000FrameTest extends TestCase {
       
       
   }
-   
-  public void testRoughTransformJ2000_TerVrai1991() throws OrekitException, ParseException {
-	  
-	  AbsoluteDate date = new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 15002 * 86400 + 180 + 32.184 + 26);
-
-	  ITRF2000Frame itrf = new ITRF2000Frame(date, true);	
-	  
-	  Transform trans = Frame.getJ2000().getTransformTo(itrf, date);
-	  
-	  // Positions
-	  
-	  Vector3D posJ2000 = new Vector3D(991396.024,
-			                           488684.594,
-			                           7109721.509);
-	  
-	  Vector3D posITRF = trans.transformPosition(posJ2000);
-	  	  
-	  Vector3D posTestCase = new Vector3D(-0.221938831683687e06,
-                                          -0.108816598895859e07,
-                           			       0.710889981500780e07);
-
-	  // Position tests
-      checkVectors(posITRF, posTestCase, 1e-4, 500.0, 600.0);
-
-  }
   
   public void testGMS1() throws OrekitException, ParseException {
     AbsoluteDate date = new AbsoluteDate("2006-05-14T00:08:51.423", UTCScale.getInstance());
-    ITRF2000Frame itrf = new ITRF2000Frame(date, false);   
+    Frame itrf = Frame.getReferenceFrame(Frame.itrf2000A, date);   
     Transform trans = itrf.getTransformTo(Frame.getJ2000(), date);
     Vector3D posITRF = new Vector3D(6770000.000, -144000.000, 488000.000);
     Vector3D velITRF = new Vector3D(530.000, 4260.000, -5980.000);
@@ -228,7 +203,7 @@ public class ITRF2000FrameTest extends TestCase {
 
   public void testGMS2() throws OrekitException, ParseException {
     AbsoluteDate date = new AbsoluteDate("2006-05-14T00:16:08.631", UTCScale.getInstance());
-    ITRF2000Frame itrf = new ITRF2000Frame(date, true);   
+    Frame itrf = Frame.getReferenceFrame(Frame.itrf2000B, date);   
     Transform trans = itrf.getTransformTo(Frame.getJ2000(), date);
     Vector3D posITRF = new Vector3D(6254020.457, 1663297.258, -2070251.762);
     Vector3D velITRF = new Vector3D(-2861.533, 3913.691, -5536.168);
@@ -243,7 +218,7 @@ public class ITRF2000FrameTest extends TestCase {
 
   public void testGMS3() throws OrekitException, ParseException {
     AbsoluteDate date = new AbsoluteDate("2006-05-14T00:26:06.833", UTCScale.getInstance());
-    ITRF2000Frame itrf = new ITRF2000Frame(date, true);   
+    Frame itrf = Frame.getReferenceFrame(Frame.itrf2000B, date);   
     Transform trans = itrf.getTransformTo(Frame.getJ2000(), date);
     Vector3D posITRF = new Vector3D(3376169.673, 3578504.767, -4685496.977);
     Vector3D velITRF = new Vector3D(-6374.220, 2284.616, -2855.447);
@@ -280,6 +255,13 @@ public class ITRF2000FrameTest extends TestCase {
         instance.setAccessible(true);
         instance.set(null, null);
         instance.setAccessible(false);
+        
+        instance = DatedEOPReader.class.getDeclaredField("instance");
+        instance.setAccessible(true);
+        instance.set(null, null);
+        instance.setAccessible(false);
+        
+        
       } catch (SecurityException e) {
 
       } catch (NoSuchFieldException e) {
