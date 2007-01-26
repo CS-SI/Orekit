@@ -17,6 +17,9 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * that a transformation is defined as a transform to apply to the
  * coordinates of a vector expressed in the old frame to obtain the 
  * same vector expressed in the new frame. <p>
+ * 
+ *  <h5> Example </h5>
+ * 
  * <pre> 
  * 
  * 1 ) Example of translation from R<sub>A</sub> to R<sub>B</sub>:

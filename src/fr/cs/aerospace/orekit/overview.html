@@ -2,9 +2,97 @@
 <body>
 ORbital Extraplotation KIT.
 
-<p>
-OREKIT, a very efficient tool for space mechanics. 
+<h2> 1. Purpose </h2>
+<p> 
+	OREKIT library is a multiple tool provider for space mechanics projects. It is 
+implemented in JAVA 1.4 language. 
 </p>
+<p>
+	OREKIT project was initiated by CS for several reasons : <br>
+ - some space mechanics softwares are implemented in C/C++ language, and a large 
+proportion of the engineers are still using FORTRAN90 or even FORTRAN77 to code 
+their calculators. OREKIT innovates with the JAVA object oriented language, 
+which opens many possibilities and facilitates significantly the software use and support. <br>
+ - OREKIT wants to be a efficient and progressive tool, and provides some of the most
+recent physical models such as earth fixed frame and smart and precise numerical
+propagators. <br> 
+ - if it exists many orbital extrapolation tools, their complexity rises as well as 
+their size and the number of their functionalities. And, for most of the users the 
+biggest issue is to get an easy and affordable access to these expensive and protected
+tools. OREKIT has been structured and developed to reduce as much as possible all of
+these problems, and provides simple and efficient tools for different uses.
+</p>
+<p>
+	It can be used for many purposes, starting from simple geometrical or orbital tools, 
+ending with the propagation of orbits with several perturbation forces and maneuvers.
+Here is a short list of the possibilities offered by the library : <br>
+ - <strong>frames and transform handling</strong>. Rotations, translations, position 
+ and velocity transform... <br>
+ - <strong>time and instants handling</strong>. Absolute dates comparison, epoch and 
+ time scales models... <br>
+ - <strong>space mechanics objects implementation</strong>. Moon, Sun, terrestrial 
+ frame ITRF2000, forces (gravity attraction field, third body attraction, 
+ sun and atmospheric drag, maneuvers...) <br>
+ - <strong>orbits representation</strong>. Orbital parameters conversions (Keplerian,
+ Circular, Cartesian, Equinoctial), Keplerian extrapolation, simple attitudes.<br>
+ - <strong>numerical extrapolation</strong>. Numerical solutions to Gauss's equations, 
+ with perturbing forces and maneuvers. 
+</p>
+
+<h2> 2. The use of JAVA as a scientific tool </h2>
+<p>
+	OREKIT is compatible with JAVA version 1.4 and followers and is designed to 
+integrate technical projects as a solid and efficient base.
+</p>
+<p>
+	It is clearly not common to use JAVA for scientific softwares, and too often 
+for the wrong reasons. First of all, JAVA and the object oriented language permits
+a fast, convivial and agile development. With the help of graphical interfaces, 
+the very numerous available libraries, the plug ins and more, JAVA has proved itself 
+very useful and practical. It is used by a large community of users on free software
+development : web and database applications, graphics, interfaces...
+<p>  
+	So, why should it be kept away from scientific and mathematical use ? One of the
+most heard argument is its slowness. That's only partially true. JAVA is not as slow as
+some people would say, especially since the improved handling of garbage collector and
+compilation. And, furthermore, with the growing capacities of our calculators, fastness
+cannot be restricting anymore, especially in space mechanics which requires relatively
+simple calculus. 
+</p>
+<p>
+	OREKIT and JAVA are completely adapted to pre-mission analysis and on ground softwares. 
+</p>
+
+<h2> 3. MANTISSA </h2>
+<p>
+	OREKIT uses a free ware library, MANTISSA ( 
+<ahref="http://www.spaceroots.org"> ), which provides mathematical tools for many purposes:
+geometry, polynomial equations, differential equations, and more... 
+</p>
+<p>
+	OREKIT is based on two MANTISSA packages : <br> 
+ - {@link org.spaceroots.mantissa.geometry}, which provides very useful objects as vectors
+   and rotations (internally represented by quaternions). <br>
+ - {@link org.spaceroots.mantissa.ode}, which provides numerical solutions to solve 
+   Ordinary Differential Equations (ODE).
+</p>   
+<p>
+	The use of MANTISSA is hide in OREKIT as much as possible so the user doesn't 
+have to worry about his understanding of this library. 
+He will have to manipulate essentially the simple classes {@link org.spaceroots.mantissa.geometry.Vector3D},
+{@link org.spaceroots.mantissa.geometry.Rotation}, and {@link org.spaceroots.mantissa.ode.FirstOrderIntegrator}. 
+</p>
+
+<h2> 4. Library description </h2>
+
+<p> There are 4 ground packages : <br>
+ - {@link fr.cs.aerospace.orekit.time}, which is independant 
+  (exept for {@link fr.cs.aerospace.orekit.utils.PVCoordinates}). <br>
+ - {@link fr.cs.aerospace.orekit.frames}, which uses {@link org.spaceroots.mantissa.geometry}
+   and {@link fr.cs.aerospace.orekit.iers}
+ - 
+
+
 
 @version 2.0
 @author L. Maisonobe

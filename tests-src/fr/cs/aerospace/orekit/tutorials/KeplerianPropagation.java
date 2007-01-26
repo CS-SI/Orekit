@@ -16,7 +16,9 @@ import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
 
-
+/** The aim of this tutorial is to manipulate spacecraft states, orbital parameters
+ * and keplerian propagation
+ */
 public class KeplerianPropagation {
 
   public static void keplerianPropagation() throws ParseException, OrekitException {

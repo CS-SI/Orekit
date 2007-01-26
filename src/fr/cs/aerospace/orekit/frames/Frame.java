@@ -34,7 +34,7 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * 
  * <p>  <h5> Reference Frames </h5>
  *  Several Reference frames are implemented in OREKIT. The user can 
- *  {@link #getReferenceFrame(fr.cs.aerospace.orekit.frames.Frame.FrameType, AbsoluteDate) get them} 
+ *  {@link #getReferenceFrame(fr.cs.aerospace.orekit.frames.Frame.FrameType, AbsoluteDate) use them} 
  *  by specifying the {@link FrameType} (type enum) he wants.
  *     
  *    <h5> International Terrestrial Reference Frame 2000 </h5>  
@@ -272,7 +272,8 @@ public class Frame implements Serializable {
     return path;
   }
     
-  /** Frame Type enum for the {@link Frame#getReferenceFrame(fr.cs.aerospace.orekit.frames.Frame.FrameType, AbsoluteDate)} method.  */
+  /** Frame Type enum for the 
+   * {@link Frame#getReferenceFrame(fr.cs.aerospace.orekit.frames.Frame.FrameType, AbsoluteDate)} method.  */
   public static class FrameType {
     private FrameType(String name) {
       this.name = name;

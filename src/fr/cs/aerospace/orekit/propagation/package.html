@@ -22,24 +22,23 @@ This package provides tools to propagate orbital states with different methods.
  representation: only the mean anomaly value changes.
 </p>
 
-	
-
 <p> <h5> Eckstein-Hechler propagation </h5>	
   This analytical model is suited for near circular orbits and inclination
   neither equatorial nor critical. It considers J2 to J6 potential 
   coefficients correctors, and uses mean parameters to compute the new 
-  position. As the keplerian propagator, it implements the ephemeris 
-  interface. 
+  position. As the keplerian propagator, it implements the 
+  {@link fr.cs.aerospace.orekit.propagation.Ephemeris} interface. 
 </p>
 	
-<p> <h5> Numerical propagation </h5> It is the most important part of the OREKIT project. Based on MANTISSA
+<p> <h5> Numerical propagation </h5> 
+ It is the most important part of the OREKIT project. Based on MANTISSA
  integrators, the {@link fr.cs.aerospace.orekit.propagation.NumericalPropagator}
  class realizes the interface between space mechanics and mathematical 
  resolutions. If its utilization seems difficult on first sight, it is in 
  fact quite clear and intuitive.
  </p>
 
-<p> The problem to integrate is a seven dimension time derivative equations
+<p> The mathematical problem to integrate is a seven dimension time derivative equations
  system. The six first equations are given by the Gauss equations (expressed
  in {@link fr.cs.aerospace.orekit.orbits.EquinoctialParameters}) and the 
  seventh is simply the flow rate and mass equation. This first order 
@@ -48,9 +47,8 @@ This package provides tools to propagate orbital states with different methods.
  It will be instanced by the propagator and then be modified at each step 
  (a fixed t value) by all the needed 
  {@link fr.cs.aerospace.orekit.forces.ForceModel force models} which
-  will add their contribution, the perturbing acceleration.
+ will add their contribution, the perturbing acceleration.
 </p>
-	
 <p>	The {@link org.spaceroots.mantissa.ode.FirstOrderIntegrator integrators}
  provided by MANTISSA need the state vector at t0, the state vector first 
  time derivate at t0, and then calculates the next step state vector, and 

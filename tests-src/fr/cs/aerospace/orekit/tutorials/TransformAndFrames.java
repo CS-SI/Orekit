@@ -9,7 +9,9 @@ import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
-
+/** The aim of this tutorial is to manipulate transforms, frames and position and velocity coordinates.
+ * @author F. Maussion
+ */
 public class TransformAndFrames {
 
   public static void transform() throws OrekitException {

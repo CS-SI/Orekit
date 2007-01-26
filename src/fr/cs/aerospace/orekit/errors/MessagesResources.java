@@ -4,7 +4,6 @@ import java.util.ListResourceBundle;
 
 /** This class gather the message resources for the orekit library.
  * @author Luc Maisonobe
- * @version $Id$
  */
 public class MessagesResources
   extends ListResourceBundle {

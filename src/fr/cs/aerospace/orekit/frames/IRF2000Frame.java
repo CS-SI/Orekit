@@ -8,7 +8,7 @@ import fr.cs.aerospace.orekit.frames.series.Development;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** Intermediate Reference Frame 2000 : true equinox and equator of date.
- * <p> Precession and nutation effects and no earth rotation. Its parent
+ * <p> It considers precession and nutation effects and not the earth rotation. Its parent
  * frame is the J2000 frame. <p>
  */
 class IRF2000Frame extends Frame {

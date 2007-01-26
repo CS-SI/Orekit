@@ -5,7 +5,6 @@ import java.util.ListResourceBundle;
 /** This class gather the french translations of the message resources
  * for the orekit library.
  * @author Luc Maisonobe
- * @version $Id$
  */
 public class MessagesResources_fr
   extends ListResourceBundle {

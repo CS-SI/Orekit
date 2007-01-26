@@ -122,8 +122,7 @@ class DatedEOPReader {
 
   }
   
-  /** Earth Orientation Parameter format more adapted to the OREKIT representation.
-   */
+  /** Earth Orientation Parameter format more adapted to the OREKIT representation.  */
   private static class DatedEop implements Comparable, Serializable {
 
     private static final long serialVersionUID = -6893523591361188479L;

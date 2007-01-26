@@ -6,7 +6,7 @@ import java.util.MissingResourceException;
 
 /** This utility class translates strings and formats.
  * @author L. Maisonobe
- * @version $Id: Translator.java 623 2005-03-24 14:45:44Z internMS $
+ * 
  */
 public class Translator {
 

@@ -21,6 +21,10 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
 
 
+/** The aim of this tutorial is to manipulate the Numerical propagator
+ * and the force models.
+ * @author F. Maussion
+ */
 public class NumericalPropagation {
  
   public static void numericalPropagation() throws ParseException, OrekitException {

@@ -19,11 +19,17 @@ public class PotentialReaderFactory {
     readers.add(new EGMFormatReader());
   }
   
+  /** Adds a {@link PotentialCoefficientsReader} to the test list.
+   * By construction, the list contains allready the {@link SHMFormatReader}
+   * and the {@link EGMFormatReader}.
+   * @param reader the reader to add
+   */
   public void addPotentialReader(PotentialCoefficientsReader reader) {
      readers.add(reader);
   }
   
   /** Determines the proper reader to use wich the selected file.
+   * It tests all the readers it contains to see if they match the input format.
    * @param in the file to check (it can be compressed)
    * @return the proper reader
    * @throws OrekitException when no known reader can read the file
