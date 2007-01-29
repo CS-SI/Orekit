@@ -3,7 +3,7 @@ package fr.cs.aerospace.orekit.tle;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
-abstract class SDP4Extrapolator  extends SXP4Extrapolator {
+abstract class SDP4Extrapolator  extends TLEPropagator {
 
   protected SDP4Extrapolator(TLE initialTLE) throws OrekitException {
     super (initialTLE);
@@ -15,20 +15,17 @@ abstract class SDP4Extrapolator  extends SXP4Extrapolator {
 
   protected void sxpExtrapolate(double tSince) throws OrekitException {
 
-    double xnoddf;
-
     // Update for secular gravity and atmospheric drag
     omgadf = tle.getPerigeeArgument() + omgdot * tSince;
-    xnoddf = tle.getRaan() + xnodot * tSince;
+    double xnoddf = tle.getRaan() + xnodot * tSince;
     double tSinceSq = tSince * tSince;
     xnode = xnoddf + xnodcf * tSinceSq;
     xn = xn0dp;
 
     // Update for deep-space secular effects
     xll = tle.getMeanAnomaly() + xmdot * tSince;
-    t = tSince;
 
-    Deep_dpsec();
+    deepSecularEffects(tSince);
 
     double tempa = 1 - c1 * tSince;    
     a = Math.pow(Constants.xke/xn, Constants.twoThirds)*tempa*tempa;
@@ -37,7 +34,7 @@ abstract class SDP4Extrapolator  extends SXP4Extrapolator {
     // Update for deep-space periodic effects
     xll += xn0dp * t2cof * tSinceSq;
 
-    Deep_dpper();
+    deepPeriodicEffects(tSince);
 
     xl = xll + omgadf + xnode;
     
@@ -77,16 +74,12 @@ abstract class SDP4Extrapolator  extends SXP4Extrapolator {
     return( rval);
   }
   
-  protected abstract void Deep_dpper();
+  protected abstract void deepPeriodicEffects(double t);
   
-  protected abstract void Deep_dpsec();
+  protected abstract void deepSecularEffects(double t);
   
   protected abstract void luniSolarTermsComputation() throws OrekitException;
-    
-  /** intermediate values. */
-
-  protected double t; // tSince
-  
+      
   /** Params to determine for PV computation. */
   protected double omgadf; // new perigee argument
   protected double xn; // new mean motion

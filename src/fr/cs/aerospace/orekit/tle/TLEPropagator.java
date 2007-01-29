@@ -7,11 +7,11 @@ import fr.cs.aerospace.orekit.errors.Translator;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
-public abstract class SXP4Extrapolator {
+public abstract class TLEPropagator {
 
   /** Protected constructor for herited classes. 
    * @throws OrekitException */
-  protected SXP4Extrapolator(TLE initialTLE) throws OrekitException {
+  protected TLEPropagator(TLE initialTLE) throws OrekitException {
     tle = initialTLE;
     initializeCommons();
     sxpInitialize();
@@ -22,7 +22,7 @@ public abstract class SXP4Extrapolator {
    * @return the correct propagator.
    * @throws OrekitException 
    */
-  public static SXP4Extrapolator selectExtrapolator(TLE tle) throws OrekitException {
+  public static TLEPropagator selectExtrapolator(TLE tle) throws OrekitException {
 
     double a1 = Math.pow( Constants.xke / (tle.getMeanMotion()*60.0), Constants.twoThirds);
     double cosi0 = Math.cos(tle.getI());
@@ -53,8 +53,8 @@ public abstract class SXP4Extrapolator {
   public PVCoordinates getPVCoordinates(AbsoluteDate date)
     throws OrekitException {  
     
-    // Extrapolation proper to each extrapolator
     double tSince = date.minus(tle.getEpoch())/60.0;
+    
     sxpExtrapolate(tSince);  
     
     // Compute PV with previous calculated parameters
@@ -96,10 +96,10 @@ public abstract class SXP4Extrapolator {
       else {
         s4 = perige - 78.; 
       }
-      double temp_val = (120. - s4) * Constants.ae / Constants.er;
+      double temp_val = (120.0 - s4) * Constants.ae / Constants.er;
       double temp_val_squared = temp_val * temp_val;
       q0ms24 = temp_val_squared * temp_val_squared;
-      s4 = s4 / Constants.ae + Constants.er; // new value for q0ms2T and s
+      s4 = s4 / Constants.er + Constants.ae; // new value for q0ms2T and s
     } 
     
     double pinv = 1. / (a0dp * beta02);
@@ -341,6 +341,8 @@ public abstract class SXP4Extrapolator {
   protected double c4; // C4 from SPTRCK #3
   protected double xnodcf; // common parameter for raan (OMEGA) computation 
   protected double t2cof; // 3/2 * C1
+  
+  public int exType;
 
 }
 //      My comments

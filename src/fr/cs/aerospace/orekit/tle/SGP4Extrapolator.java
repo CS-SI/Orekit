@@ -2,10 +2,11 @@ package fr.cs.aerospace.orekit.tle;
 
 import fr.cs.aerospace.orekit.errors.OrekitException;
 
-class SGP4Extrapolator extends SXP4Extrapolator {
+class SGP4Extrapolator extends TLEPropagator {
   
   protected SGP4Extrapolator(TLE initialTLE) throws OrekitException {
     super (initialTLE);
+    this.exType = 1;
   }
 
   public void sxpInitialize() {

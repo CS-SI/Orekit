@@ -1,9 +1,12 @@
 package fr.cs.aerospace.orekit.tle;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.ParseException;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.FindFile;
@@ -81,100 +84,6 @@ public class tleTest extends TestCase {
 
   }
 
-  public void aatestPVTransform() throws OrekitException, ParseException {
-
-    // TEST VALUES : 
-
-    String line1 = "1 07191U 73086EZ  02076.63595131 -.00000031  00000-0  10000-3 0  9045";
-    String line2 = "2 07191 102.1490 334.0121 0253607  54.7437 307.7251 12.10431881825991";
-
-    Vector3D testPos = new Vector3D ( 7095.62534394,
-                                      -3459.54977223,
-                                      2.65766867);
-
-
-    Vector3D testVel = new Vector3D ( -0.79920008,
-                                      -1.28572174,
-                                      6.99886910);
-
-//  OrbitalParameters testOrb = new CartesianParameters(new PVCoordinates(testPos, testVel)
-//  , Frame.getJ2000(), Constants.mu);
-
-
-    // Convert to tle :    
-    assertTrue(TLE.isFormatOK(line1, line2)); 
-    TLE tle = new TLE(line1, line2);
-
-    SXP4Extrapolator ex = SXP4Extrapolator.selectExtrapolator(tle);
-    PVCoordinates result = ex.getPVCoordinates(tle.getEpoch());
-
-    Utils.vectorToString("result pos : ", result.getPosition().subtract(testPos));
-
-    Utils.vectorToString("result vel : ", result.getVelocity().subtract(testVel));
-
-    //-----360 min-----------------------------------------------------------------------
-
-    testPos = new Vector3D ( 6876.82395295,
-                             -3614.28549445,
-                             1242.00621199);
-
-
-    testVel = new Vector3D (-1.80950045,
-                            -0.77766069,
-                            6.90918302);
-
-    result = ex.getPVCoordinates(new AbsoluteDate(tle.getEpoch(), 360*60));
-
-    Utils.vectorToString("result pos 360 : ", result.getPosition().subtract(testPos));
-
-    Utils.vectorToString("result vel 360 : ", result.getVelocity().subtract(testVel));
-
-//  ------2880 min-----------------------------------------------------------------------
-
-    testPos = new Vector3D ( 3051.67782955,
-                             225.45893096,
-                             -7549.72713780);
-
-
-    testVel = new Vector3D (5.53973976,
-                            -3.48618620,
-                            2.28442985);
-
-    result = ex.getPVCoordinates(new AbsoluteDate(tle.getEpoch(), -2880*60));
-
-    Utils.vectorToString("result pos -2880 : ", result.getPosition().subtract(testPos));
-
-    Utils.vectorToString("result vel -2880 : ", result.getVelocity().subtract(testVel));
-
-
-//  ------------------ Verification test cases ----------------------
-
-//  #   DELTA 1 DEB         # near earth normal drag equation
-//  #                       # perigee = 377.26km, so moderate drag case
-//  1 06251U 62025E   06176.82412014 .00008885 00000-0 12808-3 0 3985
-//  2 06251 58.0579 54.0425 0030035 139.1568 221.1854 15.56387291 6774
-
-//  1 07191U 73086EZ  02076.63595131 -.00000031  00000-0  10000-3 0  9045
-
-//  2 07191 102.1490 334.0121 0253607  54.7437 307.7251 12.10431881825991
-
-//  Near-Earth type Ephemeris (SGP4) selected:
-//  Ephem:SGP4   Tsince         X/Xdot           Y/Ydot           Z/Zdot
-//  7191     1440.0000      5197.68379504   -3532.40188648    4642.94280275 
-//  -4.52981807       0.79135016       5.57991435 
-//  7191        0.0000      7095.62534394   -3459.54977223       2.65766867 
-//  -0.79920008      -1.28572174       6.99886910 
-//  7191      360.0000      6876.82395295   -3614.28549445    1242.00621199 
-//  -1.80950045      -0.77766069       6.90918302 
-//  7191     1080.0000      5917.38908180   -3650.54888754    3593.33932356 
-//  -3.70227403       0.27502090       6.19225553 
-//  7191      720.0000      6481.41080392   -3678.31238626    2449.51628455 
-//  -2.78652792      -0.25275130       6.63881188 
-//  7191      719.0000      6638.89853614   -3657.68854846    2047.73362803 
-//  -2.46167103      -0.43439031       6.75039533 
-//  7191    -2880.0000      3051.67782955     225.45893096   -7549.72713780 
-//  5.53973976      -3.48618620       2.28442985     
-  }
   public void testFirstSGP() throws OrekitException, ParseException {
 
 //  # DELTA 1 DEB # near earth normal drag equation 
@@ -201,7 +110,7 @@ public class tleTest extends TestCase {
     assertTrue(TLE.isFormatOK(line1, line2)); 
     TLE tle = new TLE(line1, line2);
 
-    SXP4Extrapolator ex = SXP4Extrapolator.selectExtrapolator(tle);
+    TLEPropagator ex = TLEPropagator.selectExtrapolator(tle);
     PVCoordinates result = ex.getPVCoordinates(tle.getEpoch());
 
     Utils.vectorToString("result pos : ", result.getPosition().subtract(testPos));
@@ -332,7 +241,7 @@ public class tleTest extends TestCase {
     assertTrue(TLE.isFormatOK(line1, line2)); 
     TLE tle = new TLE(line1, line2);
 
-    SXP4Extrapolator ex = SXP4Extrapolator.selectExtrapolator(tle);
+    TLEPropagator ex = TLEPropagator.selectExtrapolator(tle);
     PVCoordinates result = ex.getPVCoordinates(tle.getEpoch());
 //    double daysSince1900 = tle.getEpoch().minus(AbsoluteDate.JulianEpoch)/86400.0 - 2415020;
 //    System.out.println("days : " + daysSince1900);
@@ -341,7 +250,6 @@ public class tleTest extends TestCase {
 
     Utils.vectorToString("result vel SDP: ", result.getVelocity().subtract(testVel));
 
-    Deep2 dd = new Deep2(tle);
     
 //    8195 xx 
 //    0.00000000 2349.89483350 -14785.93811562 0.02119378 2.721488096 -3.256811655 4.498416672 
@@ -371,7 +279,6 @@ public class tleTest extends TestCase {
 //    2880.00000000 3417.20931586 -16038.79510665 1894.74934058 2.585515864 -2.596818146 4.456882556 2006 6 27 7:58:18.143636 
   }
 
-
   public void testThetaG() throws OrekitException, ParseException {
     
     AbsoluteDate date = AbsoluteDate.J2000Epoch;
@@ -394,4 +301,93 @@ public class tleTest extends TestCase {
 
   }
 
+  public void testSatCodeCompliance() throws IOException, OrekitException {
+    
+    File rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data" +
+                                 "/tle/extrapolationTest-data/SatCode-entry", "/");
+    InputStream inEntry = new FileInputStream(rootDir.getAbsolutePath());
+    BufferedReader rEntry = new BufferedReader(new InputStreamReader(inEntry));
+    
+    rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data" +
+                                 "/tle/extrapolationTest-data/SatCode-results", "/");
+    InputStream inResults = new FileInputStream(rootDir.getAbsolutePath());
+    BufferedReader rResults = new BufferedReader(new InputStreamReader(inResults));
+       
+    boolean stop = false;
+    String rline = rResults.readLine();
+    
+    while( stop==false ) {
+      if (rline == null) break;
+      String[] title = rline.split(" ");
+      
+      if(title[0].matches("r")) {        
+        
+        System.out.println();
+        
+        String eline;
+        
+        for (eline = rEntry.readLine(); eline.charAt(0)=='#'; eline = rEntry.readLine()) {
+          if(eline.charAt(0)=='#') {
+            System.out.println(eline);
+          }          
+        }
+        
+        System.out.println("SATELLITE " + Double.parseDouble(title[1]));
+        
+        String line1 = eline;
+        String line2 = rEntry.readLine();
+        System.out.println(line1);
+        System.out.println(line2);
+        
+        assertTrue(TLE.isFormatOK(line1, line2));
+        
+        TLE tle = new TLE(line1, line2);
+        
+        assertTrue(Double.parseDouble(title[1])==tle.getSatelliteNumber());
+
+        TLEPropagator ex = TLEPropagator.selectExtrapolator(tle);
+        
+
+          
+        
+        for (rline = rResults.readLine(); (rline!=null)&&(rline.charAt(0)!='r'); rline = rResults.readLine()) {
+          String[] data = rline.split(" ");
+          double minFromStart = Double.parseDouble(data[0]);
+          double pX = Double.parseDouble(data[1]);
+          double pY = Double.parseDouble(data[2]);
+          double pZ = Double.parseDouble(data[3]);
+          double vX = Double.parseDouble(data[4]);
+          double vY = Double.parseDouble(data[5]);
+          double vZ = Double.parseDouble(data[6]);
+          Vector3D testPos = new Vector3D(pX, pY, pZ);
+          Vector3D testVel = new Vector3D(vX, vY, vZ);
+          if(ex.exType==2) {
+            System.out.print(" t since : " + minFromStart + " ");
+          }
+          AbsoluteDate date = new AbsoluteDate(tle.getEpoch(), minFromStart*60);
+          PVCoordinates results = null;
+          try {
+            results = ex.getPVCoordinates(date);
+          }
+          catch(IllegalArgumentException e)  {
+            if(ex.exType==2) {
+              System.out.println(e.toString());
+            }
+          }
+          
+          if (results != null) {
+            double normDifPos = testPos.subtract(results.getPosition()).getNorm();
+            double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
+            if(ex.exType==2) {
+              System.out.print(" dif pos : " + normDifPos);
+              System.out.println(" dif vel : " + normDifVel);
+            }
+          }       
+
+        }
+        
+      }
+    }
+    
+  }
 }
