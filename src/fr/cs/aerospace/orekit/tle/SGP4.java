@@ -2,13 +2,19 @@ package fr.cs.aerospace.orekit.tle;
 
 import fr.cs.aerospace.orekit.errors.OrekitException;
 
-class SGP4Extrapolator extends TLEPropagator {
+/** This class contains methods to compute propagated coordinates with the SGP4 model.
+ * 
+ * @author F. Maussion
+ */
+class SGP4 extends TLEPropagator {
   
-  protected SGP4Extrapolator(TLE initialTLE) throws OrekitException {
+  protected SGP4(TLE initialTLE) throws OrekitException {
     super (initialTLE);
-    this.exType = 1;
   }
-
+  
+  /** Initialization proper to each propagator (SGP or SDP).
+   * @param tSince the offset from initial epoch (min)
+   */
   public void sxpInitialize() {
     
     // For perigee less than 220 kilometers, the equations are truncated to 
@@ -27,7 +33,7 @@ class SGP4Extrapolator extends TLEPropagator {
       t4cof = 0.25*(3 * d3 + c1 * (12 * d2 + 10 * c1sq));
       t5cof = 0.2*(3 * d4 + 12 * c1 * d3 + 6 * d2 * d2 + 15 * c1sq *(2 * d2 + c1sq));
       sinM0 = Math.sin(tle.getMeanAnomaly());
-      if( tle.getE() < Constants.MINIMAL_E) {
+      if( tle.getE() < 1e-4) {
         omgcof = 0.;
         xmcof = 0.;
       }        
@@ -42,7 +48,10 @@ class SGP4Extrapolator extends TLEPropagator {
     // initialized
   }
   
-  public void sxpExtrapolate(double tSince) {
+  /** Propagation proper to each propagator (SGP or SDP).
+   * @param tSince the offset from initial epoch (min)
+   */
+  public void sxpPropagate(double tSince) {
         
     // Update for secular gravity and atmospheric drag. 
     double xmdf = tle.getMeanAnomaly() + xmdot * tSince;
@@ -82,17 +91,13 @@ class SGP4Extrapolator extends TLEPropagator {
     xl = xmp + omega + xnode + xn0dp*templ;
     
     i = tle.getI();
-//    if( tempa < 0.)       /* force negative a,  to indicate error condition */
-//      a = -a;   TODO what's the problem with negative tempa ??
 
-//   sxpx_posn_vel( xnode, a, e, params, cosi0, sini0, i, omega, xl);
   }
 
   /** If perige is less than 220 km, some calculus are avoided. */
   private boolean lessThan220;
 
-  /** intermediate parameters. */
-  
+  /** intermediate parameters. */  
   private double delM0; // (1 + eta*cos(M0))^3
   private double d2, d3, d4; // internal coeffs
   private double t3cof, t4cof, t5cof; // internal coefs

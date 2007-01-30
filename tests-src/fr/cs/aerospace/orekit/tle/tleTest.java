@@ -3,7 +3,6 @@ package fr.cs.aerospace.orekit.tle;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -215,40 +214,42 @@ public class tleTest extends TestCase {
 
   }
 
-  public void testFirstSDP() throws OrekitException, ParseException {
+  public void aatestFirstSDP() throws OrekitException, ParseException {
+//
+////    # MOLNIYA 2-14 # 12h resonant ecc in 0.65 to 0.7 range 
+////    1 08195U 75081A   06176.33215444  .00000099  00000-0  11873-3   0 813 
+////    2 08195  64.1586 279.0717 6877146 264.7651  20.2257  2.00491383225656 
+//
+//    // TEST VALUES : 
+//                
+//    String line1 = "1 08195U 75081A   06176.33215444  .00000099  00000-0  11873-3   0 813";
+//    String line2 = "2 08195  64.1586 279.0717 6877146 264.7651  20.2257  2.00491383225656";
+//    
+//    Vector3D testPos = new Vector3D ( 2349.89483350,
+//                                      -14785.93811562,
+//                                      0.02119378);
+//
+//
+//    Vector3D testVel = new Vector3D (2.721488096,
+//                                     -3.256811655,
+//                                     4.498416672);
+//
+//
+//
+//    // Convert to tle :    
+//    assertTrue(TLE.isFormatOK(line1, line2)); 
+//    TLE tle = new TLE(line1, line2);
 
-//    # MOLNIYA 2-14 # 12h resonant ecc in 0.65 to 0.7 range 
-//    1 08195U 75081A   06176.33215444  .00000099  00000-0  11873-3   0 813 
-//    2 08195  64.1586 279.0717 6877146 264.7651  20.2257  2.00491383225656 
+//    TLEPropagator ex = TLEPropagator.selectExtrapolator(tle);
+//    PVCoordinates result = ex.getPVCoordinates(tle.getEpoch());
+////    double daysSince1900 = tle.getEpoch().minus(AbsoluteDate.JulianEpoch)/86400.0 - 2415020;
+////    System.out.println("days : " + daysSince1900);
+//    
 
-    // TEST VALUES : 
-                
-    String line1 = "1 08195U 75081A   06176.33215444  .00000099  00000-0  11873-3   0 813";
-    String line2 = "2 08195  64.1586 279.0717 6877146 264.7651  20.2257  2.00491383225656";
-    
-    Vector3D testPos = new Vector3D ( 2349.89483350,
-                                      -14785.93811562,
-                                      0.02119378);
-
-
-    Vector3D testVel = new Vector3D (2.721488096,
-                                     -3.256811655,
-                                     4.498416672);
-
-
-
-    // Convert to tle :    
-    assertTrue(TLE.isFormatOK(line1, line2)); 
-    TLE tle = new TLE(line1, line2);
-
-    TLEPropagator ex = TLEPropagator.selectExtrapolator(tle);
-    PVCoordinates result = ex.getPVCoordinates(tle.getEpoch());
-//    double daysSince1900 = tle.getEpoch().minus(AbsoluteDate.JulianEpoch)/86400.0 - 2415020;
-//    System.out.println("days : " + daysSince1900);
-    
-    Utils.vectorToString("result pos SDP: ", result.getPosition().subtract(testPos));
-
-    Utils.vectorToString("result vel SDP: ", result.getVelocity().subtract(testVel));
+   
+//    Utils.vectorToString("result pos SDP: ", result.getPosition().subtract(testPos));
+//
+//    Utils.vectorToString("result vel SDP: ", result.getVelocity().subtract(testVel));
 
     
 //    8195 xx 
@@ -283,73 +284,65 @@ public class tleTest extends TestCase {
     
     AbsoluteDate date = AbsoluteDate.J2000Epoch;
     
-    double teta = SDP4Extrapolator.thetaG(date); 
+    double teta = SDP4.thetaG(date); 
     
     TIRF2000Frame ITRF = (TIRF2000Frame)Frame.getReferenceFrame(Frame.tirf2000B, date);
     double tetaTIRF = ITRF.getEarthRotationAngle(date);    
-    
-    System.out.println("teta j2000 epoch SDP : " + Utils.trimAngle(teta, Math.PI));
-    System.out.println("teta j2000 epoch ITRF : " + Utils.trimAngle(tetaTIRF, Math.PI));
+    assertEquals( Utils.trimAngle(tetaTIRF, Math.PI), Utils.trimAngle(teta, Math.PI), 0.003);
         
     date = new AbsoluteDate(AbsoluteDate.J2000Epoch, 78.2*86400);
     
-    teta = SDP4Extrapolator.thetaG(date); 
+    teta = SDP4.thetaG(date); 
     tetaTIRF = ITRF.getEarthRotationAngle(date);
     
-    System.out.println("teta random epoch SDP  " + Utils.trimAngle(teta, Math.PI));
-    System.out.println("teta random epoch ITRF  " + Utils.trimAngle(tetaTIRF, Math.PI));
-
+    assertEquals( Utils.trimAngle(tetaTIRF, Math.PI), Utils.trimAngle(teta, Math.PI), 0.003);
   }
 
   public void testSatCodeCompliance() throws IOException, OrekitException {
-    
+
     File rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data" +
                                  "/tle/extrapolationTest-data/SatCode-entry", "/");
     InputStream inEntry = new FileInputStream(rootDir.getAbsolutePath());
     BufferedReader rEntry = new BufferedReader(new InputStreamReader(inEntry));
-    
+
     rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data" +
-                                 "/tle/extrapolationTest-data/SatCode-results", "/");
+                            "/tle/extrapolationTest-data/SatCode-results", "/");
     InputStream inResults = new FileInputStream(rootDir.getAbsolutePath());
     BufferedReader rResults = new BufferedReader(new InputStreamReader(inResults));
-       
+
+    double cumulated = 0;
+    
     boolean stop = false;
     String rline = rResults.readLine();
-    
+
     while( stop==false ) {
       if (rline == null) break;
       String[] title = rline.split(" ");
-      
+
       if(title[0].matches("r")) {        
-        
-        System.out.println();
-        
+
         String eline;
-        
+        String[] header = new String[4];
+        int count = 0;
         for (eline = rEntry.readLine(); eline.charAt(0)=='#'; eline = rEntry.readLine()) {
           if(eline.charAt(0)=='#') {
-            System.out.println(eline);
+            header[count++] = eline;
           }          
         }
-        
-        System.out.println("SATELLITE " + Double.parseDouble(title[1]));
-        
         String line1 = eline;
         String line2 = rEntry.readLine();
-        System.out.println(line1);
-        System.out.println(line2);
-        
         assertTrue(TLE.isFormatOK(line1, line2));
-        
+
         TLE tle = new TLE(line1, line2);
-        
-        assertTrue(Double.parseDouble(title[1])==tle.getSatelliteNumber());
+
+        double satNum = Double.parseDouble(title[1]);
+        assertTrue(satNum==tle.getSatelliteNumber());
 
         TLEPropagator ex = TLEPropagator.selectExtrapolator(tle);
-        
-
-          
-        
+        System.out.println("SATELLITE " + Double.parseDouble(title[1]));
+        System.out.println(header[1]);
+        System.out.println(header[2]);  
+        int once = 0;     
         for (rline = rResults.readLine(); (rline!=null)&&(rline.charAt(0)!='r'); rline = rResults.readLine()) {
           String[] data = rline.split(" ");
           double minFromStart = Double.parseDouble(data[0]);
@@ -361,33 +354,40 @@ public class tleTest extends TestCase {
           double vZ = Double.parseDouble(data[6]);
           Vector3D testPos = new Vector3D(pX, pY, pZ);
           Vector3D testVel = new Vector3D(vX, vY, vZ);
-          if(ex.exType==2) {
-            System.out.print(" t since : " + minFromStart + " ");
-          }
+          
           AbsoluteDate date = new AbsoluteDate(tle.getEpoch(), minFromStart*60);
           PVCoordinates results = null;
           try {
             results = ex.getPVCoordinates(date);
           }
           catch(IllegalArgumentException e)  {
-            if(ex.exType==2) {
-              System.out.println(e.toString());
+            if(satNum==28872  || satNum==23333 || satNum==29141 ) {
+              // expected behaviour
+            }
+            else {
+              fail(" exception not expected");
             }
           }
-          
           if (results != null) {
             double normDifPos = testPos.subtract(results.getPosition()).getNorm();
             double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
-            if(ex.exType==2) {
-              System.out.print(" dif pos : " + normDifPos);
-              System.out.println(" dif vel : " + normDifVel);
-            }
-          }       
-
+            cumulated += normDifPos;
+            assertEquals( 0, normDifPos, 1);
+            assertEquals( 0, normDifVel, 1e-3);
+//            if (normDifPos>0.01 && once == 0) {
+//              System.out.println("SATELLITE " + Double.parseDouble(title[1]));
+//              System.out.println(header[1]);
+//              System.out.println(header[2]);  
+              System.out.print(" t since : " + minFromStart + " ");
+//              System.out.println(" norm dif pos > 1e-3 ");
+              System.out.println(" norm dif pos : " + normDifPos);
+              once++;
+//            }
+          }    
         }
-        
+
       }
     }
-    
+    System.out.println( "cumulated error : " + cumulated);
   }
 }

@@ -1,17 +1,24 @@
 package fr.cs.aerospace.orekit.tle;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
-
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.errors.Translator;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
+/** This class provides elements to propagate TLE's.
+ * 
+ * The models used are SGP4 and SDP4, initialy proposed by NORAD as the unique convenient
+ * propagator for TLE's. The code is largely inspired from the (...)
+ *
+ * @author F. Maussion
+ */
 public abstract class TLEPropagator {
 
   /** Protected constructor for herited classes. 
-   * @throws OrekitException */
-  protected TLEPropagator(TLE initialTLE) throws OrekitException {
+   * @param initialTLE the unique TLE to propagate
+   */
+  protected TLEPropagator(TLE initialTLE) {
     tle = initialTLE;
     initializeCommons();
     sxpInitialize();
@@ -36,12 +43,10 @@ public abstract class TLEPropagator {
 
     // Period >= 225 minutes is deep space 
     if (2*Math.PI / (xn0dp*Constants.minutesPerDay) >= (1. / 6.4)) {
-      System.out.println(" SDP4 choisi");
-      return new DeepSDP4Extrapolator(tle);
+      return new DeepSDP4(tle);
     }
     else {
-      System.out.println(" SGP4 choisi");
-      return new SGP4Extrapolator(tle);
+      return new SGP4(tle);
     }
   }
 
@@ -55,16 +60,14 @@ public abstract class TLEPropagator {
     
     double tSince = date.minus(tle.getEpoch())/60.0;
     
-    sxpExtrapolate(tSince);  
+    sxpPropagate(tSince);  
     
     // Compute PV with previous calculated parameters
     return computePVCoordinates();
   }
 
-  /** Computation of the first commons parameters. 
-   * @throws OrekitException if TLE is not valid
-   */
-  private void initializeCommons() throws OrekitException {
+  /** Computation of the first commons parameters.  */
+  private void initializeCommons() {
     
     double a1 = Math.pow( Constants.xke / (tle.getMeanMotion()*60.0), Constants.twoThirds);
     cosi0 = Math.cos(tle.getI());
@@ -150,10 +153,9 @@ public abstract class TLEPropagator {
 
   }
 
-  protected abstract void sxpInitialize() throws OrekitException;
-  
-  protected abstract void sxpExtrapolate(double tSince) throws OrekitException;
-
+  /** Retrieves the position and velocity.
+   * @return the computed PVCoordinates.
+   */
   private PVCoordinates computePVCoordinates() {
 
 //    int sxpx_posn_vel( const double xnode, const double a, const double ecc,
@@ -161,7 +163,7 @@ public abstract class TLEPropagator {
 //                       const double xincl, const double omega,
 //                       const double xl)
 
-    /* Long period periodics */
+    // Long period periodics 
     double axn = e * Math.cos(omega);
     double temp = 1. / (a * (1. - e*e));
     double xlcof = .125 * Constants.a3ovk2 * sini0 * (3 + 5*cosi0) / (1. + cosi0);
@@ -171,7 +173,7 @@ public abstract class TLEPropagator {
     double xlt = xl + xll;
     double ayn = e * Math.sin(omega) + aynl;
     double elsq = axn * axn + ayn * ayn;
-    double capu = ( xlt - xnode)%(2*Math.PI); // TODO check double capu = fmod( xlt - xnode, twopi);
+    double capu = trimAngle(( xlt - xnode), Math.PI); // TODO check double capu = fmod( xlt - xnode, twopi);
     double epw = capu;
     double temp1, temp2;
     double ecosE = 0;
@@ -183,11 +185,8 @@ public abstract class TLEPropagator {
     double sinuk, cosuk, sinik, cosik, sinnok, cosnok, xmx, xmy;
     double sinEPW = 0;
     double cosEPW = 0;
-    double ux, uy, uz;
-    int j = 0;
 
     // Dundee changes:  items dependent on cosio get recomputed:
-    // TODO special revisited changes to check
     double cosi0Sq = cosi0 * cosi0;
     double x3thm1 = 3.0 * cosi0Sq - 1.0;
     double x1mth2 = 1.0 - cosi0Sq;
@@ -199,22 +198,16 @@ public abstract class TLEPropagator {
          "Eccentricity is becoming greater than 1. Unable to continue TLE propagation.");
       throw new IllegalArgumentException(message);
     }   
-    if (a < 0) {
-      String message = Translator.getInstance().translate(
-         "Semi-major axis is becoming negative. Unable to continue TLE propagation.");
-      throw new IllegalArgumentException(message);
-    }   
     if ( (a * (1. - e) < 1.) || (a * (1. + e) < 1.) ) {
       String message = Translator.getInstance().translate(
          "Perige within earth.");
       throw new IllegalArgumentException(message);
     }   
     
-    // Solve Kepler's' Equation.    
-    // TODO special revisited changes to check   
+    // Solve Kepler's' Equation.     
     double newtonRaphsonEpsilon = 1e-12;
 
-    for( j = 0; j < 10; j++) {     
+    for(int j = 0; j < 10; j++) {     
 
       double f, fdot, delta_epw;
       boolean doSecondOrderNewtonRaphson = true;
@@ -276,9 +269,9 @@ public abstract class TLEPropagator {
     cosnok = Math.cos(xnodek);
     xmx = -sinnok * cosik;
     xmy = cosnok * cosik;
-    ux = xmx * sinuk + cosnok * cosuk;
-    uy = xmy * sinuk + sinnok * cosuk;
-    uz = sinik * sinuk;
+    double ux = xmx * sinuk + cosnok * cosuk;
+    double uy = xmy * sinuk + sinnok * cosuk;
+    double uz = sinik * sinuk;
     
     // Position and velocity
 
@@ -303,8 +296,28 @@ public abstract class TLEPropagator {
 
   }
 
+  /** Trim an angle between ref - PI and ref + PI.
+   * @param a the angle (rad)
+   * @param ref the reference
+   * @return the trimed angle
+   */
+  protected static double trimAngle (double a, double ref) {
+    double twoPi = 2 * Math.PI;
+    return a - twoPi * Math.floor ((a + Math.PI - ref) / twoPi);
+  }
+  
+  /** Initialization proper to each propagator (SGP or SDP).
+   * @param tSince the offset from initial epoch (min)
+   */
+  protected abstract void sxpInitialize();
+  
+  /** Propagation proper to each propagator (SGP or SDP).
+   * @param tSince the offset from initial epoch (min)
+   */
+  protected abstract void sxpPropagate(double tSince) throws OrekitException;
+  
   /** Initial state. */
-  protected TLE tle;
+  protected final TLE tle;
 
   /** Elements to determine for PV computation. */
   protected double xnode; // final RAAN
@@ -342,8 +355,6 @@ public abstract class TLEPropagator {
   protected double xnodcf; // common parameter for raan (OMEGA) computation 
   protected double t2cof; // 3/2 * C1
   
-  public int exType;
-
 }
 //      My comments
 

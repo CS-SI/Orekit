@@ -1,17 +1,22 @@
 package fr.cs.aerospace.orekit.tle;
 
-import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
+/** This class contains the methods that compute deep space perturbation terms.
+ * 
+ * @author F. Maussion
+ */
+class DeepSDP4 extends SDP4 {
 
-public class DeepSDP4Extrapolator extends SDP4Extrapolator {
-
-  protected DeepSDP4Extrapolator(TLE initialTLE) throws OrekitException {
+  /** Constructor for a unique initial TLE.
+   * @param initialTLE the TLE to propagate.
+   */
+  protected DeepSDP4(TLE initialTLE) {
     super(initialTLE);
-    this.exType = 2;
   }
   
-  protected void luniSolarTermsComputation() throws OrekitException {
+  /** Computes luni - solar terms from initial coordinates and epoch. */
+  protected void luniSolarTermsComputation() {
 
     double sing = Math.sin(tle.getPerigeeArgument());
     double cosg = Math.cos(tle.getPerigeeArgument());
@@ -20,24 +25,20 @@ public class DeepSDP4Extrapolator extends SDP4Extrapolator {
     double cosq = Math.cos(tle.getRaan());
     double aqnv = 1.0/a0dp;
 
-    // Compute julian days since 1900 TODO check Julian days
+    // Compute julian days since 1900
     double daysSince1900 = tle.getEpoch().minus(AbsoluteDate.JulianEpoch)/86400.0 - 2415020;
-    
-
-
+  
     double cc = c1ss;
     double ze = zes;
     double zn = zns;
     double zsinh = sinq;
     double zcosh = cosq;
-
     
     thgr = thetaG(tle.getEpoch());
     xnq = xn0dp;
     xqncl = tle.getI();
     omegaq = tle.getPerigeeArgument();
     
-    {
     double xnodce = 4.5236020 - (9.2422029e-4) * daysSince1900;
     double stem = Math.sin(xnodce);
     double ctem = Math.cos(xnodce);
@@ -56,7 +57,6 @@ public class DeepSDP4Extrapolator extends SDP4Extrapolator {
     zcosgl = Math.cos( zx);
     zsingl = Math.sin( zx);
     zmos = trimAngle((6.2565837 + 0.017201977 * daysSince1900), Math.PI);
-    }
 
     // Do solar terms
     savtsn = 1e20;
@@ -71,6 +71,7 @@ public class DeepSDP4Extrapolator extends SDP4Extrapolator {
     double sh = 0;
     double si = 0;
     double sl = 0;
+    
     // There was previously some convoluted logic here, but it boils
     // down to this:  we compute the solar terms,  then the lunar terms.
     // On a second pass,  we recompute the solar terms, taking advantage
@@ -301,16 +302,19 @@ public class DeepSDP4Extrapolator extends SDP4Extrapolator {
       synchronous = false;
     }
     if(resonant) {
-
       xfact = bfact-xnq;
 
       // Initialize integrator 
       xli = xlamo;
       xni = xnq;
       atime = 0;
-    }   
+    }
+        
   }
     
+  /** Computes secular terms from current coordinates and epoch. 
+   * @param t offset from initial epoch (min)
+   */
   protected void deepSecularEffects(double t)  {
 
     xll += ssl * t;
@@ -328,7 +332,7 @@ public class DeepSDP4Extrapolator extends SDP4Extrapolator {
       Easiest way to arrange similar behavior in this code is
       just to always do a restart,  if we're in Dundee-compliant
       mode. */
-      if( Math.abs(t) < Math.abs(t-atime))  {   
+      if( Math.abs(t) < Math.abs(t-atime)||isDundeeCompliant)  {   
         /* Epoch restart */
         atime = 0;
         xni = xnq;
@@ -372,6 +376,9 @@ public class DeepSDP4Extrapolator extends SDP4Extrapolator {
     }
   }
 
+  /** Computes periodic terms from current coordinates and epoch. 
+   * @param t offset from initial epoch (min)
+   */
   protected void deepPeriodicEffects(double t)  {
 
     /* If the time didn't change by more than 30 minutes,      */
@@ -380,8 +387,7 @@ public class DeepSDP4Extrapolator extends SDP4Extrapolator {
     /* However,  the Dundee code _always_ recomputes,  so if   */
     /* we're attempting to replicate its results,  we've gotta */
     /* recompute everything,  too.                             */
-    // TODO dundee compliance
-    if( Math.abs(savtsn-t) >= 30.)  {
+    if( Math.abs(savtsn-t) >= 30.|| isDundeeCompliant)  {
       double zf, zm, sinzf, ses, sis, sil, sel, sll, sls;
       double f2, f3, sghl, sghs, shs, sh1;
 
@@ -418,7 +424,7 @@ public class DeepSDP4Extrapolator extends SDP4Extrapolator {
       pgh = sghs+sghl;
       ph = shs+sh1;
     }
-    
+    xinc += pinc;
     double sinis = Math.sin( xinc);
     double cosis = Math.cos( xinc);
 
@@ -426,8 +432,9 @@ public class DeepSDP4Extrapolator extends SDP4Extrapolator {
     em += pe;
     xll += pl;
     omgadf += pgh;
-    if( tle.getI() >= 0.2)   {
-      // Apply periodics directly 
+//    if( tle.getI() >= 0.2)   {
+    if( xinc >= 0.2)   {
+          // Apply periodics directly 
       double temp_val = ph / sinis;
       omgadf -= cosis * temp_val;
       xnode += temp_val;
@@ -439,7 +446,7 @@ public class DeepSDP4Extrapolator extends SDP4Extrapolator {
       double alfdp = ph * cosok + (pinc * cosis + sinis) * sinok;
       double betdp = - ph * sinok + (pinc * cosis + sinis) * cosok;
       double dls, delta_xnode;
-
+      xnode = trimAngle(xnode, Math.PI);
       delta_xnode = Math.atan2(alfdp,betdp) - xnode;
 
       /* This is a patch to Lyddane modification suggested */
@@ -460,13 +467,14 @@ public class DeepSDP4Extrapolator extends SDP4Extrapolator {
     } /* End case dpper: */
   }
 
+  /** Computes internal secular derivs. */
   private void computeSecularDerivs() {
     
     double sin_li = Math.sin(xli);
     double cos_li = Math.cos(xli);
     double sin_2li = 2. * sin_li * cos_li;
     double cos_2li = 2. * cos_li * cos_li - 1.;
-    int count = 0;
+
     // Dot terms calculated :
     if( synchronous )  {
       double sin_3li = sin_2li * cos_li + cos_2li * sin_li;
@@ -478,11 +486,11 @@ public class DeepSDP4Extrapolator extends SDP4Extrapolator {
       double term2b = 2. * del2 * (cos_2li * c_2fasx4 + sin_2li * s_2fasx4);
       double term3b = 3. * del3 * (cos_3li * c_3fasx6 + sin_3li * s_3fasx6);
 
-      for(int i = 0; i < secularIntegrationOrder; i += 2)  {
+      for(int j = 0; j < secularIntegrationOrder; j += 2)  {
 //      *derivs++ = term1a + term2a + term3a;
 //      *derivs++ = term1b + term2b + term3b; 
-        derivs[count++] = term1a + term2a + term3a;
-        derivs[count++] = term1b + term2b + term3b;
+        derivs[j] = term1a + term2a + term3a;
+        derivs[j+1] = term1b + term2b + term3b;
         if( (i + 2) < secularIntegrationOrder)   {
           term1a = -term1a;
           term2a *= -4.;
@@ -536,10 +544,10 @@ public class DeepSDP4Extrapolator extends SDP4Extrapolator {
           + d5421 * (cos_2li_p_omi*c_g54 + sin_2li_p_omi*s_g54)
           + d5433 * (cos_2li_m_omi*c_g54 + sin_2li_m_omi*s_g54));
 
-      for(int i = 0; i < secularIntegrationOrder; i += 2) {
-        derivs[count++] = term1a + term2a;
-        derivs[count++] = term1b + term2b;
-        if( (i + 2) < secularIntegrationOrder)  {
+      for(int j = 0; j < secularIntegrationOrder; j += 2) {
+        derivs[j] = term1a + term2a;
+        derivs[j+1] = term1b + term2b;
+        if( (j + 2) < secularIntegrationOrder)  {
           term1a = -term1a;
           term2a *= -4.;
           term1b = -term1b;
@@ -548,13 +556,7 @@ public class DeepSDP4Extrapolator extends SDP4Extrapolator {
       }
     } /* End of 12-hr resonant case */
   }
-  
-  //trim an angle between ref - PI and ref + PI
-  private static double trimAngle (double a, double ref) {
-    double twoPi = 2 * Math.PI;
-    return a - twoPi * Math.floor ((a + Math.PI - ref) / twoPi);
-  }
-  
+    
   /** Intermediate values. */
   private double thgr;
   private double xnq;
@@ -620,7 +622,6 @@ public class DeepSDP4Extrapolator extends SDP4Extrapolator {
   private double xli; 
   private double xni; 
   private double atime; 
-
   
   private double pe;
   private double pinc;
@@ -631,8 +632,15 @@ public class DeepSDP4Extrapolator extends SDP4Extrapolator {
   private double[] derivs;
 
   /** Special orbits flags. */
-  private boolean resonant = false; 
-  private boolean synchronous = false; 
+  private boolean resonant; 
+  private boolean synchronous; 
+  
+  /** Compliant with Dundee modifications. */
+  private boolean isDundeeCompliant = true; 
+  
+  /** Implementation params */ 
+  private double secularIntegrationStep = 720.;
+  private int secularIntegrationOrder = 2;
 
   /** Internal constants. */
   private static final double zns = 1.19459E-5;
@@ -670,8 +678,5 @@ public class DeepSDP4Extrapolator extends SDP4Extrapolator {
   private static final double s_g52 =  0.86783740128127729;
   private static final double c_g54 = -0.29695209575316894;
   private static final double s_g54 = -0.95489237761529999;
-  
-  /** Implementation params */ // TODO check these variables importance
-  private double secularIntegrationStep = 720.;
-  private int secularIntegrationOrder = 2;
+    
 }

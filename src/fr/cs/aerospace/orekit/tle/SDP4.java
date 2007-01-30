@@ -3,17 +3,30 @@ package fr.cs.aerospace.orekit.tle;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
-abstract class SDP4Extrapolator  extends TLEPropagator {
+/** This class contains methods to compute propagated coordinates with the SDP4 model.
+ * 
+ * @author F. Maussion
+ */
+abstract class SDP4  extends TLEPropagator {
 
-  protected SDP4Extrapolator(TLE initialTLE) throws OrekitException {
+  /** Constructor for a unique initial TLE.
+   * @param initialTLE the TLE to propagate.
+   */
+  protected SDP4(TLE initialTLE) {
     super (initialTLE);
   }
-
-  protected void sxpInitialize() throws OrekitException {
+  
+  /** Initialization proper to each propagator (SGP or SDP).
+   * @param tSince the offset from initial epoch (min)
+   */
+  protected void sxpInitialize() {
     luniSolarTermsComputation();
   }  // End of initialization
 
-  protected void sxpExtrapolate(double tSince) throws OrekitException {
+  /** Propagation proper to each propagator (SGP or SDP).
+   * @param tSince the offset from initial epoch (min)
+   */
+  protected void sxpPropagate(double tSince) throws OrekitException {
 
     // Update for secular gravity and atmospheric drag
     omgadf = tle.getPerigeeArgument() + omgdot * tSince;
@@ -35,7 +48,13 @@ abstract class SDP4Extrapolator  extends TLEPropagator {
     xll += xn0dp * t2cof * tSinceSq;
 
     deepPeriodicEffects(tSince);
-
+    if (xinc < 0.)       /* Begin April 1983 errata correction: */
+    {
+    xinc = -xinc;
+    sini0 = -sini0;
+    xnode += Math.PI;
+    omgadf -= Math.PI;
+    }  
     xl = xll + omgadf + xnode;
     
     // Dundee change:  Reset cosio,  sinio for new xinc:
@@ -47,7 +66,7 @@ abstract class SDP4Extrapolator  extends TLEPropagator {
     // end of calculus, go for PV computation
   }
 
-  /** Computes NORAD compliant earth rotation angle.
+  /** Computes SPACETRACK#3 compliant earth rotation angle.
    * @param date the current date
    * @return the ERA (rad)
    */
@@ -72,14 +91,21 @@ abstract class SDP4Extrapolator  extends TLEPropagator {
     rval = 2 * Math.PI * GMST / seconds_per_day;
 
     return( rval);
-  }
-  
-  protected abstract void deepPeriodicEffects(double t);
-  
+  }  
+
+  /** Computes luni - solar terms from initial coordinates and epoch. */
+  protected abstract void luniSolarTermsComputation();
+      
+  /** Computes secular terms from current coordinates and epoch. 
+   * @param t offset from initial epoch (min)
+   */
   protected abstract void deepSecularEffects(double t);
   
-  protected abstract void luniSolarTermsComputation() throws OrekitException;
-      
+  /** Computes periodic terms from current coordinates and epoch. 
+   * @param t offset from initial epoch (min)
+   */
+  protected abstract void deepPeriodicEffects(double t);
+  
   /** Params to determine for PV computation. */
   protected double omgadf; // new perigee argument
   protected double xn; // new mean motion
