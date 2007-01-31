@@ -83,137 +83,6 @@ public class tleTest extends TestCase {
 
   }
 
-  public void testFirstSGP() throws OrekitException, ParseException {
-
-//  # DELTA 1 DEB # near earth normal drag equation 
-//  # # perigee = 377.26km, so moderate drag case 
-//  1 06251U 62025E   06176.82412014  .00008885  00000-0  12808-3 0  3985 
-//  2 06251  58.0579  54.0425 0030035 139.1568 221.1854 15.56387291  6774 
-
-    // TEST VALUES :  
-    String line1 = "1 06251U 62025E   06176.82412014  .00008885  00000-0  12808-3 0  3985";
-    String line2 = "2 06251  58.0579  54.0425 0030035 139.1568 221.1854 15.56387291  6774";
-
-    Vector3D testPos = new Vector3D ( 3988.31022699,
-                                      5498.96657235,
-                                      0.90055879);
-
-
-    Vector3D testVel = new Vector3D ( -3.290032738,
-                                      2.357652820,
-                                      6.496623475);
-
-
-
-    // Convert to tle :    
-    assertTrue(TLE.isFormatOK(line1, line2)); 
-    TLE tle = new TLE(line1, line2);
-
-    TLEPropagator ex = TLEPropagator.selectExtrapolator(tle);
-    PVCoordinates result = ex.getPVCoordinates(tle.getEpoch());
-
-    Utils.vectorToString("result pos : ", result.getPosition().subtract(testPos));
-
-    Utils.vectorToString("result vel : ", result.getVelocity().subtract(testVel));
-
-    //-----360 min-----------------------------------------------------------------------
-
-    testPos = new Vector3D ( 4993.62642836,
-                             2890.54969900,
-                             -3600.40145627);
-
-
-    testVel = new Vector3D (0.347333429,
-                            5.707031557,
-                            5.070699638);
-
-    result = ex.getPVCoordinates(new AbsoluteDate(tle.getEpoch(), 360*60));
-
-    Utils.vectorToString("result pos 360 : ", result.getPosition().subtract(testPos));
-
-    Utils.vectorToString("result vel 360 : ", result.getVelocity().subtract(testVel));
-
-    //-----960 min-----------------------------------------------------------------------
-
-    testPos = new Vector3D ( -4990.91637950,
-                             -2303.42547880,
-                             3920.86335598);
-
-
-    testVel = new Vector3D (-0.993439372,
-                            -5.967458360,
-                            -4.759110856);
-
-    result = ex.getPVCoordinates(new AbsoluteDate(tle.getEpoch(), 960*60));
-
-    Utils.vectorToString("result pos 960 : ", result.getPosition().subtract(testPos));
-
-    Utils.vectorToString("result vel 960 : ", result.getVelocity().subtract(testVel));
-
-    //-----1800 min-----------------------------------------------------------------------
-//  1800.00000000 -4966.20137963 -4379.59155037 1349.33347502 1.763172581 -3.981456387 -6.343279443 
-    testPos = new Vector3D ( -4966.20137963,
-                             -4379.59155037,
-                             1349.33347502);
-
-
-    testVel = new Vector3D (1.763172581,
-                            -3.981456387,
-                            -6.343279443);
-
-    result = ex.getPVCoordinates(new AbsoluteDate(tle.getEpoch(), 1800*60));
-
-    Utils.vectorToString("result pos 1800 : ", result.getPosition().subtract(testPos));
-
-    Utils.vectorToString("result vel 1800 : ", result.getVelocity().subtract(testVel));
-
-
-    //-----2880 min-----------------------------------------------------------------------
-
-    testPos = new Vector3D ( 1159.27802897,
-                             5056.60175495,
-                             4353.49418579);
-
-
-    testVel = new Vector3D (-5.968060341,
-                            -2.314790406,
-                            4.230722669);
-
-    result = ex.getPVCoordinates(new AbsoluteDate(tle.getEpoch(), 2880*60));
-
-    Utils.vectorToString("result pos 2880 : ", result.getPosition().subtract(testPos));
-
-    Utils.vectorToString("result vel 2880 : ", result.getVelocity().subtract(testVel));
-
-//  6251 xx 
-//  0.00000000 3988.31022699 5498.96657235 0.90055879 -3.290032738 2.357652820 6.496623475 
-//  120.00000000 -3935.69800083 409.10980837 5471.33577327 -3.374784183 -6.635211043 -1.942056221 2006 6 25 21:46:43.980124 
-//  240.00000000 -1675.12766915 -5683.30432352 -3286.21510937 5.282496925 1.508674259 -5.354872978 2006 6 25 23:46:43.980097 
-//  360.00000000 4993.62642836 2890.54969900 -3600.40145627 0.347333429 5.707031557 5.070699638 2006 6 26 1:46:43.980111 
-//  480.00000000 -1115.07959514 4015.11691491 5326.99727718 -5.524279443 -4.765738774 2.402255961 2006 6 26 3:46:43.980124 
-//  600.00000000 -4329.10008198 -5176.70287935 409.65313857 2.858408303 -2.933091792 -6.509690397 2006 6 26 5:46:43.980097 
-//  720.00000000 3692.60030028 -976.24265255 -5623.36447493 3.897257243 6.415554948 1.429112190 2006 6 26 7:46:43.980111 
-//  840.00000000 2301.83510037 5723.92394553 2814.61514580 -5.110924966 -0.764510559 5.662120145 2006 6 26 9:46:43.980124 
-//  960.00000000 -4990.91637950 -2303.42547880 3920.86335598 -0.993439372 -5.967458360 -4.759110856 2006 6 26 11:46:43.980097 
-//  1080.00000000 642.27769977 -4332.89821901 -5183.31523910 5.720542579 4.216573838 -2.846576139 2006 6 26 13:46:43.980111 
-//  1200.00000000 4719.78335752 4798.06938996 -943.58851062 -2.294860662 3.492499389 6.408334723 2006 6 26 15:46:43.980124 
-//  1320.00000000 -3299.16993602 1576.83168320 5678.67840638 -4.460347074 -6.202025196 -0.885874586 2006 6 26 17:46:43.980097 
-//  1440.00000000 -2777.14682335 -5663.16031708 -2462.54889123 4.915493146 0.123328992 -5.896495091 2006 6 26 19:46:43.980111 
-//  1560.00000000 4992.31573893 1716.62356770 -4287.86065581 1.640717189 6.071570434 4.338797931 2006 6 26 21:46:43.980124 
-//  1680.00000000 -8.22384755 4662.21521668 4905.66411857 -5.891011274 -3.593173872 3.365100460 2006 6 26 23:46:43.980097 
-//  1800.00000000 -4966.20137963 -4379.59155037 1349.33347502 1.763172581 -3.981456387 -6.343279443 2006 6 27 1:46:43.980111 
-//  1920.00000000 2954.49390331 -2080.65984650 -5754.75038057 4.895893306 5.858184322 0.375474825 2006 6 27 3:46:43.980124 
-//  2040.00000000 3363.28794321 5559.55841180 1956.05542266 -4.587378863 0.591943403 6.107838605 2006 6 27 5:46:43.980097 
-//  2160.00000000 -4856.66780070 -1107.03450192 4557.21258241 -2.304158557 -6.186437070 -3.956549542 2006 6 27 7:46:43.980111 
-//  2280.00000000 -497.84480071 -4863.46005312 -4700.81211217 5.960065407 2.996683369 -3.767123329 2006 6 27 9:46:43.980124 
-//  2400.00000000 5241.61936096 3910.75960683 -1857.93473952 -1.124834806 4.406213160 6.148161299 2006 6 27 11:46:43.980097 
-//  2520.00000000 -2451.38045953 2610.60463261 5729.79022069 -5.366560525 -5.500855666 0.187958716 2006 6 27 13:46:43.980111 
-//  2640.00000000 -3791.87520638 -5378.82851382 -1575.82737930 4.266273592 -1.199162551 -6.276154080 2006 6 27 15:46:43.980124 
-//  2760.00000000 4730.53958356 524.05006433 -4857.29369725 2.918056288 6.135412849 3.495115636 2006 6 27 17:46:43.980097 
-//  2880.00000000 1159.27802897 5056.60175495 4353.49418579 -5.968060341 -2.314790406 4.230722669 2006 6 27 19:46:43.980111 
-
-  }
-
   public void aatestFirstSDP() throws OrekitException, ParseException {
 //
 ////    # MOLNIYA 2-14 # 12h resonant ecc in 0.65 to 0.7 range 
@@ -310,13 +179,15 @@ public class tleTest extends TestCase {
     InputStream inResults = new FileInputStream(rootDir.getAbsolutePath());
     BufferedReader rResults = new BufferedReader(new InputStreamReader(inResults));
 
-    double cumulated = 0;
+    double cumulated = 0; // sum of all differences between test cases and OREKIT results
     
     boolean stop = false;
+    
     String rline = rResults.readLine();
 
     while( stop==false ) {
       if (rline == null) break;
+      
       String[] title = rline.split(" ");
 
       if(title[0].matches("r")) {        
@@ -342,18 +213,19 @@ public class tleTest extends TestCase {
         System.out.println("SATELLITE " + Double.parseDouble(title[1]));
         System.out.println(header[1]);
         System.out.println(header[2]);  
-        int once = 0;     
+        
+        double maxError = 0;
         for (rline = rResults.readLine(); (rline!=null)&&(rline.charAt(0)!='r'); rline = rResults.readLine()) {
           String[] data = rline.split(" ");
           double minFromStart = Double.parseDouble(data[0]);
           double pX = Double.parseDouble(data[1]);
           double pY = Double.parseDouble(data[2]);
           double pZ = Double.parseDouble(data[3]);
-          double vX = Double.parseDouble(data[4]);
-          double vY = Double.parseDouble(data[5]);
-          double vZ = Double.parseDouble(data[6]);
+//          double vX = Double.parseDouble(data[4]);
+//          double vY = Double.parseDouble(data[5]);
+//          double vZ = Double.parseDouble(data[6]);
           Vector3D testPos = new Vector3D(pX, pY, pZ);
-          Vector3D testVel = new Vector3D(vX, vY, vZ);
+//          Vector3D testVel = new Vector3D(vX, vY, vZ);
           
           AbsoluteDate date = new AbsoluteDate(tle.getEpoch(), minFromStart*60);
           PVCoordinates results = null;
@@ -370,24 +242,23 @@ public class tleTest extends TestCase {
           }
           if (results != null) {
             double normDifPos = testPos.subtract(results.getPosition()).getNorm();
-            double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
+//            double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
             cumulated += normDifPos;
-            assertEquals( 0, normDifPos, 1);
-            assertEquals( 0, normDifVel, 1e-3);
-//            if (normDifPos>0.01 && once == 0) {
-//              System.out.println("SATELLITE " + Double.parseDouble(title[1]));
-//              System.out.println(header[1]);
-//              System.out.println(header[2]);  
-              System.out.print(" t since : " + minFromStart + " ");
-//              System.out.println(" norm dif pos > 1e-3 ");
-              System.out.println(" norm dif pos : " + normDifPos);
-              once++;
-//            }
-          }    
+//            assertEquals( 0, normDifPos, 1);
+//            assertEquals( 0, normDifVel, 1e-3);
+            if(maxError == 0 || normDifPos>maxError) {
+              maxError = normDifPos;
+            }
+          }  
         }
-
+        System.out.println(" max error : " + maxError);
+        System.out.println();
+        System.out.println();
+        
       }
     }
+
+    System.out.println();
     System.out.println( "cumulated error : " + cumulated);
   }
 }
