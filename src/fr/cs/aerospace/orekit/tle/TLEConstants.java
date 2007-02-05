@@ -7,7 +7,7 @@ package fr.cs.aerospace.orekit.tle;
  * 
  * @author F. Maussion
  */
-public final class Constants {
+final class TLEConstants {
   
   public static final double oneThird = 1.0/3.0;
   public static final double twoThirds = 2.0/3.0;

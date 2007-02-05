@@ -31,18 +31,18 @@ public abstract class TLEPropagator {
    */
   public static TLEPropagator selectExtrapolator(TLE tle) throws OrekitException {
 
-    double a1 = Math.pow( Constants.xke / (tle.getMeanMotion()*60.0), Constants.twoThirds);
+    double a1 = Math.pow( TLEConstants.xke / (tle.getMeanMotion()*60.0), TLEConstants.twoThirds);
     double cosi0 = Math.cos(tle.getI());
-    double temp = Constants.ck2 * 1.5 * (3*cosi0*cosi0 - 1.0) * Math.pow(1.0 - tle.getE()*tle.getE(),-1.5);
+    double temp = TLEConstants.ck2 * 1.5 * (3*cosi0*cosi0 - 1.0) * Math.pow(1.0 - tle.getE()*tle.getE(),-1.5);
     double delta1 = temp/(a1*a1);
-    double a0 = a1 * (1.0 - delta1 * (Constants.oneThird + delta1 * (delta1 * 134./81.+1.0)));
+    double a0 = a1 * (1.0 - delta1 * (TLEConstants.oneThird + delta1 * (delta1 * 134./81.+1.0)));
     double delta0 = temp/(a0*a0);
 
     // recover original mean motion :
     double xn0dp = tle.getMeanMotion()*60.0/(delta0 + 1.0);
 
     // Period >= 225 minutes is deep space 
-    if (2*Math.PI / (xn0dp*Constants.minutesPerDay) >= (1. / 6.4)) {
+    if (2*Math.PI / (xn0dp*TLEConstants.minutesPerDay) >= (1. / 6.4)) {
       return new DeepSDP4(tle);
     }
     else {
@@ -69,16 +69,16 @@ public abstract class TLEPropagator {
   /** Computation of the first commons parameters.  */
   private void initializeCommons() {
     
-    double a1 = Math.pow( Constants.xke / (tle.getMeanMotion()*60.0), Constants.twoThirds);
+    double a1 = Math.pow( TLEConstants.xke / (tle.getMeanMotion()*60.0), TLEConstants.twoThirds);
     cosi0 = Math.cos(tle.getI());
     theta2 = cosi0 * cosi0;
     double x3thm1 = 3.* theta2 - 1.;
     e0sq = tle.getE() * tle.getE();
     beta02 = 1 - e0sq;
     beta0 = Math.sqrt(beta02);
-    double tval = Constants.ck2 * 1.5 * x3thm1 / (beta0 * beta02);
+    double tval = TLEConstants.ck2 * 1.5 * x3thm1 / (beta0 * beta02);
     double delta1 = tval/(a1 * a1);
-    double a0 = a1 * (1 - delta1 * (Constants.oneThird + delta1 * (1. + 134./81.* delta1)));
+    double a0 = a1 * (1 - delta1 * (TLEConstants.oneThird + delta1 * (1. + 134./81.* delta1)));
     double delta0 = tval/(a0 * a0);
 
     // recover original mean motion and semi-major axis :
@@ -86,10 +86,10 @@ public abstract class TLEPropagator {
     a0dp = a0/(1.0 - delta0);    
     
     // Values of s and qms2t :    
-    s4 = Constants.s;  // unmodified value for s
-    double q0ms24 = Constants.qoms2t; // unmodified value for q0ms2T
+    s4 = TLEConstants.s;  // unmodified value for s
+    double q0ms24 = TLEConstants.qoms2t; // unmodified value for q0ms2T
     
-    perige = (a0dp*(1-tle.getE()) - Constants.ae)* Constants.er; // perige 
+    perige = (a0dp*(1-tle.getE()) - TLEConstants.ae)* TLEConstants.er; // perige 
     
     //  For perigee below 156 km, the values of s and qoms2t are changed :
     if(perige < 156) {
@@ -99,10 +99,10 @@ public abstract class TLEPropagator {
       else {
         s4 = perige - 78.; 
       }
-      double temp_val = (120.0 - s4) * Constants.ae / Constants.er;
+      double temp_val = (120.0 - s4) * TLEConstants.ae / TLEConstants.er;
       double temp_val_squared = temp_val * temp_val;
       q0ms24 = temp_val_squared * temp_val_squared;
-      s4 = s4 / Constants.er + Constants.ae; // new value for q0ms2T and s
+      s4 = s4 / TLEConstants.er + TLEConstants.ae; // new value for q0ms2T and s
     } 
     
     double pinv = 1. / (a0dp * beta02);
@@ -119,7 +119,7 @@ public abstract class TLEPropagator {
 
     // C2 and C1 coefficients computation :
     c2 = coef1 * xn0dp * (a0dp * (1 + 1.5*etasq + eeta * (4 + etasq)) + 
-        0.75*Constants.ck2 * tsi/psisq * x3thm1 *(8 + 3*etasq * (8 + etasq)));
+        0.75*TLEConstants.ck2 * tsi/psisq * x3thm1 *(8 + 3*etasq * (8 + etasq)));
     c1 = tle.getBStar() * c2;
     sini0 = Math.sin(tle.getI());    
    
@@ -127,14 +127,14 @@ public abstract class TLEPropagator {
 
     // C4 coefficient computation :
     c4 = 2 * xn0dp * coef1 * a0dp * beta02 * (eta * (2 + 0.5*etasq) + tle.getE() * 
-        (0.5 + 2*etasq) - 2 * Constants.ck2 * tsi/(a0dp*psisq) * (-3*x3thm1 * 
+        (0.5 + 2*etasq) - 2 * TLEConstants.ck2 * tsi/(a0dp*psisq) * (-3*x3thm1 * 
             (1 - 2*eeta + etasq * (1.5 - 0.5*eeta)) + 0.75*x1mth2 * 
               (2 * etasq - eeta * (1+etasq)) * Math.cos(2*tle.getPerigeeArgument())));
     
     double theta4 = theta2 * theta2;
-    double temp1 = 3 * Constants.ck2 * pinvsq * xn0dp;
-    double temp2 = temp1 * Constants.ck2 * pinvsq;
-    double temp3 = 1.25 * Constants.ck4 * pinvsq * pinvsq * xn0dp;
+    double temp1 = 3 * TLEConstants.ck2 * pinvsq * xn0dp;
+    double temp2 = temp1 * TLEConstants.ck2 * pinvsq;
+    double temp3 = 1.25 * TLEConstants.ck4 * pinvsq * pinvsq * xn0dp;
 
     // atmospheric and gravitation coefs :(Mdf and OMEGAdf)
     xmdot = xn0dp + 0.5*temp1 * beta0 * x3thm1 + 0.0625*temp2 * beta0 * 
@@ -155,19 +155,15 @@ public abstract class TLEPropagator {
 
   /** Retrieves the position and velocity.
    * @return the computed PVCoordinates.
+   * @throws OrekitException 
    */
-  private PVCoordinates computePVCoordinates() {
-
-//    int sxpx_posn_vel( const double xnode, const double a, const double ecc,
-//                       const double cosio, const double sinio,
-//                       const double xincl, const double omega,
-//                       const double xl)
+  private PVCoordinates computePVCoordinates() throws OrekitException {
 
     // Long period periodics 
     double axn = e * Math.cos(omega);
     double temp = 1. / (a * (1. - e*e));
-    double xlcof = .125 * Constants.a3ovk2 * sini0 * (3 + 5*cosi0) / (1. + cosi0);
-    double aycof = 0.25 * Constants.a3ovk2 * sini0;
+    double xlcof = .125 * TLEConstants.a3ovk2 * sini0 * (3 + 5*cosi0) / (1. + cosi0);
+    double aycof = 0.25 * TLEConstants.a3ovk2 * sini0;
     double xll = temp * xlcof * axn;
     double aynl = temp * aycof;
     double xlt = xl + xll;
@@ -192,16 +188,20 @@ public abstract class TLEPropagator {
     double x1mth2 = 1.0 - cosi0Sq;
     double x7thm1 = 7.0 * cosi0Sq - 1.0;
 
-    // TODO exceptions
     if (e > (1 - 1e-6)) {
       String message = Translator.getInstance().translate(
-         "Eccentricity is becoming greater than 1. Unable to continue TLE propagation.");
-      throw new IllegalArgumentException(message);
+         "Eccentricity is becoming greater than 1. Unable to continue TLE propagation." +
+         "Satellite number : {0}. Element number : {1}.");
+      throw new OrekitException(message, new String[] 
+         {Integer.toString(tle.getSatelliteNumber()),
+          Integer.toString(tle.getElementNumber())});
     }   
     if ( (a * (1. - e) < 1.) || (a * (1. + e) < 1.) ) {
       String message = Translator.getInstance().translate(
-         "Perige within earth.");
-      throw new IllegalArgumentException(message);
+         "Perige within earth. Satellite number : {0}. Element number : {1}.");
+      throw new OrekitException(message, new String[] 
+         {Integer.toString(tle.getSatelliteNumber()),
+          Integer.toString(tle.getElementNumber())});
     }   
     
     // Solve Kepler's' Equation.     
@@ -251,7 +251,7 @@ public abstract class TLEPropagator {
     u = Math.atan2(sinu, cosu);
     sin2u = 2 * sinu * cosu;
     cos2u = 2 * cosu * cosu - 1;
-    temp1 = Constants.ck2 / pl;
+    temp1 = TLEConstants.ck2 / pl;
     temp2 = temp1 / pl;
 
     // Update for short periodics
@@ -275,22 +275,22 @@ public abstract class TLEPropagator {
     
     // Position and velocity
 
-    Vector3D pos = new Vector3D(rk*ux*Constants.er,
-                                rk*uy*Constants.er,
-                                rk*uz*Constants.er);
+    Vector3D pos = new Vector3D(1000*rk*ux*TLEConstants.er,
+                                1000*rk*uy*TLEConstants.er,
+                                1000*rk*uz*TLEConstants.er);
     
-    double rdot = Constants.xke*Math.sqrt(a)*esinE/r;
-    double rfdot = Constants.xke*Math.sqrt(pl)/r;
-    double xn = Constants.xke/(a * Math.sqrt(a));
+    double rdot = TLEConstants.xke*Math.sqrt(a)*esinE/r;
+    double rfdot = TLEConstants.xke*Math.sqrt(pl)/r;
+    double xn = TLEConstants.xke/(a * Math.sqrt(a));
     double rdotk = rdot-xn*temp1*x1mth2*sin2u;
     double rfdotk = rfdot+xn*temp1*(x1mth2*cos2u+1.5*x3thm1);
     double vx = xmx*cosuk-cosnok*sinuk;
     double vy = xmy*cosuk-sinnok*sinuk;
     double vz = sinik*cosuk;
     
-    Vector3D vel = new Vector3D((rdotk*ux+rfdotk*vx)*Constants.er/60.0,
-                                (rdotk*uy+rfdotk*vy)*Constants.er/60.0,
-                                (rdotk*uz+rfdotk*vz)*Constants.er/60.0);  
+    Vector3D vel = new Vector3D(1000*(rdotk*ux+rfdotk*vx)*TLEConstants.er/60.0,
+                                1000*(rdotk*uy+rfdotk*vy)*TLEConstants.er/60.0,
+                                1000*(rdotk*uz+rfdotk*vz)*TLEConstants.er/60.0);  
 
     return new PVCoordinates(pos,vel);
 
@@ -363,6 +363,3 @@ public abstract class TLEPropagator {
 // tle->omega0 = perigeeArgument (omega)
 // tle->xmo = mean anomaly (M)
 // tle->xnodeo = raan
-
-// 1 = true
-// 0 = false

@@ -19,6 +19,7 @@ public class AllTests {
     suite.addTest(fr.cs.aerospace.orekit.potential.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.maneuvers.AllTests.suite());
     suite.addTest(fr.cs.aerospace.orekit.attitudes.AllTests.suite());
+    suite.addTest(fr.cs.aerospace.orekit.tle.AllTests.suite());
 
     return suite; 
 

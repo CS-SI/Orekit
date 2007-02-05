@@ -15,7 +15,7 @@ class SGP4 extends TLEPropagator {
   /** Initialization proper to each propagator (SGP or SDP).
    * @param tSince the offset from initial epoch (min)
    */
-  public void sxpInitialize() {
+  protected void sxpInitialize() {
     
     // For perigee less than 220 kilometers, the equations are truncated to 
     // linear variation in sqrt a and quadratic variation in mean anomaly. 
@@ -38,8 +38,8 @@ class SGP4 extends TLEPropagator {
         xmcof = 0.;
       }        
       else  {
-        double c3 = coef * tsi * Constants.a3ovk2 * xn0dp * Constants.ae * sini0 / tle.getE();
-        xmcof = -Constants.twoThirds * coef * tle.getBStar() * Constants.ae / eeta;
+        double c3 = coef * tsi * TLEConstants.a3ovk2 * xn0dp * TLEConstants.ae * sini0 / tle.getE();
+        xmcof = -TLEConstants.twoThirds * coef * tle.getBStar() * TLEConstants.ae / eeta;
         omgcof = tle.getBStar() * c3 * Math.cos(tle.getPerigeeArgument());
       }
     } 
@@ -51,7 +51,7 @@ class SGP4 extends TLEPropagator {
   /** Propagation proper to each propagator (SGP or SDP).
    * @param tSince the offset from initial epoch (min)
    */
-  public void sxpPropagate(double tSince) {
+  protected void sxpPropagate(double tSince) {
         
     // Update for secular gravity and atmospheric drag. 
     double xmdf = tle.getMeanAnomaly() + xmdot * tSince;

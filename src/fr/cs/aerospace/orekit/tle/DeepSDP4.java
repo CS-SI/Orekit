@@ -487,8 +487,6 @@ class DeepSDP4 extends SDP4 {
       double term3b = 3. * del3 * (cos_3li * c_3fasx6 + sin_3li * s_3fasx6);
 
       for(int j = 0; j < secularIntegrationOrder; j += 2)  {
-//      *derivs++ = term1a + term2a + term3a;
-//      *derivs++ = term1b + term2b + term3b; 
         derivs[j] = term1a + term2a + term3a;
         derivs[j+1] = term1b + term2b + term3b;
         if( (i + 2) < secularIntegrationOrder)   {

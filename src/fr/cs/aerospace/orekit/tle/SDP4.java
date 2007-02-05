@@ -41,7 +41,7 @@ abstract class SDP4  extends TLEPropagator {
     deepSecularEffects(tSince);
 
     double tempa = 1 - c1 * tSince;    
-    a = Math.pow(Constants.xke/xn, Constants.twoThirds)*tempa*tempa;
+    a = Math.pow(TLEConstants.xke/xn, TLEConstants.twoThirds)*tempa*tempa;
     em -= tle.getBStar()*c4*tSince;
     
     // Update for deep-space periodic effects
@@ -70,7 +70,7 @@ abstract class SDP4  extends TLEPropagator {
    * @param date the current date
    * @return the ERA (rad)
    */
-  public static double thetaG(AbsoluteDate date) {
+  protected static double thetaG(AbsoluteDate date) {
 
     // Reference:  The 1992 Astronomical Almanac, page B6.
     double omega_E = 1.00273790934;
