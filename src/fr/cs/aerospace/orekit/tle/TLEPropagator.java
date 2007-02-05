@@ -38,15 +38,15 @@ public abstract class TLEPropagator {
     double a0 = a1 * (1.0 - delta1 * (Constants.oneThird + delta1 * (delta1 * 134./81.+1.0)));
     double delta0 = temp/(a0*a0);
 
-    // recover original mean motion and semi-major axis :
+    // recover original mean motion :
     double xn0dp = tle.getMeanMotion()*60.0/(delta0 + 1.0);
 
     // Period >= 225 minutes is deep space 
     if (2*Math.PI / (xn0dp*Constants.minutesPerDay) >= (1. / 6.4)) {
-      return new DeepSDP4(tle);
+      return new DeepSDP42(tle);
     }
     else {
-      return new SGP4(tle);
+      return new SGP42(tle);
     }
   }
 

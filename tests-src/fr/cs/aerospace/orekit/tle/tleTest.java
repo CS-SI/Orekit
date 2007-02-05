@@ -13,6 +13,9 @@ import fr.cs.aerospace.orekit.Utils;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.frames.TIRF2000Frame;
+import fr.cs.aerospace.orekit.orbits.CartesianParameters;
+import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
+import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -80,7 +83,11 @@ public class tleTest extends TestCase {
     assertTrue(series.getClosestTLE(mid).getEpoch().equals(series.getFirstDate()));
     mid = new AbsoluteDate("2003-06-02T11:12:15", UTCScale.getInstance());                                 
     assertTrue(series.getClosestTLE(mid).getEpoch().equals(series.getLastDate()));
-
+    
+    AbsoluteDate mil9cent = new AbsoluteDate("1900-01-01T00:00:00", UTCScale.getInstance());
+    
+    double daysSince1900 = mil9cent.minus(AbsoluteDate.JulianEpoch)/86400.0 - 2415020;
+    System.out.println(daysSince1900);
   }
 
   public void aatestFirstSDP() throws OrekitException, ParseException {
@@ -153,7 +160,7 @@ public class tleTest extends TestCase {
     
     AbsoluteDate date = AbsoluteDate.J2000Epoch;
     
-    double teta = SDP4.thetaG(date); 
+    double teta = SDP42.thetaG(date); 
     
     TIRF2000Frame ITRF = (TIRF2000Frame)Frame.getReferenceFrame(Frame.tirf2000B, date);
     double tetaTIRF = ITRF.getEarthRotationAngle(date);    
@@ -161,7 +168,7 @@ public class tleTest extends TestCase {
         
     date = new AbsoluteDate(AbsoluteDate.J2000Epoch, 78.2*86400);
     
-    teta = SDP4.thetaG(date); 
+    teta = SDP42.thetaG(date); 
     tetaTIRF = ITRF.getEarthRotationAngle(date);
     
     assertEquals( Utils.trimAngle(tetaTIRF, Math.PI), Utils.trimAngle(teta, Math.PI), 0.003);
@@ -210,55 +217,63 @@ public class tleTest extends TestCase {
         assertTrue(satNum==tle.getSatelliteNumber());
 
         TLEPropagator ex = TLEPropagator.selectExtrapolator(tle);
-        System.out.println("SATELLITE " + Double.parseDouble(title[1]));
-        System.out.println(header[1]);
-        System.out.println(header[2]);  
+//        System.out.println("SATELLITE " + Double.parseDouble(title[1]));
+//        System.out.println(header[1]);
+//        System.out.println(header[2]);  
         
         double maxError = 0;
         for (rline = rResults.readLine(); (rline!=null)&&(rline.charAt(0)!='r'); rline = rResults.readLine()) {
-          String[] data = rline.split(" ");
-          double minFromStart = Double.parseDouble(data[0]);
-          double pX = Double.parseDouble(data[1]);
-          double pY = Double.parseDouble(data[2]);
-          double pZ = Double.parseDouble(data[3]);
-//          double vX = Double.parseDouble(data[4]);
-//          double vY = Double.parseDouble(data[5]);
-//          double vZ = Double.parseDouble(data[6]);
-          Vector3D testPos = new Vector3D(pX, pY, pZ);
-//          Vector3D testVel = new Vector3D(vX, vY, vZ);
-          
-          AbsoluteDate date = new AbsoluteDate(tle.getEpoch(), minFromStart*60);
-          PVCoordinates results = null;
-          try {
-            results = ex.getPVCoordinates(date);
+          if (satNum == 14128) {            
+            
+            String[] data = rline.split(" ");
+            double minFromStart = Double.parseDouble(data[0]);
+            double pX = Double.parseDouble(data[1]);
+            double pY = Double.parseDouble(data[2]);
+            double pZ = Double.parseDouble(data[3]);
+            double vX = Double.parseDouble(data[4]);
+            double vY = Double.parseDouble(data[5]);
+            double vZ = Double.parseDouble(data[6]);
+            Vector3D testPos = new Vector3D(pX, pY, pZ);
+            Vector3D testVel = new Vector3D(vX, vY, vZ);
+            
+            AbsoluteDate date = new AbsoluteDate(tle.getEpoch(), minFromStart*60);
+            PVCoordinates results = null;
+            try {
+              results = ex.getPVCoordinates(date);
+            }
+            catch(IllegalArgumentException e)  {
+              if(satNum==28872  || satNum==23333 || satNum==29141 ) {
+                // expected behaviour
+              }
+              else {
+                fail(" exception not expected");
+              }
+            }
+            if (results != null) {
+              double normDifPos = testPos.subtract(results.getPosition()).getNorm();
+//              double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
+              cumulated += normDifPos;
+              System.out.print(minFromStart);
+              System.out.println(" " + testPos.subtract(results.getPosition()).getY());
+//              Utils.vectorToString(" ",testPos.subtract(results.getPosition()));
+              
+//              assertEquals( 0, normDifPos, 1);
+//              assertEquals( 0, normDifVel, 1e-3);
+              if(maxError == 0 || normDifPos>maxError) {
+                maxError = normDifPos;
+              }
+            }  
           }
-          catch(IllegalArgumentException e)  {
-            if(satNum==28872  || satNum==23333 || satNum==29141 ) {
-              // expected behaviour
-            }
-            else {
-              fail(" exception not expected");
-            }
-          }
-          if (results != null) {
-            double normDifPos = testPos.subtract(results.getPosition()).getNorm();
-//            double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
-            cumulated += normDifPos;
-//            assertEquals( 0, normDifPos, 1);
-//            assertEquals( 0, normDifVel, 1e-3);
-            if(maxError == 0 || normDifPos>maxError) {
-              maxError = normDifPos;
-            }
-          }  
+
         }
-        System.out.println(" max error : " + maxError);
-        System.out.println();
-        System.out.println();
+//        System.out.println(" max error : " + maxError);
+//        System.out.println();
+//        System.out.println();
         
       }
     }
 
-    System.out.println();
-    System.out.println( "cumulated error : " + cumulated);
+//    System.out.println();
+//    System.out.println( "cumulated error : " + cumulated);
   }
 }
