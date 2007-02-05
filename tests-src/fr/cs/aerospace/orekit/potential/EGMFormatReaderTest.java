@@ -50,15 +50,12 @@ public class EGMFormatReaderTest extends TestCase {
     
   public void testExeption() throws FileNotFoundException, IOException {
     
-    PotentialCoefficientsReader reader;
     PotentialReaderFactory factory = new PotentialReaderFactory();
     int c = 0;
     try {
       File rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data" +
                                    "/potential/egm-format-corrupted/fakegm1", "/");
-      InputStream in = new FileInputStream(rootDir.getAbsolutePath());
-
-      reader = factory.getPotentialReader(in);
+      factory.getPotentialReader(new FileInputStream(rootDir.getAbsolutePath()));
     } catch (OrekitException e) {
       c++;
       // expected behaviour
@@ -66,16 +63,14 @@ public class EGMFormatReaderTest extends TestCase {
     try {
       File rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data" +
                                    "/potential/egm-format-corrupted/fakegm2", "/");
-      InputStream in = new FileInputStream(rootDir.getAbsolutePath());
-
-      reader = factory.getPotentialReader(in);
+      factory.getPotentialReader(new FileInputStream(rootDir.getAbsolutePath()));
     } catch (OrekitException e) {
       c++;
       // expected behaviour
     }
     
     try {
-      reader = new SHMFormatReader();
+      PotentialCoefficientsReader reader = new SHMFormatReader();
       reader.read();
     } catch (OrekitException e) {
       c++;

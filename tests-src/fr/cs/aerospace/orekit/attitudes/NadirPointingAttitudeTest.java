@@ -12,7 +12,6 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.CircularParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
-import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.propagation.KeplerianPropagator;
 import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
@@ -27,18 +26,10 @@ public class NadirPointingAttitudeTest extends TestCase {
 
   public void testPureNadir() throws ParseException, OrekitException, FileNotFoundException {
 
-    // parameters
-    final double a = 12000000;
-    final double ex = 1e-3;
-    final double ey = 1e-3;
-    final double OMEGA = 0;
-    final double l = 0;
-    final double i = Math.PI/4; 
-    final double mu = Utils.mu;
-
-    final OrbitalParameters op = new CircularParameters(a, ex, ey, i, OMEGA, l, 
-                                                        CircularParameters.TRUE_LONGITUDE_ARGUMENT
-                                                        , Frame.getJ2000());
+    final CircularParameters op =
+      new CircularParameters(12000000, 1e-3, 1e-3, Math.PI/4, 0.0, 
+                             0.0, CircularParameters.TRUE_LONGITUDE_ARGUMENT,
+                             Frame.getJ2000());
 
     final AbsoluteDate initDate = new AbsoluteDate("2001-03-21T00:00:00",
                                                    UTCScale.getInstance());
@@ -48,21 +39,22 @@ public class NadirPointingAttitudeTest extends TestCase {
     BodyShape earth = new OneAxisEllipsoid(6378136.460, 0.6);
 
     AttitudeKinematicsProvider att = 
-      new NadirPointingAttitude(mu, earth, NadirPointingAttitude.PURENADIR,0,0);
+      new NadirPointingAttitude(Utils.mu, earth, NadirPointingAttitude.PURENADIR,0,0);
 
-    final SpacecraftState initState = new SpacecraftState(o, 1000, 
-                                                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(mu), 
-                                                                                    o.getFrame()));
-    double period = 2*Math.PI*Math.sqrt(a*a*a/mu);
+    final SpacecraftState initState =
+      new SpacecraftState(o, 1000, 
+                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu), 
+                                                    o.getFrame()));
+    double period = 2 * Math.PI * op.getA() * Math.sqrt(op.getA() / Utils.mu);
 
-    KeplerianPropagator kep = new KeplerianPropagator(initState, mu);
+    KeplerianPropagator kep = new KeplerianPropagator(initState, Utils.mu);
     kep.setAkProvider(att);
     SpacecraftState medState;
     AbsoluteDate medDate;
     for (int j=0 ; j<= period; j++) {
       medDate = new AbsoluteDate(initDate , j);
       medState = kep.getSpacecraftState(medDate);
-      Vector3D pos = medState.getPVCoordinates(mu).getPosition().negate();
+      Vector3D pos = medState.getPVCoordinates(Utils.mu).getPosition().negate();
       Vector3D dir = medState.getAttitude().applyInverseTo(Vector3D.minusK);
       Line orto = new Line(pos , dir);
       GeodeticPoint geo = earth.transform(pos);
@@ -73,18 +65,10 @@ public class NadirPointingAttitudeTest extends TestCase {
 
   public void testOrbitalNadir() throws ParseException, OrekitException, FileNotFoundException {
 
-    // parameters
-    final double a = 12000000;
-    double ex = 1e-3;
-    double ey = 1e-3;
-    final double OMEGA = 0;
-    final double l = 0;
-    final double i = Math.PI/2; 
-    final double mu = Utils.mu;
-
-    OrbitalParameters op = new CircularParameters(a, ex, ey, i, OMEGA, l, 
-                                                        CircularParameters.TRUE_LONGITUDE_ARGUMENT
-                                                        , Frame.getJ2000());
+    CircularParameters op =
+      new CircularParameters(12000000, 1e-3, 1e-3, Math.PI/2, 0.0, 
+                             0.0, CircularParameters.TRUE_LONGITUDE_ARGUMENT,
+                             Frame.getJ2000());
 
     final AbsoluteDate initDate = new AbsoluteDate("2001-03-21T00:00:00",
                                                    UTCScale.getInstance());
@@ -94,14 +78,15 @@ public class NadirPointingAttitudeTest extends TestCase {
     BodyShape earth = new OneAxisEllipsoid(6378136.460, 0.6);
 
     AttitudeKinematicsProvider att = 
-      new NadirPointingAttitude(mu, earth, NadirPointingAttitude.ORBITALPLANE,0,0);
+      new NadirPointingAttitude(Utils.mu, earth, NadirPointingAttitude.ORBITALPLANE,0,0);
 
-    SpacecraftState initState = new SpacecraftState(o, 1000, 
-                                                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(mu), 
-                                                                                    o.getFrame()));
-    double period = 2*Math.PI*Math.sqrt(a*a*a/mu);
+    SpacecraftState initState =
+      new SpacecraftState(o, 1000, 
+                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu), 
+                                                    o.getFrame()));
+    double period = 2 * Math.PI * op.getA() * Math.sqrt(op.getA() / Utils.mu);
 
-    KeplerianPropagator kep = new KeplerianPropagator(initState, mu);
+    KeplerianPropagator kep = new KeplerianPropagator(initState, Utils.mu);
     kep.setAkProvider(att);
     SpacecraftState medState;
     AbsoluteDate medDate;
@@ -109,7 +94,7 @@ public class NadirPointingAttitudeTest extends TestCase {
     for (int j=0 ; j<= period; j++) {
       medDate = new AbsoluteDate(initDate , j);
       medState = kep.getSpacecraftState(medDate);
-      Vector3D pos = medState.getPVCoordinates(mu).getPosition();
+      Vector3D pos = medState.getPVCoordinates(Utils.mu).getPosition();
       Vector3D dir = medState.getAttitude().applyInverseTo(Vector3D.minusK);
       Line orto = new Line(pos , dir);
       GeodeticPoint geo = earth.transform(pos);
@@ -118,25 +103,24 @@ public class NadirPointingAttitudeTest extends TestCase {
       assertEquals(0, orto.distance(earth.transform(geo)), 1e-7);
     }
     
-    ex = Math.PI/8;
-    ey = Math.PI/8;
-    op = new CircularParameters(a, ex, ey, i, OMEGA, l, 
-                                                        CircularParameters.TRUE_LONGITUDE_ARGUMENT
-                                                        , Frame.getJ2000());
+    op = new CircularParameters(op.getA(), Math.PI/8, Math.PI/8,
+                                op.getI(), op.getRightAscensionOfAscendingNode(), 
+                                op.getAlphaV(), CircularParameters.TRUE_LONGITUDE_ARGUMENT,
+                                Frame.getJ2000());
 
     o = new Orbit(initDate, op);
     initState = new SpacecraftState(o, 1000, 
-                                                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(mu), 
-                                                                                    o.getFrame()));
-    period = 2*Math.PI*Math.sqrt(a*a*a/mu);
+                                    att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu), 
+                                                              o.getFrame()));
+    period = 2 * Math.PI * op.getA() * Math.sqrt(op.getA() / Utils.mu);
 
-    kep = new KeplerianPropagator(initState, mu);
+    kep = new KeplerianPropagator(initState, Utils.mu);
     kep.setAkProvider(att);
 
     for (int j=0 ; j<= period; j++) {
       medDate = new AbsoluteDate(initDate , j);
       medState = kep.getSpacecraftState(medDate);
-      Vector3D pos = medState.getPVCoordinates(mu).getPosition();
+      Vector3D pos = medState.getPVCoordinates(Utils.mu).getPosition();
       Vector3D dir = medState.getAttitude().applyInverseTo(Vector3D.minusK);
       Line orto = new Line(pos , dir);
       GeodeticPoint geo = earth.transform(pos);
@@ -148,18 +132,10 @@ public class NadirPointingAttitudeTest extends TestCase {
 
   public void testWithOrbitalInclination() throws ParseException, OrekitException, FileNotFoundException {
 
-    // parameters
-    final double a = 12000000;
-    final double ex = 1e-3;
-    final double ey = 1e-3;
-    final double OMEGA = 0;
-    final double l = 0;
-    final double i = Math.PI/4; 
-    final double mu = Utils.mu;
-
-    final OrbitalParameters op = new CircularParameters(a, ex, ey, i, OMEGA, l, 
-                                                        CircularParameters.TRUE_LONGITUDE_ARGUMENT
-                                                        , Frame.getJ2000());
+    final CircularParameters op =
+      new CircularParameters(12000000, 1e-3, 1e-3, Math.PI/4, 0.0, 
+                             0.0, CircularParameters.TRUE_LONGITUDE_ARGUMENT,
+                             Frame.getJ2000());
 
     final AbsoluteDate initDate = new AbsoluteDate("2001-03-21T00:00:00",
                                                    UTCScale.getInstance());
@@ -169,21 +145,22 @@ public class NadirPointingAttitudeTest extends TestCase {
     BodyShape earth = new OneAxisEllipsoid(6378136.460, 0.6);
 
     AttitudeKinematicsProvider att = 
-      new NadirPointingAttitude(mu, earth, NadirPointingAttitude.ORBITALPLANE,0,0);
+      new NadirPointingAttitude(Utils.mu, earth, NadirPointingAttitude.ORBITALPLANE,0,0);
 
-    final SpacecraftState initState = new SpacecraftState(o, 1000, 
-                                                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(mu), 
-                                                                                    o.getFrame()));
-    double period = 2*Math.PI*Math.sqrt(a*a*a/mu);
+    final SpacecraftState initState =
+      new SpacecraftState(o, 1000, 
+                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu), 
+                                                    o.getFrame()));
+    double period = 2 * Math.PI * op.getA() * Math.sqrt(op.getA() / Utils.mu);
 
-    KeplerianPropagator kep = new KeplerianPropagator(initState, mu);
+    KeplerianPropagator kep = new KeplerianPropagator(initState, Utils.mu);
     kep.setAkProvider(att);
     SpacecraftState medState;
     AbsoluteDate medDate;
 
     medDate = new AbsoluteDate(initDate , period/6);
     medState = kep.getSpacecraftState(medDate);
-    Vector3D pos = medState.getPVCoordinates(mu).getPosition();
+    Vector3D pos = medState.getPVCoordinates(Utils.mu).getPosition();
     Vector3D dir = medState.getAttitude().applyInverseTo(Vector3D.plusJ);
     assertEquals(0, Vector3D.dotProduct(dir, pos), 1e-7);    
     dir = medState.getAttitude().applyInverseTo(Vector3D.minusK);

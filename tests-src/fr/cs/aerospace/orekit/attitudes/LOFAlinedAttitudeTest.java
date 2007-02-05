@@ -9,7 +9,6 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.CircularParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
-import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.propagation.KeplerianPropagator;
 import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
@@ -23,18 +22,9 @@ public class LOFAlinedAttitudeTest extends TestCase {
 
   public void testQSW() throws ParseException, OrekitException, FileNotFoundException {
 
-    // parameters
-    final double a = 12000000;
-    double ex = 1e-3;
-    double ey = 1e-3;
-    final double OMEGA = 0;
-    final double l = 0;
-    final double i = Math.PI/4; 
-    final double mu = Utils.mu;
-
-    OrbitalParameters op = new CircularParameters(a, ex, ey, i, OMEGA, l, 
-                                                  CircularParameters.TRUE_LONGITUDE_ARGUMENT
-                                                  , Frame.getJ2000());
+    CircularParameters op = new CircularParameters(12000000.0, 1.0e-3, 1.0e-3, Math.PI/4, 0.0,
+                                                   0.0, CircularParameters.TRUE_LONGITUDE_ARGUMENT,
+                                                   Frame.getJ2000());
 
     AbsoluteDate initDate = new AbsoluteDate("2001-03-21T00:00:00",
                                              UTCScale.getInstance());
@@ -42,14 +32,15 @@ public class LOFAlinedAttitudeTest extends TestCase {
     Orbit o = new Orbit(initDate, op);
 
     AttitudeKinematicsProvider att = 
-      new LOFAlinedAttitude(mu, LOFAlinedAttitude.QSW);
+      new LOFAlinedAttitude(Utils.mu, LOFAlinedAttitude.QSW);
 
-    SpacecraftState initState = new SpacecraftState(o, 1000, 
-                                                    att.getAttitudeKinematics(initDate, o.getPVCoordinates(mu), 
-                                                                              o.getFrame()));
-    double period = 2*Math.PI*Math.sqrt(a*a*a/mu);
+    SpacecraftState initState =
+      new SpacecraftState(o, 1000, 
+                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu), 
+                                                    o.getFrame()));
+    double period = 2 * Math.PI * op.getA() * Math.sqrt(op.getA() / Utils.mu);
 
-    KeplerianPropagator kep = new KeplerianPropagator(initState, mu);
+    KeplerianPropagator kep = new KeplerianPropagator(initState, Utils.mu);
     kep.setAkProvider(att);
 
     SpacecraftState medState;
@@ -58,7 +49,7 @@ public class LOFAlinedAttitudeTest extends TestCase {
     for (int j=0 ; j<= period; j++) {
       medDate = new AbsoluteDate(initDate , j);
       medState = kep.getSpacecraftState(medDate);
-      Vector3D pos = medState.getPVCoordinates(mu).getPosition().negate();
+      Vector3D pos = medState.getPVCoordinates(Utils.mu).getPosition().negate();
       // X is earth centered :
       Vector3D dir = medState.getAttitude().applyInverseTo(Vector3D.plusI);
       assertEquals(0, Vector3D.angle(pos, dir), 10e-10);
@@ -67,22 +58,20 @@ public class LOFAlinedAttitudeTest extends TestCase {
       assertEquals(0, Vector3D.dotProduct(pos, dir), 1e-4);
     }
 
-    ex = Math.PI/8;
-    ey = Math.PI/8;
-
-    op = new CircularParameters(a, ex, ey, i, OMEGA, l, 
-                                                  CircularParameters.TRUE_LONGITUDE_ARGUMENT
-                                                  , Frame.getJ2000());
+    op = new CircularParameters(op.getA(), Math.PI / 8, Math.PI / 8,
+                                op.getI(), op.getRightAscensionOfAscendingNode(),
+                                op.getAlphaV(), CircularParameters.TRUE_LONGITUDE_ARGUMENT,
+                                Frame.getJ2000());
 
 
     o = new Orbit(initDate, op);
 
     initState = new SpacecraftState(o, 1000, 
-                                                    att.getAttitudeKinematics(initDate, o.getPVCoordinates(mu), 
-                                                                              o.getFrame()));
-    period = 2*Math.PI*Math.sqrt(a*a*a/mu);
+                                    att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu), 
+                                                              o.getFrame()));
+    period = 2 * Math.PI * op.getA() * Math.sqrt(op.getA() / Utils.mu);
 
-    kep = new KeplerianPropagator(initState, mu);
+    kep = new KeplerianPropagator(initState, Utils.mu);
     kep.setAkProvider(att);
 
 
@@ -90,7 +79,7 @@ public class LOFAlinedAttitudeTest extends TestCase {
     for (int j=0 ; j<= period; j++) {
       medDate = new AbsoluteDate(initDate , j);
       medState = kep.getSpacecraftState(medDate);
-      Vector3D pos = medState.getPVCoordinates(mu).getPosition().negate();
+      Vector3D pos = medState.getPVCoordinates(Utils.mu).getPosition().negate();
       // X is earth centered :
       Vector3D dir = medState.getAttitude().applyInverseTo(Vector3D.plusI);
       assertEquals(0, Vector3D.angle(pos, dir), 10e-10);
@@ -102,18 +91,10 @@ public class LOFAlinedAttitudeTest extends TestCase {
 
   public void testTNW() throws ParseException, OrekitException, FileNotFoundException {
 
-    // parameters
-    final double a = 12000000;
-    final double ex = 1e-3;
-    final double ey = 1e-3;
-    final double OMEGA = 0;
-    final double l = 0;
-    final double i = Math.PI/4; 
-    final double mu = Utils.mu;
-
-    final OrbitalParameters op = new CircularParameters(a, ex, ey, i, OMEGA, l, 
-                                                        CircularParameters.TRUE_LONGITUDE_ARGUMENT
-                                                        , Frame.getJ2000());
+    final CircularParameters op =
+      new CircularParameters(12000000, 1e-3, 1e-3, Math.PI/4, 0.0,
+                             0.0, CircularParameters.TRUE_LONGITUDE_ARGUMENT,
+                             Frame.getJ2000());
 
     final AbsoluteDate initDate = new AbsoluteDate("2001-03-21T00:00:00",
                                                    UTCScale.getInstance());
@@ -121,14 +102,15 @@ public class LOFAlinedAttitudeTest extends TestCase {
     final Orbit o = new Orbit(initDate, op);
 
     AttitudeKinematicsProvider att = 
-      new LOFAlinedAttitude(mu, LOFAlinedAttitude.TNW);
+      new LOFAlinedAttitude(Utils.mu, LOFAlinedAttitude.TNW);
 
-    final SpacecraftState initState = new SpacecraftState(o, 1000, 
-                                                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(mu), 
-                                                                                    o.getFrame()));
-    double period = 2*Math.PI*Math.sqrt(a*a*a/mu);
+    final SpacecraftState initState =
+      new SpacecraftState(o, 1000, 
+                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu), 
+                                                    o.getFrame()));
+    double period = 2 * Math.PI * op.getA() * Math.sqrt(op.getA() / Utils.mu);
 
-    KeplerianPropagator kep = new KeplerianPropagator(initState, mu);
+    KeplerianPropagator kep = new KeplerianPropagator(initState, Utils.mu);
     kep.setAkProvider(att);
     SpacecraftState medState;
     AbsoluteDate medDate;
@@ -136,7 +118,7 @@ public class LOFAlinedAttitudeTest extends TestCase {
     for (int j=0 ; j<= period; j++) {
       medDate = new AbsoluteDate(initDate , j);
       medState = kep.getSpacecraftState(medDate);
-      Vector3D vel = medState.getPVCoordinates(mu).getVelocity();
+      Vector3D vel = medState.getPVCoordinates(Utils.mu).getVelocity();
       Vector3D dir = medState.getAttitude().applyInverseTo(Vector3D.plusK);
       // K is alined with the velocity
       assertEquals(0, Vector3D.angle(vel, dir), 10e-8);

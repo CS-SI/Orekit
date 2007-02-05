@@ -604,30 +604,6 @@ public class IERSData {
       bulletinBMonthly = new TreeSet(new MonthlyFilesComparator());
     }
 
-    private static class YearlyFilesComparator implements Comparator {
-      public int compare(Object arg0, Object arg1) {
-        Matcher matcher0 = yearlyPattern.matcher(((File) arg0).getName());
-        matcher0.matches();
-        int year0 = Integer.parseInt(matcher0.group(1));
-        Matcher matcher1 = yearlyPattern.matcher(((File) arg1).getName());
-        matcher1.matches();
-        int year1 = Integer.parseInt(matcher1.group(1));
-        return year0 - year1;
-      }
-    }
-    
-    private static class MonthlyFilesComparator implements Comparator {
-      public int compare(Object arg0, Object arg1) {
-        Matcher matcher0 = monthlyPattern.matcher(((File) arg0).getName());
-        matcher0.matches();
-        int year0 = Integer.parseInt(matcher0.group(1));
-        Matcher matcher1 = monthlyPattern.matcher(((File) arg1).getName());
-        matcher1.matches();
-        int year1 = Integer.parseInt(matcher1.group(1));
-        return year0 - year1;
-      }
-    }
-
     /** UTC-TAI history file. */
     public File utcTaiHistory;
 
@@ -639,6 +615,30 @@ public class IERSData {
 
   }
   
+  private static class YearlyFilesComparator implements Comparator {
+    public int compare(Object arg0, Object arg1) {
+      Matcher matcher0 = yearlyPattern.matcher(((File) arg0).getName());
+      matcher0.matches();
+      int year0 = Integer.parseInt(matcher0.group(1));
+      Matcher matcher1 = yearlyPattern.matcher(((File) arg1).getName());
+      matcher1.matches();
+      int year1 = Integer.parseInt(matcher1.group(1));
+      return year0 - year1;
+    }
+  }
+    
+  private static class MonthlyFilesComparator implements Comparator {
+    public int compare(Object arg0, Object arg1) {
+      Matcher matcher0 = monthlyPattern.matcher(((File) arg0).getName());
+      matcher0.matches();
+      int year0 = Integer.parseInt(matcher0.group(1));
+      Matcher matcher1 = monthlyPattern.matcher(((File) arg1).getName());
+      matcher1.matches();
+      int year1 = Integer.parseInt(matcher1.group(1));
+      return year0 - year1;
+    }
+  }
+
   /** Earth Orientation Parameters entries. */
   private TreeSet eop;
 

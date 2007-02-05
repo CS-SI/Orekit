@@ -194,6 +194,8 @@ public class SolarRadiationPressure implements ForceModel {
       return 1.0e-3;
     }
 
+    private static final long serialVersionUID = -2402806683532244120L;
+
   }
 
   /** This class defines the penumbra switching function.
@@ -232,6 +234,8 @@ public class SolarRadiationPressure implements ForceModel {
       // convergence threshold in seconds for penumbra events
       return 1.0e-3;
     }
+
+    private static final long serialVersionUID = -423248605146669097L;
 
   }
   

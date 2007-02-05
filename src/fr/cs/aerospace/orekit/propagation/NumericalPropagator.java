@@ -1,5 +1,6 @@
 package fr.cs.aerospace.orekit.propagation;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import org.spaceroots.mantissa.ode.ContinuousOutputModel;
@@ -78,7 +79,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * @author  F. Maussion
  */
 public class NumericalPropagator
-implements FirstOrderDifferentialEquations, AttitudePropagator {
+implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
 
   /** Create a new instance of NumericalExtrapolationModel.
    * After creation, the instance is empty, i.e. there is no perturbing force
@@ -413,5 +414,7 @@ implements FirstOrderDifferentialEquations, AttitudePropagator {
 
   /** Switching functions exception. */
   private OrekitException swfException;
+
+  private static final long serialVersionUID = 5792536158612690051L;
 
 }

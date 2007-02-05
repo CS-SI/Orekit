@@ -1,5 +1,7 @@
 package fr.cs.aerospace.orekit.forces;
 
+import java.io.Serializable;
+
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
@@ -29,7 +31,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  */
 
 
-public interface SWF {
+public interface SWF extends Serializable {
 
     /** Compute the value of the switching function. 
      * This function must be continuous (at least in its roots neighborhood),

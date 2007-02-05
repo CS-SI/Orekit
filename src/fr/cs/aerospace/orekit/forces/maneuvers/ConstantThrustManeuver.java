@@ -146,6 +146,8 @@ public class ConstantThrustManeuver implements ForceModel {
       return 1.0e-4;
     }
 
+    private static final long serialVersionUID = -3929595470907786248L;
+
   }
 
   /** This class defines the end of the acceleration switching function.
@@ -173,6 +175,8 @@ public class ConstantThrustManeuver implements ForceModel {
       return 1.0e-4;
     }
 
+    private static final long serialVersionUID = 2437223790185987916L;
+
   }
 
   /** state of the engine */
@@ -199,6 +203,7 @@ public class ConstantThrustManeuver implements ForceModel {
 
   private ThrustForceDirection variableDir;
 
-  /** Earth gravity acceleration constant (m.s²) */
+  /** Reference gravity acceleration constant (m/s²) */
   private static final double g0 = 9.80665;
+
 }
