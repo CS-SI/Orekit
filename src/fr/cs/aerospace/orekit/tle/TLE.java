@@ -22,7 +22,6 @@ public class TLE  implements Comparable {
    */
   public TLE(String line1, String line2) throws OrekitException {
 
-     
     satelliteNumber = Integer.parseInt(line1.substring(2,7).replace(" ", "0"));
     internationalDesignator = line1.substring(9,17);
 
