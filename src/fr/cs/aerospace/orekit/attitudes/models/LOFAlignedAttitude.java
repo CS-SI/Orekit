@@ -13,7 +13,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * 
  * @author F. Maussion
  */
-public class LOFAlinedAttitude implements AttitudeKinematicsProvider {
+public class LOFAlignedAttitude implements AttitudeKinematicsProvider {
 
   /** Identifier for TNW frame. */
   public static final int TNW = 0;
@@ -40,7 +40,7 @@ public class LOFAlinedAttitude implements AttitudeKinematicsProvider {
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
    * @param frameType the LOF (must be one of {@link #TNW} or {@link #QSW})
    */
-  public LOFAlinedAttitude(double mu, int frameType) {
+  public LOFAlignedAttitude(double mu, int frameType) {
     this.mu = mu;
     this.frameType = frameType;
   }
