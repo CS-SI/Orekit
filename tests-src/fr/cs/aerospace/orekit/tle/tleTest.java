@@ -160,7 +160,7 @@ public class tleTest extends TestCase {
     
     AbsoluteDate date = AbsoluteDate.J2000Epoch;
     
-    double teta = SDP42.thetaG(date); 
+    double teta = SDP4.thetaG(date); 
     
     TIRF2000Frame ITRF = (TIRF2000Frame)Frame.getReferenceFrame(Frame.tirf2000B, date);
     double tetaTIRF = ITRF.getEarthRotationAngle(date);    
@@ -168,7 +168,7 @@ public class tleTest extends TestCase {
         
     date = new AbsoluteDate(AbsoluteDate.J2000Epoch, 78.2*86400);
     
-    teta = SDP42.thetaG(date); 
+    teta = SDP4.thetaG(date); 
     tetaTIRF = ITRF.getEarthRotationAngle(date);
     
     assertEquals( Utils.trimAngle(tetaTIRF, Math.PI), Utils.trimAngle(teta, Math.PI), 0.003);
@@ -217,13 +217,13 @@ public class tleTest extends TestCase {
         assertTrue(satNum==tle.getSatelliteNumber());
 
         TLEPropagator ex = TLEPropagator.selectExtrapolator(tle);
-//        System.out.println("SATELLITE " + Double.parseDouble(title[1]));
-//        System.out.println(header[1]);
-//        System.out.println(header[2]);  
+        System.out.println("SATELLITE " + Double.parseDouble(title[1]));
+        System.out.println(header[1]);
+        System.out.println(header[2]);  
         
         double maxError = 0;
         for (rline = rResults.readLine(); (rline!=null)&&(rline.charAt(0)!='r'); rline = rResults.readLine()) {
-          if (satNum == 14128) {            
+           
             
             String[] data = rline.split(" ");
             double minFromStart = Double.parseDouble(data[0]);
@@ -254,7 +254,7 @@ public class tleTest extends TestCase {
 //              double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
               cumulated += normDifPos;
               System.out.print(minFromStart);
-              System.out.println(" " + testPos.subtract(results.getPosition()).getY());
+              System.out.println(" " + normDifPos);
 //              Utils.vectorToString(" ",testPos.subtract(results.getPosition()));
               
 //              assertEquals( 0, normDifPos, 1);
@@ -263,7 +263,7 @@ public class tleTest extends TestCase {
                 maxError = normDifPos;
               }
             }  
-          }
+       
 
         }
 //        System.out.println(" max error : " + maxError);
@@ -273,7 +273,7 @@ public class tleTest extends TestCase {
       }
     }
 
-//    System.out.println();
-//    System.out.println( "cumulated error : " + cumulated);
+    System.out.println();
+    System.out.println( "cumulated error : " + cumulated);
   }
 }

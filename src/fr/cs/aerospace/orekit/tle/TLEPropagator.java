@@ -43,10 +43,10 @@ public abstract class TLEPropagator {
 
     // Period >= 225 minutes is deep space 
     if (2*Math.PI / (xn0dp*Constants.minutesPerDay) >= (1. / 6.4)) {
-      return new DeepSDP42(tle);
+      return new DeepSDP4(tle);
     }
     else {
-      return new SGP42(tle);
+      return new SGP4(tle);
     }
   }
 
