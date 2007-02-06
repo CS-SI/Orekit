@@ -2,11 +2,8 @@ package fr.cs.aerospace.orekit.forces;
 
 import java.io.Serializable;
 
-import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.time.AbsoluteDate;
-import fr.cs.aerospace.orekit.utils.PVCoordinates;
+import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 
 /** This interface represents the switching function of the set of force 
  * models.
@@ -24,7 +21,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * <p> Once the g function root is reached, we are sure the integrator
  *  won't miss the event relative to this date : a discontinuity in
  *  acceleration, a change in the state... This event can be initiated
- *  by the {@link #eventOccurred(AbsoluteDate, PVCoordinates, Frame, double, AttitudeKinematics)}
+ *  by the {@link #eventOccurred(SpacecraftState, double)}
  *  method, wich is called when the step is placed on the wanted date. <p> 
  *
  * @author L. Maisonobe
@@ -36,27 +33,21 @@ public interface SWF extends Serializable {
     /** Compute the value of the switching function. 
      * This function must be continuous (at least in its roots neighborhood),
      * as the integrator will need to find its roots to locate the events.
-     * @param t current date
-     * @param pvCoordinates the {@link PVCoordinates}
-     * @param frame in which are defined the coordinates
-     * @param mass the current mass (kg)
-     * @param ak the attitude representation
+     * @param s the current state information : date, cinematics, attitude
+     * @param mu central gravitation coefficient
      * @return the value of the switching function
      * @throws OrekitException if some specific error occurs
      */
-    public double g(AbsoluteDate t, PVCoordinates pvCoordinates, Frame frame,
-                      double mass, AttitudeKinematics ak)
+    public double g(SpacecraftState s, double mu)
       throws OrekitException;
     
     /** Handle an event and choose what to do next.
-     * @param t current date
-     * @param pvCoordinates the {@link PVCoordinates}
-     * @param frame in which are defined the coordinates
-     * @param mass the current mass (kg)
-     * @param ak the attitude representation
+     * @param s the current state information : date, cinematics, attitude
+     * @param mu central gravtitation coefficient
+     * @throws OrekitException if some specific error occurs
      */
-    public void eventOccurred(AbsoluteDate t, PVCoordinates pvCoordinates,
-                              Frame frame, double mass, AttitudeKinematics ak);
+    public void eventOccurred(SpacecraftState s, double mu)
+      throws OrekitException;
     
     /** Get the convergence threshold in the event time search.
      */

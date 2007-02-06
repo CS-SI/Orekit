@@ -57,15 +57,15 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  *        /     \   Preccession and Nutation effects 
  *       /       \   (the complexity of the parameters changes between A and B models)
  *      /         \ 
- *  {@link #irf2000A}    {@link #irf2000B}    ( intermediate reference frame : true equinox and equator of date )
+ *  {@link #IRF2000A}    {@link #IRF2000B}    ( intermediate reference frame : true equinox and equator of date )
  *      |          |   
  *      |          |   Earth natural rotation
  *      |          |
- *  {@link #tirf2000A}   {@link #tirf2000B}   ( terrestrial intermediate reference frame )
+ *  {@link #TIRF2000A}   {@link #TIRF2000B}   ( terrestrial intermediate reference frame )
  *      |          | 
  *      |          |   Pole motion
  *      |          | 
- *  {@link #itrf2000A}  {@link #itrf2000B}   ( international terrestrial reference frame )
+ *  {@link #ITRF2000A}  {@link #ITRF2000B}   ( international terrestrial reference frame )
  *  
  * </pre>
  * <p> This implementation follows the new non-rotating origin paradigm
@@ -287,41 +287,41 @@ public class Frame implements Serializable {
   /** International Terrestrial Reference Frame 2000 A.
    * <p> Replaces the old ECEF representation. <p>
    */
-  public static final FrameType itrf2000A = new FrameType("ITRF2000A");
+  public static final FrameType ITRF2000A = new FrameType("ITRF2000A");
   
   /** International Terrestrial Reference Frame 2000 B.
    * <p> Replaces the old ECEF representation. <p>
    */
-  public static final FrameType itrf2000B = new FrameType("ITRF2000B");
+  public static final FrameType ITRF2000B = new FrameType("ITRF2000B");
   
   /** Intermediate Reference Frame 2000 A : true equinox and equator of date.
    * <p> Precession and nutation effects with maximal precision and no 
    * earth rotation. <p>
    */
-  public static final FrameType irf2000A = new FrameType("IRF2000A");
+  public static final FrameType IRF2000A = new FrameType("IRF2000A");
   
   /** Intermediate Reference Frame 2000 B : true equinox and equator of date.
    * <p> Precession and nutation effects with less precision and no 
    * earth rotation. <p>
    */
-  public static final FrameType irf2000B = new FrameType("IRF2000B");
+  public static final FrameType IRF2000B = new FrameType("IRF2000B");
  
   /** Terrestrial Intermediate Reference Frame 2000 A.
    * <p> The pole motion is not considered.</p> */  
-  public static final FrameType tirf2000A = new FrameType("TIRF2000A");
+  public static final FrameType TIRF2000A = new FrameType("TIRF2000A");
   
   /** Terrestrial Intermediate Reference Frame 2000 B.
    * <p> The pole motion is not considered.</p> */  
-  public static final FrameType tirf2000B = new FrameType("TIRF2000B");
+  public static final FrameType TIRF2000B = new FrameType("TIRF2000B");
   
   /** Veis 1950 frame.
    * <p>This frame is sometimes refered to as
    * <em>&gamma;<sub>50</sub> CNES</em></p> */
-  public static final FrameType veis1950 = new FrameType("veis1950");
+  public static final FrameType VEIS1950 = new FrameType("VEIS1950");
  
   /** Get one of the 7 unique reference frames.
-   * Must be one of {@link #veis1950}, {@link #itrf2000A}, {@link #itrf2000B},
-   * {@link #tirf2000A}, {@link #tirf2000B}, {@link #irf2000A}, {@link #irf2000B}.
+   * Must be one of {@link #VEIS1950}, {@link #ITRF2000A}, {@link #ITRF2000B},
+   * {@link #TIRF2000A}, {@link #TIRF2000B}, {@link #IRF2000A}, {@link #IRF2000B}.
    * @param type the frame type.
    * @param date the current date
    * @return the selected reference frame singleton.
@@ -329,43 +329,43 @@ public class Frame implements Serializable {
    * library cannot be read.
    */
   public static Frame getReferenceFrame(FrameType type, AbsoluteDate date) throws OrekitException {
-    if (type == itrf2000A) {
+    if (type == ITRF2000A) {
       if (itrf2000AFrame == null) {
-        itrf2000AFrame = new ITRF2000Frame(getReferenceFrame(tirf2000A, date), date, type.name);
+        itrf2000AFrame = new ITRF2000Frame(getReferenceFrame(TIRF2000A, date), date, type.name);
       }
       return itrf2000AFrame;      
     }
-    if (type == itrf2000B) {
+    if (type == ITRF2000B) {
       if (itrf2000BFrame == null) {
-        itrf2000BFrame = new ITRF2000Frame(getReferenceFrame(tirf2000B, date), date, type.name);
+        itrf2000BFrame = new ITRF2000Frame(getReferenceFrame(TIRF2000B, date), date, type.name);
       }
       return itrf2000BFrame;      
     }
-    if (type == tirf2000A) {
+    if (type == TIRF2000A) {
       if (tirf2000AFrame == null) {
-        tirf2000AFrame = new TIRF2000Frame(getReferenceFrame(irf2000A, date), date, type.name);
+        tirf2000AFrame = new TIRF2000Frame(getReferenceFrame(IRF2000A, date), date, type.name);
       }
       return tirf2000AFrame;      
     }
-    if (type == tirf2000B) {
+    if (type == TIRF2000B) {
       if (tirf2000BFrame == null) {
-        tirf2000BFrame = new TIRF2000Frame(getReferenceFrame(irf2000B, date), date, type.name);
+        tirf2000BFrame = new TIRF2000Frame(getReferenceFrame(IRF2000B, date), date, type.name);
       }
       return tirf2000BFrame;      
     }
-    if (type == irf2000A) {
+    if (type == IRF2000A) {
       if (irf2000AFrame == null) {
         irf2000AFrame = new IRF2000Frame(date, false, type.name);
       }
       return irf2000AFrame;      
     }
-    if (type == irf2000B) {
+    if (type == IRF2000B) {
       if (irf2000BFrame == null) {
         irf2000BFrame = new IRF2000Frame(date, true, type.name);
       }
       return irf2000BFrame;      
     }
-    if (type == veis1950) {
+    if (type == VEIS1950) {
       return getVeis1950();      
     }
     else {

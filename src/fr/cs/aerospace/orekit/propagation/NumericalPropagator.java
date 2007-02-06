@@ -13,7 +13,6 @@ import org.spaceroots.mantissa.ode.StepNormalizer;
 import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.IntegratorException;
 import org.spaceroots.mantissa.ode.SwitchingFunction;
-
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematicsProvider;
 import fr.cs.aerospace.orekit.attitudes.models.IdentityAttitude;
 import fr.cs.aerospace.orekit.errors.OrekitException;
@@ -23,7 +22,6 @@ import fr.cs.aerospace.orekit.forces.SWF;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
-import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /** This class propagates a {@link fr.cs.aerospace.orekit.propagation.SpacecraftState}
  * using numerical integration.
@@ -95,10 +93,8 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
     this.forceSwf           = new ArrayList();
     this.integrator         = integrator;
     this.startDate          = new AbsoluteDate();
-    this.date               = new AbsoluteDate();
-    this.parameters         = null;
+    this.currentState       = null;
     this.adder              = null;
-    this.mass               = Double.NaN;
     this.akProvider         = new IdentityAttitude();
     this.state              = new double[getDimension()];
     this.swfException       = null;
@@ -206,12 +202,13 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
 
     // space dynamics view
     startDate  = initialState.getDate();
-    date       = startDate;
-    parameters = new EquinoctialParameters(initialState.getParameters(), mu);
-    mass       = initialState.getMass();
+   
+    EquinoctialParameters parameters = new EquinoctialParameters(initialState.getParameters(), mu);
+    currentState = initialState;
+    
     adder      = new TimeDerivativesEquations(parameters , mu);
 
-    if (mass <= 0.0) {
+    if (initialState.getMass() <= 0.0) {
       throw new IllegalArgumentException("Mass is null or negative");
     }    
 
@@ -226,7 +223,7 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
     state[3] = parameters.getHx();
     state[4] = parameters.getHy();
     state[5] = parameters.getLv();
-    state[6] = mass;     
+    state[6] = initialState.getMass();     
 
     // Add the switching functions
     for (Iterator iter = forceSwf.iterator(); iter.hasNext(); ) {
@@ -253,14 +250,13 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
     }
 
     // back to space dynamics view
-    date = new AbsoluteDate(startDate, t1);
+    AbsoluteDate date = new AbsoluteDate(startDate, t1);
 
     parameters = new EquinoctialParameters(state[0], state[1],state[2],state[3],
                                            state[4],state[5], EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
                                            parameters.getFrame());
-    mass = state[6];  
     
-    return new SpacecraftState(new Orbit(date , parameters), mass, 
+    return new SpacecraftState(new Orbit(date , parameters), state[6], 
                                 akProvider.getAttitudeKinematics(date,
                                  parameters.getPVCoordinates(mu), parameters.getFrame()));    
   }
@@ -291,19 +287,16 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
       mapState(t, y);
 
       // compute cartesian coordinates
-      PVCoordinates pvCoordinates = parameters.getPVCoordinates(mu);
-      if (mass <= 0.0) {
+      if (currentState.getMass() <= 0.0) {
         String message = Translator.getInstance().translate("Mass is becoming negative");
         throw new IllegalArgumentException(message);
       }    
       // initialize derivatives
-      adder.initDerivatives(yDot , parameters);
+      adder.initDerivatives(yDot , (EquinoctialParameters)currentState.getParameters());
 
       // compute the contributions of all perturbing forces
       for (Iterator iter = forceModels.iterator(); iter.hasNext();) {
-        ((ForceModel) iter.next()).addContribution(date, pvCoordinates, parameters.getFrame(), mass, 
-                              akProvider.getAttitudeKinematics(
-                                                date, pvCoordinates, parameters.getFrame()), adder);
+        ((ForceModel) iter.next()).addContribution(currentState, adder, mu);
       }
 
       // finalize derivatives by adding the Kepler contribution
@@ -321,17 +314,14 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
   private void mapState(double t, double [] y) {
 
     // update space dynamics view
-    date = new AbsoluteDate(startDate, t);
-
-    parameters = new EquinoctialParameters(y[0], y[1],y[2],y[3],y[4],y[5],
+    
+    currentState = new SpacecraftState(new Orbit(new AbsoluteDate(startDate, t), new EquinoctialParameters(y[0], y[1],y[2],y[3],y[4],y[5],
                                            EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                           parameters.getFrame());
-    mass = y[6];
+                                           currentState.getFrame())), y[6]);
   }
 
   
-  /** Converts OREKIT switching functions to MANTISSA interface
-   */
+  /** Converts OREKIT switching functions to MANTISSA interface. */
   private class MappingSwitchingFunction implements SwitchingFunction {
 
     public MappingSwitchingFunction(SWF swf) {
@@ -341,10 +331,7 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
     public double g(double t, double[] y){
       mapState(t, y);
       try {
-        PVCoordinates pv = parameters.getPVCoordinates(mu);
-        return swf.g(date, pv , parameters.getFrame(),mass, 
-                     akProvider.getAttitudeKinematics(
-                                             date, pv, parameters.getFrame()));
+        return swf.g(currentState, mu);
       } catch (OrekitException oe) {
         if (swfException==null) {
           swfException = oe;
@@ -355,11 +342,8 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
 
     public int eventOccurred(double t, double[] y) {
       mapState(t, y);
-      PVCoordinates pv = parameters.getPVCoordinates(mu);
       try {
-        swf.eventOccurred(date, pv , parameters.getFrame(),mass, 
-                          akProvider.getAttitudeKinematics(
-                                             date, pv, parameters.getFrame()));
+        swf.eventOccurred(currentState, mu);
       } catch (OrekitException oe) {
         if (swfException==null) {
           swfException = oe;
@@ -397,15 +381,9 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
   /** Start date. */
   private AbsoluteDate startDate;
 
-  /** Current date. */
-  private AbsoluteDate date;
-
-  /** Current EquinoctialParameters, updated during the integration process. */
-  private EquinoctialParameters parameters;
-
-  /** Current mass (kg), updated during the integration process. */
-  private double mass;
-
+  /** Current state to propagate. */
+  private SpacecraftState currentState;
+  
   /** Integrator selected by the user for the orbital extrapolation process. */
   private FirstOrderIntegrator integrator;
 

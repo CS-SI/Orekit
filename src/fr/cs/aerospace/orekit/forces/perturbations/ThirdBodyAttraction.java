@@ -2,17 +2,14 @@ package fr.cs.aerospace.orekit.forces.perturbations;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
-import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.bodies.ThirdBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
-import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.models.bodies.Moon;
 import fr.cs.aerospace.orekit.models.bodies.Sun;
+import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
-import fr.cs.aerospace.orekit.time.AbsoluteDate;
-import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /** Third body attraction force model.
  *  
@@ -30,21 +27,16 @@ public class ThirdBodyAttraction implements ForceModel {
 
   /** Compute the contribution of the body attraction to the perturbing
    * acceleration.
-   * @param t current date
-   * @param pvCoordinates the position and velocity
-   * @param frame in which are defined the coordinates
-   * @param mass the current mass (kg)
-   * @param ak the attitude representation
+   * @param s the current state information : date, cinematics, attitude
    * @param adder object where the contribution should be added
+   * @param mu central gravitation coefficient
    * @throws OrekitException if some specific error occurs
    */  
-  public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates,
-                              Frame frame, double mass, AttitudeKinematics ak, TimeDerivativesEquations adder) 
+  public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu) 
     throws OrekitException {
+    Vector3D otherBody = body.getPosition(s.getDate(), s.getFrame());
 
-    Vector3D otherBody = body.getPosition(t, frame);
-
-    Vector3D centralBody = new Vector3D(-1.0 , pvCoordinates.getPosition());
+    Vector3D centralBody = new Vector3D(-1.0 , s.getPVCoordinates(mu).getPosition());
     centralBody = centralBody.add(otherBody);
     centralBody = centralBody.multiply(1.0/Math.pow(centralBody.getNorm(), 3));
 

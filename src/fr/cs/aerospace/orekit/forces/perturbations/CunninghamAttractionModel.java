@@ -1,14 +1,12 @@
 package fr.cs.aerospace.orekit.forces.perturbations;
 
-import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.frames.Transform;
+import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
-import fr.cs.aerospace.orekit.time.AbsoluteDate;
-import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
@@ -28,20 +26,18 @@ public class CunninghamAttractionModel implements ForceModel {
 
   /** Creates a new instance.
    * 
-   * @param mu central body attraction coefficient
    * @param centralBodyFrame rotating body frame
    * @param equatorialRadius reference equatorial radius of the potential
    * @param C un-normalized coefficients array (cosine part)
    * @param S un-normalized coefficients array (sine part)
    * @throws OrekitException 
    */
-  public CunninghamAttractionModel(double mu, Frame centralBodyFrame,
+  public CunninghamAttractionModel(Frame centralBodyFrame,
                                    double equatorialRadius, double[][] C, double[][] S)
   throws OrekitException {
 
     this.bodyFrame = centralBodyFrame;
     this.equatorialRadius = equatorialRadius;
-    this.mu = mu;
     degree  = C.length - 1;
     order   = C[degree].length - 1;
 
@@ -85,22 +81,17 @@ public class CunninghamAttractionModel implements ForceModel {
    * The central part of the acceleration (mu/r<sup>2</sup> term) is not
    * computed here, only the <em>perturbing</em> acceleration is considered.
    * </p>
-   * @param date current date
-   * @param pvCoordinates the position and velocity
-   * @param frame in which are defined the coordinates
-   * @param mass the current mass (kg)
-   * @param ak the attitude representation
+   * @param s the current state information : date, cinematics, attitude
    * @param adder object where the contribution should be added
+   * @param mu central gravitation coefficient
    * @throws OrekitException if some specific error occurs
    */
-  public void addContribution(AbsoluteDate date, PVCoordinates pvCoordinates,
-                              Frame frame, double mass, AttitudeKinematics ak, TimeDerivativesEquations adder)
+  public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
   throws OrekitException {
-
     // get the position in body frame
-    Transform fromBodyFrame = bodyFrame.getTransformTo(frame, date);
+    Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), s.getDate());
     Transform toBodyFrame   = fromBodyFrame.getInverse();
-    Vector3D relative = toBodyFrame.transformPosition(pvCoordinates.getPosition());
+    Vector3D relative = toBodyFrame.transformPosition(s.getPVCoordinates(mu).getPosition());
 
     double x = relative.getX();
     double y = relative.getY();
@@ -116,7 +107,7 @@ public class CunninghamAttractionModel implements ForceModel {
                                 new String[] { Double.toString(r) });
     }
 
-    // define of some intermediate variables
+    // define some intermediate variables
     double onR2 = 1 / r2;
     double onR3 = onR2 / r;
     double onR4 = onR2 * onR2;
@@ -356,9 +347,6 @@ public class CunninghamAttractionModel implements ForceModel {
 
   /** Equatorial radius of the Central Body. */
   private double equatorialRadius;
-
-  /** Central attraction. */
-  private double mu;
 
   /** First normalized potential tesseral coefficients array. */
   private double[][] C;

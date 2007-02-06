@@ -1,7 +1,6 @@
 package fr.cs.aerospace.orekit.forces.perturbations;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
-import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.bodies.ThirdBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
@@ -9,6 +8,7 @@ import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.models.spacecraft.SolarRadiationPressureSpacecraft;
+import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -53,36 +53,31 @@ public class SolarRadiationPressure implements ForceModel {
 
   /** Compute the contribution of the solar radiation pressure to the perturbing
    * acceleration.
-   * @param date current date
-   * @param pvCoordinates the position and velocity
-   * @param frame in which are defined the coordinates
-   * @param mass the current mass (kg)
-   * @param ak the attitude representation
+   * @param s the current state information : date, cinematics, attitude
    * @param adder object where the contribution should be added
+   * @param mu central gravitation coefficient
    * @throws OrekitException if some specific error occurs
    */	
-  public void addContribution(AbsoluteDate date, PVCoordinates pvCoordinates, 
-                              Frame frame, double mass, AttitudeKinematics ak, TimeDerivativesEquations adder)
+  public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
   throws OrekitException {
-
     // raw radiation pressure
-    Vector3D satSunVector = sun.getPosition(date , frame).subtract(
-                                                          pvCoordinates.getPosition());
+    Vector3D satSunVector = sun.getPosition(s.getDate() , s.getFrame()).subtract(
+                                                          s.getPVCoordinates(mu).getPosition());
 
     double dRatio = dRef / satSunVector.getNorm();
     double rawP   = pRef * dRatio * dRatio
     * getLightningRatio(
-                        pvCoordinates.getPosition(), frame, date);
+                        s.getPVCoordinates(mu).getPosition(), s.getFrame(), s.getDate());
 
     // spacecraft characteristics effects
 
     Vector3D u = satSunVector.normalize();
-    Vector3D inSpacecraft = ak.getAttitude().applyTo(u);
+    Vector3D inSpacecraft = s.getAttitudeKinematics().getAttitude().applyTo(u);
     double kd = (1.0 - spacecraft.getAbsCoef(inSpacecraft).getNorm())
     * (1.0 - spacecraft.getReflectionCoef(inSpacecraft).getNorm());
  
     double acceleration = rawP * (1 + kd * 4.0 / 9.0 )
-    * spacecraft.getSurface(inSpacecraft) / mass;
+    * spacecraft.getSurface(inSpacecraft) / s.getMass();
 
     // provide the perturbing acceleration to the derivatives adder
 
@@ -163,19 +158,22 @@ public class SolarRadiationPressure implements ForceModel {
    */
   private class Umbraswitch implements SWF {
 
-    public void eventOccurred(AbsoluteDate t, PVCoordinates pvCoordinates, Frame frame, double mass, AttitudeKinematics ak) {
+    public void eventOccurred(SpacecraftState s, double mu) {
       // do nothing
     }
 
     /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
      * the Earth's apparent radius
+     * @param s the current state information : date, cinematics, attitude
+     * @param mu central gravitation coefficient
      */
-    public double g(AbsoluteDate date, PVCoordinates pvCoordinates, Frame frame, double mass, AttitudeKinematics ak)
+    public double g(SpacecraftState s, double mu)
     throws OrekitException {
-      Vector3D satSunVector = sun.getPosition(date, frame).subtract(
-                                                pvCoordinates.getPosition());
-      double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pvCoordinates.getPosition());
-      double r = pvCoordinates.getPosition().getNorm();
+      PVCoordinates pv = s.getPVCoordinates(mu);
+      Vector3D satSunVector = sun.getPosition(s.getDate(), s.getFrame()).subtract(
+                                                pv.getPosition());
+      double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pv.getPosition());
+      double r = pv.getPosition().getNorm();
       if (r <= centralBody.getEquatorialRadius()) {
         throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
                                   new String[] { Double.toString(r) });
@@ -203,19 +201,22 @@ public class SolarRadiationPressure implements ForceModel {
    */
   private class Penumbraswitch implements SWF {
 
-    public void eventOccurred(AbsoluteDate t, PVCoordinates pvCoordinates, Frame frame, double mass, AttitudeKinematics ak) {
+    public void eventOccurred(SpacecraftState s, double mu) {
       // do nothing
     }
 
     /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
      * the sum of the Earth's and Sun's apparent radius
+     * @param s the current state information : date, cinematics, attitude
+     * @param mu central gravitation coefficient
      */
-    public double g(AbsoluteDate date, PVCoordinates pvCoordinates, Frame frame, double mass, AttitudeKinematics ak)
+    public double g(SpacecraftState s, double mu)
     throws OrekitException {
-      Vector3D satSunVector = sun.getPosition(date , frame).subtract(
-                                                     pvCoordinates.getPosition());
-      double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pvCoordinates.getPosition());
-      double r = pvCoordinates.getPosition().getNorm();
+      PVCoordinates pv = s.getPVCoordinates(mu);
+      Vector3D satSunVector = sun.getPosition(s.getDate() , s.getFrame()).subtract(
+                                                     pv.getPosition());
+      double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pv.getPosition());
+      double r = pv.getPosition().getNorm();
       if (r <= centralBody.getEquatorialRadius()) {
         throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
                                   new String[] { Double.toString(r) });

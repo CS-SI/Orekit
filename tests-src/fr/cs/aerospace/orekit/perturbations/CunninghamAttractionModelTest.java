@@ -65,7 +65,7 @@ public class CunninghamAttractionModelTest extends TestCase {
     c[0][0] = 0.0;
     c[2][0] = c20;
     double[][] s = new double[3][1];
-    propagator.addForceModel(new CunninghamAttractionModel(mu, itrf2000, 6378136.460, c, s));
+    propagator.addForceModel(new CunninghamAttractionModel( itrf2000, 6378136.460, c, s));
 
     // let the step handler perform the test
     propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date , 7 * 86400),
@@ -134,7 +134,7 @@ public class CunninghamAttractionModelTest extends TestCase {
                 new EquinoctialParameters(new PVCoordinates(position, velocity),
                                           poleAligned, mu));
 
-    propagator.addForceModel(new CunninghamAttractionModel(mu, itrf2000, ae,
+    propagator.addForceModel(new CunninghamAttractionModel(itrf2000, ae,
                                                          new double[][] {
                                                            { 0.0 }, { 0.0 }, { c20 }, { c30 },
                                                            { c40 }, { c50 }, { c60 },
@@ -204,7 +204,7 @@ public class CunninghamAttractionModelTest extends TestCase {
     Orbit orbit = new Orbit(date , op);
     propagator = new NumericalPropagator(mu,
                                          new ClassicalRungeKuttaIntegrator(1000));
-    propagator.addForceModel(new CunninghamAttractionModel(mu, itrf2000, ae,
+    propagator.addForceModel(new CunninghamAttractionModel(itrf2000, ae,
                                                            new double[][] {
         { 0.0 }, { 0.0 }, { c20 }, { c30 },
         { c40 }, { c50 }, { c60 },
@@ -218,7 +218,7 @@ public class CunninghamAttractionModelTest extends TestCase {
 
     propagator.removeForceModels();
     
-    propagator.addForceModel(new DrozinerAttractionModel(mu, itrf2000, ae,
+    propagator.addForceModel(new DrozinerAttractionModel(itrf2000, ae,
                                                          new double[][] {
                                                            { 0.0 }, { 0.0 }, { c20 }, { c30 },
                                                            { c40 }, { c50 }, { c60 },
@@ -250,7 +250,7 @@ public class CunninghamAttractionModelTest extends TestCase {
       c50 =  2.27888264414e-7;
       c60 = -5.40618601332e-7;
      
-      itrf2000 = Frame.getReferenceFrame(Frame.itrf2000B, new AbsoluteDate());
+      itrf2000 = Frame.getReferenceFrame(Frame.ITRF2000B, new AbsoluteDate());
       propagator =
         new NumericalPropagator(mu,
                                 new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));

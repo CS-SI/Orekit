@@ -9,8 +9,7 @@ import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** Moon model.
- * The position model is the Brown theory.
- * 
+ * The position model is the Brown theory. 
  * @author E. Delente
  */
 
@@ -22,7 +21,7 @@ public class Moon extends ThirdBody {
     
       try {
         transform  =
-          Frame.getReferenceFrame(Frame.veis1950, reference).getTransformTo(Frame.getJ2000(), reference);
+          Frame.getReferenceFrame(Frame.VEIS1950, reference).getTransformTo(Frame.getJ2000(), reference);
       } catch (OrekitException e) {
         // should not happen
         transform = new Transform();

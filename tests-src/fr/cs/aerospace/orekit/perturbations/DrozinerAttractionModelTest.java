@@ -60,7 +60,7 @@ public class DrozinerAttractionModelTest extends TestCase {
                                                    poleAligned);
     Orbit orbit = new Orbit(date , op);
 
-    propagator.addForceModel(new DrozinerAttractionModel(mu, itrf2000,
+    propagator.addForceModel(new DrozinerAttractionModel(itrf2000,
                                                          6378136.460,
                                                          new double[][] { { 0.0 }, { 0.0 }, { c20 } },
                                                          new double[][] { { 0.0 }, { 0.0 }, { 0.0 } }));
@@ -131,7 +131,7 @@ public class DrozinerAttractionModelTest extends TestCase {
                 new EquinoctialParameters(new PVCoordinates(position, velocity),
                                           poleAligned, mu));
 
-    propagator.addForceModel(new DrozinerAttractionModel(mu, itrf2000, ae,
+    propagator.addForceModel(new DrozinerAttractionModel(itrf2000, ae,
                                                          new double[][] {
                                                            { 1.0 }, { 0.0 }, { c20 }, { c30 },
                                                            { c40 }, { c50 }, { c60 },
@@ -200,13 +200,13 @@ public class DrozinerAttractionModelTest extends TestCase {
     Orbit orbit = new Orbit(date , op);
     propagator = new NumericalPropagator(mu,
                                          new ClassicalRungeKuttaIntegrator(100));
-    propagator.addForceModel(new CunninghamAttractionModel(mu, itrf2000, ae,C, S));
+    propagator.addForceModel(new CunninghamAttractionModel(itrf2000, ae,C, S));
 
     SpacecraftState cunnOrb = propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date ,  86400));
 
     propagator.removeForceModels();
     
-    propagator.addForceModel(new DrozinerAttractionModel(mu, itrf2000, ae,
+    propagator.addForceModel(new DrozinerAttractionModel(itrf2000, ae,
                                                          C, S));
 
     SpacecraftState drozOrb = propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date ,  86400));
@@ -227,7 +227,7 @@ public class DrozinerAttractionModelTest extends TestCase {
       c40 =  1.61994537014e-6;
       c50 =  2.27888264414e-7;
       c60 = -5.40618601332e-7;
-      itrf2000 = Frame.getReferenceFrame(Frame.itrf2000B, new AbsoluteDate());
+      itrf2000 = Frame.getReferenceFrame(Frame.ITRF2000B, new AbsoluteDate());
       propagator =
         new NumericalPropagator(mu,
                                 new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));

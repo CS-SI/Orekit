@@ -11,8 +11,8 @@ import fr.cs.aerospace.orekit.time.UTCScale;
  * <p> The pole motion is not considered. It handles
  * the earth rotation angle, its parent frame is the {@link IRF2000Frame}</p>
  */ 
-public class TIRF2000Frame extends Frame {
-// TODO public to protaected
+class TIRF2000Frame extends Frame {
+
   /** Constructor for the singleton.
    * @param parent the IRF2000
    * @param date the current date

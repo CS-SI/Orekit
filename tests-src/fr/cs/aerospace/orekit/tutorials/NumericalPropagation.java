@@ -34,7 +34,7 @@ public class NumericalPropagation {
     double mu =  3.9860064e+14; // gravitation coefficient
     double ae =  6378136.460; // equatorial radius in meter
     double c20 = -1.08262631303e-3; // J2 potential coefficent
-    Frame itrf2000 = Frame.getReferenceFrame(Frame.itrf2000B, new AbsoluteDate()); // terrestrial frame at an arbitrary date
+    Frame itrf2000 = Frame.getReferenceFrame(Frame.ITRF2000B, new AbsoluteDate()); // terrestrial frame at an arbitrary date
     
     
     //  Initial state definition :    
@@ -85,7 +85,7 @@ public class NumericalPropagation {
     c[2][0] = c20;
     double[][] s = new double[3][1]; // potential coeffs arrays (only J2 is considered here)
   
-    ForceModel cunningham = new CunninghamAttractionModel(mu, itrf2000, ae, c, s);
+    ForceModel cunningham = new CunninghamAttractionModel(itrf2000, ae, c, s);
     propagator.addForceModel(cunningham);
     
     // propagation with storage of the results in an integrated ephemeris
@@ -107,7 +107,7 @@ public class NumericalPropagation {
     double mu =  3.9860064e+14; // gravitation coefficient
     double ae =  6378136.460; // equatorial radius in meter
     double c20 = -1.08262631303e-3; // J2 potential coefficent
-    Frame itrf2000 = Frame.getReferenceFrame(Frame.itrf2000B, new AbsoluteDate()); // terrestrial frame at an arbitrary date
+    Frame itrf2000 = Frame.getReferenceFrame(Frame.ITRF2000B, new AbsoluteDate()); // terrestrial frame at an arbitrary date
     
     
     //  Initial state definition :    
@@ -158,7 +158,7 @@ public class NumericalPropagation {
     c[2][0] = c20;
     double[][] s = new double[3][1]; // potential coeffs arrays (only J2 is considered here)
   
-    ForceModel cunningham = new CunninghamAttractionModel(mu, itrf2000, mass, c, s);
+    ForceModel cunningham = new CunninghamAttractionModel(itrf2000, mass, c, s);
     propagator.addForceModel(cunningham);
     AbsoluteDate finalDate = new AbsoluteDate(initialDate, 500);
     

@@ -2,15 +2,13 @@ package fr.cs.aerospace.orekit.forces.perturbations;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
-import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.frames.Transform;
+import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
-import fr.cs.aerospace.orekit.time.AbsoluteDate;
-import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /** This class represents the gravitational field of a celestial body.
  * <p>The algorithm implemented in this class has been designed by
@@ -26,19 +24,17 @@ public class DrozinerAttractionModel implements ForceModel {
 
   /** Creates a new instance.
    * 
-   * @param mu central body attraction coefficient
    * @param centralBodyFrame rotating body frame
    * @param equatorialRadius reference equatorial radius of the potential
    * @param C un-normalized coefficients array (cosine part)
    * @param S un-normalized coefficients array (sine part)
    * @throws OrekitException 
    */
-  public DrozinerAttractionModel(double mu, Frame centralBodyFrame, 
+  public DrozinerAttractionModel(Frame centralBodyFrame, 
                                  double equatorialRadius,
                                  double[][] C, double[][] S)
   throws OrekitException {
 
-    this.mu = mu;
     this.equatorialRadius = equatorialRadius;
     this.centralBodyFrame = centralBodyFrame;    
     degree = C.length - 1;
@@ -78,23 +74,18 @@ public class DrozinerAttractionModel implements ForceModel {
    * acceleration, using the Drozyner algorithm. The central part of the
    * acceleration (&mu;/r<sup>2</sup> term) is not computed here, only the
    * <em>perturbing</em> acceleration is considered, not the main part.
-   * @param t current date
-   * @param pvCoordinates the position and velocity
-   * @param frame in which are defined the coordinates
-   * @param mass the current mass (kg)
-   * @param ak the attitude representation
+   * @param s the current state information : date, cinematics, attitude
    * @param adder object where the contribution should be added
+   * @param mu central gravitation coefficient
    * @throws OrekitException if some specific error occurs
    */
 
-  public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates, 
-                              Frame frame, double mass, AttitudeKinematics ak, TimeDerivativesEquations adder)
+  public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
   throws OrekitException {
-
     // Get the position in body frame
-    Transform bodyToInertial = centralBodyFrame.getTransformTo(frame, t);
+    Transform bodyToInertial = centralBodyFrame.getTransformTo(s.getFrame(), s.getDate());
     Vector3D posInBody =
-      bodyToInertial.getInverse().transformVector(pvCoordinates.getPosition());
+      bodyToInertial.getInverse().transformVector(s.getPVCoordinates(mu).getPosition());
     double xBody = posInBody.getX();
     double yBody = posInBody.getY();
     double zBody = posInBody.getZ();
@@ -265,9 +256,6 @@ public class DrozinerAttractionModel implements ForceModel {
   public SWF[] getSwitchingFunctions() {
     return new SWF[0];
   }
-
-  /** Central body attraction coefficient. */
-  private double mu;
 
   /** Reference equatorial radius of the potential. */
   private double equatorialRadius;

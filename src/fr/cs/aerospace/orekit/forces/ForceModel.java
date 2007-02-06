@@ -1,11 +1,8 @@
 package fr.cs.aerospace.orekit.forces;
 
-import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
-import fr.cs.aerospace.orekit.time.AbsoluteDate;
-import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /** This interface represents a force model set.
  *
@@ -26,17 +23,12 @@ public interface ForceModel {
 
   /** Compute the contribution of the force model to the perturbing
    * acceleration.
-   * @param t current date
-   * @param pvCoordinates the position and velocity
-   * @param frame in which are defined the coordinates
-   * @param mass the current mass (kg)
-   * @param ak the attitude representation
+   * @param s the current state information : date, cinematics, attitude
    * @param adder object where the contribution should be added
+   * @param mu central gravitation coefficient
    * @throws OrekitException if some specific error occurs
    */
-  public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates,
-                              Frame frame, double mass, AttitudeKinematics ak,
-                              TimeDerivativesEquations adder)
+  public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
       throws OrekitException;
 
   /** Get the switching functions internally used by the model itself.

@@ -1,14 +1,12 @@
 package fr.cs.aerospace.orekit.forces.maneuvers;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
-import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
-import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
-import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 
 /** This class implements a simple maneuver with constant thrust.
@@ -70,26 +68,20 @@ public class ConstantThrustManeuver implements ForceModel {
   }
 
   /** Compute the contribution of maneuver to the global acceleration.
-   * @param t current date
-   * @param pvCoordinates the position and velocity
-   * @param frame in which are defined the coordinates
-   * @param mass the current mass (kg)
-   * @param ak the attitude representation
+   * @param s the current state information : date, cinematics, attitude
    * @param adder object where the contribution should be added
+   * @param mu central gravitation coefficient
    * @throws OrekitException if some specific error occurs
    */  
-  public void addContribution(AbsoluteDate t, PVCoordinates pvCoordinates,
-                              Frame frame, double mass,
-                              AttitudeKinematics ak, TimeDerivativesEquations adder)
+  public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
   throws OrekitException {
-
     if(firing) {      
       if (variableDir!=null) {
-        direction = variableDir.getDirection(t, pvCoordinates,
-                                                          frame, mass, ak).normalize();
+        direction = variableDir.getDirection(s.getDate(), s.getPVCoordinates(mu),
+                          s.getFrame(), s.getMass(), s.getAttitudeKinematics()).normalize();
       }
 
-      double acc = force/mass;        
+      double acc = force/s.getMass();        
       Vector3D acceleration = new Vector3D(acc, direction);
 
       switch (frameType) {
@@ -125,15 +117,17 @@ public class ConstantThrustManeuver implements ForceModel {
    */
   private class StartSwitch implements SWF {
 
-    public void eventOccurred(AbsoluteDate t, PVCoordinates pvCoordinates, Frame frame, double mass, AttitudeKinematics ak) {
+    public void eventOccurred(SpacecraftState s, double mu) {
       firing = true;
     }
 
-    /** The G-function is the difference between the start date and the currentdate. 
+    /** The G-function is the difference between the start date and the current date. 
+     * @param s the current state information : date, cinematics, attitude
+     * @param mu central gravitation coefficient
      */
-    public double g(AbsoluteDate date, PVCoordinates pvCoordinates, Frame frame, double mass, AttitudeKinematics ak)
+    public double g(SpacecraftState s, double mu)
     throws OrekitException {
-      return startDate.minus(date);
+      return startDate.minus(s.getDate());
 
     }
 
@@ -155,15 +149,17 @@ public class ConstantThrustManeuver implements ForceModel {
    */
   private class EndSwitch implements SWF {
 
-    public void eventOccurred(AbsoluteDate t, PVCoordinates pvCoordinates, Frame frame, double mass, AttitudeKinematics ak) {
+    public void eventOccurred(SpacecraftState s, double mu) {
       firing = false;
     }
 
     /** The G-function is the difference between the end date and the currentdate. 
+     * @param s the current state information : date, cinematics, attitude
+     * @param mu central gravitation coefficient
      */
-    public double g(AbsoluteDate date, PVCoordinates pvCoordinates, Frame frame, double mass, AttitudeKinematics ak)
+    public double g(SpacecraftState s, double mu)
     throws OrekitException {   
-      return endDate.minus(date);
+      return endDate.minus(s.getDate());
     }
 
     public double getMaxCheckInterval() {

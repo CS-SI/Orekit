@@ -20,7 +20,7 @@ public class Sun extends ThirdBody {
     super(6.96e8, 1.32712440e20);
     try {
       transform  =
-        Frame.getReferenceFrame(Frame.veis1950, reference).getTransformTo(Frame.getJ2000(), reference);
+        Frame.getReferenceFrame(Frame.VEIS1950, reference).getTransformTo(Frame.getJ2000(), reference);
     } catch (OrekitException e) {
       // should not happen
       transform = new Transform();

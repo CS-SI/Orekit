@@ -36,7 +36,7 @@ public class MoonTest extends TestCase {
   public void checkDirection(double offsetJ2000, double x, double y, double z) throws OrekitException {
     Vector3D moon = new Moon().getPosition(new AbsoluteDate(AbsoluteDate.J2000Epoch, offsetJ2000), Frame.getJ2000());
     AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000Epoch, offsetJ2000);
-    moon = Frame.getJ2000().getTransformTo(Frame.getReferenceFrame(Frame.veis1950, date), date).transformPosition(moon);
+    moon = Frame.getJ2000().getTransformTo(Frame.getReferenceFrame(Frame.VEIS1950, date), date).transformPosition(moon);
     moon = moon.normalize();
     assertEquals(x, moon.getX(), 1.0e-7);
     assertEquals(y, moon.getY(), 1.0e-7);
