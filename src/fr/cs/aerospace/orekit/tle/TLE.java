@@ -293,52 +293,48 @@ public class TLE  implements Comparable {
     return false;
   }
 
-  public static boolean isLine1OK(String line1) throws OrekitException {
-
-    String i  = "[ 0-9]";
-    String i5 = "[ 0-9]{5}";
-    String i8 = "[ 0-9]{8}";
-    String c  = "[ A-Z]{3}";
-
-    String lineNb = "1 ";
-    String satNb = i5 + "U ";
-    String ID = i5 + c + " ";
-    String epoch = i5 + "[.]" + i8 +" ";
-    String ftdMM = "[ +-]" + "[.]" + i8+ " ";
-    String stdMM = "[ +-]" + i5 + "[+-]" + i + " ";
-    String bStar = "[ +-]" + i5 + "[+-]" + i + " ";
-    String eph = i + " ";
-    String eltN = i + "{4}";
-    String chK = i;
-
-    Pattern line1Pattern = Pattern.compile(lineNb + satNb + ID + epoch + ftdMM +
-                                           stdMM + bStar + eph + eltN + chK);
-
+  private static boolean isLine1OK(String line1) throws OrekitException {
     Matcher matcher = line1Pattern.matcher(line1);
     return matcher.matches();
   }
 
-  public static boolean isLine2OK(String line2) throws OrekitException {
-
-    String i  = "[ 0-9]";
-    String p  = "[.]";
-
-    String lineNb = "2 ";
-    String satNb = i + "{5}" + " ";
-    String inc = i + "{3}" + p + i + "{4}" + " ";
-    String raan = i + "{3}" + p + i + "{4}" + " ";
-    String e = i + "{7}" + " ";
-    String arg = i + "{3}" + p + i + "{4}" + " ";
-    String ma = i + "{3}" + p + i + "{4}" + " ";
-    String revs= i + "{2}" + p +  i + "{13}";
-    String chK = i;
-
-    Pattern line2Pattern = Pattern.compile(lineNb + satNb + inc + raan + e +
-                                           arg + ma + revs + chK);
-
+  private static boolean isLine2OK(String line2) throws OrekitException {
     Matcher matcher = line2Pattern.matcher(line2);
-
     return matcher.matches();
   }
+  
+  /** Patterns */
+  private static String pn  = "[ 0-9]";
+  private static String i5 = "[ 0-9]{5}";
+  private static String i8 = "[ 0-9]{8}";
+  private static String c  = "[ A-Z]{3}";
 
+  private static String line1Nb = "1 ";
+  private static String satNb1 = i5 + "U ";
+  private static String ID = i5 + c + " ";
+  private static String pepoch = i5 + "[.]" + i8 +" ";
+  private static String ftdMM = "[ +-]" + "[.]" + i8+ " ";
+  private static String stdMM = "[ +-]" + i5 + "[+-]" + pn + " ";
+  private static String pbStar = "[ +-]" + i5 + "[+-]" + pn + " ";
+  private static String eph = pn + " ";
+  private static String eltN = pn + "{4}";
+  private static String pchK = pn;
+
+  private static final Pattern line1Pattern = Pattern.compile(line1Nb + satNb1 + ID + pepoch + ftdMM +
+                                         stdMM + pbStar + eph + eltN + pchK);
+ 
+  private static String p  = "[.]";
+  private static String line2Nb = "2 ";
+  private static String satNb2 = pn + "{5}" + " ";
+  private static String inc = pn + "{3}" + p + pn + "{4}" + " ";
+  private static String praan = pn + "{3}" + p + pn + "{4}" + " ";
+  private static String pe = pn + "{7}" + " ";
+  private static String arg = pn + "{3}" + p + pn + "{4}" + " ";
+  private static String ma = pn + "{3}" + p +pn + "{4}" + " ";
+  private static String revs= pn + "{2}" + p +  pn + "{13}";
+  private static String chK = pn;
+ 
+  private static final Pattern line2Pattern = Pattern.compile(line2Nb + satNb2 + inc + praan + pe +
+                                         arg + ma + revs + chK);  
+  
 }

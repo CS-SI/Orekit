@@ -5,7 +5,9 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** This class contains methods to compute propagated coordinates with the SDP4 model.
  * 
- * @author F. Maussion
+ * @author SPACETRACK Report #3 project. Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
+ * @author Revisiting Spacetrack Report #3. David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
+ * @author Fabien Maussion (Java translation)
  */
 abstract class SDP4  extends TLEPropagator {
 
@@ -48,13 +50,7 @@ abstract class SDP4  extends TLEPropagator {
     xll += xn0dp * t2cof * tSinceSq;
 
     deepPeriodicEffects(tSince);
-    if (xinc < 0.)       /* Begin April 1983 errata correction: */
-    {
-    xinc = -xinc;
-    sini0 = -sini0;
-    xnode += Math.PI;
-    omgadf -= Math.PI;
-    }  
+
     xl = xll + omgadf + xnode;
     
     // Dundee change:  Reset cosio,  sinio for new xinc:

@@ -77,8 +77,7 @@ public class ConstantThrustManeuver implements ForceModel {
   throws OrekitException {
     if(firing) {      
       if (variableDir!=null) {
-        direction = variableDir.getDirection(s.getDate(), s.getPVCoordinates(mu),
-                          s.getFrame(), s.getMass(), s.getAttitudeKinematics()).normalize();
+        direction = variableDir.getDirection(s).normalize();
       }
 
       double acc = force/s.getMass();        

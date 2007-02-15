@@ -11,7 +11,9 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
  * The models used are SGP4 and SDP4, initialy proposed by NORAD as the unique convenient
  * propagator for TLE's. The code is largely inspired from the (...)
  *
- * @author F. Maussion
+ * @author SPACETRACK Report #3 project. Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
+ * @author Revisiting Spacetrack Report #3. David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
+ * @author Fabien Maussion (Java translation)
  */
 public abstract class TLEPropagator {
 
@@ -169,7 +171,7 @@ public abstract class TLEPropagator {
     double xlt = xl + xll;
     double ayn = e * Math.sin(omega) + aynl;
     double elsq = axn * axn + ayn * ayn;
-    double capu = trimAngle(( xlt - xnode), Math.PI); // TODO check double capu = fmod( xlt - xnode, twopi);
+    double capu = trimAngle(( xlt - xnode), Math.PI); 
     double epw = capu;
     double temp1, temp2;
     double ecosE = 0;
@@ -355,6 +357,7 @@ public abstract class TLEPropagator {
   protected double xnodcf; // common parameter for raan (OMEGA) computation 
   protected double t2cof; // 3/2 * C1
   
+  public boolean isSDP;
 }
 //      My comments
 

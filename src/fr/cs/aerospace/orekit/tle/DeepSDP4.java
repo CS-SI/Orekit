@@ -4,7 +4,9 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** This class contains the methods that compute deep space perturbation terms.
  * 
- * @author F. Maussion
+ * @author SPACETRACK Report #3 project. Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
+ * @author Revisiting Spacetrack Report #3. David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
+ * @author Fabien Maussion (Java translation)
  */
 class DeepSDP4 extends SDP4 {
 
@@ -13,6 +15,7 @@ class DeepSDP4 extends SDP4 {
    */
   protected DeepSDP4(TLE initialTLE) {
     super(initialTLE);
+    this.isSDP = true;
   }
   
   /** Computes luni - solar terms from initial coordinates and epoch. */
@@ -36,7 +39,6 @@ class DeepSDP4 extends SDP4 {
     
     thgr = thetaG(tle.getEpoch());
     xnq = xn0dp;
-    xqncl = tle.getI();
     omegaq = tle.getPerigeeArgument();
     
     double xnodce = 4.5236020 - (9.2422029e-4) * daysSince1900;
@@ -124,7 +126,7 @@ class DeepSDP4 extends SDP4 {
       si = s2*zn*(z11+z13);
       sl = -zn*s3*(z1+z3-14-6*e0sq);
       sgh = s4*zn*(z31+z33-6);
-      if (xqncl < (Math.PI / 60.)) {// <==>  (< 3 degrees)
+      if (tle.getI() < (Math.PI / 60.)) {// <==>  (< 3 degrees)
         sh = 0;             
       }       
       else {
@@ -309,7 +311,7 @@ class DeepSDP4 extends SDP4 {
       xni = xnq;
       atime = 0;
     }
-        
+    derivs = new double[secularIntegrationOrder]; 
   }
     
   /** Computes secular terms from current coordinates and epoch. 
@@ -351,7 +353,6 @@ class DeepSDP4 extends SDP4 {
         else {
           lastIntegrationStep = true;
         }
-        derivs = new double[secularIntegrationOrder];
         
         computeSecularDerivs();
         
@@ -361,12 +362,12 @@ class DeepSDP4 extends SDP4 {
         xli += delt * xldot;
         xni += delt * derivs[0];
         double delt_factor = delt;
-        for( int i = 2; i <= secularIntegrationOrder; i++) {
+        for( int j = 2; j <= secularIntegrationOrder; j++) {
           xlpow *= xldot;
-          derivs[i - 1] *= xlpow;
-          delt_factor *= delt / (double)i;
-          xli += delt_factor * derivs[i - 2];
-          xni += delt_factor * derivs[i - 1];
+          derivs[j - 1] *= xlpow;
+          delt_factor *= delt / (double)j;
+          xli += delt_factor * derivs[j - 2];
+          xni += delt_factor * derivs[j - 1];
         }
         atime += delt;
       }
@@ -424,7 +425,9 @@ class DeepSDP4 extends SDP4 {
       pgh = sghs+sghl;
       ph = shs+sh1;
     }
+    
     xinc += pinc;
+
     double sinis = Math.sin( xinc);
     double cosis = Math.cos( xinc);
 
@@ -432,8 +435,11 @@ class DeepSDP4 extends SDP4 {
     em += pe;
     xll += pl;
     omgadf += pgh;
-//    if( tle.getI() >= 0.2)   {
-    if( xinc >= 0.2)   {
+    xinc = trimAngle(xinc, 0);
+    
+//    if( tle.getI() >= 0.2)   
+    if( Math.abs(xinc) >= 0.2)   
+    {
           // Apply periodics directly 
       double temp_val = ph / sinis;
       omgadf -= cosis * temp_val;
@@ -446,22 +452,11 @@ class DeepSDP4 extends SDP4 {
       double alfdp = ph * cosok + (pinc * cosis + sinis) * sinok;
       double betdp = - ph * sinok + (pinc * cosis + sinis) * cosok;
       double dls, delta_xnode;
-      xnode = trimAngle(xnode, Math.PI);
+      
       delta_xnode = Math.atan2(alfdp,betdp) - xnode;
-
-      /* This is a patch to Lyddane modification suggested */
-      /* by Rob Matson, streamlined very slightly by BJG, to */
-      /* keep 'delta_xnode' between +/- 180 degrees: */
-
-      if( delta_xnode < - Math.PI) {
-        delta_xnode += 2*Math.PI;
-      }
-      else if( delta_xnode > Math.PI) {
-        delta_xnode -= 2*Math.PI;
-      }
+      delta_xnode = trimAngle(delta_xnode, 0);
 
       dls = -xnode * sinis * pinc;
-
       omgadf += dls - cosis * delta_xnode;
       xnode += delta_xnode;
     } /* End case dpper: */
@@ -558,7 +553,6 @@ class DeepSDP4 extends SDP4 {
   /** Intermediate values. */
   private double thgr;
   private double xnq;
-  private double xqncl;
   private double omegaq;
   private double zcosil;
   private double zsinil;
@@ -637,8 +631,8 @@ class DeepSDP4 extends SDP4 {
   private boolean isDundeeCompliant = true; 
   
   /** Implementation params */ 
-  private double secularIntegrationStep = 720.;
-  private int secularIntegrationOrder = 2;
+  private static double secularIntegrationStep = 720.;
+  private static int secularIntegrationOrder = 2;
 
   /** Internal constants. */
   private static final double zns = 1.19459E-5;

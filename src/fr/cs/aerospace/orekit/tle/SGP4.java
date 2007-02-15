@@ -4,12 +4,15 @@ import fr.cs.aerospace.orekit.errors.OrekitException;
 
 /** This class contains methods to compute propagated coordinates with the SGP4 model.
  * 
- * @author F. Maussion
+ * @author SPACETRACK Report #3 project. Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
+ * @author Revisiting Spacetrack Report #3. David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
+ * @author Fabien Maussion (Java translation)
  */
 class SGP4 extends TLEPropagator {
   
   protected SGP4(TLE initialTLE) throws OrekitException {
     super (initialTLE);
+    this.isSDP = false;
   }
   
   /** Initialization proper to each propagator (SGP or SDP).

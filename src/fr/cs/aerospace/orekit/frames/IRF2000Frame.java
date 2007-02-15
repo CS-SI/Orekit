@@ -49,7 +49,7 @@ class IRF2000Frame extends Frame {
   }
   
   /** Update the frame to the given date.
-   * <p>The update considers the pole motion from IERS data.</p>
+   * <p>The update considers the nutation and precession effects from IERS data.</p>
    * @param date new value of the date
    * @exception OrekitException if the nutation model data embedded in the
    * library cannot be read

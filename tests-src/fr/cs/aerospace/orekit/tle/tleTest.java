@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
+
+import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.FindFile;
 import fr.cs.aerospace.orekit.errors.OrekitException;
@@ -24,10 +26,7 @@ public class tleTest extends TestCase {
     String line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
     String line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62";
 
-    assertTrue(TLE.isLine1OK(line1));
-    assertTrue(TLE.isLine2OK(line2));
-
-    assertTrue(TLE.isFormatOK(line1, line2)); 
+    assertTrue(TLE.isFormatOK(line1, line2));
 
     TLE tle = new TLE(line1, line2);
     assertEquals(tle.getSatelliteNumber(), 27421, 0);
@@ -65,8 +64,7 @@ public class tleTest extends TestCase {
     File rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data/tle/regular-data/" +
                                  "spot-5.txt", "/");
     InputStream in = new FileInputStream(rootDir.getAbsolutePath());    
-    TLESeries series = new TLESeries();
-    series.read(in);
+    TLESeries series = new TLESeries(in);
     assertEquals(0, series.getFirstDate().minus(
                                                 new AbsoluteDate("2002-05-04T11:45:15.695", UTCScale.getInstance())), 1e-3);
     assertEquals(0, series.getLastDate().minus(
@@ -113,7 +111,6 @@ public class tleTest extends TestCase {
     BufferedReader rResults = new BufferedReader(new InputStreamReader(inResults));
 
     double cumulated = 0; // sum of all differences between test cases and OREKIT results
-
     boolean stop = false;
 
     String rline = rResults.readLine();
@@ -126,8 +123,10 @@ public class tleTest extends TestCase {
       if(title[0].matches("r")) {        
 
         String eline;
-
+        int count = 0;
+        String[] header = new String[4];
         for (eline = rEntry.readLine(); eline.charAt(0)=='#'; eline = rEntry.readLine()) {      
+          header[count++] = eline;
         }
         String line1 = eline;
         String line2 = rEntry.readLine();
@@ -135,10 +134,18 @@ public class tleTest extends TestCase {
 
         TLE tle = new TLE(line1, line2);
 
-        double satNum = Double.parseDouble(title[1]);
+        int satNum = Integer.parseInt(title[1]);
         assertTrue(satNum==tle.getSatelliteNumber());
-
         TLEPropagator ex = TLEPropagator.selectExtrapolator(tle);
+
+//        System.out.println();
+//        for(int i = 0; i<4; i++) {
+//          if(header[i]!=null) {
+//            System.out.println(header[i]);
+//          }
+//        }
+//        System.out.println(" Satellite number : " + satNum);
+
 
         for (rline = rResults.readLine(); (rline!=null)&&(rline.charAt(0)!='r'); rline = rResults.readLine()) {
 
@@ -169,16 +176,43 @@ public class tleTest extends TestCase {
           if (results != null) {
             double normDifPos = testPos.subtract(results.getPosition()).getNorm();
             double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
-            cumulated += normDifPos;
 
-            assertEquals( 0, normDifPos, 1000);
-            assertEquals( 0, normDifVel, 1);
-
+            cumulated += normDifPos;  
+//            if(normDifPos>1) {
+//              System.out.println(minFromStart + "    " + normDifPos);
+//            }              
+            checkVectors(testPos, results.getPosition(),6e-6,1.4e-5,280);
+            assertEquals( 0, normDifVel, 0.1);
           }  
-        }
+
+        }        
       }
     }
-    assertEquals(0, cumulated, 16000);
+
+//    System.out.println();
+//    System.out.println(" cumul :  " + cumulated);
+
+    assertEquals(0, cumulated, 3750);
+  }
+  
+  /** Compare and asserts two vectors.
+   * @param pos1 reference vector
+   * @param pos2 to test vector
+   * @param deltaNorm relative delta between the two norms
+   * @param deltaAngle the delta angle
+   * @param difNorm the norm of the difference
+   */
+  private void checkVectors(Vector3D pos1 , Vector3D pos2,
+                            double deltaNorm,
+                            double deltaAngle, double difNorm) {
+      
+      Vector3D d = pos1.subtract(pos2);
+      Rotation r = new Rotation(pos1, pos2);
+
+      assertEquals(0, (pos1.getNorm()-pos2.getNorm())/pos1.getNorm(), deltaNorm); 
+      assertEquals(0, d.getNorm(), difNorm);      
+      assertEquals(0,r.getAngle(),deltaAngle);
+    
   }
 
   public static Test suite() {
