@@ -65,8 +65,42 @@ public class MessagesResources
     { "unable to parse line {0} of nutation model file {1}:\n{2}",
       "unable to parse line {0} of nutation model file {1}:\n{2}" },
     { "unable to find nutation model file {0}",
-      "unable to find nutation model file {0}" }
-
+      "unable to find nutation model file {0}" },
+    { "Choosen frame type is not correct",
+      "Choosen frame type is not correct" },
+    { "Choosen attitude type is not correct",
+      "Choosen attitude type is not correct" },
+    { "Mass is null or negative",
+      "Mass is null or negative" },
+    { "Flow rate (dm/dt) is positive : ",
+      "Flow rate (dm/dt) is positive : " },
+    { "null norm",
+      "null norm" },
+    { "polar trajectory (r1 = {0})",
+      "polar trajectory (r1 = {0})" },
+    { "C and S should have the same size :" +
+      " (C = [{0}][{1}] ; S = [{2}][{3}])",
+      "C and S should have the same size :" +
+      " (C = [{0}][{1}] ; S = [{2}][{3}])" },
+    { "the reader has not been tested ",
+      "the reader has not been tested " },
+    { "too large degree (n = {0}), potential maximal degree is {1})",
+      "too large degree (n = {0}), potential maximal degree is {1})" },
+    { "too large order (m = {0}), potential maximal order is {1})",
+      "too large order (m = {0}), potential maximal order is {1})" },
+    { "Unknown file format ",
+      "Unknown file format " },
+    { "Cheksum of line 1 is not correct. Should be: {0} but is: {1}",
+      "Cheksum of line 1 is not correct. Should be: {0} but is: {1}" },
+    { "Cheksum of line 2 is not correct. Should be: {0} but is: {1}",
+      "Cheksum of line 2 is not correct. Should be: {0} but is: {1}" },
+    { "Eccentricity is becoming greater than 1. Unable to continue TLE propagation." +
+      "Satellite number : {0}. Element number : {1}.",
+      "Eccentricity is becoming greater than 1. Unable to continue TLE propagation." +
+      "Satellite number : {0}. Element number : {1}." },
+    { "Perige within earth." + "Satellite number : {0}. Element number : {1}.",
+      "Perige within earth." + "Satellite number : {0}. Element number : {1}." }
+      
   };
 
 }

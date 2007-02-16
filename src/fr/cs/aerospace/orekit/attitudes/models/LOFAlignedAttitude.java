@@ -5,6 +5,7 @@ import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematicsProvider;
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.errors.Translator;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -85,7 +86,8 @@ public class LOFAlignedAttitude implements AttitudeKinematicsProvider {
       break; // end TNW
 
     default :
-      throw new IllegalArgumentException(" Frame type is not correct ");
+      throw new IllegalArgumentException(Translator.getInstance().translate(
+                             "Choosen frame type is not correct"));
     }
 
     //  compute semi-major axis

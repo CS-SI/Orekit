@@ -2,6 +2,7 @@ package fr.cs.aerospace.orekit.forces.maneuvers;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.errors.Translator;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.SWF;
 import fr.cs.aerospace.orekit.propagation.SpacecraftState;
@@ -97,7 +98,8 @@ public class ConstantThrustManeuver implements ForceModel {
                                  acceleration.getY(), acceleration.getZ());
         break;
       default :
-        throw new IllegalArgumentException(" Frame type is not correct ");
+        throw new IllegalArgumentException(Translator.getInstance().translate(
+        "Choosen frame type is not correct"));
       }            
       adder.addMassDerivative(flowRate);
     }

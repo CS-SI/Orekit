@@ -65,7 +65,7 @@ public class PotentialReaderFactory {
     }
     
     if (result == null) {
-      throw new OrekitException("Unknown file format. ", new String[0]);
+      throw new OrekitException("Unknown file format ", new String[0]);
     }
 
     return result;

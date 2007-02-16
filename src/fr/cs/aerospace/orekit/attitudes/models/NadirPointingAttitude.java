@@ -8,6 +8,7 @@ import fr.cs.aerospace.orekit.bodies.BodyShape;
 import fr.cs.aerospace.orekit.bodies.GeodeticPoint;
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.errors.Translator;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -102,7 +103,8 @@ public class NadirPointingAttitude implements AttitudeKinematicsProvider {
                        Vector3D.plusJ, Vector3D.minusK);
       break;
     default :
-      throw new IllegalArgumentException(" Attitude type is not correct ");
+      throw new IllegalArgumentException(Translator.getInstance().translate(
+               "Choosen attitude type is not correct"));
     }
 
     Rotation pitch = new Rotation(Vector3D.plusJ, this.pitch);

@@ -204,7 +204,10 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
     startDate  = initialState.getDate();
    
     EquinoctialParameters parameters = new EquinoctialParameters(initialState.getParameters(), mu);
-    currentState = initialState;
+    
+    currentState = new SpacecraftState(
+           new Orbit(initialState.getDate(), parameters), 
+                initialState.getMass(), initialState.getAttitudeKinematics());
     
     adder      = new TimeDerivativesEquations(parameters , mu);
 
@@ -288,7 +291,7 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
 
       // compute cartesian coordinates
       if (currentState.getMass() <= 0.0) {
-        String message = Translator.getInstance().translate("Mass is becoming negative");
+        String message = Translator.getInstance().translate("Mass is null or negative");
         throw new IllegalArgumentException(message);
       }    
       // initialize derivatives
@@ -310,14 +313,18 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
   /** Convert state array to space mecanics objects (AbsoluteDate and OrbitalParameters)
    * @param t integration time (s)
    * @param y state array
+   * @throws OrekitException 
    */
-  private void mapState(double t, double [] y) {
+  private void mapState(double t, double [] y) throws OrekitException {
 
     // update space dynamics view
     
-    currentState = new SpacecraftState(new Orbit(new AbsoluteDate(startDate, t), new EquinoctialParameters(y[0], y[1],y[2],y[3],y[4],y[5],
-                                           EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                           currentState.getFrame())), y[6]);
+    EquinoctialParameters currentParameters = new EquinoctialParameters(y[0], y[1],y[2],y[3],y[4],y[5],
+                                                                        EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
+                                                                        currentState.getFrame());
+    AbsoluteDate currentDate = new AbsoluteDate(startDate, t);
+    currentState = new SpacecraftState(new Orbit(currentDate, currentParameters), y[6], 
+     akProvider.getAttitudeKinematics(currentDate, currentParameters.getPVCoordinates(mu), currentState.getFrame()));
   }
 
   
@@ -328,9 +335,9 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
       this.swf = swf;
     }
 
-    public double g(double t, double[] y){
-      mapState(t, y);
+    public double g(double t, double[] y){      
       try {
+        mapState(t, y);
         return swf.g(currentState, mu);
       } catch (OrekitException oe) {
         if (swfException==null) {
@@ -341,8 +348,8 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
     }
 
     public int eventOccurred(double t, double[] y) {
-      mapState(t, y);
       try {
+        mapState(t, y);
         swf.eventOccurred(currentState, mu);
       } catch (OrekitException oe) {
         if (swfException==null) {

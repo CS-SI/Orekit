@@ -78,8 +78,37 @@ public class MessagesResources_fr
     { "unable to find nutation model file {0}",
       "impossible de trouver le fichier de mod\u00e8le de nutation {0}" },
     { "Eccentricity is becoming greater than 1. Unable to continue." , 
-      "L'eccentricité devient plus grande que 1. Impossible de continuer" }
- 
+      "L'eccentricité devient plus grande que 1. Impossible de continuer" },
+    { "Choosen frame type is not correct",
+      "Le type de rep\u00e8re choisi n'est pas valide" },
+    { "Choosen attitude type is not correct",
+      "Le type d'attitude choisi n'est pas valide" },
+    { "Mass is null or negative",
+      "La masse est nulle ou n\u00e9gative" },
+    { "Flow rate (dm/dt) is positive : ",
+      "Le débit de masse (dm/dt) est positif : " },
+    { "null norm",
+      "La norme est nulle" },
+    { "the reader has not been tested ",
+      "le lecteur n'a pas été testé "},
+    { "the reader is not adapted to the format ",
+      "le lecteur n'est pas adapté au format "},
+    { "too large degree (n = {0}), potential maximal degree is {1})",
+      "degr\u00e9 trop important (n = {0}), le degr\u00e9 de potentiel maximal est {1})"},
+    { "Unknown file format ",
+      "Format de fichier inconnu "},
+    { "Cheksum of line 1 is not correct. Should be: {0} but is: {1}",
+      "Le cheksum de la ligne 1 n'est pas correct. il devrait valoir: {0} mais vaut: {1}"},
+    { "Cheksum of line 2 is not correct. Should be: {0} but is: {1}",
+      "Le cheksum de la ligne 2 n'est pas correct. il devrait valoir: {0} mais vaut: {1}"},
+    { "Eccentricity is becoming greater than 1. Unable to continue TLE propagation." +
+      "Satellite number : {0}. Element number : {1}.",
+      "L'eccentricit\u00e9 d\u00e9passe 1. Impossible de continuer l'extrapolation de TLE." +
+      "Num\u00e9ro de satellite : {0}. Numero de l''\u00e9l\u00e9ment: {1}."},
+    { "Perige within earth." + "Satellite number : {0}. Element number : {1}.",
+      "P\u00e9rig\u00e9e souterrain."  +
+      "Num\u00e9ro de satellite : {0}. Numero de l''\u00e9l\u00e9ment: {1}."}
+   
   };
 
 }

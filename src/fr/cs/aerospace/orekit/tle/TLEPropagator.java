@@ -200,7 +200,7 @@ public abstract class TLEPropagator {
     }   
     if ( (a * (1. - e) < 1.) || (a * (1. + e) < 1.) ) {
       String message = Translator.getInstance().translate(
-         "Perige within earth. Satellite number : {0}. Element number : {1}.");
+         "Perige within earth." + "Satellite number : {0}. Element number : {1}.");
       throw new OrekitException(message, new String[] 
          {Integer.toString(tle.getSatelliteNumber()),
           Integer.toString(tle.getElementNumber())});
@@ -314,9 +314,9 @@ public abstract class TLEPropagator {
   protected abstract void sxpInitialize();
   
   /** Propagation proper to each propagator (SGP or SDP).
-   * @param tSince the offset from initial epoch (min)
+   * @param t the offset from initial epoch (min)
    */
-  protected abstract void sxpPropagate(double tSince) throws OrekitException;
+  protected abstract void sxpPropagate(double t) throws OrekitException;
   
   /** Initial state. */
   protected final TLE tle;

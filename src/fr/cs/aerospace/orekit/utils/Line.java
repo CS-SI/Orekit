@@ -2,6 +2,8 @@ package fr.cs.aerospace.orekit.utils;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.errors.Translator;
+
 /** The class represent lines in a three dimensional space.
 
  * <p>Each oriented line is intrinsically associated with an abscissa
@@ -29,7 +31,8 @@ public class Line {
   public Line(Vector3D p, Vector3D direction) {
 	  double norm = direction.getNorm();
 	    if (norm < 1.0e-10) {
-	      throw new IllegalArgumentException("null norm");
+	      throw new IllegalArgumentException(
+              Translator.getInstance().translate("null norm"));
 	    }
 	    this.direction = new Vector3D(1.0 / norm, direction);
 	    zero = new Vector3D(1.0, p,

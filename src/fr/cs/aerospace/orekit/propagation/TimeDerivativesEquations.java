@@ -243,8 +243,9 @@ public class TimeDerivativesEquations {
    */
   public void addMassDerivative(double dMass) {
     if(dMass>0) {
+      String message1 = Translator.getInstance().translate("Flow rate (dm/dt) is positive : ");
       throw new IllegalArgumentException(
-                    " Flow rate (dm/dt) is positive : " + dMass + " kg/s");
+                    message1 + dMass + " kg/s");
     }
     yDot[6] += dMass;
   }

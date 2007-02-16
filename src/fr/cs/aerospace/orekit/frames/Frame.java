@@ -369,7 +369,8 @@ public class Frame implements Serializable {
       return getVeis1950();      
     }
     else {
-      throw new RuntimeException("Type is not respected");
+      throw new RuntimeException(
+        Translator.getInstance().translate("Choosen frame type is not correct"));
     }
   }
   

@@ -99,7 +99,7 @@ public class tleTest extends TestCase {
   }
 
   public void testSatCodeCompliance() throws IOException, OrekitException {
-
+    
     File rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data" +
                                  "/tle/extrapolationTest-data/SatCode-entry", "/");
     InputStream inEntry = new FileInputStream(rootDir.getAbsolutePath());
