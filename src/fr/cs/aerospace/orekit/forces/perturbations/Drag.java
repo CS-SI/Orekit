@@ -11,8 +11,15 @@ import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
 
 /** Atmospheric drag force model.
+ * The drag acceleration is computed as follows :
+ * 
+ * &gamma = (1/2 * Ro * V<sup>2</sup> * S / Mass) * DragCoefVector
+ * 
+ * With DragCoefVector = {Cx, Cy, Cz} and S given by the user threw the interface 
+ * {@link AtmosphereDragSpacecraft} 
  * 
  * @author E. Delente
+ * @author F. Maussion
  */
 
 public class Drag implements ForceModel {
@@ -34,7 +41,7 @@ public class Drag implements ForceModel {
    */
   public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
       throws OrekitException {
-    double rho = atmosphere.getDensity(s.getDate(), s.getPVCoordinates(mu).getPosition());
+    double rho = atmosphere.getDensity(s.getDate(), s.getPVCoordinates(mu).getPosition(), s.getFrame());
     Vector3D vAtm;
 
     vAtm = atmosphere.getVelocity(s.getDate(), s.getPVCoordinates(mu).getPosition(), s.getFrame());

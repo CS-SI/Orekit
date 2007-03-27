@@ -107,7 +107,11 @@ public class MessagesResources_fr
       "Num\u00e9ro de satellite : {0}. Numero de l''\u00e9l\u00e9ment: {1}."},
     { "Perige within earth." + "Satellite number : {0}. Element number : {1}.",
       "P\u00e9rig\u00e9e souterrain."  +
-      "Num\u00e9ro de satellite : {0}. Numero de l''\u00e9l\u00e9ment: {1}."}
+      "Num\u00e9ro de satellite : {0}. Numero de l''\u00e9l\u00e9ment: {1}."},
+    { "Current date is out of range. " + 
+      "Solar activity datas are not available" ,
+      "La date est hors de l'intervalle permis. " + 
+      "Les paramètres d'activité du soleil ne sont pas disponibles. " }
    
   };
 

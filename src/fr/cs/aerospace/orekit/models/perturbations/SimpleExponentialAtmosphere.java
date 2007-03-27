@@ -37,9 +37,10 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
   /** Get the density at a given inertial position.
    * @param date current date (ignored in this implementation)
    * @param position current position
+   * @param frame the Frame in which is defined the position
    * @return local density (kg/m<sup>3</sup>)
    */
-  public double getDensity(AbsoluteDate date, Vector3D position) {
+  public double getDensity(AbsoluteDate date, Vector3D position, Frame frame) {
     double altitude = shape.transform(position).altitude;
     return rho0 * Math.exp((h0 - altitude) / hscale);
   }

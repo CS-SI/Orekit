@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
-
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.FindFile;
@@ -81,7 +80,7 @@ public class tleTest extends TestCase {
   }
 
   public void testThetaG() throws OrekitException, ParseException {
-
+    
 //  AbsoluteDate date = AbsoluteDate.J2000Epoch;
 
 //  double teta = SDP4.thetaG(date); 

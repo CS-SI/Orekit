@@ -14,7 +14,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /** This class reads and handles series of tle, that have to be (for the moment)
  *  tle's from the same space object. It provides bounded ephemerides
- *  by finfing the best initial TLE to propagate and than handles the
+ *  by finfing the best initial TLE to propagate and than handling the
  *  propagation.
  *  
  * @author F. Maussion

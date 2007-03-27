@@ -99,8 +99,11 @@ public class MessagesResources
       "Eccentricity is becoming greater than 1. Unable to continue TLE propagation." +
       "Satellite number : {0}. Element number : {1}." },
     { "Perige within earth." + "Satellite number : {0}. Element number : {1}.",
-      "Perige within earth." + "Satellite number : {0}. Element number : {1}." }
-      
+      "Perige within earth." + "Satellite number : {0}. Element number : {1}." },
+    { "Current date is out of range. " + 
+      "Solar activity datas are not available" ,
+      "Current date is out of range. " + 
+      "Solar activity datas are not available" }
   };
 
 }

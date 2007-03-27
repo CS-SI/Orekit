@@ -61,7 +61,7 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  *      |          |   
  *      |          |   Earth natural rotation
  *      |          |
- *  {@link #TIRF2000A}   {@link #TIRF2000B}   ( terrestrial intermediate reference frame )
+ *  {@link #TIRF2000A}   {@link #TIRF2000B}   ( terrestrial intermediate reference frame : Pseudo Earth Fixed Frame)
  *      |          | 
  *      |          |   Pole motion
  *      |          | 

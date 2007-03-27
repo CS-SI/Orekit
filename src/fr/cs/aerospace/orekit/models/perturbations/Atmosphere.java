@@ -14,12 +14,15 @@ public interface Atmosphere {
 
   /** Get the local density.
    * @param date current date
-   * @param position current position
+   * @param position current position in frame
+   * @param frame the frame in which is defined the position
    * @return local density (kg/m<sup>3</sup>)
+   * @throws OrekitException 
    */
-  public double getDensity(AbsoluteDate date, Vector3D position);
+  public double getDensity(AbsoluteDate date, Vector3D position, Frame frame) 
+    throws OrekitException;
 
-  /** Get the inertial velocity of atmosphere modecules.
+  /** Get the inertial velocity of atmosphere molecules.
    * @param date current date
    * @param position current position in frame
    * @param frame the frame in which is defined the position

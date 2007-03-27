@@ -9,9 +9,12 @@ import java.security.PrivilegedAction;
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.FindFile;
+import fr.cs.aerospace.orekit.Utils;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.iers.IERSData;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.time.TAIScale;
+import fr.cs.aerospace.orekit.time.TTScale;
 import fr.cs.aerospace.orekit.time.UTCScale;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 import junit.framework.Test;
@@ -230,6 +233,163 @@ public class ITRF2000FrameTest extends TestCase {
     assertEquals(4291.97158,   pv2000.getVelocity().getY(),   0.1);
     assertEquals(-2859.11413,  pv2000.getVelocity().getZ(),   0.01);
   }
+
+  public void testAASReference() throws OrekitException, ParseException {
+
+      AbsoluteDate t0 = new AbsoluteDate("2004-04-06T07:51:28.386", UTCScale.getInstance());
+      AbsoluteDate t0inTAI = new AbsoluteDate("2004-04-06T07:52:00.386", TAIScale.getInstance());
+      
+      AbsoluteDate myCNES1950 = new AbsoluteDate("1950-01-01T00:00:00",  TAIScale.getInstance());
+      
+      System.out.println(t0inTAI.minus(myCNES1950)/60/60/24);
+
+      Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, t0);    
+      
+      Transform trans = itrf.getTransformTo(Frame.getJ2000(), t0);
+      
+      // Positions
+      
+      Vector3D posITRF = new Vector3D(-1033.4793830*1000,
+                                      7901.2952754*1000,
+                                       6380.3565958 *1000);
+      
+      Vector3D posTestCaseRef = new Vector3D(5102.5090383*1000,
+                                           6123.0119733*1000,
+                                           6378.1363142*1000);
+    
+        
+   // velocity tests
+    
+    Vector3D velITRF = new Vector3D(-3.225636520*1000,
+                                    -2.872451450*1000,
+                                     5.53192446*1000);
+    
+    Vector3D velTestCase = new Vector3D(-4.743219766*1000,
+                                         0.790536342*1000,
+                                         5.533756085*1000);
+
+    
+    PVCoordinates pv = new PVCoordinates(posITRF , velITRF);
+    
+    PVCoordinates result = trans.transformPVCoordinates(pv);
+        
+    
+    Utils.vectorToString(" pos cals ", result.getPosition());
+    Utils.vectorToString(" pos test ", posTestCaseRef);
+    Utils.vectorToString("dif ", posTestCaseRef.subtract(result.getPosition()));
+    
+    Utils.vectorToString(" vel cals ", result.getVelocity());
+    Utils.vectorToString(" vel test ", velTestCase);
+    Utils.vectorToString(" dif ", velTestCase.subtract(result.getVelocity()));
+    
+    
+//    checkVectors(result.getVelocity(), speedTestCase, 1.9e-7, 0.0013, 0.0016);
+//        checkVectors(result.getVelocity(), speedTestCase, 1.9e-7, 0.0013, 0.0016);  
+
+    // Position tests
+//  checkVectors(posJ2000, posTestCaseRef, 1.4e-7, 0.9, 1.06);
+}
+  
+  public void testValladoReference() throws OrekitException, ParseException {
+
+    AbsoluteDate t0 = new AbsoluteDate("2004-04-06T07:51:28.386", UTCScale.getInstance());
+    t0 = new AbsoluteDate(t0, 0.000009);
+    
+    Frame j2000 = Frame.getJ2000();
+    Frame irf = Frame.getReferenceFrame(Frame.IRF2000A, t0);    
+    Frame tirf = Frame.getReferenceFrame(Frame.TIRF2000A, t0);    
+    Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000A, t0);    
+    
+    Transform trans;
+    PVCoordinates pv;
+    PVCoordinates result;
+    
+    // test cases
+    
+    Vector3D testPosJ2000 = new Vector3D(5102.508958*1000,
+                                         6123.011401*1000,
+                                         6378.136928*1000);
+    
+    Vector3D testVelJ2000 = new Vector3D(-4.74322016*1000,
+                                          0.79053650*1000,
+                                          5.533756573*1000);
+    
+    Vector3D testPosIRF = new Vector3D(5100.0076393*1000,
+                                       6122.7764115*1000,
+                                       6380.343827*1000);
+    
+    Vector3D testVelIRF = new Vector3D(-4.745388938*1000,
+                                        0.790332038*1000,
+                                        5.531929087*1000);
+
+    Vector3D testPosTIRF = new Vector3D(-1033.4750313*1000,
+                                         7901.2909240*1000,
+                                         6380.3438271*1000);
+    
+    Vector3D testVelTIRF = new Vector3D(-3.225632747*1000,
+                                        -2.872455223*1000,
+                                         5.531929087*1000);
+
+    Vector3D testPosITRF = new Vector3D(-1033.4793830*1000,
+                                         7901.2952758*1000,
+                                         6380.3565953*1000);
+    
+    Vector3D testVelITRF = new Vector3D(-3.225636520*1000,
+                                        -2.872451450*1000,
+                                         5.531924446*1000);
+
+  // tests
+    
+  trans = j2000.getTransformTo(irf, t0);
+  
+  pv = new PVCoordinates(testPosJ2000 , testVelJ2000);
+  result = trans.transformPVCoordinates(pv);
+    
+  System.out.println( " IRF ");
+  Utils.vectorToString(" pos cals ", result.getPosition());
+  Utils.vectorToString(" pos test ", testPosIRF);
+  Utils.vectorToString(" dif ", testPosIRF.subtract(result.getPosition()));
+  
+  Utils.vectorToString(" vel cals ", result.getVelocity() );
+  Utils.vectorToString(" vel test ", testVelIRF);
+  Utils.vectorToString(" dif ", testVelIRF.subtract(result.getVelocity()));
+  
+  System.out.println();
+
+//  pv = new PVCoordinates(testPosJ2000 , testVelJ2000);
+  trans = j2000.getTransformTo(tirf, t0);
+  
+  result = trans.transformPVCoordinates(pv);
+    
+  System.out.println( " TIRF ");
+  Utils.vectorToString(" pos cals ", result.getPosition());
+  Utils.vectorToString(" pos test ", testPosTIRF);
+  Utils.vectorToString(" dif ", testPosTIRF.subtract(result.getPosition()));
+  
+  Utils.vectorToString(" vel cals ", result.getVelocity() );
+  Utils.vectorToString(" vel test ", testVelTIRF);
+  Utils.vectorToString(" dif ", testVelTIRF.subtract(result.getVelocity()));
+
+  System.out.println();
+  
+//  pv = new PVCoordinates(testPosJ2000 , testVelJ2000);
+  trans = j2000.getTransformTo(itrf, t0);  
+  result = trans.transformPVCoordinates(pv);
+    
+  System.out.println( " ITRF ");
+  Utils.vectorToString(" pos cals ", result.getPosition());
+  Utils.vectorToString(" pos test ", testPosITRF);
+  Utils.vectorToString(" dif ", testPosITRF.subtract(result.getPosition()));
+  
+  Utils.vectorToString(" vel cals ", result.getVelocity() );
+  Utils.vectorToString(" vel test ", testVelITRF);
+  Utils.vectorToString(" dif ", testVelITRF.subtract(result.getVelocity()));
+
+  System.out.println();
+  
+  
+  
+}
 
   public void setUp() {
     System.setProperty("orekit.iers.directory",

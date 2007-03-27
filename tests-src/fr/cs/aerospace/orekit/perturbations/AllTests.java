@@ -11,6 +11,7 @@ public class AllTests {
     suite.addTest(ThirdBodyAttractionTest.suite());
     suite.addTest(CunninghamAttractionModelTest.suite());
     suite.addTest(DrozinerAttractionModelTest.suite());
+    suite.addTest(DTM2000AtmosphereTest.suite());
     return suite; 
   }
 }
