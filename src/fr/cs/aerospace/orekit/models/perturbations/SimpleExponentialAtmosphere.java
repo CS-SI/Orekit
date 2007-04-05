@@ -46,6 +46,8 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
   }
 
   /** Get the inertial velocity of atmosphere modecules.
+   * Here the case is simplified : atmosphere is supposed to have a null velocity
+   * in earth frame.
    * @param date current date
    * @param position current position in frame
    * @param frame the frame in which is defined the position
