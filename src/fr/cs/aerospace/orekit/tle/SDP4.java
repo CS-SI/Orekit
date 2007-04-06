@@ -2,6 +2,8 @@ package fr.cs.aerospace.orekit.tle;
 
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.time.TTScale;
+import fr.cs.aerospace.orekit.time.UTCScale;
 
 /** This class contains methods to compute propagated coordinates with the SDP4 model.
  * 
@@ -13,15 +15,17 @@ abstract class SDP4  extends TLEPropagator {
 
   /** Constructor for a unique initial TLE.
    * @param initialTLE the TLE to propagate.
+   * @throws OrekitException if some specific error occurs
    */
-  protected SDP4(TLE initialTLE) {
+  protected SDP4(TLE initialTLE) throws OrekitException {
     super (initialTLE);
   }
   
   /** Initialization proper to each propagator (SGP or SDP).
    * @param tSince the offset from initial epoch (min)
+   * @throws OrekitException when UTC time steps can't be read
    */
-  protected void sxpInitialize() {
+  protected void sxpInitialize() throws OrekitException {
     luniSolarTermsComputation();
   }  // End of initialization
 
@@ -65,13 +69,15 @@ abstract class SDP4  extends TLEPropagator {
   /** Computes SPACETRACK#3 compliant earth rotation angle.
    * @param date the current date
    * @return the ERA (rad)
+   * @throws OrekitException when UTC time steps can't be read
    */
-  protected static double thetaG(AbsoluteDate date) {
+  protected static double thetaG(AbsoluteDate date) throws OrekitException {
 
     // Reference:  The 1992 Astronomical Almanac, page B6.
     double omega_E = 1.00273790934;
-    double jd = date.minus(AbsoluteDate.JulianEpoch)/86400;
-
+    double jd = (date.minus(AbsoluteDate.JulianEpoch)+
+          date.timeScalesOffset(UTCScale.getInstance(), TTScale.getInstance()))/86400;
+      
     // Earth rotations per sidereal day (non-constant)
 
     double UT = (jd + .5)%1;
@@ -87,10 +93,13 @@ abstract class SDP4  extends TLEPropagator {
     rval = 2 * Math.PI * GMST / seconds_per_day;
 
     return( rval);
+    
   }  
 
-  /** Computes luni - solar terms from initial coordinates and epoch. */
-  protected abstract void luniSolarTermsComputation();
+  /** Computes luni - solar terms from initial coordinates and epoch. 
+   * @throws OrekitException when UTC time steps can't be read
+   */
+  protected abstract void luniSolarTermsComputation() throws OrekitException;
       
   /** Computes secular terms from current coordinates and epoch. 
    * @param t offset from initial epoch (min)

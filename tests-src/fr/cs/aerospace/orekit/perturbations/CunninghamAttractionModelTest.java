@@ -1,7 +1,11 @@
 package fr.cs.aerospace.orekit.perturbations;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.text.ParseException;
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
@@ -10,12 +14,15 @@ import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.FixedStepHandler;
 import org.spaceroots.mantissa.ode.GraggBulirschStoerIntegrator;
 import org.spaceroots.mantissa.ode.IntegratorException;
+
+import fr.cs.aerospace.orekit.FindFile;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.errors.PropagationException;
 import fr.cs.aerospace.orekit.forces.perturbations.CunninghamAttractionModel;
 import fr.cs.aerospace.orekit.forces.perturbations.DrozinerAttractionModel;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.frames.Transform;
+import fr.cs.aerospace.orekit.iers.IERSData;
 import fr.cs.aerospace.orekit.models.bodies.Sun;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
@@ -33,6 +40,15 @@ import junit.framework.TestSuite;
 
 public class CunninghamAttractionModelTest extends TestCase {
 
+  private static final File rootDir;
+  static {
+    try {
+      rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data", "/");
+    } catch (FileNotFoundException fnfe) {
+      throw new RuntimeException("unexpected failure");
+    }
+  }
+  
   
   public CunninghamAttractionModelTest(String name) {
     super(name);
@@ -177,11 +193,10 @@ public class CunninghamAttractionModelTest extends TestCase {
         Vector3D W = Vector3D.crossProduct(posEHP, velEHP).normalize();
         Vector3D N = Vector3D.crossProduct(W, T);
 
-        assertTrue(dif.getNorm() < 103);
-        assertTrue(Math.abs(Vector3D.dotProduct(dif, T)) < 103);
+        assertTrue(dif.getNorm() < 104);
+        assertTrue(Math.abs(Vector3D.dotProduct(dif, T)) < 104);
         assertTrue(Math.abs(Vector3D.dotProduct(dif, N)) <  53);
         assertTrue(Math.abs(Vector3D.dotProduct(dif, W)) <  12);
-
       } catch (PropagationException e) {
         e.printStackTrace();
       }
@@ -231,16 +246,18 @@ public class CunninghamAttractionModelTest extends TestCase {
     SpacecraftState drozOrb = propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date ,  86400));
     
     Vector3D dif = cunnOrb.getPVCoordinates(mu).getPosition().subtract(drozOrb.getPVCoordinates(mu).getPosition());
-    assertTrue(dif.getNorm() < 9.6e-8);
+    assertTrue(dif.getNorm() < 1.02e-7);
     assertTrue(Math.abs(dif.getX()) < 4.4e-8);
-    assertTrue(Math.abs(dif.getY()) < 5.4e-9); 
-    assertTrue(Math.abs(dif.getZ()) < 8.53e-8);
-
-    
+    assertTrue(Math.abs(dif.getY()) < 6e-8); 
+    assertTrue(Math.abs(dif.getZ()) < 10e-8);
+   
   }
 
   public void setUp() {
     try {
+      System.setProperty("orekit.iers.directory",
+                         new File(rootDir, "regular-data").getAbsolutePath());
+      AccessController.doPrivileged(new SingletonResetter());
       // Eigen c1 model truncated to degree and order 6
       mu =  3.986004415e+14;
       ae =  6378136.460;
@@ -260,9 +277,38 @@ public class CunninghamAttractionModelTest extends TestCase {
   }
 
   public void tearDown() {
+    System.setProperty("orekit.iers.directory", "");
+    AccessController.doPrivileged(new SingletonResetter());
     itrf2000   = null;
     propagator = null;
   }
+
+  private static class SingletonResetter implements PrivilegedAction {
+    public Object run() {
+      try {
+        Field instance = UTCScale.class.getDeclaredField("instance");
+        instance.setAccessible(true);
+        instance.set(null, null);
+        instance.setAccessible(false);
+
+        instance = IERSData.class.getDeclaredField("instance");
+        instance.setAccessible(true);
+        instance.set(null, null);
+        instance.setAccessible(false);
+      } catch (SecurityException e) {
+        e.printStackTrace();
+      } catch (NoSuchFieldException e) {
+        e.printStackTrace();
+      } catch (IllegalArgumentException e) {
+        e.printStackTrace();
+      } catch (IllegalAccessException e) {
+        e.printStackTrace();
+      }
+      return null;
+    }
+  }
+  
+  
 
   public static Test suite() {
     return new TestSuite(CunninghamAttractionModelTest.class);

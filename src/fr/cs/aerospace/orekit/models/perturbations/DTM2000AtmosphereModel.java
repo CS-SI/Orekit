@@ -7,7 +7,7 @@ import fr.cs.aerospace.orekit.bodies.BodyShape;
 import fr.cs.aerospace.orekit.bodies.GeodeticPoint;
 import fr.cs.aerospace.orekit.bodies.ThirdBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.forces.perturbations.Drag;
+import fr.cs.aerospace.orekit.forces.perturbations.AtmosphericDrag;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
@@ -16,7 +16,7 @@ import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /** This class is the OREKIT compliant realization of the DTM2000 atmosphere model.
  * 
- * It should be instancied to be used by the {@link Drag drag force model} as it 
+ * It should be instancied to be used by the {@link AtmosphericDrag drag force model} as it 
  * implements the {@link Atmosphere} interface.
  *  
  *  The input parameters are computed with orbital state information, but solar

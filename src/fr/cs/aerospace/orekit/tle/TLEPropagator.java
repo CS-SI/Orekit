@@ -19,8 +19,9 @@ public abstract class TLEPropagator {
 
   /** Protected constructor for herited classes. 
    * @param initialTLE the unique TLE to propagate
+   * @throws OrekitException if some specific error occurs
    */
-  protected TLEPropagator(TLE initialTLE) {
+  protected TLEPropagator(TLE initialTLE) throws OrekitException {
     tle = initialTLE;
     initializeCommons();
     sxpInitialize();
@@ -310,8 +311,9 @@ public abstract class TLEPropagator {
   
   /** Initialization proper to each propagator (SGP or SDP).
    * @param tSince the offset from initial epoch (min)
+   * @throws OrekitException if some specific error occurs    
    */
-  protected abstract void sxpInitialize();
+  protected abstract void sxpInitialize() throws OrekitException;
   
   /** Propagation proper to each propagator (SGP or SDP).
    * @param t the offset from initial epoch (min)

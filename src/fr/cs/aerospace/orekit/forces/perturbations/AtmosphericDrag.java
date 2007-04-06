@@ -22,13 +22,13 @@ import fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations;
  * @author F. Maussion
  */
 
-public class Drag implements ForceModel {
+public class AtmosphericDrag implements ForceModel {
 
   /** Simple constructor.
    * @param atmosphere atmospheric model
    * @param spacecraft the object physical and geometrical information
    */
-  public Drag(Atmosphere atmosphere, AtmosphereDragSpacecraft spacecraft) {
+  public AtmosphericDrag(Atmosphere atmosphere, AtmosphereDragSpacecraft spacecraft) {
     this.atmosphere = atmosphere;
     this.spacecraft = spacecraft;
   }

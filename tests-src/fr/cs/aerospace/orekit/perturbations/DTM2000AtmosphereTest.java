@@ -1,5 +1,7 @@
 package fr.cs.aerospace.orekit.perturbations;
 
+import java.text.ParseException;
+
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.models.perturbations.DTM2000Atmosphere;
 import junit.framework.Test;
@@ -9,10 +11,10 @@ import junit.framework.TestSuite;
 
 public class DTM2000AtmosphereTest extends TestCase {
 
-  public void testOutputValidity() throws OrekitException {
+  public void testOutputValidity() throws OrekitException, ParseException {
 
     DTM2000Atmosphere atm = new DTM2000Atmosphere();
-
+    
 //  alt=500.                  
 //  lat=-70.      NB: the subroutine requires latitude in rad
 //  day=15.

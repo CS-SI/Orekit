@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.forces.perturbations.Drag;
+import fr.cs.aerospace.orekit.forces.perturbations.AtmosphericDrag;
 
 /** This atmosphere model is the realization of the DTM-2000 model.
  * <p>
@@ -23,7 +23,7 @@ import fr.cs.aerospace.orekit.forces.perturbations.Drag;
  * <li> one OREKIT independant and compliant with initial entry values : 
  *        {@link #getDensity(int, double, double, double, double, double, double, double, double)}. </li>
  * <li> one compliant with OREKIT Atmosphere interface, necessary to the 
- *        {@link Drag drag force model} computation. This implementation is realized
+ *        {@link AtmosphericDrag drag force model} computation. This implementation is realized
  *        by the subclass {@link DTM2000AtmosphereModel}</li>
  *</p>
  *<p>

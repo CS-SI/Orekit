@@ -1,6 +1,9 @@
 package fr.cs.aerospace.orekit.tle;
 
+import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.time.TTScale;
+import fr.cs.aerospace.orekit.time.UTCScale;
 
 /** This class contains the methods that compute deep space perturbation terms.
  * 
@@ -12,14 +15,17 @@ class DeepSDP4 extends SDP4 {
 
   /** Constructor for a unique initial TLE.
    * @param initialTLE the TLE to propagate.
+   * @throws OrekitException if some specific error occurs
    */
-  protected DeepSDP4(TLE initialTLE) {
+  protected DeepSDP4(TLE initialTLE) throws OrekitException {
     super(initialTLE);
     this.isSDP = true;
   }
   
-  /** Computes luni - solar terms from initial coordinates and epoch. */
-  protected void luniSolarTermsComputation() {
+  /** Computes luni - solar terms from initial coordinates and epoch. 
+   * @throws OrekitException when UTC time steps can't be read
+   */
+  protected void luniSolarTermsComputation() throws OrekitException {
 
     double sing = Math.sin(tle.getPerigeeArgument());
     double cosg = Math.cos(tle.getPerigeeArgument());
@@ -29,7 +35,9 @@ class DeepSDP4 extends SDP4 {
     double aqnv = 1.0/a0dp;
 
     // Compute julian days since 1900
-    double daysSince1900 = tle.getEpoch().minus(AbsoluteDate.JulianEpoch)/86400.0 - 2415020;
+    double daysSince1900 = (tle.getEpoch().minus(AbsoluteDate.JulianEpoch)
+       +tle.getEpoch().timeScalesOffset(UTCScale.getInstance(), TTScale.getInstance()))/86400.0 - 2415020;
+
   
     double cc = c1ss;
     double ze = zes;
@@ -437,7 +445,7 @@ class DeepSDP4 extends SDP4 {
     omgadf += pgh;
     xinc = trimAngle(xinc, 0);
     
-//    if( tle.getI() >= 0.2)   
+//    if( Math.abs(tle.getI()) >= 0.2)   
     if( Math.abs(xinc) >= 0.2)   
     {
           // Apply periodics directly 

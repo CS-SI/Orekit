@@ -3,14 +3,18 @@ package fr.cs.aerospace.orekit.tle;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.text.ParseException;
-import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.FindFile;
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.iers.IERSData;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -20,11 +24,20 @@ import junit.framework.TestSuite;
 
 public class tleTest extends TestCase {
 
+  private static final File rootDir;
+  static {
+    try {
+      rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data", "/");
+    } catch (FileNotFoundException fnfe) {
+      throw new RuntimeException("unexpected failure");
+    }
+  }
+  
   public void testTLEFormat() throws OrekitException, ParseException {
 
     String line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
     String line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62";
-
+   
     assertTrue(TLE.isFormatOK(line1, line2));
 
     TLE tle = new TLE(line1, line2);
@@ -58,6 +71,7 @@ public class tleTest extends TestCase {
     assertFalse(TLE.isFormatOK(line1, line2)); 
   }
 
+  
   public void testTLESeriesFormat() throws IOException, OrekitException, ParseException {
 
     File rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data/tle/regular-data/" +
@@ -79,25 +93,25 @@ public class tleTest extends TestCase {
 
   }
 
+  
   public void testThetaG() throws OrekitException, ParseException {
-    
-//  AbsoluteDate date = AbsoluteDate.J2000Epoch;
 
-//  double teta = SDP4.thetaG(date); 
-
-//  TIRF2000Frame ITRF = (TIRF2000Frame)Frame.getReferenceFrame(Frame.tirf2000B, date);
-//  double tetaTIRF = ITRF.getEarthRotationAngle(date);    
-//  assertEquals( Utils.trimAngle(tetaTIRF, Math.PI), Utils.trimAngle(teta, Math.PI), 0.003);
-
-//  date = new AbsoluteDate(AbsoluteDate.J2000Epoch, 78.2*86400);
-
-//  teta = SDP4.thetaG(date); 
-//  tetaTIRF = ITRF.getEarthRotationAngle(date);
-
-//  assertEquals( Utils.trimAngle(tetaTIRF, Math.PI), Utils.trimAngle(teta, Math.PI), 0.003);
+//    AbsoluteDate date = AbsoluteDate.J2000Epoch;
+//    double teta = SDP4.thetaG(date); 
+//
+//    TIRF2000Frame ITRF = (TIRF2000Frame)Frame.getReferenceFrame(Frame.TIRF2000B, date);
+//    double tetaTIRF = ITRF.getEarthRotationAngle(date);    
+//    assertEquals( Math.toDegrees(Utils.trimAngle(tetaTIRF, Math.PI)), Math.toDegrees(Utils.trimAngle(teta, Math.PI)), 0.003);
+//
+//    date = new AbsoluteDate("2002-03-08T01:00:45", UTCScale.getInstance());
+//    tetaTIRF = ITRF.getEarthRotationAngle(date);    
+//    teta = SDP4.thetaG(date); 
+//    assertEquals( Math.toDegrees(Utils.trimAngle(tetaTIRF, Math.PI)), Math.toDegrees(Utils.trimAngle(teta, Math.PI)), 0.04);
   }
-
-  public void testSatCodeCompliance() throws IOException, OrekitException {
+  
+  public void testSatCodeCompliance() throws IOException, OrekitException, ParseException {
+    
+    boolean printResults = false;
     
     File rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data" +
                                  "/tle/extrapolationTest-data/SatCode-entry", "/");
@@ -137,15 +151,16 @@ public class tleTest extends TestCase {
         assertTrue(satNum==tle.getSatelliteNumber());
         TLEPropagator ex = TLEPropagator.selectExtrapolator(tle);
 
-//        System.out.println();
-//        for(int i = 0; i<4; i++) {
-//          if(header[i]!=null) {
-//            System.out.println(header[i]);
-//          }
-//        }
-//        System.out.println(" Satellite number : " + satNum);
-
-
+        if(printResults) {
+          System.out.println();
+          for(int i = 0; i<4; i++) {
+            if(header[i]!=null) {
+              System.out.println(header[i]);
+            }
+          }
+          System.out.println(" Satellite number : " + satNum);
+        }
+        
         for (rline = rResults.readLine(); (rline!=null)&&(rline.charAt(0)!='r'); rline = rResults.readLine()) {
 
           String[] data = rline.split(" ");
@@ -177,44 +192,67 @@ public class tleTest extends TestCase {
             double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
 
             cumulated += normDifPos;  
-//            if(normDifPos>1) {
-//              System.out.println(minFromStart + "    " + normDifPos);
-//            }              
-            checkVectors(testPos, results.getPosition(),6e-6,1.4e-5,280);
-            assertEquals( 0, normDifVel, 0.1);
+            if(printResults) {
+              System.out.println(minFromStart + "    " + normDifPos);
+            }              
+            assertEquals( 0, normDifPos, 2e-3);;
+            assertEquals( 0, normDifVel, 1e-5);
+            
           }  
 
         }        
       }
     }
-
-//    System.out.println();
-//    System.out.println(" cumul :  " + cumulated);
-
-    assertEquals(0, cumulated, 3750);
+    if (printResults) {
+      System.out.println();
+      System.out.println(" cumul :  " + cumulated);
+    }
+    assertEquals(0, cumulated, 0.024);
   }
   
-  /** Compare and asserts two vectors.
-   * @param pos1 reference vector
-   * @param pos2 to test vector
-   * @param deltaNorm relative delta between the two norms
-   * @param deltaAngle the delta angle
-   * @param difNorm the norm of the difference
-   */
-  private void checkVectors(Vector3D pos1 , Vector3D pos2,
-                            double deltaNorm,
-                            double deltaAngle, double difNorm) {
-      
-      Vector3D d = pos1.subtract(pos2);
-      Rotation r = new Rotation(pos1, pos2);
-
-      assertEquals(0, (pos1.getNorm()-pos2.getNorm())/pos1.getNorm(), deltaNorm); 
-      assertEquals(0, d.getNorm(), difNorm);      
-      assertEquals(0,r.getAngle(),deltaAngle);
-    
+  
+  public void setUp() throws OrekitException {
+    System.setProperty("orekit.iers.directory",
+                       new File(rootDir, "regular-data").getAbsolutePath());
+    AccessController.doPrivileged(new SingletonResetter());
   }
 
+  
+  public void tearDown() {
+    System.setProperty("orekit.iers.directory", "");
+    AccessController.doPrivileged(new SingletonResetter());
+  }
+
+  
+  private static class SingletonResetter implements PrivilegedAction {
+    public Object run() {
+      try {
+        Field instance = UTCScale.class.getDeclaredField("instance");
+        instance.setAccessible(true);
+        instance.set(null, null);
+        instance.setAccessible(false);
+
+        instance = IERSData.class.getDeclaredField("instance");
+        instance.setAccessible(true);
+        instance.set(null, null);
+        instance.setAccessible(false);
+      } catch (SecurityException e) {
+        e.printStackTrace();
+      } catch (NoSuchFieldException e) {
+        e.printStackTrace();
+      } catch (IllegalArgumentException e) {
+        e.printStackTrace();
+      } catch (IllegalAccessException e) {
+        e.printStackTrace();
+      }
+      return null;
+    }
+  }
+  
+  
   public static Test suite() {
     return new TestSuite(tleTest.class);
   }
+  
+
 }
