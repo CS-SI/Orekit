@@ -9,6 +9,19 @@ import fr.cs.aerospace.orekit.time.UTCScale;
 
 /** This class converts and contains TLE datas.
  * 
+ * An instance of TLE is created with the two lines string representation,
+ * convertion of the datas is made internally for easier retrieval and 
+ * future extrapolation.
+ * All the values provided by a TLE only have sense when translated by the correspondant
+ * {@link TLEPropagator propagator}. Even when no extrapolation in time is needed, 
+ * state information (position and velocity coordinates) can only be computed threw
+ * the propagator. Untreated values like inclination, RAAN, mean Motion, etc. can't
+ * be used by themselves without loosing precision.
+ * <p>
+ * More information on the TLE format can be found on the 
+ * <ahref="http://www.celestrak.com/">
+ * CelesTrak website.</a>
+ * </p>
  * @author F. Maussion
  */
 public class TLE  implements Comparable {

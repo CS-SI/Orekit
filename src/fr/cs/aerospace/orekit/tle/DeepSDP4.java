@@ -7,6 +7,9 @@ import fr.cs.aerospace.orekit.time.UTCScale;
 
 /** This class contains the methods that compute deep space perturbation terms.
  * 
+ * The user should not bother in this class since it is handled internaly by the
+ * {@link TLEPropagator}.
+ * 
  * @author SPACETRACK Report #3 project. Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
  * @author Revisiting Spacetrack Report #3. David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
  * @author Fabien Maussion (Java translation)
@@ -445,7 +448,6 @@ class DeepSDP4 extends SDP4 {
     omgadf += pgh;
     xinc = trimAngle(xinc, 0);
     
-//    if( Math.abs(tle.getI()) >= 0.2)   
     if( Math.abs(xinc) >= 0.2)   
     {
           // Apply periodics directly 

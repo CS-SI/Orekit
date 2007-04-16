@@ -7,6 +7,9 @@ import fr.cs.aerospace.orekit.time.UTCScale;
 
 /** This class contains methods to compute propagated coordinates with the SDP4 model.
  * 
+ * The user should not bother in this class since it is handled internaly by the
+ * {@link TLEPropagator}.
+ * 
  * @author SPACETRACK Report #3 project. Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
  * @author Revisiting Spacetrack Report #3. David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
  * @author Fabien Maussion (Java translation)

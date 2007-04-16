@@ -7,13 +7,30 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 
 /** This class provides elements to propagate TLE's.
- * 
+ * <p>
  * The models used are SGP4 and SDP4, initialy proposed by NORAD as the unique convenient
- * propagator for TLE's. The code is largely inspired from the (...)
- *
+ * propagator for TLE's. Inputs and outputs of this propagator are only suited for
+ * NORAD two lines elements sets, since it uses estimations and mean values appropriate
+ * for TLE's only.
+ * </p>
+ * <p>
+ * Deep- or near- space propagator is selected internaly according to NORAD recommendations
+ * so that the user has not to worry about the used computation methods. One instance is created
+ * for each TLE (this instance can only be get threw {@link #selectExtrapolator(TLE)} method,
+ * and can compute {@link PVCoordinates position and velocity coordinates} at any
+ * time. Maximum accuracy is guaranteed in a 24h range period before and after the provided 
+ * TLE epcoh (if course this accuracy is not really measurable nor predictable : according to
+ * <ahref="http://www.celestrak.com/"> CelesTrak</a>, the precision is close to one kilometer
+ * and error won't probably rise above 2 km).
+ * </p>
+ * <p>
+ * This implementation is largely inspired from the paper and source code <ahref="http://www.celestrak.com/publications/AIAA/2006-6753/">
+ * Revisiting Spacetrack Report #3</a> and is totally compliant with its results and tests cases.
+ * </p>
  * @author SPACETRACK Report #3 project. Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
  * @author Revisiting Spacetrack Report #3. David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
- * @author Fabien Maussion (Java translation)
+ * @author F. Maussion (Java translation)
+ * @see TLE
  */
 public abstract class TLEPropagator {
 

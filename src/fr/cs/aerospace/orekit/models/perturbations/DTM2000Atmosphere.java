@@ -53,7 +53,7 @@ import fr.cs.aerospace.orekit.forces.perturbations.AtmosphericDrag;
  *</p>
  *
  * 
- * @author S. Bruinsma, G. Thuillier, F. Barlier : initial research and Fortran routine
+ * @author S. Bruinsma, G. Thuillier, F. Barlier : original research and Fortran routine
  * @author F. Maussion : JAVA adaptation 
  */
 public class DTM2000Atmosphere {
@@ -67,7 +67,7 @@ public class DTM2000Atmosphere {
     }
   }
 
-  /** Get the local density with initial basical entries.
+  /** Get the local density with initial entries.
    * @param day day of year
    * @param alti altitude in meters
    * @param lon local longitude (rad)
@@ -103,6 +103,7 @@ public class DTM2000Atmosphere {
   /** Computes output vales once tne inputs are set. */
   private void computation() {
     ro=0.;
+ 
     double zlb = zlb0; // + dzlb ?? 
 
 //  calcul des polynomes de legendre
@@ -157,10 +158,10 @@ public class DTM2000Atmosphere {
 
     kleq = 0; //equinox
 
-    if((day<59) || (day>284)) {
+    if((day<59) || (day>284)) { 
       kleq=-1; //hiver nord
     }
-    if((day>99) & (day<244)) {
+    if((day>99) & (day<244)) { 
       kleq= 1; //ete nord
     }
 
@@ -211,7 +212,6 @@ public class DTM2000Atmosphere {
     double glb=gsurf/(zlbre*zlbre);
     glb=glb/(sigma*rgas*tinf);
     double t120tz=t120/tz;
-//  TODO ?  double tinftz=tinf/tz;
 
     double[] cc = new double[6+1];
     double[] fz = new double[6+1];
@@ -258,7 +258,7 @@ public class DTM2000Atmosphere {
       a77=-a77;
       a78=-a78;
     }
-    if(kle_eq == 0 ) {    // equinox
+    if(kle_eq == 0 ) {    // equinox  
       a74 = semestrialCorrection(a74);
       a77 = semestrialCorrection(a77);
       a78 = semestrialCorrection(a78);
@@ -362,12 +362,14 @@ public class DTM2000Atmosphere {
     double a90=a[90];
     double a91=a[91];
     if(kle_eq == -1) {            //hiver
+   
       a88=-a88;
       a89=-a89;
       a90=-a90;
       a91=-a91;
     }
     if(kle_eq == 0) {             //equinox
+
       a88 = semestrialCorrection(a88);
       a89 = semestrialCorrection(a89);
       a90 = semestrialCorrection(a90);
@@ -447,7 +449,7 @@ public class DTM2000Atmosphere {
       xmult=(day-debeq_au)/40.;
       result=param - 2.*param*xmult;
     }
-    else {
+    else {   
       xmult=(day-debeq_pr)/40.;
       result=2.*param*xmult-param;
     }
@@ -671,7 +673,7 @@ public class DTM2000Atmosphere {
   private static double[] daz  = null;
   private static double[] dt0  = null;
   private static double[] dtp  = null; 
-  
+
   /** Identifier for hydrogen.*/
   public static int HYDROGEN = 1;
   /** Identifier for helium.*/
