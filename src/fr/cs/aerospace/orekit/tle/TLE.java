@@ -1,6 +1,8 @@
 package fr.cs.aerospace.orekit.tle;
 
-import java.text.ParseException;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import fr.cs.aerospace.orekit.errors.OrekitException;
@@ -39,30 +41,26 @@ public class TLE  implements Comparable {
     internationalDesignator = line1.substring(9,17);
 
     // Date format transform :
+ 
+    Calendar cal = new GregorianCalendar();
+    cal.setTimeZone(TimeZone.getTimeZone("UTC"));
+    cal.set(Calendar.MONTH, Calendar.JANUARY);
+    cal.set(Calendar.DAY_OF_MONTH, 1);
+    cal.set(Calendar.HOUR_OF_DAY, 0);
+    cal.set(Calendar.MINUTE, 0);
+    cal.set(Calendar.SECOND, 0);    
+    cal.set(Calendar.MILLISECOND, 0);
     int year = Integer.parseInt(line1.substring(18,20).replace(" ", "0"));
-    AbsoluteDate t;
     if (year<57) {
-      try {
-        year = 2000 + year;
-        t = new AbsoluteDate(Integer.toString(year)+"-01-01T00:00:00",
-                             UTCScale.getInstance());
-      } catch (ParseException e) {
-        // should not happen
-        throw new RuntimeException(e);
-      }
+      year += 2000; 
     }
     else {
-      try {
-        year = 1900 + year;
-        t = new AbsoluteDate(Integer.toString(year)+"-01-01T00:00:00",
-                             UTCScale.getInstance());
-      } catch (ParseException e) {
-        // should not happen
-        throw new RuntimeException(e);
-      }
+      year += 1900; 
     }
+    cal.set(Calendar.YEAR, year);
     double dayNb = Double.parseDouble(line1.substring(20,32).replace(" ", "0"));
-    epoch = new AbsoluteDate(t, (dayNb-1.0)*86400);
+    epoch = new AbsoluteDate(new AbsoluteDate(cal.getTime(), UTCScale.getInstance()), (dayNb-1)*86400); //-1 is due to TLE date definition
+    // Fields transform :
     bStar = Double.parseDouble(line1.substring(53,54).replace(" ", "0") + "." + line1.substring(54,59).replace(" ", "0") +
                                "e" + line1.substring(59,61).replace(" ", "0"));
     ephemerisType = Integer.parseInt(line1.substring(62,63).replace(" ", "0"));
@@ -72,8 +70,7 @@ public class TLE  implements Comparable {
     e = Double.parseDouble("."+line2.substring(26,33).replace(" ", "0"));
     pa = Math.toRadians(Double.parseDouble(line2.substring(34,42).replace(" ", "0")));
     meanAnomaly = Math.toRadians(Double.parseDouble(line2.substring(43,51).replace(" ", "0")));
-    meanMotion = Math.PI * Double.parseDouble(line2.substring(52,63).replace(" ", "0")) / (43200.0);
-    
+    meanMotion = Math.PI * Double.parseDouble(line2.substring(52,63).replace(" ", "0")) / (43200.0);   
     revolutionNumberAtEpoch = Integer.parseInt(line2.substring(63,68).replace(" ", "0"));
 
   }

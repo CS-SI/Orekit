@@ -72,8 +72,8 @@ class DatedEOPReader {
       double dtP    = date.minus(previous.date);
       double dtN    = next.date.minus(date);
       double sum    = dtN + dtP;
-      double coeffP = dtP / sum;
-      double coeffN = dtN / sum;
+      double coeffP = dtN / sum;
+      double coeffN = dtP / sum;
       return new PoleCorrection(coeffP * previous.rawEntry.pole.xp
                               + coeffN * next.rawEntry.pole.xp,
                                 coeffP * previous.rawEntry.pole.yp

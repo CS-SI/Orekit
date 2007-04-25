@@ -1,10 +1,51 @@
 package fr.cs.aerospace.orekit.models.perturbations;
 
+import fr.cs.aerospace.orekit.forces.perturbations.AtmosphericDrag;
 
+
+/** This is the realization of the Jaccia-Bowman 2006 atmospheric model.
+ * <p>
+ * It is described in the paper : <br>
+ *
+ * <b>A New Empirical Thermospheric Density Model JB2006 Using New Solar Indices</b><br>
+ * 
+ * <i>Bruce R. Bowman, W. Kent Tobiska and Frank A. Marcos</i> <br>
+ *  
+ * AIAA 2006-6166<br>  
+ *</p>
+ * <p>
+ * Two computation methods are proposed to the user :
+ * <li> one OREKIT independant and compliant with initial FORTRAN routine entry values : 
+ *        {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double)}. </li>
+ * <li> one compliant with OREKIT Atmosphere interface, necessary to the 
+ *        {@link AtmosphericDrag drag force model} computation. This implementation is realized
+ *        by the subclass {@link JB2006AtmosphereModel}</li>
+ *</p>
+ * <p>
+ * This model provides dense output for all altidudes and positions. Output datas are :
+ * <pre>
+ * - Exospheric Temperature above Input Position (deg K)
+ * - Temperature at Input Position (deg K)
+ * - Total Mass-Density at Input Position (kg/m<sup>3</sup>) 
+ * </pre>
+ * </p>
+ * <p>
+ * The model needs geographical and time information to compute general values, 
+ * but also needs space weather datas : mean and daily solar flux, retrieved threw
+ * different indices, and planetary geomagnetic incides. <br>
+ * More information on these indices can be found on the  <a
+ * href="http://sol.spacenvironment.net/~JB2006/JB2006_index.html">
+ * official JB2000 website.</a>
+ *</p>
+ *
+ * @author Bruce R Bowman (HQ AFSPC, Space Analysis Division), Feb 2006 : FORTRAN routine
+ * @author F. Maussion : JAVA adaptation
+ */
 public class JB2006Atmosphere {
 
+  /** Simple constructor. */
   public JB2006Atmosphere() {
-
+    
   }
 
   /** Get the local density with initial entries.
@@ -16,7 +57,7 @@ public class JB2006Atmosphere {
    * @param satAlt Height of position (m)
    * @param f10 10.7-cm Solar flux (1e<sup>-22</sup>*Watt/(m<sup>2</sup>*Hertz)). 
    *            Tabular time 1.0 day earlier
-   * @param f10B 10.7-cm Solar Flux, average 81-day centered on the input time
+   * @param f10B 10.7-cm Solar Flux, averaged 81-day centered on the input time
    * @param ap Geomagnetic planetary 3-hour index A<sub>p</sub>
    *            for a tabular time 6.7 hours earlier
    * @param s10 EUV index (26-34 nm) scaled to F10. Tabular time 1 day earlier.
@@ -76,7 +117,7 @@ public class JB2006Atmosphere {
     // Compute the local exospheric temperature.
 
     double TINF = TSUBL + DTG + DTCLST;
-    TEMP[1] = TINF;
+    temp[1] = TINF;
 
     // Equation (9)
 
@@ -105,11 +146,11 @@ public class JB2006Atmosphere {
     double AL = Math.log(Z2/Z1);
     int N = (int)Math.floor(AL/R1) + 1;
     double ZR = Math.exp(AL/(double)(N));
-    double AMBAR1 = XAMBAR(Z1);
-    double TLOC1 = XLOCAL(Z1,TC);
+    double AMBAR1 = xAmbar(Z1);
+    double TLOC1 = xLocal(Z1,TC);
     double ZEND = Z1;
     double SUM2 = 0.;
-    double AIN = AMBAR1 * XGRAV(Z1)/TLOC1;
+    double AIN = AMBAR1 * xGrav(Z1)/TLOC1;
     double AMBAR2 =0;
     double TLOC2 =0;
     double Z = 0;
@@ -122,20 +163,20 @@ public class JB2006Atmosphere {
       double SUM1 = WT[1]*AIN;
       for (int j = 2; j<=5; j++) {
         Z = Z + DZ;
-        AMBAR2 = XAMBAR(Z);
-        TLOC2 = XLOCAL(Z,TC);
-        GRAVL = XGRAV(Z);
+        AMBAR2 = xAmbar(Z);
+        TLOC2 = xLocal(Z,TC);
+        GRAVL = xGrav(Z);
         AIN = AMBAR2 * GRAVL/TLOC2;  
         SUM1 = SUM1 + WT[j] * AIN;
       }
       SUM2 = SUM2 + DZ * SUM1;
     }
     double FACT1 = 1000.0/RSTAR;
-    RHO = 3.46e-6 * AMBAR2 * TLOC1 * Math.exp(-FACT1*SUM2) /AMBAR1 /TLOC2;
+    rho = 3.46e-6 * AMBAR2 * TLOC1 * Math.exp(-FACT1*SUM2) /AMBAR1 /TLOC2;
 
     // Equation (2)
 
-    double ANM = AVOGAD * RHO;
+    double ANM = AVOGAD * rho;
     double AN  = ANM/AMBAR2;
 
     // Equation (3)
@@ -151,7 +192,7 @@ public class JB2006Atmosphere {
     ALN[3] = Math.log(2. * (AN - FACT2));
 
     if(satAlt <= 105.) {
-      TEMP[2] = TLOC2;
+      temp[2] = TLOC2;
       // Put in negligible hydrogen for use in DO-LOOP 13
       ALN[6] = ALN[5] - 25.;
     }
@@ -172,8 +213,8 @@ public class JB2006Atmosphere {
         double SUM1 = WT[1] * AIN;
         for(int J = 2; J<= 5; J++) {
           Z = Z + DZ;
-          TLOC3 = XLOCAL(Z,TC);
-          GRAVL = XGRAV(Z);
+          TLOC3 = xLocal(Z,TC);
+          GRAVL = xGrav(Z);
           AIN = GRAVL/TLOC3;
           SUM1 = SUM1 + WT[J] * AIN;
         }
@@ -197,8 +238,8 @@ public class JB2006Atmosphere {
         double SUM1 = WT[1] * AIN;
         for(int J = 2; J<= 5; J++) {
           Z = Z + DZ;
-          TLOC4 = XLOCAL(Z,TC);
-          GRAVL = XGRAV(Z);
+          TLOC4 = xLocal(Z,TC);
+          GRAVL = xGrav(Z);
           AIN = GRAVL/TLOC4;
           SUM1 = SUM1 + WT[J] * AIN;
         }
@@ -206,14 +247,14 @@ public class JB2006Atmosphere {
       }
       double ALTR, HSIGN;
       if (satAlt <= 500.) {
-        TEMP[2] = TLOC3;
+        temp[2] = TLOC3;
         ALTR = Math.log(TLOC3/TLOC2);
         FACT2 = FACT1 * SUM2;
         HSIGN = 1.;
 
       } 
       else {
-        TEMP[2] = TLOC4;
+        temp[2] = TLOC4;
         ALTR = Math.log(TLOC4/TLOC2);
         FACT2 = FACT1 * (SUM2 + SUM3);
         HSIGN = -1.;
@@ -249,7 +290,7 @@ public class JB2006Atmosphere {
     if (Z<2000.) {
       double D1950 = dateMJD - 33281.;
       // Use new semiannual model DELTA LOG RHO
-      DLRSA = SEMIAN(TMOUTD(D1950),satAlt,f10B);
+      DLRSA = semian(dayOfYear(D1950),satAlt,f10B);
     }
 
     // Sum the delta-log-rhos and apply to the number densities.
@@ -277,7 +318,7 @@ public class JB2006Atmosphere {
 
     }
 
-    RHO = SUMNM/AVOGAD;
+    rho = SUMNM/AVOGAD;
 
     // Compute the high altitude exospheric density correction factor
 
@@ -300,9 +341,9 @@ public class JB2006Atmosphere {
 
     // Apply the exospheric density correction factor.
 
-    RHO    = FEX * RHO;
+    rho    = FEX * rho;
 
-    return RHO;
+    return rho;
   }
 
   /** Compute dTc correction for Jacchia-Bowman model.
@@ -425,7 +466,7 @@ public class JB2006Atmosphere {
    * @param z
    * @return
    */
-  private static double XAMBAR(double z) {
+  private static double xAmbar(double z) {
     double dz = z - 100.;
     double amb = CXAMB[7];
     for (int i=6; i>=1; i--) {
@@ -437,9 +478,9 @@ public class JB2006Atmosphere {
   /**  Evaluates Equation (10) or Equation (13), depending on Z
    * @param Z
    * @param TC
-   * @return
+   * @return result of equation (10)
    */
-  private static double XLOCAL(double Z,double[] TC) {
+  private static double xLocal(double Z,double[] TC) {
     double DZ = Z - 125;
     if (DZ <= 0) {
       return ((-9.8204695e-6 * DZ - 7.3039742e-4) * DZ*DZ + 1.0)
@@ -452,9 +493,9 @@ public class JB2006Atmosphere {
 
   /** Evaluates Equation (8) of gravity field
    * @param Z altitude
-   * @return the gravity fiels
+   * @return the gravity field
    */
-  private static double XGRAV(double Z) {
+  private static double xGrav(double Z) {
     double temp = (1.0 + Z/6356.766);
     return 9.80665/(temp*temp);        
   }
@@ -464,7 +505,7 @@ public class JB2006Atmosphere {
    * @param HT HEIGHT (KM)
    * @param F10BAR  AVE 81-DAY CENTERED F10
    */
-  private static double SEMIAN (double DAY,double HT,double F10BAR) {
+  private static double semian (double DAY,double HT,double F10BAR) {
 
     double F10B = F10BAR;
     double FB2  = F10BAR*F10BAR;
@@ -506,7 +547,7 @@ public class JB2006Atmosphere {
    * @param D1950 (days since 1950)
    * @return the numebr days in year
    */
-  private static double TMOUTD(double D1950) {
+  private static double dayOfYear(double D1950) {
     int IYDAY = (int)D1950;
     double FRACO = D1950 - IYDAY;
     IYDAY = IYDAY + 364;
@@ -522,11 +563,29 @@ public class JB2006Atmosphere {
 
   // OUTPUT:
 
+  /** Get the exospheric temperature above input position.
+   * {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double)}
+   * <b> must </b> must be called before calling this function.
+   * @return the exospheric temperature (deg K)
+   */
+  public double getExosphericTemp() {
+    return temp[1];
+  }
+  
+  /** Get the temperature at input position.
+   * {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double)}
+   * <b> must </b> must be called before calling this function.
+   * @return the local temperature (deg K)
+   */
+  public double getLocalTemp() {
+    return temp[2];
+  }
+  
   /** TEMP(1): Exospheric Temperature above Input Position (deg K)
       TEMP(2): Temperature at Input Position (deg K)*/
-  public double[] TEMP = new double[3];
-  /** Total Mass-Desnity at Input Position (kg/m**3) */
-  double RHO;    
+  private double[] temp = new double[3];
+  /** Total Mass-Desnity at Input Position (kg/m<sup>3</sup>) */
+  private double rho;    
 
   // DATAS :
 

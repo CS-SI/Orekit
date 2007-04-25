@@ -12,6 +12,7 @@ public class AllTests {
     suite.addTest(CunninghamAttractionModelTest.suite());
     suite.addTest(DrozinerAttractionModelTest.suite());
     suite.addTest(DTM2000AtmosphereTest.suite());
-    return suite; 
+    suite.addTest(JB2006AtmosphereTest.suite());
+     return suite; 
   }
 }
