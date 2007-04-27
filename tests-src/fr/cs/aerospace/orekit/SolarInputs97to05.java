@@ -313,8 +313,15 @@ public class SolarInputs97to05 implements JB2006InputParameters,
   }
 
   public double get24HoursKp(AbsoluteDate date) {
-    // TODO Auto-generated method stub
-    return 0;
+    double result = 0;
+    AbsoluteDate myDate = date;
+    
+    for(int i=0; i<8; i++) {
+      result += getThreeHourlyKP(date);
+      myDate = new AbsoluteDate(myDate, -3*3600);
+    }
+        
+    return result/8;
   }
 
   public double getInstantFlux(AbsoluteDate date) {

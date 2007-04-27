@@ -6,11 +6,20 @@ import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.ParseException;
+
+import org.spaceroots.mantissa.geometry.Vector3D;
+
 import fr.cs.aerospace.orekit.FindFile;
 import fr.cs.aerospace.orekit.SolarInputs97to05;
+import fr.cs.aerospace.orekit.bodies.BodyShape;
+import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.iers.IERSData;
+import fr.cs.aerospace.orekit.models.bodies.Sun;
+import fr.cs.aerospace.orekit.models.perturbations.DTM2000AtmosphereModel;
 import fr.cs.aerospace.orekit.models.perturbations.JB2006Atmosphere;
+import fr.cs.aerospace.orekit.models.perturbations.JB2006AtmosphereModel;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
 import junit.framework.Test;
@@ -159,33 +168,36 @@ public class JB2006AtmosphereTest extends TestCase {
 
   }
   
-  public void aatestComparisonWithDTM2000() throws OrekitException, ParseException {
+  public void testComparisonWithDTM2000() throws OrekitException, ParseException {
 
 
-//    AbsoluteDate date = new AbsoluteDate("2003-10-14T02:00:00", UTCScale.getInstance());
-//
-//    Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, date);
-//    Sun sun = new Sun(); 
-//    BodyShape earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101);
-//    
-//    SolarInputs97to05 in = SolarInputs97to05.getInstance();
-//    JB2006AtmosphereModel jb = new JB2006AtmosphereModel(in, sun, earth, itrf);
-//    DTM2000AtmosphereModel dtm = new DTM2000AtmosphereModel(in, sun, earth, itrf);
-//    // Positions
-//
-//    Vector3D pos = new Vector3D(6500000.0,
-//                               -1234567.0,
-//                                4000000.0);
-//    
-//    // COMPUTE DENSITY KG/M3 RHO 
-//    
-//    // alt = 400
-//    double roJb = jb.getDensity(date, pos, Frame.getJ2000());
-//    
-//    double roDtm = dtm.getDensity(date, pos, Frame.getJ2000());
-//  
-//    System.out.println("JB :" + roJb);
-//    AssertEquals( ,"dtm :" + roDtm);
+    AbsoluteDate date = new AbsoluteDate("2003-10-14T02:00:00", UTCScale.getInstance());
+    System.out.println(" days : " + AbsoluteDate.CNES1950Epoch.minus(AbsoluteDate.ModifiedJulianEpoch)/86400);
+    Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, date);
+    Sun sun = new Sun(); 
+    OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101);
+    
+    SolarInputs97to05 in = SolarInputs97to05.getInstance();
+    earth.setAngularThreshold(1e-10);
+    JB2006AtmosphereModel jb = new JB2006AtmosphereModel(in, sun, earth, itrf);
+    DTM2000AtmosphereModel dtm = new DTM2000AtmosphereModel(in, sun, earth, itrf);
+    // Positions
+
+    Vector3D pos = new Vector3D(6500000.0,
+                               -1234567.0,
+                                4000000.0);
+    
+    // COMPUTE DENSITY KG/M3 RHO 
+    
+    // alt = 400
+    double roJb = jb.getDensity(date, pos, Frame.getJ2000());
+    
+    double roDtm = dtm.getDensity(date, pos, Frame.getJ2000());
+  
+    System.out.println("JB :" + roJb);
+    System.out.println("DTM :" + roDtm);
+    System.out.println("dif :" + (roDtm-roJb)/roJb);
+    
     
   }
   

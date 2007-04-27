@@ -67,7 +67,7 @@ public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosph
     Calendar cal = new GregorianCalendar();
     cal.setTime(date.toDate(UTCScale.getInstance()));
     int day = cal.get(Calendar.DAY_OF_YEAR);
-    
+    System.out.println(" day of year DTM : " + day);
     // compute geodetic position
     Vector3D posInBody = frame.getTransformTo(bodyFrame, date).transformPosition(position);
     GeodeticPoint inBody = earth.transform(posInBody);
@@ -81,7 +81,6 @@ public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosph
     Math.atan2(sunPos.getX()*position.getY() - sunPos.getY()*position.getX(), 
                sunPos.getX()*position.getX() + sunPos.getY()*position.getY());
     hl = Utils.trimAngle(hl, Math.PI);
-
     // get current solar activity datas and compute
     return getDensity(day, alti, lon, lat, hl, inputParams.getInstantFlux(date), 
                       inputParams.getMeanFlux(date), inputParams.getThreeHourlyKP(date), 

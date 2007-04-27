@@ -1,6 +1,7 @@
 package fr.cs.aerospace.orekit.models.perturbations;
 
 import fr.cs.aerospace.orekit.forces.perturbations.AtmosphericDrag;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 
 /** This is the realization of the Jaccia-Bowman 2006 atmospheric model.
@@ -70,12 +71,8 @@ public class JB2006Atmosphere {
                            double satLat, double satAlt, double f10,double f10B, double ap ,
                            double s10,double s10B,double xm10,double xm10B) {
     
-    satAlt /= 1000;
+    satAlt /= 1000.0;
     
-    double[] TC = new double[5];
-    double[] ALN = new double[7];
-    double[] AL10N = new double[7];
-
     // Equation (14)
 
     double tc = 379 + 3.353*f10B + 0.358*(f10-f10B)
@@ -89,14 +86,14 @@ public class JB2006Atmosphere {
     // Equation (16)
     double h = satLon - sunRA;
     double tau = h - 0.64577182 + 0.10471976 * Math.sin(h + 0.75049158);
-    double solTimeHour = ((h + PI)/DEGRAD)*(24./360.);                   
+    double solTimeHour = ((h + PI)/DEGRAD)*(24./360.);
+    
     if(solTimeHour >= 24) {
       solTimeHour = solTimeHour - 24.;              
     }
     if(solTimeHour < 0) {
       solTimeHour = solTimeHour + 24.;             
     }
-
     // Equation (17)
 
     double C = Math.pow(Math.cos(eta),2.5);
@@ -548,6 +545,9 @@ public class JB2006Atmosphere {
    * @return the numebr days in year
    */
   private static double dayOfYear(double D1950) {
+    System.out.println("date mjd JB " + D1950);
+    System.out.println("date JB " + new AbsoluteDate(AbsoluteDate.CNES1950Epoch, D1950*86400));
+    
     int IYDAY = (int)D1950;
     double FRACO = D1950 - IYDAY;
     IYDAY = IYDAY + 364;
@@ -558,6 +558,7 @@ public class JB2006Atmosphere {
       ITEMP = 3;
     }
     IYDAY = IYDAY - 365*ITEMP + 1;
+    System.out.println(" day of year JB : " + IYDAY + FRACO);
     return IYDAY + FRACO;
   }
 
@@ -655,5 +656,9 @@ public class JB2006Atmosphere {
       -0.275555432e+01,  0.110234982e+02,  0.148881951e+03,
       -0.751640284e+03,  0.637876542e+03,  0.127093998e+02,
       -0.212825156e+02,  0.275555432e+01};
+  
+  private static double[] TC = new double[5];
+  private static double[] ALN = new double[7];
+  private static double[] AL10N = new double[7];
   
 }

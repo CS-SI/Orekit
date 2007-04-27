@@ -60,8 +60,7 @@ public class JB2006AtmosphereModel extends JB2006Atmosphere implements
 
     // compute modifed julian days date
     double dateMJD = date.minus(AbsoluteDate.ModifiedJulianEpoch);
-    dateMJD /= 84000.;
-    
+    dateMJD /= 86400.;
     // compute geodetic position
     Vector3D posInBody = frame.getTransformTo(bodyFrame, date).transformPosition(position);
     GeodeticPoint inBody = earth.transform(posInBody);
