@@ -1,5 +1,7 @@
 package fr.cs.aerospace.orekit.bodies;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.utils.Line;
 
@@ -88,7 +90,6 @@ public class OneAxisEllipsoid implements BodyShape {
    * not intersect the surface
    */
   public GeodeticPoint getIntersectionPoint(Line line) {
-
     // compute some miscellaneous variables outside of the loop
     Vector3D point    = line.getOrigin();
     double z          = point.getZ();
@@ -144,6 +145,8 @@ public class OneAxisEllipsoid implements BodyShape {
    */
   public GeodeticPoint transform(Vector3D point) {
 
+    logger.info("transform(Vector3D point) called");
+    
     // compute some miscellaneous variables outside of the loop
     double z          = point.getZ();
     double z2         = z * z;
@@ -154,8 +157,11 @@ public class OneAxisEllipsoid implements BodyShape {
     double dist       = Math.sqrt(r2 + z2);
     boolean inside    = (g2r2ma2pz2 <= 0);
 
+    logger.debug("inside ellipsoid : {}", new Boolean(inside));
+    
     // point at the center
     if (dist < (epsilon * ae)) {
+      logger.debug("Point at the center.");
       return new GeodeticPoint(0.0, 0.5 * Math.PI, -ae * Math.sqrt(1.0 - e2));
     }
 
@@ -177,6 +183,7 @@ public class OneAxisEllipsoid implements BodyShape {
 
     // point on the ellipse
     if (Math.abs(k) < (epsilon * dist)) {
+      logger.debug("Point on the ellipse.");
       return new GeodeticPoint(lambda, phi, k);
     }
  
@@ -254,7 +261,7 @@ public class OneAxisEllipsoid implements BodyShape {
       double cPhi  = Math.cos(phi);
       double sPhi  = Math.sin(phi);
       double coeff = Math.sqrt(1.0 - e2 * sPhi * sPhi);
-
+      logger.debug("dPhi : {}", new Double(dPhi));
       if (dPhi < angularThreshold) {
         // angular convergence reached
         return new GeodeticPoint(lambda, phi,
@@ -297,5 +304,7 @@ public class OneAxisEllipsoid implements BodyShape {
   private double angularThreshold;
 
   private static final double ot = 1.0 / 3.0;
+  
+  private static final Logger logger = LoggerFactory.getLogger(OneAxisEllipsoid.class);
 
 }
