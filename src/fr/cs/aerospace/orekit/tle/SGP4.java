@@ -89,7 +89,7 @@ class SGP4 extends TLEPropagator {
     a = a0dp * tempa * tempa;
     e = tle.getE() - tempe;
 
-    // A highly arbitrary lower limit on e,  of 1e-6:  TODO why ?
+    // A highly arbitrary lower limit on e,  of 1e-6:  
     if( e < 1e-6) {
       e = 1e-6;
     }

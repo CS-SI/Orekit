@@ -1,7 +1,6 @@
 package fr.cs.aerospace.orekit.models.perturbations;
 
 import fr.cs.aerospace.orekit.forces.perturbations.AtmosphericDrag;
-import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 
 /** This is the realization of the Jaccia-Bowman 2006 atmospheric model.
@@ -36,7 +35,7 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * different indices, and planetary geomagnetic incides. <br>
  * More information on these indices can be found on the  <a
  * href="http://sol.spacenvironment.net/~JB2006/JB2006_index.html">
- * official JB2000 website.</a>
+ * official JB2006 website.</a>
  *</p>
  *
  * @author Bruce R Bowman (HQ AFSPC, Space Analysis Division), Feb 2006 : FORTRAN routine
@@ -545,20 +544,19 @@ public class JB2006Atmosphere {
    * @return the numebr days in year
    */
   private static double dayOfYear(double D1950) {
-    System.out.println("date mjd JB " + D1950);
-    System.out.println("date JB " + new AbsoluteDate(AbsoluteDate.CNES1950Epoch, D1950*86400));
     
     int IYDAY = (int)D1950;
     double FRACO = D1950 - IYDAY;
     IYDAY = IYDAY + 364;
+
     int ITEMP = IYDAY/1461;
+
     IYDAY = IYDAY - ITEMP*1461; 
     ITEMP = IYDAY/365;
     if (ITEMP>=3) {
       ITEMP = 3;
     }
     IYDAY = IYDAY - 365*ITEMP + 1;
-    System.out.println(" day of year JB : " + IYDAY + FRACO);
     return IYDAY + FRACO;
   }
 

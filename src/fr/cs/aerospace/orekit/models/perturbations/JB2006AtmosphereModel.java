@@ -68,7 +68,6 @@ public class JB2006AtmosphereModel extends JB2006Atmosphere implements
     // compute sun position
     Vector3D sunPosInBody = frame.getTransformTo(bodyFrame, date).transformPosition(sun.getPosition(date, frame));
     GeodeticPoint sunInBody = earth.transform(sunPosInBody);
-    
     return getDensity(dateMJD, sunInBody.longitude, sunInBody.latitude, inBody.longitude, inBody.latitude,
                       inBody.altitude, inputParams.getF10(date), inputParams.getF10B(date), 
                       inputParams.getAp(date), inputParams.getS10(date),

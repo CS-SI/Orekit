@@ -2,16 +2,16 @@ package fr.cs.aerospace.orekit.perturbations;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.ParseException;
-
 import org.spaceroots.mantissa.geometry.Vector3D;
-
 import fr.cs.aerospace.orekit.FindFile;
 import fr.cs.aerospace.orekit.SolarInputs97to05;
-import fr.cs.aerospace.orekit.bodies.BodyShape;
+import fr.cs.aerospace.orekit.bodies.GeodeticPoint;
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
@@ -165,14 +165,12 @@ public class JB2006AtmosphereTest extends TestCase {
     assertEquals(roTestCase*1e11, Math.round(myRo*1e15)/1e4,0);
     assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
     assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
-
+    
   }
   
-  public void testComparisonWithDTM2000() throws OrekitException, ParseException {
+  public void testComparisonWithDTM2000() throws OrekitException, ParseException, FileNotFoundException {
 
-
-    AbsoluteDate date = new AbsoluteDate("2003-10-14T02:00:00", UTCScale.getInstance());
-    System.out.println(" days : " + AbsoluteDate.CNES1950Epoch.minus(AbsoluteDate.ModifiedJulianEpoch)/86400);
+    AbsoluteDate date = new AbsoluteDate("2003-01-01T00:00:00", UTCScale.getInstance());
     Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, date);
     Sun sun = new Sun(); 
     OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101);
@@ -190,14 +188,61 @@ public class JB2006AtmosphereTest extends TestCase {
     // COMPUTE DENSITY KG/M3 RHO 
     
     // alt = 400
-    double roJb = jb.getDensity(date, pos, Frame.getJ2000());
-    
+    double roJb = jb.getDensity(date, pos, Frame.getJ2000());    
     double roDtm = dtm.getDensity(date, pos, Frame.getJ2000());
+
+    System.out.println("JB :" + roJb);
+    System.out.println("DTM :" + roDtm);
+    System.out.println("dif :" + (roDtm-roJb)/roJb);
+    System.out.println();
+    pos = new Vector3D(3011109.360780633,
+                       -5889822.669411588,
+                       4002170.0385907636);
+    
+    // COMPUTE DENSITY KG/M3 RHO 
+    
+    // alt = 400
+    roJb = jb.getDensity(date, pos, Frame.getJ2000());    
+    roDtm = dtm.getDensity(date, pos, Frame.getJ2000());
   
     System.out.println("JB :" + roJb);
     System.out.println("DTM :" + roDtm);
     System.out.println("dif :" + (roDtm-roJb)/roJb);
+    System.out.println();
     
+    
+    pos =new Vector3D(-1033.4793830*1000,
+                      7901.2952754*1000,
+                      6380.3565958 *1000);
+    
+    // COMPUTE DENSITY KG/M3 RHO 
+    
+    // alt = 400
+    roJb = jb.getDensity(date, pos, Frame.getJ2000());    
+    roDtm = dtm.getDensity(date, pos, Frame.getJ2000());
+
+    System.out.println("JB :" + roJb);
+    System.out.println("DTM :" + roDtm);
+    System.out.println("dif :" + (roDtm-roJb)/roJb);
+    System.out.println();
+
+    PrintWriter w = new PrintWriter(new FileOutputStream("/home/fab/resultsAtm.dat"));
+    GeodeticPoint point;
+    for (int i = 0; i<367; i++) {
+      date = new AbsoluteDate(date, 86400);
+      point = new GeodeticPoint(0, Math.toRadians(40), 300*1000);
+      pos = earth.transform(point);
+      roJb = jb.getDensity(date, pos, Frame.getJ2000());    
+      roDtm = dtm.getDensity(date, pos, Frame.getJ2000());
+      double dif = Math.abs((roJb - roDtm) / roJb );
+      if (dif>=1) {
+        System.out.println(date);
+      }
+//      w.println(date.minus(new AbsoluteDate("2003-01-01T00:00:00", UTCScale.getInstance()))/60/60/24.0 + " " + roJb + " " + roDtm);
+      w.println(date.minus(new AbsoluteDate("2003-01-01T00:00:00", UTCScale.getInstance()))/60/60/24.0 + " " + dif);
+      
+    }
+    w.close();
     
   }
   
@@ -233,11 +278,7 @@ public class JB2006AtmosphereTest extends TestCase {
     assertEquals(0 , in.getAp(date),0);
     date = new AbsoluteDate(date, 6*3600-1); 
     assertEquals(3 , in.getAp(date),0);
-  }
-    
-    
-  
-  
+  } 
   
   public void setUp() {
     System.setProperty("orekit.iers.directory",

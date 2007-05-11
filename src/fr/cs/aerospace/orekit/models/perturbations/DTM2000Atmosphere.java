@@ -11,7 +11,8 @@ import fr.cs.aerospace.orekit.forces.perturbations.AtmosphericDrag;
  * <p>
  * It is described in the paper : <br>
  *
- * <b>The DTM-2000 empirical thermosphere model with new data assimilation and constraints at lower boundary: accuracy and properties</b><br>
+ * <b>The DTM-2000 empirical thermosphere model with new data assimilation
+ *  and constraints at lower boundary: accuracy and properties</b><br>
  * 
  * <i>S. Bruinsma, G. Thuillier and F. Barlier</i> <br>
  *  
@@ -310,15 +311,15 @@ public class DTM2000Atmosphere {
     da[76]=da[66]*da[66];
 //  fonction g(l) non periodique
     double f0=a[4]*da[4]+a[5]*da[5]+a[6]*da[6]+a[69]*da[69]
-                                                        +a[82]*da[82]+a[83]*da[83]+a[84]*da[84]+a[85]*da[85]+a[86]*da[86]+a[87]*da[87];
+      +a[82]*da[82]+a[83]*da[83]+a[84]*da[84]+a[85]*da[85]+a[86]*da[86]+a[87]*da[87];
     double f1f=1.+f0*ff0;
 
     f0=f0+a[2]*da[2]+a[3]*da[3]+a74*da[74]+a77*da[77]
-                                                  +a[7]*da[7]+a[8]*da[8]
-                                                                      +a[60]*da[60]+a[61]*da[61]+a[68]*da[68]
-                                                                                                          +a[64]*da[64]+a[65]*da[65]+a[66]*da[66]
-                                                                                                                                              +a[72]*da[72]+a[73]*da[73]+a[75]*da[75]+a[76]*da[76]
-                                                                                                                                                                                               +a78*da[78]+a[79]*da[79];
+       +a[7]*da[7]+a[8]*da[8]
+         +a[60]*da[60]+a[61]*da[61]+a[68]*da[68]
+            +a[64]*da[64]+a[65]*da[65]+a[66]*da[66]
+                 +a[72]*da[72]+a[73]*da[73]+a[75]*da[75]+a[76]*da[76]
+                   +a78*da[78]+a[79]*da[79];
 //  termes annuels symetriques en latitude
     da[9]=Math.cos(rot*(day-a[11]));
     da[10]=p20*da[9];
@@ -362,14 +363,12 @@ public class DTM2000Atmosphere {
     double a90=a[90];
     double a91=a[91];
     if(kle_eq == -1) {            //hiver
-
       a88=-a88;
       a89=-a89;
       a90=-a90;
       a91=-a91;
     }
     if(kle_eq == 0) {             //equinox
-
       a88 = semestrialCorrection(a88);
       a89 = semestrialCorrection(a89);
       a90 = semestrialCorrection(a90);
@@ -382,14 +381,14 @@ public class DTM2000Atmosphere {
     da[36]=p33*s3h;
 //  fonction g[l] periodique
     double fp=a[9]*da[9]+a[10]*da[10]+a[12]*da[12]+a[13]*da[13]
-                                                            +a[15]*da[15]+a[16]*da[16]+a[17]*da[17]+a[19]*da[19]
-                                                                                                             +a[21]*da[21]+a[22]*da[22]+a[23]*da[23]+a[24]*da[24]
-                                                                                                                                                              +a[25]*da[25]+a[26]*da[26]+a[27]*da[27]+a[28]*da[28]
-                                                                                                                                                                                                               +a[29]*da[29]+a[30]*da[30]+a[31]*da[31]+a[32]*da[32]
-                                                                                                                                                                                                                                                                +a[33]*da[33]+a[34]*da[34]+a[35]*da[35]+a[36]*da[36]
-                                                                                                                                                                                                                                                                                                                 +a[37]*da[37]+a[38]*da[38]+a[39]*da[39]+a[59]*da[59]
-                                                                                                                                                                                                                                                                                                                                                                  +a88*da[88]+a89*da[89]+a90*da[90]+a91*da[91]
-                                                                                                                                                                                                                                                                                                                                                                                                           +a[92]*da[92]+a[93]*da[93];
+       +a[15]*da[15]+a[16]*da[16]+a[17]*da[17]+a[19]*da[19]
+         +a[21]*da[21]+a[22]*da[22]+a[23]*da[23]+a[24]*da[24]
+          +a[25]*da[25]+a[26]*da[26]+a[27]*da[27]+a[28]*da[28]
+           +a[29]*da[29]+a[30]*da[30]+a[31]*da[31]+a[32]*da[32]
+            +a[33]*da[33]+a[34]*da[34]+a[35]*da[35]+a[36]*da[36]
+             +a[37]*da[37]+a[38]*da[38]+a[39]*da[39]+a[59]*da[59]
+              +a88*da[88]+a89*da[89]+a90*da[90]+a91*da[91]
+               +a[92]*da[92]+a[93]*da[93];
 
 //  termes d'activite magnetique
     da[40]=p10*coste*dkp;
@@ -404,7 +403,7 @@ public class DTM2000Atmosphere {
 
 //  fonction g[l] periodique supplementaire
     fp=fp+a[40]*da[40]+a[41]*da[41]+a[42]*da[42]+a[43]*da[43]
-                                                          +a[44]*da[44]+a[45]*da[45]+a[46]*da[46]+a[47]*da[47]+a[48]*da[48];
+         +a[44]*da[44]+a[45]*da[45]+a[46]*da[46]+a[47]*da[47]+a[48]*da[48];
 
     dakp = (a[40]*p10+a[41]*p30+a[42]*p50)*coste
     +(a[43]*p11+a[44]*p31+a[45]*p51)*ch
@@ -427,7 +426,7 @@ public class DTM2000Atmosphere {
 
 //  fonction g[l] periodique supplementaire
     fp=fp +a[49]*da[49]+a[50]*da[50]+a[51]*da[51]+a[52]*da[52]+a[53]*da[53]
-                                                                        +a[54]*da[54]+a[55]*da[55]+a[56]*da[56]+a[57]*da[57]+a[58]*da[58];
+          +a[54]*da[54]+a[55]*da[55]+a[56]*da[56]+a[57]*da[57]+a[58]*da[58];
 
 //  fonction g(l) totale (couplage avec le flux)
     return (f0+fp*f1f);

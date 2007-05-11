@@ -6,7 +6,7 @@ import org.spaceroots.mantissa.geometry.Vector3D;
 
 /** Simple container of the cinematic couple Position (m) and Velocity (m/s).
  * 
- * @author F Maussion
+ * @author F. Maussion
  */
 public class PVCoordinates implements Serializable {
 
@@ -62,12 +62,10 @@ public class PVCoordinates implements Serializable {
 	    return sb.toString();
 	}
 	
-	/** The position. 
-	 */
+	/** The position. */
 	private final Vector3D position;
 	
-	/** The velocity. 
-	 */
+	/** The velocity. */
 	private final Vector3D velocity;
 
     private static final long serialVersionUID = -8311737465010015024L;

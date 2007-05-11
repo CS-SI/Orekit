@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+ <appender name="A1" class="ch.qos.logback.core.ConsoleAppender">
+   <layout class="ch.qos.logback.classic.PatternLayout">
+     <pattern>%-5r %-5p [%t] %c - %m%n</pattern>
+   </layout>
+ </appender>
+
+ <logger name="fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid">
+   <level value="WARN"/>
+ </logger>
+
+ <root>
+   <level value="DEBUG"/>
+   <appender-ref ref="A1"/>
+ </root>
+</configuration>
+
