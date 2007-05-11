@@ -7,7 +7,8 @@ import fr.cs.aerospace.orekit.forces.perturbations.AtmosphericDrag;
  * <p>
  * It is described in the paper : <br>
  *
- * <b>A New Empirical Thermospheric Density Model JB2006 Using New Solar Indices</b><br>
+ * <a href="http://sol.spacenvironment.net/~JB2006/pubs/JB2006_AIAA-6166_model.pdf">A
+ * New Empirical Thermospheric Density Model JB2006 Using New Solar Indices</a><br>
  * 
  * <i>Bruce R. Bowman, W. Kent Tobiska and Frank A. Marcos</i> <br>
  *  
@@ -15,19 +16,21 @@ import fr.cs.aerospace.orekit.forces.perturbations.AtmosphericDrag;
  *</p>
  * <p>
  * Two computation methods are proposed to the user :
+ * <ul>
  * <li> one OREKIT independant and compliant with initial FORTRAN routine entry values : 
  *        {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double)}. </li>
  * <li> one compliant with OREKIT Atmosphere interface, necessary to the 
  *        {@link AtmosphericDrag drag force model} computation. This implementation is realized
  *        by the subclass {@link JB2006AtmosphereModel}</li>
- *</p>
+ * </ul>
+ * </p>
  * <p>
  * This model provides dense output for all altidudes and positions. Output datas are :
- * <pre>
- * - Exospheric Temperature above Input Position (deg K)
- * - Temperature at Input Position (deg K)
- * - Total Mass-Density at Input Position (kg/m<sup>3</sup>) 
- * </pre>
+ * <ul>
+ * <li>Exospheric Temperature above Input Position (deg K)</li>
+ * <li>Temperature at Input Position (deg K)</li>
+ * <li>Total Mass-Density at Input Position (kg/m<sup>3</sup>)</li>
+ * </ul>
  * </p>
  * <p>
  * The model needs geographical and time information to compute general values, 
