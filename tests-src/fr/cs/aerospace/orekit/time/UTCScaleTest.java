@@ -1,31 +1,15 @@
 package fr.cs.aerospace.orekit.time;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
-
-import fr.cs.aerospace.orekit.FindFile;
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.iers.IERSData;
+import fr.cs.aerospace.orekit.frames.IERSDataResetter;
 
 import junit.framework.*;
 
 public class UTCScaleTest
   extends TestCase {
-
-  private static final File rootDir;
-  static {
-    try {
-      rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data", "/");
-    } catch (FileNotFoundException fnfe) {
-      throw new RuntimeException("unexpected failure");
-    }
-  }
 
   public UTCScaleTest(String name) {
     super(name);
@@ -110,41 +94,13 @@ public class UTCScaleTest
   }
 
   public void setUp() throws OrekitException {
-    System.setProperty("orekit.iers.directory",
-                       new File(rootDir, "regular-data").getAbsolutePath());
-    AccessController.doPrivileged(new SingletonResetter());
+    IERSDataResetter.setUp("regular-data");
     utc = UTCScale.getInstance();
   }
 
   public void tearDown() {
-    System.setProperty("orekit.iers.directory", "");
-    AccessController.doPrivileged(new SingletonResetter());
+    IERSDataResetter.tearDown();
     utc = null;
-  }
-
-  private static class SingletonResetter implements PrivilegedAction {
-    public Object run() {
-      try {
-        Field instance = UTCScale.class.getDeclaredField("instance");
-        instance.setAccessible(true);
-        instance.set(null, null);
-        instance.setAccessible(false);
-
-        instance = IERSData.class.getDeclaredField("instance");
-        instance.setAccessible(true);
-        instance.set(null, null);
-        instance.setAccessible(false);
-      } catch (SecurityException e) {
-        e.printStackTrace();
-      } catch (NoSuchFieldException e) {
-        e.printStackTrace();
-      } catch (IllegalArgumentException e) {
-        e.printStackTrace();
-      } catch (IllegalAccessException e) {
-        e.printStackTrace();
-      }
-      return null;
-    }
   }
 
   public static Test suite() {

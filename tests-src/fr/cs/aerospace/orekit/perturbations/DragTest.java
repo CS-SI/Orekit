@@ -5,6 +5,7 @@ import fr.cs.aerospace.orekit.Utils;
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.frames.IERSDataResetter;
 import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.models.perturbations.SimpleExponentialAtmosphere;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
@@ -29,11 +30,18 @@ public class DragTest extends TestCase {
       Transform toBody = Frame.getJ2000().getTransformTo(itrf, date);
       Vector3D test = Vector3D.crossProduct(toBody.getRotAxis(),posInJ2000);
       test = test.subtract(vel);
-      
-      assertEquals(0, test.getNorm(), 2.1e-5);
+      assertEquals(0, test.getNorm(), 2.9e-5);
            
    }
-       
+    
+    public void setUp() {
+      IERSDataResetter.setUp("regular-data");
+    }
+
+    public void tearDown() {
+      IERSDataResetter.tearDown();
+    }
+    
   public static Test suite() {
     return new TestSuite(DragTest.class);
   }

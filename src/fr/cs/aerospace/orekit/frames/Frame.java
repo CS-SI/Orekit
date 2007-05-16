@@ -3,9 +3,7 @@ package fr.cs.aerospace.orekit.frames;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
-
 import org.spaceroots.mantissa.geometry.Rotation;
-
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.errors.Translator;
 import fr.cs.aerospace.orekit.iers.IERSData;

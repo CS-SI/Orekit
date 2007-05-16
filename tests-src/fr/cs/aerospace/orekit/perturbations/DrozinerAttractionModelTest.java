@@ -15,6 +15,7 @@ import fr.cs.aerospace.orekit.errors.PropagationException;
 import fr.cs.aerospace.orekit.forces.perturbations.CunninghamAttractionModel;
 import fr.cs.aerospace.orekit.forces.perturbations.DrozinerAttractionModel;
 import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.frames.IERSDataResetter;
 import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.models.bodies.Sun;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
@@ -176,7 +177,7 @@ public class DrozinerAttractionModelTest extends TestCase {
         assertTrue(dif.getNorm() < 104);
         assertTrue(Math.abs(Vector3D.dotProduct(dif, T)) < 104);
         assertTrue(Math.abs(Vector3D.dotProduct(dif, N)) <  53);
-        assertTrue(Math.abs(Vector3D.dotProduct(dif, W)) <  12);
+        assertTrue(Math.abs(Vector3D.dotProduct(dif, W)) <  13);
 
       } catch (PropagationException e) {
         e.printStackTrace();
@@ -212,13 +213,11 @@ public class DrozinerAttractionModelTest extends TestCase {
     SpacecraftState drozOrb = propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date ,  86400));
     
     Vector3D dif = cunnOrb.getPVCoordinates(mu).getPosition().subtract(drozOrb.getPVCoordinates(mu).getPosition());
-    assertTrue(dif.getNorm() < 1.6e-4);
-    assertTrue(Math.abs(dif.getX()) < 5.6e-5);
-    assertTrue(Math.abs(dif.getY()) < 4.9e-5); 
-    assertTrue(Math.abs(dif.getZ()) < 1.4e-4);
+    assertEquals(0, dif.getNorm(), 1.05e-9);
   }
 
   public void setUp() {
+    IERSDataResetter.setUp("regular-data");
     try {
       mu  =  3.986004415e+14;
       ae  =  6378136.460;
@@ -238,6 +237,7 @@ public class DrozinerAttractionModelTest extends TestCase {
   }
 
   public void tearDown() {
+    IERSDataResetter.tearDown();
     itrf2000   = null;
     propagator = null;
   }

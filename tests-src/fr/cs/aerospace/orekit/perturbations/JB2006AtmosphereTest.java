@@ -1,21 +1,16 @@
 package fr.cs.aerospace.orekit.perturbations;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
-import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.text.ParseException;
 import org.spaceroots.mantissa.geometry.Vector3D;
-import fr.cs.aerospace.orekit.FindFile;
 import fr.cs.aerospace.orekit.SolarInputs97to05;
 import fr.cs.aerospace.orekit.bodies.GeodeticPoint;
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.iers.IERSData;
+import fr.cs.aerospace.orekit.frames.IERSDataResetter;
 import fr.cs.aerospace.orekit.models.bodies.Sun;
 import fr.cs.aerospace.orekit.models.perturbations.DTM2000AtmosphereModel;
 import fr.cs.aerospace.orekit.models.perturbations.JB2006Atmosphere;
@@ -28,14 +23,6 @@ import junit.framework.TestSuite;
 
 
 public class JB2006AtmosphereTest extends TestCase {
-  private static final File rootDir;
-  static {
-    try {
-      rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data", "/");
-    } catch (FileNotFoundException fnfe) {
-      throw new RuntimeException("unexpected failure");
-    }
-  }
   
   public void testWithOriginalTestsCases() throws OrekitException, ParseException {
 
@@ -281,41 +268,11 @@ public class JB2006AtmosphereTest extends TestCase {
   } 
   
   public void setUp() {
-    System.setProperty("orekit.iers.directory",
-                       new File(rootDir, "compressed-data").getAbsolutePath());
-    AccessController.doPrivileged(new SingletonResetter());
+    IERSDataResetter.setUp("regular-data");
   }
 
   public void tearDown() {
-    System.setProperty("orekit.iers.directory", "");
-    AccessController.doPrivileged(new SingletonResetter());
-  }
-
-  private static class SingletonResetter implements PrivilegedAction {
-    public Object run() {
-      try {
-        Field instance;
-        instance = UTCScale.class.getDeclaredField("instance");
-        instance.setAccessible(true);
-        instance.set(null, null);
-        instance.setAccessible(false);
-
-        instance = IERSData.class.getDeclaredField("instance");
-        instance.setAccessible(true);
-        instance.set(null, null);
-        instance.setAccessible(false);
-
-      } catch (SecurityException e) {
-
-      } catch (NoSuchFieldException e) {
-
-      } catch (IllegalArgumentException e) {
-
-      } catch (IllegalAccessException e) {
-
-      }
-      return null;
-    }
+    IERSDataResetter.tearDown();
   }
   
   public static Test suite() {

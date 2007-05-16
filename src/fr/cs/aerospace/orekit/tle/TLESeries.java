@@ -55,7 +55,7 @@ public class TLESeries {
         throw new OrekitException("Non pair line number", new String[0]);
       }
       if (TLE.isFormatOK(line1, line2)) {
-        int satNum = Integer.parseInt(line1.substring(2,7).replace(" ", "0"));
+        int satNum = Integer.parseInt(line1.substring(2,7).replace(' ','0'));
         String iD = line1.substring(9,17);
         if(satelliteNumber==0&&internationalDesignator==null) {
           satelliteNumber = satNum;

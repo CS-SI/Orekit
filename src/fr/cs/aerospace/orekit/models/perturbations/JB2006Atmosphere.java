@@ -263,11 +263,10 @@ public class JB2006Atmosphere {
       }
 
       // Equation (7) - Note that in CIRA72, AL10T5 = DLOG10(T500)
-      double AL10T5 = Math.log10(TINF);
+      double AL10T5 = Math.log(TINF)/Math.log(10);
       double ALNH5 = (5.5 * AL10T5 - 39.40) * AL10T5 + 73.13;
       ALN[6] = AL10 * (ALNH5 + 6.) + HSIGN * (Math.log(TLOC4/TLOC3)
           + FACT1 * SUM3 * AMW[6]);
-
     }
 
     // Equation (24)  - J70 Seasonal-Latitudinal Variation
@@ -275,10 +274,8 @@ public class JB2006Atmosphere {
     double TRASH = (dateMJD - 36204.) / 365.2422;
     double CAPPHI = TRASH % 1;
 
-    double signum = Math.signum(satLat);
-    if (signum == 0) {
-      signum = 1;
-    }
+    int signum = ((satLat >= 0) ? 1 : -1);
+        
     double DLRSL = 0.02 * (satAlt - 90.)
     * Math.exp(-0.045 * (satAlt - 90.))
     * signum * Math.sin(TWOPI * CAPPHI+ 1.72)

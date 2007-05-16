@@ -1,17 +1,10 @@
 package fr.cs.aerospace.orekit.frames;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.lang.reflect.Field;
 import java.text.ParseException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
-import fr.cs.aerospace.orekit.FindFile;
 import fr.cs.aerospace.orekit.Utils;
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.iers.IERSData;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
@@ -20,15 +13,6 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 public class ITRF2000FrameTest extends TestCase {
-
-  private static final File rootDir;
-  static {
-    try {
-      rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data", "/");
-    } catch (FileNotFoundException fnfe) {
-      throw new RuntimeException("unexpected failure");
-    }
-  }
 
   public void testRoughRotation() throws ParseException, OrekitException {
 
@@ -234,7 +218,7 @@ public class ITRF2000FrameTest extends TestCase {
 
   public void testAASReferenceLEO() throws OrekitException, ParseException {
 
-    setUpVallado();
+    IERSDataResetter.setUp("testitrf-data");
     
     AbsoluteDate t0 = new AbsoluteDate("2004-04-06T07:51:28.386", UTCScale.getInstance());
     t0 = new AbsoluteDate(t0, 0.000009);
@@ -281,7 +265,7 @@ public class ITRF2000FrameTest extends TestCase {
 
   public void testAASReferenceGEO() throws OrekitException, ParseException {
     
-    setUpVallado();
+    IERSDataResetter.setUp("testitrf-data");
     
     AbsoluteDate t0 = new AbsoluteDate("2004-06-01T00:00:00", UTCScale.getInstance());
     
@@ -436,55 +420,14 @@ public class ITRF2000FrameTest extends TestCase {
   }
 
   public void setUp() {
-    System.setProperty("orekit.iers.directory",
-                       new File(rootDir, "compressed-data").getAbsolutePath());
-    AccessController.doPrivileged(new SingletonResetter());
+    IERSDataResetter.setUp("regular-data");
   }
 
-  public void setUpVallado() {
-    System.setProperty("orekit.iers.directory",
-                       new File(rootDir, "testitrf-data").getAbsolutePath());
-    AccessController.doPrivileged(new SingletonResetter());
+  public void tearDown() {
+    IERSDataResetter.tearDown();
   }
 
-   public void tearDown() {
-    System.setProperty("orekit.iers.directory", "");
-    AccessController.doPrivileged(new SingletonResetter());
-  }
-
-  private static class SingletonResetter implements PrivilegedAction {
-    public Object run() {
-      try {
-        Field instance;
-        instance = UTCScale.class.getDeclaredField("instance");
-        instance.setAccessible(true);
-        instance.set(null, null);
-        instance.setAccessible(false);
-
-        instance = IERSData.class.getDeclaredField("instance");
-        instance.setAccessible(true);
-        instance.set(null, null);
-        instance.setAccessible(false);
-
-        instance = DatedEOPReader.class.getDeclaredField("instance");
-        instance.setAccessible(true);
-        instance.set(null, null);
-        instance.setAccessible(false);
-
-
-      } catch (SecurityException e) {
-
-      } catch (NoSuchFieldException e) {
-
-      } catch (IllegalArgumentException e) {
-
-      } catch (IllegalAccessException e) {
-
-      }
-      return null;
-    }
-  }
-
+ 
   /** Compare and asserts two vectors.
    * @param vRef reference vector
    * @param vResult vector to test

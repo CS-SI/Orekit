@@ -1,32 +1,16 @@
 package fr.cs.aerospace.orekit.iers;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.text.ParseException;
-
-import fr.cs.aerospace.orekit.FindFile;
 import fr.cs.aerospace.orekit.errors.OrekitException;
+import fr.cs.aerospace.orekit.frames.IERSDataResetter;
 import fr.cs.aerospace.orekit.iers.IERSData;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
-
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 public class IERSDataTest extends TestCase {
-
-  private static final File rootDir;
-  static {
-    try {
-      rootDir = FindFile.find("/tests-src/fr/cs/aerospace/orekit/data", "/");
-    } catch (FileNotFoundException fnfe) {
-      throw new RuntimeException("unexpected failure");
-    }
-  }
 
   public void testNoDirectory() {
     checkFailure("inexistant-directory");
@@ -79,8 +63,7 @@ public class IERSDataTest extends TestCase {
 
   private void checkSuccess(String directoryName) {
     try {
-      System.setProperty("orekit.iers.directory",
-                         new File(rootDir, directoryName).getAbsolutePath());
+      IERSDataResetter.setUp(directoryName);
       assertNotNull(IERSData.getInstance());
     } catch (OrekitException e) {
       fail(e.getMessage());
@@ -89,8 +72,7 @@ public class IERSDataTest extends TestCase {
 
   private void checkFailure(String directoryName) {
     try {
-      System.setProperty("orekit.iers.directory",
-                         new File(rootDir, directoryName).getAbsolutePath());
+      IERSDataResetter.setUp(directoryName);
       IERSData.getInstance();
       fail("an exeption should have been thrown");
     } catch (OrekitException e) {
@@ -100,35 +82,8 @@ public class IERSDataTest extends TestCase {
     }
   }
 
-  public void setUp() {
-    AccessController.doPrivileged(new SingletonResetter());
-  }
   public void tearDown() {
-    System.setProperty("orekit.iers.directory", "");
-    AccessController.doPrivileged(new SingletonResetter());
-  }
-
-  private static class SingletonResetter implements PrivilegedAction {
-    public Object run() {
-      try {
-
-        Field instance = UTCScale.class.getDeclaredField("instance");
-        instance.setAccessible(true);
-        instance.set(null, null);
-        instance.setAccessible(false);
-
-        instance = IERSData.class.getDeclaredField("instance");
-        instance.setAccessible(true);
-        instance.set(null, null);
-        instance.setAccessible(false);
-
-      } catch (SecurityException e) {
-      } catch (NoSuchFieldException e) {
-      } catch (IllegalArgumentException e) {
-      } catch (IllegalAccessException e) {
-      }
-      return null;
-    }
+    IERSDataResetter.tearDown();
   }
 
   public static Test suite() {
