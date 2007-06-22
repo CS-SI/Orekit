@@ -60,7 +60,9 @@ public class IERSDirectoryCrawler {
    */
   public void crawl(IERSFileVisitor visitor)
     throws OrekitException {
-    crawl(visitor, root);
+    if (root != null) {
+      crawl(visitor, root);
+    }
   }
 
   /** Crawl a directory hierarchy.
