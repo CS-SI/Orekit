@@ -6,7 +6,6 @@ import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import fr.cs.aerospace.orekit.FindFile;
-import fr.cs.aerospace.orekit.iers.IERSData;
 import fr.cs.aerospace.orekit.time.UTCScale;
 
 
@@ -41,12 +40,7 @@ public class IERSDataResetter {
         instance.set(null, null);
         instance.setAccessible(false);
 
-        instance = IERSData.class.getDeclaredField("instance");
-        instance.setAccessible(true);
-        instance.set(null, null);
-        instance.setAccessible(false);
-
-        instance = DatedEOPReader.class.getDeclaredField("instance");
+        instance = EarthOrientationHistory.class.getDeclaredField("instance");
         instance.setAccessible(true);
         instance.set(null, null);
         instance.setAccessible(false);

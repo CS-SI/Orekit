@@ -10,6 +10,7 @@ import fr.cs.aerospace.orekit.bodies.GeodeticPoint;
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.frames.IERSDataResetter;
 import fr.cs.aerospace.orekit.orbits.CircularParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.propagation.KeplerianPropagator;
@@ -165,6 +166,14 @@ public class NadirPointingAttitudeTest extends TestCase {
     assertEquals(0, Vector3D.dotProduct(dir, pos), 1e-7);    
     dir = medState.getAttitude().applyInverseTo(Vector3D.minusK);
     assertEquals(0.14886, Vector3D.angle(dir, pos), 1e-5);
+  }
+
+  public void setUp() {
+    IERSDataResetter.setUp("regular-data");
+  }
+
+  public void tearDown() {
+    IERSDataResetter.tearDown();
   }
 
   public static Test suite() {

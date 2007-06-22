@@ -10,6 +10,7 @@ import org.spaceroots.mantissa.ode.IntegratorException;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.perturbations.ThirdBodyAttraction;
 import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.frames.IERSDataResetter;
 import fr.cs.aerospace.orekit.models.bodies.Moon;
 import fr.cs.aerospace.orekit.models.bodies.Sun;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
@@ -128,8 +129,15 @@ public class ThirdBodyAttractionTest extends TestCase {
     }
     
   }     
-  
-  
+
+  public void setUp() {
+    IERSDataResetter.setUp("regular-data");
+  }
+
+  public void tearDown() {
+    IERSDataResetter.tearDown();
+  }
+
   public static Test suite() {
     return new TestSuite(ThirdBodyAttractionTest.class);
   }

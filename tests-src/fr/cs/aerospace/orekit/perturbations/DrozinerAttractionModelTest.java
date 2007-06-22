@@ -213,7 +213,7 @@ public class DrozinerAttractionModelTest extends TestCase {
     SpacecraftState drozOrb = propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date ,  86400));
     
     Vector3D dif = cunnOrb.getPVCoordinates(mu).getPosition().subtract(drozOrb.getPVCoordinates(mu).getPosition());
-    assertEquals(0, dif.getNorm(), 1.05e-9);
+    assertEquals(0, dif.getNorm(), 1.0e-8);
   }
 
   public void setUp() {

@@ -42,7 +42,7 @@ class ITRF2000Frame extends Frame {
       
 
       // get the current IERS pole correction parameters
-      PoleCorrection iCorr = DatedEOPReader.getInstance().getPoleCorrection(date);
+      PoleCorrection iCorr = EarthOrientationHistory.getInstance().getPoleCorrection(date);
 
       // compute the additional terms not included in IERS data
       PoleCorrection tCorr = tidalCorrection(date);

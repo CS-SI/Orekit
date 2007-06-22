@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import org.spaceroots.mantissa.geometry.Rotation;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.errors.Translator;
-import fr.cs.aerospace.orekit.iers.IERSData;
+import fr.cs.aerospace.orekit.iers.IERSDirectoryCrawler;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 
 /** Tridimensional references frames class.
@@ -44,7 +44,7 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * frame which is the reference frame for GPS satellites.
  * <p>This frame is used to define position on solid Earth. It rotates with
  * the Earth and includes the pole motion with respect to Earth crust as
- * provided by {@link IERSData IERS data}. Its pole axis is the IERS Reference
+ * provided by {@link IERSDirectoryCrawler IERS data}. Its pole axis is the IERS Reference
  * Pole (IRP).</p>
  *  OREKIT proposes all the intermediate frames used to build this specific frame.
  *  Here is a shematical representation of the ITRF frame tree : 
@@ -52,7 +52,7 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * <pre>
  *       
  *       - J2000 -
- *        /     \   Preccession and Nutation effects 
+ *        /     \   Precession and Nutation effects 
  *       /       \   (the complexity of the parameters changes between A and B models)
  *      /         \ 
  *  {@link #IRF2000A}    {@link #IRF2000B}    ( intermediate reference frame : true equinox and equator of date )

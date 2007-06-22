@@ -8,7 +8,10 @@ public class AllTests {
 
     TestSuite suite = new TestSuite("fr.cs.aerospace.orekit.iers"); 
 
-    suite.addTest(IERSDataTest.suite());
+    suite.addTest(IERSDirectoryCrawlerTest.suite());
+    suite.addTest(UTCTAIHistoryFilesLoaderTest.suite());
+    suite.addTest(EOPC04FilesLoaderTest.suite());
+    suite.addTest(BulletinBFilesLoaderTest.suite());
     return suite; 
 
   }

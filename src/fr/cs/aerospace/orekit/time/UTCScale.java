@@ -1,8 +1,10 @@
 package fr.cs.aerospace.orekit.time;
 
+import java.text.ParseException;
+
 import fr.cs.aerospace.orekit.errors.OrekitException;
-import fr.cs.aerospace.orekit.iers.IERSData;
 import fr.cs.aerospace.orekit.iers.Leap;
+import fr.cs.aerospace.orekit.iers.UTCTAIHistoryFilesLoader;
 
 /** Coordinated Universal Time.
  * <p>UTC is related to TAI using step adjustments from time to time
@@ -21,11 +23,10 @@ import fr.cs.aerospace.orekit.iers.Leap;
  * introduced a second corresponding to location 23:59:60, i.e. the
  * last minute of 2005 was 61 seconds long instead of 60 seconds.</p>
  * <p>The OREKIT library retrieves time steps data thanks to the {@link
- * fr.cs.aerospace.orekit.iers.IERSData IERSData} class.</p>
+ * fr.cs.aerospace.orekit.iers.IERSDirectoryCrawler IERSDirectoryCrawler} class.</p>
  * <p>This is a singleton class, so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
- * @see fr.cs.aerospace.orekit.iers.IERSData
  */
 public class UTCScale extends TimeScale {
 
@@ -36,14 +37,9 @@ public class UTCScale extends TimeScale {
     throws OrekitException {
     super("UTC");
 
-    // put the most recent leap first,
-    // as it will often be the only one really used
-    leaps = IERSData.getInstance().getTimeSteps();
-    for (int i = 0, j = leaps.length - 1; i < j; ++i, --j) {
-      Leap l   = leaps[i];
-      leaps[i] = leaps[j];
-      leaps[j] = l;
-    }
+    // get the time steps from the history file
+    // found in the IERS directories hierarchy
+    leaps = new UTCTAIHistoryFilesLoader().getTimeSteps();
 
   }
 
@@ -91,10 +87,32 @@ public class UTCScale extends TimeScale {
     return 0;
   }
 
+  /** Get the date of the first available known UTC steps.
+   * @return the start date of the available data
+   * @throws OrekitException
+   */
+  public AbsoluteDate getStartDate()
+    throws ParseException, OrekitException {
+    if (UTCStartDate == null) {
+      try {
+        AbsoluteDate ref = new AbsoluteDate("1970-01-01T00:00:00", this);
+        Leap firstLeap = leaps[leaps.length - 1];
+        UTCStartDate = new AbsoluteDate(ref, firstLeap.utcTime - firstLeap.step);
+      } catch (ParseException pe) {
+        // this should never happen with the previous fixed date string
+        throw new RuntimeException("internal error");
+      }
+    }
+    return UTCStartDate;
+  }
+
   /** Uniq instance. */
   private static TimeScale instance = null;
 
   /** Time steps. */
   private Leap[] leaps;
+
+  /** Date of the first available known UTC steps. */
+  private AbsoluteDate UTCStartDate;
 
 }

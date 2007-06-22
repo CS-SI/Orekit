@@ -1,8 +1,6 @@
 package fr.cs.aerospace.orekit.perturbations;
 
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
 import java.text.ParseException;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.SolarInputs97to05;
@@ -213,7 +211,6 @@ public class JB2006AtmosphereTest extends TestCase {
     System.out.println("dif :" + (roDtm-roJb)/roJb);
     System.out.println();
 
-    PrintWriter w = new PrintWriter(new FileOutputStream("/home/fab/resultsAtm.dat"));
     GeodeticPoint point;
     for (int i = 0; i<367; i++) {
       date = new AbsoluteDate(date, 86400);
@@ -225,11 +222,8 @@ public class JB2006AtmosphereTest extends TestCase {
       if (dif>=1) {
         System.out.println(date);
       }
-//      w.println(date.minus(new AbsoluteDate("2003-01-01T00:00:00", UTCScale.getInstance()))/60/60/24.0 + " " + roJb + " " + roDtm);
-      w.println(date.minus(new AbsoluteDate("2003-01-01T00:00:00", UTCScale.getInstance()))/60/60/24.0 + " " + dif);
       
     }
-    w.close();
     
   }
   

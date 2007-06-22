@@ -42,7 +42,7 @@ class TIRF2000Frame extends Frame {
       double tts = date.minus(AbsoluteDate.J2000Epoch);
       
       // compute Earth Rotation Angle using Nicole Capitaine model (2000)
-      double dtu1 = DatedEOPReader.getInstance().getUT1MinusUTC(date);
+      double dtu1 = EarthOrientationHistory.getInstance().getUT1MinusUTC(date);
       double taiMinusTt  = TTScale.getInstance().offsetToTAI(tts + j2000MinusJava);
       double utcMinusTai = UTCScale.getInstance().offsetFromTAI(tts + taiMinusTt + j2000MinusJava);
       double tu = (tts + taiMinusTt + utcMinusTai + dtu1) / 86400 ;

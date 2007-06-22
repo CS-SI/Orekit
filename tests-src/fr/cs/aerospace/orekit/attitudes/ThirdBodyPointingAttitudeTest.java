@@ -8,6 +8,7 @@ import fr.cs.aerospace.orekit.attitudes.models.ThirdBodyPointingAttitude;
 import fr.cs.aerospace.orekit.bodies.ThirdBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.frames.IERSDataResetter;
 import fr.cs.aerospace.orekit.models.bodies.Sun;
 import fr.cs.aerospace.orekit.orbits.CircularParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
@@ -87,7 +88,15 @@ public class ThirdBodyPointingAttitudeTest extends TestCase {
    transX = finState.getAttitude().applyInverseTo(Vector3D.plusI);
    assertEquals(0, Vector3D.angle(transX , sunPos), 1e-10);
   }
-  
+
+  public void setUp() {
+    IERSDataResetter.setUp("regular-data");
+  }
+
+  public void tearDown() {
+    IERSDataResetter.tearDown();
+  }
+
   public static Test suite() {
     return new TestSuite(ThirdBodyPointingAttitudeTest.class);
   }

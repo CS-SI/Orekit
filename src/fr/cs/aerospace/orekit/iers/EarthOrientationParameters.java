@@ -1,18 +1,43 @@
 package fr.cs.aerospace.orekit.iers;
 
 import java.io.Serializable;
+import java.util.Date;
 
+import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.PoleCorrection;
+import fr.cs.aerospace.orekit.time.AbsoluteDate;
+import fr.cs.aerospace.orekit.time.UTCScale;
 
 /** Container class for Earth Orientation Parameters provided by IERS.
  * <p>Instances of this class correspond to lines from either the
  * EOP C 04 yearly files or the bulletin B monthly files.</p>
  * @author Luc Maisonobe
- * @see IERSData
+ * @see EOPC04FilesLoader
+ * @see BulletinBFilesLoader
  * @see fr.cs.aerospace.orekit.frames.Frame
  */
 public class EarthOrientationParameters
-  implements Comparable, Serializable {
+  implements Serializable {
+
+  /** Simple constructor.
+   * @param mjd entry date
+   * @param ut1MinusUtc UT1-UTC (seconds)
+   * @param pole pole correction
+   * @exception OrekitException if the UTC scale cannot be initialized
+   */
+  public EarthOrientationParameters(int mjd, double ut1MinusUtc,
+                                    PoleCorrection pole)
+    throws OrekitException {
+
+    this.mjd         = mjd;
+    this.ut1MinusUtc = ut1MinusUtc;
+    this.pole        = pole;
+
+    // convert mjd date at 00h00 UTC to absolute date
+    long javaTime = (mjd - 40587) * 86400000l;
+    this.date     = new AbsoluteDate(new Date(javaTime), UTCScale.getInstance());
+
+  }
 
   /** Entry date (modified julian day, 00h00 UTC scale). */
   public final int mjd;
@@ -23,24 +48,9 @@ public class EarthOrientationParameters
   /** Pole correction. */
   public final PoleCorrection pole;
 
-  /** Simple constructor.
-   * @param mjd entry date
-   * @param ut1MinusUtc UT1-UTC (seconds)
-   * @param pole pole correction
-   */
-  public EarthOrientationParameters(int mjd,
-                                    double ut1MinusUtc,
-                                    PoleCorrection pole) {
-    this.mjd         = mjd;
-    this.ut1MinusUtc = ut1MinusUtc;
-    this.pole        = pole;
-  }
+  /** Entry date (absolute date). */
+  public final AbsoluteDate date;
 
-  /** Compare an entry with another one, according to date. */
-  public int compareTo(Object entry) {
-    return mjd - ((EarthOrientationParameters) entry).mjd;
-  }
-
-  private static final long serialVersionUID = -2068124502946328146L;
+  private static final long serialVersionUID = 3827689974193144490L;
 
 }

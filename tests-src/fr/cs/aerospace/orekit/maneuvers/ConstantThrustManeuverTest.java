@@ -9,6 +9,7 @@ import fr.cs.aerospace.orekit.Utils;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.maneuvers.ConstantThrustManeuver;
 import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.frames.IERSDataResetter;
 import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
@@ -67,7 +68,15 @@ public class ConstantThrustManeuverTest extends TestCase {
     assertEquals(28969, finalorb.getA()/1000, 1);
     
   }
-  
+
+  public void setUp() {
+    IERSDataResetter.setUp("regular-data");
+  }
+
+  public void tearDown() {
+    IERSDataResetter.tearDown();
+  }
+
   public static Test suite() {
     return new TestSuite(ConstantThrustManeuverTest.class);
   }

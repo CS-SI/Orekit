@@ -7,6 +7,7 @@ import fr.cs.aerospace.orekit.Utils;
 import fr.cs.aerospace.orekit.attitudes.models.LOFAlignedAttitude;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.frames.IERSDataResetter;
 import fr.cs.aerospace.orekit.orbits.CircularParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.propagation.KeplerianPropagator;
@@ -126,6 +127,14 @@ public class LOFAlinedAttitudeTest extends TestCase {
       // J is orthogonal to the orbital plane :
       assertEquals(0, Vector3D.dotProduct(vel, dir), 1e-3);
     }
+  }
+
+  public void setUp() {
+    IERSDataResetter.setUp("regular-data");
+  }
+
+  public void tearDown() {
+    IERSDataResetter.tearDown();
   }
 
   public static Test suite() {
