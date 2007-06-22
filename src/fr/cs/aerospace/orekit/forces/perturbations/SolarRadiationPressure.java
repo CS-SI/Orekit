@@ -1,7 +1,6 @@
 package fr.cs.aerospace.orekit.forces.perturbations;
 
 import org.spaceroots.mantissa.geometry.Vector3D;
-import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.bodies.ThirdBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.ForceModel;
@@ -27,27 +26,27 @@ public class SolarRadiationPressure implements ForceModel {
    *   <li>p<sub>ref</sub> = 4.56 10<sup>-6</sup> N/m<sup>2</sup></li>
    * </ul>
    * @param sun Sun model
-   * @param centralBody centralBody shape model (for umbra/penumbra computation)
+   * @param equatorialRadius spherical shape model (for umbra/penumbra computation)
    * @param spacecraft the object physical and geometrical information
    */
-  public SolarRadiationPressure(ThirdBody sun, OneAxisEllipsoid centralBody,
+  public SolarRadiationPressure(ThirdBody sun, double equatorialRadius,
                                 SolarRadiationPressureSpacecraft spacecraft) {
-    this(149597870000.0, 4.56e-6, sun, centralBody, spacecraft);
+    this(149597870000.0, 4.56e-6, sun, equatorialRadius, spacecraft);
   }
 
   /** Complete constructor.
    * @param dRef reference distance for the radiation pressure (m)
    * @param pRef reference radiation pressure at dRef (N/m<sup>2</sup>)
    * @param sun Sun model
-   * @param centralBody centralBody shape model (for umbra/penumbra computation)
+   * @param equatorialRadius spherical shape model (for umbra/penumbra computation)
    * @param spacecraft the object physical and geometrical information
    */
   public SolarRadiationPressure(double dRef, double pRef, ThirdBody sun, 
-                                OneAxisEllipsoid centralBody, SolarRadiationPressureSpacecraft spacecraft) {
+                                double equatorialRadius, SolarRadiationPressureSpacecraft spacecraft) {
     this.dRef  = dRef;
     this.pRef  = pRef;
     this.sun   = sun;
-    this.centralBody = centralBody;
+    this.equatorialRadius = equatorialRadius;
     this.spacecraft = spacecraft;
   }
 
@@ -98,12 +97,12 @@ public class SolarRadiationPressure implements ForceModel {
     Vector3D satSunVector = sun.getPosition(date, frame).subtract(position);
     // Earth apparent radius
     double r = position.getNorm();
-    if (r <= centralBody.getEquatorialRadius()) {
+    if (r <= equatorialRadius) {
       throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
                                 new String[] { Double.toString(r) });
     }
 
-    double alphaEarth = Math.atan(centralBody.getEquatorialRadius() / r);
+    double alphaEarth = Math.atan(equatorialRadius / r);
 
     // Definition of the Sun's apparent radius
     double alphaSun = sun.getRadius() / satSunVector.getNorm();
@@ -174,11 +173,11 @@ public class SolarRadiationPressure implements ForceModel {
                                                 pv.getPosition());
       double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pv.getPosition());
       double r = pv.getPosition().getNorm();
-      if (r <= centralBody.getEquatorialRadius()) {
+      if (r <= equatorialRadius) {
         throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
                                   new String[] { Double.toString(r) });
       }
-      double alphaEarth = centralBody.getEquatorialRadius() / r;
+      double alphaEarth = equatorialRadius / r;
       return sunEarthAngle - alphaEarth;
     }
 
@@ -217,11 +216,11 @@ public class SolarRadiationPressure implements ForceModel {
                                                      pv.getPosition());
       double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pv.getPosition());
       double r = pv.getPosition().getNorm();
-      if (r <= centralBody.getEquatorialRadius()) {
+      if (r <= equatorialRadius) {
         throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
                                   new String[] { Double.toString(r) });
       }
-      double alphaEarth = centralBody.getEquatorialRadius() / r;
+      double alphaEarth = equatorialRadius / r;
       double alphaSun   = sun.getRadius() / satSunVector.getNorm();
       return sunEarthAngle - alphaEarth - alphaSun;
     }
@@ -249,9 +248,13 @@ public class SolarRadiationPressure implements ForceModel {
   /** Sun model. */
   private ThirdBody sun;
 
+//  /** Earth model. */
+//  private BodyShape centralBody;
+  
   /** Earth model. */
-  private OneAxisEllipsoid centralBody;
+  private double equatorialRadius;
 
+  
   /** Spacecraft. */
   private SolarRadiationPressureSpacecraft spacecraft;
 }

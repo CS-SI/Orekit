@@ -1,7 +1,8 @@
 package fr.cs.aerospace.orekit;
 
-import org.spaceroots.mantissa.geometry.Vector3D;
+import java.util.Random;
 
+import org.spaceroots.mantissa.geometry.Vector3D;
 
 public class Utils {
   
@@ -24,11 +25,14 @@ public class Utils {
     return a - twoPi * Math.floor ((a + Math.PI - ref) / twoPi);
   }
   
-  public static void vectorToString(String comment, Vector3D v) {
-    String s = " X : " + v.getX() + "; Y :  " + v.getY() + "; Z : " + v.getZ() + ";" + " norme  : " + v.getNorm();
-    System.out.println(comment + " " + s);
+  //trim an angle between ref - PI and ref + PI
+  public static Vector3D randomVector (int size) {
+    Random rand = new Random();
+    return new Vector3D(rand.nextDouble()*size,
+                        rand.nextDouble()*size,
+                        rand.nextDouble()*size); 
   }
-  
+    
   public static final double ae =  6378136.460;
   public static final double mu =  3.986004415e+14;
   

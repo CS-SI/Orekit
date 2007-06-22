@@ -5,6 +5,9 @@ import java.io.Serializable;
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 
+import fr.cs.aerospace.orekit.frames.Transform;
+import fr.cs.aerospace.orekit.utils.PVCoordinates;
+
 /** This class is a container for attitude representation.
  * 
  * <p> It contains the attitude quaternion (used internally but represented by the
@@ -48,6 +51,13 @@ public class AttitudeKinematics implements Serializable {
    */
   public Vector3D getspinAxis() {
     return spin;
+  }
+  
+  /** Get the attitude kinematics transform.
+   * @return the transform, which can be applied on {@link PVCoordinates}
+   */
+  public Transform getAkTransform() {
+    return new Transform(attitude, spin);
   }
 
   /** Attitude quaternion */

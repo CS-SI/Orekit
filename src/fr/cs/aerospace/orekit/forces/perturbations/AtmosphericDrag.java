@@ -42,8 +42,8 @@ public class AtmosphericDrag implements ForceModel {
   public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
       throws OrekitException {
     double rho = atmosphere.getDensity(s.getDate(), s.getPVCoordinates(mu).getPosition(), s.getFrame());
+    
     Vector3D vAtm;
-
     vAtm = atmosphere.getVelocity(s.getDate(), s.getPVCoordinates(mu).getPosition(), s.getFrame());
 
     Vector3D incidence = vAtm.subtract(s.getPVCoordinates(mu).getVelocity());

@@ -5,6 +5,7 @@ import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.frames.Frame;
+import fr.cs.aerospace.orekit.frames.Transform;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
@@ -119,6 +120,13 @@ public class SpacecraftState
    */
   public Vector3D getspinAxis() {
     return attitude.getspinAxis();    
+  }
+  
+  /** Get the attitude kinematics transform.
+   * @return the transform, which can be applied on {@link PVCoordinates}
+   */
+  public Transform getAkTransform() {
+    return attitude.getAkTransform();
   }
 
   /** Get the semi-major axis.

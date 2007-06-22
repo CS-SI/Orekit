@@ -15,8 +15,6 @@ import fr.cs.aerospace.orekit.time.AbsoluteDate;
  * <p>This interface is typically used by algorithms that need to go
  * back and forth in time to look for special conditions (convergence
  * status, constraints limits, parameter values ...).</p>
-
- * @version $Id$
  * @author M. Romero
  * @author L. Maisonobe
  *

@@ -6,7 +6,6 @@ import java.io.Serializable;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
-import fr.cs.aerospace.orekit.errors.OrekitException;
 
 /** This class represents a specific instant in time.
 
@@ -70,14 +69,11 @@ public class AbsoluteDate implements Comparable, Serializable {
 
     /** Date formats to use for string conversion. */
     private static SimpleDateFormat input  = null;
-    private static SimpleDateFormat output = null;
 
     static {
       try {
         input = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         input.setTimeZone(TimeZone.getTimeZone("UTC"));
-        output = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-        output.setTimeZone(TimeZone.getTimeZone("UTC"));
         TimeScale tt = TTScale.getInstance();
         JulianEpoch         = new AbsoluteDate("-4712-01-01T12:00:00", tt);
         ModifiedJulianEpoch = new AbsoluteDate("1858-11-17T00:00:00",  tt);
@@ -184,27 +180,6 @@ public class AbsoluteDate implements Comparable, Serializable {
      return new Date(Math.round(time * 1000));
    }
    
-   /** Get a String representation of the instant location in UTC time scale.
-    * @return a string representation of the instance,
-    * in ISO-8601 format with milliseconds accuracy
-    */
-   public String toString() {
-     try {
-       return toString(UTCScale.getInstance());
-     } catch (OrekitException oe) {
-       return toString(TAIScale.getInstance());       
-     }
-   }
-
-   /** Get a String representation of the instant location.
-    * @param timeScale time scale to use
-    * @return a string representation of the instance,
-    * in ISO-8601 format with milliseconds accuracy
-    */
-   public String toString(TimeScale timeScale) {
-     return output.format(toDate(timeScale));
-   }
-
    /** Compare the instance with another date.
     * @param date other date to compare the instance to
     * @return a negative integer, zero, or a positive integer as this date
@@ -242,11 +217,10 @@ public class AbsoluteDate implements Comparable, Serializable {
      return (int)(l^(l>>>32));
    }
    
-
    /** Reference epoch in milliseconds from 1970-01-01T00:00:00 TAI. */
    private final long epoch;
    
-   /** Offset from the reference epoch in milliseconds. */
+   /** Offset from the reference epoch in seconds. */
    private final double offset;
 
    private static final long serialVersionUID = -4127860894692239957L;

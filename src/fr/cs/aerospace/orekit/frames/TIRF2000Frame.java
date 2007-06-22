@@ -2,8 +2,6 @@ package fr.cs.aerospace.orekit.frames;
 
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
-
-import fr.cs.aerospace.orekit.Utils;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.TTScale;
@@ -48,9 +46,7 @@ class TIRF2000Frame extends Frame {
       double tu = (tts + taiMinusTt + utcMinusTai + dtu1) / 86400 ;
       era  = era0 + era1A * tu + era1B * tu;
       era -= twoPi * Math.floor((era + Math.PI) / twoPi);
-      
-      double eraDeg = Utils.trimAngle(era, Math.PI);
-      eraDeg = Math.toDegrees(eraDeg);
+
       // simple rotation around the Celestial Intermediate Pole
       Rotation rRot = new Rotation(Vector3D.plusK, era);
 

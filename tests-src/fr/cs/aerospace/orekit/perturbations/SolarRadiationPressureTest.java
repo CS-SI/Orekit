@@ -11,7 +11,6 @@ import org.spaceroots.mantissa.ode.FirstOrderIntegrator;
 import org.spaceroots.mantissa.ode.FixedStepHandler;
 import org.spaceroots.mantissa.ode.GraggBulirschStoerIntegrator;
 import org.spaceroots.mantissa.ode.IntegratorException;
-
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.perturbations.SolarRadiationPressure;
@@ -41,7 +40,7 @@ public class SolarRadiationPressureTest extends TestCase {
 	    Sun sun = new Sun();
 	    OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765);
 	    SolarRadiationPressure SRP =  new SolarRadiationPressure(
-	    		sun , earth ,
+	    		sun , earth.getEquatorialRadius() ,
 	    	              (SolarRadiationPressureSpacecraft)new SphericalSpacecraft(50.0,
 	                            	  0.5, 0.5, 0.5));
         
@@ -87,7 +86,7 @@ public class SolarRadiationPressureTest extends TestCase {
 	    
 	    // creation of the force model
 		SolarRadiationPressure SRP =  new SolarRadiationPressure(
-	    		sun , new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765),
+	    		sun , new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765).getEquatorialRadius(),
 	    	              (SolarRadiationPressureSpacecraft)new SphericalSpacecraft(500.0,
 	                            	  0.7, 0.7, 0.7));
 		

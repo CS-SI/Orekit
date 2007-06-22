@@ -11,6 +11,7 @@ import fr.cs.aerospace.orekit.iers.EOPC04FilesLoader;
 import fr.cs.aerospace.orekit.iers.EarthOrientationParameters;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
+import fr.cs.aerospace.orekit.utils.DateFormatter;
 
 
 /** This class holds Earth Orientation data throughout a large time range.
@@ -71,8 +72,8 @@ public class EarthOrientationHistory implements Serializable {
       if ((previous != null) && ((current.mjd - previous.mjd) > maxGap)) {
         throw new OrekitException("missing Earth Orientation Parameters between {0} and {1}",
                                   new String[] {
-                                    previous.date.toString(UTCScale.getInstance()),
-                                    current.date.toString(UTCScale.getInstance())
+                                    DateFormatter.toString(previous.date, UTCScale.getInstance()),
+                                    DateFormatter.toString(current.date, UTCScale.getInstance())
                                   });
 
       }

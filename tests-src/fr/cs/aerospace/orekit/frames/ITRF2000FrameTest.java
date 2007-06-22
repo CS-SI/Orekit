@@ -3,11 +3,11 @@ package fr.cs.aerospace.orekit.frames;
 import java.text.ParseException;
 import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
-import fr.cs.aerospace.orekit.Utils;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
+import fr.cs.aerospace.orekit.utils.VectorFormatter;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -372,13 +372,13 @@ public class ITRF2000FrameTest extends TestCase {
     result = trans.transformPVCoordinates(pv);
 
     System.out.println( " IRF ");
-    Utils.vectorToString(" pos cals ", result.getPosition());
-    Utils.vectorToString(" pos test ", testPosIRF);
-    Utils.vectorToString(" dif ", testPosIRF.subtract(result.getPosition()));
+    System.out.println(" pos cals "+ VectorFormatter.toString(result.getPosition()));
+    System.out.println(" pos test "+ VectorFormatter.toString(testPosIRF));
+    System.out.println(" dif "+ VectorFormatter.toString(testPosIRF.subtract(result.getPosition())));
 
-    Utils.vectorToString(" vel cals ", result.getVelocity() );
-    Utils.vectorToString(" vel test ", testVelIRF);
-    Utils.vectorToString(" dif ", testVelIRF.subtract(result.getVelocity()));
+    System.out.println(" vel cals "+ VectorFormatter.toString(result.getVelocity()));
+    System.out.println(" vel test "+ VectorFormatter.toString(testVelIRF));
+    System.out.println(" dif "+ VectorFormatter.toString(testVelIRF.subtract(result.getVelocity())));
 
     System.out.println();
 
@@ -388,30 +388,30 @@ public class ITRF2000FrameTest extends TestCase {
     result = trans.transformPVCoordinates(pv);
 
     System.out.println( " TIRF ");
-    Utils.vectorToString(" pos cals ", result.getPosition());
-    Utils.vectorToString(" pos test ", testPosTIRF);
-    Utils.vectorToString(" dif ", testPosTIRF.subtract(result.getPosition()));
+    System.out.println(" pos cals "+ VectorFormatter.toString(result.getPosition()));
+    System.out.println(" pos test "+ VectorFormatter.toString(testPosTIRF));
+    System.out.println(" dif "+ VectorFormatter.toString(testPosTIRF.subtract(result.getPosition())));
 
-    Utils.vectorToString(" vel cals ", result.getVelocity() );
-    Utils.vectorToString(" vel test ", testVelTIRF);
-    Utils.vectorToString(" dif ", testVelTIRF.subtract(result.getVelocity()));
+    System.out.println(" vel cals "+ VectorFormatter.toString(result.getVelocity() ));
+    System.out.println(" vel test "+ VectorFormatter.toString(testVelTIRF));
+    System.out.println(" dif "+ VectorFormatter.toString(testVelTIRF.subtract(result.getVelocity())));
 
     System.out.println();
 
     
     
-//  pv = new PVCoordinates(testPosJ2000 , testVelJ2000);
-    trans = j2000.getTransformTo(itrf, t0);  
+//  pv = new PVCoordinates(testPosJ2000,testVelJ2000);
+    trans = j2000.getTransformTo(itrf,t0);  
     result = trans.transformPVCoordinates(pv);
 
     System.out.println( " ITRF ");
-    Utils.vectorToString(" pos cals ", result.getPosition());
-    Utils.vectorToString(" pos test ", testPosITRF);
-    Utils.vectorToString(" dif ", testPosITRF.subtract(result.getPosition()));
+    System.out.println(" pos cals "+ VectorFormatter.toString(result.getPosition()));
+    System.out.println(" pos test "+ VectorFormatter.toString(testPosITRF));
+    System.out.println(" dif "+ VectorFormatter.toString(testPosITRF.subtract(result.getPosition())));
 
-    Utils.vectorToString(" vel cals ", result.getVelocity() );
-    Utils.vectorToString(" vel test ", testVelITRF);
-    Utils.vectorToString(" dif ", testVelITRF.subtract(result.getVelocity()));
+    System.out.println(" vel cals "+ VectorFormatter.toString(result.getVelocity() ));
+    System.out.println(" vel test "+ VectorFormatter.toString(testVelITRF));
+    System.out.println(" dif "+ VectorFormatter.toString(testVelITRF.subtract(result.getVelocity())));
 
     System.out.println();
 

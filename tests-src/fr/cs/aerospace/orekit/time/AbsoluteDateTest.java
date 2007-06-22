@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.util.Date;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.IERSDataResetter;
+import fr.cs.aerospace.orekit.utils.DateFormatter;
 
 import junit.framework.*;
 
@@ -26,18 +27,18 @@ public class AbsoluteDateTest
   public void testOutput() {
     TimeScale tt = TTScale.getInstance();
     assertEquals("1950-01-01T01:01:01.000",
-                 new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 3661.0).toString(tt));
+                 DateFormatter.toString(new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 3661.0),tt));
     assertEquals("2000-01-01T13:01:01.000",
-                 new AbsoluteDate(AbsoluteDate.J2000Epoch, 3661.0).toString(tt));
+                 DateFormatter.toString(new AbsoluteDate(AbsoluteDate.J2000Epoch, 3661.0),tt));
   }
   
   public void testJ2000() {
     assertEquals("2000-01-01T12:00:00.000",
-                 AbsoluteDate.J2000Epoch.toString(TTScale.getInstance()));
+                 DateFormatter.toString(AbsoluteDate.J2000Epoch,TTScale.getInstance()));
     assertEquals("2000-01-01T11:59:27.816",
-                 AbsoluteDate.J2000Epoch.toString(TAIScale.getInstance()));
+                 DateFormatter.toString(AbsoluteDate.J2000Epoch,TAIScale.getInstance()));
     assertEquals("2000-01-01T11:58:55.816",
-                 AbsoluteDate.J2000Epoch.toString(utc));
+                 DateFormatter.toString(AbsoluteDate.J2000Epoch,utc));
   }
 
   public void testFraction() throws ParseException {
@@ -57,12 +58,12 @@ public class AbsoluteDateTest
   public void testUTC() throws ParseException {
 	  AbsoluteDate date =
 		  new AbsoluteDate("2002-01-01T00:00:01", utc);
-	  assertEquals("2002-01-01T00:00:01.000", date.toString());
+	  assertEquals("2002-01-01T00:00:01.000", DateFormatter.toString(date));
   }
   
   public void test1970() throws ParseException {
 	  AbsoluteDate date = new AbsoluteDate(new Date(0l), utc);
-	  assertEquals("1970-01-01T00:00:00.000", date.toString());
+	  assertEquals("1970-01-01T00:00:00.000", DateFormatter.toString(date));
   }
 
   public void setUp() throws OrekitException {
