@@ -1,24 +1,23 @@
 package fr.cs.aerospace.orekit.tutorials;
 
 import java.text.ParseException;
-
 import org.spaceroots.mantissa.ode.FirstOrderIntegrator;
-import org.spaceroots.mantissa.ode.FixedStepHandler;
 import org.spaceroots.mantissa.ode.GraggBulirschStoerIntegrator;
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.ForceModel;
 import fr.cs.aerospace.orekit.forces.perturbations.CunninghamAttractionModel;
 import fr.cs.aerospace.orekit.frames.Frame;
-import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
+import fr.cs.aerospace.orekit.propagation.FixedStepHandler;
 import fr.cs.aerospace.orekit.propagation.IntegratedEphemeris;
 import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
 import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;
+import fr.cs.aerospace.orekit.utils.DateFormatter;
 
 
 /** The aim of this tutorial is to manipulate the Numerical propagator
@@ -168,22 +167,29 @@ public class NumericalPropagation {
                        finalState.getParameters());
     }
   
-    private static class tutorialStepHandler implements FixedStepHandler {
+    private static class tutorialStepHandler extends FixedStepHandler {
 
       private tutorialStepHandler() {
         //private constructor
       }
-      
-      public void handleStep(double t, double[] y, boolean isLast) {
-        System.out.println(" step time : " + t);
-        OrbitalParameters stepParameters = 
-          new EquinoctialParameters(y[0], y[1], y[2], y[3], y[4], y[5],
-                                    EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                    Frame.getJ2000());
-        System.out.println(" step state : " + stepParameters);
+
+      public void handleStep(SpacecraftState currentState, boolean isLast) {
+        System.out.println(" step time : " + DateFormatter.toString(currentState.getDate()));
+        System.out.println(" step state : " + currentState.getParameters());
         if (isLast) {
           System.out.println(" this was the last step ");
         }
+        
+      }
+
+      public boolean requiresDenseOutput() {
+        // TODO Auto-generated method stub
+        return false;
+      }
+
+      public void reset() {
+        // TODO Auto-generated method stub
+        
       }
       
     }

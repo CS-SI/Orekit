@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.text.ParseException;
 import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.FirstOrderIntegrator;
-import org.spaceroots.mantissa.ode.FixedStepHandler;
 import org.spaceroots.mantissa.ode.GraggBulirschStoerIntegrator;
 import org.spaceroots.mantissa.ode.IntegratorException;
 import fr.cs.aerospace.orekit.errors.OrekitException;
@@ -16,6 +15,7 @@ import fr.cs.aerospace.orekit.models.bodies.Sun;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
+import fr.cs.aerospace.orekit.propagation.FixedStepHandler;
 import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
 import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
@@ -48,7 +48,7 @@ public class ThirdBodyAttractionTest extends TestCase {
     
     // Step Handler
     
-    TBAStepHandler sh = new TBAStepHandler(TBAStepHandler.SUN);
+    TBAStepHandler sh = new TBAStepHandler(TBAStepHandler.SUN, date);
     AbsoluteDate finalDate = new AbsoluteDate(date , 2*365*period);
     calc.propagate(new SpacecraftState(orbit) , finalDate, Math.floor(period), sh );
     
@@ -75,7 +75,7 @@ public class ThirdBodyAttractionTest extends TestCase {
     
     // Step Handler
     
-    TBAStepHandler sh = new TBAStepHandler(TBAStepHandler.MOON);
+    TBAStepHandler sh = new TBAStepHandler(TBAStepHandler.MOON, date);
     AbsoluteDate finalDate = new AbsoluteDate(date , 365*period);
     calc.propagate(new SpacecraftState(orbit) , finalDate, Math.floor(period), sh );
     
@@ -83,15 +83,17 @@ public class ThirdBodyAttractionTest extends TestCase {
   
   private double mu = 3.98600E14;
   
-  private static class TBAStepHandler implements FixedStepHandler {
+  private static class TBAStepHandler extends FixedStepHandler {
     
     public static final int MOON = 1;
     public static final int SUN = 2;
     public static final int SUNandMOON = 3;
     private int type;
+    AbsoluteDate date;
     
-    private TBAStepHandler(int type) throws FileNotFoundException {
+    private TBAStepHandler(int type, AbsoluteDate date) throws FileNotFoundException {
       this.type = type;
+      this.date = date;
     }
     
     public void handleStep(double t, double[]y, boolean isLastStep) {
@@ -126,6 +128,20 @@ public class ThirdBodyAttractionTest extends TestCase {
     private double ySun(double t) {
       return 1.43526e-3 + 7.49765e-11 * t + 6.9448e-5 * 
       Math.cos(3.9820426e-7*t) + 17.6083e-5 * Math.sin(3.9820426e-7*t);
+    }
+
+    public void handleStep(SpacecraftState currentState, boolean isLast) {
+      this.handleStep(currentState.getDate().minus(date), new double[] {0,0,0,currentState.getHx(), currentState.getHy()}, isLast);    
+    }
+
+    public boolean requiresDenseOutput() {
+      // TODO Auto-generated method stub
+      return false;
+    }
+
+    public void reset() {
+      // TODO Auto-generated method stub
+      
     }
     
   }     

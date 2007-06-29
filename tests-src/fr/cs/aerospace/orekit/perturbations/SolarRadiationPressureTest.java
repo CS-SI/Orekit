@@ -8,7 +8,6 @@ import fr.cs.aerospace.orekit.models.spacecraft.SphericalSpacecraft;
 import fr.cs.aerospace.orekit.models.spacecraft.SolarRadiationPressureSpacecraft;
 import org.spaceroots.mantissa.ode.DerivativeException;
 import org.spaceroots.mantissa.ode.FirstOrderIntegrator;
-import org.spaceroots.mantissa.ode.FixedStepHandler;
 import org.spaceroots.mantissa.ode.GraggBulirschStoerIntegrator;
 import org.spaceroots.mantissa.ode.IntegratorException;
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
@@ -19,6 +18,7 @@ import fr.cs.aerospace.orekit.frames.IERSDataResetter;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
+import fr.cs.aerospace.orekit.propagation.FixedStepHandler;
 import fr.cs.aerospace.orekit.propagation.KeplerianPropagator;
 import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
 import fr.cs.aerospace.orekit.propagation.SpacecraftState;
@@ -113,16 +113,31 @@ public class SolarRadiationPressureTest extends TestCase {
 	
 	private double mu = 3.98600E14;
 	  	
-	private class SolarStepHandler implements FixedStepHandler {
+	private class SolarStepHandler extends FixedStepHandler {
 
 		private SolarStepHandler() {
 		}
 		
 		public void handleStep(double t, double[]y, boolean isLastStep) {
-			double radius = Math.sqrt((y[1]-0.00940313)*(y[1]-0.00940313) 
-	        		+ (y[2]-0.013679)*(y[2]-0.013679));
-	        checkRadius(radius , 0.00351 , 0.00394);
+
 		}
+
+    public void handleStep(SpacecraftState currentState, boolean isLast) {
+        double radius = Math.sqrt((currentState.getEx()-0.00940313)*(currentState.getEx()-0.00940313) 
+                                + (currentState.getEy()-0.013679)*(currentState.getEy()-0.013679));
+                        checkRadius(radius , 0.00351 , 0.00394);
+      
+    }
+
+    public boolean requiresDenseOutput() {
+      // TODO Auto-generated method stub
+      return false;
+    }
+
+    public void reset() {
+      // TODO Auto-generated method stub
+      
+    }
 
 
 	}

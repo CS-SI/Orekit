@@ -6,7 +6,6 @@ import org.spaceroots.mantissa.geometry.Rotation;
 import org.spaceroots.mantissa.geometry.Vector3D;
 import org.spaceroots.mantissa.ode.ClassicalRungeKuttaIntegrator;
 import org.spaceroots.mantissa.ode.DerivativeException;
-import org.spaceroots.mantissa.ode.FixedStepHandler;
 import org.spaceroots.mantissa.ode.GraggBulirschStoerIntegrator;
 import org.spaceroots.mantissa.ode.IntegratorException;
 import fr.cs.aerospace.orekit.errors.OrekitException;
@@ -22,6 +21,7 @@ import fr.cs.aerospace.orekit.orbits.KeplerianParameters;
 import fr.cs.aerospace.orekit.orbits.Orbit;
 import fr.cs.aerospace.orekit.orbits.OrbitalParameters;
 import fr.cs.aerospace.orekit.propagation.EcksteinHechlerPropagator;
+import fr.cs.aerospace.orekit.propagation.FixedStepHandler;
 import fr.cs.aerospace.orekit.propagation.NumericalPropagator;
 import fr.cs.aerospace.orekit.propagation.SpacecraftState;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
@@ -72,24 +72,23 @@ public class CunninghamAttractionModelTest extends TestCase {
 
   }
 
-  private static class SpotStepHandler implements FixedStepHandler {
+  private static class SpotStepHandler extends FixedStepHandler {
 
     public SpotStepHandler(AbsoluteDate date, double mu) {
-      this.date = date;
       this.mu   = mu;
       sun       = new Sun();
       previous  = Double.NaN;
     }
 
-    public void handleStep(double t, double[] y, boolean isLastStep) {
-      OrbitalParameters op =
-        new EquinoctialParameters(y[0], y[1], y[2], y[3], y[4], y[5],
-                                  EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                  Frame.getJ2000());
+    private double mu;
+    private Sun sun;
+    private double previous;
+    public void handleStep(SpacecraftState currentState, boolean isLast) {
 
-      Vector3D pos = op.getPVCoordinates(mu).getPosition();
-      Vector3D vel = op.getPVCoordinates(mu).getVelocity();
-      AbsoluteDate current = new AbsoluteDate(date, t);
+
+      Vector3D pos = currentState.getPVCoordinates(mu).getPosition();
+      Vector3D vel = currentState.getPVCoordinates(mu).getVelocity();
+      AbsoluteDate current = currentState.getDate();
       Vector3D sunPos;
       try {
         sunPos = sun.getPosition(current , Frame.getJ2000());
@@ -106,10 +105,15 @@ public class CunninghamAttractionModelTest extends TestCase {
       previous = angle;
     }
 
-    private AbsoluteDate date;
-    private double mu;
-    private Sun sun;
-    private double previous;
+    public boolean requiresDenseOutput() {
+      // TODO Auto-generated method stub
+      return false;
+    }
+
+    public void reset() {
+      // TODO Auto-generated method stub
+      
+    }
 
   }
   
@@ -150,26 +154,22 @@ public class CunninghamAttractionModelTest extends TestCase {
     
   }
   
-  private class EckStepHandler implements FixedStepHandler {
+  private class EckStepHandler extends FixedStepHandler {
     
     private EckStepHandler(Orbit initialOrbit)
       throws FileNotFoundException, OrekitException {
-      date = initialOrbit.getDate();
       referencePropagator =
         new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit), ae, mu, c20, c30, c40, c50, c60);
     }
     
-    public void handleStep(double t, double[] y, boolean isLastStep) {
+    private EcksteinHechlerPropagator referencePropagator;
+    public void handleStep(SpacecraftState currentState, boolean isLast) {
       try {
-        OrbitalParameters op =
-          new EquinoctialParameters(y[0], y[1], y[2], y[3], y[4], y[5],
-                                    EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                    Frame.getJ2000());
-        AbsoluteDate current = new AbsoluteDate(date, t);
+  
 
-        SpacecraftState EHPOrbit   = referencePropagator.getSpacecraftState(current);
+        SpacecraftState EHPOrbit   = referencePropagator.getSpacecraftState(currentState.getDate());
         Vector3D posEHP  = EHPOrbit.getPVCoordinates(mu).getPosition();
-        Vector3D posDROZ = op.getPVCoordinates(mu).getPosition();
+        Vector3D posDROZ = currentState.getPVCoordinates(mu).getPosition();
         Vector3D velEHP  = EHPOrbit.getPVCoordinates(mu).getVelocity();
         Vector3D dif     = posEHP.subtract(posDROZ);
 
@@ -185,9 +185,18 @@ public class CunninghamAttractionModelTest extends TestCase {
       } catch (PropagationException e) {
         e.printStackTrace();
       }
+      
     }
-    private AbsoluteDate date;
-    private EcksteinHechlerPropagator referencePropagator;
+
+    public boolean requiresDenseOutput() {
+      // TODO Auto-generated method stub
+      return false;
+    }
+
+    public void reset() {
+      // TODO Auto-generated method stub
+      
+    }
     
   }
   // test the difference with the Cunningham model

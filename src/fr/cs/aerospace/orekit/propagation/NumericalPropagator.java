@@ -179,10 +179,19 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
    * @exception OrekitException if integration cannot be performed
    */     
   public SpacecraftState propagate(SpacecraftState initialState, AbsoluteDate finalDate,
-                                   double h, FixedStepHandler handler)
+                                   double h, fr.cs.aerospace.orekit.propagation.FixedStepHandler handler)
   throws OrekitException {
-    return propagate(initialState, finalDate, new StepNormalizer(h, handler));
+    handler.initialize(initialState.getDate(), akProvider, initialState.getFrame(), mu);
+    return propagate(initialState, finalDate, new StepNormalizer(h, handler.getMantissaStepHandler()));
   }
+  
+  public SpacecraftState propagate(SpacecraftState initialState,
+                                    AbsoluteDate finalDate, fr.cs.aerospace.orekit.propagation.StepHandler handler)
+   throws OrekitException {
+    handler.initialize(initialState.getDate(), akProvider, initialState.getFrame(), mu);
+    return propagate(initialState, finalDate, handler.getMantissaStepHandler());
+  }
+
 
   /** Propagate an orbit and call a user handler after each successful step.
    * @param initialState the state to extrapolate
@@ -191,7 +200,7 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
    * @return the {@link SpacecraftState} at the final date 
    * @exception OrekitException if integration cannot be performed
    */    
-  public SpacecraftState propagate(SpacecraftState initialState,
+  private SpacecraftState propagate(SpacecraftState initialState,
                                    AbsoluteDate finalDate, StepHandler handler)
   throws OrekitException {
 
