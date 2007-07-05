@@ -7,7 +7,7 @@
    </layout>
  </appender>
 
- <logger name="fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid">
+ <logger name="fr.cs.orekit.bodies.OneAxisEllipsoid">
    <level value="WARN"/>
  </logger>
 
