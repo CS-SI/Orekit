@@ -1,6 +1,6 @@
 package fr.cs.aerospace.orekit.models.bodies;
 
-import org.spaceroots.mantissa.geometry.Vector3D;
+import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.bodies.ThirdBody;
 import fr.cs.aerospace.orekit.errors.OrekitException;

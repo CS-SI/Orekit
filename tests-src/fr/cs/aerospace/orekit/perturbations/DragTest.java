@@ -1,6 +1,6 @@
 package fr.cs.aerospace.orekit.perturbations;
 
-import org.spaceroots.mantissa.geometry.Vector3D;
+import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.aerospace.orekit.Utils;
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.aerospace.orekit.errors.OrekitException;

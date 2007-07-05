@@ -1,6 +1,6 @@
 package fr.cs.aerospace.orekit.models.spacecraft;
 
-import org.spaceroots.mantissa.geometry.Vector3D;
+import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.aerospace.orekit.forces.perturbations.SolarRadiationPressure;
 
 /** Adapted container for the SolarRadiationPressure force model.

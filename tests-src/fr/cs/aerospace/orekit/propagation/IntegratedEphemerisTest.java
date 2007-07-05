@@ -1,9 +1,9 @@
 package fr.cs.aerospace.orekit.propagation;
 
 import java.io.FileNotFoundException;
-import org.spaceroots.mantissa.geometry.Vector3D;
-import org.spaceroots.mantissa.ode.FirstOrderIntegrator;
-import org.spaceroots.mantissa.ode.GraggBulirschStoerIntegrator;
+import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.ode.FirstOrderIntegrator;
+import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
 
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;

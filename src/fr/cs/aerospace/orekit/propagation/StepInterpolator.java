@@ -1,6 +1,6 @@
 package fr.cs.aerospace.orekit.propagation;
 
-import org.spaceroots.mantissa.ode.DerivativeException;
+import org.apache.commons.math.ode.DerivativeException;
 
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;

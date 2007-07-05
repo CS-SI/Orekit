@@ -1,8 +1,8 @@
 package fr.cs.aerospace.orekit.frames;
 
 import java.text.ParseException;
-import org.spaceroots.mantissa.geometry.Rotation;
-import org.spaceroots.mantissa.geometry.Vector3D;
+import org.apache.commons.math.geometry.Rotation;
+import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
 import fr.cs.aerospace.orekit.time.UTCScale;

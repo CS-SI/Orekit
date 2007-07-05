@@ -1,6 +1,6 @@
 package fr.cs.aerospace.orekit.bodies;
 
-import org.spaceroots.mantissa.geometry.Vector3D;
+import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.aerospace.orekit.utils.Line;
 
 /** Modelization of one-axis ellipsoid.

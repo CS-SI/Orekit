@@ -3,7 +3,7 @@ package fr.cs.aerospace.orekit.propagation;
 import fr.cs.aerospace.orekit.Utils;
 
 import junit.framework.*;
-import org.spaceroots.mantissa.geometry.Vector3D;
+import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.errors.PropagationException;
 import fr.cs.aerospace.orekit.frames.Frame;

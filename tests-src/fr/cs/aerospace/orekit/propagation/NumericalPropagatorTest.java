@@ -1,8 +1,8 @@
 package fr.cs.aerospace.orekit.propagation;
 
 import junit.framework.*;
-import org.spaceroots.mantissa.ode.DormandPrince853Integrator;
-import org.spaceroots.mantissa.geometry.Vector3D;
+import org.apache.commons.math.ode.DormandPrince853Integrator;
+import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.orbits.EquinoctialParameters;

@@ -2,8 +2,8 @@ package fr.cs.aerospace.orekit.frames;
 
 import java.util.Random;
 
-import org.spaceroots.mantissa.geometry.Rotation;
-import org.spaceroots.mantissa.geometry.Vector3D;
+import org.apache.commons.math.geometry.Rotation;
+import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.aerospace.orekit.utils.PVCoordinates;
 import junit.framework.Test;
 import junit.framework.TestCase;

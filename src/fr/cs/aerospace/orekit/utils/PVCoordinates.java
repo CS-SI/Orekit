@@ -2,7 +2,7 @@ package fr.cs.aerospace.orekit.utils;
 
 import java.io.Serializable;
 
-import org.spaceroots.mantissa.geometry.Vector3D;
+import org.apache.commons.math.geometry.Vector3D;
 
 /** Simple container of the cinematic couple Position (m) and Velocity (m/s).
  * 

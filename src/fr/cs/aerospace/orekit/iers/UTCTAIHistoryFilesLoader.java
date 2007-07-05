@@ -165,6 +165,8 @@ public class UTCTAIHistoryFilesLoader extends IERSFileVisitor {
                                 new String[] { file.getAbsolutePath() });        
     }
 
+    readFile = file;
+
   }
 
   /** Already read file. */

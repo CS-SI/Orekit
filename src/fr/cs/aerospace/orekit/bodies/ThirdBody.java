@@ -3,7 +3,7 @@ package fr.cs.aerospace.orekit.bodies;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.time.AbsoluteDate;
-import org.spaceroots.mantissa.geometry.Vector3D;
+import org.apache.commons.math.geometry.Vector3D;
 
 /** This class represents an attracting body different from the central one.
  * @author E. Delente

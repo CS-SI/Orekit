@@ -2,7 +2,7 @@ package fr.cs.aerospace.orekit.attitudes;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
-import org.spaceroots.mantissa.geometry.Vector3D;
+import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.aerospace.orekit.Utils;
 import fr.cs.aerospace.orekit.attitudes.models.LOFAlignedAttitude;
 import fr.cs.aerospace.orekit.errors.OrekitException;

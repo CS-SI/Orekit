@@ -2,7 +2,7 @@ package fr.cs.aerospace.orekit.models.perturbations;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import org.spaceroots.mantissa.geometry.Vector3D;
+import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.aerospace.orekit.Utils;
 import fr.cs.aerospace.orekit.bodies.BodyShape;
 import fr.cs.aerospace.orekit.bodies.GeodeticPoint;

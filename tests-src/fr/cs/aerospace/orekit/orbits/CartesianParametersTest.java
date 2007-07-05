@@ -2,7 +2,7 @@ package fr.cs.aerospace.orekit.orbits;
 
 import junit.framework.*;
 
-import org.spaceroots.mantissa.geometry.Vector3D;
+import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.aerospace.orekit.Utils;
 import fr.cs.aerospace.orekit.frames.Frame;

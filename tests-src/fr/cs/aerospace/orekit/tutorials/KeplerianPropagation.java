@@ -2,8 +2,8 @@ package fr.cs.aerospace.orekit.tutorials;
 
 import java.text.ParseException;
 
-import org.spaceroots.mantissa.ode.ClassicalRungeKuttaIntegrator;
-import org.spaceroots.mantissa.ode.FirstOrderIntegrator;
+import org.apache.commons.math.ode.ClassicalRungeKuttaIntegrator;
+import org.apache.commons.math.ode.FirstOrderIntegrator;
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;

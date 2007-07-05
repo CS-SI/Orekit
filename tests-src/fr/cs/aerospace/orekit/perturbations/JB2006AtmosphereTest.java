@@ -2,7 +2,7 @@ package fr.cs.aerospace.orekit.perturbations;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
-import org.spaceroots.mantissa.geometry.Vector3D;
+import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.aerospace.orekit.SolarInputs97to05;
 import fr.cs.aerospace.orekit.bodies.GeodeticPoint;
 import fr.cs.aerospace.orekit.bodies.OneAxisEllipsoid;

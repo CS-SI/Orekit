@@ -1,6 +1,6 @@
 package fr.cs.aerospace.orekit.models.spacecraft;
 
-import org.spaceroots.mantissa.geometry.Vector3D;
+import org.apache.commons.math.geometry.Vector3D;
 
 /** This class represents the features of a simplified spacecraft.
  * <p>The model of this spacecraft is a simple spherical model, this

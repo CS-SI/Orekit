@@ -1,7 +1,7 @@
 package fr.cs.aerospace.orekit.propagation;
 
-import org.spaceroots.mantissa.ode.DerivativeException;
-import org.spaceroots.mantissa.ode.StepInterpolator;
+import org.apache.commons.math.ode.DerivativeException;
+import org.apache.commons.math.ode.StepInterpolator;
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematicsProvider;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.frames.Frame;
@@ -25,7 +25,7 @@ public abstract class StepHandler {
      this.mu = mu;
   }
   
-  protected org.spaceroots.mantissa.ode.StepHandler getMantissaStepHandler() {
+  protected org.apache.commons.math.ode.StepHandler getMantissaStepHandler() {
    return mantissaStepHandler;
  }
 
@@ -44,7 +44,7 @@ public abstract class StepHandler {
   
   mappingStepHandler mantissaStepHandler;
   
-  private class mappingStepHandler implements org.spaceroots.mantissa.ode.StepHandler {
+  private class mappingStepHandler implements org.apache.commons.math.ode.StepHandler {
     
     public void handleStep(StepInterpolator interpolator, boolean isLast) throws DerivativeException {
      

@@ -1,10 +1,10 @@
 package fr.cs.aerospace.orekit.maneuvers;
 
 import java.text.ParseException;
-import org.spaceroots.mantissa.geometry.Vector3D;
-import org.spaceroots.mantissa.ode.DerivativeException;
-import org.spaceroots.mantissa.ode.GraggBulirschStoerIntegrator;
-import org.spaceroots.mantissa.ode.IntegratorException;
+import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.ode.DerivativeException;
+import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
+import org.apache.commons.math.ode.IntegratorException;
 import fr.cs.aerospace.orekit.Utils;
 import fr.cs.aerospace.orekit.errors.OrekitException;
 import fr.cs.aerospace.orekit.forces.maneuvers.ConstantThrustManeuver;

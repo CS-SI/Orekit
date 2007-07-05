@@ -23,7 +23,7 @@ public abstract class FixedStepHandler {
      this.mu = mu;
   }
   
-  protected org.spaceroots.mantissa.ode.FixedStepHandler getMantissaStepHandler() {
+  protected org.apache.commons.math.ode.FixedStepHandler getMantissaStepHandler() {
    return mantissaFixedStepHandler;
  }
 
@@ -41,7 +41,7 @@ public abstract class FixedStepHandler {
   
   mappingFixedStepHandler mantissaFixedStepHandler;
   
-  private class mappingFixedStepHandler implements org.spaceroots.mantissa.ode.FixedStepHandler {
+  private class mappingFixedStepHandler implements org.apache.commons.math.ode.FixedStepHandler {
     
     public void handleStep(double t, double[] y, boolean isLast) {
       OrbitalParameters op =

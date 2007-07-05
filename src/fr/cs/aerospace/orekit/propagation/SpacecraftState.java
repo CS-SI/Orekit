@@ -1,8 +1,8 @@
 package fr.cs.aerospace.orekit.propagation;
 
 import java.io.Serializable;
-import org.spaceroots.mantissa.geometry.Rotation;
-import org.spaceroots.mantissa.geometry.Vector3D;
+import org.apache.commons.math.geometry.Rotation;
+import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematics;
 import fr.cs.aerospace.orekit.frames.Frame;
 import fr.cs.aerospace.orekit.frames.Transform;

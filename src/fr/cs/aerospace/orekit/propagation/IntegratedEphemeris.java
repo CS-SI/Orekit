@@ -1,6 +1,6 @@
 package fr.cs.aerospace.orekit.propagation;
 
-import org.spaceroots.mantissa.ode.ContinuousOutputModel;
+import org.apache.commons.math.ode.ContinuousOutputModel;
 
 import fr.cs.aerospace.orekit.attitudes.AttitudeKinematicsProvider;
 import fr.cs.aerospace.orekit.errors.OrekitException;
