@@ -13,20 +13,20 @@
     <property name="version"         value="1.4" />
 
     <!-- main customization properties -->
-    <property name="root.package.name" value="fr.cs.aerospace.orekit" />
-    <property name="copyright"         value="2002-2006 C-S" />
+    <property name="root.package.name" value="fr.cs.orekit" />
+    <property name="copyright"         value="2002-2007 C-S" />
 
     <!-- directories -->
     <property name="src.dir"        value="src" />
     <property name="tests-src.dir"  value="tests-src" />
     <property name="bin.dir"        value="bin" />
     <property name="build.dir"      value="build" />
-    <property name="resources.dir"  value="fr/cs/aerospace/orekit/resources" />
+    <property name="resources.dir"  value="fr/cs/orekit/resources" />
     <property name="doc.dir"        value="doc" />
     <property name="javadoc.dir"    value="${doc.dir}/javadoc" />
 
     <!-- external libraries properties -->
-    <property name="mantissa.jar" value="${user.home}/lib/java/mantissa/mantissa-6.4.jar" />
+    <property name="commons-math.jar" value="${user.home}/sources/java/external-libs/commons-math-1.2-SNAPSHOT.jar" />
 
     <!-- compilation properties -->
     <property name="debug"       value="true" />
@@ -37,7 +37,7 @@
 
     <!-- Classpath setting -->
     <path id="project.class.path">
-      <pathelement location="${mantissa.jar}" />
+      <pathelement location="${commons-math.jar}" />
       <pathelement path="${java.class.path}"  />
      </path>
 
