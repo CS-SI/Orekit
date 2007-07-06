@@ -1,8 +1,16 @@
 OREKIT is a proprietary product from CS-SI.
 See you particular license contract to see what you can do with it.
 
-OREKIT relies on the following third-party products :
+OREKIT relies on the following third-party products:
 
-  mantissa from SpaceRoots
-  http://www.spaceroots.org/software/mantissa/index.html
-  released under a BSD-like license, see LICENSE.mantissa
+  commons-math from the Apache Software Foundation
+  http://jakarta.apache.org/commons/math/
+  released under the Apache license, version 2 see LICENSE-Apache.txt
+
+  slf4j from Quality Open Software
+  http://www.slf4j.org/
+  released under the MIT license, see LICENSE-slf4j.txt
+
+  logback from Quality Open Software
+  http://logback.qos.ch/
+  released underf the LGPL license, see LICENSE-logback.txt and LICENSE-lgpl.txt
