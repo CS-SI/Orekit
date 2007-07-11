@@ -2,7 +2,6 @@ package fr.cs.orekit.iers;
 
 import java.text.ParseException;
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.frames.IERSDataResetter;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.UTCScale;
 import junit.framework.Test;
@@ -22,7 +21,7 @@ public class UTCTAIHistoryFilesLoaderTest extends TestCase {
   }
 
   public void testNoData() throws OrekitException {
-    checkSuccess("empty-directory");
+    checkSuccess("no-data");
     assertEquals(0.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);    
   }
 

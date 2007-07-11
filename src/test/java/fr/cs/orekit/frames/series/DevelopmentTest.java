@@ -125,7 +125,7 @@ public class DevelopmentTest extends TestCase {
 
   public void testTrueFiles()
     throws OrekitException {
-    String directory = "/fr/cs/orekit/resources/";
+    String directory = "/META-INF/IERS-conventions-2003/";
     InputStream xStream =
       getClass().getResourceAsStream(directory + "tab5.2a.txt");
     assertNotNull(new Development(xStream, 1.0, "tab5.2a.txt"));

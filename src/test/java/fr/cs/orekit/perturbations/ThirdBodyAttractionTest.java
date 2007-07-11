@@ -9,7 +9,7 @@ import org.apache.commons.math.ode.IntegratorException;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.forces.perturbations.ThirdBodyAttraction;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.frames.IERSDataResetter;
+import fr.cs.orekit.iers.IERSDataResetter;
 import fr.cs.orekit.models.bodies.Moon;
 import fr.cs.orekit.models.bodies.Sun;
 import fr.cs.orekit.orbits.EquinoctialParameters;

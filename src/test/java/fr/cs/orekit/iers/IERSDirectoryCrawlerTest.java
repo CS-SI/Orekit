@@ -3,7 +3,6 @@ package fr.cs.orekit.iers;
 import java.io.BufferedReader;
 
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.frames.IERSDataResetter;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;

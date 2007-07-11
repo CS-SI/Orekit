@@ -4,7 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.frames.IERSDataResetter;
+import fr.cs.orekit.iers.IERSDataResetter;
 import fr.cs.orekit.utils.DateFormatter;
 import junit.framework.*;
 

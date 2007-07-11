@@ -3,7 +3,7 @@ package fr.cs.orekit.time;
 import java.text.ParseException;
 import java.util.Date;
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.frames.IERSDataResetter;
+import fr.cs.orekit.iers.IERSDataResetter;
 import fr.cs.orekit.utils.DateFormatter;
 
 import junit.framework.*;

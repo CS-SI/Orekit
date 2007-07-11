@@ -1,11 +1,8 @@
 package fr.cs.orekit.potential;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import fr.cs.orekit.FindFile;
 import fr.cs.orekit.errors.OrekitException;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -15,9 +12,8 @@ public class EGMFormatReaderTest extends TestCase {
   
   public void testRead() throws OrekitException, IOException {
     
-    File rootDir = FindFile.find("/tests-src/fr/cs/orekit/data" +
-                                 "/potential/egm-format/egm96_to360.ascii.gz", "/");
-    InputStream in = new FileInputStream(rootDir.getAbsolutePath());
+    InputStream in =
+      getClass().getResourceAsStream("/potential/egm-format/egm96_to360.ascii.gz");
     
     PotentialReaderFactory factory = new PotentialReaderFactory();
     PotentialCoefficientsReader reader = factory.getPotentialReader(in);
@@ -53,17 +49,17 @@ public class EGMFormatReaderTest extends TestCase {
     PotentialReaderFactory factory = new PotentialReaderFactory();
     int c = 0;
     try {
-      File rootDir = FindFile.find("/tests-src/fr/cs/orekit/data" +
-                                   "/potential/egm-format-corrupted/fakegm1", "/");
-      factory.getPotentialReader(new FileInputStream(rootDir.getAbsolutePath()));
+      InputStream in =
+        getClass().getResourceAsStream("/potential/egm-format-corrupted/fakegm1");
+      factory.getPotentialReader(in);
     } catch (OrekitException e) {
       c++;
       // expected behaviour
     }
     try {
-      File rootDir = FindFile.find("/tests-src/fr/cs/orekit/data" +
-                                   "/potential/egm-format-corrupted/fakegm2", "/");
-      factory.getPotentialReader(new FileInputStream(rootDir.getAbsolutePath()));
+      InputStream in =
+        getClass().getResourceAsStream("/potential/egm-format-corrupted/fakegm2");
+      factory.getPotentialReader(in);
     } catch (OrekitException e) {
       c++;
       // expected behaviour

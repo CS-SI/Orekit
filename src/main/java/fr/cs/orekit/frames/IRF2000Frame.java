@@ -218,18 +218,21 @@ class IRF2000Frame extends Frame {
   private static final double f141 = 0.024381750;
   private static final double f142 = 0.00000538691;
 
+  /** IERS conventions (2003) resources base directory. */
+  private static final String iers2003Base = "/META-INF/IERS-conventions-2003/";
+
   /** Resources for IERS table 5.2a from IERS conventions (2003). */
-  private static final String xModel2000A    = "/fr/cs/orekit/resources/tab5.2a.txt";
-  private static final String xModel2000B    = "/fr/cs/orekit/resources/tab5.2a.reduced.txt";
+  private static final String xModel2000A    = iers2003Base + "tab5.2a.txt";
+  private static final String xModel2000B    = iers2003Base + "tab5.2a.reduced.txt";
 
   /** Resources for IERS table 5.2b from IERS conventions (2003). */
-  private static final String yModel2000A    = "/fr/cs/orekit/resources/tab5.2b.txt";
-  private static final String yModel2000B    = "/fr/cs/orekit/resources/tab5.2b.reduced.txt";
+  private static final String yModel2000A    = iers2003Base + "tab5.2b.txt";
+  private static final String yModel2000B    = iers2003Base + "tab5.2b.reduced.txt";
 
   /** Resources for IERS table 5.2c from IERS conventions (2003). */
-  private static final String sxy2Model2000A = "/fr/cs/orekit/resources/tab5.2c.txt";
-  private static final String sxy2Model2000B = "/fr/cs/orekit/resources/tab5.2c.reduced.txt";
+  private static final String sxy2Model2000A = iers2003Base + "tab5.2c.txt";
+  private static final String sxy2Model2000B = iers2003Base + "tab5.2c.reduced.txt";
 
-  private static final long serialVersionUID = -6655695030282892705L;
-  
+  private static final long serialVersionUID = 2781008917378714616L;
+
 }

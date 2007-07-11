@@ -1,6 +1,7 @@
 package fr.cs.orekit.iers;
 
 import java.io.File;
+import java.net.URL;
 
 import fr.cs.orekit.errors.OrekitException;
 
@@ -36,7 +37,10 @@ public class IERSDirectoryCrawler {
     String directoryName = System.getProperty("orekit.iers.directory");
     if ((directoryName != null) && ! "".equals(directoryName)) {
 
-      root = new File(directoryName);
+      // try to find the root directory either in classpath or in filesystem
+      // (classpath having higher priority)
+      URL url = getClass().getClassLoader().getResource(directoryName);
+      root = new File((url != null) ? url.getPath() : directoryName);
 
       // safety checks
       if (! root.exists()) {

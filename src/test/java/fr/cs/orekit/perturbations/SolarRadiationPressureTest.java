@@ -14,7 +14,7 @@ import fr.cs.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.forces.perturbations.SolarRadiationPressure;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.frames.IERSDataResetter;
+import fr.cs.orekit.iers.IERSDataResetter;
 import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.orbits.OrbitalParameters;

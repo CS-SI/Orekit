@@ -1,12 +1,9 @@
 package fr.cs.orekit.potential;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import fr.cs.orekit.FindFile;
 import fr.cs.orekit.errors.OrekitException;
 
 import junit.framework.Test;
@@ -17,9 +14,8 @@ public class SHMFormatReaderTest extends TestCase {
   
   public void testRead() throws OrekitException, IOException {
     
-    File rootDir = FindFile.find("/tests-src/fr/cs/orekit/data" +
-                                 "/potential/shm-format/g003_eigen-cg01c_coef", "/");
-    InputStream in = new FileInputStream(rootDir.getAbsolutePath());
+    InputStream in =
+      getClass().getResourceAsStream("/potential/shm-format/g003_eigen-cg01c_coef");
     PotentialReaderFactory factory = new PotentialReaderFactory();
     PotentialCoefficientsReader reader = factory.getPotentialReader(in);
     reader.read();
@@ -33,9 +29,8 @@ public class SHMFormatReaderTest extends TestCase {
     assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
     assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
     
-    rootDir = FindFile.find("/tests-src/fr/cs/orekit/data" +
-                            "/potential/shm-format/eigen_cg03c_coef", "/");
-    in = new FileInputStream(rootDir.getAbsolutePath());
+    in = 
+      getClass().getResourceAsStream("/potential/shm-format/eigen_cg03c_coef");
     reader = factory.getPotentialReader(in);
     reader.read();
     C = reader.getC(360 , 360, true);;
@@ -51,9 +46,8 @@ public class SHMFormatReaderTest extends TestCase {
   }
   
   public void testReadCompressed() throws OrekitException, IOException {
-    File rootDir = FindFile.find("/tests-src/fr/cs/orekit/data" +
-                                 "/potential/shm-format-compressed/eigen-cg01c_coef.gz", "/");
-    InputStream in = new FileInputStream(rootDir.getAbsolutePath());
+    InputStream in =
+      getClass().getResourceAsStream("/potential/shm-format-compressed/eigen-cg01c_coef.gz");
     PotentialReaderFactory factory = new PotentialReaderFactory();
     PotentialCoefficientsReader reader = factory.getPotentialReader(in);
     reader.read();
@@ -67,9 +61,8 @@ public class SHMFormatReaderTest extends TestCase {
     assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
     assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
     
-    rootDir = FindFile.find("/tests-src/fr/cs/orekit/data" +
-                            "/potential/shm-format-compressed/eigen_cg03c_coef.gz", "/");
-    in = new FileInputStream(rootDir.getAbsolutePath());
+    in =
+      getClass().getResourceAsStream("/potential/shm-format-compressed/eigen_cg03c_coef.gz");
     reader = factory.getPotentialReader(in);
     reader.read();
     C = reader.getC(360 , 360, true);;
@@ -90,27 +83,24 @@ public class SHMFormatReaderTest extends TestCase {
     int c = 0;
     PotentialReaderFactory factory = new PotentialReaderFactory();
     try {
-      File rootDir = FindFile.find("/tests-src/fr/cs/orekit/data" +
-                                   "/potential/shm-format-corrupted/fakeeigen1", "/");
-      InputStream in = new FileInputStream(rootDir.getAbsolutePath());
+      InputStream in =
+        getClass().getResourceAsStream("/potential/shm-format-corrupted/fakeeigen1");
       reader = factory.getPotentialReader(in);
     } catch (OrekitException e) {
       c++;
       // expected behaviour
     }
     try {
-      File rootDir = FindFile.find("/tests-src/fr/cs/orekit/data" +
-                                   "/potential/shm-format-corrupted/fakeeigen2", "/");
-      InputStream in = new FileInputStream(rootDir.getAbsolutePath());
+      InputStream in =
+        getClass().getResourceAsStream("/potential/shm-format-corrupted/fakeeigen2");
       reader = factory.getPotentialReader(in);
     } catch (OrekitException e) {
       c++;
       // expected behaviour
     }
     try {
-      File rootDir = FindFile.find("/tests-src/fr/cs/orekit/data" +
-                                   "/potential/shm-format-corrupted/fakeeigen3", "/");
-      InputStream in = new FileInputStream(rootDir.getAbsolutePath());
+      InputStream in =
+        getClass().getResourceAsStream("/potential/shm-format-corrupted/fakeeigen3");
       reader = factory.getPotentialReader(in);
     } catch (OrekitException e) {
       c++;

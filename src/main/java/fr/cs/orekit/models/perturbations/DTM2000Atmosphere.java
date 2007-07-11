@@ -647,7 +647,7 @@ public class DTM2000Atmosphere {
   private static final double rot2 = .034428412;  
 
   /** Resources text file. */
-  private static final String dtm2000 = "/fr/cs/orekit/resources/dtm_2000.txt";
+  private static final String dtm2000 = "/META-INF/dtm_2000.txt";
 
   // Dtm ressources :
 

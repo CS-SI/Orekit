@@ -4,6 +4,7 @@ import java.text.ParseException;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.orekit.errors.OrekitException;
+import fr.cs.orekit.iers.IERSDataResetter;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.UTCScale;
 import fr.cs.orekit.utils.PVCoordinates;

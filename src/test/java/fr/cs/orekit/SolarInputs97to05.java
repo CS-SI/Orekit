@@ -1,9 +1,6 @@
 package fr.cs.orekit;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -36,26 +33,11 @@ DTM2000InputParameters {
   private SolarInputs97to05() throws OrekitException {
 
     datas = new TreeSet();
-    InputStream in ;
-    try {
-      File rootDir = FindFile.find("/tests-src/fr/cs/orekit/data" +
-                                   "/atmosphere/JB_All_97-05.txt", "/");
-      in = new FileInputStream(rootDir.getAbsolutePath());
-    } catch (FileNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-
+    InputStream in = getClass().getResourceAsStream("/atmosphere/JB_All_97-05.txt");
     BufferedReader rFlux = new BufferedReader(new InputStreamReader(in));
 
 
-    try {
-      File rootDir = FindFile.find("/tests-src/fr/cs/orekit/data" +
-                                   "/atmosphere/NOAA_ap_97-05.dat.txt", "/");
-      in = new FileInputStream(rootDir.getAbsolutePath());
-    } catch (FileNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-
+    in = getClass().getResourceAsStream("/atmosphere/NOAA_ap_97-05.dat.txt");
     BufferedReader rAp = new BufferedReader(new InputStreamReader(in));
 
     try {

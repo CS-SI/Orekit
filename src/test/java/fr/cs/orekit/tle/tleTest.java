@@ -1,16 +1,13 @@
 package fr.cs.orekit.tle;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 import org.apache.commons.math.geometry.Vector3D;
-import fr.cs.orekit.FindFile;
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.frames.IERSDataResetter;
+import fr.cs.orekit.iers.IERSDataResetter;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.UTCScale;
 import fr.cs.orekit.utils.PVCoordinates;
@@ -61,9 +58,8 @@ public class tleTest extends TestCase {
   
   public void testTLESeriesFormat() throws IOException, OrekitException, ParseException {
 
-    File rootDir = FindFile.find("/tests-src/fr/cs/orekit/data/tle/regular-data/" +
-                                 "spot-5.txt", "/");
-    InputStream in = new FileInputStream(rootDir.getAbsolutePath());    
+    InputStream in =
+      getClass().getResourceAsStream("/tle/regular-data/spot-5.txt");
     TLESeries series = new TLESeries(in);
     assertEquals(0, series.getFirstDate().minus(
                                                 new AbsoluteDate("2002-05-04T11:45:15.695", UTCScale.getInstance())), 1e-3);
@@ -100,14 +96,12 @@ public class tleTest extends TestCase {
     
     boolean printResults = false;
     
-    File rootDir = FindFile.find("/tests-src/fr/cs/orekit/data" +
-                                 "/tle/extrapolationTest-data/SatCode-entry", "/");
-    InputStream inEntry = new FileInputStream(rootDir.getAbsolutePath());
+    InputStream inEntry =
+      getClass().getResourceAsStream("/tle/extrapolationTest-data/SatCode-entry");
     BufferedReader rEntry = new BufferedReader(new InputStreamReader(inEntry));
 
-    rootDir = FindFile.find("/tests-src/fr/cs/orekit/data" +
-                            "/tle/extrapolationTest-data/SatCode-results", "/");
-    InputStream inResults = new FileInputStream(rootDir.getAbsolutePath());
+    InputStream inResults =
+      getClass().getResourceAsStream("/tle/extrapolationTest-data/SatCode-results");
     BufferedReader rResults = new BufferedReader(new InputStreamReader(inResults));
 
     double cumulated = 0; // sum of all differences between test cases and OREKIT results

@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.frames.IERSDataResetter;
 import junit.framework.TestCase;
 
 public abstract class AbstractFilesLoaderTest extends TestCase {
