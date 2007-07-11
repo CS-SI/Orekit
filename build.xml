@@ -1,182 +1,91 @@
-<?xml version="1.0"?>
-
-<!--                This is an ant build script                   -->
-<!-- You should process this file with ant to compile the project -->
-
-<project name="orekit" basedir="." default="build">
-
-  <!-- Properties setting -->
-  <target name="init">
-
-    <tstamp/>
-
-    <property name="version"         value="1.4" />
-
-    <!-- main customization properties -->
-    <property name="root.package.name" value="fr.cs.orekit" />
-    <property name="copyright"         value="2002-2007 C-S" />
-
-    <!-- directories -->
-    <property name="src.dir"        value="src" />
-    <property name="tests-src.dir"  value="tests-src" />
-    <property name="bin.dir"        value="bin" />
-    <property name="build.dir"      value="build" />
-    <property name="resources.dir"  value="fr/cs/orekit/resources" />
-    <property name="doc.dir"        value="doc" />
-    <property name="javadoc.dir"    value="${doc.dir}/javadoc" />
-
-    <!-- external libraries properties -->
-    <property name="commons-math.jar" value="${user.home}/sources/java/external-libs/commons-math-1.2-SNAPSHOT.jar" />
-
-    <!-- compilation properties -->
-    <property name="debug"       value="true" />
-    <property name="deprecation" value="true" />
-
-    <!-- junit related properties -->
-    <property name="test.class"  value="${root.package.name}.AllTests" />
-
-    <!-- Classpath setting -->
-    <path id="project.class.path">
-      <pathelement location="${commons-math.jar}" />
-      <pathelement path="${java.class.path}"  />
-     </path>
-
+<project name="orekit" default="jar" basedir=".">
+  <property file="${user.home}/.m2/maven.properties"/>
+  <property name="maven.build.output" value="target/classes"/>
+  <property name="maven.build.directory" value="target"/>
+  <property name="maven.build.final.name" value="orekit-1.0-SNAPSHOT"/>
+  <property name="maven.test.reports" value="${maven.build.directory}/test-reports"/>
+  <property name="maven.test.output" value="target/test-classes"/>
+  <property name="maven.repo.local" value="${user.home}/.m2/repository"/>
+  <path id="build.classpath">
+    <fileset dir="${maven.repo.local}">
+      <include name="commons-math/commons-math/1.2-SNAPSHOT/commons-math-1.2-SNAPSHOT.jar"/>
+      <include name="org/slf4j/slf4j-api/1.4.1/slf4j-api-1.4.1.jar"/>
+    </fileset>
+  </path>
+  <target name="clean" description="Clean the output directory">
+    <delete dir="${maven.build.directory}"/>
   </target>
-
-  <!-- Directories preparation -->
-  <target name="prepare" depends="init" description="Create directories">
-    <mkdir dir="${build.dir}"   />
-    <mkdir dir="${bin.dir}"     />
-    <mkdir dir="${javadoc.dir}" />
-  </target>
-
-
-  <!-- Compilation -->
-  <target name="compile" depends="prepare" description="Compile the library">
-    <javac srcdir="${src.dir}" destdir="${bin.dir}"
-           debug="${debug}" deprecation="${deprecation}">
-      <classpath refid="project.class.path" />
-      <exclude name="**/gui/*" />
+  <target name="compile" depends="get-deps" description="Compile the code">
+    <mkdir dir="${maven.build.output}"/>
+    <javac destdir="${maven.build.output}" excludes="**/package.html" debug="true" deprecation="true" optimize="false">
+      <src>
+        <pathelement location="src/main/java"/>
+      </src>
+      <classpath refid="build.classpath"/>
     </javac>
-    <copy todir="${bin.dir}/${resources.dir}">
-      <fileset dir="${src.dir}/${resources.dir}"/>
+    <mkdir dir="${maven.build.output}/META-INF"/>
+    <copy todir="${maven.build.output}/META-INF">
+      <fileset dir=".">
+        <include name="LICENSE*.txt"/>
+      </fileset>
+    </copy>
+    <copy todir="${maven.build.output}">
+      <fileset dir="src/main/resources"/>
     </copy>
   </target>
-
-  <!-- Tests -->
-  <target name="compile-tests" depends="compile"
-          description="Compile the tests">
-    <javac srcdir="${tests-src.dir}" destdir="${bin.dir}"
-           debug="${debug}" deprecation="${deprecation}">
-      <classpath refid="project.class.path" />
-   </javac>
+  <target name="jar" depends="compile,test" description="Clean the JAR">
+    <jar jarfile="${maven.build.directory}/${maven.build.final.name}.jar" basedir="${maven.build.output}" excludes="**/package.html"/>
   </target>
-
-  <target name="test" depends="init,compile-tests"
-          description="Run the tests">
-    <junit fork="yes">
+  <target name="compile-tests" depends="junit-present, compile" description="Compile the test code" if="junit.present">
+    <mkdir dir="${maven.test.output}"/>
+    <javac destdir="${maven.test.output}" excludes="**/package.html" debug="true" deprecation="true" optimize="false">
+      <src>
+        <pathelement location="src/test/java"/>
+      </src>
       <classpath>
-        <path refid="project.class.path" />
-        <pathelement location="${bin.dir}" />
+        <path refid="build.classpath"/>
+        <pathelement location="${maven.build.output}"/>
       </classpath>
-      <formatter type="brief" usefile="false" />
-      <test name="${test.class}" />
+    </javac>
+    <copy todir="${maven.test.output}">
+      <fileset dir="src/test/resources"/>
+    </copy>
+  </target>
+  <target name="test" depends="junit-present, compile-tests" if="junit.present" description="Run the test cases">
+    <mkdir dir="${maven.test.reports}"/>
+    <junit printSummary="yes" haltonerror="true" haltonfailure="true" fork="true" dir=".">
+      <sysproperty key="basedir" value="."/>
+      <formatter type="xml"/>
+      <formatter type="plain" usefile="false"/>
+      <classpath>
+        <path refid="build.classpath"/>
+        <pathelement location="${maven.build.output}"/>
+        <pathelement location="${maven.test.output}"/>
+      </classpath>
+      <batchtest todir="${maven.test.reports}">
+        <fileset dir="src/test/java">
+          <include name="**/*Test.java"/>
+          <exclude name="**/*Abstract*Test.java"/>
+        </fileset>
+      </batchtest>
     </junit>
   </target>
-
-  <!-- Documentation -->
-  <target name="javadoc" depends="init"
-          description="Build javadoc documentation">
-
-    <!-- discard the CVS files -->
-    <pathconvert pathsep="," property="documentedfiles">
-      <path>
-        <fileset dir="${src.dir}">
-          <include name="**/*.java" />
-          <exclude name="**/CVS/*"  />
-        </fileset>
-     </path>
-    </pathconvert>
-
-    <!-- build the documentation -->
-    <javadoc sourcepath="${src.dir}" sourcefiles="${documentedfiles}"
-             destdir="${javadoc.dir}"
-             bottom="&lt;i&gt;Copyright &#169; ${copyright}. All Rights Reserved.&lt;/i&gt;">
-      <classpath refid="project.class.path" />
-    </javadoc>
-
+  <target name="test-junit-present">
+    <available classname="junit.framework.Test" property="junit.present"/>
   </target>
-
-  <!-- Documentation -->
-  <target name="doc" depends="javadoc" description="Build documentation"/>
-
-  <!-- All: compilation and documentation -->
-  <target name="all" depends="init,compile,doc" description="Build everything"/>
-
-  <target name="build" depends="init,compile" description="Build the archive file">
-    <jar jarfile="${build.dir}/${ant.project.name}-${version}.jar"
-         excludes="**/*Test.class,**/*Tests.class,**/Test*.class"
-         compress="true" basedir="${bin.dir}" manifest="manifest" />
-    <copy todir="${build.dir}">
-      <fileset file="${mantissa.jar}"/>
-    </copy>
+  <target name="junit-present" depends="test-junit-present" unless="junit.present">
+    <echo>================================= WARNING ================================</echo>
+    <echo> Junit isn't present in your $ANT_HOME/lib directory. Tests not executed. </echo>
+    <echo>==========================================================================</echo>
   </target>
-
-  <!-- Dist : packaging of all -->
-  <target name="dist" depends="init,build,doc"
-          description="Create distribution files">
-   <zip zipfile="${ant.project.name}-${version}-src.zip">
-      <zipfileset dir="${basedir}" prefix="${ant.project.name}-${version}-src" >
-        <exclude name="${ant.project.name}-*-src.zip" />
-        <exclude name="${ant.project.name}-*-doc.zip" />
-        <exclude name="${ant.project.name}-*-bin.zip" />
-        <exclude name="**/CVS/*"  />
-        <exclude name="${build.dir}/**" />
-        <exclude name="${bin.dir}/**" />
-        <exclude name="${doc.dir}/**" />
-      </zipfileset>
-    </zip>
-    <zip zipfile="${ant.project.name}-${version}-bin.zip">
-      <zipfileset dir="${build.dir}" prefix="${ant.project.name}-${version}" >
-        <exclude name="**/CVS/*" />
-      </zipfileset>
-    </zip>
-    <zip zipfile="${ant.project.name}-${version}-doc.zip">
-      <zipfileset dir="${doc.dir}" prefix="${ant.project.name}-${version}-doc" >
-        <exclude name="**/CVS/*" />
-      </zipfileset>
-    </zip>
+  <target name="test-offline">
+    <condition property="maven.mode.offline">
+      <equals arg1="${build.sysclasspath}" arg2="only"/>
+    </condition>
   </target>
-
-  <!-- Clean targets -->
-  <target name="check-dirs" depends="init">
-    <available file="${build.dir}" property="build.dir.present" />
-    <available file="${bin.dir}"   property="bin.dir.present"   />
-    <available file="${doc.dir}"   property="doc.dir.present"   />
+  <target name="get-deps" depends="test-offline" description="Download all dependencies" unless="maven.mode.offline">
+    <mkdir dir="${maven.repo.local}"/>
+    <get src="http://repo1.maven.org/maven2/commons-math/commons-math/1.2-SNAPSHOT/commons-math-1.2-SNAPSHOT.jar" dest="${maven.repo.local}/commons-math/commons-math/1.2-SNAPSHOT/commons-math-1.2-SNAPSHOT.jar" usetimestamp="true" ignoreerrors="true"/>
+    <get src="http://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.4.1/slf4j-api-1.4.1.jar" dest="${maven.repo.local}/org/slf4j/slf4j-api/1.4.1/slf4j-api-1.4.1.jar" usetimestamp="true" ignoreerrors="true"/>
   </target>
-
-  <target name="clean-builddir" depends="init,check-dirs" if="build.dir.present">
-    <delete dir="${build.dir}" />
-  </target>
-
-  <target name="clean-bindir" depends="init,check-dirs" if="bin.dir.present">
-    <delete dir="${bin.dir}" />
-  </target>
-
-  <target name="clean-docdir" depends="init,check-dirs" if="doc.dir.present">
-    <delete dir="${doc.dir}" />
-  </target>
-
-  <target name="clean"
-          depends="init,clean-builddir,clean-bindir,clean-docdir"
-          description="Clean everything">
-    <delete>
-      <fileset dir=".">
-        <include name="${ant.project.name}-*-src.zip" />
-        <include name="${ant.project.name}-*-doc.zip" />
-        <include name="${ant.project.name}-*-bin.zip" />
-      </fileset>
-    </delete>
-  </target>
-
 </project>
