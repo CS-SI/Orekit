@@ -1,0 +1,13 @@
+OREKIT relies on the following third-party products:
+
+  commons-math from the Apache Software Foundation
+  http://jakarta.apache.org/commons/math/
+  released under the Apache license, version 2 see LICENSE-Apache.txt
+
+  slf4j from Quality Open Software
+  http://www.slf4j.org/
+  released under the MIT license, see LICENSE-slf4j.txt
+
+  logback from Quality Open Software
+  http://logback.qos.ch/
+  released underf the LGPL license, see LICENSE-logback.txt and LICENSE-lgpl.txt
