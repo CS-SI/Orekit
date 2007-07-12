@@ -23,12 +23,6 @@
       </src>
       <classpath refid="build.classpath"/>
     </javac>
-    <mkdir dir="${maven.build.output}/META-INF"/>
-    <copy todir="${maven.build.output}/META-INF">
-      <fileset dir=".">
-        <include name="LICENSE*.txt"/>
-      </fileset>
-    </copy>
     <copy todir="${maven.build.output}">
       <fileset dir="src/main/resources"/>
     </copy>

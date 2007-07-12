@@ -1,0 +1,10 @@
+<assembly>
+  <id>src</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <componentDescriptors>
+    <componentDescriptor>src/assemble/misc-files.xml</componentDescriptor>
+    <componentDescriptor>src/assemble/building-files.xml</componentDescriptor>
+  </componentDescriptors>
+</assembly>

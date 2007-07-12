@@ -9,12 +9,6 @@
   <url>http://www.c-s.fr/</url>
   <dependencies>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>commons-math</groupId>
       <artifactId>commons-math</artifactId>
       <version>1.2-SNAPSHOT</version>
@@ -30,22 +24,25 @@
       <version>0.9.5</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
-    <resources>
-      <resource>
-        <!-- make sure licenses are kept at top level in the source tree -->
-        <!-- and are copied into META-INF at build time -->
-        <directory>.</directory>
-        <includes>
-          <include>LICENSE*.txt</include>
-        </includes>
-        <targetPath>META-INF</targetPath>
-      </resource>
-      <resource>
-        <!-- standard resources directory -->
-        <directory>src/main/resources</directory>
-      </resource>
-    </resources>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>src/assemble/source-assembly.xml</descriptor>
+            <descriptor>src/assemble/source-with-deps-assembly.xml</descriptor>
+            <descriptor>src/assemble/binary-assembly.xml</descriptor>
+          </descriptors>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 </project>

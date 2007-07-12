@@ -1,0 +1,13 @@
+<assembly>
+  <id>src-with-deps</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <componentDescriptors>
+    <componentDescriptor>src/assemble/misc-files.xml</componentDescriptor>
+    <componentDescriptor>src/assemble/building-files.xml</componentDescriptor>
+    <componentDescriptor>src/assemble/compile-dependencies.xml</componentDescriptor>
+    <componentDescriptor>src/assemble/run-dependencies.xml</componentDescriptor>
+    <componentDescriptor>src/assemble/test-dependencies.xml</componentDescriptor>
+  </componentDescriptors>
+</assembly>

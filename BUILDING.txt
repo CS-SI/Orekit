@@ -1,0 +1,32 @@
+Orekit can be built from source either using maven 2,
+ant or eclipse (with the m2eclipse plugin).
+
+Building with Maven 2:
+ - Maven 2 can be downloaded here:
+       http://maven.apache.org/download.html
+ - running "mvn package" automatically downloads all
+   the required dependencies listed in the pom.xml file
+   and creates a file named target/orekit-x.y.jar where
+   x.y is the version number
+
+Building with Ant:
+ - Ant can be downloaded here:
+       http://ant.apache.org/bindownload.cgi
+ - edit the automatically generated build.xml file to
+   handle dependencies as they are available in your
+   system (the generated file tries to mimic maven
+   behaviour and download them, which may not be what
+   you want)
+ - running "ant jar" creates a file named
+   target/orekit-x.y.jar where x.y is the version number
+
+Building with Eclipse:
+ - Eclipse can be downloaded here:
+       http://www.eclipse.org/downloads/
+ - open orekit as a java project (the eclipse .project
+   is already provided with the orekit source distribution)
+ - configure the dependencies in the build path as they
+   are available in your system (the .classpath file
+   is configured to use a maven 2 repository, which may
+   not be what you want)
+ - build the project as usual using eclipse features

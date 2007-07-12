@@ -1,0 +1,18 @@
+<component>
+  <fileSets>
+    <fileSet>
+      <includes>
+        <include>BUILDING.txt</include>
+        <include>pom.xml</include>
+        <include>build.xml</include>
+        <include>.classpath</include>
+        <include>.project</include>
+      </includes>
+      <useDefaultExcludes>true</useDefaultExcludes>
+    </fileSet>
+    <fileSet>
+      <directory>src</directory>
+      <useDefaultExcludes>true</useDefaultExcludes>
+    </fileSet>
+  </fileSets>
+</component>

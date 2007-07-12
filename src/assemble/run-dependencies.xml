@@ -1,0 +1,19 @@
+<component>
+  <dependencySets>
+    <dependencySet>
+      <scope>test</scope>
+      <useTransitiveFiltering>true</useTransitiveFiltering>
+      <includes>
+        <include>ch.qos.logback:logback-classic</include>
+      </includes>
+    </dependencySet>
+  </dependencySets>
+  <fileSets>
+    <fileSet>
+      <includes>
+        <include>LICENSE-logback.txt</include>
+        <include>LICENSE-lgpl.txt</include>
+      </includes>
+    </fileSet>
+  </fileSets>
+</component>

@@ -1,0 +1,18 @@
+<component>
+  <dependencySets>
+    <dependencySet>
+      <includes>
+        <include>commons-math:commons-math</include>
+        <include>org.slf4j:slf4j-api</include>
+      </includes>
+    </dependencySet>
+  </dependencySets>
+  <fileSets>
+    <fileSet>
+      <includes>
+        <include>LICENSE-apache.txt</include>
+        <include>LICENSE-slf4j.txt</include>
+      </includes>
+    </fileSet>
+  </fileSets>
+</component>
