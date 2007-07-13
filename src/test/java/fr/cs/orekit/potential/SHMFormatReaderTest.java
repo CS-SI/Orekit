@@ -19,13 +19,13 @@ public class SHMFormatReaderTest extends TestCase {
     PotentialReaderFactory factory = new PotentialReaderFactory();
     PotentialCoefficientsReader reader = factory.getPotentialReader(in);
     reader.read();
-    double[][] C = reader.getC(360 , 360, true);
-    double[][] S = reader.getS(360 , 360, true);
+    double[][] C = reader.getC(5, 5, true);
+    double[][] S = reader.getS(5, 5, true);
     
     assertEquals(0.957187536534E-06,C[3][0],  0);
-    assertEquals(-.600855921000E-12,C[360][360],  0);
+    assertEquals(0.174787189024E-06,C[5][5],  0);
     assertEquals(0, S[4][0],  0);
-    assertEquals(-.781165450789E-09 ,S[89][89],  0);
+    assertEquals(0.308834848269E-06 ,S[4][4],  0);
     assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
     assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
     
@@ -33,13 +33,13 @@ public class SHMFormatReaderTest extends TestCase {
       getClass().getResourceAsStream("/potential/shm-format/eigen_cg03c_coef");
     reader = factory.getPotentialReader(in);
     reader.read();
-    C = reader.getC(360 , 360, true);;
-    S = reader.getS(360 , 360, true);
+    C = reader.getC(5, 5, true);;
+    S = reader.getS(5, 5, true);
     
     assertEquals(0.957201462136E-06,C[3][0],  0);
-    assertEquals(-.600855921000E-12,C[360][360],  0);
+    assertEquals(0.174786174485E-06,C[5][5],  0);
     assertEquals(0, S[4][0],  0);
-    assertEquals(-.719392021047E-09 ,S[89][89],  0);
+    assertEquals(0.308834784975E-06 ,S[4][4],  0);
     assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
     assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
     
@@ -51,13 +51,13 @@ public class SHMFormatReaderTest extends TestCase {
     PotentialReaderFactory factory = new PotentialReaderFactory();
     PotentialCoefficientsReader reader = factory.getPotentialReader(in);
     reader.read();
-    double[][] C = reader.getC(360 , 360, true);;
-    double[][] S = reader.getS(360 , 360, true);;
+    double[][] C = reader.getC(5, 5, true);;
+    double[][] S = reader.getS(5, 5, true);;
     
     assertEquals(0.957187536534E-06,C[3][0],  0);
-    assertEquals(-.600855921000E-12,C[360][360],  0);
+    assertEquals(0.174787189024E-06,C[5][5],  0);
     assertEquals(0, S[4][0],  0);
-    assertEquals(-.781165450789E-09 ,S[89][89],  0);
+    assertEquals(0.308834848269E-06 ,S[4][4],  0);
     assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
     assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
     
@@ -65,13 +65,13 @@ public class SHMFormatReaderTest extends TestCase {
       getClass().getResourceAsStream("/potential/shm-format-compressed/eigen_cg03c_coef.gz");
     reader = factory.getPotentialReader(in);
     reader.read();
-    C = reader.getC(360 , 360, true);;
-    S = reader.getS(360 , 360, true);;
+    C = reader.getC(5, 5, true);;
+    S = reader.getS(5, 5, true);;
     
     assertEquals(0.957201462136E-06,C[3][0],  0);
-    assertEquals(-.600855921000E-12,C[360][360],  0);
+    assertEquals(0.174786174485E-06,C[5][5],  0);
     assertEquals(0, S[4][0],  0);
-    assertEquals(-.719392021047E-09 ,S[89][89],  0);
+    assertEquals(0.308834784975E-06 ,S[4][4],  0);
     assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
     assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
     

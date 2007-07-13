@@ -176,10 +176,6 @@ public class JB2006AtmosphereTest extends TestCase {
     double roJb = jb.getDensity(date, pos, Frame.getJ2000());    
     double roDtm = dtm.getDensity(date, pos, Frame.getJ2000());
 
-    System.out.println("JB :" + roJb);
-    System.out.println("DTM :" + roDtm);
-    System.out.println("dif :" + (roDtm-roJb)/roJb);
-    System.out.println();
     pos = new Vector3D(3011109.360780633,
                        -5889822.669411588,
                        4002170.0385907636);
@@ -190,12 +186,6 @@ public class JB2006AtmosphereTest extends TestCase {
     roJb = jb.getDensity(date, pos, Frame.getJ2000());    
     roDtm = dtm.getDensity(date, pos, Frame.getJ2000());
   
-    System.out.println("JB :" + roJb);
-    System.out.println("DTM :" + roDtm);
-    System.out.println("dif :" + (roDtm-roJb)/roJb);
-    System.out.println();
-    
-    
     pos =new Vector3D(-1033.4793830*1000,
                       7901.2952754*1000,
                       6380.3565958 *1000);
@@ -205,11 +195,6 @@ public class JB2006AtmosphereTest extends TestCase {
     // alt = 400
     roJb = jb.getDensity(date, pos, Frame.getJ2000());    
     roDtm = dtm.getDensity(date, pos, Frame.getJ2000());
-
-    System.out.println("JB :" + roJb);
-    System.out.println("DTM :" + roDtm);
-    System.out.println("dif :" + (roDtm-roJb)/roJb);
-    System.out.println();
 
     GeodeticPoint point;
     for (int i = 0; i<367; i++) {

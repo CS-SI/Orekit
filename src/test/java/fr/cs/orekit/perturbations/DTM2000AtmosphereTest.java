@@ -66,7 +66,6 @@ public class DTM2000AtmosphereTest extends TestCase {
     assertEquals(0, (roTestCase -myRo)/roTestCase, 2e-14);
     assertEquals(0, (tzTestCase-atm.getT())/tzTestCase, 1e-13);
     assertEquals(0, (tinfTestCase-atm.getTinf())/tinfTestCase, 1e-13);
-    System.out.println(" validé : ");
 //  IDEM., day=85
     
     roTestCase=    2.9983740796297e-17* 1000;
@@ -100,22 +99,12 @@ public class DTM2000AtmosphereTest extends TestCase {
     tinfTestCase=    793.65549802348;
     
     myRo = atm.getDensity(15, 500*1000, 0, Math.toRadians(-70), 16*Math.PI/12, 70, 70, 0, 0);
-    System.out.println();
-    System.out.println(" ro : " + myRo);
-    System.out.println(" tz : " + atm.getT());
-    System.out.println(" tinf : " + atm.getTinf());
-    System.out.println();      
-    System.out.println();      
-    
+   
 //  IDEM., alt=800.
 //  ro=    1.9556768571305D-18
 //  tz=    793.65549797919
 //  tinf=    793.65549802348
     myRo = atm.getDensity(15, 800*1000, 0, Math.toRadians(-70), 16*Math.PI/12, 70, 70, 0, 0);
-    System.out.println();
-    System.out.println(" ro : " + myRo);
-    System.out.println(" tz : " + atm.getT());
-    System.out.println(" tinf : " + atm.getTinf());
 
   }
 
