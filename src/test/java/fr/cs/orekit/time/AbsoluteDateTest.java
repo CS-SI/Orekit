@@ -66,6 +66,23 @@ public class AbsoluteDateTest
 	  assertEquals("1970-01-01T00:00:00.000", DateFormatter.toString(date));
   }
 
+  public void testUtcGpsOffset() throws ParseException {
+    AbsoluteDate date1   = new AbsoluteDate("2005-08-09T16:31:17", utc);
+    AbsoluteDate date2   = new AbsoluteDate("2006-08-09T16:31:17", utc);
+    AbsoluteDate dateRef = new AbsoluteDate("1980-01-06T00:00:00", utc);
+
+    // 13 seconds offset between GPS time and UTC in 2005
+    long noLeapGap = ((9347 * 24 + 16) * 60 + 31) * 60 + 17;
+    long realGap   = (long) date1.minus(dateRef);
+    assertEquals(13, realGap - noLeapGap);
+
+    // 14 seconds offset between GPS time and UTC in 2006
+    noLeapGap = ((9712 * 24 + 16) * 60 + 31) * 60 + 17;
+    realGap   = (long) date2.minus(dateRef);
+    assertEquals(14, realGap - noLeapGap);
+
+  }
+
   public void setUp() throws OrekitException {
     IERSDataResetter.setUp("regular-data");
     utc = UTCScale.getInstance();
