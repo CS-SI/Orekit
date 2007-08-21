@@ -23,7 +23,7 @@ public class DevelopmentTest extends TestCase {
   public void testNoFile() {
     try {
       InputStream stream =
-        DevelopmentTest.class.getResourceAsStream("/fr.cs/orekit/resources/missing");
+        DevelopmentTest.class.getResourceAsStream("/fr/cs/orekit/resources/missing");
       new Development(stream, 1.0, "missing");
       fail("exception expected");
     } catch (OrekitException oe) {
