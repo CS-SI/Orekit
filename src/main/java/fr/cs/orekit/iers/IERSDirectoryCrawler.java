@@ -58,7 +58,6 @@ public class IERSDirectoryCrawler {
 
   /** Crawl the IERS root hierarchy.
    * @param visitor IERS file visitor to use
-   * @param root IERS root hierarchy root
    * @exception OrekitException if some data is missing, duplicated
    * or can't be read
    */
