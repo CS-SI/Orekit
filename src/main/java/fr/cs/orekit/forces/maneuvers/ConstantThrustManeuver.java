@@ -141,6 +141,10 @@ public class ConstantThrustManeuver implements ForceModel {
       return 1.0e-4;
     }
 
+    public int getMaxIterationCount() {
+      return 10;
+    }
+
     private static final long serialVersionUID = -3929595470907786248L;
 
   }
@@ -170,6 +174,10 @@ public class ConstantThrustManeuver implements ForceModel {
     public double getThreshold() {
       // convergence threshold in seconds
       return 1.0e-4;
+    }
+
+    public int getMaxIterationCount() {
+      return 10;
     }
 
     private static final long serialVersionUID = 2437223790185987916L;

@@ -241,7 +241,8 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
     for (Iterator iter = forceSwf.iterator(); iter.hasNext(); ) {
       SWF swf = (SWF)iter.next();
       integrator.addSwitchingFunction(new MappingSwitchingFunction(swf), 
-                                      swf.getMaxCheckInterval(), swf.getThreshold());
+                                      swf.getMaxCheckInterval(), swf.getThreshold(),
+                                      swf.getMaxIterationCount());
     }
 
     // mathematical integration

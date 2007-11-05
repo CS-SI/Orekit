@@ -191,6 +191,10 @@ public class SolarRadiationPressure implements ForceModel {
       return 1.0e-3;
     }
 
+    public int getMaxIterationCount() {
+      return 100;
+    }
+
     private static final long serialVersionUID = -2402806683532244120L;
 
   }
@@ -233,6 +237,10 @@ public class SolarRadiationPressure implements ForceModel {
     public double getThreshold() {
       // convergence threshold in seconds for penumbra events
       return 1.0e-3;
+    }
+
+    public int getMaxIterationCount() {
+      return 100;
     }
 
     private static final long serialVersionUID = -423248605146669097L;

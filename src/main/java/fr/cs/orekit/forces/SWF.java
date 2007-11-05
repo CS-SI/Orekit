@@ -57,4 +57,8 @@ public interface SWF extends Serializable {
      */
     public double getMaxCheckInterval();
     
+    /** Get maximal number of iterations in the event time search.
+     */
+    public int getMaxIterationCount();
+    
 }
