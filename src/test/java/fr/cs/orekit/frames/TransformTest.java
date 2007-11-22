@@ -4,6 +4,7 @@ import java.util.Random;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+
 import fr.cs.orekit.utils.PVCoordinates;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -33,10 +34,10 @@ public class TransformTest extends TestCase {
   public void testRandomComposition() {
 
     Random random = new Random(0x171c79e323a1123l);
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 20; ++i) {
 
       // build a complex transform by compositing primitive ones
-      int n = random.nextInt(10);
+      int n = random.nextInt(20);
       Transform[] transforms = new Transform[n];
       Transform combined = new Transform();
       for (int k = 0; k < n; ++k) {
@@ -61,7 +62,7 @@ public class TransformTest extends TestCase {
         Vector3D bCombined = combined.transformVector(a);
         Vector3D cCombined = combined.transformPosition(a);
         assertEquals(0, bCombined.subtract(bRef).getNorm(), 1.0e-11);
-        assertEquals(0, cCombined.subtract(cRef).getNorm(), 3.0e-11);
+        assertEquals(0, cCombined.subtract(cRef).getNorm(), 1.0e-10);
 
       }
     }
@@ -70,12 +71,19 @@ public class TransformTest extends TestCase {
 
   public void testReverse() {
     Random random = new Random(0x9f82ba2b2c98dac5l);
-    Transform t1  = new Transform(randomVector(random));
-    Transform t2  = new Transform(randomRotation(random));
-    Transform t3  = new Transform(randomVector(random));
-    Transform t   = new Transform(new Transform(t1, t2), t3);
+    for (int i = 0; i < 20; ++i) {
+      int n = random.nextInt(20);
+      Transform combined = new Transform();
+      for (int k = 0; k < n; ++k) {
+        Transform t = random.nextBoolean()
+                    ? new Transform(randomVector(random), randomVector(random))
+                    : new Transform(randomRotation(random), randomVector(random));
+        combined = new Transform(combined, t);
+      }
 
-    checkNoTransform(new Transform(t, t.getInverse()), random);
+      checkNoTransform(new Transform(combined, combined.getInverse()), random);
+
+    }
     
   }
 
@@ -315,14 +323,19 @@ public class TransformTest extends TestCase {
 
   private void checkNoTransform(Transform transform, Random random) {
     for (int i = 0; i < 100; ++i) {
-      Vector3D a = new Vector3D(random.nextDouble(),
-                                random.nextDouble(),
-                                random.nextDouble());
-      Vector3D b = transform.transformVector(a);
-      assertEquals(0, a.subtract(b).getNorm(), 1.0e-12);
-      Vector3D c = transform.transformPosition(a);
-      assertEquals(0, a.subtract(c).getNorm(), 2.0e-12);
-    }
+      Vector3D a = randomVector(random);
+      Vector3D tA = transform.transformVector(a);
+      assertEquals(0, a.subtract(tA).getNorm(), 1.0e-10 * a.getNorm());
+      Vector3D b = randomVector(random);
+      Vector3D tB = transform.transformPosition(b);
+      assertEquals(0, b.subtract(tB).getNorm(), 1.0e-10 * a.getNorm());
+      PVCoordinates pv  = new PVCoordinates(randomVector(random), randomVector(random));
+      PVCoordinates tPv = transform.transformPVCoordinates(pv);
+      assertEquals(0, pv.getPosition().subtract(tPv.getPosition()).getNorm(),
+                   1.0e-10 * pv.getPosition().getNorm());
+      assertEquals(0, pv.getVelocity().subtract(tPv.getVelocity()).getNorm(),
+                   1.0e-9 * pv.getVelocity().getNorm());
+     }
   }
   
   public static Test suite() {

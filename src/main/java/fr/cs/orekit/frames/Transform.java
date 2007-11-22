@@ -157,12 +157,11 @@ public class Transform implements Serializable {
    * @return inverse transform of the instance
    */
   public Transform getInverse() {
-    Vector3D reversedTranslation = rotation.applyTo(translation.negate());
-    return new Transform(reversedTranslation, 
-                         Vector3D.crossProduct(reversedTranslation, rotationRate).subtract(
-                                           rotation.applyTo(velocity)),
-                                           rotation.revert(),
-                                           rotation.applyInverseTo(rotationRate.negate()));
+    Vector3D rT = rotation.applyTo(translation);
+    return new Transform(rT.negate(),
+                         Vector3D.crossProduct(rotationRate, rT).subtract(rotation.applyTo(velocity)),
+                         rotation.revert(),
+                         rotation.applyInverseTo(rotationRate.negate()));
   }
 
   /** Transform a position vector (including translation effects).
