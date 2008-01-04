@@ -207,7 +207,7 @@ public abstract class OrbitalParameters
     if (dirtyCache || ((mu - cachedMu) != 0)) {
       initPVCoordinates(mu);
     }
-    return cachedPVCoordinates;	
+    return cachedPVCoordinates;
   }
 
   /** Get the frame in which are defined the orbital parameters.

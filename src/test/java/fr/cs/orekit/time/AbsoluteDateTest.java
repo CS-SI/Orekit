@@ -66,8 +66,8 @@ public class AbsoluteDateTest
   }
 
   public void test1970() throws ParseException {
-	  AbsoluteDate date = new AbsoluteDate(new Date(0l), utc);
-	  assertEquals("1970-01-01T00:00:00.000", DateFormatter.toString(date));
+      AbsoluteDate date = new AbsoluteDate(new Date(0l), utc);
+      assertEquals("1970-01-01T00:00:00.000", DateFormatter.toString(date));
   }
 
   public void testUtcGpsOffset() throws ParseException {

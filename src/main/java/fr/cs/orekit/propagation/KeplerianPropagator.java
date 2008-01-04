@@ -33,11 +33,11 @@ public class KeplerianPropagator implements Ephemeris, AttitudePropagator {
     // evaluation of LM = PA + RAAN + M at extrapolated time
 
     EquinoctialParameters extrapolated = new EquinoctialParameters(
-    		 initialParameters.getA(), initialParameters.getEquinoctialEx(),
-    		 initialParameters.getEquinoctialEy(), initialParameters.getHx(),
-    		 initialParameters.getHy(),
-    		 initialParameters.getLM() + n * date.minus(initialDate) ,
-    		 EquinoctialParameters.MEAN_LATITUDE_ARGUMENT, initialParameters.getFrame());
+             initialParameters.getA(), initialParameters.getEquinoctialEx(),
+             initialParameters.getEquinoctialEy(), initialParameters.getHx(),
+             initialParameters.getHy(),
+             initialParameters.getLM() + n * date.minus(initialDate) ,
+             EquinoctialParameters.MEAN_LATITUDE_ARGUMENT, initialParameters.getFrame());
 
     try {
       return new SpacecraftState(new Orbit(date, extrapolated), mass,

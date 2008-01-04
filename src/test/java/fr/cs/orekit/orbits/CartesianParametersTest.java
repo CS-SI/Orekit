@@ -100,7 +100,7 @@ public class CartesianParametersTest extends TestCase {
 
     // validation of: V = sqrt(mu.(1+2e.cos(v)+e2)/a.(1-e2) )
     assertEquals(na * Math.sqrt(ksi * ksi + nu * nu) / epsilon,
-    		p.getPVCoordinates(mu).getVelocity().getNorm(),
+            p.getPVCoordinates(mu).getVelocity().getNorm(),
                  Utils.epsilonTest * Math.abs(p.getPVCoordinates(mu).getVelocity().getNorm()));
 
   }
@@ -121,7 +121,7 @@ public class CartesianParametersTest extends TestCase {
 
     for (double lv = 0; lv <= 2 * Math.PI; lv += 2 * Math.PI/100.) {
       p = new EquinoctialParameters(p.getA(), p.getEquinoctialEx(), p.getEquinoctialEy(),
-    		                        p.getHx(), p.getHy(), lv, 2, p.getFrame());
+                                    p.getHx(), p.getHy(), lv, 2, p.getFrame());
       position = p.getPVCoordinates(mu).getPosition();
 
       // test if the norm of the position is in the range [perigee radius, apogee radius]

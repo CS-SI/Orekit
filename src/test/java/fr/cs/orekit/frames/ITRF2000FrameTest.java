@@ -91,7 +91,7 @@ public class ITRF2000FrameTest extends TestCase {
                                          new ChunkedTime(02, 00, 00),
                                          UTCScale.getInstance());
 
-    Frame tirf = Frame.getReferenceFrame(Frame.TIRF2000B, date);	
+    Frame tirf = Frame.getReferenceFrame(Frame.TIRF2000B, date);
 
     Transform trans = Frame.getJ2000().getTransformTo(tirf, date);
 
@@ -118,7 +118,7 @@ public class ITRF2000FrameTest extends TestCase {
                                        new ChunkedTime(02, 00, 00),
                                        UTCScale.getInstance());
 
-    Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, t0);	
+    Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, t0);
 
     Transform trans = Frame.getJ2000().getTransformTo(itrf, t0);
 
@@ -176,7 +176,7 @@ public class ITRF2000FrameTest extends TestCase {
 
     PVCoordinates result = tr.transformPVCoordinates(pv);
 
-    checkVectors(speedTestCase, result.getVelocity(), 1.9e-7, 1.44e-7,0.002);	
+    checkVectors(speedTestCase, result.getVelocity(), 1.9e-7, 1.44e-7,0.002);
 
     result = trans.transformPVCoordinates(pv);
     checkVectors(speedTestCase, result.getVelocity(), 1.9e-7, 1.5e-7, 0.002);

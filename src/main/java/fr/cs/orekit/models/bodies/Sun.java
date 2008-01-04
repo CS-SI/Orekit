@@ -37,7 +37,7 @@ public class Sun extends ThirdBody {
    */
   public Vector3D getPosition(AbsoluteDate date, Frame frame) throws OrekitException {
 
-	
+
     double t = date.minus(reference) / 86400.0;
     double f = Math.toRadians(225.768 + 13.2293505 * t);
     double d = Math.toRadians(11.786 + 12.190749 * t);
@@ -78,9 +78,9 @@ public class Sun extends ThirdBody {
                                              sl * se / q));
     double dasr = 1672.2 * Math.cos(xlp) + 28.0 * Math.cos(xlp + xlp)
                 - 0.35 * Math.cos(d);
-    	
+    
     Vector3D posInJ2000 =  new Vector3D(1000.0 * 149597870.0 / (1.0 + 1.E-05 * dasr), centralSun);
-	
+
     return Frame.getJ2000().getTransformTo(frame, date).transformPosition(posInJ2000);
   }
 

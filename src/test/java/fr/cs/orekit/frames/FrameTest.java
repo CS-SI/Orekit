@@ -56,20 +56,20 @@ public class FrameTest extends TestCase {
   }
 
   public void testFindCommon() throws OrekitException {
-	
+
     Random random = new Random(0xb7d1a155e726da57l);
     Transform t1  = randomTransform(random);
     Transform t2  = randomTransform(random);
     Transform t3  = randomTransform(random);
 
-	Frame R1 = new Frame(Frame.getJ2000(),t1,"R1");
-	Frame R2 = new Frame(R1,t2,"R2");
-	Frame R3 = new Frame(R2,t3,"R3");
-	
-	  Transform T = R1.getTransformTo(R3, new AbsoluteDate());
+    Frame R1 = new Frame(Frame.getJ2000(),t1,"R1");
+    Frame R2 = new Frame(R1,t2,"R2");
+    Frame R3 = new Frame(R2,t3,"R3");
+
+      Transform T = R1.getTransformTo(R3, new AbsoluteDate());
 
       Transform S = new Transform(t2,t3);
-	
+
       checkNoTransform(new Transform(T, S.getInverse()) , random);
 
   }

@@ -104,27 +104,27 @@ public class KeplerianParametersTest extends TestCase {
 
 //    p.setTrueAnomaly(v);
     p = new KeplerianParameters(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-    		 p.getRightAscensionOfAscendingNode(), v , 2, p.getFrame());
+             p.getRightAscensionOfAscendingNode(), v , 2, p.getFrame());
     assertEquals(p.getTrueAnomaly(), v, Utils.epsilonAngle * Math.abs(v));
     assertEquals(p.getEccentricAnomaly(), E, Utils.epsilonAngle * Math.abs(E));
     assertEquals(p.getMeanAnomaly(), M, Utils.epsilonAngle * Math.abs(M));
 //    p.setTrueAnomaly(0);
     p = new KeplerianParameters(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-   		 p.getRightAscensionOfAscendingNode(), 0 , 2, p.getFrame());
+            p.getRightAscensionOfAscendingNode(), 0 , 2, p.getFrame());
 
 //    p.setEccentricAnomaly(E);
     p = new KeplerianParameters(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-   		 p.getRightAscensionOfAscendingNode(), E , 1, p.getFrame());
+            p.getRightAscensionOfAscendingNode(), E , 1, p.getFrame());
     assertEquals(p.getTrueAnomaly(), v, Utils.epsilonAngle * Math.abs(v));
     assertEquals(p.getEccentricAnomaly(), E, Utils.epsilonAngle * Math.abs(E));
     assertEquals(p.getMeanAnomaly(), M, Utils.epsilonAngle * Math.abs(M));
 //    p.setTrueAnomaly(0);
     p = new KeplerianParameters(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-   		 p.getRightAscensionOfAscendingNode(), 0 , 2, p.getFrame());
+            p.getRightAscensionOfAscendingNode(), 0 , 2, p.getFrame());
 
 //    p.setMeanAnomaly(M);
     p = new KeplerianParameters(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-   		 p.getRightAscensionOfAscendingNode(), M , 0, p.getFrame());
+            p.getRightAscensionOfAscendingNode(), M , 0, p.getFrame());
     assertEquals(p.getTrueAnomaly(), v, Utils.epsilonAngle * Math.abs(v));
     assertEquals(p.getEccentricAnomaly(), E, Utils.epsilonAngle * Math.abs(E));
     assertEquals(p.getMeanAnomaly(), M, Utils.epsilonAngle * Math.abs(M));
@@ -132,34 +132,34 @@ public class KeplerianParametersTest extends TestCase {
     // circular orbit
 //    p.setE(0);
     p = new KeplerianParameters(p.getA(),0, p.getI(), p.getPerigeeArgument(),
-   		 p.getRightAscensionOfAscendingNode(), p.getLv() , 2, p.getFrame());
+            p.getRightAscensionOfAscendingNode(), p.getLv() , 2, p.getFrame());
 
     E = v;
     M = E;
 
 //    p.setTrueAnomaly(v);
     p = new KeplerianParameters(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-   		 p.getRightAscensionOfAscendingNode(), v , 2, p.getFrame());
+            p.getRightAscensionOfAscendingNode(), v , 2, p.getFrame());
     assertEquals(p.getTrueAnomaly(), v, Utils.epsilonAngle * Math.abs(v));
     assertEquals(p.getEccentricAnomaly(), E, Utils.epsilonAngle * Math.abs(E));
     assertEquals(p.getMeanAnomaly(), M, Utils.epsilonAngle * Math.abs(M));
 //    p.setTrueAnomaly(0);
     p = new KeplerianParameters(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-   		 p.getRightAscensionOfAscendingNode(), 0 , 2, p.getFrame());
+            p.getRightAscensionOfAscendingNode(), 0 , 2, p.getFrame());
 
 //    p.setEccentricAnomaly(E);
     p = new KeplerianParameters(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-   		 p.getRightAscensionOfAscendingNode(), E , 1, p.getFrame());
+            p.getRightAscensionOfAscendingNode(), E , 1, p.getFrame());
     assertEquals(p.getTrueAnomaly(), v, Utils.epsilonAngle * Math.abs(v));
     assertEquals(p.getEccentricAnomaly(), E, Utils.epsilonAngle * Math.abs(E));
     assertEquals(p.getMeanAnomaly(), M, Utils.epsilonAngle * Math.abs(M));
 //    p.setTrueAnomaly(0);
     p = new KeplerianParameters(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-   		 p.getRightAscensionOfAscendingNode(), 0 , 2, p.getFrame());
+            p.getRightAscensionOfAscendingNode(), 0 , 2, p.getFrame());
 
 //    p.setMeanAnomaly(M);
     p = new KeplerianParameters(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-   		 p.getRightAscensionOfAscendingNode(), M , 0, p.getFrame());
+            p.getRightAscensionOfAscendingNode(), M , 0, p.getFrame());
     assertEquals(p.getTrueAnomaly(), v, Utils.epsilonAngle * Math.abs(v));
     assertEquals(p.getEccentricAnomaly(), E, Utils.epsilonAngle * Math.abs(E));
     assertEquals(p.getMeanAnomaly(), M, Utils.epsilonAngle * Math.abs(M));
@@ -237,7 +237,7 @@ public class KeplerianParametersTest extends TestCase {
     for (double lv = 0; lv <= 2 * Math.PI; lv += 2 * Math.PI/100.) {
 //      p.setTrueAnomaly(lv);
       p = new KeplerianParameters(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-     		 p.getRightAscensionOfAscendingNode(), lv , 2, p.getFrame());
+              p.getRightAscensionOfAscendingNode(), lv , 2, p.getFrame());
       position = p.getPVCoordinates(mu).getPosition();
 
       // test if the norm of the position is in the range [perigee radius, apogee radius]
@@ -260,26 +260,26 @@ public class KeplerianParametersTest extends TestCase {
     // apsides
 //    p.setTrueAnomaly(0);
     p = new KeplerianParameters(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-   		 p.getRightAscensionOfAscendingNode(), 0 , 2, p.getFrame());
+            p.getRightAscensionOfAscendingNode(), 0 , 2, p.getFrame());
     assertEquals(p.getPVCoordinates(mu).getPosition().getNorm(), perigeeRadius, perigeeRadius * Utils.epsilonTest);
 
 //    p.setTrueAnomaly(Math.PI);
     p = new KeplerianParameters(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-   		 p.getRightAscensionOfAscendingNode(), Math.PI , 2, p.getFrame());
+            p.getRightAscensionOfAscendingNode(), Math.PI , 2, p.getFrame());
     assertEquals(p.getPVCoordinates(mu).getPosition().getNorm(), apogeeRadius, apogeeRadius * Utils.epsilonTest);
 
     // nodes
     // descending node
 //    p.setTrueAnomaly(Math.PI - p.getPerigeeArgument());
     p = new KeplerianParameters(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-   		 p.getRightAscensionOfAscendingNode(), Math.PI - p.getPerigeeArgument() , 2, p.getFrame());
+            p.getRightAscensionOfAscendingNode(), Math.PI - p.getPerigeeArgument() , 2, p.getFrame());
     assertTrue(Math.abs(p.getPVCoordinates(mu).getPosition().getZ()) < p.getPVCoordinates(mu).getPosition().getNorm() * Utils.epsilonTest);
     assertTrue(p.getPVCoordinates(mu).getVelocity().getZ() < 0);
 
     // ascending node
 //    p.setTrueAnomaly(2.0 * Math.PI - p.getPerigeeArgument());
     p = new KeplerianParameters(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-      		 p.getRightAscensionOfAscendingNode(),2.0 * Math.PI - p.getPerigeeArgument() , 2, p.getFrame());
+               p.getRightAscensionOfAscendingNode(),2.0 * Math.PI - p.getPerigeeArgument() , 2, p.getFrame());
     assertTrue(Math.abs(p.getPVCoordinates(mu).getPosition().getZ()) < p.getPVCoordinates(mu).getPosition().getNorm() * Utils.epsilonTest);
     assertTrue(p.getPVCoordinates(mu).getVelocity().getZ() > 0);
 
@@ -300,8 +300,8 @@ public class KeplerianParametersTest extends TestCase {
 
     for (double lv = 0; lv <= 2 * Math.PI; lv += 2 * Math.PI/100.) {
 //      pCirEqua.setTrueAnomaly(lv)
-    	pCirEqua = new KeplerianParameters(pCirEqua.getA(),pCirEqua.getE(),pCirEqua.getI(), pCirEqua.getPerigeeArgument(),
-    			pCirEqua.getRightAscensionOfAscendingNode(), lv, 2, pCirEqua.getFrame());
+        pCirEqua = new KeplerianParameters(pCirEqua.getA(),pCirEqua.getE(),pCirEqua.getI(), pCirEqua.getPerigeeArgument(),
+                pCirEqua.getRightAscensionOfAscendingNode(), lv, 2, pCirEqua.getFrame());
       position = pCirEqua.getPVCoordinates(mu).getPosition();
 
       // test if the norm pf the position is in the range [perigee radius, apogee radius]

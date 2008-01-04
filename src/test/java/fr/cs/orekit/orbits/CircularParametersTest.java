@@ -164,33 +164,33 @@ public class CircularParametersTest extends TestCase {
 
 //    p.setAlphaV(lv - raan);
     p = new CircularParameters(p.getA() , p.getCircularEx(), p.getCircularEy(),
-    		p.getRightAscensionOfAscendingNode(),
-    		p.getAlphaV(), lv - raan, 2, p.getFrame());
+            p.getRightAscensionOfAscendingNode(),
+            p.getAlphaV(), lv - raan, 2, p.getFrame());
     assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
     assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
     assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
 //    p.setAlphaV(0);
     p = new CircularParameters(p.getA() , p.getCircularEx(), p.getCircularEy(),
-    		p.getRightAscensionOfAscendingNode(),
-    		p.getAlphaV(), 0, 2, p.getFrame());
+            p.getRightAscensionOfAscendingNode(),
+            p.getAlphaV(), 0, 2, p.getFrame());
 
 
 //    p.setAlphaE(lE - raan);
     p = new CircularParameters(p.getA() , p.getCircularEx(), p.getCircularEy(),
-    		p.getRightAscensionOfAscendingNode(),
-    		p.getAlphaV(), lE - raan, 1, p.getFrame());
+            p.getRightAscensionOfAscendingNode(),
+            p.getAlphaV(), lE - raan, 1, p.getFrame());
     assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
     assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
     assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
 //    p.setAlphaV(0);
     p = new CircularParameters(p.getA() , p.getCircularEx(), p.getCircularEy(),
-    		p.getRightAscensionOfAscendingNode(),
-    		p.getAlphaV(), 0, 2, p.getFrame());
+            p.getRightAscensionOfAscendingNode(),
+            p.getAlphaV(), 0, 2, p.getFrame());
 
 //    p.setAlphaM(lM - raan);
     p = new CircularParameters(p.getA() , p.getCircularEx(), p.getCircularEy(),
-    		p.getRightAscensionOfAscendingNode(),
-    		p.getAlphaV(), lM - raan, 0, p.getFrame());
+            p.getRightAscensionOfAscendingNode(),
+            p.getAlphaV(), lM - raan, 0, p.getFrame());
     assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
     assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
     assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
@@ -211,7 +211,7 @@ public class CircularParametersTest extends TestCase {
 //    p.setCircularEy(0);
 
     p = new CircularParameters(p.getA() , 0, 0, p.getRightAscensionOfAscendingNode(),
-    		p.getAlphaV(), p.getAlphaV(), 2, p.getFrame());
+            p.getAlphaV(), p.getAlphaV(), 2, p.getFrame());
 
     double lv = 1.1;
     double lE = lv;
@@ -219,33 +219,33 @@ public class CircularParametersTest extends TestCase {
 
 //    p.setAlphaV(lv - raan);
     p = new CircularParameters(p.getA() , p.getCircularEx(), p.getCircularEy(),
-    		p.getRightAscensionOfAscendingNode(),
-    		p.getAlphaV(), lv - raan, 2, p.getFrame());
+            p.getRightAscensionOfAscendingNode(),
+            p.getAlphaV(), lv - raan, 2, p.getFrame());
     assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
     assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
     assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
 //    p.setAlphaV(0);
     p = new CircularParameters(p.getA() , p.getCircularEx(), p.getCircularEy(),
-    		p.getRightAscensionOfAscendingNode(),
-    		p.getAlphaV(), 0, 2, p.getFrame());
+            p.getRightAscensionOfAscendingNode(),
+            p.getAlphaV(), 0, 2, p.getFrame());
 
 //    p.setAlphaE(lE - raan);
     p = new CircularParameters(p.getA() , p.getCircularEx(), p.getCircularEy(),
-    		p.getRightAscensionOfAscendingNode(),
-    		p.getAlphaV(), lE - raan, 1, p.getFrame());
+            p.getRightAscensionOfAscendingNode(),
+            p.getAlphaV(), lE - raan, 1, p.getFrame());
 
     assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
     assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
     assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
 //    p.setAlphaV(0);
     p = new CircularParameters(p.getA() , p.getCircularEx(), p.getCircularEy(),
-    		p.getRightAscensionOfAscendingNode(),
-    		p.getAlphaV(), 0, 2, p.getFrame());
+            p.getRightAscensionOfAscendingNode(),
+            p.getAlphaV(), 0, 2, p.getFrame());
 
 //    p.setAlphaM(lM - raan);
     p = new CircularParameters(p.getA() , p.getCircularEx(), p.getCircularEy(),
-    		p.getRightAscensionOfAscendingNode(),
-    		p.getAlphaV(), lM - raan, 0, p.getFrame());
+            p.getRightAscensionOfAscendingNode(),
+            p.getAlphaV(), lM - raan, 0, p.getFrame());
     assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
     assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
     assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
@@ -279,7 +279,7 @@ public class CircularParametersTest extends TestCase {
                  p.getPVCoordinates(mu).getPosition().getNorm(),
                  Utils.epsilonTest * Math.abs(p.getPVCoordinates(mu).getPosition().getNorm()));
     assertEquals(na * Math.sqrt(ksi * ksi + nu * nu) / epsilon,
-    		p.getPVCoordinates(mu).getVelocity().getNorm(),
+            p.getPVCoordinates(mu).getVelocity().getNorm(),
                  Utils.epsilonTest * Math.abs(p.getPVCoordinates(mu).getVelocity().getNorm()));
 
   }
@@ -338,8 +338,8 @@ public class CircularParametersTest extends TestCase {
     for (double alphaV = 0; alphaV <= 2 * Math.PI; alphaV += 2 * Math.PI/100.) {
 //      p.setAlphaV(alphaV);
       p = new CircularParameters(p.getA() , p.getCircularEx(), p.getCircularEy(), p.getI(),
-      		p.getRightAscensionOfAscendingNode(),
-      		alphaV, 2, p.getFrame());
+              p.getRightAscensionOfAscendingNode(),
+              alphaV, 2, p.getFrame());
       position = p.getPVCoordinates(mu).getPosition();
       // test if the norm of the position is in the range [perigee radius, apogee radius]
       // Warning: these tests are without absolute value by choice
@@ -384,8 +384,8 @@ public class CircularParametersTest extends TestCase {
     for (double alphaV = 0; alphaV <= 2 * Math.PI; alphaV += 2 * Math.PI/100.) {
 //      pCirEqua.setAlphaV(alphaV);
       pCirEqua = new CircularParameters(pCirEqua.getA() , pCirEqua.getCircularEx(), pCirEqua.getCircularEy(), pCirEqua.getI(),
-    		  pCirEqua.getRightAscensionOfAscendingNode(),
-    		  alphaV, 2, pCirEqua.getFrame());
+              pCirEqua.getRightAscensionOfAscendingNode(),
+              alphaV, 2, pCirEqua.getFrame());
       position = pCirEqua.getPVCoordinates(mu).getPosition();
 
       // test if the norm pf the position is in the range [perigee radius, apogee radius]

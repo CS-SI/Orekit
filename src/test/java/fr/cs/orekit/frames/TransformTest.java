@@ -105,72 +105,72 @@ public class TransformTest extends TestCase {
   }
 
   public void testRoughTransPV() {
-	
-	  PVCoordinates pointP1 = new PVCoordinates(Vector3D.plusI, Vector3D.plusI);
-	
-	  // translation transform test
-	  PVCoordinates pointP2 = new PVCoordinates(new Vector3D(0, 0, 0), new Vector3D(0, 0, 0));
-	  Transform R1toR2 = new Transform(Vector3D.minusI, Vector3D.minusI);
-	  PVCoordinates result1 = R1toR2.transformPVCoordinates(pointP1);
-	  checkVectors(pointP2.getPosition(), result1.getPosition());
-	  checkVectors(pointP2.getVelocity(), result1.getVelocity());
-	
-	  // test inverse translation
-	  Transform R2toR1 = R1toR2.getInverse();
-	  PVCoordinates invResult1 = R2toR1.transformPVCoordinates(pointP2);
-	  checkVectors(pointP1.getPosition(), invResult1.getPosition());
-	  checkVectors(pointP1.getVelocity(), invResult1.getVelocity());
-	
-	  // rotation transform test
-	  PVCoordinates pointP3 = new PVCoordinates(Vector3D.plusJ, new Vector3D(-2, 1, 0));
-	  Rotation R = new Rotation(Vector3D.plusK, Math.PI/2);	
-	  Transform R1toR3 = new Transform(R, new Vector3D(0, 0, -2));
-	  PVCoordinates result2 = R1toR3.transformPVCoordinates(pointP1);
-	  checkVectors(pointP3.getPosition(), result2.getPosition());
+
+      PVCoordinates pointP1 = new PVCoordinates(Vector3D.plusI, Vector3D.plusI);
+
+      // translation transform test
+      PVCoordinates pointP2 = new PVCoordinates(new Vector3D(0, 0, 0), new Vector3D(0, 0, 0));
+      Transform R1toR2 = new Transform(Vector3D.minusI, Vector3D.minusI);
+      PVCoordinates result1 = R1toR2.transformPVCoordinates(pointP1);
+      checkVectors(pointP2.getPosition(), result1.getPosition());
+      checkVectors(pointP2.getVelocity(), result1.getVelocity());
+
+      // test inverse translation
+      Transform R2toR1 = R1toR2.getInverse();
+      PVCoordinates invResult1 = R2toR1.transformPVCoordinates(pointP2);
+      checkVectors(pointP1.getPosition(), invResult1.getPosition());
+      checkVectors(pointP1.getVelocity(), invResult1.getVelocity());
+
+      // rotation transform test
+      PVCoordinates pointP3 = new PVCoordinates(Vector3D.plusJ, new Vector3D(-2, 1, 0));
+      Rotation R = new Rotation(Vector3D.plusK, Math.PI/2);
+      Transform R1toR3 = new Transform(R, new Vector3D(0, 0, -2));
+      PVCoordinates result2 = R1toR3.transformPVCoordinates(pointP1);
+      checkVectors(pointP3.getPosition(), result2.getPosition());
       checkVectors(pointP3.getVelocity(), result2.getVelocity());
-	
-	  // test inverse rotation
+
+      // test inverse rotation
       Transform R3toR1 = R1toR3.getInverse();
-	  PVCoordinates invResult2 = R3toR1.transformPVCoordinates(pointP3);
-	  checkVectors(pointP1.getPosition(), invResult2.getPosition());
-	  checkVectors(pointP1.getVelocity(), invResult2.getVelocity());
-	
-	  // combine 2 velocity transform
-	  Transform R1toR4 = new Transform(new Vector3D(-2,0,0),new Vector3D(-2,0,0));
+      PVCoordinates invResult2 = R3toR1.transformPVCoordinates(pointP3);
+      checkVectors(pointP1.getPosition(), invResult2.getPosition());
+      checkVectors(pointP1.getVelocity(), invResult2.getVelocity());
+
+      // combine 2 velocity transform
+      Transform R1toR4 = new Transform(new Vector3D(-2,0,0),new Vector3D(-2,0,0));
       PVCoordinates pointP4 = new PVCoordinates(new Vector3D(-1,0,0),new Vector3D(-1,0,0));
-	  Transform R2toR4 = new Transform(R2toR1, R1toR4);
-	  PVCoordinates compResult = R2toR4.transformPVCoordinates(pointP2);
-	  checkVectors(pointP4.getPosition() , compResult.getPosition());
-	  checkVectors(pointP4.getVelocity() , compResult.getVelocity());
-	
-	  // combine 2 rotation tranform
-	  PVCoordinates pointP5 = new PVCoordinates(new Vector3D(-1,0,0),new Vector3D(-1 , 0 , 3));
-	  Rotation R2 = new Rotation( new Vector3D(0,0,1), Math.PI );	
-	  Transform R1toR5 = new Transform(R2 , new Vector3D(0, -3, 0));
-	  Transform R3toR5 = new Transform (R3toR1, R1toR5);
-	  PVCoordinates combResult = R3toR5.transformPVCoordinates(pointP3);
-	  checkVectors(pointP5.getPosition() , combResult.getPosition());
-	  checkVectors(pointP5.getVelocity() , combResult.getVelocity());
-	
-	  // combine translation and rotation
-	  Transform R2toR3 = new Transform (R2toR1,R1toR3);
-	  PVCoordinates Result = R2toR3.transformPVCoordinates(pointP2);	
-	  checkVectors(pointP3.getPosition() , Result.getPosition());
-	  checkVectors(pointP3.getVelocity() , Result.getVelocity());
-	
-	  Transform R3toR2 = new Transform (R3toR1, R1toR2);	
-	  Result = R3toR2.transformPVCoordinates(pointP3);
-	  checkVectors(pointP2.getPosition() , Result.getPosition());
-	  checkVectors(pointP2.getVelocity() , Result.getVelocity());
-	
+      Transform R2toR4 = new Transform(R2toR1, R1toR4);
+      PVCoordinates compResult = R2toR4.transformPVCoordinates(pointP2);
+      checkVectors(pointP4.getPosition() , compResult.getPosition());
+      checkVectors(pointP4.getVelocity() , compResult.getVelocity());
+
+      // combine 2 rotation tranform
+      PVCoordinates pointP5 = new PVCoordinates(new Vector3D(-1,0,0),new Vector3D(-1 , 0 , 3));
+      Rotation R2 = new Rotation( new Vector3D(0,0,1), Math.PI );
+      Transform R1toR5 = new Transform(R2 , new Vector3D(0, -3, 0));
+      Transform R3toR5 = new Transform (R3toR1, R1toR5);
+      PVCoordinates combResult = R3toR5.transformPVCoordinates(pointP3);
+      checkVectors(pointP5.getPosition() , combResult.getPosition());
+      checkVectors(pointP5.getVelocity() , combResult.getVelocity());
+
+      // combine translation and rotation
+      Transform R2toR3 = new Transform (R2toR1,R1toR3);
+      PVCoordinates Result = R2toR3.transformPVCoordinates(pointP2);
+      checkVectors(pointP3.getPosition() , Result.getPosition());
+      checkVectors(pointP3.getVelocity() , Result.getVelocity());
+
+      Transform R3toR2 = new Transform (R3toR1, R1toR2);
+      Result = R3toR2.transformPVCoordinates(pointP3);
+      checkVectors(pointP2.getPosition() , Result.getPosition());
+      checkVectors(pointP2.getVelocity() , Result.getVelocity());
+
       Transform newR1toR5 = new Transform(R1toR2, R2toR3);
       newR1toR5 = new   Transform(newR1toR5,R3toR5);
       Result = newR1toR5.transformPVCoordinates(pointP1);
       checkVectors(pointP5.getPosition() , Result.getPosition());
       checkVectors(pointP5.getVelocity() , Result.getVelocity());
-	
-	  // more tests	
-	
+
+      // more tests
+
       newR1toR5 = new Transform(R1toR2, R2toR3);
       Transform R3toR4 = new Transform(R3toR1, R1toR4);
       newR1toR5 = new Transform(newR1toR5, R3toR4);
@@ -183,85 +183,85 @@ public class TransformTest extends TestCase {
   }
 
   public void testRotPV() {
-	
-	  Random rnd = new Random(0x73d5554d99427af0l);
-	
-	  // Instant Rotation only
-	
-	  for (int i = 0; i < 10; ++i) {
 
-		  // Random instant rotation
-		
-	      Rotation instantRot    = randomRotation(rnd);
-	      Vector3D normAxis = instantRot.getAxis();
-	      double w  = Math.abs(instantRot.getAngle())/86400;
-	
-	      // random rotation
-	      Rotation rot    = randomRotation(rnd);
+      Random rnd = new Random(0x73d5554d99427af0l);
 
-	      // so we have a transform
-	      Transform tr = new Transform(rot , new Vector3D(w, normAxis));
-	
-	      // random position and velocity
-	      Vector3D pos = randomVector(rnd);
-	      Vector3D vel = randomVector(rnd);
-	
-	      PVCoordinates pvOne = new PVCoordinates(pos,vel);
-	
-	      // we obtain
-	
-	      PVCoordinates pvTwo = tr.transformPVCoordinates(pvOne);
-	      	
-	      // test inverse
+      // Instant Rotation only
 
-	      Vector3D resultvel = tr.getInverse().transformPVCoordinates(pvTwo).getVelocity();
+      for (int i = 0; i < 10; ++i) {
 
-	      checkVectors(resultvel , vel); 	
-	
-	      }
+          // Random instant rotation
+
+          Rotation instantRot    = randomRotation(rnd);
+          Vector3D normAxis = instantRot.getAxis();
+          double w  = Math.abs(instantRot.getAngle())/86400;
+
+          // random rotation
+          Rotation rot    = randomRotation(rnd);
+
+          // so we have a transform
+          Transform tr = new Transform(rot , new Vector3D(w, normAxis));
+
+          // random position and velocity
+          Vector3D pos = randomVector(rnd);
+          Vector3D vel = randomVector(rnd);
+
+          PVCoordinates pvOne = new PVCoordinates(pos,vel);
+
+          // we obtain
+
+          PVCoordinates pvTwo = tr.transformPVCoordinates(pvOne);
+          
+          // test inverse
+
+          Vector3D resultvel = tr.getInverse().transformPVCoordinates(pvTwo).getVelocity();
+
+          checkVectors(resultvel , vel); 
+
+          }
 
   }
 
   public void testTransPV() {
-	
-	  Random rnd = new Random(0x73d5554d99427af0l);
+
+      Random rnd = new Random(0x73d5554d99427af0l);
 
   // translation velocity only :
-	
-	  for (int i = 0; i < 10; ++i) {
-		
-	  // random position and velocity
-		  Vector3D pos = randomVector(rnd);
-		  Vector3D vel = randomVector(rnd);
-	      PVCoordinates pvOne = new PVCoordinates(pos , vel);
-		
-	  // random transform
-		  Vector3D trans = randomVector(rnd);
-		  Vector3D transVel = randomVector(rnd);
-	      Transform tr = new Transform(trans , transVel);
-		
-	      double dt = 1;
-	
-	  // we should obtain :
-	
-	      Vector3D good =(tr.transformPosition(
-                pos.add(new Vector3D( dt , vel))).add(new Vector3D(dt, transVel)));
-	
-	  // we have :
-	
-	      PVCoordinates pvTwo = tr.transformPVCoordinates(pvOne);	
-	      Vector3D result  = (pvTwo.getPosition().add(
-	    		  new Vector3D(dt ,pvTwo.getVelocity()))); 	
-          checkVectors( good , result);
-	
-	  // test inverse
 
-	      Vector3D resultvel = tr.getInverse().
-	      transformPVCoordinates(pvTwo).getVelocity();
-	      checkVectors(resultvel , vel);	
-	      	
-	      }
-	
+      for (int i = 0; i < 10; ++i) {
+
+      // random position and velocity
+          Vector3D pos = randomVector(rnd);
+          Vector3D vel = randomVector(rnd);
+          PVCoordinates pvOne = new PVCoordinates(pos , vel);
+
+      // random transform
+          Vector3D trans = randomVector(rnd);
+          Vector3D transVel = randomVector(rnd);
+          Transform tr = new Transform(trans , transVel);
+
+          double dt = 1;
+
+      // we should obtain :
+
+          Vector3D good =(tr.transformPosition(
+                pos.add(new Vector3D( dt , vel))).add(new Vector3D(dt, transVel)));
+
+      // we have :
+
+          PVCoordinates pvTwo = tr.transformPVCoordinates(pvOne);
+          Vector3D result  = (pvTwo.getPosition().add(
+                  new Vector3D(dt ,pvTwo.getVelocity()))); 
+          checkVectors( good , result);
+
+      // test inverse
+
+          Vector3D resultvel = tr.getInverse().
+          transformPVCoordinates(pvTwo).getVelocity();
+          checkVectors(resultvel , vel);
+          
+          }
+
   }
 
   public void testRotation() {
@@ -288,21 +288,21 @@ public class TransformTest extends TestCase {
   }
 
   private void checkVectors(Vector3D v1 , Vector3D v2) {
-	
-	  Vector3D d = v1.subtract(v2);
 
-	  assertEquals(0,d.getX(),1.0e-8);
-	  assertEquals(0,d.getY(),1.0e-8);
-	  assertEquals(0,d.getZ(),1.0e-8);
+      Vector3D d = v1.subtract(v2);
 
-	  assertEquals(0,d.getNorm(),1.0e-8);
-	
-	  if ((v1.getNorm() > 1.0e-10) && (v2.getNorm() > 1.0e-10)) {
-	  Rotation r = new Rotation(v1, v2);
+      assertEquals(0,d.getX(),1.0e-8);
+      assertEquals(0,d.getY(),1.0e-8);
+      assertEquals(0,d.getZ(),1.0e-8);
+
+      assertEquals(0,d.getNorm(),1.0e-8);
+
+      if ((v1.getNorm() > 1.0e-10) && (v2.getNorm() > 1.0e-10)) {
+      Rotation r = new Rotation(v1, v2);
       assertEquals(0,r.getAngle(),1.0e-8);
-	
-	
-	  }
+
+
+      }
 
 }
 

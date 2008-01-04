@@ -138,21 +138,21 @@ public class Frame implements Serializable {
    * @return the name
    */
   public String getName() {
-	  return this.name;
+      return this.name;
   }
 
   /** New definition of the java.util toString() method.
    * @return the name
    */
   public String toString() {
-	  return this.name;
+      return this.name;
   }
 
   /** Get the parent frame
    * @return parent frame
    */
   public Frame getParent() {
-	  return parent;
+      return parent;
   }
 
   /** Update the transform from the parent frame to the instance.

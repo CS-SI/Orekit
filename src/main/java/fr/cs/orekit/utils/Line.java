@@ -29,14 +29,14 @@ public class Line {
    * @exception IllegalArgumentException if the direction norm is too small
    */
   public Line(Vector3D p, Vector3D direction) {
-	  double norm = direction.getNorm();
-	    if (norm < 1.0e-10) {
-	      throw new IllegalArgumentException(
+      double norm = direction.getNorm();
+        if (norm < 1.0e-10) {
+          throw new IllegalArgumentException(
               Translator.getInstance().translate("null norm"));
-	    }
-	    this.direction = new Vector3D(1.0 / norm, direction);
-	    zero = new Vector3D(1.0, p,
-	                        -Vector3D.dotProduct(p, this.direction), this.direction);
+        }
+        this.direction = new Vector3D(1.0 / norm, direction);
+        zero = new Vector3D(1.0, p,
+                            -Vector3D.dotProduct(p, this.direction), this.direction);
   }
 
   /** Revert the line direction.
