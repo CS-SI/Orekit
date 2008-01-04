@@ -112,13 +112,10 @@ public class DrozinerAttractionModelTest extends TestCase {
     }
 
     public boolean requiresDenseOutput() {
-      // TODO Auto-generated method stub
       return false;
     }
 
     public void reset() {
-      // TODO Auto-generated method stub
-      
     }
 
   }
@@ -197,13 +194,10 @@ public class DrozinerAttractionModelTest extends TestCase {
     }
 
     public boolean requiresDenseOutput() {
-      // TODO Auto-generated method stub
       return false;
     }
 
     public void reset() {
-      // TODO Auto-generated method stub
-      
     }
   }
   
