@@ -5,7 +5,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.orekit.utils.Line;
 
 /** Interface representing the rigid surface shape of a natural body.
- * <p>The shape is not provided as a single complete geometrical
+ * <p>The shape is not provided as a single complete geometric
  * model, but single points can be queried ({@link #getIntersectionPoint}).</p>
  * @author Luc Maisonobe
  */
