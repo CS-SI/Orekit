@@ -18,7 +18,7 @@ import fr.cs.orekit.utils.PVCoordinates;
  * so that the user has not to worry about the used computation methods. One instance is created
  * for each TLE (this instance can only be get using {@link #selectExtrapolator(TLE)} method,
  * and can compute {@link PVCoordinates position and velocity coordinates} at any
- * time. Maximum accuracy is guaranteed in a 24h range period before and after the provided 
+ * time. Maximum accuracy is guaranteed in a 24h range period before and after the provided
  * TLE epoch (of course this accuracy is not really measurable nor predictable: according to
  * <a href="http://www.celestrak.com/">CelesTrak</a>, the precision is close to one kilometer
  * and error won't probably rise above 2 km).
@@ -33,7 +33,7 @@ import fr.cs.orekit.utils.PVCoordinates;
  */
 public abstract class TLEPropagator {
 
-  /** Protected constructor for derived classes. 
+  /** Protected constructor for derived classes.
    * @param initialTLE the unique TLE to propagate
    * @throws OrekitException if some specific error occurs
    */
@@ -42,11 +42,11 @@ public abstract class TLEPropagator {
     initializeCommons();
     sxpInitialize();
   }
-  
+
   /** Selects the extrapolator to use with the selected TLE.
    * @param tle the TLE to propagate.
    * @return the correct propagator.
-   * @throws OrekitException 
+   * @throws OrekitException
    */
   public static TLEPropagator selectExtrapolator(TLE tle) throws OrekitException {
 
@@ -60,7 +60,7 @@ public abstract class TLEPropagator {
     // recover original mean motion :
     double xn0dp = tle.getMeanMotion()*60.0/(delta0 + 1.0);
 
-    // Period >= 225 minutes is deep space 
+    // Period >= 225 minutes is deep space
     if (2*Math.PI / (xn0dp*TLEConstants.minutesPerDay) >= (1. / 6.4)) {
       return new DeepSDP4(tle);
     }
@@ -75,19 +75,19 @@ public abstract class TLEPropagator {
    * @throws OrekitException
    */
   public PVCoordinates getPVCoordinates(AbsoluteDate date)
-    throws OrekitException {  
-    
+    throws OrekitException {
+
     double tSince = date.minus(tle.getEpoch())/60.0;
-    
-    sxpPropagate(tSince);  
-    
+
+    sxpPropagate(tSince);
+
     // Compute PV with previous calculated parameters
     return computePVCoordinates();
   }
 
   /** Computation of the first commons parameters.  */
   private void initializeCommons() {
-    
+
     double a1 = Math.pow( TLEConstants.xke / (tle.getMeanMotion()*60.0), TLEConstants.twoThirds);
     cosi0 = Math.cos(tle.getI());
     theta2 = cosi0 * cosi0;
@@ -102,28 +102,28 @@ public abstract class TLEPropagator {
 
     // recover original mean motion and semi-major axis :
     xn0dp = tle.getMeanMotion() * 60.0 /(delta0 + 1.0);
-    a0dp = a0/(1.0 - delta0);    
-    
-    // Values of s and qms2t :    
+    a0dp = a0/(1.0 - delta0);
+
+    // Values of s and qms2t :
     s4 = TLEConstants.s;  // unmodified value for s
     double q0ms24 = TLEConstants.qoms2t; // unmodified value for q0ms2T
-    
-    perige = (a0dp*(1-tle.getE()) - TLEConstants.ae)* TLEConstants.er; // perige 
-    
+
+    perige = (a0dp*(1-tle.getE()) - TLEConstants.ae)* TLEConstants.er; // perige
+
     //  For perigee below 156 km, the values of s and qoms2t are changed :
     if(perige < 156) {
       if(perige <= 98) {
-        s4 = 20.; 
+        s4 = 20.;
       }
       else {
-        s4 = perige - 78.; 
+        s4 = perige - 78.;
       }
       double temp_val = (120.0 - s4) * TLEConstants.ae / TLEConstants.er;
       double temp_val_squared = temp_val * temp_val;
       q0ms24 = temp_val_squared * temp_val_squared;
       s4 = s4 / TLEConstants.er + TLEConstants.ae; // new value for q0ms2T and s
-    } 
-    
+    }
+
     double pinv = 1. / (a0dp * beta02);
     double pinvsq = pinv * pinv;
     tsi = 1. / (a0dp - s4);
@@ -137,48 +137,48 @@ public abstract class TLEPropagator {
     coef1 = coef / Math.pow(psisq,3.5);
 
     // C2 and C1 coefficients computation :
-    c2 = coef1 * xn0dp * (a0dp * (1 + 1.5*etasq + eeta * (4 + etasq)) + 
+    c2 = coef1 * xn0dp * (a0dp * (1 + 1.5*etasq + eeta * (4 + etasq)) +
         0.75*TLEConstants.ck2 * tsi/psisq * x3thm1 *(8 + 3*etasq * (8 + etasq)));
     c1 = tle.getBStar() * c2;
-    sini0 = Math.sin(tle.getI());    
-   
+    sini0 = Math.sin(tle.getI());
+
     double x1mth2 = 1-theta2;
 
     // C4 coefficient computation :
-    c4 = 2 * xn0dp * coef1 * a0dp * beta02 * (eta * (2 + 0.5*etasq) + tle.getE() * 
-        (0.5 + 2*etasq) - 2 * TLEConstants.ck2 * tsi/(a0dp*psisq) * (-3*x3thm1 * 
-            (1 - 2*eeta + etasq * (1.5 - 0.5*eeta)) + 0.75*x1mth2 * 
+    c4 = 2 * xn0dp * coef1 * a0dp * beta02 * (eta * (2 + 0.5*etasq) + tle.getE() *
+        (0.5 + 2*etasq) - 2 * TLEConstants.ck2 * tsi/(a0dp*psisq) * (-3*x3thm1 *
+            (1 - 2*eeta + etasq * (1.5 - 0.5*eeta)) + 0.75*x1mth2 *
               (2 * etasq - eeta * (1+etasq)) * Math.cos(2*tle.getPerigeeArgument())));
-    
+
     double theta4 = theta2 * theta2;
     double temp1 = 3 * TLEConstants.ck2 * pinvsq * xn0dp;
     double temp2 = temp1 * TLEConstants.ck2 * pinvsq;
     double temp3 = 1.25 * TLEConstants.ck4 * pinvsq * pinvsq * xn0dp;
 
     // atmospheric and gravitation coefs :(Mdf and OMEGAdf)
-    xmdot = xn0dp + 0.5*temp1 * beta0 * x3thm1 + 0.0625*temp2 * beta0 * 
+    xmdot = xn0dp + 0.5*temp1 * beta0 * x3thm1 + 0.0625*temp2 * beta0 *
                  (13 - 78*theta2 + 137*theta4);
-    
+
     double x1m5th = 1 - 5*theta2;
-    
-    omgdot = -0.5*temp1 * x1m5th + 0.0625*temp2 * (7 - 114*theta2 + 395*theta4) + 
+
+    omgdot = -0.5*temp1 * x1m5th + 0.0625*temp2 * (7 - 114*theta2 + 395*theta4) +
                 temp3*(3 - 36*theta2 + 49*theta4);
-    
+
     double xhdot1 = -temp1 * cosi0;
-    
+
     xnodot = xhdot1 + (0.5*temp2 * (4 - 19*theta2) + 2*temp3 * (3 - 7*theta2)) * cosi0;
     xnodcf = 3.5 * beta02 * xhdot1 * c1;
-    t2cof = 1.5 * c1;    
+    t2cof = 1.5 * c1;
 
   }
 
   /** Retrieves the position and velocity.
    * @return the computed PVCoordinates.
-   * @throws OrekitException 
+   * @throws OrekitException
    */
   private PVCoordinates computePVCoordinates() throws OrekitException {
 
-    // Long period periodics 
+    // Long period periodics
     double axn = e * Math.cos(omega);
     double temp = 1. / (a * (1. - e*e));
     double xlcof = .125 * TLEConstants.a3ovk2 * sini0 * (3 + 5*cosi0) / (1. + cosi0);
@@ -188,7 +188,7 @@ public abstract class TLEPropagator {
     double xlt = xl + xll;
     double ayn = e * Math.sin(omega) + aynl;
     double elsq = axn * axn + ayn * ayn;
-    double capu = trimAngle(( xlt - xnode), Math.PI); 
+    double capu = trimAngle(( xlt - xnode), Math.PI);
     double epw = capu;
     double temp1, temp2;
     double ecosE = 0;
@@ -225,12 +225,12 @@ public abstract class TLEPropagator {
                                   new Integer(tle.getSatelliteNumber()),
                                   new Integer(tle.getElementNumber())
                                 });
-    }   
-    
-    // Solve Kepler's' Equation.     
+    }
+
+    // Solve Kepler's' Equation.
     double newtonRaphsonEpsilon = 1e-12;
 
-    for(int j = 0; j < 10; j++) {     
+    for(int j = 0; j < 10; j++) {
 
       double f, fdot, delta_epw;
       boolean doSecondOrderNewtonRaphson = true;
@@ -245,20 +245,20 @@ public abstract class TLEPropagator {
       delta_epw = f / fdot;
       if(j==0) {
         double maxNewtonRaphson = 1.25 * Math.abs(e);
-        doSecondOrderNewtonRaphson = false;        
+        doSecondOrderNewtonRaphson = false;
         if( delta_epw > maxNewtonRaphson) {
           delta_epw = maxNewtonRaphson;
-        }          
+        }
         else if( delta_epw < -maxNewtonRaphson) {
           delta_epw = -maxNewtonRaphson;
-        }          
+        }
         else {
           doSecondOrderNewtonRaphson = true;
-        }          
+        }
       }
       if(doSecondOrderNewtonRaphson) {
         delta_epw = f / (fdot + 0.5 * esinE * delta_epw);
-      }        
+      }
       epw += delta_epw;
     }
 
@@ -295,13 +295,13 @@ public abstract class TLEPropagator {
     double ux = xmx * sinuk + cosnok * cosuk;
     double uy = xmy * sinuk + sinnok * cosuk;
     double uz = sinik * sinuk;
-    
+
     // Position and velocity
 
     Vector3D pos = new Vector3D(1000*rk*ux*TLEConstants.er,
                                 1000*rk*uy*TLEConstants.er,
                                 1000*rk*uz*TLEConstants.er);
-    
+
     double rdot = TLEConstants.xke*Math.sqrt(a)*esinE/r;
     double rfdot = TLEConstants.xke*Math.sqrt(pl)/r;
     double xn = TLEConstants.xke/(a * Math.sqrt(a));
@@ -310,10 +310,10 @@ public abstract class TLEPropagator {
     double vx = xmx*cosuk-cosnok*sinuk;
     double vy = xmy*cosuk-sinnok*sinuk;
     double vz = sinik*cosuk;
-    
+
     Vector3D vel = new Vector3D(1000*(rdotk*ux+rfdotk*vx)*TLEConstants.er/60.0,
                                 1000*(rdotk*uy+rfdotk*vy)*TLEConstants.er/60.0,
-                                1000*(rdotk*uz+rfdotk*vz)*TLEConstants.er/60.0);  
+                                1000*(rdotk*uz+rfdotk*vz)*TLEConstants.er/60.0);
 
     return new PVCoordinates(pos,vel);
 
@@ -328,17 +328,17 @@ public abstract class TLEPropagator {
     double twoPi = 2 * Math.PI;
     return a - twoPi * Math.floor ((a + Math.PI - ref) / twoPi);
   }
-  
+
   /** Initialization proper to each propagator (SGP or SDP).
-   * @throws OrekitException if some specific error occurs    
+   * @throws OrekitException if some specific error occurs
    */
   protected abstract void sxpInitialize() throws OrekitException;
-  
+
   /** Propagation proper to each propagator (SGP or SDP).
    * @param t the offset from initial epoch (min)
    */
   protected abstract void sxpPropagate(double t) throws OrekitException;
-  
+
   /** Initial state. */
   protected final TLE tle;
 
@@ -363,7 +363,7 @@ public abstract class TLEPropagator {
   protected double beta02; // 1 - e2
   protected double beta0; // sqrt (1 - e2)
   protected double perige; // perigee, expressed in KM and ALTITUDE
-  
+
   protected double etasq; // eta squared
   protected double eeta; // original eccentricity * eta
   protected double s4; // s* new value for the contant s
@@ -375,9 +375,9 @@ public abstract class TLEPropagator {
   protected double c1; // C1 from SPTRCK #3
   protected double c2; // C2 from SPTRCK #3
   protected double c4; // C4 from SPTRCK #3
-  protected double xnodcf; // common parameter for raan (OMEGA) computation 
+  protected double xnodcf; // common parameter for raan (OMEGA) computation
   protected double t2cof; // 3/2 * C1
-  
+
   public boolean isSDP;
 }
 //      My comments

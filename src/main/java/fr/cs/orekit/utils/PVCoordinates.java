@@ -5,7 +5,7 @@ import java.io.Serializable;
 import org.apache.commons.math.geometry.Vector3D;
 
 /** Simple container of the cinematic couple Position (m) and Velocity (m/s).
- * 
+ *
  * @author F. Maussion
  */
 public class PVCoordinates implements Serializable {

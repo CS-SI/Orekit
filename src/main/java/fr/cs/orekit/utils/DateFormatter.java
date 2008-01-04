@@ -9,7 +9,7 @@ import fr.cs.orekit.time.TimeScale;
 import fr.cs.orekit.time.UTCScale;
 
 /** Converts a date into a standard ISO-8601 string representation.
- * 
+ *
  * @author F. Maussion
  */
 public class DateFormatter {
@@ -30,7 +30,7 @@ public class DateFormatter {
     try {
       return toString(date,UTCScale.getInstance());
     } catch (OrekitException oe) {
-      return toString(date,TAIScale.getInstance());       
+      return toString(date,TAIScale.getInstance());
     }
   }
 

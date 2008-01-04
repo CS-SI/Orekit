@@ -11,7 +11,7 @@ import fr.cs.orekit.time.AbsoluteDate;
 
 
 /** This class implements a simple maneuver with constant thrust.
- * 
+ *
  * @author F. Maussion
  */
 public class ConstantThrustManeuver implements ForceModel {
@@ -51,7 +51,7 @@ public class ConstantThrustManeuver implements ForceModel {
     this.flowRate = -force/(g0*isp);
     this.direction = direction.normalize();
     this.frameType = frameType;
-    firing = false;     
+    firing = false;
   }
 
   /** Constructor for a variable direction and constant thrust.
@@ -65,7 +65,7 @@ public class ConstantThrustManeuver implements ForceModel {
                                 double force, double isp, ThrustForceDirection direction) {
 
     this(startDate, duration, force, isp, null, direction.getType());
-    this.variableDir = direction;   
+    this.variableDir = direction;
   }
 
   /** Compute the contribution of maneuver to the global acceleration.
@@ -73,15 +73,15 @@ public class ConstantThrustManeuver implements ForceModel {
    * @param adder object where the contribution should be added
    * @param mu central gravitation coefficient
    * @throws OrekitException if some specific error occurs
-   */  
+   */
   public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
   throws OrekitException {
-    if(firing) {      
+    if(firing) {
       if (variableDir!=null) {
         direction = variableDir.getDirection(s).normalize();
       }
 
-      double acc = force/s.getMass();        
+      double acc = force/s.getMass();
       Vector3D acceleration = new Vector3D(acc, direction);
 
       switch (frameType) {
@@ -100,7 +100,7 @@ public class ConstantThrustManeuver implements ForceModel {
       default :
         throw new IllegalArgumentException(Translator.getInstance().translate(
         "Choosen frame type is not correct"));
-      }            
+      }
       adder.addMassDerivative(flowRate);
     }
 
@@ -122,7 +122,7 @@ public class ConstantThrustManeuver implements ForceModel {
       firing = true;
     }
 
-    /** The G-function is the difference between the start date and the current date. 
+    /** The G-function is the difference between the start date and the current date.
      * @param s the current state information : date, cinematics, attitude
      * @param mu central gravitation coefficient
      */
@@ -158,12 +158,12 @@ public class ConstantThrustManeuver implements ForceModel {
       firing = false;
     }
 
-    /** The G-function is the difference between the end date and the currentdate. 
+    /** The G-function is the difference between the end date and the currentdate.
      * @param s the current state information : date, cinematics, attitude
      * @param mu central gravitation coefficient
      */
     public double g(SpacecraftState s, double mu)
-    throws OrekitException {   
+    throws OrekitException {
       return endDate.minus(s.getDate());
     }
 

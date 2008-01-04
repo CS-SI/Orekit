@@ -7,17 +7,17 @@ import java.io.InputStreamReader;
 import fr.cs.orekit.errors.OrekitException;
 
 /**This reader is adapted to the SHM Format.
- * 
- * <p> This format is used to describe the gravity field of EIGEN models, 
- * edited by the GFZ Postdam.  
+ *
+ * <p> This format is used to describe the gravity field of EIGEN models,
+ * edited by the GFZ Postdam.
  * It is described in <ahref="http://www.gfz-potsdam.de/grace/results/">
  * Potsdam university website </a>
- * 
- * <p> The proper way to use this class is to call the 
+ *
+ * <p> The proper way to use this class is to call the
  *  {@link PotentialReaderFactory}
  *  which will determine which reader to use with the selected potential
  *  coefficients file <p>
- *   
+ *
  * @see PotentialReaderFactory
  * @author F. Maussion
  */
@@ -90,7 +90,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
     return fileIsOK;
   }
 
-  /** Computes the coefficients by reading the selected (and tested) file 
+  /** Computes the coefficients by reading the selected (and tested) file
    * @throws OrekitException when the file has not been initialized or checked.
    * @throws IOException when the file is corrupted.
    */

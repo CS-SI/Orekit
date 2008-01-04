@@ -10,7 +10,7 @@ import fr.cs.orekit.propagation.TimeDerivativesEquations;
  * can be taken into account by the orbit extrapolation methods.</p>
  *
  * <p>For real problems, and according to the kind of forces we want to
- * represent (gravitational or non-gravitational perturbations), the 
+ * represent (gravitational or non-gravitational perturbations), the
  * contribution of the perturbing acceleration is added like a disturbing term
  * in the partial derivatives coming from the Gauss equations or the Lagrange's
  * planetary equations.</p>

@@ -75,7 +75,7 @@ public class MessagesResources_fr
       "impossible d''analyser la ligne {0} du fichier de mod\u00e8le de nutation {1} :\n{2}" },
     { "unable to find nutation model file {0}",
       "impossible de trouver le fichier de mod\u00e8le de nutation {0}" },
-    { "Eccentricity is becoming greater than 1. Unable to continue." , 
+    { "Eccentricity is becoming greater than 1. Unable to continue." ,
       "L''eccentricit\u00e9 devient plus grande que 1. Impossible de continuer" },
     { "Choosen frame type is not correct",
       "Le type de rep\u00e8re choisi n''est pas valide" },
@@ -106,9 +106,9 @@ public class MessagesResources_fr
     { "Perige within earth." + "Satellite number : {0}. Element number : {1}.",
       "P\u00e9rig\u00e9e souterrain."  +
       "Num\u00e9ro de satellite : {0}. Num\u00e9ro de l''\u00e9l\u00e9ment: {1}."},
-    { "Current date is out of range. " + 
+    { "Current date is out of range. " +
       "Solar activity datas are not available" ,
-      "La date est hors de l''intervalle permis. " + 
+      "La date est hors de l''intervalle permis. " +
       "Les param\u00e8tres d''activit\u00e9 du soleil ne sont pas disponibles. " },
     { "non-existent month {0}",
       "mois inexistant {0}" },
@@ -118,7 +118,7 @@ public class MessagesResources_fr
       "heure inexistante {0}:{1}:{2}" },
     { "out of range seconds number: {0}",
       "num\u00e9ro de seconde hors domaine : {0}" }
-   
+
   };
 
 }

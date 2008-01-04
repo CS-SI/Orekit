@@ -15,17 +15,17 @@ public class UTCTAIHistoryFilesLoaderTest extends TestCase {
 
   public void testRegular() throws OrekitException {
     checkSuccess("regular-data");
-    assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);    
+    assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);
   }
 
   public void testCompressed() throws OrekitException {
     checkSuccess("compressed-data");
-    assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);    
+    assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);
   }
 
   public void testNoData() throws OrekitException {
     checkSuccess("no-data");
-    assertEquals(0.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);    
+    assertEquals(0.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);
   }
 
   public void testUTCDate() throws OrekitException, ParseException {

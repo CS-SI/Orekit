@@ -5,14 +5,14 @@ import java.io.InputStream;
 import fr.cs.orekit.errors.OrekitException;
 
 /**This abstract class represents a Gravitational Potential Coefficients file reader.
- * 
+ *
  * <p> As it exits many different coefficients models and containers this
  *  interface represents all the methods that should be implemented by a reader.
- *  The proper way to use this interface is to call the 
+ *  The proper way to use this interface is to call the
  *  {@link fr.cs.orekit.potential.PotentialReaderFactory}
  *  which will determine which reader to use with the selected potential
  *  coefficients file.<p>
- *   
+ *
  * @see fr.cs.orekit.potential.PotentialReaderFactory
  * @author F. Maussion
  */
@@ -37,17 +37,17 @@ public abstract class PotentialCoefficientsReader {
    */
   public abstract boolean isFileOK(InputStream in) throws IOException;
 
-  /** Computes the coefficients by reading the selected (and tested) file 
+  /** Computes the coefficients by reading the selected (and tested) file
    * @throws OrekitException when the file has not been initialized or checked.
    * @throws IOException when the file is corrupted.
    */
   public abstract void read() throws OrekitException, IOException;
 
   /** Get the zonal coefficients.
-   * @param normalized (true) or un-normalized (false) 
+   * @param normalized (true) or un-normalized (false)
    * @param n the maximal degree requested
    * @return J the zonal coefficients array.
-   * @throws OrekitException 
+   * @throws OrekitException
    */
   public double[] getJ(boolean normalized, int n) throws OrekitException {
     if (n >= normalizedC.length) {
@@ -70,10 +70,10 @@ public abstract class PotentialCoefficientsReader {
 
   /** Get the tesseral-sectorial and zonal coefficients.
    * @param n the degree
-   * @param m the order 
-   * @param normalized (true) or un-normalized (false) 
+   * @param m the order
+   * @param normalized (true) or un-normalized (false)
    * @return the cosines coefficients matrix
-   * @throws OrekitException 
+   * @throws OrekitException
    */
   public double[][] getC(int n, int m, boolean normalized)
       throws OrekitException {
@@ -81,10 +81,10 @@ public abstract class PotentialCoefficientsReader {
         : getUnNormalizedC());
   }
 
-  /** Get tesseral-sectorial coefficients. 
+  /** Get tesseral-sectorial coefficients.
    * @param n the degree
-   * @param m the order 
-   * @param normalized (true) or un-normalized (false) 
+   * @param m the order
+   * @param normalized (true) or un-normalized (false)
    * @return the sines coefficients matrix
    */
   public double[][] getS(int n, int m, boolean normalized)
@@ -94,11 +94,11 @@ public abstract class PotentialCoefficientsReader {
   }
 
   /** Get the tesseral-sectorial and zonal coefficients.
-   * @param normalized (true) or un-normalized (false) 
+   * @param normalized (true) or un-normalized (false)
    * @param n the degree
-   * @param m the order 
+   * @param m the order
    * @return C the coefficients matrix
-   * @throws OrekitException 
+   * @throws OrekitException
    */
   private double[][] truncateArray(int n, int m, double[][] complete)
       throws OrekitException {
@@ -144,14 +144,14 @@ public abstract class PotentialCoefficientsReader {
     return normalizedJ;
   }
 
-  /** Get the fully normalized tesseral-sectorial and zonal coefficients. 
+  /** Get the fully normalized tesseral-sectorial and zonal coefficients.
    * @return C the coefficients matrix
    */
   private double[][] getNormalizedC() {
     return normalizedC;
   }
 
-  /** Get the fully normalized tesseral-sectorial coefficients. 
+  /** Get the fully normalized tesseral-sectorial coefficients.
    * @return S the coefficients matrix
    */
   private double[][] getNormalizedS() {
@@ -172,7 +172,7 @@ public abstract class PotentialCoefficientsReader {
     return unNormalizedJ;
   }
 
-  /** Get the un-normalized tesseral-sectorial and zonal coefficients. 
+  /** Get the un-normalized tesseral-sectorial and zonal coefficients.
    * @return C the coefficients matrix
    */
   private double[][] getUnNormalizedC() {
@@ -183,7 +183,7 @@ public abstract class PotentialCoefficientsReader {
     return unNormalizedC;
   }
 
-  /** Get the un-normalized tesseral-sectorial coefficients. 
+  /** Get the un-normalized tesseral-sectorial coefficients.
    * @return S the coefficients matrix
    */
   private double[][] getUnNormalizedS() {

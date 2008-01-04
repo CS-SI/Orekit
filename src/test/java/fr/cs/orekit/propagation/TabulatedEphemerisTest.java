@@ -35,13 +35,13 @@ public class TabulatedEphemerisTest extends TestCase {
     double OMEGA = Math.toRadians(261);
     double lv = 0;
 
-   AttitudeKinematicsProvider akp = new NadirPointingAttitude(Utils.mu, 
+   AttitudeKinematicsProvider akp = new NadirPointingAttitude(Utils.mu,
                                                 NadirPointingAttitude.PURENADIR, 0, 0);
- 
+
     OrbitalParameters transPar = new KeplerianParameters(a, e, i,
                                                      omega, OMEGA,
                                                      lv, KeplerianParameters.TRUE_ANOMALY, Frame.getJ2000());
-    
+
     AbsoluteDate initDate = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
                                              ChunkedTime.H00,
                                              UTCScale.getInstance());
@@ -49,28 +49,28 @@ public class TabulatedEphemerisTest extends TestCase {
                                               ChunkedTime.H00,
                                               UTCScale.getInstance());
     double deltaT = finalDate.minus(initDate);
-    
-    SpacecraftState initState = new SpacecraftState(new Orbit(initDate, transPar), mass, akp.getAttitudeKinematics(initDate, 
+
+    SpacecraftState initState = new SpacecraftState(new Orbit(initDate, transPar), mass, akp.getAttitudeKinematics(initDate,
                                          transPar.getPVCoordinates(Utils.mu), transPar.getFrame()));
-    
+
     EcksteinHechlerPropagator eck =
       new EcksteinHechlerPropagator(initState, ae, mu, c20, c30, c40, c50, c60);
-    
+
     eck.setAkProvider(akp);
 
     int nbPoints = 1000;
     SpacecraftState[] tab = new SpacecraftState[nbPoints+1];
-    
+
     for(int j = 0; j<= nbPoints; j++) {
       AbsoluteDate current = new AbsoluteDate(initDate, j*deltaT/(double)nbPoints );
       tab[j] = eck.getSpacecraftState(current);
     }
-    
+
     TabulatedEphemeris te = new TabulatedEphemeris(tab);
 
     assertTrue(te.getMaxDate().minus(finalDate)==0);
     assertTrue(te.getMinDate().minus(initDate)==0);
-    
+
     AbsoluteDate myDate = new AbsoluteDate(initDate, 80001);
 
 //    assertEquals( eck.getSpacecraftState(myDate).getA(), te.getSpacecraftState(myDate).getA(), 0 );
@@ -79,21 +79,21 @@ public class TabulatedEphemerisTest extends TestCase {
 //    assertEquals( eck.getSpacecraftState(myDate).getHx(), te.getSpacecraftState(myDate).getHx(), 0 );
 //    assertEquals( eck.getSpacecraftState(myDate).getHy(), te.getSpacecraftState(myDate).getHy(), 0 );
 //    assertEquals( eck.getSpacecraftState(myDate).getLv(), te.getSpacecraftState(myDate).getLv(), 0 );
-    
+
     PVCoordinates pv = new PVCoordinates(new Vector3D(1,0,0), new Vector3D(1,0,0));
-    assertEquals( eck.getSpacecraftState(myDate).getAkTransform().transformPVCoordinates(pv).getPosition().getX(), 
+    assertEquals( eck.getSpacecraftState(myDate).getAkTransform().transformPVCoordinates(pv).getPosition().getX(),
                   te.getSpacecraftState(myDate).getAkTransform().transformPVCoordinates(pv).getPosition().getX(),
                   1e-4 );
-    assertEquals( eck.getSpacecraftState(myDate).getAkTransform().transformPVCoordinates(pv).getVelocity().getX(), 
+    assertEquals( eck.getSpacecraftState(myDate).getAkTransform().transformPVCoordinates(pv).getVelocity().getX(),
                   te.getSpacecraftState(myDate).getAkTransform().transformPVCoordinates(pv).getVelocity().getX(),
                   1e-4 );
-    
-    
-    
-    
-    
+
+
+
+
+
   }
-  
+
   public void setUp() {
     mu  = 3.9860047e14;
     ae  = 6.378137e6;
@@ -121,9 +121,9 @@ public class TabulatedEphemerisTest extends TestCase {
   private double c40;
   private double c50;
   private double c60;
-  
+
   public static Test suite() {
     return new TestSuite(TabulatedEphemerisTest.class);
   }
-  
+
 }

@@ -4,13 +4,13 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 public class AllTests {
-  public static Test suite() { 
+  public static Test suite() {
 
-    TestSuite suite = new TestSuite("fr.cs.orekit.tle"); 
+    TestSuite suite = new TestSuite("fr.cs.orekit.tle");
 
     suite.addTest(tleTest.suite());
-    
-    return suite; 
+
+    return suite;
 
   }
 }

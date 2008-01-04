@@ -49,10 +49,10 @@ public class SolarRadiationPressureTest extends TestCase {
 	    		sun , earth.getEquatorialRadius() ,
 	    	              (SolarRadiationPressureSpacecraft)new SphericalSpacecraft(50.0,
 	                            	  0.5, 0.5, 0.5));
-        
+
         double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/mu);
         assertEquals(86164, period,1);
-	    
+	
 		// creation of the propagator
 		KeplerianPropagator k = new KeplerianPropagator(new SpacecraftState(orbit, 1500.0), mu);
 		
@@ -78,7 +78,7 @@ public class SolarRadiationPressureTest extends TestCase {
 			}
 		}
 		assertTrue(3==count);
-	} 
+	}
 	
 	public void testRoughOrbitalModifs() throws ParseException, OrekitException, DerivativeException, IntegratorException, FileNotFoundException {
 		
@@ -91,7 +91,7 @@ public class SolarRadiationPressureTest extends TestCase {
                 0.1, 2, Frame.getJ2000());
 	    Orbit orbit = new Orbit(date , op);
 	    Sun sun = new Sun();
-	    
+	
 	    // creation of the force model
 		SolarRadiationPressure SRP =  new SolarRadiationPressure(
 	    		sun , new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765).getEquatorialRadius(),
@@ -99,7 +99,7 @@ public class SolarRadiationPressureTest extends TestCase {
 	                            	  0.7, 0.7, 0.7));
 		
 		double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/mu);
-        
+
         assertEquals(86164, period,1);
 		// creation of the propagator
 		FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, period/4, 0, 10e-4);
@@ -130,7 +130,7 @@ public class SolarRadiationPressureTest extends TestCase {
 	  }
 
 	  public void handleStep(SpacecraftState currentState, boolean isLast) {
-	    double radius = Math.sqrt((currentState.getEx()-0.00940313)*(currentState.getEx()-0.00940313) 
+	    double radius = Math.sqrt((currentState.getEx()-0.00940313)*(currentState.getEx()-0.00940313)
 	                              + (currentState.getEy()-0.013679)*(currentState.getEy()-0.013679));
 	    checkRadius(radius , 0.00351 , 0.00394);
 	  }

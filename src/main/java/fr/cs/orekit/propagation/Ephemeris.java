@@ -21,11 +21,11 @@ import fr.cs.orekit.time.AbsoluteDate;
  */
 
 public interface Ephemeris {
-    
+
     /** Get the orbit at a specific date.
      * @param date desired date for the orbit
      * @return the orbit at the specified date
-     */    
+     */
     public SpacecraftState getSpacecraftState(AbsoluteDate date)
       throws PropagationException;
 

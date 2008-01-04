@@ -7,7 +7,7 @@ import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.time.AbsoluteDate;
 
 /** International Terrestrial Reference Frame 2000.
- * <p> Handles pole motion effects and depends on {@link TIRF2000Frame}, its 
+ * <p> Handles pole motion effects and depends on {@link TIRF2000Frame}, its
  * parent frame .</p>
  * @author Luc Maisonobe
  */
@@ -22,7 +22,7 @@ class ITRF2000Frame extends Frame {
   protected ITRF2000Frame(Frame parent, AbsoluteDate date, String name) throws OrekitException {
     super(parent, null, name);
     // everything is in place, we can now synchronize the frame
-    updateFrame(date);    
+    updateFrame(date);
   }
 
   /** Update the frame to the given date.
@@ -33,13 +33,13 @@ class ITRF2000Frame extends Frame {
    */
   protected void updateFrame(AbsoluteDate date)
     throws OrekitException {
-    
+
     if (cachedDate == null||cachedDate!=date) {
-      
+
       //    offset from J2000 epoch in julian centuries
       double tts = date.minus(AbsoluteDate.J2000Epoch);
       double ttc =  tts * julianCenturyPerSecond;
-      
+
 
       // get the current IERS pole correction parameters
       PoleCorrection iCorr = EarthOrientationHistory.getInstance().getPoleCorrection(date);
@@ -58,14 +58,14 @@ class ITRF2000Frame extends Frame {
 
       // combined effects
       Rotation combined = wRot.revert();
-      
+
       // set up the transform from parent GCRS (J2000) to ITRF
       Vector3D rotationRate = new Vector3D();
-      updateTransform(new Transform(combined , rotationRate));      
+      updateTransform(new Transform(combined , rotationRate));
       cachedDate = date;
     }
   }
-  
+
   /** Compute tidal correction to the pole motion.
    * @param date current date
    * @return tidal correction
@@ -87,16 +87,16 @@ class ITRF2000Frame extends Frame {
     // For now, this term is ignored
     return PoleCorrection.NULL_CORRECTION;
   }
-  
+
   /** 2&pi;. */
   private static final double twoPi = 2.0 * Math.PI;
-  
+
   /** Radians per arcsecond. */
   private static final double radiansPerArcsecond = twoPi / 1296000;
-  
+
   /** Julian century per second. */
   private static final double julianCenturyPerSecond = 1.0 / (36525.0 * 86400.0);
-  
+
   /** S' rate in radians per julian century.
    * Approximately -47 microarcsecond per julian century (Lambert and Bizouard, 2002)
    */
@@ -104,6 +104,6 @@ class ITRF2000Frame extends Frame {
 
   /** Cached date to avoid useless calculus */
   private AbsoluteDate cachedDate;
-  
+
   private static final long serialVersionUID = -9058199158939623380L;
 }

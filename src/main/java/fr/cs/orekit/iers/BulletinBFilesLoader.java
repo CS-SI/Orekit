@@ -29,9 +29,9 @@ public class BulletinBFilesLoader extends IERSFileVisitor {
     // really present in the available files):
     // 1 - EARTH ORIENTATION PARAMETERS (IERS evaluation).
     // 2 - SMOOTHED VALUES OF x, y, UT1, D, dX, dY (IERS EVALUATION)
-    // 3 - NORMAL VALUES OF THE EARTH ORIENTATION PARAMETERS AT FIVE-DAY INTERVALS 
+    // 3 - NORMAL VALUES OF THE EARTH ORIENTATION PARAMETERS AT FIVE-DAY INTERVALS
     // 4 - DURATION OF THE DAY AND ANGULAR VELOCITY OF THE EARTH (IERS evaluation).
-    // 5 - INFORMATION ON TIME SCALES 
+    // 5 - INFORMATION ON TIME SCALES
     //       6 - SUMMARY OF CONTRIBUTED EARTH ORIENTATION PARAMETERS SERIES
     sectionHeaderPattern =
       Pattern.compile("^ +([123456]) - \\p{Upper}+ \\p{Upper}+ \\p{Upper}+.*");

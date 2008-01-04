@@ -95,7 +95,7 @@ public class EOPC04FilesLoader extends IERSFileVisitor {
     // check if we have read something
     if (inHeader) {
       throw new OrekitException("file {0} is not an IERS data file",
-                                new Object[] { file.getAbsolutePath() });        
+                                new Object[] { file.getAbsolutePath() });
     }
 
   }

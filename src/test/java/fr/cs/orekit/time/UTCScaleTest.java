@@ -15,7 +15,7 @@ public class UTCScaleTest
     super(name);
     utc = null;
   }
-  
+
   public void testNoLeap() throws ParseException {
     AbsoluteDate d1 = new AbsoluteDate(new ChunkedDate(1999, 12, 31),
                                        new ChunkedTime(23, 59, 59),
@@ -25,7 +25,7 @@ public class UTCScaleTest
                                        utc);
     assertEquals(2.0, d2.minus(d1), 1.0e-10);
   }
-  
+
   public void testLeap2006() throws ParseException {
     AbsoluteDate leapDate =
       new AbsoluteDate(new ChunkedDate(2006, 01, 01), ChunkedTime.H00, utc);
@@ -76,7 +76,7 @@ public class UTCScaleTest
         // but the UTC scale "replays" the previous second, before the step
         assertEquals(-1.0, dt1 + dt2, 1.0e-10);
       } else {
-        assertEquals( 0.0, dt1 + dt2, 1.0e-10);        
+        assertEquals( 0.0, dt1 + dt2, 1.0e-10);
       }
     }
   }

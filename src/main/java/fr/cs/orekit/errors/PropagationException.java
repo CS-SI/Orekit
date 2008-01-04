@@ -2,12 +2,12 @@ package fr.cs.orekit.errors;
 
 /** This class is the base class for all specific exceptions thrown by
  * during the propagation calculus.
- * 
+ *
  * @author  L. Maisonobe
  */
 public class PropagationException
   extends OrekitException {
-    
+
   /** Simple constructor.
    * Build an exception with a translated and formatted message
    * @param specifier format specifier (to be translated)
@@ -16,7 +16,7 @@ public class PropagationException
   public PropagationException(String specifier, Object[] parts) {
     super(specifier, parts);
   }
-  
+
   /** Simple constructor.
    * Build an exception from a cause and with a specified message
    * @param message descriptive message

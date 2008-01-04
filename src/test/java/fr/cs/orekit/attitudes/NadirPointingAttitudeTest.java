@@ -33,7 +33,7 @@ public class NadirPointingAttitudeTest extends TestCase {
   public void testPureNadir() throws ParseException, OrekitException, FileNotFoundException {
 
     final CircularParameters op =
-      new CircularParameters(12000000, 1e-3, 1e-3, Math.PI/4, 0.0, 
+      new CircularParameters(12000000, 1e-3, 1e-3, Math.PI/4, 0.0,
                              0.0, CircularParameters.TRUE_LONGITUDE_ARGUMENT,
                              Frame.getJ2000());
 
@@ -45,12 +45,12 @@ public class NadirPointingAttitudeTest extends TestCase {
 
     BodyShape earth = new OneAxisEllipsoid(6378136.460, 0.6);
 
-    AttitudeKinematicsProvider att = 
+    AttitudeKinematicsProvider att =
       new NadirPointingAttitude(Utils.mu, earth, NadirPointingAttitude.PURENADIR,0,0);
 
     final SpacecraftState initState =
-      new SpacecraftState(o, 1000, 
-                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu), 
+      new SpacecraftState(o, 1000,
+                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu),
                                                     o.getFrame()));
     double period = 2 * Math.PI * op.getA() * Math.sqrt(op.getA() / Utils.mu);
 
@@ -66,14 +66,14 @@ public class NadirPointingAttitudeTest extends TestCase {
       Line orto = new Line(pos , dir);
       GeodeticPoint geo = earth.transform(pos);
       geo = new GeodeticPoint(geo.longitude, geo.latitude, 0);
-      assertEquals(0, orto.distance(earth.transform(geo)), 1e-3);      
+      assertEquals(0, orto.distance(earth.transform(geo)), 1e-3);
     }
   }
 
   public void testOrbitalNadir() throws ParseException, OrekitException, FileNotFoundException {
 
     CircularParameters op =
-      new CircularParameters(12000000, 1e-3, 1e-3, Math.PI/2, 0.0, 
+      new CircularParameters(12000000, 1e-3, 1e-3, Math.PI/2, 0.0,
                              0.0, CircularParameters.TRUE_LONGITUDE_ARGUMENT,
                              Frame.getJ2000());
 
@@ -85,12 +85,12 @@ public class NadirPointingAttitudeTest extends TestCase {
 
     BodyShape earth = new OneAxisEllipsoid(6378136.460, 0.6);
 
-    AttitudeKinematicsProvider att = 
+    AttitudeKinematicsProvider att =
       new NadirPointingAttitude(Utils.mu, earth, NadirPointingAttitude.ORBITALPLANE,0,0);
 
     SpacecraftState initState =
-      new SpacecraftState(o, 1000, 
-                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu), 
+      new SpacecraftState(o, 1000,
+                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu),
                                                     o.getFrame()));
     double period = 2 * Math.PI * op.getA() * Math.sqrt(op.getA() / Utils.mu);
 
@@ -110,15 +110,15 @@ public class NadirPointingAttitudeTest extends TestCase {
       // with i = pi/2, the behaviour is the same as a pure NAdir :
       assertEquals(0, orto.distance(earth.transform(geo)), 1e-7);
     }
-    
+
     op = new CircularParameters(op.getA(), Math.PI/8, Math.PI/8,
-                                op.getI(), op.getRightAscensionOfAscendingNode(), 
+                                op.getI(), op.getRightAscensionOfAscendingNode(),
                                 op.getAlphaV(), CircularParameters.TRUE_LONGITUDE_ARGUMENT,
                                 Frame.getJ2000());
 
     o = new Orbit(initDate, op);
-    initState = new SpacecraftState(o, 1000, 
-                                    att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu), 
+    initState = new SpacecraftState(o, 1000,
+                                    att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu),
                                                               o.getFrame()));
     period = 2 * Math.PI * op.getA() * Math.sqrt(op.getA() / Utils.mu);
 
@@ -141,7 +141,7 @@ public class NadirPointingAttitudeTest extends TestCase {
   public void testWithOrbitalInclination() throws ParseException, OrekitException, FileNotFoundException {
 
     final CircularParameters op =
-      new CircularParameters(12000000, 1e-3, 1e-3, Math.PI/4, 0.0, 
+      new CircularParameters(12000000, 1e-3, 1e-3, Math.PI/4, 0.0,
                              0.0, CircularParameters.TRUE_LONGITUDE_ARGUMENT,
                              Frame.getJ2000());
 
@@ -153,12 +153,12 @@ public class NadirPointingAttitudeTest extends TestCase {
 
     BodyShape earth = new OneAxisEllipsoid(6378136.460, 0.6);
 
-    AttitudeKinematicsProvider att = 
+    AttitudeKinematicsProvider att =
       new NadirPointingAttitude(Utils.mu, earth, NadirPointingAttitude.ORBITALPLANE,0,0);
 
     final SpacecraftState initState =
-      new SpacecraftState(o, 1000, 
-                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu), 
+      new SpacecraftState(o, 1000,
+                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu),
                                                     o.getFrame()));
     double period = 2 * Math.PI * op.getA() * Math.sqrt(op.getA() / Utils.mu);
 
@@ -171,7 +171,7 @@ public class NadirPointingAttitudeTest extends TestCase {
     medState = kep.getSpacecraftState(medDate);
     Vector3D pos = medState.getPVCoordinates(Utils.mu).getPosition();
     Vector3D dir = medState.getAttitude().applyInverseTo(Vector3D.plusJ);
-    assertEquals(0, Vector3D.dotProduct(dir, pos), 1e-7);    
+    assertEquals(0, Vector3D.dotProduct(dir, pos), 1e-7);
     dir = medState.getAttitude().applyInverseTo(Vector3D.minusK);
     assertEquals(0.14886, Vector3D.angle(dir, pos), 1e-5);
   }

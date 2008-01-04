@@ -20,7 +20,7 @@ import fr.cs.orekit.errors.OrekitException;
  * <em>arguments</em>. The arguments are combination of luni-solar or
  * planetary {@link BodiesElements elements}.
  * </p>
- * 
+ *
  * @author Luc Maisonobe
  * @see SeriesTerm
  */
@@ -51,8 +51,8 @@ public class Development implements Serializable {
                         + "(?:\\p{Space}*t(?:\\^\\p{Digit}+)?)?");
 
       // the series parts should read something like:
-      // j = 0  Nb of terms = 1306        
-      // 
+      // j = 0  Nb of terms = 1306
+      //
       //  1    -6844318.44        1328.67    0    0    0    0    1    0    0    0    0    0    0    0    0    0
       //  2     -523908.04        -544.76    0    0    2   -2    2    0    0    0    0    0    0    0    0    0
       //  3      -90552.22         111.23    0    0    2    0    2    0    0    0    0    0    0    0    0    0
@@ -123,7 +123,7 @@ public class Development implements Serializable {
 
       if (array.isEmpty()) {
         throw new OrekitException("file {0} is not an IERS data file",
-                                  new String[] { name });        
+                                  new String[] { name });
       }
 
       // store the non-polynomial part series
@@ -235,7 +235,7 @@ public class Development implements Serializable {
     throw new OrekitException("unable to parse line {0} of nutation model file {1}:\n{2}",
                                 new String[] {
                                   Integer.toString(lineNumber), name, line
-                                });              
+                                });
 
   }
 

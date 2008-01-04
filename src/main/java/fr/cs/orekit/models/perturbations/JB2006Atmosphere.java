@@ -9,17 +9,17 @@ import fr.cs.orekit.forces.perturbations.AtmosphericDrag;
  *
  * <a href="http://sol.spacenvironment.net/~JB2006/pubs/JB2006_AIAA-6166_model.pdf">A
  * New Empirical Thermospheric Density Model JB2006 Using New Solar Indices</a><br>
- * 
+ *
  * <i>Bruce R. Bowman, W. Kent Tobiska and Frank A. Marcos</i> <br>
- *  
- * AIAA 2006-6166<br>  
+ *
+ * AIAA 2006-6166<br>
  *</p>
  * <p>
  * Two computation methods are proposed to the user :
  * <ul>
- * <li> one OREKIT independant and compliant with initial FORTRAN routine entry values : 
+ * <li> one OREKIT independant and compliant with initial FORTRAN routine entry values :
  *        {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double)}. </li>
- * <li> one compliant with OREKIT Atmosphere interface, necessary to the 
+ * <li> one compliant with OREKIT Atmosphere interface, necessary to the
  *        {@link AtmosphericDrag drag force model} computation. This implementation is realized
  *        by the subclass {@link JB2006AtmosphereModel}</li>
  * </ul>
@@ -33,7 +33,7 @@ import fr.cs.orekit.forces.perturbations.AtmosphericDrag;
  * </ul>
  * </p>
  * <p>
- * The model needs geographical and time information to compute general values, 
+ * The model needs geographical and time information to compute general values,
  * but also needs space weather datas : mean and daily solar flux, retrieved threw
  * different indices, and planetary geomagnetic incides. <br>
  * More information on these indices can be found on the  <a
@@ -48,7 +48,7 @@ public class JB2006Atmosphere {
 
   /** Simple constructor. */
   public JB2006Atmosphere() {
-    
+
   }
 
   /** Get the local density with initial entries.
@@ -58,7 +58,7 @@ public class JB2006Atmosphere {
    * @param satLon Right Ascension of position (radians)
    * @param satLat Geocentric latitude of position (radians)
    * @param satAlt Height of position (m)
-   * @param f10 10.7-cm Solar flux (1e<sup>-22</sup>*Watt/(m<sup>2</sup>*Hertz)). 
+   * @param f10 10.7-cm Solar flux (1e<sup>-22</sup>*Watt/(m<sup>2</sup>*Hertz)).
    *            Tabular time 1.0 day earlier
    * @param f10B 10.7-cm Solar Flux, averaged 81-day centered on the input time
    * @param ap Geomagnetic planetary 3-hour index A<sub>p</sub>
@@ -72,9 +72,9 @@ public class JB2006Atmosphere {
   public double getDensity(double dateMJD,double sunRA, double sunDecli,double satLon,
                            double satLat, double satAlt, double f10,double f10B, double ap ,
                            double s10,double s10B,double xm10,double xm10B) {
-    
+
     satAlt /= 1000.0;
-    
+
     // Equation (14)
 
     double tc = 379 + 3.353*f10B + 0.358*(f10-f10B)
@@ -89,12 +89,12 @@ public class JB2006Atmosphere {
     double h = satLon - sunRA;
     double tau = h - 0.64577182 + 0.10471976 * Math.sin(h + 0.75049158);
     double solTimeHour = ((h + PI)/DEGRAD)*(24./360.);
-    
+
     if(solTimeHour >= 24) {
-      solTimeHour = solTimeHour - 24.;              
+      solTimeHour = solTimeHour - 24.;
     }
     if(solTimeHour < 0) {
-      solTimeHour = solTimeHour + 24.;             
+      solTimeHour = solTimeHour + 24.;
     }
     // Equation (17)
 
@@ -110,7 +110,7 @@ public class JB2006Atmosphere {
     double DTG = ap + 100. * (1. - EXPAP);
 
     // Compute correction to dTc for local solar time and lat correction
-    
+
     double DTCLST = dTc(f10,solTimeHour,satLat,satAlt);
 
     // Compute the local exospheric temperature.
@@ -154,7 +154,7 @@ public class JB2006Atmosphere {
     double TLOC2 =0;
     double Z = 0;
     double GRAVL = 0;
-    
+
     for(int i = 1; i<=N; i++) {
       Z = ZEND;
       ZEND = ZR * Z;
@@ -165,7 +165,7 @@ public class JB2006Atmosphere {
         AMBAR2 = xAmbar(Z);
         TLOC2 = xLocal(Z,TC);
         GRAVL = xGrav(Z);
-        AIN = AMBAR2 * GRAVL/TLOC2;  
+        AIN = AMBAR2 * GRAVL/TLOC2;
         SUM1 = SUM1 + WT[j] * AIN;
       }
       SUM2 = SUM2 + DZ * SUM1;
@@ -195,7 +195,7 @@ public class JB2006Atmosphere {
       // Put in negligible hydrogen for use in DO-LOOP 13
       ALN[6] = ALN[5] - 25.;
     }
-    else {  
+    else {
       // Equation (6)
       double Z3 = Math.min(satAlt,500.);
       AL = Math.log(Z3/Z);
@@ -251,7 +251,7 @@ public class JB2006Atmosphere {
         FACT2 = FACT1 * SUM2;
         HSIGN = 1.;
 
-      } 
+      }
       else {
         temp[2] = TLOC4;
         ALTR = Math.log(TLOC4/TLOC2);
@@ -275,7 +275,7 @@ public class JB2006Atmosphere {
     double CAPPHI = TRASH % 1;
 
     int signum = ((satLat >= 0) ? 1 : -1);
-        
+
     double DLRSL = 0.02 * (satAlt - 90.)
     * Math.exp(-0.045 * (satAlt - 90.))
     * signum * Math.sin(TWOPI * CAPPHI+ 1.72)
@@ -361,7 +361,7 @@ public class JB2006Atmosphere {
     double f   = (f10 - 100.)/100.;
     double h;
     double sum;
-    
+
     // Calculates dTc
     if ((satAlt>=120)&(satAlt<=200)) {
       double DTC200 =
@@ -373,7 +373,7 @@ public class JB2006Atmosphere {
       + CdtSub[8]*tx*ycs     + CdtSub[9]*tx2*ycs  + CdtSub[10]*tx3*ycs
       + CdtSub[11]*tx4*ycs + CdtSub[12]*tx5*ycs + CdtSub[13]*ycs
       + CdtSub[14]*f*ycs     + CdtSub[15]*tx*f*ycs  + CdtSub[16]*tx2*f*ycs;
-      double DTC200DZ = sum; 
+      double DTC200DZ = sum;
       double CC  = 3.*DTC200 - DTC200DZ;
       double DD  = DTC200 - CC;
       double ZP  = (satAlt-120.)/80.;
@@ -493,7 +493,7 @@ public class JB2006Atmosphere {
    */
   private static double xGrav(double Z) {
     double temp = (1.0 + Z/6356.766);
-    return 9.80665/(temp*temp);        
+    return 9.80665/(temp*temp);
   }
 
   /** COMPUTE SEMIANNUAL VARIATION (DELTA LOG RHO)
@@ -521,7 +521,7 @@ public class JB2006Atmosphere {
     double COS3P = Math.cos(3.*TWOPI*TAU);
     double SIN4P = Math.sin(4.*TWOPI*TAU);
     double COS4P = Math.cos(4.*TWOPI*TAU);
-    // SEMIANNUAL PHASE FUNCTION 
+    // SEMIANNUAL PHASE FUNCTION
     double GTZ = GTM[1] + GTM[2]*SIN1P + GTM[3]*COS1P
     + GTM[4]*SIN2P + GTM[5]*COS2P
     + GTM[6]*SIN3P + GTM[7]*COS3P
@@ -537,21 +537,21 @@ public class JB2006Atmosphere {
       FZZ = 1.e-6;
     }
     return FZZ*GTZ;
-  } 
-  
+  }
+
   /** Compute day of year.
    * @param D1950 (days since 1950)
    * @return the numebr days in year
    */
   private static double dayOfYear(double D1950) {
-    
+
     int IYDAY = (int)D1950;
     double FRACO = D1950 - IYDAY;
     IYDAY = IYDAY + 364;
 
     int ITEMP = IYDAY/1461;
 
-    IYDAY = IYDAY - ITEMP*1461; 
+    IYDAY = IYDAY - ITEMP*1461;
     ITEMP = IYDAY/365;
     if (ITEMP>=3) {
       ITEMP = 3;
@@ -570,7 +570,7 @@ public class JB2006Atmosphere {
   public double getExosphericTemp() {
     return temp[1];
   }
-  
+
   /** Get the temperature at input position.
    * {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double)}
    * <b> must </b> must be called before calling this function.
@@ -579,12 +579,12 @@ public class JB2006Atmosphere {
   public double getLocalTemp() {
     return temp[2];
   }
-  
+
   /** TEMP(1): Exospheric Temperature above Input Position (deg K)
       TEMP(2): Temperature at Input Position (deg K)*/
   private double[] temp = new double[3];
   /** Total Mass-Desnity at Input Position (kg/m<sup>3</sup>) */
-  private double rho;    
+  private double rho;
 
   // DATAS :
 
@@ -631,7 +631,7 @@ public class JB2006Atmosphere {
        0.206763e-02,-0.142888e-02,-0.867124e-05, 0.189032e-04,
        0.156988e-03, 0.491286e-03,-0.391484e-04,-0.126854e-04,
        0.134078e-04,-0.614176e-05, 0.343423e-05};
-  
+
   /** XAMBAR relative datas */
   private static final double[] CXAMB = new double[] {0, 28.15204,-8.5586e-2,+1.2840e-4,-1.0056e-5,
       -1.0210e-5,+1.5044e-6,+9.9826e-8};
@@ -645,7 +645,7 @@ public class JB2006Atmosphere {
       0.181870931e+04, -0.237389204e+04,  0.996703815e+03,
       0.361416936e+02 };
   /** DTSUB relative datas */
-  private static final double[] CdtSub = new double[] { 0,  
+  private static final double[] CdtSub = new double[] { 0,
       -0.155986211e+02, -0.512114909e+01, -0.693003609e+02,
       0.203716701e+03,  0.703316291e+03, -0.194349234e+04,
       0.110651308e+04, -0.220835117e+03,  0.143256989e+04,
@@ -654,9 +654,9 @@ public class JB2006Atmosphere {
       -0.275555432e+01,  0.110234982e+02,  0.148881951e+03,
       -0.751640284e+03,  0.637876542e+03,  0.127093998e+02,
       -0.212825156e+02,  0.275555432e+01};
-  
+
   private static double[] TC = new double[5];
   private static double[] ALN = new double[7];
   private static double[] AL10N = new double[7];
-  
+
 }

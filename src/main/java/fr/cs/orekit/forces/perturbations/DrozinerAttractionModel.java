@@ -14,7 +14,7 @@ import fr.cs.orekit.propagation.TimeDerivativesEquations;
  * Andrzej Droziner (Institute of Mathematical Machines, Warsaw) in
  * his 1976 paper: <em>An algorithm for recurrent calculation of gravitational
  * acceleration</em> (artificial satellites, Vol. 12, No 2, June 1977).</p>
- * 
+ *
  * @author F. Maussion
  * @author L. Maisonobe
  */
@@ -22,23 +22,23 @@ import fr.cs.orekit.propagation.TimeDerivativesEquations;
 public class DrozinerAttractionModel implements ForceModel {
 
   /** Creates a new instance.
-   * 
+   *
    * @param centralBodyFrame rotating body frame
    * @param equatorialRadius reference equatorial radius of the potential
    * @param C un-normalized coefficients array (cosine part)
    * @param S un-normalized coefficients array (sine part)
-   * @throws OrekitException 
+   * @throws OrekitException
    */
-  public DrozinerAttractionModel(Frame centralBodyFrame, 
+  public DrozinerAttractionModel(Frame centralBodyFrame,
                                  double equatorialRadius,
                                  double[][] C, double[][] S)
   throws OrekitException {
 
     this.equatorialRadius = equatorialRadius;
-    this.centralBodyFrame = centralBodyFrame;    
+    this.centralBodyFrame = centralBodyFrame;
     degree = C.length - 1;
-    order = C[degree].length-1;    
-    
+    order = C[degree].length-1;
+
     if (C.length!=S.length||C[C.length-1].length!=S[S.length-1].length) {
       throw new OrekitException("C and S should have the same size :" +
                                 " (C = [{0}][{1}] ; S = [{2}][{3}])",
@@ -65,7 +65,7 @@ public class DrozinerAttractionModel implements ForceModel {
 
         }
       }
-    }    
+    }
   }
 
   /**
@@ -161,7 +161,7 @@ public class DrozinerAttractionModel implements ForceModel {
       double innerSum3;
       double Gkj;
       double Hkj;
-      
+
       double cosjm1L = cosL;
       double sinjm1L = sinL;
 
@@ -175,7 +175,7 @@ public class DrozinerAttractionModel implements ForceModel {
 
       // first terms
       Gkj = C[1][1] * cosL + S[1][1] * sinL;
-      Hkj = C[1][1] * sinL - S[1][1] * cosL;   
+      Hkj = C[1][1] * sinL - S[1][1] * cosL;
 
       Akj = 2*r1Onr*betaKminus1-zOnr*Bkminus1kminus1;
       Dkj =  (Akj + zOnr * Bkminus1kminus1 ) * 0.5 ;
@@ -183,7 +183,7 @@ public class DrozinerAttractionModel implements ForceModel {
       sum2 += Bkminus1kminus1 * Gkj;
       sum3 += Dkj * Hkj;
 
-      // the other terms      
+      // the other terms
       for(int j=1; j<=order; j++) {
 
         innerSum1 = 0.0;
@@ -198,7 +198,7 @@ public class DrozinerAttractionModel implements ForceModel {
           if (k<cJ.length) {
 
             Gkj = cJ[k] * cosjL + sJ[k] * sinjL;
-            Hkj = cJ[k] * sinjL - sJ[k] * cosjL;  
+            Hkj = cJ[k] * sinjL - sJ[k] * cosjL;
 
             if (j <= (k - 2)) {
               Bkj = aeOnr * ( zOnr * Bkm1j * (2.0 * k + 1.0) / (k - j)
@@ -208,8 +208,8 @@ public class DrozinerAttractionModel implements ForceModel {
             if (j == (k - 1)) {
               betaK =  aeOnr * (2.0 * k - 1.0) * r1Onr * betaKminus1;
               Bkj = aeOnr * (2.0 * k + 1.0) * zOnr * Bkm1j - betaK;
-              Akj = aeOnr *  (k + 1.0) * Bkm1j - zOnr * Bkj;          
-              betaKminus1 = betaK; 
+              Akj = aeOnr *  (k + 1.0) * Bkm1j - zOnr * Bkj;
+              betaKminus1 = betaK;
             }
             if (j == k) {
               Bkj = (2 * k + 1) * aeOnr * r1Onr * Bkminus1kminus1;
@@ -225,7 +225,7 @@ public class DrozinerAttractionModel implements ForceModel {
             innerSum1 += Akj * Gkj;
             innerSum2 += Bkj * Gkj;
             innerSum3 += Dkj * Hkj;
-          }  
+          }
         }
 
         sum1 += innerSum1;
@@ -233,7 +233,7 @@ public class DrozinerAttractionModel implements ForceModel {
         sum3 += innerSum3;
 
         sinjL = sinjm1L*cosL + cosjm1L*sinL;
-        cosjL = cosjm1L*cosL - sinjm1L*sinL; 
+        cosjL = cosjm1L*cosL - sinjm1L*sinL;
         sinjm1L = sinjL;
         cosjm1L = cosjL;
       }
@@ -265,7 +265,7 @@ public class DrozinerAttractionModel implements ForceModel {
   /** Second normalized potential tesseral coefficients array. */
   private double[][]   S;
 
-  /** Frame for the central body. */  
+  /** Frame for the central body. */
   private Frame centralBodyFrame;
 
   /** Number of zonal coefficients */

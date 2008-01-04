@@ -38,10 +38,10 @@ public class Line {
 	    zero = new Vector3D(1.0, p,
 	                        -Vector3D.dotProduct(p, this.direction), this.direction);
   }
-  
+
   /** Revert the line direction.
    * @param line the line to revert
-   * @return a new instance of Line wich is the reverse of line 
+   * @return a new instance of Line wich is the reverse of line
    */
   public static Line revert(Line line) {
     return new Line(line.zero , line.direction.negate());
@@ -65,7 +65,7 @@ public class Line {
    * <p>The abscissa is 0 if the projection of the point and the
    * projection of the frame origin on the line are the same
    * point.</p>
-   * @param point point to check 
+   * @param point point to check
    * @return abscissa of the point
    */
   public double getAbscissa(Vector3D point) {
@@ -73,7 +73,7 @@ public class Line {
   }
 
   /** Get one point from the line.
-   * @param abscissa desired abscissa for the point 
+   * @param abscissa desired abscissa for the point
    * @return one point belonging to the line, at specified abscissa
    * (really a {@link Vector3D Vector3D} instance)
    */

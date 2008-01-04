@@ -27,15 +27,15 @@ class PlanetaryTerm extends SeriesTerm {
          + cNe * elements.lNe + cPa * elements.pa;
   }
 
-  private final int cMe; 
-  private final int cVe; 
-  private final int cE; 
-  private final int cMa; 
-  private final int cJu; 
-  private final int cSa; 
-  private final int cUr; 
-  private final int cNe; 
-  private final int cPa; 
+  private final int cMe;
+  private final int cVe;
+  private final int cE;
+  private final int cMa;
+  private final int cJu;
+  private final int cSa;
+  private final int cUr;
+  private final int cNe;
+  private final int cPa;
 
   private static final long serialVersionUID = -4604270587132683569L;
 

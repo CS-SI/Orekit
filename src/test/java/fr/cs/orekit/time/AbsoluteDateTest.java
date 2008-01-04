@@ -14,7 +14,7 @@ public class AbsoluteDateTest
   public AbsoluteDateTest(String name) {
     super(name);
   }
-  
+
   public void testStandardEpoch() {
     TimeScale tai = TAIScale.getInstance();
     TimeScale tt  = TTScale.getInstance();
@@ -24,7 +24,7 @@ public class AbsoluteDateTest
     assertEquals(315964819000l,     AbsoluteDate.GPSEpoch.toDate(tai).getTime());
     assertEquals(946728000000l,     AbsoluteDate.J2000Epoch.toDate(tt).getTime());
   }
-  
+
   public void testOutput() {
     TimeScale tt = TTScale.getInstance();
     assertEquals("1950-01-01T01:01:01.000",
@@ -32,7 +32,7 @@ public class AbsoluteDateTest
     assertEquals("2000-01-01T13:01:01.000",
                  DateFormatter.toString(new AbsoluteDate(AbsoluteDate.J2000Epoch, 3661.0),tt));
   }
-  
+
   public void testJ2000() {
     assertEquals("2000-01-01T12:00:00.000",
                  DateFormatter.toString(AbsoluteDate.J2000Epoch,TTScale.getInstance()));
@@ -64,7 +64,7 @@ public class AbsoluteDateTest
                                          utc);
     assertEquals("2002-01-01T00:00:01.000", DateFormatter.toString(date));
   }
-  
+
   public void test1970() throws ParseException {
 	  AbsoluteDate date = new AbsoluteDate(new Date(0l), utc);
 	  assertEquals("1970-01-01T00:00:00.000", DateFormatter.toString(date));

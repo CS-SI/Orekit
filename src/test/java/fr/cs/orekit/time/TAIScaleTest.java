@@ -16,7 +16,7 @@ public class TAIScaleTest
     for (double taiTime = tLeap - 60; taiTime < tLeap + 60; taiTime += 0.3) {
       double dt1 = scale.offsetFromTAI(taiTime);
       double dt2 = scale.offsetToTAI(taiTime + dt1);
-      assertEquals( 0.0, dt1 + dt2, 1.0e-10);        
+      assertEquals( 0.0, dt1 + dt2, 1.0e-10);
     }
   }
 

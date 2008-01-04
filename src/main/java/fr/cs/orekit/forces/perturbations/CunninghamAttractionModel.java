@@ -17,7 +17,7 @@ import org.apache.commons.math.geometry.Vector3D;
  * his 1969 paper: <em>On the computation of the spherical harmonic
  * terms needed during the numerical integration of the orbital motion
  * of an artificial satellite</em> (Celestial Mechanics 2, 1970).</p>
- * 
+ *
  * @author F. Maussion
  * @author L. Maisonobe
  */
@@ -25,12 +25,12 @@ import org.apache.commons.math.geometry.Vector3D;
 public class CunninghamAttractionModel implements ForceModel {
 
   /** Creates a new instance.
-   * 
+   *
    * @param centralBodyFrame rotating body frame
    * @param equatorialRadius reference equatorial radius of the potential
    * @param C un-normalized coefficients array (cosine part)
    * @param S un-normalized coefficients array (sine part)
-   * @throws OrekitException 
+   * @throws OrekitException
    */
   public CunninghamAttractionModel(Frame centralBodyFrame,
                                    double equatorialRadius, double[][] C, double[][] S)
@@ -49,13 +49,13 @@ public class CunninghamAttractionModel implements ForceModel {
                                   new Integer(S.length), new Integer(S[degree].length)
                                 });
     }
-    
+
     if(C.length<1) {
       this.C = new double[1][1];
       this.S = new double[1][1];
     }
     else {
-      // invert the arrays (optimization for later "line per line" seeking) 
+      // invert the arrays (optimization for later "line per line" seeking)
       this.C = new double[C[degree].length][C.length];
       this.S = new double[S[degree].length][S.length];
 
@@ -74,7 +74,7 @@ public class CunninghamAttractionModel implements ForceModel {
     this.C[0][0] = 0.0;
 
   }
-  
+
    /** Compute the contribution of the central body potential to the perturbing
    * acceleration.
    * <p>
@@ -112,7 +112,7 @@ public class CunninghamAttractionModel implements ForceModel {
     double onR3 = onR2 / r;
     double onR4 = onR2 * onR2;
 
-    double cmx   = -x * onR2; 
+    double cmx   = -x * onR2;
     double cmy   = -y * onR2;
     double cmz   = -z * onR2;
 
@@ -194,7 +194,7 @@ public class CunninghamAttractionModel implements ForceModel {
       double[] Sm = S[m];
 
       double rn = rm;
-      double cx = cmx; 
+      double cx = cmx;
       double cy = cmy;
       double cz = cmz;
 
@@ -219,8 +219,8 @@ public class CunninghamAttractionModel implements ForceModel {
 
         if(n==m) {
           // calculate the first element of the next column
-          Vrd = (cx + dx) * Vrn1 - (cy + dy) * Vin1; 
-          Vid = (cy + dy) * Vrn1 + (cx + dx) * Vin1;     
+          Vrd = (cx + dx) * Vrn1 - (cy + dy) * Vin1;
+          Vid = (cy + dy) * Vrn1 + (cx + dx) * Vin1;
 
           gradXVrd = (cx + dx) * gradXVrn1 - (cy + dy) * gradXVin1 + (dcxdx + ddxdx) * Vrn1 - (dcxdy + ddxdy) * Vin1;
           gradXVid = (cy + dy) * gradXVrn1 + (cx + dx) * gradXVin1 + (dcxdy + ddxdy) * Vrn1 + (dcxdx + ddxdx) * Vin1;
@@ -230,7 +230,7 @@ public class CunninghamAttractionModel implements ForceModel {
 
           gradZVrd = (cx + dx) * gradZVrn1 - (cy + dy) * gradZVin1 + (dcxdz + ddxdz) * Vrn1 - (dcydz + ddydz) * Vin1;
           gradZVid = (cy + dy) * gradZVrn1 + (cx + dx) * gradZVin1 + (dcydz + ddydz) * Vrn1 + (dcxdz + ddxdz) * Vin1;
-          // initialize the current column 
+          // initialize the current column
           Vrn = Vrn1;
           Vin = Vin1;
 
@@ -241,12 +241,12 @@ public class CunninghamAttractionModel implements ForceModel {
           gradZVrn = gradZVrn1;
           gradZVin = gradZVin1;
 
-        }        
+        }
 
         if(n==m+1) {
           // calculate the second element of the column
           Vrn = cz*Vrn1;
-          Vin = cz*Vin1;          
+          Vin = cz*Vin1;
 
           gradXVrn = cz * gradXVrn1 + dcxdz * Vrn1;
           gradXVin = cz * gradXVin1 + dcxdz * Vin1;
@@ -257,7 +257,7 @@ public class CunninghamAttractionModel implements ForceModel {
           gradZVrn = cz * gradZVrn1 + dczdz * Vrn1;
           gradZVin = cz * gradZVin1 + dczdz * Vin1;
 
-        }        
+        }
 
         if(n>=m+2) {
           // calculate the other elements of the column
@@ -303,7 +303,7 @@ public class CunninghamAttractionModel implements ForceModel {
         gradYVrn1 = gradYVrn;
         gradYVin1 = gradYVin;
         gradZVrn1 = gradZVrn;
-        gradZVin1 = gradZVin;     
+        gradZVin1 = gradZVin;
 
         // calculate the acceleration due to the Cnm and Snm coefficients
         // ( as the matrix is inversed, Cnm actually is Cmn )
@@ -321,7 +321,7 @@ public class CunninghamAttractionModel implements ForceModel {
       // increment variables
       rm *= equatorialRadius;
 
-      cmx += dx; 
+      cmx += dx;
       cmy += dy;
       cmz += dz;
 

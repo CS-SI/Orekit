@@ -4,7 +4,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.orekit.forces.perturbations.SolarRadiationPressure;
 
 /** Adapted container for the SolarRadiationPressure force model.
- * 
+ *
  * @see SolarRadiationPressure
  * @author F. Maussion
  */

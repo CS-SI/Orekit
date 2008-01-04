@@ -15,12 +15,12 @@ import fr.cs.orekit.time.AbsoluteDate;
  * later retrieval.
  *
  * <p>Instances of this class are built and then must be filled with the results
- * provided by {@link NumericalPropagator} objects in order to allow random 
+ * provided by {@link NumericalPropagator} objects in order to allow random
  * access to any intermediate state of the orbit throughout the integration range.
  * Numerically integrated orbits can therefore be used by algorithms that
  * need to wander around according to their own algorithm without cumbersome
  * tight link with the integrator.</p>
- * 
+ *
  * <p> This class handles a {@link ContinuousOutputModel} and can be very
  *  voluminous. Refer to {@link ContinuousOutputModel} for more information.</p>
  *
@@ -32,8 +32,8 @@ import fr.cs.orekit.time.AbsoluteDate;
  */
 public class IntegratedEphemeris implements BoundedEphemeris {
 
-  /** Creates a new instance of IntegratedEphemeris wich must be 
-   *  filled by the propagator. 
+  /** Creates a new instance of IntegratedEphemeris wich must be
+   *  filled by the propagator.
    */
   public IntegratedEphemeris() {
     isInitialized = false;
@@ -63,7 +63,7 @@ public class IntegratedEphemeris implements BoundedEphemeris {
    * @param date desired date for the orbit
    * @return the {@link SpacecraftState} at the specified date and null if not initialized.
    * @exception PropagationException if the date is outside of the range
-   */    
+   */
   public SpacecraftState getSpacecraftState(AbsoluteDate date)
   throws PropagationException {
     if(isInitialized) {
@@ -76,7 +76,7 @@ public class IntegratedEphemeris implements BoundedEphemeris {
       double mass = state[6];
 
       try {
-        return new SpacecraftState(new Orbit(date , eq), mass, 
+        return new SpacecraftState(new Orbit(date , eq), mass,
                                    akProvider.getAttitudeKinematics(date, eq.getPVCoordinates(mu), frame));
       } catch (OrekitException oe) {
         throw new PropagationException(oe.getMessage(), oe);

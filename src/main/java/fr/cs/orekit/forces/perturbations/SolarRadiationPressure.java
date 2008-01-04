@@ -13,8 +13,8 @@ import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
 
 /** Solar radiation pressure force model.
- * 
- * @author F. Maussion 
+ *
+ * @author F. Maussion
  * @author E.Delente
  */
 public class SolarRadiationPressure implements ForceModel {
@@ -41,7 +41,7 @@ public class SolarRadiationPressure implements ForceModel {
    * @param equatorialRadius spherical shape model (for umbra/penumbra computation)
    * @param spacecraft the object physical and geometrical information
    */
-  public SolarRadiationPressure(double dRef, double pRef, ThirdBody sun, 
+  public SolarRadiationPressure(double dRef, double pRef, ThirdBody sun,
                                 double equatorialRadius, SolarRadiationPressureSpacecraft spacecraft) {
     this.dRef  = dRef;
     this.pRef  = pRef;
@@ -74,7 +74,7 @@ public class SolarRadiationPressure implements ForceModel {
     Vector3D inSpacecraft = s.getAttitudeKinematics().getAttitude().applyTo(u);
     double kd = (1.0 - spacecraft.getAbsCoef(inSpacecraft).getNorm())
     * (1.0 - spacecraft.getReflectionCoef(inSpacecraft).getNorm());
- 
+
     double acceleration = rawP * (1 + kd * 4.0 / 9.0 )
     * spacecraft.getSurface(inSpacecraft) / s.getMass();
 
@@ -246,7 +246,7 @@ public class SolarRadiationPressure implements ForceModel {
     private static final long serialVersionUID = -423248605146669097L;
 
   }
-  
+
   /** Reference distance (m). */
   private double dRef;
 
@@ -258,11 +258,11 @@ public class SolarRadiationPressure implements ForceModel {
 
 //  /** Earth model. */
 //  private BodyShape centralBody;
-  
+
   /** Earth model. */
   private double equatorialRadius;
 
-  
+
   /** Spacecraft. */
   private SolarRadiationPressureSpacecraft spacecraft;
 }

@@ -11,10 +11,10 @@ import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
 
-/** This class is the representation of the state to propagate with the 
+/** This class is the representation of the state to propagate with the
  * {@link NumericalPropagator}.
- *  
- * <p> It contains an {@link OrbitalParameters orbital state} at a current 
+ *
+ * <p> It contains an {@link OrbitalParameters orbital state} at a current
  * {@link AbsoluteDate} both handled by an {@link Orbit}, plus the current
  * mass and attitude.
  * </p>
@@ -24,7 +24,7 @@ import fr.cs.orekit.utils.PVCoordinates;
  * @see NumericalPropagator
  * @author F. Maussion
  */
-public class SpacecraftState 
+public class SpacecraftState
   implements Serializable {
 
   /** Create a new instance from orbital state and mass.
@@ -49,8 +49,8 @@ public class SpacecraftState
     this.attitude = new AttitudeKinematics();
   }
 
-  /** Create a new instance from orbital state only 
-   * (gives an arbitrary value (1000 kg) for the mass and 
+  /** Create a new instance from orbital state only
+   * (gives an arbitrary value (1000 kg) for the mass and
    * initialize the attitude to the identity).
    * @param orbit the orbit
    */
@@ -104,8 +104,8 @@ public class SpacecraftState
 
   /** Get the attitude quaternion.
    * <p> The {@link Rotation} returned by this method represents the rotation
-   * to apply to a vector expressed in spacecraft frame to obtain the same vector 
-   * defined in the orbit inertial frame </p> 
+   * to apply to a vector expressed in spacecraft frame to obtain the same vector
+   * defined in the orbit inertial frame </p>
    * @return the attitude rotation of the spacecraft
    */
   public Rotation getAttitude() {
@@ -115,13 +115,13 @@ public class SpacecraftState
   /** Get the attitute rotation derivative.
    * <p> The {@link Vector3D} returned by this method represents the instant rotation
    * to apply to a velocity vector expressed in spacecraft frame to obtain the same
-   * vector defined in the orbit inertial frame </p> 
+   * vector defined in the orbit inertial frame </p>
    * @return the instant rotation of the spacecraft
    */
   public Vector3D getspinAxis() {
-    return attitude.getspinAxis();    
+    return attitude.getspinAxis();
   }
-  
+
   /** Get the attitude kinematics transform.
    * @return the transform, which can be applied on {@link PVCoordinates}
    */
@@ -193,7 +193,7 @@ public class SpacecraftState
    */
   public double getLM(){
     return orbit.getLM();
-  }  
+  }
 
   // Additional orbital elements
 
@@ -218,7 +218,7 @@ public class SpacecraftState
   /** Get the {@link PVCoordinates}.
    * Compute the position and velocity of the satellite. This method caches its
    * results, and recompute them only when the method is called with a new value
-   * for mu. The result is provided as a reference to the internally cached 
+   * for mu. The result is provided as a reference to the internally cached
    * {@link PVCoordinates}, so the caller is responsible to copy it in a separate
    * {@link PVCoordinates} if it needs to keep the value for a while.
    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)

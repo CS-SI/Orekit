@@ -39,7 +39,7 @@ public abstract class AbstractFilesLoaderTest extends TestCase {
       return eop1.mjd - eop2.mjd;
     }
   }
-  
+
   protected TreeSet eop;
 
 }

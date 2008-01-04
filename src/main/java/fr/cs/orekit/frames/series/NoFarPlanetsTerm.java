@@ -29,16 +29,16 @@ class NoFarPlanetsTerm extends SeriesTerm {
 
   }
 
-  private final int cL; 
-  private final int cF; 
-  private final int cD; 
-  private final int cOmega; 
-  private final int cMe; 
-  private final int cVe; 
-  private final int cE; 
-  private final int cMa; 
-  private final int cJu; 
-  private final int cSa; 
+  private final int cL;
+  private final int cF;
+  private final int cD;
+  private final int cOmega;
+  private final int cMe;
+  private final int cVe;
+  private final int cE;
+  private final int cMa;
+  private final int cJu;
+  private final int cSa;
 
   private static final long serialVersionUID = 3105481273138507585L;
 

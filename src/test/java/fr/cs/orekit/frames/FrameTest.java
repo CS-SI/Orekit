@@ -13,13 +13,13 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 public class FrameTest extends TestCase {
-  
+
   public void testSameFrameRoot() throws OrekitException {
     Random random = new Random(0x29448c7d58b95565l);
     Frame  frame  = Frame.getJ2000();
     checkNoTransform(frame.getTransformTo(frame, new AbsoluteDate()), random);
   }
-  
+
   public void testSameFrameNoRoot() throws OrekitException {
     Random random = new Random(0xc6e88d0f53e29116l);
     Transform t   = randomTransform(random);
@@ -54,22 +54,22 @@ public class FrameTest extends TestCase {
       new Frame(new Frame(new Frame(Frame.getJ2000(), t1, null), t2, null), t3, null);
     checkNoTransform(frame1.getTransformTo(frame2, new AbsoluteDate()), random);
   }
-  
+
   public void testFindCommon() throws OrekitException {
-	  
+	
     Random random = new Random(0xb7d1a155e726da57l);
     Transform t1  = randomTransform(random);
     Transform t2  = randomTransform(random);
-    Transform t3  = randomTransform(random);    
-    
+    Transform t3  = randomTransform(random);
+
 	Frame R1 = new Frame(Frame.getJ2000(),t1,"R1");
 	Frame R2 = new Frame(R1,t2,"R2");
 	Frame R3 = new Frame(R2,t3,"R3");
-	  
+	
 	  Transform T = R1.getTransformTo(R3, new AbsoluteDate());
-      
+
       Transform S = new Transform(t2,t3);
-	  
+	
       checkNoTransform(new Transform(T, S.getInverse()) , random);
 
   }
@@ -92,7 +92,7 @@ public class FrameTest extends TestCase {
     assertEquals(0, j50.subtract(j50Ref).getNorm(), 1.0e-15);
     assertEquals(0, k50.subtract(k50Ref).getNorm(), 1.0e-15);
   }
-  
+
   private Transform randomTransform(Random random) {
     Transform transform = new Transform();
     for (int i = random.nextInt(10); i > 0; --i) {
@@ -125,9 +125,9 @@ public class FrameTest extends TestCase {
       assertEquals(0, a.subtract(c).getNorm(), 1.0e-10);
     }
   }
-  
+
   public static Test suite() {
     return new TestSuite(FrameTest.class);
   }
-  
+
 }

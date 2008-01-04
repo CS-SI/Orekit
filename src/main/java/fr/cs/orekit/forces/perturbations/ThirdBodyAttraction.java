@@ -12,13 +12,13 @@ import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.propagation.TimeDerivativesEquations;
 
 /** Third body attraction force model.
- *  
+ *
  * @author F. Maussion
  */
 public class ThirdBodyAttraction implements ForceModel {
 
   /** Simple constructor.
-   * @param body the third body to consider 
+   * @param body the third body to consider
    * (ex: {@link Sun} or {@link Moon})
    */
   public ThirdBodyAttraction(ThirdBody body) {
@@ -31,8 +31,8 @@ public class ThirdBodyAttraction implements ForceModel {
    * @param adder object where the contribution should be added
    * @param mu central gravitation coefficient
    * @throws OrekitException if some specific error occurs
-   */  
-  public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu) 
+   */
+  public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
     throws OrekitException {
     Vector3D otherBody = body.getPosition(s.getDate(), s.getFrame());
 

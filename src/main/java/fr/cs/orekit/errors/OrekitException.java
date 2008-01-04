@@ -10,7 +10,7 @@ package fr.cs.orekit.errors;
  * ArrayIndexOutOfBoundsException or InvalidParameterException, these
  * standard exceptions are thrown rather than the mantissa specific
  * ones.</p>
- * 
+ *
  * @author L. Maisonobe
 
  */

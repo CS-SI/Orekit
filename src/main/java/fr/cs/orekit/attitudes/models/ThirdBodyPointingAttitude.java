@@ -12,26 +12,26 @@ import fr.cs.orekit.utils.PVCoordinates;
 
 //TODO Validation of the javadoc by the headchief
 /** Third body pointing attitute representation.
- * 
+ *
  * <p> Perfectly automatised attitude, as it does not consider the
  *  perturbing couples, the captors and spacecraft dynamic.</p>
- *    
+ *
  * @author F. Maussion
  */
 public class ThirdBodyPointingAttitude implements AttitudeKinematicsProvider {
 
-  /** Initializes the first rotation. 
+  /** Initializes the first rotation.
    * <p> The initial attidute of the spacecraft is defined by the rotation
    * axis (it is the axis wich is pointing to the third body) of the
    * spacecraft and two planes. They are defined by the third body
    * direction and the same vector expressed in inertial frame and in the
    * spacecraft frame (approximatively). In fact, the correct vector will
-   * be calculated internaly, the important information is a correct 
-   * definition of the planes : see 
+   * be calculated internaly, the important information is a correct
+   * definition of the planes : see
    *  {@link Rotation#Rotation(Vector3D, Vector3D, Vector3D, Vector3D)}. <p>
    * @param body the third body to point at
-   * @param initDate the initial date 
-   * @param pv the initial {@link PVCoordinates} 
+   * @param initDate the initial date
+   * @param pv the initial {@link PVCoordinates}
    * @param frame the inertial frame in which are defined the coordinates
    * @param spin the spacecraft rotation angle first time derivate (rad/s)
    * @param rotAxis the rotation axis of the spacecraft (in spacecraft frame)
@@ -51,8 +51,8 @@ public class ThirdBodyPointingAttitude implements AttitudeKinematicsProvider {
     Vector3D initBodyDir = body.getPosition(initDate, frame).subtract(pv.getPosition());
     this.R0 = new Rotation(initBodyDir, inertial, this.rotAxis, spacecraft);
 
-  } 
-  
+  }
+
   /** Get the attitude representation in the selected frame.
    * @param date the current date
    * @param pv the coordinates in the inertial frame
@@ -60,7 +60,7 @@ public class ThirdBodyPointingAttitude implements AttitudeKinematicsProvider {
    * @return the attitude representation of the spacecraft
    * @throws OrekitException if some specific error occurs.
    */
-  public AttitudeKinematics getAttitudeKinematics(AbsoluteDate date, 
+  public AttitudeKinematics getAttitudeKinematics(AbsoluteDate date,
                                                   PVCoordinates pv, Frame frame)
     throws OrekitException {
     return new AttitudeKinematics(getAttitude(date, pv, frame),
@@ -69,7 +69,7 @@ public class ThirdBodyPointingAttitude implements AttitudeKinematicsProvider {
 
   /** Get the attitude rotation.
    * <p> The {@link Rotation} returned by this method represents the rotation
-   * to apply to a vector expressed in the inertial frame to obtain the same vector 
+   * to apply to a vector expressed in the inertial frame to obtain the same vector
    * defined in the spacecraft frame </p>
    */
   private Rotation getAttitude(AbsoluteDate date, PVCoordinates pv, Frame frame)
@@ -81,7 +81,7 @@ public class ThirdBodyPointingAttitude implements AttitudeKinematicsProvider {
 
     Rotation RBody = new Rotation(newBodyDir, rotAxis);
 
-    Rotation RSpin = new Rotation(rotAxis, spin*date.minus(initDate));     
+    Rotation RSpin = new Rotation(rotAxis, spin*date.minus(initDate));
 
     Rotation finalRot = RSpin.applyTo(RBody.applyTo(R0));
 

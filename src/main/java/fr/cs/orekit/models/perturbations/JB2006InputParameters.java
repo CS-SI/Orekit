@@ -4,26 +4,26 @@ import fr.cs.orekit.time.AbsoluteDate;
 
 
 public interface JB2006InputParameters {
-  
+
   /** Gets the available data range minimum date.
    * @return the minimum date.
    */
   public AbsoluteDate getMinDate();
-  
+
   /** Gets the available data range maximum date.
    * @return the maximum date.
    */
   public AbsoluteDate getMaxDate();
-  
-  /** Get the value of the instantaneous solar flux F10.7 index 
+
+  /** Get the value of the instantaneous solar flux F10.7 index
    *        (1e<sup>-22</sup>*Watt/(m<sup>2</sup>*Hertz))
    *                 (Tabular time 1.0 day earlier).
    * @param date the current date
    * @return the instantaneous F10.7 index
    */
   public double getF10(AbsoluteDate date);
-  
-  /** Get the value of the mean solar flux, 
+
+  /** Get the value of the mean solar flux,
    *    averaged 81-day centered F10.7 B indexon the input time.
    * @param date the current date
    * @return the mean solar flux F10.7B index

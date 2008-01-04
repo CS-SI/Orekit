@@ -20,7 +20,7 @@ import fr.cs.orekit.utils.DateFormatter;
  * @author F. Maussion
  */
 public class EarthOrientationHistory implements Serializable {
-  
+
   /** Private constructor for the singleton.
    * @throws OrekitException if there is a problem while reading IERS data
    */
@@ -56,7 +56,7 @@ public class EarthOrientationHistory implements Serializable {
     }
     return instance;
   }
- 
+
   /** Check Earth orientation parameters continuity.
    * @param maxGap maximal allowed gap between entries (in days)
    * @exception OrekitException if there are holes in the data sequence
@@ -86,14 +86,14 @@ public class EarthOrientationHistory implements Serializable {
   public AbsoluteDate getStartDate() {
     return ((EarthOrientationParameters)eop.first()).date;
   }
-  
+
   /** Get the date of the last available Earth Orientation Parameters.
    * @return the end date of the available data
    */
   public AbsoluteDate getEndDate() {
     return ((EarthOrientationParameters)eop.last()).date;
   }
-  
+
   /** Get the UT1-UTC value.
    * <p>The data provided comes from the EOP C 04 files. It
    * is smoothed data.</p>
@@ -129,7 +129,7 @@ public class EarthOrientationHistory implements Serializable {
     }
     return PoleCorrection.NULL_CORRECTION;
   }
-  
+
   /** Select the entries bracketing a specified date.
    * @param  date target date
    * @return true if the date was found in the tables
@@ -172,13 +172,13 @@ public class EarthOrientationHistory implements Serializable {
 
   /** Earth Orientation Parameters. */
   private TreeSet eop = null;
-  
+
   /** Previous EOP entry. */
   private EarthOrientationParameters previous;
 
   /** Next EOP entry. */
   private EarthOrientationParameters next;
-  
+
   /** Singleton instance. */
   private static EarthOrientationHistory instance = null;
 

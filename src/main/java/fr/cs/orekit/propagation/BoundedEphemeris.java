@@ -14,15 +14,15 @@ import fr.cs.orekit.time.AbsoluteDate;
  *
  */
 public interface BoundedEphemeris extends Ephemeris {
-    
+
     /** Get the first date of the range.
      * @return the first date of the range
      */
     public AbsoluteDate getMinDate();
-    
+
     /** Get the last date of the range.
      * @return the last date of the range
      */
     public AbsoluteDate getMaxDate();
-    
+
 }

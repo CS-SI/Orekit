@@ -27,7 +27,7 @@ public class IntegratedEphemerisTest extends TestCase {
 
     AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
     SpacecraftState initialOrbit =
-      new SpacecraftState(new Orbit(initDate, 
+      new SpacecraftState(new Orbit(initDate,
                                     new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu)));
 
     // Keplerian propagator definition
@@ -51,7 +51,7 @@ public class IntegratedEphemerisTest extends TestCase {
     SpacecraftState numericIntermediateOrbit;
     AbsoluteDate intermediateDate;
 
-    // tests 
+    // tests
 
     for (int i = 1; i<=86400; i++) {
       intermediateDate = new AbsoluteDate(initDate , i);

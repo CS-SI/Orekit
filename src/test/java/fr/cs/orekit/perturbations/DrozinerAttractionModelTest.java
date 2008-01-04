@@ -63,7 +63,7 @@ public class DrozinerAttractionModelTest extends TestCase {
     double i     = Math.toRadians(98.7);
     double omega = Math.toRadians(93.0);
     double OMEGA = Math.toRadians(15.0 * 22.5);
-    OrbitalParameters op = new KeplerianParameters(7201009.7124401, 1e-3, i , omega, OMEGA, 
+    OrbitalParameters op = new KeplerianParameters(7201009.7124401, 1e-3, i , omega, OMEGA,
                                                    0, KeplerianParameters.MEAN_ANOMALY,
                                                    poleAligned);
     Orbit orbit = new Orbit(date , op);
@@ -91,7 +91,7 @@ public class DrozinerAttractionModelTest extends TestCase {
     private Sun sun;
     private double previous;
     public void handleStep(SpacecraftState currentState, boolean isLast) {
-    
+
       Vector3D pos = currentState.getPVCoordinates(mu).getPosition();
       Vector3D vel = currentState.getPVCoordinates(mu).getVelocity();
       AbsoluteDate current = currentState.getDate();
@@ -149,26 +149,26 @@ public class DrozinerAttractionModelTest extends TestCase {
                                                            { 0.0 }, { 0.0 }, { 0.0 }, { 0.0 },
                                                            { 0.0 }, { 0.0 }, { 0.0 },
                                                          }));
-    
+
     // let the step handler perform the test
     propagator.propagate(new SpacecraftState(initialOrbit), new AbsoluteDate(date , 50000), 20,
                          new EckStepHandler(initialOrbit));
-    
+
   }
-  
+
   private class EckStepHandler extends fr.cs.orekit.propagation.FixedStepHandler {
-    
+
     private EckStepHandler(Orbit initialOrbit)
       throws FileNotFoundException, OrekitException {
       referencePropagator =
         new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit), ae, mu, c20, c30, c40, c50, c60);
     }
-    
+
     public void handleStep(double t, double[] y, boolean isLastStep) {
-      
+
     }
     private EcksteinHechlerPropagator referencePropagator;
-    
+
     public void handleStep(SpacecraftState currentState, boolean isLast) {
       try {
 
@@ -181,7 +181,7 @@ public class DrozinerAttractionModelTest extends TestCase {
         Vector3D T = new Vector3D(1 / velEHP.getNorm(), velEHP);
         Vector3D W = Vector3D.crossProduct(posEHP, velEHP).normalize();
         Vector3D N = Vector3D.crossProduct(W, T);
-        
+
         assertTrue(dif.getNorm() < 104);
         assertTrue(Math.abs(Vector3D.dotProduct(dif, T)) < 104);
         assertTrue(Math.abs(Vector3D.dotProduct(dif, N)) <  53);
@@ -190,7 +190,7 @@ public class DrozinerAttractionModelTest extends TestCase {
       } catch (PropagationException e) {
         e.printStackTrace();
       }
-      
+
     }
 
     public boolean requiresDenseOutput() {
@@ -200,7 +200,7 @@ public class DrozinerAttractionModelTest extends TestCase {
     public void reset() {
     }
   }
-  
+
   // test the difference with the Cunningham model
   public void testTesserealWithCunninghamReference()
   throws OrekitException, IOException, DerivativeException, IntegratorException, ParseException {
@@ -211,7 +211,7 @@ public class DrozinerAttractionModelTest extends TestCase {
     double i     = Math.toRadians(98.7);
     double omega = Math.toRadians(93.0);
     double OMEGA = Math.toRadians(15.0 * 22.5);
-    OrbitalParameters op = new KeplerianParameters(7201009.7124401, 1e-3, i , omega, OMEGA, 
+    OrbitalParameters op = new KeplerianParameters(7201009.7124401, 1e-3, i , omega, OMEGA,
                                                    0, KeplerianParameters.MEAN_ANOMALY,
                                                    Frame.getJ2000());
     Orbit orbit = new Orbit(date , op);
@@ -222,12 +222,12 @@ public class DrozinerAttractionModelTest extends TestCase {
     SpacecraftState cunnOrb = propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date ,  86400));
 
     propagator.removeForceModels();
-    
+
     propagator.addForceModel(new DrozinerAttractionModel(itrf2000, ae,
                                                          C, S));
 
     SpacecraftState drozOrb = propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date ,  86400));
-    
+
     Vector3D dif = cunnOrb.getPVCoordinates(mu).getPosition().subtract(drozOrb.getPVCoordinates(mu).getPosition());
     assertEquals(0, dif.getNorm(), 1.0e-8);
   }
@@ -246,7 +246,7 @@ public class DrozinerAttractionModelTest extends TestCase {
       propagator =
         new NumericalPropagator(mu,
                                 new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
-      
+
     } catch (OrekitException oe) {
       fail(oe.getMessage());
     }
@@ -294,7 +294,7 @@ public class DrozinerAttractionModelTest extends TestCase {
       {  0.000000000000e+00,  9.562397128532e-08, -1.347688934659e-06,  3.220292843428e-08,
         -1.699735804354e-06, -1.934323349167e-06, -8.559943406892e-07 }
     };
-  
+
   private Frame   itrf2000;
   private NumericalPropagator propagator;
 

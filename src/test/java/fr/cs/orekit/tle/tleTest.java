@@ -21,12 +21,12 @@ import fr.cs.orekit.time.UTCScale;
 import fr.cs.orekit.utils.PVCoordinates;
 
 public class tleTest extends TestCase {
-  
+
   public void testTLEFormat() throws OrekitException, ParseException {
 
     String line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
     String line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62";
-   
+
     assertTrue(TLE.isFormatOK(line1, line2));
 
     TLE tle = new TLE(line1, line2);
@@ -40,27 +40,27 @@ public class tleTest extends TestCase {
     assertEquals(Math.toDegrees(tle.getPerigeeArgument()), 133.9522, 1e-10);
     assertEquals(Math.toDegrees(tle.getMeanAnomaly()), 226.1918, 1e-10);
     assertEquals(tle.getMeanMotion()*86400/(2*Math.PI), 14.26113993, 0);
-    assertEquals(tle.getRevolutionNumberAtEpoch(), 6, 0);    
-    assertEquals(tle.getElementNumber(), 2 ,0);  
+    assertEquals(tle.getRevolutionNumberAtEpoch(), 6, 0);
+    assertEquals(tle.getElementNumber(), 2 ,0);
 
     line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
-    line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14*26113993    62";    
-    assertFalse(TLE.isFormatOK(line1, line2));     
+    line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14*26113993    62";
+    assertFalse(TLE.isFormatOK(line1, line2));
 
     line1 = "1 27421 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
     line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62";
-    assertFalse(TLE.isFormatOK(line1, line2)); 
+    assertFalse(TLE.isFormatOK(line1, line2));
 
     line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
     line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 10006113993    62";
-    assertFalse(TLE.isFormatOK(line1, line2)); 
+    assertFalse(TLE.isFormatOK(line1, line2));
 
     line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879 2 0    20";
     line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62";
-    assertFalse(TLE.isFormatOK(line1, line2)); 
+    assertFalse(TLE.isFormatOK(line1, line2));
   }
 
-  
+
   public void testTLESeriesFormat() throws IOException, OrekitException, ParseException {
 
     InputStream in =
@@ -87,35 +87,35 @@ public class tleTest extends TestCase {
                  1e-3);
     mid = new AbsoluteDate(new ChunkedDate(2001, 06, 02),
                            new ChunkedTime(11, 12, 15),
-                           UTCScale.getInstance());                                 
+                           UTCScale.getInstance());
     assertTrue(series.getClosestTLE(mid).getEpoch().equals(series.getFirstDate()));
     mid = new AbsoluteDate(new ChunkedDate(2003, 06, 02),
                            new ChunkedTime(11, 12, 15),
-                           UTCScale.getInstance());                                 
+                           UTCScale.getInstance());
     assertTrue(series.getClosestTLE(mid).getEpoch().equals(series.getLastDate()));
 
   }
 
-  
+
   public void testThetaG() throws OrekitException, ParseException {
 
 //    AbsoluteDate date = AbsoluteDate.J2000Epoch;
-//    double teta = SDP4.thetaG(date); 
+//    double teta = SDP4.thetaG(date);
 //
 //    TIRF2000Frame ITRF = (TIRF2000Frame)Frame.getReferenceFrame(Frame.TIRF2000B, date);
-//    double tetaTIRF = ITRF.getEarthRotationAngle(date);    
+//    double tetaTIRF = ITRF.getEarthRotationAngle(date);
 //    assertEquals( Math.toDegrees(Utils.trimAngle(tetaTIRF, Math.PI)), Math.toDegrees(Utils.trimAngle(teta, Math.PI)), 0.003);
 //
 //    date = new AbsoluteDate(new ChunkedDate(2002, 03, 08), new ChunkedTime(01, 00, 45), UTCScale.getInstance());
-//    tetaTIRF = ITRF.getEarthRotationAngle(date);    
-//    teta = SDP4.thetaG(date); 
+//    tetaTIRF = ITRF.getEarthRotationAngle(date);
+//    teta = SDP4.thetaG(date);
 //    assertEquals( Math.toDegrees(Utils.trimAngle(tetaTIRF, Math.PI)), Math.toDegrees(Utils.trimAngle(teta, Math.PI)), 0.04);
   }
-  
+
   public void testSatCodeCompliance() throws IOException, OrekitException, ParseException {
-    
+
     boolean printResults = false;
-    
+
     InputStream inEntry =
       getClass().getResourceAsStream("/tle/extrapolationTest-data/SatCode-entry");
     BufferedReader rEntry = new BufferedReader(new InputStreamReader(inEntry));
@@ -134,12 +134,12 @@ public class tleTest extends TestCase {
 
       String[] title = rline.split(" ");
 
-      if(title[0].matches("r")) {        
+      if(title[0].matches("r")) {
 
         String eline;
         int count = 0;
         String[] header = new String[4];
-        for (eline = rEntry.readLine(); eline.charAt(0)=='#'; eline = rEntry.readLine()) {      
+        for (eline = rEntry.readLine(); eline.charAt(0)=='#'; eline = rEntry.readLine()) {
           header[count++] = eline;
         }
         String line1 = eline;
@@ -161,7 +161,7 @@ public class tleTest extends TestCase {
           }
           System.out.println(" Satellite number : " + satNum);
         }
-        
+
         for (rline = rResults.readLine(); (rline!=null)&&(rline.charAt(0)!='r'); rline = rResults.readLine()) {
 
           String[] data = rline.split(" ");
@@ -192,16 +192,16 @@ public class tleTest extends TestCase {
             double normDifPos = testPos.subtract(results.getPosition()).getNorm();
             double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
 
-            cumulated += normDifPos;  
+            cumulated += normDifPos;
             if(printResults) {
               System.out.println(minFromStart + "    " + normDifPos);
-            }              
+            }
             assertEquals( 0, normDifPos, 2e-3);;
             assertEquals( 0, normDifVel, 1e-5);
-            
-          }  
 
-        }        
+          }
+
+        }
       }
     }
     if (printResults) {
@@ -210,19 +210,19 @@ public class tleTest extends TestCase {
     }
     assertEquals(0, cumulated, 0.024);
   }
-  
-  
+
+
   public void setUp() {
     IERSDataResetter.setUp("regular-data");
   }
 
   public void tearDown() {
     IERSDataResetter.tearDown();
-  }  
-  
+  }
+
   public static Test suite() {
     return new TestSuite(tleTest.class);
   }
-  
+
 
 }

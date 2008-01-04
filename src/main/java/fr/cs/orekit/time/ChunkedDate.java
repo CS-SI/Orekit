@@ -243,7 +243,7 @@ public class ChunkedDate {
     private static final int[] previousMonthEndDay = {
       0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335
     };
-    
+
     public int getMonth(int dayInYear) {
       return (dayInYear < 32) ? 1 : (10 * dayInYear + 313) / 306;
     }
@@ -268,11 +268,11 @@ public class ChunkedDate {
     public int getMonth(int dayInYear) {
       return (dayInYear < 32) ? 1 : (10 * dayInYear + 323) / 306;
     }
-    
+
     public int getDay(int dayInYear, int month) {
       return dayInYear - previousMonthEndDay[month];
     }
-    
+
     public int getDayInYear(int month, int day) {
       return day + previousMonthEndDay[month];
     }

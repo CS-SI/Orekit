@@ -10,17 +10,17 @@ import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.UTCScale;
 
 /** This class converts and contains TLE datas.
- * 
+ *
  * An instance of TLE is created with the two lines string representation,
- * convertion of the datas is made internally for easier retrieval and 
+ * convertion of the datas is made internally for easier retrieval and
  * future extrapolation.
  * All the values provided by a TLE only have sense when translated by the correspondant
- * {@link TLEPropagator propagator}. Even when no extrapolation in time is needed, 
+ * {@link TLEPropagator propagator}. Even when no extrapolation in time is needed,
  * state information (position and velocity coordinates) can only be computed threw
  * the propagator. Untreated values like inclination, RAAN, mean Motion, etc. can't
  * be used by themselves without loosing precision.
  * <p>
- * More information on the TLE format can be found on the 
+ * More information on the TLE format can be found on the
  * <ahref="http://www.celestrak.com/">
  * CelesTrak website.</a>
  * </p>
@@ -41,21 +41,21 @@ public class TLE  implements Comparable {
     internationalDesignator = line1.substring(9,17);
 
     // Date format transform :
- 
+
     Calendar cal = new GregorianCalendar();
     cal.setTimeZone(TimeZone.getTimeZone("UTC"));
     cal.set(Calendar.MONTH, Calendar.JANUARY);
     cal.set(Calendar.DAY_OF_MONTH, 1);
     cal.set(Calendar.HOUR_OF_DAY, 0);
     cal.set(Calendar.MINUTE, 0);
-    cal.set(Calendar.SECOND, 0);    
+    cal.set(Calendar.SECOND, 0);
     cal.set(Calendar.MILLISECOND, 0);
     int year = Integer.parseInt(line1.substring(18,20).replace(' ','0'));
     if (year<57) {
-      year += 2000; 
+      year += 2000;
     }
     else {
-      year += 1900; 
+      year += 1900;
     }
     cal.set(Calendar.YEAR, year);
     double dayNb = Double.parseDouble(line1.substring(20,32).replace(' ','0'));
@@ -70,7 +70,7 @@ public class TLE  implements Comparable {
     e = Double.parseDouble("."+line2.substring(26,33).replace(' ','0'));
     pa = Math.toRadians(Double.parseDouble(line2.substring(34,42).replace(' ','0')));
     meanAnomaly = Math.toRadians(Double.parseDouble(line2.substring(43,51).replace(' ','0')));
-    meanMotion = Math.PI * Double.parseDouble(line2.substring(52,63).replace(' ','0')) / (43200.0);   
+    meanMotion = Math.PI * Double.parseDouble(line2.substring(52,63).replace(' ','0')) / (43200.0);
     revolutionNumberAtEpoch = Integer.parseInt(line2.substring(63,68).replace(' ','0'));
 
   }
@@ -92,7 +92,7 @@ public class TLE  implements Comparable {
     revolutionNumberAtEpoch = 0;
   }
 
-  /** Compare an entry with another one, according to date. 
+  /** Compare an entry with another one, according to date.
    * <p> Entry should be a TLE, to avoid ClassCastExceptions. </p>
    */
   public int compareTo(Object entry) {
@@ -246,7 +246,7 @@ public class TLE  implements Comparable {
    */
   public int getSatelliteNumber() {
     return satelliteNumber;
-  }  
+  }
 
   /** Check the entries to determine if the element format is correct.
    * @param line1 the first element (69 char String)
@@ -258,10 +258,10 @@ public class TLE  implements Comparable {
 
     if (line1.length()!=69 ||line2.length()!=69 ) {
       return false;
-    } 
+    }
     if(isLine1OK(line1)&&isLine2OK(line2)) {
 
-      // check sums 
+      // check sums
       int chksum1  = 0;
       int chksum2  = 0;
 
@@ -272,12 +272,12 @@ public class TLE  implements Comparable {
           chksum1 += Integer.parseInt(x);
         } catch(NumberFormatException nb) {
           if (x.equals("-")) chksum1++;
-        }       
+        }
         try {
           chksum2 += Integer.parseInt(y);
         } catch(NumberFormatException nb) {
           if (y.equals("-")) chksum2++;
-        }       
+        }
       }
 
       double decimal = chksum1/10.0;
@@ -312,7 +312,7 @@ public class TLE  implements Comparable {
     Matcher matcher = line2Pattern.matcher(line2);
     return matcher.matches();
   }
-  
+
   /** Patterns */
   private static String pn  = "[ 0-9]";
   private static String i5 = "[ 0-9]{5}";
@@ -332,7 +332,7 @@ public class TLE  implements Comparable {
 
   private static final Pattern line1Pattern = Pattern.compile(line1Nb + satNb1 + ID + pepoch + ftdMM +
                                          stdMM + pbStar + eph + eltN + pchK);
- 
+
   private static String p  = "[.]";
   private static String line2Nb = "2 ";
   private static String satNb2 = pn + "{5}" + " ";
@@ -343,8 +343,8 @@ public class TLE  implements Comparable {
   private static String ma = pn + "{3}" + p +pn + "{4}" + " ";
   private static String revs= pn + "{2}" + p +  pn + "{13}";
   private static String chK = pn;
- 
+
   private static final Pattern line2Pattern = Pattern.compile(line2Nb + satNb2 + inc + praan + pe +
-                                         arg + ma + revs + chK);  
-  
+                                         arg + ma + revs + chK);
+
 }

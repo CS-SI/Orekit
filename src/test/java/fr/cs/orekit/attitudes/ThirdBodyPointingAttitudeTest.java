@@ -28,9 +28,9 @@ import fr.cs.orekit.time.UTCScale;
 
 
 public class ThirdBodyPointingAttitudeTest extends TestCase {
-  
+
   public void testSimpleBehaviour() throws ParseException, OrekitException, FileNotFoundException {
-    
+
     // parameters
     double a = 12000000;
     double ex = 1e-3;
@@ -38,30 +38,30 @@ public class ThirdBodyPointingAttitudeTest extends TestCase {
     double OMEGA = 0;
     double l = 0;
     double mu = Utils.mu;
-    
-    final OrbitalParameters op = new CircularParameters(a, ex, ey, 0, OMEGA, l, 
+
+    final OrbitalParameters op = new CircularParameters(a, ex, ey, 0, OMEGA, l,
                                                   CircularParameters.TRUE_LONGITUDE_ARGUMENT
                                                   , Frame.getJ2000());
-    
+
     final AbsoluteDate initDate = new AbsoluteDate(new ChunkedDate(2001, 03, 21),
                                                    ChunkedTime.H00,
                                                    UTCScale.getInstance());
-    
+
     final Orbit o = new Orbit(initDate, op);
-    
+
     final double period = 2*Math.PI*Math.sqrt(a*a*a/mu);
-    final double spin = 2*Math.PI/period;    
+    final double spin = 2*Math.PI/period;
     final ThirdBody sun = new Sun();
-    
-    AttitudeKinematicsProvider att = 
+
+    AttitudeKinematicsProvider att =
       new ThirdBodyPointingAttitude(sun, initDate, o.getPVCoordinates(mu),
                                          Frame.getJ2000(), spin,
                                     Vector3D.plusI, Vector3D.plusJ, Vector3D.plusJ);
-    
-    final SpacecraftState initState = new SpacecraftState(o, 1000, 
-                                  att.getAttitudeKinematics(initDate, o.getPVCoordinates(mu), 
+
+    final SpacecraftState initState = new SpacecraftState(o, 1000,
+                                  att.getAttitudeKinematics(initDate, o.getPVCoordinates(mu),
                                                             o.getFrame()));
-    
+
     KeplerianPropagator kep = new KeplerianPropagator(initState, mu);
     kep.setAkProvider(att);
     // Spin tests
@@ -71,27 +71,27 @@ public class ThirdBodyPointingAttitudeTest extends TestCase {
    for(int i=0; i<=period; i++) {
      interDate= new AbsoluteDate(initDate, i);
      interState = kep.getSpacecraftState(interDate);
-     interJtrans = interState.getAttitude().applyInverseTo(Vector3D.plusJ); 
+     interJtrans = interState.getAttitude().applyInverseTo(Vector3D.plusJ);
      assertEquals(0, (interJtrans.getY()-Math.cos(i/(period)*2*Math.PI)), 5e-05);
      assertEquals(0, (interJtrans.getZ()+Math.sin(i/(period)*2*Math.PI)), 1);
    }
    // sun pointing tests
-   
+
    final AbsoluteDate finDate = new AbsoluteDate(new ChunkedDate(2001, 9, 21),
                                                  ChunkedTime.H00,
                                                  UTCScale.getInstance());
    final AbsoluteDate medDate = new AbsoluteDate(initDate , finDate.minus(initDate)/2);
    final SpacecraftState medState = kep.getSpacecraftState(medDate);
-   
+
    Vector3D sunPos = sun.getPosition(medDate, Frame.getJ2000()).subtract(
                                        medState.getPVCoordinates(mu).getPosition());
    Vector3D transX = medState.getAttitude().applyInverseTo(Vector3D.plusI);
    assertEquals(0, Vector3D.angle(transX , sunPos), 1e-15);
-   
-   final SpacecraftState finState = kep.getSpacecraftState(finDate);    
+
+   final SpacecraftState finState = kep.getSpacecraftState(finDate);
    sunPos = sun.getPosition(finDate, Frame.getJ2000()).subtract(
                               finState.getPVCoordinates(mu).getPosition());
-   
+
    transX = finState.getAttitude().applyInverseTo(Vector3D.plusI);
    assertEquals(0, Vector3D.angle(transX , sunPos), 1e-10);
   }

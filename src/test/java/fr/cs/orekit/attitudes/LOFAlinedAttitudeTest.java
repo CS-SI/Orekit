@@ -34,12 +34,12 @@ public class LOFAlinedAttitudeTest extends TestCase {
 
     Orbit o = new Orbit(initDate, op);
 
-    AttitudeKinematicsProvider att = 
+    AttitudeKinematicsProvider att =
       new LOFAlignedAttitude(Utils.mu, LOFAlignedAttitude.QSW);
 
     SpacecraftState initState =
-      new SpacecraftState(o, 1000, 
-                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu), 
+      new SpacecraftState(o, 1000,
+                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu),
                                                     o.getFrame()));
     double period = 2 * Math.PI * op.getA() * Math.sqrt(op.getA() / Utils.mu);
 
@@ -69,8 +69,8 @@ public class LOFAlinedAttitudeTest extends TestCase {
 
     o = new Orbit(initDate, op);
 
-    initState = new SpacecraftState(o, 1000, 
-                                    att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu), 
+    initState = new SpacecraftState(o, 1000,
+                                    att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu),
                                                               o.getFrame()));
     period = 2 * Math.PI * op.getA() * Math.sqrt(op.getA() / Utils.mu);
 
@@ -104,12 +104,12 @@ public class LOFAlinedAttitudeTest extends TestCase {
 
     final Orbit o = new Orbit(initDate, op);
 
-    AttitudeKinematicsProvider att = 
+    AttitudeKinematicsProvider att =
       new LOFAlignedAttitude(Utils.mu, LOFAlignedAttitude.TNW);
 
     final SpacecraftState initState =
-      new SpacecraftState(o, 1000, 
-                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu), 
+      new SpacecraftState(o, 1000,
+                          att.getAttitudeKinematics(initDate, o.getPVCoordinates(Utils.mu),
                                                     o.getFrame()));
     double period = 2 * Math.PI * op.getA() * Math.sqrt(op.getA() / Utils.mu);
 

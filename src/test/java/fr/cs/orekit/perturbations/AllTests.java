@@ -4,8 +4,8 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 public class AllTests {
-  public static Test suite() { 
-    TestSuite suite = new TestSuite("fr.cs.orekit.perturbations"); 
+  public static Test suite() {
+    TestSuite suite = new TestSuite("fr.cs.orekit.perturbations");
     suite.addTest(DragTest.suite());
     suite.addTest(SolarRadiationPressureTest.suite());
     suite.addTest(ThirdBodyAttractionTest.suite());
@@ -13,6 +13,6 @@ public class AllTests {
     suite.addTest(DrozinerAttractionModelTest.suite());
     suite.addTest(DTM2000AtmosphereTest.suite());
     suite.addTest(JB2006AtmosphereTest.suite());
-     return suite; 
+     return suite;
   }
 }

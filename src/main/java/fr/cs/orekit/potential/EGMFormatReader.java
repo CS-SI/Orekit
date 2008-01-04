@@ -10,18 +10,18 @@ import java.util.regex.Pattern;
 import fr.cs.orekit.errors.OrekitException;
 
 /**This reader is adapted to the EGM Format.
- *  
- * <p> The proper way to use this class is to call the 
+ *
+ * <p> The proper way to use this class is to call the
  *  {@link fr.cs.orekit.potential.PotentialReaderFactory}
  *  which will determine which reader to use with the selected potential
  *  coefficients file <p>
- *   
+ *
  * @see fr.cs.orekit.potential.PotentialReaderFactory
  * @author F. Maussion
  */
 public class EGMFormatReader extends PotentialCoefficientsReader {
 
-  /** Simple constructor (the first method to call after construction is 
+  /** Simple constructor (the first method to call after construction is
    * {@link #isFileOK(InputStream)}. It is done automaticaly by the factory).
    */
   protected EGMFormatReader() {
@@ -75,7 +75,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
     return fileIsOK;
   }
 
-  /** Computes the coefficients by reading the selected (and tested) file 
+  /** Computes the coefficients by reading the selected (and tested) file
    * @throws OrekitException when the file has not been initialized or checked.
    * @throws IOException when the file is corrupted.
    */

@@ -14,10 +14,10 @@ public class ChunkedTime {
 
   /** Constant for commonly used hour 00:00:00. */
   public static final ChunkedTime H00   = new ChunkedTime(0, 0, 0);
-  
+
   /** Constant for commonly used hour 12:00:00. */
   public static final ChunkedTime H12 = new ChunkedTime(12, 0, 0);
-  
+
   /** Build a time from its clock elements.
    * @param hour hour number from 0 to 23
    * @param minute minute number from 0 to 59

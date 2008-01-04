@@ -16,19 +16,19 @@ import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.UTCScale;
 import fr.cs.orekit.utils.DateFormatter;
 
-/** This class reads and provides solar activity data needed by the 
+/** This class reads and provides solar activity data needed by the
  * two atmospheric models. The data are furnished at the <a
  * href="http://terra1.spacenvironment.net/~JB2006/indices.html">
  * official JB2006 website.</a>
- * 
+ *
  * @author F. Maussion
  */
 public class SolarInputs97to05 implements JB2006InputParameters,
 DTM2000InputParameters {
 
-  /** Simple constructor. 
+  /** Simple constructor.
    * Data file address is set internally, nothing to be done here.
-   * 
+   *
    * @throws OrekitException
    */
   private SolarInputs97to05() throws OrekitException {
@@ -45,7 +45,7 @@ DTM2000InputParameters {
       read(rFlux, rAp);
     } catch (IOException e) {
       throw new RuntimeException(e);
-    }     
+    }
   }
 
   /** Singleton getter.
@@ -82,8 +82,8 @@ DTM2000InputParameters {
       flux = lineFlux.trim().split("\\s+") ;
       ap = lineAp.trim().split("\\s+") ;
 
-      int year = Integer.parseInt(flux[0]);           
-      int day = Integer.parseInt(flux[1]);   
+      int year = Integer.parseInt(flux[0]);
+      int day = Integer.parseInt(flux[1]);
 
       if(day != Integer.parseInt(ap[0])) {
         throw new OrekitException("inconsistent JB2006 and geomagnetic indices files",
@@ -105,7 +105,7 @@ DTM2000InputParameters {
         firstDate = date;
       }
 
-      data.add(new LineParameters(date, 
+      data.add(new LineParameters(date,
                                    new double[] {
           Double.parseDouble(ap[3]),
           Double.parseDouble(ap[4]),
@@ -119,8 +119,8 @@ DTM2000InputParameters {
       },
       Double.parseDouble(flux[3]),
       Double.parseDouble(flux[4]),
-      Double.parseDouble(flux[5]), 
-      Double.parseDouble(flux[6]), 
+      Double.parseDouble(flux[5]),
+      Double.parseDouble(flux[6]),
       Double.parseDouble(flux[7]),
       Double.parseDouble(flux[8])));
 
@@ -136,7 +136,7 @@ DTM2000InputParameters {
     }
 
     // don't search if the cached selection is fine
-    if ((currentParam != null) && (date.minus(currentParam.date) >= 0) && 
+    if ((currentParam != null) && (date.minus(currentParam.date) >= 0) &&
         (date.minus(currentParam.date) < 86400 )) {
       return;
     }
@@ -222,23 +222,23 @@ DTM2000InputParameters {
         if(hour>=i*3 & hour<(i+1)*3) {
           result = tab[i];
         }
-      }     
-    } 
+      }
+    }
     catch (OrekitException e) {
       // nothing
-    }    
+    }
     return result;
   }
 
   public double getF10(AbsoluteDate date) {
-    double result = Double.NaN;    
+    double result = Double.NaN;
     try {
       findClosestLine(date);
       result=currentParam.f10;
-    } 
+    }
     catch (OrekitException e) {
       // nothing
-    }    
+    }
     return result;
   }
 
@@ -247,10 +247,10 @@ DTM2000InputParameters {
     try {
       findClosestLine(date);
       result=currentParam.f10B;
-    } 
+    }
     catch (OrekitException e) {
       // nothing
-    }    
+    }
     return result;
   }
 
@@ -267,10 +267,10 @@ DTM2000InputParameters {
     try {
       findClosestLine(date);
       result=currentParam.s10;
-    } 
+    }
     catch (OrekitException e) {
       // nothing
-    }    
+    }
     return result;
   }
 
@@ -279,10 +279,10 @@ DTM2000InputParameters {
     try {
       findClosestLine(date);
       result=currentParam.s10B;
-    } 
+    }
     catch (OrekitException e) {
       // nothing
-    }    
+    }
     return result;
   }
 
@@ -291,10 +291,10 @@ DTM2000InputParameters {
     try {
       findClosestLine(date);
       result=currentParam.xm10;
-    } 
+    }
     catch (OrekitException e) {
       // nothing
-    }    
+    }
     return result;
   }
 
@@ -303,10 +303,10 @@ DTM2000InputParameters {
     try {
       findClosestLine(date);
       result=currentParam.xm10B;
-    } 
+    }
     catch (OrekitException e) {
       // nothing
-    }    
+    }
     return result;
   }
 
@@ -329,22 +329,22 @@ DTM2000InputParameters {
   public double getMeanFlux(AbsoluteDate date) {
     return getF10B(date);
   }
-    
+
   /** The 3-H Kp is derived from the Ap index.
    * The used method is explained on <a
    * href="http://www.ngdc.noaa.gov/stp/GEOMAG/kp_ap.shtml">
    * NOAA website.</a>. Here is the corresponding tab :
    * <pre>
-   * The scale is O to 9 expressed in thirds of a unit, e.g. 5- is 4 2/3, 
-   * 5 is 5 and 5+ is 5 1/3. 
-   * 
+   * The scale is O to 9 expressed in thirds of a unit, e.g. 5- is 4 2/3,
+   * 5 is 5 and 5+ is 5 1/3.
+   *
    * The 3-hourly ap (equivalent range) index is derived from the Kp index as follows:
    *
    * Kp = 0o   0+   1-   1o   1+   2-   2o   2+   3-   3o   3+   4-   4o   4+
    * ap =  0    2    3    4    5    6    7    9   12   15   18   22   27   32
    * Kp = 5-   5o   5+   6-   6o   6+   7-   7o   7+   8-   8o   8+   9-   9o
    * ap = 39   48   56   67   80   94  111  132  154  179  207  236  300  400
-   * 
+   *
    * </pre>
    */
   public double getThreeHourlyKP(AbsoluteDate date) {
@@ -361,16 +361,16 @@ DTM2000InputParameters {
   }
 
   private static final double third = 1.0/3.0;
-  
-  private static final double[] kpTab = new double[] 
+
+  private static final double[] kpTab = new double[]
    {0, 0+third, 1-third, 1, 1+third, 2-third, 2, 2+third, 3-third, 3, 3+third, 4-third, 4, 4+third,
     5-third, 5, 5+third, 6-third, 6, 6+third, 7-third, 7, 7+third, 8-third, 8, 8+third, 9-third, 9};
-  
+
   private static final double[] apTab = new double[] {
     0, 2, 3, 4, 5, 6, 7, 9, 12, 15, 18, 22, 27, 32,
     39, 48, 56, 67, 80, 94, 111, 132, 154 , 179, 207, 236, 300, 400 };
- 
-  
-  
-  
+
+
+
+
 }

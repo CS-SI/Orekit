@@ -9,7 +9,7 @@ import fr.cs.orekit.frames.Transform;
 import fr.cs.orekit.time.AbsoluteDate;
 
 /** Moon model.
- * The position model is the Brown theory. 
+ * The position model is the Brown theory.
  * @author E. Delente
  */
 
@@ -18,7 +18,7 @@ public class Moon extends ThirdBody {
   /** Creates a new instance of ThirdBody Moon.  */
   public Moon() {
     super(1737400.0, 4.9027989e12);
-    
+
       try {
         transform  =
           Frame.getReferenceFrame(Frame.VEIS1950, reference).getTransformTo(Frame.getJ2000(), reference);
@@ -26,8 +26,8 @@ public class Moon extends ThirdBody {
         // should not happen
         transform = new Transform();
       }
-    
-    
+
+
   }
 
   /** Gets the position of the Moon in the selected frame.
@@ -36,7 +36,7 @@ public class Moon extends ThirdBody {
    * @param date current date
    * @param frame the frame where to define the position
    * @return position of the Moon wrt the central body in the J2000 Frame (m)
-   * @throws OrekitException 
+   * @throws OrekitException
    */
   public Vector3D getPosition(AbsoluteDate date, Frame frame) throws OrekitException {
 
@@ -116,10 +116,10 @@ public class Moon extends ThirdBody {
     dasr = dasr - 9.0 * Math.cos(xl + xl - d - d) + 8.0
            * Math.cos(xl + xl + d + d);
     dasr = dasr + 8.0 * Math.cos(4.0 * d);
-    
+
     Vector3D posInJ2000 = new Vector3D(1000.0 * 384389.3 / (1.0 + 1.E-05 * dasr),
             centralMoon);
-    
+
     return Frame.getJ2000().getTransformTo(frame, date).transformPosition(posInJ2000);
 
   }

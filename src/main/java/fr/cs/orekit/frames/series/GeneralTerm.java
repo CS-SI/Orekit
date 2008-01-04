@@ -36,20 +36,20 @@ class GeneralTerm extends SeriesTerm {
 
   }
 
-  private final int cL; 
-  private final int cLPrime; 
-  private final int cF; 
-  private final int cD; 
-  private final int cOmega; 
-  private final int cMe; 
-  private final int cVe; 
-  private final int cE; 
-  private final int cMa; 
-  private final int cJu; 
-  private final int cSa; 
-  private final int cUr; 
-  private final int cNe; 
-  private final int cPa; 
+  private final int cL;
+  private final int cLPrime;
+  private final int cF;
+  private final int cD;
+  private final int cOmega;
+  private final int cMe;
+  private final int cVe;
+  private final int cE;
+  private final int cMa;
+  private final int cJu;
+  private final int cSa;
+  private final int cUr;
+  private final int cNe;
+  private final int cPa;
 
   private static final long serialVersionUID = 2084933766306957711L;
 

@@ -36,7 +36,7 @@ public class ITRF2000FrameTest extends TestCase {
     assertEquals(0.0, evolution.transformPosition(new Vector3D(0,0,0)).getNorm(), 1.0e-10);
     assertTrue(Vector3D.dotProduct(Vector3D.plusK, evolution.transformVector(new Vector3D(6000,6000,0))) < 0.01);
     assertEquals(2 * Math.PI * dt / 86164, Vector3D.angle(
-                                                          t0.transformVector(new Vector3D(6000,6000,0)), t1.transformVector(new Vector3D(6000,6000,0))), 
+                                                          t0.transformVector(new Vector3D(6000,6000,0)), t1.transformVector(new Vector3D(6000,6000,0))),
                                                           1.0e-9);
 
   }
@@ -136,7 +136,7 @@ public class ITRF2000FrameTest extends TestCase {
 
     // Position tests
     checkVectors(posTestCaseRef, posITRF, 1.4e-7, 1.4e-7, 1.07);
-    
+
     // velocity tests
 
     Vector3D speedJ2000 = new Vector3D(3609.28229,
@@ -188,7 +188,7 @@ public class ITRF2000FrameTest extends TestCase {
     AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2006, 05, 14),
                                          new ChunkedTime(0, 8, 51.423),
                                          UTCScale.getInstance());
-    Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000A, date);   
+    Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000A, date);
     Transform trans = itrf.getTransformTo(Frame.getJ2000(), date);
     Vector3D posITRF = new Vector3D(6770000.000, -144000.000, 488000.000);
     Vector3D velITRF = new Vector3D(530.000, 4260.000, -5980.000);
@@ -205,7 +205,7 @@ public class ITRF2000FrameTest extends TestCase {
     AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2006, 05, 14),
                                          new ChunkedTime(00, 16, 08.631),
                                          UTCScale.getInstance());
-    Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, date);   
+    Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, date);
     Transform trans = itrf.getTransformTo(Frame.getJ2000(), date);
     Vector3D posITRF = new Vector3D(6254020.457, 1663297.258, -2070251.762);
     Vector3D velITRF = new Vector3D(-2861.533, 3913.691, -5536.168);
@@ -222,7 +222,7 @@ public class ITRF2000FrameTest extends TestCase {
     AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2006, 05, 14),
                                          new ChunkedTime(00, 26, 06.833),
                                          UTCScale.getInstance());
-    Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, date);   
+    Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, date);
     Transform trans = itrf.getTransformTo(Frame.getJ2000(), date);
     Vector3D posITRF = new Vector3D(3376169.673, 3578504.767, -4685496.977);
     Vector3D velITRF = new Vector3D(-6374.220, 2284.616, -2855.447);
@@ -238,17 +238,17 @@ public class ITRF2000FrameTest extends TestCase {
   public void testAASReferenceLEO() throws OrekitException, ParseException {
 
     IERSDataResetter.setUp("testitrf-data");
-    
+
     AbsoluteDate t0 = new AbsoluteDate(new ChunkedDate(2004, 04, 06),
                                        new ChunkedTime(07, 51, 28.386),
                                        UTCScale.getInstance());
     t0 = new AbsoluteDate(t0, 0.000009);
 
-    Frame itrfA = Frame.getReferenceFrame(Frame.ITRF2000A, t0);    
+    Frame itrfA = Frame.getReferenceFrame(Frame.ITRF2000A, t0);
 
     Transform transA = itrfA.getTransformTo(Frame.getJ2000(), t0);
 
-    Frame itrfB = Frame.getReferenceFrame(Frame.ITRF2000B, t0);    
+    Frame itrfB = Frame.getReferenceFrame(Frame.ITRF2000B, t0);
 
     Transform transB = itrfB.getTransformTo(Frame.getJ2000(), t0);
 
@@ -281,22 +281,22 @@ public class ITRF2000FrameTest extends TestCase {
 //    Utils.vectorToString("B pos cals ", resultB.getPosition());
 //    Utils.vectorToString("B pos test ", posGCRFiau2000b);
 //    Utils.vectorToString("B dif ", posGCRFiau2000b.subtract(resultB.getPosition()));
-    
+
   }
 
   public void testAASReferenceGEO() throws OrekitException, ParseException {
-    
+
     IERSDataResetter.setUp("testitrf-data");
-    
+
     AbsoluteDate t0 = new AbsoluteDate(new ChunkedDate(2004, 06, 01),
                                        ChunkedTime.H00,
                                        UTCScale.getInstance());
-    
-    Frame itrfA = Frame.getReferenceFrame(Frame.ITRF2000A, t0);    
+
+    Frame itrfA = Frame.getReferenceFrame(Frame.ITRF2000A, t0);
 
     Transform transA = itrfA.getTransformTo(Frame.getJ2000(), t0);
 
-    Frame itrfB = Frame.getReferenceFrame(Frame.ITRF2000B, t0);    
+    Frame itrfB = Frame.getReferenceFrame(Frame.ITRF2000B, t0);
 
     Transform transB = itrfB.getTransformTo(Frame.getJ2000(), t0);
 
@@ -314,7 +314,7 @@ public class ITRF2000FrameTest extends TestCase {
     Vector3D velGCRFiau2000a = new Vector3D(0.834787458*1000, -2.958305691*1000, -0.001172993*1000);
     Vector3D posGCRFiau2000b = new Vector3D(-40588.1503617*1000,-11462.1670397*1000, 27.1432125*1000);
     Vector3D velGCRFiau2000b = new Vector3D(0.834787458*1000,-2.958305691*1000,-0.001172999*1000);
-   
+
     // TESTS
 
     PVCoordinates resultA = transA.transformPVCoordinates(pvITRF);
@@ -323,7 +323,7 @@ public class ITRF2000FrameTest extends TestCase {
     PVCoordinates resultB = transB.transformPVCoordinates(pvITRF);
     checkVectors(posGCRFiau2000b,resultB.getPosition(),3.81e-8, 3.81e-8, 1.61);
     checkVectors(velGCRFiau2000b,resultB.getVelocity(), 1.7e-8,1.7e-8, 5.11e-5);
-   
+
 //    System.out.println( " ITRF GEO ");
 //    Utils.vectorToString("A pos cals ", resultA.getPosition());
 //    Utils.vectorToString("A pos test ", posGCRFiau2000a);
@@ -347,9 +347,9 @@ public class ITRF2000FrameTest extends TestCase {
     t0 = new AbsoluteDate(t0, 0.000009);
 
     Frame j2000 = Frame.getJ2000();
-    Frame irf = Frame.getReferenceFrame(Frame.IRF2000A, t0);    
-    Frame tirf = Frame.getReferenceFrame(Frame.TIRF2000A, t0);    
-    Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000A, t0);    
+    Frame irf = Frame.getReferenceFrame(Frame.IRF2000A, t0);
+    Frame tirf = Frame.getReferenceFrame(Frame.TIRF2000A, t0);
+    Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000A, t0);
 
     Transform trans;
     PVCoordinates pv;
@@ -423,10 +423,10 @@ public class ITRF2000FrameTest extends TestCase {
 
     System.out.println();
 
-    
-    
+
+
 //  pv = new PVCoordinates(testPosJ2000,testVelJ2000);
-    trans = j2000.getTransformTo(itrf,t0);  
+    trans = j2000.getTransformTo(itrf,t0);
     result = trans.transformPVCoordinates(pv);
 
     System.out.println( " ITRF ");
@@ -452,7 +452,7 @@ public class ITRF2000FrameTest extends TestCase {
     IERSDataResetter.tearDown();
   }
 
- 
+
   /** Compare and asserts two vectors.
    * @param vRef reference vector
    * @param vResult vector to test
@@ -476,22 +476,22 @@ public class ITRF2000FrameTest extends TestCase {
   public static Test suite() {
     return new TestSuite(ITRF2000FrameTest.class);
   }
-  
+
 //  private class LagrangeFitter {
-//    
+//
 //    private double[] x;
 //    private double[] y;
 //    private int n;
-//    
+//
 //    LagrangeFitter(double[] x, double[] y) {
 //      this.x= x;
 //      this.y = y;
 //      n = x.length -1;
 //    }
-//    
+//
 //    public double getValue(double x) {
 //      double p = 0;
-//      
+//
 //      for (int j = 0; j<= n ; j++) {
 //        double l = 1;
 //        for(int k=0; k<=n; k++ ) {
@@ -503,9 +503,9 @@ public class ITRF2000FrameTest extends TestCase {
 //      }
 //      return p;
 //    }
-//    
+//
 //  }
-  
+
   //
 //double xp = -6.798284606394803e-7;
 //double yp = 1.6252035846549786E-6;

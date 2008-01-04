@@ -9,12 +9,12 @@ import fr.cs.orekit.time.UTCScale;
 
 
 public class IERSDataResetter {
-  
+
   public static void setUp(String directory) {
     System.setProperty("orekit.iers.directory", directory);
     AccessController.doPrivileged(new SingletonResetter());
   }
-  
+
   public static void tearDown() {
     System.setProperty("orekit.iers.directory", "");
     AccessController.doPrivileged(new SingletonResetter());

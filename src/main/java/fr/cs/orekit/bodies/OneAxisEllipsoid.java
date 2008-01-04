@@ -144,7 +144,7 @@ public class OneAxisEllipsoid implements BodyShape {
   public GeodeticPoint transform(Vector3D point) {
 
 //    logger.info("transform(Vector3D point) called");
-    
+
     // compute some miscellaneous variables outside of the loop
     double z          = point.getZ();
     double z2         = z * z;
@@ -156,7 +156,7 @@ public class OneAxisEllipsoid implements BodyShape {
     boolean inside    = (g2r2ma2pz2 <= 0);
 
 //    logger.debug("inside ellipsoid : {}", new Boolean(inside));
-    
+
     // point at the center
     if (dist < (epsilon * ae)) {
 //      logger.debug("Point at the center.");
@@ -184,7 +184,7 @@ public class OneAxisEllipsoid implements BodyShape {
 //      logger.debug("Point on the ellipse.");
       return new GeodeticPoint(lambda, phi, k);
     }
- 
+
     for (int iterations = 0; iterations < 100; ++iterations) {
 
       // 4th degree normalized polynom describing
@@ -265,7 +265,7 @@ public class OneAxisEllipsoid implements BodyShape {
         return new GeodeticPoint(lambda, phi,
                                     r * cPhi + z * sPhi - ae * coeff);
       }
-      
+
       b = ae / coeff;
       double dR = r - cPhi * b;
       double dZ = z - sPhi * b * g2;
@@ -284,16 +284,16 @@ public class OneAxisEllipsoid implements BodyShape {
 
   /** Equatorial radius */
   private final double ae;
-  
+
   /** Eccentricity power 2 */
   private final double e2;
-  
+
   /** 1 minus flatness */
   private final double g;
-  
+
   /** g * g */
   private final double g2;
-  
+
   /** Equatorial radius power 2 */
   private final double ae2;
 
@@ -302,7 +302,7 @@ public class OneAxisEllipsoid implements BodyShape {
   private double angularThreshold;
 
   private static final double ot = 1.0 / 3.0;
-  
+
 //  private static final Logger logger = LoggerFactory.getLogger(OneAxisEllipsoid.class);
 
 }

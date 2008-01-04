@@ -16,12 +16,12 @@ import fr.cs.orekit.utils.PVCoordinates;
  *  tle's from the same space object. It provides bounded ephemerides
  *  by finding the best initial TLE to propagate and than handling the
  *  propagation.
- *  
+ *
  * @author F. Maussion
  */
-public class TLESeries {  
+public class TLESeries {
 
-  /** Simple constructor with a TLE file. 
+  /** Simple constructor with a TLE file.
    * <p> The read TLE entries, if they match, are stored into a treeset for later use. <p>
    * @param in the input to read (it can be compressed)
    * @throws IOException when the {@link InputStream} cannot be buffered.
@@ -68,14 +68,14 @@ public class TLESeries {
           }
         }
         // seems OK
-        tles.add(new TLE(line1,line2)); 
+        tles.add(new TLE(line1,line2));
       } else {
         throw new OrekitException("Non-TLE line in TLE data file", new Object[0]);
       }
 
     }
   }
- 
+
   /** Get the extrapolated position and velocity from an initial date.
    * For a good precision, this date should not be too far from the range :
    * [{@link #getFirstDate() first date} ; {@link #getLastDate() last date}].
@@ -91,7 +91,7 @@ public class TLESeries {
     }
     return lastPropagator.getPVCoordinates(date);
   }
-  
+
   /** Get the closest TLE to the selected date.
    * @param date the date
    * @return the TLE that will suit the most for propagation.
@@ -135,20 +135,20 @@ public class TLESeries {
     }
   }
 
-  /** Get the start date of the serie. 
+  /** Get the start date of the serie.
    * @return the first date
    */
-  public AbsoluteDate getFirstDate() {      
+  public AbsoluteDate getFirstDate() {
     if (firstDate==null){
       firstDate = ((TLE)tles.first()).getEpoch();
     }
     return firstDate;
   }
-  
-  /** Get the last date of the serie. 
+
+  /** Get the last date of the serie.
    * @return the end date
    */
-  public AbsoluteDate getLastDate() {      
+  public AbsoluteDate getLastDate() {
     if (lastDate==null){
       lastDate = ((TLE)tles.last()).getEpoch();
     }
@@ -181,10 +181,10 @@ public class TLESeries {
   }
 
   /** TLE entries. */
-  private TreeSet tles;  
+  private TreeSet tles;
   private TLE previous;
   private TLE next;
-  
+
   /** Last used TLE. */
   private TLE lastTLE;
   /** Associated Propagator. */

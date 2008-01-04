@@ -10,7 +10,7 @@ import fr.cs.orekit.iers.IERSDirectoryCrawler;
 import fr.cs.orekit.time.AbsoluteDate;
 
 /** Tridimensional references frames class.
- * 
+ *
  * <p><h5> Frame Presentation </h5>
  * This class is the base class for all frames in OREKIT. The frames are
  * linked together in a tree with the J2000 frame as the root of the tree.
@@ -25,17 +25,17 @@ import fr.cs.orekit.time.AbsoluteDate;
  * <p>The transforms may be constant or varying. For simple fixed transforms,
  * using this base class is sufficient. For varying transforms (time-dependant
  * or telemetry-based for example), it may be useful to define specific subclasses
- * that will implement {@link #updateFrame(AbsoluteDate)} or that will 
+ * that will implement {@link #updateFrame(AbsoluteDate)} or that will
  * add some specific <code>updateFromTelemetry(telemetry)</code>
- * methods that will compute the transform and call internally 
+ * methods that will compute the transform and call internally
  * the {@link #updateTransform(Transform)} method.</p>
- * 
+ *
  * <p>  <h5> Reference Frames </h5>
- *  Several Reference frames are implemented in OREKIT. The user can 
- *  {@link #getReferenceFrame(fr.cs.orekit.frames.Frame.FrameType, AbsoluteDate) use them} 
+ *  Several Reference frames are implemented in OREKIT. The user can
+ *  {@link #getReferenceFrame(fr.cs.orekit.frames.Frame.FrameType, AbsoluteDate) use them}
  *  by specifying the {@link FrameType} (type enum) he wants.
- *     
- *    <h5> International Terrestrial Reference Frame 2000 </h5>  
+ *
+ *    <h5> International Terrestrial Reference Frame 2000 </h5>
  * This frame is the current (as of 2006) reference realization of
  * the International Terrestrial Reference System produced by IERS.
  * It is described in <a
@@ -47,24 +47,24 @@ import fr.cs.orekit.time.AbsoluteDate;
  * provided by {@link IERSDirectoryCrawler IERS data}. Its pole axis is the IERS Reference
  * Pole (IRP).</p>
  *  OREKIT proposes all the intermediate frames used to build this specific frame.
- *  Here is a shematical representation of the ITRF frame tree : 
- *   
+ *  Here is a shematical representation of the ITRF frame tree :
+ *
  * <pre>
- *       
+ *
  *       - J2000 -
- *        /     \   Precession and Nutation effects 
+ *        /     \   Precession and Nutation effects
  *       /       \   (the complexity of the parameters changes between A and B models)
- *      /         \ 
+ *      /         \
  *  {@link #IRF2000A}    {@link #IRF2000B}    ( intermediate reference frame : true equinox and equator of date )
- *      |          |   
+ *      |          |
  *      |          |   Earth natural rotation
  *      |          |
  *  {@link #TIRF2000A}   {@link #TIRF2000B}   ( terrestrial intermediate reference frame : Pseudo Earth Fixed Frame)
- *      |          | 
+ *      |          |
  *      |          |   Pole motion
- *      |          | 
+ *      |          |
  *  {@link #ITRF2000A}  {@link #ITRF2000B}   ( international terrestrial reference frame )
- *  
+ *
  * </pre>
  * <p> This implementation follows the new non-rotating origin paradigm
  * mandated by IAU 2000 resolution B1.8. It is therefore based on
@@ -72,16 +72,16 @@ import fr.cs.orekit.time.AbsoluteDate;
  * on user choice at construction, it is either consistent to the complete IAU
  * 2000A precession-nutation model with an accuracy level of 0.2 milliarcsecond
  * or consistent to the reduced IAU 2000B precession-nutation model with an
- * accuracy level of 1.0 milliarcsecond. The IAU2000B is recommended for most 
+ * accuracy level of 1.0 milliarcsecond. The IAU2000B is recommended for most
  * applications since it is <strong>far less</strong> computation intensive than
  * the IAU2000A model and its accuracy is only slightly degraded.
  * </p>
  * <p>Other implementations of the ITRF 2000 are possible by
  * ignoring the B1.8 resolution and using the classical paradigm which
  * is equinox-based and relies on a specifically tuned Greenwich Sidereal Time.
- * They are not yet available in the OREKIT library.</p> 
+ * They are not yet available in the OREKIT library.</p>
  * </p>
- * 
+ *
  * @author G. Prat
  * @author L. Maisonobe
  */
@@ -133,28 +133,28 @@ public class Frame implements Serializable {
     commons        = new HashMap();
 
   }
-    
+
   /** Get the name.
-   * @return the name 
+   * @return the name
    */
   public String getName() {
 	  return this.name;
   }
-  
+
   /** New definition of the java.util toString() method.
-   * @return the name 
-   */ 
+   * @return the name
+   */
   public String toString() {
 	  return this.name;
   }
 
   /** Get the parent frame
    * @return parent frame
-   */  
+   */
   public Frame getParent() {
 	  return parent;
   }
-  
+
   /** Update the transform from the parent frame to the instance.
    * @param transform new transform from parent frame to instance
    */
@@ -194,7 +194,7 @@ public class Frame implements Serializable {
     return new Transform(commonToInstance.getInverse(), commonToDestination);
 
   }
-  
+
   /** Update the frame to the given date.
    * <p>This method is called each time {@link #getTransformTo(Frame, AbsoluteDate)}
    * is called. Default behaviour is to do nothing. The proper way to build
@@ -204,9 +204,9 @@ public class Frame implements Serializable {
    * @exception OrekitException if some frame specific error occurs
    */
   protected void updateFrame(AbsoluteDate date) throws OrekitException {
-    
+
   }
-  
+
   /** Find the deepest common ancestor of two frames in the frames tree.
    * @param from origin frame
    * @param to destination frame
@@ -235,7 +235,7 @@ public class Frame implements Serializable {
       to.commons.put(from, common);
       return common;
     }
-  
+
     // at this stage pathFrom contains at least one frame
     Frame lastFrom = (Frame) pathFrom.removeLast();
     common = lastFrom; // common must be one of the instance of Frame already defined
@@ -269,8 +269,8 @@ public class Frame implements Serializable {
     }
     return path;
   }
-    
-  /** Frame Type enum for the 
+
+  /** Frame Type enum for the
    * {@link Frame#getReferenceFrame(fr.cs.orekit.frames.Frame.FrameType, AbsoluteDate)} method.  */
   public static class FrameType {
     private FrameType(String name) {
@@ -286,37 +286,37 @@ public class Frame implements Serializable {
    * <p> Replaces the old ECEF representation. <p>
    */
   public static final FrameType ITRF2000A = new FrameType("ITRF2000A");
-  
+
   /** International Terrestrial Reference Frame 2000 B.
    * <p> Replaces the old ECEF representation. <p>
    */
   public static final FrameType ITRF2000B = new FrameType("ITRF2000B");
-  
+
   /** Intermediate Reference Frame 2000 A : true equinox and equator of date.
-   * <p> Precession and nutation effects with maximal precision and no 
+   * <p> Precession and nutation effects with maximal precision and no
    * earth rotation. <p>
    */
   public static final FrameType IRF2000A = new FrameType("IRF2000A");
-  
+
   /** Intermediate Reference Frame 2000 B : true equinox and equator of date.
-   * <p> Precession and nutation effects with less precision and no 
+   * <p> Precession and nutation effects with less precision and no
    * earth rotation. <p>
    */
   public static final FrameType IRF2000B = new FrameType("IRF2000B");
- 
+
   /** Terrestrial Intermediate Reference Frame 2000 A.
-   * <p> The pole motion is not considered.</p> */  
+   * <p> The pole motion is not considered.</p> */
   public static final FrameType TIRF2000A = new FrameType("TIRF2000A");
-  
+
   /** Terrestrial Intermediate Reference Frame 2000 B.
-   * <p> The pole motion is not considered.</p> */  
+   * <p> The pole motion is not considered.</p> */
   public static final FrameType TIRF2000B = new FrameType("TIRF2000B");
-  
+
   /** Veis 1950 frame.
    * <p>This frame is sometimes refered to as
    * <em>&gamma;<sub>50</sub> CNES</em></p> */
   public static final FrameType VEIS1950 = new FrameType("VEIS1950");
- 
+
   /** Get one of the 7 unique reference frames.
    * Must be one of {@link #VEIS1950}, {@link #ITRF2000A}, {@link #ITRF2000B},
    * {@link #TIRF2000A}, {@link #TIRF2000B}, {@link #IRF2000A}, {@link #IRF2000B}.
@@ -331,47 +331,47 @@ public class Frame implements Serializable {
       if (itrf2000AFrame == null) {
         itrf2000AFrame = new ITRF2000Frame(getReferenceFrame(TIRF2000A, date), date, type.name);
       }
-      return itrf2000AFrame;      
+      return itrf2000AFrame;
     }
     if (type == ITRF2000B) {
       if (itrf2000BFrame == null) {
         itrf2000BFrame = new ITRF2000Frame(getReferenceFrame(TIRF2000B, date), date, type.name);
       }
-      return itrf2000BFrame;      
+      return itrf2000BFrame;
     }
     if (type == TIRF2000A) {
       if (tirf2000AFrame == null) {
         tirf2000AFrame = new TIRF2000Frame(getReferenceFrame(IRF2000A, date), date, type.name);
       }
-      return tirf2000AFrame;      
+      return tirf2000AFrame;
     }
     if (type == TIRF2000B) {
       if (tirf2000BFrame == null) {
         tirf2000BFrame = new TIRF2000Frame(getReferenceFrame(IRF2000B, date), date, type.name);
       }
-      return tirf2000BFrame;      
+      return tirf2000BFrame;
     }
     if (type == IRF2000A) {
       if (irf2000AFrame == null) {
         irf2000AFrame = new IRF2000Frame(date, false, type.name);
       }
-      return irf2000AFrame;      
+      return irf2000AFrame;
     }
     if (type == IRF2000B) {
       if (irf2000BFrame == null) {
         irf2000BFrame = new IRF2000Frame(date, true, type.name);
       }
-      return irf2000BFrame;      
+      return irf2000BFrame;
     }
     if (type == VEIS1950) {
-      return getVeis1950();      
+      return getVeis1950();
     }
     else {
       throw new RuntimeException(
         Translator.getInstance().translate("Choosen frame type is not correct"));
     }
   }
-  
+
   /** Get the unique Veis 1950 frame.
    * <p>This frame is sometimes refered to as
    * <em>&gamma;<sub>50</sub> CNES</em></p>
@@ -390,31 +390,31 @@ public class Frame implements Serializable {
     }
     return veis1950Frame;
   }
-  
+
   /** Reference earth ITRF2000 A frame singleton. */
   private static ITRF2000Frame itrf2000AFrame = null;
-  
+
   /** Reference earth ITRF2000 B frame singleton. */
   private static ITRF2000Frame itrf2000BFrame = null;
-  
+
   /** True earth TIRF2000 A frame singleton. */
   private static TIRF2000Frame tirf2000AFrame = null;
-  
+
   /** True earth TIRF2000 B frame singleton. */
   private static TIRF2000Frame tirf2000BFrame = null;
-  
+
   /** True equator IRF2000 A frame singleton. */
   private static IRF2000Frame irf2000AFrame = null;
-  
+
   /** True equator IRF2000 B frame singleton. */
   private static IRF2000Frame irf2000BFrame = null;
 
   /** Mean equator 1950 frame singleton. */
   private static Frame veis1950Frame = null;
-  
+
   /** J2000 root frame. */
   private static Frame j2000 = null;
-      
+
   /**  parent frame (only J2000 doesn't have a parent). */
   private final Frame parent;
 

@@ -16,10 +16,10 @@ import fr.cs.orekit.utils.PVCoordinates;
  * The state vector handled internally has the form that follows:
  *   <pre>
  *     y[0] = a
- *     y[1] = ex 
- *     y[2] = ey 
+ *     y[1] = ex
+ *     y[2] = ey
  *     y[3] = hx
- *     y[4] = hy 
+ *     y[4] = hy
  *     y[5] = lv
  *     y[6] = mass
  *   </pre>
@@ -60,26 +60,26 @@ public class TimeDerivativesEquations {
   protected TimeDerivativesEquations(EquinoctialParameters parameters, double mu) {
     this.parameters = parameters;
     this.mu = mu;
-    Q = new Vector3D();    
-    S = new Vector3D();    
-    T = new Vector3D();    
-    N = new Vector3D();    
+    Q = new Vector3D();
+    S = new Vector3D();
+    T = new Vector3D();
+    N = new Vector3D();
     W = new Vector3D();
-    updateOrbitalFrames();     
+    updateOrbitalFrames();
   }
-  
+
   /** Update the orbital frames. */
   private void updateOrbitalFrames() {
     PVCoordinates pvCoordinates = parameters.getPVCoordinates(mu);
-        
+
     W = Vector3D.crossProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity()).normalize();
-  
+
     T = pvCoordinates.getVelocity().normalize();
-    
+
     N = Vector3D.crossProduct(W, T);
 
     Q = pvCoordinates.getPosition().normalize();
-   
+
     S = Vector3D.crossProduct(W, Q);
   }
 
@@ -89,7 +89,7 @@ public class TimeDerivativesEquations {
    */
   protected void initDerivatives(double[] yDot ,
                                EquinoctialParameters parameters) {
-                                
+
 
     this.parameters = parameters;
     updateOrbitalFrames();
@@ -99,7 +99,7 @@ public class TimeDerivativesEquations {
 
     // initialize derivatives to zero
     Arrays.fill(yDot, 0.0);
-    
+
     // intermediate variables
     double ex  = parameters.getEquinoctialEx();
     double ey  = parameters.getEquinoctialEy();
@@ -112,7 +112,7 @@ public class TimeDerivativesEquations {
                                                           + " greater than 1."
                                                           + " Unable to continue.");
       throw new IllegalArgumentException(message);
-    }    
+    }
 
     // intermediate variables
     double oMe2        = (1 - e) * (1 + e);
@@ -142,7 +142,7 @@ public class TimeDerivativesEquations {
     double tOnEpsilonN        = 2 / (n * epsilon);
     double tEpsilonOnNASqrt   = 2 * epsilonOnNA / sqrt;
     double epsilonOnNAKsit    = epsilonOnNA / (2 * ksi);
-    
+
     // Kepler natural evolution
     lvKepler = n * ksi * ksi / (oMe2 * epsilon);
 
@@ -150,21 +150,21 @@ public class TimeDerivativesEquations {
     aT  = tOnEpsilonN * sqrt;
     exT = tEpsilonOnNASqrt * (ex + cLv);
     eyT = tEpsilonOnNASqrt * (ey + sLv);
-        
+
     // coefficients along N
     exN = -epsilonOnNAKsiSqrt * (2 * ey * ksi + oMe2 * sLv);
     eyN =  epsilonOnNAKsiSqrt * (2 * ex * ksi + oMe2 * cLv);
-                
+
     // coefficients along Q
     aQ  =  tOnEpsilonN * nu;
     exQ =  epsilonOnNA * sLv;
     eyQ = -epsilonOnNA * cLv;
-        
+
     // coefficients along S
     aS  = tOnEpsilonN * ksi;
     exS = epsilonOnNAKsi * (ex + oPksi * cLv);
     eyS = epsilonOnNAKsi * (ey + oPksi * sLv);
-        
+
     // coefficients along W
     lvW =  epsilonOnNAKsi * hxsLvMhycLv;
     exW = -ey * lvW;
@@ -212,10 +212,10 @@ public class TimeDerivativesEquations {
     yDot[4] += hyW * w;
     yDot[5] += lvW * w;
   }
-  
 
-  /** Add the contribution of an acceleration expressed in the inertial frame 
-   *  (it is important to make sure this acceleration is defined in the 
+
+  /** Add the contribution of an acceleration expressed in the inertial frame
+   *  (it is important to make sure this acceleration is defined in the
    *  same frame as the orbit) .
    * @param x acceleration along the X axis (m/s<sup>2</sup>)
    * @param y acceleration along the Y axis (m/s<sup>2</sup>)
@@ -228,7 +228,7 @@ public class TimeDerivativesEquations {
   }
 
   /** Add the contribution of an acceleration expressed in inertial frame
-   *  (it is important to make sure this acceleration is expressed in the 
+   *  (it is important to make sure this acceleration is expressed in the
    *  same frame as the orbit) .
    * @param gamma acceleration vector in the intertial frame (m/s<sup>2</sup>)
    */
@@ -237,7 +237,7 @@ public class TimeDerivativesEquations {
                        Vector3D.dotProduct(gamma, N),
                        Vector3D.dotProduct(gamma, W));
   }
-  
+
   /** Add the contribution of the flow rate (dm/dt).
    * @param dMass the flow rate (dm/dt)
    */
@@ -249,31 +249,31 @@ public class TimeDerivativesEquations {
     }
     yDot[6] += dMass;
   }
-  
+
   /** Get the first vector of the (Q, S, W) local orbital frame.
    * @return first vector of the (Q, S, W) local orbital frame */
   public Vector3D getQ() {
     return Q;
   }
-    
+
   /** Get the second vector of the (Q, S, W) local orbital frame.
    * @return second vector of the (Q, S, W) local orbital frame */
   public Vector3D getS() {
     return S;
   }
-    
+
   /** Get the first vector of the (T, N, W) local orbital frame.
    * @return first vector of the (T, N, W) local orbital frame */
   public Vector3D getT() {
     return T;
   }
-    
+
   /** Get the second vector of the (T, N, W) local orbital frame.
    * @return second vector of the (T, N, W) local orbital frame */
   public Vector3D getN() {
     return N;
   }
-    
+
   /** Get the third vector of both the (Q, S, W) and (T, N, W) local orbital
    * frames.
    * @return third vector of both the (Q, S, W) and (T, N, W) local orbital
@@ -285,28 +285,28 @@ public class TimeDerivativesEquations {
 
   /** Orbital parameters. */
   private EquinoctialParameters parameters;
-          
+
   /** Reference to the derivatives array to initialize. */
   private double[] yDot;
-    
+
   /** Central body attraction coefficient. */
   private double mu;
-    
+
   /** First vector of the (Q, S, W) local orbital frame. */
   private Vector3D Q;
-    
+
   /** Second vector of the (Q, S, W) local orbital frame. */
   protected Vector3D S;
-    
+
   /** First vector of the (T, N, W) local orbital frame. */
   private Vector3D T;
-    
+
   /** Second vector of the (T, N, W) local orbital frame. */
   private Vector3D N;
-    
+
   /** Third vector of both the (Q, S, W) and (T, N, W) local orbital frames. */
   private Vector3D W;
-  
+
   /** Multiplicative coefficients for the perturbing accelerations. */
   private double aT;
   private double exT;
@@ -331,5 +331,5 @@ public class TimeDerivativesEquations {
 
   /** Kepler evolution on true latitude argument. */
   private double lvKepler;
-  
+
 }

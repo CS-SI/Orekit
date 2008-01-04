@@ -31,7 +31,7 @@ public class UTCTAIHistoryFilesLoader extends IERSFileVisitor {
     // the data lines in the UTC time steps data files have the following form:
     // 1966  Jan.  1 - 1968  Feb.  1     4.313 170 0s + (MJD - 39 126) x 0.002 592s
     // 1968  Feb.  1 - 1972  Jan.  1     4.213 170 0s +        ""
-    // 1972  Jan.  1 -       Jul.  1    10s            
+    // 1972  Jan.  1 -       Jul.  1    10s
     //       Jul.  1 - 1973  Jan.  1    11s
     // 1973  Jan.  1 - 1974  Jan.  1    12s
     //  ...
@@ -162,7 +162,7 @@ public class UTCTAIHistoryFilesLoader extends IERSFileVisitor {
 
     if (leaps.isEmpty()) {
       throw new OrekitException("file {0} is not an IERS UTC-TAI history file",
-                                new Object[] { file.getAbsolutePath() });        
+                                new Object[] { file.getAbsolutePath() });
     }
 
     readFile = file;

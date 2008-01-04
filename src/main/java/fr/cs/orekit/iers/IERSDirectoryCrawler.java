@@ -17,12 +17,12 @@ import fr.cs.orekit.errors.OrekitException;
  * existing root tree otherwise an error will be triggered. The organisation
  * of files in the tree is free, sub-directories can be used at will.</p>
  * <p>Gzip-compressed files are supported.</p>
- * 
+ *
  * <p>
  * This is a simple application of the <code>visitor</code> design pattern for
  * directory hierarchy crawling.
  * </p>
- * 
+ *
  * @author Luc Maisonobe
  */
 public class IERSDirectoryCrawler {

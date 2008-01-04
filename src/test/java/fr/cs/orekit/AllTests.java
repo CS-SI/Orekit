@@ -4,9 +4,9 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 public class AllTests {
-  public static Test suite() { 
+  public static Test suite() {
 
-    TestSuite suite = new TestSuite("fr.cs.orekit"); 
+    TestSuite suite = new TestSuite("fr.cs.orekit");
 
     suite.addTest(fr.cs.orekit.iers.AllTests.suite());
     suite.addTest(fr.cs.orekit.time.AllTests.suite());
@@ -21,7 +21,7 @@ public class AllTests {
     suite.addTest(fr.cs.orekit.attitudes.AllTests.suite());
     suite.addTest(fr.cs.orekit.tle.AllTests.suite());
 
-    return suite; 
+    return suite;
 
   }
 }

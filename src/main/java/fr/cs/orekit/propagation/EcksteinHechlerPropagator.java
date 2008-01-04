@@ -22,7 +22,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
 
   /** Create a new instance.
    * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
-   * are related to both the normalized coefficients 
+   * are related to both the normalized coefficients
    * <span style="text-decoration: overline">C</span><sub>n,0</sub>
    *  and the J<sub>n</sub> one as follows:</p>
    * <pre>
@@ -74,8 +74,8 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
       throws PropagationException {
     OrbitalParameters op = propagate(date);
     try {
-      return new SpacecraftState(new Orbit(date, op), mass, 
-                                          akProvider.getAttitudeKinematics(date, 
+      return new SpacecraftState(new Orbit(date, op), mass,
+                                          akProvider.getAttitudeKinematics(date,
                                                   op.getPVCoordinates(mu), op.getFrame()));
     } catch (OrekitException oe) {
       throw new PropagationException(oe.getMessage(), oe);
@@ -344,14 +344,14 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
     double twoPi = 2 * Math.PI;
     return a - twoPi * Math.floor((a + Math.PI - ref) / twoPi);
   }
-  
+
   public void setAkProvider(AttitudeKinematicsProvider akProvider) {
     this.akProvider = akProvider;
   }
-  
+
   /** Attitude provider */
   private AttitudeKinematicsProvider akProvider;
-  
+
   /** Initial date. */
   private AbsoluteDate initialDate;
 

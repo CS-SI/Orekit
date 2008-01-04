@@ -9,7 +9,7 @@ import fr.cs.orekit.frames.Transform;
 import fr.cs.orekit.utils.PVCoordinates;
 
 /** This class is a container for attitude representation.
- * 
+ *
  * <p> It contains the attitude quaternion (used internally but represented by the
  * {@link Rotation} object) and the instant rotation axis (first time derivative).
  *  at a given time. <p>
@@ -18,7 +18,7 @@ import fr.cs.orekit.utils.PVCoordinates;
  * @author F. Maussion
  */
 public class AttitudeKinematics implements Serializable {
-  
+
   /** Simple constructor for identity attitude.  */
   public AttitudeKinematics() {
     this.attitude = new Rotation();
@@ -36,8 +36,8 @@ public class AttitudeKinematics implements Serializable {
 
   /** Get the attitude rotation.
    * <p> The {@link Rotation} returned by this method represents the rotation
-   * to apply to a vector expressed in the inertial frame to obtain the same vector 
-   * defined in the spacecraft frame </p> 
+   * to apply to a vector expressed in the inertial frame to obtain the same vector
+   * defined in the spacecraft frame </p>
    * @return the attitude rotation of the spacecraft
    */
   public Rotation getAttitude() {
@@ -45,14 +45,14 @@ public class AttitudeKinematics implements Serializable {
   }
 
   /** Get the attitute rotation derivative.
-   * <p> The {@link Vector3D} returned by this method is the rotation axis 
-   * in the spacecraft frame. Its norm represents the spin. </p> 
+   * <p> The {@link Vector3D} returned by this method is the rotation axis
+   * in the spacecraft frame. Its norm represents the spin. </p>
    * @return the instant rotation of the spacecraft
    */
   public Vector3D getspinAxis() {
     return spin;
   }
-  
+
   /** Get the attitude kinematics transform.
    * @return the transform, which can be applied on {@link PVCoordinates}
    */

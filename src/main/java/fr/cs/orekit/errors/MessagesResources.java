@@ -98,9 +98,9 @@ public class MessagesResources
       "Satellite number : {0}. Element number : {1}." },
     { "Perige within earth." + "Satellite number : {0}. Element number : {1}.",
       "Perige within earth." + "Satellite number : {0}. Element number : {1}." },
-    { "Current date is out of range. " + 
+    { "Current date is out of range. " +
       "Solar activity datas are not available" ,
-      "Current date is out of range. " + 
+      "Current date is out of range. " +
       "Solar activity datas are not available" },
     { "non-existent month {0}",
       "non-existent month {0}" },

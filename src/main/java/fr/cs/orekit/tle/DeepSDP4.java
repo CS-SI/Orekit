@@ -6,10 +6,10 @@ import fr.cs.orekit.time.TTScale;
 import fr.cs.orekit.time.UTCScale;
 
 /** This class contains the methods that compute deep space perturbation terms.
- * 
+ *
  * The user should not bother in this class since it is handled internaly by the
  * {@link TLEPropagator}.
- * 
+ *
  * @author SPACETRACK Report #3 project. Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
  * @author Revisiting Spacetrack Report #3. David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
  * @author Fabien Maussion (Java translation)
@@ -24,15 +24,15 @@ class DeepSDP4 extends SDP4 {
     super(initialTLE);
     this.isSDP = true;
   }
-  
-  /** Computes luni - solar terms from initial coordinates and epoch. 
+
+  /** Computes luni - solar terms from initial coordinates and epoch.
    * @throws OrekitException when UTC time steps can't be read
    */
   protected void luniSolarTermsComputation() throws OrekitException {
 
     double sing = Math.sin(tle.getPerigeeArgument());
     double cosg = Math.cos(tle.getPerigeeArgument());
-    
+
     double sinq = Math.sin(tle.getRaan());
     double cosq = Math.cos(tle.getRaan());
     double aqnv = 1.0/a0dp;
@@ -41,17 +41,17 @@ class DeepSDP4 extends SDP4 {
     double daysSince1900 = (tle.getEpoch().minus(AbsoluteDate.JulianEpoch)
        +tle.getEpoch().timeScalesOffset(UTCScale.getInstance(), TTScale.getInstance()))/86400.0 - 2415020;
 
-  
+
     double cc = c1ss;
     double ze = zes;
     double zn = zns;
     double zsinh = sinq;
     double zcosh = cosq;
-    
+
     thgr = thetaG(tle.getEpoch());
     xnq = xn0dp;
     omegaq = tle.getPerigeeArgument();
-    
+
     double xnodce = 4.5236020 - (9.2422029e-4) * daysSince1900;
     double stem = Math.sin(xnodce);
     double ctem = Math.cos(xnodce);
@@ -63,7 +63,7 @@ class DeepSDP4 extends SDP4 {
     zsinhl = 0.089683511 * stem / zsinil;
     zcoshl = Math.sqrt(1. - zsinhl*zsinhl);
     zmol = trimAngle(c_minus_gam, Math.PI);
-    
+
     double zx = 0.39785416 * stem / zsinil;
     double zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
     zx = Math.atan2( zx, zy) + gam - xnodce;
@@ -78,17 +78,17 @@ class DeepSDP4 extends SDP4 {
     double zsini =  0.39785416;
     double zsing = -0.98088458;
     double zcosg =  0.1945905;
-    
+
     double se = 0;
     double sgh = 0;
     double sh = 0;
     double si = 0;
     double sl = 0;
-    
+
     // There was previously some convoluted logic here, but it boils
     // down to this:  we compute the solar terms,  then the lunar terms.
     // On a second pass,  we recompute the solar terms, taking advantage
-    // of the improved data that resulted from computing lunar terms.   
+    // of the improved data that resulted from computing lunar terms.
     for(int iteration = 0; iteration < 2; iteration++) {
       double a1 = zcosg * zcosh + zsing * zcosi * zsinh;
       double a3 = -zsing * zcosh + zcosg * zcosi * zsinh;
@@ -138,11 +138,11 @@ class DeepSDP4 extends SDP4 {
       sl = -zn*s3*(z1+z3-14-6*e0sq);
       sgh = s4*zn*(z31+z33-6);
       if (tle.getI() < (Math.PI / 60.)) {// <==>  (< 3 degrees)
-        sh = 0;             
-      }       
+        sh = 0;
+      }
       else {
         sh = -zn*s2*(z21+z23);
-      }        
+      }
       ee2 = 2*s1*s6;
       e3 = 2*s1*s7;
       xi2 = 2*s2*z12;
@@ -192,15 +192,15 @@ class DeepSDP4 extends SDP4 {
     ssg += sgh - cosi0 / sini0 * sh;
     ssh += sh / sini0;
 
-    
-    
+
+
     //        Start the resonant-synchronous tests and initialization
-    
+
     double bfact = 0;
-    
-    // if mean motion is 1.893053 to 2.117652 revs/day, and ecc >= .5, 
+
+    // if mean motion is 1.893053 to 2.117652 revs/day, and ecc >= .5,
     // start of the 12-hour orbit, e >.5 section
-    
+
     if( (xnq >= 0.00826) && (xnq <= 0.00924) && (tle.getE()) >= .5) {
 
       double g201 = -0.306 - (tle.getE()- 0.64) * 0.440;
@@ -208,7 +208,7 @@ class DeepSDP4 extends SDP4 {
       double sini2 = sini0*sini0;
       double f220 = 0.75*(1+2*cosi0+theta2);
       double f221 = 1.5 * sini2;
-      double f321 = 1.875 * sini0 * (1 - 2 * cosi0 - 3 * theta2); 
+      double f321 = 1.875 * sini0 * (1 - 2 * cosi0 - 3 * theta2);
       double f322 = -1.875*sini0*(1+2* cosi0-3*theta2);
       double f441 = 35 * sini2 * f220;
       double f442 = 39.3750 * sini2 * sini2;
@@ -225,10 +225,10 @@ class DeepSDP4 extends SDP4 {
       double g211, g310, g322;
       double temp, temp1;
 
-      resonant = true;       // it is resonant... 
-      synchronous = false;     // but it's not synchronous 
+      resonant = true;       // it is resonant...
+      synchronous = false;     // but it's not synchronous
 
-      // Geopotential resonance initialization for 12 hour orbits : 
+      // Geopotential resonance initialization for 12 hour orbits :
       if (tle.getE() <= 0.65) {
         g211 = 3.616-13.247*tle.getE()+16.290*e0sq;
         g310 = -19.302+117.390*tle.getE()-228.419*e0sq+156.591*eoc;
@@ -236,7 +236,7 @@ class DeepSDP4 extends SDP4 {
         g410 = -41.122+242.694*tle.getE()-471.094*e0sq+313.953*eoc;
         g422 = -146.407+841.880*tle.getE()-1629.014*e0sq+1083.435*eoc;
         g520 = -532.114+3017.977*tle.getE()-5740.032*e0sq+3708.276*eoc;
-      } // End if (tle.getE() <= 0.65) 
+      } // End if (tle.getE() <= 0.65)
       else  {
         g211 = -72.099+331.819*tle.getE()-508.738*e0sq+266.724*eoc;
         g310 = -346.844+1582.851*tle.getE()-2415.925*e0sq+1246.113*eoc;
@@ -245,7 +245,7 @@ class DeepSDP4 extends SDP4 {
         g422 = -3581.69+16178.11*tle.getE()-24462.77*e0sq + 12422.52*eoc;
         if (tle.getE() <= 0.715) {
           g520 = 1464.74-4664.75*tle.getE()+3763.64*e0sq;
-        }          
+        }
         else {
           g520 = -5149.66+29936.92*tle.getE()-54087.36*e0sq+31324.56*eoc;
         }
@@ -299,7 +299,7 @@ class DeepSDP4 extends SDP4 {
 
       resonant = true;
       synchronous = true;
-      
+
       // Synchronous resonance terms initialization
       del1 = 3*xnq*xnq*aqnv*aqnv;
       del2 = 2*del1*f220*g200*q22;
@@ -310,22 +310,22 @@ class DeepSDP4 extends SDP4 {
       bfact = bfact+ssl+ssg+ssh;
     } // End of geosych case
     else {
-      // it's neither a high-e 12-hr orbit nor a geosynch: 
+      // it's neither a high-e 12-hr orbit nor a geosynch:
       resonant = false;
       synchronous = false;
     }
     if(resonant) {
       xfact = bfact-xnq;
 
-      // Initialize integrator 
+      // Initialize integrator
       xli = xlamo;
       xni = xnq;
       atime = 0;
     }
-    derivs = new double[secularIntegrationOrder]; 
+    derivs = new double[secularIntegrationOrder];
   }
-    
-  /** Computes secular terms from current coordinates and epoch. 
+
+  /** Computes secular terms from current coordinates and epoch.
    * @param t offset from initial epoch (min)
    */
   protected void deepSecularEffects(double t)  {
@@ -335,7 +335,7 @@ class DeepSDP4 extends SDP4 {
     xnode += ssh * t;
     em = tle.getE() + sse * t;
     xinc = tle.getI() + ssi * t;
-    
+
     if(resonant) {
       /* If we're closer to t=0 than to the currently-stored data
       from the previous call to this function,  then we're
@@ -345,7 +345,7 @@ class DeepSDP4 extends SDP4 {
       Easiest way to arrange similar behavior in this code is
       just to always do a restart,  if we're in Dundee-compliant
       mode. */
-      if( Math.abs(t) < Math.abs(t-atime)||isDundeeCompliant)  {   
+      if( Math.abs(t) < Math.abs(t-atime)||isDundeeCompliant)  {
         /* Epoch restart */
         atime = 0;
         xni = xnq;
@@ -364,9 +364,9 @@ class DeepSDP4 extends SDP4 {
         else {
           lastIntegrationStep = true;
         }
-        
+
         computeSecularDerivs();
-        
+
         double xldot = xni + xfact;
 
         double xlpow = 1.;
@@ -384,11 +384,11 @@ class DeepSDP4 extends SDP4 {
       }
       xn = xni;
       double temp = -xnode + thgr + t * thdt;
-      xll = xli + temp + (synchronous ? - omgadf : temp); 
+      xll = xli + temp + (synchronous ? - omgadf : temp);
     }
   }
 
-  /** Computes periodic terms from current coordinates and epoch. 
+  /** Computes periodic terms from current coordinates and epoch.
    * @param t offset from initial epoch (min)
    */
   protected void deepPeriodicEffects(double t)  {
@@ -436,7 +436,7 @@ class DeepSDP4 extends SDP4 {
       pgh = sghs+sghl;
       ph = shs+sh1;
     }
-    
+
     xinc += pinc;
 
     double sinis = Math.sin( xinc);
@@ -447,10 +447,10 @@ class DeepSDP4 extends SDP4 {
     xll += pl;
     omgadf += pgh;
     xinc = trimAngle(xinc, 0);
-    
-    if( Math.abs(xinc) >= 0.2)   
+
+    if( Math.abs(xinc) >= 0.2)
     {
-          // Apply periodics directly 
+          // Apply periodics directly
       double temp_val = ph / sinis;
       omgadf -= cosis * temp_val;
       xnode += temp_val;
@@ -462,7 +462,7 @@ class DeepSDP4 extends SDP4 {
       double alfdp = ph * cosok + (pinc * cosis + sinis) * sinok;
       double betdp = - ph * sinok + (pinc * cosis + sinis) * cosok;
       double dls, delta_xnode;
-      
+
       delta_xnode = Math.atan2(alfdp,betdp) - xnode;
       delta_xnode = trimAngle(delta_xnode, 0);
 
@@ -474,7 +474,7 @@ class DeepSDP4 extends SDP4 {
 
   /** Computes internal secular derivs. */
   private void computeSecularDerivs() {
-    
+
     double sin_li = Math.sin(xli);
     double cos_li = Math.cos(xli);
     double sin_2li = 2. * sin_li * cos_li;
@@ -559,7 +559,7 @@ class DeepSDP4 extends SDP4 {
       }
     } /* End of 12-hr resonant case */
   }
-    
+
   /** Intermediate values. */
   private double thgr;
   private double xnq;
@@ -602,45 +602,45 @@ class DeepSDP4 extends SDP4 {
   private double sse;
   private double ssi;
   private double ssl;
-  private double ssh; 
+  private double ssh;
   private double ssg;
   private double se2;
-  private double si2; 
+  private double si2;
   private double sl2;
-  private double sgh2; 
+  private double sgh2;
   private double sh2;
   private double se3;
   private double si3;
-  private double sl3; 
-  private double sgh3; 
-  private double sh3; 
-  private double sl4; 
-  private double sgh4; 
+  private double sl3;
+  private double sgh3;
+  private double sh3;
+  private double sl4;
+  private double sgh4;
 
-  private double del1; 
-  private double del2; 
-  private double del3; 
-  private double xfact; 
-  private double xli; 
-  private double xni; 
-  private double atime; 
-  
+  private double del1;
+  private double del2;
+  private double del3;
+  private double xfact;
+  private double xli;
+  private double xni;
+  private double atime;
+
   private double pe;
   private double pinc;
   private double pl;
   private double pgh;
   private double ph;
-  
+
   private double[] derivs;
 
   /** Special orbits flags. */
-  private boolean resonant; 
-  private boolean synchronous; 
-  
+  private boolean resonant;
+  private boolean synchronous;
+
   /** Compliant with Dundee modifications. */
-  private boolean isDundeeCompliant = true; 
-  
-  /** Implementation params */ 
+  private boolean isDundeeCompliant = true;
+
+  /** Implementation params */
   private static double secularIntegrationStep = 720.;
   private static int secularIntegrationOrder = 2;
 
@@ -652,24 +652,24 @@ class DeepSDP4 extends SDP4 {
   private static final double thdt = 4.3752691E-3;
   private static final double c1ss   =  2.9864797E-6;
   private static final double c1l = 4.7968065E-7;
-  
+
   private static final double root22 = 1.7891679E-6;
   private static final double root32 = 3.7393792E-7;
   private static final double root44 = 7.3636953E-9;
   private static final double root52 = 1.1428639E-7;
   private static final double root54 = 2.1765803E-9;
-  
+
   private static final double q22    =  1.7891679E-6;
   private static final double q31    =  2.1460748E-6;
   private static final double q33    =  2.2123015E-7;
-  
+
   private static final double c_fasx2 =  0.99139134268488593;
   private static final double s_fasx2 =  0.13093206501640101;
   private static final double c_2fasx4 =  0.87051638752972937;
   private static final double s_2fasx4 = -0.49213943048915526;
   private static final double c_3fasx6 =  0.43258117585763334;
   private static final double s_3fasx6 =  0.90159499016666422;
-  
+
   private static final double c_g22 =  0.87051638752972937;
   private static final double s_g22 = -0.49213943048915526;
   private static final double c_g32 =  0.57972190187001149;
@@ -680,5 +680,5 @@ class DeepSDP4 extends SDP4 {
   private static final double s_g52 =  0.86783740128127729;
   private static final double c_g54 = -0.29695209575316894;
   private static final double s_g54 = -0.95489237761529999;
-    
+
 }

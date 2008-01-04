@@ -18,7 +18,7 @@ public class PotentialReaderFactory {
     readers.add(new SHMFormatReader());
     readers.add(new EGMFormatReader());
   }
-  
+
   /** Adds a {@link PotentialCoefficientsReader} to the test list.
    * By construction, the list contains allready the {@link SHMFormatReader}
    * and the {@link EGMFormatReader}.
@@ -27,13 +27,13 @@ public class PotentialReaderFactory {
   public void addPotentialReader(PotentialCoefficientsReader reader) {
      readers.add(reader);
   }
-  
+
   /** Determines the proper reader to use wich the selected file.
    * It tests all the readers it contains to see if they match the input format.
    * @param in the file to check (it can be compressed)
    * @return the proper reader
    * @throws OrekitException when no known reader can read the file
-   * @throws IOException when the {@link InputStream} is not valid. 
+   * @throws IOException when the {@link InputStream} is not valid.
    */
   public PotentialCoefficientsReader getPotentialReader(InputStream in)
       throws OrekitException, IOException {
@@ -63,7 +63,7 @@ public class PotentialReaderFactory {
       }
       filter.reset();
     }
-    
+
     if (result == null) {
       throw new OrekitException("Unknown file format ", new Object[0]);
     }
@@ -71,7 +71,7 @@ public class PotentialReaderFactory {
     return result;
 
   }
-  
+
   /** Potential readers tab */
   private ArrayList readers;
 

@@ -3,29 +3,29 @@ package fr.cs.orekit.tle;
 import fr.cs.orekit.errors.OrekitException;
 
 /** This class contains methods to compute propagated coordinates with the SGP4 model.
- * 
+ *
  * The user should not bother in this class since it is handled internaly by the
  * {@link TLEPropagator}.
- * 
+ *
  * @author SPACETRACK Report #3 project. Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
  * @author Revisiting Spacetrack Report #3. David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
  * @author Fabien Maussion (Java translation)
  */
 class SGP4 extends TLEPropagator {
-  
+
   protected SGP4(TLE initialTLE) throws OrekitException {
     super (initialTLE);
     this.isSDP = false;
   }
-  
+
   /** Initialization proper to each propagator (SGP or SDP).
    * @param tSince the offset from initial epoch (min)
    */
   protected void sxpInitialize() {
-    
-    // For perigee less than 220 kilometers, the equations are truncated to 
-    // linear variation in sqrt a and quadratic variation in mean anomaly. 
-    // Also, the c3 term, the delta omega term, and the delta m term are dropped.      
+
+    // For perigee less than 220 kilometers, the equations are truncated to
+    // linear variation in sqrt a and quadratic variation in mean anomaly.
+    // Also, the c3 term, the delta omega term, and the delta m term are dropped.
     lessThan220 = (perige < 220);
     if(!lessThan220) {
       double c1sq = c1 * c1;
@@ -42,24 +42,24 @@ class SGP4 extends TLEPropagator {
       if( tle.getE() < 1e-4) {
         omgcof = 0.;
         xmcof = 0.;
-      }        
+      }
       else  {
         double c3 = coef * tsi * TLEConstants.a3ovk2 * xn0dp * TLEConstants.ae * sini0 / tle.getE();
         xmcof = -TLEConstants.twoThirds * coef * tle.getBStar() * TLEConstants.ae / eeta;
         omgcof = tle.getBStar() * c3 * Math.cos(tle.getPerigeeArgument());
       }
-    } 
-    
+    }
+
     c5 = 2 * coef1 * a0dp * beta02 * (1 + 2.75*(etasq + eeta) + eeta * etasq);
     // initialized
   }
-  
+
   /** Propagation proper to each propagator (SGP or SDP).
    * @param tSince the offset from initial epoch (min)
    */
   protected void sxpPropagate(double tSince) {
-        
-    // Update for secular gravity and atmospheric drag. 
+
+    // Update for secular gravity and atmospheric drag.
     double xmdf = tle.getMeanAnomaly() + xmdot * tSince;
     double omgadf = tle.getPerigeeArgument() + omgdot * tSince;
     double xn0ddf = tle.getRaan() + xnodot * tSince;
@@ -70,7 +70,7 @@ class SGP4 extends TLEPropagator {
     double tempa = 1-c1 * tSince;
     double tempe = tle.getBStar() * c4 * tSince;
     double templ = t2cof * tsq;
-    
+
     if(!lessThan220) {
       double delomg = omgcof * tSince;
       double delm = 1. + eta * Math.cos(xmdf);
@@ -89,13 +89,13 @@ class SGP4 extends TLEPropagator {
     a = a0dp * tempa * tempa;
     e = tle.getE() - tempe;
 
-    // A highly arbitrary lower limit on e,  of 1e-6:  
+    // A highly arbitrary lower limit on e,  of 1e-6:
     if( e < 1e-6) {
       e = 1e-6;
     }
-    
+
     xl = xmp + omega + xnode + xn0dp*templ;
-    
+
     i = tle.getI();
 
   }
@@ -103,7 +103,7 @@ class SGP4 extends TLEPropagator {
   /** If perige is less than 220 km, some calculus are avoided. */
   private boolean lessThan220;
 
-  /** intermediate parameters. */  
+  /** intermediate parameters. */
   private double delM0; // (1 + eta*cos(M0))^3
   private double d2, d3, d4; // internal coeffs
   private double t3cof, t4cof, t5cof; // internal coefs
@@ -111,5 +111,5 @@ class SGP4 extends TLEPropagator {
   private double omgcof; // coef for omega computation
   private double xmcof; // coef for M computation
   private double c5; // C5 from SPCTRCK#3
-  
+
 }

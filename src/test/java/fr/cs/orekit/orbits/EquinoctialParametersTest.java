@@ -31,7 +31,7 @@ public class EquinoctialParametersTest extends TestCase {
     double mu = 3.9860047e14;
     Vector3D pos = equi.getPVCoordinates(mu).getPosition();
     Vector3D vit = equi.getPVCoordinates(mu).getVelocity();
-    
+
     PVCoordinates pvCoordinates = new PVCoordinates(pos,vit);
 
     EquinoctialParameters param = new EquinoctialParameters(pvCoordinates, Frame.getJ2000(), mu);
@@ -64,7 +64,7 @@ public class EquinoctialParametersTest extends TestCase {
     double mu = 3.9860047e14;
     Vector3D posCir = equiCir.getPVCoordinates(mu).getPosition();
     Vector3D vitCir = equiCir.getPVCoordinates(mu).getVelocity();
-    
+
     PVCoordinates pvCoordinates = new PVCoordinates(posCir,vitCir);
 
     EquinoctialParameters paramCir = new EquinoctialParameters(pvCoordinates, Frame.getJ2000(),
@@ -171,61 +171,61 @@ public class EquinoctialParametersTest extends TestCase {
 
 //    p.setLv(lv);
     p = new EquinoctialParameters(p.getA() ,p.getEquinoctialEx(),
-        	p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , 2, p.getFrame()); 
+        	p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , 2, p.getFrame());
     assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
     assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
     assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
 //    p.setLv(0);
     p = new EquinoctialParameters(p.getA() ,p.getEquinoctialEx(),
-    	p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , 2, p.getFrame()); 
+    	p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , 2, p.getFrame());
 
 //    p.setLE(lE);
     p = new EquinoctialParameters(p.getA() ,p.getEquinoctialEx(),
-        	p.getEquinoctialEy() , p.getHx(), p.getHy() , lE , 1, p.getFrame()); 
+        	p.getEquinoctialEy() , p.getHx(), p.getHy() , lE , 1, p.getFrame());
     assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
     assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
     assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
 //    p.setLv(0);
     p = new EquinoctialParameters(p.getA() ,p.getEquinoctialEx(),
-        	p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , 2, p.getFrame()); 
+        	p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , 2, p.getFrame());
 
 //    p.setLM(lM);
     p = new EquinoctialParameters(p.getA() ,p.getEquinoctialEx(),
-        	p.getEquinoctialEy() , p.getHx(), p.getHy() , lM , 0, p.getFrame()); 
+        	p.getEquinoctialEy() , p.getHx(), p.getHy() , lM , 0, p.getFrame());
     assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
     assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
     assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
 
     // circular orbit
     p = new EquinoctialParameters(p.getA() ,0 ,
-        	0, p.getHx(), p.getHy() , p.getLv() , 2, p.getFrame()); 
+        	0, p.getHx(), p.getHy() , p.getLv() , 2, p.getFrame());
 
     lE = lv;
     lM = lE;
 
 //    p.setLv(lv);
     p = new EquinoctialParameters(p.getA() ,p.getEquinoctialEx(),
-        	p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , 2, p.getFrame()); 
+        	p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , 2, p.getFrame());
     assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
     assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
     assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
 //    p.setLv(0);
     p = new EquinoctialParameters(p.getA() ,p.getEquinoctialEx(),
-        	p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , 2, p.getFrame()); 
+        	p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , 2, p.getFrame());
 
 //    p.setLE(lE);
     p = new EquinoctialParameters(p.getA() ,p.getEquinoctialEx(),
-        	p.getEquinoctialEy() , p.getHx(), p.getHy() , lE , 1, p.getFrame()); 
+        	p.getEquinoctialEy() , p.getHx(), p.getHy() , lE , 1, p.getFrame());
     assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
     assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
     assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
 //    p.setLv(0);
     p = new EquinoctialParameters(p.getA() ,p.getEquinoctialEx(),
-        	p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , 2, p.getFrame()); 
+        	p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , 2, p.getFrame());
 
 //    p.setLM(lM);
     p = new EquinoctialParameters(p.getA() ,p.getEquinoctialEx(),
-        	p.getEquinoctialEy() , p.getHx(), p.getHy() , lM , 0, p.getFrame()); 
+        	p.getEquinoctialEy() , p.getHx(), p.getHy() , lM , 0, p.getFrame());
     assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
     assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
     assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
@@ -298,7 +298,7 @@ public class EquinoctialParametersTest extends TestCase {
     for (double lv = 0; lv <= 2 * Math.PI; lv += 2 * Math.PI / 100.) {
 //      p.setLv(lv);
       p = new EquinoctialParameters(p.getA() ,p.getEquinoctialEx(),
-    	    	p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , 2, p.getFrame()); 
+    	    	p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , 2, p.getFrame());
       position = p.getPVCoordinates(mu).getPosition();
 
       // test if the norm of the position is in the range [perigee radius,
@@ -339,7 +339,7 @@ public class EquinoctialParametersTest extends TestCase {
     for (double lv = 0; lv <= 2 * Math.PI; lv += 2 * Math.PI / 100.) {
 //      pCirEqua.setLv(lv);
     	pCirEqua = new EquinoctialParameters(pCirEqua.getA() ,pCirEqua.getEquinoctialEx(),
-    			pCirEqua.getEquinoctialEy() , pCirEqua.getHx(), pCirEqua.getHy() , lv , 2, pCirEqua.getFrame()); 
+    			pCirEqua.getEquinoctialEy() , pCirEqua.getHx(), pCirEqua.getHy() , lv , 2, pCirEqua.getFrame());
       position = pCirEqua.getPVCoordinates(mu).getPosition();
 
       // test if the norm pf the position is in the range [perigee radius,

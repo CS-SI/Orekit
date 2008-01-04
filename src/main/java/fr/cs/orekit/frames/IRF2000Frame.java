@@ -27,9 +27,9 @@ class IRF2000Frame extends Frame {
    * @see Frame
    */
   protected IRF2000Frame(AbsoluteDate date, boolean useIAU2000B, String name) throws OrekitException {
-    
+
     super(getJ2000(), null , name);
-    
+
     this.useIAU2000B = useIAU2000B;
 
     // nutation models are in micro arcseconds
@@ -47,7 +47,7 @@ class IRF2000Frame extends Frame {
     // everything is in place, we can now synchronize the frame
     updateFrame(date);
   }
-  
+
   /** Update the frame to the given date.
    * <p>The update considers the nutation and precession effects from IERS data.</p>
    * @param date new value of the date
@@ -56,12 +56,12 @@ class IRF2000Frame extends Frame {
    */
   protected void updateFrame(AbsoluteDate date)
     throws OrekitException {
-    
+
     if (cachedDate == null||cachedDate!=date) {
       //    offset from J2000 epoch in julian centuries
       double tts = date.minus(AbsoluteDate.J2000Epoch);
       double ttc =  tts * julianCenturyPerSecond;
-      
+
       // luni-solar and planetary elements
       BodiesElements elements = computeBodiesElements(ttc);
 
@@ -71,14 +71,14 @@ class IRF2000Frame extends Frame {
 
       // combined effects
       Rotation combined = qRot.revert();
-      
+
       // set up the transform from parent GCRS (J2000) to ITRF
       Vector3D rotationRate = new Vector3D();
-      updateTransform(new Transform(combined , rotationRate));      
+      updateTransform(new Transform(combined , rotationRate));
       cachedDate = date;
     }
   }
-  
+
   /** Compute the nutation elements.
    * @param tt offset from J2000.0 epoch in julian centuries
    * @return luni-solar and planetary elements
@@ -107,7 +107,7 @@ class IRF2000Frame extends Frame {
                            f131 * tt + f130, // mean Neptune longitude
                            (f142 * tt + f141) * tt); // general accumulated precession in longitude
   }
-  
+
   /** Compute precession and nutation effects.
    * @param t offset from J2000.0 epoch in julian centuries
    * @param elements luni-solar and planetary elements for the current date
@@ -134,7 +134,7 @@ class IRF2000Frame extends Frame {
     return rpE.applyInverseTo(rmD.applyTo(rpE.applyTo(rpS)));
 
   }
-  
+
   /** Indicator for complete or reduced precession-nutation model. */
   private boolean useIAU2000B;
 
@@ -146,7 +146,7 @@ class IRF2000Frame extends Frame {
 
   /** Pole position (S + XY/2). */
   private Development sxy2Development = null;
-  
+
   /** Cached date to avoid useless calculus */
   private AbsoluteDate cachedDate;
 

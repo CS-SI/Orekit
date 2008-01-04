@@ -13,35 +13,35 @@ import fr.cs.orekit.forces.perturbations.AtmosphericDrag;
  *
  * <b>The DTM-2000 empirical thermosphere model with new data assimilation
  *  and constraints at lower boundary: accuracy and properties</b><br>
- * 
+ *
  * <i>S. Bruinsma, G. Thuillier and F. Barlier</i> <br>
- *  
+ *
  * Journal of Atmospheric and Solar-Terrestrial Physics 65 (2003) 1053–1070<br>
- * 
+ *
  *</p>
  * <p>
  * Two computation methods are proposed to the user :
- * <li> one OREKIT independant and compliant with initial FORTRAN routine entry values : 
+ * <li> one OREKIT independant and compliant with initial FORTRAN routine entry values :
  *        {@link #getDensity(int, double, double, double, double, double, double, double, double)}. </li>
- * <li> one compliant with OREKIT Atmosphere interface, necessary to the 
+ * <li> one compliant with OREKIT Atmosphere interface, necessary to the
  *        {@link AtmosphericDrag drag force model} computation. This implementation is realized
  *        by the subclass {@link DTM2000AtmosphereModel}</li>
  *</p>
  *<p>
  * This model provides dense output for altitudes beyond 120 km. Computed datas are :
  * <pre>
- * - Temperature at altitude z (K) 
+ * - Temperature at altitude z (K)
  * - Exospheric temperature abaove input position (K)
  * - Vertical gradient of T a 120 km
  * - Total density (kg/m<sup>3</sup>).
- * - Mean atomic mass. 
+ * - Mean atomic mass.
  * - Partial densities in (kg/m<sup>3</sup>) : hydrogen, helium, atomic oxygen,
  *   molecular nitrogen, molecular oxygen, atomic nitrogen.
  * </pre>
  * </p>
  * <p>
- * The model needs geographical and time information to compute general values, 
- * but also needs space weather datas : mean and instantaneous solar flux and 
+ * The model needs geographical and time information to compute general values,
+ * but also needs space weather datas : mean and instantaneous solar flux and
  * geomagnetic incides.
  * Mean solar flux is (for the moment) represented by the F10.7 indices. Instantaneous
  * flux can be setted to the mean value if the data is not available. Geomagnetic
@@ -49,18 +49,18 @@ import fr.cs.orekit.forces.perturbations.AtmosphericDrag;
  * 9 (high activity).
  * All these datas can be found on the <a
  * href="http://sec.noaa.gov/Data/index.html">
- * NOAA (National Oceanic and Atmospheric 
+ * NOAA (National Oceanic and Atmospheric
  * Administration) website.</a>
  *</p>
  *
- * 
+ *
  * @author S. Bruinsma, G. Thuillier, F. Barlier : original research and Fortran routine
- * @author F. Maussion : JAVA adaptation 
+ * @author F. Maussion : JAVA adaptation
  */
 public class DTM2000Atmosphere {
 
   /** Simple constructor for independant computation.
-   * @throws OrekitException if some resource file reading error occurs 
+   * @throws OrekitException if some resource file reading error occurs
    */
   public DTM2000Atmosphere() throws OrekitException {
     if(tt == null) {
@@ -79,12 +79,12 @@ public class DTM2000Atmosphere {
    * @param akp3 3 hrs geomagnetic activity index (1-9)
    * @param akp24 Mean of last 24 hrs geomagnetic activity index (1-9)
    * @return the local density (kg/m<sup>3</sup>)
-   * @throws OrekitException 
+   * @throws OrekitException
    */
   public double getDensity(int day, double alti, double lon, double lat,
                            double hl, double f, double fbar, double akp3, double akp24) throws OrekitException {
     if(alti<120000) {
-      throw new OrekitException(" Altitude is below the minimal range of 120000 m : {0}" , 
+      throw new OrekitException(" Altitude is below the minimal range of 120000 m : {0}" ,
                                 new Object[] { new Double(alti) });
     }
     this.day = day;
@@ -105,7 +105,7 @@ public class DTM2000Atmosphere {
   private void computation() {
     ro=0.;
 
-    double zlb = zlb0; // + dzlb ?? 
+    double zlb = zlb0; // + dzlb ??
 
 //  calcul des polynomes de legendre
     double c = Math.sin(alat);
@@ -141,7 +141,7 @@ public class DTM2000Atmosphere {
     p20mg = 1.5*cmg2-0.5;
     p40mg = 4.375*cmg4-3.75*cmg2+0.375;
 
-//  heure locale 
+//  heure locale
     hl0=hl;
     ch=Math.cos(hl0);
     sh=Math.sin(hl0);
@@ -159,10 +159,10 @@ public class DTM2000Atmosphere {
 
     kleq = 0; //equinox
 
-    if((day<59) || (day>284)) { 
+    if((day<59) || (day>284)) {
       kleq=-1; //hiver nord
     }
-    if((day>99) & (day<244)) { 
+    if((day>99) & (day<244)) {
       kleq= 1; //ete nord
     }
 
@@ -238,7 +238,7 @@ public class DTM2000Atmosphere {
   /** Computation of function G
    * @param a vector of coefficients for computation
    * @param da vector of partial derivatives
-   * @param ff0 coefficient flag (1 for Ox, Az, He, T°; 0 for H and tp120) 
+   * @param ff0 coefficient flag (1 for Ox, Az, He, T°; 0 for H and tp120)
    * @param kle_eq season indicator flag (summer, winter, equinox)
    * @return value of G
    */
@@ -247,8 +247,8 @@ public class DTM2000Atmosphere {
     double[] fmfb = new double[2+1];
     double[] fbm150 = new double[2+1];
 
-//  termes de latitude  
-    da[2] =p20; 
+//  termes de latitude
+    da[2] =p20;
     da[3] =p40 ;
     da[74]=p10 ;
     double a74=a[74];
@@ -259,7 +259,7 @@ public class DTM2000Atmosphere {
       a77=-a77;
       a78=-a78;
     }
-    if(kle_eq == 0 ) {    // equinox  
+    if(kle_eq == 0 ) {    // equinox
       a74 = semestrialCorrection(a74);
       a77 = semestrialCorrection(a77);
       a78 = semestrialCorrection(a78);
@@ -448,7 +448,7 @@ public class DTM2000Atmosphere {
       xmult=(day-debeq_au)/40.;
       result=param - 2.*param*xmult;
     }
-    else {   
+    else {
       xmult=(day-debeq_pr)/40.;
       result=2.*param*xmult-param;
     }
@@ -456,12 +456,12 @@ public class DTM2000Atmosphere {
   }
 
 
-  /** Store the DTM model elements coefficients in internal arrays 
-   * @throws OrekitException if some resource file reading error occurs 
+  /** Store the DTM model elements coefficients in internal arrays
+   * @throws OrekitException if some resource file reading error occurs
    */
   private void readcoefficients() throws OrekitException {
 
-    tt = new double[nlatm+1]; 
+    tt = new double[nlatm+1];
     h = new double[nlatm+1];
     he = new double[nlatm+1];
     o = new double[nlatm+1];
@@ -471,7 +471,7 @@ public class DTM2000Atmosphere {
     t0 = new double[nlatm+1];
     tp = new double[nlatm+1];
 
-    dtt = new double[nlatm+1]; 
+    dtt = new double[nlatm+1];
     dh = new double[nlatm+1];
     dhe = new double[nlatm+1];
     dox = new double[nlatm+1];
@@ -479,10 +479,10 @@ public class DTM2000Atmosphere {
     do2 = new double[nlatm+1];
     daz = new double[nlatm+1];
     dt0 = new double[nlatm+1];
-    dtp = new double[nlatm+1]; 
+    dtp = new double[nlatm+1];
 
     for(int j = 0; j<dtt.length; j++) {
-      dtt[j] = Double.NaN; 
+      dtt[j] = Double.NaN;
       dh[j] = Double.NaN;
       dhe[j] = Double.NaN;
       dox[j] = Double.NaN;
@@ -490,7 +490,7 @@ public class DTM2000Atmosphere {
       do2[j] = Double.NaN;
       daz[j] = Double.NaN;
       dt0[j] = Double.NaN;
-      dtp[j] = Double.NaN; 
+      dtp[j] = Double.NaN;
     }
 
     Class c = getClass();
@@ -504,10 +504,10 @@ public class DTM2000Atmosphere {
       BufferedReader r = new BufferedReader(new InputStreamReader(in));
       r.readLine();
       r.readLine();
-      for (String line = r.readLine(); line != null; line = r.readLine()) {        
+      for (String line = r.readLine(); line != null; line = r.readLine()) {
         int num = Integer.parseInt(line.substring(0,4).replace(' ', '0'));
         line = line.substring(4);
-        tt[num] = Double.parseDouble(line.substring(0,13).replace(' ', '0')); 
+        tt[num] = Double.parseDouble(line.substring(0,13).replace(' ', '0'));
         line = line.substring(13+9);
         h[num] = Double.parseDouble(line.substring(0,13).replace(' ', '0'));
         line = line.substring(13+9);
@@ -535,7 +535,7 @@ public class DTM2000Atmosphere {
 
   /** Get the current exospheric temperature above input position.
    * {@link #getDensity(int, double, double, double, double, double, double, double, double) getDensity}
-   * method <b>must</b> be called before calling this function. 
+   * method <b>must</b> be called before calling this function.
    * @return the exospheric temperature (K)
    */
   public double getTinf() {
@@ -544,7 +544,7 @@ public class DTM2000Atmosphere {
 
   /** Get the local temperature.
    * {@link #getDensity(int, double, double, double, double, double, double, double, double) getDensity}
-   * method <b>must</b> be called before calling this function. 
+   * method <b>must</b> be called before calling this function.
    * @return the temperature at altitude z (K)
    */
   public double getT() {
@@ -553,7 +553,7 @@ public class DTM2000Atmosphere {
 
   /** Get the local mean atomic mass.
    * {@link #getDensity(int, double, double, double, double, double, double, double, double) getDensity}
-   * method <b>must</b> be called before calling this function. 
+   * method <b>must</b> be called before calling this function.
    * @return the local mean atomic mass
    */
   public double getMam() {
@@ -562,8 +562,8 @@ public class DTM2000Atmosphere {
 
   /** Get the local partial density of the selected element.
    * {@link #getDensity(int, double, double, double, double, double, double, double, double) getDensity}
-   * method <b>must</b> be called before calling this function. 
-   * @param identifier one of the six elements : {@link #HYDROGEN}, {@link #HELIUM}, 
+   * method <b>must</b> be called before calling this function.
+   * @param identifier one of the six elements : {@link #HYDROGEN}, {@link #HELIUM},
    * {@link #ATOMICOXYGEN}, {@link #MOLECULARNITROGEN},  {@link #MOLECULAROXYGEN}, {@link #ATOMICNITROGEN}
    * @return the local partial density (kg/m<sup>3</sup>)
    */
@@ -581,7 +581,7 @@ public class DTM2000Atmosphere {
   private double[] f = new double[3];
   /** Mean solar flux. fbar[1]=mean flux; fbar[2]=0. (not used) */
   private double[] fbar = new double[3];
-  /** Kp. akp[1]=3-hourly kp; akp[3]=mean kp of last 24 hours; akp[2]=akp[4]=0 (not used */ 
+  /** Kp. akp[1]=3-hourly kp; akp[3]=mean kp of last 24 hours; akp[2]=akp[4]=0 (not used */
   private double[] akp = new double[5];
   /** Geodetic altitude in km (minimum altitude: 120 km) */
   private double alti;
@@ -605,7 +605,7 @@ public class DTM2000Atmosphere {
   /** Mean atomic mass. */
   private double wmm;
   /** Partial densities in (g/cm3) :
-   d(1) = hydrogen 
+   d(1) = hydrogen
    d(2) = helium
    d(3) = atomic oxygen
    d(4) = molecular nitrogen
@@ -626,9 +626,9 @@ public class DTM2000Atmosphere {
   /** Number of parameters. */
   private static final int nlatm = 96;
   /** Thermal diffusion coefficient. */
-  private static final double[] alefa = new double[]{0,-0.40,-0.38,0.,0.,0.,0.}; 
+  private static final double[] alefa = new double[]{0,-0.40,-0.38,0.,0.,0.,0.};
   /** Atomic mass  H, HE, O, N2, O2, N */
-  private static final double[] ma = new double[]{0,1,4,16,28,32,14}; 
+  private static final double[] ma = new double[]{0,1,4,16,28,32,14};
   /** Atomic mass  H, HE, O, N2, O2, N */
   private static final double[] vma = new double[]{0,1.6606e-24,6.6423e-24,26.569e-24,46.4958e-24,53.1381e-24,23.2479e-24};
   /** Polar Earth radius */
@@ -636,15 +636,15 @@ public class DTM2000Atmosphere {
   /** Reference altitude. */
   private static final double zlb0 = 120.;
   /** Magnetic Pole coordinates (79n,71w) */
-  private static final double cpmg = .19081 ,spmg = .98163, xlmg = -1.2392; 
+  private static final double cpmg = .19081 ,spmg = .98163, xlmg = -1.2392;
   /** Gravity acceleration at 120 km altitude. */
   private static final double gsurf = 980.665;
   // TODO determine what this is
-  private static final double rgas = 831.4; 
+  private static final double rgas = 831.4;
   /** 2*pi/365 */
   private static final double rot = .017214206;
   /** 2*rot */
-  private static final double rot2 = .034428412;  
+  private static final double rot2 = .034428412;
 
   /** Resources text file. */
   private static final String dtm2000 = "/META-INF/dtm_2000.txt";
@@ -652,7 +652,7 @@ public class DTM2000Atmosphere {
   // Dtm ressources :
 
   /** Elements coefficients. */
-  private static double[] tt   = null; 
+  private static double[] tt   = null;
   private static double[] h    = null;
   private static double[] he   = null;
   private static double[] o    = null;
@@ -662,7 +662,7 @@ public class DTM2000Atmosphere {
   private static double[] t0   = null;
   private static double[] tp   = null;
   /** Partial derivatives. */
-  private static double[] dtt  = null; 
+  private static double[] dtt  = null;
   private static double[] dh   = null;
   private static double[] dhe  = null;
   private static double[] dox  = null;
@@ -670,7 +670,7 @@ public class DTM2000Atmosphere {
   private static double[] do2  = null;
   private static double[] daz  = null;
   private static double[] dt0  = null;
-  private static double[] dtp  = null; 
+  private static double[] dtp  = null;
 
   /** Identifier for hydrogen.*/
   public static int HYDROGEN = 1;
@@ -683,6 +683,6 @@ public class DTM2000Atmosphere {
   /** Identifier for molecular oxygen.*/
   public static int MOLECULAROXYGEN = 5;
   /** Identifier for atomic nitrogen.*/
-  public static int ATOMICNITROGEN = 6; 
+  public static int ATOMICNITROGEN = 6;
 
 }

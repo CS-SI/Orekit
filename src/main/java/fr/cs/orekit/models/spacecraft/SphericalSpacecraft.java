@@ -7,11 +7,11 @@ import org.apache.commons.math.geometry.Vector3D;
  * means that all coefficients are constant and do not depend of
  * the direction. As such, it is a simple container that returns the
  * values set in the constructor.</p>
- * 
+ *
  * @author E. Delente
  * @author F. Maussion
  */
-public class SphericalSpacecraft 
+public class SphericalSpacecraft
   implements SolarRadiationPressureSpacecraft, AtmosphereDragSpacecraft {
 
   /** Simple constructor.

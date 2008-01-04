@@ -33,10 +33,10 @@ public class Sun extends ThirdBody {
    * @param date date
    * @param frame the frame where to define the position
    * @return position of the sun (m) in the J2000 Frame
-   * @throws OrekitException 
+   * @throws OrekitException
    */
   public Vector3D getPosition(AbsoluteDate date, Frame frame) throws OrekitException {
-    
+
 	
     double t = date.minus(reference) / 86400.0;
     double f = Math.toRadians(225.768 + 13.2293505 * t);
@@ -89,6 +89,6 @@ public class Sun extends ThirdBody {
     new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 864000000.0);
 
   /** Transform from Veis1950 to J2000. */
-  private Transform transform; 
+  private Transform transform;
 
 }

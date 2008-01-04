@@ -48,13 +48,13 @@ public class AbsoluteDate implements Comparable, Serializable {
      * a different convention (for example the <code>convcal</code> utility).</p>
      */
     public static final AbsoluteDate JulianEpoch;
-    
+
     /** Reference epoch for modified julian dates: 1858-11-17T00:00:00. */
     public static final AbsoluteDate ModifiedJulianEpoch;
-    
+
     /** Reference epoch for CNES 1950 dates: 1950-01-01T00:00:00. */
     public static final AbsoluteDate CNES1950Epoch;
-    
+
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 UTC. */
     public static final AbsoluteDate GPSEpoch;
 
@@ -87,9 +87,9 @@ public class AbsoluteDate implements Comparable, Serializable {
         new AbsoluteDate(new ChunkedDate(1980, 1, 6), new ChunkedTime(0, 0, 19), tai);
 
     }
-    
+
     /** Create an instance with a default value ({@link #J2000Epoch}).
-     */    
+     */
     public AbsoluteDate() {
       epoch  = J2000Epoch.epoch;
       offset = J2000Epoch.offset;
@@ -99,23 +99,23 @@ public class AbsoluteDate implements Comparable, Serializable {
      * @param date date location in the time scale
      * @param time time location in the time scale
      * @param timeScale time scale
-     */    
+     */
     public AbsoluteDate(ChunkedDate date, ChunkedTime time, TimeScale timeScale) {
       // set the epoch at the start of the current minute
       int j1970Day = date.getJ2000Day() + 10957;
       epoch  = 60000l * ((j1970Day * 24l + time.hour) * 60l + time.minute);
       offset = time.second + timeScale.offsetToTAI(epoch * 0.001 + time.second);
-    }    
-    
+    }
+
     /** Build an instant from a location in a {@link TimeScale time scale}.
      * @param location location in the time scale
      * @param timeScale time scale
-     */    
+     */
     public AbsoluteDate(Date location, TimeScale timeScale) {
       epoch  = location.getTime();
       offset = timeScale.offsetToTAI(epoch * 0.001);
-    }    
-    
+    }
+
     /** Build an instant from an offset with respect to another instant.
      * <p>It is important to note that the <code>offset</code> is <em>not</em>
      * the difference between two readings on a time scale. As an example,
@@ -126,11 +126,11 @@ public class AbsoluteDate implements Comparable, Serializable {
      * @param instant reference instant
      * @param offset offset from the reference instant (seconds physically
      * separating the two instants)
-     */    
+     */
     public AbsoluteDate(AbsoluteDate instant, double offset) {
         epoch = instant.epoch;
         this.offset = instant.offset + offset;
-    }    
+    }
 
     /** Build an instant corresponding to a GPS date.
      * <p>GPS dates are provided as a week number starting at
@@ -184,7 +184,7 @@ public class AbsoluteDate implements Comparable, Serializable {
      time += timeScale.offsetFromTAI(time);
      return new Date(Math.round(time * 1000));
    }
-   
+
    /** Compare the instance with another date.
     * @param date other date to compare the instance to
     * @return a negative integer, zero, or a positive integer as this date
@@ -216,15 +216,15 @@ public class AbsoluteDate implements Comparable, Serializable {
      }
      return false;
    }
-   
+
    public int hashCode() {
-     long l = Double.doubleToLongBits(minus(J2000Epoch));     
+     long l = Double.doubleToLongBits(minus(J2000Epoch));
      return (int)(l^(l>>>32));
    }
-   
+
    /** Reference epoch in milliseconds from 1970-01-01T00:00:00 TAI. */
    private final long epoch;
-   
+
    /** Offset from the reference epoch in seconds. */
    private final double offset;
 
