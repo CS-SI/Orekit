@@ -1,21 +1,17 @@
 package fr.cs.orekit.time;
 
 import java.util.Date;
-import java.util.TimeZone;
 import java.io.Serializable;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
-import java.text.ParseException;
 
 /** This class represents a specific instant in time.
 
  * <p>Instances of this class are considered to be absolute in the sense
  * that each one represent the occurrence of some event and can be compared
- * to other instances or located in any {@link TimeScale time scale}. In
+ * to other instances or located in <em>any</em> {@link TimeScale time scale}. In
  * order to represent a specific event instant in two different time scales
  * (say {@link TAIScale TAI} and {@link UTCScale UTC} for example), only
  * one instance is needed, the representations are made available by
- * calling the appropriate methods on this instance several time with
+ * calling the appropriate methods on this instance several times with
  * several different time scales as parameters. Two complementary views are
  * available:</p>
  * <ul>
@@ -24,7 +20,7 @@ import java.text.ParseException;
  *   {@link TimeScale time scale}. The related methods are {@link
  *   #AbsoluteDate(Date, TimeScale) AbsoluteDate(location, timeScale)}, {@link
  *   #AbsoluteDate(String, TimeScale) AbsoluteDate(location, timeScale)},
- *    {@link #toDate}, {@link #toString() toString()}, {@link #toString(TimeScale)
+ *   {@link #toDate}, {@link #toString() toString()}, {@link #toString(TimeScale)
  *   toString(timeScale)} and {@link #timeScalesOffset}.</p>
  *   </li>
  *   <li><p>offset view (mainly for physical computation)</p>
@@ -37,7 +33,7 @@ import java.text.ParseException;
  *   </li>
  * </ul>
  * <p>
- * The instance <code>AbsoluteDate</code> is guaranted to be immutable.
+ * Instances of the <code>AbsoluteDate</code> class are guaranteed to be immutable.
  * </p>
  * @author L. Maisonobe
  * @see TimeScale
@@ -45,10 +41,11 @@ import java.text.ParseException;
 public class AbsoluteDate implements Comparable, Serializable {
 
     /** Reference epoch for julian dates: -4712-01-01T12:00:00.
-     * <p>The java.util.Date class follows the astronomical convention
-     * and uses a year 0 between years -1 and +1, hence this reference
-     * date is in year -4712 and not in year -4713 as can be seen in
-     * other documents that obey a different convention.</p>
+     * <p>Both <code>java.util.Date</code> and {@link ChunkedDate} classes
+     * follow the astronomical conventions and consider a year 0 between
+     * years -1 and +1, hence this reference date lies in year -4712 and not
+     * in year -4713 as can be seen in other documents or programs that obey
+     * a different convention (for example the <code>convcal</code> utility).</p>
      */
     public static final AbsoluteDate JulianEpoch;
     
@@ -58,33 +55,37 @@ public class AbsoluteDate implements Comparable, Serializable {
     /** Reference epoch for CNES 1950 dates: 1950-01-01T00:00:00. */
     public static final AbsoluteDate CNES1950Epoch;
     
-    /** Reference epoch for GPS weeks: 1980-01-06T00:00:00. */
+    /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 UTC. */
     public static final AbsoluteDate GPSEpoch;
 
-    /** J2000.0 Reference epoch: 2000-01-01T12:00:00 TT. */
+    /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC). */
     public static final AbsoluteDate J2000Epoch;
 
     /** Java Reference epoch: 1970-01-01T00:00:00 TT. */
     public static final AbsoluteDate JavaEpoch;
 
-    /** Date formats to use for string conversion. */
-    private static SimpleDateFormat input  = null;
-
     static {
-      try {
-        input = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        input.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
-        TimeScale tt = TTScale.getInstance();
-        JulianEpoch         = new AbsoluteDate("-4712-01-01T12:00:00", tt);
-        ModifiedJulianEpoch = new AbsoluteDate("1858-11-17T00:00:00",  tt);
-        CNES1950Epoch       = new AbsoluteDate("1950-01-01T00:00:00",  tt);
-        GPSEpoch            = new AbsoluteDate("1980-01-06T00:00:00",  tt);
-        JavaEpoch           = new AbsoluteDate("1970-01-01T00:00:00",  tt);
-        J2000Epoch          = new AbsoluteDate("2000-01-01T12:00:00",  tt);
-      } catch (ParseException pe) {
-        // should not happen
-        throw new RuntimeException(pe);
-      }
+
+     TimeScale tai = TAIScale.getInstance();
+      TimeScale tt  = TTScale.getInstance();
+      JulianEpoch =
+        new AbsoluteDate(new ChunkedDate(-4712,  1,  1), ChunkedTime.H12, tt);
+      ModifiedJulianEpoch =
+        new AbsoluteDate(new ChunkedDate( 1858, 11, 17), ChunkedTime.H00, tt);
+      CNES1950Epoch =
+        new AbsoluteDate(new ChunkedDate( 1950,  1,  1), ChunkedTime.H00, tt);
+      JavaEpoch =
+        new AbsoluteDate(new ChunkedDate( 1970,  1,  1), ChunkedTime.H00, tt);
+      J2000Epoch =
+        new AbsoluteDate(new ChunkedDate( 2000,  1,  1), ChunkedTime.H12, tt);
+
+      // GPS epoch is 1980-01-06T00:00:00Z (i.e. UTC), TAI - UTC = +19s at this time,
+      // we use a date in TAI here for safety reasons, to avoid calling
+      // UTCScale.getInstance() which may throw an exception as this is not
+      // desired in this very early run part of code
+      GPSEpoch =
+        new AbsoluteDate(new ChunkedDate(1980, 1, 6), new ChunkedTime(0, 0, 19), tai);
+
     }
     
     /** Create an instance with a default value ({@link #J2000Epoch}).
@@ -95,33 +96,24 @@ public class AbsoluteDate implements Comparable, Serializable {
     }
 
     /** Build an instant from a location in a {@link TimeScale time scale}.
+     * @param date date location in the time scale
+     * @param time time location in the time scale
+     * @param timeScale time scale
+     */    
+    public AbsoluteDate(ChunkedDate date, ChunkedTime time, TimeScale timeScale) {
+      // set the epoch at the start of the current minute
+      int j1970Day = date.getJ2000Day() + 10957;
+      epoch  = 60000l * ((j1970Day * 24l + time.hour) * 60l + time.minute);
+      offset = time.second + timeScale.offsetToTAI(epoch * 0.001 + time.second);
+    }    
+    
+    /** Build an instant from a location in a {@link TimeScale time scale}.
      * @param location location in the time scale
      * @param timeScale time scale
      */    
     public AbsoluteDate(Date location, TimeScale timeScale) {
       epoch  = location.getTime();
       offset = timeScale.offsetToTAI(epoch * 0.001);
-    }    
-    
-    /** Build an instant from a location in a {@link TimeScale time scale}.
-     * <p>The recognized format is only a subset of ISO-8601. It is
-     * yyyy-mm-ddThh:mm:ss[.sss] where the fractional part of the second
-     * is optional. Timezones are explicitely <em>not</em> supported.</p>
-     * @param location location in the time scale in a subset ISO-8601 format
-     * @param timeScale time scale
-     * @exception ParseException if the string cannot be parsed
-     */    
-    public AbsoluteDate(String location, TimeScale timeScale)
-      throws ParseException {
-            ParsePosition position = new ParsePosition(0);
-            Date parsed = input.parse(location, position);
-            double fraction = 0;
-            if (position.getIndex() < location.length()) {
-              fraction =
-                Double.parseDouble(location.substring(position.getIndex()));
-            }
-            epoch  = parsed.getTime();
-            offset = fraction + timeScale.offsetToTAI(epoch * 0.001 + fraction);
     }    
     
     /** Build an instant from an offset with respect to another instant.
@@ -139,7 +131,20 @@ public class AbsoluteDate implements Comparable, Serializable {
         epoch = instant.epoch;
         this.offset = instant.offset + offset;
     }    
-           
+
+    /** Build an instant corresponding to a GPS date.
+     * <p>GPS dates are provided as a week number starting at
+     * {@link #GPSEpoch GPS epoch} and as a number of milliseconds
+     * since week start.</p>
+     * @param weekNumber week number since {@link #GPSEpoch GPS epoch}
+     * @param milliInWeek number of milliseconds since week start
+     * @return a new instant
+     */
+    public static AbsoluteDate createGPSDate(int weekNumber, double milliInWeek) {
+      return new AbsoluteDate(GPSEpoch,
+                              weekNumber * 604800 + milliInWeek / 1000);
+    }
+
    /** Compute the offset between two instant.
     * <p>The offset is the number of seconds physically elapsed
     * between the two instants.</p>

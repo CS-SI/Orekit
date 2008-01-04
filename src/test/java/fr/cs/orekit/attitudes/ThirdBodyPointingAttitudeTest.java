@@ -2,7 +2,13 @@ package fr.cs.orekit.attitudes;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.apache.commons.math.geometry.Vector3D;
+
 import fr.cs.orekit.Utils;
 import fr.cs.orekit.attitudes.models.ThirdBodyPointingAttitude;
 import fr.cs.orekit.bodies.ThirdBody;
@@ -16,10 +22,9 @@ import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.propagation.KeplerianPropagator;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
+import fr.cs.orekit.time.ChunkedDate;
+import fr.cs.orekit.time.ChunkedTime;
 import fr.cs.orekit.time.UTCScale;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 
 public class ThirdBodyPointingAttitudeTest extends TestCase {
@@ -38,8 +43,9 @@ public class ThirdBodyPointingAttitudeTest extends TestCase {
                                                   CircularParameters.TRUE_LONGITUDE_ARGUMENT
                                                   , Frame.getJ2000());
     
-    final AbsoluteDate initDate = new AbsoluteDate("2001-03-21T00:00:00",
-                                         UTCScale.getInstance());
+    final AbsoluteDate initDate = new AbsoluteDate(new ChunkedDate(2001, 03, 21),
+                                                   ChunkedTime.H00,
+                                                   UTCScale.getInstance());
     
     final Orbit o = new Orbit(initDate, op);
     
@@ -71,8 +77,9 @@ public class ThirdBodyPointingAttitudeTest extends TestCase {
    }
    // sun pointing tests
    
-   final AbsoluteDate finDate = new AbsoluteDate("2001-09-21T00:00:00",
-                                           UTCScale.getInstance());
+   final AbsoluteDate finDate = new AbsoluteDate(new ChunkedDate(2001, 9, 21),
+                                                 ChunkedTime.H00,
+                                                 UTCScale.getInstance());
    final AbsoluteDate medDate = new AbsoluteDate(initDate , finDate.minus(initDate)/2);
    final SpacecraftState medState = kep.getSpacecraftState(medDate);
    

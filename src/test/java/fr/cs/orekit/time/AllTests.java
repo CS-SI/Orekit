@@ -9,6 +9,7 @@ public class AllTests {
     TestSuite suite = new TestSuite("fr.cs.orekit.time"); 
 
     suite.addTest(AbsoluteDateTest.suite());
+    suite.addTest(ChunkedDateTest.suite());
     suite.addTest(UTCScaleTest.suite());
     suite.addTest(TAIScaleTest.suite());
     suite.addTest(TTScaleTest.suite());

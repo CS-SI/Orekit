@@ -2,6 +2,10 @@ package fr.cs.orekit.propagation;
 
 import java.text.ParseException;
 
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.orekit.Utils;
@@ -13,11 +17,10 @@ import fr.cs.orekit.orbits.KeplerianParameters;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.time.AbsoluteDate;
+import fr.cs.orekit.time.ChunkedDate;
+import fr.cs.orekit.time.ChunkedTime;
 import fr.cs.orekit.time.UTCScale;
 import fr.cs.orekit.utils.PVCoordinates;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 
 public class TabulatedEphemerisTest extends TestCase {
@@ -39,8 +42,12 @@ public class TabulatedEphemerisTest extends TestCase {
                                                      omega, OMEGA,
                                                      lv, KeplerianParameters.TRUE_ANOMALY, Frame.getJ2000());
     
-    AbsoluteDate initDate = new AbsoluteDate("2004-01-01T00:00:00.000" , UTCScale.getInstance());
-    AbsoluteDate finalDate = new AbsoluteDate("2004-01-02T00:00:00.000" , UTCScale.getInstance());
+    AbsoluteDate initDate = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
+                                             ChunkedTime.H00,
+                                             UTCScale.getInstance());
+    AbsoluteDate finalDate = new AbsoluteDate(new ChunkedDate(2004, 01, 02),
+                                              ChunkedTime.H00,
+                                              UTCScale.getInstance());
     double deltaT = finalDate.minus(initDate);
     
     SpacecraftState initState = new SpacecraftState(new Orbit(initDate, transPar), mass, akp.getAttitudeKinematics(initDate, 

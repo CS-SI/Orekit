@@ -3,18 +3,23 @@ package fr.cs.orekit.perturbations;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 
-import fr.cs.orekit.models.bodies.Sun;
-import fr.cs.orekit.models.spacecraft.SphericalSpacecraft;
-import fr.cs.orekit.models.spacecraft.SolarRadiationPressureSpacecraft;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
+
 import fr.cs.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.forces.perturbations.SolarRadiationPressure;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.iers.IERSDataResetter;
+import fr.cs.orekit.models.bodies.Sun;
+import fr.cs.orekit.models.spacecraft.SolarRadiationPressureSpacecraft;
+import fr.cs.orekit.models.spacecraft.SphericalSpacecraft;
 import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.orbits.OrbitalParameters;
@@ -23,16 +28,17 @@ import fr.cs.orekit.propagation.KeplerianPropagator;
 import fr.cs.orekit.propagation.NumericalPropagator;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
+import fr.cs.orekit.time.ChunkedDate;
+import fr.cs.orekit.time.ChunkedTime;
 import fr.cs.orekit.time.UTCScale;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 public class SolarRadiationPressureTest extends TestCase {
 
 	public void testLightning() throws OrekitException, ParseException, DerivativeException, IntegratorException{
 	    // Initialization
-		AbsoluteDate date = new AbsoluteDate("2000-03-21T13:59:27.816" , UTCScale.getInstance());
+		AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 3, 21),
+		                                     new ChunkedTime(13, 59, 27.816),
+		                                     UTCScale.getInstance());
 	    OrbitalParameters op = new EquinoctialParameters(42164000,10e-3,10e-3,
 	    		Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
                 0.1, 2, Frame.getJ2000());
@@ -77,7 +83,9 @@ public class SolarRadiationPressureTest extends TestCase {
 	public void testRoughOrbitalModifs() throws ParseException, OrekitException, DerivativeException, IntegratorException, FileNotFoundException {
 		
 		// initialization
-		AbsoluteDate date = new AbsoluteDate("2000-07-01T13:59:27.816" , UTCScale.getInstance());
+		AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 7, 1),
+		                                     new ChunkedTime(13, 59, 27.816),
+		                                     UTCScale.getInstance());
 	    OrbitalParameters op = new EquinoctialParameters(42164000,10e-3,10e-3,
 	    		Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
                 0.1, 2, Frame.getJ2000());
@@ -115,30 +123,24 @@ public class SolarRadiationPressureTest extends TestCase {
 	  	
 	private class SolarStepHandler extends FixedStepHandler {
 
-		private SolarStepHandler() {
-		}
-		
-		public void handleStep(double t, double[]y, boolean isLastStep) {
+	  private SolarStepHandler() {
+	  }
 
-		}
+	  public void handleStep(double t, double[]y, boolean isLastStep) {
+	  }
 
-    public void handleStep(SpacecraftState currentState, boolean isLast) {
-        double radius = Math.sqrt((currentState.getEx()-0.00940313)*(currentState.getEx()-0.00940313) 
-                                + (currentState.getEy()-0.013679)*(currentState.getEy()-0.013679));
-                        checkRadius(radius , 0.00351 , 0.00394);
-      
-    }
+	  public void handleStep(SpacecraftState currentState, boolean isLast) {
+	    double radius = Math.sqrt((currentState.getEx()-0.00940313)*(currentState.getEx()-0.00940313) 
+	                              + (currentState.getEy()-0.013679)*(currentState.getEy()-0.013679));
+	    checkRadius(radius , 0.00351 , 0.00394);
+	  }
 
-    public boolean requiresDenseOutput() {
-      // TODO Auto-generated method stub
-      return false;
-    }
+	  public boolean requiresDenseOutput() {
+	    return false;
+	  }
 
-    public void reset() {
-      // TODO Auto-generated method stub
-      
-    }
-
+	  public void reset() {
+	  }
 
 	}
 

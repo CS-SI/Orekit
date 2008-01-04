@@ -13,6 +13,8 @@ import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.propagation.KeplerianPropagator;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
+import fr.cs.orekit.time.ChunkedDate;
+import fr.cs.orekit.time.ChunkedTime;
 import fr.cs.orekit.time.UTCScale;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -27,7 +29,7 @@ public class LOFAlinedAttitudeTest extends TestCase {
                                                    0.0, CircularParameters.TRUE_LONGITUDE_ARGUMENT,
                                                    Frame.getJ2000());
 
-    AbsoluteDate initDate = new AbsoluteDate("2001-03-21T00:00:00",
+    AbsoluteDate initDate = new AbsoluteDate(new ChunkedDate(2001, 3, 21), ChunkedTime.H00,
                                              UTCScale.getInstance());
 
     Orbit o = new Orbit(initDate, op);
@@ -97,7 +99,7 @@ public class LOFAlinedAttitudeTest extends TestCase {
                              0.0, CircularParameters.TRUE_LONGITUDE_ARGUMENT,
                              Frame.getJ2000());
 
-    final AbsoluteDate initDate = new AbsoluteDate("2001-03-21T00:00:00",
+    final AbsoluteDate initDate = new AbsoluteDate(new ChunkedDate(2001, 3, 21), ChunkedTime.H00,
                                                    UTCScale.getInstance());
 
     final Orbit o = new Orbit(initDate, op);

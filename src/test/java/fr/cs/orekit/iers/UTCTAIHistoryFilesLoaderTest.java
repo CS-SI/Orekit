@@ -1,12 +1,15 @@
 package fr.cs.orekit.iers;
 
 import java.text.ParseException;
-import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.time.AbsoluteDate;
-import fr.cs.orekit.time.UTCScale;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import fr.cs.orekit.errors.OrekitException;
+import fr.cs.orekit.time.AbsoluteDate;
+import fr.cs.orekit.time.ChunkedDate;
+import fr.cs.orekit.time.ChunkedTime;
+import fr.cs.orekit.time.UTCScale;
 
 public class UTCTAIHistoryFilesLoaderTest extends TestCase {
 
@@ -29,7 +32,8 @@ public class UTCTAIHistoryFilesLoaderTest extends TestCase {
     checkSuccess("regular-data");
     UTCScale scale = (UTCScale) UTCScale.getInstance();
     AbsoluteDate startDate = scale.getStartDate();
-    double delta = startDate.minus(new AbsoluteDate("1972-01-01T00:00:00", scale));
+    double delta = startDate.minus(new AbsoluteDate(new ChunkedDate(1972, 01, 01),
+                                                    ChunkedTime.H00, scale));
     assertEquals(0, delta, 0);
   }
 

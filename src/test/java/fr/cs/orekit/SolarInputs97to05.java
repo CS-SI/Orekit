@@ -14,10 +14,11 @@ import fr.cs.orekit.models.perturbations.DTM2000InputParameters;
 import fr.cs.orekit.models.perturbations.JB2006InputParameters;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.UTCScale;
+import fr.cs.orekit.utils.DateFormatter;
 
-/** This class reads and provides solar activity datas needed by the 
- * two atmospheric models. The datas are furnished by the <a
- * href="http://sol.spacenvironment.net/~JB2006/JB2006_index.html">
+/** This class reads and provides solar activity data needed by the 
+ * two atmospheric models. The data are furnished at the <a
+ * href="http://terra1.spacenvironment.net/~JB2006/indices.html">
  * official JB2006 website.</a>
  * 
  * @author F. Maussion
@@ -26,13 +27,13 @@ public class SolarInputs97to05 implements JB2006InputParameters,
 DTM2000InputParameters {
 
   /** Simple constructor. 
-   * Data file adress is setted internally, nothing to be done here.
+   * Data file address is set internally, nothing to be done here.
    * 
    * @throws OrekitException
    */
   private SolarInputs97to05() throws OrekitException {
 
-    datas = new TreeSet();
+    data = new TreeSet();
     InputStream in = getClass().getResourceAsStream("/atmosphere/JB_All_97-05.txt");
     BufferedReader rFlux = new BufferedReader(new InputStreamReader(in));
 
@@ -85,11 +86,13 @@ DTM2000InputParameters {
       int day = Integer.parseInt(flux[1]);   
 
       if(day != Integer.parseInt(ap[0])) {
-        throw new OrekitException(" Tain ca craint ", new String[0]);
+        throw new OrekitException("inconsistent JB2006 and geomagnetic indices files",
+                                  new Object[0]);
       }
       if( (year<2000 & (year-1900)!=Integer.parseInt(ap[11])) ||
           (year>=2000 & (year-2000)!=Integer.parseInt(ap[11])) ) {
-        throw new OrekitException(" Tain ca craint ", new String[0]);
+        throw new OrekitException("inconsistent JB2006 and geomagnetic indices files",
+                                  new Object[0]);
       }
 
       cal.set(Calendar.YEAR, year);
@@ -102,7 +105,7 @@ DTM2000InputParameters {
         firstDate = date;
       }
 
-      datas.add(new LineParameters(date, 
+      data.add(new LineParameters(date, 
                                    new double[] {
           Double.parseDouble(ap[3]),
           Double.parseDouble(ap[4]),
@@ -129,7 +132,7 @@ DTM2000InputParameters {
   private void findClosestLine(AbsoluteDate date) throws OrekitException {
 
     if(date.minus(firstDate)<0 || date.minus(lastDate)>86400) {
-      throw new OrekitException("out of range" , new String[0]);
+      throw new OrekitException("out of range" , new Object[0]);
     }
 
     // don't search if the cached selection is fine
@@ -141,22 +144,25 @@ DTM2000InputParameters {
       new LineParameters(new AbsoluteDate(date, -86400), null, 0, 0, 0, 0, 0, 0);
 
     // search starting from entries a few steps before the target date
-    SortedSet tailSet = datas.tailSet(before);
+    SortedSet tailSet = data.tailSet(before);
 
     if (tailSet != null) {
       currentParam = (LineParameters)tailSet.first();
       if(currentParam.date.minus(date)==-86400) {
         before = new LineParameters(date, null, 0, 0, 0, 0, 0, 0);
-        tailSet = datas.tailSet(before);
+        tailSet = data.tailSet(before);
         currentParam = (LineParameters)tailSet.first();
       }
     } else {
-      throw new OrekitException("big problem" , new String[0]);
+      throw new OrekitException("unable to find data for date {0}",
+                                new Object[] {
+                                  DateFormatter.toString(date, UTCScale.getInstance())
+                                });
     }
   }
 
   /** All entries. */
-  private TreeSet datas;
+  private TreeSet data;
 
   private LineParameters currentParam;
 

@@ -1,24 +1,30 @@
 package fr.cs.orekit.frames;
 
 import java.text.ParseException;
-import org.apache.commons.math.geometry.Rotation;
-import org.apache.commons.math.geometry.Vector3D;
-import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.iers.IERSDataResetter;
-import fr.cs.orekit.time.AbsoluteDate;
-import fr.cs.orekit.time.UTCScale;
-import fr.cs.orekit.utils.PVCoordinates;
-import fr.cs.orekit.utils.VectorFormatter;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import org.apache.commons.math.geometry.Rotation;
+import org.apache.commons.math.geometry.Vector3D;
+
+import fr.cs.orekit.errors.OrekitException;
+import fr.cs.orekit.iers.IERSDataResetter;
+import fr.cs.orekit.time.AbsoluteDate;
+import fr.cs.orekit.time.ChunkedDate;
+import fr.cs.orekit.time.ChunkedTime;
+import fr.cs.orekit.time.UTCScale;
+import fr.cs.orekit.utils.PVCoordinates;
+import fr.cs.orekit.utils.VectorFormatter;
 
 public class ITRF2000FrameTest extends TestCase {
 
   public void testRoughRotation() throws ParseException, OrekitException {
 
-    AbsoluteDate date1 =new AbsoluteDate("2006-02-24T15:38:00",
-                                         UTCScale.getInstance());
+    AbsoluteDate date1 = new AbsoluteDate(new ChunkedDate(2006, 02, 24),
+                                          new ChunkedTime(15, 38, 00),
+                                          UTCScale.getInstance());
     Frame itrf2000 = Frame.getReferenceFrame(Frame.ITRF2000B, date1);
     Transform t0 = itrf2000.getTransformTo(Frame.getJ2000(), date1 );
 
@@ -37,7 +43,8 @@ public class ITRF2000FrameTest extends TestCase {
 
   public void testRoughOrientation() throws ParseException, OrekitException {
 
-    AbsoluteDate date = new AbsoluteDate("2001-03-21T00:00:00",
+    AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2001, 03, 21),
+                                         ChunkedTime.H00,
                                          UTCScale.getInstance());
     Frame itrf2000 = Frame.getReferenceFrame(Frame.ITRF2000B, date);
 
@@ -60,7 +67,8 @@ public class ITRF2000FrameTest extends TestCase {
 
   public void testRoughERA() throws ParseException, OrekitException {
 
-    AbsoluteDate date = new AbsoluteDate("2001-03-21T00:00:00",
+    AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2001, 03, 21),
+                                         ChunkedTime.H00,
                                          UTCScale.getInstance());
     TIRF2000Frame TIRF2000 = (TIRF2000Frame)Frame.getReferenceFrame(Frame.TIRF2000B, date);
 
@@ -79,7 +87,9 @@ public class ITRF2000FrameTest extends TestCase {
 
   public void testMSLIBTransformJ2OOO_TerVrai() throws OrekitException, ParseException {
 
-    AbsoluteDate date = new AbsoluteDate("2003-10-14T02:00:00", UTCScale.getInstance());
+    AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2003, 10, 14),
+                                         new ChunkedTime(02, 00, 00),
+                                         UTCScale.getInstance());
 
     Frame tirf = Frame.getReferenceFrame(Frame.TIRF2000B, date);	
 
@@ -104,7 +114,9 @@ public class ITRF2000FrameTest extends TestCase {
 
   public void testMSLIBTransformJ2000_TerRef() throws OrekitException, ParseException {
 
-    AbsoluteDate t0 = new AbsoluteDate("2003-10-14T02:00:00", UTCScale.getInstance());
+    AbsoluteDate t0 = new AbsoluteDate(new ChunkedDate(2003, 10, 14),
+                                       new ChunkedTime(02, 00, 00),
+                                       UTCScale.getInstance());
 
     Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, t0);	
 
@@ -173,7 +185,9 @@ public class ITRF2000FrameTest extends TestCase {
   }
 
   public void testGMS1() throws OrekitException, ParseException {
-    AbsoluteDate date = new AbsoluteDate("2006-05-14T00:08:51.423", UTCScale.getInstance());
+    AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2006, 05, 14),
+                                         new ChunkedTime(0, 8, 51.423),
+                                         UTCScale.getInstance());
     Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000A, date);   
     Transform trans = itrf.getTransformTo(Frame.getJ2000(), date);
     Vector3D posITRF = new Vector3D(6770000.000, -144000.000, 488000.000);
@@ -188,7 +202,9 @@ public class ITRF2000FrameTest extends TestCase {
   }
 
   public void testGMS2() throws OrekitException, ParseException {
-    AbsoluteDate date = new AbsoluteDate("2006-05-14T00:16:08.631", UTCScale.getInstance());
+    AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2006, 05, 14),
+                                         new ChunkedTime(00, 16, 08.631),
+                                         UTCScale.getInstance());
     Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, date);   
     Transform trans = itrf.getTransformTo(Frame.getJ2000(), date);
     Vector3D posITRF = new Vector3D(6254020.457, 1663297.258, -2070251.762);
@@ -203,7 +219,9 @@ public class ITRF2000FrameTest extends TestCase {
   }
 
   public void testGMS3() throws OrekitException, ParseException {
-    AbsoluteDate date = new AbsoluteDate("2006-05-14T00:26:06.833", UTCScale.getInstance());
+    AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2006, 05, 14),
+                                         new ChunkedTime(00, 26, 06.833),
+                                         UTCScale.getInstance());
     Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, date);   
     Transform trans = itrf.getTransformTo(Frame.getJ2000(), date);
     Vector3D posITRF = new Vector3D(3376169.673, 3578504.767, -4685496.977);
@@ -221,7 +239,9 @@ public class ITRF2000FrameTest extends TestCase {
 
     IERSDataResetter.setUp("testitrf-data");
     
-    AbsoluteDate t0 = new AbsoluteDate("2004-04-06T07:51:28.386", UTCScale.getInstance());
+    AbsoluteDate t0 = new AbsoluteDate(new ChunkedDate(2004, 04, 06),
+                                       new ChunkedTime(07, 51, 28.386),
+                                       UTCScale.getInstance());
     t0 = new AbsoluteDate(t0, 0.000009);
 
     Frame itrfA = Frame.getReferenceFrame(Frame.ITRF2000A, t0);    
@@ -268,7 +288,9 @@ public class ITRF2000FrameTest extends TestCase {
     
     IERSDataResetter.setUp("testitrf-data");
     
-    AbsoluteDate t0 = new AbsoluteDate("2004-06-01T00:00:00", UTCScale.getInstance());
+    AbsoluteDate t0 = new AbsoluteDate(new ChunkedDate(2004, 06, 01),
+                                       ChunkedTime.H00,
+                                       UTCScale.getInstance());
     
     Frame itrfA = Frame.getReferenceFrame(Frame.ITRF2000A, t0);    
 
@@ -319,7 +341,9 @@ public class ITRF2000FrameTest extends TestCase {
 
  public void aatestValladoReference() throws OrekitException, ParseException {
 
-    AbsoluteDate t0 = new AbsoluteDate("2004-04-06T07:51:28.386", UTCScale.getInstance());
+    AbsoluteDate t0 = new AbsoluteDate(new ChunkedDate(2004, 04, 06),
+                                       new ChunkedTime(07, 51, 28.386),
+                                       UTCScale.getInstance());
     t0 = new AbsoluteDate(t0, 0.000009);
 
     Frame j2000 = Frame.getJ2000();
@@ -488,7 +512,9 @@ public class ITRF2000FrameTest extends TestCase {
 //System.out.println(xp * 1296000 /(2 * Math.PI) );
 //System.out.println(yp * 1296000 /(2 * Math.PI) );
 //
-//AbsoluteDate zero = new AbsoluteDate("2004-04-05T00:00:00", UTCScale.getInstance());
+//AbsoluteDate zero = new AbsoluteDate(new ChunkedDate(2004, 04, 05),
+//                                       ChunkedTime.H00,
+//                                       UTCScale.getInstance());
 //double[] t = new double[] {0, 86400, 2*86400, 3*86400 };
 //double[] x = new double[] {-0.141167,-0.140639 , -0.140023, -0.139768 };
 //double[] y = new double[] {0.330933, 0.333257,0.336179,0.339275};

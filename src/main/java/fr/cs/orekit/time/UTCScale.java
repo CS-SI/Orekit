@@ -1,7 +1,5 @@
 package fr.cs.orekit.time;
 
-import java.text.ParseException;
-
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.iers.Leap;
 import fr.cs.orekit.iers.UTCTAIHistoryFilesLoader;
@@ -92,16 +90,14 @@ public class UTCScale extends TimeScale {
    * @throws OrekitException
    */
   public AbsoluteDate getStartDate()
-    throws ParseException, OrekitException {
+    throws OrekitException {
     if (UTCStartDate == null) {
-      try {
-        AbsoluteDate ref = new AbsoluteDate("1970-01-01T00:00:00", this);
-        Leap firstLeap = leaps[leaps.length - 1];
-        UTCStartDate = new AbsoluteDate(ref, firstLeap.utcTime - firstLeap.step);
-      } catch (ParseException pe) {
-        // this should never happen with the previous fixed date string
-        throw new RuntimeException("internal error");
-      }
+      AbsoluteDate ref =
+        new AbsoluteDate(new ChunkedDate(1970, 1, 1),
+                         new ChunkedTime(0, 0, 0),
+                         this);
+      Leap firstLeap = leaps[leaps.length - 1];
+      UTCStartDate = new AbsoluteDate(ref, firstLeap.utcTime - firstLeap.step);
     }
     return UTCStartDate;
   }

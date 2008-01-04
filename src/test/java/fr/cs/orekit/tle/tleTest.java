@@ -5,15 +5,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
-import org.apache.commons.math.geometry.Vector3D;
-import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.iers.IERSDataResetter;
-import fr.cs.orekit.time.AbsoluteDate;
-import fr.cs.orekit.time.UTCScale;
-import fr.cs.orekit.utils.PVCoordinates;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import org.apache.commons.math.geometry.Vector3D;
+
+import fr.cs.orekit.errors.OrekitException;
+import fr.cs.orekit.iers.IERSDataResetter;
+import fr.cs.orekit.time.AbsoluteDate;
+import fr.cs.orekit.time.ChunkedDate;
+import fr.cs.orekit.time.ChunkedTime;
+import fr.cs.orekit.time.UTCScale;
+import fr.cs.orekit.utils.PVCoordinates;
 
 public class tleTest extends TestCase {
   
@@ -61,17 +66,32 @@ public class tleTest extends TestCase {
     InputStream in =
       getClass().getResourceAsStream("/tle/regular-data/spot-5.txt");
     TLESeries series = new TLESeries(in);
-    assertEquals(0, series.getFirstDate().minus(
-                                                new AbsoluteDate("2002-05-04T11:45:15.695", UTCScale.getInstance())), 1e-3);
-    assertEquals(0, series.getLastDate().minus(
-                                               new AbsoluteDate("2002-06-24T18:12:44.592", UTCScale.getInstance())), 1e-3);
+    assertEquals(0,
+                 series.getFirstDate().minus(new AbsoluteDate(new ChunkedDate(2002, 05, 04),
+                                                              new ChunkedTime(11, 45, 15.695),
+                                                              UTCScale.getInstance())),
+                 1e-3);
+    assertEquals(0,
+                 series.getLastDate().minus(new AbsoluteDate(new ChunkedDate(2002, 06, 24),
+                                                             new ChunkedTime(18, 12, 44.592),
+                                                             UTCScale.getInstance())),
+                 1e-3);
 
-    AbsoluteDate mid = new AbsoluteDate("2002-06-02T11:12:15", UTCScale.getInstance());
-    assertEquals(0, series.getClosestTLE(mid).getEpoch().minus(
-                                                               new AbsoluteDate("2002-06-02T10:08:25.401", UTCScale.getInstance())), 1e-3);
-    mid = new AbsoluteDate("2001-06-02T11:12:15", UTCScale.getInstance());                                 
+    AbsoluteDate mid = new AbsoluteDate(new ChunkedDate(2002, 06, 02),
+                                        new ChunkedTime(11, 12, 15),
+                                        UTCScale.getInstance());
+    assertEquals(0,
+                 series.getClosestTLE(mid).getEpoch().minus(new AbsoluteDate(new ChunkedDate(2002, 6, 2),
+                                                                             new ChunkedTime(10, 8, 25.401),
+                                                                             UTCScale.getInstance())),
+                 1e-3);
+    mid = new AbsoluteDate(new ChunkedDate(2001, 06, 02),
+                           new ChunkedTime(11, 12, 15),
+                           UTCScale.getInstance());                                 
     assertTrue(series.getClosestTLE(mid).getEpoch().equals(series.getFirstDate()));
-    mid = new AbsoluteDate("2003-06-02T11:12:15", UTCScale.getInstance());                                 
+    mid = new AbsoluteDate(new ChunkedDate(2003, 06, 02),
+                           new ChunkedTime(11, 12, 15),
+                           UTCScale.getInstance());                                 
     assertTrue(series.getClosestTLE(mid).getEpoch().equals(series.getLastDate()));
 
   }
@@ -86,7 +106,7 @@ public class tleTest extends TestCase {
 //    double tetaTIRF = ITRF.getEarthRotationAngle(date);    
 //    assertEquals( Math.toDegrees(Utils.trimAngle(tetaTIRF, Math.PI)), Math.toDegrees(Utils.trimAngle(teta, Math.PI)), 0.003);
 //
-//    date = new AbsoluteDate("2002-03-08T01:00:45", UTCScale.getInstance());
+//    date = new AbsoluteDate(new ChunkedDate(2002, 03, 08), new ChunkedTime(01, 00, 45), UTCScale.getInstance());
 //    tetaTIRF = ITRF.getEarthRotationAngle(date);    
 //    teta = SDP4.thetaG(date); 
 //    assertEquals( Math.toDegrees(Utils.trimAngle(tetaTIRF, Math.PI)), Math.toDegrees(Utils.trimAngle(teta, Math.PI)), 0.04);

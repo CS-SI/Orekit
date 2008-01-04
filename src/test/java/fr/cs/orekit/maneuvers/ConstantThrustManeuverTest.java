@@ -1,10 +1,16 @@
 package fr.cs.orekit.maneuvers;
 
 import java.text.ParseException;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
+
 import fr.cs.orekit.Utils;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.forces.maneuvers.ConstantThrustManeuver;
@@ -16,10 +22,9 @@ import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.propagation.NumericalPropagator;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
+import fr.cs.orekit.time.ChunkedDate;
+import fr.cs.orekit.time.ChunkedTime;
 import fr.cs.orekit.time.UTCScale;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 
 public class ConstantThrustManeuverTest extends TestCase {
@@ -48,8 +53,12 @@ public class ConstantThrustManeuverTest extends TestCase {
                                                      omega, OMEGA,
                                                      lv, KeplerianParameters.TRUE_ANOMALY, Frame.getJ2000());
     
-    AbsoluteDate initDate = new AbsoluteDate("2004-01-01T23:30:00.000" , UTCScale.getInstance());
-    AbsoluteDate fireDate = new AbsoluteDate("2004-01-02T04:15:34.080" , UTCScale.getInstance());
+    AbsoluteDate initDate = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
+                                             new ChunkedTime(23, 30, 00.000),
+                                             UTCScale.getInstance());
+    AbsoluteDate fireDate = new AbsoluteDate(new ChunkedDate(2004, 01, 02),
+                                             new ChunkedTime(04, 15, 34.080),
+                                             UTCScale.getInstance());
     
     SpacecraftState transOrb = new SpacecraftState(new Orbit(initDate, transPar), mass);
     

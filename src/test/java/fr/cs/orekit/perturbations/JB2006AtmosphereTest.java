@@ -2,7 +2,13 @@ package fr.cs.orekit.perturbations;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.apache.commons.math.geometry.Vector3D;
+
 import fr.cs.orekit.SolarInputs97to05;
 import fr.cs.orekit.bodies.GeodeticPoint;
 import fr.cs.orekit.bodies.OneAxisEllipsoid;
@@ -14,10 +20,9 @@ import fr.cs.orekit.models.perturbations.DTM2000AtmosphereModel;
 import fr.cs.orekit.models.perturbations.JB2006Atmosphere;
 import fr.cs.orekit.models.perturbations.JB2006AtmosphereModel;
 import fr.cs.orekit.time.AbsoluteDate;
+import fr.cs.orekit.time.ChunkedDate;
+import fr.cs.orekit.time.ChunkedTime;
 import fr.cs.orekit.time.UTCScale;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 
 public class JB2006AtmosphereTest extends TestCase {
@@ -155,7 +160,9 @@ public class JB2006AtmosphereTest extends TestCase {
   
   public void testComparisonWithDTM2000() throws OrekitException, ParseException, FileNotFoundException {
 
-    AbsoluteDate date = new AbsoluteDate("2003-01-01T00:00:00", UTCScale.getInstance());
+    AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2003, 01, 01),
+                                         ChunkedTime.H00,
+                                         UTCScale.getInstance());
     Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, date);
     Sun sun = new Sun(); 
     OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101);
@@ -214,7 +221,9 @@ public class JB2006AtmosphereTest extends TestCase {
   
   public void testSolarInputs() throws OrekitException, ParseException {
     
-    AbsoluteDate date = new AbsoluteDate("2001-01-14T00:00:00", UTCScale.getInstance());
+    AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2001, 01, 14),
+                                         ChunkedTime.H00,
+                                         UTCScale.getInstance());
     
     SolarInputs97to05 in = SolarInputs97to05.getInstance();
     
@@ -232,7 +241,9 @@ public class JB2006AtmosphereTest extends TestCase {
     date = new AbsoluteDate(date, 11*3600);    
     assertEquals(6 , in.getAp(date),0);
     
-    date = new AbsoluteDate("1998-02-02T18:00:00", UTCScale.getInstance());
+    date = new AbsoluteDate(new ChunkedDate(1998, 02, 02),
+                            new ChunkedTime(18, 00, 00),
+                            UTCScale.getInstance());
 //    1998  33   2450847.0  89.1  95.1  95.8  97.9  81.3  92.0  1
 //    33  89  95   4   5   4   4   2   0   0   3                          98 
     assertEquals(89.1, in.getF10(date),0);

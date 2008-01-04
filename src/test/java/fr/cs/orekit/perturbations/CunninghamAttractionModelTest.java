@@ -2,12 +2,18 @@ package fr.cs.orekit.perturbations;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
+
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.forces.perturbations.CunninghamAttractionModel;
@@ -25,11 +31,10 @@ import fr.cs.orekit.propagation.FixedStepHandler;
 import fr.cs.orekit.propagation.NumericalPropagator;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
+import fr.cs.orekit.time.ChunkedDate;
+import fr.cs.orekit.time.ChunkedTime;
 import fr.cs.orekit.time.UTCScale;
 import fr.cs.orekit.utils.PVCoordinates;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 public class CunninghamAttractionModelTest extends TestCase {
   
@@ -45,7 +50,9 @@ public class CunninghamAttractionModelTest extends TestCase {
            OrekitException, DerivativeException, IntegratorException {
 
     // initialization
-    AbsoluteDate date = new AbsoluteDate("2000-07-01T13:59:27.816" , UTCScale.getInstance());
+    AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 07, 01),
+                                         new ChunkedTime(13, 59, 27.816),
+                                         UTCScale.getInstance());
     Transform itrfToJ2000  = itrf2000.getTransformTo(Frame.getJ2000(), date);
     Vector3D pole          = itrfToJ2000.transformVector(Vector3D.plusK);
     Frame poleAligned      = new Frame(Frame.getJ2000(),
@@ -203,7 +210,9 @@ public class CunninghamAttractionModelTest extends TestCase {
   public void testZonalWithDrozinerReference()
   throws OrekitException, DerivativeException, IntegratorException, ParseException {
 //  initialization
-    AbsoluteDate date = new AbsoluteDate("2000-07-01T13:59:27.816" , UTCScale.getInstance());
+    AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 07, 01),
+                                         new ChunkedTime(13, 59, 27.816),
+                                         UTCScale.getInstance());
     double i     = Math.toRadians(98.7);
     double omega = Math.toRadians(93.0);
     double OMEGA = Math.toRadians(15.0 * 22.5);

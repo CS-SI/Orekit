@@ -2,10 +2,16 @@ package fr.cs.orekit.perturbations;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
+
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.forces.perturbations.ThirdBodyAttraction;
 import fr.cs.orekit.frames.Frame;
@@ -19,17 +25,18 @@ import fr.cs.orekit.propagation.FixedStepHandler;
 import fr.cs.orekit.propagation.NumericalPropagator;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
+import fr.cs.orekit.time.ChunkedDate;
+import fr.cs.orekit.time.ChunkedTime;
 import fr.cs.orekit.time.UTCScale;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 public class ThirdBodyAttractionTest extends TestCase {
   
   public void testSunContrib() throws ParseException, OrekitException, DerivativeException, IntegratorException, FileNotFoundException {
     
     // initialization
-    AbsoluteDate date = new AbsoluteDate("2000-07-01T13:59:27.816" , UTCScale.getInstance());
+    AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 07, 01),
+                                         new ChunkedTime(13, 59, 27.816),
+                                         UTCScale.getInstance());
     OrbitalParameters op = new EquinoctialParameters(42164000,10e-3,10e-3,
                                                      Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
                                                      0.1, 2, Frame.getJ2000());
@@ -56,7 +63,9 @@ public class ThirdBodyAttractionTest extends TestCase {
   public void testMoonContrib() throws ParseException, OrekitException, DerivativeException, IntegratorException, FileNotFoundException {
     
     // initialization
-    AbsoluteDate date = new AbsoluteDate("2000-07-01T13:59:27.816" , UTCScale.getInstance());
+    AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 07, 01),
+                                         new ChunkedTime(13, 59, 27.816),
+                                         UTCScale.getInstance());
     OrbitalParameters op = new EquinoctialParameters(42164000,10e-3,10e-3,
                                                      Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
                                                      0.1, 2, Frame.getJ2000());
@@ -135,13 +144,10 @@ public class ThirdBodyAttractionTest extends TestCase {
     }
 
     public boolean requiresDenseOutput() {
-      // TODO Auto-generated method stub
       return false;
     }
 
     public void reset() {
-      // TODO Auto-generated method stub
-      
     }
     
   }     

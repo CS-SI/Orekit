@@ -1,8 +1,10 @@
 package fr.cs.orekit.tutorials;
 
 import java.text.ParseException;
+
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
+
 import fr.cs.orekit.attitudes.AttitudeKinematics;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.forces.ForceModel;
@@ -16,6 +18,8 @@ import fr.cs.orekit.propagation.IntegratedEphemeris;
 import fr.cs.orekit.propagation.NumericalPropagator;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
+import fr.cs.orekit.time.ChunkedDate;
+import fr.cs.orekit.time.ChunkedTime;
 import fr.cs.orekit.time.UTCScale;
 import fr.cs.orekit.utils.DateFormatter;
 
@@ -51,9 +55,10 @@ public class NumericalPropagation {
     AttitudeKinematics initialAK = new AttitudeKinematics(); // identity attitude
       // date and frame
     
-    AbsoluteDate initialDate = 
-      new AbsoluteDate("2004-01-01T23:30:00.000" , UTCScale.getInstance());
-    
+    AbsoluteDate initialDate = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
+                                                new ChunkedTime(23, 30, 00.000),
+                                                UTCScale.getInstance());
+ 
     Frame inertialFrame = Frame.getJ2000();
     
       // OREKIT objects construction:
@@ -124,8 +129,9 @@ public class NumericalPropagation {
     AttitudeKinematics initialAK = new AttitudeKinematics(); // identity attitude
       // date and frame
     
-    AbsoluteDate initialDate = 
-      new AbsoluteDate("2004-01-01T23:30:00.000" , UTCScale.getInstance());
+    AbsoluteDate initialDate = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
+                                                new ChunkedTime(23, 30, 00.000),
+                                                UTCScale.getInstance());
     
     Frame inertialFrame = Frame.getJ2000();
     
@@ -183,13 +189,10 @@ public class NumericalPropagation {
       }
 
       public boolean requiresDenseOutput() {
-        // TODO Auto-generated method stub
         return false;
       }
 
       public void reset() {
-        // TODO Auto-generated method stub
-        
       }
       
     }

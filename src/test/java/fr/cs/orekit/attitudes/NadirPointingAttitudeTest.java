@@ -2,7 +2,13 @@ package fr.cs.orekit.attitudes;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.apache.commons.math.geometry.Vector3D;
+
 import fr.cs.orekit.Utils;
 import fr.cs.orekit.attitudes.models.NadirPointingAttitude;
 import fr.cs.orekit.bodies.BodyShape;
@@ -16,11 +22,10 @@ import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.propagation.KeplerianPropagator;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
+import fr.cs.orekit.time.ChunkedDate;
+import fr.cs.orekit.time.ChunkedTime;
 import fr.cs.orekit.time.UTCScale;
 import fr.cs.orekit.utils.Line;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 
 public class NadirPointingAttitudeTest extends TestCase {
@@ -32,7 +37,8 @@ public class NadirPointingAttitudeTest extends TestCase {
                              0.0, CircularParameters.TRUE_LONGITUDE_ARGUMENT,
                              Frame.getJ2000());
 
-    final AbsoluteDate initDate = new AbsoluteDate("2001-03-21T00:00:00",
+    final AbsoluteDate initDate = new AbsoluteDate(new ChunkedDate(2001, 03, 21),
+                                                   ChunkedTime.H00,
                                                    UTCScale.getInstance());
 
     final Orbit o = new Orbit(initDate, op);
@@ -71,7 +77,8 @@ public class NadirPointingAttitudeTest extends TestCase {
                              0.0, CircularParameters.TRUE_LONGITUDE_ARGUMENT,
                              Frame.getJ2000());
 
-    final AbsoluteDate initDate = new AbsoluteDate("2001-03-21T00:00:00",
+    final AbsoluteDate initDate = new AbsoluteDate(new ChunkedDate(2001, 03, 21),
+                                                   ChunkedTime.H00,
                                                    UTCScale.getInstance());
 
     Orbit o = new Orbit(initDate, op);
@@ -138,7 +145,8 @@ public class NadirPointingAttitudeTest extends TestCase {
                              0.0, CircularParameters.TRUE_LONGITUDE_ARGUMENT,
                              Frame.getJ2000());
 
-    final AbsoluteDate initDate = new AbsoluteDate("2001-03-21T00:00:00",
+    final AbsoluteDate initDate = new AbsoluteDate(new ChunkedDate(2001, 03, 21),
+                                                   ChunkedTime.H00,
                                                    UTCScale.getInstance());
 
     final Orbit o = new Orbit(initDate, op);

@@ -4,6 +4,7 @@ import java.text.ParseException;
 
 import org.apache.commons.math.ode.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
+
 import fr.cs.orekit.attitudes.AttitudeKinematics;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
@@ -14,6 +15,8 @@ import fr.cs.orekit.propagation.KeplerianPropagator;
 import fr.cs.orekit.propagation.NumericalPropagator;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
+import fr.cs.orekit.time.ChunkedDate;
+import fr.cs.orekit.time.ChunkedTime;
 import fr.cs.orekit.time.UTCScale;
 
 /** The aim of this tutorial is to manipulate spacecraft states, orbital parameters
@@ -42,8 +45,9 @@ public class KeplerianPropagation {
     AttitudeKinematics initialAK = new AttitudeKinematics(); // identity attitude
       // date and frame
     
-    AbsoluteDate initialDate = 
-      new AbsoluteDate("2004-01-01T23:30:00.000" , UTCScale.getInstance());
+    AbsoluteDate initialDate = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
+                                                new ChunkedTime(23, 30, 00.000),
+                                                UTCScale.getInstance());
     
     Frame inertialFrame = Frame.getJ2000();
     
