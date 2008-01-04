@@ -45,11 +45,11 @@ public class IERSDirectoryCrawler {
       // safety checks
       if (! root.exists()) {
         throw new OrekitException("IERS root directory {0} does not exist",
-                                  new String[] { root.getAbsolutePath() });
+                                  new Object[] { root.getAbsolutePath() });
       }
       if (! root.isDirectory()) {
         throw new OrekitException("{0} is not a directory",
-                                  new String[] { root.getAbsolutePath() });
+                                  new Object[] { root.getAbsolutePath() });
       }
 
     }

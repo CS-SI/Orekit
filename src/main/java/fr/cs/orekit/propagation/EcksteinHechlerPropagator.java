@@ -92,9 +92,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
     // sanity check
     if (osculating.getA() < referenceRadius) {
       throw new PropagationException("trajectory inside the Brillouin sphere (r = {0})",
-                                     new String[] {
-                                       Double.toString(osculating.getA())
-                                     });
+                                     new Object[] { new Double(osculating.getA()) });
     }
 
     // rough initialization of the mean parameters

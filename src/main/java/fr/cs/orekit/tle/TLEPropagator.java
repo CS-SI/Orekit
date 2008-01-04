@@ -8,25 +8,24 @@ import fr.cs.orekit.utils.PVCoordinates;
 
 /** This class provides elements to propagate TLE's.
  * <p>
- * The models used are SGP4 and SDP4, initialy proposed by NORAD as the unique convenient
+ * The models used are SGP4 and SDP4, initially proposed by NORAD as the unique convenient
  * propagator for TLE's. Inputs and outputs of this propagator are only suited for
  * NORAD two lines elements sets, since it uses estimations and mean values appropriate
  * for TLE's only.
  * </p>
  * <p>
- * Deep- or near- space propagator is selected internaly according to NORAD recommendations
+ * Deep- or near- space propagator is selected internally according to NORAD recommendations
  * so that the user has not to worry about the used computation methods. One instance is created
- * for each TLE (this instance can only be get threw {@link #selectExtrapolator(TLE)} method,
+ * for each TLE (this instance can only be get using {@link #selectExtrapolator(TLE)} method,
  * and can compute {@link PVCoordinates position and velocity coordinates} at any
  * time. Maximum accuracy is guaranteed in a 24h range period before and after the provided 
- * TLE epcoh (if course this accuracy is not really measurable nor predictable : according to
- * <ahref="http://www.celestrak.com/"> CelesTrak</a>, the precision is close to one kilometer
+ * TLE epoch (of course this accuracy is not really measurable nor predictable: according to
+ * <a href="http://www.celestrak.com/">CelesTrak</a>, the precision is close to one kilometer
  * and error won't probably rise above 2 km).
  * </p>
- * <p>
- * This implementation is largely inspired from the paper and source code <ahref="http://www.celestrak.com/publications/AIAA/2006-6753/">
- * Revisiting Spacetrack Report #3</a> and is totally compliant with its results and tests cases.
- * </p>
+ * <p>This implementation is largely inspired from the paper and source code <a
+ * href="http://www.celestrak.com/publications/AIAA/2006-6753/">Revisiting Spacetrack
+ * Report #3</a> and is fully compliant with its results and tests cases.</p>
  * @author SPACETRACK Report #3 project. Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
  * @author Revisiting Spacetrack Report #3. David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
  * @author F. Maussion (Java translation)
@@ -34,7 +33,7 @@ import fr.cs.orekit.utils.PVCoordinates;
  */
 public abstract class TLEPropagator {
 
-  /** Protected constructor for herited classes. 
+  /** Protected constructor for derived classes. 
    * @param initialTLE the unique TLE to propagate
    * @throws OrekitException if some specific error occurs
    */
@@ -212,16 +211,20 @@ public abstract class TLEPropagator {
       String message = Translator.getInstance().translate(
          "Eccentricity is becoming greater than 1. Unable to continue TLE propagation." +
          "Satellite number : {0}. Element number : {1}.");
-      throw new OrekitException(message, new String[] 
-         {Integer.toString(tle.getSatelliteNumber()),
-          Integer.toString(tle.getElementNumber())});
-    }   
+      throw new OrekitException(message,
+                                new Object[] {
+                                  new Integer(tle.getSatelliteNumber()),
+                                  new Integer(tle.getElementNumber())
+                                });
+    }
     if ( (a * (1. - e) < 1.) || (a * (1. + e) < 1.) ) {
       String message = Translator.getInstance().translate(
          "Perige within earth." + "Satellite number : {0}. Element number : {1}.");
-      throw new OrekitException(message, new String[] 
-         {Integer.toString(tle.getSatelliteNumber()),
-          Integer.toString(tle.getElementNumber())});
+      throw new OrekitException(message,
+                                new Object[] {
+                                  new Integer(tle.getSatelliteNumber()),
+                                  new Integer(tle.getElementNumber())
+                                });
     }   
     
     // Solve Kepler's' Equation.     
@@ -327,7 +330,6 @@ public abstract class TLEPropagator {
   }
   
   /** Initialization proper to each propagator (SGP or SDP).
-   * @param tSince the offset from initial epoch (min)
    * @throws OrekitException if some specific error occurs    
    */
   protected abstract void sxpInitialize() throws OrekitException;

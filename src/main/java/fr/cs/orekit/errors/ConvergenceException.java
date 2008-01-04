@@ -8,7 +8,7 @@ extends OrekitException {
    */
   public ConvergenceException(int iterations) {
     super("unable to converge after {0} iterations",
-          new String[] { Integer.toString(iterations) });
+          new Object[] { new Integer(iterations) });
   }
   
   private static final long serialVersionUID = -1389664478543066679L;

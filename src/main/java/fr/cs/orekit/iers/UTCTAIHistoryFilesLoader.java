@@ -84,7 +84,7 @@ public class UTCTAIHistoryFilesLoader extends IERSFileVisitor {
 
     if (readFile != null) {
       throw new OrekitException("several IERS UTC-TAI history files found: {0} and {1}",
-                                new String[] {
+                                new Object[] {
                                   readFile.getAbsolutePath(),
                                   file.getAbsolutePath()
                                 });
@@ -104,10 +104,10 @@ public class UTCTAIHistoryFilesLoader extends IERSFileVisitor {
         if (lastLine > 0) {
           throw new OrekitException("unexpected data line {0} in file {1}"
                                     + "(line {2} should not be followed by data)",
-                                    new String[] {
-                                        Integer.toString(lineNumber),
+                                    new Object[] {
+                                        new Integer(lineNumber),
                                         file.getAbsolutePath(),
-                                        Integer.toString(lastLine)
+                                        new Integer(lastLine)
                                     });
         }
       } else {
@@ -138,9 +138,9 @@ public class UTCTAIHistoryFilesLoader extends IERSFileVisitor {
           double utcTime = format.parse(sDate).getTime() * 1.0e-3;
           if ((last != null) && (utcTime < last.utcTime)) {
             throw new OrekitException("non-increasing dates in file {0}, line {1}",
-                                      new String[] {
+                                      new Object[] {
                                         file.getAbsolutePath(),
-                                        Integer.toString(lineNumber)
+                                        new Integer(lineNumber)
                                       });
           }
 
@@ -152,8 +152,8 @@ public class UTCTAIHistoryFilesLoader extends IERSFileVisitor {
 
         } catch (NumberFormatException nfe) {
           throw new OrekitException("unable to parse line {0} in IERS UTC-TAI history file {1}",
-                                    new String[] {
-                                      Integer.toString(lineNumber),
+                                    new Object[] {
+                                      new Integer(lineNumber),
                                       file.getAbsolutePath()
                                     });
         }
@@ -162,7 +162,7 @@ public class UTCTAIHistoryFilesLoader extends IERSFileVisitor {
 
     if (leaps.isEmpty()) {
       throw new OrekitException("file {0} is not an IERS UTC-TAI history file",
-                                new String[] { file.getAbsolutePath() });        
+                                new Object[] { file.getAbsolutePath() });        
     }
 
     readFile = file;

@@ -37,7 +37,7 @@ public class Development implements Serializable {
 
     if (stream == null) {
       throw new OrekitException("unable to find nutation model file {0}",
-                                new String[] { name });
+                                new Object[] { name });
     }
 
     try {
@@ -188,10 +188,10 @@ public class Development implements Serializable {
     if (Integer.parseInt(headerMatcher.group(1)) != expected) {
       throw new OrekitException("missing serie j = {0} in nutation"
                                 + " model file {1} (line {2})",
-                                new String[] {
-                                  Integer.toString(expected),
+                                new Object[] {
+                                  new Integer(expected),
                                   name,
-                                  Integer.toString(lineNumber)
+                                  new Integer(lineNumber)
                                 });
     }
 
@@ -214,10 +214,7 @@ public class Development implements Serializable {
     // sanity check
     if (line == null) {
       throw new OrekitException("unexpected end of nutation model file {0} (after line {1})",
-                                new String[] {
-                                  name,
-                                  Integer.toString(lineNumber - 1)
-                                });
+                                new Object[] { name, new Integer(lineNumber - 1) });
     }
 
     // parse the nutation serie term

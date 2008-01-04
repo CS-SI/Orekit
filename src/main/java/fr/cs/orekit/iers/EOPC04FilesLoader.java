@@ -85,17 +85,17 @@ public class EOPC04FilesLoader extends IERSFileVisitor {
       }
       if (! (inHeader || parsed)) {
         throw new OrekitException("unable to parse line {0} in IERS data file {1}",
-                                  new String[] {
-            Integer.toString(lineNumber),
-            file.getAbsolutePath()
-        });
+                                  new Object[] {
+                                    new Integer(lineNumber),
+                                    file.getAbsolutePath()
+                                  });
       }
     }
 
     // check if we have read something
     if (inHeader) {
       throw new OrekitException("file {0} is not an IERS data file",
-                                new String[] { file.getAbsolutePath() });        
+                                new Object[] { file.getAbsolutePath() });        
     }
 
   }

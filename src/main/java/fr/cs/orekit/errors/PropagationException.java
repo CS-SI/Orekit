@@ -13,7 +13,7 @@ public class PropagationException
    * @param specifier format specifier (to be translated)
    * @param parts parts to insert in the format (no translation)
    */
-  public PropagationException(String specifier, String[] parts) {
+  public PropagationException(String specifier, Object[] parts) {
     super(specifier, parts);
   }
   

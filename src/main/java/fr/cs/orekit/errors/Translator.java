@@ -41,7 +41,7 @@ public class Translator {
    * @param specifier format specifier (to be translated)
    * @param parts parts to insert in the format (no translation)
    */
-  public String translate(String specifier, String[] parts) {
+  public String translate(String specifier, Object[] parts) {
     String translated;
     try {
       translated = resources.getString(specifier);

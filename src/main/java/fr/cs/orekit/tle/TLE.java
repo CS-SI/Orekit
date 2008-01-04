@@ -284,19 +284,19 @@ public class TLE  implements Comparable {
       decimal = (decimal - Math.floor(decimal))*10;
       if(Integer.parseInt(line1.substring(68))!= Math.round(decimal)) {
         throw new OrekitException("Cheksum of line 1 is not correct. Should be: {0} but is: {1}",
-                                  new String[] {
-            line1.substring(68) ,
-            Double.toString(Math.round(decimal))
-        });
+                                  new Object[] {
+                                    line1.substring(68) ,
+                                    new Double(Math.round(decimal))
+                                  });
       }
       decimal = chksum2/10.0;
       decimal = (decimal - Math.floor(decimal))*10;
       if(Integer.parseInt(line2.substring(68))!= Math.round(decimal)) {
         throw new OrekitException("Cheksum of line 2 is not correct. Should be: {0} but is: {1}",
-                                  new String[] {
-            line2.substring(68) ,
-            Double.toString(Math.round(decimal))
-        });
+                                  new Object[] {
+                                    line2.substring(68) ,
+                                    new Double(Math.round(decimal))
+                                  });
       }
       return true;
     }

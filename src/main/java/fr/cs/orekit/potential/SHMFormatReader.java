@@ -96,11 +96,11 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
    */
   public void read() throws OrekitException, IOException {
     if (in == null) {
-      throw new OrekitException("the reader has not been tested", new String[0]);
+      throw new OrekitException("the reader has not been tested", new Object[0]);
     }
     if (fileIsOK == false) {
       throw new OrekitException("the reader is not adapted to the format",
-                                new String[0]);
+                                new Object[0]);
     }
 
     BufferedReader r = new BufferedReader(new InputStreamReader(in));

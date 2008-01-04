@@ -55,7 +55,7 @@ public class JB2006AtmosphereModel extends JB2006Atmosphere implements
         date.compareTo(inputParams.getMinDate())<0) {
       throw new OrekitException("Current date is out of range. " + 
                                 "Solar activity datas are not available",
-                                new String[0]);      
+                                new Object[0]);      
     }
 
     // compute modifed julian days date

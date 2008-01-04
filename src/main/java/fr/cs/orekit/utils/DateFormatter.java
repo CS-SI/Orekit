@@ -8,19 +8,19 @@ import fr.cs.orekit.time.TAIScale;
 import fr.cs.orekit.time.TimeScale;
 import fr.cs.orekit.time.UTCScale;
 
-/** Converts a date into a standard string reprensentation.
+/** Converts a date into a standard ISO-8601 string representation.
  * 
  * @author F. Maussion
  */
 public class DateFormatter {
-  
+
   /** Date formats to use for string conversion. */
   private static SimpleDateFormat output = null;
   static {
       output = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
       output.setTimeZone(TimeZone.getTimeZone("UTC"));
   }
-  
+
   /** Get a String representation of the instant location in UTC time scale.
    * @param date the date to format
    * @return a string representation of the instance,
@@ -33,7 +33,6 @@ public class DateFormatter {
       return toString(date,TAIScale.getInstance());       
     }
   }
-  
 
   /** Get a String representation of the instant location.
    * @param date the date to format

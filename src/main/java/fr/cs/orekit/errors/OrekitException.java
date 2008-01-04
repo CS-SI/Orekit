@@ -23,7 +23,7 @@ public class OrekitException
    * @param specifier format specifier (to be translated)
    * @param parts parts to insert in the format (no translation)
    */
-  public OrekitException(String specifier, String[] parts) {
+  public OrekitException(String specifier, Object[] parts) {
     super(Translator.getInstance().translate(specifier, parts));
   }
 
@@ -42,7 +42,7 @@ public class OrekitException
    * @param parts parts to insert in the format (no translation)
    * @param cause underlying cause
    */
-  public OrekitException(String specifier, String[] parts, Throwable cause) {
+  public OrekitException(String specifier, Object[] parts, Throwable cause) {
     super(Translator.getInstance().translate(specifier, parts), cause);
   }
 

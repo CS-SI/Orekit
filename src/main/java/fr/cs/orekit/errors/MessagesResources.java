@@ -101,7 +101,16 @@ public class MessagesResources
     { "Current date is out of range. " + 
       "Solar activity datas are not available" ,
       "Current date is out of range. " + 
-      "Solar activity datas are not available" }
+      "Solar activity datas are not available" },
+    { "non-existent month {0}",
+      "non-existent month {0}" },
+    { "non-existent date {0}-{1}-{2}",
+      "non-existent date {0}-{1}-{2}" },
+    { "non-existent hour {0}:{1}:{2}",
+      "non-existent hour {0}:{1}:{2}" },
+    { "out of range seconds number: {0}",
+      "out of range seconds number: {0}" }
+
   };
 
 }

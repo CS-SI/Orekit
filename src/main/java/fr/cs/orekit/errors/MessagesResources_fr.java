@@ -109,7 +109,15 @@ public class MessagesResources_fr
     { "Current date is out of range. " + 
       "Solar activity datas are not available" ,
       "La date est hors de l''intervalle permis. " + 
-      "Les param\u00e8tres d''activit\u00e9 du soleil ne sont pas disponibles. " }
+      "Les param\u00e8tres d''activit\u00e9 du soleil ne sont pas disponibles. " },
+    { "non-existent month {0}",
+      "mois inexistant {0}" },
+    { "non-existent date {0}-{1}-{2}",
+      "date inexistante {0}-{1}-{2}" },
+    { "non-existent hour {0}:{1}:{2}",
+      "heure inexistante {0}:{1}:{2}" },
+    { "out of range seconds number: {0}",
+      "num\u00e9ro de seconde hors domaine : {0}" }
    
   };
 

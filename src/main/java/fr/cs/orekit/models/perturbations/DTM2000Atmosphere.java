@@ -85,7 +85,7 @@ public class DTM2000Atmosphere {
                            double hl, double f, double fbar, double akp3, double akp24) throws OrekitException {
     if(alti<120000) {
       throw new OrekitException(" Altitude is below the minimal range of 120000 m : {0}" , 
-                                new String[] {Double.toString(alti)});
+                                new Object[] { new Double(alti) });
     }
     this.day = day;
     this.alti = alti/1000;
@@ -497,7 +497,7 @@ public class DTM2000Atmosphere {
     InputStream in = c.getResourceAsStream(dtm2000);
     if (in == null) {
       throw new OrekitException("unable to find dtm 2000 model data file {0}",
-                                new String[] { dtm2000 });
+                                new Object[] { dtm2000 });
     }
     try {
 

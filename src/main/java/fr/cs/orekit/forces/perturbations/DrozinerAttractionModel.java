@@ -42,10 +42,10 @@ public class DrozinerAttractionModel implements ForceModel {
     if (C.length!=S.length||C[C.length-1].length!=S[S.length-1].length) {
       throw new OrekitException("C and S should have the same size :" +
                                 " (C = [{0}][{1}] ; S = [{2}][{3}])",
-                                new String[] { Integer.toString(C.length) , 
-          Integer.toString(C[degree].length) , 
-          Integer.toString(S.length) ,           
-          Integer.toString(S[degree].length) });
+                                new Object[] {
+                                  new Integer(C.length), new Integer(C[degree].length),
+                                  new Integer(S.length), new Integer(S[degree].length)
+                                });
     }
 
     if(C.length<1) {
@@ -94,13 +94,13 @@ public class DrozinerAttractionModel implements ForceModel {
     double r1 = Math.sqrt(r12);
     if (r1 <= 10e-2) {
       throw new OrekitException("polar trajectory (r1 = {0})",
-                                new String[] { Double.toString(r1) });
+                                new Object[] { new Double(r1) });
     }
     double r2 = r12 + zBody * zBody;
     double r  = Math.sqrt(r2);
     if (r <= equatorialRadius) {
       throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
-                                new String[] { Double.toString(r) });
+                                new Object[] { new Double(r) });
     }
     double r3    = r2  * r;
     double aeOnr = equatorialRadius / r;

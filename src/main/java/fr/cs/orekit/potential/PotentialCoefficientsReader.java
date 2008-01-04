@@ -51,11 +51,10 @@ public abstract class PotentialCoefficientsReader {
    */
   public double[] getJ(boolean normalized, int n) throws OrekitException {
     if (n >= normalizedC.length) {
-      throw new OrekitException(
-                                "too large degree (n = {0}), potential maximal degree is {1})",
-                                new String[] {
-                                    Integer.toString(n),
-                                    Integer.toString(normalizedC.length - 1)
+      throw new OrekitException("too large degree (n = {0}), potential maximal degree is {1})",
+                                new Object[] {
+                                    new Integer(n),
+                                    new Integer(normalizedC.length - 1)
                                 });
     }
 
@@ -106,20 +105,17 @@ public abstract class PotentialCoefficientsReader {
 
     // safety checks
     if (n >= complete.length) {
-      throw new OrekitException(
-                                "too large degree (n = {0}), potential maximal degree is {1})",
-                                new String[] {
-                                    Integer.toString(n),
-                                    Integer.toString(complete.length - 1)
+      throw new OrekitException("too large degree (n = {0}), potential maximal degree is {1})",
+                                new Object[] {
+                                    new Integer(n),
+                                    new Integer(complete.length - 1)
                                 });
     }
     if (m >= complete[complete.length - 1].length) {
-      throw new OrekitException(
-                                "too large order (m = {0}), potential maximal order is {1})",
-                                new String[] {
-                                    Integer.toString(m),
-                                    Integer
-                                        .toString(complete[complete.length - 1].length - 1)
+      throw new OrekitException("too large order (m = {0}), potential maximal order is {1})",
+                                new Object[] {
+                                    new Integer(m),
+                                    new Integer(complete[complete.length - 1].length - 1)
                                 });
     }
 

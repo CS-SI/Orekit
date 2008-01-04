@@ -99,7 +99,7 @@ public class SolarRadiationPressure implements ForceModel {
     double r = position.getNorm();
     if (r <= equatorialRadius) {
       throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
-                                new String[] { Double.toString(r) });
+                                new Object[] { new Double(r) });
     }
 
     double alphaEarth = Math.atan(equatorialRadius / r);
@@ -175,7 +175,7 @@ public class SolarRadiationPressure implements ForceModel {
       double r = pv.getPosition().getNorm();
       if (r <= equatorialRadius) {
         throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
-                                  new String[] { Double.toString(r) });
+                                  new Object[] { new Double(r) });
       }
       double alphaEarth = equatorialRadius / r;
       return sunEarthAngle - alphaEarth;
@@ -222,7 +222,7 @@ public class SolarRadiationPressure implements ForceModel {
       double r = pv.getPosition().getNorm();
       if (r <= equatorialRadius) {
         throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
-                                  new String[] { Double.toString(r) });
+                                  new Object[] { new Double(r) });
       }
       double alphaEarth = equatorialRadius / r;
       double alphaSun   = sun.getRadius() / satSunVector.getNorm();

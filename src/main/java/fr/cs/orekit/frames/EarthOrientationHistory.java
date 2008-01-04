@@ -71,7 +71,7 @@ public class EarthOrientationHistory implements Serializable {
       // compare the dates of previous and current entries
       if ((previous != null) && ((current.mjd - previous.mjd) > maxGap)) {
         throw new OrekitException("missing Earth Orientation Parameters between {0} and {1}",
-                                  new String[] {
+                                  new Object[] {
                                     DateFormatter.toString(previous.date, UTCScale.getInstance()),
                                     DateFormatter.toString(current.date, UTCScale.getInstance())
                                   });
