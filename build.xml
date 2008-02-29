@@ -1,85 +1,22 @@
-<project name="orekit" default="jar" basedir=".">
-  <property file="${user.home}/.m2/maven.properties"/>
-  <property name="maven.build.output" value="target/classes"/>
-  <property name="maven.build.directory" value="target"/>
-  <property name="maven.build.final.name" value="orekit-1.0-SNAPSHOT"/>
-  <property name="maven.test.reports" value="${maven.build.directory}/test-reports"/>
-  <property name="maven.test.output" value="target/test-classes"/>
-  <property name="maven.repo.local" value="${user.home}/.m2/repository"/>
-  <path id="build.classpath">
-    <fileset dir="${maven.repo.local}">
-      <include name="commons-math/commons-math/1.2-SNAPSHOT/commons-math-1.2-SNAPSHOT.jar"/>
-      <include name="org/slf4j/slf4j-api/1.4.1/slf4j-api-1.4.1.jar"/>
-    </fileset>
-  </path>
-  <target name="clean" description="Clean the output directory">
-    <delete dir="${maven.build.directory}"/>
-  </target>
-  <target name="compile" depends="get-deps" description="Compile the code">
-    <mkdir dir="${maven.build.output}"/>
-    <javac destdir="${maven.build.output}" excludes="**/package.html" debug="true" deprecation="true" optimize="false">
-      <src>
-        <pathelement location="src/main/java"/>
-      </src>
-      <classpath refid="build.classpath"/>
-    </javac>
-    <copy todir="${maven.build.output}">
-      <fileset dir="src/main/resources"/>
-    </copy>
-  </target>
-  <target name="jar" depends="compile,test" description="Clean the JAR">
-    <jar jarfile="${maven.build.directory}/${maven.build.final.name}.jar" basedir="${maven.build.output}" excludes="**/package.html"/>
-  </target>
-  <target name="compile-tests" depends="junit-present, compile" description="Compile the test code" if="junit.present">
-    <mkdir dir="${maven.test.output}"/>
-    <javac destdir="${maven.test.output}" excludes="**/package.html" debug="true" deprecation="true" optimize="false">
-      <src>
-        <pathelement location="src/test/java"/>
-      </src>
-      <classpath>
-        <path refid="build.classpath"/>
-        <pathelement location="${maven.build.output}"/>
-      </classpath>
-    </javac>
-    <copy todir="${maven.test.output}">
-      <fileset dir="src/test/resources"/>
-    </copy>
-  </target>
-  <target name="test" depends="junit-present, compile-tests" if="junit.present" description="Run the test cases">
-    <mkdir dir="${maven.test.reports}"/>
-    <junit printSummary="yes" haltonerror="true" haltonfailure="true" fork="true" dir=".">
-      <sysproperty key="basedir" value="."/>
-      <formatter type="xml"/>
-      <formatter type="plain" usefile="false"/>
-      <classpath>
-        <path refid="build.classpath"/>
-        <pathelement location="${maven.build.output}"/>
-        <pathelement location="${maven.test.output}"/>
-      </classpath>
-      <batchtest todir="${maven.test.reports}">
-        <fileset dir="src/test/java">
-          <include name="**/*Test.java"/>
-          <exclude name="**/*Abstract*Test.java"/>
-        </fileset>
-      </batchtest>
-    </junit>
-  </target>
-  <target name="test-junit-present">
-    <available classname="junit.framework.Test" property="junit.present"/>
-  </target>
-  <target name="junit-present" depends="test-junit-present" unless="junit.present">
-    <echo>================================= WARNING ================================</echo>
-    <echo> Junit isn't present in your $ANT_HOME/lib directory. Tests not executed. </echo>
-    <echo>==========================================================================</echo>
-  </target>
-  <target name="test-offline">
-    <condition property="maven.mode.offline">
-      <equals arg1="${build.sysclasspath}" arg2="only"/>
-    </condition>
-  </target>
-  <target name="get-deps" depends="test-offline" description="Download all dependencies" unless="maven.mode.offline">
-    <mkdir dir="${maven.repo.local}"/>
-    <get src="http://repo1.maven.org/maven2/commons-math/commons-math/1.2-SNAPSHOT/commons-math-1.2-SNAPSHOT.jar" dest="${maven.repo.local}/commons-math/commons-math/1.2-SNAPSHOT/commons-math-1.2-SNAPSHOT.jar" usetimestamp="true" ignoreerrors="true"/>
-    <get src="http://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.4.1/slf4j-api-1.4.1.jar" dest="${maven.repo.local}/org/slf4j/slf4j-api/1.4.1/slf4j-api-1.4.1.jar" usetimestamp="true" ignoreerrors="true"/>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ====================================================================== -->
+<!-- Ant build file (http://ant.apache.org/) for Ant 1.6.2 or above.        -->
+<!-- ====================================================================== -->
+
+<project name="orekit" default="package" basedir=".">
+
+  <!-- ====================================================================== -->
+  <!-- Import maven-build.xml into the current project                        -->
+  <!-- ====================================================================== -->
+
+  <import file="maven-build.xml"/>
+  
+  <!-- ====================================================================== -->
+  <!-- Help target                                                            -->
+  <!-- ====================================================================== -->
+
+  <target name="help">
+    <echo message="Please run: $ant -projecthelp"/>
   </target>
 </project>
