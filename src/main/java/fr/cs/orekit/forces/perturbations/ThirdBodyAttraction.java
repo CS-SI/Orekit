@@ -38,12 +38,12 @@ public class ThirdBodyAttraction implements ForceModel {
 
     Vector3D centralBody = new Vector3D(-1.0 , s.getPVCoordinates(mu).getPosition());
     centralBody = centralBody.add(otherBody);
-    centralBody = centralBody.multiply(1.0/Math.pow(centralBody.getNorm(), 3));
+    centralBody = centralBody.scalarMultiply(1.0/Math.pow(centralBody.getNorm(), 3));
 
-    otherBody = otherBody.multiply(1.0/Math.pow(otherBody.getNorm(), 3));
+    otherBody = otherBody.scalarMultiply(1.0/Math.pow(otherBody.getNorm(), 3));
 
     Vector3D gamma = centralBody.subtract(otherBody);
-    gamma = gamma.multiply(body.getMu());
+    gamma = gamma.scalarMultiply(body.getMu());
 
     adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
   }
