@@ -13,67 +13,67 @@ import java.text.SimpleDateFormat;
  */
 public class TCGScale extends TimeScale {
 
-  // reference time scale
-  private static final TimeScale tt;
+    // reference time scale
+    private static final TimeScale tt;
 
-  // reference time tor TCG is 1977-01-01 (MJD = 43144)
-  private static final double reference;
+    // reference time tor TCG is 1977-01-01 (MJD = 43144)
+    private static final double reference;
 
-  static {
-    try {
-      tt = TTScale.getInstance();
-      SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-      reference = format.parse("1977-01-01").getTime();
-    } catch (ParseException pe) {
-      throw new RuntimeException("internal error"); // should not happen
+    static {
+        try {
+            tt = TTScale.getInstance();
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            reference = format.parse("1977-01-01").getTime();
+        } catch (ParseException pe) {
+            throw new RuntimeException("internal error"); // should not happen
+        }
     }
-  }
 
-  /** Private constructor for the singleton.
-   */
-  private TCGScale() {
-    super("TCG");
-  }
-
-  /** Get the unique instance of this class.
-   * @return the unique instance
-   */
-  public static TimeScale getInstance() {
-    if (instance == null) {
-      instance = new TCGScale();
+    /** Private constructor for the singleton.
+     */
+    private TCGScale() {
+        super("TCG");
     }
-    return instance;
-  }
 
-  /** Get the offset to convert locations from {@link TAIScale}  to instance.
-   * @param taiTime location of an event in the {@link TAIScale}  time scale
-   * as a seconds index starting at 1970-01-01T00:00:00
-   * @return offset to <em>add</em> to taiTime to get a location
-   * in instance time scale
-   */
-  public double offsetFromTAI(double taiTime) {
-    double ttOffset = tt.offsetFromTAI(taiTime);
-    return ttOffset + lg * (ttOffset + taiTime - reference);
-  }
+    /** Get the unique instance of this class.
+     * @return the unique instance
+     */
+    public static TimeScale getInstance() {
+        if (instance == null) {
+            instance = new TCGScale();
+        }
+        return instance;
+    }
 
-  /** Get the offset to convert locations from instance to {@link TAIScale} .
-   * @param instanceTime location of an event in the instance time scale
-   * as a seconds index starting at 1970-01-01T00:00:00
-   * @return offset to <em>add</em> to instanceTime to get a location
-   * in {@link TAIScale}  time scale
-   */
-  public double offsetToTAI(double instanceTime) {
-    double ttTime = inverse * (instanceTime + lg * reference);
-    return tt.offsetToTAI(ttTime) - lg * inverse * (instanceTime - reference);
-  }
+    /** Get the offset to convert locations from {@link TAIScale}  to instance.
+     * @param taiTime location of an event in the {@link TAIScale}  time scale
+     * as a seconds index starting at 1970-01-01T00:00:00
+     * @return offset to <em>add</em> to taiTime to get a location
+     * in instance time scale
+     */
+    public double offsetFromTAI(double taiTime) {
+        double ttOffset = tt.offsetFromTAI(taiTime);
+        return ttOffset + lg * (ttOffset + taiTime - reference);
+    }
 
-  /** Uniq instance. */
-  private static TimeScale instance = null;
+    /** Get the offset to convert locations from instance to {@link TAIScale} .
+     * @param instanceTime location of an event in the instance time scale
+     * as a seconds index starting at 1970-01-01T00:00:00
+     * @return offset to <em>add</em> to instanceTime to get a location
+     * in {@link TAIScale}  time scale
+     */
+    public double offsetToTAI(double instanceTime) {
+        double ttTime = inverse * (instanceTime + lg * reference);
+        return tt.offsetToTAI(ttTime) - lg * inverse * (instanceTime - reference);
+    }
 
-  /** LG rate. */
-  private static double lg = 6.969290134e-10;
+    /** Uniq instance. */
+    private static TimeScale instance = null;
 
-  /** Inverse rate. */
-  private static double inverse = 1.0 / (1.0 + lg);
+    /** LG rate. */
+    private static double lg = 6.969290134e-10;
+
+    /** Inverse rate. */
+    private static double inverse = 1.0 / (1.0 + lg);
 
 }

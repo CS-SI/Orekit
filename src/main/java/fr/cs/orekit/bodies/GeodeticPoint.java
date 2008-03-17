@@ -8,24 +8,24 @@ package fr.cs.orekit.bodies;
  */
 public class GeodeticPoint {
 
-  /** Longitude of the point (rad). */
-  public final double longitude;
+    /** Longitude of the point (rad). */
+    public final double longitude;
 
-  /** Latitude of the point (rad). */
-  public final double latitude;
+    /** Latitude of the point (rad). */
+    public final double latitude;
 
-  /** Altitude of the point (m). */
-  public final double altitude;
+    /** Altitude of the point (m). */
+    public final double altitude;
 
-  /** Build a new instance.
-   * @param longitude longitude of the point
-   * @param latitude of the point
-   * @param altitude altitude of the point
-   */
-  public GeodeticPoint(double longitude, double latitude, double altitude) {
-    this.longitude = longitude;
-    this.latitude  = latitude;
-    this.altitude  = altitude;
-  }
+    /** Build a new instance.
+     * @param longitude longitude of the point
+     * @param latitude of the point
+     * @param altitude altitude of the point
+     */
+    public GeodeticPoint(double longitude, double latitude, double altitude) {
+        this.longitude = longitude;
+        this.latitude  = latitude;
+        this.altitude  = altitude;
+    }
 
 }

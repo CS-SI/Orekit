@@ -21,20 +21,20 @@ import fr.cs.orekit.propagation.TimeDerivativesEquations;
 
 public interface ForceModel {
 
-  /** Compute the contribution of the force model to the perturbing
-   * acceleration.
-   * @param s the current state information : date, cinematics, attitude
-   * @param adder object where the contribution should be added
-   * @param mu central gravitation coefficient
-   * @throws OrekitException if some specific error occurs
-   */
-  public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
-      throws OrekitException;
+    /** Compute the contribution of the force model to the perturbing
+     * acceleration.
+     * @param s the current state information : date, cinematics, attitude
+     * @param adder object where the contribution should be added
+     * @param mu central gravitation coefficient
+     * @throws OrekitException if some specific error occurs
+     */
+    public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
+    throws OrekitException;
 
-  /** Get the switching functions internally used by the model itself.
-   * @return array of switching functions or null if the model doesn't need
-   * any switching function by itself
-   */
-  public SWF[] getSwitchingFunctions();
+    /** Get the switching functions internally used by the model itself.
+     * @return array of switching functions or null if the model doesn't need
+     * any switching function by itself
+     */
+    public SWF[] getSwitchingFunctions();
 
 }

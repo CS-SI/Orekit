@@ -5,11 +5,11 @@ import junit.framework.TestSuite;
 
 
 public class AllTests {
-  public static Test suite() {
-    TestSuite suite = new TestSuite("fr.cs.orekit.potential");
-    suite.addTest(SHMFormatReaderTest.suite());
-    suite.addTest(EGMFormatReaderTest.suite());
+    public static Test suite() {
+        TestSuite suite = new TestSuite("fr.cs.orekit.potential");
+        suite.addTest(SHMFormatReaderTest.suite());
+        suite.addTest(EGMFormatReaderTest.suite());
 
-    return suite;
-  }
+        return suite;
+    }
 }

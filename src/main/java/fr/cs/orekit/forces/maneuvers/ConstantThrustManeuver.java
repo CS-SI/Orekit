@@ -16,199 +16,199 @@ import fr.cs.orekit.time.AbsoluteDate;
  */
 public class ConstantThrustManeuver implements ForceModel {
 
-  /** Identifier for TNW frame. */
-  public static final int TNW = 0;
+    /** Identifier for TNW frame. */
+    public static final int TNW = 0;
 
-  /** Identifier for QSW frame. */
-  public static final int QSW = 1;
+    /** Identifier for QSW frame. */
+    public static final int QSW = 1;
 
-  /** Identifier for inertial frame. */
-  public static final int INERTIAL = 2;
+    /** Identifier for inertial frame. */
+    public static final int INERTIAL = 2;
 
-  /** Simple constructor for a constant direction and constant thrust.
-   * @param startDate the instant of ignition
-   * @param duration the duration of the thrust (s)
-   * @param force the thrust force (N)
-   * @param isp the Isp (s)
-   * @param direction the acceleration direction in choosed frame.
-   * @param frameType the frame in which is defined the direction,
-   *  must be one of {@link #TNW}, {@link #QSW} or  {@link #INERTIAL}
-   */
-  public ConstantThrustManeuver(AbsoluteDate startDate, double duration,
-                                double force, double isp, Vector3D direction, int frameType) {
-
-    if (duration>=0) {
-      this.startDate = startDate;
-      this.endDate = new AbsoluteDate(startDate , duration);
-      this.duration = duration;
-    }
-    else {
-      this.endDate = startDate;
-      this.startDate = new AbsoluteDate(startDate , duration);
-      this.duration = - duration;
-    }
-    this.force = force;
-    this.flowRate = -force/(g0*isp);
-    this.direction = direction.normalize();
-    this.frameType = frameType;
-    firing = false;
-  }
-
-  /** Constructor for a variable direction and constant thrust.
-   * @param startDate the instant of ignition
-   * @param duration the duration of the thrust (s)
-   * @param force the thrust force (N)
-   * @param isp the Isp (s)
-   * @param direction the variable acceleration direction.
-   */
-  public ConstantThrustManeuver(AbsoluteDate startDate, double duration,
-                                double force, double isp, ThrustForceDirection direction) {
-
-    this(startDate, duration, force, isp, null, direction.getType());
-    this.variableDir = direction;
-  }
-
-  /** Compute the contribution of maneuver to the global acceleration.
-   * @param s the current state information : date, cinematics, attitude
-   * @param adder object where the contribution should be added
-   * @param mu central gravitation coefficient
-   * @throws OrekitException if some specific error occurs
-   */
-  public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
-  throws OrekitException {
-    if(firing) {
-      if (variableDir!=null) {
-        direction = variableDir.getDirection(s).normalize();
-      }
-
-      double acc = force/s.getMass();
-      Vector3D acceleration = new Vector3D(acc, direction);
-
-      switch (frameType) {
-      case TNW :
-        adder.addTNWAcceleration(acceleration.getX(),
-                                 acceleration.getY(), acceleration.getZ());
-        break;
-      case QSW :
-        adder.addQSWAcceleration(acceleration.getX(),
-                                 acceleration.getY(), acceleration.getZ());
-        break;
-      case INERTIAL :
-        adder.addXYZAcceleration(acceleration.getX(),
-                                 acceleration.getY(), acceleration.getZ());
-        break;
-      default :
-        throw new IllegalArgumentException(Translator.getInstance().translate(
-        "Choosen frame type is not correct"));
-      }
-      adder.addMassDerivative(flowRate);
-    }
-
-  }
-
-  /** Gets the swithching functions related to start and stop passes.
-   * @return start / stop switching functions
-   */
-  public SWF[] getSwitchingFunctions() {
-    return new SWF[] { new StartSwitch(), new EndSwitch() };
-  }
-
-  /** This class defines the begining of the acceleration switching function.
-   * It triggers at the ignition.
-   */
-  private class StartSwitch implements SWF {
-
-    public void eventOccurred(SpacecraftState s, double mu) {
-      firing = true;
-    }
-
-    /** The G-function is the difference between the start date and the current date.
-     * @param s the current state information : date, cinematics, attitude
-     * @param mu central gravitation coefficient
+    /** Simple constructor for a constant direction and constant thrust.
+     * @param startDate the instant of ignition
+     * @param duration the duration of the thrust (s)
+     * @param force the thrust force (N)
+     * @param isp the Isp (s)
+     * @param direction the acceleration direction in choosed frame.
+     * @param frameType the frame in which is defined the direction,
+     *  must be one of {@link #TNW}, {@link #QSW} or  {@link #INERTIAL}
      */
-    public double g(SpacecraftState s, double mu)
-    throws OrekitException {
-      return startDate.minus(s.getDate());
+    public ConstantThrustManeuver(AbsoluteDate startDate, double duration,
+                                  double force, double isp, Vector3D direction, int frameType) {
 
+        if (duration>=0) {
+            this.startDate = startDate;
+            this.endDate = new AbsoluteDate(startDate , duration);
+            this.duration = duration;
+        }
+        else {
+            this.endDate = startDate;
+            this.startDate = new AbsoluteDate(startDate , duration);
+            this.duration = - duration;
+        }
+        this.force = force;
+        this.flowRate = -force/(g0*isp);
+        this.direction = direction.normalize();
+        this.frameType = frameType;
+        firing = false;
     }
 
-    public double getMaxCheckInterval() {
-      return duration;
-    }
-
-    public double getThreshold() {
-      // convergence threshold in seconds
-      return 1.0e-4;
-    }
-
-    public int getMaxIterationCount() {
-      return 10;
-    }
-
-    private static final long serialVersionUID = -3929595470907786248L;
-
-  }
-
-  /** This class defines the end of the acceleration switching function.
-   * It triggers at the end of the maneuver.
-   */
-  private class EndSwitch implements SWF {
-
-    public void eventOccurred(SpacecraftState s, double mu) {
-      firing = false;
-    }
-
-    /** The G-function is the difference between the end date and the currentdate.
-     * @param s the current state information : date, cinematics, attitude
-     * @param mu central gravitation coefficient
+    /** Constructor for a variable direction and constant thrust.
+     * @param startDate the instant of ignition
+     * @param duration the duration of the thrust (s)
+     * @param force the thrust force (N)
+     * @param isp the Isp (s)
+     * @param direction the variable acceleration direction.
      */
-    public double g(SpacecraftState s, double mu)
+    public ConstantThrustManeuver(AbsoluteDate startDate, double duration,
+                                  double force, double isp, ThrustForceDirection direction) {
+
+        this(startDate, duration, force, isp, null, direction.getType());
+        this.variableDir = direction;
+    }
+
+    /** Compute the contribution of maneuver to the global acceleration.
+     * @param s the current state information : date, cinematics, attitude
+     * @param adder object where the contribution should be added
+     * @param mu central gravitation coefficient
+     * @throws OrekitException if some specific error occurs
+     */
+    public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
     throws OrekitException {
-      return endDate.minus(s.getDate());
+        if(firing) {
+            if (variableDir!=null) {
+                direction = variableDir.getDirection(s).normalize();
+            }
+
+            double acc = force/s.getMass();
+            Vector3D acceleration = new Vector3D(acc, direction);
+
+            switch (frameType) {
+            case TNW :
+                adder.addTNWAcceleration(acceleration.getX(),
+                                         acceleration.getY(), acceleration.getZ());
+                break;
+            case QSW :
+                adder.addQSWAcceleration(acceleration.getX(),
+                                         acceleration.getY(), acceleration.getZ());
+                break;
+            case INERTIAL :
+                adder.addXYZAcceleration(acceleration.getX(),
+                                         acceleration.getY(), acceleration.getZ());
+                break;
+            default :
+                throw new IllegalArgumentException(Translator.getInstance().translate(
+                "Choosen frame type is not correct"));
+            }
+            adder.addMassDerivative(flowRate);
+        }
+
     }
 
-    public double getMaxCheckInterval() {
-      return duration;
+    /** Gets the swithching functions related to start and stop passes.
+     * @return start / stop switching functions
+     */
+    public SWF[] getSwitchingFunctions() {
+        return new SWF[] { new StartSwitch(), new EndSwitch() };
     }
 
-    public double getThreshold() {
-      // convergence threshold in seconds
-      return 1.0e-4;
+    /** This class defines the begining of the acceleration switching function.
+     * It triggers at the ignition.
+     */
+    private class StartSwitch implements SWF {
+
+        public void eventOccurred(SpacecraftState s, double mu) {
+            firing = true;
+        }
+
+        /** The G-function is the difference between the start date and the current date.
+         * @param s the current state information : date, cinematics, attitude
+         * @param mu central gravitation coefficient
+         */
+        public double g(SpacecraftState s, double mu)
+        throws OrekitException {
+            return startDate.minus(s.getDate());
+
+        }
+
+        public double getMaxCheckInterval() {
+            return duration;
+        }
+
+        public double getThreshold() {
+            // convergence threshold in seconds
+            return 1.0e-4;
+        }
+
+        public int getMaxIterationCount() {
+            return 10;
+        }
+
+        private static final long serialVersionUID = -3929595470907786248L;
+
     }
 
-    public int getMaxIterationCount() {
-      return 10;
+    /** This class defines the end of the acceleration switching function.
+     * It triggers at the end of the maneuver.
+     */
+    private class EndSwitch implements SWF {
+
+        public void eventOccurred(SpacecraftState s, double mu) {
+            firing = false;
+        }
+
+        /** The G-function is the difference between the end date and the currentdate.
+         * @param s the current state information : date, cinematics, attitude
+         * @param mu central gravitation coefficient
+         */
+        public double g(SpacecraftState s, double mu)
+        throws OrekitException {
+            return endDate.minus(s.getDate());
+        }
+
+        public double getMaxCheckInterval() {
+            return duration;
+        }
+
+        public double getThreshold() {
+            // convergence threshold in seconds
+            return 1.0e-4;
+        }
+
+        public int getMaxIterationCount() {
+            return 10;
+        }
+
+        private static final long serialVersionUID = 2437223790185987916L;
+
     }
 
-    private static final long serialVersionUID = 2437223790185987916L;
+    /** state of the engine */
+    private boolean firing;
 
-  }
+    /** Frame type */
+    private int frameType;
 
-  /** state of the engine */
-  private boolean firing;
+    /** start of the maneuver */
+    private AbsoluteDate startDate;
 
-  /** Frame type */
-  private int frameType;
+    /** end of the maneuver */
+    private AbsoluteDate endDate;
 
-  /** start of the maneuver */
-  private AbsoluteDate startDate;
+    /** duration (s) */
+    private double duration;
 
-  /** end of the maneuver */
-  private AbsoluteDate endDate;
+    /** The engine caracteristics */
+    private double force;
+    private double flowRate;
 
-  /** duration (s) */
-  private double duration;
+    /** Direction of the acceleration in selected frame */
+    private Vector3D direction;
 
-  /** The engine caracteristics */
-  private double force;
-  private double flowRate;
+    private ThrustForceDirection variableDir;
 
-  /** Direction of the acceleration in selected frame */
-  private Vector3D direction;
-
-  private ThrustForceDirection variableDir;
-
-  /** Reference gravity acceleration constant (m/s²) */
-  private static final double g0 = 9.80665;
+    /** Reference gravity acceleration constant (m/s²) */
+    private static final double g0 = 9.80665;
 
 }

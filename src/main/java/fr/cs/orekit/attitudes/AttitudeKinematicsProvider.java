@@ -25,15 +25,15 @@ import fr.cs.orekit.utils.PVCoordinates;
  */
 public interface AttitudeKinematicsProvider {
 
-  /** Get the attitude representation in the selected frame.
-   * @param date the current date
-   * @param pv the coordinates in the inertial frame
-   * @param frame the inertial frame in which are defined the coordinates
-   * @return the attitude representation of the spacecraft
-   * @throws OrekitException if some specific error occurs.
-   */
-  public AttitudeKinematics getAttitudeKinematics(AbsoluteDate date,
-                                                  PVCoordinates pv, Frame frame)
-      throws OrekitException;
+    /** Get the attitude representation in the selected frame.
+     * @param date the current date
+     * @param pv the coordinates in the inertial frame
+     * @param frame the inertial frame in which are defined the coordinates
+     * @return the attitude representation of the spacecraft
+     * @throws OrekitException if some specific error occurs.
+     */
+    public AttitudeKinematics getAttitudeKinematics(AbsoluteDate date,
+                                                    PVCoordinates pv, Frame frame)
+    throws OrekitException;
 
 }

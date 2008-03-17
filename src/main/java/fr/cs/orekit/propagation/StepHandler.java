@@ -10,98 +10,98 @@ import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.time.AbsoluteDate;
 
-// FIXME : JAVADOC and TEST ! ! !
+//FIXME : JAVADOC and TEST ! ! !
 public abstract class StepHandler {
 
-  public StepHandler() {
-    mantissaStepHandler = new mappingStepHandler();
-  }
+    public StepHandler() {
+        mantissaStepHandler = new mappingStepHandler();
+    }
 
-  protected void initialize(AbsoluteDate date, AttitudeKinematicsProvider provider,
+    protected void initialize(AbsoluteDate date, AttitudeKinematicsProvider provider,
                               Frame frame, double mu) {
-     initialDate = date;
-     inertialFrame = frame;
-     akProvider = provider;
-     this.mu = mu;
-  }
+        initialDate = date;
+        inertialFrame = frame;
+        akProvider = provider;
+        this.mu = mu;
+    }
 
-  protected org.apache.commons.math.ode.StepHandler getMantissaStepHandler() {
-   return mantissaStepHandler;
- }
+    protected org.apache.commons.math.ode.StepHandler getMantissaStepHandler() {
+        return mantissaStepHandler;
+    }
 
-  public abstract void handleStep(
-   fr.cs.orekit.propagation.StepInterpolator interpolator, boolean isLast)
+    public abstract void handleStep(
+                                    fr.cs.orekit.propagation.StepInterpolator interpolator, boolean isLast)
     throws DerivativeException;
 
-  public abstract boolean requiresDenseOutput();
+    public abstract boolean requiresDenseOutput();
 
-  public abstract void reset() ;
+    public abstract void reset() ;
 
-  AbsoluteDate initialDate;
-  Frame inertialFrame;
-  AttitudeKinematicsProvider akProvider;
-  double mu;
+    AbsoluteDate initialDate;
+    Frame inertialFrame;
+    AttitudeKinematicsProvider akProvider;
+    double mu;
 
-  mappingStepHandler mantissaStepHandler;
+    mappingStepHandler mantissaStepHandler;
 
-  private class mappingStepHandler implements org.apache.commons.math.ode.StepHandler {
+    private class mappingStepHandler implements org.apache.commons.math.ode.StepHandler {
 
-    public void handleStep(StepInterpolator interpolator, boolean isLast) throws DerivativeException {
+        public void handleStep(StepInterpolator interpolator, boolean isLast) throws DerivativeException {
 
-      StepHandler.this.handleStep(new mappingStepInterpolator(interpolator), isLast);
+            StepHandler.this.handleStep(new mappingStepInterpolator(interpolator), isLast);
 
-    }
+        }
 
-    public boolean requiresDenseOutput() {
-      return StepHandler.this.requiresDenseOutput();
-    }
+        public boolean requiresDenseOutput() {
+            return StepHandler.this.requiresDenseOutput();
+        }
 
-    public void reset() {
-     StepHandler.this.reset();
-    }
-
-  }
-
-  private class mappingStepInterpolator implements fr.cs.orekit.propagation.StepInterpolator {
-
-    private mappingStepInterpolator(StepInterpolator mantissaInterpolator) {
+        public void reset() {
+            StepHandler.this.reset();
+        }
 
     }
 
-    public AbsoluteDate getCurrentDate() {
-      return new AbsoluteDate(initialDate, mantissaInterpolator.getCurrentTime());
+    private class mappingStepInterpolator implements fr.cs.orekit.propagation.StepInterpolator {
+
+        private mappingStepInterpolator(StepInterpolator mantissaInterpolator) {
+
+        }
+
+        public AbsoluteDate getCurrentDate() {
+            return new AbsoluteDate(initialDate, mantissaInterpolator.getCurrentTime());
+        }
+
+        public AbsoluteDate getInterpolatedDate() {
+            return new AbsoluteDate(initialDate, mantissaInterpolator.getInterpolatedTime());
+        }
+
+        public SpacecraftState getInterpolatedState() throws OrekitException {
+            double[] y = mantissaInterpolator.getInterpolatedState();
+
+            OrbitalParameters op =
+                new EquinoctialParameters(y[0], y[1], y[2], y[3], y[4], y[5],
+                                          EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
+                                          inertialFrame);
+            AbsoluteDate current = new AbsoluteDate(initialDate, mantissaInterpolator.getCurrentTime());
+            return new SpacecraftState(new Orbit(current, op), y[6],
+                                       akProvider.getAttitudeKinematics(current, op.getPVCoordinates(mu), inertialFrame));
+        }
+
+        public AbsoluteDate getPreviousDate() {
+            return new AbsoluteDate(initialDate, mantissaInterpolator.getPreviousTime());
+        }
+
+        public boolean isForward() {
+            return mantissaInterpolator.isForward();
+        }
+
+        public void setInterpolatedDate(AbsoluteDate date) throws DerivativeException {
+            mantissaInterpolator.setInterpolatedTime(date.minus(initialDate));
+        }
+
+        private StepInterpolator mantissaInterpolator;
+
     }
-
-    public AbsoluteDate getInterpolatedDate() {
-      return new AbsoluteDate(initialDate, mantissaInterpolator.getInterpolatedTime());
-    }
-
-    public SpacecraftState getInterpolatedState() throws OrekitException {
-      double[] y = mantissaInterpolator.getInterpolatedState();
-
-      OrbitalParameters op =
-        new EquinoctialParameters(y[0], y[1], y[2], y[3], y[4], y[5],
-                                  EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                  inertialFrame);
-      AbsoluteDate current = new AbsoluteDate(initialDate, mantissaInterpolator.getCurrentTime());
-      return new SpacecraftState(new Orbit(current, op), y[6],
-                          akProvider.getAttitudeKinematics(current, op.getPVCoordinates(mu), inertialFrame));
-    }
-
-    public AbsoluteDate getPreviousDate() {
-      return new AbsoluteDate(initialDate, mantissaInterpolator.getPreviousTime());
-    }
-
-    public boolean isForward() {
-      return mantissaInterpolator.isForward();
-    }
-
-    public void setInterpolatedDate(AbsoluteDate date) throws DerivativeException {
-      mantissaInterpolator.setInterpolatedTime(date.minus(initialDate));
-    }
-
-    private StepInterpolator mantissaInterpolator;
-
-  }
 
 }

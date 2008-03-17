@@ -9,24 +9,24 @@ import fr.cs.orekit.time.UTCScale;
  */
 public class Leap {
 
-  /** Time in UTC at which the step occurs. */
-  public final double utcTime;
+    /** Time in UTC at which the step occurs. */
+    public final double utcTime;
 
-  /** Step value. */
-  public final double step;
+    /** Step value. */
+    public final double step;
 
-  /** Offset in seconds after the leap. */
-  public final double offsetAfter;
+    /** Offset in seconds after the leap. */
+    public final double offsetAfter;
 
-  /** Simple constructor.
-   * @param utcTime time in UTC at which the step occurs
-   * @param step step value
-   * @param offsetAfter offset in seconds after the leap
-   */
-  public Leap(double utcTime, double step, double offsetAfter) {
-    this.utcTime     = utcTime;
-    this.step        = step;
-    this.offsetAfter = offsetAfter;
-  }
+    /** Simple constructor.
+     * @param utcTime time in UTC at which the step occurs
+     * @param step step value
+     * @param offsetAfter offset in seconds after the leap
+     */
+    public Leap(double utcTime, double step, double offsetAfter) {
+        this.utcTime     = utcTime;
+        this.step        = step;
+        this.offsetAfter = offsetAfter;
+    }
 
 }

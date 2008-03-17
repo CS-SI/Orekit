@@ -1,4 +1,9 @@
-#Wed Mar 05 08:44:25 MET 2008
+#Mon Mar 17 09:40:50 MET 2008
 eclipse.preferences.version=1
 formatter_profile=_SpaceRoots
 formatter_settings_version=11
+org.eclipse.jdt.ui.exception.name=e
+org.eclipse.jdt.ui.gettersetter.use.is=true
+org.eclipse.jdt.ui.javadoc=false
+org.eclipse.jdt.ui.keywordthis=false
+org.eclipse.jdt.ui.overrideannotation=true

@@ -28,87 +28,87 @@ import fr.cs.orekit.iers.UTCTAIHistoryFilesLoader;
  */
 public class UTCScale extends TimeScale {
 
-  /** Private constructor for the singleton.
-   * @exception OrekitException if the time steps cannot be read
-   */
-  private UTCScale()
+    /** Private constructor for the singleton.
+     * @exception OrekitException if the time steps cannot be read
+     */
+    private UTCScale()
     throws OrekitException {
-    super("UTC");
+        super("UTC");
 
-    // get the time steps from the history file
-    // found in the IERS directories hierarchy
-    leaps = new UTCTAIHistoryFilesLoader().getTimeSteps();
+        // get the time steps from the history file
+        // found in the IERS directories hierarchy
+        leaps = new UTCTAIHistoryFilesLoader().getTimeSteps();
 
-  }
+    }
 
-  /** Get the unique instance of this class.
-   * @return the unique instance
-   * @exception OrekitException if the time steps cannot be read
-   */
-  public static TimeScale getInstance()
+    /** Get the unique instance of this class.
+     * @return the unique instance
+     * @exception OrekitException if the time steps cannot be read
+     */
+    public static TimeScale getInstance()
     throws OrekitException {
-    if (instance == null) {
-      instance = new UTCScale();
+        if (instance == null) {
+            instance = new UTCScale();
+        }
+        return instance;
     }
-    return instance;
-  }
 
-  /** Get the offset to convert locations from {@link TAIScale}  to instance.
-   * @param taiTime location of an event in the {@link TAIScale}  time scale
-   * as a seconds index starting at 1970-01-01T00:00:00
-   * @return offset to <em>add</em> to taiTime to get a location
-   * in instance time scale
-   */
-  public double offsetFromTAI(double taiTime) {
-    for (int i = 0; i < leaps.length; ++i) {
-      Leap leap = leaps[i];
-      if ((taiTime  + (leap.offsetAfter - leap.step)) >= leap.utcTime) {
-        return leap.offsetAfter;
-      }
+    /** Get the offset to convert locations from {@link TAIScale}  to instance.
+     * @param taiTime location of an event in the {@link TAIScale}  time scale
+     * as a seconds index starting at 1970-01-01T00:00:00
+     * @return offset to <em>add</em> to taiTime to get a location
+     * in instance time scale
+     */
+    public double offsetFromTAI(double taiTime) {
+        for (int i = 0; i < leaps.length; ++i) {
+            Leap leap = leaps[i];
+            if ((taiTime  + (leap.offsetAfter - leap.step)) >= leap.utcTime) {
+                return leap.offsetAfter;
+            }
+        }
+        return 0;
     }
-    return 0;
-  }
 
-  /** Get the offset to convert locations from instance to {@link TAIScale} .
-   * @param instanceTime location of an event in the instance time scale
-   * as a seconds index starting at 1970-01-01T00:00:00
-   * @return offset to <em>add</em> to instanceTime to get a location
-   * in {@link TAIScale}  time scale
-   */
-  public double offsetToTAI(double instanceTime) {
-    for (int i = 0; i < leaps.length; ++i) {
-      Leap leap = leaps[i];
-      if (instanceTime >= leap.utcTime) {
-        return -leap.offsetAfter;
-      }
+    /** Get the offset to convert locations from instance to {@link TAIScale} .
+     * @param instanceTime location of an event in the instance time scale
+     * as a seconds index starting at 1970-01-01T00:00:00
+     * @return offset to <em>add</em> to instanceTime to get a location
+     * in {@link TAIScale}  time scale
+     */
+    public double offsetToTAI(double instanceTime) {
+        for (int i = 0; i < leaps.length; ++i) {
+            Leap leap = leaps[i];
+            if (instanceTime >= leap.utcTime) {
+                return -leap.offsetAfter;
+            }
+        }
+        return 0;
     }
-    return 0;
-  }
 
-  /** Get the date of the first available known UTC steps.
-   * @return the start date of the available data
-   * @throws OrekitException
-   */
-  public AbsoluteDate getStartDate()
+    /** Get the date of the first available known UTC steps.
+     * @return the start date of the available data
+     * @throws OrekitException
+     */
+    public AbsoluteDate getStartDate()
     throws OrekitException {
-    if (UTCStartDate == null) {
-      AbsoluteDate ref =
-        new AbsoluteDate(new ChunkedDate(1970, 1, 1),
-                         new ChunkedTime(0, 0, 0),
-                         this);
-      Leap firstLeap = leaps[leaps.length - 1];
-      UTCStartDate = new AbsoluteDate(ref, firstLeap.utcTime - firstLeap.step);
+        if (UTCStartDate == null) {
+            AbsoluteDate ref =
+                new AbsoluteDate(new ChunkedDate(1970, 1, 1),
+                                 new ChunkedTime(0, 0, 0),
+                                 this);
+            Leap firstLeap = leaps[leaps.length - 1];
+            UTCStartDate = new AbsoluteDate(ref, firstLeap.utcTime - firstLeap.step);
+        }
+        return UTCStartDate;
     }
-    return UTCStartDate;
-  }
 
-  /** Uniq instance. */
-  private static TimeScale instance = null;
+    /** Uniq instance. */
+    private static TimeScale instance = null;
 
-  /** Time steps. */
-  private Leap[] leaps;
+    /** Time steps. */
+    private Leap[] leaps;
 
-  /** Date of the first available known UTC steps. */
-  private AbsoluteDate UTCStartDate;
+    /** Date of the first available known UTC steps. */
+    private AbsoluteDate UTCStartDate;
 
 }

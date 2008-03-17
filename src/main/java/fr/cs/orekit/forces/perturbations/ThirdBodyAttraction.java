@@ -17,45 +17,45 @@ import fr.cs.orekit.propagation.TimeDerivativesEquations;
  */
 public class ThirdBodyAttraction implements ForceModel {
 
-  /** Simple constructor.
-   * @param body the third body to consider
-   * (ex: {@link Sun} or {@link Moon})
-   */
-  public ThirdBodyAttraction(ThirdBody body) {
-    this.body = body;
-  }
+    /** Simple constructor.
+     * @param body the third body to consider
+     * (ex: {@link Sun} or {@link Moon})
+     */
+    public ThirdBodyAttraction(ThirdBody body) {
+        this.body = body;
+    }
 
-  /** Compute the contribution of the body attraction to the perturbing
-   * acceleration.
-   * @param s the current state information : date, cinematics, attitude
-   * @param adder object where the contribution should be added
-   * @param mu central gravitation coefficient
-   * @throws OrekitException if some specific error occurs
-   */
-  public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
+    /** Compute the contribution of the body attraction to the perturbing
+     * acceleration.
+     * @param s the current state information : date, cinematics, attitude
+     * @param adder object where the contribution should be added
+     * @param mu central gravitation coefficient
+     * @throws OrekitException if some specific error occurs
+     */
+    public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
     throws OrekitException {
-    Vector3D otherBody = body.getPosition(s.getDate(), s.getFrame());
+        Vector3D otherBody = body.getPosition(s.getDate(), s.getFrame());
 
-    Vector3D centralBody = new Vector3D(-1.0 , s.getPVCoordinates(mu).getPosition());
-    centralBody = centralBody.add(otherBody);
-    centralBody = centralBody.scalarMultiply(1.0/Math.pow(centralBody.getNorm(), 3));
+        Vector3D centralBody = new Vector3D(-1.0 , s.getPVCoordinates(mu).getPosition());
+        centralBody = centralBody.add(otherBody);
+        centralBody = centralBody.scalarMultiply(1.0/Math.pow(centralBody.getNorm(), 3));
 
-    otherBody = otherBody.scalarMultiply(1.0/Math.pow(otherBody.getNorm(), 3));
+        otherBody = otherBody.scalarMultiply(1.0/Math.pow(otherBody.getNorm(), 3));
 
-    Vector3D gamma = centralBody.subtract(otherBody);
-    gamma = gamma.scalarMultiply(body.getMu());
+        Vector3D gamma = centralBody.subtract(otherBody);
+        gamma = gamma.scalarMultiply(body.getMu());
 
-    adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
-  }
+        adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
+    }
 
-  /** Ther are no SwitchingFunctions for this model.
-   * @return null
-   */
-  public SWF[] getSwitchingFunctions() {
-    return new SWF[0];
-  }
+    /** Ther are no SwitchingFunctions for this model.
+     * @return null
+     */
+    public SWF[] getSwitchingFunctions() {
+        return new SWF[0];
+    }
 
-  /** The body to consider */
-  private ThirdBody body;
+    /** The body to consider */
+    private ThirdBody body;
 
 }

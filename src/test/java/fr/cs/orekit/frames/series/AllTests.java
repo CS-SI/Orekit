@@ -4,12 +4,12 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 public class AllTests {
-  public static Test suite() {
+    public static Test suite() {
 
-    TestSuite suite = new TestSuite("fr.cs.orekit.frames.nutation");
+        TestSuite suite = new TestSuite("fr.cs.orekit.frames.nutation");
 
-    suite.addTest(DevelopmentTest.suite());
-    return suite;
+        suite.addTest(DevelopmentTest.suite());
+        return suite;
 
-  }
+    }
 }

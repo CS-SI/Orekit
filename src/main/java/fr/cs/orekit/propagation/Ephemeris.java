@@ -27,6 +27,6 @@ public interface Ephemeris {
      * @return the orbit at the specified date
      */
     public SpacecraftState getSpacecraftState(AbsoluteDate date)
-      throws PropagationException;
+    throws PropagationException;
 
 }

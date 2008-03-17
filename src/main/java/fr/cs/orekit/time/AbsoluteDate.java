@@ -66,33 +66,33 @@ public class AbsoluteDate implements Comparable, Serializable {
 
     static {
 
-     TimeScale tai = TAIScale.getInstance();
-      TimeScale tt  = TTScale.getInstance();
-      JulianEpoch =
-        new AbsoluteDate(new ChunkedDate(-4712,  1,  1), ChunkedTime.H12, tt);
-      ModifiedJulianEpoch =
-        new AbsoluteDate(new ChunkedDate( 1858, 11, 17), ChunkedTime.H00, tt);
-      CNES1950Epoch =
-        new AbsoluteDate(new ChunkedDate( 1950,  1,  1), ChunkedTime.H00, tt);
-      JavaEpoch =
-        new AbsoluteDate(new ChunkedDate( 1970,  1,  1), ChunkedTime.H00, tt);
-      J2000Epoch =
-        new AbsoluteDate(new ChunkedDate( 2000,  1,  1), ChunkedTime.H12, tt);
+        TimeScale tai = TAIScale.getInstance();
+        TimeScale tt  = TTScale.getInstance();
+        JulianEpoch =
+            new AbsoluteDate(new ChunkedDate(-4712,  1,  1), ChunkedTime.H12, tt);
+        ModifiedJulianEpoch =
+            new AbsoluteDate(new ChunkedDate( 1858, 11, 17), ChunkedTime.H00, tt);
+        CNES1950Epoch =
+            new AbsoluteDate(new ChunkedDate( 1950,  1,  1), ChunkedTime.H00, tt);
+        JavaEpoch =
+            new AbsoluteDate(new ChunkedDate( 1970,  1,  1), ChunkedTime.H00, tt);
+        J2000Epoch =
+            new AbsoluteDate(new ChunkedDate( 2000,  1,  1), ChunkedTime.H12, tt);
 
-      // GPS epoch is 1980-01-06T00:00:00Z (i.e. UTC), TAI - UTC = +19s at this time,
-      // we use a date in TAI here for safety reasons, to avoid calling
-      // UTCScale.getInstance() which may throw an exception as this is not
-      // desired in this very early run part of code
-      GPSEpoch =
-        new AbsoluteDate(new ChunkedDate(1980, 1, 6), new ChunkedTime(0, 0, 19), tai);
+        // GPS epoch is 1980-01-06T00:00:00Z (i.e. UTC), TAI - UTC = +19s at this time,
+        // we use a date in TAI here for safety reasons, to avoid calling
+        // UTCScale.getInstance() which may throw an exception as this is not
+        // desired in this very early run part of code
+        GPSEpoch =
+            new AbsoluteDate(new ChunkedDate(1980, 1, 6), new ChunkedTime(0, 0, 19), tai);
 
     }
 
     /** Create an instance with a default value ({@link #J2000Epoch}).
      */
     public AbsoluteDate() {
-      epoch  = J2000Epoch.epoch;
-      offset = J2000Epoch.offset;
+        epoch  = J2000Epoch.epoch;
+        offset = J2000Epoch.offset;
     }
 
     /** Build an instant from a location in a {@link TimeScale time scale}.
@@ -101,10 +101,10 @@ public class AbsoluteDate implements Comparable, Serializable {
      * @param timeScale time scale
      */
     public AbsoluteDate(ChunkedDate date, ChunkedTime time, TimeScale timeScale) {
-      // set the epoch at the start of the current minute
-      int j1970Day = date.getJ2000Day() + 10957;
-      epoch  = 60000l * ((j1970Day * 24l + time.hour) * 60l + time.minute);
-      offset = time.second + timeScale.offsetToTAI(epoch * 0.001 + time.second);
+        // set the epoch at the start of the current minute
+        int j1970Day = date.getJ2000Day() + 10957;
+        epoch  = 60000l * ((j1970Day * 24l + time.hour) * 60l + time.minute);
+        offset = time.second + timeScale.offsetToTAI(epoch * 0.001 + time.second);
     }
 
     /** Build an instant from a location in a {@link TimeScale time scale}.
@@ -112,8 +112,8 @@ public class AbsoluteDate implements Comparable, Serializable {
      * @param timeScale time scale
      */
     public AbsoluteDate(Date location, TimeScale timeScale) {
-      epoch  = location.getTime();
-      offset = timeScale.offsetToTAI(epoch * 0.001);
+        epoch  = location.getTime();
+        offset = timeScale.offsetToTAI(epoch * 0.001);
     }
 
     /** Build an instant from an offset with respect to another instant.
@@ -141,93 +141,93 @@ public class AbsoluteDate implements Comparable, Serializable {
      * @return a new instant
      */
     public static AbsoluteDate createGPSDate(int weekNumber, double milliInWeek) {
-      return new AbsoluteDate(GPSEpoch,
-                              weekNumber * 604800 + milliInWeek / 1000);
+        return new AbsoluteDate(GPSEpoch,
+                                weekNumber * 604800 + milliInWeek / 1000);
     }
 
-   /** Compute the offset between two instant.
-    * <p>The offset is the number of seconds physically elapsed
-    * between the two instants.</p>
-    * @param instant instant to subtract from the instance
-    * @return offset in seconds between the two instant (positive
-    * if the instance is posterior to the argument)
-    */
-   public double minus(AbsoluteDate instant) {
-     return 0.001 * (epoch - instant.epoch) + (offset - instant.offset);
-   }
+    /** Compute the offset between two instant.
+     * <p>The offset is the number of seconds physically elapsed
+     * between the two instants.</p>
+     * @param instant instant to subtract from the instance
+     * @return offset in seconds between the two instant (positive
+     * if the instance is posterior to the argument)
+     */
+    public double minus(AbsoluteDate instant) {
+        return 0.001 * (epoch - instant.epoch) + (offset - instant.offset);
+    }
 
-   /** Compute the offset between two time scales at the current instant.
-    * <p>The offset is defined as <i>l<sub>1</sub>-l<sub>2</sub></i>
-    * where <i>l<sub>1</sub></i> is the location of the instant in
-    * the <code>scale1</code> time scale and <i>l<sub>2</sub></i> is the
-    * location of the instant in the <code>scale2</code> time scale.</p>
-    * @param scale1 first time scale
-    * @param scale2 second time scale
-    * @return offset in seconds between the two time scales at the
-    * current instant
-    */
-   public double timeScalesOffset(TimeScale scale1, TimeScale scale2) {
-     double taiTime = 0.001 * epoch + offset;
-     return scale1.offsetFromTAI(taiTime) - scale2.offsetFromTAI(taiTime);
-   }
+    /** Compute the offset between two time scales at the current instant.
+     * <p>The offset is defined as <i>l<sub>1</sub>-l<sub>2</sub></i>
+     * where <i>l<sub>1</sub></i> is the location of the instant in
+     * the <code>scale1</code> time scale and <i>l<sub>2</sub></i> is the
+     * location of the instant in the <code>scale2</code> time scale.</p>
+     * @param scale1 first time scale
+     * @param scale2 second time scale
+     * @return offset in seconds between the two time scales at the
+     * current instant
+     */
+    public double timeScalesOffset(TimeScale scale1, TimeScale scale2) {
+        double taiTime = 0.001 * epoch + offset;
+        return scale1.offsetFromTAI(taiTime) - scale2.offsetFromTAI(taiTime);
+    }
 
-   /** Convert the instance to a Java {@link java.util.Date Date}.
-    * <p>Conversion to the Date class induces a loss of precision because
-    * the Date class does not provide sub-millisecond information. Java Dates
-    * are considered to be locations in some times scales.</p>
-    * @param timeScale time scale to use
-    * @return a {@link java.util.Date Date} instance representing the location
-    * of the instant in the time scale
-    */
-   public Date toDate(TimeScale timeScale) {
-     double time = 0.001 * epoch + offset;
-     time += timeScale.offsetFromTAI(time);
-     return new Date(Math.round(time * 1000));
-   }
+    /** Convert the instance to a Java {@link java.util.Date Date}.
+     * <p>Conversion to the Date class induces a loss of precision because
+     * the Date class does not provide sub-millisecond information. Java Dates
+     * are considered to be locations in some times scales.</p>
+     * @param timeScale time scale to use
+     * @return a {@link java.util.Date Date} instance representing the location
+     * of the instant in the time scale
+     */
+    public Date toDate(TimeScale timeScale) {
+        double time = 0.001 * epoch + offset;
+        time += timeScale.offsetFromTAI(time);
+        return new Date(Math.round(time * 1000));
+    }
 
-   /** Compare the instance with another date.
-    * @param date other date to compare the instance to
-    * @return a negative integer, zero, or a positive integer as this date
-    * is before, simultaneous, or after the specified date.
-    * @exception ClassCastException if the parameter is not an AbsoluteDate
-    * instance
-    */
-   public int compareTo(Object date) {
-     double delta = minus((AbsoluteDate) date);
-     if (delta < 0) {
-       return -1;
-     } else if (delta > 0) {
-       return +1;
-     }
-     return 0;
-   }
+    /** Compare the instance with another date.
+     * @param date other date to compare the instance to
+     * @return a negative integer, zero, or a positive integer as this date
+     * is before, simultaneous, or after the specified date.
+     * @exception ClassCastException if the parameter is not an AbsoluteDate
+     * instance
+     */
+    public int compareTo(Object date) {
+        double delta = minus((AbsoluteDate) date);
+        if (delta < 0) {
+            return -1;
+        } else if (delta > 0) {
+            return +1;
+        }
+        return 0;
+    }
 
-   /** Check if the instance represent the same time as another instance.
-    * @param date other date
-    * @return true if the instance and the other date refer to the same instant
-    */
-   public boolean equals(Object date) {
-     if ((date != null) && (date instanceof AbsoluteDate)) {
-       try {
-         return minus((AbsoluteDate)date) == 0;
-       } catch(ClassCastException cce) {
-         // ignored
-       }
-     }
-     return false;
-   }
+    /** Check if the instance represent the same time as another instance.
+     * @param date other date
+     * @return true if the instance and the other date refer to the same instant
+     */
+    public boolean equals(Object date) {
+        if ((date != null) && (date instanceof AbsoluteDate)) {
+            try {
+                return minus((AbsoluteDate)date) == 0;
+            } catch(ClassCastException cce) {
+                // ignored
+            }
+        }
+        return false;
+    }
 
-   public int hashCode() {
-     long l = Double.doubleToLongBits(minus(J2000Epoch));
-     return (int)(l^(l>>>32));
-   }
+    public int hashCode() {
+        long l = Double.doubleToLongBits(minus(J2000Epoch));
+        return (int)(l^(l>>>32));
+    }
 
-   /** Reference epoch in milliseconds from 1970-01-01T00:00:00 TAI. */
-   private final long epoch;
+    /** Reference epoch in milliseconds from 1970-01-01T00:00:00 TAI. */
+    private final long epoch;
 
-   /** Offset from the reference epoch in seconds. */
-   private final double offset;
+    /** Offset from the reference epoch in seconds. */
+    private final double offset;
 
-   private static final long serialVersionUID = -4127860894692239957L;
+    private static final long serialVersionUID = -4127860894692239957L;
 
 }

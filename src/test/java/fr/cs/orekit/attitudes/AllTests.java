@@ -6,15 +6,15 @@ import junit.framework.TestSuite;
 
 
 public class AllTests extends TestCase {
-  public static Test suite() {
+    public static Test suite() {
 
-    TestSuite suite = new TestSuite("fr.cs.orekit.attitudes");
+        TestSuite suite = new TestSuite("fr.cs.orekit.attitudes");
 
-    suite.addTest(ThirdBodyPointingAttitudeTest.suite());
-    suite.addTest(NadirPointingAttitudeTest.suite());
-    suite.addTest(LOFAlinedAttitudeTest.suite());
+        suite.addTest(ThirdBodyPointingAttitudeTest.suite());
+        suite.addTest(NadirPointingAttitudeTest.suite());
+        suite.addTest(LOFAlinedAttitudeTest.suite());
 
-    return suite;
+        return suite;
 
-  }
+    }
 }

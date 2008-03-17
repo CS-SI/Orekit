@@ -39,7 +39,7 @@ public interface SWF extends Serializable {
      * @throws OrekitException if some specific error occurs
      */
     public double g(SpacecraftState s, double mu)
-      throws OrekitException;
+    throws OrekitException;
 
     /** Handle an event and choose what to do next.
      * @param s the current state information : date, cinematics, attitude
@@ -47,7 +47,7 @@ public interface SWF extends Serializable {
      * @throws OrekitException if some specific error occurs
      */
     public void eventOccurred(SpacecraftState s, double mu)
-      throws OrekitException;
+    throws OrekitException;
 
     /** Get the convergence threshold in the event time search.
      */

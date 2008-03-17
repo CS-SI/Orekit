@@ -40,15 +40,15 @@ public class SolarRadiationPressureTest extends TestCase {
                                              new ChunkedTime(13, 59, 27.816),
                                              UTCScale.getInstance());
         OrbitalParameters op = new EquinoctialParameters(42164000,10e-3,10e-3,
-                Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
-                0.1, 2, Frame.getJ2000());
+                                                         Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
+                                                         0.1, 2, Frame.getJ2000());
         Orbit orbit = new Orbit(date , op);
         Sun sun = new Sun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765);
         SolarRadiationPressure SRP =  new SolarRadiationPressure(
-                sun , earth.getEquatorialRadius() ,
-                          (SolarRadiationPressureSpacecraft)new SphericalSpacecraft(50.0,
-                                      0.5, 0.5, 0.5));
+                                                                 sun , earth.getEquatorialRadius() ,
+                                                                 (SolarRadiationPressureSpacecraft)new SphericalSpacecraft(50.0,
+                                                                                                                           0.5, 0.5, 0.5));
 
         double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/mu);
         assertEquals(86164, period,1);
@@ -74,7 +74,7 @@ public class SolarRadiationPressureTest extends TestCase {
                     }
                 }
             } catch (OrekitException e) {
-            e.printStackTrace();
+                e.printStackTrace();
             }
         }
         assertTrue(3==count);
@@ -87,16 +87,16 @@ public class SolarRadiationPressureTest extends TestCase {
                                              new ChunkedTime(13, 59, 27.816),
                                              UTCScale.getInstance());
         OrbitalParameters op = new EquinoctialParameters(42164000,10e-3,10e-3,
-                Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
-                0.1, 2, Frame.getJ2000());
+                                                         Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
+                                                         0.1, 2, Frame.getJ2000());
         Orbit orbit = new Orbit(date , op);
         Sun sun = new Sun();
 
         // creation of the force model
         SolarRadiationPressure SRP =  new SolarRadiationPressure(
-                sun , new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765).getEquatorialRadius(),
-                          (SolarRadiationPressureSpacecraft)new SphericalSpacecraft(500.0,
-                                      0.7, 0.7, 0.7));
+                                                                 sun , new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765).getEquatorialRadius(),
+                                                                 (SolarRadiationPressureSpacecraft)new SphericalSpacecraft(500.0,
+                                                                                                                           0.7, 0.7, 0.7));
 
         double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/mu);
 
@@ -120,36 +120,36 @@ public class SolarRadiationPressureTest extends TestCase {
     }
 
     private double mu = 3.98600E14;
-      
+
     private class SolarStepHandler extends FixedStepHandler {
 
-      private SolarStepHandler() {
-      }
+        private SolarStepHandler() {
+        }
 
-      public void handleStep(double t, double[]y, boolean isLastStep) {
-      }
+        public void handleStep(double t, double[]y, boolean isLastStep) {
+        }
 
-      public void handleStep(SpacecraftState currentState, boolean isLast) {
-        double radius = Math.sqrt((currentState.getEx()-0.00940313)*(currentState.getEx()-0.00940313)
-                                  + (currentState.getEy()-0.013679)*(currentState.getEy()-0.013679));
-        checkRadius(radius , 0.00351 , 0.00394);
-      }
+        public void handleStep(SpacecraftState currentState, boolean isLast) {
+            double radius = Math.sqrt((currentState.getEx()-0.00940313)*(currentState.getEx()-0.00940313)
+                                      + (currentState.getEy()-0.013679)*(currentState.getEy()-0.013679));
+            checkRadius(radius , 0.00351 , 0.00394);
+        }
 
-      public boolean requiresDenseOutput() {
-        return false;
-      }
+        public boolean requiresDenseOutput() {
+            return false;
+        }
 
-      public void reset() {
-      }
+        public void reset() {
+        }
 
     }
 
     public void setUp() {
-      IERSDataResetter.setUp("regular-data");
+        IERSDataResetter.setUp("regular-data");
     }
 
     public void tearDown() {
-      IERSDataResetter.tearDown();
+        IERSDataResetter.tearDown();
     }
 
     public static Test suite() {

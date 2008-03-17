@@ -52,156 +52,156 @@ import java.io.Serializable;
 public class Orbit
 implements Serializable {
 
-  /** Create a new instance from date and orbital parameters
-   * @param t  date
-   * @param parameters orbital parameters
-   */
-  public Orbit(AbsoluteDate t, OrbitalParameters parameters) {
-    this.t = t;
-    this.parameters = parameters;
-  }
+    /** Create a new instance from date and orbital parameters
+     * @param t  date
+     * @param parameters orbital parameters
+     */
+    public Orbit(AbsoluteDate t, OrbitalParameters parameters) {
+        this.t = t;
+        this.parameters = parameters;
+    }
 
-  /** Get the date.
-   * @return date
-   */
-  public AbsoluteDate getDate() {
-    return t;
-  }
+    /** Get the date.
+     * @return date
+     */
+    public AbsoluteDate getDate() {
+        return t;
+    }
 
-  /** Get the orbital parameters.
-   * @return orbital parameters
-   */
-  public OrbitalParameters getParameters() {
-    return parameters;
-  }
+    /** Get the orbital parameters.
+     * @return orbital parameters
+     */
+    public OrbitalParameters getParameters() {
+        return parameters;
+    }
 
-  /** Get the inertial frame.
-   * @return the frame
-   */
-  public Frame getFrame() {
-    return parameters.getFrame();
-  }
+    /** Get the inertial frame.
+     * @return the frame
+     */
+    public Frame getFrame() {
+        return parameters.getFrame();
+    }
 
-  /** Get the semi-major axis.
-   * @return semi-major axis (m)
-   */
-  public double getA() {
-    return parameters.getA();
-  }
+    /** Get the semi-major axis.
+     * @return semi-major axis (m)
+     */
+    public double getA() {
+        return parameters.getA();
+    }
 
-  /** Get the first component of the eccentricity vector (as per equinoctial parameters).
-   * @return e cos(&omega; + &Omega;), first component of eccentricity vector
-   * @see #getE()
-   */
-  public double getEx(){
-    return parameters.getEquinoctialEx();
-  }
+    /** Get the first component of the eccentricity vector (as per equinoctial parameters).
+     * @return e cos(&omega; + &Omega;), first component of eccentricity vector
+     * @see #getE()
+     */
+    public double getEx(){
+        return parameters.getEquinoctialEx();
+    }
 
-  /** Get the second component of the eccentricity vector (as per equinoctial parameters).
-   * @return e sin(&omega; + &Omega;), second component of the eccentricity vector
-   * @see #getE()
-   */
-  public double getEy(){
-    return parameters.getEquinoctialEy();
-  }
+    /** Get the second component of the eccentricity vector (as per equinoctial parameters).
+     * @return e sin(&omega; + &Omega;), second component of the eccentricity vector
+     * @see #getE()
+     */
+    public double getEy(){
+        return parameters.getEquinoctialEy();
+    }
 
-  /** Get the first component of the inclination vector (as per equinoctial parameters).
-   * @return tan(i/2) cos(&Omega;), first component of the inclination vector
-   * @see #getI()
-   */
-  public double getHx(){
-    return parameters.getHx();
-  }
+    /** Get the first component of the inclination vector (as per equinoctial parameters).
+     * @return tan(i/2) cos(&Omega;), first component of the inclination vector
+     * @see #getI()
+     */
+    public double getHx(){
+        return parameters.getHx();
+    }
 
-  /** Get the second component of the inclination vector (as per equinoctial parameters).
-   * @return tan(i/2) sin(&Omega;), second component of the inclination vector
-   * @see #getI()
-   */
-  public double getHy(){
-    return parameters.getHy();
-  }
+    /** Get the second component of the inclination vector (as per equinoctial parameters).
+     * @return tan(i/2) sin(&Omega;), second component of the inclination vector
+     * @see #getI()
+     */
+    public double getHy(){
+        return parameters.getHy();
+    }
 
-  /** Get the true latitude argument (as per equinoctial parameters).
-   * @return v + &omega; + &Omega; true latitude argument (rad)
-   * @see #getLE()
-   * @see #getLM()
-   */
-  public double getLv(){
-    return parameters.getLv();
-  }
+    /** Get the true latitude argument (as per equinoctial parameters).
+     * @return v + &omega; + &Omega; true latitude argument (rad)
+     * @see #getLE()
+     * @see #getLM()
+     */
+    public double getLv(){
+        return parameters.getLv();
+    }
 
-  /** Get the eccentric latitude argument (as per equinoctial parameters).
-   * @return E + &omega; + &Omega; eccentric latitude argument (rad)
-   * @see #getLv()
-   * @see #getLM()
-   */
-  public double getLE(){
-    return parameters.getLE();
-  }
+    /** Get the eccentric latitude argument (as per equinoctial parameters).
+     * @return E + &omega; + &Omega; eccentric latitude argument (rad)
+     * @see #getLv()
+     * @see #getLM()
+     */
+    public double getLE(){
+        return parameters.getLE();
+    }
 
-  /** Get the mean latitude argument (as per equinoctial parameters).
-   * @return M + &omega; + &Omega; mean latitude argument (rad)
-   * @see #getLv()
-   * @see #getLE()
-   */
-  public double getLM(){
-    return parameters.getLM();
-  }
+    /** Get the mean latitude argument (as per equinoctial parameters).
+     * @return M + &omega; + &Omega; mean latitude argument (rad)
+     * @see #getLv()
+     * @see #getLE()
+     */
+    public double getLM(){
+        return parameters.getLM();
+    }
 
 
-  // Additional orbital elements
+    // Additional orbital elements
 
-  /** Get the eccentricity.
-   * @return eccentricity
-   * @see #getEx()
-   * @see #getEy()
-   */
-  public double getE() {
-    return parameters.getE();
-  }
+    /** Get the eccentricity.
+     * @return eccentricity
+     * @see #getEx()
+     * @see #getEy()
+     */
+    public double getE() {
+        return parameters.getE();
+    }
 
-  /** Get the inclination.
-   * @return inclination (rad)
-   * @see #getHx()
-   * @see #getHy()
-   */
-  public double getI() {
-    return parameters.getI();
-  }
+    /** Get the inclination.
+     * @return inclination (rad)
+     * @see #getHx()
+     * @see #getHy()
+     */
+    public double getI() {
+        return parameters.getI();
+    }
 
-  /** Get the {@link PVCoordinates}.
-   * Compute the position and velocity of the satellite. This method caches its
-   * results, and recompute them only when the method is called with a new value
-   * for mu. The result is provided as a reference to the internally cached
-   * {@link PVCoordinates}, so the caller is responsible to copy it in a separate
-   * {@link PVCoordinates} if it needs to keep the value for a while.
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   * @return pvCoordinates in inertial frame (reference to an
-   * internally cached pvCoordinates which can change)
-   */
-  public PVCoordinates getPVCoordinates(double mu) {
-    return parameters.getPVCoordinates(mu);
-  }
+    /** Get the {@link PVCoordinates}.
+     * Compute the position and velocity of the satellite. This method caches its
+     * results, and recompute them only when the method is called with a new value
+     * for mu. The result is provided as a reference to the internally cached
+     * {@link PVCoordinates}, so the caller is responsible to copy it in a separate
+     * {@link PVCoordinates} if it needs to keep the value for a while.
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @return pvCoordinates in inertial frame (reference to an
+     * internally cached pvCoordinates which can change)
+     */
+    public PVCoordinates getPVCoordinates(double mu) {
+        return parameters.getPVCoordinates(mu);
+    }
 
-  /**  Returns a string representation of this Orbit object
-   * @return a string representation of this object
-   */
-  public String toString() {
-    StringBuffer sb = new StringBuffer();
-    sb.append('{');
-    sb.append(t.toString());
-    sb.append(' ');
-    sb.append(parameters.toString());
-    sb.append('}');
-    return sb.toString();
-  }
+    /**  Returns a string representation of this Orbit object
+     * @return a string representation of this object
+     */
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        sb.append('{');
+        sb.append(t.toString());
+        sb.append(' ');
+        sb.append(parameters.toString());
+        sb.append('}');
+        return sb.toString();
+    }
 
-  /** Date of the current state. */
-  private final AbsoluteDate t;
+    /** Date of the current state. */
+    private final AbsoluteDate t;
 
-  /** Orbital parameters state. */
-  private final OrbitalParameters parameters;
+    /** Orbital parameters state. */
+    private final OrbitalParameters parameters;
 
-  private static final long serialVersionUID = 7165778593185551534L;
+    private static final long serialVersionUID = 7165778593185551534L;
 
 }

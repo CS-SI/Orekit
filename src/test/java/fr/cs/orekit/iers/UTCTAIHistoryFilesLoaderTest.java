@@ -13,45 +13,45 @@ import fr.cs.orekit.time.UTCScale;
 
 public class UTCTAIHistoryFilesLoaderTest extends TestCase {
 
-  public void testRegular() throws OrekitException {
-    checkSuccess("regular-data");
-    assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);
-  }
-
-  public void testCompressed() throws OrekitException {
-    checkSuccess("compressed-data");
-    assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);
-  }
-
-  public void testNoData() throws OrekitException {
-    checkSuccess("no-data");
-    assertEquals(0.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);
-  }
-
-  public void testUTCDate() throws OrekitException, ParseException {
-    checkSuccess("regular-data");
-    UTCScale scale = (UTCScale) UTCScale.getInstance();
-    AbsoluteDate startDate = scale.getStartDate();
-    double delta = startDate.minus(new AbsoluteDate(new ChunkedDate(1972, 01, 01),
-                                                    ChunkedTime.H00, scale));
-    assertEquals(0, delta, 0);
-  }
-
-  private void checkSuccess(String directoryName) {
-    try {
-      IERSDataResetter.setUp(directoryName);
-      assertNotNull(UTCScale.getInstance());
-    } catch (OrekitException e) {
-      fail(e.getMessage());
+    public void testRegular() throws OrekitException {
+        checkSuccess("regular-data");
+        assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);
     }
-  }
 
-  public void tearDown() {
-    IERSDataResetter.tearDown();
-  }
+    public void testCompressed() throws OrekitException {
+        checkSuccess("compressed-data");
+        assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);
+    }
 
-  public static Test suite() {
-    return new TestSuite(UTCTAIHistoryFilesLoaderTest.class);
-  }
+    public void testNoData() throws OrekitException {
+        checkSuccess("no-data");
+        assertEquals(0.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);
+    }
+
+    public void testUTCDate() throws OrekitException, ParseException {
+        checkSuccess("regular-data");
+        UTCScale scale = (UTCScale) UTCScale.getInstance();
+        AbsoluteDate startDate = scale.getStartDate();
+        double delta = startDate.minus(new AbsoluteDate(new ChunkedDate(1972, 01, 01),
+                                                        ChunkedTime.H00, scale));
+        assertEquals(0, delta, 0);
+    }
+
+    private void checkSuccess(String directoryName) {
+        try {
+            IERSDataResetter.setUp(directoryName);
+            assertNotNull(UTCScale.getInstance());
+        } catch (OrekitException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    public void tearDown() {
+        IERSDataResetter.tearDown();
+    }
+
+    public static Test suite() {
+        return new TestSuite(UTCTAIHistoryFilesLoaderTest.class);
+    }
 
 }

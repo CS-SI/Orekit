@@ -4,12 +4,12 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 public class AllTests {
-  public static Test suite() {
+    public static Test suite() {
 
-    TestSuite suite = new TestSuite("fr.cs.orekit.iers");
+        TestSuite suite = new TestSuite("fr.cs.orekit.iers");
 
-    suite.addTest(ConstantThrustManeuverTest.suite());
-    return suite;
+        suite.addTest(ConstantThrustManeuverTest.suite());
+        return suite;
 
-  }
+    }
 }

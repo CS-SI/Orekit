@@ -11,41 +11,41 @@ import org.apache.commons.math.geometry.Vector3D;
 
 public abstract class ThirdBody {
 
-  /** Simple constructor.
-   * @param radius equatorial radius
-   * @param mu attraction coefficient
-   */
-  protected ThirdBody(double radius, double mu) {
-    this.radius = radius;
-    this.mu = mu;
-  }
+    /** Simple constructor.
+     * @param radius equatorial radius
+     * @param mu attraction coefficient
+     */
+    protected ThirdBody(double radius, double mu) {
+        this.radius = radius;
+        this.mu = mu;
+    }
 
-  /** Get the position of the body in the selected frame.
-   * @param date current date
-   * @param frame the frame where to define the position
-   * @return position of the body (m)
-   * @throws OrekitException
-   */
-  public abstract Vector3D getPosition(AbsoluteDate date , Frame frame) throws OrekitException;
+    /** Get the position of the body in the selected frame.
+     * @param date current date
+     * @param frame the frame where to define the position
+     * @return position of the body (m)
+     * @throws OrekitException
+     */
+    public abstract Vector3D getPosition(AbsoluteDate date , Frame frame) throws OrekitException;
 
-  /** Get the equatorial radius of the body.
-   * @return equatorial radius of the body (m)
-   */
-  public double getRadius() {
-    return radius;
-  }
+    /** Get the equatorial radius of the body.
+     * @return equatorial radius of the body (m)
+     */
+    public double getRadius() {
+        return radius;
+    }
 
-  /** Get the attraction coefficient of the body.
-   * @return attraction coefficient of the body (m<sup>3</sup>/s<sup>2</sup>)
-   */
-  public double getMu() {
-    return mu;
-  }
+    /** Get the attraction coefficient of the body.
+     * @return attraction coefficient of the body (m<sup>3</sup>/s<sup>2</sup>)
+     */
+    public double getMu() {
+        return mu;
+    }
 
-  /** Equatorial radius. */
-  protected double radius;
+    /** Equatorial radius. */
+    protected double radius;
 
-  /** Attraction coefficient. */
-  protected double mu;
+    /** Attraction coefficient. */
+    protected double mu;
 
 }

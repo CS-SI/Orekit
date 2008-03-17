@@ -21,41 +21,41 @@ import fr.cs.orekit.utils.PVCoordinates;
  */
 public class EarthCenteredAttitude implements AttitudeKinematicsProvider {
 
-  /** Simple Constructor.
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   */
-  public EarthCenteredAttitude(double mu) {
-    this.mu = mu;
-  }
+    /** Simple Constructor.
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     */
+    public EarthCenteredAttitude(double mu) {
+        this.mu = mu;
+    }
 
-  /** Get the attitude representation in the selected frame.
-   * @param date the current date
-   * @param pv the coordinates in the inertial frame
-   * @param frame the inertial frame in which are defined the coordinates
-   * @return the attitude representation of the spacecraft
-   * @throws OrekitException if some specific error occurs.
-   */
-  public AttitudeKinematics getAttitudeKinematics(AbsoluteDate date,
-                                                  PVCoordinates pv, Frame frame)
-      throws OrekitException {
+    /** Get the attitude representation in the selected frame.
+     * @param date the current date
+     * @param pv the coordinates in the inertial frame
+     * @param frame the inertial frame in which are defined the coordinates
+     * @return the attitude representation of the spacecraft
+     * @throws OrekitException if some specific error occurs.
+     */
+    public AttitudeKinematics getAttitudeKinematics(AbsoluteDate date,
+                                                    PVCoordinates pv, Frame frame)
+    throws OrekitException {
 
-    Vector3D pos = pv.getPosition().negate();
-    Vector3D vel = pv.getPosition();
-    Rotation R = new Rotation(pos , Vector3D.crossProduct(pos, vel),
-                              Vector3D.plusK, Vector3D.plusJ);
+        Vector3D pos = pv.getPosition().negate();
+        Vector3D vel = pv.getPosition();
+        Rotation R = new Rotation(pos , Vector3D.crossProduct(pos, vel),
+                                  Vector3D.plusK, Vector3D.plusJ);
 
-    //  compute semi-major axis
-    double r       = pv.getPosition().getNorm();
-    double V2      = Vector3D.dotProduct(pv.getVelocity(), pv.getVelocity());
-    double rV2OnMu = r * V2 / mu;
-    double a       = r / (2 - rV2OnMu);
+        //  compute semi-major axis
+        double r       = pv.getPosition().getNorm();
+        double V2      = Vector3D.dotProduct(pv.getVelocity(), pv.getVelocity());
+        double rV2OnMu = r * V2 / mu;
+        double a       = r / (2 - rV2OnMu);
 
-    Vector3D spin = new Vector3D(Math.sqrt(mu/(a*a*a)), Vector3D.minusJ);
+        Vector3D spin = new Vector3D(Math.sqrt(mu/(a*a*a)), Vector3D.minusJ);
 
-    return new AttitudeKinematics(R, spin);
-  }
+        return new AttitudeKinematics(R, spin);
+    }
 
-  /** Central body gravitation constant */
-  private double mu;
+    /** Central body gravitation constant */
+    private double mu;
 
 }

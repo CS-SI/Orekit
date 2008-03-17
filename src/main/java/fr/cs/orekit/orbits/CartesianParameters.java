@@ -37,109 +37,109 @@ import fr.cs.orekit.utils.PVCoordinates;
  * @author  F.Maussion
  */
 public class CartesianParameters
- extends OrbitalParameters {
+extends OrbitalParameters {
 
-  /** Constructor from cartesian parameters.
-   * @param pvCoordinates the position and velocity of the satellite.
-   * @param frame the frame in which are defined the {@link PVCoordinates}
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   */
-  public CartesianParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
-    super(pvCoordinates, frame, mu);
-    equinoctial = new EquinoctialParameters(pvCoordinates, frame, mu);
-  }
+    /** Constructor from cartesian parameters.
+     * @param pvCoordinates the position and velocity of the satellite.
+     * @param frame the frame in which are defined the {@link PVCoordinates}
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     */
+    public CartesianParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
+        super(pvCoordinates, frame, mu);
+        equinoctial = new EquinoctialParameters(pvCoordinates, frame, mu);
+    }
 
-  /** Constructor from any kind of orbital parameters
-   * @param op orbital parameters to copy
-   * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   */
-  public CartesianParameters(OrbitalParameters op, double mu) {
-    super(op.frame);
-    PVCoordinates pvCoordinates = getPVCoordinates(mu);
-    equinoctial = new EquinoctialParameters(pvCoordinates, frame, mu);
-  }
+    /** Constructor from any kind of orbital parameters
+     * @param op orbital parameters to copy
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     */
+    public CartesianParameters(OrbitalParameters op, double mu) {
+        super(op.frame);
+        PVCoordinates pvCoordinates = getPVCoordinates(mu);
+        equinoctial = new EquinoctialParameters(pvCoordinates, frame, mu);
+    }
 
-  /** Get the semi-major axis.
-   * @return semi-major axis (m)
-   */
-  public double getA() {
-    return equinoctial.getA();
-  }
+    /** Get the semi-major axis.
+     * @return semi-major axis (m)
+     */
+    public double getA() {
+        return equinoctial.getA();
+    }
 
-  /** Get the eccentricity.
-   * @return eccentricity
-   */
-  public double getE() {
-    return equinoctial.getE();
-  }
+    /** Get the eccentricity.
+     * @return eccentricity
+     */
+    public double getE() {
+        return equinoctial.getE();
+    }
 
-  /** Get the inclination.
-   * @return inclination (rad)
-   */
-  public double getI() {
-    return equinoctial.getI();
-  }
+    /** Get the inclination.
+     * @return inclination (rad)
+     */
+    public double getI() {
+        return equinoctial.getI();
+    }
 
-  /** Get the first component of the eccentricity vector.
-   * @return first component of the eccentricity vector
-   */
-  public double getEquinoctialEx() {
-    return equinoctial.getEquinoctialEx();
-  }
+    /** Get the first component of the eccentricity vector.
+     * @return first component of the eccentricity vector
+     */
+    public double getEquinoctialEx() {
+        return equinoctial.getEquinoctialEx();
+    }
 
-  /** Get the second component of the eccentricity vector.
-   * @return second component of the eccentricity vector
-   */
-  public double getEquinoctialEy() {
-    return equinoctial.getEquinoctialEy();
-  }
+    /** Get the second component of the eccentricity vector.
+     * @return second component of the eccentricity vector
+     */
+    public double getEquinoctialEy() {
+        return equinoctial.getEquinoctialEy();
+    }
 
-  /** Get the first component of the inclination vector.
-   * @return first component oof the inclination vector.
-   */
-  public double getHx() {
-    return equinoctial.getHx();
-  }
+    /** Get the first component of the inclination vector.
+     * @return first component oof the inclination vector.
+     */
+    public double getHx() {
+        return equinoctial.getHx();
+    }
 
-  /** Get the second component of the inclination vector.
-   * @return second component oof the inclination vector.
-   */
-  public double getHy() {
-    return equinoctial.getHy();
-  }
+    /** Get the second component of the inclination vector.
+     * @return second component oof the inclination vector.
+     */
+    public double getHy() {
+        return equinoctial.getHy();
+    }
 
-  /** Get the true latitude argument.
-   * @return true latitude argument (rad)
-   */
-  public double getLv() {
-    return equinoctial.getLv();
-  }
+    /** Get the true latitude argument.
+     * @return true latitude argument (rad)
+     */
+    public double getLv() {
+        return equinoctial.getLv();
+    }
 
-  /** Get the eccentric latitude argument.
-   * @return eccentric latitude argument.(rad)
-   */
-  public double getLE() {
-    return equinoctial.getLE();
-  }
+    /** Get the eccentric latitude argument.
+     * @return eccentric latitude argument.(rad)
+     */
+    public double getLE() {
+        return equinoctial.getLE();
+    }
 
-  /** Get the mean latitude argument.
-   * @return mean latitude argument.(rad)
-   */
-  public double getLM() {
-    return equinoctial.getLM();
-  }
+    /** Get the mean latitude argument.
+     * @return mean latitude argument.(rad)
+     */
+    public double getLM() {
+        return equinoctial.getLM();
+    }
 
-  /**  Returns a string representation of this Orbit object
-   * @return a string representation of this object
-   */
-  public String toString() {
-    String str = getPVCoordinates(getCachedMu()).toString();
-    return "cartesian parameters: "+str;
-  }
+    /**  Returns a string representation of this Orbit object
+     * @return a string representation of this object
+     */
+    public String toString() {
+        String str = getPVCoordinates(getCachedMu()).toString();
+        return "cartesian parameters: "+str;
+    }
 
-  /** Underlying equinoctial orbit providing non-cartesian elements. */
-  private final EquinoctialParameters equinoctial;
+    /** Underlying equinoctial orbit providing non-cartesian elements. */
+    private final EquinoctialParameters equinoctial;
 
-  private static final long serialVersionUID = -1349581125178017277L;
+    private static final long serialVersionUID = -1349581125178017277L;
 
 }

@@ -21,11 +21,11 @@ import fr.cs.orekit.forces.ForceModel;
  */
 public interface AttitudePropagator {
 
-  /** Sets the attitude provider used by the propagator.
-   * <p> If this method is never called before extrapolation, the attitude is
-   * set to default : {@link IdentityAttitude} <p>
-   * @param akProvider the attitude to propagate
-   */
-  public void setAkProvider(AttitudeKinematicsProvider akProvider);
+    /** Sets the attitude provider used by the propagator.
+     * <p> If this method is never called before extrapolation, the attitude is
+     * set to default : {@link IdentityAttitude} <p>
+     * @param akProvider the attitude to propagate
+     */
+    public void setAkProvider(AttitudeKinematicsProvider akProvider);
 
 }

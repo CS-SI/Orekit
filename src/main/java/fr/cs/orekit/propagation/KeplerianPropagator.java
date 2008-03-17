@@ -14,62 +14,62 @@ import fr.cs.orekit.time.AbsoluteDate;
  */
 public class KeplerianPropagator implements Ephemeris, AttitudePropagator {
 
-  /** Build a new instance.
-   * @param initialState initial state
-   * @param mu central acceleration coefficient (m<sup>3</sup>/s<sup>2</sup>)
-   */
-  public KeplerianPropagator(SpacecraftState initialState, double mu) {
-    this.initialDate = initialState.getDate();
-    this.initialParameters = new EquinoctialParameters(initialState.getParameters(), mu);
-    this.mass = initialState.getMass();
-    this.n = Math.sqrt(mu / initialParameters.getA()) / initialParameters.getA();
-    this.akProvider = new IdentityAttitude();
-    this.mu = mu;
-  }
-
-  public SpacecraftState getSpacecraftState(AbsoluteDate date)
-  throws PropagationException {
-
-    // evaluation of LM = PA + RAAN + M at extrapolated time
-
-    EquinoctialParameters extrapolated = new EquinoctialParameters(
-             initialParameters.getA(), initialParameters.getEquinoctialEx(),
-             initialParameters.getEquinoctialEy(), initialParameters.getHx(),
-             initialParameters.getHy(),
-             initialParameters.getLM() + n * date.minus(initialDate) ,
-             EquinoctialParameters.MEAN_LATITUDE_ARGUMENT, initialParameters.getFrame());
-
-    try {
-      return new SpacecraftState(new Orbit(date, extrapolated), mass,
-                                akProvider.getAttitudeKinematics(date,
-                                                                 extrapolated.getPVCoordinates(mu),
-                                                                 extrapolated.getFrame()));
-    } catch (OrekitException oe) {
-      throw new PropagationException(oe.getMessage(), oe);
+    /** Build a new instance.
+     * @param initialState initial state
+     * @param mu central acceleration coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     */
+    public KeplerianPropagator(SpacecraftState initialState, double mu) {
+        this.initialDate = initialState.getDate();
+        this.initialParameters = new EquinoctialParameters(initialState.getParameters(), mu);
+        this.mass = initialState.getMass();
+        this.n = Math.sqrt(mu / initialParameters.getA()) / initialParameters.getA();
+        this.akProvider = new IdentityAttitude();
+        this.mu = mu;
     }
 
-  }
+    public SpacecraftState getSpacecraftState(AbsoluteDate date)
+    throws PropagationException {
 
-  public void setAkProvider(AttitudeKinematicsProvider akProvider) {
-    this.akProvider = akProvider;
-  }
+        // evaluation of LM = PA + RAAN + M at extrapolated time
 
-  /** Attitude provider */
-  private AttitudeKinematicsProvider akProvider;
+        EquinoctialParameters extrapolated = new EquinoctialParameters(
+                                                                       initialParameters.getA(), initialParameters.getEquinoctialEx(),
+                                                                       initialParameters.getEquinoctialEy(), initialParameters.getHx(),
+                                                                       initialParameters.getHy(),
+                                                                       initialParameters.getLM() + n * date.minus(initialDate) ,
+                                                                       EquinoctialParameters.MEAN_LATITUDE_ARGUMENT, initialParameters.getFrame());
 
-  /** Initial orbit date. */
-  private AbsoluteDate initialDate;
+        try {
+            return new SpacecraftState(new Orbit(date, extrapolated), mass,
+                                       akProvider.getAttitudeKinematics(date,
+                                                                        extrapolated.getPVCoordinates(mu),
+                                                                        extrapolated.getFrame()));
+        } catch (OrekitException oe) {
+            throw new PropagationException(oe.getMessage(), oe);
+        }
 
-  /** Initial orbit parameters. */
-  private EquinoctialParameters initialParameters;
+    }
 
-  /** Initial mass. */
-  private double mass;
+    public void setAkProvider(AttitudeKinematicsProvider akProvider) {
+        this.akProvider = akProvider;
+    }
 
-  /** Mu. */
-  private double mu;
+    /** Attitude provider */
+    private AttitudeKinematicsProvider akProvider;
 
-  /** Mean motion. */
-  private double n;
+    /** Initial orbit date. */
+    private AbsoluteDate initialDate;
+
+    /** Initial orbit parameters. */
+    private EquinoctialParameters initialParameters;
+
+    /** Initial mass. */
+    private double mass;
+
+    /** Mu. */
+    private double mu;
+
+    /** Mean motion. */
+    private double n;
 
 }

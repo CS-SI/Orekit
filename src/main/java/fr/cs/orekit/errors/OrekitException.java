@@ -16,36 +16,36 @@ package fr.cs.orekit.errors;
  */
 
 public class OrekitException
-  extends Exception {
+extends Exception {
 
-  /** Simple constructor.
-   * Build an exception with a translated and formatted message
-   * @param specifier format specifier (to be translated)
-   * @param parts parts to insert in the format (no translation)
-   */
-  public OrekitException(String specifier, Object[] parts) {
-    super(Translator.getInstance().translate(specifier, parts));
-  }
+    /** Simple constructor.
+     * Build an exception with a translated and formatted message
+     * @param specifier format specifier (to be translated)
+     * @param parts parts to insert in the format (no translation)
+     */
+    public OrekitException(String specifier, Object[] parts) {
+        super(Translator.getInstance().translate(specifier, parts));
+    }
 
-  /** Simple constructor.
-   * Build an exception from a cause and with a specified message
-   * @param message descriptive message
-   * @param cause underlying cause
-   */
-  public OrekitException(String message, Throwable cause) {
-    super(message, cause);
-  }
+    /** Simple constructor.
+     * Build an exception from a cause and with a specified message
+     * @param message descriptive message
+     * @param cause underlying cause
+     */
+    public OrekitException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-  /** Simple constructor.
-   * Build an exception from a cause and with a translated and formatted message
-   * @param specifier format specifier (to be translated)
-   * @param parts parts to insert in the format (no translation)
-   * @param cause underlying cause
-   */
-  public OrekitException(String specifier, Object[] parts, Throwable cause) {
-    super(Translator.getInstance().translate(specifier, parts), cause);
-  }
+    /** Simple constructor.
+     * Build an exception from a cause and with a translated and formatted message
+     * @param specifier format specifier (to be translated)
+     * @param parts parts to insert in the format (no translation)
+     * @param cause underlying cause
+     */
+    public OrekitException(String specifier, Object[] parts, Throwable cause) {
+        super(Translator.getInstance().translate(specifier, parts), cause);
+    }
 
-  private static final long serialVersionUID = -988928652056598915L;
+    private static final long serialVersionUID = -988928652056598915L;
 
 }
