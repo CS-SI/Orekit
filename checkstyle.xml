@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
+                        "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
+
+<module name="Checker">
+  <property name="localeLanguage" value="en" />
+  <module name="TreeWalker">
+    <module name="AvoidStarImport" />
+    <module name="DeclarationOrder"/>
+    <module name="EqualsHashCode"/>
+    <module name="FallThrough"/>
+    <module name="FinalLocalVariable"/>
+    <module name="IllegalCatch"/>
+    <module name="IllegalImport"/>
+    <module name="Indentation"/>
+    <module name="JavadocMethod">
+      <property name="scope" value="protected"/>
+      <property name="allowUndeclaredRTE" value="true" />
+      <property name="allowMissingPropertyJavadoc" value="true" />
+    </module>
+    <module name="JavadocType"/>
+    <module name="JavadocVariable"/>
+    <module name="MissingSwitchDefault"/>
+    <module name="ModifierOrder"/>
+    <module name="MultipleStringLiterals"/>
+    <module name="MultipleVariableDeclarations"/>
+    <module name="OperatorWrap">
+      <property name="option" value="eol" />
+    </module>
+    <module name="StringLiteralEquality"/>
+    <module name="TabCharacter" />
+    <module name="TodoComment"/>
+    <module name="UnnecessaryParentheses"/>
+    <module name="UnusedImports"/>
+  </module>
+  <module name="NewlineAtEndOfFile"/>
+</module>
