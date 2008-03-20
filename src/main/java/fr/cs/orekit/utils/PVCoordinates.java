@@ -6,7 +6,8 @@ import org.apache.commons.math.geometry.Vector3D;
 
 /** Simple container of the cinematic couple Position (m) and Velocity (m/s).
  *
- * @author F. Maussion
+ * @author Fabien Maussion
+ * @author Luc Maisonobe
  */
 public class PVCoordinates implements Serializable {
 
