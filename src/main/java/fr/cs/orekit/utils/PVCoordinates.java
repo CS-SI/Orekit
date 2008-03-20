@@ -29,6 +29,65 @@ public class PVCoordinates implements Serializable {
 
     }
 
+    /** Multiplicative constructor
+     * Build a PVCoordinates from another one and a scale factor. 
+     * The PVCoordinates built will be a * pv
+     * @param a scale factor
+     * @param pv base (unscaled) PVCoordinates
+     */
+    public PVCoordinates(double a, PVCoordinates pv) {
+      this(new Vector3D(a, pv.position), new Vector3D(a, pv.velocity));
+    }
+
+    /** Linear constructor
+     * Build a PVCoordinates from two other ones and corresponding scale factors.
+     * The PVCoordinates built will be a1 * u1 + a2 * u2
+     * @param a1 first scale factor
+     * @param pv1 first base (unscaled) PVCoordinates
+     * @param a2 second scale factor
+     * @param pv2 second base (unscaled) PVCoordinates
+     */
+    public PVCoordinates(double a1, PVCoordinates pv1, double a2, PVCoordinates pv2) {
+        this(new Vector3D(a1, pv1.position, a2, pv2.position),
+             new Vector3D(a1, pv1.velocity, a2, pv2.velocity));
+    }
+
+    /** Linear constructor
+     * Build a PVCoordinates from three other ones and corresponding scale factors.
+     * The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3
+     * @param a1 first scale factor
+     * @param pv1 first base (unscaled) PVCoordinates
+     * @param a2 second scale factor
+     * @param pv2 second base (unscaled) PVCoordinates
+     * @param a3 third scale factor
+     * @param pv3 third base (unscaled) PVCoordinates
+     */
+    public PVCoordinates(double a1, PVCoordinates pv1, double a2, PVCoordinates pv2,
+                         double a3, PVCoordinates pv3) {
+        this(new Vector3D(a1, pv1.position, a2, pv2.position, a3, pv3.position),
+             new Vector3D(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity));
+    }
+
+    /** Linear constructor
+     * Build a PVCoordinates from four other ones and corresponding scale factors.
+     * The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4
+     * @param a1 first scale factor
+     * @param pv1 first base (unscaled) PVCoordinates
+     * @param a2 second scale factor
+     * @param pv2 second base (unscaled) PVCoordinates
+     * @param a3 third scale factor
+     * @param pv3 third base (unscaled) PVCoordinates
+     * @param a4 fourth scale factor
+     * @param pv4 fourth base (unscaled) PVCoordinates
+     */
+    public PVCoordinates(double a1, PVCoordinates pv1, double a2, PVCoordinates pv2,
+                         double a3, PVCoordinates pv3, double a4, PVCoordinates pv4) {
+        this(new Vector3D(a1, pv1.position, a2, pv2.position,
+                          a3, pv3.position, a4, pv4.position),
+             new Vector3D(a1, pv1.velocity, a2, pv2.velocity,
+                          a3, pv3.velocity, a4, pv4.velocity));
+    }
+
     /** Gets the position.
      * @return the position vector (m).
      */
