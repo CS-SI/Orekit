@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import org.apache.commons.math.geometry.Vector3D;
 
-/** Simple container of the cinematic couple Position (m) and Velocity (m/s).
+/** Simple container for Position/Velocity pairs.
  *
  * @author Fabien Maussion
  * @author Luc Maisonobe
