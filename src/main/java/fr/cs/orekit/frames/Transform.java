@@ -60,6 +60,21 @@ import fr.cs.orekit.utils.PVCoordinates;
  */
 public class Transform implements Serializable {
 
+    /** serializable UID. */
+    private static final long serialVersionUID = -989814451927839248L;
+
+    /** Global translation. */
+    private Vector3D translation;
+
+    /** First time derivative of the translation. */
+    private Vector3D velocity;
+
+    /** Global rotation. */
+    private Rotation rotation;
+
+    /** First time derivative of the rotation (norm representing angular rate). */
+    private Vector3D rotationRate;
+
     /** Build a transform from its primitive operations.
      * @param translation first primitive operation to apply
      * @param velocity first time derivative of the translation
@@ -157,7 +172,7 @@ public class Transform implements Serializable {
      * @return inverse transform of the instance
      */
     public Transform getInverse() {
-        Vector3D rT = rotation.applyTo(translation);
+        final Vector3D rT = rotation.applyTo(translation);
         return new Transform(rT.negate(),
                              Vector3D.crossProduct(rotationRate, rT).subtract(rotation.applyTo(velocity)),
                              rotation.revert(),
@@ -166,6 +181,7 @@ public class Transform implements Serializable {
 
     /** Transform a position vector (including translation effects).
      * @param position vector to transform
+     * @return transformed position
      */
     public Vector3D transformPosition(Vector3D position) {
         return rotation.applyTo(translation.add(position));
@@ -173,18 +189,20 @@ public class Transform implements Serializable {
 
     /** Transform a vector (ignoring translation effects).
      * @param vector vector to transform
+     * @return transformed vector
      */
     public Vector3D transformVector(Vector3D vector) {
         return rotation.applyTo(vector);
     }
 
-    /** Transform {@link PVCoordinates} including cinematic effects.
-     * @param pv the couple position-velocity to tranform.
+    /** Transform {@link PVCoordinates} including kinematic effects.
+     * @param pv the couple position-velocity to transform.
+     * @return transformed position/velocity
      */
     public PVCoordinates transformPVCoordinates(PVCoordinates pv) {
-        Vector3D p = pv.getPosition();
-        Vector3D v = pv.getVelocity();
-        Vector3D transformedP = rotation.applyTo(translation.add(p));
+        final Vector3D p = pv.getPosition();
+        final Vector3D v = pv.getVelocity();
+        final Vector3D transformedP = rotation.applyTo(translation.add(p));
         return new PVCoordinates(transformedP,
                                  rotation.applyTo(v.add(velocity)).subtract(
                                                                             Vector3D.crossProduct(rotationRate, transformedP)));
@@ -227,17 +245,4 @@ public class Transform implements Serializable {
         return rotationRate;
     }
 
-    /** Global translation. */
-    private Vector3D translation;
-
-    /** First time derivative of the translation. */
-    private Vector3D velocity;
-
-    /** Global rotation. */
-    private Rotation rotation;
-
-    /** First time derivative of the rotation (norm representing angular rate). */
-    private Vector3D rotationRate;
-
-    private static final long serialVersionUID = -4819571244806665519L;
 }

@@ -18,6 +18,22 @@ public class ChunkedTime {
     /** Constant for commonly used hour 12:00:00. */
     public static final ChunkedTime H12 = new ChunkedTime(12, 0, 0);
 
+    /** Format for hours and minutes. */
+    private static final DecimalFormat twoDigits = new DecimalFormat("00");
+
+    /** Format for seconds. */
+    private static final DecimalFormat secondsDigits =
+        new DecimalFormat("00.000", new DecimalFormatSymbols(Locale.US));
+
+    /** Hour number. */
+    public final int hour;
+
+    /** Minute number. */
+    public final int minute;
+
+    /** Second number. */
+    public final double second;
+
     /** Build a time from its clock elements.
      * @param hour hour number from 0 to 23
      * @param minute minute number from 0 to 59
@@ -78,6 +94,9 @@ public class ChunkedTime {
         return second + 60 * minute + 3600 * hour;
     }
 
+    /** Get a string representation of the time.
+     * @return string representation of the time
+     */
     public String toString() {
         return new StringBuffer().
         append(twoDigits.format(hour)).append(':').
@@ -85,18 +104,5 @@ public class ChunkedTime {
         append(secondsDigits.format(second)).
         toString();
     }
-
-    /** Hour number. */
-    public final int hour;
-
-    /** Minute number. */
-    public final int minute;
-
-    /** Second number. */
-    public final double second;
-
-    private static final DecimalFormat twoDigits     = new DecimalFormat("00");
-    private static final DecimalFormat secondsDigits =
-        new DecimalFormat("00.000", new DecimalFormatSymbols(Locale.US));
 
 }

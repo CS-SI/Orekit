@@ -23,13 +23,19 @@ import fr.cs.orekit.errors.Translator;
  */
 public class Line {
 
+    /** Line direction. */
+    private Vector3D direction;
+
+    /** Line point closest to the origin. */
+    private Vector3D zero;
+
     /** Build a line from a point and a direction.
      * @param p point belonging to the line (this can be any point)
      * @param direction direction of the line
      * @exception IllegalArgumentException if the direction norm is too small
      */
     public Line(Vector3D p, Vector3D direction) {
-        double norm = direction.getNorm();
+        final double norm = direction.getNorm();
         if (norm < 1.0e-10) {
             throw new IllegalArgumentException(
                                                Translator.getInstance().translate("null norm"));
@@ -94,15 +100,9 @@ public class Line {
      * @return distance between the instance and the point
      */
     public double distance(Vector3D p) {
-        Vector3D d = p.subtract(zero);
-        Vector3D n = new Vector3D(1.0, d, -Vector3D.dotProduct(d, direction), direction);
-        return n.getNorm();
+        final Vector3D d = p.subtract(zero);
+        final double dot = Vector3D.dotProduct(d, direction);
+        return new Vector3D(1.0, d, -dot, direction).getNorm();
     }
-
-    /** Line direction. */
-    private Vector3D direction;
-
-    /** Line point closest to the origin. */
-    private Vector3D zero;
 
 }

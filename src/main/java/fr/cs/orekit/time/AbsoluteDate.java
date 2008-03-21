@@ -40,6 +40,9 @@ import java.io.Serializable;
  */
 public class AbsoluteDate implements Comparable, Serializable {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 869125978894503980L;
+
     /** Reference epoch for julian dates: -4712-01-01T12:00:00.
      * <p>Both <code>java.util.Date</code> and {@link ChunkedDate} classes
      * follow the astronomical conventions and consider a year 0 between
@@ -64,10 +67,16 @@ public class AbsoluteDate implements Comparable, Serializable {
     /** Java Reference epoch: 1970-01-01T00:00:00 TT. */
     public static final AbsoluteDate JavaEpoch;
 
+    /** Reference epoch in milliseconds from 1970-01-01T00:00:00 TAI. */
+    private final long epoch;
+
+    /** Offset from the reference epoch in seconds. */
+    private final double offset;
+
     static {
 
-        TimeScale tai = TAIScale.getInstance();
-        TimeScale tt  = TTScale.getInstance();
+        final TimeScale tai = TAIScale.getInstance();
+        final TimeScale tt  = TTScale.getInstance();
         JulianEpoch =
             new AbsoluteDate(new ChunkedDate(-4712,  1,  1), ChunkedTime.H12, tt);
         ModifiedJulianEpoch =
@@ -102,7 +111,7 @@ public class AbsoluteDate implements Comparable, Serializable {
      */
     public AbsoluteDate(ChunkedDate date, ChunkedTime time, TimeScale timeScale) {
         // set the epoch at the start of the current minute
-        int j1970Day = date.getJ2000Day() + 10957;
+        final int j1970Day = date.getJ2000Day() + 10957;
         epoch  = 60000l * ((j1970Day * 24l + time.hour) * 60l + time.minute);
         offset = time.second + timeScale.offsetToTAI(epoch * 0.001 + time.second);
     }
@@ -167,7 +176,7 @@ public class AbsoluteDate implements Comparable, Serializable {
      * current instant
      */
     public double timeScalesOffset(TimeScale scale1, TimeScale scale2) {
-        double taiTime = 0.001 * epoch + offset;
+        final double taiTime = 0.001 * epoch + offset;
         return scale1.offsetFromTAI(taiTime) - scale2.offsetFromTAI(taiTime);
     }
 
@@ -193,7 +202,7 @@ public class AbsoluteDate implements Comparable, Serializable {
      * instance
      */
     public int compareTo(Object date) {
-        double delta = minus((AbsoluteDate) date);
+        final double delta = minus((AbsoluteDate) date);
         if (delta < 0) {
             return -1;
         } else if (delta > 0) {
@@ -217,17 +226,12 @@ public class AbsoluteDate implements Comparable, Serializable {
         return false;
     }
 
+    /** Get a hashcode for this date.
+     * @return hashcode
+     */
     public int hashCode() {
-        long l = Double.doubleToLongBits(minus(J2000Epoch));
+        final long l = Double.doubleToLongBits(minus(J2000Epoch));
         return (int)(l^(l>>>32));
     }
-
-    /** Reference epoch in milliseconds from 1970-01-01T00:00:00 TAI. */
-    private final long epoch;
-
-    /** Offset from the reference epoch in seconds. */
-    private final double offset;
-
-    private static final long serialVersionUID = -4127860894692239957L;
 
 }

@@ -1,7 +1,6 @@
 package fr.cs.orekit.orbits;
 
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.propagation.Ephemeris;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
 import java.io.Serializable;
@@ -49,8 +48,16 @@ import java.io.Serializable;
 
  */
 
-public class Orbit
-implements Serializable {
+public class Orbit implements Serializable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = -1020615214010191133L;
+
+    /** Date of the current state. */
+    private final AbsoluteDate t;
+
+    /** Orbital parameters state. */
+    private final OrbitalParameters parameters;
 
     /** Create a new instance from date and orbital parameters
      * @param t  date
@@ -187,7 +194,7 @@ implements Serializable {
      * @return a string representation of this object
      */
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        final StringBuffer sb = new StringBuffer();
         sb.append('{');
         sb.append(t.toString());
         sb.append(' ');
@@ -195,13 +202,5 @@ implements Serializable {
         sb.append('}');
         return sb.toString();
     }
-
-    /** Date of the current state. */
-    private final AbsoluteDate t;
-
-    /** Orbital parameters state. */
-    private final OrbitalParameters parameters;
-
-    private static final long serialVersionUID = 7165778593185551534L;
 
 }
