@@ -25,20 +25,19 @@ public class ChunkedTime {
      * @exception IllegalArgumentException if inconsistent arguments
      * are given (parameters out of range)
      */
-    public ChunkedTime(int hour, int minute, double second)
-    throws IllegalArgumentException {
+    public ChunkedTime(int hour, int minute, double second) throws IllegalArgumentException {
 
         // range check
         if ((hour   < 0) || (hour   >  23) ||
                 (minute < 0) || (minute >  59) ||
                 (second < 0) || (second >= 60.0)) {
-            String message =
+            final String message =
                 Translator.getInstance().translate("non-existent hour {0}:{1}:{2}",
                                                    new Object[] {
-                        new Integer(hour),
-                        new Integer(minute),
-                        new Double(second)
-                });
+                                                       new Integer(hour),
+                                                       new Integer(minute),
+                                                       new Double(second)
+                                                   });
             throw new IllegalArgumentException(message);
         }
 
@@ -55,11 +54,11 @@ public class ChunkedTime {
     public ChunkedTime(double secondInDay) {
         // range check
         if ((secondInDay < 0) || (secondInDay >= 86400.0)) {
-            String message =
+            final String message =
                 Translator.getInstance().translate("out of range seconds number: {0}",
                                                    new Object[] {
-                        new Double(secondInDay)
-                });
+                                                       new Double(secondInDay)
+                                                   });
             throw new IllegalArgumentException(message);
         }
 
