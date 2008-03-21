@@ -15,7 +15,7 @@ public class Translator {
      */
     private Translator() {
         resources =
-            ResourceBundle.getBundle("fr.cs.orekit.errors.MessagesResources");
+            ResourceBundle.getBundle("META-INF/localization/ExceptionsMessages");
     }
 
     /** Get the unique instance.
