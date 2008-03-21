@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
 import org.apache.commons.math.geometry.Rotation;
+
+import fr.cs.orekit.errors.FrameAncestorException;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.Translator;
 import fr.cs.orekit.iers.IERSDirectoryCrawler;
@@ -207,6 +209,86 @@ public class Frame implements Serializable {
 
     }
 
+    /** Update the transform from parent frame according to two other
+     * frames used as control handles.
+
+     * <p>This method allows to control the relative position of two parts
+     * of the global frames tree using any two frames in each part as
+     * control handles. Consider the following simplified frames tree as an
+     * example:</p>
+     * <pre>
+     *               J<sub>2000</sub>
+     *                 |
+     *  --------------------------------
+     *  |             |                |
+     * Sun        satellite          Earth
+     *                |                |
+     *        on-board antenna   ground station
+     *                                 |
+     *                          tracking antenna
+     * </pre>
+     * <p>Given a tracking measurement, we want to update the satellite
+     * position. We build the transform between the two antennas (a simple
+     * translation computed from range and line of sight) and update the transform
+     * <em>between J<sub>2000</sub> and satellite frames</p> such that the
+     * transform <em>between on-board antenna and tracking antenna frames</em>
+     * becomes equal to the computed transform. This is done by the following
+     * call to the method:</p>
+     * <pre><code>
+     * satellite.updateTransform(onBoardAntenna, trackingAntenna,
+     *                           measurementTransform, date);
+     * </code></pre>
+     * <p>One way to represent the behavior of the method is to consider the
+     * sub-tree rooted at the instance on one hand (satellite and on-board antenna)
+     * and the tree containing all the other frames on the other hand (J<sub>2000</sub>,
+     * Sun, Earth, ground station, tracking antenna). Both tree are kept as solid
+     * sets linked by a flexible spring. The method stretches the spring to make
+     * sure the transform between the two specified frames (one in each tree part)
+     * matches the specified transform.</p>
+     * @param f1 first control frame
+     * @param f2 second control frame
+     * @param f1Tof2 desired transform from first to second control frame
+     * @param date date of the transform
+     * @exception OrekitException if the path between the two control frames does
+     * not cross the link between instance and its parent frame or if some
+     * intermediate transform fails
+     * @see #updateTransform(Transform)
+     */
+    public void updateTransform(Frame f1, Frame f2, Transform f1Tof2, AbsoluteDate date)
+      throws OrekitException {
+
+      // make sure f1 is not a child of the instance
+      if (f1.isChildOf(this) || (f1 == this)) {
+
+        if (f2.isChildOf(this) || (f2 == this)) {
+          throw new FrameAncestorException("both frames {0} and {1} are child of {2}",
+                                           new String[] {
+                                             f1.getName(), f2.getName(), getName()
+                                           });
+        }
+
+        // swap f1 and f2 to make sure the child is f2
+        Frame tmp = f1;
+        f1 = f2;
+        f2 = tmp;
+        f1Tof2 = f1Tof2.getInverse();
+
+      } else  if (! (f2.isChildOf(this) || (f2 == this))) {
+        throw new FrameAncestorException("neither frames {0} nor {1} have {2} as ancestor",
+                                         new String[] {
+                                           f1.getName(), f2.getName(), getName()
+                                         });
+      }
+
+      // rebuild the transform by traveling from parent to self
+      // WITHOUT using the existing this.transform that will be updated
+      Transform parentToF1 = parent.getTransformTo(f1, date);
+      Transform f2ToSelf   = f2.getTransformTo(this, date);
+      Transform f1ToSelf   = new Transform(f1Tof2, f2ToSelf);
+      updateTransform(new Transform(parentToF1, f1ToSelf));
+
+    }
+
     /** Find the deepest common ancestor of two frames in the frames tree.
      * @param from origin frame
      * @param to destination frame
@@ -258,6 +340,20 @@ public class Frame implements Serializable {
 
     }
 
+    /** Determine if a Frame is a child of another one.
+     * @param potentialAncestor supposed ancestor frame
+     * @return true if the potentialAncestor belongs to the
+     * path from instance to the root frame
+     */
+    public boolean isChildOf(Frame potentialAncestor) {
+      for (Frame frame = parent; frame != null; frame = frame.parent) {
+        if (frame == potentialAncestor) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     /** Get the path from instance frame to the root frame.
      * @return path from instance to root, excluding instance itself
      * (empty if instance is root)
@@ -271,7 +367,8 @@ public class Frame implements Serializable {
     }
 
     /** Frame Type enum for the
-     * {@link Frame#getReferenceFrame(fr.cs.orekit.frames.Frame.FrameType, AbsoluteDate)} method.  */
+     * {@link Frame#getReferenceFrame(fr.cs.orekit.frames.Frame.FrameType, AbsoluteDate)} method.
+     */
     public static class FrameType {
         private FrameType(String name) {
             this.name = name;

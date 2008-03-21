@@ -5,6 +5,7 @@ import java.util.Random;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 
+import fr.cs.orekit.errors.FrameAncestorException;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.time.AbsoluteDate;
 
@@ -91,6 +92,104 @@ public class FrameTest extends TestCase {
         assertEquals(0, i50.subtract(i50Ref).getNorm(), 1.0e-15);
         assertEquals(0, j50.subtract(j50Ref).getNorm(), 1.0e-15);
         assertEquals(0, k50.subtract(k50Ref).getNorm(), 1.0e-15);
+    }
+
+    public void testIsChildOf() throws OrekitException{
+        Random random = new Random(0xb7d1a155e726da78l);
+        Frame j2000   = Frame.getJ2000();
+
+        Frame f1 = new Frame(j2000, randomTransform(random), "f1");
+        Frame f2 = new Frame(f1   , randomTransform(random), "f2");
+        Frame f4 = new Frame(f2   , randomTransform(random), "f4");
+        Frame f5 = new Frame(f4   , randomTransform(random), "f5");
+        Frame f6 = new Frame(j2000, randomTransform(random), "f6");
+        Frame f7 = new Frame(f6   , randomTransform(random), "f7");
+        Frame f8 = new Frame(f6   , randomTransform(random), "f8");
+        Frame f9 = new Frame(f7   , randomTransform(random), "f9");
+
+        // check if the root frame can be an ancestor of another frame
+        assertEquals(false, j2000.isChildOf(f5));
+
+        // check if a frame which belongs to the same branch than the 2nd frame is a branch of it
+        assertEquals(true, f5.isChildOf(f1));
+
+        // check if a random frame is the child of the root frame 
+        assertEquals(true, f9.isChildOf(j2000));
+
+        // check that a frame is not its own child
+        assertEquals(false, f4.isChildOf(f4));
+
+        // check if a frame which belong to a different branch than the 2nd frame can be a child for it
+        assertEquals(false, f9.isChildOf(f5));
+
+        // check if the root frame is not a child of itself
+        assertEquals(false, j2000.isChildOf(j2000));
+
+        assertEquals(false, f9.isChildOf(f8));
+
+    }
+
+    public void testUpdateTransform() throws OrekitException {
+        Random random     = new Random(0x2f6769c23e53e96el);
+        Frame j2000       = Frame.getJ2000();
+        AbsoluteDate date = new AbsoluteDate();
+
+        Frame f1 = new Frame(j2000, randomTransform(random), "f1");
+        Frame f2 = new Frame(f1   , randomTransform(random), "f2");
+        Frame f3 = new Frame(f2   , randomTransform(random), "f3");
+        Frame f4 = new Frame(f2   , randomTransform(random), "f4");
+        Frame f5 = new Frame(f4   , randomTransform(random), "f5");
+        Frame f6 = new Frame(j2000, randomTransform(random), "f6");
+        Frame f7 = new Frame(f6   , randomTransform(random), "f7");
+        Frame f8 = new Frame(f6   , randomTransform(random), "f8");
+        Frame f9 = new Frame(f7   , randomTransform(random), "f9");
+
+        checkFrameAncestorException(f6, f8, f9, randomTransform(random), date);
+        checkFrameAncestorException(f6, f3, f5, randomTransform(random), date);
+        checkFrameAncestorException(j2000, f5, f9, randomTransform(random), date);
+        checkFrameAncestorException(f3, j2000, f6, randomTransform(random), date);    
+
+        checkUpdateTransform(f1, f5, f9, date, random);
+        checkUpdateTransform(f7, f6, f9, date, random);
+        checkUpdateTransform(f6, j2000, f7, date, random);
+
+        checkUpdateTransform(f6, f6.getParent(), f6, date, random);
+
+    }
+
+    private void checkFrameAncestorException(Frame f0, Frame f1, Frame f2,
+                                             Transform transform, AbsoluteDate date) {
+        doCheckFrameAncestorException(f0, f1, f2, transform, date);
+        doCheckFrameAncestorException(f0, f2, f1, transform, date);
+    }
+
+    private void doCheckFrameAncestorException(Frame f0, Frame f1, Frame f2,
+                                               Transform transform, AbsoluteDate date) {
+        try {
+            f0.updateTransform(f1, f2, transform, date);
+            fail("Should raise a FrameAncestorException");
+        } catch(FrameAncestorException expected){
+            // expected behavior
+        } catch (Exception e) {
+            fail("wrong exception caught");
+        }
+    }
+
+    private void checkUpdateTransform(Frame f0, Frame f1, Frame f2,
+                                      AbsoluteDate date, Random random)
+      throws OrekitException {
+        Transform f1ToF2 = randomTransform(random);
+
+        f0.updateTransform(f1, f2, f1ToF2, date);
+        Transform obtained12 = f1.getTransformTo(f2, date);
+        checkNoTransform(new Transform(f1ToF2, obtained12.getInverse()), random);
+
+        f0.updateTransform(f2, f1, f1ToF2.getInverse(), date);
+        Transform obtained21 = f2.getTransformTo(f1, date);
+        checkNoTransform(new Transform(f1ToF2.getInverse(), obtained21.getInverse()), random);
+
+        checkNoTransform(new Transform(obtained12, obtained21), random);
+
     }
 
     private Transform randomTransform(Random random) {
