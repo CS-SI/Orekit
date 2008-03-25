@@ -3,6 +3,7 @@ package fr.cs.orekit.orbits;
 import junit.framework.*;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.MathUtils;
 
 import fr.cs.orekit.Utils;
 import fr.cs.orekit.frames.Frame;
@@ -40,7 +41,7 @@ public class CircularParametersTest extends TestCase {
         assertEquals(param.getEquinoctialEy(), circ.getEquinoctialEy(), Utils.epsilonE * Math.abs(circ.getE()));
         assertEquals(param.getHx(), circ.getHx(), Utils.epsilonAngle * Math.abs(circ.getI()));
         assertEquals(param.getHy(), circ.getHy(), Utils.epsilonAngle * Math.abs(circ.getI()));
-        assertEquals(Utils.trimAngle(param.getLv(),circ.getLv()), circ.getLv(), Utils.epsilonAngle * Math.abs(circ.getLv()));
+        assertEquals(MathUtils.normalizeAngle(param.getLv(),circ.getLv()), circ.getLv(), Utils.epsilonAngle * Math.abs(circ.getLv()));
 
     }
 
@@ -67,7 +68,7 @@ public class CircularParametersTest extends TestCase {
         assertEquals(paramCir.getEquinoctialEy(), circCir.getEquinoctialEy(), Utils.epsilonEcir * Math.abs(circCir.getE()));
         assertEquals(paramCir.getHx(), circCir.getHx(), Utils.epsilonAngle * Math.abs(circCir.getI()));
         assertEquals(paramCir.getHy(), circCir.getHy(), Utils.epsilonAngle * Math.abs(circCir.getI()));
-        assertEquals(Utils.trimAngle(paramCir.getLv(),circCir.getLv()), circCir.getLv(), Utils.epsilonAngle * Math.abs(circCir.getLv()));
+        assertEquals(MathUtils.normalizeAngle(paramCir.getLv(),circCir.getLv()), circCir.getLv(), Utils.epsilonAngle * Math.abs(circCir.getLv()));
 
     }
 
@@ -128,13 +129,13 @@ public class CircularParametersTest extends TestCase {
         assertEquals(0.110283316961361e-03, kep.getE(), Utils.epsilonE * Math.abs(kep.getE()));
         assertEquals(0.166901168553917e-03, kep.getI(),
                      Utils.epsilonAngle * Math.abs(kep.getI()));
-        assertEquals(Utils.trimAngle(-3.87224326008837, kep.getPerigeeArgument()),
+        assertEquals(MathUtils.normalizeAngle(-3.87224326008837, kep.getPerigeeArgument()),
                      kep.getPerigeeArgument(),
                      Utils.epsilonTest * Math.abs(kep.getPerigeeArgument()));
-        assertEquals(Utils.trimAngle(5.51473467358854, kep.getRightAscensionOfAscendingNode()),
+        assertEquals(MathUtils.normalizeAngle(5.51473467358854, kep.getRightAscensionOfAscendingNode()),
                      kep.getRightAscensionOfAscendingNode(),
                      Utils.epsilonTest * Math.abs(kep.getRightAscensionOfAscendingNode()));
-        assertEquals(Utils.trimAngle(3.65750858649982, kep.getMeanAnomaly()),
+        assertEquals(MathUtils.normalizeAngle(3.65750858649982, kep.getMeanAnomaly()),
                      kep.getMeanAnomaly(),
                      Utils.epsilonTest * Math.abs(kep.getMeanAnomaly()));
 

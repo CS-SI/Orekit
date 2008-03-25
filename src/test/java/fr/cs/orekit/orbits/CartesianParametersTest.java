@@ -3,6 +3,7 @@ package fr.cs.orekit.orbits;
 import junit.framework.*;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.MathUtils;
 
 import fr.cs.orekit.Utils;
 import fr.cs.orekit.frames.Frame;
@@ -47,8 +48,8 @@ public class CartesianParametersTest extends TestCase {
         assertEquals(0.592732497856475e-03,  p.getEquinoctialEx(), Utils.epsilonE * Math.abs(p.getE()));
         assertEquals(-0.206274396964359e-02, p.getEquinoctialEy(), Utils.epsilonE * Math.abs(p.getE()));
         assertEquals(Math.sqrt(Math.pow(0.592732497856475e-03,2)+Math.pow(-0.206274396964359e-02,2)), p.getE(), Utils.epsilonAngle * Math.abs(p.getE()));
-        assertEquals(Utils.trimAngle(2*Math.asin(Math.sqrt((Math.pow(0.128021863908325e-03,2)+Math.pow(-0.352136186881817e-02,2))/4.)),p.getI()), p.getI(), Utils.epsilonAngle * Math.abs(p.getI()));
-        assertEquals(Utils.trimAngle(0.234498139679291e+01,p.getLM()), p.getLM(), Utils.epsilonAngle * Math.abs(p.getLM()));
+        assertEquals(MathUtils.normalizeAngle(2*Math.asin(Math.sqrt((Math.pow(0.128021863908325e-03,2)+Math.pow(-0.352136186881817e-02,2))/4.)),p.getI()), p.getI(), Utils.epsilonAngle * Math.abs(p.getI()));
+        assertEquals(MathUtils.normalizeAngle(0.234498139679291e+01,p.getLM()), p.getLM(), Utils.epsilonAngle * Math.abs(p.getLM()));
     }
 
     public void testCartesianToKeplerian(){
@@ -65,13 +66,13 @@ public class CartesianParametersTest extends TestCase {
         assertEquals(0.743502611664700, p.getE(), Utils.epsilonE     * Math.abs(p.getE()));
         assertEquals(0.122182096220906, p.getI(), Utils.epsilonAngle * Math.abs(p.getI()));
         double pa = kep.getPerigeeArgument();
-        assertEquals(Utils.trimAngle(3.09909041016672, pa), pa,
+        assertEquals(MathUtils.normalizeAngle(3.09909041016672, pa), pa,
                      Utils.epsilonAngle * Math.abs(pa));
         double raan = kep.getRightAscensionOfAscendingNode();
-        assertEquals(Utils.trimAngle(2.32231010979999, raan), raan,
+        assertEquals(MathUtils.normalizeAngle(2.32231010979999, raan), raan,
                      Utils.epsilonAngle * Math.abs(raan));
         double m = kep.getMeanAnomaly();
-        assertEquals(Utils.trimAngle(3.22888977629034, m), m,
+        assertEquals(MathUtils.normalizeAngle(3.22888977629034, m), m,
                      Utils.epsilonAngle * Math.abs(Math.abs(m)));
     }
 

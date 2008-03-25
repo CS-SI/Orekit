@@ -20,12 +20,6 @@ public class Utils {
 
 
     //trim an angle between ref - PI and ref + PI
-    public static double trimAngle (double a, double ref) {
-        double twoPi = 2 * Math.PI;
-        return a - twoPi * Math.floor ((a + Math.PI - ref) / twoPi);
-    }
-
-    //trim an angle between ref - PI and ref + PI
     public static Vector3D randomVector (int size) {
         Random rand = new Random();
         return new Vector3D(rand.nextDouble()*size,

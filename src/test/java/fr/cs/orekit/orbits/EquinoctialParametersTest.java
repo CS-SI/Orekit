@@ -3,6 +3,7 @@ package fr.cs.orekit.orbits;
 import junit.framework.*;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.MathUtils;
 
 import fr.cs.orekit.Utils;
 import fr.cs.orekit.frames.Frame;
@@ -44,7 +45,7 @@ public class EquinoctialParametersTest extends TestCase {
                      * Math.abs(equi.getI()));
         assertEquals(param.getHy(), equi.getHy(), Utils.epsilonAngle
                      * Math.abs(equi.getI()));
-        assertEquals(Utils.trimAngle(param.getLv(), equi.getLv()), equi.getLv(),
+        assertEquals(MathUtils.normalizeAngle(param.getLv(), equi.getLv()), equi.getLv(),
                      Utils.epsilonAngle * Math.abs(equi.getLv()));
 
     }
@@ -79,7 +80,7 @@ public class EquinoctialParametersTest extends TestCase {
                      * Math.abs(equiCir.getI()));
         assertEquals(paramCir.getHy(), equiCir.getHy(), Utils.epsilonAngle
                      * Math.abs(equiCir.getI()));
-        assertEquals(Utils.trimAngle(paramCir.getLv(), equiCir.getLv()), equiCir
+        assertEquals(MathUtils.normalizeAngle(paramCir.getLv(), equiCir.getLv()), equiCir
                      .getLv(), Utils.epsilonAngle * Math.abs(equiCir.getLv()));
 
     }
@@ -137,14 +138,14 @@ public class EquinoctialParametersTest extends TestCase {
                      * Math.abs(kep.getE()));
         assertEquals(0.166901168553917e-03, kep.getI(), Utils.epsilonAngle
                      * Math.abs(kep.getI()));
-        assertEquals(Utils.trimAngle(-3.87224326008837, kep.getPerigeeArgument()),
+        assertEquals(MathUtils.normalizeAngle(-3.87224326008837, kep.getPerigeeArgument()),
                      kep.getPerigeeArgument(), Utils.epsilonTest
                      * Math.abs(kep.getPerigeeArgument()));
-        assertEquals(Utils.trimAngle(5.51473467358854, kep
+        assertEquals(MathUtils.normalizeAngle(5.51473467358854, kep
                                      .getRightAscensionOfAscendingNode()), kep
                                      .getRightAscensionOfAscendingNode(), Utils.epsilonTest
                                      * Math.abs(kep.getRightAscensionOfAscendingNode()));
-        assertEquals(Utils.trimAngle(3.65750858649982, kep.getMeanAnomaly()), kep
+        assertEquals(MathUtils.normalizeAngle(3.65750858649982, kep.getMeanAnomaly()), kep
                      .getMeanAnomaly(), Utils.epsilonTest * Math.abs(kep.getMeanAnomaly()));
 
     }

@@ -15,7 +15,6 @@ class SGP4 extends TLEPropagator {
 
     protected SGP4(TLE initialTLE) throws OrekitException {
         super (initialTLE);
-        this.isSDP = false;
     }
 
     /** Initialization proper to each propagator (SGP or SDP).

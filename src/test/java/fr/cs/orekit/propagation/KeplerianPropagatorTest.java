@@ -4,6 +4,7 @@ import fr.cs.orekit.Utils;
 
 import junit.framework.*;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.MathUtils;
 
 import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.frames.Frame;
@@ -51,11 +52,11 @@ public class KeplerianPropagatorTest extends TestCase {
         assertEquals(n*delta_t,
                      finalOrbit.getLM() - initialOrbit.getLM(),
                      Utils.epsilonTest * Math.abs(n*delta_t));
-        assertEquals(Utils.trimAngle(finalOrbit.getLM(),initialOrbit.getLM()), initialOrbit.getLM(), Utils.epsilonAngle * Math.abs(initialOrbit.getLM()));
+        assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(),initialOrbit.getLM()), initialOrbit.getLM(), Utils.epsilonAngle * Math.abs(initialOrbit.getLM()));
 
         assertEquals(finalOrbit.getA(), initialOrbit.getA(), Utils.epsilonTest * initialOrbit.getA());
         assertEquals(finalOrbit.getE(), initialOrbit.getE(), Utils.epsilonE * initialOrbit.getE());
-        assertEquals(Utils.trimAngle(finalOrbit.getI(),initialOrbit.getI()), initialOrbit.getI(), Utils.epsilonAngle * Math.abs(initialOrbit.getI()));
+        assertEquals(MathUtils.normalizeAngle(finalOrbit.getI(),initialOrbit.getI()), initialOrbit.getI(), Utils.epsilonAngle * Math.abs(initialOrbit.getI()));
 
     }
 
@@ -87,11 +88,11 @@ public class KeplerianPropagatorTest extends TestCase {
         assertEquals(n*delta_t,
                      finalOrbit.getLM() - initialOrbit.getLM(),
                      Utils.epsilonTest * Math.max(100.,Math.abs(n*delta_t)));
-        assertEquals(Utils.trimAngle(finalOrbit.getLM(),initialOrbit.getLM()), initialOrbit.getLM(), Utils.epsilonAngle * Math.abs(initialOrbit.getLM()));
+        assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(),initialOrbit.getLM()), initialOrbit.getLM(), Utils.epsilonAngle * Math.abs(initialOrbit.getLM()));
 
         assertEquals(finalOrbit.getA(), initialOrbit.getA(), Utils.epsilonTest * initialOrbit.getA());
         assertEquals(finalOrbit.getE(), initialOrbit.getE(), Utils.epsilonE * initialOrbit.getE());
-        assertEquals(Utils.trimAngle(finalOrbit.getI(),initialOrbit.getI()), initialOrbit.getI(), Utils.epsilonAngle * Math.abs(initialOrbit.getI()));
+        assertEquals(MathUtils.normalizeAngle(finalOrbit.getI(),initialOrbit.getI()), initialOrbit.getI(), Utils.epsilonAngle * Math.abs(initialOrbit.getI()));
 
     }
 

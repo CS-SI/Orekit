@@ -2,8 +2,8 @@ package fr.cs.orekit.bodies;
 
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.MathUtils;
 
-import fr.cs.orekit.Utils;
 import fr.cs.orekit.utils.Line;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -131,7 +131,7 @@ public class OneAxisEllipsoidTest extends TestCase {
 
         OneAxisEllipsoid model = new OneAxisEllipsoid(ae, f);
         GeodeticPoint gp = model.transform(new Vector3D(x, y, z));
-        assertEquals(longitude, Utils.trimAngle(gp.longitude, longitude), 1.0e-10);
+        assertEquals(longitude, MathUtils.normalizeAngle(gp.longitude, longitude), 1.0e-10);
         assertEquals(latitude,  gp.latitude,  1.0e-10);
         assertEquals(altitude,  gp.altitude,  1.0e-10 * Math.abs(altitude));
     }

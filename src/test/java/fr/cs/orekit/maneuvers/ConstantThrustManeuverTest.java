@@ -10,8 +10,8 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
+import org.apache.commons.math.util.MathUtils;
 
-import fr.cs.orekit.Utils;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.forces.maneuvers.ConstantThrustManeuver;
 import fr.cs.orekit.frames.Frame;
@@ -73,7 +73,7 @@ public class ConstantThrustManeuverTest extends TestCase {
         SpacecraftState finalorb = pro.propagate(transOrb, new AbsoluteDate(fireDate, 3800));
 
         assertEquals(2007.882454, finalorb .getMass(), 1e-6);
-        assertEquals(2.6792, Math.toDegrees(Utils.trimAngle(finalorb.getI(), Math.PI)), 1e-4);
+        assertEquals(2.6792, Math.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), Math.PI)), 1e-4);
         assertEquals(28969, finalorb.getA()/1000, 1);
 
     }

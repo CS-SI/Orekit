@@ -3,6 +3,7 @@ package fr.cs.orekit.propagation;
 import junit.framework.*;
 import fr.cs.orekit.Utils;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.MathUtils;
 
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
@@ -53,16 +54,16 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
                      * initialOrbit.getE());
         assertEquals(finalOrbit.getEy(), initialOrbit.getEy(), Utils.epsilonE
                      * initialOrbit.getE());
-        assertEquals(Utils.trimAngle(finalOrbit.getHx(), initialOrbit.getHx()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbit.getHx(), initialOrbit.getHx()),
                      initialOrbit.getHx(), Utils.epsilonAngle
                      * Math.abs(initialOrbit.getI()));
-        assertEquals(Utils.trimAngle(finalOrbit.getHy(), initialOrbit.getHy()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbit.getHy(), initialOrbit.getHy()),
                      initialOrbit.getHy(), Utils.epsilonAngle
                      * Math.abs(initialOrbit.getI()));
-        assertEquals(Utils.trimAngle(finalOrbit.getLv(), initialOrbit.getLv()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbit.getLv(), initialOrbit.getLv()),
                      initialOrbit.getLv(), Utils.epsilonAngle
                      * Math.abs(initialOrbit.getLv()));
-        assertEquals(Utils.trimAngle(finalOrbit.getLM(), initialOrbit.getLM()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(), initialOrbit.getLM()),
                      initialOrbit.getLM(), Utils.epsilonAngle
                      * Math.abs(initialOrbit.getLM()));
 
@@ -98,19 +99,19 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
                      * initialOrbit.getE());
         assertEquals(finalOrbit.getEy(), initialOrbit.getEy(), Utils.epsilonE
                      * initialOrbit.getE());
-        assertEquals(Utils.trimAngle(finalOrbit.getHx(), initialOrbit.getHx()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbit.getHx(), initialOrbit.getHx()),
                      initialOrbit.getHx(), Utils.epsilonAngle
                      * Math.abs(initialOrbit.getI()));
-        assertEquals(Utils.trimAngle(finalOrbit.getHy(), initialOrbit.getHy()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbit.getHy(), initialOrbit.getHy()),
                      initialOrbit.getHy(), Utils.epsilonAngle
                      * Math.abs(initialOrbit.getI()));
-        assertEquals(Utils.trimAngle(finalOrbit.getLv(), initialOrbit.getLv()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbit.getLv(), initialOrbit.getLv()),
                      initialOrbit.getLv(), Utils.epsilonAngle
                      * Math.abs(initialOrbit.getLv()));
-        assertEquals(Utils.trimAngle(finalOrbit.getLE(), initialOrbit.getLE()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbit.getLE(), initialOrbit.getLE()),
                      initialOrbit.getLE(), Utils.epsilonAngle
                      * Math.abs(initialOrbit.getLE()));
-        assertEquals(Utils.trimAngle(finalOrbit.getLM(), initialOrbit.getLM()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(), initialOrbit.getLM()),
                      initialOrbit.getLM(), Utils.epsilonAngle
                      * Math.abs(initialOrbit.getLM()));
 
@@ -164,19 +165,19 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
                      * finalOrbitKep.getE());
         assertEquals(finalOrbitAna.getEy(), finalOrbitKep.getEy(), Utils.epsilonE
                      * finalOrbitKep.getE());
-        assertEquals(Utils.trimAngle(finalOrbitAna.getHx(), finalOrbitKep.getHx()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHx(), finalOrbitKep.getHx()),
                      finalOrbitKep.getHx(), Utils.epsilonAngle
                      * Math.abs(finalOrbitKep.getI()));
-        assertEquals(Utils.trimAngle(finalOrbitAna.getHy(), finalOrbitKep.getHy()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHy(), finalOrbitKep.getHy()),
                      finalOrbitKep.getHy(), Utils.epsilonAngle
                      * Math.abs(finalOrbitKep.getI()));
-        assertEquals(Utils.trimAngle(finalOrbitAna.getLv(), finalOrbitKep.getLv()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLv(), finalOrbitKep.getLv()),
                      finalOrbitKep.getLv(), Utils.epsilonAngle
                      * Math.abs(finalOrbitKep.getLv()));
-        assertEquals(Utils.trimAngle(finalOrbitAna.getLE(), finalOrbitKep.getLE()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLE(), finalOrbitKep.getLE()),
                      finalOrbitKep.getLE(), Utils.epsilonAngle
                      * Math.abs(finalOrbitKep.getLE()));
-        assertEquals(Utils.trimAngle(finalOrbitAna.getLM(), finalOrbitKep.getLM()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLM(), finalOrbitKep.getLM()),
                      finalOrbitKep.getLM(), Utils.epsilonAngle
                      * Math.abs(finalOrbitKep.getLM()));
 
