@@ -2,7 +2,9 @@ package fr.cs.orekit.models.perturbations;
 
 import fr.cs.orekit.time.AbsoluteDate;
 
-
+/**  Interface for solar activity and magnetic activity data.
+ * @author F. Maussion
+ */
 public interface JB2006InputParameters {
 
     /** Gets the available data range minimum date.

@@ -17,19 +17,20 @@ public interface Atmosphere {
      * @param position current position in frame
      * @param frame the frame in which is defined the position
      * @return local density (kg/m<sup>3</sup>)
-     * @throws OrekitException
+     * @exception OrekitException if date is out of range of solar activity model
+     * or if some frame conversion cannot be performed
      */
     public double getDensity(AbsoluteDate date, Vector3D position, Frame frame)
-    throws OrekitException;
+        throws OrekitException;
 
     /** Get the inertial velocity of atmosphere molecules.
      * @param date current date
      * @param position current position in frame
      * @param frame the frame in which is defined the position
      * @return velocity (m/s) (defined in the same frame as the position)
-     * @throws OrekitException
+     * @exception OrekitException if some conversion cannot be performed
      */
     public Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame)
-    throws OrekitException;
+        throws OrekitException;
 
 }

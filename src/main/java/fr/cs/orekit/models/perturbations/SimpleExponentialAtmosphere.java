@@ -18,6 +18,21 @@ import fr.cs.orekit.utils.PVCoordinates;
  */
 public class SimpleExponentialAtmosphere implements Atmosphere {
 
+    /** Earth shape model. */
+    private BodyShape    shape;
+
+    /** Earth reference frame. */
+    private Frame        bodyFrame;
+
+    /** Reference density. */
+    private double       rho0;
+
+    /** Reference altitude. */
+    private double       h0;
+
+    /** Reference altitude scale. */
+    private double       hscale;
+
     /** Create an exponential atmosphere.
      * @param shape body shape model
      * @param bodyFrame body rotation frame
@@ -41,8 +56,7 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
      * @return local density (kg/m<sup>3</sup>)
      */
     public double getDensity(AbsoluteDate date, Vector3D position, Frame frame) {
-        double altitude = shape.transform(position).altitude;
-        return rho0 * Math.exp((h0 - altitude) / hscale);
+        return rho0 * Math.exp((h0 - shape.transform(position).altitude) / hscale);
     }
 
     /** Get the inertial velocity of atmosphere modecules.
@@ -52,21 +66,15 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
      * @param position current position in frame
      * @param frame the frame in which is defined the position
      * @return velocity (m/s) (defined in the same frame than the position)
-     * @throws OrekitException
+     * @throws OrekitException if some frame conversion cannot be computed
      */
     public Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame)
-    throws OrekitException {
-        Transform bodyToFrame = bodyFrame.getTransformTo(frame, date);
-        Vector3D posInBody = bodyToFrame.getInverse().transformPosition(position);
-        PVCoordinates pvBody = new PVCoordinates(posInBody, new Vector3D(0, 0, 0));
-        PVCoordinates pvFrame = bodyToFrame.transformPVCoordinates(pvBody);
+        throws OrekitException {
+        final Transform bodyToFrame = bodyFrame.getTransformTo(frame, date);
+        final Vector3D posInBody = bodyToFrame.getInverse().transformPosition(position);
+        final PVCoordinates pvBody = new PVCoordinates(posInBody, new Vector3D(0, 0, 0));
+        final PVCoordinates pvFrame = bodyToFrame.transformPVCoordinates(pvBody);
         return pvFrame.getVelocity();
     }
-
-    private BodyShape    shape;
-    private Frame        bodyFrame;
-    private double       rho0;
-    private double       h0;
-    private double       hscale;
 
 }
