@@ -1,6 +1,8 @@
 package fr.cs.orekit.orbits;
 
 import org.apache.commons.math.geometry.Vector3D;
+
+import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.utils.PVCoordinates;
 
@@ -30,7 +32,7 @@ import fr.cs.orekit.utils.PVCoordinates;
  */
 
 public class CircularParameters
-extends OrbitalParameters {
+    extends OrbitalParameters {
 
     /** Identifier for mean longitude argument. */
     public static final int MEAN_LONGITUDE_ARGUMENT = 0;
@@ -40,6 +42,27 @@ extends OrbitalParameters {
 
     /** Identifier for true longitude argument. */
     public static final int TRUE_LONGITUDE_ARGUMENT = 2;
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = -2984595977828653812L;
+
+    /** Semi-major axis (m). */
+    private final double a;
+
+    /** First component of the circular eccentricity vector. */
+    private final double ex;
+
+    /** Second component of the circular eccentricity vector. */
+    private final double ey;
+
+    /** Inclination (rad). */
+    private final double i;
+
+    /** Right Ascension of Ascending Node (rad). */
+    private final double raan;
+
+    /** True longitude argument (rad). */
+    private final double alphaV;
 
     /** Creates a new instance
      * @param a  semi-major axis (m)
@@ -51,6 +74,12 @@ extends OrbitalParameters {
      * @param type type of longitude argument, must be one of {@link #MEAN_LONGITUDE_ARGUMENT},
      * {@link #ECCENTRIC_LONGITUDE_ARGUMENT} or  {@link #TRUE_LONGITUDE_ARGUMENT}
      * @param frame the frame in which are defined the parameters
+     * @exception IllegalArgumentException if the longitude argument type is not
+     * one of {@link #MEAN_LONGITUDE_ARGUMENT}, @link #ECCENTRIC_LONGITUDE_ARGUMENT}
+     * or  {@link #TRUE_LONGITUDE_ARGUMENT}
+     * @see #MEAN_LONGITUDE_ARGUMENT
+     * @see #ECCENTRIC_LONGITUDE_ARGUMENT
+     * @see #TRUE_LONGITUDE_ARGUMENT
      */
     public CircularParameters(double a, double ex, double ey, double i, double raan,
                               double alpha, int type, Frame frame) {
@@ -68,9 +97,18 @@ extends OrbitalParameters {
         case ECCENTRIC_LONGITUDE_ARGUMENT :
             this.alphaV = computeAlphaE(alpha);
             break;
-        default :
+        case TRUE_LONGITUDE_ARGUMENT :
             this.alphaV = alpha;
-        break;
+            break;
+        default :
+            this.alphaV = Double.NaN;
+            OrekitException.throwIllegalArgumentException("angle type not supported, supported angles:" +
+                                                          " {0}, {1} and {2}",
+                                                          new Object[] {
+                                                              "MEAN_LONGITUDE_ARGUMENT",
+                                                              "ECCENTRIC_LONGITUDE_ARGUMENT",
+                                                              "TRUE_LONGITUDE_ARGUMENT"
+                                                          });
         }
 
     }
@@ -84,44 +122,47 @@ extends OrbitalParameters {
         super(pvCoordinates, frame, mu);
 
         // compute semi-major axis
-        double r          = pvCoordinates.getPosition().getNorm();
-        double V2         = Vector3D.dotProduct(pvCoordinates.getVelocity(), pvCoordinates.getVelocity());
-        double rV2OnMu    = r * V2 / mu;
-        a                 = r / (2 - rV2OnMu);
+        final double r  = pvCoordinates.getPosition().getNorm();
+        final double V2 = Vector3D.dotProduct(pvCoordinates.getVelocity(),
+                                              pvCoordinates.getVelocity());
+        final double rV2OnMu = r * V2 / mu;
+        a = r / (2 - rV2OnMu);
 
         // compute inclination
-        Vector3D momentum = Vector3D.crossProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity());
-        i                 = Vector3D.angle(momentum, Vector3D.plusK);
+        final Vector3D momentum = Vector3D.crossProduct(pvCoordinates.getPosition(),
+                                                        pvCoordinates.getVelocity());
+        i = Vector3D.angle(momentum, Vector3D.plusK);
 
         // compute right ascension of ascending node
-        Vector3D node     = Vector3D.crossProduct(Vector3D.plusK, momentum);
-        double   n2       = Vector3D.dotProduct(node, node);
+        final Vector3D node     = Vector3D.crossProduct(Vector3D.plusK, momentum);
+        final double   n2       = Vector3D.dotProduct(node, node);
         // the following comparison with 0 IS REALLY numerically justified and stable
         raan = (n2 == 0) ? 0 : Math.atan2(node.getY(), node.getX());
 
         // 2D-coordinates in the canonical frame
-        double cosRaan = Math.cos(raan);
-        double sinRaan = Math.sin(raan);
-        double cosI    = Math.cos(i);
-        double sinI    = Math.sin(i);
-        Vector3D rVec  = new Vector3D(cosRaan, Math.sin(raan), 0);
-        Vector3D sVec  = new Vector3D(-cosI * sinRaan, cosI * cosRaan, sinI);
-        double x2      = Vector3D.dotProduct(pvCoordinates.getPosition(), rVec) / a;
-        double y2      = Vector3D.dotProduct(pvCoordinates.getPosition(), sVec) / a;
+        final double cosRaan = Math.cos(raan);
+        final double sinRaan = Math.sin(raan);
+        final double cosI    = Math.cos(i);
+        final double sinI    = Math.sin(i);
+        final Vector3D rVec  = new Vector3D(cosRaan, Math.sin(raan), 0);
+        final Vector3D sVec  = new Vector3D(-cosI * sinRaan, cosI * cosRaan, sinI);
+        final double x2      = Vector3D.dotProduct(pvCoordinates.getPosition(), rVec) / a;
+        final double y2      = Vector3D.dotProduct(pvCoordinates.getPosition(), sVec) / a;
 
         // compute eccentricity vector
-        double eSE    = Vector3D.dotProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity()) / Math.sqrt(mu * a);
-        double eCE    = rV2OnMu - 1;
-        double e2     = eCE * eCE + eSE * eSE;
-        double f      = eCE - e2;
-        double g      = Math.sqrt(1 - e2) * eSE;
-        double aOnR   = a / r;
-        double a2OnR2 = aOnR * aOnR;
+        final double eSE    = Vector3D.dotProduct(pvCoordinates.getPosition(),
+                                                  pvCoordinates.getVelocity()) / Math.sqrt(mu * a);
+        final double eCE    = rV2OnMu - 1;
+        final double e2     = eCE * eCE + eSE * eSE;
+        final double f      = eCE - e2;
+        final double g      = Math.sqrt(1 - e2) * eSE;
+        final double aOnR   = a / r;
+        final double a2OnR2 = aOnR * aOnR;
         ex = a2OnR2 * (f * x2 + g * y2);
         ey = a2OnR2 * (f * y2 - g * x2);
 
         // compute longitude argument
-        double beta = 1 / (1 + Math.sqrt(1 - ex * ex - ey * ey));
+        final double beta = 1 / (1 + Math.sqrt(1 - ex * ex - ey * ey));
         alphaV = computeAlphaE(Math.atan2(y2 + ey + eSE * beta * ex, x2 + ex - eSE * beta * ey));
     }
 
@@ -134,10 +175,10 @@ extends OrbitalParameters {
         a    = op.getA();
         i    = op.getI();
         raan = Math.atan2(op.getHy(), op.getHx());
-        double cosRaan = Math.cos(raan);
-        double sinRaan = Math.sin(raan);
-        double equiEx = op.getEquinoctialEx();
-        double equiEy = op.getEquinoctialEy();
+        final double cosRaan = Math.cos(raan);
+        final double sinRaan = Math.sin(raan);
+        final double equiEx = op.getEquinoctialEx();
+        final double equiEy = op.getEquinoctialEy();
         ex   = equiEx * cosRaan + equiEy * sinRaan;
         ey   = equiEy * cosRaan - equiEx * sinRaan;
         this.alphaV = op.getLv() - raan;
@@ -203,11 +244,11 @@ extends OrbitalParameters {
      * @return E + &omega; eccentric longitude argument (rad)
      */
     public double getAlphaE() {
-        double epsilon   = Math.sqrt(1 - ex * ex - ey * ey);
-        double cosAlphaV = Math.cos(alphaV);
-        double sinAlphaV = Math.sin(alphaV);
-        return alphaV + 2 * Math.atan((ey * cosAlphaV - ex * sinAlphaV)
-                                      / (epsilon + 1 + ex * cosAlphaV + ey * sinAlphaV));
+        final double epsilon   = Math.sqrt(1 - ex * ex - ey * ey);
+        final double cosAlphaV = Math.cos(alphaV);
+        final double sinAlphaV = Math.sin(alphaV);
+        return alphaV + 2 * Math.atan((ey * cosAlphaV - ex * sinAlphaV) /
+                                      (epsilon + 1 + ex * cosAlphaV + ey * sinAlphaV));
     }
 
     /** Computes the eccentric longitude argument.
@@ -215,18 +256,18 @@ extends OrbitalParameters {
      * @return the true longitude argument.
      */
     private double computeAlphaE(double alphaE) {
-        double epsilon   = Math.sqrt(1 - ex * ex - ey * ey);
-        double cosAlphaE = Math.cos(alphaE);
-        double sinAlphaE = Math.sin(alphaE);
-        return alphaE + 2 * Math.atan((ex * sinAlphaE - ey * cosAlphaE)
-                                      / (epsilon + 1 - ex * cosAlphaE - ey * sinAlphaE));
+        final double epsilon   = Math.sqrt(1 - ex * ex - ey * ey);
+        final double cosAlphaE = Math.cos(alphaE);
+        final double sinAlphaE = Math.sin(alphaE);
+        return alphaE + 2 * Math.atan((ex * sinAlphaE - ey * cosAlphaE) /
+                                      (epsilon + 1 - ex * cosAlphaE - ey * sinAlphaE));
     }
 
     /** Get the mean longitude argument.
      * @return M + &omega; mean longitude argument (rad)
      */
     public double getAlphaM() {
-        double alphaE = getAlphaE();
+        final double alphaE = getAlphaE();
         return alphaE - ex * Math.sin(alphaE) + ey * Math.cos(alphaE);
     }
 
@@ -245,11 +286,11 @@ extends OrbitalParameters {
         double sinLE = Math.sin(alphaE);
         int iter = 0;
         do {
-            double f2 = ex * sinLE - ey * cosLE;
-            double f1 = 1.0 - ex * cosLE - ey * sinLE;
-            double f0 = alphaEMalphaM - f2;
+            final double f2 = ex * sinLE - ey * cosLE;
+            final double f1 = 1.0 - ex * cosLE - ey * sinLE;
+            final double f0 = alphaEMalphaM - f2;
 
-            double f12 = 2.0 * f1;
+            final double f12 = 2.0 * f1;
             shift = f0 * f12 / (f1 * f12 - f0 * f2);
 
             alphaEMalphaM -= shift;
@@ -309,43 +350,13 @@ extends OrbitalParameters {
      * @return a string representation of this object
      */
     public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("circular parameters: ");
-        sb.append('{');
-        sb.append("a: ");
-        sb.append(a);
-        sb.append(";ex: ");
-        sb.append(ex);
-        sb.append(";ey: ");
-        sb.append(ey);
-        sb.append(";i: ");
-        sb.append(i);
-        sb.append(";raan: ");
-        sb.append(raan);
-        sb.append(";alphaV: ");
-        sb.append(Math.toDegrees(alphaV));
-        sb.append(";}");
-        return sb.toString();
+        return new StringBuffer().append("circular parameters: ").append('{').
+                                  append("a: ").append(a).
+                                  append(", ex: ").append(ex).append(", ey: ").append(ey).
+                                  append(", i: ").append(i).
+                                  append(", raan: ").append(raan).
+                                  append(", alphaV: ").append(Math.toDegrees(alphaV)).
+                                  append(";}").toString();
     }
-
-    /** Semi-major axis (m). */
-    private final double a;
-
-    /** First component of the circular eccentricity vector. */
-    private final double ex;
-
-    /** Second component of the circular eccentricity vector. */
-    private final double ey;
-
-    /** Inclination (rad). */
-    private final double i;
-
-    /** Right Ascension of Ascending Node (rad). */
-    private final double raan;
-
-    /** True longitude argument (rad). */
-    private final double alphaV;
-
-    private static final long serialVersionUID = -6724645584654038446L;
 
 }
