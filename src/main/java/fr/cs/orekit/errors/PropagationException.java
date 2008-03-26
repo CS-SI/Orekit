@@ -8,6 +8,9 @@ package fr.cs.orekit.errors;
 public class PropagationException
 extends OrekitException {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 3644973045303340556L;
+
     /** Simple constructor.
      * Build an exception with a translated and formatted message
      * @param specifier format specifier (to be translated)
@@ -25,7 +28,5 @@ extends OrekitException {
     public PropagationException(String message, Throwable cause) {
         super(message, cause);
     }
-
-    private static final long serialVersionUID = -1769023640956695918L;
 
 }

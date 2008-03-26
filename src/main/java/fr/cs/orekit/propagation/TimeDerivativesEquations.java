@@ -2,7 +2,9 @@ package fr.cs.orekit.propagation;
 
 import java.util.Arrays;
 import org.apache.commons.math.geometry.Vector3D;
-import fr.cs.orekit.errors.Translator;
+
+import fr.cs.orekit.errors.OrekitException;
+import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.utils.PVCoordinates;
 
@@ -53,6 +55,59 @@ import fr.cs.orekit.utils.PVCoordinates;
  */
 public class TimeDerivativesEquations {
 
+    /** Orbital parameters. */
+    private EquinoctialParameters parameters;
+
+    /** Reference to the derivatives array to initialize. */
+    private double[] yDot;
+
+    /** Central body attraction coefficient. */
+    private double mu;
+
+    /** First vector of the (q, s, w) local orbital frame. */
+    private Vector3D lofQ;
+
+    /** Second vector of the (q, s, w) local orbital frame. */
+    private Vector3D lofS;
+
+    /** First vector of the (t, n, w) local orbital frame. */
+    private Vector3D lofT;
+
+    /** Second vector of the (t, n, w) local orbital frame. */
+    private Vector3D lofN;
+
+    /** Third vector of both the (q, s, w) and (t, n, w) local orbital frames. */
+    private Vector3D lofW;
+
+    /** Multiplicative coefficients for the perturbing accelerations along lofQ. */
+    private double aQ;
+    private double exQ;
+    private double eyQ;
+
+    /** Multiplicative coefficients for the perturbing accelerations along lofS. */
+    private double aS;
+    private double exS;
+    private double eyS;
+
+    /** Multiplicative coefficients for the perturbing accelerations along lofT. */
+    private double aT;
+    private double exT;
+    private double eyT;
+
+    /** Multiplicative coefficients for the perturbing accelerations along lofN. */
+    private double exN;
+    private double eyN;
+
+    /** Multiplicative coefficients for the perturbing accelerations along lofW. */
+    private double eyW;
+    private double exW;
+    private double hxW;
+    private double hyW;
+    private double lvW;
+
+    /** Kepler evolution on true latitude argument. */
+    private double lvKepler;
+
     /** Create a new instance.
      * @param parameters current orbit parameters
      * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
@@ -60,35 +115,40 @@ public class TimeDerivativesEquations {
     protected TimeDerivativesEquations(EquinoctialParameters parameters, double mu) {
         this.parameters = parameters;
         this.mu = mu;
-        Q = new Vector3D();
-        S = new Vector3D();
-        T = new Vector3D();
-        N = new Vector3D();
-        W = new Vector3D();
+        lofQ = new Vector3D();
+        lofS = new Vector3D();
+        lofT = new Vector3D();
+        lofN = new Vector3D();
+        lofW = new Vector3D();
         updateOrbitalFrames();
     }
 
     /** Update the orbital frames. */
     private void updateOrbitalFrames() {
-        PVCoordinates pvCoordinates = parameters.getPVCoordinates(mu);
 
-        W = Vector3D.crossProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity()).normalize();
+        // get the position/velocity vectors
+        final PVCoordinates pvCoordinates = parameters.getPVCoordinates(mu);
 
-        T = pvCoordinates.getVelocity().normalize();
+        // compute orbital plane normal vector
+        lofW = Vector3D.crossProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity()).normalize();
 
-        N = Vector3D.crossProduct(W, T);
+        // compute (q, s, w) local orbital frame
+        lofQ = pvCoordinates.getPosition().normalize();
+        lofS = Vector3D.crossProduct(lofW, lofQ);
 
-        Q = pvCoordinates.getPosition().normalize();
+        // compute (t, n, w) local orbital frame
+        lofT = pvCoordinates.getVelocity().normalize();
+        lofN = Vector3D.crossProduct(lofW, lofT);
 
-        S = Vector3D.crossProduct(W, Q);
     }
 
     /** Initialize all derivatives to zero.
      * @param yDot reference to the array where to put the derivatives.
      * @param parameters current orbit parameters
+     * @exception PropagationException if the orbit evolve out of supported range
      */
-    protected void initDerivatives(double[] yDot ,
-                                   EquinoctialParameters parameters) {
+    protected void initDerivatives(double[] yDot, EquinoctialParameters parameters)
+        throws PropagationException {
 
 
         this.parameters = parameters;
@@ -101,47 +161,45 @@ public class TimeDerivativesEquations {
         Arrays.fill(yDot, 0.0);
 
         // intermediate variables
-        double ex  = parameters.getEquinoctialEx();
-        double ey  = parameters.getEquinoctialEy();
-        double ex2 = ex * ex;
-        double ey2 = ey * ey;
-        double e2  = ex2 + ey2;
-        double e   = Math.sqrt(e2);
-        if (e > 1) {
-            String message = Translator.getInstance().translate("Eccentricity is becoming"
-                                                                + " greater than 1."
-                                                                + " Unable to continue.");
-            throw new IllegalArgumentException(message);
+        final double ex  = parameters.getEquinoctialEx();
+        final double ey  = parameters.getEquinoctialEy();
+        final double ex2 = ex * ex;
+        final double ey2 = ey * ey;
+        final double e2  = ex2 + ey2;
+        final double e   = Math.sqrt(e2);
+        if (e >= 1) {
+            throw new PropagationException("orbit becomes hyperbolic, unable to propagate it further (e: {0})",
+                                           new Object[] { new Double(e) });
         }
 
         // intermediate variables
-        double oMe2        = (1 - e) * (1 + e);
-        double epsilon     = Math.sqrt(oMe2);
-        double a           = parameters.getA();
-        double na          = Math.sqrt(mu / a);
-        double n           = na / a;
-        double lv          = parameters.getLv();
-        double cLv         = Math.cos(lv);
-        double sLv         = Math.sin(lv);
-        double excLv       = ex * cLv;
-        double eysLv       = ey * sLv;
-        double excLvPeysLv = excLv + eysLv;
-        double ksi         = 1 + excLvPeysLv;
-        double nu          = ex * sLv - ey * cLv;
-        double sqrt        = Math.sqrt(ksi * ksi + nu * nu);
-        double oPksi       = 2 + excLvPeysLv;
-        double hx          = parameters.getHx();
-        double hy          = parameters.getHy();
-        double h2          = hx * hx  + hy * hy ;
-        double oPh2        = 1 + h2;
-        double hxsLvMhycLv = hx * sLv - hy * cLv;
+        final double oMe2        = (1 - e) * (1 + e);
+        final double epsilon     = Math.sqrt(oMe2);
+        final double a           = parameters.getA();
+        final double na          = Math.sqrt(mu / a);
+        final double n           = na / a;
+        final double lv          = parameters.getLv();
+        final double cLv         = Math.cos(lv);
+        final double sLv         = Math.sin(lv);
+        final double excLv       = ex * cLv;
+        final double eysLv       = ey * sLv;
+        final double excLvPeysLv = excLv + eysLv;
+        final double ksi         = 1 + excLvPeysLv;
+        final double nu          = ex * sLv - ey * cLv;
+        final double sqrt        = Math.sqrt(ksi * ksi + nu * nu);
+        final double oPksi       = 2 + excLvPeysLv;
+        final double hx          = parameters.getHx();
+        final double hy          = parameters.getHy();
+        final double h2          = hx * hx  + hy * hy ;
+        final double oPh2        = 1 + h2;
+        final double hxsLvMhycLv = hx * sLv - hy * cLv;
 
-        double epsilonOnNA        = epsilon / na;
-        double epsilonOnNAKsi     = epsilonOnNA / ksi;
-        double epsilonOnNAKsiSqrt = epsilonOnNAKsi / sqrt;
-        double tOnEpsilonN        = 2 / (n * epsilon);
-        double tEpsilonOnNASqrt   = 2 * epsilonOnNA / sqrt;
-        double epsilonOnNAKsit    = epsilonOnNA / (2 * ksi);
+        final double epsilonOnNA        = epsilon / na;
+        final double epsilonOnNAKsi     = epsilonOnNA / ksi;
+        final double epsilonOnNAKsiSqrt = epsilonOnNAKsi / sqrt;
+        final double tOnEpsilonN        = 2 / (n * epsilon);
+        final double tEpsilonOnNASqrt   = 2 * epsilonOnNA / sqrt;
+        final double epsilonOnNAKsit    = epsilonOnNA / (2 * ksi);
 
         // Kepler natural evolution
         lvKepler = n * ksi * ksi / (oMe2 * epsilon);
@@ -183,7 +241,7 @@ public class TimeDerivativesEquations {
         yDot[5] += lvKepler;
     }
 
-    /** Add the contribution of an acceleration expressed in (T, N, W)
+    /** Add the contribution of an acceleration expressed in (t, n, w)
      * local orbital frame.
      * @param t acceleration along the T axis (m/s<sup>2</sup>)
      * @param n acceleration along the N axis (m/s<sup>2</sup>)
@@ -198,7 +256,7 @@ public class TimeDerivativesEquations {
         yDot[5] += lvW * w;
     }
 
-    /** Add the contribution of an acceleration expressed in (Q, S, W)
+    /** Add the contribution of an acceleration expressed in (q, s, w)
      * local orbital frame.
      * @param q acceleration along the Q axis (m/s<sup>2</sup>)
      * @param s acceleration along the S axis (m/s<sup>2</sup>)
@@ -222,9 +280,9 @@ public class TimeDerivativesEquations {
      * @param z acceleration along the Z axis (m/s<sup>2</sup>)
      */
     public void addXYZAcceleration(double x, double y, double z) {
-        addTNWAcceleration(x * T.getX() + y * T.getY() + z * T.getZ(),
-                           x * N.getX() + y * N.getY() + z * N.getZ(),
-                           x * W.getX() + y * W.getY() + z * W.getZ());
+        addTNWAcceleration(x * lofT.getX() + y * lofT.getY() + z * lofT.getZ(),
+                           x * lofN.getX() + y * lofN.getY() + z * lofN.getZ(),
+                           x * lofW.getX() + y * lofW.getY() + z * lofW.getZ());
     }
 
     /** Add the contribution of an acceleration expressed in inertial frame
@@ -233,103 +291,54 @@ public class TimeDerivativesEquations {
      * @param gamma acceleration vector in the intertial frame (m/s<sup>2</sup>)
      */
     public void addAcceleration(Vector3D gamma) {
-        addTNWAcceleration(Vector3D.dotProduct(gamma, T),
-                           Vector3D.dotProduct(gamma, N),
-                           Vector3D.dotProduct(gamma, W));
+        addTNWAcceleration(Vector3D.dotProduct(gamma, lofT),
+                           Vector3D.dotProduct(gamma, lofN),
+                           Vector3D.dotProduct(gamma, lofW));
     }
 
     /** Add the contribution of the flow rate (dm/dt).
-     * @param dMass the flow rate (dm/dt)
+     * @param q the flow rate, must be negative (dm/dt)
+     * @exception IllegalArgumentException if flow-rate is positive
      */
-    public void addMassDerivative(double dMass) {
-        if(dMass>0) {
-            String message1 = Translator.getInstance().translate("Flow rate (dm/dt) is positive : ");
-            throw new IllegalArgumentException(
-                                               message1 + dMass + " kg/s");
+    public void addMassDerivative(double q) {
+        if (q > 0) {
+            OrekitException.throwIllegalArgumentException("positive flow rate (q: {0})",
+                                                          new Object[] { new Double(q) });
         }
-        yDot[6] += dMass;
+        yDot[6] += q;
     }
 
-    /** Get the first vector of the (Q, S, W) local orbital frame.
-     * @return first vector of the (Q, S, W) local orbital frame */
+    /** Get the first vector of the (q, s, w) local orbital frame.
+     * @return first vector of the (q, s, w) local orbital frame */
     public Vector3D getQ() {
-        return Q;
+        return lofQ;
     }
 
-    /** Get the second vector of the (Q, S, W) local orbital frame.
-     * @return second vector of the (Q, S, W) local orbital frame */
+    /** Get the second vector of the (q, s, w) local orbital frame.
+     * @return second vector of the (q, s, w) local orbital frame */
     public Vector3D getS() {
-        return S;
+        return lofS;
     }
 
-    /** Get the first vector of the (T, N, W) local orbital frame.
-     * @return first vector of the (T, N, W) local orbital frame */
+    /** Get the first vector of the (t, n, w) local orbital frame.
+     * @return first vector of the (t, n, w) local orbital frame */
     public Vector3D getT() {
-        return T;
+        return lofT;
     }
 
-    /** Get the second vector of the (T, N, W) local orbital frame.
-     * @return second vector of the (T, N, W) local orbital frame */
+    /** Get the second vector of the (t, n, w) local orbital frame.
+     * @return second vector of the (t, n, w) local orbital frame */
     public Vector3D getN() {
-        return N;
+        return lofN;
     }
 
-    /** Get the third vector of both the (Q, S, W) and (T, N, W) local orbital
+    /** Get the third vector of both the (q, s, w) and (t, n, w) local orbital
      * frames.
-     * @return third vector of both the (Q, S, W) and (T, N, W) local orbital
+     * @return third vector of both the (q, s, w) and (t, n, w) local orbital
      * frames
      */
     public Vector3D getW() {
-        return W;
+        return lofW;
     }
-
-    /** Orbital parameters. */
-    private EquinoctialParameters parameters;
-
-    /** Reference to the derivatives array to initialize. */
-    private double[] yDot;
-
-    /** Central body attraction coefficient. */
-    private double mu;
-
-    /** First vector of the (Q, S, W) local orbital frame. */
-    private Vector3D Q;
-
-    /** Second vector of the (Q, S, W) local orbital frame. */
-    protected Vector3D S;
-
-    /** First vector of the (T, N, W) local orbital frame. */
-    private Vector3D T;
-
-    /** Second vector of the (T, N, W) local orbital frame. */
-    private Vector3D N;
-
-    /** Third vector of both the (Q, S, W) and (T, N, W) local orbital frames. */
-    private Vector3D W;
-
-    /** Multiplicative coefficients for the perturbing accelerations. */
-    private double aT;
-    private double exT;
-    private double eyT;
-
-    private double aQ;
-    private double exQ;
-    private double eyQ;
-
-    private double exN;
-    private double eyN;
-
-    private double aS;
-    private double exS;
-    private double eyS;
-
-    private double eyW;
-    private double exW;
-    private double hxW;
-    private double hyW;
-    private double lvW;
-
-    /** Kepler evolution on true latitude argument. */
-    private double lvKepler;
 
 }

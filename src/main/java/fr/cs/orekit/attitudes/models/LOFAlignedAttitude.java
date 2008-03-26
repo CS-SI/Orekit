@@ -5,7 +5,6 @@ import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.orekit.attitudes.AttitudeKinematics;
 import fr.cs.orekit.attitudes.AttitudeKinematicsProvider;
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.errors.Translator;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
@@ -21,6 +20,12 @@ public class LOFAlignedAttitude implements AttitudeKinematicsProvider {
 
     /** Identifier for QSW frame. */
     public static final int QSW = 1;
+
+    /** Central body gravitation coefficient */
+    private final double mu;
+
+    /** Frame type */
+    private final int frameType;
 
     /** Simple constructor.
      *
@@ -39,11 +44,20 @@ public class LOFAlignedAttitude implements AttitudeKinematicsProvider {
      * </p>
      *
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     * @param frameType the LOF (must be one of {@link #TNW} or {@link #QSW})
+     * @param frameType the LOF
+     * @exception IllegalArgumentException if frame type is neither
+     * {@link #TNW} nor {@link #QSW}
+     * @see #QSW
+     * @see #TNW
      */
     public LOFAlignedAttitude(double mu, int frameType) {
         this.mu = mu;
         this.frameType = frameType;
+        if ((frameType != QSW) && (frameType != TNW)) {
+            OrekitException.throwIllegalArgumentException("unsupported local orbital frame, " +
+                                                          "supported types: {0}, {1}",
+                                                          new Object[] { "QSW", "TNW" });
+        }
     }
 
     /** Get the attitude representation in the selected frame.
@@ -57,54 +71,30 @@ public class LOFAlignedAttitude implements AttitudeKinematicsProvider {
                                                     PVCoordinates pv, Frame frame)
     throws OrekitException {
 
-        Rotation R;
+        final Vector3D wLof =
+            Vector3D.crossProduct(pv.getPosition(), pv.getVelocity()).normalize();
 
-        Vector3D W = Vector3D.crossProduct(pv.getPosition(),pv.getVelocity()).normalize();
-
-        switch (frameType) {
-
-        // if frame = QSW -----------------------------------------
-        case QSW :
-
-            Vector3D Q = pv.getPosition().normalize();
-
-            Vector3D S = Vector3D.crossProduct(W,Q);
-
-            R = new Rotation(Q , S, Vector3D.minusI, Vector3D.plusK);
-
-            break; // end QSW
-
-            // if frame = TNW -----------------------------------------
-        case TNW :
-
-            Vector3D T = pv.getVelocity().normalize();
-
-            Vector3D N = Vector3D.crossProduct(W,T);
-
-            R = new Rotation(N , T, Vector3D.plusI, Vector3D.plusK);
-
-            break; // end TNW
-
-        default :
-            throw new IllegalArgumentException(Translator.getInstance().translate(
-            "Choosen frame type is not correct"));
+        Rotation rot;
+        if (frameType == QSW) {
+            final Vector3D qLof = pv.getPosition();
+            final Vector3D sLof = Vector3D.crossProduct(wLof, qLof);
+            rot = new Rotation(qLof, sLof, Vector3D.minusI, Vector3D.plusK);
+        } else {
+            final Vector3D tLof = pv.getVelocity();
+            final Vector3D nLof = Vector3D.crossProduct(wLof, tLof);
+            rot = new Rotation(nLof, tLof, Vector3D.plusI, Vector3D.plusK);
         }
 
         //  compute semi-major axis
-        double r       = pv.getPosition().getNorm();
-        double V2      = Vector3D.dotProduct(pv.getVelocity(), pv.getVelocity());
-        double rV2OnMu = r * V2 / mu;
-        double a       = r / (2 - rV2OnMu);
-        Vector3D spin = new Vector3D(Math.sqrt(mu/(a*a*a)), Vector3D.plusJ);
+        // TODO this is  NOT the proper way to do this!
+        final double r       = pv.getPosition().getNorm();
+        final double v2      = Vector3D.dotProduct(pv.getVelocity(), pv.getVelocity());
+        final double rV2OnMu = r * v2 / mu;
+        final double a       = r / (2 - rV2OnMu);
+        final Vector3D spin  = new Vector3D(Math.sqrt(mu / a) / a, Vector3D.plusJ);
 
-        return new AttitudeKinematics(R , spin);
+        return new AttitudeKinematics(rot, spin);
 
     }
-
-    /** Central body gravitation coefficient */
-    private double mu;
-
-    /** Frame type */
-    private int frameType;
 
 }

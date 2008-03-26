@@ -88,7 +88,7 @@ public class LOFAlinedAttitudeTest extends TestCase {
             assertEquals(0, Vector3D.angle(pos, dir), 10e-10);
             // J is orthogonal to the orbital plane :
             dir = medState.getAttitude().applyInverseTo(Vector3D.plusJ);
-            assertEquals(0, Vector3D.dotProduct(pos, dir), 1e-4);
+            assertEquals(0, Vector3D.dotProduct(pos, dir), 3e-4);
         }
     }
 

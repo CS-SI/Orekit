@@ -3,12 +3,13 @@ package fr.cs.orekit.propagation;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+
 import org.apache.commons.math.ode.ContinuousOutputModel;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math.ode.StepHandler;
 import org.apache.commons.math.ode.DummyStepHandler;
-import org.apache.commons.math.ode.FixedStepHandler;
 import org.apache.commons.math.ode.StepNormalizer;
 import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.IntegratorException;
@@ -16,7 +17,6 @@ import org.apache.commons.math.ode.SwitchingFunction;
 import fr.cs.orekit.attitudes.AttitudeKinematicsProvider;
 import fr.cs.orekit.attitudes.models.IdentityAttitude;
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.errors.Translator;
 import fr.cs.orekit.forces.ForceModel;
 import fr.cs.orekit.forces.SWF;
 import fr.cs.orekit.orbits.EquinoctialParameters;
@@ -79,6 +79,39 @@ import fr.cs.orekit.time.AbsoluteDate;
 public class NumericalPropagator
 implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = -7625270037622308823L;
+
+    /** Attitude provider */
+    private AttitudeKinematicsProvider akProvider;
+
+    /** Central body gravitational constant. */
+    private final double mu;
+
+    /** Force models used during the extrapolation of the Orbit. */
+    private final List forceModels;
+
+    /** Switching functions used during the extrapolation of the Orbit. */
+    private final List forceSwf;
+
+    /** State vector */
+    private final double[] state;
+
+    /** Start date. */
+    private AbsoluteDate startDate;
+
+    /** Current state to propagate. */
+    private SpacecraftState currentState;
+
+    /** Integrator selected by the user for the orbital extrapolation process. */
+    private final FirstOrderIntegrator integrator;
+
+    /** Gauss equations handler. */
+    private TimeDerivativesEquations adder;
+
+    /** Switching functions exception. */
+    private OrekitException swfException;
+
     /** Create a new instance of NumericalExtrapolationModel.
      * After creation, the instance is empty, i.e. there is no perturbing force
      * at all. This means that if {@link #addForceModel addForceModel} is not
@@ -110,8 +143,8 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
     public void addForceModel(ForceModel model) {
         forceModels.add(model);
         SWF[] swf = model.getSwitchingFunctions();
-        if (swf!=null) {
-            for (int i = 0 ; i<swf.length ; i++) {
+        if (swf != null) {
+            for (int i = 0 ; i < swf.length ; i++) {
                 forceSwf.add(swf[i]);
             }
         }
@@ -144,8 +177,7 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
      * @exception OrekitException if integration cannot be performed
      */
     public SpacecraftState propagate(SpacecraftState initialState,
-                                     AbsoluteDate finalDate)
-    throws OrekitException {
+                                     AbsoluteDate finalDate) throws OrekitException {
         return propagate(initialState, finalDate, DummyStepHandler.getInstance());
     }
 
@@ -160,9 +192,10 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
     public SpacecraftState propagate(SpacecraftState initialState,
                                      AbsoluteDate finalDate,
                                      IntegratedEphemeris ephemeris)
-    throws OrekitException {
-        ContinuousOutputModel model = new ContinuousOutputModel();
-        SpacecraftState finalState = propagate(initialState, finalDate, (StepHandler)model);
+        throws OrekitException {
+        final ContinuousOutputModel model = new ContinuousOutputModel();
+        final SpacecraftState finalState =
+            propagate(initialState, finalDate, (StepHandler)model);
         ephemeris.initialize(model , initialState.getDate(),
                              initialState.getParameters().getFrame(),
                              akProvider, mu);
@@ -179,7 +212,7 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
      * @exception OrekitException if integration cannot be performed
      */
     public SpacecraftState propagate(SpacecraftState initialState, AbsoluteDate finalDate,
-                                     double h, fr.cs.orekit.propagation.FixedStepHandler handler)
+                                     double h, FixedStepHandler handler)
     throws OrekitException {
         handler.initialize(initialState.getDate(), akProvider, initialState.getFrame(), mu);
         return propagate(initialState, finalDate, new StepNormalizer(h, handler.getMantissaStepHandler()));
@@ -265,13 +298,15 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
         // back to space dynamics view
         AbsoluteDate date = new AbsoluteDate(startDate, t1);
 
-        parameters = new EquinoctialParameters(state[0], state[1],state[2],state[3],
-                                               state[4],state[5], EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                               parameters.getFrame());
+        parameters =
+            new EquinoctialParameters(state[0], state[1],state[2],state[3],
+                                      state[4],state[5], EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
+                                      parameters.getFrame());
 
         return new SpacecraftState(new Orbit(date , parameters), state[6],
                                    akProvider.getAttitudeKinematics(date,
-                                                                    parameters.getPVCoordinates(mu), parameters.getFrame()));
+                                                                    parameters.getPVCoordinates(mu),
+                                                                    parameters.getFrame()));
     }
 
     /** Gets the dimension of the handled state vecor (always 7).
@@ -293,7 +328,7 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
     throws DerivativeException {
 
         try {
-            if (swfException!=null) {
+            if (swfException != null) {
                 throw swfException;
             }
             // update space dynamics view
@@ -301,11 +336,13 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
 
             // compute cartesian coordinates
             if (currentState.getMass() <= 0.0) {
-                String message = Translator.getInstance().translate("Mass is null or negative");
-                throw new IllegalArgumentException(message);
+                OrekitException.throwIllegalArgumentException("spacecraft mass becomes negative (m: {0})",
+                                                              new Object[] {
+                                                                  new Double(currentState.getMass())
+                                                              });
             }
             // initialize derivatives
-            adder.initDerivatives(yDot , (EquinoctialParameters)currentState.getParameters());
+            adder.initDerivatives(yDot, (EquinoctialParameters)currentState.getParameters());
 
             // compute the contributions of all perturbing forces
             for (Iterator iter = forceModels.iterator(); iter.hasNext();) {
@@ -329,17 +366,27 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
 
         // update space dynamics view
 
-        EquinoctialParameters currentParameters = new EquinoctialParameters(y[0], y[1],y[2],y[3],y[4],y[5],
-                                                                            EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                                                            currentState.getFrame());
+        EquinoctialParameters currentParameters =
+            new EquinoctialParameters(y[0], y[1],y[2],y[3],y[4],y[5],
+                                      EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
+                                      currentState.getFrame());
         AbsoluteDate currentDate = new AbsoluteDate(startDate, t);
-        currentState = new SpacecraftState(new Orbit(currentDate, currentParameters), y[6],
-                                           akProvider.getAttitudeKinematics(currentDate, currentParameters.getPVCoordinates(mu), currentState.getFrame()));
+        currentState =
+            new SpacecraftState(new Orbit(currentDate, currentParameters), y[6],
+                                akProvider.getAttitudeKinematics(currentDate,
+                                                                 currentParameters.getPVCoordinates(mu),
+                                                                 currentState.getFrame()));
     }
 
 
     /** Converts OREKIT switching functions to MANTISSA interface. */
     private class MappingSwitchingFunction implements SwitchingFunction {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = -6733513215617899510L;
+
+        /** Underlying orekit switching function. */
+        private final SWF swf;
 
         public MappingSwitchingFunction(SWF swf) {
             this.swf = swf;
@@ -373,43 +420,6 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
             // never called since eventOccured never returns CallResetState
         }
 
-        private SWF swf;
-
-        private static final long serialVersionUID = 2902410850401460548L;
-
-
     }
-
-    /** Attitude provider */
-    private AttitudeKinematicsProvider akProvider;
-
-    /** Central body gravitational constant. */
-    private double mu;
-
-    /** Force models used during the extrapolation of the Orbit. */
-    private ArrayList forceModels;
-
-    /** Switching functions used during the extrapolation of the Orbit. */
-    private ArrayList forceSwf;
-
-    /** State vector */
-    private double[] state;
-
-    /** Start date. */
-    private AbsoluteDate startDate;
-
-    /** Current state to propagate. */
-    private SpacecraftState currentState;
-
-    /** Integrator selected by the user for the orbital extrapolation process. */
-    private FirstOrderIntegrator integrator;
-
-    /** Gauss equations handler. */
-    private TimeDerivativesEquations adder;
-
-    /** Switching functions exception. */
-    private OrekitException swfException;
-
-    private static final long serialVersionUID = 5792536158612690051L;
 
 }

@@ -7,8 +7,6 @@ import org.apache.commons.math.geometry.Rotation;
 
 import fr.cs.orekit.errors.FrameAncestorException;
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.errors.Translator;
-import fr.cs.orekit.iers.IERSDirectoryCrawler;
 import fr.cs.orekit.time.AbsoluteDate;
 
 /** Tridimensional references frames class.
@@ -34,7 +32,7 @@ import fr.cs.orekit.time.AbsoluteDate;
  *
  * <p>  <h5> Reference Frames </h5>
  *  Several Reference frames are implemented in OREKIT. The user can
- *  {@link #getReferenceFrame(fr.cs.orekit.frames.Frame.FrameType, AbsoluteDate) use them}
+ *  {@link #getReferenceFrame(Frame.FrameType, AbsoluteDate) use them}
  *  by specifying the {@link FrameType} (type enum) he wants.
  *
  *    <h5> International Terrestrial Reference Frame 2000 </h5>
@@ -46,8 +44,8 @@ import fr.cs.orekit.time.AbsoluteDate;
  * frame which is the reference frame for GPS satellites.
  * <p>This frame is used to define position on solid Earth. It rotates with
  * the Earth and includes the pole motion with respect to Earth crust as
- * provided by {@link IERSDirectoryCrawler IERS data}. Its pole axis is the IERS Reference
- * Pole (IRP).</p>
+ * provided by {@link fr.cs.orekit.iers.IERSDirectoryCrawler IERS data}.
+ * Its pole axis is the IERS Reference Pole (IRP).</p>
  *  OREKIT proposes all the intermediate frames used to build this specific frame.
  *  Here is a shematical representation of the ITRF frame tree :
  *
@@ -57,15 +55,15 @@ import fr.cs.orekit.time.AbsoluteDate;
  *        /     \   Precession and Nutation effects
  *       /       \   (the complexity of the parameters changes between A and B models)
  *      /         \
- *  {@link #IRF2000A}    {@link #IRF2000B}    ( intermediate reference frame : true equinox and equator of date )
+ *  {@link #IRF2000A}    {@link #IRF2000B}    (intermediate reference frame : true equinox and equator of date)
  *      |          |
  *      |          |   Earth natural rotation
  *      |          |
- *  {@link #TIRF2000A}   {@link #TIRF2000B}   ( terrestrial intermediate reference frame : Pseudo Earth Fixed Frame)
+ *  {@link #TIRF2000A}   {@link #TIRF2000B}   (terrestrial intermediate reference frame : Pseudo Earth Fixed Frame)
  *      |          |
  *      |          |   Pole motion
  *      |          |
- *  {@link #ITRF2000A}  {@link #ITRF2000B}   ( international terrestrial reference frame )
+ *  {@link #ITRF2000A}  {@link #ITRF2000B}   (international terrestrial reference frame)
  *
  * </pre>
  * <p> This implementation follows the new non-rotating origin paradigm
@@ -89,15 +87,79 @@ import fr.cs.orekit.time.AbsoluteDate;
  */
 public class Frame implements Serializable {
 
-    /** Get the unique J2000 frame.
-     * @return the unique instance of the J2000 frame
+    /** International Terrestrial Reference Frame 2000 A.
+     * <p> Replaces the old ECEF representation. <p>
      */
-    public static Frame getJ2000() {
-        if (j2000 == null) {
-            j2000 = new Frame("J2000");
-        }
-        return j2000;
-    }
+    public static final FrameType ITRF2000A = new FrameType("ITRF2000A");
+
+    /** International Terrestrial Reference Frame 2000 B.
+     * <p> Replaces the old ECEF representation. <p>
+     */
+    public static final FrameType ITRF2000B = new FrameType("ITRF2000B");
+
+    /** Intermediate Reference Frame 2000 A : true equinox and equator of date.
+     * <p> Precession and nutation effects with maximal precision and no
+     * earth rotation. <p>
+     */
+    public static final FrameType IRF2000A = new FrameType("IRF2000A");
+
+    /** Intermediate Reference Frame 2000 B : true equinox and equator of date.
+     * <p> Precession and nutation effects with less precision and no
+     * earth rotation. <p>
+     */
+    public static final FrameType IRF2000B = new FrameType("IRF2000B");
+
+    /** Terrestrial Intermediate Reference Frame 2000 A.
+     * <p> The pole motion is not considered.</p> */
+    public static final FrameType TIRF2000A = new FrameType("TIRF2000A");
+
+    /** Terrestrial Intermediate Reference Frame 2000 B.
+     * <p> The pole motion is not considered.</p> */
+    public static final FrameType TIRF2000B = new FrameType("TIRF2000B");
+
+    /** Veis 1950 frame.
+     * <p>This frame is sometimes refered to as
+     * <em>&gamma;<sub>50</sub> CNES</em></p> */
+    public static final FrameType VEIS1950 = new FrameType("VEIS1950");
+
+    /** Serialiazable UID. */
+    private static final long serialVersionUID = 2071889292905823128L;
+
+    /** Reference earth ITRF2000 A frame singleton. */
+    private static ITRF2000Frame itrf2000AFrame = null;
+
+    /** Reference earth ITRF2000 B frame singleton. */
+    private static ITRF2000Frame itrf2000BFrame = null;
+
+    /** True earth TIRF2000 A frame singleton. */
+    private static TIRF2000Frame tirf2000AFrame = null;
+
+    /** True earth TIRF2000 B frame singleton. */
+    private static TIRF2000Frame tirf2000BFrame = null;
+
+    /** True equator IRF2000 A frame singleton. */
+    private static IRF2000Frame irf2000AFrame = null;
+
+    /** True equator IRF2000 B frame singleton. */
+    private static IRF2000Frame irf2000BFrame = null;
+
+    /** Mean equator 1950 frame singleton. */
+    private static Frame veis1950Frame = null;
+
+    /** J2000 root frame. */
+    private static Frame j2000 = null;
+
+    /**  parent frame (only J2000 doesn't have a parent). */
+    private final Frame parent;
+
+    /** Transform from parent frame to instance. */
+    private Transform transform;
+
+    /** Map of deepest frames commons with other frames. */
+    private final HashMap commons;
+
+    /** Instance name. */
+    private final String name;
 
     /** Private constructor used only for the J2000 root frame.
      * @param name name of the frame
@@ -122,18 +184,28 @@ public class Frame implements Serializable {
      * @param name name of the frame
      * @exception IllegalArgumentException if the parent frame is null
      */
-    public Frame(Frame parent, Transform transform, String name)
-    throws IllegalArgumentException {
+    public Frame(Frame parent, Transform transform,
+                 String name) throws IllegalArgumentException {
 
         if (parent == null) {
-            String message = Translator.getInstance().translate("null parent frame");
-            throw new IllegalArgumentException(message);
+            OrekitException.throwIllegalArgumentException("null parent for frame {0}",
+                                                          new Object[] { name });
         }
         this.name      = name;
         this.parent    = parent;
         this.transform = transform;
         commons        = new HashMap();
 
+    }
+
+    /** Get the unique J2000 frame.
+     * @return the unique instance of the J2000 frame
+     */
+    public static Frame getJ2000() {
+        if (j2000 == null) {
+            j2000 = new Frame("J2000");
+        }
+        return j2000;
     }
 
     /** Get the name.
@@ -170,11 +242,11 @@ public class Frame implements Serializable {
      * @return transform from the instance to the destination frame
      * @throws OrekitException if some frame specific error occurs
      */
-    public Transform getTransformTo(Frame destination, AbsoluteDate date)
-    throws OrekitException {
+    public Transform getTransformTo(Frame destination,
+                                    AbsoluteDate date) throws OrekitException {
 
         // common ancestor to both frames in the frames tree
-        Frame common = findCommon(this, destination);
+        final Frame common = findCommon(this, destination);
 
         // transform from common to instance
         Transform commonToInstance = new Transform();
@@ -209,8 +281,8 @@ public class Frame implements Serializable {
 
     }
 
-    /** Update the transform from parent frame according to two other
-     * frames used as control handles.
+    /** Update the transform from parent frame implicitly according to two other
+     * frames.
 
      * <p>This method allows to control the relative position of two parts
      * of the global frames tree using any two frames in each part as
@@ -227,26 +299,29 @@ public class Frame implements Serializable {
      *                                 |
      *                          tracking antenna
      * </pre>
-     * <p>Given a tracking measurement, we want to update the satellite
-     * position. We build the transform between the two antennas (a simple
-     * translation computed from range and line of sight) and update the transform
-     * <em>between J<sub>2000</sub> and satellite frames</p> such that the
-     * transform <em>between on-board antenna and tracking antenna frames</em>
-     * becomes equal to the computed transform. This is done by the following
-     * call to the method:</p>
+     * <p>Tracking measurements really correspond to the link between the ground
+     * and on-board antennas. This is tightly linked to the transform between
+     * these two frames, however neither frame is the direct parent frame of the
+     * other ones: the path involves four intermediate frames. When we process a
+     * measurement, what we really want to update is the transform that defines
+     * the satellite frame with respect to its parent J<sub>2000</sub> frame. This
+     * is the purpose of this method. This update is done by the following call,
+     * where <code>measurementTransform</code> represent the measurement as a
+     * simple translation transform between the two antenna frames:</p>
      * <pre><code>
      * satellite.updateTransform(onBoardAntenna, trackingAntenna,
      *                           measurementTransform, date);
      * </code></pre>
      * <p>One way to represent the behavior of the method is to consider the
-     * sub-tree rooted at the instance on one hand (satellite and on-board antenna)
-     * and the tree containing all the other frames on the other hand (J<sub>2000</sub>,
-     * Sun, Earth, ground station, tracking antenna). Both tree are kept as solid
-     * sets linked by a flexible spring. The method stretches the spring to make
+     * sub-tree rooted at the instance on one hand (satellite and on-board antenna
+     * in the example above) and the tree containing all the other frames on the
+     * other hand (J<sub>2000</sub>, Sun, Earth, ground station, tracking antenna).
+     * Both tree are considered as solid sets linked by a flexible spring, which is
+     * the transform we want to update. The method stretches the spring to make
      * sure the transform between the two specified frames (one in each tree part)
      * matches the specified transform.</p>
-     * @param f1 first control frame
-     * @param f2 second control frame
+     * @param f1 first control frame (may be the instance itself)
+     * @param f2 second control frame (may be the instance itself)
      * @param f1Tof2 desired transform from first to second control frame
      * @param date date of the transform
      * @exception OrekitException if the path between the two control frames does
@@ -254,38 +329,38 @@ public class Frame implements Serializable {
      * intermediate transform fails
      * @see #updateTransform(Transform)
      */
-    public void updateTransform(Frame f1, Frame f2, Transform f1Tof2, AbsoluteDate date)
-      throws OrekitException {
+    public void updateTransform(Frame f1, Frame f2, Transform f1Tof2,
+                                AbsoluteDate date) throws OrekitException {
 
       // make sure f1 is not a child of the instance
-      if (f1.isChildOf(this) || (f1 == this)) {
+        if (f1.isChildOf(this) || (f1 == this)) {
 
-        if (f2.isChildOf(this) || (f2 == this)) {
-          throw new FrameAncestorException("both frames {0} and {1} are child of {2}",
-                                           new String[] {
-                                             f1.getName(), f2.getName(), getName()
-                                           });
+            if (f2.isChildOf(this) || (f2 == this)) {
+                throw new FrameAncestorException("both frames {0} and {1} are child of {2}",
+                                                 new Object[] {
+                                                     f1.getName(), f2.getName(), getName()
+                                                 });
+            }
+
+            // swap f1 and f2 to make sure the child is f2
+            final Frame tmp = f1;
+            f1 = f2;
+            f2 = tmp;
+            f1Tof2 = f1Tof2.getInverse();
+
+        } else  if (! (f2.isChildOf(this) || (f2 == this))) {
+            throw new FrameAncestorException("neither frames {0} nor {1} have {2} as ancestor",
+                                             new Object[] {
+                                                 f1.getName(), f2.getName(), getName()
+                                             });
         }
 
-        // swap f1 and f2 to make sure the child is f2
-        Frame tmp = f1;
-        f1 = f2;
-        f2 = tmp;
-        f1Tof2 = f1Tof2.getInverse();
-
-      } else  if (! (f2.isChildOf(this) || (f2 == this))) {
-        throw new FrameAncestorException("neither frames {0} nor {1} have {2} as ancestor",
-                                         new String[] {
-                                           f1.getName(), f2.getName(), getName()
-                                         });
-      }
-
-      // rebuild the transform by traveling from parent to self
-      // WITHOUT using the existing this.transform that will be updated
-      Transform parentToF1 = parent.getTransformTo(f1, date);
-      Transform f2ToSelf   = f2.getTransformTo(this, date);
-      Transform f1ToSelf   = new Transform(f1Tof2, f2ToSelf);
-      updateTransform(new Transform(parentToF1, f1ToSelf));
+        // rebuild the transform by traveling from parent to self
+        // WITHOUT using the existing this.transform that will be updated
+        final Transform parentToF1 = parent.getTransformTo(f1, date);
+        final Transform f2ToSelf   = f2.getTransformTo(this, date);
+        final Transform f1ToSelf   = new Transform(f1Tof2, f2ToSelf);
+        updateTransform(new Transform(parentToF1, f1ToSelf));
 
     }
 
@@ -303,8 +378,8 @@ public class Frame implements Serializable {
         }
 
         // definitions of the path up to the head tree for each frame
-        LinkedList pathFrom = from.pathToRoot();
-        LinkedList pathTo   = to.pathToRoot();
+        final LinkedList pathFrom = from.pathToRoot();
+        final LinkedList pathTo   = to.pathToRoot();
 
         if (pathFrom.isEmpty()||pathTo.contains(from)) { // handle root case and same branch case
             common = from;
@@ -324,13 +399,9 @@ public class Frame implements Serializable {
 
         // at the beginning of the loop pathTo contains at least one frame
         for (Frame lastTo = (Frame) pathTo.removeLast();
-        (lastTo == lastFrom) && (lastTo != null) && (lastFrom != null);
-        // in order to deal with the end of the list which throwed an exception
-        lastTo = (Frame) (pathTo.isEmpty() ? null : pathTo.removeLast())) {
-
+             (lastTo == lastFrom) && (lastTo != null) && (lastFrom != null);
+             lastTo = (Frame) (pathTo.isEmpty() ? null : pathTo.removeLast())) {
             common = lastFrom;
-
-            // in order to deal with the end of the list which throwed an exception
             lastFrom = (Frame) (pathFrom.isEmpty() ? null : pathFrom.removeLast());
         }
 
@@ -346,12 +417,12 @@ public class Frame implements Serializable {
      * path from instance to the root frame
      */
     public boolean isChildOf(Frame potentialAncestor) {
-      for (Frame frame = parent; frame != null; frame = frame.parent) {
-        if (frame == potentialAncestor) {
-          return true;
+        for (Frame frame = parent; frame != null; frame = frame.parent) {
+            if (frame == potentialAncestor) {
+                return true;
+            }
         }
-      }
-      return false;
+        return false;
     }
 
     /** Get the path from instance frame to the root frame.
@@ -359,7 +430,7 @@ public class Frame implements Serializable {
      * (empty if instance is root)
      */
     private LinkedList pathToRoot() {
-        LinkedList path = new LinkedList();
+        final LinkedList path = new LinkedList();
         for (Frame frame = parent; frame != null; frame = frame.parent) {
             path.add(frame);
         }
@@ -367,52 +438,31 @@ public class Frame implements Serializable {
     }
 
     /** Frame Type enum for the
-     * {@link Frame#getReferenceFrame(fr.cs.orekit.frames.Frame.FrameType, AbsoluteDate)} method.
+     * {@link Frame#getReferenceFrame(Frame.FrameType, AbsoluteDate)} method.
      */
-    public static class FrameType {
+    public static class FrameType implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = -7876565578577219160L;
+
+        /** Name of the frame type. */
+        private final String name;
+
+        /** Build a frame type.
+         * @param name name of the frame type
+         */
         private FrameType(String name) {
             this.name = name;
         }
+
+        /** Return a string representation of this type.
+         * @return string representation of this type (i.e. its name)
+         */
         public String toString() {
             return name;
         }
-        private final String name;
+
     }
-
-    /** International Terrestrial Reference Frame 2000 A.
-     * <p> Replaces the old ECEF representation. <p>
-     */
-    public static final FrameType ITRF2000A = new FrameType("ITRF2000A");
-
-    /** International Terrestrial Reference Frame 2000 B.
-     * <p> Replaces the old ECEF representation. <p>
-     */
-    public static final FrameType ITRF2000B = new FrameType("ITRF2000B");
-
-    /** Intermediate Reference Frame 2000 A : true equinox and equator of date.
-     * <p> Precession and nutation effects with maximal precision and no
-     * earth rotation. <p>
-     */
-    public static final FrameType IRF2000A = new FrameType("IRF2000A");
-
-    /** Intermediate Reference Frame 2000 B : true equinox and equator of date.
-     * <p> Precession and nutation effects with less precision and no
-     * earth rotation. <p>
-     */
-    public static final FrameType IRF2000B = new FrameType("IRF2000B");
-
-    /** Terrestrial Intermediate Reference Frame 2000 A.
-     * <p> The pole motion is not considered.</p> */
-    public static final FrameType TIRF2000A = new FrameType("TIRF2000A");
-
-    /** Terrestrial Intermediate Reference Frame 2000 B.
-     * <p> The pole motion is not considered.</p> */
-    public static final FrameType TIRF2000B = new FrameType("TIRF2000B");
-
-    /** Veis 1950 frame.
-     * <p>This frame is sometimes refered to as
-     * <em>&gamma;<sub>50</sub> CNES</em></p> */
-    public static final FrameType VEIS1950 = new FrameType("VEIS1950");
 
     /** Get one of the 7 unique reference frames.
      * Must be one of {@link #VEIS1950}, {@link #ITRF2000A}, {@link #ITRF2000B},
@@ -463,10 +513,17 @@ public class Frame implements Serializable {
         if (type == VEIS1950) {
             return getVeis1950();
         }
-        else {
-            throw new RuntimeException(
-                                       Translator.getInstance().translate("Choosen frame type is not correct"));
-        }
+
+        OrekitException.throwIllegalArgumentException("unknown frame type {0}, known types: " +
+                                                      "{1}, {2}, {3}, {4}, {5}, {6} and {7}",
+                                                      new Object[] {
+                                                          type, ITRF2000A, ITRF2000B, TIRF2000A,
+                                                          TIRF2000B, IRF2000A, IRF2000B, VEIS1950
+                                                      });
+
+        // in fact, this is never reached
+        return null;
+
     }
 
     /** Get the unique Veis 1950 frame.
@@ -476,53 +533,14 @@ public class Frame implements Serializable {
      */
     private static Frame getVeis1950() {
         if (veis1950Frame == null) {
-            double q1 = -2.01425201682020570e-5;
-            double q2 = -2.43283773387856897e-3;
-            double q3 =  5.59078052583013584e-3;
-            double q0 = Math.sqrt(1.0 - q1 * q1 - q2 * q2 - q3 * q3);
-            veis1950Frame =
-                new Frame(getJ2000(),
-                          new Transform(new Rotation(q0, q1, q2, q3, true)),
-                "Veis1950");
+            final double q1 = -2.01425201682020570e-5;
+            final double q2 = -2.43283773387856897e-3;
+            final double q3 =  5.59078052583013584e-3;
+            final double q0 = Math.sqrt(1.0 - q1 * q1 - q2 * q2 - q3 * q3);
+            final Transform t = new Transform(new Rotation(q0, q1, q2, q3, true));
+            veis1950Frame = new Frame(getJ2000(), t, "Veis1950");
         }
         return veis1950Frame;
     }
 
-    /** Reference earth ITRF2000 A frame singleton. */
-    private static ITRF2000Frame itrf2000AFrame = null;
-
-    /** Reference earth ITRF2000 B frame singleton. */
-    private static ITRF2000Frame itrf2000BFrame = null;
-
-    /** True earth TIRF2000 A frame singleton. */
-    private static TIRF2000Frame tirf2000AFrame = null;
-
-    /** True earth TIRF2000 B frame singleton. */
-    private static TIRF2000Frame tirf2000BFrame = null;
-
-    /** True equator IRF2000 A frame singleton. */
-    private static IRF2000Frame irf2000AFrame = null;
-
-    /** True equator IRF2000 B frame singleton. */
-    private static IRF2000Frame irf2000BFrame = null;
-
-    /** Mean equator 1950 frame singleton. */
-    private static Frame veis1950Frame = null;
-
-    /** J2000 root frame. */
-    private static Frame j2000 = null;
-
-    /**  parent frame (only J2000 doesn't have a parent). */
-    private final Frame parent;
-
-    /** Transform from parent frame to instance. */
-    private Transform transform;
-
-    /** Map of deepest frames commons with other frames. */
-    private HashMap commons;
-
-    /** Instance name. */
-    private final String name;
-
-    private static final long serialVersionUID = 2071889292905823128L;
 }

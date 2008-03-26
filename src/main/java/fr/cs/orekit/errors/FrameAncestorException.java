@@ -6,10 +6,16 @@ package fr.cs.orekit.errors;
  */
 public class FrameAncestorException extends OrekitException {
 
-  public FrameAncestorException(String specifier, String[] parts) {
-    super(specifier, parts);
-  }
+    /** Serializable UID. */
+    private static final long serialVersionUID = -4364398908632938172L;
 
-  private static final long serialVersionUID = -4100579364338940418L;
+    /** Simple constructor.
+     * Build an exception with a translated and formatted message
+     * @param specifier format specifier (to be translated)
+     * @param parts parts to insert in the format (no translation)
+     */
+    public FrameAncestorException(String specifier, Object[] parts) {
+        super(specifier, parts);
+    }
 
 }

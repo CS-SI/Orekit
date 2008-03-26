@@ -2,7 +2,7 @@ package fr.cs.orekit.time;
 
 import java.text.DecimalFormat;
 
-import fr.cs.orekit.errors.Translator;
+import fr.cs.orekit.errors.OrekitException;
 
 /** Class representing a date as year, month and day chunks.
  * <p>This class uses the astronomical convention for calendars,
@@ -14,10 +14,29 @@ import fr.cs.orekit.errors.Translator;
  *   <li>from 0001-01-01 to 1582-10-04: julian calendar</li>
  *   <li>from 1582-10-15: gregorian calendar</li>
  * </ul>
- * @author L. Maisonobe
+ * @author Luc Maisonobe
  *
  */
 public class ChunkedDate {
+
+    private static final YearFactory prolepticJulianFactory = new ProlepticJulianFactory();
+    private static final YearFactory julianFactory          = new JulianFactory();
+    private static final YearFactory gregorianFactory       = new GregorianFactory();
+
+    private static final MonthDayFactory leapYearFactory    = new LeapYearFactory();
+    private static final MonthDayFactory commonYearFactory  = new CommonYearFactory();
+
+    private static DecimalFormat fourDigits = new DecimalFormat("0000");
+    private static DecimalFormat twoDigits  = new DecimalFormat("00");
+
+    /** Year number. */
+    public final int year;
+
+    /** Month number. */
+    public final int month;
+
+    /** Day number. */
+    public final int day;
 
     /** Build a date from its calendar elements.
      * @param year year number (may be 0 or negative for BC years)
@@ -33,10 +52,10 @@ public class ChunkedDate {
         // very rough range check
         // (just to avoid ArrayOutOfboundException in MonthDayFactory later)
         if ((month < 1) || (month > 12)) {
-            String message =
-                Translator.getInstance().translate("non-existent month {0}",
-                                                   new Object[] { new Integer(month) });
-            throw new IllegalArgumentException(message);
+            OrekitException.throwIllegalArgumentException("non-existent month {0}",
+                                                          new Object[] {
+                                                              new Integer(month)
+                                                          });
         }
 
         // start by trusting the parameters
@@ -49,14 +68,12 @@ public class ChunkedDate {
 
         // check the parameters for mismatch
         if ((year != check.year) || (month != check.month) || (day != check.day)) {
-            String message =
-                Translator.getInstance().translate("non-existent date {0}-{1}-{2}",
-                                                   new Object[] {
-                        new Integer(year),
-                        new Integer(month),
-                        new Integer(day)
-                });
-            throw new IllegalArgumentException(message);
+            OrekitException.throwIllegalArgumentException("non-existent date {0}-{1}-{2}",
+                                                          new Object[] {
+                                                              new Integer(year),
+                                                              new Integer(month),
+                                                              new Integer(day)
+                                                          });
         }
 
     }
@@ -80,7 +97,7 @@ public class ChunkedDate {
             }
         }
         year = yFactory.getYear(j2000Day);
-        int dayInYear = j2000Day - yFactory.getLastJ2000DayOfYear(year - 1);
+        final int dayInYear = j2000Day - yFactory.getLastJ2000DayOfYear(year - 1);
 
         // handle month/day according to the year being a common or leap year
         MonthDayFactory mdFactory = yFactory.isLeap(year) ? leapYearFactory : commonYearFactory;
@@ -111,7 +128,7 @@ public class ChunkedDate {
      * @return day of week
      */
     public int getDayOfWeek() {
-        int dow = (getJ2000Day() + 6) % 7; // result is between -6 and +6
+        final int dow = (getJ2000Day() + 6) % 7; // result is between -6 and +6
         return (dow < 1) ? (dow + 7) : dow;
     }
 
@@ -278,24 +295,5 @@ public class ChunkedDate {
         }
 
     }
-
-    /** Year number. */
-    public final int year;
-
-    /** Month number. */
-    public final int month;
-
-    /** Day number. */
-    public final int day;
-
-    private static final YearFactory prolepticJulianFactory = new ProlepticJulianFactory();
-    private static final YearFactory julianFactory          = new JulianFactory();
-    private static final YearFactory gregorianFactory       = new GregorianFactory();
-
-    private static final MonthDayFactory leapYearFactory    = new LeapYearFactory();
-    private static final MonthDayFactory commonYearFactory  = new CommonYearFactory();
-
-    private static DecimalFormat fourDigits = new DecimalFormat("0000");
-    private static DecimalFormat twoDigits  = new DecimalFormat("00");
 
 }

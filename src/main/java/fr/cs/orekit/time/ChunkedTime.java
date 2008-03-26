@@ -4,10 +4,10 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-import fr.cs.orekit.errors.Translator;
+import fr.cs.orekit.errors.OrekitException;
 
 /** Class representing a time within the day as hour, minute and second chunks.
- * @author L. Maisonobe
+ * @author Luc Maisonobe
  *
  */
 public class ChunkedTime {
@@ -47,15 +47,13 @@ public class ChunkedTime {
         if ((hour   < 0) || (hour   >  23) ||
                 (minute < 0) || (minute >  59) ||
                 (second < 0) || (second >= 60.0)) {
-            final String message =
-                Translator.getInstance().translate("non-existent hour {0}:{1}:{2}",
-                                                   new Object[] {
-                                                       new Integer(hour),
-                                                       new Integer(minute),
-                                                       new Double(second)
-                                                   });
-            throw new IllegalArgumentException(message);
-        }
+            OrekitException.throwIllegalArgumentException("non-existent hour {0}:{1}:{2}",
+                                                          new Object[] {
+                                                              new Integer(hour),
+                                                              new Integer(minute),
+                                                              new Double(second)
+                                                          });
+         }
 
         this.hour = hour;
         this.minute = minute;
@@ -70,12 +68,10 @@ public class ChunkedTime {
     public ChunkedTime(double secondInDay) {
         // range check
         if ((secondInDay < 0) || (secondInDay >= 86400.0)) {
-            final String message =
-                Translator.getInstance().translate("out of range seconds number: {0}",
-                                                   new Object[] {
-                                                       new Double(secondInDay)
-                                                   });
-            throw new IllegalArgumentException(message);
+            OrekitException.throwIllegalArgumentException("out of range seconds number: {0}",
+                                                          new Object[] {
+                                                              new Double(secondInDay)
+                                                          });
         }
 
         // extract the time chunks

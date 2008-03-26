@@ -8,10 +8,10 @@ import fr.cs.orekit.bodies.BodyShape;
 import fr.cs.orekit.bodies.GeodeticPoint;
 import fr.cs.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.errors.Translator;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
+
 //TODO Approximative Javadoc
 /** Nadir pointing attitute representation.
  *
@@ -43,20 +43,39 @@ public class NadirPointingAttitude implements AttitudeKinematicsProvider {
     /** Identifier for the "orbital plane oriented" attitude. */
     public static final int ORBITALPLANE = 1;
 
+    /** The body to point at. */
+    private final BodyShape body;
+
+    /** Type of attitude. */
+    private final int type;
+
+    /** Central body gravitation constant */
+    private final double mu;
+
+    /** Bias */
+    private final double roll;
+    private final double pitch;
+
     /** Constructor with any {@link BodyShape}.
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @param body the body shape to point at
      * @param type {@link #PURENADIR} or {@link #ORBITALPLANE}
      * @param pitchBias the bias around Y
      * @param rollBias the bias around K (applied after the pitch)
+     * @exception IllegalArgumentException if type is neither
+     * {@link #PURENADIR} nor {@link #ORBITALPLANE}
      */
     public NadirPointingAttitude(double mu, BodyShape body, int type,
-                                 double pitchBias, double rollBias) {
+                                 double pitchBias, double rollBias)
+        throws IllegalArgumentException {
         this.body = body;
         this.mu = mu;
         this.type = type;
         this.roll = rollBias;
         this.pitch = pitchBias;
+        if ((type != PURENADIR) && (type != ORBITALPLANE)) {
+            OrekitException.throwIllegalArgumentException("Choosen attitude type is not correct", null);
+        }
     }
 
     /** Simple constructor with a classical ellipsoid earth.
@@ -70,11 +89,7 @@ public class NadirPointingAttitude implements AttitudeKinematicsProvider {
      */
     public NadirPointingAttitude(double mu, int type,
                                  double pitchBias, double rollBias) {
-        this.body = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101);
-        this.mu = mu;
-        this.type = type;
-        this.roll = rollBias;
-        this.pitch = pitchBias;
+        this(mu, new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101), type, pitchBias, rollBias);
     }
 
     /** Get the attitude representation in the selected frame.
@@ -92,19 +107,11 @@ public class NadirPointingAttitude implements AttitudeKinematicsProvider {
         GeodeticPoint geo = body.transform(pv.getPosition());
         Vector3D direction = new Vector3D(geo.longitude,geo.latitude);
         Rotation R;
-        switch (type) {
-        case PURENADIR :
-            R = new Rotation(direction , pv.getVelocity()  ,
-                             Vector3D.minusK, Vector3D.plusI);
-            break;
-        case ORBITALPLANE :
+        if (type == PURENADIR) {
+            R = new Rotation(direction, pv.getVelocity(), Vector3D.minusK, Vector3D.plusI);
+        } else {
             Vector3D angMom = Vector3D.crossProduct(pv.getVelocity(), pv.getPosition());
-            R = new Rotation(angMom , direction  ,
-                             Vector3D.plusJ, Vector3D.minusK);
-            break;
-        default :
-            throw new IllegalArgumentException(Translator.getInstance().translate(
-            "Choosen attitude type is not correct"));
+            R = new Rotation(angMom, direction, Vector3D.plusJ, Vector3D.minusK);
         }
 
         Rotation pitch = new Rotation(Vector3D.plusJ, this.pitch);
@@ -124,16 +131,4 @@ public class NadirPointingAttitude implements AttitudeKinematicsProvider {
 
     }
 
-    /** The body to point at. */
-    private BodyShape body;
-
-    /** Type of attitude. */
-    private int type;
-
-    /** Central body gravitation constant */
-    private double mu;
-
-    /** Bias */
-    private double roll;
-    private double pitch;
 }

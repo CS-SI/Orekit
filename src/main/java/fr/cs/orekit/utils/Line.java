@@ -2,8 +2,6 @@ package fr.cs.orekit.utils;
 
 import org.apache.commons.math.geometry.Vector3D;
 
-import fr.cs.orekit.errors.Translator;
-
 /** The class represent lines in a three dimensional space.
 
  * <p>Each oriented line is intrinsically associated with an abscissa
@@ -24,10 +22,10 @@ import fr.cs.orekit.errors.Translator;
 public class Line {
 
     /** Line direction. */
-    private Vector3D direction;
+    private final Vector3D direction;
 
     /** Line point closest to the origin. */
-    private Vector3D zero;
+    private final Vector3D zero;
 
     /** Build a line from a point and a direction.
      * @param p point belonging to the line (this can be any point)
@@ -35,19 +33,14 @@ public class Line {
      * @exception IllegalArgumentException if the direction norm is too small
      */
     public Line(Vector3D p, Vector3D direction) {
-        final double norm = direction.getNorm();
-        if (norm < 1.0e-10) {
-            throw new IllegalArgumentException(
-                                               Translator.getInstance().translate("null norm"));
-        }
-        this.direction = new Vector3D(1.0 / norm, direction);
-        zero = new Vector3D(1.0, p,
-                            -Vector3D.dotProduct(p, this.direction), this.direction);
+        this.direction = direction.normalize();
+        zero =
+            new Vector3D(1.0, p, -Vector3D.dotProduct(p, this.direction), this.direction);
     }
 
     /** Revert the line direction.
      * @param line the line to revert
-     * @return a new instance of Line wich is the reverse of line
+     * @return a new instance of Line which is the reverse of line
      */
     public static Line revert(Line line) {
         return new Line(line.zero , line.direction.negate());
@@ -101,8 +94,7 @@ public class Line {
      */
     public double distance(Vector3D p) {
         final Vector3D d = p.subtract(zero);
-        final double dot = Vector3D.dotProduct(d, direction);
-        return new Vector3D(1.0, d, -dot, direction).getNorm();
+        return new Vector3D(1.0, d, -Vector3D.dotProduct(d, direction), direction).getNorm();
     }
 
 }

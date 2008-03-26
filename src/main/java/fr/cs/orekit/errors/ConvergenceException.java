@@ -3,6 +3,9 @@ package fr.cs.orekit.errors;
 public class ConvergenceException
 extends OrekitException {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = -8509280851120696283L;
+
     /** Simple constructor.
      * @param iterations number of iterations already realized
      */
@@ -10,7 +13,5 @@ extends OrekitException {
         super("unable to converge after {0} iterations",
               new Object[] { new Integer(iterations) });
     }
-
-    private static final long serialVersionUID = -1389664478543066679L;
 
 }
