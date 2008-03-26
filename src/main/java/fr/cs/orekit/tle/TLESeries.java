@@ -21,6 +21,27 @@ import fr.cs.orekit.utils.PVCoordinates;
  */
 public class TLESeries {
 
+    /** TLE entries. */
+    private TreeSet tles;
+    private TLE previous;
+    private TLE next;
+
+    /** Last used TLE. */
+    private TLE lastTLE;
+
+    /** Associated propagator. */
+    private TLEPropagator lastPropagator;
+
+    /** Bounds *. */
+    private AbsoluteDate firstDate;
+    private AbsoluteDate lastDate;
+
+    /** The satellite id */
+    private int satelliteNumber;
+
+    /** International designator */
+    private String internationalDesignator;
+
     /** Simple constructor with a TLE file.
      * <p> The read TLE entries, if they match, are stored into a treeset for later use. <p>
      * @param in the input to read (it can be compressed)
@@ -44,34 +65,35 @@ public class TLESeries {
      */
     private void read(InputStream in) throws IOException, OrekitException {
 //      TODO different formats, not portable enough
-        BufferedReader r = new BufferedReader(new InputStreamReader(checkCompressed(in)));
+        final BufferedReader r = new BufferedReader(new InputStreamReader(checkCompressed(in)));
 
-        String line2;
         for (String line1 = r.readLine(); line1 != null; line1 = r.readLine()) {
-            line2 = r.readLine();
 
-            // Format checks :
-            if(line2==null) {
+            // add second line
+            final String line2 = r.readLine();
+            if (line2 == null) {
                 throw new OrekitException("Missing second line in TLE", new Object[0]);
             }
-            if (TLE.isFormatOK(line1, line2)) {
-                int satNum = Integer.parseInt(line1.substring(2,7).replace(' ','0'));
-                String iD = line1.substring(9,17);
-                if(satelliteNumber==0&&internationalDesignator==null) {
-                    satelliteNumber = satNum;
-                    internationalDesignator = iD;
-                }
-                else {
-                    if(satNum!=satelliteNumber||(iD.equals(internationalDesignator))==false) {
-                        throw new OrekitException("The TLE's are not representing the same object.",
-                                                  new Object[0]);
-                    }
-                }
-                // seems OK
-                tles.add(new TLE(line1,line2));
-            } else {
+
+            // safety checks
+            if (! TLE.isFormatOK(line1, line2)) {
                 throw new OrekitException("Non-TLE line in TLE data file", new Object[0]);
             }
+
+            final int satNum = Integer.parseInt(line1.substring(2,7).replace(' ','0'));
+            final String iD = line1.substring(9,17);
+            if (satelliteNumber == 0 && internationalDesignator == null) {
+                satelliteNumber = satNum;
+                internationalDesignator = iD;
+            } else {
+                if (satNum != satelliteNumber || ! iD.equals(internationalDesignator)) {
+                    throw new OrekitException("The TLE's are not representing the same object.",
+                                              new Object[0]);
+                }
+            }
+
+            // everything seems OK
+            tles.add(new TLE(line1, line2));
 
         }
     }
@@ -81,11 +103,11 @@ public class TLESeries {
      * [{@link #getFirstDate() first date} ; {@link #getLastDate() last date}].
      * @param date the final date
      * @return the final PVCoordinates
-     * @throws OrekitException
+     * @throws OrekitException if the underlying propagator cannot be initialized
      */
     public PVCoordinates getPVCoordinates(AbsoluteDate date) throws OrekitException {
-        TLE toExtrapolate = getClosestTLE(date);
-        if (lastTLE == null || toExtrapolate.compareTo(lastTLE)!=0) {
+        final TLE toExtrapolate = getClosestTLE(date);
+        if (lastTLE == null || toExtrapolate.compareTo(lastTLE) != 0) {
             lastTLE = toExtrapolate;
             lastPropagator = TLEPropagator.selectExtrapolator(lastTLE);
         }
@@ -99,38 +121,36 @@ public class TLESeries {
     public TLE getClosestTLE(AbsoluteDate date) {
 
         //  don't search if the cached selection is fine
-        if ((previous != null) && (date.minus(previous.getEpoch()) >= 0)
-                && (next != null) && (date.minus(next.getEpoch()) <= 0)) {
+        if ((previous != null) && (date.minus(previous.getEpoch()) >= 0) &&
+            (next     != null) && (date.minus(next.getEpoch())     <= 0)) {
             // the current selection is already good
-            if(next.getEpoch().minus(date)>date.minus(previous.getEpoch())) {
+            if (next.getEpoch().minus(date) > date.minus(previous.getEpoch())) {
                 return previous;
-            }
-            else {
+            } else {
                 return next;
             }
         }
         // reset the selection before the search phase
-        previous = null;
-        next     = null;
-        TLE ideal = new TLE(date);
+        previous  = null;
+        next      = null;
+        final TLE ideal = new TLE(date);
 
-        SortedSet headSet = tles.headSet(ideal);
-        SortedSet tailSet = tles.tailSet(ideal);
+        final SortedSet headSet = tles.headSet(ideal);
+        final SortedSet tailSet = tles.tailSet(ideal);
 
 
         if (headSet.isEmpty()) {
-            return (TLE)tailSet.first();
+            return (TLE) tailSet.first();
         }
         if (tailSet.isEmpty()) {
-            return (TLE)headSet.last();
+            return (TLE) headSet.last();
         }
-        previous = (TLE)headSet.last();
-        next = (TLE)tailSet.first();
+        previous = (TLE) headSet.last();
+        next = (TLE) tailSet.first();
 
-        if(next.getEpoch().minus(date)>date.minus(previous.getEpoch())) {
+        if(next.getEpoch().minus(date) > date.minus(previous.getEpoch())) {
             return previous;
-        }
-        else {
+        } else {
             return next;
         }
     }
@@ -139,8 +159,8 @@ public class TLESeries {
      * @return the first date
      */
     public AbsoluteDate getFirstDate() {
-        if (firstDate==null){
-            firstDate = ((TLE)tles.first()).getEpoch();
+        if (firstDate == null) {
+            firstDate = ((TLE) tles.first()).getEpoch();
         }
         return firstDate;
     }
@@ -149,8 +169,8 @@ public class TLESeries {
      * @return the end date
      */
     public AbsoluteDate getLastDate() {
-        if (lastDate==null){
-            lastDate = ((TLE)tles.last()).getEpoch();
+        if (lastDate == null) {
+            lastDate = ((TLE) tles.last()).getEpoch();
         }
         return lastDate;
     }
@@ -167,7 +187,7 @@ public class TLESeries {
 
         boolean isCompressed = false;
         try {
-            isCompressed = (new GZIPInputStream(filter).read() != -1);
+            isCompressed = new GZIPInputStream(filter).read() != -1;
         } catch (IOException e) {
             isCompressed = false;
         }
@@ -180,22 +200,4 @@ public class TLESeries {
         return filter;
     }
 
-    /** TLE entries. */
-    private TreeSet tles;
-    private TLE previous;
-    private TLE next;
-
-    /** Last used TLE. */
-    private TLE lastTLE;
-    /** Associated Propagator. */
-    private TLEPropagator lastPropagator;
-
-    /** Bounds *. */
-    private AbsoluteDate firstDate;
-    private AbsoluteDate lastDate;
-
-    /** The satellite id */
-    private int satelliteNumber;
-    /** International designator */
-    private String internationalDesignator;
 }

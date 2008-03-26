@@ -7,7 +7,7 @@ import fr.cs.orekit.time.UTCScale;
 
 /** This class contains methods to compute propagated coordinates with the SDP4 model.
  *
- * The user should not bother in this class since it is handled internaly by the
+ * The user should not bother in this class since it is handled internally by the
  * {@link TLEPropagator}.
  *
  * @author SPACETRACK Report #3 project. Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
@@ -15,6 +15,21 @@ import fr.cs.orekit.time.UTCScale;
  * @author Fabien Maussion (Java translation)
  */
 abstract class SDP4  extends TLEPropagator {
+
+    /** New perigee argument. */
+    protected double omgadf;
+
+    /** New mean motion. */
+    protected double xn;
+
+    /** Parameter for xl computation. */
+    protected double xll;
+
+    /** New eccentricity. */
+    protected double em;
+
+    /** New inclination. */
+    protected double xinc;
 
     /** Constructor for a unique initial TLE.
      * @param initialTLE the TLE to propagate.
@@ -39,8 +54,8 @@ abstract class SDP4  extends TLEPropagator {
 
         // Update for secular gravity and atmospheric drag
         omgadf = tle.getPerigeeArgument() + omgdot * tSince;
-        double xnoddf = tle.getRaan() + xnodot * tSince;
-        double tSinceSq = tSince * tSince;
+        final double xnoddf = tle.getRaan() + xnodot * tSince;
+        final double tSinceSq = tSince * tSince;
         xnode = xnoddf + xnodcf * tSinceSq;
         xn = xn0dp;
 
@@ -49,7 +64,7 @@ abstract class SDP4  extends TLEPropagator {
 
         deepSecularEffects(tSince);
 
-        double tempa = 1 - c1 * tSince;
+        final double tempa = 1 - c1 * tSince;
         a = Math.pow(TLEConstants.xke/xn, TLEConstants.twoThirds)*tempa*tempa;
         em -= tle.getBStar()*c4*tSince;
 
@@ -77,25 +92,25 @@ abstract class SDP4  extends TLEPropagator {
     protected static double thetaG(AbsoluteDate date) throws OrekitException {
 
         // Reference:  The 1992 Astronomical Almanac, page B6.
-        double omega_E = 1.00273790934;
-        double jd = (date.minus(AbsoluteDate.JulianEpoch)+
-                date.timeScalesOffset(UTCScale.getInstance(), TTScale.getInstance()))/86400;
+        final double omega_E = 1.00273790934;
+        final double jd = (date.minus(AbsoluteDate.JulianEpoch) +
+                           date.timeScalesOffset(UTCScale.getInstance(), TTScale.getInstance())
+                          ) / 86400;
 
         // Earth rotations per sidereal day (non-constant)
 
-        double UT = (jd + .5)%1;
-        double seconds_per_day = 86400.;
-        double jd_2000 = 2451545.0;   /* 1.5 Jan 2000 = JD 2451545. */
-        double t_cen, GMST, rval;
+        final double UT = (jd + .5)%1;
+        final double seconds_per_day = 86400.;
+        final double jd_2000 = 2451545.0;   /* 1.5 Jan 2000 = JD 2451545. */
+        final double t_cen = (jd - UT - jd_2000) / 36525.;
+        double GMST = 24110.54841 +
+                      t_cen * (8640184.812866 + t_cen * (0.093104 - t_cen * 6.2E-6));
+        GMST = (GMST + seconds_per_day * omega_E * UT) % seconds_per_day;
+        if (GMST < 0.) {
+            GMST += seconds_per_day;
+        }
 
-        t_cen = (jd - UT - jd_2000) / 36525.;
-        GMST = 24110.54841 + t_cen * (8640184.812866 + t_cen *
-                (0.093104 - t_cen * 6.2E-6));
-        GMST = (GMST + seconds_per_day * omega_E * UT)%seconds_per_day;
-        if( GMST < 0.) GMST += seconds_per_day;
-        rval = 2 * Math.PI * GMST / seconds_per_day;
-
-        return( rval);
+        return 2 * Math.PI * GMST / seconds_per_day;
 
     }
 
@@ -113,12 +128,5 @@ abstract class SDP4  extends TLEPropagator {
      * @param t offset from initial epoch (min)
      */
     protected abstract void deepPeriodicEffects(double t);
-
-    /** Params to determine for PV computation. */
-    protected double omgadf; // new perigee argument
-    protected double xn; // new mean motion
-    protected double xll; // parameter for xl computation
-    protected double em; // new eccentricity
-    protected double xinc; // new inclination
 
 }
