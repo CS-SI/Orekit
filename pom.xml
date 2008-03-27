@@ -2,12 +2,60 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>fr.cs.orekit</groupId>
+  <groupId>fr.cs</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
   <version>2.1</version>
   <name>ORbit Extrapolation KIT</name>
+
+  <inceptionYear>2002</inceptionYear>
+  <description>
+    OREKIT (ORbits Extrapolation KIT) is a low level space dynamics library.
+    It provides basic elements (orbits, dates, attitude, frames ...) and
+    various algorithms to handle them (conversions, analytical and numerical
+    propagation, pointing ...).
+  </description>
+
   <url>http://www.c-s.fr/</url>
+
+  <scm>
+    <connection>
+      scm:svn:svn://aicsrv.si.c-s.fr:3693/orekit/trunk
+    </connection>
+  </scm>
+
+  <developers>
+    <developer>
+      <name>Luc Maisonobe</name>
+      <id>luc</id>
+      <email>Luc.Maisonobe at c-s dot fr</email>
+    </developer>
+    <developer>
+      <name>Guylaine Prat</name>
+      <id>guylaine</id>
+      <email>Guylaine.Prat at c-s dot fr</email>
+    </developer>
+    <developer>
+      <name>Romain Di Costanzo</name>
+      <id>romain</id>
+      <email>Romain.Di-Costanzo at c-s dot fr</email>
+    </developer>
+    <developer>
+      <name>V&#233;ronique Pommier</name>
+      <id>v&#233;ronique</id>
+      <email>Veronique.Pommier at c-s dot fr</email>
+    </developer>
+    <developer>
+      <name>&#201;douard Delente</name>
+    </developer>
+    <developer>
+      <name>Mathieu Rom&#233;ro</name>
+    </developer>
+    <developer>
+      <name>Fabien Maussion</name>
+    </developer>
+  </developers>
+
   <dependencies>
     <dependency>
       <groupId>commons-math</groupId>
