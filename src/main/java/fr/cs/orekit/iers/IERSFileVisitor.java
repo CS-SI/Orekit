@@ -19,11 +19,11 @@ import fr.cs.orekit.errors.OrekitException;
  */
 public abstract class IERSFileVisitor {
 
-    /** File name pattern. */
-    private final Pattern supportedFilesPattern;
-
     /** Current file. */
     protected File file;
+
+    /** File name pattern. */
+    private final Pattern supportedFilesPattern;
 
     /** Simple constructor.
      * @param supportedFilesPattern file name pattern for supported files
@@ -42,12 +42,12 @@ public abstract class IERSFileVisitor {
     }
 
     /** Visit a file.
-     * @param String fileName file name
+     * @param file file to visit
      * @exception OrekitException if some data is missing, can't be read
      * or if some loader specific error occurs
      */
     public void visit(File file)
-    throws OrekitException {
+        throws OrekitException {
         try {
             this.file = file;
             InputStream is = new FileInputStream(file);
@@ -55,7 +55,7 @@ public abstract class IERSFileVisitor {
                 // add the decompression filter
                 is = new GZIPInputStream(is);
             }
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             visit(reader);
             reader.close();
         } catch (IOException ioe) {

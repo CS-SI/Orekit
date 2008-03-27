@@ -22,6 +22,9 @@ import fr.cs.orekit.time.AbsoluteDate;
  */
 public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 4924905512408375026L;
+
     /** Attitude provider */
     private AttitudeKinematicsProvider akProvider;
 

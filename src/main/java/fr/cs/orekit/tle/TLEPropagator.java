@@ -37,41 +37,93 @@ public abstract class TLEPropagator {
     /** Initial state. */
     protected final TLE tle;
 
-    /** Elements to determine for PV computation. */
-    protected double xnode; // final RAAN
-    protected double a; // final semi major axis
-    protected double e; // final eccentricity
-    protected double i; // final inclination
-    protected double omega; // final perigee argument
-    protected double xl; // L from SPTRCK #3
+    /** final RAAN. */
+    protected double xnode;
 
-    /** Intermediate values. */
-    protected double a0dp; // original recovered semi major axis
-    protected double xn0dp; // original recovered mean motion
-    protected double cosi0; // cosinus original inclination
-    protected double theta2; // cos io squared
-    protected double sini0; // sinus original inclination
-    protected double xmdot; // common parameter for mean anomaly (M) computation
-    protected double omgdot; // common parameter for perigee argument (omega) computation
-    protected double xnodot; // common parameter for raan (OMEGA) computation
-    protected double e0sq; // original eccentricity squared
-    protected double beta02; // 1 - e2
-    protected double beta0; // sqrt (1 - e2)
-    protected double perige; // perigee, expressed in KM and ALTITUDE
+    /** final semi major axis. */
+    protected double a;
 
-    protected double etasq; // eta squared
-    protected double eeta; // original eccentricity * eta
-    protected double s4; // s* new value for the contant s
-    protected double tsi; // tsi from SPTRCK #3
-    protected double eta; // eta from SPTRCK #3
-    protected double coef; // coef for SGP C3 computation
-    protected double coef1; // coef for SGP C5 computation
+    /** final eccentricity. */
+    protected double e;
 
-    protected double c1; // C1 from SPTRCK #3
-    protected double c2; // C2 from SPTRCK #3
-    protected double c4; // C4 from SPTRCK #3
-    protected double xnodcf; // common parameter for raan (OMEGA) computation
-    protected double t2cof; // 3/2 * C1
+    /** final inclination. */
+    protected double i;
+
+    /** final perigee argument. */
+    protected double omega;
+
+    /** L from SPTRCK #3. */
+    protected double xl;
+
+    /** original recovered semi major axis. */
+    protected double a0dp;
+
+    /** original recovered mean motion. */
+    protected double xn0dp;
+
+    /** cosinus original inclination. */
+    protected double cosi0;
+
+    /** cos io squared. */
+    protected double theta2;
+
+    /** sinus original inclination. */
+    protected double sini0;
+
+    /** common parameter for mean anomaly (M) computation. */
+    protected double xmdot;
+
+    /** common parameter for perigee argument (omega) computation. */
+    protected double omgdot;
+
+    /** common parameter for raan (OMEGA) computation. */
+    protected double xnodot;
+
+    /** original eccentricity squared. */
+    protected double e0sq;
+    /** 1 - e2. */
+    protected double beta02;
+    /** sqrt (1 - e2). */
+    protected double beta0;
+
+    /** perigee, expressed in KM and ALTITUDE. */
+    protected double perige;
+
+    /** eta squared. */
+    protected double etasq;
+
+    /** original eccentricity * eta. */
+    protected double eeta;
+
+    /** s* new value for the contant s. */
+    protected double s4;
+
+    /** tsi from SPTRCK #3. */
+    protected double tsi;
+
+    /** eta from SPTRCK #3. */
+    protected double eta;
+
+    /** coef for SGP C3 computation. */
+    protected double coef;
+
+    /** coef for SGP C5 computation. */
+    protected double coef1;
+
+    /** C1 from SPTRCK #3. */
+    protected double c1;
+
+    /** C2 from SPTRCK #3. */
+    protected double c2;
+
+    /** C4 from SPTRCK #3. */
+    protected double c4;
+
+    /** common parameter for raan (OMEGA) computation. */
+    protected double xnodcf;
+
+    /** 3/2 * C1. */
+    protected double t2cof;
 
     /** Protected constructor for derived classes.
      * @param initialTLE the unique TLE to propagate

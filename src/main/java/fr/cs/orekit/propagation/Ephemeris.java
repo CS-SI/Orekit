@@ -1,5 +1,7 @@
 package fr.cs.orekit.propagation;
 
+import java.io.Serializable;
+
 import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.time.AbsoluteDate;
 
@@ -20,7 +22,7 @@ import fr.cs.orekit.time.AbsoluteDate;
  *
  */
 
-public interface Ephemeris {
+public interface Ephemeris extends Serializable {
 
     /** Get the orbit at a specific date.
      * @param date desired date for the orbit

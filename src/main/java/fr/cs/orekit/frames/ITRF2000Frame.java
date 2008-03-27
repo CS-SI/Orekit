@@ -13,6 +13,26 @@ import fr.cs.orekit.time.AbsoluteDate;
  */
 class ITRF2000Frame extends Frame {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 720487682019109221L;
+
+    /** 2&pi;. */
+    private static final double twoPi = 2.0 * Math.PI;
+
+    /** Radians per arcsecond. */
+    private static final double radiansPerArcsecond = twoPi / 1296000;
+
+    /** Julian century per second. */
+    private static final double julianCenturyPerSecond = 1.0 / (36525.0 * 86400.0);
+
+    /** S' rate in radians per julian century.
+     * Approximately -47 microarcsecond per julian century (Lambert and Bizouard, 2002)
+     */
+    private static final double sPrimeRate = -47e-6 * radiansPerArcsecond ;
+
+    /** Cached date to avoid useless calculus */
+    private AbsoluteDate cachedDate;
+
     /** Constructor for the singleton.
      * @param parent the TIRF2000
      * @param date the current date
@@ -31,37 +51,34 @@ class ITRF2000Frame extends Frame {
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */
-    protected void updateFrame(AbsoluteDate date)
-    throws OrekitException {
+    protected void updateFrame(AbsoluteDate date) throws OrekitException {
 
         if (cachedDate == null||cachedDate!=date) {
 
             //    offset from J2000 epoch in julian centuries
-            double tts = date.minus(AbsoluteDate.J2000Epoch);
-            double ttc =  tts * julianCenturyPerSecond;
-
+            final double tts = date.minus(AbsoluteDate.J2000Epoch);
+            final double ttc =  tts * julianCenturyPerSecond;
 
             // get the current IERS pole correction parameters
-            PoleCorrection iCorr = EarthOrientationHistory.getInstance().getPoleCorrection(date);
+            final PoleCorrection iCorr = EarthOrientationHistory.getInstance().getPoleCorrection(date);
 
             // compute the additional terms not included in IERS data
-            PoleCorrection tCorr = tidalCorrection(date);
-            PoleCorrection nCorr = nutationCorrection(date);
+            final PoleCorrection tCorr = tidalCorrection(date);
+            final PoleCorrection nCorr = nutationCorrection(date);
 
             // elementary rotations due to pole motion in terrestrial frame
-            Rotation r1 = new Rotation(Vector3D.plusI, -(iCorr.yp + tCorr.yp + nCorr.yp));
-            Rotation r2 = new Rotation(Vector3D.plusJ, -(iCorr.xp + tCorr.xp + nCorr.xp));
-            Rotation r3 = new Rotation(Vector3D.plusK, sPrimeRate * ttc);
+            final Rotation r1 = new Rotation(Vector3D.plusI, -(iCorr.yp + tCorr.yp + nCorr.yp));
+            final Rotation r2 = new Rotation(Vector3D.plusJ, -(iCorr.xp + tCorr.xp + nCorr.xp));
+            final Rotation r3 = new Rotation(Vector3D.plusK, sPrimeRate * ttc);
 
             // complete pole motion in terrestrial frame
-            Rotation wRot = r3.applyTo(r2.applyTo(r1));
+            final Rotation wRot = r3.applyTo(r2.applyTo(r1));
 
             // combined effects
-            Rotation combined = wRot.revert();
+            final Rotation combined = wRot.revert();
 
             // set up the transform from parent GCRS (J2000) to ITRF
-            Vector3D rotationRate = new Vector3D();
-            updateTransform(new Transform(combined , rotationRate));
+            updateTransform(new Transform(combined , Vector3D.zero));
             cachedDate = date;
         }
     }
@@ -88,22 +105,4 @@ class ITRF2000Frame extends Frame {
         return PoleCorrection.NULL_CORRECTION;
     }
 
-    /** 2&pi;. */
-    private static final double twoPi = 2.0 * Math.PI;
-
-    /** Radians per arcsecond. */
-    private static final double radiansPerArcsecond = twoPi / 1296000;
-
-    /** Julian century per second. */
-    private static final double julianCenturyPerSecond = 1.0 / (36525.0 * 86400.0);
-
-    /** S' rate in radians per julian century.
-     * Approximately -47 microarcsecond per julian century (Lambert and Bizouard, 2002)
-     */
-    private static final double sPrimeRate = -47e-6 * radiansPerArcsecond ;
-
-    /** Cached date to avoid useless calculus */
-    private AbsoluteDate cachedDate;
-
-    private static final long serialVersionUID = -9058199158939623380L;
 }

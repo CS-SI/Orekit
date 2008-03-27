@@ -20,6 +20,20 @@ import fr.cs.orekit.time.AbsoluteDate;
  */
 public class TabulatedEphemeris implements BoundedEphemeris {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 7422810748920169223L;
+
+    /** All entries. */
+    private final TreeSet data;
+
+    /** Enclosing states */
+    private comparableState previous;
+    private comparableState next;
+
+    /** Bounds */
+    private final SpacecraftState firstElement;
+    private final SpacecraftState lastElement;
+
     /** Constructor with tabulated entries.
      * If wanted,  {@link #setPropagator(SimplePropagator)} can be called after
      * construction to set interpolation method. If not, classical
@@ -32,30 +46,16 @@ public class TabulatedEphemeris implements BoundedEphemeris {
             throw new IllegalArgumentException("There should be at least 2 entries.");
         }
 
-        datas = new TreeSet();
+        data = new TreeSet();
         for(int i=0; i<tabulatedStates.length; i++) {
-            datas.add(new comparableState(tabulatedStates[i]));
+            data.add(new comparableState(tabulatedStates[i]));
         }
 
-        firstElement = ((comparableState)(datas.first())).state;
-        lastElement = ((comparableState)(datas.last())).state;
+        firstElement = ((comparableState)(data.first())).state;
+        lastElement = ((comparableState)(data.last())).state;
 
         previous = null;
         next = null;
-        this.interpolationOrder = 1;
-    }
-
-    /** Constructor with tabulated entries.
-     * If wanted,  {@link #setPropagator(SimplePropagator)} can be called after
-     * construction to set interpolation method. If not, classical
-     * interpolation will be used.
-     * @param tabulatedStates the entries tab
-     * @param interpolationOrder the required oder
-     */
-    public TabulatedEphemeris(SpacecraftState[] tabulatedStates, int interpolationOrder) {
-        this(tabulatedStates);
-        this.interpolationOrder = interpolationOrder;
-
     }
 
     /** Get the last date of the range.
@@ -154,8 +154,8 @@ public class TabulatedEphemeris implements BoundedEphemeris {
             return false;
         }
         if(date.minus(firstElement.getDate())==0) {
-            previous = (comparableState)datas.first();
-            Iterator i = datas.iterator();
+            previous = (comparableState)data.first();
+            Iterator i = data.iterator();
             i.next();
             next = (comparableState)i.next();
             return true;
@@ -172,22 +172,10 @@ public class TabulatedEphemeris implements BoundedEphemeris {
 
         comparableState opt = new comparableState(new SpacecraftState(new Orbit(date, new EquinoctialParameters(0, 0, 0, 0, 0, 0, 0, null))));
 
-        previous = (comparableState)datas.headSet(opt).last();
-        next = (comparableState)datas.tailSet(opt).first();
+        previous = (comparableState)data.headSet(opt).last();
+        next = (comparableState)data.tailSet(opt).first();
         return true;
     }
-
-    /** All entries. */
-    private final TreeSet datas;
-    private int interpolationOrder;
-
-    /** Enclosing states */
-    private comparableState previous;
-    private comparableState next;
-
-    /** Bounds */
-    private final SpacecraftState firstElement;
-    private final SpacecraftState lastElement;
 
     /** Container class for SpacecraftStates.  */
     private class comparableState  implements Comparable {
@@ -207,6 +195,7 @@ public class TabulatedEphemeris implements BoundedEphemeris {
             return date.compareTo(((comparableState)entry).date);
         }
     }
+
 }
 
 

@@ -127,7 +127,8 @@ class IRF2000Frame extends Frame {
      * library cannot be read.
      * @see Frame
      */
-    protected IRF2000Frame(AbsoluteDate date, boolean useIAU2000B, String name) throws OrekitException {
+    protected IRF2000Frame(AbsoluteDate date, boolean useIAU2000B, String name)
+        throws OrekitException {
 
         super(getJ2000(), null , name);
 

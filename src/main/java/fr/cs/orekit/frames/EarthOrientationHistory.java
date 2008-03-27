@@ -21,11 +21,25 @@ import fr.cs.orekit.utils.DateFormatter;
  */
 public class EarthOrientationHistory implements Serializable {
 
-    /** Private constructor for the singleton.
+    /** Serializable UID. */
+    private static final long serialVersionUID = -6983677302885110865L;
+
+    /** Singleton instance. */
+    private static EarthOrientationHistory instance = null;
+
+    /** Earth Orientation Parameters. */
+    private TreeSet eop = null;
+
+    /** Previous EOP entry. */
+    private EarthOrientationParameters previous;
+
+    /** Next EOP entry. */
+    private EarthOrientationParameters next;
+
+   /** Private constructor for the singleton.
      * @throws OrekitException if there is a problem while reading IERS data
      */
-    private EarthOrientationHistory()
-    throws OrekitException {
+    private EarthOrientationHistory() throws OrekitException {
 
         // set up a date-ordered set, able to use either
         // EarthOrientationParameters or AbsoluteDate instances
@@ -49,8 +63,7 @@ public class EarthOrientationHistory implements Serializable {
      * @return the unique dated eop reader instance.
      * @throws OrekitException when there is a problem while reading IERS datas
      */
-    public static EarthOrientationHistory getInstance()
-    throws OrekitException {
+    public static EarthOrientationHistory getInstance() throws OrekitException {
         if (instance == null) {
             instance = new EarthOrientationHistory();
         }
@@ -61,20 +74,19 @@ public class EarthOrientationHistory implements Serializable {
      * @param maxGap maximal allowed gap between entries (in days)
      * @exception OrekitException if there are holes in the data sequence
      */
-    private void checkEOPContinuity(int maxGap)
-    throws OrekitException {
+    private void checkEOPContinuity(int maxGap) throws OrekitException {
         EarthOrientationParameters current = null;
-        for (Iterator iterator = eop.iterator(); iterator.hasNext();) {
-            EarthOrientationParameters previous = current;
+        for (final Iterator iterator = eop.iterator(); iterator.hasNext();) {
+            final EarthOrientationParameters previous = current;
             current = (EarthOrientationParameters) iterator.next();
 
             // compare the dates of previous and current entries
             if ((previous != null) && ((current.mjd - previous.mjd) > maxGap)) {
                 throw new OrekitException("missing Earth Orientation Parameters between {0} and {1}",
                                           new Object[] {
-                        DateFormatter.toString(previous.date, UTCScale.getInstance()),
-                        DateFormatter.toString(current.date, UTCScale.getInstance())
-                });
+                                              DateFormatter.toString(previous.date, UTCScale.getInstance()),
+                                              DateFormatter.toString(current.date, UTCScale.getInstance())
+                                          });
 
             }
         }
@@ -102,8 +114,8 @@ public class EarthOrientationHistory implements Serializable {
      */
     protected double getUT1MinusUTC(AbsoluteDate date) {
         if (selectBracketingEntries(date)) {
-            double dtP = date.minus(previous.date);
-            double dtN = next.date.minus(date);
+            final double dtP = date.minus(previous.date);
+            final double dtN = next.date.minus(date);
             return (dtP * next.ut1MinusUtc + dtN * previous.ut1MinusUtc) / (dtN + dtP);
         }
         return 0;
@@ -115,15 +127,14 @@ public class EarthOrientationHistory implements Serializable {
      * @param date date at which the correction is desired
      * @return pole correction ({@link PoleCorrection#NULL_CORRECTION
      * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
-     * @exception OrekitException if the IERS data cannot be read
      */
     protected PoleCorrection getPoleCorrection(AbsoluteDate date) {
         if (selectBracketingEntries(date)) {
-            double dtP    = date.minus(previous.date);
-            double dtN    = next.date.minus(date);
-            double sum    = dtN + dtP;
-            double coeffP = dtN / sum;
-            double coeffN = dtP / sum;
+            final double dtP    = date.minus(previous.date);
+            final double dtN    = next.date.minus(date);
+            final double sum    = dtN + dtP;
+            final double coeffP = dtN / sum;
+            final double coeffN = dtP / sum;
             return new PoleCorrection(coeffP * previous.pole.xp + coeffN * next.pole.xp,
                                       coeffP * previous.pole.yp + coeffN * next.pole.yp);
         }
@@ -137,16 +148,16 @@ public class EarthOrientationHistory implements Serializable {
     private boolean selectBracketingEntries(AbsoluteDate date) {
 
         // don't search if the cached selection is fine
-        if ((previous != null) && (date.minus(previous.date) >= 0)
-                && (next != null) && (date.minus(next.date) < 0)) {
+        if ((previous != null) && (date.minus(previous.date) >= 0) &&
+            (next != null) && (date.minus(next.date) < 0)) {
             // the current selection is already good
             return true;
         }
 
         // select the bracketing elements (may be null)
-        SortedSet head = eop.headSet(date);
+        final SortedSet head = eop.headSet(date);
         previous = (EarthOrientationParameters) (head.isEmpty() ? null : head.last());
-        SortedSet tail = eop.tailSet(date);
+        final SortedSet tail = eop.tailSet(date);
         next     = (EarthOrientationParameters) (tail.isEmpty() ? null : tail.first());
 
         return (previous != null) && (next != null);
@@ -158,30 +169,24 @@ public class EarthOrientationHistory implements Serializable {
      */
     private static class EOPComparator implements Comparator, Serializable {
 
+        /** Serializable UID. */
+        private static final long serialVersionUID = -8636906467091448424L;
+
+        /** Build a comparator for either {@link AbsoluteDate} or
+         * {@link EarthOrientationParameters} instances.
+         * @param o1 first object
+         * @param o2 second object
+         * return a negative integer if o1 is before o2, 0 if they are
+         * are the same time, a positive integer otherwise
+         */
         public int compare(Object o1, Object o2) {
-            AbsoluteDate d1 = (o1 instanceof AbsoluteDate) ?
-                    ((AbsoluteDate) o1) : ((EarthOrientationParameters) o1).date;
-                    AbsoluteDate d2 = (o2 instanceof AbsoluteDate) ?
-                            ((AbsoluteDate) o2) : ((EarthOrientationParameters) o2).date;
-                            return d1.compareTo(d2);
+            final AbsoluteDate d1 =
+                (o1 instanceof AbsoluteDate) ? ((AbsoluteDate) o1) : ((EarthOrientationParameters) o1).date;
+            final AbsoluteDate d2 =
+                (o2 instanceof AbsoluteDate) ? ((AbsoluteDate) o2) : ((EarthOrientationParameters) o2).date;
+            return d1.compareTo(d2);
         }
 
-        private static final long serialVersionUID = 612278880319640448L;
-
     }
-
-    /** Earth Orientation Parameters. */
-    private TreeSet eop = null;
-
-    /** Previous EOP entry. */
-    private EarthOrientationParameters previous;
-
-    /** Next EOP entry. */
-    private EarthOrientationParameters next;
-
-    /** Singleton instance. */
-    private static EarthOrientationHistory instance = null;
-
-    private static final long serialVersionUID = 4028633968968154618L;
 
 }

@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +27,19 @@ import fr.cs.orekit.errors.OrekitException;
  */
 public class Development implements Serializable {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = -3016824169123970737L;
+
+    /** Error message for non IERS files. */
+    private static final String NOT_IERS_FILE =
+        "file {0} is not an IERS data file";
+
+    /** Coefficients of the polynomial part. */
+    private double[] coefficients;
+
+    /** Non-polynomial series. */
+    private SeriesTerm[][] series;
+
     /** Build a development from an IERS table file.
      * @param stream stream containing the IERS table
      * @param factor multiplicative factor to use for coefficients
@@ -33,7 +47,7 @@ public class Development implements Serializable {
      * @exception OrekitException if stream is null or the table cannot be parsed
      */
     public Development(InputStream stream, double factor, String name)
-    throws OrekitException {
+        throws OrekitException {
 
         if (stream == null) {
             throw new OrekitException("unable to find nutation model file {0}",
@@ -45,10 +59,10 @@ public class Development implements Serializable {
             // -16616.99 + 2004191742.88 t - 427219.05 t^2 - 198620.54 t^3 - 46.05 t^4 + 5.98 t^5
             // or something like:
             // 0''.014506 + 4612''.15739966t + 1''.39667721t^2 - 0''.00009344t^3 + 0''.00001882t^4
-            Pattern termPattern =
-                Pattern.compile("\\p{Space}*([-+]?)"
-                                + "\\p{Space}*(\\p{Digit}+)(?:'')?(\\.\\p{Digit}+)"
-                                + "(?:\\p{Space}*t(?:\\^\\p{Digit}+)?)?");
+            final Pattern termPattern =
+                Pattern.compile("\\p{Space}*([-+]?)" +
+                                "\\p{Space}*(\\p{Digit}+)(?:'')?(\\.\\p{Digit}+)" +
+                                "(?:\\p{Space}*t(?:\\^\\p{Digit}+)?)?");
 
             // the series parts should read something like:
             // j = 0  Nb of terms = 1306
@@ -57,14 +71,13 @@ public class Development implements Serializable {
             //  2     -523908.04        -544.76    0    0    2   -2    2    0    0    0    0    0    0    0    0    0
             //  3      -90552.22         111.23    0    0    2    0    2    0    0    0    0    0    0    0    0    0
             //  4       82168.76         -27.64    0    0    0    0    2    0    0    0    0    0    0    0    0    0
-            Pattern seriesHeaderPattern =
-                Pattern.compile("^\\p{Space}*j\\p{Space}*=\\p{Space}*(\\p{Digit}+)"
-                                + ".*"
-                                + "=\\p{Space}*(\\p{Digit}+)\\p{Space}*$");
+            final Pattern seriesHeaderPattern =
+                Pattern.compile("^\\p{Space}*j\\p{Space}*=\\p{Space}*(\\p{Digit}+)" +
+                                ".*=\\p{Space}*(\\p{Digit}+)\\p{Space}*$");
 
 
             // setup the reader
-            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
             String line = reader.readLine();
             int lineNumber = 1;
 
@@ -80,31 +93,30 @@ public class Development implements Serializable {
                 }
             }
             if (coefficients == null) {
-                throw new OrekitException("file {0} is not an IERS data file",
-                                          new String[] { name });
+                throw new OrekitException(NOT_IERS_FILE, new Object[] { name });
             }
 
             line = reader.readLine();
             ++lineNumber;
 
             // look for the non-polynomial part
-            ArrayList array = new ArrayList();
+            final List array = new ArrayList();
             while (line != null) {
-                int nTerms = parseSeriesHeader(seriesHeaderPattern.matcher(line),
-                                               array.size(), name, lineNumber);
+                final int nTerms = parseSeriesHeader(seriesHeaderPattern.matcher(line),
+                                                     array.size(), name, lineNumber);
                 if (nTerms >= 0) {
                     // we have found a non-polynomial series
 
                     // skip blank lines
                     line = reader.readLine();
                     ++lineNumber;
-                    while ((line != null) && "".equals(line.trim())) {
+                    while ((line != null) && line.trim().isEmpty()) {
                         line = reader.readLine();
                         ++lineNumber;
                     }
 
                     // read the terms of the current serie
-                    SeriesTerm[] serie = new SeriesTerm[nTerms];
+                    final SeriesTerm[] serie = new SeriesTerm[nTerms];
                     for (int i = 0; i < nTerms; ++i) {
                         serie[i] = parseSeriesTerm(line, factor, name, lineNumber);
                         line = reader.readLine();
@@ -122,8 +134,7 @@ public class Development implements Serializable {
             }
 
             if (array.isEmpty()) {
-                throw new OrekitException("file {0} is not an IERS data file",
-                                          new String[] { name });
+                throw new OrekitException(NOT_IERS_FILE, new Object[] { name });
             }
 
             // store the non-polynomial part series
@@ -150,7 +161,7 @@ public class Development implements Serializable {
         }
 
         // store the concatenated sign, integer and fractional parts of the monomial coefficient
-        ArrayList coeffs = new ArrayList();
+        final List coeffs = new ArrayList();
         do {
             coeffs.add(termMatcher.group(1) + termMatcher.group(2) + termMatcher.group(3));
         } while (termMatcher.find());
@@ -177,7 +188,7 @@ public class Development implements Serializable {
      */
     private int parseSeriesHeader(Matcher headerMatcher, int expected,
                                   String name, int lineNumber)
-    throws OrekitException {
+        throws OrekitException {
 
         // is this a series header line ?
         if (! headerMatcher.matches()) {
@@ -186,12 +197,12 @@ public class Development implements Serializable {
 
         // sanity check
         if (Integer.parseInt(headerMatcher.group(1)) != expected) {
-            throw new OrekitException("missing serie j = {0} in nutation"
-                                      + " model file {1} (line {2})",
+            throw new OrekitException("missing serie j = {0} in nutation " +
+                                      "model file {1} (line {2})",
                                       new Object[] {
-                                              new Integer(expected),
-                                              name,
-                                              new Integer(lineNumber)
+                                          new Integer(expected),
+                                          name,
+                                          new Integer(lineNumber)
                                       });
         }
 
@@ -209,7 +220,7 @@ public class Development implements Serializable {
      */
     private SeriesTerm parseSeriesTerm (String line, double factor,
                                         String name, int lineNumber)
-    throws OrekitException {
+        throws OrekitException {
 
         // sanity check
         if (line == null) {
@@ -218,9 +229,9 @@ public class Development implements Serializable {
         }
 
         // parse the nutation serie term
-        String[] fields = line.split("\\p{Space}+");
-        int l = fields.length;
-        if ((l == 17) || ((l == 18) && "".equals(fields[0]))) {
+        final String[] fields = line.split("\\p{Space}+");
+        final int l = fields.length;
+        if ((l == 17) || ((l == 18) && fields[0].isEmpty())) {
             return SeriesTerm.buildTerm(Double.parseDouble(fields[l - 16]) * factor,
                                         Double.parseDouble(fields[l - 15]) * factor,
                                         Integer.parseInt(fields[l - 14]), Integer.parseInt(fields[l -13]),
@@ -233,9 +244,9 @@ public class Development implements Serializable {
         }
 
         throw new OrekitException("unable to parse line {0} of nutation model file {1}:\n{2}",
-                                  new String[] {
-                Integer.toString(lineNumber), name, line
-        });
+                                  new Object[] {
+                                      Integer.toString(lineNumber), name, line
+                                  });
 
     }
 
@@ -256,7 +267,7 @@ public class Development implements Serializable {
         double np = 0;
         for (int i = series.length - 1; i >= 0; --i) {
 
-            SeriesTerm[] serie = series[i];
+            final SeriesTerm[] serie = series[i];
 
             // add the harmonic terms starting from the last (smallest) terms,
             // to avoid numerical problems
@@ -273,13 +284,5 @@ public class Development implements Serializable {
         return p + np;
 
     }
-
-    /** Coefficients of the polynomial part. */
-    private double[] coefficients;
-
-    /** Non-polynomial series. */
-    private SeriesTerm[][] series;
-
-    private static final long serialVersionUID = -3022140412788385100L;
 
 }
