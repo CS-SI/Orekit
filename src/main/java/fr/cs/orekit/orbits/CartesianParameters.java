@@ -36,8 +36,13 @@ import fr.cs.orekit.utils.PVCoordinates;
  * @author  G. Prat
  * @author  F.Maussion
  */
-public class CartesianParameters
-extends OrbitalParameters {
+public class CartesianParameters extends OrbitalParameters {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 2006917870170399349L;
+
+    /** Underlying equinoctial orbit providing non-cartesian elements. */
+    private final EquinoctialParameters equinoctial;
 
     /** Constructor from cartesian parameters.
      * @param pvCoordinates the position and velocity of the satellite.
@@ -55,8 +60,7 @@ extends OrbitalParameters {
      */
     public CartesianParameters(OrbitalParameters op, double mu) {
         super(op.frame);
-        PVCoordinates pvCoordinates = getPVCoordinates(mu);
-        equinoctial = new EquinoctialParameters(pvCoordinates, frame, mu);
+        equinoctial = new EquinoctialParameters(getPVCoordinates(mu), frame, mu);
     }
 
     /** Get the semi-major axis.
@@ -133,13 +137,7 @@ extends OrbitalParameters {
      * @return a string representation of this object
      */
     public String toString() {
-        String str = getPVCoordinates(getCachedMu()).toString();
-        return "cartesian parameters: "+str;
+        return "cartesian parameters: " + getPVCoordinates(getCachedMu()).toString();
     }
-
-    /** Underlying equinoctial orbit providing non-cartesian elements. */
-    private final EquinoctialParameters equinoctial;
-
-    private static final long serialVersionUID = -1349581125178017277L;
 
 }

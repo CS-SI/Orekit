@@ -55,8 +55,8 @@ public class AbsoluteDate implements Comparable, Serializable {
     /** Reference epoch for modified julian dates: 1858-11-17T00:00:00. */
     public static final AbsoluteDate ModifiedJulianEpoch;
 
-    /** Reference epoch for CNES 1950 dates: 1950-01-01T00:00:00. */
-    public static final AbsoluteDate CNES1950Epoch;
+    /** Reference epoch for 1950 dates: 1950-01-01T00:00:00. */
+    public static final AbsoluteDate FiftiesEpoch;
 
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 UTC. */
     public static final AbsoluteDate GPSEpoch;
@@ -81,7 +81,7 @@ public class AbsoluteDate implements Comparable, Serializable {
             new AbsoluteDate(new ChunkedDate(-4712,  1,  1), ChunkedTime.H12, tt);
         ModifiedJulianEpoch =
             new AbsoluteDate(new ChunkedDate( 1858, 11, 17), ChunkedTime.H00, tt);
-        CNES1950Epoch =
+        FiftiesEpoch =
             new AbsoluteDate(new ChunkedDate( 1950,  1,  1), ChunkedTime.H00, tt);
         JavaEpoch =
             new AbsoluteDate(new ChunkedDate( 1970,  1,  1), ChunkedTime.H00, tt);

@@ -20,7 +20,7 @@ extends TestCase {
         TimeScale tt  = TTScale.getInstance();
         assertEquals(-210866760000000l, AbsoluteDate.JulianEpoch.toDate(tt).getTime());
         assertEquals(-3506716800000l,   AbsoluteDate.ModifiedJulianEpoch.toDate(tt).getTime());
-        assertEquals(-631152000000l,    AbsoluteDate.CNES1950Epoch.toDate(tt).getTime());
+        assertEquals(-631152000000l,    AbsoluteDate.FiftiesEpoch.toDate(tt).getTime());
         assertEquals(315964819000l,     AbsoluteDate.GPSEpoch.toDate(tai).getTime());
         assertEquals(946728000000l,     AbsoluteDate.J2000Epoch.toDate(tt).getTime());
     }
@@ -28,7 +28,7 @@ extends TestCase {
     public void testOutput() {
         TimeScale tt = TTScale.getInstance();
         assertEquals("1950-01-01T01:01:01.000",
-                     DateFormatter.toString(new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 3661.0),tt));
+                     DateFormatter.toString(new AbsoluteDate(AbsoluteDate.FiftiesEpoch, 3661.0),tt));
         assertEquals("2000-01-01T13:01:01.000",
                      DateFormatter.toString(new AbsoluteDate(AbsoluteDate.J2000Epoch, 3661.0),tt));
     }

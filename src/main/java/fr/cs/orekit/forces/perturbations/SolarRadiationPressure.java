@@ -19,6 +19,25 @@ import fr.cs.orekit.utils.PVCoordinates;
  */
 public class SolarRadiationPressure implements ForceModel {
 
+    /** Error message for too low trajectory. */
+    private static final String LOW_TRAJECTORY_MESSAGE =
+        "trajectory inside the Brillouin sphere (r = {0})";
+
+    /** Reference distance (m). */
+    private final double dRef;
+
+    /** Reference radiation pressure at dRef (N/m<sup>2</sup>).*/
+    private final double pRef;
+
+    /** Sun model. */
+    private final ThirdBody sun;
+
+    /** Earth model. */
+    private final double equatorialRadius;
+
+    /** Spacecraft. */
+    private final SolarRadiationPressureSpacecraft spacecraft;
+
     /** Simple constructor with default reference values.
      * <p>When this constructor is used, the reference values are:</p>
      * <ul>
@@ -58,28 +77,27 @@ public class SolarRadiationPressure implements ForceModel {
      * @throws OrekitException if some specific error occurs
      */
     public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
-    throws OrekitException {
+        throws OrekitException {
         // raw radiation pressure
-        Vector3D satSunVector = sun.getPosition(s.getDate() , s.getFrame()).subtract(
-                                                                                     s.getPVCoordinates(mu).getPosition());
+        final Vector3D satSunVector =
+            sun.getPosition(s.getDate() ,
+                            s.getFrame()).subtract(s.getPVCoordinates(mu).getPosition());
 
-        double dRatio = dRef / satSunVector.getNorm();
-        double rawP   = pRef * dRatio * dRatio
-        * getLightningRatio(
-                            s.getPVCoordinates(mu).getPosition(), s.getFrame(), s.getDate());
+        final double dRatio = dRef / satSunVector.getNorm();
+        final double rawP   =
+            pRef * dRatio * dRatio * getLightningRatio(s.getPVCoordinates(mu).getPosition(),
+                                                       s.getFrame(), s.getDate());
 
         // spacecraft characteristics effects
+        final Vector3D u = satSunVector.normalize();
+        final Vector3D inSpacecraft = s.getAttitudeKinematics().getAttitude().applyTo(u);
+        final double kd = (1.0 - spacecraft.getAbsCoef(inSpacecraft).getNorm()) *
+            (1.0 - spacecraft.getReflectionCoef(inSpacecraft).getNorm());
 
-        Vector3D u = satSunVector.normalize();
-        Vector3D inSpacecraft = s.getAttitudeKinematics().getAttitude().applyTo(u);
-        double kd = (1.0 - spacecraft.getAbsCoef(inSpacecraft).getNorm())
-        * (1.0 - spacecraft.getReflectionCoef(inSpacecraft).getNorm());
-
-        double acceleration = rawP * (1 + kd * 4.0 / 9.0 )
-        * spacecraft.getSurface(inSpacecraft) / s.getMass();
+        final double acceleration =
+            rawP * (1 + kd * 4.0 / 9.0 ) * spacecraft.getSurface(inSpacecraft) / s.getMass();
 
         // provide the perturbing acceleration to the derivatives adder
-
         adder.addXYZAcceleration(acceleration * u.getX(),
                                  acceleration * u.getY(),
                                  acceleration * u.getZ());
@@ -90,25 +108,25 @@ public class SolarRadiationPressure implements ForceModel {
      * @param position the satellite's position in the selected frame.
      * @param frame in which is defined the position
      * @param date the date
+     * @return lightning ratio
      * @exception OrekitException if the trajectory is inside the Earth
      */
     public double getLightningRatio(Vector3D position, Frame frame, AbsoluteDate date)
-    throws OrekitException {
-        Vector3D satSunVector = sun.getPosition(date, frame).subtract(position);
+        throws OrekitException {
+        final Vector3D satSunVector = sun.getPosition(date, frame).subtract(position);
         // Earth apparent radius
-        double r = position.getNorm();
+        final double r = position.getNorm();
         if (r <= equatorialRadius) {
-            throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
-                                      new Object[] { new Double(r) });
+            throw new OrekitException(LOW_TRAJECTORY_MESSAGE, new Object[] { new Double(r) });
         }
 
-        double alphaEarth = Math.atan(equatorialRadius / r);
+        final double alphaEarth = Math.atan(equatorialRadius / r);
 
         // Definition of the Sun's apparent radius
-        double alphaSun = sun.getRadius() / satSunVector.getNorm();
+        final double alphaSun = sun.getRadius() / satSunVector.getNorm();
 
         // Retrieve the Sat-Sun / Sat-Central body angle
-        double sunEarthAngle = Vector3D.angle(satSunVector, position.negate());
+        final double sunEarthAngle = Vector3D.angle(satSunVector, position.negate());
 
         double result = 1.0;
 
@@ -121,22 +139,22 @@ public class SolarRadiationPressure implements ForceModel {
 
             //result = (alphaSun + sunEarthAngle - alphaEarth) / (2*alphaSun);
 
-            double alpha1 = (sunEarthAngle * sunEarthAngle
-                    - (alphaEarth - alphaSun) * (alphaSun + alphaEarth))
-                    / (2 * sunEarthAngle);
+            final double alpha1 =
+                (sunEarthAngle * sunEarthAngle -
+                        (alphaEarth - alphaSun) * (alphaSun + alphaEarth)) / (2 * sunEarthAngle);
 
-            double alpha2 = (sunEarthAngle * sunEarthAngle
-                    + (alphaEarth - alphaSun) * (alphaSun + alphaEarth))
-                    / (2 * sunEarthAngle);
+            final double alpha2 =
+                (sunEarthAngle * sunEarthAngle +
+                        (alphaEarth - alphaSun) * (alphaSun + alphaEarth)) / (2 * sunEarthAngle);
 
-            double P1 = Math.PI * alphaSun * alphaSun
-            - alphaSun * alphaSun * Math.acos(alpha1 / alphaSun)
-            + alpha1 * Math.sqrt(alphaSun * alphaSun - alpha1 * alpha1);
+            final double P1 = Math.PI * alphaSun * alphaSun -
+                alphaSun * alphaSun * Math.acos(alpha1 / alphaSun) +
+                alpha1 * Math.sqrt(alphaSun * alphaSun - alpha1 * alpha1);
 
-            double P2 = alphaEarth * alphaEarth * Math.acos(alpha2 / alphaEarth)
-            - alpha2 * Math.sqrt(alphaEarth * alphaEarth - alpha2 * alpha2);
+            final double P2 = alphaEarth * alphaEarth * Math.acos(alpha2 / alphaEarth) -
+                alpha2 * Math.sqrt(alphaEarth * alphaEarth - alpha2 * alpha2);
 
-            result =  (P1 - P2) / (Math.PI * alphaSun * alphaSun);
+            result = (P1 - P2) / (Math.PI * alphaSun * alphaSun);
 
 
         }
@@ -145,7 +163,7 @@ public class SolarRadiationPressure implements ForceModel {
 
     }
 
-    /** Gets the swithching functions related to umbra and penumbra passes.
+    /** Get the switching functions related to umbra and penumbra passes.
      * @return umbra/penumbra switching functions
      */
     public SWF[] getSwitchingFunctions() {
@@ -157,6 +175,9 @@ public class SolarRadiationPressure implements ForceModel {
      */
     private class Umbraswitch implements SWF {
 
+        /** Serializable UID. */
+        private static final long serialVersionUID = 8164370576237170346L;
+
         public void eventOccurred(SpacecraftState s, double mu) {
             // do nothing
         }
@@ -165,19 +186,19 @@ public class SolarRadiationPressure implements ForceModel {
          * the Earth's apparent radius
          * @param s the current state information : date, cinematics, attitude
          * @param mu central gravitation coefficient
+         * @exception OrekitException if sun or spacecraft position cannot be computed
          */
         public double g(SpacecraftState s, double mu)
-        throws OrekitException {
-            PVCoordinates pv = s.getPVCoordinates(mu);
-            Vector3D satSunVector = sun.getPosition(s.getDate(), s.getFrame()).subtract(
-                                                                                        pv.getPosition());
-            double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pv.getPosition());
-            double r = pv.getPosition().getNorm();
+            throws OrekitException {
+            final PVCoordinates pv = s.getPVCoordinates(mu);
+            final Vector3D satSunVector =
+                sun.getPosition(s.getDate(), s.getFrame()).subtract(pv.getPosition());
+            final double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pv.getPosition());
+            final double r = pv.getPosition().getNorm();
             if (r <= equatorialRadius) {
-                throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
-                                          new Object[] { new Double(r) });
+                throw new OrekitException(LOW_TRAJECTORY_MESSAGE, new Object[] { new Double(r) });
             }
-            double alphaEarth = equatorialRadius / r;
+            final double alphaEarth = equatorialRadius / r;
             return sunEarthAngle - alphaEarth;
         }
 
@@ -195,14 +216,15 @@ public class SolarRadiationPressure implements ForceModel {
             return 100;
         }
 
-        private static final long serialVersionUID = -2402806683532244120L;
-
     }
 
     /** This class defines the penumbra switching function.
      * It triggers when the satellite enters the penumbra zone.
      */
     private class Penumbraswitch implements SWF {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = -8548885301322210937L;
 
         public void eventOccurred(SpacecraftState s, double mu) {
             // do nothing
@@ -212,20 +234,20 @@ public class SolarRadiationPressure implements ForceModel {
          * the sum of the Earth's and Sun's apparent radius
          * @param s the current state information : date, cinematics, attitude
          * @param mu central gravitation coefficient
+         * @exception OrekitException if sun or spacecraft position cannot be computed
          */
         public double g(SpacecraftState s, double mu)
-        throws OrekitException {
-            PVCoordinates pv = s.getPVCoordinates(mu);
-            Vector3D satSunVector = sun.getPosition(s.getDate() , s.getFrame()).subtract(
-                                                                                         pv.getPosition());
-            double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pv.getPosition());
-            double r = pv.getPosition().getNorm();
+            throws OrekitException {
+            final PVCoordinates pv = s.getPVCoordinates(mu);
+            final Vector3D satSunVector =
+                sun.getPosition(s.getDate() , s.getFrame()).subtract(pv.getPosition());
+            final double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pv.getPosition());
+            final double r = pv.getPosition().getNorm();
             if (r <= equatorialRadius) {
-                throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
-                                          new Object[] { new Double(r) });
+                throw new OrekitException(LOW_TRAJECTORY_MESSAGE, new Object[] { new Double(r) });
             }
-            double alphaEarth = equatorialRadius / r;
-            double alphaSun   = sun.getRadius() / satSunVector.getNorm();
+            final double alphaEarth = equatorialRadius / r;
+            final double alphaSun   = sun.getRadius() / satSunVector.getNorm();
             return sunEarthAngle - alphaEarth - alphaSun;
         }
 
@@ -243,26 +265,6 @@ public class SolarRadiationPressure implements ForceModel {
             return 100;
         }
 
-        private static final long serialVersionUID = -423248605146669097L;
-
     }
 
-    /** Reference distance (m). */
-    private double dRef;
-
-    /** Reference radiation pressure at dRef (N/m<sup>2</sup>).*/
-    private double pRef;
-
-    /** Sun model. */
-    private ThirdBody sun;
-
-//  /** Earth model. */
-//  private BodyShape centralBody;
-
-    /** Earth model. */
-    private double equatorialRadius;
-
-
-    /** Spacecraft. */
-    private SolarRadiationPressureSpacecraft spacecraft;
 }

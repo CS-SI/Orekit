@@ -348,7 +348,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
         // Comparison with a given extrapolated orbit
         // -----------------------------------------
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 12584. * 86400.);
+        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.FiftiesEpoch, 12584. * 86400.);
 
         double a = 7200000.;
         double exp = .9848e-4; // e * cos(pom)

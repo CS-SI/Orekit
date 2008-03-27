@@ -1,5 +1,7 @@
 package fr.cs.orekit.propagation;
 
+import org.apache.commons.math.util.MathUtils;
+
 import fr.cs.orekit.attitudes.AttitudeKinematicsProvider;
 import fr.cs.orekit.attitudes.models.IdentityAttitude;
 import fr.cs.orekit.errors.OrekitException;
@@ -24,7 +26,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
     private AttitudeKinematicsProvider akProvider;
 
     /** Initial date. */
-    private AbsoluteDate initialDate;
+    private final AbsoluteDate initialDate;
 
     /** Mean parameters at the initial date. */
     private CircularParameters mean;
@@ -46,7 +48,11 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
     /** Model parameters. */
     private double referenceRadius;
     private double mu;
-    private double c20, c30, c40, c50, c60;
+    private double c20;
+    private double c30;
+    private double c40;
+    private double c50;
+    private double c60;
     private double mass;
 
     /** Create a new instance.
@@ -165,10 +171,10 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
             final double deltaEx     = osculating.getCircularEx() - rebuilt.getCircularEx();
             final double deltaEy     = osculating.getCircularEy() - rebuilt.getCircularEy();
             final double deltaI      = osculating.getI()  - rebuilt.getI();
-            final double deltaRAAN   = trimAngle(osculating.getRightAscensionOfAscendingNode() -
+            final double deltaRAAN   = MathUtils.normalizeAngle(osculating.getRightAscensionOfAscendingNode() -
                                                  rebuilt.getRightAscensionOfAscendingNode(),
                                                  0.0);
-            final double deltaAlphaM = trimAngle(osculating.getAlphaM() - rebuilt.getAlphaM(), 0.0);
+            final double deltaAlphaM = MathUtils.normalizeAngle(osculating.getAlphaM() - rebuilt.getAlphaM(), 0.0);
 
             // update mean parameters
             mean= new CircularParameters(mean.getA()          + deltaA,
@@ -193,21 +199,21 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
                 if (e > 0.1) {
                     // if 0.005 < e < 0.1 no error is triggered, but accuracy is poor
                     throw new PropagationException("too excentric orbit (e = {0})",
-                                                   new String[] { Double.toString(e) });
+                                                   new Object[] { new Double(e) });
                 }
 
                 final double meanI = mean.getI();
                 if ((meanI < 0.) || (meanI > Math.PI) || (Math.abs(Math.sin(meanI)) < 1.0e-10)) {
                     throw new PropagationException("almost equatorial orbit (i = {0} degrees)",
-                                                   new String[] {
-                                                       Double.toString(Math.toDegrees(meanI))
+                                                   new Object[] {
+                                                       new Double(Math.toDegrees(meanI))
                                                    });
                 }
 
                 if ((Math.abs(meanI - 1.1071487) < 1.0e-3) || (Math.abs(meanI - 2.0344439) < 1.0e-3)) {
                     throw new PropagationException("almost critically inclined orbit (i = {0} degrees)",
-                                                   new String[] {
-                                                       Double.toString(Math.toDegrees(meanI))
+                                                   new Object[] {
+                                                       new Double(Math.toDegrees(meanI))
                                                    });
                 }
 
@@ -219,7 +225,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
 
         throw new PropagationException("unable to compute Eckstein-Hechler mean" +
                                        " parameters after {0} iterations",
-                                       new String[] { Integer.toString(i) });
+                                       new Object[] { new Integer(i) });
 
     }
 
@@ -260,7 +266,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
             0.9375 * g4 * (7.0 * sinI2 - 4.0) +
             3.28125 * g6 * (2.0 - 9.0 * sinI2 + 8.25 * sinI4);
         final double omm =
-            trimAngle(mean.getRightAscensionOfAscendingNode() + q * cosI1 * xnot, Math.PI);
+            MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + q * cosI1 * xnot, Math.PI);
 
         // latitude argument
         final double rdl = 1.0 - 1.50 * g2 * (3.0 - 4.0 * sinI2);
@@ -268,7 +274,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
             2.25 * g2 * g2 * (9.0 - 263.0 / 12.0 * sinI2 + 341.0 / 24.0 * sinI4) +
             15.0 / 16.0 * g4 * (8.0 - 31.0 * sinI2 + 24.5 * sinI4) +
             105.0 / 32.0 * g6 * (-10.0 / 3.0 + 25.0 * sinI2 - 48.75 * sinI4 + 27.5 * sinI6);
-        final double xlm = trimAngle(mean.getAlphaM()+ q * xnot, Math.PI);
+        final double xlm = MathUtils.normalizeAngle(mean.getAlphaM()+ q * xnot, Math.PI);
 
         // periodical terms
         final double cl1 = Math.cos(xlm);
@@ -373,16 +379,10 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
 
         // osculating parameters
         return new CircularParameters(mean.getA() * (1.0 + rda), exm + rdex, eym + rdey,
-                                      xim + rdxi, trimAngle(omm + rdom, Math.PI),
-                                      trimAngle(xlm + rdxl, Math.PI),
+                                      xim + rdxi, MathUtils.normalizeAngle(omm + rdom, Math.PI),
+                                      MathUtils.normalizeAngle(xlm + rdxl, Math.PI),
                                       CircularParameters.MEAN_LONGITUDE_ARGUMENT, mean.getFrame());
 
-    }
-
-    // trim an angle between ref - PI and ref + PI
-    private static double trimAngle(double a, double ref) {
-        final double twoPi = 2 * Math.PI;
-        return a - twoPi * Math.floor((a + Math.PI - ref) / twoPi);
     }
 
     public void setAkProvider(AttitudeKinematicsProvider akProvider) {

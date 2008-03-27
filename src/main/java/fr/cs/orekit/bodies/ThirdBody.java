@@ -1,5 +1,7 @@
 package fr.cs.orekit.bodies;
 
+import java.io.Serializable;
+
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.time.AbsoluteDate;
@@ -9,7 +11,7 @@ import org.apache.commons.math.geometry.Vector3D;
  * @author E. Delente
  */
 
-public abstract class ThirdBody {
+public abstract class ThirdBody implements Serializable {
 
     /** Simple constructor.
      * @param radius equatorial radius
@@ -26,7 +28,7 @@ public abstract class ThirdBody {
      * @return position of the body (m)
      * @throws OrekitException
      */
-    public abstract Vector3D getPosition(AbsoluteDate date , Frame frame) throws OrekitException;
+    public abstract Vector3D getPosition(AbsoluteDate date, Frame frame) throws OrekitException;
 
     /** Get the equatorial radius of the body.
      * @return equatorial radius of the body (m)

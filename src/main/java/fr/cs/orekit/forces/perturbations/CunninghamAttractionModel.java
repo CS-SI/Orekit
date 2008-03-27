@@ -24,17 +24,35 @@ import org.apache.commons.math.geometry.Vector3D;
 
 public class CunninghamAttractionModel implements ForceModel {
 
+    /** Equatorial radius of the Central Body. */
+    private final double equatorialRadius;
+
+    /** First normalized potential tesseral coefficients array. */
+    private final double[][] C;
+
+    /** Second normalized potential tesseral coefficients array. */
+    private final double[][] S;
+
+    /** Degree of potential. */
+    private final int degree;
+
+    /** Order of potential. */
+    private final int order;
+
+    /** Rotating body. */
+    private final Frame bodyFrame;
+
     /** Creates a new instance.
      *
      * @param centralBodyFrame rotating body frame
      * @param equatorialRadius reference equatorial radius of the potential
      * @param C un-normalized coefficients array (cosine part)
      * @param S un-normalized coefficients array (sine part)
-     * @throws OrekitException
+     * @exception IllegalArgumentException if coefficients array do not match
      */
     public CunninghamAttractionModel(Frame centralBodyFrame,
-                                     double equatorialRadius, double[][] C, double[][] S)
-    throws OrekitException {
+                                     double equatorialRadius,
+                                     double[][] C, double[][] S) throws IllegalArgumentException {
 
         this.bodyFrame = centralBodyFrame;
         this.equatorialRadius = equatorialRadius;
@@ -42,35 +60,34 @@ public class CunninghamAttractionModel implements ForceModel {
         order   = C[degree].length - 1;
 
         if (C.length!=S.length||C[C.length-1].length!=S[S.length-1].length) {
-            throw new OrekitException("C and S should have the same size :" +
-                                      " (C = [{0}][{1}] ; S = [{2}][{3}])",
-                                      new Object[] {
-                    new Integer(C.length), new Integer(C[degree].length),
-                    new Integer(S.length), new Integer(S[degree].length)
-            });
+            OrekitException.throwIllegalArgumentException("potential arrays sizes mismatch (C: {0}x{1}, S: {2}x{3})",
+                                                          new Object[] {
+                                                              new Integer(C.length),
+                                                              new Integer(C[degree].length),
+                                                              new Integer(S.length),
+                                                              new Integer(S[degree].length)
+                                                          });
         }
 
-        if(C.length<1) {
+        if (C.length < 1) {
             this.C = new double[1][1];
             this.S = new double[1][1];
-        }
-        else {
+        } else {
             // invert the arrays (optimization for later "line per line" seeking)
             this.C = new double[C[degree].length][C.length];
             this.S = new double[S[degree].length][S.length];
 
-            for (int i=0; i<=degree; i++) {
-                double[] cT = C[i];
-                double[] sT = S[i];
-                for (int j=0; j<cT.length; j++) {
+            for (int i = 0; i <= degree; i++) {
+                final double[] cT = C[i];
+                final double[] sT = S[i];
+                for (int j = 0; j < cT.length; j++) {
                     this.C[j][i] = cT[j];
                     this.S[j][i] = sT[j];
-
                 }
             }
         }
 
-        // do not calculate keplerian evolution
+        // do not compute keplerian evolution
         this.C[0][0] = 0.0;
 
     }
@@ -87,38 +104,38 @@ public class CunninghamAttractionModel implements ForceModel {
      * @throws OrekitException if some specific error occurs
      */
     public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
-    throws OrekitException {
+        throws OrekitException {
         // get the position in body frame
-        Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), s.getDate());
-        Transform toBodyFrame   = fromBodyFrame.getInverse();
-        Vector3D relative = toBodyFrame.transformPosition(s.getPVCoordinates(mu).getPosition());
+        final Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), s.getDate());
+        final Transform toBodyFrame   = fromBodyFrame.getInverse();
+        final Vector3D relative = toBodyFrame.transformPosition(s.getPVCoordinates(mu).getPosition());
 
-        double x = relative.getX();
-        double y = relative.getY();
-        double z = relative.getZ();
+        final double x = relative.getX();
+        final double y = relative.getY();
+        final double z = relative.getZ();
 
-        double x2 = x * x;
-        double y2 = y * y;
-        double z2 = z * z;
-        double r2 = x2 + y2 + z2;
-        double r = Math.sqrt(r2);
+        final double x2 = x * x;
+        final double y2 = y * y;
+        final double z2 = z * z;
+        final double r2 = x2 + y2 + z2;
+        final double r = Math.sqrt(r2);
         if (r <= equatorialRadius) {
             throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
                                       new Object[] { new Double(r) });
         }
 
         // define some intermediate variables
-        double onR2 = 1 / r2;
-        double onR3 = onR2 / r;
-        double onR4 = onR2 * onR2;
+        final double onR2 = 1 / r2;
+        final double onR3 = onR2 / r;
+        final double onR4 = onR2 * onR2;
 
         double cmx   = -x * onR2;
         double cmy   = -y * onR2;
         double cmz   = -z * onR2;
 
-        double dx   = -2 * cmx;
-        double dy   = -2 * cmy;
-        double dz   = -2 * cmz;
+        final double dx   = -2 * cmx;
+        final double dy   = -2 * cmy;
+        final double dz   = -2 * cmz;
 
         // intermediate variables gradients
         // since dcy/dx = dcx/dy, dcz/dx = dcx/dz and dcz/dy = dcy/dz,
@@ -131,16 +148,16 @@ public class CunninghamAttractionModel implements ForceModel {
         double dcmydz =  dy * z * onR2;
         double dcmzdz = (z2 - x2 - y2) * onR4;
 
-        double ddxdx = -2 * dcmxdx;
-        double ddxdy = -2 * dcmxdy;
-        double ddxdz = -2 * dcmxdz;
-        double ddydy = -2 * dcmydy;
-        double ddydz = -2 * dcmydz;
-        double ddzdz = -2 * dcmzdz;
+        final double ddxdx = -2 * dcmxdx;
+        final double ddxdy = -2 * dcmxdy;
+        final double ddxdz = -2 * dcmxdz;
+        final double ddydy = -2 * dcmydy;
+        final double ddydz = -2 * dcmydz;
+        final double ddzdz = -2 * dcmzdz;
 
-        double donr2dx = -dx * onR2;
-        double donr2dy = -dy * onR2;
-        double donr2dz = -dz * onR2;
+        final double donr2dx = -dx * onR2;
+        final double donr2dy = -dy * onR2;
+        final double donr2dz = -dz * onR2;
 
         // potential coefficients (4 per matrix)
         double Vrn  = 0.0;
@@ -190,8 +207,8 @@ public class CunninghamAttractionModel implements ForceModel {
         for (int m = 0; m <= order; m++) {
 
             // intermediate variables to compute incrementation
-            double[] Cm = C[m];
-            double[] Sm = S[m];
+            final double[] Cm = C[m];
+            final double[] Sm = S[m];
 
             double rn = rm;
             double cx = cmx;
@@ -243,10 +260,10 @@ public class CunninghamAttractionModel implements ForceModel {
 
                 }
 
-                if(n==m+1) {
+                if (n == m + 1) {
                     // calculate the second element of the column
-                    Vrn = cz*Vrn1;
-                    Vin = cz*Vin1;
+                    Vrn = cz * Vrn1;
+                    Vin = cz * Vin1;
 
                     gradXVrn = cz * gradXVrn1 + dcxdz * Vrn1;
                     gradXVin = cz * gradXVin1 + dcxdz * Vin1;
@@ -257,12 +274,10 @@ public class CunninghamAttractionModel implements ForceModel {
                     gradZVrn = cz * gradZVrn1 + dczdz * Vrn1;
                     gradZVin = cz * gradZVin1 + dczdz * Vin1;
 
-                }
-
-                if(n>=m+2) {
+                } else if (n >= m + 2) {
                     // calculate the other elements of the column
-                    double inv   = 1.0 / (n - m);
-                    double coeff = n + m - 1.0;
+                    final double inv   = 1.0 / (n - m);
+                    final double coeff = n + m - 1.0;
 
                     Vrn = (cz * Vrn1 - coeff * onR2 * Vrn2) * inv;
                     Vin = (cz * Vin1 - coeff * onR2 * Vin2) * inv;
@@ -305,10 +320,10 @@ public class CunninghamAttractionModel implements ForceModel {
                 gradZVrn1 = gradZVrn;
                 gradZVin1 = gradZVin;
 
-                // calculate the acceleration due to the Cnm and Snm coefficients
+                // compute the acceleration due to the Cnm and Snm coefficients
                 // ( as the matrix is inversed, Cnm actually is Cmn )
 
-                if (Cm[n]!=0.0||Sm[n]!=0.0) { // avoid doing the calcul if not necessary
+                if (Cm[n] != 0.0 || Sm[n] != 0.0) { // avoid doing the processing if not necessary
                     vdX += rn * (Cm[n] * gradXVrn + Sm[n] * gradXVin);
                     vdY += rn * (Cm[n] * gradYVrn + Sm[n] * gradYVin);
                     vdZ += rn * (Cm[n] * gradZVrn + Sm[n] * gradZVin);
@@ -335,7 +350,7 @@ public class CunninghamAttractionModel implements ForceModel {
         }
 
         // compute acceleration in inertial frame
-        Vector3D acceleration =
+        final Vector3D acceleration =
             fromBodyFrame.transformVector(new Vector3D(mu * vdX, mu * vdY, mu * vdZ));
         adder.addXYZAcceleration(acceleration.getX(), acceleration.getY(), acceleration.getZ());
 
@@ -344,23 +359,5 @@ public class CunninghamAttractionModel implements ForceModel {
     public SWF[] getSwitchingFunctions() {
         return new SWF[0];
     }
-
-    /** Equatorial radius of the Central Body. */
-    private double equatorialRadius;
-
-    /** First normalized potential tesseral coefficients array. */
-    private double[][] C;
-
-    /** Second normalized potential tesseral coefficients array. */
-    private double[][] S;
-
-    /** Degree of potential. */
-    private int degree;
-
-    /** Order of potential. */
-    private int order;
-
-    /** Rotating body. */
-    private Frame bodyFrame;
 
 }

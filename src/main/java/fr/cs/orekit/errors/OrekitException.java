@@ -21,8 +21,7 @@ import java.util.ResourceBundle;
 
  */
 
-public class OrekitException
-extends Exception {
+public class OrekitException extends Exception {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 8837701027854807120L;
@@ -32,41 +31,6 @@ extends Exception {
 
     static {
         resources = ResourceBundle.getBundle("META-INF/localization/ExceptionsMessages");
-    }
-
-    /** Translate a string.
-     * @param s string to translate
-     * @return translated string, or original string if no translation
-     * can be found)
-     */
-    public static String translate(String s) {
-        return translate(s, new String[0]);
-    }
-
-    /** Translate and format a message.
-     * @param specifier format specifier (to be translated)
-     * @param parts parts to insert in the format (no translation)
-     */
-    public static String translate(String specifier, Object[] parts) {
-        String translated;
-        try {
-            translated = resources.getString(specifier);
-        } catch (MissingResourceException mre) {
-            translated = specifier;
-        }
-        return new MessageFormat(translated).format(parts);
-    }
-
-    /** Throw an {@link java.lang.IllegalArgumentException} with
-     * localized message.
-     * @param specifier format specifier (to be translated)
-     * @param parts parts to insert in the format (no translation)
-     * @exception IllegalArgumentException always throws an exception
-     */
-    public static void throwIllegalArgumentException(String specifier,
-                                                     Object[] parts)
-        throws IllegalArgumentException {
-        throw new IllegalArgumentException(translate(specifier, parts));
     }
 
     /** Simple constructor.
@@ -95,6 +59,41 @@ extends Exception {
      */
     public OrekitException(String specifier, Object[] parts, Throwable cause) {
         super(translate(specifier, parts), cause);
+    }
+
+    /** Translate a string.
+     * @param s string to translate
+     * @return translated string, or original string if no translation
+     * can be found)
+     */
+    public static String translate(String s) {
+        return translate(s, new Object[0]);
+    }
+
+    /** Translate and format a message.
+     * @param specifier format specifier (to be translated)
+     * @param parts parts to insert in the format (no translation)
+     * @return translated and formatted message
+     */
+    public static String translate(String specifier, Object[] parts) {
+        String translated;
+        try {
+            translated = resources.getString(specifier);
+        } catch (MissingResourceException mre) {
+            translated = specifier;
+        }
+        return new MessageFormat(translated).format(parts);
+    }
+
+    /** Throw an {@link java.lang.IllegalArgumentException} with localized message.
+     * @param specifier format specifier (to be translated)
+     * @param parts parts to insert in the format (no translation)
+     * @exception IllegalArgumentException always throws an exception
+     */
+    public static void throwIllegalArgumentException(String specifier,
+                                                     Object[] parts)
+        throws IllegalArgumentException {
+        throw new IllegalArgumentException(translate(specifier, parts));
     }
 
 }

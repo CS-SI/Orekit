@@ -82,7 +82,8 @@ public class CircularParameters
      * @see #TRUE_LONGITUDE_ARGUMENT
      */
     public CircularParameters(double a, double ex, double ey, double i, double raan,
-                              double alpha, int type, Frame frame) {
+                              double alpha, int type, Frame frame)
+        throws IllegalArgumentException {
         super(frame);
         this.a    =  a;
         this.ex   = ex;
@@ -122,15 +123,15 @@ public class CircularParameters
         super(pvCoordinates, frame, mu);
 
         // compute semi-major axis
-        final double r  = pvCoordinates.getPosition().getNorm();
-        final double V2 = Vector3D.dotProduct(pvCoordinates.getVelocity(),
-                                              pvCoordinates.getVelocity());
+        final Vector3D pvP = pvCoordinates.getPosition();
+        final Vector3D pvV = pvCoordinates.getVelocity();
+        final double r  = pvP.getNorm();
+        final double V2 = Vector3D.dotProduct(pvV, pvV);
         final double rV2OnMu = r * V2 / mu;
         a = r / (2 - rV2OnMu);
 
         // compute inclination
-        final Vector3D momentum = Vector3D.crossProduct(pvCoordinates.getPosition(),
-                                                        pvCoordinates.getVelocity());
+        final Vector3D momentum = Vector3D.crossProduct(pvP, pvV);
         i = Vector3D.angle(momentum, Vector3D.plusK);
 
         // compute right ascension of ascending node
@@ -146,12 +147,11 @@ public class CircularParameters
         final double sinI    = Math.sin(i);
         final Vector3D rVec  = new Vector3D(cosRaan, Math.sin(raan), 0);
         final Vector3D sVec  = new Vector3D(-cosI * sinRaan, cosI * cosRaan, sinI);
-        final double x2      = Vector3D.dotProduct(pvCoordinates.getPosition(), rVec) / a;
-        final double y2      = Vector3D.dotProduct(pvCoordinates.getPosition(), sVec) / a;
+        final double x2      = Vector3D.dotProduct(pvP, rVec) / a;
+        final double y2      = Vector3D.dotProduct(pvP, sVec) / a;
 
         // compute eccentricity vector
-        final double eSE    = Vector3D.dotProduct(pvCoordinates.getPosition(),
-                                                  pvCoordinates.getVelocity()) / Math.sqrt(mu * a);
+        final double eSE    = Vector3D.dotProduct(pvP, pvV) / Math.sqrt(mu * a);
         final double eCE    = rV2OnMu - 1;
         final double e2     = eCE * eCE + eSE * eSE;
         final double f      = eCE - e2;

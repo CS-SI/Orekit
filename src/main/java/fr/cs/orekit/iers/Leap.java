@@ -1,11 +1,9 @@
 package fr.cs.orekit.iers;
 
-import fr.cs.orekit.time.UTCScale;
-
 /** UTC Time steps.
  * <p>This class is a simple container.</p>
  * @author Luc Maisonobe
- * @see UTCScale
+ * @see fr.cs.orekit.time.UTCScale
  */
 public class Leap {
 

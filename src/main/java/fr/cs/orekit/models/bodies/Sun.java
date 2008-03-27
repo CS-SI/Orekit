@@ -14,17 +14,29 @@ import fr.cs.orekit.time.AbsoluteDate;
 
 public class Sun extends ThirdBody {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 6780721457181916297L;
+
+    /** Reference date. */
+    private static final AbsoluteDate reference =
+        new AbsoluteDate(AbsoluteDate.FiftiesEpoch, 864000000.0);
+
+    /** Transform from Veis1950 to J2000. */
+    private final Transform transform;
+
     /** Simple constructor.
      */
     public Sun() {
         super(6.96e8, 1.32712440e20);
+        Transform t;
         try {
-            transform  =
+            t  =
                 Frame.getReferenceFrame(Frame.VEIS1950, reference).getTransformTo(Frame.getJ2000(), reference);
         } catch (OrekitException e) {
             // should not happen
-            transform = new Transform();
+            t = new Transform();
         }
+        transform = t;
     }
 
     /** Gets the position of the Sun in the selected Frame.
@@ -33,7 +45,7 @@ public class Sun extends ThirdBody {
      * @param date date
      * @param frame the frame where to define the position
      * @return position of the sun (m) in the J2000 Frame
-     * @throws OrekitException
+     * @throws OrekitException if a frame conversion cannot be computed
      */
     public Vector3D getPosition(AbsoluteDate date, Frame frame) throws OrekitException {
 
@@ -46,7 +58,7 @@ public class Sun extends ThirdBody {
         double e = Math.toRadians(23.44223 - 3.5626E-07 * t);
         double ce = Math.cos(e);
         double se = Math.sin(e);
-        double rot = 0.6119022e-6 * date.minus(AbsoluteDate.CNES1950Epoch) / 86400.0;
+        double rot = 0.6119022e-6 * date.minus(AbsoluteDate.FiftiesEpoch) / 86400.0;
         double cr = Math.cos(rot);
         double sr = Math.sin(rot);
 
@@ -83,12 +95,5 @@ public class Sun extends ThirdBody {
 
         return Frame.getJ2000().getTransformTo(frame, date).transformPosition(posInJ2000);
     }
-
-    /** Reference date. */
-    private static AbsoluteDate reference =
-        new AbsoluteDate(AbsoluteDate.CNES1950Epoch, 864000000.0);
-
-    /** Transform from Veis1950 to J2000. */
-    private Transform transform;
 
 }

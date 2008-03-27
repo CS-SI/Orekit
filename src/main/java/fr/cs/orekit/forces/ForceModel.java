@@ -29,7 +29,7 @@ public interface ForceModel {
      * @throws OrekitException if some specific error occurs
      */
     public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
-    throws OrekitException;
+        throws OrekitException;
 
     /** Get the switching functions internally used by the model itself.
      * @return array of switching functions or null if the model doesn't need

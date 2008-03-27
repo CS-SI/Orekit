@@ -1,6 +1,8 @@
 package fr.cs.orekit.orbits;
 
 import org.apache.commons.math.geometry.Vector3D;
+
+import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.utils.PVCoordinates;
 
@@ -29,8 +31,7 @@ import fr.cs.orekit.utils.PVCoordinates;
  * @author  G. Prat
  * @author  F.Maussion
  */
-public class KeplerianParameters
-extends OrbitalParameters {
+public class KeplerianParameters extends OrbitalParameters {
 
     /** Identifier for mean anomaly. */
     public static final int MEAN_ANOMALY = 0;
@@ -46,6 +47,27 @@ extends OrbitalParameters {
      */
     public static final double E_CIRC = 1.e-10;
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 8246107953352737072L;
+
+    /** Semi-major axis (m). */
+    private final double a;
+
+    /** Eccentricity. */
+    private final double e;
+
+    /** Inclination (rad). */
+    private final double i;
+
+    /** Perigee Argument (rad). */
+    private final double pa;
+
+    /** Right Ascension of Ascending Node (rad). */
+    private final double raan;
+
+    /** True anomaly (rad). */
+    private final double v;
+
     /** Creates a new instance
      * @param a  semi-major axis (m)
      * @param e eccentricity
@@ -56,10 +78,17 @@ extends OrbitalParameters {
      * @param type type of anomaly, must be one of {@link #MEAN_ANOMALY},
      * {@link #ECCENTRIC_ANOMALY} or  {@link #TRUE_ANOMALY}
      * @param frame the frame in which are defined the parameters
+     * @exception IllegalArgumentException if the longitude argument type is not
+     * one of {@link #MEAN_ANOMALY}, @link {@link #ECCENTRIC_ANOMALY}}
+     * or  {@link #TRUE_ANOMALY}
+     * @see #MEAN_ANOMALY
+     * @see #ECCENTRIC_ANOMALY
+     * @see #TRUE_ANOMALY
      */
     public KeplerianParameters(double a, double e, double i,
                                double pa, double raan,
-                               double anomaly, int type, Frame frame) {
+                               double anomaly, int type, Frame frame)
+        throws IllegalArgumentException {
         super(frame);
         this.a    =    a;
         this.e    =    e;
@@ -74,9 +103,19 @@ extends OrbitalParameters {
         case ECCENTRIC_ANOMALY :
             this.v = computeEccentricAnomaly(anomaly);
             break;
-        default :
+        case TRUE_ANOMALY :
             this.v = anomaly;
-        break;
+            break;
+        default :
+            this.v = Double.NaN;
+            OrekitException.throwIllegalArgumentException("angle type not supported, supported angles:" +
+                                                          " {0}, {1} and {2}",
+                                                          new Object[] {
+                                                              "MEAN_ANOMALY",
+                                                              "ECCENTRIC_ANOMALY",
+                                                              "TRUE_ANOMALY"
+                                                          });
+
         }
     }
 
@@ -89,25 +128,28 @@ extends OrbitalParameters {
         super(pvCoordinates, frame, mu);
 
         // compute semi-major axis
-        double r          = pvCoordinates.getPosition().getNorm();
-        double V2         = Vector3D.dotProduct(pvCoordinates.getVelocity(), pvCoordinates.getVelocity());
-        double rV2OnMu    = r * V2 / mu;
-        a                 = r / (2 - rV2OnMu);
+        final Vector3D pvP = pvCoordinates.getPosition();
+        final Vector3D pvV = pvCoordinates.getVelocity();
+        final double r = pvP.getNorm();
+        final double V2 = Vector3D.dotProduct(pvV, pvV);
+        final double rV2OnMu = r * V2 / mu;
+        a = r / (2 - rV2OnMu);
 
         // compute eccentricity
-        double muA        = mu * a;
-        double eSE        = Vector3D.dotProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity()) / Math.sqrt(muA);
-        double eCE        = rV2OnMu - 1;
-        e                 = Math.sqrt(eSE * eSE + eCE * eCE);
+        final double muA = mu * a;
+        final double eSE = Vector3D.dotProduct(pvP, pvV) / Math.sqrt(muA);
+        final double eCE = rV2OnMu - 1;
+        e = Math.sqrt(eSE * eSE + eCE * eCE);
 
         // compute inclination
-        Vector3D momentum = Vector3D.crossProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity());
-        double   m2       = Vector3D.dotProduct(momentum, momentum);
+        final Vector3D momentum =
+            Vector3D.crossProduct(pvP, pvV);
+        final double m2 = Vector3D.dotProduct(momentum, momentum);
         i = Vector3D.angle(momentum, Vector3D.plusK);
 
         // compute right ascension of ascending node
-        Vector3D node     = Vector3D.crossProduct(Vector3D.plusK, momentum);
-        double   n2       = Vector3D.dotProduct(node, node);
+        final Vector3D node = Vector3D.crossProduct(Vector3D.plusK, momentum);
+        final double n2 = Vector3D.dotProduct(node, node);
         // the following comparison with 0 IS REALLY numerically justified and stable
         raan = (n2 == 0) ? 0 : Math.atan2(node.getY(), node.getX());
 
@@ -115,17 +157,18 @@ extends OrbitalParameters {
         if (e < E_CIRC) {
             v = 0;
         } else {
-            double E = Math.atan2(eSE, eCE);
-            double k = 1 / (1 + Math.sqrt(m2 / muA));
+            final double E = Math.atan2(eSE, eCE);
+            final double k = 1 / (1 + Math.sqrt(m2 / muA));
             v = E + 2 * Math.atan(k * eSE / (1 - k *eCE));
         }
 
         // compute perigee argument
-        double cosRaan = Math.cos(raan);
-        double sinRaan = Math.sin(raan);
-        double px = cosRaan * pvCoordinates.getPosition().getX() + sinRaan * pvCoordinates.getPosition().getY();
-        double py = Math.cos(i) * (cosRaan * pvCoordinates.getPosition().getY() - sinRaan * pvCoordinates.getPosition().getX())
-        + Math.sin(i) * pvCoordinates.getPosition().getZ();
+        final double cosRaan = Math.cos(raan);
+        final double sinRaan = Math.sin(raan);
+        final double px = cosRaan * pvP.getX() +
+                          sinRaan * pvP.getY();
+        final double py = Math.cos(i) * (cosRaan * pvP.getY() - sinRaan * pvP.getX()) +
+                          Math.sin(i) * pvP.getZ();
         pa = Math.atan2(py, px) - v;
     }
 
@@ -189,7 +232,7 @@ extends OrbitalParameters {
      * @return eccentric anomaly (rad)
      */
     public double getEccentricAnomaly() {
-        double beta = e / (1 + Math.sqrt((1 - e) * (1 + e)));
+        final double beta = e / (1 + Math.sqrt((1 - e) * (1 + e)));
         return v - 2 * Math.atan(beta * Math.sin(v) / (1 + beta * Math.cos(v)));
     }
 
@@ -198,17 +241,15 @@ extends OrbitalParameters {
      * @return v the true anomaly
      */
     private double computeEccentricAnomaly (double E) {
-
-        double beta = e / (1 + Math.sqrt((1 - e) * (1 + e)));
+        final double beta = e / (1 + Math.sqrt((1 - e) * (1 + e)));
         return E + 2 * Math.atan(beta * Math.sin(E) / (1 - beta * Math.cos(E)));
-
     }
 
     /** Get the mean anomaly.
      * @return mean anomaly (rad)
      */
     public double getMeanAnomaly() {
-        double E = getEccentricAnomaly();
+        final double E = getEccentricAnomaly();
         return E - e * Math.sin(E);
     }
 
@@ -224,11 +265,11 @@ extends OrbitalParameters {
         double EmM   = 0.0;
         int iter = 0;
         do {
-            double f2 = e * Math.sin(E);
-            double f1 = 1.0 - e * Math.cos(E);
-            double f0 = EmM - f2;
+            final double f2 = e * Math.sin(E);
+            final double f1 = 1.0 - e * Math.cos(E);
+            final double f0 = EmM - f2;
 
-            double f12 = 2 * f1;
+            final double f12 = 2 * f1;
             shift = f0 * f12 / (f1 * f12 - f0 * f2);
 
             EmM -= shift;
@@ -293,42 +334,14 @@ extends OrbitalParameters {
      * @return a string representation of this object
      */
     public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("keplerian parameters: ");
-        sb.append('{');
-        sb.append("a: ");
-        sb.append(a);
-        sb.append("; e: ");
-        sb.append(e);
-        sb.append("; i: ");
-        sb.append(Math.toDegrees(i));
-        sb.append("; pa: ");
-        sb.append(Math.toDegrees(pa));
-        sb.append("; raan: ");
-        sb.append(Math.toDegrees(raan));
-        sb.append("; lv: ");
-        sb.append(Math.toDegrees(v));
-        sb.append(";}");
-        return sb.toString();
+        return new StringBuffer().append("keplerian parameters: ").append('{').
+                                  append("a: ").append(a).
+                                  append("; e: ").append(e).
+                                  append("; i: ").append(Math.toDegrees(i)).
+                                  append("; pa: ").append(Math.toDegrees(pa)).
+                                  append("; raan: ").append(Math.toDegrees(raan)).
+                                  append("; lv: ").append(Math.toDegrees(v)).
+                                  append(";}").toString();
     }
 
-    /** Semi-major axis (m). */
-    private final double a;
-
-    /** Eccentricity. */
-    private final double e;
-
-    /** Inclination (rad). */
-    private final double i;
-
-    /** Perigee Argument (rad). */
-    private final double pa;
-
-    /** Right Ascension of Ascending Node (rad). */
-    private final double raan;
-
-    /** True anomaly (rad). */
-    private final double v;
-
-    private static final long serialVersionUID = -2635247116374550475L;
 }

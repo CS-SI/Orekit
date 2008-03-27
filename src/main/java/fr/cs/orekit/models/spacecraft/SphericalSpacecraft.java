@@ -12,7 +12,19 @@ import org.apache.commons.math.geometry.Vector3D;
  * @author F. Maussion
  */
 public class SphericalSpacecraft
-implements SolarRadiationPressureSpacecraft, AtmosphereDragSpacecraft {
+    implements SolarRadiationPressureSpacecraft, AtmosphereDragSpacecraft {
+
+    /** Surface (m<sup>2</sup>). */
+    private double surface;
+
+    /** Drag coefficient. */
+    private double dragCoeff;
+
+    /** Absorption coefficient. */
+    private double absorptionCoeff;
+
+    /** Specular reflection coefficient. */
+    private double reflectionCoeff;
 
     /** Simple constructor.
      * @param surface Surface (m<sup>2</sup>)
@@ -89,17 +101,5 @@ implements SolarRadiationPressureSpacecraft, AtmosphereDragSpacecraft {
     public void setReflectionCoef(double reflectionCoeff) {
         this.reflectionCoeff = reflectionCoeff;
     }
-
-    /** Surface (m<sup>2</sup>). */
-    private double surface;
-
-    /** Drag coefficient. */
-    private double dragCoeff;
-
-    /** Absorption coefficient. */
-    private double absorptionCoeff;
-
-    /** Specular reflection coefficient. */
-    private double reflectionCoeff;
 
 }
