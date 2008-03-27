@@ -19,6 +19,12 @@ import fr.cs.orekit.errors.OrekitException;
  */
 public abstract class IERSFileVisitor {
 
+    /** File name pattern. */
+    private final Pattern supportedFilesPattern;
+
+    /** Current file. */
+    protected File file;
+
     /** Simple constructor.
      * @param supportedFilesPattern file name pattern for supported files
      */
@@ -67,12 +73,6 @@ public abstract class IERSFileVisitor {
      * or if some loader specific error occurs
      */
     protected abstract void visit(BufferedReader reader)
-    throws IOException, ParseException, OrekitException;
-
-    /** File name pattern. */
-    private final Pattern supportedFilesPattern;
-
-    /** Current file. */
-    protected File file;
+        throws IOException, ParseException, OrekitException;
 
 }

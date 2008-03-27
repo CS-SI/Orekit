@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,6 +25,22 @@ import fr.cs.orekit.errors.OrekitException;
  */
 public class UTCTAIHistoryFilesLoader extends IERSFileVisitor {
 
+    /** Already read file. */
+    private File readFile;
+
+    /** Regular data lines pattern. */
+    private Pattern regularPattern;
+
+    /** Last line pattern pattern. */
+    private Pattern lastPattern;
+
+    /** Parsing format for reconstructed dates. */
+    private SimpleDateFormat format;
+
+    /** Time leaps. */
+    private List leaps;
+
+    /** Build a loader for UTC-TAI history file. */
     public UTCTAIHistoryFilesLoader() {
 
         super("^UTC-TAI\\.history(?:\\.gz)?$");
@@ -37,17 +54,17 @@ public class UTCTAIHistoryFilesLoader extends IERSFileVisitor {
         //  ...
         // 2006  Jan.  1.-                  33s
         // we ignore the non-constant and non integer offsets before 1972-01-01
-        String yearField   = "\\p{Blank}*((?:\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit})|(?:    ))";
-        String monthField  = "\\p{Blank}+(\\p{Upper}\\p{Lower}+)\\.?";
-        String dayField    = "\\p{Blank}+([ 0-9]+)\\.?";
-        String offsetField = "\\p{Blank}+(\\p{Digit}+)s";
-        regularPattern = Pattern.compile("^" + yearField + monthField + dayField
-                                         + "\\p{Blank}*-\\p{Blank}+"
-                                         + yearField + monthField + dayField
-                                         + offsetField + "\\p{Blank}*$");
-        lastPattern    = Pattern.compile("^" + yearField + monthField + dayField
-                                         + "\\p{Blank}*-\\p{Blank}+"
-                                         + offsetField + "\\p{Blank}*$");
+        final String yearField   = "\\p{Blank}*((?:\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit})|(?:    ))";
+        final String monthField  = "\\p{Blank}+(\\p{Upper}\\p{Lower}+)\\.?";
+        final String dayField    = "\\p{Blank}+([ 0-9]+)\\.?";
+        final String offsetField = "\\p{Blank}+(\\p{Digit}+)s";
+        final String separator   = "\\p{Blank}*-\\p{Blank}+";
+        final String finalBlanks = "\\p{Blank}*$";
+        regularPattern = Pattern.compile("^" + yearField + monthField + dayField +
+                                         separator + yearField + monthField + dayField +
+                                         offsetField + finalBlanks);
+        lastPattern    = Pattern.compile("^" + yearField + monthField + dayField +
+                                         separator + offsetField + finalBlanks);
 
         format = new SimpleDateFormat("yyyy MMM dd Z", Locale.US);
 
@@ -60,17 +77,17 @@ public class UTCTAIHistoryFilesLoader extends IERSFileVisitor {
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
      */
-    public Leap[] getTimeSteps()
-    throws OrekitException {
+    public Leap[] getTimeSteps() throws OrekitException {
 
         leaps = new ArrayList();
         new IERSDirectoryCrawler().crawl(this);
-        Leap[] timeSteps = (Leap[]) leaps.toArray(new Leap[leaps.size()]);
+        final Leap[] timeSteps = (Leap[]) leaps.toArray(new Leap[leaps.size()]);
 
         // put the array in reversed chronological order
         // to optimize access to the more recent step (at index 0)
-        for (int i = 0, j = timeSteps.length - 1; i < j; ++i, --j) {
-            Leap l   = timeSteps[i];
+        int i = 0;
+        for (int j = timeSteps.length - 1; i < j; ++i, --j) {
+            final Leap l = timeSteps[i];
             timeSteps[i] = timeSteps[j];
             timeSteps[j] = l;
         }
@@ -79,22 +96,25 @@ public class UTCTAIHistoryFilesLoader extends IERSFileVisitor {
 
     }
 
+    /** {@inheritDoc} */
     protected void visit(BufferedReader reader)
-    throws OrekitException, IOException, ParseException {
+        throws OrekitException, IOException, ParseException {
 
         if (readFile != null) {
-            throw new OrekitException("several IERS UTC-TAI history files found: {0} and {1}",
+            throw new OrekitException("several IERS UTC-TAI history files found: " +
+                                      "{0} and {1}",
                                       new Object[] {
-                    readFile.getAbsolutePath(),
-                    file.getAbsolutePath()
-            });
+                                          readFile.getAbsolutePath(),
+                                          file.getAbsolutePath()
+                                      });
         }
 
         // read all file, ignoring not recognized lines
+        final String emptyYear = "    ";
         int lineNumber = 0;
         Leap last = null;
         int lastLine = 0;
-        String previousYear = "    ";
+        String previousYear = emptyYear;
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
             ++lineNumber;
 
@@ -102,12 +122,11 @@ public class UTCTAIHistoryFilesLoader extends IERSFileVisitor {
             Matcher matcher = regularPattern.matcher(line);
             if (matcher.matches()) {
                 if (lastLine > 0) {
-                    throw new OrekitException("unexpected data line {0} in file {1}"
-                                              + "(line {2} should not be followed by data)",
+                    throw new OrekitException("unexpected data after line {0} in file {1}: {2}",
                                               new Object[] {
-                                                      new Integer(lineNumber),
-                                                      file.getAbsolutePath(),
-                                                      new Integer(lastLine)
+                                                  new Integer(lastLine),
+                                                  file.getAbsolutePath(),
+                                                  line
                                               });
                 }
             } else {
@@ -123,28 +142,28 @@ public class UTCTAIHistoryFilesLoader extends IERSFileVisitor {
                     // build an entry from the extracted fields
 
                     String year = matcher.group(1);
-                    if ("    ".equals(year)) {
+                    if (emptyYear.equals(year)) {
                         year = previousYear;
                     }
                     if (lineNumber != lastLine) {
-                        if ("    ".equals(matcher.group(4))) {
+                        if (emptyYear.equals(matcher.group(4))) {
                             previousYear = year;
                         } else {
                             previousYear = matcher.group(4);
                         }
                     }
-                    String sDate =
+                    final String sDate =
                         year + ' ' + matcher.group(2) + ' ' + matcher.group(3) + " +0000";
-                    double utcTime = format.parse(sDate).getTime() * 1.0e-3;
+                    final double utcTime = format.parse(sDate).getTime() * 1.0e-3;
                     if ((last != null) && (utcTime < last.utcTime)) {
-                        throw new OrekitException("non-increasing dates in file {0}, line {1}",
+                        throw new OrekitException("non-chronological dates in file {0}, line {1}",
                                                   new Object[] {
-                                file.getAbsolutePath(),
-                                new Integer(lineNumber)
-                        });
+                                                      file.getAbsolutePath(),
+                                                      new Integer(lineNumber)
+                                                  });
                     }
 
-                    double offset = -Double.parseDouble(matcher.group(matcher.groupCount()));
+                    final double offset = -Double.parseDouble(matcher.group(matcher.groupCount()));
                     last = new Leap(utcTime,
                                     offset - ((last == null) ? 0 : last.offsetAfter),
                                     offset);
@@ -153,9 +172,9 @@ public class UTCTAIHistoryFilesLoader extends IERSFileVisitor {
                 } catch (NumberFormatException nfe) {
                     throw new OrekitException("unable to parse line {0} in IERS UTC-TAI history file {1}",
                                               new Object[] {
-                            new Integer(lineNumber),
-                            file.getAbsolutePath()
-                    });
+                                                  new Integer(lineNumber),
+                                                  file.getAbsolutePath()
+                                              });
                 }
             }
         }
@@ -168,20 +187,5 @@ public class UTCTAIHistoryFilesLoader extends IERSFileVisitor {
         readFile = file;
 
     }
-
-    /** Already read file. */
-    private File readFile;
-
-    /** Regular data lines pattern. */
-    private Pattern regularPattern;
-
-    /** Last line pattern pattern. */
-    private Pattern lastPattern;
-
-    /** Parsing format for reconstructed dates. */
-    private SimpleDateFormat format;
-
-    /** Time leaps. */
-    private ArrayList leaps;
 
 }

@@ -5,18 +5,27 @@ import java.io.Serializable;
 import org.apache.commons.math.geometry.Vector3D;
 
 /** Simple container for Position/Velocity pairs.
- *
+ * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Fabien Maussion
  * @author Luc Maisonobe
  */
 public class PVCoordinates implements Serializable {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 8581359579182947710L;
+
+    /** The position. */
+    private final Vector3D position;
+
+    /** The velocity. */
+    private final Vector3D velocity;
+
     /** Simple constructor.
      * <p> Sets the Coordinates to default : (0 0 0) (0 0 0).
      */
     public PVCoordinates() {
-        position = new Vector3D();
-        velocity = new Vector3D();
+        position = Vector3D.zero;
+        velocity = Vector3D.zero;
     }
 
     /** Builds a PVCoordinates couple.
@@ -24,10 +33,8 @@ public class PVCoordinates implements Serializable {
      * @param velocity the velocity vector (m/s)
      */
     public PVCoordinates(Vector3D position, Vector3D velocity) {
-
         this.position = position;
         this.velocity = velocity;
-
     }
 
     /** Multiplicative constructor
@@ -104,29 +111,13 @@ public class PVCoordinates implements Serializable {
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append('{');
-        sb.append("X: ");
-        sb.append(position.getX());
-        sb.append("; Y: ");
-        sb.append(position.getY());
-        sb.append("; Z: ");
-        sb.append(position.getZ());
-        sb.append("; XDot: ");
-        sb.append(velocity.getX());
-        sb.append("; YDot: ");
-        sb.append(velocity.getY());
-        sb.append("; ZDot: ");
-        sb.append(velocity.getZ());
-        sb.append(";}");
-        return sb.toString();
+        return new StringBuffer().append('{').append("P(").
+                                  append(position.getX()).append(", ").
+                                  append(position.getY()).append(", ").
+                                  append(position.getZ()).append("), V(").
+                                  append(velocity.getX()).append(", ").
+                                  append(velocity.getY()).append(", ").
+                                  append(velocity.getZ()).append(")}").toString();
     }
 
-    /** The position. */
-    private final Vector3D position;
-
-    /** The velocity. */
-    private final Vector3D velocity;
-
-    private static final long serialVersionUID = -8311737465010015024L;
 }

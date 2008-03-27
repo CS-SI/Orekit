@@ -24,6 +24,12 @@ import fr.cs.orekit.propagation.TimeDerivativesEquations;
 
 public class AtmosphericDrag implements ForceModel {
 
+    /** Atmospheric model */
+    private final Atmosphere atmosphere;
+
+    /** Spacecraft. */
+    private final AtmosphereDragSpacecraft spacecraft;
+
     /** Simple constructor.
      * @param atmosphere atmospheric model
      * @param spacecraft the object physical and geometrical information
@@ -43,30 +49,27 @@ public class AtmosphericDrag implements ForceModel {
     throws OrekitException {
         double rho = atmosphere.getDensity(s.getDate(), s.getPVCoordinates(mu).getPosition(), s.getFrame());
 
-        Vector3D vAtm;
-        vAtm = atmosphere.getVelocity(s.getDate(), s.getPVCoordinates(mu).getPosition(), s.getFrame());
+        final Vector3D vAtm =
+            atmosphere.getVelocity(s.getDate(), s.getPVCoordinates(mu).getPosition(), s.getFrame());
 
-        Vector3D incidence = vAtm.subtract(s.getPVCoordinates(mu).getVelocity());
-        double v2 = Vector3D.dotProduct(incidence, incidence);
+        final Vector3D incidence = vAtm.subtract(s.getPVCoordinates(mu).getVelocity());
+        final double v2 = Vector3D.dotProduct(incidence, incidence);
 
-        Vector3D inSpacecraft = s.getAttitudeKinematics().getAttitude().applyTo(incidence.normalize());
-        double k = rho * v2 * spacecraft.getSurface(inSpacecraft) / (2 * s.getMass());
-        Vector3D cD = spacecraft.getDragCoef(inSpacecraft);
-        s.getAttitudeKinematics().getAttitude().applyInverseTo(cD);
+        final Vector3D inSpacecraft =
+            s.getAttitudeKinematics().getAttitude().applyTo(incidence.normalize());
+        final double k = rho * v2 * spacecraft.getSurface(inSpacecraft) / (2 * s.getMass());
+        final Vector3D cD = spacecraft.getDragCoef(inSpacecraft);
 
         // Additition of calculated acceleration to adder
         adder.addXYZAcceleration(k * cD.getX(), k * cD.getY(), k * cD.getZ());
 
     }
 
+    /** There are no SwitchingFunctions for this model.
+     * @return an empty array
+     */
     public SWF[] getSwitchingFunctions() {
         return new SWF[0];
     }
-
-    /** Atmospheric model */
-    private Atmosphere atmosphere;
-
-    /** Spacecraft. */
-    private AtmosphereDragSpacecraft spacecraft;
 
 }

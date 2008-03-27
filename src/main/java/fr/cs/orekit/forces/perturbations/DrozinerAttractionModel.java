@@ -258,6 +258,9 @@ public class DrozinerAttractionModel implements ForceModel {
 
     }
 
+    /** There are no SwitchingFunctions for this model.
+     * @return an empty array
+     */
     public SWF[] getSwitchingFunctions() {
         return new SWF[0];
     }
