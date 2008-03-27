@@ -13,8 +13,14 @@ import org.apache.commons.math.geometry.Vector3D;
 
 public abstract class ThirdBody implements Serializable {
 
+    /** Reference radius. */
+    protected double radius;
+
+    /** Attraction coefficient. */
+    protected double mu;
+
     /** Simple constructor.
-     * @param radius equatorial radius
+     * @param radius reference radius
      * @param mu attraction coefficient
      */
     protected ThirdBody(double radius, double mu) {
@@ -26,12 +32,12 @@ public abstract class ThirdBody implements Serializable {
      * @param date current date
      * @param frame the frame where to define the position
      * @return position of the body (m)
-     * @throws OrekitException
+     * @throws OrekitException if position cannot be computed in given frame
      */
     public abstract Vector3D getPosition(AbsoluteDate date, Frame frame) throws OrekitException;
 
-    /** Get the equatorial radius of the body.
-     * @return equatorial radius of the body (m)
+    /** Get the reference radius of the body.
+     * @return reference radius of the body (m)
      */
     public double getRadius() {
         return radius;
@@ -43,11 +49,5 @@ public abstract class ThirdBody implements Serializable {
     public double getMu() {
         return mu;
     }
-
-    /** Equatorial radius. */
-    protected double radius;
-
-    /** Attraction coefficient. */
-    protected double mu;
 
 }

@@ -20,6 +20,25 @@ import fr.cs.orekit.frames.PoleCorrection;
  */
 public class BulletinBFilesLoader extends IERSFileVisitor {
 
+    /** Conversion factor. */
+    private static final double arcSecondsToRadians = Math.toRadians(1.0 / 3600);
+
+    /** Section header pattern. */
+    private final Pattern sectionHeaderPattern;
+
+    /** Patterns in section 1. */
+    private final Pattern section1DataPattern;
+    private final Pattern finalValuesStartPattern;
+    private final Pattern finalValuesEndPattern;
+
+    /** Data line pattern in section 2. */
+    private final Pattern section2DataPattern;
+
+    /** Earth Orientation Parameters entries. */
+    private TreeSet eop;
+
+    /** Create a loader for IERS bulletin B files.
+     */
     public BulletinBFilesLoader() {
 
         super("^bulletinb_IAU2000-(\\d\\d\\d)\\.txt(?:\\.gz)?$");
@@ -51,20 +70,21 @@ public class BulletinBFilesLoader extends IERSFileVisitor {
         // in section 2:
         // FEB   3   53769  0.05025  0.38417  0.321173 -1.218   1.507   0.06  -0.31
         // FEB   4   53770  0.05015  0.38454  0.319753 -1.748   1.275   0.03  -0.35
-        String monthField       = "\\p{Blank}*\\p{Upper}\\p{Upper}\\p{Upper}";
-        String dayField         = "\\p{Blank}+[ 0-9]\\p{Digit}";
-        String mjdField         = "\\p{Blank}+(\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit})";
-        String storedRealField  = "\\p{Blank}+(-?\\p{Digit}+\\.(?:\\p{Digit})+)";
-        String ignoredRealField = "\\p{Blank}+-?\\p{Digit}+\\.(?:\\p{Digit})+";
-        section1DataPattern = Pattern.compile("^" + monthField + dayField + mjdField
-                                              + ignoredRealField + ignoredRealField + ignoredRealField
-                                              + ignoredRealField + ignoredRealField + ignoredRealField
-                                              + "\\p{Blank}*$");
-        section2DataPattern = Pattern.compile("^" + monthField + dayField + mjdField
-                                              + storedRealField  + storedRealField  + storedRealField
-                                              + ignoredRealField + ignoredRealField
-                                              + ignoredRealField + ignoredRealField
-                                              + "\\p{Blank}*$");
+        final String monthField       = "\\p{Blank}*\\p{Upper}\\p{Upper}\\p{Upper}";
+        final String dayField         = "\\p{Blank}+[ 0-9]\\p{Digit}";
+        final String mjdField         = "\\p{Blank}+(\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit})";
+        final String storedRealField  = "\\p{Blank}+(-?\\p{Digit}+\\.(?:\\p{Digit})+)";
+        final String ignoredRealField = "\\p{Blank}+-?\\p{Digit}+\\.(?:\\p{Digit})+";
+        final String finalBlanks      = "\\p{Blank}*$";
+        section1DataPattern = Pattern.compile("^" + monthField + dayField + mjdField +
+                                              ignoredRealField + ignoredRealField + ignoredRealField +
+                                              ignoredRealField + ignoredRealField + ignoredRealField +
+                                              finalBlanks);
+        section2DataPattern = Pattern.compile("^" + monthField + dayField + mjdField +
+                                              storedRealField  + storedRealField  + storedRealField +
+                                              ignoredRealField + ignoredRealField +
+                                              ignoredRealField + ignoredRealField +
+                                              finalBlanks);
 
     }
 
@@ -76,14 +96,13 @@ public class BulletinBFilesLoader extends IERSFileVisitor {
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
      */
-    public void loadEOP(TreeSet eop)
-    throws OrekitException {
+    public void loadEOP(TreeSet eop) throws OrekitException {
         this.eop = eop;
         new IERSDirectoryCrawler().crawl(this);
     }
 
-    protected void visit(BufferedReader reader)
-    throws OrekitException, IOException {
+    /** {@inheritDoc} */
+    protected void visit(BufferedReader reader) throws OrekitException, IOException {
 
         // Extract mjd bounds from section 1
         int mjdMin = -1;
@@ -98,7 +117,7 @@ public class BulletinBFilesLoader extends IERSFileVisitor {
                 matcher = section1DataPattern.matcher(line);
                 if (matcher.matches()) {
                     // this is a data line, build an entry from the extracted fields
-                    int mjd = Integer.parseInt(matcher.group(1));
+                    final int mjd = Integer.parseInt(matcher.group(1));
                     if (mjdMin < 0) {
                         mjdMin = mjd;
                     } else {
@@ -125,10 +144,10 @@ public class BulletinBFilesLoader extends IERSFileVisitor {
                 matcher = section2DataPattern.matcher(line);
                 if (matcher.matches()) {
                     // this is a data line, build an entry from the extracted fields
-                    int    date = Integer.parseInt(matcher.group(1));
-                    double x    = Double.parseDouble(matcher.group(2)) * arcSecondsToRadians;
-                    double y    = Double.parseDouble(matcher.group(3)) * arcSecondsToRadians;
-                    double dtu1 = Double.parseDouble(matcher.group(4));
+                    final int    date = Integer.parseInt(matcher.group(1));
+                    final double x    = Double.parseDouble(matcher.group(2)) * arcSecondsToRadians;
+                    final double y    = Double.parseDouble(matcher.group(3)) * arcSecondsToRadians;
+                    final double dtu1 = Double.parseDouble(matcher.group(4));
                     if (date >= mjdMin) {
                         eop.add(new EarthOrientationParameters(date, dtu1, new PoleCorrection(x, y)));
                         if (date >= mjdMax) {
@@ -141,22 +160,5 @@ public class BulletinBFilesLoader extends IERSFileVisitor {
         }
 
     }
-
-    /** Section header pattern. */
-    private Pattern sectionHeaderPattern;
-
-    /** Patterns in section 1. */
-    private Pattern section1DataPattern;
-    private Pattern finalValuesStartPattern;
-    private Pattern finalValuesEndPattern;
-
-    /** Data line pattern in section 2. */
-    private Pattern section2DataPattern;
-
-    /** Conversion factor. */
-    private double arcSecondsToRadians;
-
-    /** Earth Orientation Parameters entries. */
-    private TreeSet eop;
 
 }

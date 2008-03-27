@@ -110,13 +110,17 @@ public class PVCoordinates implements Serializable {
         return velocity;
     }
 
+    /** Return a string representation of this position/velocity pair.
+     * @return string representation of this position/velocity pair
+     */
     public String toString() {
+        final String comma = ", ";
         return new StringBuffer().append('{').append("P(").
-                                  append(position.getX()).append(", ").
-                                  append(position.getY()).append(", ").
+                                  append(position.getX()).append(comma).
+                                  append(position.getY()).append(comma).
                                   append(position.getZ()).append("), V(").
-                                  append(velocity.getX()).append(", ").
-                                  append(velocity.getY()).append(", ").
+                                  append(velocity.getX()).append(comma).
+                                  append(velocity.getY()).append(comma).
                                   append(velocity.getZ()).append(")}").toString();
     }
 

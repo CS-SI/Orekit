@@ -27,19 +27,21 @@ import fr.cs.orekit.errors.OrekitException;
  */
 public class IERSDirectoryCrawler {
 
-    /** Private constructor for the singleton.
+    /** IERS root hierarchy root. */
+    private File root;
+
+    /** Build an IERS files crawler.
      * @exception OrekitException if some data is missing or can't be read
      */
-    public IERSDirectoryCrawler()
-    throws OrekitException {
+    public IERSDirectoryCrawler() throws OrekitException {
 
         // check the root tree
-        String directoryName = System.getProperty("orekit.iers.directory");
+        final String directoryName = System.getProperty("orekit.iers.directory");
         if ((directoryName != null) && ! "".equals(directoryName)) {
 
             // try to find the root directory either in classpath or in filesystem
             // (classpath having higher priority)
-            URL url = getClass().getClassLoader().getResource(directoryName);
+            final URL url = getClass().getClassLoader().getResource(directoryName);
             root = new File((url != null) ? url.getPath() : directoryName);
 
             // safety checks
@@ -61,8 +63,7 @@ public class IERSDirectoryCrawler {
      * @exception OrekitException if some data is missing, duplicated
      * or can't be read
      */
-    public void crawl(IERSFileVisitor visitor)
-    throws OrekitException {
+    public void crawl(IERSFileVisitor visitor) throws OrekitException {
         if (root != null) {
             crawl(visitor, root);
         }
@@ -74,11 +75,10 @@ public class IERSDirectoryCrawler {
      * @exception OrekitException if some data is missing, duplicated
      * or can't be read
      */
-    private void crawl(IERSFileVisitor visitor, File directory)
-    throws OrekitException {
+    private void crawl(IERSFileVisitor visitor, File directory) throws OrekitException {
 
         // search in current directory
-        File[] list = directory.listFiles();
+        final File[] list = directory.listFiles();
         for (int i = 0; i < list.length; ++i) {
             if (list[i].isDirectory()) {
 
@@ -94,8 +94,5 @@ public class IERSDirectoryCrawler {
         }
 
     }
-
-    /** IERS root hierarchy root. */
-    private File root;
 
 }

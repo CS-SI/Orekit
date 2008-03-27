@@ -5,6 +5,47 @@ package fr.cs.orekit.frames.series;
  */
 class PlanetaryTerm extends SeriesTerm {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = -666953066880447449L;
+
+    /** Coefficient for mean Mercury longitude. */
+    private final int cMe;
+
+    /** Coefficient for mean Venus longitude. */
+    private final int cVe;
+
+    /** Coefficient for mean Earth longitude. */
+    private final int cE;
+
+    /** Coefficient for mean Mars longitude. */
+    private final int cMa;
+
+    /** Coefficient for mean Jupiter longitude. */
+    private final int cJu;
+
+    /** Coefficient for mean Saturn longitude. */
+    private final int cSa;
+
+    /** Coefficient for mean Uranus longitude. */
+    private final int cUr;
+
+    /** Coefficient for mean Neptune longitude. */
+    private final int cNe;
+
+    /** Coefficient for general accumulated precession in longitude. */
+    private final int cPa;
+
+    /** Build a planetary term for nutation series.
+     * @param cMe coefficient for mean Mercury longitude
+     * @param cVe coefficient for mean Venus longitude
+     * @param cE coefficient for mean Earth longitude
+     * @param cMa coefficient for mean Mars longitude
+     * @param cJu coefficient for mean Jupiter longitude
+     * @param cSa coefficient for mean Saturn longitude
+     * @param cUr coefficient for mean Uranus longitude
+     * @param cNe coefficient for mean Neptune longitude
+     * @param cPa coefficient for general accumulated precession in longitude
+      */
     public PlanetaryTerm(double sinCoeff, double cosCoeff,
                          int cMe, int cVe, int cE, int cMa, int cJu,
                          int cSa, int cUr, int cNe, int cPa) {
@@ -21,22 +62,10 @@ class PlanetaryTerm extends SeriesTerm {
     }
 
     protected double argument(BodiesElements elements) {
-        return cMe * elements.lMe + cVe * elements.lVe + cE  * elements.lE
-        + cMa * elements.lMa + cJu * elements.lJu
-        + cSa * elements.lSa + cUr * elements.lUr
-        + cNe * elements.lNe + cPa * elements.pa;
+        return cMe * elements.lMe + cVe * elements.lVe + cE  * elements.lE +
+               cMa * elements.lMa + cJu * elements.lJu +
+               cSa * elements.lSa + cUr * elements.lUr +
+               cNe * elements.lNe + cPa * elements.pa;
     }
-
-    private final int cMe;
-    private final int cVe;
-    private final int cE;
-    private final int cMa;
-    private final int cJu;
-    private final int cSa;
-    private final int cUr;
-    private final int cNe;
-    private final int cPa;
-
-    private static final long serialVersionUID = -4604270587132683569L;
 
 }

@@ -53,7 +53,7 @@ public class ChunkedTime {
                                                               new Integer(minute),
                                                               new Double(second)
                                                           });
-         }
+        }
 
         this.hour = hour;
         this.minute = minute;
