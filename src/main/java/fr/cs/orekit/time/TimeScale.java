@@ -10,6 +10,9 @@ package fr.cs.orekit.time;
  */
 public abstract class TimeScale {
 
+    /** Name of the time scale. */
+    private final String name;
+
     /** Simple constructor.
      * @param name name of the time scale
      */
@@ -39,8 +42,5 @@ public abstract class TimeScale {
     public String toString() {
         return name;
     }
-
-    /** Name of the time scale. */
-    private final String name;
 
 }

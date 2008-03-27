@@ -20,6 +20,17 @@ import fr.cs.orekit.frames.PoleCorrection;
  */
 public class EOPC04FilesLoader extends IERSFileVisitor {
 
+    /** Conversion factor. */
+    private static final double arcSecondsToRadians = 2 * Math.PI / 1296000;
+
+    /** Data line pattern. */
+    private final Pattern dataPattern;
+
+    /** Earth Orientation Parameters entries. */
+    private TreeSet eop;
+
+    /** Build a loader for IERS EOPC 04 files.
+     */
     public EOPC04FilesLoader() {
 
         super("^eopc04_IAU2000\\.(\\d\\d)(?:\\.gz)?$");
@@ -29,19 +40,17 @@ public class EOPC04FilesLoader extends IERSFileVisitor {
         //   JAN   2  52276-0.177500 0.297468-0.1166973   0.0009382    0.00030  0.00043
         // the corresponding fortran format is:
         //  2X,A4,I3,2X,I5,2F9.6,F10.7,2X,F10.7,2X,2F9.5
-        String yearField  = "\\p{Upper}\\p{Upper}\\p{Upper}\\p{Blank}";
-        String dayField   = "\\p{Blank}[ 0-9]\\p{Digit}";
-        String mjdField   = "(\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit})";
-        String poleField  = "(.........)";
-        String dtU1Field  = "(..........)";
-        String lodField   = "..........";
-        String deltaField = ".........";
-        dataPattern = Pattern.compile("^  " + yearField + dayField + "  "
-                                      + mjdField + poleField + poleField
-                                      + dtU1Field + "  " + lodField
-                                      + "  " + deltaField + deltaField + "\\p{Blank}*$");
-
-        arcSecondsToRadians = 2 * Math.PI / 1296000;
+        final String yearField  = "\\p{Upper}\\p{Upper}\\p{Upper}\\p{Blank}";
+        final String dayField   = "\\p{Blank}[ 0-9]\\p{Digit}";
+        final String mjdField   = "(\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit})";
+        final String poleField  = "(.........)";
+        final String dtU1Field  = "(..........)";
+        final String lodField   = "..........";
+        final String deltaField = ".........";
+        dataPattern = Pattern.compile("^  " + yearField + dayField + "  " +
+                                      mjdField + poleField + poleField +
+                                      dtU1Field + "  " + lodField +
+                                      "  " + deltaField + deltaField + "\\p{Blank}*$");
 
     }
 
@@ -53,14 +62,13 @@ public class EOPC04FilesLoader extends IERSFileVisitor {
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
      */
-    public void loadEOP(TreeSet eop)
-    throws OrekitException {
+    public void loadEOP(TreeSet eop) throws OrekitException {
         this.eop = eop;
         new IERSDirectoryCrawler().crawl(this);
     }
 
-    protected void visit(BufferedReader reader)
-    throws IOException, OrekitException {
+    /** {@inheritDoc} */
+    protected void visit(BufferedReader reader) throws IOException, OrekitException {
 
         // read all file, ignoring header
         int lineNumber = 0;
@@ -68,15 +76,15 @@ public class EOPC04FilesLoader extends IERSFileVisitor {
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
             ++lineNumber;
             boolean parsed = false;
-            Matcher matcher = dataPattern.matcher(line);
+            final Matcher matcher = dataPattern.matcher(line);
             if (matcher.matches()) {
                 inHeader = false;
                 try {
                     // this is a data line, build an entry from the extracted fields
-                    int    date = Integer.parseInt(matcher.group(1));
-                    double x    = Double.parseDouble(matcher.group(2)) * arcSecondsToRadians;
-                    double y    = Double.parseDouble(matcher.group(3)) * arcSecondsToRadians;
-                    double dtu1 = Double.parseDouble(matcher.group(4));
+                    final int    date = Integer.parseInt(matcher.group(1));
+                    final double x    = Double.parseDouble(matcher.group(2)) * arcSecondsToRadians;
+                    final double y    = Double.parseDouble(matcher.group(3)) * arcSecondsToRadians;
+                    final double dtu1 = Double.parseDouble(matcher.group(4));
                     eop.add(new EarthOrientationParameters(date, dtu1, new PoleCorrection(x, y)));
                     parsed = true;
                 } catch (NumberFormatException nfe) {
@@ -86,9 +94,9 @@ public class EOPC04FilesLoader extends IERSFileVisitor {
             if (! (inHeader || parsed)) {
                 throw new OrekitException("unable to parse line {0} in IERS data file {1}",
                                           new Object[] {
-                        new Integer(lineNumber),
-                        file.getAbsolutePath()
-                });
+                                              new Integer(lineNumber),
+                                              file.getAbsolutePath()
+                                          });
             }
         }
 
@@ -99,14 +107,5 @@ public class EOPC04FilesLoader extends IERSFileVisitor {
         }
 
     }
-
-    /** Data line pattern. */
-    private Pattern dataPattern;
-
-    /** Conversion factor. */
-    private double arcSecondsToRadians;
-
-    /** Earth Orientation Parameters entries. */
-    private TreeSet eop;
 
 }

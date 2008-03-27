@@ -77,7 +77,7 @@ import fr.cs.orekit.time.AbsoluteDate;
  * @author  F. Maussion
  */
 public class NumericalPropagator
-implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
+    implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -7625270037622308823L;
@@ -142,7 +142,7 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
      */
     public void addForceModel(ForceModel model) {
         forceModels.add(model);
-        SWF[] swf = model.getSwitchingFunctions();
+        final SWF[] swf = model.getSwitchingFunctions();
         if (swf != null) {
             for (int i = 0 ; i < swf.length ; i++) {
                 forceSwf.add(swf[i]);
@@ -213,14 +213,22 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
      */
     public SpacecraftState propagate(SpacecraftState initialState, AbsoluteDate finalDate,
                                      double h, FixedStepHandler handler)
-    throws OrekitException {
+        throws OrekitException {
         handler.initialize(initialState.getDate(), akProvider, initialState.getFrame(), mu);
         return propagate(initialState, finalDate, new StepNormalizer(h, handler.getMantissaStepHandler()));
     }
 
+    /** Propagate an orbit and call a user handler at each step end.
+     * @param initialState the state to extrapolate
+     * @param finalDate target date for the orbit
+     * @param handler object to call at fixed time steps
+     * @return the state at the final date
+     * @exception OrekitException if integration cannot be performed
+     */
     public SpacecraftState propagate(SpacecraftState initialState,
-                                     AbsoluteDate finalDate, fr.cs.orekit.propagation.StepHandler handler)
-    throws OrekitException {
+                                     AbsoluteDate finalDate,
+                                     fr.cs.orekit.propagation.StepHandler handler)
+        throws OrekitException {
         handler.initialize(initialState.getDate(), akProvider, initialState.getFrame(), mu);
         return propagate(initialState, finalDate, handler.getMantissaStepHandler());
     }
@@ -245,21 +253,22 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
         // space dynamics view
         startDate  = initialState.getDate();
 
-        EquinoctialParameters parameters = new EquinoctialParameters(initialState.getParameters(), mu);
+        EquinoctialParameters parameters =
+            new EquinoctialParameters(initialState.getParameters(), mu);
 
-        currentState = new SpacecraftState(
-                                           new Orbit(initialState.getDate(), parameters),
-                                           initialState.getMass(), initialState.getAttitudeKinematics());
+        currentState =
+            new SpacecraftState(new Orbit(initialState.getDate(), parameters),
+                                initialState.getMass(), initialState.getAttitudeKinematics());
 
-        adder      = new TimeDerivativesEquations(parameters , mu);
+        adder = new TimeDerivativesEquations(parameters , mu);
 
         if (initialState.getMass() <= 0.0) {
             throw new IllegalArgumentException("Mass is null or negative");
         }
 
         // mathematical view
-        double t0 = 0;
-        double t1 = finalDate.minus(startDate);
+        final double t0 = 0;
+        final double t1 = finalDate.minus(startDate);
 
         // Map state to array
         state[0] = parameters.getA();
@@ -272,7 +281,7 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
 
         // Add the switching functions
         for (Iterator iter = forceSwf.iterator(); iter.hasNext(); ) {
-            SWF swf = (SWF)iter.next();
+            final SWF swf = (SWF) iter.next();
             integrator.addSwitchingFunction(new MappingSwitchingFunction(swf),
                                             swf.getMaxCheckInterval(), swf.getThreshold(),
                                             swf.getMaxIterationCount());
@@ -296,7 +305,7 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
         }
 
         // back to space dynamics view
-        AbsoluteDate date = new AbsoluteDate(startDate, t1);
+        final AbsoluteDate date = new AbsoluteDate(startDate, t1);
 
         parameters =
             new EquinoctialParameters(state[0], state[1],state[2],state[3],
@@ -345,7 +354,7 @@ implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
             adder.initDerivatives(yDot, (EquinoctialParameters)currentState.getParameters());
 
             // compute the contributions of all perturbing forces
-            for (Iterator iter = forceModels.iterator(); iter.hasNext();) {
+            for (final Iterator iter = forceModels.iterator(); iter.hasNext();) {
                 ((ForceModel) iter.next()).addContribution(currentState, adder, mu);
             }
 

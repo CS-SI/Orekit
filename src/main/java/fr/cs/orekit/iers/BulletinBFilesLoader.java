@@ -21,7 +21,7 @@ import fr.cs.orekit.frames.PoleCorrection;
 public class BulletinBFilesLoader extends IERSFileVisitor {
 
     /** Conversion factor. */
-    private static final double arcSecondsToRadians = Math.toRadians(1.0 / 3600);
+    private static final double arcSecondsToRadians = 2 * Math.PI / 1296000;
 
     /** Section header pattern. */
     private final Pattern sectionHeaderPattern;

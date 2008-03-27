@@ -42,15 +42,13 @@ public interface StepInterpolator {
      * @throws DerivativeException if this call induces an automatic step
      *  finalization that throws one
      */
-    public void setInterpolatedDate(AbsoluteDate date)
-    throws DerivativeException;
+    public void setInterpolatedDate(AbsoluteDate date) throws DerivativeException;
 
     /** Get the state of the interpolated point.
      * @return state at date {@link #getInterpolatedDate()}
-     * @throws OrekitException
+     * @throws OrekitException if state cannot be interpolated
      */
     public SpacecraftState getInterpolatedState() throws OrekitException;
-
 
     /** Check if the natural integration direction is forward.
      * This method provides the integration direction as specified by the

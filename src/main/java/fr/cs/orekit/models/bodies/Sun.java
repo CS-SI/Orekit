@@ -49,51 +49,57 @@ public class Sun extends ThirdBody {
      */
     public Vector3D getPosition(AbsoluteDate date, Frame frame) throws OrekitException {
 
-
-        double t = date.minus(reference) / 86400.0;
-        double f = Math.toRadians(225.768 + 13.2293505 * t);
-        double d = Math.toRadians(11.786 + 12.190749 * t);
-        double xlp = Math.toRadians(134.003 + 0.9856 * t);
-        double g = Math.toRadians(282.551 + 0.000047 * t);
-        double e = Math.toRadians(23.44223 - 3.5626E-07 * t);
-        double ce = Math.cos(e);
-        double se = Math.sin(e);
-        double rot = 0.6119022e-6 * date.minus(AbsoluteDate.FiftiesEpoch) / 86400.0;
-        double cr = Math.cos(rot);
-        double sr = Math.sin(rot);
+        final double t = date.minus(reference) / 86400.0;
+        final double f = Math.toRadians(225.768 + 13.2293505 * t);
+        final double d = Math.toRadians(11.786 + 12.190749 * t);
+        final double xlp = Math.toRadians(134.003 + 0.9856 * t);
+        final double g = Math.toRadians(282.551 + 0.000047 * t);
+        final double e = Math.toRadians(23.44223 - 3.5626E-07 * t);
+        final double ce = Math.cos(e);
+        final double se = Math.sin(e);
+        final double rot = 0.6119022e-6 * date.minus(AbsoluteDate.FiftiesEpoch) / 86400.0;
+        final double cr = Math.cos(rot);
+        final double sr = Math.sin(rot);
 
         // Newcomb's theory
-        double cl = 99972.0 * Math.cos(xlp + g) + 1671.0 * Math.cos(xlp + xlp + g)
-        - 1678.0 * Math.cos(g);
-        cl = cl + 32.0 * Math.cos(3.0 * xlp + g) + Math.cos(4.0 * xlp + g) + 2.0
-        * Math.cos(xlp + d + g);
-        cl = cl - 4.0 * Math.cos(g - xlp) - 2.0 * Math.cos(xlp - d + g) + 4.0
-        * Math.cos(f - d);
-        cl = cl - 4.0 * Math.cos(xlp + xlp - f + d + g + g);
-        cl = cl * 1.E-05;
+        final double cl = (99972.0 * Math.cos(xlp + g) +
+                           1671.0 * Math.cos(xlp + xlp + g) -
+                           1678.0 * Math.cos(g) +
+                           32.0 * Math.cos(3.0 * xlp + g) +
+                           Math.cos(4.0 * xlp + g) +
+                           2.0 * Math.cos(xlp + d + g) -
+                           4.0 * Math.cos(g - xlp) -
+                           2.0 * Math.cos(xlp - d + g) +
+                           4.0 * Math.cos(f - d) -
+                           4.0 * Math.cos(xlp + xlp - f + d + g + g)) * 1.0e-5;
 
-        double sl = 99972.0 * Math.sin(xlp + g) + 1671.0 * Math.sin(xlp + xlp + g)
-        - 1678.0 * Math.sin(g);
-        sl = sl + 32.0 * Math.sin(3.0 * xlp + g) + Math.sin(4.0 * xlp + g) + 2.0
-        * Math.sin(xlp + d + g);
-        sl = sl - 4.0 * Math.sin(g - xlp) - 2.0 * Math.sin(xlp - d + g) + 4.0
-        * Math.sin(f - d);
-        sl = sl - 4.0 * Math.sin(xlp + xlp - f + d + g + g);
-        sl = sl * 1.E-05;
+        final double sl = (99972.0 * Math.sin(xlp + g) +
+                           1671.0 * Math.sin(xlp + xlp + g) -
+                           1678.0 * Math.sin(g) +
+                           32.0 * Math.sin(3.0 * xlp + g) +
+                           Math.sin(4.0 * xlp + g) +
+                           2.0 * Math.sin(xlp + d + g) -
+                           4.0 * Math.sin(g - xlp) -
+                           2.0 * Math.sin(xlp - d + g) +
+                           4.0 * Math.sin(f - d) -
+                           4.0 * Math.sin(xlp + xlp - f + d + g + g)) * 1.0e-5;
 
-        double q = Math.sqrt(cl * cl + sl * sl);
-        double sx = cl / q;
-        double sy = sl * ce / q;
-        Vector3D centralSun =
+        final double q = Math.sqrt(cl * cl + sl * sl);
+        final double sx = cl / q;
+        final double sy = sl * ce / q;
+        final Vector3D centralSun =
             transform.transformVector(new Vector3D(sx * cr + sy * sr,
                                                    sy * cr - sx * sr,
                                                    sl * se / q));
-        double dasr = 1672.2 * Math.cos(xlp) + 28.0 * Math.cos(xlp + xlp)
-        - 0.35 * Math.cos(d);
+        final double dasr = 1672.2 * Math.cos(xlp) +
+                            28.0 * Math.cos(xlp + xlp) -
+                            0.35 * Math.cos(d);
 
-        Vector3D posInJ2000 =  new Vector3D(1000.0 * 149597870.0 / (1.0 + 1.E-05 * dasr), centralSun);
+        final Vector3D posInJ2000 =
+            new Vector3D(1000.0 * 149597870.0 / (1.0 + 1.E-05 * dasr), centralSun);
 
         return Frame.getJ2000().getTransformTo(frame, date).transformPosition(posInJ2000);
+
     }
 
 }
