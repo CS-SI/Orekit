@@ -9,13 +9,33 @@ import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.time.AbsoluteDate;
 
+/** This class is a space-dynamics aware step handler.
+ * 
+ * <p>It mirrors the {@link org.apache.commons.math.ode.StepHandler
+ * StepHandler} interface from <a href="http://commons.apache.org/math/"
+ * commons-math</a> but provides a space-dynamics interface to the methods.</p>
+ * 
+ */
 public abstract class OrekitStepHandler implements StepHandler {
 
+    /** Reference date. */
     private AbsoluteDate reference;
+
+    /** Reference frame. */
     private Frame frame;
-    private AttitudeKinematicsProvider provider;
+
+    /** Central body attraction coefficient. */
     private double mu;
 
+    /** Provider for attitude data. */
+    private AttitudeKinematicsProvider provider;
+
+    /** Initialize the handler.
+     * @param reference reference date
+     * @param frame reference frame
+     * @param mu central body attraction coefficient
+     * @param provider attitude data provider
+     */
     protected void initialize(AbsoluteDate reference, Frame frame, double mu,
                               AttitudeKinematicsProvider provider) {
         this.reference = reference;
@@ -24,18 +44,27 @@ public abstract class OrekitStepHandler implements StepHandler {
         this.mu        = mu;
     }
 
+    /** Handle the current step.
+     * @param interpolator interpolator set up for the current step
+     * @param isLast if true, this is the last integration step
+     * @exception PropagationException if step cannot be handled
+     */
     public abstract void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
         throws PropagationException;
 
+    /** {@inheritDoc} */
     public abstract boolean requiresDenseOutput();
 
+    /** {@inheritDoc} */
     public abstract void reset() ;
 
+    /** {@inheritDoc} */
     public void handleStep(StepInterpolator interpolator, boolean isLast)
         throws DerivativeException {
         try {
-            handleStep(new OrekitStepInterpolator(reference, frame, mu, provider, interpolator),
-                       isLast);
+            final OrekitStepInterpolator orekitInterpolator =
+                new OrekitStepInterpolator(reference, frame, mu, provider, interpolator);
+            handleStep(orekitInterpolator, isLast);
         } catch (PropagationException pe) {
             throw new DerivativeException(pe);
         }
