@@ -4,7 +4,7 @@
     <format>zip</format>
   </formats>
   <componentDescriptors>
-    <componentDescriptor>src/assemble/misc-files.xml</componentDescriptor>
-    <componentDescriptor>src/assemble/building-files.xml</componentDescriptor>
+    <componentDescriptor>src/assembly/misc-files.xml</componentDescriptor>
+    <componentDescriptor>src/assembly/building-files.xml</componentDescriptor>
   </componentDescriptors>
 </assembly>

@@ -3,15 +3,13 @@
     <dependencySet>
       <includes>
         <include>commons-math:commons-math</include>
-        <include>org.slf4j:slf4j-api</include>
       </includes>
     </dependencySet>
   </dependencySets>
   <fileSets>
     <fileSet>
       <includes>
-        <include>LICENSE-apache.txt</include>
-        <include>LICENSE-slf4j.txt</include>
+        <include>LICENSE-apache</include>
       </includes>
     </fileSet>
   </fileSets>
