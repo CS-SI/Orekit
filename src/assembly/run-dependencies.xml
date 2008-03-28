@@ -12,7 +12,6 @@
     <fileSet>
       <includes>
         <include>LICENSE-logback.txt</include>
-        <include>LICENSE-lgpl.txt</include>
       </includes>
     </fileSet>
   </fileSets>
