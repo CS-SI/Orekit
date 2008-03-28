@@ -1,13 +1,13 @@
-package fr.cs.orekit.propagation.forces.perturbations;
+package fr.cs.orekit.propagation.numerical.forces.perturbations;
 
 import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.orekit.bodies.ThirdBody;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.propagation.SpacecraftState;
-import fr.cs.orekit.propagation.forces.ForceModel;
 import fr.cs.orekit.propagation.numerical.OrekitSwitchingFunction;
 import fr.cs.orekit.propagation.numerical.TimeDerivativesEquations;
+import fr.cs.orekit.propagation.numerical.forces.ForceModel;
 
 /** Third body attraction force model.
  *

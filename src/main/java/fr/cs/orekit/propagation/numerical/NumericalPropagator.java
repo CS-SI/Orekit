@@ -21,7 +21,7 @@ import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.propagation.AttitudePropagator;
 import fr.cs.orekit.propagation.SpacecraftState;
-import fr.cs.orekit.propagation.forces.ForceModel;
+import fr.cs.orekit.propagation.numerical.forces.ForceModel;
 import fr.cs.orekit.time.AbsoluteDate;
 
 /** This class propagates a {@link fr.cs.orekit.propagation.SpacecraftState}

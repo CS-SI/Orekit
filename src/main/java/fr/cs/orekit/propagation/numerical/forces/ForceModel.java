@@ -1,4 +1,4 @@
-package fr.cs.orekit.propagation.forces;
+package fr.cs.orekit.propagation.numerical.forces;
 
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.propagation.SpacecraftState;
