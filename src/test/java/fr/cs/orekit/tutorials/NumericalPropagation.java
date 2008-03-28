@@ -7,13 +7,13 @@ import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
 
 import fr.cs.orekit.attitudes.AttitudeKinematics;
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.forces.perturbations.CunninghamAttractionModel;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.orbits.KeplerianParameters;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.propagation.forces.ForceModel;
+import fr.cs.orekit.propagation.forces.perturbations.CunninghamAttractionModel;
 import fr.cs.orekit.propagation.numerical.IntegratedEphemeris;
 import fr.cs.orekit.propagation.numerical.NumericalPropagator;
 import fr.cs.orekit.propagation.numerical.OrekitFixedStepHandler;

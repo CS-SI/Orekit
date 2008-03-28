@@ -1,4 +1,4 @@
-package fr.cs.orekit.forces.perturbations;
+package fr.cs.orekit.propagation.forces.perturbations;
 
 import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.orekit.bodies.ThirdBody;

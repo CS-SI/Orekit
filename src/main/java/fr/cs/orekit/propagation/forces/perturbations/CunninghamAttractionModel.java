@@ -1,4 +1,4 @@
-package fr.cs.orekit.forces.perturbations;
+package fr.cs.orekit.propagation.forces.perturbations;
 
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;

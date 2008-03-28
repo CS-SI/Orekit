@@ -1,4 +1,4 @@
-package fr.cs.orekit.forces.maneuvers;
+package fr.cs.orekit.propagation.forces.maneuvers;
 
 import org.apache.commons.math.geometry.Vector3D;
 
