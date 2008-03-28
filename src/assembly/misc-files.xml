@@ -2,8 +2,8 @@
   <fileSets>
     <fileSet>
       <includes>
-       <include>README.txt</include>
-       <include>LICENSE.txt</include>
+       <include>README</include>
+       <include>LICENSE</include>
       </includes>
     </fileSet>
   </fileSets>
