@@ -24,8 +24,19 @@ import fr.cs.orekit.utils.PVCoordinates;
  * @see NumericalPropagator
  * @author F. Maussion
  */
-public class SpacecraftState
-implements Serializable {
+public class SpacecraftState implements Serializable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 8071995498433113417L;
+
+    /** Orbital state. */
+    private final Orbit orbit;
+
+    /** Current mass (kg). */
+    private final double mass;
+
+    /** Attitude. */
+    private final AttitudeKinematics attitude;
 
     /** Create a new instance from orbital state and mass.
      * @param orbit the orbit
@@ -228,16 +239,5 @@ implements Serializable {
     public PVCoordinates getPVCoordinates(double mu) {
         return orbit.getPVCoordinates(mu);
     }
-
-    /** Orbital state */
-    private final Orbit orbit;
-
-    /** Current mass (kg)*/
-    private final double mass;
-
-    /** Attitude */
-    private final AttitudeKinematics attitude;
-
-    private static final long serialVersionUID = 4660942382447513104L;
 
 }

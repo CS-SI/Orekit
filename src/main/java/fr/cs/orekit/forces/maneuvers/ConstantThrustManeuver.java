@@ -3,7 +3,7 @@ package fr.cs.orekit.forces.maneuvers;
 import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.forces.ForceModel;
-import fr.cs.orekit.forces.SWF;
+import fr.cs.orekit.forces.OrekitSwitchingFunction;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.propagation.TimeDerivativesEquations;
 import fr.cs.orekit.time.AbsoluteDate;
@@ -76,7 +76,7 @@ public class ConstantThrustManeuver implements ForceModel {
             OrekitException.throwIllegalArgumentException("unsupported thrust direction frame, " +
                                                           "supported types: {0}, {1} and {2}",
                                                           new Object[] {
-                                                             "QSW", "TNW", "INERTIAL"
+                                                              "QSW", "TNW", "INERTIAL"
                                                           });
         }
 
@@ -127,7 +127,7 @@ public class ConstantThrustManeuver implements ForceModel {
             }
 
             final double acc = thrust/s.getMass();
-            Vector3D acceleration = new Vector3D(acc, direction);
+            final Vector3D acceleration = new Vector3D(acc, direction);
 
             if (frameType == QSW) {
                 adder.addQSWAcceleration(acceleration.getX(),
@@ -148,14 +148,14 @@ public class ConstantThrustManeuver implements ForceModel {
     /** Gets the swithching functions related to start and stop passes.
      * @return start / stop switching functions
      */
-    public SWF[] getSwitchingFunctions() {
-        return new SWF[] { new StartSwitch(), new EndSwitch() };
+    public OrekitSwitchingFunction[] getSwitchingFunctions() {
+        return new OrekitSwitchingFunction[] { new StartSwitch(), new EndSwitch() };
     }
 
     /** This class defines the begining of the acceleration switching function.
      * It triggers at the ignition.
      */
-    private class StartSwitch implements SWF {
+    private class StartSwitch implements OrekitSwitchingFunction {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -3763244241136150814L;
@@ -190,7 +190,7 @@ public class ConstantThrustManeuver implements ForceModel {
     /** This class defines the end of the acceleration switching function.
      * It triggers at the end of the maneuver.
      */
-    private class EndSwitch implements SWF {
+    private class EndSwitch implements OrekitSwitchingFunction {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -4081671157610680754L;

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 import fr.cs.orekit.errors.OrekitException;
 
@@ -13,6 +14,11 @@ import fr.cs.orekit.errors.OrekitException;
  */
 public class PotentialReaderFactory {
 
+    /** Potential readers tab */
+    private List readers;
+
+    /** Simple constructor.
+     */
     public PotentialReaderFactory() {
         readers = new ArrayList();
         readers.add(new SHMFormatReader());
@@ -32,18 +38,18 @@ public class PotentialReaderFactory {
      * It tests all the readers it contains to see if they match the input format.
      * @param in the file to check (it can be compressed)
      * @return the proper reader
-     * @throws OrekitException when no known reader can read the file
-     * @throws IOException when the {@link InputStream} is not valid.
+     * @exception OrekitException when no known reader can read the file
+     * @exception IOException when the {@link InputStream} is not valid.
      */
     public PotentialCoefficientsReader getPotentialReader(InputStream in)
-    throws OrekitException, IOException {
+        throws OrekitException, IOException {
 
         BufferedInputStream filter = new BufferedInputStream(in);
         filter.mark(1024 * 1024);
 
         boolean isCompressed = false;
         try {
-            isCompressed = (new GZIPInputStream(filter).read() != -1);
+            isCompressed = new GZIPInputStream(filter).read() != -1;
         } catch (IOException e) {
             isCompressed = false;
         }
@@ -56,8 +62,8 @@ public class PotentialReaderFactory {
         PotentialCoefficientsReader result = null;
 
         // test the available readers
-        for (Iterator iter = readers.iterator(); iter.hasNext();) {
-            PotentialCoefficientsReader test = (PotentialCoefficientsReader) iter.next();
+        for (final Iterator iter = readers.iterator(); iter.hasNext();) {
+            final PotentialCoefficientsReader test = (PotentialCoefficientsReader) iter.next();
             if (test.isFileOK(filter)) {
                 result = test;
             }
@@ -71,8 +77,5 @@ public class PotentialReaderFactory {
         return result;
 
     }
-
-    /** Potential readers tab */
-    private ArrayList readers;
 
 }

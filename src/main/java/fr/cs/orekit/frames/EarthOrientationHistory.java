@@ -164,8 +164,8 @@ public class EarthOrientationHistory implements Serializable {
 
     }
 
-    /** Specialized comparator handling both EarthOrientationParameters
-     * and AbsoluteDate instances.
+    /** Specialized comparator handling both {@link EarthOrientationParameters}
+     * and {@link AbsoluteDate} instances.
      */
     private static class EOPComparator implements Comparator, Serializable {
 

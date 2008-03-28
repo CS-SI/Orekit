@@ -21,13 +21,15 @@ public abstract class ThrustForceDirection {
     /** Identifier for inertial frame. */
     public static final int INERTIAL = 2;
 
+    /** The frame type : ({@link #TNW}, {@link #QSW} or {@link #INERTIAL}) */
+    private int frameType;
 
     /** Simple constructor.
      * @param frameType the frame in which is defined the direction,
      *  must be one of {@link #TNW}, {@link #QSW} or  {@link #INERTIAL}
      */
     protected ThrustForceDirection(int frameType) {
-        if (frameType<0||frameType>2) {
+        if (frameType < 0 || frameType > 2) {
             this.frameType = INERTIAL;
         }
         else {
@@ -48,9 +50,6 @@ public abstract class ThrustForceDirection {
      * @throws OrekitException if some specific error occurs
      */
     public abstract Vector3D getDirection(SpacecraftState currentState)
-    throws OrekitException;
-
-    /** The frame type : ({@link #TNW}, {@link #QSW} or {@link #INERTIAL}) */
-    private int frameType;
+        throws OrekitException;
 
 }

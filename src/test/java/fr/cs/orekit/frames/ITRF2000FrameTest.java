@@ -16,7 +16,6 @@ import fr.cs.orekit.time.ChunkedDate;
 import fr.cs.orekit.time.ChunkedTime;
 import fr.cs.orekit.time.UTCScale;
 import fr.cs.orekit.utils.PVCoordinates;
-import fr.cs.orekit.utils.VectorFormatter;
 
 public class ITRF2000FrameTest extends TestCase {
 
@@ -397,13 +396,15 @@ public class ITRF2000FrameTest extends TestCase {
         result = trans.transformPVCoordinates(pv);
 
         System.out.println( " IRF ");
-        System.out.println(" pos cals "+ VectorFormatter.toString(result.getPosition()));
-        System.out.println(" pos test "+ VectorFormatter.toString(testPosIRF));
-        System.out.println(" dif "+ VectorFormatter.toString(testPosIRF.subtract(result.getPosition())));
+        System.out.println(" pos cals "+ result.getPosition().getX() + " " + result.getPosition().getY() + " " + result.getPosition().getZ());
+        System.out.println(" pos test "+ testPosIRF.getX() + " " + testPosIRF.getY() + " " + testPosIRF.getZ());
+        Vector3D posError = testPosIRF.subtract(result.getPosition());
+        System.out.println(" dif "+ posError.getX() + " " + posError.getY() + " " + posError.getZ());
 
-        System.out.println(" vel cals "+ VectorFormatter.toString(result.getVelocity()));
-        System.out.println(" vel test "+ VectorFormatter.toString(testVelIRF));
-        System.out.println(" dif "+ VectorFormatter.toString(testVelIRF.subtract(result.getVelocity())));
+        System.out.println(" vel cals "+ result.getVelocity().getX() + " " + result.getVelocity().getY() + " " + result.getVelocity().getZ());
+        System.out.println(" vel test "+ testVelIRF.getX() + " " + testVelIRF.getY() + " " + testVelIRF.getZ());
+        Vector3D velError = testVelIRF.subtract(result.getVelocity());
+        System.out.println(" dif "+ velError.getX() + " " + velError.getY() + " " + velError.getZ());
 
         System.out.println();
 
@@ -413,13 +414,15 @@ public class ITRF2000FrameTest extends TestCase {
         result = trans.transformPVCoordinates(pv);
 
         System.out.println( " TIRF ");
-        System.out.println(" pos cals "+ VectorFormatter.toString(result.getPosition()));
-        System.out.println(" pos test "+ VectorFormatter.toString(testPosTIRF));
-        System.out.println(" dif "+ VectorFormatter.toString(testPosTIRF.subtract(result.getPosition())));
+        System.out.println(" pos cals "+ result.getPosition().getX() + " " + result.getPosition().getY() + " " + result.getPosition().getZ());
+        System.out.println(" pos test "+ testPosTIRF.getX() + " " + testPosTIRF.getY() + " " + testPosTIRF.getZ());
+        posError = testPosTIRF.subtract(result.getPosition());
+        System.out.println(" dif "+ posError.getX() + " " +posError.getY() + " " + posError.getZ());
 
-        System.out.println(" vel cals "+ VectorFormatter.toString(result.getVelocity() ));
-        System.out.println(" vel test "+ VectorFormatter.toString(testVelTIRF));
-        System.out.println(" dif "+ VectorFormatter.toString(testVelTIRF.subtract(result.getVelocity())));
+        System.out.println(" vel cals "+ result.getVelocity() .getX() + " " + result.getVelocity() .getY() + " " + result.getVelocity() .getZ());
+        System.out.println(" vel test "+ testVelTIRF.getX() + " " + testVelTIRF.getY() + " " + testVelTIRF.getZ());
+        velError =  testVelTIRF.subtract(result.getVelocity());
+        System.out.println(" dif "+ velError.getX() + " " + velError.getY() + " " + velError.getZ());
 
         System.out.println();
 
@@ -430,13 +433,15 @@ public class ITRF2000FrameTest extends TestCase {
         result = trans.transformPVCoordinates(pv);
 
         System.out.println( " ITRF ");
-        System.out.println(" pos cals "+ VectorFormatter.toString(result.getPosition()));
-        System.out.println(" pos test "+ VectorFormatter.toString(testPosITRF));
-        System.out.println(" dif "+ VectorFormatter.toString(testPosITRF.subtract(result.getPosition())));
+        System.out.println(" pos cals "+ result.getPosition().getX() + " " + result.getPosition().getY() + " " + result.getPosition().getZ());
+        System.out.println(" pos test "+ testPosITRF.getX() + " " + testPosITRF.getY() + " " + testPosITRF.getZ());
+        posError = testPosITRF.subtract(result.getPosition());
+        System.out.println(" dif "+ posError.getX() + " " + posError.getY() + " " + posError.getZ());
 
-        System.out.println(" vel cals "+ VectorFormatter.toString(result.getVelocity() ));
-        System.out.println(" vel test "+ VectorFormatter.toString(testVelITRF));
-        System.out.println(" dif "+ VectorFormatter.toString(testVelITRF.subtract(result.getVelocity())));
+        System.out.println(" vel cals "+ result.getVelocity() .getX() + " " + result.getVelocity() .getY() + " " + result.getVelocity() .getZ());
+        System.out.println(" vel test "+ testVelITRF.getX() + " " + testVelITRF.getY() + " " + testVelITRF.getZ());
+        velError = testVelITRF.subtract(result.getVelocity());
+        System.out.println(" dif "+ velError.getX() + " " +velError.getY() + " " + velError.getZ());
 
         System.out.println();
 

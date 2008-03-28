@@ -5,7 +5,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.orekit.bodies.ThirdBody;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.forces.ForceModel;
-import fr.cs.orekit.forces.SWF;
+import fr.cs.orekit.forces.OrekitSwitchingFunction;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.propagation.TimeDerivativesEquations;
 
@@ -52,8 +52,8 @@ public class ThirdBodyAttraction implements ForceModel {
     /** There are no SwitchingFunctions for this model.
      * @return an empty array
      */
-    public SWF[] getSwitchingFunctions() {
-        return new SWF[0];
+    public OrekitSwitchingFunction[] getSwitchingFunctions() {
+        return new OrekitSwitchingFunction[0];
     }
 
 }

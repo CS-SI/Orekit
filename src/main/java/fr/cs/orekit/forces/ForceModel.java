@@ -35,6 +35,6 @@ public interface ForceModel {
      * @return array of switching functions or null if the model doesn't need
      * any switching function by itself
      */
-    public SWF[] getSwitchingFunctions();
+    public OrekitSwitchingFunction[] getSwitchingFunctions();
 
 }

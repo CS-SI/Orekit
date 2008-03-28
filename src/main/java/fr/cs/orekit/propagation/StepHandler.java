@@ -13,8 +13,14 @@ import fr.cs.orekit.time.AbsoluteDate;
 //FIXME : JAVADOC and TEST ! ! !
 public abstract class StepHandler {
 
+    private AbsoluteDate initialDate;
+    private Frame inertialFrame;
+    private AttitudeKinematicsProvider akProvider;
+    private double mu;
+    private MappingStepHandler handler;
+
     public StepHandler() {
-        mantissaStepHandler = new mappingStepHandler();
+        handler = new MappingStepHandler();
     }
 
     protected void initialize(AbsoluteDate date, AttitudeKinematicsProvider provider,
@@ -26,29 +32,21 @@ public abstract class StepHandler {
     }
 
     protected org.apache.commons.math.ode.StepHandler getMantissaStepHandler() {
-        return mantissaStepHandler;
+        return handler;
     }
 
-    public abstract void handleStep(
-                                    fr.cs.orekit.propagation.StepInterpolator interpolator, boolean isLast)
-    throws DerivativeException;
+    public abstract void handleStep(MappingStepInterpolator interpolator, boolean isLast)
+        throws DerivativeException;
 
     public abstract boolean requiresDenseOutput();
 
     public abstract void reset() ;
 
-    AbsoluteDate initialDate;
-    Frame inertialFrame;
-    AttitudeKinematicsProvider akProvider;
-    double mu;
-
-    mappingStepHandler mantissaStepHandler;
-
-    private class mappingStepHandler implements org.apache.commons.math.ode.StepHandler {
+    private class MappingStepHandler implements org.apache.commons.math.ode.StepHandler {
 
         public void handleStep(StepInterpolator interpolator, boolean isLast) throws DerivativeException {
 
-            StepHandler.this.handleStep(new mappingStepInterpolator(interpolator), isLast);
+            StepHandler.this.handleStep(new MappingStepInterpolator(interpolator), isLast);
 
         }
 
@@ -62,45 +60,45 @@ public abstract class StepHandler {
 
     }
 
-    private class mappingStepInterpolator implements fr.cs.orekit.propagation.StepInterpolator {
+    private class MappingStepInterpolator {
 
-        private mappingStepInterpolator(StepInterpolator mantissaInterpolator) {
-
+        private MappingStepInterpolator(StepInterpolator interpolator) {
+            this.interpolator = interpolator;
         }
 
         public AbsoluteDate getCurrentDate() {
-            return new AbsoluteDate(initialDate, mantissaInterpolator.getCurrentTime());
+            return new AbsoluteDate(initialDate, interpolator.getCurrentTime());
         }
 
         public AbsoluteDate getInterpolatedDate() {
-            return new AbsoluteDate(initialDate, mantissaInterpolator.getInterpolatedTime());
+            return new AbsoluteDate(initialDate, interpolator.getInterpolatedTime());
         }
 
         public SpacecraftState getInterpolatedState() throws OrekitException {
-            double[] y = mantissaInterpolator.getInterpolatedState();
+            double[] y = interpolator.getInterpolatedState();
 
             OrbitalParameters op =
                 new EquinoctialParameters(y[0], y[1], y[2], y[3], y[4], y[5],
                                           EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
                                           inertialFrame);
-            AbsoluteDate current = new AbsoluteDate(initialDate, mantissaInterpolator.getCurrentTime());
+            AbsoluteDate current = new AbsoluteDate(initialDate, interpolator.getCurrentTime());
             return new SpacecraftState(new Orbit(current, op), y[6],
                                        akProvider.getAttitudeKinematics(current, op.getPVCoordinates(mu), inertialFrame));
         }
 
         public AbsoluteDate getPreviousDate() {
-            return new AbsoluteDate(initialDate, mantissaInterpolator.getPreviousTime());
+            return new AbsoluteDate(initialDate, interpolator.getPreviousTime());
         }
 
         public boolean isForward() {
-            return mantissaInterpolator.isForward();
+            return interpolator.isForward();
         }
 
         public void setInterpolatedDate(AbsoluteDate date) throws DerivativeException {
-            mantissaInterpolator.setInterpolatedTime(date.minus(initialDate));
+            interpolator.setInterpolatedTime(date.minus(initialDate));
         }
 
-        private StepInterpolator mantissaInterpolator;
+        private StepInterpolator interpolator;
 
     }
 

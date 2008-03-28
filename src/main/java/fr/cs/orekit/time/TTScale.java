@@ -10,6 +10,9 @@ package fr.cs.orekit.time;
  */
 public class TTScale extends TimeScale {
 
+    /** Unique instance. */
+    private static TimeScale instance = null;
+
     /** Private constructor for the singleton.
      */
     private TTScale() {
@@ -45,8 +48,5 @@ public class TTScale extends TimeScale {
     public double offsetToTAI(double instanceTime) {
         return -32.184;
     }
-
-    /** Uniq instance. */
-    private static TimeScale instance = null;
 
 }

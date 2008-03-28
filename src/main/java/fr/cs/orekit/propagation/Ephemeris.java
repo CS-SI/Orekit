@@ -27,8 +27,9 @@ public interface Ephemeris extends Serializable {
     /** Get the orbit at a specific date.
      * @param date desired date for the orbit
      * @return the orbit at the specified date
+     * @exception PropagationException if state cannot be extrapolated
      */
     public SpacecraftState getSpacecraftState(AbsoluteDate date)
-    throws PropagationException;
+        throws PropagationException;
 
 }

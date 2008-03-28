@@ -9,7 +9,7 @@ import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.time.AbsoluteDate;
 
-/** Simple keplerian orbit extrapolator.
+/** Simple keplerian orbit propagator.
  * @author G. Prat
  * @version $Id$
  */
@@ -55,7 +55,7 @@ public class KeplerianPropagator implements Ephemeris, AttitudePropagator {
 
         // evaluation of LM = PA + RAAN + M at extrapolated time
 
-        EquinoctialParameters extrapolated =
+        final EquinoctialParameters extrapolated =
             new EquinoctialParameters(initialParameters.getA(), initialParameters.getEquinoctialEx(),
                                       initialParameters.getEquinoctialEy(), initialParameters.getHx(),
                                       initialParameters.getHy(),
@@ -64,7 +64,7 @@ public class KeplerianPropagator implements Ephemeris, AttitudePropagator {
                                       initialParameters.getFrame());
 
         try {
-            AttitudeKinematics ak =
+            final AttitudeKinematics ak =
                 akProvider.getAttitudeKinematics(date,
                                                  extrapolated.getPVCoordinates(mu),
                                                  extrapolated.getFrame());

@@ -7,6 +7,9 @@ package fr.cs.orekit.time;
  */
 public class TAIScale extends TimeScale {
 
+    /** Unique instance. */
+    private static TimeScale instance = null;
+
     /** Private constructor for the singleton.
      */
     private TAIScale() {
@@ -42,8 +45,5 @@ public class TAIScale extends TimeScale {
     public double offsetToTAI(double instanceTime) {
         return 0;
     }
-
-    /** Uniq instance. */
-    private static TimeScale instance = null;
 
 }

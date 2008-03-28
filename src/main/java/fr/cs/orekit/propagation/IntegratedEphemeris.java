@@ -107,7 +107,7 @@ public class IntegratedEphemeris implements BoundedEphemeris {
             final double mass = state[6];
 
             try {
-                AttitudeKinematics ak =
+                final AttitudeKinematics ak =
                     akProvider.getAttitudeKinematics(date, eq.getPVCoordinates(mu), frame);
                 return new SpacecraftState(new Orbit(date , eq), mass, ak);
             } catch (OrekitException oe) {

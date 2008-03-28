@@ -47,10 +47,11 @@ public class EOPC04FilesLoader extends IERSFileVisitor {
         final String dtU1Field  = "(..........)";
         final String lodField   = "..........";
         final String deltaField = ".........";
-        dataPattern = Pattern.compile("^  " + yearField + dayField + "  " +
+        final String twoSpaces  = "  ";
+        dataPattern = Pattern.compile("^  " + yearField + dayField + twoSpaces +
                                       mjdField + poleField + poleField +
-                                      dtU1Field + "  " + lodField +
-                                      "  " + deltaField + deltaField + "\\p{Blank}*$");
+                                      dtU1Field + twoSpaces + lodField +
+                                      twoSpaces + deltaField + deltaField + "\\p{Blank}*$");
 
     }
 

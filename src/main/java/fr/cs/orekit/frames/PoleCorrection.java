@@ -13,6 +13,9 @@ public class PoleCorrection implements Serializable {
     public static final PoleCorrection NULL_CORRECTION =
         new PoleCorrection(0, 0);
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = -7225297729553686894L;
+
     /** x<sub>p</sub> parameter (radians). */
     public final double xp;
 
@@ -27,7 +30,5 @@ public class PoleCorrection implements Serializable {
         this.xp = xp;
         this.yp = yp;
     }
-
-    private static final long serialVersionUID = 836646384925701284L;
 
 }

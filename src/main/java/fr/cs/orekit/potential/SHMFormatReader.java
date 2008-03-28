@@ -6,11 +6,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import fr.cs.orekit.errors.OrekitException;
 
-/**This reader is adapted to the SHM Format.
+/** Reader for the SHM gravity potential format.
  *
  * <p> This format is used to describe the gravity field of EIGEN models,
- * edited by the GFZ Postdam.
- * It is described in <ahref="http://www.gfz-potsdam.de/grace/results/">
+ * edited by the GFZ Potsdam.
+ * It is described in <a href="http://www.gfz-potsdam.de/grace/results/">
  * Potsdam university website </a>
  *
  * <p> The proper way to use this class is to call the
@@ -22,6 +22,16 @@ import fr.cs.orekit.errors.OrekitException;
  * @author F. Maussion
  */
 public class SHMFormatReader extends PotentialCoefficientsReader {
+
+    /** Field labels. */
+    private static final String GRCOEF = "GRCOEF";
+    private static final String GRCOF2 = "GRCOF2";
+
+    /** Format compatibility flag. */
+    private boolean fileIsOK;
+
+    /** The input to check and read. */
+    private InputStream in;
 
     /** Simple constructor (the first method to call then is <code>isFileOK</code>.
      *  It is done automaticaly by the factory).
@@ -39,7 +49,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
     public boolean isFileOK(InputStream in) throws IOException {
 
         this.in = in;
-        BufferedReader r = new BufferedReader(new InputStreamReader(in));
+        final BufferedReader r = new BufferedReader(new InputStreamReader(in));
         // tests variables
         boolean iKnow = false;
         boolean earth = false;
@@ -52,8 +62,8 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                 iKnow = true;
             } else {
                 if (c == 1) {
-                    if (!("FIRST ".equals(line.substring(0, 6)) && "SHM    ".equals(line
-                                                                                    .substring(49, 56)))) {
+                    if (!("FIRST ".equals(line.substring(0, 6)) &&
+                          "SHM    ".equals(line.substring(49, 56)))) {
                         iKnow = true;
                     }
                 }
@@ -68,10 +78,10 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                 }
                 // check there is at least two coef line
                 if ((line.length() >= 6) && earth == true && c > 2 && c < 27) {
-                    if ("GRCOEF".equals(line.substring(0, 6))) {
+                    if (GRCOEF.equals(line.substring(0, 6))) {
                         lineIndex++;
                     }
-                    if ("GRCOF2".equals(line.substring(0, 6))) {
+                    if (GRCOF2.equals(line.substring(0, 6))) {
                         lineIndex++;
                     }
 
@@ -103,10 +113,10 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                                       new Object[0]);
         }
 
-        BufferedReader r = new BufferedReader(new InputStreamReader(in));
+        final BufferedReader r = new BufferedReader(new InputStreamReader(in));
         for (String line = r.readLine(); line != null; line = r.readLine()) {
             if (line.length() >= 6) {
-                String[] tab = line.split("\\s+");
+                final String[] tab = line.split("\\s+");
 
                 // read the earth values
                 if ("EARTH".equals(tab[0])) {
@@ -116,7 +126,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
 
                 // initialize the arrays
                 if ("SHM".equals(tab[0])) {
-                    int i = Integer.parseInt(tab[1]);
+                    final int i = Integer.parseInt(tab[1]);
                     normalizedC = new double[i + 1][];
                     normalizedS = new double[i + 1][];
                     for (int k = 0; k < normalizedC.length; k++) {
@@ -126,15 +136,15 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                 }
 
                 // fill the arrays
-                if ("GRCOEF".equals(line.substring(0, 6))) {
-                    int i = Integer.parseInt(tab[1]);
-                    int j = Integer.parseInt(tab[2]);
+                if (GRCOEF.equals(line.substring(0, 6))) {
+                    final int i = Integer.parseInt(tab[1]);
+                    final int j = Integer.parseInt(tab[2]);
                     normalizedC[i][j] = Double.parseDouble(tab[3].replace('D', 'E'));
                     normalizedS[i][j] = Double.parseDouble(tab[4].replace('D', 'E'));
                 }
-                if ("GRCOF2".equals(tab[0])) {
-                    int i = Integer.parseInt(tab[1]);
-                    int j = Integer.parseInt(tab[2]);
+                if (GRCOF2.equals(tab[0])) {
+                    final int i = Integer.parseInt(tab[1]);
+                    final int j = Integer.parseInt(tab[2]);
                     normalizedC[i][j] = Double.parseDouble(tab[3].replace('D', 'E'));
                     normalizedS[i][j] = Double.parseDouble(tab[4].replace('D', 'E'));
                 }
@@ -142,11 +152,5 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
             }
         }
     }
-
-    /** is file ok? */
-    private boolean fileIsOK;
-
-    /** The input to check and read */
-    private InputStream in;
 
 }

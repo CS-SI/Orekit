@@ -4,7 +4,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.orekit.bodies.ThirdBody;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.forces.ForceModel;
-import fr.cs.orekit.forces.SWF;
+import fr.cs.orekit.forces.OrekitSwitchingFunction;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.models.spacecraft.SolarRadiationPressureSpacecraft;
 import fr.cs.orekit.propagation.SpacecraftState;
@@ -166,14 +166,14 @@ public class SolarRadiationPressure implements ForceModel {
     /** Get the switching functions related to umbra and penumbra passes.
      * @return umbra/penumbra switching functions
      */
-    public SWF[] getSwitchingFunctions() {
-        return new SWF[] { new Umbraswitch(), new Penumbraswitch() };
+    public OrekitSwitchingFunction[] getSwitchingFunctions() {
+        return new OrekitSwitchingFunction[] { new Umbraswitch(), new Penumbraswitch() };
     }
 
     /** This class defines the Umbra switching function.
      * It triggers when the satellite enters the umbra zone.
      */
-    private class Umbraswitch implements SWF {
+    private class Umbraswitch implements OrekitSwitchingFunction {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 8164370576237170346L;
@@ -221,7 +221,7 @@ public class SolarRadiationPressure implements ForceModel {
     /** This class defines the penumbra switching function.
      * It triggers when the satellite enters the penumbra zone.
      */
-    private class Penumbraswitch implements SWF {
+    private class Penumbraswitch implements OrekitSwitchingFunction {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -8548885301322210937L;

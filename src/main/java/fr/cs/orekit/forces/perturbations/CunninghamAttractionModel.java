@@ -2,7 +2,7 @@ package fr.cs.orekit.forces.perturbations;
 
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.forces.ForceModel;
-import fr.cs.orekit.forces.SWF;
+import fr.cs.orekit.forces.OrekitSwitchingFunction;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.frames.Transform;
 import fr.cs.orekit.propagation.SpacecraftState;
@@ -359,8 +359,8 @@ public class CunninghamAttractionModel implements ForceModel {
     /** There are no SwitchingFunctions for this model.
      * @return an empty array
      */
-    public SWF[] getSwitchingFunctions() {
-        return new SWF[0];
+    public OrekitSwitchingFunction[] getSwitchingFunctions() {
+        return new OrekitSwitchingFunction[0];
     }
 
 }

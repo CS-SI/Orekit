@@ -1,12 +1,11 @@
 package fr.cs.orekit.errors;
 
 /** This class is the base class for all specific exceptions thrown by
- * during the propagation calculus.
+ * during the propagation computation.
  *
- * @author  L. Maisonobe
+ * @author  Luc Maisonobe
  */
-public class PropagationException
-extends OrekitException {
+public class PropagationException extends OrekitException {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 3644973045303340556L;

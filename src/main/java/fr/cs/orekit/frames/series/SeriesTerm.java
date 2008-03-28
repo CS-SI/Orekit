@@ -8,6 +8,12 @@ import java.io.Serializable;
  */
 public abstract class SeriesTerm implements Serializable {
 
+    /** Coefficient for the sine of the argument. */
+    private final double sinCoeff;
+
+    /** Coefficient for the cosine of the argument. */
+    private final double cosCoeff;
+
     /** Simple constructor for the base class.
      * @param sinCoeff coefficient for the sine of the argument
      * @param cosCoeff coefficient for the cosine of the argument
@@ -22,7 +28,7 @@ public abstract class SeriesTerm implements Serializable {
      * @return current value of the term
      */
     public double value(BodiesElements elements) {
-        double a = argument(elements);
+        final double a = argument(elements);
         return sinCoeff * Math.sin(a) + cosCoeff * Math.cos(a);
     }
 
@@ -63,8 +69,8 @@ public abstract class SeriesTerm implements Serializable {
         if (cL == 0 && cLPrime == 0 && cF == 0 && cD == 0 && cOmega == 0) {
             return new PlanetaryTerm(sinCoeff, cosCoeff,
                                      cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
-        } else if (cMe == 0 && cVe == 0 && cE == 0 && cMa == 0 && cJu == 0
-                && cSa == 0 && cUr == 0 && cNe == 0 && cPa == 0) {
+        } else if (cMe == 0 && cVe == 0 && cE == 0 && cMa == 0 && cJu == 0 &&
+                   cSa == 0 && cUr == 0 && cNe == 0 && cPa == 0) {
             return new LuniSolarTerm(sinCoeff, cosCoeff,
                                      cL, cLPrime, cF, cD, cOmega);
         } else if (cLPrime == 0 && cUr == 0 && cNe == 0 && cPa == 0) {
@@ -78,11 +84,5 @@ public abstract class SeriesTerm implements Serializable {
         }
 
     }
-
-    /** Coefficient for the sine of the argument. */
-    private final double sinCoeff;
-
-    /** Coefficient for the cosine of the argument. */
-    private final double cosCoeff;
 
 }

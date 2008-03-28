@@ -7,41 +7,6 @@ package fr.cs.orekit.frames.series;
  */
 public final class BodiesElements {
 
-    /** Simple constructor.
-     * @param l mean anomaly of the Moon
-     * @param lPrime mean anomaly of the Sun
-     * @param f L - &Omega; where L is the mean longitude of the Moon
-     * @param d mean elongation of the Moon from the Sun
-     * @param omega mean longitude of the ascending node of the Moon
-     * @param lMe mean Mercury longitude
-     * @param lVe mean Venus longitude
-     * @param lE mean Earth longitude
-     * @param lMa mean Mars longitude
-     * @param lJu mean Jupiter longitude
-     * @param lSa mean Saturn longitude
-     * @param lUr mean Uranus longitude
-     * @param lNe mean Neptune longitude
-     * @param pa general accumulated precession in longitude
-     */
-    public BodiesElements(double l, double lPrime, double f, double d, double omega,
-                          double lMe, double lVe, double lE, double lMa, double lJu,
-                          double lSa, double lUr, double lNe, double pa) {
-        this.l      = l;
-        this.lPrime = lPrime;
-        this.f      = f;
-        this.d      = d;
-        this.omega  = omega;
-        this.lMe    = lMe;
-        this.lVe    = lVe;
-        this.lE     = lE;
-        this.lMa    = lMa;
-        this.lJu    = lJu;
-        this.lSa    = lSa;
-        this.lUr    = lUr;
-        this.lNe    = lNe;
-        this.pa     = pa;
-    }
-
     /** Mean anomaly of the Moon. */
     public final double l;
 
@@ -83,5 +48,40 @@ public final class BodiesElements {
 
     /** General accumulated precession in longitude. */
     public final double pa;
+
+    /** Simple constructor.
+     * @param l mean anomaly of the Moon
+     * @param lPrime mean anomaly of the Sun
+     * @param f L - &Omega; where L is the mean longitude of the Moon
+     * @param d mean elongation of the Moon from the Sun
+     * @param omega mean longitude of the ascending node of the Moon
+     * @param lMe mean Mercury longitude
+     * @param lVe mean Venus longitude
+     * @param lE mean Earth longitude
+     * @param lMa mean Mars longitude
+     * @param lJu mean Jupiter longitude
+     * @param lSa mean Saturn longitude
+     * @param lUr mean Uranus longitude
+     * @param lNe mean Neptune longitude
+     * @param pa general accumulated precession in longitude
+     */
+    public BodiesElements(double l, double lPrime, double f, double d, double omega,
+                          double lMe, double lVe, double lE, double lMa, double lJu,
+                          double lSa, double lUr, double lNe, double pa) {
+        this.l      = l;
+        this.lPrime = lPrime;
+        this.f      = f;
+        this.d      = d;
+        this.omega  = omega;
+        this.lMe    = lMe;
+        this.lVe    = lVe;
+        this.lE     = lE;
+        this.lMa    = lMa;
+        this.lJu    = lJu;
+        this.lSa    = lSa;
+        this.lUr    = lUr;
+        this.lNe    = lNe;
+        this.pa     = pa;
+    }
 
 }

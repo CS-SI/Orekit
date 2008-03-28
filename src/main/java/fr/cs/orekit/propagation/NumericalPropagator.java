@@ -18,7 +18,7 @@ import fr.cs.orekit.attitudes.AttitudeKinematicsProvider;
 import fr.cs.orekit.attitudes.models.IdentityAttitude;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.forces.ForceModel;
-import fr.cs.orekit.forces.SWF;
+import fr.cs.orekit.forces.OrekitSwitchingFunction;
 import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.time.AbsoluteDate;
@@ -142,7 +142,7 @@ public class NumericalPropagator
      */
     public void addForceModel(ForceModel model) {
         forceModels.add(model);
-        final SWF[] swf = model.getSwitchingFunctions();
+        final OrekitSwitchingFunction[] swf = model.getSwitchingFunctions();
         if (swf != null) {
             for (int i = 0 ; i < swf.length ; i++) {
                 forceSwf.add(swf[i]);
@@ -243,7 +243,7 @@ public class NumericalPropagator
      */
     private SpacecraftState propagate(SpacecraftState initialState,
                                       AbsoluteDate finalDate, StepHandler handler)
-    throws OrekitException {
+        throws OrekitException {
 
         if (initialState.getDate().equals(finalDate)) {
             // don't extrapolate
@@ -280,8 +280,8 @@ public class NumericalPropagator
         state[6] = initialState.getMass();
 
         // Add the switching functions
-        for (Iterator iter = forceSwf.iterator(); iter.hasNext(); ) {
-            final SWF swf = (SWF) iter.next();
+        for (final Iterator iter = forceSwf.iterator(); iter.hasNext(); ) {
+            final OrekitSwitchingFunction swf = (OrekitSwitchingFunction) iter.next();
             integrator.addSwitchingFunction(new MappingSwitchingFunction(swf),
                                             swf.getMaxCheckInterval(), swf.getThreshold(),
                                             swf.getMaxIterationCount());
@@ -334,7 +334,7 @@ public class NumericalPropagator
      * if the underlying user function triggers one
      */
     public void computeDerivatives(double t, double[] y, double[] yDot)
-    throws DerivativeException {
+        throws DerivativeException {
 
         try {
             if (swfException != null) {
@@ -374,12 +374,11 @@ public class NumericalPropagator
     private void mapState(double t, double [] y) throws OrekitException {
 
         // update space dynamics view
-
-        EquinoctialParameters currentParameters =
+        final EquinoctialParameters currentParameters =
             new EquinoctialParameters(y[0], y[1],y[2],y[3],y[4],y[5],
                                       EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
                                       currentState.getFrame());
-        AbsoluteDate currentDate = new AbsoluteDate(startDate, t);
+        final AbsoluteDate currentDate = new AbsoluteDate(startDate, t);
         currentState =
             new SpacecraftState(new Orbit(currentDate, currentParameters), y[6],
                                 akProvider.getAttitudeKinematics(currentDate,
@@ -395,9 +394,9 @@ public class NumericalPropagator
         private static final long serialVersionUID = -6733513215617899510L;
 
         /** Underlying orekit switching function. */
-        private final SWF swf;
+        private final OrekitSwitchingFunction swf;
 
-        public MappingSwitchingFunction(SWF swf) {
+        public MappingSwitchingFunction(OrekitSwitchingFunction swf) {
             this.swf = swf;
         }
 

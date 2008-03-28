@@ -46,8 +46,7 @@ public class ChunkedDate {
      * are given (parameters out of range, february 29 for non-leap years,
      * dates during the gregorian leap in 1582 ...)
      */
-    public ChunkedDate(int year, int month, int day)
-    throws IllegalArgumentException {
+    public ChunkedDate(int year, int month, int day) throws IllegalArgumentException {
 
         // very rough range check
         // (just to avoid ArrayOutOfboundException in MonthDayFactory later)
@@ -64,7 +63,7 @@ public class ChunkedDate {
         this.day   = day;
 
         // build a check date from the J2000 day
-        ChunkedDate check = new ChunkedDate(getJ2000Day());
+        final ChunkedDate check = new ChunkedDate(getJ2000Day());
 
         // check the parameters for mismatch
         if ((year != check.year) || (month != check.month) || (day != check.day)) {
@@ -100,7 +99,8 @@ public class ChunkedDate {
         final int dayInYear = j2000Day - yFactory.getLastJ2000DayOfYear(year - 1);
 
         // handle month/day according to the year being a common or leap year
-        MonthDayFactory mdFactory = yFactory.isLeap(year) ? leapYearFactory : commonYearFactory;
+        final MonthDayFactory mdFactory =
+            yFactory.isLeap(year) ? leapYearFactory : commonYearFactory;
         month = mdFactory.getMonth(dayInYear);
         day   = mdFactory.getDay(dayInYear, month);
 
@@ -118,9 +118,10 @@ public class ChunkedDate {
                 yFactory = julianFactory;
             }
         }
-        MonthDayFactory mdFactory = yFactory.isLeap(year) ? leapYearFactory : commonYearFactory;
-        return yFactory.getLastJ2000DayOfYear(year - 1)
-        + mdFactory.getDayInYear(month, day);
+        final MonthDayFactory mdFactory =
+            yFactory.isLeap(year) ? leapYearFactory : commonYearFactory;
+        return yFactory.getLastJ2000DayOfYear(year - 1) +
+               mdFactory.getDayInYear(month, day);
     }
 
     /** Get the day of week.
@@ -137,10 +138,10 @@ public class ChunkedDate {
      */
     public String toString() {
         return new StringBuffer().
-        append(fourDigits.format(year)).append('-').
-        append(twoDigits.format(month)).append('-').
-        append(twoDigits.format(day)).
-        toString();
+               append(fourDigits.format(year)).append('-').
+               append(twoDigits.format(month)).append('-').
+               append(twoDigits.format(day)).
+               toString();
     }
 
     /** Interface for dealing with years sequences according to some calendar. */
@@ -169,14 +170,17 @@ public class ChunkedDate {
     /** Class providing a years sequence compliant with the proleptic julian calendar. */
     private static class ProlepticJulianFactory implements YearFactory {
 
+        /** {@inheritDoc} */
         public int getYear(int j2000Day) {
             return  -((-4 * j2000Day - 2920488) / 1461);
         }
 
+        /** {@inheritDoc} */
         public int getLastJ2000DayOfYear(int year) {
             return (1461 * year + 1) / 4 - 730123;
         }
 
+        /** {@inheritDoc} */
         public boolean isLeap(int year) {
             return (year % 4) == 0;
         }
@@ -186,14 +190,17 @@ public class ChunkedDate {
     /** Class providing a years sequence compliant with the julian calendar. */
     private static class JulianFactory implements YearFactory {
 
+        /** {@inheritDoc} */
         public int getYear(int j2000Day) {
             return  (4 * j2000Day + 2921948) / 1461;
         }
 
+        /** {@inheritDoc} */
         public int getLastJ2000DayOfYear(int year) {
             return (1461 * year) / 4 - 730122;
         }
 
+        /** {@inheritDoc} */
         public boolean isLeap(int year) {
             return (year % 4) == 0;
         }
@@ -203,6 +210,7 @@ public class ChunkedDate {
     /** Class providing a years sequence compliant with the gregorian calendar. */
     private static class GregorianFactory implements YearFactory {
 
+        /** {@inheritDoc} */
         public int getYear(int j2000Day) {
 
             // year estimate
@@ -219,10 +227,12 @@ public class ChunkedDate {
 
         }
 
+        /** {@inheritDoc} */
         public int getLastJ2000DayOfYear(int year) {
             return (1461 * year) / 4 - year / 100 + year / 400 - 730120;
         }
 
+        /** {@inheritDoc} */
         public boolean isLeap(int year) {
             return ((year % 4) == 0) && (((year % 400) == 0) || ((year % 100) != 0));
         }
@@ -257,18 +267,22 @@ public class ChunkedDate {
     /** Class providing the months sequence for leap years. */
     private static class LeapYearFactory implements MonthDayFactory {
 
+        /** Months succession definition. */
         private static final int[] previousMonthEndDay = {
             0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335
         };
 
+        /** {@inheritDoc} */
         public int getMonth(int dayInYear) {
             return (dayInYear < 32) ? 1 : (10 * dayInYear + 313) / 306;
         }
 
+        /** {@inheritDoc} */
         public int getDay(int dayInYear, int month) {
             return dayInYear - previousMonthEndDay[month];
         }
 
+        /** {@inheritDoc} */
         public int getDayInYear(int month, int day) {
             return day + previousMonthEndDay[month];
         }
@@ -278,18 +292,22 @@ public class ChunkedDate {
     /** Class providing the months sequence for common years. */
     private static class CommonYearFactory implements MonthDayFactory {
 
+        /** Months succession definition. */
         private static final int[] previousMonthEndDay = {
             0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334
         };
 
+        /** {@inheritDoc} */
         public int getMonth(int dayInYear) {
             return (dayInYear < 32) ? 1 : (10 * dayInYear + 323) / 306;
         }
 
+        /** {@inheritDoc} */
         public int getDay(int dayInYear, int month) {
             return dayInYear - previousMonthEndDay[month];
         }
 
+        /** {@inheritDoc} */
         public int getDayInYear(int month, int day) {
             return day + previousMonthEndDay[month];
         }

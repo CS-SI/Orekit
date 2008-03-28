@@ -5,14 +5,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import fr.cs.orekit.errors.OrekitException;
 
 /**This reader is adapted to the EGM Format.
  *
- * <p> The proper way to use this class is to call the
- *  {@link fr.cs.orekit.potential.PotentialReaderFactory}
+ * <p> The proper way to use this class is to call the {@link PotentialReaderFactory}
  *  which will determine which reader to use with the selected potential
  *  coefficients file <p>
  *
@@ -20,6 +20,12 @@ import fr.cs.orekit.errors.OrekitException;
  * @author F. Maussion
  */
 public class EGMFormatReader extends PotentialCoefficientsReader {
+
+    /** Format compatibility flag. */
+    private boolean fileIsOK;
+
+    /** The input to check and read. */
+    private InputStream in;
 
     /** Simple constructor (the first method to call after construction is
      * {@link #isFileOK(InputStream)}. It is done automaticaly by the factory).
@@ -39,7 +45,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
     public boolean isFileOK(InputStream in) throws IOException {
 
         this.in = in;
-        BufferedReader r = new BufferedReader(new InputStreamReader(in));
+        final BufferedReader r = new BufferedReader(new InputStreamReader(in));
 
         // tests variables
         boolean iKnow = false;
@@ -47,17 +53,18 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
         int c = 1;
 
         // set up the regular expressions
-        String integerField = " +[0-9]+";
-        String realField = " +[-+0-9.e.E]+";
-        Pattern regularPattern = Pattern.compile("^" + integerField + integerField
-                                                 + realField + realField + realField + realField + " *$");
+        final String integerField = " +[0-9]+";
+        final String realField = " +[-+0-9.e.E]+";
+        final Pattern regularPattern =
+            Pattern.compile("^" + integerField + integerField +
+                            realField + realField + realField + realField + " *$");
 
         // read the first lines to detect the format
         for (String line = r.readLine(); !iKnow; line = r.readLine()) {
             if (line == null) {
                 iKnow = true;
             } else {
-                Matcher matcher = regularPattern.matcher(line);
+                final Matcher matcher = regularPattern.matcher(line);
                 if (matcher.matches()) {
                     lineIndex++;
                 }
@@ -89,30 +96,28 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
             throw new OrekitException("the reader is not adapted to the format ",
                                       new Object[0]);
         }
-        BufferedReader r = new BufferedReader(new InputStreamReader(in));
 
-        ArrayList cl = new ArrayList();
-        ArrayList sl = new ArrayList();
+        final BufferedReader r = new BufferedReader(new InputStreamReader(in));
+        final List cl = new ArrayList();
+        final List sl = new ArrayList();
         for (String line = r.readLine(); line != null; line = r.readLine()) {
             if (line.length() >= 15) {
 
                 // get the fields defining the current the potential terms
-                String[] tab = line.trim().split("\\s+");
-                int i = Integer.parseInt(tab[0]);
-                int j = Integer.parseInt(tab[1]);
-                double c = Double.parseDouble(tab[2]);
-                double s = Double.parseDouble(tab[3]);
+                final String[] tab = line.trim().split("\\s+");
+                final int i = Integer.parseInt(tab[0]);
+                final int j = Integer.parseInt(tab[1]);
+                final double c = Double.parseDouble(tab[2]);
+                final double s = Double.parseDouble(tab[3]);
 
                 // extend the cl array if needed
                 while (cl.size() <= i) {
-                    double[] row = new double[cl.size() + 1];
-                    cl.add(row);
+                    cl.add(new double[cl.size() + 1]);
                 }
 
                 // extend the sl array if needed
                 while (sl.size() <= i) {
-                    double[] row = new double[sl.size() + 1];
-                    sl.add(row);
+                    sl.add(new double[sl.size() + 1]);
                 }
 
                 // store the terms
@@ -127,11 +132,5 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
         normalizedS = (double[][]) sl.toArray(new double[sl.size()][]);
 
     }
-
-    /** is file ok? */
-    private boolean fileIsOK;
-
-    /** The input to check and read */
-    private InputStream in;
 
 }

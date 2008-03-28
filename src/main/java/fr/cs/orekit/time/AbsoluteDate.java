@@ -40,9 +40,6 @@ import java.io.Serializable;
  */
 public class AbsoluteDate implements Comparable, Serializable {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 869125978894503980L;
-
     /** Reference epoch for julian dates: -4712-01-01T12:00:00.
      * <p>Both <code>java.util.Date</code> and {@link ChunkedDate} classes
      * follow the astronomical conventions and consider a year 0 between
@@ -50,52 +47,41 @@ public class AbsoluteDate implements Comparable, Serializable {
      * in year -4713 as can be seen in other documents or programs that obey
      * a different convention (for example the <code>convcal</code> utility).</p>
      */
-    public static final AbsoluteDate JulianEpoch;
+    public static final AbsoluteDate JulianEpoch =
+        new AbsoluteDate(new ChunkedDate(-4712,  1,  1), ChunkedTime.H12, TTScale.getInstance());
 
     /** Reference epoch for modified julian dates: 1858-11-17T00:00:00. */
-    public static final AbsoluteDate ModifiedJulianEpoch;
+    public static final AbsoluteDate ModifiedJulianEpoch =
+        new AbsoluteDate(new ChunkedDate( 1858, 11, 17), ChunkedTime.H00, TTScale.getInstance());
 
     /** Reference epoch for 1950 dates: 1950-01-01T00:00:00. */
-    public static final AbsoluteDate FiftiesEpoch;
+    public static final AbsoluteDate FiftiesEpoch =
+        new AbsoluteDate(new ChunkedDate( 1950,  1,  1), ChunkedTime.H00, TTScale.getInstance());
 
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 UTC. */
-    public static final AbsoluteDate GPSEpoch;
+    // GPS epoch is 1980-01-06T00:00:00Z (i.e. UTC), TAI - UTC = +19s at this time,
+    // we use a date in TAI here for safety reasons, to avoid calling
+    // UTCScale.getInstance() which may throw an exception as this is not
+    // desired in this very early run part of code
+    public static final AbsoluteDate GPSEpoch =
+        new AbsoluteDate(new ChunkedDate(1980, 1, 6), new ChunkedTime(0, 0, 19), TAIScale.getInstance());
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC). */
-    public static final AbsoluteDate J2000Epoch;
+    public static final AbsoluteDate J2000Epoch =
+        new AbsoluteDate(new ChunkedDate( 2000,  1,  1), ChunkedTime.H12, TTScale.getInstance());
 
     /** Java Reference epoch: 1970-01-01T00:00:00 TT. */
-    public static final AbsoluteDate JavaEpoch;
+    public static final AbsoluteDate JavaEpoch =
+        new AbsoluteDate(new ChunkedDate( 1970,  1,  1), ChunkedTime.H00, TTScale.getInstance());
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 869125978894503980L;
 
     /** Reference epoch in milliseconds from 1970-01-01T00:00:00 TAI. */
     private final long epoch;
 
     /** Offset from the reference epoch in seconds. */
     private final double offset;
-
-    static {
-
-        final TimeScale tai = TAIScale.getInstance();
-        final TimeScale tt  = TTScale.getInstance();
-        JulianEpoch =
-            new AbsoluteDate(new ChunkedDate(-4712,  1,  1), ChunkedTime.H12, tt);
-        ModifiedJulianEpoch =
-            new AbsoluteDate(new ChunkedDate( 1858, 11, 17), ChunkedTime.H00, tt);
-        FiftiesEpoch =
-            new AbsoluteDate(new ChunkedDate( 1950,  1,  1), ChunkedTime.H00, tt);
-        JavaEpoch =
-            new AbsoluteDate(new ChunkedDate( 1970,  1,  1), ChunkedTime.H00, tt);
-        J2000Epoch =
-            new AbsoluteDate(new ChunkedDate( 2000,  1,  1), ChunkedTime.H12, tt);
-
-        // GPS epoch is 1980-01-06T00:00:00Z (i.e. UTC), TAI - UTC = +19s at this time,
-        // we use a date in TAI here for safety reasons, to avoid calling
-        // UTCScale.getInstance() which may throw an exception as this is not
-        // desired in this very early run part of code
-        GPSEpoch =
-            new AbsoluteDate(new ChunkedDate(1980, 1, 6), new ChunkedTime(0, 0, 19), tai);
-
-    }
 
     /** Create an instance with a default value ({@link #J2000Epoch}).
      */

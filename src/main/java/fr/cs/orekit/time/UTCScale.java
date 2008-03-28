@@ -28,11 +28,19 @@ import fr.cs.orekit.iers.UTCTAIHistoryFilesLoader;
  */
 public class UTCScale extends TimeScale {
 
+    /** Unique instance. */
+    private static TimeScale instance = null;
+
+    /** Time steps. */
+    private Leap[] leaps;
+
+    /** Date of the first available known UTC steps. */
+    private AbsoluteDate UTCStartDate;
+
     /** Private constructor for the singleton.
      * @exception OrekitException if the time steps cannot be read
      */
-    private UTCScale()
-    throws OrekitException {
+    private UTCScale() throws OrekitException {
         super("UTC");
 
         // get the time steps from the history file
@@ -45,8 +53,7 @@ public class UTCScale extends TimeScale {
      * @return the unique instance
      * @exception OrekitException if the time steps cannot be read
      */
-    public static TimeScale getInstance()
-    throws OrekitException {
+    public static TimeScale getInstance() throws OrekitException {
         if (instance == null) {
             instance = new UTCScale();
         }
@@ -61,7 +68,7 @@ public class UTCScale extends TimeScale {
      */
     public double offsetFromTAI(double taiTime) {
         for (int i = 0; i < leaps.length; ++i) {
-            Leap leap = leaps[i];
+            final Leap leap = leaps[i];
             if ((taiTime  + (leap.offsetAfter - leap.step)) >= leap.utcTime) {
                 return leap.offsetAfter;
             }
@@ -77,7 +84,7 @@ public class UTCScale extends TimeScale {
      */
     public double offsetToTAI(double instanceTime) {
         for (int i = 0; i < leaps.length; ++i) {
-            Leap leap = leaps[i];
+            final Leap leap = leaps[i];
             if (instanceTime >= leap.utcTime) {
                 return -leap.offsetAfter;
             }
@@ -87,28 +94,17 @@ public class UTCScale extends TimeScale {
 
     /** Get the date of the first available known UTC steps.
      * @return the start date of the available data
-     * @throws OrekitException
      */
-    public AbsoluteDate getStartDate()
-    throws OrekitException {
+    public AbsoluteDate getStartDate() {
         if (UTCStartDate == null) {
-            AbsoluteDate ref =
+            final AbsoluteDate ref =
                 new AbsoluteDate(new ChunkedDate(1970, 1, 1),
                                  new ChunkedTime(0, 0, 0),
                                  this);
-            Leap firstLeap = leaps[leaps.length - 1];
+            final Leap firstLeap = leaps[leaps.length - 1];
             UTCStartDate = new AbsoluteDate(ref, firstLeap.utcTime - firstLeap.step);
         }
         return UTCStartDate;
     }
-
-    /** Uniq instance. */
-    private static TimeScale instance = null;
-
-    /** Time steps. */
-    private Leap[] leaps;
-
-    /** Date of the first available known UTC steps. */
-    private AbsoluteDate UTCStartDate;
 
 }

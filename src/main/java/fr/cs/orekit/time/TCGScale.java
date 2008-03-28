@@ -13,6 +13,15 @@ import java.text.SimpleDateFormat;
  */
 public class TCGScale extends TimeScale {
 
+    /** Unique instance. */
+    private static TimeScale instance = null;
+
+    /** LG rate. */
+    private static double lg = 6.969290134e-10;
+
+    /** Inverse rate. */
+    private static double inverse = 1.0 / (1.0 + lg);
+
     // reference time scale
     private static final TimeScale tt;
 
@@ -22,7 +31,7 @@ public class TCGScale extends TimeScale {
     static {
         try {
             tt = TTScale.getInstance();
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
             reference = format.parse("1977-01-01").getTime();
         } catch (ParseException pe) {
             throw new RuntimeException("internal error"); // should not happen
@@ -52,7 +61,7 @@ public class TCGScale extends TimeScale {
      * in instance time scale
      */
     public double offsetFromTAI(double taiTime) {
-        double ttOffset = tt.offsetFromTAI(taiTime);
+        final double ttOffset = tt.offsetFromTAI(taiTime);
         return ttOffset + lg * (ttOffset + taiTime - reference);
     }
 
@@ -63,17 +72,8 @@ public class TCGScale extends TimeScale {
      * in {@link TAIScale}  time scale
      */
     public double offsetToTAI(double instanceTime) {
-        double ttTime = inverse * (instanceTime + lg * reference);
+        final double ttTime = inverse * (instanceTime + lg * reference);
         return tt.offsetToTAI(ttTime) - lg * inverse * (instanceTime - reference);
     }
-
-    /** Uniq instance. */
-    private static TimeScale instance = null;
-
-    /** LG rate. */
-    private static double lg = 6.969290134e-10;
-
-    /** Inverse rate. */
-    private static double inverse = 1.0 / (1.0 + lg);
 
 }
