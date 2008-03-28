@@ -2,10 +2,10 @@ package fr.cs.orekit.forces.maneuvers;
 
 import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.forces.ForceModel;
-import fr.cs.orekit.forces.OrekitSwitchingFunction;
 import fr.cs.orekit.propagation.SpacecraftState;
-import fr.cs.orekit.propagation.TimeDerivativesEquations;
+import fr.cs.orekit.propagation.forces.ForceModel;
+import fr.cs.orekit.propagation.numerical.OrekitSwitchingFunction;
+import fr.cs.orekit.propagation.numerical.TimeDerivativesEquations;
 import fr.cs.orekit.time.AbsoluteDate;
 
 

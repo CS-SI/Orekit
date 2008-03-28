@@ -1,4 +1,4 @@
-package fr.cs.orekit.propagation;
+package fr.cs.orekit.propagation.numerical;
 
 import org.apache.commons.math.ode.ContinuousOutputModel;
 
@@ -10,6 +10,7 @@ import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.propagation.BoundedEphemeris;
+import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
 
 /** This class stores numerically integrated orbital parameters for

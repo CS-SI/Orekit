@@ -23,10 +23,10 @@ import fr.cs.orekit.models.spacecraft.SphericalSpacecraft;
 import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.orbits.OrbitalParameters;
-import fr.cs.orekit.propagation.FixedStepHandler;
-import fr.cs.orekit.propagation.KeplerianPropagator;
-import fr.cs.orekit.propagation.NumericalPropagator;
 import fr.cs.orekit.propagation.SpacecraftState;
+import fr.cs.orekit.propagation.analytical.KeplerianPropagator;
+import fr.cs.orekit.propagation.numerical.NumericalPropagator;
+import fr.cs.orekit.propagation.numerical.OrekitFixedStepHandler;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.ChunkedDate;
 import fr.cs.orekit.time.ChunkedTime;
@@ -121,7 +121,7 @@ public class SolarRadiationPressureTest extends TestCase {
 
     private double mu = 3.98600E14;
 
-    private class SolarStepHandler extends FixedStepHandler {
+    private class SolarStepHandler extends OrekitFixedStepHandler {
 
         private SolarStepHandler() {
         }

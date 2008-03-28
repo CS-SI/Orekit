@@ -26,10 +26,10 @@ import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.KeplerianParameters;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.orbits.OrbitalParameters;
-import fr.cs.orekit.propagation.EcksteinHechlerPropagator;
-import fr.cs.orekit.propagation.FixedStepHandler;
-import fr.cs.orekit.propagation.NumericalPropagator;
 import fr.cs.orekit.propagation.SpacecraftState;
+import fr.cs.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import fr.cs.orekit.propagation.numerical.NumericalPropagator;
+import fr.cs.orekit.propagation.numerical.OrekitFixedStepHandler;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.ChunkedDate;
 import fr.cs.orekit.time.ChunkedTime;
@@ -79,7 +79,7 @@ public class CunninghamAttractionModelTest extends TestCase {
 
     }
 
-    private static class SpotStepHandler extends FixedStepHandler {
+    private static class SpotStepHandler extends OrekitFixedStepHandler {
 
         public SpotStepHandler(AbsoluteDate date, double mu) {
             this.mu   = mu;
@@ -158,7 +158,7 @@ public class CunninghamAttractionModelTest extends TestCase {
 
     }
 
-    private class EckStepHandler extends FixedStepHandler {
+    private class EckStepHandler extends OrekitFixedStepHandler {
 
         private EckStepHandler(Orbit initialOrbit)
         throws FileNotFoundException, OrekitException {

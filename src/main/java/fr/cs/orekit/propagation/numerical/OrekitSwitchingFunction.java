@@ -1,12 +1,11 @@
-package fr.cs.orekit.forces;
+package fr.cs.orekit.propagation.numerical;
 
 import java.io.Serializable;
 
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.propagation.SpacecraftState;
 
-/** This interface represents the switching function of the set of force
- * models.
+/** This interface represents space-dynamics aware switching functions.
  * 
  * <p>It mirrors the {@link org.apache.commons.math.ode.SwitchingFunction
  * SwitchingFunction} interface from <a href="http://commons.apache.org/math/"

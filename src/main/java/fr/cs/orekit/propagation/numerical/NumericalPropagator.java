@@ -1,4 +1,4 @@
-package fr.cs.orekit.propagation;
+package fr.cs.orekit.propagation.numerical;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -17,10 +17,11 @@ import org.apache.commons.math.ode.SwitchingFunction;
 import fr.cs.orekit.attitudes.AttitudeKinematicsProvider;
 import fr.cs.orekit.attitudes.models.IdentityAttitude;
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.forces.ForceModel;
-import fr.cs.orekit.forces.OrekitSwitchingFunction;
 import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.Orbit;
+import fr.cs.orekit.propagation.AttitudePropagator;
+import fr.cs.orekit.propagation.SpacecraftState;
+import fr.cs.orekit.propagation.forces.ForceModel;
 import fr.cs.orekit.time.AbsoluteDate;
 
 /** This class propagates a {@link fr.cs.orekit.propagation.SpacecraftState}
@@ -42,7 +43,7 @@ import fr.cs.orekit.time.AbsoluteDate;
  *  {@link IntegratedEphemeris}</dd>
  *  <dt>if the user needs to do some action at regular time steps during
  *      integration</dt>
- *  <dd>he will use {@link #propagate(SpacecraftState,AbsoluteDate,double,FixedStepHandler)}</dd>
+ *  <dd>he will use {@link #propagate(SpacecraftState,AbsoluteDate,double,OrekitFixedStepHandler)}</dd>
  *  <dt>if the user needs to do some action during integration but do not need
  *      specific time steps</dt>
  *  <dd>he will use {@link #propagate(SpacecraftState,AbsoluteDate,StepHandler)}</dd>
@@ -66,7 +67,7 @@ import fr.cs.orekit.time.AbsoluteDate;
  * @see SpacecraftState
  * @see ForceModel
  * @see StepHandler
- * @see FixedStepHandler
+ * @see OrekitFixedStepHandler
  * @see IntegratedEphemeris
  * @see AttitudeKinematicsProvider
  * @see TimeDerivativesEquations
@@ -212,10 +213,10 @@ public class NumericalPropagator
      * @exception OrekitException if integration cannot be performed
      */
     public SpacecraftState propagate(SpacecraftState initialState, AbsoluteDate finalDate,
-                                     double h, FixedStepHandler handler)
+                                     double h, OrekitFixedStepHandler handler)
         throws OrekitException {
-        handler.initialize(initialState.getDate(), akProvider, initialState.getFrame(), mu);
-        return propagate(initialState, finalDate, new StepNormalizer(h, handler.getMantissaStepHandler()));
+        handler.initialize(initialState.getDate(), initialState.getFrame(), mu, akProvider);
+        return propagate(initialState, finalDate, new StepNormalizer(h, handler));
     }
 
     /** Propagate an orbit and call a user handler at each step end.
@@ -225,12 +226,11 @@ public class NumericalPropagator
      * @return the state at the final date
      * @exception OrekitException if integration cannot be performed
      */
-    public SpacecraftState propagate(SpacecraftState initialState,
-                                     AbsoluteDate finalDate,
-                                     fr.cs.orekit.propagation.StepHandler handler)
+    public SpacecraftState propagate(SpacecraftState initialState, AbsoluteDate finalDate,
+                                     OrekitStepHandler handler)
         throws OrekitException {
-        handler.initialize(initialState.getDate(), akProvider, initialState.getFrame(), mu);
-        return propagate(initialState, finalDate, handler.getMantissaStepHandler());
+        handler.initialize(initialState.getDate(), initialState.getFrame(), mu, akProvider);
+        return propagate(initialState, finalDate, handler);
     }
 
 
@@ -253,14 +253,14 @@ public class NumericalPropagator
         // space dynamics view
         startDate  = initialState.getDate();
 
-        EquinoctialParameters parameters =
+        final EquinoctialParameters initialParameters =
             new EquinoctialParameters(initialState.getParameters(), mu);
 
         currentState =
-            new SpacecraftState(new Orbit(initialState.getDate(), parameters),
+            new SpacecraftState(new Orbit(initialState.getDate(), initialParameters),
                                 initialState.getMass(), initialState.getAttitudeKinematics());
 
-        adder = new TimeDerivativesEquations(parameters , mu);
+        adder = new TimeDerivativesEquations(initialParameters , mu);
 
         if (initialState.getMass() <= 0.0) {
             throw new IllegalArgumentException("Mass is null or negative");
@@ -271,12 +271,12 @@ public class NumericalPropagator
         final double t1 = finalDate.minus(startDate);
 
         // Map state to array
-        state[0] = parameters.getA();
-        state[1] = parameters.getEquinoctialEx();
-        state[2] = parameters.getEquinoctialEy();
-        state[3] = parameters.getHx();
-        state[4] = parameters.getHy();
-        state[5] = parameters.getLv();
+        state[0] = initialParameters.getA();
+        state[1] = initialParameters.getEquinoctialEx();
+        state[2] = initialParameters.getEquinoctialEy();
+        state[3] = initialParameters.getHx();
+        state[4] = initialParameters.getHy();
+        state[5] = initialParameters.getLv();
         state[6] = initialState.getMass();
 
         // Add the switching functions
@@ -307,10 +307,10 @@ public class NumericalPropagator
         // back to space dynamics view
         final AbsoluteDate date = new AbsoluteDate(startDate, t1);
 
-        parameters =
+        final EquinoctialParameters parameters =
             new EquinoctialParameters(state[0], state[1],state[2],state[3],
                                       state[4],state[5], EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                      parameters.getFrame());
+                                      initialParameters.getFrame());
 
         return new SpacecraftState(new Orbit(date , parameters), state[6],
                                    akProvider.getAttitudeKinematics(date,
@@ -318,7 +318,7 @@ public class NumericalPropagator
                                                                     parameters.getFrame()));
     }
 
-    /** Gets the dimension of the handled state vecor (always 7).
+    /** Gets the dimension of the handled state vector (always 7).
      * @return 7.
      */
     public int getDimension() {

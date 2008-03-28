@@ -7,7 +7,7 @@ import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.propagation.NumericalPropagator;
+import fr.cs.orekit.propagation.numerical.NumericalPropagator;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
 

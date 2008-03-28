@@ -1,4 +1,4 @@
-package fr.cs.orekit.propagation;
+package fr.cs.orekit.propagation.numerical;
 
 import java.util.Arrays;
 import org.apache.commons.math.geometry.Vector3D;
@@ -47,7 +47,7 @@ import fr.cs.orekit.utils.PVCoordinates;
  * </ul>
  * </p>
  * @see fr.cs.orekit.orbits.EquinoctialParameters
- * @see fr.cs.orekit.propagation.NumericalPropagator
+ * @see fr.cs.orekit.propagation.numerical.NumericalPropagator
  * @version $Id: OrbitDerivativesAdder.java 1052 2006-10-11 10:49:23 +0000 (mer., 11 oct. 2006) fabien $
  * @author L. Maisonobe
  * @author F.Maussion

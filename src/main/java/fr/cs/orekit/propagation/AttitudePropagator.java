@@ -3,7 +3,7 @@ package fr.cs.orekit.propagation;
 import fr.cs.orekit.attitudes.AttitudeKinematics;
 import fr.cs.orekit.attitudes.AttitudeKinematicsProvider;
 import fr.cs.orekit.attitudes.models.IdentityAttitude;
-import fr.cs.orekit.forces.ForceModel;
+import fr.cs.orekit.propagation.forces.ForceModel;
 
 
 /** Every class implementing this interface realises a contract, which is

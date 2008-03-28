@@ -1,4 +1,4 @@
-package fr.cs.orekit.propagation;
+package fr.cs.orekit.propagation.analytical;
 
 import org.apache.commons.math.util.MathUtils;
 
@@ -9,6 +9,9 @@ import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.orbits.CircularParameters;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.orbits.OrbitalParameters;
+import fr.cs.orekit.propagation.AttitudePropagator;
+import fr.cs.orekit.propagation.Ephemeris;
+import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
 
 /** This class propagates a {@link fr.cs.orekit.propagation.SpacecraftState}

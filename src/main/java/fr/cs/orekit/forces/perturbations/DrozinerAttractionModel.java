@@ -2,12 +2,12 @@ package fr.cs.orekit.forces.perturbations;
 
 import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.forces.ForceModel;
-import fr.cs.orekit.forces.OrekitSwitchingFunction;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.frames.Transform;
 import fr.cs.orekit.propagation.SpacecraftState;
-import fr.cs.orekit.propagation.TimeDerivativesEquations;
+import fr.cs.orekit.propagation.forces.ForceModel;
+import fr.cs.orekit.propagation.numerical.OrekitSwitchingFunction;
+import fr.cs.orekit.propagation.numerical.TimeDerivativesEquations;
 
 /** This class represents the gravitational field of a celestial body.
  * <p>The algorithm implemented in this class has been designed by

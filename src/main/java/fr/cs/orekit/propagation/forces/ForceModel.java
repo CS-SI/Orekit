@@ -1,8 +1,9 @@
-package fr.cs.orekit.forces;
+package fr.cs.orekit.propagation.forces;
 
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.propagation.SpacecraftState;
-import fr.cs.orekit.propagation.TimeDerivativesEquations;
+import fr.cs.orekit.propagation.numerical.OrekitSwitchingFunction;
+import fr.cs.orekit.propagation.numerical.TimeDerivativesEquations;
 
 /** This interface represents a force model set.
  *

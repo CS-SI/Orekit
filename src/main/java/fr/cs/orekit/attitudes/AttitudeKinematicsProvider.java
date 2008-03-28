@@ -1,9 +1,9 @@
 package fr.cs.orekit.attitudes;
 
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.forces.ForceModel;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.propagation.AttitudePropagator;
+import fr.cs.orekit.propagation.forces.ForceModel;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
 

@@ -1,4 +1,4 @@
-package fr.cs.orekit.propagation;
+package fr.cs.orekit.propagation.analytical;
 
 import fr.cs.orekit.attitudes.AttitudeKinematics;
 import fr.cs.orekit.attitudes.AttitudeKinematicsProvider;
@@ -7,6 +7,9 @@ import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.Orbit;
+import fr.cs.orekit.propagation.AttitudePropagator;
+import fr.cs.orekit.propagation.Ephemeris;
+import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
 
 /** Simple keplerian orbit propagator.
