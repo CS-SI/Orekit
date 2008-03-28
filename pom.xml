@@ -76,7 +76,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.1</version>
+      <version>4.4</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -84,13 +84,12 @@
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2-beta-2</version>
         <configuration>
           <descriptors>
-            <descriptor>src/assemble/source-assembly.xml</descriptor>
-            <descriptor>
-              src/assemble/source-with-deps-assembly.xml
-            </descriptor>
-            <descriptor>src/assemble/binary-assembly.xml</descriptor>
+            <descriptor>src/assembly/source-assembly.xml</descriptor>
+            <descriptor>src/assembly/source-with-deps-assembly.xml</descriptor>
+            <descriptor>src/assembly/binary-assembly.xml</descriptor>
           </descriptors>
         </configuration>
       </plugin>
@@ -101,7 +100,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>cobertura-maven-plugin</artifactId>
-        <version>2.0</version>
+        <version>2.2</version>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
