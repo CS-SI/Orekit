@@ -1,8 +1,5 @@
 package fr.cs.orekit.time;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-
 /** Geocentric Coordinate Time.
  * <p>Coordinate time at the center of mass of the Earth.
  * This time scale depends linearly from {@link TTScale
@@ -23,20 +20,10 @@ public class TCGScale extends TimeScale {
     private static double inverse = 1.0 / (1.0 + lg);
 
     // reference time scale
-    private static final TimeScale tt;
+    private static final TimeScale tt = TTScale.getInstance();
 
-    // reference time tor TCG is 1977-01-01 (MJD = 43144)
-    private static final double reference;
-
-    static {
-        try {
-            tt = TTScale.getInstance();
-            final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-            reference = format.parse("1977-01-01").getTime();
-        } catch (ParseException pe) {
-            throw new RuntimeException("internal error"); // should not happen
-        }
-    }
+    // reference time for TCG is 1977-01-01 (2557 days after 1970-01-01)
+    private static final double reference = 2557l * 86400000l;
 
     /** Private constructor for the singleton.
      */
