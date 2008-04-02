@@ -55,8 +55,9 @@ public class ConstantThrustManeuver implements ForceModel {
     private ThrustForceDirection variableDir;
 
     /** Simple constructor for a constant direction and constant thrust.
-     * @param startDate the instant of ignition
-     * @param duration the duration of the thrust (s)
+     * @param date maneuver date
+     * @param duration the duration of the thrust (s) (if negative,
+     * the date is considered to be the stop date)
      * @param thrust the thrust force (N)
      * @param isp the Isp (s)
      * @param direction the acceleration direction in choosed frame.
@@ -82,16 +83,16 @@ public class ConstantThrustManeuver implements ForceModel {
 
         if (duration >= 0) {
             this.startDate = startDate;
-            this.endDate   = new AbsoluteDate(startDate , duration);
+            this.endDate   = new AbsoluteDate(startDate, duration);
             this.duration  = duration;
         } else {
             this.endDate   = startDate;
-            this.startDate = new AbsoluteDate(startDate , duration);
+            this.startDate = new AbsoluteDate(endDate, duration);
             this.duration  = -duration;
         }
 
         this.thrust     = thrust;
-        this.flowRate  = -thrust / (g0*isp);
+        this.flowRate  = -thrust / (g0 * isp);
         this.direction = direction.normalize();
         this.frameType = frameType;
         firing = false;
@@ -99,8 +100,9 @@ public class ConstantThrustManeuver implements ForceModel {
     }
 
     /** Constructor for a variable direction and constant thrust.
-     * @param startDate the instant of ignition
-     * @param duration the duration of the thrust (s)
+     * @param date maneuver date
+     * @param duration the duration of the thrust (s) (if negative,
+     * the date is considered to be the stop date)
      * @param thrust the thrust force (N)
      * @param isp the specific impulse (s)
      * @param direction the variable acceleration direction.
