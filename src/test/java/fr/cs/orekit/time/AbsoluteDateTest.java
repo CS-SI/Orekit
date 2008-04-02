@@ -2,11 +2,12 @@ package fr.cs.orekit.time;
 
 import java.text.ParseException;
 import java.util.Date;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.iers.IERSDataResetter;
-import fr.cs.orekit.utils.DateFormatter;
-
-import junit.framework.*;
 
 public class AbsoluteDateTest
 extends TestCase {
@@ -28,18 +29,18 @@ extends TestCase {
     public void testOutput() {
         TimeScale tt = TTScale.getInstance();
         assertEquals("1950-01-01T01:01:01.000",
-                     DateFormatter.toString(new AbsoluteDate(AbsoluteDate.FiftiesEpoch, 3661.0),tt));
+                     new AbsoluteDate(AbsoluteDate.FiftiesEpoch, 3661.0).toString(tt));
         assertEquals("2000-01-01T13:01:01.000",
-                     DateFormatter.toString(new AbsoluteDate(AbsoluteDate.J2000Epoch, 3661.0),tt));
+                     new AbsoluteDate(AbsoluteDate.J2000Epoch, 3661.0).toString(tt));
     }
 
     public void testJ2000() {
         assertEquals("2000-01-01T12:00:00.000",
-                     DateFormatter.toString(AbsoluteDate.J2000Epoch,TTScale.getInstance()));
+                     AbsoluteDate.J2000Epoch.toString(TTScale.getInstance()));
         assertEquals("2000-01-01T11:59:27.816",
-                     DateFormatter.toString(AbsoluteDate.J2000Epoch,TAIScale.getInstance()));
+                     AbsoluteDate.J2000Epoch.toString(TAIScale.getInstance()));
         assertEquals("2000-01-01T11:58:55.816",
-                     DateFormatter.toString(AbsoluteDate.J2000Epoch,utc));
+                     AbsoluteDate.J2000Epoch.toString(utc));
     }
 
     public void testFraction() {
@@ -62,12 +63,12 @@ extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2002, 01, 01),
                                              new ChunkedTime(00, 00, 01),
                                              utc);
-        assertEquals("2002-01-01T00:00:01.000", DateFormatter.toString(date));
+        assertEquals("2002-01-01T00:00:01.000", date.toString());
     }
 
     public void test1970() {
         AbsoluteDate date = new AbsoluteDate(new Date(0l), utc);
-        assertEquals("1970-01-01T00:00:00.000", DateFormatter.toString(date));
+        assertEquals("1970-01-01T00:00:00.000", date.toString());
     }
 
     public void testUtcGpsOffset() {

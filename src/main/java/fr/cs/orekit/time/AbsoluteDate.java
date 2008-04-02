@@ -1,7 +1,11 @@
 package fr.cs.orekit.time;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 import java.io.Serializable;
+
+import fr.cs.orekit.errors.OrekitException;
 
 /** This class represents a specific instant in time.
 
@@ -74,8 +78,18 @@ public class AbsoluteDate implements Comparable, Serializable {
     public static final AbsoluteDate JavaEpoch =
         new AbsoluteDate(new ChunkedDate( 1970,  1,  1), ChunkedTime.H00, TTScale.getInstance());
 
+    /** Date formats to use for string conversion. */
+    private static final SimpleDateFormat output = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+    static {
+        // The time zone set here as NOTHING to do with the time scale represented by the
+        // UTCScale class. It is ONLY a way to make sure the standard SimpleDateFormat class
+        // does not add spurious daylight saving times or country-related offsets while generating
+        // the string representation. We can safely use it with non-UTC scales like TAI or TT
+        output.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
+    }
+
     /** Serializable UID. */
-    private static final long serialVersionUID = 869125978894503980L;
+    private static final long serialVersionUID = 3675795014622410242L;
 
     /** Reference epoch in milliseconds from 1970-01-01T00:00:00 TAI. */
     private final long epoch;
@@ -218,6 +232,27 @@ public class AbsoluteDate implements Comparable, Serializable {
     public int hashCode() {
         final long l = Double.doubleToLongBits(minus(J2000Epoch));
         return (int)(l^(l>>>32));
+    }
+
+    /** Get a String representation of the instant location in UTC time scale.
+     * @return a string representation of the instance,
+     * in ISO-8601 format with milliseconds accuracy
+     */
+    public String toString() {
+        try {
+            return toString(UTCScale.getInstance());
+        } catch (OrekitException oe) {
+            throw new RuntimeException(oe);
+        }
+    }
+
+    /** Get a String representation of the instant location.
+     * @param timeScale time scale to use
+     * @return a string representation of the instance,
+     * in ISO-8601 format with milliseconds accuracy
+     */
+    public String toString(TimeScale timeScale) {
+        return output.format(toDate(timeScale));
     }
 
 }

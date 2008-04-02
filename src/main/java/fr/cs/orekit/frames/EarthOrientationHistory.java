@@ -5,14 +5,12 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.iers.BulletinBFilesLoader;
 import fr.cs.orekit.iers.EOPC04FilesLoader;
 import fr.cs.orekit.iers.EarthOrientationParameters;
 import fr.cs.orekit.time.AbsoluteDate;
-import fr.cs.orekit.time.UTCScale;
-import fr.cs.orekit.utils.DateFormatter;
-
 
 /** This class holds Earth Orientation data throughout a large time range.
  * It is a singleton since it handles voluminous data.
@@ -83,10 +81,7 @@ public class EarthOrientationHistory implements Serializable {
             // compare the dates of previous and current entries
             if ((previous != null) && ((current.mjd - previous.mjd) > maxGap)) {
                 throw new OrekitException("missing Earth Orientation Parameters between {0} and {1}",
-                                          new Object[] {
-                                              DateFormatter.toString(previous.date, UTCScale.getInstance()),
-                                              DateFormatter.toString(current.date, UTCScale.getInstance())
-                                          });
+                                          new Object[] { previous, current });
 
             }
         }

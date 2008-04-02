@@ -9,12 +9,12 @@ import java.util.GregorianCalendar;
 import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeSet;
+
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.models.perturbations.DTM2000InputParameters;
 import fr.cs.orekit.models.perturbations.JB2006InputParameters;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.UTCScale;
-import fr.cs.orekit.utils.DateFormatter;
 
 /** This class reads and provides solar activity data needed by the
  * two atmospheric models. The data are furnished at the <a
@@ -155,9 +155,7 @@ DTM2000InputParameters {
             }
         } else {
             throw new OrekitException("unable to find data for date {0}",
-                                      new Object[] {
-                    DateFormatter.toString(date, UTCScale.getInstance())
-            });
+                                      new Object[] { date });
         }
     }
 

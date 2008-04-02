@@ -21,7 +21,6 @@ import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.ChunkedDate;
 import fr.cs.orekit.time.ChunkedTime;
 import fr.cs.orekit.time.UTCScale;
-import fr.cs.orekit.utils.DateFormatter;
 
 
 /** The aim of this tutorial is to manipulate the Numerical propagator
@@ -180,7 +179,7 @@ public class NumericalPropagation {
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {
-            System.out.println(" step time : " + DateFormatter.toString(currentState.getDate()));
+            System.out.println(" step time : " + currentState.getDate());
             System.out.println(" step state : " + currentState.getParameters());
             if (isLast) {
                 System.out.println(" this was the last step ");

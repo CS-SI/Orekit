@@ -3,10 +3,12 @@ package fr.cs.orekit.time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.iers.IERSDataResetter;
-import fr.cs.orekit.utils.DateFormatter;
-import junit.framework.*;
 
 public class UTCScaleTest
 extends TestCase {
@@ -47,21 +49,21 @@ extends TestCase {
         AbsoluteDate d = new AbsoluteDate(new ChunkedDate(1983, 06, 30),
                                           new ChunkedTime(23, 59, 59),
                                           utc);
-        assertEquals("1983-06-30T23:59:59.000", DateFormatter.toString(d,utc));
+        assertEquals("1983-06-30T23:59:59.000", d.toString(utc));
         d = new AbsoluteDate(d, 0.251);
-        assertEquals("1983-06-30T23:59:59.251", DateFormatter.toString(d,utc));
+        assertEquals("1983-06-30T23:59:59.251", d.toString(utc));
         d = new AbsoluteDate(d, 0.251);
-        assertEquals("1983-06-30T23:59:59.502", DateFormatter.toString(d,utc));
+        assertEquals("1983-06-30T23:59:59.502", d.toString(utc));
         d = new AbsoluteDate(d, 0.251);
-        assertEquals("1983-06-30T23:59:59.753", DateFormatter.toString(d,utc));
+        assertEquals("1983-06-30T23:59:59.753", d.toString(utc));
         d = new AbsoluteDate(d, 0.251);
-        assertEquals("1983-06-30T23:59:59.004", DateFormatter.toString(d,utc));
+        assertEquals("1983-06-30T23:59:59.004", d.toString(utc));
         d = new AbsoluteDate(d, 0.251);
-        assertEquals("1983-06-30T23:59:59.255", DateFormatter.toString(d,utc));
+        assertEquals("1983-06-30T23:59:59.255", d.toString(utc));
         d = new AbsoluteDate(d, 0.251);
-        assertEquals("1983-06-30T23:59:59.506", DateFormatter.toString(d,utc));
+        assertEquals("1983-06-30T23:59:59.506", d.toString(utc));
         d = new AbsoluteDate(d, 0.251);
-        assertEquals("1983-06-30T23:59:59.757", DateFormatter.toString(d,utc));
+        assertEquals("1983-06-30T23:59:59.757", d.toString(utc));
     }
 
     public void testSymetry() {
