@@ -46,12 +46,18 @@ extends TestCase {
     }
 
     public void testSymmetry() {
-        for (int i = -2500000; i < 100000; ++i) {
+        checkSymmetry(-2460000,  20000);
+        checkSymmetry( -740000,  20000);
+        checkSymmetry( -185000, 200000);
+    }
+
+    private void checkSymmetry(int start, int n) {
+        for (int i = start; i < start + n; ++i) {
             ChunkedDate date1 = new ChunkedDate(i);
             assertEquals(i, date1.getJ2000Day());
             ChunkedDate date2 = new ChunkedDate(date1.year, date1.month, date1.day);
             assertEquals(i, date2.getJ2000Day());
-        }
+        }        
     }
 
     public void testString() {
