@@ -42,14 +42,14 @@ extends TestCase {
                      DateFormatter.toString(AbsoluteDate.J2000Epoch,utc));
     }
 
-    public void testFraction() throws ParseException {
+    public void testFraction() {
         AbsoluteDate d =
             new AbsoluteDate(new ChunkedDate(2000, 01, 01), new ChunkedTime(11, 59, 27.816),
                              TAIScale.getInstance());
         assertEquals(0, d.minus(AbsoluteDate.J2000Epoch), 1.0e-10);
     }
 
-    public void testScalesOffset() throws ParseException {
+    public void testScalesOffset() {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2006, 02, 24),
                                              new ChunkedTime(15, 38, 00),
                                              utc);
@@ -58,19 +58,19 @@ extends TestCase {
                      1.0e-10);
     }
 
-    public void testUTC() throws ParseException {
+    public void testUTC() {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2002, 01, 01),
                                              new ChunkedTime(00, 00, 01),
                                              utc);
         assertEquals("2002-01-01T00:00:01.000", DateFormatter.toString(date));
     }
 
-    public void test1970() throws ParseException {
+    public void test1970() {
         AbsoluteDate date = new AbsoluteDate(new Date(0l), utc);
         assertEquals("1970-01-01T00:00:00.000", DateFormatter.toString(date));
     }
 
-    public void testUtcGpsOffset() throws ParseException {
+    public void testUtcGpsOffset() {
         AbsoluteDate date1   = new AbsoluteDate(new ChunkedDate(2005, 8, 9),
                                                 new ChunkedTime(16, 31, 17),
                                                 utc);
@@ -93,12 +93,40 @@ extends TestCase {
 
     }
 
-    public void testGpsDate() throws ParseException {
+    public void testGpsDate() {
         AbsoluteDate date = AbsoluteDate.createGPSDate(1387, 318677000.0);
         AbsoluteDate ref  = new AbsoluteDate(new ChunkedDate(2006, 8, 9),
                                              new ChunkedTime(16, 31, 03),
                                              utc);
         assertEquals(0, date.minus(ref), 1.0e-12);
+    }
+
+    public void testEquals() throws ParseException {
+        AbsoluteDate d1 =
+            new AbsoluteDate(new ChunkedDate(2006, 2, 25),
+                             new ChunkedTime(17, 10, 34),
+                             utc);
+        AbsoluteDate d2 =
+            new AbsoluteDate(new AbsoluteDate(new ChunkedDate(2006, 2, 25),
+                                              new ChunkedTime(17, 10, 0),
+                                              utc),
+                             34);
+        assertTrue(d1.equals(d2));
+        assertFalse(d1.equals(this));
+    }
+
+    public void testHashcode() throws ParseException {
+        AbsoluteDate d1 =
+            new AbsoluteDate(new ChunkedDate(2006, 2, 25),
+                             new ChunkedTime(17, 10, 34),
+                             utc);
+        AbsoluteDate d2 =
+            new AbsoluteDate(new AbsoluteDate(new ChunkedDate(2006, 2, 25),
+                                              new ChunkedTime(17, 10, 0),
+                                              utc),
+                             34);
+        assertEquals(d1.hashCode(), d2.hashCode());
+        assertTrue(d1.hashCode() != new AbsoluteDate(d1, 1.0e-3).hashCode());
     }
 
     public void setUp() throws OrekitException {
