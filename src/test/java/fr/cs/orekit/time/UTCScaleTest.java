@@ -69,17 +69,20 @@ extends TestCase {
         double tLeap = 220924815;
         TimeScale scale = utc;
         assertEquals("UTC", scale.toString());
+        boolean insideTested = false;
         for (double taiTime = tLeap - 60; taiTime < tLeap + 60; taiTime += 0.3) {
             double dt1 = scale.offsetFromTAI(taiTime);
             double dt2 = scale.offsetToTAI(taiTime + dt1);
             if ((taiTime > tLeap) && (taiTime <= tLeap + 1.0)) {
                 // we are "inside" the leap second, the TAI scale goes on
                 // but the UTC scale "replays" the previous second, before the step
+                insideTested = true;
                 assertEquals(-1.0, dt1 + dt2, 1.0e-10);
             } else {
                 assertEquals( 0.0, dt1 + dt2, 1.0e-10);
             }
         }
+        assertTrue(insideTested);
     }
 
     public void testOffsets() throws ParseException {
