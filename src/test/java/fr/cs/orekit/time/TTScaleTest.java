@@ -13,7 +13,7 @@ extends TestCase {
         // the loop is around the 1977-01-01 leap second introduction
         double tLeap = 220924815;
         TimeScale scale = TTScale.getInstance();
-        assertEquals("UTC", scale.toString());
+        assertEquals("TT", scale.toString());
         for (double taiTime = tLeap - 60; taiTime < tLeap + 60; taiTime += 0.3) {
             double dt1 = scale.offsetFromTAI(taiTime);
             double dt2 = scale.offsetToTAI(taiTime + dt1);
