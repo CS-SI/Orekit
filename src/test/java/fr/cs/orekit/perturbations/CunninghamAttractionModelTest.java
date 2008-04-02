@@ -249,7 +249,7 @@ public class CunninghamAttractionModelTest extends TestCase {
     public void setUp() {
         IERSDataResetter.setUp("regular-data");
         try {
-            // Eigen c1 model truncated to degree and order 6
+            // Eigen c1 model truncated to degree 6
             mu =  3.986004415e+14;
             ae =  6378136.460;
             c20 = -1.08262631303e-3;
