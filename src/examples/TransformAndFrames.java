@@ -1,4 +1,4 @@
-package fr.cs.orekit.tutorials;
+
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;

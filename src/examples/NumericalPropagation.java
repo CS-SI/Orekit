@@ -1,4 +1,4 @@
-package fr.cs.orekit.tutorials;
+
 
 import java.text.ParseException;
 
