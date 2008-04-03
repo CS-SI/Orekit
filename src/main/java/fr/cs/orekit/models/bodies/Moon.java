@@ -45,7 +45,7 @@ public class Moon extends ThirdBody {
      * @param date current date
      * @param frame the frame where to define the position
      * @return position of the Moon wrt the central body (m)
-     * @throws OrekitException if a frame conversion cannot be computed
+     * @exception OrekitException if a frame conversion cannot be computed
      */
     public Vector3D getPosition(AbsoluteDate date, Frame frame) throws OrekitException {
 

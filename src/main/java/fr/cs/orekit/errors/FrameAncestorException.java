@@ -1,7 +1,7 @@
 package fr.cs.orekit.errors;
 
 /** This class is the base class for exception thrown by
- * the {@link fr.cs.aerospace.orekit.frames.Frame#updateTransform(Frame,
+ * the {@link fr.cs.orekit.frames.Frame#updateTransform(Frame,
  * Frame,Transform,AbsoluteDate) Frame.updateTransform} method.
  */
 public class FrameAncestorException extends OrekitException {

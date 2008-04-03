@@ -45,8 +45,8 @@ public class TLESeries {
     /** Simple constructor with a TLE file.
      * <p> The read TLE entries, if they match, are stored into a treeset for later use. <p>
      * @param in the input to read (it can be compressed)
-     * @throws IOException when the {@link InputStream} cannot be buffered.
-     * @throws OrekitException when a format error occurs
+     * @exception IOException when the {@link InputStream} cannot be buffered.
+     * @exception OrekitException when a format error occurs
      */
     public TLESeries(InputStream in) throws IOException, OrekitException {
         tles = new TreeSet();
@@ -60,8 +60,8 @@ public class TLESeries {
     /** Read a TLE file.
      * <p> The read TLE entries, if they match, are stored into a treeset for later use. <p>
      * @param in the input to read (it can be compressed)
-     * @throws IOException when the {@link InputStream} cannot be buffered.
-     * @throws OrekitException when a format error occurs
+     * @exception IOException when the {@link InputStream} cannot be buffered.
+     * @exception OrekitException when a format error occurs
      */
     private void read(InputStream in) throws IOException, OrekitException {
 //      TODO different formats, not portable enough
@@ -103,7 +103,7 @@ public class TLESeries {
      * [{@link #getFirstDate() first date} ; {@link #getLastDate() last date}].
      * @param date the final date
      * @return the final PVCoordinates
-     * @throws OrekitException if the underlying propagator cannot be initialized
+     * @exception OrekitException if the underlying propagator cannot be initialized
      */
     public PVCoordinates getPVCoordinates(AbsoluteDate date) throws OrekitException {
         final TLE toExtrapolate = getClosestTLE(date);
@@ -178,7 +178,7 @@ public class TLESeries {
     /** checks if a file is compressed or not.
      * @param in the file to check.
      * @return a readable file.
-     * @throws IOException if the file format is not understood.
+     * @exception IOException if the file format is not understood.
      */
     private BufferedInputStream checkCompressed(InputStream in) throws IOException {
 

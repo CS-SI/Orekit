@@ -29,7 +29,7 @@ DTM2000InputParameters {
     /** Simple constructor.
      * Data file address is set internally, nothing to be done here.
      *
-     * @throws OrekitException
+     * @exception OrekitException
      */
     private SolarInputs97to05() throws OrekitException {
 
@@ -50,7 +50,7 @@ DTM2000InputParameters {
 
     /** Singleton getter.
      * @return the unique instance of this class.
-     * @throws OrekitException
+     * @exception OrekitException
      */
     public static SolarInputs97to05 getInstance() throws OrekitException {
         if ( instance == null ) {

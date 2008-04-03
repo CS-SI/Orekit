@@ -20,17 +20,18 @@ import fr.cs.orekit.errors.OrekitException;
  *</p>
  * <p>
  * Two computation methods are proposed to the user :
- * <li> one OREKIT independant and compliant with initial FORTRAN routine entry values :
+ * <li> one OREKIT independent and compliant with initial FORTRAN routine entry values :
  *        {@link #getDensity(int, double, double, double, double, double, double, double, double)}. </li>
  * <li> one compliant with OREKIT Atmosphere interface, necessary to the
- *        {@link AtmosphericDrag drag force model} computation. This implementation is realized
+ *        {@link fr.cs.orekit.propagation.numerical.forces.perturbations.AtmosphericDrag drag force model}
+ *        computation. This implementation is realized
  *        by the subclass {@link DTM2000AtmosphereModel}</li>
  *</p>
  *<p>
- * This model provides dense output for altitudes beyond 120 km. Computed datas are :
+ * This model provides dense output for altitudes beyond 120 km. Computed data are :
  * <pre>
  * - Temperature at altitude z (K)
- * - Exospheric temperature abaove input position (K)
+ * - Exospheric temperature above input position (K)
  * - Vertical gradient of T a 120 km
  * - Total density (kg/m<sup>3</sup>).
  * - Mean atomic mass.
@@ -40,13 +41,13 @@ import fr.cs.orekit.errors.OrekitException;
  * </p>
  * <p>
  * The model needs geographical and time information to compute general values,
- * but also needs space weather datas : mean and instantaneous solar flux and
- * geomagnetic incides.
+ * but also needs space weather data : mean and instantaneous solar flux and
+ * geomagnetic indices.
  * Mean solar flux is (for the moment) represented by the F10.7 indices. Instantaneous
  * flux can be setted to the mean value if the data is not available. Geomagnetic
  * acivity is represented by the Kp indice, which goes from 1 (very low activity) to
  * 9 (high activity).
- * All these datas can be found on the <a
+ * All these data can be found on the <a
  * href="http://sec.noaa.gov/Data/index.html">
  * NOAA (National Oceanic and Atmospheric
  * Administration) website.</a>
@@ -230,7 +231,7 @@ public class DTM2000Atmosphere {
     private double s3h;
 
     /** Simple constructor for independent computation.
-     * @throws OrekitException if some resource file reading error occurs
+     * @exception OrekitException if some resource file reading error occurs
      */
     public DTM2000Atmosphere() throws OrekitException {
         if (tt == null) {
@@ -624,7 +625,7 @@ public class DTM2000Atmosphere {
 
 
     /** Store the DTM model elements coefficients in internal arrays
-     * @throws OrekitException if some resource file reading error occurs
+     * @exception OrekitException if some resource file reading error occurs
      */
     private void readcoefficients() throws OrekitException {
 

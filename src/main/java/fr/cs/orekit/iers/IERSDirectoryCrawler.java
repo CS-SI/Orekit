@@ -63,7 +63,7 @@ public class IERSDirectoryCrawler {
      * @exception OrekitException if some data is missing, duplicated
      * or can't be read
      */
-    public void crawl(IERSFileVisitor visitor) throws OrekitException {
+    public void crawl(IERSFileCrawler visitor) throws OrekitException {
         if (root != null) {
             crawl(visitor, root);
         }
@@ -75,7 +75,7 @@ public class IERSDirectoryCrawler {
      * @exception OrekitException if some data is missing, duplicated
      * or can't be read
      */
-    private void crawl(IERSFileVisitor visitor, File directory) throws OrekitException {
+    private void crawl(IERSFileCrawler visitor, File directory) throws OrekitException {
 
         // search in current directory
         final File[] list = directory.listFiles();

@@ -37,7 +37,7 @@ class ITRF2000Frame extends Frame {
      * @param parent the TIRF2000
      * @param date the current date
      * @param name the string reprensentation
-     * @throws OrekitException
+     * @exception OrekitException
      */
     protected ITRF2000Frame(Frame parent, AbsoluteDate date, String name) throws OrekitException {
         super(parent, null, name);

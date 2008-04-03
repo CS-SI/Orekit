@@ -44,7 +44,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
     /** Check the file to determine if its format is understood by the reader or not.
      * @param in the input to check
      * @return true if it is readable, false if not.
-     * @throws IOException when the {@link InputStream} cannot be buffered.
+     * @exception IOException when the {@link InputStream} cannot be buffered.
      */
     public boolean isFileOK(InputStream in) throws IOException {
 
@@ -101,8 +101,8 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
     }
 
     /** Computes the coefficients by reading the selected (and tested) file
-     * @throws OrekitException when the file has not been initialized or checked.
-     * @throws IOException when the file is corrupted.
+     * @exception OrekitException when the file has not been initialized or checked.
+     * @exception IOException when the file is corrupted.
      */
     public void read() throws OrekitException, IOException {
         if (in == null) {

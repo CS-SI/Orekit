@@ -127,7 +127,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
 
     /** Compute mean parameters according to the Eckstein-Hechler analytical model.
      * @param osculating osculating orbit
-     * @throws PropagationException
+     * @exception PropagationException
      */
     private void computeMeanParameters(CircularParameters osculating)
         throws PropagationException {

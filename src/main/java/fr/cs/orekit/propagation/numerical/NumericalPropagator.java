@@ -369,7 +369,7 @@ public class NumericalPropagator
     /** Convert state array to space mecanics objects (AbsoluteDate and OrbitalParameters)
      * @param t integration time (s)
      * @param y state array
-     * @throws OrekitException
+     * @exception OrekitException
      */
     private void mapState(double t, double [] y) throws OrekitException {
 
@@ -387,7 +387,7 @@ public class NumericalPropagator
     }
 
 
-    /** Converts OREKIT switching functions to MANTISSA interface. */
+    /** Converts OREKIT switching functions to commons-math interface. */
     private class MappingSwitchingFunction implements SwitchingFunction {
 
         /** Serializable UID. */

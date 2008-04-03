@@ -32,7 +32,7 @@ public abstract class ThirdBody implements Serializable {
      * @param date current date
      * @param frame the frame where to define the position
      * @return position of the body (m)
-     * @throws OrekitException if position cannot be computed in given frame
+     * @exception OrekitException if position cannot be computed in given frame
      */
     public abstract Vector3D getPosition(AbsoluteDate date, Frame frame) throws OrekitException;
 

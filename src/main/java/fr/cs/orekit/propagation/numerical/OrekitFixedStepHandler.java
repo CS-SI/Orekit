@@ -56,13 +56,26 @@ public abstract class OrekitFixedStepHandler implements FixedStepHandler {
     public abstract void handleStep(SpacecraftState currentState, boolean isLast)
         throws PropagationException;
 
-    /** {@inheritDoc} */
+    /** Check if the handler requires dense output
+     * @return true if the handler requires dense output
+     * @see org.apache.commons.math.ode.StepHandler#requiresDenseOutput()
+     */
     public abstract boolean requiresDenseOutput();
 
-    /** {@inheritDoc} */
+    /** Reset the step handler.
+     * Initialize the internal data as required before the first step is
+     * handled.
+     * @see org.apache.commons.math.ode.StepHandler#reset()
+     */
     public abstract void reset() ;
 
-    /** {@inheritDoc} */
+    /**
+     * Handle the last accepted step
+     * @param t step time
+     * @param y step state
+     * @param isLast true if the step is the last one
+     * @see org.apache.commons.math.ode.StepHandler#handleStep(org.apache.commons.math.ode.StepInterpolator, boolean)
+     */
     public void handleStep(double t, double[] y, boolean isLast) {
         try {
             final OrbitalParameters op =

@@ -23,7 +23,7 @@ import fr.cs.orekit.utils.PVCoordinates;
  * &alpha;<sub>v</sub> stands for the true longitude argument
  * </p>
  * <p>
- * The instance <code>CircularParameters</code> is guaranted to be immutable.
+ * The instance <code>CircularParameters</code> is guaranteed to be immutable.
  * </p>
  * @see     Orbit
  * @version $Id$

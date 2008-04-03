@@ -1,14 +1,15 @@
 <html>
 <body>
 This package provides interfaces that will be used by the 
-{@link fr.cs.aerospace.orekit.propagation.NumericalPropagator}.
+{@link fr.cs.orekit.propagation.numerical.NumericalPropagator}.
 
 <p>
-The {@link fr.cs.aerospace.orekit.forces.ForceModel} instance is added to the propagator 
+The {@link fr.cs.orekit.propagation.numerical.forces.ForceModel} instance is added to the propagator 
 before the extrapolation. The propagator calls at each step the 
-{@link fr.cs.aerospace.orekit.forces.ForceModel#addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)}
+{@link fr.cs.orekit.propagation.numerical.forces.ForceModel#addContribution(SpacecraftState s,
+TimeDerivativesEquations adder, double mu)}
 method, giving all the state information it needs : date, position, velocity, frame, 
-attitude, mass and above all the {@link fr.cs.aerospace.orekit.propagation.TimeDerivativesEquations}
+attitude, mass and above all the {@link fr.cs.orekit.propagation.numerical.TimeDerivativesEquations}
  instance. The selected force model 
 calculates then the acceleration relative to the model and state, and adds it to the 
 Gauss equations. 
@@ -16,7 +17,7 @@ Gauss equations.
 <p>
 A useful object has been developed to handle the discontinuities of the acceleration 
 (typically for maneuvers or solar drag for instance): the 
-{@link fr.cs.aerospace.orekit.forces.SWF switching functions}. The g 
+{@link fr.cs.orekit.propagation.numerical.OrekitSwitchingFunction switching functions}. The g 
 function method is called at each step and must return a double. The integrator is 
 looking for its change of sign, it means that a particular step must coincide with the 
 g function sign change, so that no important event can be missed. A force model can 

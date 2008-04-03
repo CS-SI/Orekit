@@ -28,7 +28,7 @@ import fr.cs.orekit.utils.PVCoordinates;
  * suboptimal. This class is more targeted towards numerical orbit propagation.
  * </p>
  * <p>
- * The instance <code>CartesianParameters</code> is guaranted to be immutable.
+ * The instance <code>CartesianParameters</code> is guaranteed to be immutable.
  * </p>
  * @see     Orbit
  * @version $Id:CartesianParameters.java 1310 2007-07-05 16:04:25Z luc $

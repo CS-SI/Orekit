@@ -32,10 +32,7 @@ public class TabulatedEphemeris implements BoundedEphemeris {
     private SpacecraftState next;
 
     /** Constructor with tabulated entries.
-     * If desired, {@link #setPropagator(SimplePropagator)} can be called after
-     * construction to set interpolation method. If not, classical
-     * interpolation will be used.
-     * @param tabulatedStates the entries tab
+     * @param tabulatedStates states table
      */
     public TabulatedEphemeris(SpacecraftState[] tabulatedStates) {
 

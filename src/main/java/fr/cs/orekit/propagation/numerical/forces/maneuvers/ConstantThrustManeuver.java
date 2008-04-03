@@ -68,7 +68,7 @@ public class ConstantThrustManeuver implements ForceModel {
      * @see #TNW
      * @see #INERTIAL
      */
-    public ConstantThrustManeuver(AbsoluteDate startDate, double duration,
+    public ConstantThrustManeuver(AbsoluteDate date, double duration,
                                   double thrust, double isp, Vector3D direction,
                                   int frameType)
         throws IllegalArgumentException {
@@ -83,11 +83,11 @@ public class ConstantThrustManeuver implements ForceModel {
         }
 
         if (duration >= 0) {
-            this.startDate = startDate;
-            this.endDate   = new AbsoluteDate(startDate, duration);
+            this.startDate = date;
+            this.endDate   = new AbsoluteDate(date, duration);
             this.duration  = duration;
         } else {
-            this.endDate   = startDate;
+            this.endDate   = date;
             this.startDate = new AbsoluteDate(endDate, duration);
             this.duration  = -duration;
         }
@@ -104,7 +104,7 @@ public class ConstantThrustManeuver implements ForceModel {
      * @param s the current state information : date, cinematics, attitude
      * @param adder object where the contribution should be added
      * @param mu central gravitation coefficient
-     * @throws OrekitException if some specific error occurs
+     * @exception OrekitException if some specific error occurs
      */
     public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
         throws OrekitException {

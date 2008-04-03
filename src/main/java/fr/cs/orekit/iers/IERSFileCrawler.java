@@ -13,11 +13,11 @@ import java.util.zip.GZIPInputStream;
 import fr.cs.orekit.errors.OrekitException;
 
 
-/** Base class for IERS files visitors.
- * @see IERSDirectoryCrawler#visit
+/** Base class for IERS files crawlers.
+ * @see IERSDirectoryCrawler#crawl(IERSFileCrawler)
  * @author Luc Maisonobe
  */
-public abstract class IERSFileVisitor {
+public abstract class IERSFileCrawler {
 
     /** Current file. */
     protected File file;
@@ -28,7 +28,7 @@ public abstract class IERSFileVisitor {
     /** Simple constructor.
      * @param supportedFilesPattern file name pattern for supported files
      */
-    protected IERSFileVisitor(String supportedFilesPattern) {
+    protected IERSFileCrawler(String supportedFilesPattern) {
         this.supportedFilesPattern = Pattern.compile(supportedFilesPattern);
     }
 

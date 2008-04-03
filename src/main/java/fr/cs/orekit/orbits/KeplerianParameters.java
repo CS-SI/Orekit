@@ -23,7 +23,7 @@ import fr.cs.orekit.utils.PVCoordinates;
  * Right Ascension of the Ascending Node and v stands for the true anomaly.
  * </p>
  * <p>
- * The instance <code>KeplerianParameters</code> is guaranted to be immutable.
+ * The instance <code>KeplerianParameters</code> is guaranteed to be immutable.
  * </p>
  * @see     Orbit
  * @version $Id:KeplerianParameters.java 1310 2007-07-05 16:04:25Z luc $

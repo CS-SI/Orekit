@@ -18,7 +18,7 @@ import fr.cs.orekit.frames.PoleCorrection;
  * where # stands for a digit character.</p>
  * @author Luc Maisonobe
  */
-public class BulletinBFilesLoader extends IERSFileVisitor {
+public class BulletinBFilesLoader extends IERSFileCrawler {
 
     /** Conversion factor. */
     private static final double arcSecondsToRadians = 2 * Math.PI / 1296000;

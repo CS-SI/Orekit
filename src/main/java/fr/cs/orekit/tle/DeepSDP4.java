@@ -141,14 +141,14 @@ class DeepSDP4 extends SDP4 {
 
     /** Constructor for a unique initial TLE.
      * @param initialTLE the TLE to propagate.
-     * @throws OrekitException if some specific error occurs
+     * @exception OrekitException if some specific error occurs
      */
     protected DeepSDP4(TLE initialTLE) throws OrekitException {
         super(initialTLE);
     }
 
     /** Computes luni - solar terms from initial coordinates and epoch.
-     * @throws OrekitException when UTC time steps can't be read
+     * @exception OrekitException when UTC time steps can't be read
      */
     protected void luniSolarTermsComputation() throws OrekitException {
 

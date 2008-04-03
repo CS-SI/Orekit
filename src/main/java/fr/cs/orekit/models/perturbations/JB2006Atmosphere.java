@@ -14,15 +14,16 @@ package fr.cs.orekit.models.perturbations;
  * <p>
  * Two computation methods are proposed to the user :
  * <ul>
- * <li> one OREKIT independant and compliant with initial FORTRAN routine entry values :
+ * <li> one OREKIT independent and compliant with initial FORTRAN routine entry values :
  *        {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double)}. </li>
  * <li> one compliant with OREKIT Atmosphere interface, necessary to the
- *        {@link AtmosphericDrag drag force model} computation. This implementation is realized
+ *        {@link fr.cs.orekit.propagation.numerical.forces.perturbations.AtmosphericDrag
+ *        drag force model} computation. This implementation is realized
  *        by the subclass {@link JB2006AtmosphereModel}</li>
  * </ul>
  * </p>
  * <p>
- * This model provides dense output for all altidudes and positions. Output datas are :
+ * This model provides dense output for all altidudes and positions. Output data are :
  * <ul>
  * <li>Exospheric Temperature above Input Position (deg K)</li>
  * <li>Temperature at Input Position (deg K)</li>
@@ -31,7 +32,7 @@ package fr.cs.orekit.models.perturbations;
  * </p>
  * <p>
  * The model needs geographical and time information to compute general values,
- * but also needs space weather datas : mean and daily solar flux, retrieved threw
+ * but also needs space weather data : mean and daily solar flux, retrieved threw
  * different indices, and planetary geomagnetic incides. <br>
  * More information on these indices can be found on the  <a
  * href="http://sol.spacenvironment.net/~JB2006/JB2006_index.html">
@@ -43,7 +44,7 @@ package fr.cs.orekit.models.perturbations;
  */
 public class JB2006Atmosphere {
 
-    // DATAS :
+    // data :
 
     /** The alpha are the thermal diffusion coefficients in Eq. (6) */
     private static final double[] ALPHA = new double[] {0,0,0,0,0,-0.38};
@@ -89,10 +90,10 @@ public class JB2006Atmosphere {
         0.156988e-03, 0.491286e-03,-0.391484e-04,-0.126854e-04,
         0.134078e-04,-0.614176e-05, 0.343423e-05};
 
-    /** XAMBAR relative datas */
+    /** XAMBAR relative data */
     private static final double[] CXAMB = new double[] {0, 28.15204,-8.5586e-2,+1.2840e-4,-1.0056e-5,
         -1.0210e-5,+1.5044e-6,+9.9826e-8};
-    /** DTSUB relative datas */
+    /** DTSUB relative data */
     private static final double[] BdtSub = new double[] { 0,
         -0.457512297e+01, -0.512114909e+01, -0.693003609e+02,
         0.203716701e+03,  0.703316291e+03, -0.194349234e+04,
@@ -101,7 +102,7 @@ public class JB2006Atmosphere {
         -0.645841789e+01,  0.409703319e+02, -0.482006560e+03,
         0.181870931e+04, -0.237389204e+04,  0.996703815e+03,
         0.361416936e+02 };
-    /** DTSUB relative datas */
+    /** DTSUB relative data */
     private static final double[] CdtSub = new double[] { 0,
         -0.155986211e+02, -0.512114909e+01, -0.693003609e+02,
         0.203716701e+03,  0.703316291e+03, -0.194349234e+04,

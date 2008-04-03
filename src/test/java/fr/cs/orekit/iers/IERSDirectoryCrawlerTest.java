@@ -20,7 +20,7 @@ public class IERSDirectoryCrawlerTest extends TestCase {
     private void checkFailure(String directoryName) {
         try {
             IERSDataResetter.setUp(directoryName);
-            new IERSDirectoryCrawler().crawl(new IERSFileVisitor(".*") {
+            new IERSDirectoryCrawler().crawl(new IERSFileCrawler(".*") {
                 protected void visit(BufferedReader reader) {
                     // do nothing
                 }

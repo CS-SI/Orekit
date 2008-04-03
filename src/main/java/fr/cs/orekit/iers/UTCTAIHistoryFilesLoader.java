@@ -23,7 +23,7 @@ import fr.cs.orekit.errors.OrekitException;
  * hierarchy.</p>
  * @author Luc Maisonobe
  */
-public class UTCTAIHistoryFilesLoader extends IERSFileVisitor {
+public class UTCTAIHistoryFilesLoader extends IERSFileCrawler {
 
     /** Already read file. */
     private File readFile;

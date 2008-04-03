@@ -2,7 +2,7 @@ package fr.cs.orekit.models.perturbations;
 
 import fr.cs.orekit.time.AbsoluteDate;
 
-/** Container for solar activity datas, compatible with DTM2000 Atmosphere model.
+/** Container for solar activity data, compatible with DTM2000 Atmosphere model.
  *
  * This model needs mean and instantaneous solar flux and geomagnetic incides to
  * compute the local density. Mean solar flux is (for the moment) represented by
@@ -10,7 +10,7 @@ import fr.cs.orekit.time.AbsoluteDate;
  * data is not available. Geomagnetic acivity is represented by the Kp indice,
  * which goes from 1 (very low activity) to 9 (high activity).
  * <p>
- * All needed solar activity datas can be found on the <a
+ * All needed solar activity data can be found on the <a
  * href="http://sec.noaa.gov/Data/index.html">
  * NOAA (National Oceanic and Atmospheric
  * Administration) website.</a>

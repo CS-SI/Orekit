@@ -11,17 +11,17 @@ import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
 
-/** This class is the representation of the state to propagate with the
- * {@link NumericalPropagator}.
+/** This class is the representation of a complete state holding orbit, attitude
+ * and mass information.
  *
  * <p> It contains an {@link OrbitalParameters orbital state} at a current
  * {@link AbsoluteDate} both handled by an {@link Orbit}, plus the current
  * mass and attitude.
  * </p>
  * <p>
- * The instance <code>SpacecraftState</code> is guaranted to be immutable.
+ * The instance <code>SpacecraftState</code> is guaranteed to be immutable.
  * </p>
- * @see NumericalPropagator
+ * @see fr.cs.orekit.propagation.numerical.NumericalPropagator
  * @author F. Maussion
  */
 public class SpacecraftState implements Serializable {

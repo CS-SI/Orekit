@@ -13,8 +13,9 @@ import fr.cs.orekit.utils.PVCoordinates;
 
 /** This class is the OREKIT compliant realization of the JB2006 atmosphere model.
  *
- * It should be instantiated to be used by the {@link AtmosphericDrag drag force model} as it
- * implements the {@link Atmosphere} interface.
+ * It should be instantiated to be used by the {@link
+ * fr.cs.orekit.propagation.numerical.forces.perturbations.AtmosphericDrag
+ * drag force model} as it implements the {@link Atmosphere} interface.
  *
  *  The input parameters are computed with orbital state information, but solar
  *  activity and magnetic activity data must be provided by the user thanks to the
@@ -38,7 +39,7 @@ public class JB2006AtmosphereModel extends JB2006Atmosphere implements Atmospher
     private Frame bodyFrame;
 
     /** Constructor with space environment information for internal computation.
-     * @param parameters the solar and magnetic activity datas
+     * @param parameters the solar and magnetic activity data
      * @param sun the sun position
      * @param earth the earth body shape
      * @param earthFixed the earth fixed frame
@@ -57,15 +58,15 @@ public class JB2006AtmosphereModel extends JB2006Atmosphere implements Atmospher
      * @param position current position in frame
      * @param frame the frame in which is defined the position
      * @return local density (kg/m<sup>3</sup>)
-     * @throws OrekitException if date is out of range of solar activity
+     * @exception OrekitException if date is out of range of solar activity
      */
     public double getDensity(AbsoluteDate date, Vector3D position, Frame frame)
         throws OrekitException {
-        // check if datas are available :
+        // check if data are available :
         if(date.compareTo(inputParams.getMaxDate())>0 ||
                 date.compareTo(inputParams.getMinDate())<0) {
             throw new OrekitException("Current date is out of range. " +
-                                      "Solar activity datas are not available",
+                                      "Solar activity data are not available",
                                       new Object[0]);
         }
 

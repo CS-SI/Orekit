@@ -99,7 +99,7 @@ public class OrekitStepInterpolator {
 
     /** Get the interpolated state.
      * @return interpolated state at the current interpolation date
-     * @throws OrekitException if state cannot be interpolated or converted
+     * @exception OrekitException if state cannot be interpolated or converted
      * @see #getInterpolatedDate()
      * @see #setInterpolatedDate(AbsoluteDate)
      */

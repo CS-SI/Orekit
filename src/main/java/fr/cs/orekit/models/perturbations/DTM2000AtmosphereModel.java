@@ -15,8 +15,9 @@ import fr.cs.orekit.utils.PVCoordinates;
 
 /** This class is the OREKIT compliant realization of the DTM2000 atmosphere model.
  *
- * It should be instantiated to be used by the {@link AtmosphericDrag drag force model} as it
- * implements the {@link Atmosphere} interface.
+ * It should be instantiated to be used by the {@link
+ * fr.cs.orekit.propagation.numerical.forces.perturbations.AtmosphericDrag
+ * drag force model} as it implements the {@link Atmosphere} interface.
  *
  *  The input parameters are computed with orbital state information, but solar
  *  activity and magnetic activity data must be provided by the user threw
@@ -40,11 +41,11 @@ public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosph
     private Frame bodyFrame;
 
     /** Constructor with space environment information for internal computation.
-     * @param parameters the solar and magnetic activity datas
+     * @param parameters the solar and magnetic activity data
      * @param sun the sun position
      * @param earth the earth body shape
      * @param earthFixed the earth fixed frame
-     * @throws OrekitException if some specific resource file reading error occurs
+     * @exception OrekitException if some specific resource file reading error occurs
      */
     public DTM2000AtmosphereModel(DTM2000InputParameters parameters,
                                   ThirdBody sun, BodyShape earth, Frame earthFixed) throws OrekitException {
@@ -67,11 +68,11 @@ public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosph
     public double getDensity(AbsoluteDate date, Vector3D position, Frame frame)
         throws OrekitException {
 
-        // check if datas are available :
+        // check if data are available :
         if(date.compareTo(inputParams.getMaxDate())>0 ||
                 date.compareTo(inputParams.getMinDate())<0) {
             throw new OrekitException("Current date is out of range. " +
-                                      "Solar activity datas are not available",
+                                      "Solar activity data are not available",
                                       new Object[0]);
         }
 
@@ -92,7 +93,7 @@ public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosph
         final double hl = Math.PI + Math.atan2(sunPos.getX() * position.getY() - sunPos.getY() * position.getX(),
                                                sunPos.getX() * position.getX() + sunPos.getY() * position.getY());
 
-        // get current solar activity datas and compute
+        // get current solar activity data and compute
         return getDensity(day, alti, lon, lat, hl, inputParams.getInstantFlux(date),
                           inputParams.getMeanFlux(date), inputParams.getThreeHourlyKP(date),
                           inputParams.get24HoursKp(date));

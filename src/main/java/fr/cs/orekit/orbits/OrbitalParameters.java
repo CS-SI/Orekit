@@ -28,7 +28,7 @@ import java.io.Serializable;
  * force models.
  * </p>
  * <p>
- * The object <code>OrbitalParameters</code> is guaranted to be immutable.
+ * The object <code>OrbitalParameters</code> is guaranteed to be immutable.
  * </p>
  * @see     Orbit
  * @version $Id:OrbitalParameters.java 1310 2007-07-05 16:04:25Z luc $

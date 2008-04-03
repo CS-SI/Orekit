@@ -7,10 +7,10 @@ import fr.cs.orekit.time.ChunkedDate;
 import fr.cs.orekit.time.ChunkedTime;
 import fr.cs.orekit.time.UTCScale;
 
-/** This class converts and contains TLE datas.
+/** This class converts and contains TLE data.
  *
  * An instance of TLE is created with the two lines string representation,
- * convertion of the datas is made internally for easier retrieval and
+ * convertion of the data is made internally for easier retrieval and
  * future extrapolation.
  * All the values provided by a TLE only have sense when translated by the correspondant
  * {@link TLEPropagator propagator}. Even when no extrapolation in time is needed,
@@ -102,7 +102,7 @@ public class TLE  implements Comparable {
      * before trying to build this object. <p>
      * @param line1 the first element (69 char String)
      * @param line2 the second element (69 char String)
-     * @throws OrekitException if some format error occurs
+     * @exception OrekitException if some format error occurs
      */
     public TLE(final String line1, final String line2) throws OrekitException {
 
@@ -260,7 +260,7 @@ public class TLE  implements Comparable {
      * @param line1 the first element (69 char String)
      * @param line2 the second element (69 char String)
      * @return true if format is recognised, false if not
-     * @throws OrekitException if checksum is not valid
+     * @exception OrekitException if checksum is not valid
      */
     public static boolean isFormatOK(String line1, String line2) throws OrekitException {
 

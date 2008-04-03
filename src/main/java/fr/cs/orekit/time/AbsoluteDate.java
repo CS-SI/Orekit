@@ -22,18 +22,18 @@ import fr.cs.orekit.errors.OrekitException;
  *   <li><p>location view (mainly for input/output or conversions)</p>
  *   <p>locations represent the coordinate of one event with respect to a
  *   {@link TimeScale time scale}. The related methods are {@link
- *   #AbsoluteDate(Date, TimeScale) AbsoluteDate(location, timeScale)}, {@link
- *   #AbsoluteDate(String, TimeScale) AbsoluteDate(location, timeScale)},
- *   {@link #toDate}, {@link #toString() toString()}, {@link #toString(TimeScale)
- *   toString(timeScale)} and {@link #timeScalesOffset}.</p>
+ *   #AbsoluteDate(ChunkedDate, ChunkedTime, TimeScale)}, {@link
+ *   #AbsoluteDate(Date, TimeScale)}, {@link #createGPSDate(int, double)},
+ *   toString(){@link #toDate(TimeScale)}, {@link #toString(TimeScale)
+ *   toString(timeScale)}, {@link #toString()}, and {@link #timeScalesOffset}.</p>
  *   </li>
  *   <li><p>offset view (mainly for physical computation)</p>
  *   <p>offsets represent either the flow of time between two events
  *   (two instances of the class) or durations. They are counted in seconds,
- *   are continuous and could be measured using only a virtual perfect stopwatch.
- *   The related methods are {@link #AbsoluteDate(AbsoluteDate, double) AbsoluteDate(instant,
- *   offset)},
- *   {@link #minus}.</p>
+ *   are continuous and could be measured using only a virtually perfect stopwatch.
+ *   The related methods are {@link #AbsoluteDate(AbsoluteDate, double)},
+ *   {@link #minus(AbsoluteDate)}, {@link #compareTo(Object)}, {@link #equals(Object)}
+ *   and {@link #hashCode()}.</p>
  *   </li>
  * </ul>
  * <p>
@@ -219,7 +219,7 @@ public class AbsoluteDate implements Comparable, Serializable {
         if ((date != null) && (date instanceof AbsoluteDate)) {
             try {
                 return minus((AbsoluteDate)date) == 0;
-            } catch(ClassCastException cce) {
+            } catch (ClassCastException cce) {
                 // ignored
             }
         }
@@ -231,7 +231,7 @@ public class AbsoluteDate implements Comparable, Serializable {
      */
     public int hashCode() {
         final long l = Double.doubleToLongBits(minus(J2000Epoch));
-        return (int)(l^(l>>>32));
+        return (int) (l ^ (l >>> 32));
     }
 
     /** Get a String representation of the instant location in UTC time scale.

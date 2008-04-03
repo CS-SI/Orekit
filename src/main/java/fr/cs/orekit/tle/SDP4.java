@@ -33,7 +33,7 @@ abstract class SDP4  extends TLEPropagator {
 
     /** Constructor for a unique initial TLE.
      * @param initialTLE the TLE to propagate.
-     * @throws OrekitException if some specific error occurs
+     * @exception OrekitException if some specific error occurs
      */
     protected SDP4(TLE initialTLE) throws OrekitException {
         super (initialTLE);
@@ -41,7 +41,7 @@ abstract class SDP4  extends TLEPropagator {
 
     /** Initialization proper to each propagator (SGP or SDP).
      * @param tSince the offset from initial epoch (min)
-     * @throws OrekitException when UTC time steps can't be read
+     * @exception OrekitException when UTC time steps can't be read
      */
     protected void sxpInitialize() throws OrekitException {
         luniSolarTermsComputation();
@@ -87,7 +87,7 @@ abstract class SDP4  extends TLEPropagator {
     /** Computes SPACETRACK#3 compliant earth rotation angle.
      * @param date the current date
      * @return the ERA (rad)
-     * @throws OrekitException when UTC time steps can't be read
+     * @exception OrekitException when UTC time steps can't be read
      */
     protected static double thetaG(AbsoluteDate date) throws OrekitException {
 
@@ -115,7 +115,7 @@ abstract class SDP4  extends TLEPropagator {
     }
 
     /** Computes luni - solar terms from initial coordinates and epoch.
-     * @throws OrekitException when UTC time steps can't be read
+     * @exception OrekitException when UTC time steps can't be read
      */
     protected abstract void luniSolarTermsComputation() throws OrekitException;
 

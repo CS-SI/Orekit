@@ -1,9 +1,9 @@
 <html>
 <body>
-This independant package provides classes to handle epochs, timescales, and to compare 
+This independent package provides classes to handle epochs, time scales, and to compare 
 instants between them.
 	
-<p> The principal class is {@link fr.cs.aerospace.orekit.time.AbsoluteDate}
+<p> The principal class is {@link fr.cs.orekit.time.AbsoluteDate}
 which represents a unique instant in time, with no ambiguity. For that
 purpose, the ways to define this object are really precise. </p>
 
@@ -15,7 +15,7 @@ purpose, the ways to define this object are really precise. </p>
   	  - Julian Epoch : -4712-01-01 at 12:00:00 , TTScale
       - Modified Julian Epoch : 1858-11-17 at 00:00:00, TTScale
       - CNES1950Epoch : 1950-01-01 at 00:00:00,  TTScale
-      - GPS Epoch : 1980-01-06 at 00:00:00,  TTScale    
+      - GPS Epoch : 1980-01-06 at 00:00:00,  UTCScale    
       - Java Epoch : 1970-01-01 at 00:00:00, TTScale
       - J2000Epoch  : 2000-01-01 at 12:00:00, TTScale
 
@@ -42,7 +42,7 @@ purpose, the ways to define this object are really precise. </p>
  </pre> 
 </p>
  
-<p>Once it is built, an {@link fr.cs.aerospace.orekit.time.AbsoluteDate} can be compared 
+<p>Once it is built, an {@link fr.cs.orekit.time.AbsoluteDate} can be compared 
 to other ones, and expressed in other TimeScales. It is used to define states, orbits,
  frames...</p>
 

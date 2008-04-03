@@ -94,7 +94,7 @@ public class DrozinerAttractionModel implements ForceModel {
      * @param s the current state information : date, cinematics, attitude
      * @param adder object where the contribution should be added
      * @param mu central gravitation coefficient
-     * @throws OrekitException if some specific error occurs
+     * @exception OrekitException if some specific error occurs
      */
 
     public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)

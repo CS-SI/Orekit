@@ -7,9 +7,9 @@ public class TutorialOREKIT {
 
     /** This tutorial program is a first approach of the OREKIT usage.
      * @param args
-     * @throws OrekitException
-     * @throws ParseException
-     * @throws OrekitException
+     * @exception OrekitException
+     * @exception ParseException
+     * @exception OrekitException
      */
     public static void main(String[] args) throws ParseException, OrekitException {
 

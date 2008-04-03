@@ -64,13 +64,13 @@ public abstract class PotentialCoefficientsReader {
     /** Check the file to determine if its format is understood by the reader or not.
      * @param in the input to check
      * @return true if it is readable, false if not.
-     * @throws IOException when the {@link InputStream} cannot be buffered.
+     * @exception IOException when the {@link InputStream} cannot be buffered.
      */
     public abstract boolean isFileOK(InputStream in) throws IOException;
 
     /** Computes the coefficients by reading the selected (and tested) file
-     * @throws OrekitException when the file has not been initialized or checked.
-     * @throws IOException when the file is corrupted.
+     * @exception OrekitException when the file has not been initialized or checked.
+     * @exception IOException when the file is corrupted.
      */
     public abstract void read() throws OrekitException, IOException;
 
@@ -78,7 +78,7 @@ public abstract class PotentialCoefficientsReader {
      * @param normalized (true) or un-normalized (false)
      * @param n the maximal degree requested
      * @return J the zonal coefficients array.
-     * @throws OrekitException if the requested maximal degree exceeds the
+     * @exception OrekitException if the requested maximal degree exceeds the
      * available degree
      */
     public double[] getJ(boolean normalized, int n) throws OrekitException {
@@ -105,7 +105,7 @@ public abstract class PotentialCoefficientsReader {
      * @param m the order
      * @param normalized (true) or un-normalized (false)
      * @return the cosines coefficients matrix
-     * @throws OrekitException if the requested maximal degree or order exceeds the
+     * @exception OrekitException if the requested maximal degree or order exceeds the
      * available degree or order
      */
     public double[][] getC(int n, int m, boolean normalized) throws OrekitException {
@@ -117,7 +117,7 @@ public abstract class PotentialCoefficientsReader {
      * @param m the order
      * @param normalized (true) or un-normalized (false)
      * @return the sines coefficients matrix
-     * @throws OrekitException if the requested maximal degree or order exceeds the
+     * @exception OrekitException if the requested maximal degree or order exceeds the
      * available degree or order
      */
     public double[][] getS(int n, int m, boolean normalized) throws OrekitException {
@@ -129,7 +129,7 @@ public abstract class PotentialCoefficientsReader {
      * @param n the degree
      * @param m the order
      * @return C the coefficients matrix
-     * @throws OrekitException if the requested maximal degree or order exceeds the
+     * @exception OrekitException if the requested maximal degree or order exceeds the
      * available degree or order
      */
     private double[][] truncateArray(int n, int m, double[][] complete) throws OrekitException {

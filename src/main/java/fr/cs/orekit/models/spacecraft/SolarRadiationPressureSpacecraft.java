@@ -4,7 +4,6 @@ import org.apache.commons.math.geometry.Vector3D;
 
 /** Adapted container for the SolarRadiationPressure force model.
  *
- * @see SolarRadiationPressure
  * @author F. Maussion
  */
 public interface SolarRadiationPressureSpacecraft {

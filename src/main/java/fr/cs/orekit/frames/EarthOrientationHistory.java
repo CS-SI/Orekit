@@ -35,7 +35,7 @@ public class EarthOrientationHistory implements Serializable {
     private EarthOrientationParameters next;
 
    /** Private constructor for the singleton.
-     * @throws OrekitException if there is a problem while reading IERS data
+     * @exception OrekitException if there is a problem while reading IERS data
      */
     private EarthOrientationHistory() throws OrekitException {
 
@@ -59,7 +59,7 @@ public class EarthOrientationHistory implements Serializable {
 
     /** Get the singleton instance.
      * @return the unique dated eop reader instance.
-     * @throws OrekitException when there is a problem while reading IERS datas
+     * @exception OrekitException when there is a problem while reading IERS data
      */
     public static EarthOrientationHistory getInstance() throws OrekitException {
         if (instance == null) {

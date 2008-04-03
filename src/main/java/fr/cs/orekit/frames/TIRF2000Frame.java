@@ -44,7 +44,7 @@ class TIRF2000Frame extends Frame {
      * @param parent the IRF2000
      * @param date the current date
      * @param name the string reprensentation
-     * @throws OrekitException
+     * @exception OrekitException
      */
     protected TIRF2000Frame(Frame parent, AbsoluteDate date, String name)
         throws OrekitException {
@@ -89,7 +89,7 @@ class TIRF2000Frame extends Frame {
     /** Get the Earth Rotation Angle at the current date.
      * @param  date the date
      * @return Earth Rotation Angle at the current date in radians
-     * @throws OrekitException
+     * @exception OrekitException
      */
     public double getEarthRotationAngle(AbsoluteDate date) throws OrekitException {
         updateFrame(date);

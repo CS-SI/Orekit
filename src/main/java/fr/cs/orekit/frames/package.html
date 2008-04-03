@@ -2,13 +2,13 @@
 <body>
 This package provides classes to handle frames and transforms between them.
 	
-<p> The {@link fr.cs.aerospace.orekit.frames.Transform} class represents a full
+<p> The {@link fr.cs.orekit.frames.Transform} class represents a full
  transform : rotation and translation, and its first time derivative to 
  handle kinematics. 
 </p>
 
 <p> 
-A {@link fr.cs.aerospace.orekit.frames.Frame} is then defined with a transform from 
+A {@link fr.cs.orekit.frames.Frame} is then defined with a transform from 
 an other one, called Parent Frame. So the user can build its own frame tree and then 
 OREKIT can calculate any transform between frames. The first root of the tree 
 is necessarily the J2000 inertial frame, which is a singleton. In that way, there can
@@ -17,15 +17,15 @@ tree which is the J2000 reference.
 </p>  
 <p> 
 The frames are time synchronized. To get a transform from one frame to another the
-date must be specifed, and
-{@link fr.cs.aerospace.orekit.frames.Frame#updateFrame(AbsoluteDate)} is internally
+date must be specified, and
+{@link fr.cs.orekit.frames.Frame#updateFrame(AbsoluteDate)} is internally
 called. If a user wants to implement its own date synchronized frame, he has to 
-implement by extention his own {@link fr.cs.aerospace.orekit.frames.Frame#updateFrame(AbsoluteDate)}
+implement by extension his own {@link fr.cs.orekit.frames.Frame#updateFrame(AbsoluteDate)}
 method.
 </p>
 
 <p>
-OREKIT provides one specific Earth fixed (and date dependant) frame, the 
+OREKIT provides one specific Earth fixed (and date dependent) frame, the 
 International Terrestrial Reference Frame (fixed by the IERS conventions 2003). 
 </p>
 

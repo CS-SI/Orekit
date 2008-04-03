@@ -23,7 +23,7 @@ import fr.cs.orekit.time.AbsoluteDate;
  * u<sub>A</sub> in frame<sub>A</sub> and u<sub>B</sub> in frame<sub>B</sub>,
  * then u<sub>B</sub>={@link Transform#transformVector(Vector3D) t.transformVector(u<sub>A</sub>)}.
  * <p>The transforms may be constant or varying. For simple fixed transforms,
- * using this base class is sufficient. For varying transforms (time-dependant
+ * using this base class is sufficient. For varying transforms (time-dependent
  * or telemetry-based for example), it may be useful to define specific subclasses
  * that will implement {@link #updateFrame(AbsoluteDate)} or that will
  * add some specific <code>updateFromTelemetry(telemetry)</code>
@@ -238,9 +238,9 @@ public class Frame implements Serializable {
 
     /** Get the transform from the instance to another frame.
      * @param destination destination frame to which we want to transform vectors
-     * @param date the date (can be null if it is sure than no date dependant frame is used)
+     * @param date the date (can be null if it is sure than no date dependent frame is used)
      * @return transform from the instance to the destination frame
-     * @throws OrekitException if some frame specific error occurs
+     * @exception OrekitException if some frame specific error occurs
      */
     public Transform getTransformTo(Frame destination,
                                     AbsoluteDate date) throws OrekitException {
@@ -272,7 +272,7 @@ public class Frame implements Serializable {
     /** Update the frame to the given date.
      * <p>This method is called each time {@link #getTransformTo(Frame, AbsoluteDate)}
      * is called. Default behaviour is to do nothing. The proper way to build
-     * a date-dependant frame is to extend {@link Frame} and implement this method which
+     * a date-dependent frame is to extend {@link Frame} and implement this method which
      * will have to call {@link #updateTransform(Transform)} with the new transform </p>
      * @param date new value of the  date
      * @exception OrekitException if some frame specific error occurs
@@ -470,7 +470,7 @@ public class Frame implements Serializable {
      * @param type the frame type.
      * @param date the current date
      * @return the selected reference frame singleton.
-     * @throws OrekitException if the nutation model data embedded in the
+     * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
      */
     public static Frame getReferenceFrame(FrameType type, AbsoluteDate date) throws OrekitException {

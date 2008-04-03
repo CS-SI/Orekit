@@ -12,7 +12,7 @@ import java.util.ResourceBundle;
  * OrekitException. When exceptions that are already covered by the
  * standard java API should be thrown, like
  * ArrayIndexOutOfBoundsException or InvalidParameterException, these
- * standard exceptions are thrown rather than the mantissa specific
+ * standard exceptions are thrown rather than the commons-math specific
  * ones.</p>
  * <p>This class also provides utility methods to throw some standard
  * java exceptions with localized messages.</p>

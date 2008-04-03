@@ -45,7 +45,7 @@ public class Sun extends ThirdBody {
      * @param date date
      * @param frame the frame where to define the position
      * @return position of the sun (m) in the J2000 Frame
-     * @throws OrekitException if a frame conversion cannot be computed
+     * @exception OrekitException if a frame conversion cannot be computed
      */
     public Vector3D getPosition(AbsoluteDate date, Frame frame) throws OrekitException {
 

@@ -39,14 +39,14 @@ public interface OrekitSwitchingFunction extends Serializable {
      * @param s the current state information: date, kinematics, attitude
      * @param mu central body attraction coefficient
      * @return value of the switching function
-     * @throws OrekitException if some specific error occurs
+     * @exception OrekitException if some specific error occurs
      */
     public double g(SpacecraftState s, double mu) throws OrekitException;
 
     /** Handle an event and choose what to do next.
      * @param s the current state information : date, cinematics, attitude
      * @param mu central gravtitation coefficient
-     * @throws OrekitException if some specific error occurs
+     * @exception OrekitException if some specific error occurs
      */
     public void eventOccurred(SpacecraftState s, double mu) throws OrekitException;
 

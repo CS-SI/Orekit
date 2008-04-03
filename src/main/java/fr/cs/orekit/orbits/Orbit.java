@@ -1,9 +1,10 @@
 package fr.cs.orekit.orbits;
 
+import java.io.Serializable;
+
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
-import java.io.Serializable;
 
 /**
  * This class handles orbits around a central body.
@@ -12,7 +13,8 @@ import java.io.Serializable;
  * In OREKIT architecture, an Orbit is only a state at a specific date.
  * Orbit evolution is represented by the {@link
  * fr.cs.orekit.propagation.Ephemeris Ephemeris} interface,
- * which contains only the {@link Ephemeris#getSpacecraftState(AbsoluteDate)} method to
+ * which contains only the {@link
+ * fr.cs.orekit.propagation.Ephemeris#getSpacecraftState(AbsoluteDate)} method to
  * provide new states for new dates. This interface can be implemented by
  * several means like file-based interpolation, analytical model or numerical
  * integration.
@@ -37,7 +39,7 @@ import java.io.Serializable;
  * non-equatorial.
  * </p>
  * <p>
- * The instance <code>Orbit</code> is guaranted to be immutable.
+ * The instance <code>Orbit</code> is guaranteed to be immutable.
  * </p>
  * @see     OrbitalParameters
  * @see     fr.cs.orekit.propagation.Ephemeris
