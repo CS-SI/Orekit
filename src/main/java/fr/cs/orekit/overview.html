@@ -1,4 +1,5 @@
 <html>
+OREKIT
 <body>
 <h2>1. Purpose</h2>
 <p> 
@@ -39,7 +40,7 @@ discrete events. Here is a short list of the features offered by the library:</p
  frame ITRF2000, forces (gravity attraction field, third body attraction, 
  sun and atmospheric drag, maneuvers...)</li>
  <li><strong>orbits representation</strong>. Orbital parameters conversions (Keplerian,
- Circular, Cartesian, Equinoctial, Two-Lines)</li>
+ Circular, Cartesian, Equinoctial, Two-Lines Elements)</li>
  <li>orbit propagation
     <ul>
       <li>analytical (Kepler, Eckstein-Heschler, SDP4/SGP4 2006 revision)</li>
@@ -56,10 +57,10 @@ discrete events. Here is a short list of the features offered by the library:</p
 
 <h2>3. Dependency</h2>
 <p>
-OREKIT has only one dependency: the commons-math open-source library (<a
-href="http://commons.apache.org/math/">). This library provides mathematical tools for
-many purposes: geometry, polynomial equations, differential equations, and more... It
-is distributed under the business-friendly Apache Software Licence version 2.0.
+OREKIT has only one dependency: the <a href="http://commons.apache.org/math/">commons-math</a>
+open-source library. This library provides mathematical tools for many purposes: geometry,
+polynomial equations, differential equations, and more... It is distributed under the
+business-friendly Apache Software Licence version 2.0.
 </p>
 <p>
 OREKIT is based on two commons-math packages:
@@ -67,7 +68,7 @@ OREKIT is based on two commons-math packages:
 <ul>
  <li>{@link org.apache.commons.math.geometry}, which provides very useful objects as vectors
    and rotations (internally represented by quaternions)</li>
- <li>{@link org.apache.commons.math..ode}, which provides numerical solutions to solve 
+ <li>{@link org.apache.commons.math.ode}, which provides numerical solutions to solve 
    Ordinary Differential Equations (ODE).</li>
 </ul>
 <p>
