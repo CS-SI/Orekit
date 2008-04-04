@@ -6,10 +6,14 @@
 -->
 <FindBugsFilter>
 
-  <!-- the following inner class serialization pattern is intentional -->
-  <!-- the inner class and the enclosing class should be serialized together -->
+  <!-- the following inner classes serialization pattern are intentional -->
+  <!-- the inner classes and the enclosing classes should be serialized together -->
   <Match>
-    <Class name="fr.cs.orekit.propagation.numerical.forces.maneuvers.ConstantThrustManeuver" />
+    <Or>
+      <Class name="~.*\.ConstantThrustManeuver\$\w+Switch$" />
+      <Class name="~.*\.SolarRadiationPressure\$\w+Switch$" />
+      <Class name="~.*\.NumericalPropagator\$MappingSwitchingFunction$" />
+    </Or>
     <Bug pattern="SE_INNER_CLASS" />
   </Match>
 

@@ -147,7 +147,7 @@ public class ConstantThrustManeuver implements ForceModel {
 
     }
 
-    /** Gets the swithching functions related to start and stop passes.
+    /** Gets the switching functions related to start and stop passes.
      * @return start / stop switching functions
      */
     public OrekitSwitchingFunction[] getSwitchingFunctions() {

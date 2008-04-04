@@ -15,7 +15,7 @@ public class SHMFormatReaderTest extends TestCase {
     public void testRead() throws OrekitException, IOException {
 
         InputStream in =
-            getClass().getResourceAsStream("/potential/shm-format/g003_eigen-cg01c_coef");
+            SHMFormatReaderTest.class.getResourceAsStream("/potential/shm-format/g003_eigen-cg01c_coef");
         PotentialReaderFactory factory = new PotentialReaderFactory();
         PotentialCoefficientsReader reader = factory.getPotentialReader(in);
         reader.read();
@@ -30,7 +30,7 @@ public class SHMFormatReaderTest extends TestCase {
         assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
 
         in =
-            getClass().getResourceAsStream("/potential/shm-format/eigen_cg03c_coef");
+            SHMFormatReaderTest.class.getResourceAsStream("/potential/shm-format/eigen_cg03c_coef");
         reader = factory.getPotentialReader(in);
         reader.read();
         C = reader.getC(5, 5, true);;
@@ -47,7 +47,7 @@ public class SHMFormatReaderTest extends TestCase {
 
     public void testReadCompressed() throws OrekitException, IOException {
         InputStream in =
-            getClass().getResourceAsStream("/potential/shm-format-compressed/eigen-cg01c_coef.gz");
+            SHMFormatReaderTest.class.getResourceAsStream("/potential/shm-format-compressed/eigen-cg01c_coef.gz");
         PotentialReaderFactory factory = new PotentialReaderFactory();
         PotentialCoefficientsReader reader = factory.getPotentialReader(in);
         reader.read();
@@ -62,7 +62,7 @@ public class SHMFormatReaderTest extends TestCase {
         assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
 
         in =
-            getClass().getResourceAsStream("/potential/shm-format-compressed/eigen_cg03c_coef.gz");
+            SHMFormatReaderTest.class.getResourceAsStream("/potential/shm-format-compressed/eigen_cg03c_coef.gz");
         reader = factory.getPotentialReader(in);
         reader.read();
         C = reader.getC(5, 5, true);;
@@ -84,7 +84,7 @@ public class SHMFormatReaderTest extends TestCase {
         PotentialReaderFactory factory = new PotentialReaderFactory();
         try {
             InputStream in =
-                getClass().getResourceAsStream("/potential/shm-format-corrupted/fakeeigen1");
+                SHMFormatReaderTest.class.getResourceAsStream("/potential/shm-format-corrupted/fakeeigen1");
             reader = factory.getPotentialReader(in);
         } catch (OrekitException e) {
             c++;
@@ -92,7 +92,7 @@ public class SHMFormatReaderTest extends TestCase {
         }
         try {
             InputStream in =
-                getClass().getResourceAsStream("/potential/shm-format-corrupted/fakeeigen2");
+                SHMFormatReaderTest.class.getResourceAsStream("/potential/shm-format-corrupted/fakeeigen2");
             reader = factory.getPotentialReader(in);
         } catch (OrekitException e) {
             c++;
@@ -100,7 +100,7 @@ public class SHMFormatReaderTest extends TestCase {
         }
         try {
             InputStream in =
-                getClass().getResourceAsStream("/potential/shm-format-corrupted/fakeeigen3");
+                SHMFormatReaderTest.class.getResourceAsStream("/potential/shm-format-corrupted/fakeeigen3");
             reader = factory.getPotentialReader(in);
         } catch (OrekitException e) {
             c++;

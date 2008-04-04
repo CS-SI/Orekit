@@ -397,7 +397,7 @@ public class JB2006Atmosphere {
 
         double FEX = 1.;
 
-        if ((satAlt>=1000.)&(satAlt<1500.)) {
+        if ((satAlt >= 1000.) && (satAlt < 1500.)) {
             final double ZETA   = (satAlt - 1000.) * 0.002;
             final double ZETA2  =  ZETA * ZETA;
             final double ZETA3  =  ZETA * ZETA2;
@@ -439,7 +439,7 @@ public class JB2006Atmosphere {
         double sum;
 
         // Calculates dTc
-        if ((satAlt>=120)&(satAlt<=200)) {
+        if ((satAlt >= 120) && (satAlt <= 200)) {
             final double DTC200 = CdtSub[17] + CdtSub[18]*tx*ycs + CdtSub[19]*tx2*ycs +
                                   CdtSub[20]*tx3*ycs + CdtSub[21]*f*ycs + CdtSub[22]*tx*f*ycs +
                                   CdtSub[23]*tx2*f*ycs;
@@ -455,7 +455,7 @@ public class JB2006Atmosphere {
             dTc = CC*ZP*ZP + DD*ZP*ZP*ZP;
         }
 
-        if (satAlt>200.0&satAlt<=240.0) {
+        if ((satAlt > 200.0) && (satAlt <= 240.0)) {
             h = (satAlt - 200.)/50.;
             sum = CdtSub[1]*h + BdtSub[2]*f*h + CdtSub[3]*tx*f*h     + CdtSub[4]*tx2*f*h +
                   CdtSub[5]*tx3*f*h + CdtSub[6]*tx4*f*h + CdtSub[7]*tx5*f*h +
@@ -468,7 +468,7 @@ public class JB2006Atmosphere {
             dTc = sum;
         }
 
-        if (satAlt>240.0&satAlt<=300.0) {
+        if ((satAlt > 240.0) && (satAlt <= 300.0)) {
             h = 40./50.;
             sum = CdtSub[1]*h + BdtSub[2]*f*h + CdtSub[3]*tx*f*h     + CdtSub[4]*tx2*f*h +
                   CdtSub[5]*tx3*f*h    + CdtSub[6]*tx4*f*h    + CdtSub[7]*tx5*f*h +
@@ -502,7 +502,7 @@ public class JB2006Atmosphere {
             dTc = AA + BB*ZP + CC*ZP*ZP + DD*ZP*ZP*ZP;
         }
 
-        if (satAlt>300.0&satAlt<=600.0) {
+        if ((satAlt > 300.0) && (satAlt <= 600.0)) {
             h   = satAlt/100.;
             sum = BdtSub[1]    + BdtSub[2]*f  + BdtSub[3]*tx*f         + BdtSub[4]*tx2*f +
                   BdtSub[5]*tx3*f      + BdtSub[6]*tx4*f      + BdtSub[7]*tx5*f +
@@ -513,7 +513,7 @@ public class JB2006Atmosphere {
             dTc = sum;
         }
 
-        if (satAlt>600.0&satAlt<=800.0) {
+        if ((satAlt > 600.0) && (satAlt <= 800.0)) {
             final double ZP = (satAlt - 600.)/100.;
             final double HP = 600./100.;
             final double AA  = BdtSub[1]    + BdtSub[2]*f  + BdtSub[3]*tx*f         + BdtSub[4]*tx2*f +

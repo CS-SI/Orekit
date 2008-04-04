@@ -135,6 +135,7 @@ public class DTM2000Atmosphere {
     private static double[] az   = null;
     private static double[] t0   = null;
     private static double[] tp   = null;
+
     /** Partial derivatives. */
     private static double[] dtt  = null;
     private static double[] dh   = null;
@@ -255,7 +256,7 @@ public class DTM2000Atmosphere {
     public double getDensity(int day, double alti, double lon, double lat,
                              double hl, double f, double fbar,
                              double akp3, double akp24) throws OrekitException {
-        if(alti<120000) {
+        if (alti < 120000) {
             throw new OrekitException(" Altitude is below the minimal range of 120000 m : {0}" ,
                                       new Object[] { new Double(alti) });
         }
@@ -273,7 +274,7 @@ public class DTM2000Atmosphere {
     }
 
 
-    /** Computes output vales once tne inputs are set. */
+    /** Computes output vales once the inputs are set. */
     private void computation() {
         ro=0.;
 
@@ -331,11 +332,11 @@ public class DTM2000Atmosphere {
 
         kleq = 0; //equinox
 
-        if((day<59) || (day>284)) {
-            kleq=-1; //hiver nord
+        if ((day < 59) || (day > 284)) {
+            kleq=-1; // hiver nord
         }
-        if((day>99) & (day<244)) {
-            kleq= 1; //ete nord
+        if ((day > 99) && (day < 244)) {
+            kleq= 1; // ete nord
         }
 
         final double gdelt0 =  gFunction(t0,dt0,0,kleq);
@@ -627,7 +628,7 @@ public class DTM2000Atmosphere {
     /** Store the DTM model elements coefficients in internal arrays
      * @exception OrekitException if some resource file reading error occurs
      */
-    private void readcoefficients() throws OrekitException {
+    private static void readcoefficients() throws OrekitException {
 
         tt = new double[nlatm+1];
         h = new double[nlatm+1];
@@ -661,8 +662,7 @@ public class DTM2000Atmosphere {
             dtp[j] = Double.NaN;
         }
 
-        final Class c = getClass();
-        final InputStream in = c.getResourceAsStream(dtm2000);
+        final InputStream in = DTM2000Atmosphere.class.getResourceAsStream(dtm2000);
         if (in == null) {
             throw new OrekitException("unable to find dtm 2000 model data file {0}",
                                       new Object[] { dtm2000 });

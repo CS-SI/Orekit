@@ -34,11 +34,11 @@ DTM2000InputParameters {
     private SolarInputs97to05() throws OrekitException {
 
         data = new TreeSet();
-        InputStream in = getClass().getResourceAsStream("/atmosphere/JB_All_97-05.txt");
+        InputStream in = SolarInputs97to05.class.getResourceAsStream("/atmosphere/JB_All_97-05.txt");
         BufferedReader rFlux = new BufferedReader(new InputStreamReader(in));
 
 
-        in = getClass().getResourceAsStream("/atmosphere/NOAA_ap_97-05.dat.txt");
+        in = SolarInputs97to05.class.getResourceAsStream("/atmosphere/NOAA_ap_97-05.dat.txt");
         BufferedReader rAp = new BufferedReader(new InputStreamReader(in));
 
         try {
@@ -77,27 +77,33 @@ DTM2000InputParameters {
         AbsoluteDate date = null;
         boolean first = true;
 
-        for(String lineFlux = rFlux.readLine(); lineFlux!=null; lineFlux = rFlux.readLine()) {
+        for (String lineFlux = rFlux.readLine(); lineFlux != null; lineFlux = rFlux.readLine()) {
+
+            flux = lineFlux.trim().split("\\s+");
+
             lineAp = rAp.readLine();
-            flux = lineFlux.trim().split("\\s+") ;
-            ap = lineAp.trim().split("\\s+") ;
-
-            int year = Integer.parseInt(flux[0]);
-            int day = Integer.parseInt(flux[1]);
-
-            if (day != Integer.parseInt(ap[0])) {
+            if (lineAp == null) {
                 throw new OrekitException("inconsistent JB2006 and geomagnetic indices files",
                                           new Object[0]);
             }
-            int y = Integer.parseInt(ap[11]);
-            if (((year <  2000) && ((year - 1900) != y)) ||
-                ((year >= 2000) && ((year - 2000) != y))) {
+            ap = lineAp.trim().split("\\s+");
+
+            int fluxYear = Integer.parseInt(flux[0]);
+            int fluxDay = Integer.parseInt(flux[1]);
+            int apYear  = Integer.parseInt(ap[11]);
+
+            if (fluxDay != Integer.parseInt(ap[0])) {
+                throw new OrekitException("inconsistent JB2006 and geomagnetic indices files",
+                                          new Object[0]);
+            }
+            if (((fluxYear <  2000) && ((fluxYear - 1900) != apYear)) ||
+                ((fluxYear >= 2000) && ((fluxYear - 2000) != apYear))) {
                 throw new OrekitException("inconsistent JB2006 and geomagnetic indices files",
                                           new Object[0]);
             }
 
-            cal.set(Calendar.YEAR, year);
-            cal.set(Calendar.DAY_OF_YEAR, day);
+            cal.set(Calendar.YEAR, fluxYear);
+            cal.set(Calendar.DAY_OF_YEAR, fluxDay);
 
             date = new AbsoluteDate(cal.getTime(), UTCScale.getInstance());
 
@@ -132,7 +138,7 @@ DTM2000InputParameters {
 
     private void findClosestLine(AbsoluteDate date) throws OrekitException {
 
-        if(date.minus(firstDate)<0 || date.minus(lastDate)>86400) {
+        if ((date.minus(firstDate) < 0) || (date.minus(lastDate) > 86400)) {
             throw new OrekitException("out of range" , new Object[0]);
         }
 
@@ -146,7 +152,6 @@ DTM2000InputParameters {
 
         // search starting from entries a few steps before the target date
         SortedSet tailSet = data.tailSet(before);
-
         if (tailSet != null) {
             currentParam = (LineParameters)tailSet.first();
             if(currentParam.date.minus(date)==-86400) {
@@ -208,18 +213,16 @@ DTM2000InputParameters {
 
 
     public double getAp(AbsoluteDate date) {
-        double[] tab = null;
         double result = Double.NaN;
         try {
             findClosestLine(date);
-            tab=currentParam.ap;
             Calendar cal = new GregorianCalendar();
             cal.setTimeZone(TimeZone.getTimeZone("UTC"));
             cal.setTime(date.toDate(UTCScale.getInstance()));
             int hour = cal.get(Calendar.HOUR_OF_DAY);
             for(int i= 0; i<8; i++) {
-                if(hour>=i*3 & hour<(i+1)*3) {
-                    result = tab[i];
+                if ((hour >= (i * 3)) && (hour < ((i + 1) * 3))) {
+                    result = currentParam.ap[i];
                 }
             }
         }

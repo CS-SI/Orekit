@@ -13,7 +13,7 @@ public class EGMFormatReaderTest extends TestCase {
     public void testRead() throws OrekitException, IOException {
 
         InputStream in =
-            getClass().getResourceAsStream("/potential/egm-format/egm96_to5.ascii.gz");
+            EGMFormatReaderTest.class.getResourceAsStream("/potential/egm-format/egm96_to5.ascii.gz");
 
         PotentialReaderFactory factory = new PotentialReaderFactory();
         PotentialCoefficientsReader reader = factory.getPotentialReader(in);
@@ -50,7 +50,7 @@ public class EGMFormatReaderTest extends TestCase {
         int c = 0;
         try {
             InputStream in =
-                getClass().getResourceAsStream("/potential/egm-format-corrupted/fakegm1");
+                EGMFormatReaderTest.class.getResourceAsStream("/potential/egm-format-corrupted/fakegm1");
             factory.getPotentialReader(in);
         } catch (OrekitException e) {
             c++;
@@ -58,7 +58,7 @@ public class EGMFormatReaderTest extends TestCase {
         }
         try {
             InputStream in =
-                getClass().getResourceAsStream("/potential/egm-format-corrupted/fakegm2");
+                EGMFormatReaderTest.class.getResourceAsStream("/potential/egm-format-corrupted/fakegm2");
             factory.getPotentialReader(in);
         } catch (OrekitException e) {
             c++;

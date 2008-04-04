@@ -94,17 +94,17 @@ public class DTM2000AtmosphereTest extends TestCase {
 //      ro=    1.3150282384722D-16
 //      tz=    793.65487014559
 //      tinf=    793.65549802348
-        roTestCase =    1.3150282384722E-16;
-        tzTestCase=    793.65487014559;
-        tinfTestCase=    793.65549802348;
+//        roTestCase =    1.3150282384722E-16;
+//        tzTestCase=    793.65487014559;
+//        tinfTestCase=    793.65549802348;
 
-        myRo = atm.getDensity(15, 500*1000, 0, Math.toRadians(-70), 16*Math.PI/12, 70, 70, 0, 0);
+        atm.getDensity(15, 500*1000, 0, Math.toRadians(-70), 16*Math.PI/12, 70, 70, 0, 0);
 
 //      IDEM., alt=800.
 //      ro=    1.9556768571305D-18
 //      tz=    793.65549797919
 //      tinf=    793.65549802348
-        myRo = atm.getDensity(15, 800*1000, 0, Math.toRadians(-70), 16*Math.PI/12, 70, 70, 0, 0);
+        atm.getDensity(15, 800*1000, 0, Math.toRadians(-70), 16*Math.PI/12, 70, 70, 0, 0);
 
     }
 

@@ -48,6 +48,7 @@ public abstract class IERSFileCrawler {
      */
     public void visit(File file)
         throws OrekitException {
+        BufferedReader reader = null;
         try {
             this.file = file;
             InputStream is = new FileInputStream(file);
@@ -55,13 +56,21 @@ public abstract class IERSFileCrawler {
                 // add the decompression filter
                 is = new GZIPInputStream(is);
             }
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            reader = new BufferedReader(new InputStreamReader(is));
             visit(reader);
             reader.close();
         } catch (IOException ioe) {
             throw new OrekitException(ioe.getMessage(), ioe);
         } catch (ParseException pe) {
             throw new OrekitException(pe.getMessage(), pe);
+        } finally {
+            if (reader != null) {
+                try {
+                reader.close();
+                } catch (IOException ioe) {
+                    throw new OrekitException(ioe.getMessage(), ioe);
+                }
+            }
         }
     }
 

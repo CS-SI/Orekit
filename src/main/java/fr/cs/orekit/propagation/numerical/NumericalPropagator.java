@@ -81,7 +81,7 @@ public class NumericalPropagator
     implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -7625270037622308823L;
+    private static final long serialVersionUID = -6846133368177983360L;
 
     /** Attitude provider */
     private AttitudeKinematicsProvider akProvider;

@@ -170,13 +170,13 @@ public class SolarRadiationPressure implements ForceModel {
      * @return umbra/penumbra switching functions
      */
     public OrekitSwitchingFunction[] getSwitchingFunctions() {
-        return new OrekitSwitchingFunction[] { new Umbraswitch(), new Penumbraswitch() };
+        return new OrekitSwitchingFunction[] { new UmbraSwitch(), new PenumbraSwitch() };
     }
 
     /** This class defines the Umbra switching function.
      * It triggers when the satellite enters the umbra zone.
      */
-    private class Umbraswitch implements OrekitSwitchingFunction {
+    private class UmbraSwitch implements OrekitSwitchingFunction {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 8164370576237170346L;
@@ -205,16 +205,19 @@ public class SolarRadiationPressure implements ForceModel {
             return sunEarthAngle - alphaEarth;
         }
 
+        /** {@inheritDoc} */
         public double getMaxCheckInterval() {
             // we accept losing umbra passes shorter than one minute
             return 60.0;
         }
 
+        /** {@inheritDoc} */
         public double getThreshold() {
             // convergence threshold in seconds for umbra events
             return 1.0e-3;
         }
 
+        /** {@inheritDoc} */
         public int getMaxIterationCount() {
             return 100;
         }
@@ -224,11 +227,12 @@ public class SolarRadiationPressure implements ForceModel {
     /** This class defines the penumbra switching function.
      * It triggers when the satellite enters the penumbra zone.
      */
-    private class Penumbraswitch implements OrekitSwitchingFunction {
+    private class PenumbraSwitch implements OrekitSwitchingFunction {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -8548885301322210937L;
 
+        /** {@inheritDoc} */
         public void eventOccurred(SpacecraftState s, double mu) {
             // do nothing
         }
@@ -254,16 +258,19 @@ public class SolarRadiationPressure implements ForceModel {
             return sunEarthAngle - alphaEarth - alphaSun;
         }
 
+        /** {@inheritDoc} */
         public double getMaxCheckInterval() {
             // we accept losing penumbra passes shorter than one minute
             return 60.0;
         }
 
+        /** {@inheritDoc} */
         public double getThreshold() {
             // convergence threshold in seconds for penumbra events
             return 1.0e-3;
         }
 
+        /** {@inheritDoc} */
         public int getMaxIterationCount() {
             return 100;
         }

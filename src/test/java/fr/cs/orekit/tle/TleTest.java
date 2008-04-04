@@ -20,7 +20,7 @@ import fr.cs.orekit.time.ChunkedTime;
 import fr.cs.orekit.time.UTCScale;
 import fr.cs.orekit.utils.PVCoordinates;
 
-public class tleTest extends TestCase {
+public class TleTest extends TestCase {
 
     public void testTLEFormat() throws OrekitException, ParseException {
 
@@ -64,7 +64,7 @@ public class tleTest extends TestCase {
     public void testTLESeriesFormat() throws IOException, OrekitException, ParseException {
 
         InputStream in =
-            getClass().getResourceAsStream("/tle/regular-data/spot-5.txt");
+            TleTest.class.getResourceAsStream("/tle/regular-data/spot-5.txt");
         TLESeries series = new TLESeries(in);
         assertEquals(0,
                      series.getFirstDate().minus(new AbsoluteDate(new ChunkedDate(2002, 05, 04),
@@ -117,11 +117,11 @@ public class tleTest extends TestCase {
         boolean printResults = false;
 
         InputStream inEntry =
-            getClass().getResourceAsStream("/tle/extrapolationTest-data/SatCode-entry");
+            TleTest.class.getResourceAsStream("/tle/extrapolationTest-data/SatCode-entry");
         BufferedReader rEntry = new BufferedReader(new InputStreamReader(inEntry));
 
         InputStream inResults =
-            getClass().getResourceAsStream("/tle/extrapolationTest-data/SatCode-results");
+            TleTest.class.getResourceAsStream("/tle/extrapolationTest-data/SatCode-results");
         BufferedReader rResults = new BufferedReader(new InputStreamReader(inResults));
 
         double cumulated = 0; // sum of all differences between test cases and OREKIT results
@@ -134,12 +134,12 @@ public class tleTest extends TestCase {
 
             String[] title = rline.split(" ");
 
-            if(title[0].matches("r")) {
+            if (title[0].matches("r")) {
 
                 String eline;
                 int count = 0;
                 String[] header = new String[4];
-                for (eline = rEntry.readLine(); eline.charAt(0)=='#'; eline = rEntry.readLine()) {
+                for (eline = rEntry.readLine(); (eline != null) && (eline.charAt(0)=='#'); eline = rEntry.readLine()) {
                     header[count++] = eline;
                 }
                 String line1 = eline;
@@ -221,7 +221,7 @@ public class tleTest extends TestCase {
     }
 
     public static Test suite() {
-        return new TestSuite(tleTest.class);
+        return new TestSuite(TleTest.class);
     }
 
 

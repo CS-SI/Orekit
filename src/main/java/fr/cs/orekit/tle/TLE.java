@@ -140,7 +140,7 @@ public class TLE  implements Comparable {
     protected TLE(AbsoluteDate date) {
         epoch = date;
         satelliteNumber = 0;
-        internationalDesignator = new String();
+        internationalDesignator = "";
         bStar = 0;
         ephemerisType = 0;
         elementNumber = 0;
@@ -264,7 +264,8 @@ public class TLE  implements Comparable {
      */
     public static boolean isFormatOK(String line1, String line2) throws OrekitException {
 
-        if (line1.length() != 69 || line2.length() != 69) {
+        if (line1 == null || line1.length() != 69 ||
+            line2 == null || line2.length() != 69) {
             return false;
         }
 

@@ -167,14 +167,14 @@ public class NumericalPropagation {
         AbsoluteDate finalDate = new AbsoluteDate(initialDate, 500);
 
         SpacecraftState finalState =
-            propagator.propagate(initialState, finalDate, 100, new tutorialStepHandler());
+            propagator.propagate(initialState, finalDate, 100, new TutorialStepHandler());
         System.out.println(" Final state  : " +
                            finalState.getParameters());
     }
 
-    private static class tutorialStepHandler extends OrekitFixedStepHandler {
+    private static class TutorialStepHandler extends OrekitFixedStepHandler {
 
-        private tutorialStepHandler() {
+        private TutorialStepHandler() {
             //private constructor
         }
 
