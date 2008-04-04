@@ -24,6 +24,9 @@ import fr.cs.orekit.propagation.numerical.forces.ForceModel;
 
 public class AtmosphericDrag implements ForceModel {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 3822165927877548061L;
+
     /** Atmospheric model */
     private final Atmosphere atmosphere;
 

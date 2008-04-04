@@ -1,5 +1,6 @@
 package fr.cs.orekit.propagation.numerical;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import org.apache.commons.math.geometry.Vector3D;
 
@@ -53,7 +54,10 @@ import fr.cs.orekit.utils.PVCoordinates;
  * @author F.Maussion
  *
  */
-public class TimeDerivativesEquations {
+public class TimeDerivativesEquations implements Serializable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = -5105883494297693930L;
 
     /** Orbital parameters. */
     private EquinoctialParameters parameters;

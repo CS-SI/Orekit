@@ -85,12 +85,13 @@ DTM2000InputParameters {
             int year = Integer.parseInt(flux[0]);
             int day = Integer.parseInt(flux[1]);
 
-            if(day != Integer.parseInt(ap[0])) {
+            if (day != Integer.parseInt(ap[0])) {
                 throw new OrekitException("inconsistent JB2006 and geomagnetic indices files",
                                           new Object[0]);
             }
-            if( (year<2000 & (year-1900)!=Integer.parseInt(ap[11])) ||
-                    (year>=2000 & (year-2000)!=Integer.parseInt(ap[11])) ) {
+            int y = Integer.parseInt(ap[11]);
+            if (((year <  2000) && ((year - 1900) != y)) ||
+                ((year >= 2000) && ((year - 2000) != y))) {
                 throw new OrekitException("inconsistent JB2006 and geomagnetic indices files",
                                           new Object[0]);
             }

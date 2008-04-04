@@ -1,5 +1,7 @@
 package fr.cs.orekit.propagation.numerical.forces;
 
+import java.io.Serializable;
+
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.propagation.numerical.OrekitSwitchingFunction;
@@ -20,7 +22,7 @@ import fr.cs.orekit.propagation.numerical.TimeDerivativesEquations;
  * @author L. Maisonobe
  */
 
-public interface ForceModel {
+public interface ForceModel extends Serializable {
 
     /** Compute the contribution of the force model to the perturbing
      * acceleration.

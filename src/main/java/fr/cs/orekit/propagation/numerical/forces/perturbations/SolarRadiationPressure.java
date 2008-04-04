@@ -19,6 +19,9 @@ import fr.cs.orekit.utils.PVCoordinates;
  */
 public class SolarRadiationPressure implements ForceModel {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = -3831043970561319297L;
+
     /** Error message for too low trajectory. */
     private static final String LOW_TRAJECTORY_MESSAGE =
         "trajectory inside the Brillouin sphere (r = {0})";

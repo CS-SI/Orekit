@@ -230,7 +230,7 @@ public class NumericalPropagator
                                      OrekitStepHandler handler)
         throws OrekitException {
         handler.initialize(initialState.getDate(), initialState.getFrame(), mu, akProvider);
-        return propagate(initialState, finalDate, handler);
+        return propagate(initialState, finalDate, (StepHandler) handler);
     }
 
 

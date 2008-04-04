@@ -15,6 +15,9 @@ import fr.cs.orekit.time.AbsoluteDate;
  */
 public class ConstantThrustManeuver implements ForceModel {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 1573070213354448330L;
+
     /** Identifier for QSW frame. */
     public static final int QSW = 0;
 

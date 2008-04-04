@@ -15,6 +15,9 @@ import fr.cs.orekit.propagation.numerical.forces.ForceModel;
  */
 public class ThirdBodyAttraction implements ForceModel {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 8395304968977051442L;
+
     /** The body to consider */
     private final ThirdBody body;
 

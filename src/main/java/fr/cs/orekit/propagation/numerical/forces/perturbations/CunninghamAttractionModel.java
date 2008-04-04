@@ -24,6 +24,9 @@ import org.apache.commons.math.geometry.Vector3D;
 
 public class CunninghamAttractionModel implements ForceModel {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = -7911862263330769844L;
+
     /** Equatorial radius of the Central Body. */
     private final double equatorialRadius;
 

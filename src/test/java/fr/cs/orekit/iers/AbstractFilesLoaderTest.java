@@ -1,5 +1,6 @@
 package fr.cs.orekit.iers;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -32,7 +33,12 @@ public abstract class AbstractFilesLoaderTest extends TestCase {
         IERSDataResetter.tearDown();
     }
 
-    private static class ChronologicalEOPComparator implements Comparator {
+    private static class ChronologicalEOPComparator
+        implements Comparator, Serializable {
+        /** Serializable UID. */
+        private static final long serialVersionUID = -5473993886829759423L;
+
+        /** {@inheritDoc} */
         public int compare(Object o1, Object o2) {
             EarthOrientationParameters eop1 = (EarthOrientationParameters) o1;
             EarthOrientationParameters eop2 = (EarthOrientationParameters) o2;

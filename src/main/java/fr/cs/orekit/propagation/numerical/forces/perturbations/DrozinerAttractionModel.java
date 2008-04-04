@@ -21,6 +21,9 @@ import fr.cs.orekit.propagation.numerical.forces.ForceModel;
 
 public class DrozinerAttractionModel implements ForceModel {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 4257498117810293391L;
+
     /** Reference equatorial radius of the potential. */
     private final double equatorialRadius;
 
