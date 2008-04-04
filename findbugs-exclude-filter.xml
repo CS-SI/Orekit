@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!--
+  This file contains some false positive bugs detected by findbugs. Their
+  false positive nature has been analyzed individually and they have been
+  put here to instruct findbugs it must ignore them.
+-->
+<FindBugsFilter>
+
+  <!-- the following inner class serialization pattern is intentional -->
+  <!-- the inner class and the enclosing class should be serialized together -->
+  <Match>
+    <Class name="fr.cs.orekit.propagation.numerical.forces.maneuvers.ConstantThrustManeuver" />
+    <Bug pattern="SE_INNER_CLASS" />
+  </Match>
+
+</FindBugsFilter>

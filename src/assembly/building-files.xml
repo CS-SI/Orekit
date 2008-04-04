@@ -8,6 +8,7 @@
         <include>maven-build.xml</include>
         <include>maven-build.properties</include>
         <include>checkstyle.xml</include>
+        <include>findbugs-exclude-filter.xml</include>
         <include>.classpath</include>
         <include>.project</include>
       </includes>
