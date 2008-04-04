@@ -202,8 +202,10 @@ public class Frame implements Serializable {
      * @return the unique instance of the J2000 frame
      */
     public static Frame getJ2000() {
-        if (j2000 == null) {
-            j2000 = new Frame("J2000");
+        synchronized(Frame.class) {
+            if (j2000 == null) {
+                j2000 = new Frame("J2000");
+            }
         }
         return j2000;
     }
@@ -474,6 +476,7 @@ public class Frame implements Serializable {
      * library cannot be read.
      */
     public static Frame getReferenceFrame(FrameType type, AbsoluteDate date) throws OrekitException {
+        synchronized(Frame.class) {
         if (type == ITRF2000A) {
             if (itrf2000AFrame == null) {
                 itrf2000AFrame = new ITRF2000Frame(getReferenceFrame(TIRF2000A, date), date, type.name);
@@ -513,7 +516,7 @@ public class Frame implements Serializable {
         if (type == VEIS1950) {
             return getVeis1950();
         }
-
+        }
         OrekitException.throwIllegalArgumentException("unknown frame type {0}, known types: " +
                                                       "{1}, {2}, {3}, {4}, {5}, {6} and {7}",
                                                       new Object[] {
@@ -532,13 +535,15 @@ public class Frame implements Serializable {
      * @return the uniq instance of the Veis 1950 frame
      */
     private static Frame getVeis1950() {
-        if (veis1950Frame == null) {
-            final double q1 = -2.01425201682020570e-5;
-            final double q2 = -2.43283773387856897e-3;
-            final double q3 =  5.59078052583013584e-3;
-            final double q0 = Math.sqrt(1.0 - q1 * q1 - q2 * q2 - q3 * q3);
-            final Transform t = new Transform(new Rotation(q0, q1, q2, q3, true));
-            veis1950Frame = new Frame(getJ2000(), t, "Veis1950");
+        synchronized(Frame.class) {
+            if (veis1950Frame == null) {
+                final double q1 = -2.01425201682020570e-5;
+                final double q2 = -2.43283773387856897e-3;
+                final double q3 =  5.59078052583013584e-3;
+                final double q0 = Math.sqrt(1.0 - q1 * q1 - q2 * q2 - q3 * q3);
+                final Transform t = new Transform(new Rotation(q0, q1, q2, q3, true));
+                veis1950Frame = new Frame(getJ2000(), t, "Veis1950");
+            }
         }
         return veis1950Frame;
     }
