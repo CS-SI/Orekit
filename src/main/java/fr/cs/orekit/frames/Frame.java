@@ -118,36 +118,12 @@ public class Frame implements Serializable {
     public static final FrameType TIRF2000B = new FrameType("TIRF2000B");
 
     /** Veis 1950 frame.
-     * <p>This frame is sometimes refered to as
+     * <p>This frame is sometimes referred to as
      * <em>&gamma;<sub>50</sub> CNES</em></p> */
     public static final FrameType VEIS1950 = new FrameType("VEIS1950");
 
     /** Serialiazable UID. */
     private static final long serialVersionUID = 2071889292905823128L;
-
-    /** Reference earth ITRF2000 A frame singleton. */
-    private static ITRF2000Frame itrf2000AFrame = null;
-
-    /** Reference earth ITRF2000 B frame singleton. */
-    private static ITRF2000Frame itrf2000BFrame = null;
-
-    /** True earth TIRF2000 A frame singleton. */
-    private static TIRF2000Frame tirf2000AFrame = null;
-
-    /** True earth TIRF2000 B frame singleton. */
-    private static TIRF2000Frame tirf2000BFrame = null;
-
-    /** True equator IRF2000 A frame singleton. */
-    private static IRF2000Frame irf2000AFrame = null;
-
-    /** True equator IRF2000 B frame singleton. */
-    private static IRF2000Frame irf2000BFrame = null;
-
-    /** Mean equator 1950 frame singleton. */
-    private static Frame veis1950Frame = null;
-
-    /** J2000 root frame. */
-    private static Frame j2000 = null;
 
     /**  parent frame (only J2000 doesn't have a parent). */
     private final Frame parent;
@@ -202,12 +178,7 @@ public class Frame implements Serializable {
      * @return the unique instance of the J2000 frame
      */
     public static Frame getJ2000() {
-        synchronized(Frame.class) {
-            if (j2000 == null) {
-                j2000 = new Frame("J2000");
-            }
-        }
-        return j2000;
+        return LazyJ2000Holder.instance;
     }
 
     /** Get the name.
@@ -476,46 +447,44 @@ public class Frame implements Serializable {
      * library cannot be read.
      */
     public static Frame getReferenceFrame(FrameType type, AbsoluteDate date) throws OrekitException {
-        synchronized(Frame.class) {
         if (type == ITRF2000A) {
-            if (itrf2000AFrame == null) {
-                itrf2000AFrame = new ITRF2000Frame(getReferenceFrame(TIRF2000A, date), date, type.name);
+            if (LazyITRF2000AHolder.instance == null) {
+                throw LazyITRF2000AHolder.orekitException;
             }
-            return itrf2000AFrame;
+            return LazyITRF2000AHolder.instance;
         }
         if (type == ITRF2000B) {
-            if (itrf2000BFrame == null) {
-                itrf2000BFrame = new ITRF2000Frame(getReferenceFrame(TIRF2000B, date), date, type.name);
+            if (LazyITRF2000BHolder.instance == null) {
+                throw LazyITRF2000BHolder.orekitException;
             }
-            return itrf2000BFrame;
+            return LazyITRF2000BHolder.instance;
         }
         if (type == TIRF2000A) {
-            if (tirf2000AFrame == null) {
-                tirf2000AFrame = new TIRF2000Frame(getReferenceFrame(IRF2000A, date), date, type.name);
+            if (LazyTIRF2000AHolder.instance == null) {
+                throw LazyTIRF2000AHolder.orekitException;
             }
-            return tirf2000AFrame;
+            return LazyTIRF2000AHolder.instance;
         }
         if (type == TIRF2000B) {
-            if (tirf2000BFrame == null) {
-                tirf2000BFrame = new TIRF2000Frame(getReferenceFrame(IRF2000B, date), date, type.name);
+            if (LazyTIRF2000BHolder.instance == null) {
+                throw LazyTIRF2000BHolder.orekitException;
             }
-            return tirf2000BFrame;
+            return LazyTIRF2000BHolder.instance;
         }
         if (type == IRF2000A) {
-            if (irf2000AFrame == null) {
-                irf2000AFrame = new IRF2000Frame(date, false, type.name);
+            if (LazyIRF2000AHolder.instance == null) {
+                throw LazyIRF2000AHolder.orekitException;
             }
-            return irf2000AFrame;
+            return LazyIRF2000AHolder.instance;
         }
         if (type == IRF2000B) {
-            if (irf2000BFrame == null) {
-                irf2000BFrame = new IRF2000Frame(date, true, type.name);
+            if (LazyIRF2000BHolder.instance == null) {
+                throw LazyIRF2000BHolder.orekitException;
             }
-            return irf2000BFrame;
+            return LazyIRF2000BHolder.instance;
         }
         if (type == VEIS1950) {
-            return getVeis1950();
-        }
+            return LazyVeis1950Holder.instance;
         }
         OrekitException.throwIllegalArgumentException("unknown frame type {0}, known types: " +
                                                       "{1}, {2}, {3}, {4}, {5}, {6} and {7}",
@@ -524,28 +493,134 @@ public class Frame implements Serializable {
                                                           TIRF2000B, IRF2000A, IRF2000B, VEIS1950
                                                       });
 
-        // in fact, this is never reached
-        return null;
+    // in fact, this is never reached
+    return null;
 
+}
+
+    // We use the Initialization on demand holder idiom to store
+    // the singletons, as it is both thread-safe, efficient (no
+    // synchronization) and works with all version of java.
+
+    /** Holder for the J2000 frame singleton. */
+    private static class LazyJ2000Holder {
+        private static final Frame instance = new Frame("J2000");
     }
 
-    /** Get the unique Veis 1950 frame.
-     * <p>This frame is sometimes refered to as
-     * <em>&gamma;<sub>50</sub> CNES</em></p>
-     * @return the uniq instance of the Veis 1950 frame
-     */
-    private static Frame getVeis1950() {
-        synchronized(Frame.class) {
-            if (veis1950Frame == null) {
-                final double q1 = -2.01425201682020570e-5;
-                final double q2 = -2.43283773387856897e-3;
-                final double q3 =  5.59078052583013584e-3;
-                final double q0 = Math.sqrt(1.0 - q1 * q1 - q2 * q2 - q3 * q3);
-                final Transform t = new Transform(new Rotation(q0, q1, q2, q3, true));
-                veis1950Frame = new Frame(getJ2000(), t, "Veis1950");
+    /** Holder for the ITRF 2000 A frame singleton. */
+    private static class LazyITRF2000AHolder {
+        private static final Frame instance;
+        private static final OrekitException orekitException;
+        static {
+            Frame tmpFrame = null;
+            OrekitException tmpException = null;
+            try {
+                tmpFrame = new ITRF2000Frame(LazyTIRF2000AHolder.instance, AbsoluteDate.J2000Epoch, ITRF2000A.name);
+            } catch (OrekitException oe) {
+                tmpException = oe;
             }
+            instance = tmpFrame;
+            orekitException = tmpException;
         }
-        return veis1950Frame;
+    }
+
+    /** Holder for the ITRF 2000 B frame singleton. */
+    private static class LazyITRF2000BHolder {
+        private static final Frame instance;
+        private static final OrekitException orekitException;
+        static {
+            Frame tmpFrame = null;
+            OrekitException tmpException = null;
+            try {
+                tmpFrame = new ITRF2000Frame(LazyTIRF2000BHolder.instance, AbsoluteDate.J2000Epoch, ITRF2000B.name);
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            instance = tmpFrame;
+            orekitException = tmpException;
+        }
+    }
+
+    /** Holder for the TIRF 2000 A frame singleton. */
+    private static class LazyTIRF2000AHolder {
+        private static final Frame instance;
+        private static final OrekitException orekitException;
+        static {
+            Frame tmpFrame = null;
+            OrekitException tmpException = null;
+            try {
+                tmpFrame = new TIRF2000Frame(LazyIRF2000AHolder.instance, AbsoluteDate.J2000Epoch, TIRF2000A.name);
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            instance = tmpFrame;
+            orekitException = tmpException;
+        }
+    }
+
+    /** Holder for the TIRF Frame 2000 B frame singleton. */
+    private static class LazyTIRF2000BHolder {
+        private static final Frame instance;
+        private static final OrekitException orekitException;
+        static {
+            Frame tmpFrame = null;
+            OrekitException tmpException = null;
+            try {
+                tmpFrame = new TIRF2000Frame(LazyIRF2000BHolder.instance, AbsoluteDate.J2000Epoch, TIRF2000B.name);
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            instance = tmpFrame;
+            orekitException = tmpException;
+        }
+   }
+
+    /** Holder for the IRF 2000 A frame singleton. */
+    private static class LazyIRF2000AHolder {
+        private static final Frame instance;
+        private static final OrekitException orekitException;
+        static {
+            Frame tmpFrame = null;
+            OrekitException tmpException = null;
+            try {
+                tmpFrame = new IRF2000Frame(AbsoluteDate.J2000Epoch, false, IRF2000A.name);
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            instance = tmpFrame;
+            orekitException = tmpException;
+        }
+    }
+
+    /** Holder for the IRF 2000 B frame singleton. */
+    private static class LazyIRF2000BHolder {
+        private static final Frame instance;
+        private static final OrekitException orekitException;
+        static {
+            Frame tmpFrame = null;
+            OrekitException tmpException = null;
+            try {
+                tmpFrame = new IRF2000Frame(AbsoluteDate.J2000Epoch, true, IRF2000B.name);
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            instance = tmpFrame;
+            orekitException = tmpException;
+        }
+    }
+
+    /** Holder for the Veis 1950 frame singleton. */
+    private static class LazyVeis1950Holder {
+        private static final Frame instance;
+        static {
+            final double q1 = -2.01425201682020570e-5;
+            final double q2 = -2.43283773387856897e-3;
+            final double q3 =  5.59078052583013584e-3;
+            final double q0 = Math.sqrt(1.0 - q1 * q1 - q2 * q2 - q3 * q3);
+            instance = new Frame(getJ2000(),
+                                 new Transform(new Rotation(q0, q1, q2, q3, true)),
+                                 VEIS1950.name);
+        }
     }
 
 }
