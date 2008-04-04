@@ -1,5 +1,6 @@
 package fr.cs.orekit.time;
 
+import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -7,10 +8,13 @@ import java.util.Locale;
 import fr.cs.orekit.errors.OrekitException;
 
 /** Class representing a time within the day as hour, minute and second chunks.
+ * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Luc Maisonobe
- *
  */
-public class ChunkedTime {
+public class ChunkedTime implements Serializable, Comparable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 4492296986280760487L;
 
     /** Constant for commonly used hour 00:00:00. */
     public static final ChunkedTime H00   = new ChunkedTime(0, 0, 0);
@@ -99,6 +103,34 @@ public class ChunkedTime {
         append(twoDigits.format(minute)).append(':').
         append(secondsDigits.format(second)).
         toString();
+    }
+
+    /** {@inheritDoc} */
+    public int compareTo(Object other) {
+        double seconds = getSecondsInDay();
+        double otherSeconds = ((ChunkedTime) other).getSecondsInDay();
+        if (seconds < otherSeconds) {
+            return -1;
+        } else if (seconds > otherSeconds) {
+            return 1;
+        }
+        return 0;
+    }
+
+    /** {@inheritDoc} */
+    public boolean equals(Object other) {
+        try {
+            ChunkedTime otherTime = (ChunkedTime) other;
+            return (hour == otherTime.hour) && (minute == otherTime.minute) && (second == otherTime.second);
+        } catch (ClassCastException cce) {
+            return false;
+        }
+    }
+
+    /** {@inheritDoc} */
+    public int hashCode() {
+        long bits = Double.doubleToLongBits(second);
+        return ((hour << 8) | (minute << 8)) ^ (int) (bits ^ (bits >>> 32));
     }
 
 }

@@ -45,6 +45,56 @@ extends TestCase {
         assertEquals(6, new ChunkedDate( 2000, 01, 01).getDayOfWeek());
     }
 
+    public void testDayOfYear() {
+        assertEquals(  1, new ChunkedDate(2003,  1,  1).getDayOfYear());
+        assertEquals(365, new ChunkedDate(2003, 12, 31).getDayOfYear());
+        assertEquals(366, new ChunkedDate(2004, 12, 31).getDayOfYear());
+        assertEquals( 59, new ChunkedDate(2003,  2, 28).getDayOfYear());
+        assertEquals( 60, new ChunkedDate(2003,  3,  1).getDayOfYear());
+        assertEquals( 59, new ChunkedDate(2004,  2, 28).getDayOfYear());
+        assertEquals( 60, new ChunkedDate(2004,  2, 29).getDayOfYear());
+        assertEquals( 61, new ChunkedDate(2004,  3,  1).getDayOfYear());
+        assertEquals(269, new ChunkedDate(2003,  9, 26).getDayOfYear());
+    }
+
+    public void testComparisons() {
+        ChunkedDate[][] dates = {
+                { new ChunkedDate(2003,  1,  1), new ChunkedDate(2003,   1) },
+                { new ChunkedDate(2003,  2, 28), new ChunkedDate(2003,  59) },
+                { new ChunkedDate(2003,  3,  1), new ChunkedDate(2003,  60) },
+                { new ChunkedDate(2003,  9, 26), new ChunkedDate(2003, 269) },
+                { new ChunkedDate(2003, 12, 31), new ChunkedDate(2003, 365) },
+                { new ChunkedDate(2004,  2, 28), new ChunkedDate(2004,  59) },
+                { new ChunkedDate(2004,  2, 29), new ChunkedDate(2004,  60) },
+                { new ChunkedDate(2004,  3,  1), new ChunkedDate(2004,  61) },
+                { new ChunkedDate(2004, 12, 31), new ChunkedDate(2004, 366) }
+        };
+        for (int i = 0; i < dates.length; ++i) {
+            for (int j = 0; j < dates.length; ++j) {
+                if (dates[i][0].compareTo(dates[j][1]) < 0) {
+                    assertTrue(dates[j][1].compareTo(dates[i][0]) > 0);
+                    assertFalse(dates[i][0].equals(dates[j][1]));
+                    assertFalse(dates[j][1].equals(dates[i][0]));
+                    assertTrue(dates[i][0].hashCode() != dates[j][1].hashCode());
+                    assertTrue(i < j);
+                } else if (dates[i][0].compareTo(dates[j][1]) > 0) {
+                    assertTrue(dates[j][1].compareTo(dates[i][0]) < 0);
+                    assertFalse(dates[i][0].equals(dates[j][1]));
+                    assertFalse(dates[j][1].equals(dates[i][0]));
+                    assertTrue(dates[i][0].hashCode() != dates[j][1].hashCode());
+                    assertTrue(i > j);
+                } else {
+                    assertTrue(dates[j][1].compareTo(dates[i][0]) == 0);
+                    assertTrue(dates[i][0].equals(dates[j][1]));
+                    assertTrue(dates[j][1].equals(dates[i][0]));
+                    assertTrue(dates[i][0].hashCode() == dates[j][1].hashCode());
+                    assertTrue(i == j);
+                }
+            }
+        }
+        assertFalse(dates[0][0].equals(this));
+    }
+
     public void testSymmetry() {
         checkSymmetry(-2460000,  20000);
         checkSymmetry( -740000,  20000);
@@ -63,6 +113,32 @@ extends TestCase {
     public void testString() {
         assertEquals("2000-01-01", new ChunkedDate(0).toString());
         assertEquals("-4713-12-31", new ChunkedDate(-2451546).toString());
+    }
+
+    public void testConstructorDoY() {
+        checkConstructorDoY(2003, 0,   true);
+        checkConstructorDoY(2003, 1,   false);
+        checkConstructorDoY(2003, 365, false);
+        checkConstructorDoY(2003, 366, true);
+        checkConstructorDoY(2004, 0,   true);
+        checkConstructorDoY(2004, 1,   false);
+        checkConstructorDoY(2004, 366, false);
+        checkConstructorDoY(2004, 367, true);
+    }
+
+    private void checkConstructorDoY(int year, int day, boolean shouldFail) {
+        try {
+            new ChunkedDate(year, day);
+            if (shouldFail) {
+                fail("an exception should have been thrown");
+            }
+        } catch (IllegalArgumentException iae) {
+            if (! shouldFail) {
+                fail(iae.getMessage());
+            }
+        } catch (Exception e) {
+            fail("wrong exception caught");
+        }
     }
 
     public void testWellFormed() {

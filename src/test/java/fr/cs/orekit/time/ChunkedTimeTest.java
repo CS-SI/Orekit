@@ -43,6 +43,41 @@ extends TestCase {
         assertEquals("23:59:59.900", new ChunkedTime(86399.9).toString());
     }
 
+    public void testComparisons() {
+        ChunkedTime[] times = {
+                 new ChunkedTime( 0,  0,  0.0),
+                 new ChunkedTime( 0,  0,  1.0e-15),
+                 new ChunkedTime( 0, 12,  3.0),
+                 new ChunkedTime(15,  9,  3.0),
+                 new ChunkedTime(23, 59, 59.0),
+                 new ChunkedTime(23, 59, 60.0 - 1.0e-12)
+        };
+        for (int i = 0; i < times.length; ++i) {
+            for (int j = 0; j < times.length; ++j) {
+                if (times[i].compareTo(times[j]) < 0) {
+                    assertTrue(times[j].compareTo(times[i]) > 0);
+                    assertFalse(times[i].equals(times[j]));
+                    assertFalse(times[j].equals(times[i]));
+                    assertTrue(times[i].hashCode() != times[j].hashCode());
+                    assertTrue(i < j);
+                } else if (times[i].compareTo(times[j]) > 0) {
+                    assertTrue(times[j].compareTo(times[i]) < 0);
+                    assertFalse(times[i].equals(times[j]));
+                    assertFalse(times[j].equals(times[i]));
+                    assertTrue(times[i].hashCode() != times[j].hashCode());
+                    assertTrue(i > j);
+                } else {
+                    assertTrue(times[j].compareTo(times[i]) == 0);
+                    assertTrue(times[i].equals(times[j]));
+                    assertTrue(times[j].equals(times[i]));
+                    assertTrue(times[i].hashCode() == times[j].hashCode());
+                    assertTrue(i == j);
+                }
+            }
+        }
+        assertFalse(times[0].equals(this));
+    }
+
     private void checkConstructorCompletion(int hour, int minute, double second,
                                             boolean expectedCompletion) {
         try {

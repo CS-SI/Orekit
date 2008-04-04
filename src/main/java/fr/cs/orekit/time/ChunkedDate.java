@@ -1,5 +1,6 @@
 package fr.cs.orekit.time;
 
+import java.io.Serializable;
 import java.text.DecimalFormat;
 
 import fr.cs.orekit.errors.OrekitException;
@@ -14,19 +15,33 @@ import fr.cs.orekit.errors.OrekitException;
  *   <li>from 0001-01-01 to 1582-10-04: julian calendar</li>
  *   <li>from 1582-10-15: gregorian calendar</li>
  * </ul>
+ * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Luc Maisonobe
- *
  */
-public class ChunkedDate {
+public class ChunkedDate implements Serializable, Comparable {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 7127660151923617766L;
+
+    /** Factory for proleptic julian calendar (up to 0000-12-31). */
     private static final YearFactory prolepticJulianFactory = new ProlepticJulianFactory();
+
+    /** Factory for julian calendar (from 0001-01-01 to 1582-10-04). */
     private static final YearFactory julianFactory          = new JulianFactory();
+
+    /** Factory for gregorian calendar (from 1582-10-15). */
     private static final YearFactory gregorianFactory       = new GregorianFactory();
 
+    /** Factory for leap years. */
     private static final MonthDayFactory leapYearFactory    = new LeapYearFactory();
+
+    /** Factory for non-leap years. */
     private static final MonthDayFactory commonYearFactory  = new CommonYearFactory();
 
+    /** Format for years. */
     private static DecimalFormat fourDigits = new DecimalFormat("0000");
+
+    /** Format for months and days. */
     private static DecimalFormat twoDigits  = new DecimalFormat("00");
 
     /** Year number. */
@@ -77,6 +92,23 @@ public class ChunkedDate {
 
     }
 
+    /** Build a date from a year and day number.
+     * @param year year number (may be 0 or negative for BC years)
+     * @param dayNumber day number in the year from 1 to 366
+     * @exception IllegalArgumentException if dayNumber is out of range
+     * with respect to year
+     */
+    public ChunkedDate(int year, int dayNumber) throws IllegalArgumentException {
+        this(new ChunkedDate(year - 1, 12, 31).getJ2000Day() + dayNumber);
+        if (dayNumber != getDayOfYear()) {
+            OrekitException.throwIllegalArgumentException("no day number {0} in year {1}",
+                                                          new Object[] {
+                                                            new Integer(dayNumber),
+                                                            new Integer(year)
+                                                          });
+        }
+    }
+
     /** Build a date from its day number with respect to J2000 epoch.
      * @param j2000Day day number with respect to J2000 epoch
      */
@@ -125,12 +157,21 @@ public class ChunkedDate {
     }
 
     /** Get the day of week.
-     * <p>Day of week is a number between 1 (monday) and 7 (sunday).</p>
+     * <p>Day of week is a number between 1 (Monday) and 7 (Sunday).</p>
      * @return day of week
      */
     public int getDayOfWeek() {
         final int dow = (getJ2000Day() + 6) % 7; // result is between -6 and +6
         return (dow < 1) ? (dow + 7) : dow;
+    }
+
+    /** Get the day number in year.
+     * <p>Day number in year is between 1 (January 1st) and either 365 or
+     * 366 inclusive depending on year.</p>
+     * @return day number in year
+     */
+    public int getDayOfYear() {
+        return getJ2000Day() - new ChunkedDate(year - 1, 12, 31).getJ2000Day();
     }
 
     /** Get a string representation (ISO-8601) of the date.
@@ -142,6 +183,33 @@ public class ChunkedDate {
                append(twoDigits.format(month)).append('-').
                append(twoDigits.format(day)).
                toString();
+    }
+    
+    /** {@inheritDoc} */
+    public int compareTo(Object other) {
+        int j2000Day = getJ2000Day();
+        int otherJ2000Day = ((ChunkedDate) other).getJ2000Day();
+        if (j2000Day < otherJ2000Day) {
+            return -1;
+        } else if (j2000Day > otherJ2000Day) {
+            return 1;
+        }
+        return 0;
+    }
+
+    /** {@inheritDoc} */
+    public boolean equals(Object other) {
+        try {
+            ChunkedDate otherDate = (ChunkedDate) other;
+            return (year == otherDate.year) && (month == otherDate.month) && (day == otherDate.day);
+        } catch (ClassCastException cce) {
+            return false;
+        }
+    }
+
+    /** {@inheritDoc} */
+    public int hashCode() {
+        return (year << 16) | (month << 8) | day;
     }
 
     /** Interface for dealing with years sequences according to some calendar. */
