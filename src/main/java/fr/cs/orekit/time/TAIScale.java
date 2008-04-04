@@ -7,9 +7,6 @@ package fr.cs.orekit.time;
  */
 public class TAIScale extends TimeScale {
 
-    /** Unique instance. */
-    private static TimeScale instance = null;
-
     /** Private constructor for the singleton.
      */
     private TAIScale() {
@@ -20,10 +17,7 @@ public class TAIScale extends TimeScale {
      * @return the unique instance
      */
     public static TimeScale getInstance() {
-        if (instance == null) {
-            instance = new TAIScale();
-        }
-        return instance;
+       return LazyHolder.instance;
     }
 
     /** Get the offset to convert locations from {@link TAIScale} to instance.
@@ -44,6 +38,16 @@ public class TAIScale extends TimeScale {
      */
     public double offsetToTAI(double instanceTime) {
         return 0;
+    }
+
+    /** Holder for the singleton.
+     * <p>We use the Initialization on demand holder idiom to store
+     * the singleton, as it is both thread-safe, efficient (no
+     * synchronization) and works with all version of java.</p>
+     */
+    private static class LazyHolder 
+    {
+        private static final TAIScale instance = new TAIScale();
     }
 
 }

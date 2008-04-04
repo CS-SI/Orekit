@@ -41,7 +41,7 @@ public class ConstantThrustManeuverTest extends TestCase {
             fail("an exception should have been thrown");
         } catch (IllegalArgumentException iae) {
             // expected behavior
-        } catch (Exception e) {
+        } catch (OrekitException e) {
             fail("wrong exception caught");
         }
     }

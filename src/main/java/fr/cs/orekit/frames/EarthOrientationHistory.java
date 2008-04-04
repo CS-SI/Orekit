@@ -22,9 +22,6 @@ public class EarthOrientationHistory implements Serializable {
     /** Serializable UID. */
     private static final long serialVersionUID = -6983677302885110865L;
 
-    /** Singleton instance. */
-    private static EarthOrientationHistory instance = null;
-
     /** Earth Orientation Parameters. */
     private TreeSet eop = null;
 
@@ -62,10 +59,10 @@ public class EarthOrientationHistory implements Serializable {
      * @exception OrekitException when there is a problem while reading IERS data
      */
     public static EarthOrientationHistory getInstance() throws OrekitException {
-        if (instance == null) {
-            instance = new EarthOrientationHistory();
+        if (LazyHolder.instance == null) {
+            throw LazyHolder.orekitException;
         }
-        return instance;
+        return LazyHolder.instance;
     }
 
     /** Check Earth orientation parameters continuity.
@@ -182,6 +179,27 @@ public class EarthOrientationHistory implements Serializable {
             return d1.compareTo(d2);
         }
 
+    }
+
+    /** Holder for the singleton.
+     * <p>We use the Initialization on demand holder idiom to store
+     * the singleton, as it is both thread-safe, efficient (no
+     * synchronization) and works with all version of java.</p>
+     */
+    private static class LazyHolder {
+        private static final EarthOrientationHistory instance;
+        private static final OrekitException orekitException;
+        static {
+            EarthOrientationHistory tmpInstance = null;
+            OrekitException tmpException = null;
+            try {
+                tmpInstance = new EarthOrientationHistory();
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            instance        = tmpInstance;
+            orekitException = tmpException;
+        }
     }
 
 }

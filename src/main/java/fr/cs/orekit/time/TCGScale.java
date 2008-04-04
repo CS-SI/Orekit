@@ -10,9 +10,6 @@ package fr.cs.orekit.time;
  */
 public class TCGScale extends TimeScale {
 
-    /** Unique instance. */
-    private static TimeScale instance = null;
-
     /** LG rate. */
     private static double lg = 6.969290134e-10;
 
@@ -35,10 +32,7 @@ public class TCGScale extends TimeScale {
      * @return the unique instance
      */
     public static TimeScale getInstance() {
-        if (instance == null) {
-            instance = new TCGScale();
-        }
-        return instance;
+        return LazyHolder.instance;
     }
 
     /** Get the offset to convert locations from {@link TAIScale}  to instance.
@@ -61,6 +55,16 @@ public class TCGScale extends TimeScale {
     public double offsetToTAI(double instanceTime) {
         final double ttTime = inverse * (instanceTime + lg * reference);
         return tt.offsetToTAI(ttTime) - lg * inverse * (instanceTime - reference);
+    }
+
+    /** Holder for the singleton.
+     * <p>We use the Initialization on demand holder idiom to store
+     * the singleton, as it is both thread-safe, efficient (no
+     * synchronization) and works with all version of java.</p>
+     */
+    private static class LazyHolder 
+    {
+        private static final TCGScale instance = new TCGScale();
     }
 
 }

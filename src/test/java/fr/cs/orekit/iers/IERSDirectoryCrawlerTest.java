@@ -20,17 +20,22 @@ public class IERSDirectoryCrawlerTest extends TestCase {
     private void checkFailure(String directoryName) {
         try {
             IERSDataResetter.setUp(directoryName);
-            new IERSDirectoryCrawler().crawl(new IERSFileCrawler(".*") {
-                protected void visit(BufferedReader reader) {
-                    // do nothing
-                }
-            });
-            fail("an exeption should have been thrown");
+            new IERSDirectoryCrawler().crawl(new DoNothingCrawler(".*"));
+            fail("an exception should have been thrown");
         } catch (OrekitException e) {
-            // expected behaviour
+            // expected behavior
         } catch (Exception e) {
             e.printStackTrace();
             fail("wrong exception caught");
+        }
+    }
+
+    private static class DoNothingCrawler extends IERSFileCrawler {
+        public DoNothingCrawler(String pattern) {
+            super(pattern);
+        }
+        protected void visit(BufferedReader reader) {
+            // do nothing
         }
     }
 

@@ -24,7 +24,7 @@ import fr.cs.orekit.time.UTCScale;
  * </p>
  * @author F. Maussion
  */
-public class TLE  implements Comparable {
+public class TLE {
 
     /** Identifier for default type of ephemeris (SGP4/SDP4). */
     public static final int DEFAULT = 0;
@@ -132,36 +132,6 @@ public class TLE  implements Comparable {
         meanMotion = Math.PI * Double.parseDouble(line2.substring(52,63).replace(' ','0')) / 43200.0;
         revolutionNumberAtEpoch = Integer.parseInt(line2.substring(63,68).replace(' ','0'));
 
-    }
-
-    /** Specific constructor for series handling.
-     * @param date TLE date
-     */
-    protected TLE(AbsoluteDate date) {
-        epoch = date;
-        satelliteNumber = 0;
-        internationalDesignator = "";
-        bStar = 0;
-        ephemerisType = 0;
-        elementNumber = 0;
-        i = 0;
-        raan = 0;
-        e = 0;
-        pa = 0;
-        meanAnomaly = 0;
-        meanMotion = 0;
-        revolutionNumberAtEpoch = 0;
-    }
-
-    /** Compare an entry with another one, according to date.
-     * @param other other TLE to compare with
-     * @return a negative integer if the instance epoch is before other epoch,
-     * zero if both epoch are the same and a positive integer if the instance
-     * epoch is after other epoch
-     * @exception ClassCastException if other is not a TLE instance
-     */
-    public int compareTo(Object other) {
-        return epoch.compareTo(((TLE) other).getEpoch());
     }
 
     /** Gets the ballistic coefficient.

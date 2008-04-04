@@ -115,100 +115,110 @@ public class TleTest extends TestCase {
     public void testSatCodeCompliance() throws IOException, OrekitException, ParseException {
 
         boolean printResults = false;
+        BufferedReader rEntry = null;
+        BufferedReader rResults = null;
 
-        InputStream inEntry =
-            TleTest.class.getResourceAsStream("/tle/extrapolationTest-data/SatCode-entry");
-        BufferedReader rEntry = new BufferedReader(new InputStreamReader(inEntry));
+        try {
+            InputStream inEntry =
+                TleTest.class.getResourceAsStream("/tle/extrapolationTest-data/SatCode-entry");
+            rEntry = new BufferedReader(new InputStreamReader(inEntry));
 
-        InputStream inResults =
-            TleTest.class.getResourceAsStream("/tle/extrapolationTest-data/SatCode-results");
-        BufferedReader rResults = new BufferedReader(new InputStreamReader(inResults));
+            InputStream inResults =
+                TleTest.class.getResourceAsStream("/tle/extrapolationTest-data/SatCode-results");
+            rResults = new BufferedReader(new InputStreamReader(inResults));
+            double cumulated = 0; // sum of all differences between test cases and OREKIT results
+            boolean stop = false;
 
-        double cumulated = 0; // sum of all differences between test cases and OREKIT results
-        boolean stop = false;
+            String rline = rResults.readLine();
 
-        String rline = rResults.readLine();
+            while (!stop) {
+                if (rline == null) break;
 
-        while( stop==false ) {
-            if (rline == null) break;
+                String[] title = rline.split(" ");
 
-            String[] title = rline.split(" ");
+                if (title[0].matches("r")) {
 
-            if (title[0].matches("r")) {
-
-                String eline;
-                int count = 0;
-                String[] header = new String[4];
-                for (eline = rEntry.readLine(); (eline != null) && (eline.charAt(0)=='#'); eline = rEntry.readLine()) {
-                    header[count++] = eline;
-                }
-                String line1 = eline;
-                String line2 = rEntry.readLine();
-                assertTrue(TLE.isFormatOK(line1, line2));
-
-                TLE tle = new TLE(line1, line2);
-
-                int satNum = Integer.parseInt(title[1]);
-                assertTrue(satNum==tle.getSatelliteNumber());
-                TLEPropagator ex = TLEPropagator.selectExtrapolator(tle);
-
-                if(printResults) {
-                    System.out.println();
-                    for(int i = 0; i<4; i++) {
-                        if(header[i]!=null) {
-                            System.out.println(header[i]);
-                        }
+                    String eline;
+                    int count = 0;
+                    String[] header = new String[4];
+                    for (eline = rEntry.readLine(); (eline != null) && (eline.charAt(0)=='#'); eline = rEntry.readLine()) {
+                        header[count++] = eline;
                     }
-                    System.out.println(" Satellite number : " + satNum);
-                }
+                    String line1 = eline;
+                    String line2 = rEntry.readLine();
+                    assertTrue(TLE.isFormatOK(line1, line2));
 
-                for (rline = rResults.readLine(); (rline!=null)&&(rline.charAt(0)!='r'); rline = rResults.readLine()) {
+                    TLE tle = new TLE(line1, line2);
 
-                    String[] data = rline.split(" ");
-                    double minFromStart = Double.parseDouble(data[0]);
-                    double pX = 1000*Double.parseDouble(data[1]);
-                    double pY = 1000*Double.parseDouble(data[2]);
-                    double pZ = 1000*Double.parseDouble(data[3]);
-                    double vX = 1000*Double.parseDouble(data[4]);
-                    double vY = 1000*Double.parseDouble(data[5]);
-                    double vZ = 1000*Double.parseDouble(data[6]);
-                    Vector3D testPos = new Vector3D(pX, pY, pZ);
-                    Vector3D testVel = new Vector3D(vX, vY, vZ);
+                    int satNum = Integer.parseInt(title[1]);
+                    assertTrue(satNum==tle.getSatelliteNumber());
+                    TLEPropagator ex = TLEPropagator.selectExtrapolator(tle);
 
-                    AbsoluteDate date = new AbsoluteDate(tle.getEpoch(), minFromStart*60);
-                    PVCoordinates results = null;
-                    try {
-                        results = ex.getPVCoordinates(date);
-                    }
-                    catch(OrekitException e)  {
-                        if(satNum==28872  || satNum==23333 || satNum==29141 ) {
-                            // expected behaviour
+                    if(printResults) {
+                        System.out.println();
+                        for(int i = 0; i<4; i++) {
+                            if(header[i]!=null) {
+                                System.out.println(header[i]);
+                            }
                         }
-                        else {
-                            fail("exception not expected"+e.getMessage());
-                        }
-                    }
-                    if (results != null) {
-                        double normDifPos = testPos.subtract(results.getPosition()).getNorm();
-                        double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
-
-                        cumulated += normDifPos;
-                        if(printResults) {
-                            System.out.println(minFromStart + "    " + normDifPos);
-                        }
-                        assertEquals( 0, normDifPos, 2e-3);;
-                        assertEquals( 0, normDifVel, 1e-5);
-
+                        System.out.println(" Satellite number : " + satNum);
                     }
 
+                    for (rline = rResults.readLine(); (rline!=null)&&(rline.charAt(0)!='r'); rline = rResults.readLine()) {
+
+                        String[] data = rline.split(" ");
+                        double minFromStart = Double.parseDouble(data[0]);
+                        double pX = 1000*Double.parseDouble(data[1]);
+                        double pY = 1000*Double.parseDouble(data[2]);
+                        double pZ = 1000*Double.parseDouble(data[3]);
+                        double vX = 1000*Double.parseDouble(data[4]);
+                        double vY = 1000*Double.parseDouble(data[5]);
+                        double vZ = 1000*Double.parseDouble(data[6]);
+                        Vector3D testPos = new Vector3D(pX, pY, pZ);
+                        Vector3D testVel = new Vector3D(vX, vY, vZ);
+
+                        AbsoluteDate date = new AbsoluteDate(tle.getEpoch(), minFromStart*60);
+                        PVCoordinates results = null;
+                        try {
+                            results = ex.getPVCoordinates(date);
+                        }
+                        catch(OrekitException e)  {
+                            if(satNum==28872  || satNum==23333 || satNum==29141 ) {
+                                // expected behaviour
+                            }
+                            else {
+                                fail("exception not expected"+e.getMessage());
+                            }
+                        }
+                        if (results != null) {
+                            double normDifPos = testPos.subtract(results.getPosition()).getNorm();
+                            double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
+
+                            cumulated += normDifPos;
+                            if(printResults) {
+                                System.out.println(minFromStart + "    " + normDifPos);
+                            }
+                            assertEquals( 0, normDifPos, 2e-3);;
+                            assertEquals( 0, normDifVel, 1e-5);
+
+                        }
+
+                    }
                 }
             }
+            if (printResults) {
+                System.out.println();
+                System.out.println(" cumul :  " + cumulated);
+            }
+            assertEquals(0, cumulated, 0.024);
+        } finally {
+            if (rEntry != null) {
+                rEntry.close();
+            }
+            if (rResults != null) {
+                rResults.close();
+            }
         }
-        if (printResults) {
-            System.out.println();
-            System.out.println(" cumul :  " + cumulated);
-        }
-        assertEquals(0, cumulated, 0.024);
     }
 
 

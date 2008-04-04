@@ -667,9 +667,11 @@ public class DTM2000Atmosphere {
             throw new OrekitException("unable to find dtm 2000 model data file {0}",
                                       new Object[] { dtm2000 });
         }
+
+        BufferedReader r = null;
         try {
 
-            final BufferedReader r = new BufferedReader(new InputStreamReader(in));
+            r = new BufferedReader(new InputStreamReader(in));
             r.readLine();
             r.readLine();
             for (String line = r.readLine(); line != null; line = r.readLine()) {
@@ -692,10 +694,17 @@ public class DTM2000Atmosphere {
                 t0[num] = Double.parseDouble(line.substring(0,13).replace(' ', '0'));
                 line = line.substring(13+9);
                 tp[num] = Double.parseDouble(line.substring(0,13).replace(' ', '0'));
-
             }
         } catch (IOException ioe) {
             throw new OrekitException(ioe.getMessage(), ioe);
+        } finally {
+            if (r != null) {
+                try {
+                    r.close();
+                } catch (IOException ioe) {
+                    throw new OrekitException(ioe.getMessage(), ioe);                   
+                }
+            }
         }
     }
 

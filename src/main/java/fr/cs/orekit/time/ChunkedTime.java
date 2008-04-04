@@ -121,7 +121,8 @@ public class ChunkedTime implements Serializable, Comparable {
     public boolean equals(Object other) {
         try {
             ChunkedTime otherTime = (ChunkedTime) other;
-            return (hour == otherTime.hour) && (minute == otherTime.minute) && (second == otherTime.second);
+            return (otherTime != null) && (hour == otherTime.hour) &&
+                   (minute == otherTime.minute) && (second == otherTime.second);
         } catch (ClassCastException cce) {
             return false;
         }

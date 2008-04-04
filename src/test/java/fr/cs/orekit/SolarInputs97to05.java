@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.SortedSet;
 import java.util.TimeZone;
@@ -23,8 +25,28 @@ import fr.cs.orekit.time.UTCScale;
  *
  * @author F. Maussion
  */
-public class SolarInputs97to05 implements JB2006InputParameters,
-DTM2000InputParameters {
+public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputParameters {
+
+    private static final double third = 1.0/3.0;
+
+    private static final double[] kpTab = new double[] {
+        0, 0+third, 1-third, 1, 1+third, 2-third, 2, 2+third,
+        3-third, 3, 3+third, 4-third, 4, 4+third, 5-third, 5,
+        5+third, 6-third, 6, 6+third, 7-third, 7, 7+third,
+        8-third, 8, 8+third, 9-third, 9
+    };
+
+    private static final double[] apTab = new double[] {
+        0, 2, 3, 4, 5, 6, 7, 9, 12, 15, 18, 22, 27, 32,
+        39, 48, 56, 67, 80, 94, 111, 132, 154 , 179, 207, 236, 300, 400
+    };
+
+    /** All entries. */
+    private SortedSet data;
+
+    private LineParameters currentParam;
+    private AbsoluteDate firstDate;
+    private AbsoluteDate lastDate;
 
     /** Simple constructor.
      * Data file address is set internally, nothing to be done here.
@@ -33,7 +55,7 @@ DTM2000InputParameters {
      */
     private SolarInputs97to05() throws OrekitException {
 
-        data = new TreeSet();
+        data = new TreeSet(new LineParametersComparator());
         InputStream in = SolarInputs97to05.class.getResourceAsStream("/atmosphere/JB_All_97-05.txt");
         BufferedReader rFlux = new BufferedReader(new InputStreamReader(in));
 
@@ -53,10 +75,10 @@ DTM2000InputParameters {
      * @exception OrekitException
      */
     public static SolarInputs97to05 getInstance() throws OrekitException {
-        if ( instance == null ) {
-            instance = new SolarInputs97to05();
+        if (LazyHolder.instance == null) {
+            throw LazyHolder.orekitException;
         }
-        return instance;
+        return LazyHolder.instance;
     }
 
     private void read(BufferedReader rFlux, BufferedReader rAp) throws IOException, OrekitException {
@@ -165,18 +187,8 @@ DTM2000InputParameters {
         }
     }
 
-    /** All entries. */
-    private TreeSet data;
-
-    private LineParameters currentParam;
-
-    private AbsoluteDate firstDate;
-    private AbsoluteDate lastDate;
-
-    private static SolarInputs97to05 instance = null;
-
     /** Container class for Solar activity indexes.  */
-    private class LineParameters  implements Comparable {
+    private static class LineParameters {
 
         /** Entries */
         private  final AbsoluteDate date;
@@ -190,9 +202,9 @@ DTM2000InputParameters {
 
 
         /** Simple constructor. */
-        private LineParameters (AbsoluteDate date, double[]  ap, double f10,
-                                double f10B, double s10, double s10B,
-                                double xm10, double xm10B) {
+        private LineParameters(AbsoluteDate date, double[]  ap, double f10,
+                               double f10B, double s10, double s10B,
+                               double xm10, double xm10B) {
             this.date = date;
             this.ap = ap;
             this.f10 = f10;
@@ -204,13 +216,38 @@ DTM2000InputParameters {
 
         }
 
-        /** Compare an entry with another one, according to date. */
-        public int compareTo(Object entry) {
-            return date.compareTo(((LineParameters) entry).date);
+        /** Get the current date */
+        public AbsoluteDate getDate() {
+            return date;
         }
 
     }
 
+
+    /** Specialized comparator handling both {@link LineParameters}
+     * and {@link AbsoluteDate} instances.
+     */
+    private static class LineParametersComparator implements Comparator, Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = -6133879098924083582L;
+
+        /** Build a comparator for either {@link AbsoluteDate} or
+         * {@link LineParameters} instances.
+         * @param o1 first object
+         * @param o2 second object
+         * return a negative integer if o1 is before o2, 0 if they are
+         * are the same time, a positive integer otherwise
+         */
+        public int compare(Object o1, Object o2) {
+            final AbsoluteDate d1 =
+                (o1 instanceof AbsoluteDate) ? ((AbsoluteDate) o1) : ((LineParameters) o1).getDate();
+            final AbsoluteDate d2 =
+                (o2 instanceof AbsoluteDate) ? ((AbsoluteDate) o2) : ((LineParameters) o2).getDate();
+            return d1.compareTo(d2);
+        }
+
+    }
 
     public double getAp(AbsoluteDate date) {
         double result = Double.NaN;
@@ -362,17 +399,25 @@ DTM2000InputParameters {
         return kpTab[i-1];
     }
 
-    private static final double third = 1.0/3.0;
-
-    private static final double[] kpTab = new double[]
-                                                     {0, 0+third, 1-third, 1, 1+third, 2-third, 2, 2+third, 3-third, 3, 3+third, 4-third, 4, 4+third,
-        5-third, 5, 5+third, 6-third, 6, 6+third, 7-third, 7, 7+third, 8-third, 8, 8+third, 9-third, 9};
-
-    private static final double[] apTab = new double[] {
-        0, 2, 3, 4, 5, 6, 7, 9, 12, 15, 18, 22, 27, 32,
-        39, 48, 56, 67, 80, 94, 111, 132, 154 , 179, 207, 236, 300, 400 };
-
-
-
+    /** Holder for the singleton.
+     * <p>We use the Initialization on demand holder idiom to store
+     * the singleton, as it is both thread-safe, efficient (no
+     * synchronization) and works with all version of java.</p>
+     */
+    private static class LazyHolder {
+        private static final SolarInputs97to05 instance;
+        private static final OrekitException orekitException;
+        static {
+            SolarInputs97to05 tmpInstance = null;
+            OrekitException tmpException = null;
+            try {
+                tmpInstance = new SolarInputs97to05();
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            instance        = tmpInstance;
+            orekitException = tmpException;
+        }
+    }
 
 }

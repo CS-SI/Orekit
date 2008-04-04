@@ -201,7 +201,8 @@ public class ChunkedDate implements Serializable, Comparable {
     public boolean equals(Object other) {
         try {
             ChunkedDate otherDate = (ChunkedDate) other;
-            return (year == otherDate.year) && (month == otherDate.month) && (day == otherDate.day);
+            return (otherDate != null) && (year == otherDate.year) &&
+                   (month == otherDate.month) && (day == otherDate.day);
         } catch (ClassCastException cce) {
             return false;
         }

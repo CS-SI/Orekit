@@ -26,6 +26,9 @@ import fr.cs.orekit.utils.PVCoordinates;
  */
 public class JB2006AtmosphereModel extends JB2006Atmosphere implements Atmosphere {
 
+    /** Serializable UID.*/
+    private static final long serialVersionUID = -4566140204081960905L;
+
     /** Sun position */
     private ThirdBody sun;
 

@@ -28,9 +28,6 @@ import fr.cs.orekit.iers.UTCTAIHistoryFilesLoader;
  */
 public class UTCScale extends TimeScale {
 
-    /** Unique instance. */
-    private static TimeScale instance = null;
-
     /** Time steps. */
     private Leap[] leaps;
 
@@ -54,10 +51,10 @@ public class UTCScale extends TimeScale {
      * @exception OrekitException if the time steps cannot be read
      */
     public static TimeScale getInstance() throws OrekitException {
-        if (instance == null) {
-            instance = new UTCScale();
+        if (LazyHolder.instance == null) {
+            throw LazyHolder.orekitException;
         }
-        return instance;
+        return LazyHolder.instance;
     }
 
     /** Get the offset to convert locations from {@link TAIScale}  to instance.
@@ -105,6 +102,27 @@ public class UTCScale extends TimeScale {
             UTCStartDate = new AbsoluteDate(ref, firstLeap.utcTime - firstLeap.step);
         }
         return UTCStartDate;
+    }
+
+    /** Holder for the singleton.
+     * <p>We use the Initialization on demand holder idiom to store
+     * the singleton, as it is both thread-safe, efficient (no
+     * synchronization) and works with all version of java.</p>
+     */
+    private static class LazyHolder {
+        private static final UTCScale instance;
+        private static final OrekitException orekitException;
+        static {
+            UTCScale tmpInstance = null;
+            OrekitException tmpException = null;
+            try {
+                tmpInstance = new UTCScale();
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            instance        = tmpInstance;
+            orekitException = tmpException;
+        }
     }
 
 }

@@ -1,5 +1,7 @@
 package fr.cs.orekit.models.perturbations;
 
+import java.io.Serializable;
+
 import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.orekit.errors.OrekitException;
@@ -10,7 +12,7 @@ import fr.cs.orekit.time.AbsoluteDate;
  * @version $Id:Atmosphere.java 1310 2007-07-05 16:04:25Z luc $
  * @author Luc Maisonobe
  */
-public interface Atmosphere {
+public interface Atmosphere extends Serializable {
 
     /** Get the local density.
      * @param date current date

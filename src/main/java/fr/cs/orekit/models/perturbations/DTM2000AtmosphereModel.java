@@ -28,6 +28,9 @@ import fr.cs.orekit.utils.PVCoordinates;
  */
 public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosphere {
 
+    /** Serializable UID.*/
+    private static final long serialVersionUID = 7601194421088896381L;
+
     /** Sun position */
     private ThirdBody sun;
 
