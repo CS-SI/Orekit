@@ -50,7 +50,7 @@ public class NadirPointingTest extends TestCase {
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., frameItrf2000B);
                 
         // Create nadir pointing attitude law 
-        NadirPointing nadirAttitudeLaw = new NadirPointing(frameItrf2000B, earthShape);
+        NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
 
         // Create earth center pointing attitude law 
         BodyCenterPointing earthCenterAttitudeLaw = new BodyCenterPointing(frameItrf2000B);
@@ -63,10 +63,10 @@ public class NadirPointingTest extends TestCase {
         // Transform satellite position to position/velocity parameters in J2000 frame 
         PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
         
-        // Get nadir attitude */
+        // Get nadir attitude
         Rotation rotNadir = nadirAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
         
-        // Get earth center attitude */
+        // Get earth center attitude
         Rotation rotCenter = earthCenterAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
         
         // For a spheric earth, earth center pointing attitude and nadir pointing attitude
@@ -89,7 +89,7 @@ public class NadirPointingTest extends TestCase {
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameItrf2000B);
                 
         // Create nadir pointing attitude law 
-        NadirPointing nadirAttitudeLaw = new NadirPointing(frameItrf2000B, earthShape);
+        NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
 
         // Create earth center pointing attitude law 
         BodyCenterPointing earthCenterAttitudeLaw = new BodyCenterPointing(frameItrf2000B);
@@ -193,30 +193,30 @@ public class NadirPointingTest extends TestCase {
      */
     public void testVertical() throws OrekitException {
 
-        /* Elliptic earth shape */
+        // Elliptic earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameItrf2000B);
                 
-        /* Create earth center pointing attitude law */
-        NadirPointing nadirAttitudeLaw = new NadirPointing(frameItrf2000B, earthShape);
+        // Create earth center pointing attitude law
+        NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
 
-        /*  Satellite on any position */
+        //  Satellite on any position
         CircularParameters circ =
             new CircularParameters(7178000.0, 1.e-5, 0., Math.toRadians(50.), 0.,
                                    Math.toRadians(90.), CircularParameters.TRUE_LONGITUDE_ARGUMENT, Frame.getJ2000());
  
-        /* Transform satellite position to position/velocity parameters in J2000 frame */
+        // Transform satellite position to position/velocity parameters in J2000 frame */
         PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
         
-        /*  Vertical test
-         * *************** */
-        /* Get observed ground point position/velocity */
+        //  Vertical test
+        // *************** 
+        // Get observed ground point position/velocity 
         PVCoordinates pvTargetJ2000 = nadirAttitudeLaw.getObservedGroundPoint(date, pvSatJ2000, Frame.getJ2000());
         PVCoordinates pvTargetItrf2000B = j2000ToItrf.transformPVCoordinates(pvTargetJ2000);
         
-        /* Convert to geodetic coordinates */
+        // Convert to geodetic coordinates
         GeodeticPoint geoTarget = earthShape.transform(pvTargetItrf2000B.getPosition(), frameItrf2000B, date);
 
-        /* Compute local vertical axis */
+        // Compute local vertical axis
         double xVert = Math.cos(geoTarget.longitude)*Math.cos(geoTarget.latitude);
         double yVert = Math.sin(geoTarget.longitude)*Math.cos(geoTarget.latitude);
         double zVert = Math.sin(geoTarget.latitude);
@@ -225,10 +225,10 @@ public class NadirPointingTest extends TestCase {
                                               + " " + targetVertical.getY() 
                                               + " " + targetVertical.getZ());
         
-        /* Get attitude rotation state */
+        // Get attitude rotation state
         Rotation rotSatJ2000 = nadirAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
                 
-        /* Get satellite Z axis in J2000 frame */
+        // Get satellite Z axis in J2000 frame
         Vector3D zSatJ2000 = rotSatJ2000.applyInverseTo(Vector3D.plusK);
         Vector3D zSatItrf2000B = j2000ToItrf.transformVector(zSatJ2000);
         
@@ -236,7 +236,7 @@ public class NadirPointingTest extends TestCase {
                                            + " " + zSatItrf2000B.getY() 
                                            + " " + zSatItrf2000B.getZ());
         
-        /* Check that satellite Z axis is colinear to local vertical axis */
+        // Check that satellite Z axis is colinear to local vertical axis
         double angle= Vector3D.angle(zSatItrf2000B, targetVertical);
         System.out.println("angle = " + angle);
         

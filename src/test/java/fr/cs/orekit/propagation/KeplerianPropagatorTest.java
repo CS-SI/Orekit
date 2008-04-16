@@ -36,7 +36,7 @@ public class KeplerianPropagatorTest extends TestCase {
 
         // Extrapolator definition
         // -----------------------
-        KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(initialOrbit), mu);
+        KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(initialOrbit, mu), mu);
 
         // Extrapolation at the initial date
         // ---------------------------------
@@ -72,7 +72,7 @@ public class KeplerianPropagatorTest extends TestCase {
 
         // Extrapolator definition
         // -----------------------
-        KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(initialOrbit), mu);
+        KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(initialOrbit, mu), mu);
 
         // Extrapolation at the initial date
         // ---------------------------------
@@ -112,7 +112,7 @@ public class KeplerianPropagatorTest extends TestCase {
 
         // Extrapolator definition
         // -----------------------
-        KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(initialOrbit), mu);
+        KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(initialOrbit, mu), mu);
 
         // Extrapolation at a final date different from initial date
         // ---------------------------------------------------------
@@ -203,7 +203,7 @@ public class KeplerianPropagatorTest extends TestCase {
 
         // Extrapolator definition
         // -----------------------
-        KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(initialOrbit), mu);
+        KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(initialOrbit, mu), mu);
 
         // Extrapolation at a final date different from initial date
         // ---------------------------------------------------------

@@ -14,6 +14,9 @@ import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.frames.Transform;
 import fr.cs.orekit.orbits.CircularParameters;
+import fr.cs.orekit.orbits.Orbit;
+import fr.cs.orekit.propagation.SpacecraftState;
+import fr.cs.orekit.propagation.analytical.KeplerianPropagator;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.ChunkedDate;
 import fr.cs.orekit.time.ChunkedTime;
@@ -98,13 +101,13 @@ public class TargetPointingTest extends TestCase {
             new CircularParameters(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
                                    Math.toRadians(5.300), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
         
-        // Transform satellite position to position/velocity parameters in J2000 frame */
+        // Transform satellite position to position/velocity parameters in J2000 frame 
         PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
      
         //  Attitude law
         // ************** 
         
-        // Elliptic earth shape */
+        // Elliptic earth shape 
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameItrf2000B);
                 
         // Target definition as a geodetic point 
@@ -129,8 +132,8 @@ public class TargetPointingTest extends TestCase {
 
     }
 
-    /** Test with nadir target : Check that when the target is the same as nadir target,
-     * satellite attitude is the same as nadir attitude.
+    /** Test with nadir target : Check that when the target is the same as nadir target at date,
+     * satellite attitude is the same as nadir attitude at the same date, but different at a different date.
      */
     public void testNadirTarget() throws OrekitException {
 
@@ -141,7 +144,8 @@ public class TargetPointingTest extends TestCase {
         CircularParameters circ =
             new CircularParameters(7178000.0, 1.e-5, 0., Math.toRadians(50.), 0.,
                                    Math.toRadians(90.), CircularParameters.TRUE_LONGITUDE_ARGUMENT, Frame.getJ2000());
- 
+        Orbit orbit = new Orbit(date, circ);
+
         // Transform satellite position to position/velocity parameters in J2000 frame
         PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
         
@@ -150,7 +154,7 @@ public class TargetPointingTest extends TestCase {
         // ******************************************************* 
         // Definition of nadir target 
         // Create nadir pointing attitude law 
-        NadirPointing nadirAttitudeLaw = new NadirPointing(frameItrf2000B, earthShape);
+        NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
         
         // Check nadir target 
         PVCoordinates pvNadirTarget = nadirAttitudeLaw.getObservedGroundPoint(date, pvSatJ2000, Frame.getJ2000());
@@ -162,24 +166,50 @@ public class TargetPointingTest extends TestCase {
         // Create target attitude law 
         TargetPointing targetAttitudeLaw = new TargetPointing(Frame.getJ2000(), geoNadirTarget, earthShape);
 
-        // Get satellite rotation for target pointing law 
-        Rotation rotTarget = targetAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
-        System.out.println("Target pointing rotation angle = " + Math.toDegrees(rotTarget.getAngle()));
-
-        // Get satellite rotation for nadir pointing law 
-        Rotation rotNadir = nadirAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
-        System.out.println("Nadir pointing rotation angle = " + Math.toDegrees(rotNadir.getAngle()));
-
-        // For a target under satellite nadir, nadir pointing attitude 
-        // and nadir pointing attitude shall be the same, 
+        //  1/ Test that attitudes are the same at date
+        // *********************************************
         // i.e the composition of inverse earth pointing rotation
         // with nadir pointing rotation shall be identity. 
+        
+        // Get satellite rotation from target pointing law at date
+        Rotation rotTarget = targetAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
+        System.out.println("Target pointing rotation angle at t = " + Math.toDegrees(rotTarget.getAngle()));
+
+        // Get satellite rotation from nadir pointing law at date
+        Rotation rotNadir = nadirAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
+        System.out.println("Nadir pointing rotation angle at t = " + Math.toDegrees(rotNadir.getAngle()));
+
+        // Compose attitude rotations
         Rotation rotCompo = rotTarget.applyInverseTo(rotNadir);
         double angle = rotCompo.getAngle();
-        System.out.println("Composed rotation angle (deg) = " + Math.toDegrees(angle));
-        assertEquals(angle, 0.0, Utils.epsilonAngle);
+        System.out.println("Composed rotation angle at t (deg) = " + Math.toDegrees(angle));
+        //assertEquals(angle, 0.0, Utils.epsilonAngle);
 
         
+        //  1/ Test that attitudes are different at a different date
+        // **********************************************************
+
+        // Extrapolation one minute later
+        KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(orbit, mu), mu);
+        double delta_t = 60.0; // extrapolation duration in seconds
+        AbsoluteDate extrapDate = new AbsoluteDate(date, delta_t);
+        SpacecraftState extrapOrbit = extrapolator.getSpacecraftState(extrapDate);
+        PVCoordinates extrapPvSatJ2000 = extrapOrbit.getPVCoordinates(mu);
+        
+        // Get satellite rotation from target pointing law at date + 1min
+        Rotation extrapRotTarget = targetAttitudeLaw.getState(extrapDate, extrapPvSatJ2000, Frame.getJ2000()).getRotation();
+        System.out.println("Target pointing rotation angle at t+1 = " + Math.toDegrees(extrapRotTarget.getAngle()));
+        
+        // Get satellite rotation from nadir pointing law at date
+        Rotation extrapRotNadir = nadirAttitudeLaw.getState(extrapDate, extrapPvSatJ2000, Frame.getJ2000()).getRotation();
+        System.out.println("Nadir pointing rotation angle at t+1 = " + Math.toDegrees(extrapRotNadir.getAngle()));
+
+        // Compose attitude rotations
+        Rotation extrapRotCompo = extrapRotTarget.applyInverseTo(extrapRotNadir);
+        double extrapAngle = extrapRotCompo.getAngle();
+        System.out.println("Composed rotation angle at t+1 (deg) = " + Math.toDegrees(extrapAngle));
+        
+
     }
        
     /** Test if defined target belongs to the direction pointed by the satellite
@@ -218,7 +248,7 @@ public class TargetPointingTest extends TestCase {
         // Get satellite attitude rotation, i.e rotation from J2000 frame to satellite frame
         Rotation rotSatJ2000 = targetAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
         
-        // Transform Z axis from satellite frame to ITRF2000B 
+        // Transform Z axis from satellite frame to J2000 
         Vector3D ZSatJ2000 = rotSatJ2000.applyInverseTo(Vector3D.plusK);
         System.out.println("Zsat in J2000");
         System.out.println(ZSatJ2000.getX());
@@ -228,7 +258,7 @@ public class TargetPointingTest extends TestCase {
         // Line containing satellite point and following pointing direction
         Line pointingLine = new Line(pvSatJ2000.getPosition(), ZSatJ2000);
         
-        // Check that the line contains earth center (distance from line to point less than 1.e-8 m)
+        // Check that the line contains earth center
         double distance = pointingLine.distance(earthShape.transform(geoTarget));
         System.out.println("distance");
         System.out.println(distance);
@@ -260,7 +290,7 @@ public class TargetPointingTest extends TestCase {
         
         // Create nadir pointing attitude law 
         // ********************************** 
-        NadirPointing nadirAttitudeLaw = new NadirPointing(frameItrf2000B, earthShape);
+        NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
         
         // Get observed ground point from nadir pointing law
         PVCoordinates pvNadirObservedJ2000 = nadirAttitudeLaw.getObservedGroundPoint(date, pvSatJ2000, Frame.getJ2000());

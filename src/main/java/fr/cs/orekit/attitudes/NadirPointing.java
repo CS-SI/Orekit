@@ -32,11 +32,11 @@ public class NadirPointing extends GroundPointing {
     private final BodyShape shape;
 
     /** Creates new instance.
-     * @param bodyFrame Body frame
+     * @param shape Body shape
      */
-    public NadirPointing(Frame bodyFrame, BodyShape shape) {
+    public NadirPointing(BodyShape shape) {
         /* Call constructor of superclass */
-        super(bodyFrame);
+        super(shape.getBodyFrame());
         this.shape = shape;
     }
 
