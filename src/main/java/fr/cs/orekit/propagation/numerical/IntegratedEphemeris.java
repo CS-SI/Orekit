@@ -2,8 +2,7 @@ package fr.cs.orekit.propagation.numerical;
 
 import org.apache.commons.math.ode.ContinuousOutputModel;
 
-import fr.cs.orekit.attitudes.AttitudeKinematics;
-import fr.cs.orekit.attitudes.AttitudeKinematicsProvider;
+import fr.cs.orekit.attitudes.AttitudeLaw;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.frames.Frame;
@@ -35,13 +34,13 @@ import fr.cs.orekit.time.AbsoluteDate;
 public class IntegratedEphemeris implements BoundedEphemeris {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -6109078744629339488L;
+    private static final long serialVersionUID = -5016030285313444680L;
 
     /** Central body gravitational constant. */
     private double mu;
 
-    /** Attitude provider */
-    private AttitudeKinematicsProvider akProvider;
+    /** Attitude law */
+    private AttitudeLaw attitudeLaw;
 
     /** Start date of the integration (can be min or max). */
     private AbsoluteDate startDate;
@@ -71,14 +70,14 @@ public class IntegratedEphemeris implements BoundedEphemeris {
      * @param model interpolation model containing the state evolution
      * @param ref reference date
      * @param frame frame in which state has been integrated
-     * @param akProvider provider for attitude
+     * @param attitudeLaw attitude law
      * @param mu central body attraction coefficient
      */
     protected void initialize(ContinuousOutputModel model, AbsoluteDate ref, Frame frame,
-                              AttitudeKinematicsProvider akProvider, double mu) {
+                              AttitudeLaw attitudeLaw, double mu) {
         this.model     = model;
         this.frame = frame;
-        this.akProvider = akProvider;
+        this.attitudeLaw = attitudeLaw;
         this.mu = mu;
         startDate = new AbsoluteDate(ref, model.getInitialTime());
         maxDate = new AbsoluteDate(ref, model.getFinalTime());
@@ -108,9 +107,8 @@ public class IntegratedEphemeris implements BoundedEphemeris {
             final double mass = state[6];
 
             try {
-                final AttitudeKinematics ak =
-                    akProvider.getAttitudeKinematics(date, eq.getPVCoordinates(mu), frame);
-                return new SpacecraftState(new Orbit(date , eq), mass, ak);
+                return new SpacecraftState(new Orbit(date , eq), mass,
+                                           attitudeLaw.getState(date, eq.getPVCoordinates(mu), frame));
             } catch (OrekitException oe) {
                 throw new PropagationException(oe.getMessage(), oe);
             }
