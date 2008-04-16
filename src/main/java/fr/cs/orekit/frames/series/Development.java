@@ -110,7 +110,7 @@ public class Development implements Serializable {
                     // skip blank lines
                     line = reader.readLine();
                     ++lineNumber;
-                    while ((line != null) && line.trim().isEmpty()) {
+                    while ((line != null) && (line.trim().length() == 0)) {
                         line = reader.readLine();
                         ++lineNumber;
                     }
@@ -231,7 +231,8 @@ public class Development implements Serializable {
         // parse the nutation serie term
         final String[] fields = line.split("\\p{Space}+");
         final int l = fields.length;
-        if ((l == 17) || ((l == 18) && fields[0].isEmpty())) {
+        // if ((l == 17) || ((l == 18) && fields[0].isEmpty())) {
+        if ((l == 17) || ((l == 18) && (fields[0].length() == 0))) {
             return SeriesTerm.buildTerm(Double.parseDouble(fields[l - 16]) * factor,
                                         Double.parseDouble(fields[l - 15]) * factor,
                                         Integer.parseInt(fields[l - 14]), Integer.parseInt(fields[l -13]),

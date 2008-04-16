@@ -2,7 +2,6 @@ package fr.cs.orekit.propagation;
 
 import fr.cs.orekit.attitudes.AttitudeKinematics;
 import fr.cs.orekit.attitudes.AttitudeKinematicsProvider;
-import fr.cs.orekit.attitudes.models.IdentityAttitude;
 import fr.cs.orekit.propagation.numerical.forces.ForceModel;
 
 

@@ -1,6 +1,11 @@
 package fr.cs.orekit.bodies;
 
 import org.apache.commons.math.geometry.Vector3D;
+
+import fr.cs.orekit.errors.OrekitException;
+import fr.cs.orekit.frames.Frame;
+import fr.cs.orekit.frames.Transform;
+import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.Line;
 
 /** Modeling of one-axis ellipsoid.
@@ -22,6 +27,9 @@ public class OneAxisEllipsoid implements BodyShape {
 
     /** One third. */
     private static final double ot = 1.0 / 3.0;
+
+    /** Body frame related to body shape. */
+    private final Frame bodyFrame;
 
     /** Equatorial radius. */
     private final double ae;
@@ -45,16 +53,17 @@ public class OneAxisEllipsoid implements BodyShape {
     private double angularThreshold;
 
     /** Simple constructor.
-     * <p> Freqently used parameters for earth are :
+     * <p> Frequently used parameters for earth are :
      * <pre>
      * ae = 6378136.460 m
      * f  = 1 / 298.257222101
      * </pre>
      * </p>
      * @param ae earth equatorial radius
-     * @param f the flatening ( f = (a-b)/a )
+     * @param f the flattening ( f = (a-b)/a )
+     * @param bodyFrame body frame related to body shape
      */
-    public OneAxisEllipsoid(double ae, double f) {
+    public OneAxisEllipsoid(double ae, double f, Frame bodyFrame) {
         this.ae = ae;
         e2      = f * (2.0 - f);
         g       = 1.0 - f;
@@ -62,6 +71,7 @@ public class OneAxisEllipsoid implements BodyShape {
         ae2     = ae * ae;
         setCloseApproachThreshold(1.0e-10);
         setAngularThreshold(1.0e-14);
+        this.bodyFrame = bodyFrame;
     }
 
     /** Set the close approach threshold.
@@ -106,14 +116,29 @@ public class OneAxisEllipsoid implements BodyShape {
         return ae;
     }
 
+    /** Get the body frame related to body shape
+     * @return body frame related to body shape
+     */
+    public Frame getBodyFrame() {
+        return bodyFrame;  
+    }
+
     /** Get the intersection point of a line with the surface of the body.
      * @param line test line in inertial frame (may intersect the body or not)
+     * @param frame frame in which line is expressed
+     * @param date date of the line in given frame
      * @return intersection point at altitude zero or null if the line does
      * not intersect the surface
      */
-    public GeodeticPoint getIntersectionPoint(Line line) {
+    public GeodeticPoint getIntersectionPoint(Line line, Frame frame, AbsoluteDate date) 
+           throws OrekitException {
+        
+        // transform line to body frame
+        Transform t = frame.getTransformTo(bodyFrame, date);
+        Line lineInBodyFrame = t.transformLine(line);
+        
         // compute some miscellaneous variables outside of the loop
-        final Vector3D point    = line.getOrigin();
+        final Vector3D point    = lineInBodyFrame.getOrigin();
         final double z          = point.getZ();
         final double z2         = z * z;
         final double r2         = point.getX() * point.getX() + point.getY() * point.getY();
@@ -121,7 +146,7 @@ public class OneAxisEllipsoid implements BodyShape {
         final double g2r2ma2    = g2 * (r2 - ae2);
         final double g2r2ma2pz2 = g2r2ma2 + z2;
 
-        final Vector3D direction = line.getDirection();
+        final Vector3D direction = lineInBodyFrame.getDirection();
         final double cz =
             Math.sqrt(direction.getX() * direction.getX() + direction.getY() * direction.getY());
         final double sz =
@@ -164,14 +189,21 @@ public class OneAxisEllipsoid implements BodyShape {
 
     /** Transform a cartesian point to a surface-relative point.
      * @param point cartesian point
-     * @return point at the same location but as a surface-relative point
+     * @param frame frame in which cartesian point is expressed
+     * @param date date of the point in given frame
+     * @return point at the same location but as a surface-relative point, expressed in body frame
      */
-    public GeodeticPoint transform(Vector3D point) {
+    public GeodeticPoint transform(Vector3D point, Frame frame, AbsoluteDate date) 
+           throws OrekitException {
 
+        // transform line to body frame
+        Transform transf = frame.getTransformTo(bodyFrame, date);
+        Vector3D pointInBodyFrame = transf.transformPosition(point);
+        
         // compute some miscellaneous variables outside of the loop
-        final double z          = point.getZ();
+        final double z          = pointInBodyFrame.getZ();
         final double z2         = z * z;
-        final double r2         = point.getX() * point.getX() + point.getY() * point.getY();
+        final double r2         = pointInBodyFrame.getX() * pointInBodyFrame.getX() + pointInBodyFrame.getY() * pointInBodyFrame.getY();
         final double r          = Math.sqrt(r2);
         final double g2r2ma2    = g2 * (r2 - ae2);
         final double g2r2ma2pz2 = g2r2ma2 + z2;
@@ -196,7 +228,7 @@ public class OneAxisEllipsoid implements BodyShape {
         double b2 = b * b;
         final double ac = a * c;
         double k  = c / (b + Math.sqrt(b2 - ac));
-        final double lambda = Math.atan2(point.getY(), point.getX());
+        final double lambda = Math.atan2(pointInBodyFrame.getY(), pointInBodyFrame.getX());
         double phi    = Math.atan2(z - k * sz, g2 * (r - k * cz));
 
         // point on the ellipse

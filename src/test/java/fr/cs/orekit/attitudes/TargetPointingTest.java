@@ -298,25 +298,15 @@ public class TargetPointingTest extends TestCase {
         
         // Compute difference between both attitude laws 
         // *********************************************
-        // "Difference" between axes 
-        Vector3D crossProd = Vector3D.crossProduct(rotSatJ2000.getAxis(), rotSatRefJ2000.getAxis());
-        double norm = Math.sqrt(Vector3D.dotProduct(crossProd, crossProd));
-        System.out.println("Cross product = " + crossProd.getX() 
-                           + " " + crossProd.getY() 
-                           + " " + crossProd.getZ());
-        System.out.println("Norm = " + norm);
-        
-        assertEquals(norm, 0.0, 1.e-2);
-        
-        // Difference between axes
+        // Difference between attitudes
         //  expected
         double tanDeltaExpected = (6378136.460/(42164000.0-6378136.460))*Math.tan(Math.toRadians(5));
         double deltaExpected = Math.atan(tanDeltaExpected);
-        System.out.println("Delta expected = " + Math.toDegrees(deltaExpected));
+        System.out.println("Delta expected (deg) = " + Math.toDegrees(deltaExpected));
         
         //  real
         double deltaReal = rotSatJ2000.applyInverseTo(rotSatRefJ2000).getAngle();
-        System.out.println("Delta real = " + Math.toDegrees(deltaReal));
+        System.out.println("Delta real (deg) = " + Math.toDegrees(deltaReal));
         
         assertEquals(deltaReal, deltaExpected, 1.e-4);
         

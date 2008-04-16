@@ -5,6 +5,7 @@ import java.io.Serializable;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 
+import fr.cs.orekit.utils.Line;
 import fr.cs.orekit.utils.PVCoordinates;
 
 /** Transformation class in three dimensional space.
@@ -195,6 +196,20 @@ public class Transform implements Serializable {
         return rotation.applyTo(vector);
     }
 
+    /** Transform a line.
+     * @param line to transform
+     * @return transformed line
+     */
+    public Line transformLine(Line line) {
+        Vector3D origin = line.getOrigin();
+        Vector3D direction = line.getDirection();
+        
+        Vector3D transformedOrigin = transformPosition(origin);
+        Vector3D transformedDirection = transformVector(direction);
+        
+        return new Line(transformedOrigin, transformedDirection);
+    }
+    
     /** Transform {@link PVCoordinates} including kinematic effects.
      * @param pv the couple position-velocity to transform.
      * @return transformed position/velocity

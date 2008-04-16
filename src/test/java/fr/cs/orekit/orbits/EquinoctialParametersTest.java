@@ -364,7 +364,7 @@ public class EquinoctialParametersTest extends TestCase {
 
     public void testSymmetry() {
 
-        // elliptic and non equatorail orbit
+        // elliptic and non equatorial orbit
         Vector3D position = new Vector3D(4512.9, 18260., -5127.);
         Vector3D velocity = new Vector3D(134664.6, 90066.8, 72047.6);
         double mu = 3.9860047e14;
