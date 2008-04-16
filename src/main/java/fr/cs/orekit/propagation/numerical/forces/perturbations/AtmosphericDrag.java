@@ -59,11 +59,11 @@ public class AtmosphericDrag implements ForceModel {
         final double v2 = Vector3D.dotProduct(incidence, incidence);
 
         final Vector3D inSpacecraft =
-            s.getAttitudeKinematics().getAttitude().applyTo(incidence.normalize());
+            s.getAttitude().getRotation().applyTo(incidence.normalize());
         final double k = rho * v2 * spacecraft.getSurface(inSpacecraft) / (2 * s.getMass());
         final Vector3D cD = spacecraft.getDragCoef(inSpacecraft);
 
-        // Additition of calculated acceleration to adder
+        // Addition of calculated acceleration to adder
         adder.addXYZAcceleration(k * cD.getX(), k * cD.getY(), k * cD.getZ());
 
     }

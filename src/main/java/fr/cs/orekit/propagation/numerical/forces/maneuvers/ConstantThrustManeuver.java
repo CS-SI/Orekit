@@ -134,7 +134,7 @@ public class ConstantThrustManeuver implements ForceModel {
                 break;
             default :
                 // the thrust is in spacecraft frame, it depends on attitude
-                Vector3D inertialThrust = s.getAttitude().applyTo(direction);
+                Vector3D inertialThrust = s.getAttitude().getRotation().applyTo(direction);
                 adder.addXYZAcceleration(acceleration * inertialThrust.getX(),
                                          acceleration * inertialThrust.getY(),
                                          acceleration * inertialThrust.getZ());
