@@ -2,8 +2,8 @@ package fr.cs.orekit.propagation.analytical;
 
 import org.apache.commons.math.util.MathUtils;
 
-import fr.cs.orekit.attitudes.AttitudeKinematicsProvider;
-import fr.cs.orekit.attitudes.models.IdentityAttitude;
+import fr.cs.orekit.attitudes.AttitudeLaw;
+import fr.cs.orekit.attitudes.DefaultAttitude;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.orbits.CircularParameters;
@@ -28,8 +28,8 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
     /** Serializable UID. */
     private static final long serialVersionUID = 4924905512408375026L;
 
-    /** Attitude provider */
-    private AttitudeKinematicsProvider akProvider;
+    /** Attitude law */
+    private AttitudeLaw attitudeLaw;
 
     /** Initial date. */
     private final AbsoluteDate initialDate;
@@ -101,7 +101,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
         // compute mean parameters
         initialDate = initialState.getDate();
         mass = initialState.getMass();
-        this.akProvider = new IdentityAttitude();
+        this.attitudeLaw = DefaultAttitude.getInstance();
         computeMeanParameters(osculating);
 
     }
@@ -118,7 +118,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
         final OrbitalParameters op = propagate(date);
         try {
             return new SpacecraftState(new Orbit(date, op), mass,
-                                       akProvider.getAttitudeKinematics(date,
+                                       attitudeLaw.getAttitudeKinematics(date,
                                                                         op.getPVCoordinates(mu), op.getFrame()));
         } catch (OrekitException oe) {
             throw new PropagationException(oe.getMessage(), oe);
@@ -392,7 +392,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
     }
 
     public void setAkProvider(AttitudeKinematicsProvider akProvider) {
-        this.akProvider = akProvider;
+        this.attitudeLaw = akProvider;
     }
 
 }

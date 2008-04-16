@@ -1,11 +1,10 @@
 package fr.cs.orekit.propagation;
 
 import java.io.Serializable;
-import org.apache.commons.math.geometry.Rotation;
-import org.apache.commons.math.geometry.Vector3D;
-import fr.cs.orekit.attitudes.AttitudeKinematics;
+
+import fr.cs.orekit.attitudes.Attitude;
+import fr.cs.orekit.attitudes.DefaultAttitude;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.frames.Transform;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.time.AbsoluteDate;
@@ -27,7 +26,7 @@ import fr.cs.orekit.utils.PVCoordinates;
 public class SpacecraftState implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 8071995498433113417L;
+    private static final long serialVersionUID = 4422087150083556410L;
 
     /** Orbital state. */
     private final Orbit orbit;
@@ -36,39 +35,42 @@ public class SpacecraftState implements Serializable {
     private final double mass;
 
     /** Attitude. */
-    private final AttitudeKinematics attitude;
+    private final Attitude attitude;
 
     /** Create a new instance from orbital state and mass.
      * @param orbit the orbit
      * @param mass the mass (kg)
-     * @param ak the attitude kinematics
+     * @param attitude attitude
      */
-    public SpacecraftState(Orbit orbit, double mass, AttitudeKinematics ak) {
-        this.orbit = orbit;
-        this.mass  = mass;
-        this.attitude = ak;
+    public SpacecraftState(Orbit orbit, double mass, Attitude attitude) {
+        this.orbit    = orbit;
+        this.mass     = mass;
+        this.attitude = attitude;
     }
 
     /** Create a new instance from orbital state and mass.
-     * Initialize the attitude to the identity.
+     * <p>Initialize the attitude law to the
+     * {@link DefaultAttitude default attitude law}).</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public SpacecraftState(Orbit orbit, double mass) {
-        this.orbit = orbit;
-        this.mass  = mass;
-        this.attitude = new AttitudeKinematics();
+    public SpacecraftState(Orbit orbit, double mass, double mu) {
+        this.orbit    = orbit;
+        this.mass     = mass;
+        this.attitude = DefaultAttitude.getInstance().getState(orbit.getDate(),
+                                                               orbit.getPVCoordinates(mu),
+                                                               orbit.getFrame());
     }
 
-    /** Create a new instance from orbital state only
-     * (gives an arbitrary value (1000 kg) for the mass and
-     * initialize the attitude to the identity).
+    /** Create a new instance from orbital state only.
+     * <p>Gives an arbitrary value (1000 kg) for the mass and
+     * use the {@link DefaultAttitude default attitude law}).</p>
      * @param orbit the orbit
+     * @param mu central body attraction coefficient
      */
-    public SpacecraftState(Orbit orbit) {
-        this.orbit = orbit;
-        this.mass  = 1000;
-        this.attitude = new AttitudeKinematics();
+    public SpacecraftState(Orbit orbit, double mu) {
+        this(orbit, 1000.0, mu);
     }
 
     /** Gets the current orbit.
@@ -106,38 +108,11 @@ public class SpacecraftState implements Serializable {
         return orbit.getFrame();
     }
 
-    /** Gets the attitude representation.
-     * @return the attitude kinematics.
+    /** Gets the attitude.
+     * @return the attitude.
      */
-    public AttitudeKinematics getAttitudeKinematics() {
+    public Attitude getAttitude() {
         return attitude;
-    }
-
-    /** Get the attitude quaternion.
-     * <p> The {@link Rotation} returned by this method represents the rotation
-     * to apply to a vector expressed in spacecraft frame to obtain the same vector
-     * defined in the orbit inertial frame </p>
-     * @return the attitude rotation of the spacecraft
-     */
-    public Rotation getAttitude() {
-        return attitude.getAttitude();
-    }
-
-    /** Get the attitute rotation derivative.
-     * <p> The {@link Vector3D} returned by this method represents the instant rotation
-     * to apply to a velocity vector expressed in spacecraft frame to obtain the same
-     * vector defined in the orbit inertial frame </p>
-     * @return the instant rotation of the spacecraft
-     */
-    public Vector3D getspinAxis() {
-        return attitude.getspinAxis();
-    }
-
-    /** Get the attitude kinematics transform.
-     * @return the transform, which can be applied on {@link PVCoordinates}
-     */
-    public Transform getAkTransform() {
-        return attitude.getAkTransform();
     }
 
     /** Get the semi-major axis.

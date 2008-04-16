@@ -3,7 +3,6 @@ package fr.cs.orekit.attitudes;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 
-import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
@@ -22,7 +21,7 @@ import fr.cs.orekit.utils.PVCoordinates;
 public class DefaultAttitude implements AttitudeLaw {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7353978128982305892L;
+    private static final long serialVersionUID = 2326736651837053845L;
 
     /** Private constructor for the singleton.
      */
@@ -32,13 +31,12 @@ public class DefaultAttitude implements AttitudeLaw {
     /** Get the unique instance of this class.
      * @return the unique instance
      */
-    public static AttitudeLaw getInstance() {
+    public static DefaultAttitude getInstance() {
        return LazyHolder.instance;
     }
 
     /** {@inheritDoc} */
-    public Attitude getState(AbsoluteDate date, PVCoordinates pv, Frame frame)
-        throws OrekitException {
+    public Attitude getState(AbsoluteDate date, PVCoordinates pv, Frame frame) {
         final Vector3D p = pv.getPosition();
         final Vector3D v = pv.getVelocity();
         final Vector3D momentum = Vector3D.crossProduct(p, v);
@@ -55,7 +53,7 @@ public class DefaultAttitude implements AttitudeLaw {
      * synchronization) and works with all version of java.</p>
      */
     private static class LazyHolder {
-        private static final AttitudeLaw instance = new DefaultAttitude();
+        private static final DefaultAttitude instance = new DefaultAttitude();
     }
 
 }
