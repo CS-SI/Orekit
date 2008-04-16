@@ -14,6 +14,9 @@ public class PVCoordinates implements Serializable {
     /** Serializable UID. */
     private static final long serialVersionUID = 8581359579182947710L;
 
+    /** Fixed position/velocity at origin (both p and v are zero vectors). */
+    public static final PVCoordinates ZERO = new PVCoordinates(Vector3D.zero, Vector3D.zero);
+
     /** The position. */
     private final Vector3D position;
 
