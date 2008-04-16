@@ -26,7 +26,7 @@ import fr.cs.orekit.time.AbsoluteDate;
 public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 4924905512408375026L;
+    private static final long serialVersionUID = 8185876333076861718L;
 
     /** Attitude law */
     private AttitudeLaw attitudeLaw;
@@ -118,8 +118,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
         final OrbitalParameters op = propagate(date);
         try {
             return new SpacecraftState(new Orbit(date, op), mass,
-                                       attitudeLaw.getAttitudeKinematics(date,
-                                                                        op.getPVCoordinates(mu), op.getFrame()));
+                                       attitudeLaw.getState(date, op.getPVCoordinates(mu), op.getFrame()));
         } catch (OrekitException oe) {
             throw new PropagationException(oe.getMessage(), oe);
         }
@@ -391,8 +390,8 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
 
     }
 
-    public void setAkProvider(AttitudeKinematicsProvider akProvider) {
-        this.attitudeLaw = akProvider;
+    public void setAttitudeLaw(AttitudeLaw attitudeLaw) {
+        this.attitudeLaw = attitudeLaw;
     }
 
 }
