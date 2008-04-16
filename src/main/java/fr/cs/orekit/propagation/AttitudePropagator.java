@@ -2,6 +2,8 @@ package fr.cs.orekit.propagation;
 
 import fr.cs.orekit.attitudes.AttitudeKinematics;
 import fr.cs.orekit.attitudes.AttitudeKinematicsProvider;
+import fr.cs.orekit.attitudes.AttitudeLaw;
+import fr.cs.orekit.attitudes.DefaultAttitude;
 import fr.cs.orekit.propagation.numerical.forces.ForceModel;
 
 
@@ -20,11 +22,11 @@ import fr.cs.orekit.propagation.numerical.forces.ForceModel;
  */
 public interface AttitudePropagator {
 
-    /** Sets the attitude provider used by the propagator.
+    /** Sets the attitude law used by the propagator.
      * <p> If this method is never called before extrapolation, the attitude is
-     * set to default : {@link IdentityAttitude} <p>
-     * @param akProvider the attitude to propagate
+     * set to default : {@link DefaultAttitude} <p>
+     * @param attitudeLaw the attitude law to use
      */
-    public void setAkProvider(AttitudeKinematicsProvider akProvider);
+    public void setAttitudeLaw(AttitudeLaw attitudeLaw);
 
 }
