@@ -45,8 +45,7 @@ public class TAIScale extends TimeScale {
      * the singleton, as it is both thread-safe, efficient (no
      * synchronization) and works with all version of java.</p>
      */
-    private static class LazyHolder 
-    {
+    private static class LazyHolder {
         private static final TAIScale instance = new TAIScale();
     }
 
