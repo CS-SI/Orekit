@@ -1,9 +1,11 @@
 package fr.cs.orekit.propagation.numerical;
 
+import java.io.Serializable;
+
 import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.StepInterpolator;
 
-import fr.cs.orekit.attitudes.AttitudeKinematicsProvider;
+import fr.cs.orekit.attitudes.AttitudeLaw;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.frames.Frame;
@@ -20,7 +22,10 @@ import fr.cs.orekit.time.AbsoluteDate;
  * commons-math</a> but provides a space-dynamics interface to the methods.</p>
  * 
  */
-public class OrekitStepInterpolator {
+public class OrekitStepInterpolator implements Serializable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 7332721584479827727L;
 
     /** Reference date. */
     private final AbsoluteDate reference;
@@ -31,8 +36,8 @@ public class OrekitStepInterpolator {
     /** Central body attraction coefficient. */
     private final double mu;
 
-    /** Provider for attitude data. */
-    private final AttitudeKinematicsProvider provider;
+    /** Attitude law. */
+    private final AttitudeLaw attitudeLaw;
 
     /** Underlying non-space-dynamics aware interpolator. */
     private final StepInterpolator interpolator;
@@ -41,16 +46,16 @@ public class OrekitStepInterpolator {
      * @param reference reference date
      * @param frame reference frame
      * @param mu central body attraction coefficient
-     * @param provider attitude data provider
+     * @param attitudeLaw attitude law
      * @param interpolator underlying non space dynamics interpolator
      */
     public OrekitStepInterpolator(AbsoluteDate reference, Frame frame, double mu,
-                                  AttitudeKinematicsProvider provider,
+                                  AttitudeLaw attitudeLaw,
                                   StepInterpolator interpolator) {
         this.reference    = reference;
         this.frame        = frame;
         this.mu           = mu;
-        this.provider     = provider;
+        this.attitudeLaw  = attitudeLaw;
         this.interpolator = interpolator;
     }
 
@@ -111,8 +116,7 @@ public class OrekitStepInterpolator {
                                       frame);
         final AbsoluteDate current = new AbsoluteDate(reference, interpolator.getCurrentTime());
         return new SpacecraftState(new Orbit(current, op), y[6],
-                                   provider.getAttitudeKinematics(current, op.getPVCoordinates(mu),
-                                                                  frame));
+                                   attitudeLaw.getState(current, op.getPVCoordinates(mu), frame));
     }
 
     /** Check is integration direction is forward in date.

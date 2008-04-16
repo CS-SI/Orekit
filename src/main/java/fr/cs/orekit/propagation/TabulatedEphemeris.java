@@ -4,9 +4,11 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
+
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
-import fr.cs.orekit.attitudes.AttitudeKinematics;
+
+import fr.cs.orekit.attitudes.Attitude;
 import fr.cs.orekit.frames.Transform;
 import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.Orbit;
@@ -22,7 +24,7 @@ import fr.cs.orekit.time.AbsoluteDate;
 public class TabulatedEphemeris implements BoundedEphemeris {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 8672712871353042660L;
+    private static final long serialVersionUID = 3896701058258948968L;
 
     /** All entries. */
     private final TreeSet data;
@@ -80,7 +82,7 @@ public class TabulatedEphemeris implements BoundedEphemeris {
             // Classical interpolation
             return new SpacecraftState(new Orbit(date, getInterpolatedOp(tp, tn)),
                                        interpolatedMass(tp, tn),
-                                       interpolatedAk(tp, tn));
+                                       interpolatedAttitude(tp, tn));
 
         }
         // outside date range, return null
@@ -111,17 +113,18 @@ public class TabulatedEphemeris implements BoundedEphemeris {
 
     }
 
-    /** Get the interpolated Attitude kinematics.
+    /** Get the interpolated Attitude.
      * @param tp time in seconds since previous date
      * @param tn time in seconds until next date
      * @return the new attitude kinematics
      */
-    private AttitudeKinematics interpolatedAk(double tp, double tn) {
+    private Attitude interpolatedAttitude(double tp, double tn) {
 
         final double dt = tp + tn;
 
-        final Transform prevToNext = new Transform(previous.getAkTransform().getInverse(),
-                                                   next.getAkTransform());
+        final Transform prevToNext =
+            new Transform(new Transform(previous.getAttitude().getRotation().revert()),
+                          new Transform(next.getAttitude().getRotation()));
 
         final Rotation newRot = new Rotation(prevToNext.getRotation().getAxis(),
                                              tp * prevToNext.getRotation().getAngle() / dt);
@@ -133,10 +136,11 @@ public class TabulatedEphemeris implements BoundedEphemeris {
             newInstRotAxis = new Vector3D();
         }
 
-        final Transform newTrans = new Transform(previous.getAkTransform(),
-                                                 new Transform(newRot, newInstRotAxis));
+        final Transform newTrans =
+            new Transform(new Transform(previous.getAttitude().getRotation()),
+                          new Transform(newRot, newInstRotAxis));
 
-        return new AttitudeKinematics(newTrans.getRotation(), newTrans.getRotAxis());
+        return new Attitude(previous.getFrame(), newTrans.getRotation(), newTrans.getRotAxis());
 
     }
 

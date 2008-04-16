@@ -1,9 +1,11 @@
 package fr.cs.orekit.propagation.numerical;
 
+import java.io.Serializable;
+
 import org.apache.commons.math.ode.FixedStepHandler;
 
-import fr.cs.orekit.attitudes.AttitudeKinematics;
-import fr.cs.orekit.attitudes.AttitudeKinematicsProvider;
+import fr.cs.orekit.attitudes.Attitude;
+import fr.cs.orekit.attitudes.AttitudeLaw;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.frames.Frame;
@@ -20,7 +22,8 @@ import fr.cs.orekit.time.AbsoluteDate;
  * commons-math</a> but provides a space-dynamics interface to the methods.</p>
  * 
  */
-public abstract class OrekitFixedStepHandler implements FixedStepHandler {
+public abstract class OrekitFixedStepHandler
+    implements FixedStepHandler, Serializable {
 
     /** Reference date. */
     private AbsoluteDate reference;
@@ -31,21 +34,21 @@ public abstract class OrekitFixedStepHandler implements FixedStepHandler {
     /** Central body attraction coefficient. */
     private double mu;
 
-    /** Provider for attitude data. */
-    private AttitudeKinematicsProvider provider;
+    /** Attitude law. */
+    private AttitudeLaw attitudeLaw;
 
     /** Initialize the handler.
      * @param reference reference date
      * @param frame reference frame
      * @param mu central body attraction coefficient
-     * @param provider attitude data provider
+     * @param attitudeLaw attitude law
      */
     protected void initialize(AbsoluteDate reference, Frame frame, double mu,
-                              AttitudeKinematicsProvider provider) {
-        this.reference = reference;
-        this.frame     = frame;
-        this.provider  = provider;
-        this.mu        = mu;
+                              AttitudeLaw attitudeLaw) {
+        this.reference   = reference;
+        this.frame       = frame;
+        this.attitudeLaw = attitudeLaw;
+        this.mu          = mu;
     }
 
     /** Handle the current step.
@@ -83,11 +86,10 @@ public abstract class OrekitFixedStepHandler implements FixedStepHandler {
                                           EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
                                           frame);
             final AbsoluteDate current = new AbsoluteDate(reference, t);
-
-            final AttitudeKinematics ak =
-                provider.getAttitudeKinematics(current, op.getPVCoordinates(mu), frame);
+            final Attitude attitude =
+                attitudeLaw.getState(current, op.getPVCoordinates(mu), frame);
             final SpacecraftState state =
-                new SpacecraftState(new Orbit(current, op), y[6], ak);
+                new SpacecraftState(new Orbit(current, op), y[6], attitude);
             handleStep(state, isLast);
         } catch (OrekitException e) {
             throw new RuntimeException(e.getLocalizedMessage());

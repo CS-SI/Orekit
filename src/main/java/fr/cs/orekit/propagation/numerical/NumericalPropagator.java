@@ -6,16 +6,17 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.math.ode.ContinuousOutputModel;
-import org.apache.commons.math.ode.FirstOrderIntegrator;
-import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
-import org.apache.commons.math.ode.StepHandler;
-import org.apache.commons.math.ode.DummyStepHandler;
-import org.apache.commons.math.ode.StepNormalizer;
 import org.apache.commons.math.ode.DerivativeException;
+import org.apache.commons.math.ode.DummyStepHandler;
+import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
+import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
+import org.apache.commons.math.ode.StepHandler;
+import org.apache.commons.math.ode.StepNormalizer;
 import org.apache.commons.math.ode.SwitchingFunction;
-import fr.cs.orekit.attitudes.AttitudeKinematicsProvider;
-import fr.cs.orekit.attitudes.models.IdentityAttitude;
+
+import fr.cs.orekit.attitudes.AttitudeLaw;
+import fr.cs.orekit.attitudes.DefaultAttitude;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.Orbit;
@@ -81,10 +82,10 @@ public class NumericalPropagator
     implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -6846133368177983360L;
+    private static final long serialVersionUID = 6087296453928533141L;
 
-    /** Attitude provider */
-    private AttitudeKinematicsProvider akProvider;
+    /** Attitude law. */
+    private AttitudeLaw attitudeLaw;
 
     /** Central body gravitational constant. */
     private final double mu;
@@ -122,16 +123,16 @@ public class NumericalPropagator
      * @param integrator numerical integrator to use for propagation.
      */
     public NumericalPropagator(double mu, FirstOrderIntegrator integrator) {
-        this.mu                 = mu;
-        this.forceModels        = new ArrayList();
-        this.forceSwf           = new ArrayList();
-        this.integrator         = integrator;
-        this.startDate          = new AbsoluteDate();
-        this.currentState       = null;
-        this.adder              = null;
-        this.akProvider         = new IdentityAttitude();
-        this.state              = new double[getDimension()];
-        this.swfException       = null;
+        this.mu           = mu;
+        this.forceModels  = new ArrayList();
+        this.forceSwf     = new ArrayList();
+        this.integrator   = integrator;
+        this.startDate    = new AbsoluteDate();
+        this.currentState = null;
+        this.adder        = null;
+        this.attitudeLaw  = DefaultAttitude.getInstance();
+        this.state        = new double[getDimension()];
+        this.swfException = null;
     }
 
     /** Add a force model to the global perturbation model. The associated
@@ -162,13 +163,9 @@ public class NumericalPropagator
         forceSwf.clear();
     }
 
-    /** Sets the attitude provider of the propagator.
-     * <p> If this method is never called before extrapolation, the attitude is
-     * set to default : {@link IdentityAttitude} <p>
-     * @param akProvider the attitude to propagate
-     */
-    public void setAkProvider(AttitudeKinematicsProvider akProvider) {
-        this.akProvider = akProvider;
+    /** {@inheritDoc} */
+    public void setAttitudeLaw(AttitudeLaw attitudeLaw) {
+        this.attitudeLaw = attitudeLaw;
     }
 
     /** Propagate an orbit up to a specific target date.
@@ -199,7 +196,7 @@ public class NumericalPropagator
             propagate(initialState, finalDate, (StepHandler)model);
         ephemeris.initialize(model , initialState.getDate(),
                              initialState.getParameters().getFrame(),
-                             akProvider, mu);
+                             attitudeLaw, mu);
         return finalState;
     }
 
@@ -215,7 +212,7 @@ public class NumericalPropagator
     public SpacecraftState propagate(SpacecraftState initialState, AbsoluteDate finalDate,
                                      double h, OrekitFixedStepHandler handler)
         throws OrekitException {
-        handler.initialize(initialState.getDate(), initialState.getFrame(), mu, akProvider);
+        handler.initialize(initialState.getDate(), initialState.getFrame(), mu, attitudeLaw);
         return propagate(initialState, finalDate, new StepNormalizer(h, handler));
     }
 
@@ -229,7 +226,7 @@ public class NumericalPropagator
     public SpacecraftState propagate(SpacecraftState initialState, AbsoluteDate finalDate,
                                      OrekitStepHandler handler)
         throws OrekitException {
-        handler.initialize(initialState.getDate(), initialState.getFrame(), mu, akProvider);
+        handler.initialize(initialState.getDate(), initialState.getFrame(), mu, attitudeLaw);
         return propagate(initialState, finalDate, (StepHandler) handler);
     }
 
@@ -258,7 +255,7 @@ public class NumericalPropagator
 
         currentState =
             new SpacecraftState(new Orbit(initialState.getDate(), initialParameters),
-                                initialState.getMass(), initialState.getAttitudeKinematics());
+                                initialState.getMass(), initialState.getAttitude());
 
         adder = new TimeDerivativesEquations(initialParameters , mu);
 
@@ -313,9 +310,9 @@ public class NumericalPropagator
                                       initialParameters.getFrame());
 
         return new SpacecraftState(new Orbit(date , parameters), state[6],
-                                   akProvider.getAttitudeKinematics(date,
-                                                                    parameters.getPVCoordinates(mu),
-                                                                    parameters.getFrame()));
+                                   attitudeLaw.getState(date,
+                                                        parameters.getPVCoordinates(mu),
+                                                        parameters.getFrame()));
     }
 
     /** Gets the dimension of the handled state vector (always 7).
@@ -381,9 +378,9 @@ public class NumericalPropagator
         final AbsoluteDate currentDate = new AbsoluteDate(startDate, t);
         currentState =
             new SpacecraftState(new Orbit(currentDate, currentParameters), y[6],
-                                akProvider.getAttitudeKinematics(currentDate,
-                                                                 currentParameters.getPVCoordinates(mu),
-                                                                 currentState.getFrame()));
+                                attitudeLaw.getState(currentDate,
+                                                     currentParameters.getPVCoordinates(mu),
+                                                     currentState.getFrame()));
     }
 
 
