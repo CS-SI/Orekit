@@ -44,11 +44,12 @@ public class SolarRadiationPressureTest extends TestCase {
                                                          0.1, 2, Frame.getJ2000());
         Orbit orbit = new Orbit(date , op);
         Sun sun = new Sun();
-        OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765);
-        SolarRadiationPressure SRP =  new SolarRadiationPressure(
-                                                                 sun , earth.getEquatorialRadius() ,
-                                                                 (SolarRadiationPressureSpacecraft)new SphericalSpacecraft(50.0,
-                                                                                                                           0.5, 0.5, 0.5));
+        OneAxisEllipsoid earth =
+            new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
+                                 Frame.getReferenceFrame(Frame.ITRF2000B, date));
+        SolarRadiationPressure SRP = 
+            new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
+                                       (SolarRadiationPressureSpacecraft) new SphericalSpacecraft(50.0, 0.5, 0.5, 0.5));
 
         double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/mu);
         assertEquals(86164, period,1);
@@ -93,10 +94,12 @@ public class SolarRadiationPressureTest extends TestCase {
         Sun sun = new Sun();
 
         // creation of the force model
-        SolarRadiationPressure SRP =  new SolarRadiationPressure(
-                                                                 sun , new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765).getEquatorialRadius(),
-                                                                 (SolarRadiationPressureSpacecraft)new SphericalSpacecraft(500.0,
-                                                                                                                           0.7, 0.7, 0.7));
+        OneAxisEllipsoid earth =
+            new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
+                                 Frame.getReferenceFrame(Frame.ITRF2000B, date));
+        SolarRadiationPressure SRP =
+            new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
+                                       (SolarRadiationPressureSpacecraft) new SphericalSpacecraft(500.0, 0.7, 0.7, 0.7));
 
         double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/mu);
 
@@ -122,6 +125,9 @@ public class SolarRadiationPressureTest extends TestCase {
     private double mu = 3.98600E14;
 
     private class SolarStepHandler extends OrekitFixedStepHandler {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = -2346826010279512941L;
 
         private SolarStepHandler() {
         }

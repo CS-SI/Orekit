@@ -76,15 +76,11 @@ public class JB2006AtmosphereModel extends JB2006Atmosphere implements Atmospher
         // compute modified julian days date
         final double dateMJD = date.minus(AbsoluteDate.ModifiedJulianEpoch) / 86400.;
 
-        final Transform t = frame.getTransformTo(bodyFrame, date);
-
         // compute geodetic position
-        final Vector3D posInBody = t.transformPosition(position);
-        final GeodeticPoint inBody = earth.transform(posInBody);
+        final GeodeticPoint inBody = earth.transform(position, frame, date);
 
         // compute sun position
-        final Vector3D sunPosInBody = t.transformPosition(sun.getPosition(date, frame));
-        final GeodeticPoint sunInBody = earth.transform(sunPosInBody);
+        final GeodeticPoint sunInBody = earth.transform(sun.getPosition(date, frame), frame, date);
         return getDensity(dateMJD, sunInBody.longitude, sunInBody.latitude, inBody.longitude, inBody.latitude,
                           inBody.altitude, inputParams.getF10(date), inputParams.getF10B(date),
                           inputParams.getAp(date), inputParams.getS10(date),

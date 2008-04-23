@@ -57,18 +57,23 @@ public class ThirdBodyAttractionTest extends TestCase {
 
         TBAStepHandler sh = new TBAStepHandler(TBAStepHandler.SUN, date);
         AbsoluteDate finalDate = new AbsoluteDate(date , 2*365*period);
-        calc.propagate(new SpacecraftState(orbit) , finalDate, Math.floor(period), sh );
+        calc.propagate(new SpacecraftState(orbit, mu), finalDate, Math.floor(period), sh);
 
     }
-    public void testMoonContrib() throws ParseException, OrekitException, DerivativeException, IntegratorException, FileNotFoundException {
+
+    public void testMoonContrib()
+        throws ParseException, OrekitException, DerivativeException,
+               IntegratorException, FileNotFoundException {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 07, 01),
                                              new ChunkedTime(13, 59, 27.816),
                                              UTCScale.getInstance());
-        OrbitalParameters op = new EquinoctialParameters(42164000,10e-3,10e-3,
-                                                         Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
-                                                         0.1, 2, Frame.getJ2000());
+        OrbitalParameters op =
+            new EquinoctialParameters(42164000,10e-3,10e-3,
+                                      Math.tan(0.001745329) * Math.cos(2 * Math.PI / 3),
+                                      Math.tan(0.001745329) * Math.sin(2 * Math.PI / 3),
+                                      0.1, 2, Frame.getJ2000());
         Orbit orbit = new Orbit(date , op);
         Moon moon = new Moon();
 
@@ -86,7 +91,7 @@ public class ThirdBodyAttractionTest extends TestCase {
 
         TBAStepHandler sh = new TBAStepHandler(TBAStepHandler.MOON, date);
         AbsoluteDate finalDate = new AbsoluteDate(date , 365*period);
-        calc.propagate(new SpacecraftState(orbit) , finalDate, Math.floor(period), sh );
+        calc.propagate(new SpacecraftState(orbit, mu), finalDate, Math.floor(period), sh);
 
     }
 
@@ -94,6 +99,8 @@ public class ThirdBodyAttractionTest extends TestCase {
 
     private static class TBAStepHandler extends OrekitFixedStepHandler {
 
+        /** Serializable UID. */
+        private static final long serialVersionUID = 8907114996643609848L;
         public static final int MOON = 1;
         public static final int SUN = 2;
         public static final int SUNandMOON = 3;

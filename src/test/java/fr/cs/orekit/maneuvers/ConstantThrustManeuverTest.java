@@ -59,13 +59,13 @@ public class ConstantThrustManeuverTest extends TestCase {
             new CircularParameters(new PVCoordinates(Vector3D.plusI, Vector3D.plusJ),
                                    Frame.getJ2000(), mu);
         Orbit o1 = new Orbit(new AbsoluteDate(date, - 1.0), dummyParameters);
-        assertTrue(switches[0].g(new SpacecraftState(o1), mu) > 0);
+        assertTrue(switches[0].g(new SpacecraftState(o1, mu), mu) > 0);
         Orbit o2 = new Orbit(new AbsoluteDate(date,   1.0), dummyParameters);
-        assertTrue(switches[0].g(new SpacecraftState(o2), mu) < 0);
+        assertTrue(switches[0].g(new SpacecraftState(o2, mu), mu) < 0);
         Orbit o3 = new Orbit(new AbsoluteDate(date,   9.0), dummyParameters);
-        assertTrue(switches[1].g(new SpacecraftState(o3), mu) > 0);
+        assertTrue(switches[1].g(new SpacecraftState(o3, mu), mu) > 0);
         Orbit o4 = new Orbit(new AbsoluteDate(date,  11.0), dummyParameters);
-        assertTrue(switches[1].g(new SpacecraftState(o4), mu) < 0);
+        assertTrue(switches[1].g(new SpacecraftState(o4, mu), mu) < 0);
     }
 
     public void testNegativeDuration() throws OrekitException {
@@ -81,13 +81,13 @@ public class ConstantThrustManeuverTest extends TestCase {
             new CircularParameters(new PVCoordinates(Vector3D.plusI, Vector3D.plusJ),
                                    Frame.getJ2000(), mu);
         Orbit o1 = new Orbit(new AbsoluteDate(date, -11.0), dummyParameters);
-        assertTrue(switches[0].g(new SpacecraftState(o1), mu) > 0);
+        assertTrue(switches[0].g(new SpacecraftState(o1, mu), mu) > 0);
         Orbit o2 = new Orbit(new AbsoluteDate(date,  -9.0), dummyParameters);
-        assertTrue(switches[0].g(new SpacecraftState(o2), mu) < 0);
+        assertTrue(switches[0].g(new SpacecraftState(o2, mu), mu) < 0);
         Orbit o3 = new Orbit(new AbsoluteDate(date,  -1.0), dummyParameters);
-        assertTrue(switches[1].g(new SpacecraftState(o3), mu) > 0);
+        assertTrue(switches[1].g(new SpacecraftState(o3, mu), mu) > 0);
         Orbit o4 = new Orbit(new AbsoluteDate(date,   1.0), dummyParameters);
-        assertTrue(switches[1].g(new SpacecraftState(o4), mu) < 0);
+        assertTrue(switches[1].g(new SpacecraftState(o4, mu), mu) < 0);
     }
 
     public void testRoughBehaviour() throws DerivativeException, IntegratorException, OrekitException, ParseException {

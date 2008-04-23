@@ -34,9 +34,10 @@ public class NumericalPropagatorTest extends TestCase {
                                                                        1.0e-8, 1.0e-8));
 
         // Extrapolation of the initial at the initial date
-        SpacecraftState finalOrbit = extrapolator.propagate(new SpacecraftState(initialOrbit),
-                                                            initialOrbit.getDate()
-        );
+        SpacecraftState finalOrbit =
+            extrapolator.propagate(new SpacecraftState(initialOrbit, mu),
+                                   initialOrbit.getDate());
+
         // Initial orbit definition
         Vector3D initialPosition = initialOrbit.getPVCoordinates(mu).getPosition();
         Vector3D initialVelocity = initialOrbit.getPVCoordinates(mu).getVelocity();
@@ -72,8 +73,9 @@ public class NumericalPropagatorTest extends TestCase {
         double dt = 3200;
 
         // Extrapolation of the initial at t+dt
-        SpacecraftState finalOrbit =  extrapolator.propagate(new SpacecraftState(initialOrbit),
-                                                             new AbsoluteDate(initialOrbit.getDate(),dt));
+        SpacecraftState finalOrbit = 
+            extrapolator.propagate(new SpacecraftState(initialOrbit, mu),
+                                   new AbsoluteDate(initialOrbit.getDate(), dt));
 
         // Check results
         double n = Math.sqrt(mu / initialOrbit.getA()) / initialOrbit.getA();

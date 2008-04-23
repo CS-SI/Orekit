@@ -74,12 +74,15 @@ public class DrozinerAttractionModelTest extends TestCase {
                                                              new double[][] { { 0.0 }, { 0.0 }, { 0.0 } }));
 
         // let the step handler perform the test
-        propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date , 7 * 86400),
+        propagator.propagate(new SpacecraftState(orbit, mu), new AbsoluteDate(date, 7 * 86400),
                              86400, new SpotStepHandler(mu));
 
     }
 
     private static class SpotStepHandler extends OrekitFixedStepHandler {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = -3917769828973243346L;
 
         public SpotStepHandler(double mu) {
             this.mu   = mu;
@@ -151,17 +154,21 @@ public class DrozinerAttractionModelTest extends TestCase {
         }));
 
         // let the step handler perform the test
-        propagator.propagate(new SpacecraftState(initialOrbit), new AbsoluteDate(date , 50000), 20,
+        propagator.propagate(new SpacecraftState(initialOrbit, mu), new AbsoluteDate(date, 50000), 20,
                              new EckStepHandler(initialOrbit));
 
     }
 
     private class EckStepHandler extends fr.cs.orekit.propagation.numerical.OrekitFixedStepHandler {
 
+        /** Serializable UID. */
+        private static final long serialVersionUID = -6646753135832233044L;
+
         private EckStepHandler(Orbit initialOrbit)
         throws FileNotFoundException, OrekitException {
             referencePropagator =
-                new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit), ae, mu, c20, c30, c40, c50, c60);
+                new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit, mu),
+                                              ae, mu, c20, c30, c40, c50, c60);
         }
 
         public void handleStep(double t, double[] y, boolean isLastStep) {
@@ -219,14 +226,16 @@ public class DrozinerAttractionModelTest extends TestCase {
                                              new ClassicalRungeKuttaIntegrator(100));
         propagator.addForceModel(new CunninghamAttractionModel(itrf2000, ae,C, S));
 
-        SpacecraftState cunnOrb = propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date ,  86400));
+        SpacecraftState cunnOrb =
+            propagator.propagate(new SpacecraftState(orbit, mu), new AbsoluteDate(date, 86400));
 
         propagator.removeForceModels();
 
         propagator.addForceModel(new DrozinerAttractionModel(itrf2000, ae,
                                                              C, S));
 
-        SpacecraftState drozOrb = propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date ,  86400));
+        SpacecraftState drozOrb =
+            propagator.propagate(new SpacecraftState(orbit, mu), new AbsoluteDate(date,  86400));
 
         Vector3D dif = cunnOrb.getPVCoordinates(mu).getPosition().subtract(drozOrb.getPVCoordinates(mu).getPosition());
         assertEquals(0, dif.getNorm(), 1.0e-8);

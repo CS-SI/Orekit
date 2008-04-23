@@ -8,7 +8,6 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.orekit.Utils;
-import fr.cs.orekit.bodies.GeodeticPoint;
 import fr.cs.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
@@ -118,7 +117,6 @@ public class YawCompensationTest extends TestCase {
         //  Attitude laws
         // **************
         // Target pointing attitude law over satellite nadir at date, without yaw compensation
-        GeodeticPoint geoSat = earthShape.transform(pvSatItrf2000B.getPosition(), frameItrf2000B, date);
         NadirPointing nadirLaw = new NadirPointing(earthShape);
  
         // Target pointing attitude law with yaw compensation

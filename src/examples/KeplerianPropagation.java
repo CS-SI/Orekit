@@ -5,7 +5,6 @@ import java.text.ParseException;
 import org.apache.commons.math.ode.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 
-import fr.cs.orekit.attitudes.AttitudeKinematics;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.orbits.KeplerianParameters;
@@ -42,7 +41,6 @@ public class KeplerianPropagation {
 
         double mass = 2500; // mass of the spacecraft in Kg
 
-        AttitudeKinematics initialAK = new AttitudeKinematics(); // identity attitude
         // date and frame
 
         AbsoluteDate initialDate = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
@@ -59,7 +57,7 @@ public class KeplerianPropagation {
 
         Orbit initialOrbit = new Orbit(initialDate , initialParameters);
 
-        SpacecraftState initialState = new SpacecraftState(initialOrbit, mass, initialAK);
+        SpacecraftState initialState = new SpacecraftState(initialOrbit, mass);
 
         /* ***************** */
         /*   Extrapolation   */

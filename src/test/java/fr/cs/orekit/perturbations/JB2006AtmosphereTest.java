@@ -165,7 +165,7 @@ public class JB2006AtmosphereTest extends TestCase {
                                              UTCScale.getInstance());
         Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, date);
         Sun sun = new Sun();
-        OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101);
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
 
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
         earth.setAngularThreshold(1e-10);

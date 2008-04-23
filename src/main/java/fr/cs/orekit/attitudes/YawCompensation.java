@@ -6,7 +6,6 @@ import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.orekit.bodies.BodyShape;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.frames.Transform;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
 

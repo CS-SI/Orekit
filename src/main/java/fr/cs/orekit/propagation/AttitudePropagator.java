@@ -1,7 +1,5 @@
 package fr.cs.orekit.propagation;
 
-import fr.cs.orekit.attitudes.AttitudeKinematics;
-import fr.cs.orekit.attitudes.AttitudeKinematicsProvider;
 import fr.cs.orekit.attitudes.AttitudeLaw;
 import fr.cs.orekit.attitudes.DefaultAttitude;
 import fr.cs.orekit.propagation.numerical.forces.ForceModel;

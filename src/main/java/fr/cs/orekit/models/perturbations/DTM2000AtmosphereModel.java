@@ -84,8 +84,7 @@ public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosph
         cal.setTime(date.toDate(UTCScale.getInstance()));
         final int day = cal.get(Calendar.DAY_OF_YEAR);
         // compute geodetic position
-        final Vector3D posInBody = frame.getTransformTo(bodyFrame, date).transformPosition(position);
-        final GeodeticPoint inBody = earth.transform(posInBody);
+        final GeodeticPoint inBody = earth.transform(position, frame, date);
         final double alti = inBody.altitude;
         final double lon = inBody.longitude;
         final double lat = inBody.latitude;

@@ -57,9 +57,11 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
      * @param position current position
      * @param frame the Frame in which is defined the position
      * @return local density (kg/m<sup>3</sup>)
+     * @exception OrekitException if some frame conversion cannot be performed
      */
-    public double getDensity(AbsoluteDate date, Vector3D position, Frame frame) {
-        return rho0 * Math.exp((h0 - shape.transform(position).altitude) / hscale);
+    public double getDensity(AbsoluteDate date, Vector3D position, Frame frame)
+        throws OrekitException {
+        return rho0 * Math.exp((h0 - shape.transform(position, frame, date).altitude) / hscale);
     }
 
     /** Get the inertial velocity of atmosphere modecules.

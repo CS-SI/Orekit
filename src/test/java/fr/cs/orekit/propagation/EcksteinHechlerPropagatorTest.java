@@ -38,7 +38,8 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         // Extrapolator definition
         // -----------------------
         EcksteinHechlerPropagator extrapolator =
-            new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit), ae, mu, c20, c30, c40, c50, c60);
+            new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit, mu),
+                                          ae, mu, c20, c30, c40, c50, c60);
 
         // Extrapolation at the initial date
         // ---------------------------------
@@ -83,7 +84,8 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         // Extrapolator definition
         // -----------------------
         EcksteinHechlerPropagator extrapolator =
-            new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit), ae, mu, c20, c30, c40, c50, c60);
+            new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit, mu),
+                                          ae, mu, c20, c30, c40, c50, c60);
 
         // Extrapolation at the initial date
         // ---------------------------------
@@ -145,8 +147,10 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         // Extrapolators definitions
         // -------------------------
         EcksteinHechlerPropagator extrapolatorAna =
-            new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit), ae, mu, zc20, zc30, zc40, zc50, zc60);
-        KeplerianPropagator extrapolatorKep = new KeplerianPropagator(new SpacecraftState(initialOrbit), mu);
+            new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit, mu),
+                                          ae, mu, zc20, zc30, zc40, zc50, zc60);
+        KeplerianPropagator extrapolatorKep =
+            new KeplerianPropagator(new SpacecraftState(initialOrbit, mu), mu);
 
         // Extrapolation at a final date different from initial date
         // ---------------------------------------------------------
@@ -198,7 +202,8 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         // Extrapolator definition
         // -----------------------
         EcksteinHechlerPropagator extrapolator =
-            new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit), ae, mu, c20, c30, c40, c50, c60);
+            new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit, mu),
+                                          ae, mu, c20, c30, c40, c50, c60);
 
         // Extrapolation at a final date different from initial date
         // ---------------------------------------------------------
@@ -277,7 +282,8 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         // Extrapolator definition
         // -----------------------
         EcksteinHechlerPropagator extrapolator =
-            new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit), ae, mu, c20, c30, c40, c50, c60);
+            new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit, mu),
+                                          ae, mu, c20, c30, c40, c50, c60);
 
         // Extrapolation at a final date different from initial date
         // ---------------------------------------------------------
@@ -371,7 +377,8 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         // Extrapolator definition
         // -----------------------
         EcksteinHechlerPropagator extrapolator =
-            new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit), ae, mu, c20, c30, c40, c50, c60);
+            new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit, mu),
+                                          ae, mu, c20, c30, c40, c50, c60);
 
         // Extrapolation at a final date different from initial date
         // ---------------------------------------------------------
@@ -420,7 +427,8 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
             // Extrapolator definition
             // -----------------------
             EcksteinHechlerPropagator extrapolator =
-                new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit), ae, mu, c20, c30, c40, c50, c60);
+                new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit, mu),
+                                              ae, mu, c20, c30, c40, c50, c60);
 
             // Extrapolation at the initial date
             // ---------------------------------
@@ -448,7 +456,8 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
             // Extrapolator definition
             // -----------------------
             EcksteinHechlerPropagator extrapolator =
-                new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit), ae, mu, c20, c30, c40, c50, c60);
+                new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit, mu),
+                                              ae, mu, c20, c30, c40, c50, c60);
 
             // Extrapolation at the initial date
             // ---------------------------------

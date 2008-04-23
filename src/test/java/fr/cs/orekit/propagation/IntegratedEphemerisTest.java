@@ -31,7 +31,9 @@ public class IntegratedEphemerisTest extends TestCase {
         AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
         SpacecraftState initialOrbit =
             new SpacecraftState(new Orbit(initDate,
-                                          new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu)));
+                                          new EquinoctialParameters(new PVCoordinates(position, velocity),
+                                                                    Frame.getJ2000(), mu)),
+                                mu);
 
         // Keplerian propagator definition
 
