@@ -14,6 +14,9 @@ import org.apache.commons.math.geometry.Vector3D;
 public class SphericalSpacecraft
     implements SolarRadiationPressureSpacecraft, AtmosphereDragSpacecraft {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 5457704222311833198L;
+
     /** Surface (m<sup>2</sup>). */
     private double surface;
 

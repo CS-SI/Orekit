@@ -117,14 +117,14 @@ public class SolarRadiationPressureTest extends TestCase {
 
     }
 
-    public void checkRadius(double radius , double min , double max) {
+    public static void checkRadius(double radius , double min , double max) {
         assertTrue(radius >= min);
         assertTrue(radius <= max);
     }
 
     private double mu = 3.98600E14;
 
-    private class SolarStepHandler extends OrekitFixedStepHandler {
+    private static class SolarStepHandler extends OrekitFixedStepHandler {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -2346826010279512941L;

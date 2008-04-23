@@ -1,5 +1,7 @@
 package fr.cs.orekit.bodies;
 
+import java.io.Serializable;
+
 import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.orekit.errors.OrekitException;
@@ -12,7 +14,7 @@ import fr.cs.orekit.utils.Line;
  * model, but single points can be queried ({@link #getIntersectionPoint}).</p>
  * @author Luc Maisonobe
  */
-public interface BodyShape {
+public interface BodyShape extends Serializable {
 
     /** Get body frame related to body shape.
      * @return body frame related to body shape

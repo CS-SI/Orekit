@@ -158,20 +158,25 @@ public class CunninghamAttractionModelTest extends TestCase {
         // let the step handler perform the test
         propagator.propagate(new SpacecraftState(initialOrbit, mu),
                              new AbsoluteDate(date , 50000), 20,
-                             new EckStepHandler(initialOrbit));
+                             new EckStepHandler(initialOrbit, ae, mu,
+                                                c20, c30, c40, c50, c60));
 
     }
 
-    private class EckStepHandler extends OrekitFixedStepHandler {
+    private static class EckStepHandler extends OrekitFixedStepHandler {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = -4526490513062919236L;
+        /**Serializable UID. */
+        private static final long serialVersionUID = 6132817809836153771L;
 
-        private EckStepHandler(Orbit initialOrbit)
+        private final double mu;
+
+        private EckStepHandler(Orbit initialOrbit, double ae, double mu,
+                               double c20, double c30, double c40, double c50, double c60)
         throws FileNotFoundException, OrekitException {
             referencePropagator =
                 new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit, mu),
                                               ae, mu, c20, c30, c40, c50, c60);
+            this.mu = mu;
         }
 
         private EcksteinHechlerPropagator referencePropagator;

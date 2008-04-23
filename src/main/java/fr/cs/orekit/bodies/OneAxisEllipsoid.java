@@ -25,6 +25,9 @@ import fr.cs.orekit.utils.Line;
  */
 public class OneAxisEllipsoid implements BodyShape {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = -1418386024561514172L;
+
     /** One third. */
     private static final double ot = 1.0 / 3.0;
 

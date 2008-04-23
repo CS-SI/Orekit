@@ -1,6 +1,5 @@
 package fr.cs.orekit.propagation.numerical;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -79,10 +78,7 @@ import fr.cs.orekit.time.AbsoluteDate;
  * @author  F. Maussion
  */
 public class NumericalPropagator
-    implements FirstOrderDifferentialEquations, AttitudePropagator, Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 6087296453928533141L;
+    implements FirstOrderDifferentialEquations, AttitudePropagator {
 
     /** Attitude law. */
     private AttitudeLaw attitudeLaw;

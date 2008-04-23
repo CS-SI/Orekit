@@ -1,12 +1,14 @@
 package fr.cs.orekit.models.spacecraft;
 
+import java.io.Serializable;
+
 import org.apache.commons.math.geometry.Vector3D;
 
 /** Adapted container for the SolarRadiationPressure force model.
  *
  * @author F. Maussion
  */
-public interface SolarRadiationPressureSpacecraft {
+public interface SolarRadiationPressureSpacecraft extends Serializable {
 
     /** Get the surface.
      * @param direction direction of the light flux in the spacecraft frame

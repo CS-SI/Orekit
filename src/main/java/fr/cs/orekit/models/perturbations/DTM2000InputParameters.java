@@ -1,5 +1,7 @@
 package fr.cs.orekit.models.perturbations;
 
+import java.io.Serializable;
+
 import fr.cs.orekit.time.AbsoluteDate;
 
 /** Container for solar activity data, compatible with DTM2000 Atmosphere model.
@@ -18,7 +20,7 @@ import fr.cs.orekit.time.AbsoluteDate;
  *
  * @author F. Maussion
  */
-public interface DTM2000InputParameters {
+public interface DTM2000InputParameters extends Serializable {
 
     /** Gets the available data range minimum date.
      * @return the minimum date.

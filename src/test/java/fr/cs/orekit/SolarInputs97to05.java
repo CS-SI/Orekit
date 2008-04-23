@@ -27,6 +27,9 @@ import fr.cs.orekit.time.UTCScale;
  */
 public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputParameters {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 8787560814852697082L;
+
     private static final double third = 1.0/3.0;
 
     private static final double[] kpTab = new double[] {
@@ -188,8 +191,11 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
     }
 
     /** Container class for Solar activity indexes.  */
-    private static class LineParameters {
+    private static class LineParameters implements Serializable {
 
+        /** Serializable UID. */
+        private static final long serialVersionUID = 7061618989830597691L;
+   
         /** Entries */
         private  final AbsoluteDate date;
         private final double[] ap;
