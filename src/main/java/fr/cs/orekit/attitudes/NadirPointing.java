@@ -41,9 +41,10 @@ public class NadirPointing extends GroundPointing {
     }
 
     /** Get target expressed in body frame at given date.
-     * @param date Date for computing.
-     * @param pv Satellite position-velocity vector at given date in given frame.
+     * @param date computation date.
+     * @param pv satellite position-velocity vector at given date in given frame.
      * @param frame Frame in which satellite position-velocity is given.
+     * @throws OrekitException if some specific error occurs
      * 
      * <p>User should check that position/velocity and frame is consistent with given frame.
      * </p>

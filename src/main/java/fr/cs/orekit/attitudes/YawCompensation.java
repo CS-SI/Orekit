@@ -6,6 +6,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import fr.cs.orekit.bodies.BodyShape;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
+import fr.cs.orekit.frames.Transform;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
 
@@ -40,16 +41,18 @@ public class YawCompensation extends GroundPointing {
 
     /** Creates a new instance
      * @param groundPointingLaw Ground pointing attitude law before yaw compensation
+     * @param shape Body shape 
      */
-    public YawCompensation(Frame bodyFrame, GroundPointing groundPointingLaw, BodyShape shape) {
-        super(bodyFrame);
+    public YawCompensation(GroundPointing groundPointingLaw, BodyShape shape) {
+        super(shape.getBodyFrame());
         this.groundPointingLaw = groundPointingLaw;
     }
 
     /** Get target expressed in body frame at given date.
-     * @param date Date for computing.
-     * @param pv Satellite position-velocity vector at given date in given frame.
-     * @param frame Frame in which satellite position-velocity is given.
+     * @param date computation date.
+     * @param pv satellite position-velocity vector at given date in given frame.
+     * @param frame the frame in which satellite position-velocity is given.
+     * @throws OrekitException if some specific error occurs
      */
     protected PVCoordinates getTargetInBodyFrame(AbsoluteDate date,
                                                  PVCoordinates pv, Frame frame)
@@ -60,30 +63,39 @@ public class YawCompensation extends GroundPointing {
 
     
     /** Compute the system state at given date.
-     * @param date date when system state shall be computed
+     * @param date date when the system state shall be computed
+     * @param pv satellite position-velocity vector at given date in given frame.
+     * @param frame the frame in which satellite position-velocity is given.
+     * @throws OrekitException if some specific error occurs
      */
     public Attitude getState(AbsoluteDate date, PVCoordinates pv, Frame frame)  
     throws OrekitException {
         
-        /* 1/ Get attitude from base attitude law */
+        //1/ Get attitude from base attitude law
         Attitude base = groundPointingLaw.getState(date, pv, frame);
         
-        /* 2/ Add yaw compensation */
+        // 2/ Add yaw compensation
         
-        /* Z satellite axis is unchanged */
-        Vector3D zsat1 = Vector3D.plusK;
-        Vector3D zsat2 = Vector3D.plusK;
-        
-        /* X satellite axis shall be aligned to target relative velocity */
+        // Z satellite axis is unchanged
+        // X satellite axis shall be aligned to target relative velocity
         Vector3D satVelocity = pv.getVelocity();
-        Vector3D targetVelocity = groundPointingLaw.getObservedGroundPoint(date, pv, frame).getVelocity();
+        PVCoordinates targetPV = groundPointingLaw.getObservedGroundPoint(date, pv, frame);
+        Vector3D targetVelocity = targetPV.getVelocity();
+        Vector3D targetPosition = targetPV.getPosition();
         Vector3D relativeVelocity = targetVelocity.subtract(satVelocity);
-        Vector3D xsat = Vector3D.plusI;
+        Vector3D relativePosition = targetPosition.subtract(pv.getPosition());
+        Vector3D momentum = Vector3D.crossProduct(pv.getPosition(), pv.getVelocity()).normalize();
+        double dotP= Vector3D.dotProduct(momentum, relativePosition);
+        double dotV = Vector3D.dotProduct(momentum, relativeVelocity);
+        System.out.println("Cross track position = " + dotP);
+        System.out.println("Cross track velocity = " + dotV);
+        System.out.println();
+       
+        // Create rotation transforming zsat to zsat and xsat to -relativeVelocity 
+        Rotation compensation = new Rotation(Vector3D.plusK, base.getRotation().applyTo(relativeVelocity),
+                                             Vector3D.plusK, Vector3D.minusI);
         
-        /* Create rotation transforming zsat to zsat and xsat to -relativeVelocity */   
-        Rotation compensation = new Rotation(zsat1, xsat, zsat2, relativeVelocity.negate());
-        
-        /* 3/ Combination of base attitude and yaw compensation */
+        // 3/ Combination of base attitude and yaw compensation
         return new Attitude(frame, compensation.applyTo(base.getRotation()), compensation.applyTo(base.getSpin()));
     }
 

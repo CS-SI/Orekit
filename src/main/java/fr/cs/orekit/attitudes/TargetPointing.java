@@ -36,8 +36,8 @@ public class TargetPointing extends GroundPointing {
 
 
     /** Creates a new instance from body frame and target expressed in position/velocity coordinates.
-     * @param bodyFrame Body frame.
-     * @param target Target expressed in position/velocity coordinates in body frame
+     * @param bodyFrame body frame.
+     * @param target target expressed in position/velocity coordinates in body frame
      */
     public TargetPointing(Frame bodyFrame, PVCoordinates target) {
         super(bodyFrame);
@@ -45,10 +45,11 @@ public class TargetPointing extends GroundPointing {
     }
 
     /** Creates a new instance from body shape and target expressed in geodetic coordinates.
-     * @param --
+     * @param targetGeo target defined as a geodetic point in body shape frame
+     * @param shape body shape
      */
-    public TargetPointing(Frame bodyFrame, GeodeticPoint targetGeo, BodyShape shape) {
-        super(bodyFrame);
+    public TargetPointing(GeodeticPoint targetGeo, BodyShape shape) {
+        super(shape.getBodyFrame());
         
         /* Transform target from geodetic coordinates to position-velocity coordinates */
         Vector3D target = shape.transform(targetGeo);
@@ -56,9 +57,9 @@ public class TargetPointing extends GroundPointing {
     }
 
     /** Get target expressed in body frame at given date.
-     * @param date Date for computing.
-     * @param pv Satellite position-velocity vector at given date in given frame.
-     * @param frame Frame in which satellite position-velocity is given.
+     * @param date computation date.
+     * @param pv satellite position-velocity vector at given date in given frame.
+     * @param frame frame in which satellite position-velocity is given.
      * 
      * <p>User should check that position/velocity and frame is consistent with given frame.
      * </p>

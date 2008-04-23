@@ -65,16 +65,13 @@ public abstract class GroundPointing implements AttitudeLaw {
         Transform t = bodyFrame.getTransformTo(frame, date);        
         
         /* Target in given frame. */
-        Vector3D pointPos = t.getRotation().applyTo(targetInBodyFrame.getPosition());
-        Vector3D pointVel = t.getRotation().applyTo(targetInBodyFrame.getVelocity());
-        
-        return new PVCoordinates(pointPos, pointVel);
+        return t.transformPVCoordinates(targetInBodyFrame);
     }
     
     /** Compute the system state at given date in given frame.
      * @param date date when system state shall be computed
      * @param pv satellite position/velocity in given frame
-     * @param frame frame in which pv is defined
+     * @param frame the frame in which pv is defined
      * @throws OrekitException if some specific error occurs
      * 
      * <p>User should check that position/velocity and frame is consistent with given frame.
