@@ -74,7 +74,6 @@ public class NadirPointingTest extends TestCase {
         // with nadir pointing rotation shall be identity. 
         Rotation rotCompo = rotCenter.applyInverseTo(rotNadir);
         double angle = rotCompo.getAngle();
-        System.out.println("Composed rotation angle (deg) = " + Math.toDegrees(angle));
         assertEquals(angle, 0.0, Utils.epsilonAngle);
 
 }
@@ -96,8 +95,6 @@ public class NadirPointingTest extends TestCase {
         
         //  Satellite on equatorial position
         // ********************************** 
-        System.out.println("Equatorial case");
-        
         KeplerianParameters kep =
             new KeplerianParameters(7178000.0, 1.e-8, Math.toRadians(50.), 0., 0.,
                                     0., KeplerianParameters.TRUE_ANOMALY, Frame.getJ2000());
@@ -116,27 +113,17 @@ public class NadirPointingTest extends TestCase {
         // with nadir pointing rotation shall be identity. 
         Rotation rotCompo = rotCenter.applyInverseTo(rotNadir);
         double angle = rotCompo.getAngle();
-        System.out.println("Composed rotation angle (rad) = " + angle);
         assertEquals(angle, 0.0, 5.e-6);
        
         //  Satellite on polar position
         // ***************************** 
-        System.out.println("Polar case");
-
         CircularParameters circ =
             new CircularParameters(7178000.0, 1.e-5, 0., Math.toRadians(90.), 0.,
                                    Math.toRadians(90.), CircularParameters.TRUE_LONGITUDE_ARGUMENT, Frame.getJ2000());
  
         // Transform satellite position to position/velocity parameters in J2000 frame */
         pvSatJ2000 = circ.getPVCoordinates(mu);
-        
-        // Check satellite latitude 
-        GeodeticPoint geoSat = earthShape.transform(pvSatJ2000.getPosition(), Frame.getJ2000(), date);
-        System.out.println("Polar satellite latitude (deg) = " + Math.toDegrees(geoSat.latitude));
-        System.out.println("Polar satellite longitude (deg) = " + Math.toDegrees(geoSat.longitude));
-        System.out.println("Polar satellite altitude (deg) = " + Math.toDegrees(geoSat.altitude));
-        
-        
+                
         // Get nadir attitude 
         rotNadir = nadirAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
         
@@ -148,25 +135,16 @@ public class NadirPointingTest extends TestCase {
         // with nadir pointing rotation shall be identity.
         rotCompo = rotCenter.applyInverseTo(rotNadir);
         angle = rotCompo.getAngle();
-        System.out.println("Composed rotation angle (rad) = " + angle);
         assertEquals(angle, 0.0, 5.e-6);
        
         //  Satellite on any position
         // *************************** 
-        System.out.println("Any case");
-
         circ =
             new CircularParameters(7178000.0, 1.e-5, 0., Math.toRadians(50.), 0.,
                                    Math.toRadians(90.), CircularParameters.TRUE_LONGITUDE_ARGUMENT, Frame.getJ2000());
  
         // Transform satellite position to position/velocity parameters in J2000 frame 
         pvSatJ2000 = circ.getPVCoordinates(mu);
-        
-        // Check satellite latitude 
-        geoSat = earthShape.transform(pvSatJ2000.getPosition(), Frame.getJ2000(), date);
-        System.out.println("Polar satellite latitude (deg) = " + Math.toDegrees(geoSat.latitude));
-        System.out.println("Polar satellite longitude (deg) = " + Math.toDegrees(geoSat.longitude));
-        System.out.println("Polar satellite altitude (deg) = " + Math.toDegrees(geoSat.altitude));
         
         // Get nadir attitude 
         rotNadir = nadirAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
@@ -179,7 +157,6 @@ public class NadirPointingTest extends TestCase {
         // pointing rotation with nadir pointing rotation shall be different from identity.
         rotCompo = rotCenter.applyInverseTo(rotNadir);
         angle = rotCompo.getAngle();
-        System.out.println("Composed rotation angle (deg) = " + Math.toDegrees(angle));
         assertEquals(angle, Math.toRadians(0.16797386586252272), Utils.epsilonAngle);
     }
     
@@ -221,9 +198,6 @@ public class NadirPointingTest extends TestCase {
         double yVert = Math.sin(geoTarget.longitude)*Math.cos(geoTarget.latitude);
         double zVert = Math.sin(geoTarget.latitude);
         Vector3D targetVertical = new Vector3D(xVert, yVert, zVert);
-        System.out.println("Local vertical axis = " + targetVertical.getX()
-                                              + " " + targetVertical.getY() 
-                                              + " " + targetVertical.getZ());
         
         // Get attitude rotation state
         Rotation rotSatJ2000 = nadirAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
@@ -232,14 +206,8 @@ public class NadirPointingTest extends TestCase {
         Vector3D zSatJ2000 = rotSatJ2000.applyInverseTo(Vector3D.plusK);
         Vector3D zSatItrf2000B = j2000ToItrf.transformVector(zSatJ2000);
         
-        System.out.println("Satellite Z axis = " + zSatItrf2000B.getX() 
-                                           + " " + zSatItrf2000B.getY() 
-                                           + " " + zSatItrf2000B.getZ());
-        
         // Check that satellite Z axis is colinear to local vertical axis
-        double angle= Vector3D.angle(zSatItrf2000B, targetVertical);
-        System.out.println("angle = " + angle);
-        
+        double angle= Vector3D.angle(zSatItrf2000B, targetVertical);        
         assertEquals(Math.sin(angle), 0.0, Utils.epsilonTest);
         
     }

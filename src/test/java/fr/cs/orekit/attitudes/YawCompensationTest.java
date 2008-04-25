@@ -54,8 +54,6 @@ public class YawCompensationTest extends TestCase {
      * with or without yaw compensation
      */
     public void testTarget() throws OrekitException {
-        System.out.println("Test target :");
-        System.out.println("----------- :");
 
         //  Attitude laws
         // **************
@@ -69,13 +67,9 @@ public class YawCompensationTest extends TestCase {
         // **************
         // without yaw compensation
         PVCoordinates noYawTarget = nadirLaw.getTargetInBodyFrame(date, pvSatItrf2000B, frameItrf2000B);
-        System.out.println("No yaw target");
-        System.out.println(noYawTarget);
 
         // with yaw compensation
         PVCoordinates yawTarget = yawCompensLaw.getTargetInBodyFrame(date, pvSatItrf2000B, frameItrf2000B);
-        System.out.println("Yaw target");
-        System.out.println(yawTarget);
 
         // Check difference
         PVCoordinates targetDiff = new PVCoordinates(1.0, yawTarget, -1.0, noYawTarget);
@@ -88,13 +82,9 @@ public class YawCompensationTest extends TestCase {
         // *****************************
         // without yaw compensation
         PVCoordinates noYawObserved = nadirLaw.getObservedGroundPoint(date, pvSatItrf2000B, frameItrf2000B);
-        System.out.println("No yaw observed ground point");
-        System.out.println(noYawObserved);
 
         // with yaw compensation
         PVCoordinates yawObserved = yawCompensLaw.getObservedGroundPoint(date, pvSatItrf2000B, frameItrf2000B);
-        System.out.println("Yaw observed ground point");
-        System.out.println(yawObserved);
 
         // Check difference
         PVCoordinates observedDiff = new PVCoordinates(1.0, yawObserved, -1.0, noYawObserved);
@@ -104,13 +94,10 @@ public class YawCompensationTest extends TestCase {
         assertTrue((normObservedDiffPos < Utils.epsilonTest)&&(normObservedDiffVel < Utils.epsilonTest));
    }
 
-    /** Test that pointed target and observed ground point remain the same 
-     * with or without yaw compensation
+    /** Test that maximum yaw compensation is at ascending/descending node, 
+     * and minimum yaw compensation is at maximum latitude.
      */
     public void testCompensMinMax() throws OrekitException {
-        System.out.println("");
-        System.out.println("Test compens min/max :");
-        System.out.println("-------------------- :");
 
         Orbit orbit = new Orbit(date, circ);
 
@@ -126,7 +113,6 @@ public class YawCompensationTest extends TestCase {
         // Extrapolation over one orbital period (sec)
         double n = Math.sqrt(mu/Math.pow(orbit.getA(), 3));
         double duration = 2.0*Math.PI/n;
-        System.out.println("Orbital period (min) : " + duration/60.0);     
         KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(orbit, mu), mu);
         
         // Extrapolation initializations
@@ -144,40 +130,105 @@ public class YawCompensationTest extends TestCase {
             SpacecraftState extrapOrbit = extrapolator.getSpacecraftState(extrapDate);
             PVCoordinates extrapPvSatJ2000 = extrapOrbit.getPVCoordinates(mu);
             
+            // Satellite latitude at date
             double extrapLat = earthShape.transform(extrapPvSatJ2000.getPosition(), Frame.getJ2000(), extrapDate).latitude;
             
-            // Get attitude rotations from non yaw compensated / yaw compensated laws
-            Rotation rotNoYaw = nadirLaw.getState(extrapDate, extrapPvSatJ2000, Frame.getJ2000()).getRotation();
-            Rotation rotYaw = yawCompensLaw.getState(extrapDate, extrapPvSatJ2000, Frame.getJ2000()).getRotation();
-            
             // Compute yaw compensation angle -- rotations composition
-            Rotation compoRot = rotYaw.applyTo(rotNoYaw.revert());
-            Vector3D compoAxis = compoRot.getAxis();
-            double compoAngle = compoRot.getAngle();
-            if (Vector3D.dotProduct(compoAxis, Vector3D.plusK) < 0) {
-                compoAxis = compoAxis.negate();
-                compoAngle = -compoAngle;
-            }
-            
-            System.out.println(extrapDate + " yaw (deg) = " + Math.toDegrees(compoAngle)
-                                          + " latitude (deg) = " + Math.toDegrees(extrapLat)
-                                          + " composition axis = " + compoAxis.getX() + " "
-                                                                   + compoAxis.getY() + " "
-                                                                   + compoAxis.getZ() + " " 
-                                          );
-            
+            double yawAngle = yawCompensLaw.getYawAngle(extrapDate, extrapPvSatJ2000, Frame.getJ2000());
+                        
             // Update minimum yaw compensation angle
-            if (Math.abs(compoAngle) <= yawMin){
-                yawMin = Math.abs(compoAngle);
+            if (Math.abs(yawAngle) <= yawMin) {
+                yawMin = Math.abs(yawAngle);
                 latMin = extrapLat;
             }           
-         }
+
+            //     Checks
+            // ------------------
+            
+            // 1/ Check yaw values around ascending node (max yaw)
+            if ( (Math.abs(extrapLat) < Math.toRadians(2.))
+                    && (extrapPvSatJ2000.getVelocity().getZ() >= 0. ) )
+            {
+                boolean test = (    (Math.abs(yawAngle) >= Math.toRadians(2.8488911779424484)) 
+                                 && (Math.abs(yawAngle) <= Math.toRadians(2.8531667023319462)) );
+                assertEquals(true, test);
+            }
+            
+            // 2/ Check yaw values around maximum positive latitude (min yaw)
+            if ( extrapLat > Math.toRadians(50.) )
+            {
+                boolean test = (    (Math.abs(yawAngle) <= Math.toRadians(0.2627860468476059)) 
+                                 && (Math.abs(yawAngle) >= Math.toRadians(0.0032285415586776798)) );
+                assertEquals(true, test);
+            }
+            
+            // 3/ Check yaw values around descending node (max yaw)
+            if ( (Math.abs(extrapLat) < Math.toRadians(2.))
+                    && (extrapPvSatJ2000.getVelocity().getZ() <= 0. ) )
+            {
+                boolean test = (    (Math.abs(yawAngle) >= Math.toRadians(2.8485147320218904)) 
+                                 && (Math.abs(yawAngle) <= Math.toRadians(2.8535230849061097)) );
+                assertEquals(true, test);
+            }
+         
+            // 4/ Check yaw values around maximum negative latitude (min yaw)
+            if ( extrapLat < Math.toRadians(-50.) )
+            {
+                boolean test = (    (Math.abs(yawAngle) <= Math.toRadians(0.2358843505723192)) 
+                                 && (Math.abs(yawAngle) >= Math.toRadians(0.014143120809540489)) );
+                assertEquals(true, test);
+            }
+
+        }
         
-        System.out.println(" Minimum yaw angle (deg) = " + + Math.toDegrees(yawMin) 
-                           + " at latitude (deg) : " + Math.toDegrees(latMin));
+        // 5/ Check that minimum yaw compensation value is around maximum latitude
+        assertEquals(Math.toRadians(0.0032285415586776798), yawMin, Utils.epsilonAngle);
+        assertEquals(Math.toRadians(50.21484459355221), latMin, Utils.epsilonAngle);
 
     }
 
+    /** Test that compensation rotation axis is Zsat, yaw axis
+     */
+    public void testCompensAxis() throws OrekitException {
+
+        Orbit orbit = new Orbit(date, circ);
+        PVCoordinates pvSatJ2000 = orbit.getPVCoordinates(mu);
+
+        //  Attitude laws
+        // **************
+        // Target pointing attitude law over satellite nadir at date, without yaw compensation
+        NadirPointing nadirLaw = new NadirPointing(earthShape);
+ 
+        // Target pointing attitude law with yaw compensation
+        YawCompensation yawCompensLaw = new YawCompensation(nadirLaw, earthShape);
+
+        // Get attitude rotations from non yaw compensated / yaw compensated laws
+        Rotation rotNoYaw = nadirLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
+        Rotation rotYaw = yawCompensLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
+            
+        // Compose rotations composition
+        Rotation compoRot = rotYaw.applyTo(rotNoYaw.revert());
+        Vector3D yawAxis = compoRot.getAxis();
+
+        // Check axis
+        assertEquals(0., yawAxis.getX(), Utils.epsilonTest);
+        assertEquals(0., yawAxis.getY(), Utils.epsilonTest);
+        assertEquals(1., yawAxis.getZ(), Utils.epsilonTest);
+//            }
+            
+            // 2/ Check yaw values around maximum positive latitude
+            
+            // 3/ Check yaw values around descending node
+//            if ( (Math.abs(yawAngle) < Math.toRadians(3.))
+//                    && (extrapPvSatJ2000.getVelocity().getZ() <= 0. ) )
+//            {
+//                assertEquals(Math.abs(yawAngle), Math.toRadians(2.8455), Utils.epsilonTest);
+//            }
+            
+            // 4/ Check yaw values around maximum negative latitude
+
+    }
+    
     public void setUp() {
         try {
             // Computation date

@@ -56,8 +56,6 @@ public class TargetPointingTest extends TestCase {
         
         // Transform satellite position to position/velocity parameters in J2000 frame
         PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
-        System.out.println("PV sat in J2000");
-        System.out.println(pvSatJ2000);
      
         //  Attitude laws
         // *************** 
@@ -77,16 +75,13 @@ public class TargetPointingTest extends TestCase {
         // Check that both attitude are the same 
         // Get satellite rotation for target pointing law 
         Rotation rotPv = pvTargetAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
-        System.out.println("Rotation angle for pv definition = " + Math.toDegrees(rotPv.getAngle()));
 
         // Get satellite rotation for nadir pointing law
         Rotation rotGeo = geoTargetAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
-        System.out.println("Rotation angle for geo definition = " + Math.toDegrees(rotGeo.getAngle()));
 
-        //
+        // Rotations composition
         Rotation rotCompo = rotGeo.applyInverseTo(rotPv);
         double angle = rotCompo.getAngle();
-        System.out.println("Composed rotation angle (deg) = " + Math.toDegrees(angle));
         assertEquals(angle, 0.0, Utils.epsilonAngle);
 
     }
@@ -112,9 +107,6 @@ public class TargetPointingTest extends TestCase {
                 
         // Target definition as a geodetic point 
         GeodeticPoint geoTargetItrf2000B = new GeodeticPoint(Math.toRadians(1.26), Math.toRadians(43.36), 600.);
-        System.out.println("Defined target : lon = " + geoTargetItrf2000B.longitude 
-                           + " lat = " + geoTargetItrf2000B.latitude 
-                           + " alt = " + geoTargetItrf2000B.altitude);
             
         //  Attitude law definition 
         TargetPointing geoTargetAttitudeLaw = new TargetPointing(geoTargetItrf2000B, earthShape);
@@ -122,9 +114,6 @@ public class TargetPointingTest extends TestCase {
         // Check that observed ground point is the same as defined target 
         PVCoordinates pvObservedJ2000 = geoTargetAttitudeLaw.getObservedGroundPoint(date, pvSatJ2000, Frame.getJ2000());
         GeodeticPoint geoObserved = earthShape.transform(pvObservedJ2000.getPosition(), Frame.getJ2000(), date);
-        System.out.println("Observed ground point : lon = " + geoObserved.longitude 
-                                                + " lat = " + geoObserved.latitude 
-                                                + " alt = " + geoObserved.altitude);
 
         assertEquals(geoObserved.longitude, geoTargetItrf2000B.longitude, Utils.epsilonAngle);
         assertEquals(geoObserved.latitude, geoTargetItrf2000B.latitude, Utils.epsilonAngle);
@@ -160,9 +149,6 @@ public class TargetPointingTest extends TestCase {
         PVCoordinates pvNadirTarget = nadirAttitudeLaw.getObservedGroundPoint(date, j2000ToItrf.transformPVCoordinates(pvSatJ2000), 
                                                                               frameItrf2000B);
         GeodeticPoint geoNadirTarget = earthShape.transform(pvNadirTarget.getPosition(), frameItrf2000B, date);
-        System.out.println("Nadir target longitude = " + Math.toDegrees(geoNadirTarget.longitude));
-        System.out.println("Nadir target latitude = " + Math.toDegrees(geoNadirTarget.latitude));
-        System.out.println("Nadir target altitude = " + Math.toDegrees(geoNadirTarget.altitude));
         
         // Create target attitude law 
         TargetPointing targetAttitudeLaw = new TargetPointing(geoNadirTarget, earthShape);
@@ -174,16 +160,13 @@ public class TargetPointingTest extends TestCase {
         
         // Get satellite rotation from target pointing law at date
         Rotation rotTarget = targetAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
-        System.out.println("Target pointing rotation angle at t = " + Math.toDegrees(rotTarget.getAngle()));
 
         // Get satellite rotation from nadir pointing law at date
         Rotation rotNadir = nadirAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
-        System.out.println("Nadir pointing rotation angle at t = " + Math.toDegrees(rotNadir.getAngle()));
 
         // Compose attitude rotations
         Rotation rotCompo = rotTarget.applyInverseTo(rotNadir);
         double angle = rotCompo.getAngle();
-        System.out.println("Composed rotation angle at t (deg) = " + Math.toDegrees(angle));
         assertEquals(angle, 0.0, Utils.epsilonAngle);
 
         
@@ -199,16 +182,13 @@ public class TargetPointingTest extends TestCase {
         
         // Get satellite rotation from target pointing law at date + 1min
         Rotation extrapRotTarget = targetAttitudeLaw.getState(extrapDate, extrapPvSatJ2000, Frame.getJ2000()).getRotation();
-        System.out.println("Target pointing rotation angle at t+1 = " + Math.toDegrees(extrapRotTarget.getAngle()));
         
         // Get satellite rotation from nadir pointing law at date
         Rotation extrapRotNadir = nadirAttitudeLaw.getState(extrapDate, extrapPvSatJ2000, Frame.getJ2000()).getRotation();
-        System.out.println("Nadir pointing rotation angle at t+1 = " + Math.toDegrees(extrapRotNadir.getAngle()));
 
         // Compose attitude rotations
         Rotation extrapRotCompo = extrapRotTarget.applyInverseTo(extrapRotNadir);
         double extrapAngle = extrapRotCompo.getAngle();
-        System.out.println("Composed rotation angle at t+1 (deg) = " + Math.toDegrees(extrapAngle));
         assertEquals(extrapAngle, Math.toRadians(24.684793905118823), Utils.epsilonAngle);
         
     }
@@ -241,8 +221,6 @@ public class TargetPointingTest extends TestCase {
         
         // Transform satellite position to position/velocity parameters in J2000 frame
         PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
-        System.out.println("PV sat in J2000");
-        System.out.println(pvSatJ2000);
         
         //  Pointing direction
         // ********************
@@ -251,22 +229,14 @@ public class TargetPointingTest extends TestCase {
         
         // Transform Z axis from satellite frame to J2000 
         Vector3D zSatJ2000 = rotSatJ2000.applyInverseTo(Vector3D.plusK);
-        System.out.println("Zsat in J2000");
-        System.out.println(zSatJ2000.getX());
-        System.out.println(zSatJ2000.getY());
-        System.out.println(zSatJ2000.getZ());
         
         // Line containing satellite point and following pointing direction
         Line pointingLine = new Line(j2000ToItrf.transformPosition(pvSatJ2000.getPosition()), j2000ToItrf.transformVector(zSatJ2000));
         
         // Check that the line contains earth center
         double distance = pointingLine.distance(earthShape.transform(geoTarget));
-        System.out.println("distance");
-        System.out.println(distance);
         
         boolean test = (distance < 1.e-7);
-        System.out.println("test");
-        System.out.println(test);
         assertEquals(test, true);
     }
 
@@ -286,8 +256,6 @@ public class TargetPointingTest extends TestCase {
         
         // Transform satellite position to position/velocity parameters in J2000 frame
         PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
-        System.out.println("PV sat in J2000");
-        System.out.println(pvSatJ2000);
         
         // Create nadir pointing attitude law 
         // ********************************** 
@@ -298,9 +266,6 @@ public class TargetPointingTest extends TestCase {
         PVCoordinates pvNadirObservedItrf2000B = j2000ToItrf.transformPVCoordinates(pvNadirObservedJ2000);
         
         GeodeticPoint geoNadirObserved = earthShape.transform(pvNadirObservedItrf2000B.getPosition(), frameItrf2000B, date);
-        System.out.println("Nadir target lon = " + Math.toDegrees(geoNadirObserved.longitude)
-                                     + " lat = " + Math.toDegrees(geoNadirObserved.latitude)
-                                     + " alt = " + Math.toDegrees(geoNadirObserved.altitude));
 
         // Create target pointing attitude law with target equal to nadir target 
         // ********************************************************************* 
@@ -308,10 +273,6 @@ public class TargetPointingTest extends TestCase {
         
         // Get attitude rotation in J2000
         Rotation rotSatRefJ2000 = targetLawRef.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
-        System.out.println("Ref rotation axis x = " + rotSatRefJ2000.getAxis().getX()
-                                          + " y = " + rotSatRefJ2000.getAxis().getY()
-                                          + " z = " + rotSatRefJ2000.getAxis().getZ());
-        System.out.println("Ref rotation angle = " + rotSatRefJ2000.getAngle());
       
         // Create target pointing attitude law with target 5° from nadir target 
         // ******************************************************************** 
@@ -322,10 +283,6 @@ public class TargetPointingTest extends TestCase {
         
         // Get attitude rotation 
         Rotation rotSatJ2000 = targetLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
-        System.out.println(" 5° target rotation axis x = " + rotSatJ2000.getAxis().getX()
-                           + " y = " + rotSatJ2000.getAxis().getY()
-                           + " z = " + rotSatJ2000.getAxis().getZ());
-        System.out.println("5° target rotation angle = " + rotSatJ2000.getAngle());
         
         // Compute difference between both attitude laws 
         // *********************************************
@@ -333,11 +290,9 @@ public class TargetPointingTest extends TestCase {
         //  expected
         double tanDeltaExpected = (6378136.460/(42164000.0-6378136.460))*Math.tan(Math.toRadians(5));
         double deltaExpected = Math.atan(tanDeltaExpected);
-        System.out.println("Delta expected (deg) = " + Math.toDegrees(deltaExpected));
-        
+         
         //  real
         double deltaReal = rotSatJ2000.applyInverseTo(rotSatRefJ2000).getAngle();
-        System.out.println("Delta real (deg) = " + Math.toDegrees(deltaReal));
         
         assertEquals(deltaReal, deltaExpected, 1.e-4);
         

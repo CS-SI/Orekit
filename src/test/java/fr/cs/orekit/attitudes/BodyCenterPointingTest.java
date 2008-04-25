@@ -54,15 +54,11 @@ public class BodyCenterPointingTest extends TestCase {
         
         // Call get target method 
         PVCoordinates target = earthCenterAttitudeLaw.getTargetInBodyFrame(date, pvSatJ2000, Frame.getJ2000());
-        System.out.println("target");
-        System.out.println(target);
 
         // Check that target is body center
         double normPos = target.getPosition().getNorm();
         double normVel = target.getVelocity().getNorm();
         boolean test = ((normPos < Utils.epsilonTest) && (normVel < Utils.epsilonTest));
-        System.out.println("test");
-        System.out.println(test);
         assertEquals(test, true);
 
     }
@@ -74,8 +70,6 @@ public class BodyCenterPointingTest extends TestCase {
         
         // Transform satellite position to position/velocity parameters in J2000 frame
         PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
-        System.out.println("PV sat in J2000");
-        System.out.println(pvSatJ2000);
         
         //  Pointing direction
         // ******************** 
@@ -88,27 +82,16 @@ public class BodyCenterPointingTest extends TestCase {
         // Transform Z axis from J2000 to ITRF2000B
         Vector3D zSatItrf2000B = j2000ToItrf.transformPosition(zSatJ2000);
         
-        System.out.println("Zsat in ITRF2000B");
-        System.out.println(zSatItrf2000B.getX());
-        System.out.println(zSatItrf2000B.getY());
-        System.out.println(zSatItrf2000B.getZ());
-
         // Transform satellite position/velocity from J2000 to ITRF2000B 
         PVCoordinates pvSatItrf2000B = j2000ToItrf.transformPVCoordinates(pvSatJ2000);
-        System.out.println("PV sat in ITRF2000B");
-        System.out.println(pvSatItrf2000B);
                 
        // Line containing satellite point and following pointing direction
         Line pointingLine = new Line(pvSatItrf2000B.getPosition(), zSatItrf2000B);
         
         // Check that the line contains earth center (distance from line to point less than 1.e-8 m)
         double distance = pointingLine.distance(Vector3D.zero);
-        System.out.println("distance");
-        System.out.println(distance);
         
         boolean test = (distance < 1.e-8);
-        System.out.println("test");
-        System.out.println(test);
         assertEquals(test, true);
     }
 
