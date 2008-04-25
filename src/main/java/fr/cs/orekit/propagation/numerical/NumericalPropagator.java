@@ -107,9 +107,6 @@ public class NumericalPropagator
     /** Gauss equations handler. */
     private TimeDerivativesEquations adder;
 
-    /** Switching functions exception. */
-    private OrekitException swfException;
-
     /** Create a new instance of NumericalExtrapolationModel.
      * After creation, the instance is empty, i.e. there is no perturbing force
      * at all. This means that if {@link #addForceModel addForceModel} is not
@@ -128,7 +125,6 @@ public class NumericalPropagator
         this.adder        = null;
         this.attitudeLaw  = DefaultAttitude.getInstance();
         this.state        = new double[getDimension()];
-        this.swfException = null;
     }
 
     /** Add a force model to the global perturbation model. The associated
@@ -287,17 +283,28 @@ public class NumericalPropagator
         try {
             integrator.setStepHandler(handler);
             integrator.integrate(this, t0, state, t1, state);
-        } catch(DerivativeException de) {
-            if (swfException == null) {
-                throw new OrekitException(de.getMessage(), de);
+        } catch (DerivativeException de) {
+
+            // recover a possible embedded OrekitException
+            for (Throwable t = de; t != null; t = t.getCause()) {
+                if (t instanceof OrekitException) {
+                    throw (OrekitException) t;
+                }
             }
-        } catch(IntegratorException ie) {
-            if (swfException == null) {
-                throw new OrekitException(ie.getMessage(), ie);
+
+            throw new OrekitException(de.getMessage(), de);
+
+        } catch (IntegratorException ie) {
+
+            // recover a possible embedded OrekitException
+            for (Throwable t = ie; t != null; t = t.getCause()) {
+                if (t instanceof OrekitException) {
+                    throw (OrekitException) t;
+                }
             }
-        }
-        if (swfException != null) {
-            throw swfException;
+
+            throw new OrekitException(ie.getMessage(), ie);
+
         }
 
         // back to space dynamics view
@@ -333,9 +340,6 @@ public class NumericalPropagator
         throws DerivativeException {
 
         try {
-            if (swfException != null) {
-                throw swfException;
-            }
             // update space dynamics view
             currentState =
                 mapState(t, y, startDate, mu, currentState.getFrame(), attitudeLaw);
