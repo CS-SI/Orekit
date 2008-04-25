@@ -27,6 +27,9 @@ import fr.cs.orekit.errors.OrekitException;
  */
 public class IERSDirectoryCrawler {
 
+    /** Name of the property defining the IERS root directory. */
+    public static final String IERS_ROOT_DIRECTORY = "orekit.iers.directory";
+
     /** IERS root hierarchy root. */
     private File root;
 
@@ -36,7 +39,7 @@ public class IERSDirectoryCrawler {
     public IERSDirectoryCrawler() throws OrekitException {
 
         // check the root tree
-        final String directoryName = System.getProperty("orekit.iers.directory");
+        final String directoryName = System.getProperty(IERS_ROOT_DIRECTORY);
         if ((directoryName != null) && ! "".equals(directoryName)) {
 
             // try to find the root directory either in classpath or in filesystem
