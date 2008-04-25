@@ -100,16 +100,16 @@ class IRF2000Frame extends Frame {
     private static final String sxy2Model2000B = iers2003Base + "tab5.2c.reduced.txt";
 
     /** Indicator for complete or reduced precession-nutation model. */
-    private boolean useIAU2000B;
+    private final boolean useIAU2000B;
 
     /** Pole position (X). */
-    private Development xDevelopment = null;
+    private final Development xDevelopment;
 
     /** Pole position (Y). */
-    private Development yDevelopment = null;
+    private final Development yDevelopment;
 
     /** Pole position (S + XY/2). */
-    private Development sxy2Development = null;
+    private final Development sxy2Development;
 
     /** Cached date to avoid useless calculus */
     private AbsoluteDate cachedDate;
