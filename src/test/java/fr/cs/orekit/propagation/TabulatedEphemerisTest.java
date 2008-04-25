@@ -5,11 +5,8 @@ import java.text.ParseException;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import fr.cs.orekit.Utils;
-import fr.cs.orekit.attitudes.AttitudeLaw;
-import fr.cs.orekit.attitudes.NadirPointing;
-import fr.cs.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.orekit.errors.OrekitException;
+import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.orbits.KeplerianParameters;
 import fr.cs.orekit.orbits.Orbit;
@@ -33,10 +30,6 @@ public class TabulatedEphemerisTest extends TestCase {
         double OMEGA = Math.toRadians(261);
         double lv = 0;
 
-        final Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, AbsoluteDate.J2000Epoch);
-        AttitudeLaw attitudeLaw =
-            new NadirPointing(new OneAxisEllipsoid(6378137.0, 1.0 / 298.257222101, itrf));
-
         OrbitalParameters transPar = new KeplerianParameters(a, e, i,
                                                              omega, OMEGA,
                                                              lv, KeplerianParameters.TRUE_ANOMALY, Frame.getJ2000());
@@ -49,38 +42,43 @@ public class TabulatedEphemerisTest extends TestCase {
                                                   UTCScale.getInstance());
         double deltaT = finalDate.minus(initDate);
 
-        SpacecraftState initState = new SpacecraftState(new Orbit(initDate, transPar), mass,
-                                                        attitudeLaw.getState(initDate,
-                                                                             transPar.getPVCoordinates(Utils.mu),
-                                                                             transPar.getFrame()));
-
+        int nbIntervals = 720;
         EcksteinHechlerPropagator eck =
-            new EcksteinHechlerPropagator(initState, ae, mu, c20, c30, c40, c50, c60);
-
-        eck.setAttitudeLaw(attitudeLaw);
-
-        int nbPoints = 1000;
-        SpacecraftState[] tab = new SpacecraftState[nbPoints+1];
-
-        for(int j = 0; j<= nbPoints; j++) {
-            AbsoluteDate current = new AbsoluteDate(initDate, j*deltaT/(double)nbPoints );
+            new EcksteinHechlerPropagator(new SpacecraftState(new Orbit(initDate, transPar), mass),
+                                          ae, mu, c20, c30, c40, c50, c60);
+        SpacecraftState[] tab = new SpacecraftState[nbIntervals+1];
+        for (int j = 0; j<= nbIntervals; j++) {
+            AbsoluteDate current = new AbsoluteDate(initDate, (j * deltaT) / nbIntervals);
             tab[j] = eck.getSpacecraftState(current);
         }
 
         TabulatedEphemeris te = new TabulatedEphemeris(tab);
 
-        assertTrue(te.getMaxDate().minus(finalDate)==0);
-        assertTrue(te.getMinDate().minus(initDate)==0);
+        assertEquals(te.getMaxDate(), finalDate);
+        assertEquals(te.getMinDate(), initDate);
 
-        AbsoluteDate myDate = new AbsoluteDate(initDate, 80001);
+        checkEphemerides(eck, te, new AbsoluteDate(initDate, 3600),  0, true);
+        checkEphemerides(eck, te, new AbsoluteDate(initDate, 3660), 30, false);
+        checkEphemerides(eck, te, new AbsoluteDate(initDate, 3720),  0, true);
 
-        assertEquals( eck.getSpacecraftState(myDate).getA(), te.getSpacecraftState(myDate).getA(), 0 );
-        assertEquals( eck.getSpacecraftState(myDate).getEx(), te.getSpacecraftState(myDate).getEx(), 0 );
-        assertEquals( eck.getSpacecraftState(myDate).getEy(), te.getSpacecraftState(myDate).getEy(), 0 );
-        assertEquals( eck.getSpacecraftState(myDate).getHx(), te.getSpacecraftState(myDate).getHx(), 0 );
-        assertEquals( eck.getSpacecraftState(myDate).getHy(), te.getSpacecraftState(myDate).getHy(), 0 );
-        assertEquals( eck.getSpacecraftState(myDate).getLv(), te.getSpacecraftState(myDate).getLv(), 0 );
+    }
 
+    private void checkEphemerides(Ephemeris eph1, Ephemeris eph2, AbsoluteDate date,
+                                  double threshold, boolean expectedBelow)
+        throws PropagationException {
+        SpacecraftState state1 = eph1.getSpacecraftState(date);
+        SpacecraftState state2 = eph2.getSpacecraftState(date);
+        double maxError = Math.abs(state1.getA() - state2.getA());
+        maxError = Math.max(maxError, Math.abs(state1.getEx() - state2.getEx()));
+        maxError = Math.max(maxError, Math.abs(state1.getEy() - state2.getEy()));
+        maxError = Math.max(maxError, Math.abs(state1.getHx() - state2.getHx()));
+        maxError = Math.max(maxError, Math.abs(state1.getHy() - state2.getHy()));
+        maxError = Math.max(maxError, Math.abs(state1.getLv() - state2.getLv()));
+        if (expectedBelow) {
+            assertTrue(maxError <= threshold);
+        } else {
+            assertTrue(maxError >= threshold);
+        }
     }
 
     public void setUp() {
