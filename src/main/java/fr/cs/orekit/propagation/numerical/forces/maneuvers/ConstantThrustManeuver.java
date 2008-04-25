@@ -16,7 +16,7 @@ import fr.cs.orekit.time.AbsoluteDate;
 public class ConstantThrustManeuver implements ForceModel {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 1573070213354448330L;
+    private static final long serialVersionUID = 7645945521681837759L;
 
     /** Identifier for QSW frame. */
     public static final int QSW = 0;
@@ -30,8 +30,8 @@ public class ConstantThrustManeuver implements ForceModel {
     /** Identifier for spacecraft frame. */
     public static final int SPACECRAFT = 3;
 
-    /** Reference gravity acceleration constant (m/s<sup>2</sup>) */
-    private static final double g0 = 9.80665;
+    /** Reference gravity acceleration constant (m/s<sup>2</sup>). */
+    public static final double G0 = 9.80665;
 
     /** State of the engine. */
     private boolean firing;
@@ -95,8 +95,8 @@ public class ConstantThrustManeuver implements ForceModel {
             this.duration  = -duration;
         }
 
-        this.thrust     = thrust;
-        this.flowRate  = -thrust / (g0 * isp);
+        this.thrust    = thrust;
+        this.flowRate  = -thrust / (G0 * isp);
         this.direction = direction.normalize();
         this.frameType = frameType;
         firing = false;
@@ -151,7 +151,7 @@ public class ConstantThrustManeuver implements ForceModel {
      * @return start / stop switching functions
      */
     public OrekitSwitchingFunction[] getSwitchingFunctions() {
-        return new OrekitSwitchingFunction[] { new StartSwitch(), new EndSwitch() };
+        return new OrekitSwitchingFunction[] { new StartSwitch(), new StopSwitch() };
     }
 
     /** This class defines the beginning of the acceleration switching function.
@@ -193,7 +193,7 @@ public class ConstantThrustManeuver implements ForceModel {
     /** This class defines the end of the acceleration switching function.
      * It triggers at the end of the maneuver.
      */
-    private class EndSwitch implements OrekitSwitchingFunction {
+    private class StopSwitch implements OrekitSwitchingFunction {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -4081671157610680754L;
