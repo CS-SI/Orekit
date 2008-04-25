@@ -15,9 +15,6 @@ import fr.cs.orekit.time.AbsoluteDate;
  */
 public class ConstantThrustManeuver implements ForceModel {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 7645945521681837759L;
-
     /** Identifier for QSW frame. */
     public static final int QSW = 0;
 
@@ -32,6 +29,9 @@ public class ConstantThrustManeuver implements ForceModel {
 
     /** Reference gravity acceleration constant (m/s<sup>2</sup>). */
     public static final double G0 = 9.80665;
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 7645945521681837759L;
 
     /** State of the engine. */
     private boolean firing;
@@ -134,7 +134,7 @@ public class ConstantThrustManeuver implements ForceModel {
                 break;
             default :
                 // the thrust is in spacecraft frame, it depends on attitude
-                Vector3D inertialThrust = s.getAttitude().getRotation().applyTo(direction);
+                final Vector3D inertialThrust = s.getAttitude().getRotation().applyTo(direction);
                 adder.addXYZAcceleration(acceleration * inertialThrust.getX(),
                                          acceleration * inertialThrust.getY(),
                                          acceleration * inertialThrust.getZ());

@@ -11,11 +11,11 @@ import org.apache.commons.math.geometry.Vector3D;
  */
 public class PVCoordinates implements Serializable {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 8581359579182947710L;
-
     /** Fixed position/velocity at origin (both p and v are zero vectors). */
     public static final PVCoordinates ZERO = new PVCoordinates(Vector3D.zero, Vector3D.zero);
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 8581359579182947710L;
 
     /** The position. */
     private final Vector3D position;
@@ -47,8 +47,8 @@ public class PVCoordinates implements Serializable {
      * @param pv base (unscaled) PVCoordinates
      */
     public PVCoordinates(double a, PVCoordinates pv) {
-      this.position = new Vector3D(a, pv.position);
-      this.velocity = new Vector3D(a, pv.velocity);
+        this.position = new Vector3D(a, pv.position);
+        this.velocity = new Vector3D(a, pv.velocity);
     }
 
     /** Linear constructor

@@ -13,14 +13,14 @@ import fr.cs.orekit.errors.OrekitException;
  */
 public class ChunkedTime implements Serializable, Comparable {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 4492296986280760487L;
-
     /** Constant for commonly used hour 00:00:00. */
     public static final ChunkedTime H00   = new ChunkedTime(0, 0, 0);
 
     /** Constant for commonly used hour 12:00:00. */
     public static final ChunkedTime H12 = new ChunkedTime(12, 0, 0);
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 4492296986280760487L;
 
     /** Format for hours and minutes. */
     private static final DecimalFormat twoDigits = new DecimalFormat("00");
@@ -107,8 +107,8 @@ public class ChunkedTime implements Serializable, Comparable {
 
     /** {@inheritDoc} */
     public int compareTo(Object other) {
-        double seconds = getSecondsInDay();
-        double otherSeconds = ((ChunkedTime) other).getSecondsInDay();
+        final double seconds = getSecondsInDay();
+        final double otherSeconds = ((ChunkedTime) other).getSecondsInDay();
         if (seconds < otherSeconds) {
             return -1;
         } else if (seconds > otherSeconds) {
@@ -120,7 +120,7 @@ public class ChunkedTime implements Serializable, Comparable {
     /** {@inheritDoc} */
     public boolean equals(Object other) {
         try {
-            ChunkedTime otherTime = (ChunkedTime) other;
+            final ChunkedTime otherTime = (ChunkedTime) other;
             return (otherTime != null) && (hour == otherTime.hour) &&
                    (minute == otherTime.minute) && (second == otherTime.second);
         } catch (ClassCastException cce) {
@@ -130,7 +130,7 @@ public class ChunkedTime implements Serializable, Comparable {
 
     /** {@inheritDoc} */
     public int hashCode() {
-        long bits = Double.doubleToLongBits(second);
+        final long bits = Double.doubleToLongBits(second);
         return ((hour << 8) | (minute << 8)) ^ (int) (bits ^ (bits >>> 32));
     }
 

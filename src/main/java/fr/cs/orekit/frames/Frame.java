@@ -493,10 +493,10 @@ public class Frame implements Serializable {
                                                           TIRF2000B, IRF2000A, IRF2000B, VEIS1950
                                                       });
 
-    // in fact, this is never reached
-    return null;
+        // in fact, this is never reached
+        return null;
 
-}
+    }
 
     // We use the Initialization on demand holder idiom to store
     // the singletons, as it is both thread-safe, efficient (no
@@ -573,7 +573,7 @@ public class Frame implements Serializable {
             instance = tmpFrame;
             orekitException = tmpException;
         }
-   }
+    }
 
     /** Holder for the IRF 2000 A frame singleton. */
     private static class LazyIRF2000AHolder {

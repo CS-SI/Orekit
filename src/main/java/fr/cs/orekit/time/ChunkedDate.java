@@ -103,8 +103,8 @@ public class ChunkedDate implements Serializable, Comparable {
         if (dayNumber != getDayOfYear()) {
             OrekitException.throwIllegalArgumentException("no day number {0} in year {1}",
                                                           new Object[] {
-                                                            new Integer(dayNumber),
-                                                            new Integer(year)
+                                                              new Integer(dayNumber),
+                                                              new Integer(year)
                                                           });
         }
     }
@@ -187,8 +187,8 @@ public class ChunkedDate implements Serializable, Comparable {
     
     /** {@inheritDoc} */
     public int compareTo(Object other) {
-        int j2000Day = getJ2000Day();
-        int otherJ2000Day = ((ChunkedDate) other).getJ2000Day();
+        final int j2000Day = getJ2000Day();
+        final int otherJ2000Day = ((ChunkedDate) other).getJ2000Day();
         if (j2000Day < otherJ2000Day) {
             return -1;
         } else if (j2000Day > otherJ2000Day) {
@@ -200,7 +200,7 @@ public class ChunkedDate implements Serializable, Comparable {
     /** {@inheritDoc} */
     public boolean equals(Object other) {
         try {
-            ChunkedDate otherDate = (ChunkedDate) other;
+            final ChunkedDate otherDate = (ChunkedDate) other;
             return (otherDate != null) && (year == otherDate.year) &&
                    (month == otherDate.month) && (day == otherDate.day);
         } catch (ClassCastException cce) {

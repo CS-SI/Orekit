@@ -66,7 +66,7 @@ public abstract class IERSFileCrawler {
         } finally {
             if (reader != null) {
                 try {
-                reader.close();
+                    reader.close();
                 } catch (IOException ioe) {
                     throw new OrekitException(ioe.getMessage(), ioe);
                 }

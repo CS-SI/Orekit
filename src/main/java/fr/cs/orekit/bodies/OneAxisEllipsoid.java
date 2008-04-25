@@ -4,7 +4,6 @@ import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.frames.Transform;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.Line;
 
@@ -132,13 +131,14 @@ public class OneAxisEllipsoid implements BodyShape {
      * @param date date of the line in given frame
      * @return intersection point at altitude zero or null if the line does
      * not intersect the surface
+     * @exception OrekitException if line cannot be converted to body frame
      */
     public GeodeticPoint getIntersectionPoint(Line line, Frame frame, AbsoluteDate date) 
-           throws OrekitException {
+        throws OrekitException {
         
         // transform line to body frame
-        Transform t = frame.getTransformTo(bodyFrame, date);
-        Line lineInBodyFrame = t.transformLine(line);
+        final Line lineInBodyFrame =
+            frame.getTransformTo(bodyFrame, date).transformLine(line);
         
         // compute some miscellaneous variables outside of the loop
         final Vector3D point    = lineInBodyFrame.getOrigin();
@@ -150,10 +150,9 @@ public class OneAxisEllipsoid implements BodyShape {
         final double g2r2ma2pz2 = g2r2ma2 + z2;
 
         final Vector3D direction = lineInBodyFrame.getDirection();
-        final double cz =
-            Math.sqrt(direction.getX() * direction.getX() + direction.getY() * direction.getY());
-        final double sz =
-            direction.getZ();
+        final double cz = Math.sqrt(direction.getX() * direction.getX() +
+                                    direction.getY() * direction.getY());
+        final double sz = direction.getZ();
 
         // distance to the ellipse along the current line
         // as the smallest root of a 2nd degree polynom :
@@ -195,13 +194,14 @@ public class OneAxisEllipsoid implements BodyShape {
      * @param frame frame in which cartesian point is expressed
      * @param date date of the point in given frame
      * @return point at the same location but as a surface-relative point, expressed in body frame
+     * @exception OrekitException if point cannot be converted to body frame
      */
     public GeodeticPoint transform(Vector3D point, Frame frame, AbsoluteDate date) 
-           throws OrekitException {
+        throws OrekitException {
 
         // transform line to body frame
-        Transform transf = frame.getTransformTo(bodyFrame, date);
-        Vector3D pointInBodyFrame = transf.transformPosition(point);
+        final Vector3D pointInBodyFrame =
+            frame.getTransformTo(bodyFrame, date).transformPosition(point);
         
         // compute some miscellaneous variables outside of the loop
         final double z          = pointInBodyFrame.getZ();

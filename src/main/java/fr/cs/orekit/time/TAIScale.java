@@ -17,7 +17,7 @@ public class TAIScale extends TimeScale {
      * @return the unique instance
      */
     public static TimeScale getInstance() {
-       return LazyHolder.instance;
+        return LazyHolder.instance;
     }
 
     /** Get the offset to convert locations from {@link TAIScale} to instance.

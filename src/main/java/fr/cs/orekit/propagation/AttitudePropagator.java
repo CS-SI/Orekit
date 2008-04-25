@@ -1,8 +1,6 @@
 package fr.cs.orekit.propagation;
 
 import fr.cs.orekit.attitudes.AttitudeLaw;
-import fr.cs.orekit.attitudes.DefaultAttitude;
-import fr.cs.orekit.propagation.numerical.forces.ForceModel;
 
 
 /** Every class implementing this interface realises a contract, which is
@@ -11,7 +9,8 @@ import fr.cs.orekit.propagation.numerical.forces.ForceModel;
  *
  * All propagated {@link SpacecraftState SpacecraftStates} will be updated to the correct
  * {@link AttitudeKinematics}, and so will all intermediate values so that the
- * {@link ForceModel forcemodels} wich need the attitude can use this information.
+ * {@link fr.cs.orekit.propagation.numerical.forces.ForceModel forcemodels} which needs
+ * the attitude can use this information.
  *
  * @see AttitudeKinematicsProvider
  * @see AttitudeKinematics
@@ -22,7 +21,7 @@ public interface AttitudePropagator {
 
     /** Sets the attitude law used by the propagator.
      * <p> If this method is never called before extrapolation, the attitude is
-     * set to default : {@link DefaultAttitude} <p>
+     * set to default : {@link fr.cs.orekit.attitudes.DefaultAttitude} <p>
      * @param attitudeLaw the attitude law to use
      */
     public void setAttitudeLaw(AttitudeLaw attitudeLaw);

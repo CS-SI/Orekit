@@ -201,12 +201,8 @@ public class Transform implements Serializable {
      * @return transformed line
      */
     public Line transformLine(Line line) {
-        Vector3D origin = line.getOrigin();
-        Vector3D direction = line.getDirection();
-        
-        Vector3D transformedOrigin = transformPosition(origin);
-        Vector3D transformedDirection = transformVector(direction);
-        
+        final Vector3D transformedOrigin    = transformPosition(line.getOrigin());
+        final Vector3D transformedDirection = transformVector(line.getDirection());
         return new Line(transformedOrigin, transformedDirection);
     }
     
