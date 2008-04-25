@@ -12,11 +12,11 @@ import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.StepHandler;
 import org.apache.commons.math.ode.StepNormalizer;
-import org.apache.commons.math.ode.SwitchingFunction;
 
 import fr.cs.orekit.attitudes.AttitudeLaw;
 import fr.cs.orekit.attitudes.DefaultAttitude;
 import fr.cs.orekit.errors.OrekitException;
+import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.propagation.AttitudePropagator;
@@ -272,10 +272,13 @@ public class NumericalPropagator
         state[5] = initialParameters.getLv();
         state[6] = initialState.getMass();
 
-        // Add the switching functions
+        // Set up the switching functions
+        integrator.clearSwitchingFunctions();
         for (final Iterator iter = forceSwf.iterator(); iter.hasNext(); ) {
             final OrekitSwitchingFunction swf = (OrekitSwitchingFunction) iter.next();
-            integrator.addSwitchingFunction(new MappingSwitchingFunction(swf),
+            integrator.addSwitchingFunction(new WrappedSwitchingFunction(swf, startDate, mu,
+                                                                         initialState.getFrame(),
+                                                                         attitudeLaw),
                                             swf.getMaxCheckInterval(), swf.getThreshold(),
                                             swf.getMaxIterationCount());
         }
@@ -334,7 +337,8 @@ public class NumericalPropagator
                 throw swfException;
             }
             // update space dynamics view
-            mapState(t, y);
+            currentState =
+                mapState(t, y, startDate, mu, currentState.getFrame(), attitudeLaw);
 
             // compute cartesian coordinates
             if (currentState.getMass() <= 0.0) {
@@ -359,68 +363,33 @@ public class NumericalPropagator
 
     }
 
-    /** Convert state array to space mecanics objects (AbsoluteDate and OrbitalParameters)
+    /** Convert state array to space dynamics objects (AbsoluteDate and OrbitalParameters)
      * @param t integration time (s)
-     * @param y state array
+     * @param y state as a flat array
+     * @param referenceDate reference date from which t is counted
+     * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param integrationFrame frame in which integration is performed
+     * @param attitudeLaw spacecraft attitude law
+     * @return state corresponding to the flat array as a space dynamics object
      * @exception OrekitException
      */
-    private void mapState(double t, double [] y) throws OrekitException {
+    private static SpacecraftState mapState(double t, double [] y,
+                                            AbsoluteDate referenceDate, double mu,
+                                            Frame integrationFrame, AttitudeLaw attitudeLaw)
+        throws OrekitException {
 
         // update space dynamics view
         final EquinoctialParameters currentParameters =
             new EquinoctialParameters(y[0], y[1],y[2],y[3],y[4],y[5],
                                       EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                      currentState.getFrame());
-        final AbsoluteDate currentDate = new AbsoluteDate(startDate, t);
-        currentState =
+                                      integrationFrame);
+        final AbsoluteDate currentDate = new AbsoluteDate(referenceDate, t);
+        return
             new SpacecraftState(new Orbit(currentDate, currentParameters), y[6],
                                 attitudeLaw.getState(currentDate,
                                                      currentParameters.getPVCoordinates(mu),
-                                                     currentState.getFrame()));
+                                                     integrationFrame));
     }
 
-
-    /** Converts OREKIT switching functions to commons-math interface. */
-    private class MappingSwitchingFunction implements SwitchingFunction {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -6733513215617899510L;
-
-        /** Underlying orekit switching function. */
-        private final OrekitSwitchingFunction swf;
-
-        public MappingSwitchingFunction(OrekitSwitchingFunction swf) {
-            this.swf = swf;
-        }
-
-        public double g(double t, double[] y){
-            try {
-                mapState(t, y);
-                return swf.g(currentState, mu);
-            } catch (OrekitException oe) {
-                if (swfException==null) {
-                    swfException = oe;
-                }
-                return Double.NaN;
-            }
-        }
-
-        public int eventOccurred(double t, double[] y) {
-            try {
-                mapState(t, y);
-                swf.eventOccurred(currentState, mu);
-            } catch (OrekitException oe) {
-                if (swfException==null) {
-                    swfException = oe;
-                }
-            }
-            return RESET_DERIVATIVES;
-        }
-
-        public void resetState(double t, double[] y) {
-            // never called since eventOccured never returns CallResetState
-        }
-
-    }
 
 }
