@@ -29,7 +29,7 @@ import fr.cs.orekit.utils.PVCoordinates;
 public class TargetPointing extends GroundPointing {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -6066660334639100843L;
+    private static final long serialVersionUID = 2018902366782191143L;
 
     /** Target in body frame. */
     private final PVCoordinates target;
@@ -52,7 +52,7 @@ public class TargetPointing extends GroundPointing {
         super(shape.getBodyFrame());
         
         /* Transform target from geodetic coordinates to position-velocity coordinates */
-        Vector3D target = shape.transform(targetGeo);
+        final Vector3D target = shape.transform(targetGeo);
         this.target = new PVCoordinates(target, Vector3D.zero);
     }
 
@@ -60,6 +60,7 @@ public class TargetPointing extends GroundPointing {
      * @param date computation date.
      * @param pv satellite position-velocity vector at given date in given frame.
      * @param frame frame in which satellite position-velocity is given.
+     * @return target position/velocity in body frame.
      * 
      * <p>User should check that position/velocity and frame is consistent with given frame.
      * </p>

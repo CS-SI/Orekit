@@ -31,7 +31,7 @@ import fr.cs.orekit.frames.Frame;
 public class Attitude implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -8060170681466993062L;
+    private static final long serialVersionUID = 2840719248123327714L;
 
     /** Reference frame.  */
     private final Frame referenceFrame;
@@ -43,6 +43,18 @@ public class Attitude implements Serializable {
     private final Vector3D spin;
 
    
+    /** Creates a new instance
+     * @param referenceFrame reference frame from which attitude is defined
+     * @param attitude rotation between reference frame and satellite frame
+     * @param spin satellite spin (axis and velocity)
+     */
+    public Attitude(Frame referenceFrame, Rotation attitude, Vector3D spin) {
+        this.referenceFrame =    referenceFrame;
+        this.attitude       =    attitude;
+        this.spin           =    spin;
+        
+    }
+    
     /** Get the reference frame.
      * @return referenceFrame satellite rotation from reference frame.
      */
@@ -65,17 +77,5 @@ public class Attitude implements Serializable {
     }
 
 
-    /** Creates a new instance
-     * @param referenceFrame reference frame from which attitude is defined
-     * @param rotation rotation between reference frame and satellite frame
-     * @param spin satellite spin (axis and velocity)
-     */
-    public Attitude(Frame referenceFrame, Rotation attitude, Vector3D spin) {
-        this.referenceFrame =    referenceFrame;
-        this.attitude       =    attitude;
-        this.spin           =    spin;
-        
-    }
-    
 
 }

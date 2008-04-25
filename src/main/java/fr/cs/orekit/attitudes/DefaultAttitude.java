@@ -32,7 +32,7 @@ public class DefaultAttitude implements AttitudeLaw {
      * @return the unique instance
      */
     public static DefaultAttitude getInstance() {
-       return LazyHolder.instance;
+        return LazyHolder.instance;
     }
 
     /** {@inheritDoc} */

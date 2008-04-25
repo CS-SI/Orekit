@@ -26,7 +26,7 @@ import fr.cs.orekit.utils.PVCoordinates;
 public class NadirPointing extends GroundPointing {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 2619053365385184060L;
+    private static final long serialVersionUID = 9077899256315179822L;
 
     /** Body shape.  */
     private final BodyShape shape;
@@ -44,6 +44,7 @@ public class NadirPointing extends GroundPointing {
      * @param date computation date.
      * @param pv satellite position-velocity vector at given date in given frame.
      * @param frame Frame in which satellite position-velocity is given.
+     * @return target position/velocity in body frame
      * @throws OrekitException if some specific error occurs
      * 
      * <p>User should check that position/velocity and frame is consistent with given frame.
@@ -51,13 +52,13 @@ public class NadirPointing extends GroundPointing {
      */
     protected PVCoordinates getTargetInBodyFrame(AbsoluteDate date,
                                                  PVCoordinates pv, Frame frame) 
-              throws OrekitException {
+        throws OrekitException {
         
         /* Satellite position in geodetic coordinates */
-        GeodeticPoint gpSat = shape.transform(pv.getPosition(), frame, date);
+        final GeodeticPoint gpSat = shape.transform(pv.getPosition(), frame, date);
 
         /* Ground point under satellite vertical */
-        GeodeticPoint gpGround = new GeodeticPoint(gpSat.longitude, gpSat.latitude, 0.);
+        final GeodeticPoint gpGround = new GeodeticPoint(gpSat.longitude, gpSat.latitude, 0.);
         
         /* Return target = this intersection point, with null velocity */
         return new PVCoordinates(shape.transform(gpGround), Vector3D.zero);

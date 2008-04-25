@@ -32,37 +32,42 @@ public abstract class GroundPointing implements AttitudeLaw {
 
     /** Default constructor.
      * Build a new instance with arbitrary default elements.
-     * @param frame the frame that rotates with the body
+     * @param bodyFrame the frame that rotates with the body
      */
     protected GroundPointing(Frame bodyFrame) {
-            this.bodyFrame = bodyFrame;
+        this.bodyFrame = bodyFrame;
     }
     
     /** Get target point in body frame.
+     * @param date date when the target point shall be computed
+     * @param pv position/velocity of the point
+     * @param frame frame in which the point shall be computed
+     * @throws OrekitException if some specific error occurs
      * @return target in body frame
      */
     protected abstract PVCoordinates getTargetInBodyFrame(AbsoluteDate date, PVCoordinates pv, 
-                                                           Frame frame)
-                       throws OrekitException;
+                                                          Frame frame)
+        throws OrekitException;
     
     /** Compute the target ground point at given date in given frame.
      * @param date date when the point shall be computed
      * @param pv position-velocity of the point
      * @param frame frame in which the point shall be computed
      * @throws OrekitException if some specific error occurs
+     * @return observed ground point position/velocity in given frame
      * 
      * <p>User should check that position/velocity and frame is consistent with given frame.
      * </p>
      */
     public PVCoordinates getObservedGroundPoint(AbsoluteDate date, PVCoordinates pv, 
-                                                     Frame frame) 
+                                                Frame frame) 
         throws OrekitException {
         
         /* Get target in body frame */
-        PVCoordinates targetInBodyFrame = getTargetInBodyFrame(date, pv, frame);
+        final PVCoordinates targetInBodyFrame = getTargetInBodyFrame(date, pv, frame);
 
         /* Transform to given frame */
-        Transform t = bodyFrame.getTransformTo(frame, date);        
+        final Transform t = bodyFrame.getTransformTo(frame, date);        
         
         /* Target in given frame. */
         return t.transformPVCoordinates(targetInBodyFrame);
@@ -72,33 +77,34 @@ public abstract class GroundPointing implements AttitudeLaw {
      * @param date date when system state shall be computed
      * @param pv satellite position/velocity in given frame
      * @param frame the frame in which pv is defined
+     * @return satellite attitude state at date
      * @throws OrekitException if some specific error occurs
      * 
      * <p>User should check that position/velocity and frame is consistent with given frame.
      * </p>
      */
     public Attitude getState(AbsoluteDate date, PVCoordinates pv, Frame frame) 
-        throws OrekitException
-    {
+        throws OrekitException {
+        
         /* Construction of the satellite-target position/velocity vector */
-        PVCoordinates pointing =  new PVCoordinates(1, getObservedGroundPoint(date, pv, frame), -1, pv);
-        Vector3D p = pointing.getPosition();
-        Vector3D v = pointing.getVelocity();
+        final PVCoordinates pointing =  new PVCoordinates(1, getObservedGroundPoint(date, pv, frame), -1, pv);
+        final Vector3D pos = pointing.getPosition();
+        final Vector3D vel = pointing.getVelocity();
             
         /* New orekit exception if null position. */
-        if (p.equals(Vector3D.zero)) {
+        if (pos.equals(Vector3D.zero)) {
             throw new OrekitException("satellite smashed on its target",
-                                      new Object[] {p});
+                                      new Object[] {pos});
         }
         
         /* Attitude rotation in given frame : 
          * line of sight -> z satellite axis, 
          * satellite velocity -> x satellite axis. */
-        Rotation r = new Rotation(p, pv.getVelocity(), Vector3D.plusK, Vector3D.plusI);
+        final Rotation rot = new Rotation(pos, pv.getVelocity(), Vector3D.plusK, Vector3D.plusI);
         
         /* Attitude spin */
-        Vector3D spin = new Vector3D(1/Vector3D.dotProduct(p, p), Vector3D.crossProduct(p, v));
+        final Vector3D spin = new Vector3D(1/Vector3D.dotProduct(pos, pos), Vector3D.crossProduct(pos, vel));
         
-        return new Attitude(frame, r, r.applyTo(spin));
+        return new Attitude(frame, rot, rot.applyTo(spin));
     }
 }

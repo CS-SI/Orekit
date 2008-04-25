@@ -20,6 +20,9 @@ public interface AttitudeLaw extends Serializable {
     
     /** Compute the system state at given date.
      * @param date date when system state shall be computed
+     * @param pv satellite position/velocity at date, in given frame
+     * @param frame frame in which satellite position/velocity are given
+     * @return attitude state at date, in given frame
      * @throws OrekitException if some specific error occurs
      */
     public abstract Attitude getState(AbsoluteDate date, PVCoordinates pv, Frame frame)

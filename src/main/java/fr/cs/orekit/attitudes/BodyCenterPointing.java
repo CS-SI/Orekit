@@ -33,6 +33,7 @@ public class BodyCenterPointing extends GroundPointing {
      * @param date computation date.
      * @param pv satellite position-velocity vector at given date in given frame.
      * @param frame the frame in which satellite position-velocity is given.
+     * @return target position/velocity in body frame.
      * 
      * <p>User should check that position/velocity and frame is consistent with given frame.
      * </p>
