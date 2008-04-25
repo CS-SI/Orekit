@@ -1,16 +1,19 @@
 package fr.cs.orekit.perturbations;
 
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.apache.commons.math.geometry.Vector3D;
+
 import fr.cs.orekit.Utils;
 import fr.cs.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.frames.Transform;
-import fr.cs.orekit.iers.IERSDataResetter;
+import fr.cs.orekit.iers.IERSDirectoryCrawler;
 import fr.cs.orekit.models.perturbations.SimpleExponentialAtmosphere;
 import fr.cs.orekit.time.AbsoluteDate;
-
-import junit.framework.*;
 
 public class DragTest extends TestCase {
 
@@ -35,11 +38,7 @@ public class DragTest extends TestCase {
     }
 
     public void setUp() {
-        IERSDataResetter.setUp("regular-data");
-    }
-
-    public void tearDown() {
-        IERSDataResetter.tearDown();
+        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
     }
 
     public static Test suite() {

@@ -11,7 +11,7 @@ import junit.framework.TestCase;
 public abstract class AbstractFilesLoaderTest extends TestCase {
 
     protected void setRoot(String directoryName) throws OrekitException {
-        IERSDataResetter.setUp(directoryName);
+        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, directoryName);
         eop = new TreeSet(new ChronologicalEOPComparator());
     }
 
@@ -30,7 +30,6 @@ public abstract class AbstractFilesLoaderTest extends TestCase {
 
     public void tearDown() {
         eop = null;
-        IERSDataResetter.tearDown();
     }
 
     private static class ChronologicalEOPComparator

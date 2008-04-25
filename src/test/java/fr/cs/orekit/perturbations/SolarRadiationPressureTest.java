@@ -15,7 +15,7 @@ import org.apache.commons.math.ode.IntegratorException;
 import fr.cs.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.iers.IERSDataResetter;
+import fr.cs.orekit.iers.IERSDirectoryCrawler;
 import fr.cs.orekit.models.bodies.Sun;
 import fr.cs.orekit.models.spacecraft.SolarRadiationPressureSpacecraft;
 import fr.cs.orekit.models.spacecraft.SphericalSpacecraft;
@@ -151,11 +151,7 @@ public class SolarRadiationPressureTest extends TestCase {
     }
 
     public void setUp() {
-        IERSDataResetter.setUp("regular-data");
-    }
-
-    public void tearDown() {
-        IERSDataResetter.tearDown();
+        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
     }
 
     public static Test suite() {

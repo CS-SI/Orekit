@@ -10,7 +10,7 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.iers.IERSDataResetter;
+import fr.cs.orekit.iers.IERSDirectoryCrawler;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.ChunkedDate;
 import fr.cs.orekit.time.ChunkedTime;
@@ -234,111 +234,7 @@ public class ITRF2000FrameTest extends TestCase {
         assertEquals(-2859.11413,  pv2000.getVelocity().getZ(),   0.01);
     }
 
-    public void testAASReferenceLEO() throws OrekitException, ParseException {
-
-        IERSDataResetter.setUp("testitrf-data");
-
-        AbsoluteDate t0 = new AbsoluteDate(new ChunkedDate(2004, 04, 06),
-                                           new ChunkedTime(07, 51, 28.386),
-                                           UTCScale.getInstance());
-        t0 = new AbsoluteDate(t0, 0.000009);
-
-        Frame itrfA = Frame.getReferenceFrame(Frame.ITRF2000A, t0);
-
-        Transform transA = itrfA.getTransformTo(Frame.getJ2000(), t0);
-
-        Frame itrfB = Frame.getReferenceFrame(Frame.ITRF2000B, t0);
-
-        Transform transB = itrfB.getTransformTo(Frame.getJ2000(), t0);
-
-        // Positions LEO
-
-        Vector3D posITRF = new Vector3D(-1033.4793830*1000,
-                                        7901.2952754*1000,
-                                        6380.3565958 *1000);
-        Vector3D velITRF = new Vector3D(-3.225636520*1000,
-                                        -2.872451450*1000,
-                                        5.53192446*1000);
-        PVCoordinates pvITRF = new PVCoordinates(posITRF , velITRF);
-
-        Vector3D posGCRFiau2000a = new Vector3D(5102.5089579*1000, 6123.0114038*1000, 6378.1369252*1000);
-        Vector3D velGCRFiau2000a = new Vector3D(-4.743220156*1000, 0.790536497*1000, 5.533755728*1000);
-        Vector3D posGCRFiau2000b = new Vector3D(5102.5089579*1000, 6123.0114012*1000, 6378.1369277*1000);
-        Vector3D velGCRFiau2000b = new Vector3D(-4.743220156*1000, 0.790536495*1000, 5.533755729*1000);
-
-        // TESTS
-
-        PVCoordinates resultA = transA.transformPVCoordinates(pvITRF);
-        checkVectors(posGCRFiau2000a,resultA.getPosition(), 8.31e-10, 8.31e-10, 0.009);
-        checkVectors(velGCRFiau2000a,resultA.getVelocity(), 1.6e-9,  2.8e-9, 2.04e-5);
-        PVCoordinates resultB = transB.transformPVCoordinates(pvITRF);
-        checkVectors(posGCRFiau2000b,resultB.getPosition(), 4.1e-8, 4.01e-8, 0.41);
-        checkVectors(velGCRFiau2000b,resultB.getVelocity(),3.6e-8, 3.6e-8, 2.6e-4);
-//      FIXME : ITRF B non satisfaisant.
-//      System.out.println( " ITRF LEO ");
-
-//      Utils.vectorToString("B pos cals ", resultB.getPosition());
-//      Utils.vectorToString("B pos test ", posGCRFiau2000b);
-//      Utils.vectorToString("B dif ", posGCRFiau2000b.subtract(resultB.getPosition()));
-
-    }
-
-    public void testAASReferenceGEO() throws OrekitException, ParseException {
-
-        IERSDataResetter.setUp("testitrf-data");
-
-        AbsoluteDate t0 = new AbsoluteDate(new ChunkedDate(2004, 06, 01),
-                                           ChunkedTime.H00,
-                                           UTCScale.getInstance());
-
-        Frame itrfA = Frame.getReferenceFrame(Frame.ITRF2000A, t0);
-
-        Transform transA = itrfA.getTransformTo(Frame.getJ2000(), t0);
-
-        Frame itrfB = Frame.getReferenceFrame(Frame.ITRF2000B, t0);
-
-        Transform transB = itrfB.getTransformTo(Frame.getJ2000(), t0);
-
-        //  Positions GEO
-
-        Vector3D posITRF = new Vector3D(24796.9192915*1000,
-                                        -34115.8709234*1000,
-                                        10.2260621*1000);
-        Vector3D velITRF = new Vector3D(-0.000979178*1000,
-                                        -0.001476538*1000,
-                                        -0.000928776*1000);
-        PVCoordinates pvITRF = new PVCoordinates(posITRF , velITRF);
-
-        Vector3D posGCRFiau2000a = new Vector3D(-40588.1503617*1000, -11462.1670397*1000, 27.1431974*1000);
-        Vector3D velGCRFiau2000a = new Vector3D(0.834787458*1000, -2.958305691*1000, -0.001172993*1000);
-        Vector3D posGCRFiau2000b = new Vector3D(-40588.1503617*1000,-11462.1670397*1000, 27.1432125*1000);
-        Vector3D velGCRFiau2000b = new Vector3D(0.834787458*1000,-2.958305691*1000,-0.001172999*1000);
-
-        // TESTS
-
-        PVCoordinates resultA = transA.transformPVCoordinates(pvITRF);
-        checkVectors(posGCRFiau2000a,resultA.getPosition(), 7.76e-9,  7.76e-9, 0.33);
-        checkVectors(velGCRFiau2000a,resultA.getVelocity(), 7.76e-9,  7.77e-9, 2.4e-5);
-        PVCoordinates resultB = transB.transformPVCoordinates(pvITRF);
-        checkVectors(posGCRFiau2000b,resultB.getPosition(),3.81e-8, 3.81e-8, 1.61);
-        checkVectors(velGCRFiau2000b,resultB.getVelocity(), 1.7e-8,1.7e-8, 5.11e-5);
-
-//      System.out.println( " ITRF GEO ");
-//      Utils.vectorToString("A pos cals ", resultA.getPosition());
-//      Utils.vectorToString("A pos test ", posGCRFiau2000a);
-//      Utils.vectorToString("A dif ", posGCRFiau2000a.subtract(resultA.getPosition()));
-
-//      Utils.vectorToString("B pos cals ", resultB.getPosition());
-//      Utils.vectorToString("B pos test ", posGCRFiau2000b);
-//      Utils.vectorToString("B dif ", posGCRFiau2000b.subtract(resultB.getPosition()));
-
-//      Utils.vectorToString(" vel cals ", result.getVelocity() );
-//      Utils.vectorToString(" vel test ", testVelITRF);
-//      Utils.vectorToString(" dif ", testVelITRF.subtract(result.getVelocity()));
-
-    }
-
-    public void aatestValladoReference() throws OrekitException, ParseException {
+    public void testValladoReference() throws OrekitException, ParseException {
 
         AbsoluteDate t0 = new AbsoluteDate(new ChunkedDate(2004, 04, 06),
                                            new ChunkedTime(07, 51, 28.386),
@@ -450,87 +346,27 @@ public class ITRF2000FrameTest extends TestCase {
     }
 
     public void setUp() {
-        IERSDataResetter.setUp("regular-data");
+        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
     }
-
-    public void tearDown() {
-        IERSDataResetter.tearDown();
-    }
-
 
     /** Compare and asserts two vectors.
      * @param vRef reference vector
      * @param vResult vector to test
-     * @param deltaAngle the delta angle
-     * @param deltaRel the relative delta in position
+     * @param deltaAngle tolerance on angle
+     * @param deltaRel tolerance on relative position
+     * @param deltaAbs tolerance on absolute position
      */
     private void checkVectors(Vector3D vRef , Vector3D vResult,
-                              double deltaAngle, double deltaRel, double delta) {
-
+                              double deltaAngle,
+                              double deltaRel, double deltaAbs) {
+        assertEquals(0, Vector3D.angle(vRef, vResult), deltaAngle);
         Vector3D d = vRef.subtract(vResult);
-        Rotation r = new Rotation(vRef, vResult);
-        assertEquals(0,r.getAngle(),deltaAngle);
-
-        assertEquals(0, d.getNorm()/vRef.getNorm() , deltaRel);
-        assertEquals(0, d.getNorm() , delta);
-
-
-
+        assertEquals(0, d.getNorm() / vRef.getNorm(), deltaRel);
+        assertEquals(0, d.getNorm(), deltaAbs);
     }
 
     public static Test suite() {
         return new TestSuite(ITRF2000FrameTest.class);
     }
-
-//  private class LagrangeFitter {
-
-//  private double[] x;
-//  private double[] y;
-//  private int n;
-
-//  LagrangeFitter(double[] x, double[] y) {
-//  this.x= x;
-//  this.y = y;
-//  n = x.length -1;
-//  }
-
-//  public double getValue(double x) {
-//  double p = 0;
-
-//  for (int j = 0; j<= n ; j++) {
-//  double l = 1;
-//  for(int k=0; k<=n; k++ ) {
-//  if(k!=j) {
-//  l *= (x - this.x[k]) /( this.x[j] - this.x[k]);
-//  }
-//  }
-//  p += y[j]*l;
-//  }
-//  return p;
-//  }
-
-//  }
-
-    //
-//  double xp = -6.798284606394803e-7;
-//  double yp = 1.6252035846549786E-6;
-//  System.out.println(xp * 1296000 /(2 * Math.PI) );
-//  System.out.println(yp * 1296000 /(2 * Math.PI) );
-
-//  AbsoluteDate zero = new AbsoluteDate(new ChunkedDate(2004, 04, 05),
-//  ChunkedTime.H00,
-//  UTCScale.getInstance());
-//  double[] t = new double[] {0, 86400, 2*86400, 3*86400 };
-//  double[] x = new double[] {-0.141167,-0.140639 , -0.140023, -0.139768 };
-//  double[] y = new double[] {0.330933, 0.333257,0.336179,0.339275};
-
-//  LagrangeFitter lx = new LagrangeFitter(t, x);
-//  LagrangeFitter ly = new LagrangeFitter(t, y);
-
-
-//  System.out.println(" t0 : " + t0.minus(zero));
-
-//  System.out.println(" lx : " +lx.getValue(t0.minus(zero)));
-//  System.out.println(" ly : " +ly.getValue(t0.minus(zero)));
 
 }

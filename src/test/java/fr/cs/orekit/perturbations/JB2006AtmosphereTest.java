@@ -14,7 +14,7 @@ import fr.cs.orekit.bodies.GeodeticPoint;
 import fr.cs.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.iers.IERSDataResetter;
+import fr.cs.orekit.iers.IERSDirectoryCrawler;
 import fr.cs.orekit.models.bodies.Sun;
 import fr.cs.orekit.models.perturbations.DTM2000AtmosphereModel;
 import fr.cs.orekit.models.perturbations.JB2006Atmosphere;
@@ -258,11 +258,7 @@ public class JB2006AtmosphereTest extends TestCase {
     }
 
     public void setUp() {
-        IERSDataResetter.setUp("regular-data");
-    }
-
-    public void tearDown() {
-        IERSDataResetter.tearDown();
+        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
     }
 
     public static Test suite() {

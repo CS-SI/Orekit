@@ -8,7 +8,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.iers.IERSDataResetter;
+import fr.cs.orekit.iers.IERSDirectoryCrawler;
 
 public class UTCScaleTest
 extends TestCase {
@@ -108,13 +108,8 @@ extends TestCase {
     }
 
     public void setUp() throws OrekitException {
-        IERSDataResetter.setUp("regular-data");
+        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
         utc = UTCScale.getInstance();
-    }
-
-    public void tearDown() {
-        IERSDataResetter.tearDown();
-        utc = null;
     }
 
     public static Test suite() {

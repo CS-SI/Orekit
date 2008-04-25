@@ -14,7 +14,7 @@ import org.apache.commons.math.util.MathUtils;
 
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.iers.IERSDataResetter;
+import fr.cs.orekit.iers.IERSDirectoryCrawler;
 import fr.cs.orekit.orbits.CircularParameters;
 import fr.cs.orekit.orbits.KeplerianParameters;
 import fr.cs.orekit.orbits.Orbit;
@@ -138,11 +138,7 @@ public class ConstantThrustManeuverTest extends TestCase {
     }
 
     public void setUp() {
-        IERSDataResetter.setUp("regular-data");
-    }
-
-    public void tearDown() {
-        IERSDataResetter.tearDown();
+        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
     }
 
     public static Test suite() {

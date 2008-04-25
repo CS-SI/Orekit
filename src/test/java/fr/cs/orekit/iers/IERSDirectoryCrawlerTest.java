@@ -19,7 +19,7 @@ public class IERSDirectoryCrawlerTest extends TestCase {
 
     private void checkFailure(String directoryName) {
         try {
-            IERSDataResetter.setUp(directoryName);
+            System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, directoryName);
             new IERSDirectoryCrawler().crawl(new DoNothingCrawler(".*"));
             fail("an exception should have been thrown");
         } catch (OrekitException e) {
@@ -37,10 +37,6 @@ public class IERSDirectoryCrawlerTest extends TestCase {
         protected void visit(BufferedReader reader) {
             // do nothing
         }
-    }
-
-    public void tearDown() {
-        IERSDataResetter.tearDown();
     }
 
     public static Test suite() {

@@ -19,7 +19,7 @@ import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.frames.Transform;
-import fr.cs.orekit.iers.IERSDataResetter;
+import fr.cs.orekit.iers.IERSDirectoryCrawler;
 import fr.cs.orekit.models.bodies.Sun;
 import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.KeplerianParameters;
@@ -247,7 +247,7 @@ public class DrozinerAttractionModelTest extends TestCase {
     }
 
     public void setUp() {
-        IERSDataResetter.setUp("regular-data");
+        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
         try {
             mu  =  3.986004415e+14;
             ae  =  6378136.460;
@@ -267,7 +267,6 @@ public class DrozinerAttractionModelTest extends TestCase {
     }
 
     public void tearDown() {
-        IERSDataResetter.tearDown();
         itrf2000   = null;
         propagator = null;
     }
