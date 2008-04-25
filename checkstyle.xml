@@ -3,41 +3,67 @@
                         "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 
 <module name="Checker">
-    <property name="localeLanguage" value="en" />
     <module name="TreeWalker">
-        <module name="AvoidStarImport" />
-        <module name="DeclarationOrder" />
-        <module name="EqualsHashCode" />
-        <module name="FallThrough" />
-        <module name="FinalLocalVariable" />
-        <module name="IllegalCatch" />
-        <module name="IllegalImport" />
+        <module name="AvoidStarImport"/>
+        <module name="ConstantName"/>
+        <module name="DeclarationOrder"/>
+        <module name="EqualsHashCode"/>
+        <module name="FallThrough"/>
+        <module name="FinalLocalVariable"/>
+        <module name="FinalParameters"/>
+        <module name="GenericIllegalRegexp">
+            <property name="format" value="\s$"/>
+            <property name="message" value="spurious spaces at end of line"/>
+        </module>
+        <module name="GenericIllegalRegexp">
+            <property name="format" value="System\.out\.println"/>
+            <property name="message" value="forbidden print to standard output"/>
+        </module>
+        <module name="HiddenField">
+            <property name="ignoreConstructorParameter" value="true"/>
+            <property name="ignoreSetter" value="true"/>
+        </module>
+        <module name="HideUtilityClassConstructor"/>
+        <module name="IllegalCatch"/>
+        <module name="IllegalImport"/>
         <module name="Indentation">
+            <property name="basicOffset" value="4"/>
             <property name="caseIndent" value="0"/>
         </module>
         <module name="JavadocMethod">
-            <property name="scope" value="protected" />
-            <property name="allowUndeclaredRTE" value="true" />
-            <property name="allowMissingPropertyJavadoc" value="true" />
+            <property name="allowUndeclaredRTE" value="true"/>
+            <property name="allowMissingPropertyJavadoc" value="true"/>
         </module>
-        <module name="JavadocType" />
-        <module name="JavadocVariable">
-            <property name="scope" value="protected" />
-        </module>
-        <module name="MissingSwitchDefault" />
-        <module name="ModifierOrder" />
-        <module name="MultipleStringLiterals">
-            <property name="ignoreStringsRegexp" value='^"."$' />
-        </module>
-        <module name="MultipleVariableDeclarations" />
+        <module name="JavadocStyle"/>
+        <module name="JavadocType"/>
+        <module name="JavadocVariable"/>
+        <module name="MissingSwitchDefault"/>
+        <module name="ModifierOrder"/>
+        <module name="MultipleStringLiterals"/>
+        <module name="MultipleVariableDeclarations"/>
+        <module name="NoWhitespaceAfter"/>
+        <module name="NoWhitespaceBefore"/>
         <module name="OperatorWrap">
-          <property name="option" value="eol" />
+            <property name="option" value="eol"/>
         </module>
-        <module name="StringLiteralEquality" />
-        <module name="TabCharacter" />
-        <module name="TodoComment" />
-        <module name="UnnecessaryParentheses" />
-        <module name="UnusedImports" />
+        <module name="RedundantModifier"/>
+        <module name="StringLiteralEquality"/>
+        <module name="TabCharacter"/>
+        <module name="TodoComment"/>
+        <module name="UnnecessaryParentheses"/>
+        <module name="UnusedImports"/>
+        <module name="VisibilityModifier"/>
+        <module name="WhitespaceAround">
+            <property name="tokens"
+                      value="ASSIGN, BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BSR, BSR_ASSIGN,
+                             BXOR, BXOR_ASSIGN, COLON, DIV, DIV_ASSIGN, EQUAL, GE, GT,
+                             LAND, LCURLY, LE, LITERAL_CATCH, LITERAL_DO, LITERAL_ELSE,
+                             LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF, LITERAL_RETURN,
+                             LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE, LOR, LT,
+                             MINUS, MINUS_ASSIGN, MOD, MOD_ASSIGN, NOT_EQUAL, PLUS,
+                             PLUS_ASSIGN, QUESTION, RCURLY, SL, SLIST, SL_ASSIGN, SR,
+                             SR_ASSIGN, STAR, STAR_ASSIGN"/>
+        </module>
     </module>
-    <module name="NewlineAtEndOfFile" />
+    <module name="NewlineAtEndOfFile"/>
 </module>
