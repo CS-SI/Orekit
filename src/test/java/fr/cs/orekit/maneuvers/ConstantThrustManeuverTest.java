@@ -106,9 +106,9 @@ public class ConstantThrustManeuverTest extends TestCase {
         double delta = Math.toRadians(-7.4978);
         double alpha = Math.toRadians(351);
 
-        Vector3D dir = new Vector3D ( Math.cos(alpha)*Math.cos(delta),
-                                      Math.cos(alpha)*Math.sin(delta),
-                                      Math.sin(delta));
+        Vector3D dir = new Vector3D (Math.cos(alpha) * Math.cos(delta),
+                                     Math.cos(alpha) * Math.sin(delta),
+                                     Math.sin(delta));
 
         OrbitalParameters transPar = new KeplerianParameters(a, e, i,
                                                              omega, OMEGA,
@@ -121,19 +121,17 @@ public class ConstantThrustManeuverTest extends TestCase {
                                                  new ChunkedTime(04, 15, 34.080),
                                                  UTCScale.getInstance());
 
-        SpacecraftState transOrb = new SpacecraftState(new Orbit(initDate, transPar), mass);
+        SpacecraftState transOrb = new SpacecraftState(new Orbit(initDate, transPar), mass, mu);
 
-        ConstantThrustManeuver man = new ConstantThrustManeuver(fireDate,
-                                                                duration, f, isp, dir , ConstantThrustManeuver.INERTIAL);
-        GraggBulirschStoerIntegrator gragg = new GraggBulirschStoerIntegrator(1e-50, 1000, 0, 1e-08);
+        NumericalPropagator propagator =
+            new NumericalPropagator(mu, new GraggBulirschStoerIntegrator(1e-50, 1000, 0, 1e-08));
+        propagator.addForceModel(new ConstantThrustManeuver(fireDate, duration, f, isp, dir,
+                                                            ConstantThrustManeuver.INERTIAL));
 
-        NumericalPropagator pro = new NumericalPropagator(mu, gragg);
+        SpacecraftState finalorb =
+            propagator.propagate(transOrb, new AbsoluteDate(fireDate, 3800));
 
-        pro.addForceModel(man);
-
-        SpacecraftState finalorb = pro.propagate(transOrb, new AbsoluteDate(fireDate, 3800));
-
-        assertEquals(2007.882454, finalorb .getMass(), 1e-6);
+        assertEquals(2007.88245442614, finalorb.getMass(), 1e-10);
         assertEquals(2.6792, Math.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), Math.PI)), 1e-4);
         assertEquals(28969, finalorb.getA()/1000, 1);
 
