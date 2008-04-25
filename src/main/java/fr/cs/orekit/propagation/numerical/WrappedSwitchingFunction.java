@@ -15,7 +15,7 @@ import fr.cs.orekit.time.AbsoluteDate;
 class WrappedSwitchingFunction implements SwitchingFunction {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 1481804546217887349L;
+    private static final long serialVersionUID = 4547309170150559639L;
 
     /** Underlying Orekit switching function. */
     private final OrekitSwitchingFunction swf;
