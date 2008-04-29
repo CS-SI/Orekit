@@ -26,9 +26,13 @@ public class BulletinBFilesLoader extends IERSFileCrawler {
     /** Section header pattern. */
     private final Pattern sectionHeaderPattern;
 
-    /** Patterns in section 1. */
+    /** Data line pattern in section 1. */
     private final Pattern section1DataPattern;
+
+    /** Pattern for line introducing the final bulletin B values. */
     private final Pattern finalValuesStartPattern;
+
+    /** Pattern for line introducing the bulletin B preliminary extension. */
     private final Pattern finalValuesEndPattern;
 
     /** Data line pattern in section 2. */
@@ -41,7 +45,7 @@ public class BulletinBFilesLoader extends IERSFileCrawler {
      * @param eop set where to <em>add</em> EOP data
      * (pre-existing data is preserved)
      */
-    public BulletinBFilesLoader(TreeSet eop) {
+    public BulletinBFilesLoader(final TreeSet eop) {
 
         super("^bulletinb_IAU2000-(\\d\\d\\d)\\.txt(?:\\.gz)?$");
         this.eop = eop;
