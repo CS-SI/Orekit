@@ -18,7 +18,7 @@ public abstract class SeriesTerm implements Serializable {
      * @param sinCoeff coefficient for the sine of the argument
      * @param cosCoeff coefficient for the cosine of the argument
      */
-    protected SeriesTerm(double sinCoeff, double cosCoeff) {
+    protected SeriesTerm(final double sinCoeff, final double cosCoeff) {
         this.sinCoeff = sinCoeff;
         this.cosCoeff = cosCoeff;
     }
@@ -27,7 +27,7 @@ public abstract class SeriesTerm implements Serializable {
      * @param elements luni-solar and planetary elements for the current date
      * @return current value of the term
      */
-    public double value(BodiesElements elements) {
+    public double value(final BodiesElements elements) {
         final double a = argument(elements);
         return sinCoeff * Math.sin(a) + cosCoeff * Math.cos(a);
     }
@@ -36,7 +36,7 @@ public abstract class SeriesTerm implements Serializable {
      * @param elements luni-solar and planetary elements for the current date
      * @return current value of the argument
      */
-    protected abstract double argument(BodiesElements elements);
+    protected abstract double argument(final BodiesElements elements);
 
     /** Factory method for building the appropriate object.
      * <p>The method checks the null coefficients and build an instance
@@ -60,12 +60,12 @@ public abstract class SeriesTerm implements Serializable {
      * @param cPa coefficient for general accumulated precession in longitude
      * @return a nutation serie term instance well suited for the set of coefficients
      */
-    public static SeriesTerm buildTerm(double sinCoeff, double cosCoeff,
-                                       int cL, int cLPrime, int cF,
-                                       int cD, int cOmega,
-                                       int cMe, int cVe, int cE,
-                                       int cMa, int cJu, int cSa,
-                                       int cUr, int cNe, int cPa) {
+    public static SeriesTerm buildTerm(final double sinCoeff, final double cosCoeff,
+                                       final int cL, final int cLPrime, final int cF,
+                                       final int cD, final int cOmega,
+                                       final int cMe, final int cVe, final int cE,
+                                       final int cMa, final int cJu, final int cSa,
+                                       final int cUr, final int cNe, final int cPa) {
         if (cL == 0 && cLPrime == 0 && cF == 0 && cD == 0 && cOmega == 0) {
             return new PlanetaryTerm(sinCoeff, cosCoeff,
                                      cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);

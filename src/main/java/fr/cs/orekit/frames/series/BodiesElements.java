@@ -65,9 +65,9 @@ public final class BodiesElements {
      * @param lNe mean Neptune longitude
      * @param pa general accumulated precession in longitude
      */
-    public BodiesElements(double l, double lPrime, double f, double d, double omega,
-                          double lMe, double lVe, double lE, double lMa, double lJu,
-                          double lSa, double lUr, double lNe, double pa) {
+    public BodiesElements(final double l, final double lPrime, final double f, final double d, final double omega,
+                          final double lMe, final double lVe, final double lE, final double lMa, final double lJu,
+                          final double lSa, final double lUr, final double lNe, final double pa) {
         this.l      = l;
         this.lPrime = lPrime;
         this.f      = f;

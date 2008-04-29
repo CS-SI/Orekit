@@ -32,8 +32,8 @@ class LuniSolarTerm extends SeriesTerm {
      * @param cD coefficient for mean elongation of the Moon from the Sun
      * @param cOmega coefficient for mean longitude of the ascending node of the Moon
      */
-    public LuniSolarTerm(double sinCoeff, double cosCoeff,
-                         int cL, int cLPrime, int cF, int cD, int cOmega) {
+    public LuniSolarTerm(final double sinCoeff, final double cosCoeff,
+                         final int cL, final int cLPrime, final int cF, final int cD, final int cOmega) {
         super(sinCoeff, cosCoeff);
         this.cL      = cL;
         this.cLPrime = cLPrime;
@@ -43,7 +43,7 @@ class LuniSolarTerm extends SeriesTerm {
     }
 
     /** {@inheritDoc} */
-    protected double argument(BodiesElements elements) {
+    protected double argument(final BodiesElements elements) {
         return cL * elements.l + cLPrime * elements.lPrime + cF * elements.f +
                cD * elements.d + cOmega * elements.omega;
     }

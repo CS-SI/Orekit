@@ -20,7 +20,7 @@ public class KeplerianPropagator implements Ephemeris, AttitudePropagator {
     /** Serializable UID. */
     private static final long serialVersionUID = -4355212980078171786L;
 
-    /** Attitude law */
+    /** Attitude law. */
     private AttitudeLaw attitudeLaw;
 
     /** Initial orbit date. */
@@ -42,7 +42,7 @@ public class KeplerianPropagator implements Ephemeris, AttitudePropagator {
      * @param initialState initial state
      * @param mu central acceleration coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public KeplerianPropagator(SpacecraftState initialState, double mu) {
+    public KeplerianPropagator(final SpacecraftState initialState, final double mu) {
         this.initialDate = initialState.getDate();
         this.initialParameters = new EquinoctialParameters(initialState.getParameters(), mu);
         this.mass = initialState.getMass();
@@ -52,7 +52,7 @@ public class KeplerianPropagator implements Ephemeris, AttitudePropagator {
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState getSpacecraftState(AbsoluteDate date)
+    public SpacecraftState getSpacecraftState(final AbsoluteDate date)
         throws PropagationException {
 
         // evaluation of LM = PA + RAAN + M at extrapolated time
@@ -77,7 +77,7 @@ public class KeplerianPropagator implements Ephemeris, AttitudePropagator {
 
     }
 
-    public void setAttitudeLaw(AttitudeLaw attitudeLaw) {
+    public void setAttitudeLaw(final AttitudeLaw attitudeLaw) {
         this.attitudeLaw = attitudeLaw;
     }
 

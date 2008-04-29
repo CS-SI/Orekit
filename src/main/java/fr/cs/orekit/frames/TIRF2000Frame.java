@@ -17,24 +17,24 @@ class TIRF2000Frame extends Frame {
     private static final long serialVersionUID = 5098003225016267874L;
 
     /** 2&pi;. */
-    private static final double twoPi = 2.0 * Math.PI;
+    private static final double TWO_PI = 2.0 * Math.PI;
 
     /** Constant term of Capitaine's Earth Rotation Angle model. */
-    private static final double era0 = twoPi * 0.7790572732640;
+    private static final double ERA_0 = TWO_PI * 0.7790572732640;
 
     /** Offset between J2000.0 epoch and Java epoch in seconds. */
-    private static final double j2000MinusJava =
+    private static final double J2000_MINUS_JAVA =
         AbsoluteDate.J2000Epoch.minus(AbsoluteDate.JavaEpoch);
 
     /** Rate term of Capitaine's Earth Rotation Angle model.
      * (radians per day, main part) */
-    private static final double era1A = twoPi;
+    private static final double ERA_1A = TWO_PI;
 
     /** Rate term of Capitaine's Earth Rotation Angle model.
      * (radians per day, fractional part) */
-    private static final double era1B = era1A * 0.00273781191135448;
+    private static final double ERA_1B = ERA_1A * 0.00273781191135448;
 
-    /** Cached date to avoid useless calculus */
+    /** Cached date to avoid useless calculus. */
     private AbsoluteDate cachedDate;
 
     /** Earth Rotation Angle, in radians. */
@@ -44,9 +44,9 @@ class TIRF2000Frame extends Frame {
      * @param parent the IRF2000
      * @param date the current date
      * @param name the string reprensentation
-     * @exception OrekitException
+     * @exception OrekitException if nutation cannot be computed
      */
-    protected TIRF2000Frame(Frame parent, AbsoluteDate date, String name)
+    protected TIRF2000Frame(final Frame parent, final AbsoluteDate date, final String name)
         throws OrekitException {
         super(parent, null, name);
         // everything is in place, we can now synchronize the frame
@@ -59,20 +59,20 @@ class TIRF2000Frame extends Frame {
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */
-    protected void updateFrame(AbsoluteDate date) throws OrekitException {
+    protected void updateFrame(final AbsoluteDate date) throws OrekitException {
 
-        if (cachedDate == null||cachedDate!=date) {
+        if ((cachedDate == null) || !cachedDate.equals(date)) {
 
             //    offset from J2000 epoch in julian centuries
             final double tts = date.minus(AbsoluteDate.J2000Epoch);
 
             // compute Earth Rotation Angle using Nicole Capitaine model (2000)
             final double dtu1 = EarthOrientationHistory.getInstance().getUT1MinusUTC(date);
-            final double taiMinusTt  = TTScale.getInstance().offsetToTAI(tts + j2000MinusJava);
-            final double utcMinusTai = UTCScale.getInstance().offsetFromTAI(tts + taiMinusTt + j2000MinusJava);
-            final double tu = (tts + taiMinusTt + utcMinusTai + dtu1) / 86400 ;
-            era  = era0 + era1A * tu + era1B * tu;
-            era -= twoPi * Math.floor((era + Math.PI) / twoPi);
+            final double taiMinusTt  = TTScale.getInstance().offsetToTAI(tts + J2000_MINUS_JAVA);
+            final double utcMinusTai = UTCScale.getInstance().offsetFromTAI(tts + taiMinusTt + J2000_MINUS_JAVA);
+            final double tu = (tts + taiMinusTt + utcMinusTai + dtu1) / 86400.0;
+            era  = ERA_0 + ERA_1A * tu + ERA_1B * tu;
+            era -= TWO_PI * Math.floor((era + Math.PI) / TWO_PI);
 
             // simple rotation around the Celestial Intermediate Pole
             final Rotation rRot = new Rotation(Vector3D.plusK, era);
@@ -80,8 +80,8 @@ class TIRF2000Frame extends Frame {
             final Rotation combined = rRot.revert();
 
             // set up the transform from parent GCRS (J2000) to ITRF
-            final Vector3D rotationRate = new Vector3D((era1A + era1B) / 86400, Vector3D.plusK);
-            updateTransform(new Transform(combined , rotationRate));
+            final Vector3D rotationRate = new Vector3D((ERA_1A + ERA_1B) / 86400, Vector3D.plusK);
+            setTransform(new Transform(combined , rotationRate));
             cachedDate = date;
         }
     }
@@ -89,9 +89,9 @@ class TIRF2000Frame extends Frame {
     /** Get the Earth Rotation Angle at the current date.
      * @param  date the date
      * @return Earth Rotation Angle at the current date in radians
-     * @exception OrekitException
+     * @exception OrekitException if nutation model cannot be computed
      */
-    public double getEarthRotationAngle(AbsoluteDate date) throws OrekitException {
+    public double getEarthRotationAngle(final AbsoluteDate date) throws OrekitException {
         updateFrame(date);
         return era;
     }

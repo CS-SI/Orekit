@@ -28,7 +28,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
     /** Serializable UID. */
     private static final long serialVersionUID = 8185876333076861718L;
 
-    /** Attitude law */
+    /** Attitude law. */
     private AttitudeLaw attitudeLaw;
 
     /** Initial date. */
@@ -80,9 +80,10 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
      * @exception PropagationException if the mean parameters cannot be computed
      */
-    public EcksteinHechlerPropagator(SpacecraftState initialState, double referenceRadius, double mu,
-                                     double c20, double c30, double c40,
-                                     double c50, double c60)
+    public EcksteinHechlerPropagator(final SpacecraftState initialState,
+                                     final double referenceRadius, final double mu,
+                                     final double c20, final double c30, final double c40,
+                                     final double c50, final double c60)
         throws PropagationException {
 
         // store model coefficients
@@ -113,7 +114,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
      * @exception PropagationException if orbit or attitude cannot be
      * propagated at given date
      */
-    public SpacecraftState getSpacecraftState(AbsoluteDate date)
+    public SpacecraftState getSpacecraftState(final AbsoluteDate date)
         throws PropagationException {
         final OrbitalParameters op = propagate(date);
         try {
@@ -126,15 +127,19 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
 
     /** Compute mean parameters according to the Eckstein-Hechler analytical model.
      * @param osculating osculating orbit
-     * @exception PropagationException
+     * @exception PropagationException if orbit goes outside of supported range
+     * (trajectory inside the Brillouin sphere, too excentric, equatorial, critical
+     * inclination) or if convergence cannot be reached
      */
-    private void computeMeanParameters(CircularParameters osculating)
+    private void computeMeanParameters(final CircularParameters osculating)
         throws PropagationException {
 
         // sanity check
         if (osculating.getA() < referenceRadius) {
             throw new PropagationException("trajectory inside the Brillouin sphere (r = {0})",
-                                           new Object[] { new Double(osculating.getA()) });
+                                           new Object[] {
+                                               new Double(osculating.getA())
+                                           });
         }
 
         // rough initialization of the mean parameters
@@ -177,22 +182,22 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
             final double deltaEy     = osculating.getCircularEy() - rebuilt.getCircularEy();
             final double deltaI      = osculating.getI()  - rebuilt.getI();
             final double deltaRAAN   = MathUtils.normalizeAngle(osculating.getRightAscensionOfAscendingNode() -
-                                                 rebuilt.getRightAscensionOfAscendingNode(),
-                                                 0.0);
+                                                                rebuilt.getRightAscensionOfAscendingNode(),
+                                                                0.0);
             final double deltaAlphaM = MathUtils.normalizeAngle(osculating.getAlphaM() - rebuilt.getAlphaM(), 0.0);
 
             // update mean parameters
-            mean= new CircularParameters(mean.getA()          + deltaA,
-                                         mean.getCircularEx() + deltaEx,
-                                         mean.getCircularEy() + deltaEy,
-                                         mean.getI()          + deltaI,
-                                         mean.getRightAscensionOfAscendingNode() + deltaRAAN,
-                                         mean.getAlphaM()     + deltaAlphaM,
-                                         CircularParameters.MEAN_LONGITUDE_ARGUMENT,
-                                         mean.getFrame());
+            mean = new CircularParameters(mean.getA()          + deltaA,
+                                          mean.getCircularEx() + deltaEx,
+                                          mean.getCircularEy() + deltaEy,
+                                          mean.getI()          + deltaI,
+                                          mean.getRightAscensionOfAscendingNode() + deltaRAAN,
+                                          mean.getAlphaM()     + deltaAlphaM,
+                                          CircularParameters.MEAN_LONGITUDE_ARGUMENT,
+                                          mean.getFrame());
 
             // check convergence
-            if ((Math.abs(deltaA)         < thresholdA) &&
+            if ((Math.abs(deltaA)      < thresholdA) &&
                 (Math.abs(deltaEx)     < thresholdE) &&
                 (Math.abs(deltaEy)     < thresholdE) &&
                 (Math.abs(deltaI)      < thresholdAngles) &&
@@ -204,7 +209,9 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
                 if (e > 0.1) {
                     // if 0.005 < e < 0.1 no error is triggered, but accuracy is poor
                     throw new PropagationException("too excentric orbit (e = {0})",
-                                                   new Object[] { new Double(e) });
+                                                   new Object[] {
+                                                       new Double(e)
+                                                   });
                 }
 
                 final double meanI = mean.getI();
@@ -230,15 +237,18 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
 
         throw new PropagationException("unable to compute Eckstein-Hechler mean" +
                                        " parameters after {0} iterations",
-                                       new Object[] { new Integer(i) });
+                                       new Object[] {
+                                           new Integer(i)
+                                       });
 
     }
 
     /** Extrapolate an orbit up to a specific target date.
-     * @param targetDate target date for the orbit
+     * @param date target date for the orbit
+     * @return extrapolated parameters
      * @exception PropagationException if some parameters are out of bounds
      */
-    private CircularParameters propagate(AbsoluteDate date)
+    private CircularParameters propagate(final AbsoluteDate date)
         throws PropagationException {
 
         // keplerian evolution
@@ -279,7 +289,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
             2.25 * g2 * g2 * (9.0 - 263.0 / 12.0 * sinI2 + 341.0 / 24.0 * sinI4) +
             15.0 / 16.0 * g4 * (8.0 - 31.0 * sinI2 + 24.5 * sinI4) +
             105.0 / 32.0 * g6 * (-10.0 / 3.0 + 25.0 * sinI2 - 48.75 * sinI4 + 27.5 * sinI6);
-        final double xlm = MathUtils.normalizeAngle(mean.getAlphaM()+ q * xnot, Math.PI);
+        final double xlm = MathUtils.normalizeAngle(mean.getAlphaM() + q * xnot, Math.PI);
 
         // periodical terms
         final double cl1 = Math.cos(xlm);
@@ -390,7 +400,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
 
     }
 
-    public void setAttitudeLaw(AttitudeLaw attitudeLaw) {
+    public void setAttitudeLaw(final AttitudeLaw attitudeLaw) {
         this.attitudeLaw = attitudeLaw;
     }
 

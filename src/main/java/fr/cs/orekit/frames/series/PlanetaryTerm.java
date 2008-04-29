@@ -36,6 +36,8 @@ class PlanetaryTerm extends SeriesTerm {
     private final int cPa;
 
     /** Build a planetary term for nutation series.
+     * @param sinCoeff coefficient for the sine of the argument
+     * @param cosCoeff coefficient for the cosine of the argument
      * @param cMe coefficient for mean Mercury longitude
      * @param cVe coefficient for mean Venus longitude
      * @param cE coefficient for mean Earth longitude
@@ -46,9 +48,9 @@ class PlanetaryTerm extends SeriesTerm {
      * @param cNe coefficient for mean Neptune longitude
      * @param cPa coefficient for general accumulated precession in longitude
       */
-    public PlanetaryTerm(double sinCoeff, double cosCoeff,
-                         int cMe, int cVe, int cE, int cMa, int cJu,
-                         int cSa, int cUr, int cNe, int cPa) {
+    public PlanetaryTerm(final double sinCoeff, final double cosCoeff,
+                         final int cMe, final int cVe, final int cE, final int cMa, final int cJu,
+                         final int cSa, final int cUr, final int cNe, final int cPa) {
         super(sinCoeff, cosCoeff);
         this.cMe = cMe;
         this.cVe = cVe;
@@ -61,7 +63,7 @@ class PlanetaryTerm extends SeriesTerm {
         this.cPa = cPa;
     }
 
-    protected double argument(BodiesElements elements) {
+    protected double argument(final BodiesElements elements) {
         return cMe * elements.lMe + cVe * elements.lVe + cE  * elements.lE +
                cMa * elements.lMa + cJu * elements.lJu +
                cSa * elements.lSa + cUr * elements.lUr +

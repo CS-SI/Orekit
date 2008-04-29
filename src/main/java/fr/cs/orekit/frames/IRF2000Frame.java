@@ -174,7 +174,7 @@ class IRF2000Frame extends Frame {
             final Rotation combined = qRot.revert();
 
             // set up the transform from parent GCRS (J2000) to ITRF
-            updateTransform(new Transform(combined , Vector3D.zero));
+            setTransform(new Transform(combined , Vector3D.zero));
             cachedDate = date;
         }
     }

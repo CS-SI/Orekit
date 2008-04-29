@@ -28,7 +28,7 @@ import fr.cs.orekit.time.AbsoluteDate;
  * that will implement {@link #updateFrame(AbsoluteDate)} or that will
  * add some specific <code>updateFromTelemetry(telemetry)</code>
  * methods that will compute the transform and call internally
- * the {@link #updateTransform(Transform)} method.</p>
+ * the {@link #setTransform(Transform)} method.</p>
  *
  * <p>  <h5> Reference Frames </h5>
  *  Several Reference frames are implemented in OREKIT. The user can
@@ -140,7 +140,7 @@ public class Frame implements Serializable {
     /** Private constructor used only for the J2000 root frame.
      * @param name name of the frame
      */
-    private Frame(String name) {
+    private Frame(final String name) {
         parent    = null;
         transform = new Transform();
         commons   = new HashMap();
@@ -160,12 +160,14 @@ public class Frame implements Serializable {
      * @param name name of the frame
      * @exception IllegalArgumentException if the parent frame is null
      */
-    public Frame(Frame parent, Transform transform,
-                 String name) throws IllegalArgumentException {
+    public Frame(final Frame parent, final Transform transform, final String name)
+        throws IllegalArgumentException {
 
         if (parent == null) {
             OrekitException.throwIllegalArgumentException("null parent for frame {0}",
-                                                          new Object[] { name });
+                                                          new Object[] {
+                                                              name
+                                                          });
         }
         this.name      = name;
         this.parent    = parent;
@@ -178,7 +180,7 @@ public class Frame implements Serializable {
      * @return the unique instance of the J2000 frame
      */
     public static Frame getJ2000() {
-        return LazyJ2000Holder.instance;
+        return LazyJ2000Holder.INSTANCE;
     }
 
     /** Get the name.
@@ -195,7 +197,7 @@ public class Frame implements Serializable {
         return this.name;
     }
 
-    /** Get the parent frame
+    /** Get the parent frame.
      * @return parent frame
      */
     public Frame getParent() {
@@ -205,7 +207,7 @@ public class Frame implements Serializable {
     /** Update the transform from the parent frame to the instance.
      * @param transform new transform from parent frame to instance
      */
-    public void updateTransform(Transform transform) {
+    public void setTransform(final Transform transform) {
         this.transform = transform;
     }
 
@@ -215,8 +217,8 @@ public class Frame implements Serializable {
      * @return transform from the instance to the destination frame
      * @exception OrekitException if some frame specific error occurs
      */
-    public Transform getTransformTo(Frame destination,
-                                    AbsoluteDate date) throws OrekitException {
+    public Transform getTransformTo(final Frame destination, final AbsoluteDate date)
+        throws OrekitException {
 
         // common ancestor to both frames in the frames tree
         final Frame common = findCommon(this, destination);
@@ -244,14 +246,15 @@ public class Frame implements Serializable {
 
     /** Update the frame to the given date.
      * <p>This method is called each time {@link #getTransformTo(Frame, AbsoluteDate)}
-     * is called. Default behaviour is to do nothing. The proper way to build
-     * a date-dependent frame is to extend {@link Frame} and implement this method which
-     * will have to call {@link #updateTransform(Transform)} with the new transform </p>
+     * is called. The base implementation in the {@link Frame} class does nothing.
+     * The proper way to build a date-dependent frame is to extend the {@link Frame}
+     * class and implement this method which will have to call {@link
+     * #setTransform(Transform)} with the new transform </p>
      * @param date new value of the  date
      * @exception OrekitException if some frame specific error occurs
      */
-    protected void updateFrame(AbsoluteDate date) throws OrekitException {
-
+    protected void updateFrame(final AbsoluteDate date) throws OrekitException {
+        // do nothing in the base implementation
     }
 
     /** Update the transform from parent frame implicitly according to two other
@@ -300,40 +303,44 @@ public class Frame implements Serializable {
      * @exception OrekitException if the path between the two control frames does
      * not cross the link between instance and its parent frame or if some
      * intermediate transform fails
-     * @see #updateTransform(Transform)
+     * @see #setTransform(Transform)
      */
-    public void updateTransform(Frame f1, Frame f2, Transform f1Tof2,
-                                AbsoluteDate date) throws OrekitException {
+    public void updateTransform(final Frame f1, final Frame f2, final Transform f1Tof2,
+                                final AbsoluteDate date) throws OrekitException {
 
-      // make sure f1 is not a child of the instance
-        if (f1.isChildOf(this) || (f1 == this)) {
+        Frame fA = f1;
+        Frame fB = f2;
+        Transform fAtoB = f1Tof2;
 
-            if (f2.isChildOf(this) || (f2 == this)) {
+        // make sure f1 is not a child of the instance
+        if (fA.isChildOf(this) || (fA == this)) {
+
+            if (fB.isChildOf(this) || (fB == this)) {
                 throw new FrameAncestorException("both frames {0} and {1} are child of {2}",
                                                  new Object[] {
-                                                     f1.getName(), f2.getName(), getName()
+                                                     fA.getName(), fB.getName(), getName()
                                                  });
             }
 
             // swap f1 and f2 to make sure the child is f2
-            final Frame tmp = f1;
-            f1 = f2;
-            f2 = tmp;
-            f1Tof2 = f1Tof2.getInverse();
+            final Frame tmp = fA;
+            fA = fB;
+            fB = tmp;
+            fAtoB = fAtoB.getInverse();
 
-        } else  if (! (f2.isChildOf(this) || (f2 == this))) {
+        } else  if (!(fB.isChildOf(this) || (fB == this))) {
             throw new FrameAncestorException("neither frames {0} nor {1} have {2} as ancestor",
                                              new Object[] {
-                                                 f1.getName(), f2.getName(), getName()
+                                                 fA.getName(), fB.getName(), getName()
                                              });
         }
 
         // rebuild the transform by traveling from parent to self
         // WITHOUT using the existing this.transform that will be updated
-        final Transform parentToF1 = parent.getTransformTo(f1, date);
-        final Transform f2ToSelf   = f2.getTransformTo(this, date);
-        final Transform f1ToSelf   = new Transform(f1Tof2, f2ToSelf);
-        updateTransform(new Transform(parentToF1, f1ToSelf));
+        final Transform parentTofA = parent.getTransformTo(fA, date);
+        final Transform fBtoSelf   = fB.getTransformTo(this, date);
+        final Transform fAtoSelf   = new Transform(fAtoB, fBtoSelf);
+        setTransform(new Transform(parentTofA, fAtoSelf));
 
     }
 
@@ -342,7 +349,7 @@ public class Frame implements Serializable {
      * @param to destination frame
      * @return an ancestor frame of both <code>from</code> and <code>to</code>
      */
-    private static Frame findCommon(Frame from, Frame to) {
+    private static Frame findCommon(final Frame from, final Frame to) {
 
         // have we already computed the common frame for this pair ?
         Frame common = (Frame) from.commons.get(to);
@@ -354,10 +361,12 @@ public class Frame implements Serializable {
         final LinkedList pathFrom = from.pathToRoot();
         final LinkedList pathTo   = to.pathToRoot();
 
-        if (pathFrom.isEmpty()||pathTo.contains(from)) { // handle root case and same branch case
+        if (pathFrom.isEmpty() || pathTo.contains(from)) {
+            // handle root case and same branch case
             common = from;
         }
-        if (pathTo.isEmpty()||pathFrom.contains(to)) { // handle root case and same branch case
+        if (pathTo.isEmpty() || pathFrom.contains(to)) {
+            // handle root case and same branch case
             common = to;
         }
         if (common != null) {
@@ -389,7 +398,7 @@ public class Frame implements Serializable {
      * @return true if the potentialAncestor belongs to the
      * path from instance to the root frame
      */
-    public boolean isChildOf(Frame potentialAncestor) {
+    public boolean isChildOf(final Frame potentialAncestor) {
         for (Frame frame = parent; frame != null; frame = frame.parent) {
             if (frame == potentialAncestor) {
                 return true;
@@ -424,7 +433,7 @@ public class Frame implements Serializable {
         /** Build a frame type.
          * @param name name of the frame type
          */
-        private FrameType(String name) {
+        private FrameType(final String name) {
             this.name = name;
         }
 
@@ -446,24 +455,25 @@ public class Frame implements Serializable {
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
      */
-    public static Frame getReferenceFrame(FrameType type, AbsoluteDate date) throws OrekitException {
+    public static Frame getReferenceFrame(final FrameType type, final AbsoluteDate date)
+        throws OrekitException {
         if (type == ITRF2000A) {
-            if (LazyITRF2000AHolder.instance == null) {
-                throw LazyITRF2000AHolder.orekitException;
+            if (LazyITRF2000AHolder.INSTANCE == null) {
+                throw LazyITRF2000AHolder.OREKIT_EXCEPTION;
             }
-            return LazyITRF2000AHolder.instance;
+            return LazyITRF2000AHolder.INSTANCE;
         }
         if (type == ITRF2000B) {
-            if (LazyITRF2000BHolder.instance == null) {
-                throw LazyITRF2000BHolder.orekitException;
+            if (LazyITRF2000BHolder.INSTANCE == null) {
+                throw LazyITRF2000BHolder.OREKIT_EXCEPTION;
             }
-            return LazyITRF2000BHolder.instance;
+            return LazyITRF2000BHolder.INSTANCE;
         }
         if (type == TIRF2000A) {
-            if (LazyTIRF2000AHolder.instance == null) {
-                throw LazyTIRF2000AHolder.orekitException;
+            if (LazyTIRF2000AHolder.INSTANCE == null) {
+                throw LazyTIRF2000AHolder.OREKIT_EXCEPTION;
             }
-            return LazyTIRF2000AHolder.instance;
+            return LazyTIRF2000AHolder.INSTANCE;
         }
         if (type == TIRF2000B) {
             if (LazyTIRF2000BHolder.instance == null) {
@@ -472,19 +482,19 @@ public class Frame implements Serializable {
             return LazyTIRF2000BHolder.instance;
         }
         if (type == IRF2000A) {
-            if (LazyIRF2000AHolder.instance == null) {
-                throw LazyIRF2000AHolder.orekitException;
+            if (LazyIRF2000AHolder.INSTANCE == null) {
+                throw LazyIRF2000AHolder.OREKIT_EXCEPTION;
             }
-            return LazyIRF2000AHolder.instance;
+            return LazyIRF2000AHolder.INSTANCE;
         }
         if (type == IRF2000B) {
-            if (LazyIRF2000BHolder.instance == null) {
-                throw LazyIRF2000BHolder.orekitException;
+            if (LazyIRF2000BHolder.INSTANCE == null) {
+                throw LazyIRF2000BHolder.OREKIT_EXCEPTION;
             }
-            return LazyIRF2000BHolder.instance;
+            return LazyIRF2000BHolder.INSTANCE;
         }
         if (type == VEIS1950) {
-            return LazyVeis1950Holder.instance;
+            return LazyVeis1950Holder.INSTANCE;
         }
         OrekitException.throwIllegalArgumentException("unknown frame type {0}, known types: " +
                                                       "{1}, {2}, {3}, {4}, {5}, {6} and {7}",
@@ -504,30 +514,30 @@ public class Frame implements Serializable {
 
     /** Holder for the J2000 frame singleton. */
     private static class LazyJ2000Holder {
-        private static final Frame instance = new Frame("J2000");
+        private static final Frame INSTANCE = new Frame("J2000");
     }
 
     /** Holder for the ITRF 2000 A frame singleton. */
     private static class LazyITRF2000AHolder {
-        private static final Frame instance;
-        private static final OrekitException orekitException;
+        private static final Frame INSTANCE;
+        private static final OrekitException OREKIT_EXCEPTION;
         static {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new ITRF2000Frame(LazyTIRF2000AHolder.instance, AbsoluteDate.J2000Epoch, ITRF2000A.name);
+                tmpFrame = new ITRF2000Frame(LazyTIRF2000AHolder.INSTANCE, AbsoluteDate.J2000Epoch, ITRF2000A.name);
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
-            instance = tmpFrame;
-            orekitException = tmpException;
+            INSTANCE = tmpFrame;
+            OREKIT_EXCEPTION = tmpException;
         }
     }
 
     /** Holder for the ITRF 2000 B frame singleton. */
     private static class LazyITRF2000BHolder {
-        private static final Frame instance;
-        private static final OrekitException orekitException;
+        private static final Frame INSTANCE;
+        private static final OrekitException OREKIT_EXCEPTION;
         static {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
@@ -536,25 +546,25 @@ public class Frame implements Serializable {
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
-            instance = tmpFrame;
-            orekitException = tmpException;
+            INSTANCE = tmpFrame;
+            OREKIT_EXCEPTION = tmpException;
         }
     }
 
     /** Holder for the TIRF 2000 A frame singleton. */
     private static class LazyTIRF2000AHolder {
-        private static final Frame instance;
-        private static final OrekitException orekitException;
+        private static final Frame INSTANCE;
+        private static final OrekitException OREKIT_EXCEPTION;
         static {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new TIRF2000Frame(LazyIRF2000AHolder.instance, AbsoluteDate.J2000Epoch, TIRF2000A.name);
+                tmpFrame = new TIRF2000Frame(LazyIRF2000AHolder.INSTANCE, AbsoluteDate.J2000Epoch, TIRF2000A.name);
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
-            instance = tmpFrame;
-            orekitException = tmpException;
+            INSTANCE = tmpFrame;
+            OREKIT_EXCEPTION = tmpException;
         }
     }
 
@@ -566,7 +576,7 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new TIRF2000Frame(LazyIRF2000BHolder.instance, AbsoluteDate.J2000Epoch, TIRF2000B.name);
+                tmpFrame = new TIRF2000Frame(LazyIRF2000BHolder.INSTANCE, AbsoluteDate.J2000Epoch, TIRF2000B.name);
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
@@ -577,8 +587,8 @@ public class Frame implements Serializable {
 
     /** Holder for the IRF 2000 A frame singleton. */
     private static class LazyIRF2000AHolder {
-        private static final Frame instance;
-        private static final OrekitException orekitException;
+        private static final Frame INSTANCE;
+        private static final OrekitException OREKIT_EXCEPTION;
         static {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
@@ -587,15 +597,15 @@ public class Frame implements Serializable {
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
-            instance = tmpFrame;
-            orekitException = tmpException;
+            INSTANCE = tmpFrame;
+            OREKIT_EXCEPTION = tmpException;
         }
     }
 
     /** Holder for the IRF 2000 B frame singleton. */
     private static class LazyIRF2000BHolder {
-        private static final Frame instance;
-        private static final OrekitException orekitException;
+        private static final Frame INSTANCE;
+        private static final OrekitException OREKIT_EXCEPTION;
         static {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
@@ -604,20 +614,20 @@ public class Frame implements Serializable {
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
-            instance = tmpFrame;
-            orekitException = tmpException;
+            INSTANCE = tmpFrame;
+            OREKIT_EXCEPTION = tmpException;
         }
     }
 
     /** Holder for the Veis 1950 frame singleton. */
     private static class LazyVeis1950Holder {
-        private static final Frame instance;
+        private static final Frame INSTANCE;
         static {
             final double q1 = -2.01425201682020570e-5;
             final double q2 = -2.43283773387856897e-3;
             final double q3 =  5.59078052583013584e-3;
             final double q0 = Math.sqrt(1.0 - q1 * q1 - q2 * q2 - q3 * q3);
-            instance = new Frame(getJ2000(),
+            INSTANCE = new Frame(getJ2000(),
                                  new Transform(new Rotation(q0, q1, q2, q3, true)),
                                  VEIS1950.name);
         }

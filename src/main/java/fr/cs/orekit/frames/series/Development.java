@@ -46,12 +46,14 @@ public class Development implements Serializable {
      * @param name name of the resource file (for error messages only)
      * @exception OrekitException if stream is null or the table cannot be parsed
      */
-    public Development(InputStream stream, double factor, String name)
+    public Development(final InputStream stream, final double factor, final String name)
         throws OrekitException {
 
         if (stream == null) {
             throw new OrekitException("unable to find nutation model file {0}",
-                                      new Object[] { name });
+                                      new Object[] {
+                                          name
+                                      });
         }
 
         try {
@@ -93,7 +95,10 @@ public class Development implements Serializable {
                 }
             }
             if (coefficients == null) {
-                throw new OrekitException(NOT_IERS_FILE, new Object[] { name });
+                throw new OrekitException(NOT_IERS_FILE,
+                                          new Object[] {
+                                              name
+                                          });
             }
 
             line = reader.readLine();
@@ -134,7 +139,10 @@ public class Development implements Serializable {
             }
 
             if (array.isEmpty()) {
-                throw new OrekitException(NOT_IERS_FILE, new Object[] { name });
+                throw new OrekitException(NOT_IERS_FILE,
+                                          new Object[] {
+                                              name
+                                          });
             }
 
             // store the non-polynomial part series
@@ -153,10 +161,10 @@ public class Development implements Serializable {
      * @param factor multiplicative factor to use for coefficients
      * @return true if the line was parsed successfully
      */
-    private boolean parsePolynomial(Matcher termMatcher, double factor) {
+    private boolean parsePolynomial(final Matcher termMatcher, final double factor) {
 
         // parse the polynomial one polynomial term after the other
-        if (! termMatcher.lookingAt()) {
+        if (!termMatcher.lookingAt()) {
             return false;
         }
 
@@ -186,12 +194,12 @@ public class Development implements Serializable {
      * @exception OrekitException if the header does not match
      * the expected series number
      */
-    private int parseSeriesHeader(Matcher headerMatcher, int expected,
-                                  String name, int lineNumber)
+    private int parseSeriesHeader(final Matcher headerMatcher, final int expected,
+                                  final String name, final int lineNumber)
         throws OrekitException {
 
         // is this a series header line ?
-        if (! headerMatcher.matches()) {
+        if (!headerMatcher.matches()) {
             return -1;
         }
 
@@ -218,30 +226,31 @@ public class Development implements Serializable {
      * @return a series term
      * @exception OrekitException if the line is null or cannot be parsed
      */
-    private SeriesTerm parseSeriesTerm (String line, double factor,
-                                        String name, int lineNumber)
+    private SeriesTerm parseSeriesTerm (final String line, final double factor,
+                                        final String name, final int lineNumber)
         throws OrekitException {
 
         // sanity check
         if (line == null) {
             throw new OrekitException("unexpected end of nutation model file {0} (after line {1})",
-                                      new Object[] { name, new Integer(lineNumber - 1) });
+                                      new Object[] {
+                                          name, new Integer(lineNumber - 1)
+                                      });
         }
 
         // parse the nutation serie term
         final String[] fields = line.split("\\p{Space}+");
         final int l = fields.length;
-        // if ((l == 17) || ((l == 18) && fields[0].isEmpty())) {
         if ((l == 17) || ((l == 18) && (fields[0].length() == 0))) {
             return SeriesTerm.buildTerm(Double.parseDouble(fields[l - 16]) * factor,
                                         Double.parseDouble(fields[l - 15]) * factor,
-                                        Integer.parseInt(fields[l - 14]), Integer.parseInt(fields[l -13]),
-                                        Integer.parseInt(fields[l - 12]), Integer.parseInt(fields[l -11]),
-                                        Integer.parseInt(fields[l - 10]), Integer.parseInt(fields[l - 9]),
-                                        Integer.parseInt(fields[l -  8]), Integer.parseInt(fields[l - 7]),
-                                        Integer.parseInt(fields[l -  6]), Integer.parseInt(fields[l - 5]),
-                                        Integer.parseInt(fields[l -  4]), Integer.parseInt(fields[l - 3]),
-                                        Integer.parseInt(fields[l -  2]), Integer.parseInt(fields[l - 1]));
+                                        Integer.parseInt(fields[l - 14]), Integer.parseInt(fields[l - 13]),
+                                        Integer.parseInt(fields[l - 12]), Integer.parseInt(fields[l - 11]),
+                                        Integer.parseInt(fields[l - 10]), Integer.parseInt(fields[l -  9]),
+                                        Integer.parseInt(fields[l -  8]), Integer.parseInt(fields[l -  7]),
+                                        Integer.parseInt(fields[l -  6]), Integer.parseInt(fields[l -  5]),
+                                        Integer.parseInt(fields[l -  4]), Integer.parseInt(fields[l -  3]),
+                                        Integer.parseInt(fields[l -  2]), Integer.parseInt(fields[l -  1]));
         }
 
         throw new OrekitException("unable to parse line {0} of nutation model file {1}:\n{2}",
@@ -256,7 +265,7 @@ public class Development implements Serializable {
      * @param elements luni-solar and planetary elements for the current date
      * @return current value of the development
      */
-    public double value(double t, BodiesElements elements) {
+    public double value(final double t, final BodiesElements elements) {
 
         // polynomial part
         double p = 0;

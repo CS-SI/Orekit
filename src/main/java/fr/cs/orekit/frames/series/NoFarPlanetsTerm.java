@@ -49,9 +49,9 @@ class NoFarPlanetsTerm extends SeriesTerm {
      * @param cNe coefficient for mean Neptune longitude
      * @param cPa coefficient for general accumulated precession in longitude
       */
-    public NoFarPlanetsTerm(double sinCoeff, double cosCoeff,
-                            int cL, int cF, int cD, int cOmega,
-                            int cMe, int cVe, int cE, int cMa, int cJu, int cSa) {
+    public NoFarPlanetsTerm(final double sinCoeff, final double cosCoeff,
+                            final int cL, final int cF, final int cD, final int cOmega,
+                            final int cMe, final int cVe, final int cE, final int cMa, final int cJu, final int cSa) {
         super(sinCoeff, cosCoeff);
         this.cL     = cL;
         this.cF     = cF;
@@ -66,7 +66,7 @@ class NoFarPlanetsTerm extends SeriesTerm {
     }
 
     /** {@inheritDoc} */
-    protected double argument(BodiesElements elements) {
+    protected double argument(final BodiesElements elements) {
         return cL * elements.l + cF * elements.f +
                cD * elements.d + cOmega * elements.omega +
                cMe * elements.lMe + cVe * elements.lVe + cE  * elements.lE +

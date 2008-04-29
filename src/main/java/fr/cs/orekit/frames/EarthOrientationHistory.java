@@ -59,26 +59,28 @@ public class EarthOrientationHistory implements Serializable {
      * @exception OrekitException when there is a problem while reading IERS data
      */
     public static EarthOrientationHistory getInstance() throws OrekitException {
-        if (LazyHolder.instance == null) {
-            throw LazyHolder.orekitException;
+        if (LazyHolder.INSTANCE == null) {
+            throw LazyHolder.OREKIT_EXCEPTION;
         }
-        return LazyHolder.instance;
+        return LazyHolder.INSTANCE;
     }
 
     /** Check Earth orientation parameters continuity.
      * @param maxGap maximal allowed gap between entries (in days)
      * @exception OrekitException if there are holes in the data sequence
      */
-    private void checkEOPContinuity(int maxGap) throws OrekitException {
+    private void checkEOPContinuity(final int maxGap) throws OrekitException {
         EarthOrientationParameters current = null;
         for (final Iterator iterator = eop.iterator(); iterator.hasNext();) {
-            final EarthOrientationParameters previous = current;
+            final EarthOrientationParameters preceding = current;
             current = (EarthOrientationParameters) iterator.next();
 
-            // compare the dates of previous and current entries
-            if ((previous != null) && ((current.mjd - previous.mjd) > maxGap)) {
+            // compare the dates of preceding and current entries
+            if ((preceding != null) && ((current.mjd - preceding.mjd) > maxGap)) {
                 throw new OrekitException("missing Earth Orientation Parameters between {0} and {1}",
-                                          new Object[] { previous, current });
+                                          new Object[] {
+                                              preceding, current
+                                          });
 
             }
         }
@@ -104,7 +106,7 @@ public class EarthOrientationHistory implements Serializable {
      * @param date date at which the value is desired
      * @return UT1-UTC in seconds (0 if date is outside covered range)
      */
-    protected double getUT1MinusUTC(AbsoluteDate date) {
+    protected double getUT1MinusUTC(final AbsoluteDate date) {
         if (selectBracketingEntries(date)) {
             final double dtP = date.minus(previous.date);
             final double dtN = next.date.minus(date);
@@ -120,7 +122,7 @@ public class EarthOrientationHistory implements Serializable {
      * @return pole correction ({@link PoleCorrection#NULL_CORRECTION
      * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
      */
-    protected PoleCorrection getPoleCorrection(AbsoluteDate date) {
+    protected PoleCorrection getPoleCorrection(final AbsoluteDate date) {
         if (selectBracketingEntries(date)) {
             final double dtP    = date.minus(previous.date);
             final double dtN    = next.date.minus(date);
@@ -137,7 +139,7 @@ public class EarthOrientationHistory implements Serializable {
      * @param  date target date
      * @return true if the date was found in the tables
      */
-    private boolean selectBracketingEntries(AbsoluteDate date) {
+    private boolean selectBracketingEntries(final AbsoluteDate date) {
 
         // don't search if the cached selection is fine
         if ((previous != null) && (date.minus(previous.date) >= 0) &&
@@ -168,10 +170,10 @@ public class EarthOrientationHistory implements Serializable {
          * {@link EarthOrientationParameters} instances.
          * @param o1 first object
          * @param o2 second object
-         * return a negative integer if o1 is before o2, 0 if they are
+         * @return a negative integer if o1 is before o2, 0 if they are
          * are the same time, a positive integer otherwise
          */
-        public int compare(Object o1, Object o2) {
+        public int compare(final Object o1, final Object o2) {
             final AbsoluteDate d1 =
                 (o1 instanceof AbsoluteDate) ? ((AbsoluteDate) o1) : ((EarthOrientationParameters) o1).date;
             final AbsoluteDate d2 =
@@ -187,8 +189,8 @@ public class EarthOrientationHistory implements Serializable {
      * synchronization) and works with all version of java.</p>
      */
     private static class LazyHolder {
-        private static final EarthOrientationHistory instance;
-        private static final OrekitException orekitException;
+        private static final EarthOrientationHistory INSTANCE;
+        private static final OrekitException OREKIT_EXCEPTION;
         static {
             EarthOrientationHistory tmpInstance = null;
             OrekitException tmpException = null;
@@ -197,8 +199,8 @@ public class EarthOrientationHistory implements Serializable {
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
-            instance        = tmpInstance;
-            orekitException = tmpException;
+            INSTANCE        = tmpInstance;
+            OREKIT_EXCEPTION = tmpException;
         }
     }
 

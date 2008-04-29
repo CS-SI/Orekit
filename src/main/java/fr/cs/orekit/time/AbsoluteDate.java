@@ -218,7 +218,7 @@ public class AbsoluteDate implements Comparable, Serializable {
     public boolean equals(Object date) {
         if ((date != null) && (date instanceof AbsoluteDate)) {
             try {
-                return minus((AbsoluteDate)date) == 0;
+                return minus((AbsoluteDate) date) == 0;
             } catch (ClassCastException cce) {
                 // ignored
             }

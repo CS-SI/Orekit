@@ -82,8 +82,8 @@ public class Transform implements Serializable {
      * @param rotation second primitive operation to apply
      * @param rotationRate first time derivative of the rotation (norm representing angular rate)
      */
-    private Transform(Vector3D translation, Vector3D velocity,
-                      Rotation rotation, Vector3D rotationRate) {
+    private Transform(final Vector3D translation, final Vector3D velocity,
+                      final Rotation rotation, final Vector3D rotationRate) {
         this.translation  = translation;
         this.rotation     = rotation;
         this.velocity     = velocity;
@@ -101,7 +101,7 @@ public class Transform implements Serializable {
      * the transformed origin, or coordinates of the origin of the
      * old frame in the new frame)
      */
-    public Transform(Vector3D translation) {
+    public Transform(final Vector3D translation) {
         this(translation, new Vector3D(), new Rotation(), new Vector3D());
     }
 
@@ -110,7 +110,7 @@ public class Transform implements Serializable {
      * coordinates of a vector expressed in the old frame to obtain the
      * same vector expressed in the new frame )
      */
-    public Transform(Rotation rotation) {
+    public Transform(final Rotation rotation) {
         this(new Vector3D(), new Vector3D(), rotation, new Vector3D());
     }
 
@@ -121,7 +121,7 @@ public class Transform implements Serializable {
      * @param velocity the velocity of the translation (i.e. origin
      * of the old frame velocity in the new frame)
      */
-    public Transform(Vector3D translation, Vector3D velocity) {
+    public Transform(final Vector3D translation, final Vector3D velocity) {
         this(translation, velocity, new Rotation(), new Vector3D());
     }
 
@@ -132,7 +132,7 @@ public class Transform implements Serializable {
      * @param rotationRate the axis of the instant rotation
      * expressed in the new frame. (norm representing angular rate)
      */
-    public Transform(Rotation rotation, Vector3D rotationRate) {
+    public Transform(final Rotation rotation, final Vector3D rotationRate) {
         this(new Vector3D(), new Vector3D(), rotation, rotationRate);
     }
 
@@ -140,32 +140,46 @@ public class Transform implements Serializable {
      * @param first first transform applied
      * @param second second transform applied
      */
-    public Transform(Transform first, Transform second) {
+    public Transform(final Transform first, final Transform second) {
         this(compositeTranslation(first, second), compositeVelocity(first, second),
              compositeRotation(first, second), compositeRotationRate(first, second));
     }
 
-    /** The new translation */
-    private static Vector3D compositeTranslation(Transform first, Transform second) {
-        return first.translation.add(
-                                     first.rotation.applyInverseTo(second.translation));
+    /** Compute a composite translation.
+     * @param first first applied transform
+     * @param second second applied transform
+     * @return translation part of the composite transform
+     */
+    private static Vector3D compositeTranslation(final Transform first, final Transform second) {
+        return first.translation.add(first.rotation.applyInverseTo(second.translation));
     }
 
-    /** The new velocity */
-    private static Vector3D compositeVelocity(Transform first, Transform second) {
-        return first.velocity.add(
-                                  first.rotation.applyInverseTo(second.velocity.add(
-                                                                                    Vector3D.crossProduct(first.rotationRate,
-                                                                                                          second.translation))));
+    /** Compute a composite velocity.
+     * @param first first applied transform
+     * @param second second applied transform
+     * @return velocity part of the composite transform
+     */
+    private static Vector3D compositeVelocity(final Transform first, final Transform second) {
+        final Vector3D cross =
+            Vector3D.crossProduct(first.rotationRate, second.translation);
+        return first.velocity.add(first.rotation.applyInverseTo(second.velocity.add(cross)));
     }
 
-    /** The new rotation */
-    private static Rotation compositeRotation(Transform first, Transform second) {
+    /** Compute a composite rotation.
+     * @param first first applied transform
+     * @param second second applied transform
+     * @return rotation part of the composite transform
+     */
+    private static Rotation compositeRotation(final Transform first, final Transform second) {
         return second.rotation.applyTo(first.rotation);
     }
 
-    /** The new rotation rate */
-    private static Vector3D compositeRotationRate(Transform first, Transform second) {
+    /** Compute a composite rotation rate.
+     * @param first first applied transform
+     * @param second second applied transform
+     * @return rotation rate part of the composite transform
+     */
+    private static Vector3D compositeRotationRate(final Transform first, final Transform second) {
         return second.rotationRate.add(second.rotation.applyTo(first.rotationRate));
     }
 
@@ -184,7 +198,7 @@ public class Transform implements Serializable {
      * @param position vector to transform
      * @return transformed position
      */
-    public Vector3D transformPosition(Vector3D position) {
+    public Vector3D transformPosition(final Vector3D position) {
         return rotation.applyTo(translation.add(position));
     }
 
@@ -192,7 +206,7 @@ public class Transform implements Serializable {
      * @param vector vector to transform
      * @return transformed vector
      */
-    public Vector3D transformVector(Vector3D vector) {
+    public Vector3D transformVector(final Vector3D vector) {
         return rotation.applyTo(vector);
     }
 
@@ -200,23 +214,23 @@ public class Transform implements Serializable {
      * @param line to transform
      * @return transformed line
      */
-    public Line transformLine(Line line) {
+    public Line transformLine(final Line line) {
         final Vector3D transformedOrigin    = transformPosition(line.getOrigin());
         final Vector3D transformedDirection = transformVector(line.getDirection());
         return new Line(transformedOrigin, transformedDirection);
     }
-    
+
     /** Transform {@link PVCoordinates} including kinematic effects.
      * @param pv the couple position-velocity to transform.
      * @return transformed position/velocity
      */
-    public PVCoordinates transformPVCoordinates(PVCoordinates pv) {
+    public PVCoordinates transformPVCoordinates(final PVCoordinates pv) {
         final Vector3D p = pv.getPosition();
         final Vector3D v = pv.getVelocity();
         final Vector3D transformedP = rotation.applyTo(translation.add(p));
+        final Vector3D cross = Vector3D.crossProduct(rotationRate, transformedP);
         return new PVCoordinates(transformedP,
-                                 rotation.applyTo(v.add(velocity)).subtract(
-                                                                            Vector3D.crossProduct(rotationRate, transformedP)));
+                                 rotation.applyTo(v.add(velocity)).subtract(cross));
     }
 
     /** Get the underlying elementary translation.
