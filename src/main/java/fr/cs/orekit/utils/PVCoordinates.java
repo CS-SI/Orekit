@@ -35,18 +35,18 @@ public class PVCoordinates implements Serializable {
      * @param position the position vector (m)
      * @param velocity the velocity vector (m/s)
      */
-    public PVCoordinates(Vector3D position, Vector3D velocity) {
+    public PVCoordinates(final Vector3D position, final Vector3D velocity) {
         this.position = position;
         this.velocity = velocity;
     }
 
     /** Multiplicative constructor
-     * Build a PVCoordinates from another one and a scale factor. 
+     * Build a PVCoordinates from another one and a scale factor.
      * The PVCoordinates built will be a * pv
      * @param a scale factor
      * @param pv base (unscaled) PVCoordinates
      */
-    public PVCoordinates(double a, PVCoordinates pv) {
+    public PVCoordinates(final double a, final PVCoordinates pv) {
         this.position = new Vector3D(a, pv.position);
         this.velocity = new Vector3D(a, pv.velocity);
     }
@@ -59,7 +59,8 @@ public class PVCoordinates implements Serializable {
      * @param a2 second scale factor
      * @param pv2 second base (unscaled) PVCoordinates
      */
-    public PVCoordinates(double a1, PVCoordinates pv1, double a2, PVCoordinates pv2) {
+    public PVCoordinates(final double a1, final PVCoordinates pv1,
+                         final double a2, final PVCoordinates pv2) {
         this.position = new Vector3D(a1, pv1.position, a2, pv2.position);
         this.velocity = new Vector3D(a1, pv1.velocity, a2, pv2.velocity);
     }
@@ -74,8 +75,9 @@ public class PVCoordinates implements Serializable {
      * @param a3 third scale factor
      * @param pv3 third base (unscaled) PVCoordinates
      */
-    public PVCoordinates(double a1, PVCoordinates pv1, double a2, PVCoordinates pv2,
-                         double a3, PVCoordinates pv3) {
+    public PVCoordinates(final double a1, final PVCoordinates pv1,
+                         final double a2, final PVCoordinates pv2,
+                         final double a3, final PVCoordinates pv3) {
         this.position = new Vector3D(a1, pv1.position, a2, pv2.position, a3, pv3.position);
         this.velocity = new Vector3D(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity);
     }
@@ -92,8 +94,10 @@ public class PVCoordinates implements Serializable {
      * @param a4 fourth scale factor
      * @param pv4 fourth base (unscaled) PVCoordinates
      */
-    public PVCoordinates(double a1, PVCoordinates pv1, double a2, PVCoordinates pv2,
-                         double a3, PVCoordinates pv3, double a4, PVCoordinates pv4) {
+    public PVCoordinates(final double a1, final PVCoordinates pv1,
+                         final double a2, final PVCoordinates pv2,
+                         final double a3, final PVCoordinates pv3,
+                         final double a4, final PVCoordinates pv4) {
         this.position = new Vector3D(a1, pv1.position, a2, pv2.position,
                           a3, pv3.position, a4, pv4.position);
         this.velocity = new Vector3D(a1, pv1.velocity, a2, pv2.velocity,
@@ -107,7 +111,7 @@ public class PVCoordinates implements Serializable {
         return position;
     }
 
-    /** Gets the velocity
+    /** Gets the velocity.
      * @return the velocity vector (m/s).
      */
     public Vector3D getVelocity() {

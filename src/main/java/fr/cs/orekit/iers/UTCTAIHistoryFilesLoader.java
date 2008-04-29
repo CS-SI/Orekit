@@ -54,16 +54,17 @@ public class UTCTAIHistoryFilesLoader extends IERSFileCrawler {
         //  ...
         // 2006  Jan.  1.-                  33s
         // we ignore the non-constant and non integer offsets before 1972-01-01
+        final String start       = "^";
         final String yearField   = "\\p{Blank}*((?:\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit})|(?:    ))";
         final String monthField  = "\\p{Blank}+(\\p{Upper}\\p{Lower}+)\\.?";
         final String dayField    = "\\p{Blank}+([ 0-9]+)\\.?";
         final String offsetField = "\\p{Blank}+(\\p{Digit}+)s";
         final String separator   = "\\p{Blank}*-\\p{Blank}+";
         final String finalBlanks = "\\p{Blank}*$";
-        regularPattern = Pattern.compile("^" + yearField + monthField + dayField +
+        regularPattern = Pattern.compile(start + yearField + monthField + dayField +
                                          separator + yearField + monthField + dayField +
                                          offsetField + finalBlanks);
-        lastPattern    = Pattern.compile("^" + yearField + monthField + dayField +
+        lastPattern    = Pattern.compile(start + yearField + monthField + dayField +
                                          separator + offsetField + finalBlanks);
 
         format = new SimpleDateFormat("yyyy MMM dd Z", Locale.US);
@@ -97,7 +98,7 @@ public class UTCTAIHistoryFilesLoader extends IERSFileCrawler {
     }
 
     /** {@inheritDoc} */
-    protected void visit(BufferedReader reader)
+    protected void visit(final BufferedReader reader)
         throws OrekitException, IOException, ParseException {
 
         if (readFile != null) {
@@ -181,7 +182,9 @@ public class UTCTAIHistoryFilesLoader extends IERSFileCrawler {
 
         if (leaps.isEmpty()) {
             throw new OrekitException("file {0} is not an IERS UTC-TAI history file",
-                                      new Object[] { file.getAbsolutePath() });
+                                      new Object[] {
+                                          file.getAbsolutePath()
+                                      });
         }
 
         readFile = file;

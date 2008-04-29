@@ -11,14 +11,14 @@ import fr.cs.orekit.utils.PVCoordinates;
 
  * <p>
  * The parameters used internally are the circular elements defined as follows:
- *   <pre>
- *     a
- *     ex = e cos(&omega;)
- *     ey = e sin(&omega;)
- *     i
- *     &Omega;
- *     &alpha;<sub>v</sub> = v + &omega;
- *   </pre>
+ *   <ul>
+ *     <li>a</li>
+ *     <li>e<sub>x</sub> = e cos(&omega;)</li>
+ *     <li>e<sub>y</sub> = e sin(&omega;)</li>
+ *     <li>i</li>
+ *     <li>&Omega;</li>
+ *     <li>&alpha;<sub>v</sub> = v + &omega;</li>
+ *   </ul>
  * where &Omega; stands for the Right Ascension of the Ascending Node and
  * &alpha;<sub>v</sub> stands for the true longitude argument
  * </p>
@@ -64,7 +64,7 @@ public class CircularParameters
     /** True longitude argument (rad). */
     private final double alphaV;
 
-    /** Creates a new instance
+    /** Creates a new instance.
      * @param a  semi-major axis (m)
      * @param ex e cos(&omega;), first component of circular eccentricity vector
      * @param ey e sin(&omega;), second component of circular eccentricity vector
@@ -81,8 +81,9 @@ public class CircularParameters
      * @see #ECCENTRIC_LONGITUDE_ARGUMENT
      * @see #TRUE_LONGITUDE_ARGUMENT
      */
-    public CircularParameters(double a, double ex, double ey, double i, double raan,
-                              double alpha, int type, Frame frame)
+    public CircularParameters(final double a, final double ex, final double ey,
+                              final double i, final double raan,
+                              final double alpha, final int type, final Frame frame)
         throws IllegalArgumentException {
         super(frame);
         this.a    =  a;
@@ -119,7 +120,8 @@ public class CircularParameters
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public CircularParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
+    public CircularParameters(final PVCoordinates pvCoordinates, final Frame frame,
+                              final double mu) {
         super(pvCoordinates, frame, mu);
 
         // compute semi-major axis
@@ -166,11 +168,11 @@ public class CircularParameters
         alphaV = computeAlphaE(Math.atan2(y2 + ey + eSE * beta * ex, x2 + ex - eSE * beta * ey));
     }
 
-    /** Constructor from any kind of orbital parameters
+    /** Constructor from any kind of orbital parameters.
      * @param op orbital parameters to copy
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public CircularParameters(OrbitalParameters op, double mu) {
+    public CircularParameters(final OrbitalParameters op, final double mu) {
         super(op.frame);
         a    = op.getA();
         i    = op.getI();
@@ -255,7 +257,7 @@ public class CircularParameters
      * @param alphaE = E + &omega; eccentric longitude argument (rad)
      * @return the true longitude argument.
      */
-    private double computeAlphaE(double alphaE) {
+    private double computeAlphaE(final double alphaE) {
         final double epsilon   = Math.sqrt(1 - ex * ex - ey * ey);
         final double cosAlphaE = Math.cos(alphaE);
         final double sinAlphaE = Math.sin(alphaE);
@@ -275,7 +277,7 @@ public class CircularParameters
      * @param alphaM = M + &omega;  mean longitude argument (rad)
      * @return the true longitude argument.
      */
-    private double computeAlphaM(double alphaM) {
+    private double computeAlphaM(final double alphaM) {
         // Generalization of Kepler equation to equinoctial parameters
         // with alphaE = PA + E and
         //      alphaM = PA + M = alphaE - ex.sin(alphaE) + ey.cos(alphaE)
@@ -346,7 +348,7 @@ public class CircularParameters
         return getAlphaM() + raan;
     }
 
-    /**  Returns a string representation of this Orbit object
+    /**  Returns a string representation of this Orbit object.
      * @return a string representation of this object
      */
     public String toString() {

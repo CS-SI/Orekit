@@ -39,7 +39,7 @@ public class IntegratedEphemeris implements BoundedEphemeris {
     /** Central body gravitational constant. */
     private double mu;
 
-    /** Attitude law */
+    /** Attitude law. */
     private AttitudeLaw attitudeLaw;
 
     /** Start date of the integration (can be min or max). */
@@ -54,12 +54,13 @@ public class IntegratedEphemeris implements BoundedEphemeris {
     /** Underlying raw mathematical model. */
     private ContinuousOutputModel model;
 
-    /** Frame */
+    /** Frame. */
     private Frame frame;
 
+    /** Indicator for initialized instances. */
     private boolean isInitialized;
 
-    /** Creates a new instance of IntegratedEphemeris wich must be
+    /** Creates a new instance of IntegratedEphemeris which must be
      *  filled by the propagator.
      */
     public IntegratedEphemeris() {
@@ -73,8 +74,12 @@ public class IntegratedEphemeris implements BoundedEphemeris {
      * @param attitudeLaw attitude law
      * @param mu central body attraction coefficient
      */
-    protected void initialize(ContinuousOutputModel model, AbsoluteDate ref, Frame frame,
-                              AttitudeLaw attitudeLaw, double mu) {
+    protected void initialize(// CHECKSTYLE: stop HiddenField check
+                              final ContinuousOutputModel model, final AbsoluteDate ref,
+                              final Frame frame,
+                              final AttitudeLaw attitudeLaw, final double mu
+                              // CHECKSTYLE: resume HiddenField check
+                              ) {
         this.model     = model;
         this.frame = frame;
         this.attitudeLaw = attitudeLaw;
@@ -95,7 +100,7 @@ public class IntegratedEphemeris implements BoundedEphemeris {
      * @return the {@link SpacecraftState} at the specified date and null if not initialized.
      * @exception PropagationException if the date is outside of the range
      */
-    public SpacecraftState getSpacecraftState(AbsoluteDate date)
+    public SpacecraftState getSpacecraftState(final AbsoluteDate date)
         throws PropagationException {
         if (isInitialized) {
             model.setInterpolatedTime(date.minus(startDate));

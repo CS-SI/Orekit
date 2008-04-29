@@ -24,6 +24,6 @@ public interface AttitudePropagator {
      * set to default : {@link fr.cs.orekit.attitudes.DefaultAttitude} <p>
      * @param attitudeLaw the attitude law to use
      */
-    public void setAttitudeLaw(AttitudeLaw attitudeLaw);
+    void setAttitudeLaw(AttitudeLaw attitudeLaw);
 
 }

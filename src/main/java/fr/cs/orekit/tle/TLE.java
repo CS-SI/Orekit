@@ -10,17 +10,16 @@ import fr.cs.orekit.time.UTCScale;
 /** This class converts and contains TLE data.
  *
  * An instance of TLE is created with the two lines string representation,
- * convertion of the data is made internally for easier retrieval and
+ * conversion of the data is made internally for easier retrieval and
  * future extrapolation.
- * All the values provided by a TLE only have sense when translated by the correspondant
+ * All the values provided by a TLE only have sense when translated by the correspondent
  * {@link TLEPropagator propagator}. Even when no extrapolation in time is needed,
  * state information (position and velocity coordinates) can only be computed threw
  * the propagator. Untreated values like inclination, RAAN, mean Motion, etc. can't
  * be used by themselves without loosing precision.
  * <p>
  * More information on the TLE format can be found on the
- * <ahref="http://www.celestrak.com/">
- * CelesTrak website.</a>
+ * <a href="http://www.celestrak.com/">CelesTrak website.</a>
  * </p>
  * @author F. Maussion
  */
@@ -44,13 +43,13 @@ public class TLE {
     /** Identifier for SDP8 type of ephemeris. */
     public static final int SDP8 = 5;
 
-    /** Pattern for line 1 */
-    private static final Pattern line1Pattern =
+    /** Pattern for line 1. */
+    private static final Pattern LINE_1_PATTERN =
         Pattern.compile("1 [ 0-9]{5}U [ 0-9]{5}[ A-Z]{3} [ 0-9]{5}[.][ 0-9]{8} [ +-][.][ 0-9]{8} " +
                         "[ +-][ 0-9]{5}[+-][ 0-9] [ +-][ 0-9]{5}[+-][ 0-9] [ 0-9] [ 0-9]{4}[ 0-9]");
 
-    /** Pattern for line 2 */
-    private static final Pattern line2Pattern =
+    /** Pattern for line 2. */
+    private static final Pattern LINE_2_PATTERN =
         Pattern.compile("2 [ 0-9]{5} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{7} " +
                         "[ 0-9]{3}[.][ 0-9]{4} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{2}[.][ 0-9]{13}[ 0-9]");
 
@@ -58,43 +57,43 @@ public class TLE {
     private static final String CHECKSUM_MESSAGE =
         "wrong cheksum of TLE line {0}, expected {1} but got {2} ({3})";
 
-    /** The satellite id */
+    /** The satellite id. */
     private final int satelliteNumber;
 
-    /** International designator */
+    /** International designator. */
     private final String internationalDesignator;
 
-    /** the TLE current date */
+    /** the TLE current date. */
     private final AbsoluteDate epoch;
 
-    /** Ballistic coefficient */
+    /** Ballistic coefficient. */
     private final double bStar;
 
-    /** Type of ephemeris */
+    /** Type of ephemeris. */
     private final int ephemerisType;
 
-    /** Line element number */
+    /** Line element number. */
     private final int elementNumber;
 
-    /** Inclination (rad) */
+    /** Inclination (rad). */
     private final double i;
 
-    /** Right Ascension of the Ascending node (rad) */
+    /** Right Ascension of the Ascending node (rad). */
     private final double raan;
 
-    /** Eccentricity */
+    /** Eccentricity. */
     private final double e;
 
-    /** Argument of perigee (rad) */
+    /** Argument of perigee (rad). */
     private final double pa;
 
-    /** Mean anomaly (rad) */
+    /** Mean anomaly (rad). */
     private final double meanAnomaly;
 
-    /** Mean Motion (rad/sec) */
+    /** Mean Motion (rad/sec). */
     private final double meanMotion;
 
-    /** revolution number at epoch */
+    /** revolution number at epoch. */
     private final int revolutionNumberAtEpoch;
 
     /** Simple constructor with one TLE.
@@ -110,27 +109,27 @@ public class TLE {
         internationalDesignator = line1.substring(9,17);
 
         // Date format transform :
-        int year = 2000 + Integer.parseInt(line1.substring(18,20).replace(' ','0'));
+        int year = 2000 + Integer.parseInt(line1.substring(18,20).replace(' ', '0'));
         if (year > 2056) {
             year -= 100;
         }
         final ChunkedDate date = new ChunkedDate(year, 1, 1);
-        final double dayNb = Double.parseDouble(line1.substring(20,32).replace(' ','0'));
+        final double dayNb = Double.parseDouble(line1.substring(20,32).replace(' ', '0'));
         epoch = new AbsoluteDate(new AbsoluteDate(date, ChunkedTime.H00, UTCScale.getInstance()),
                                  (dayNb - 1) * 86400); //-1 is due to TLE date definition
         // Fields transform :
-        bStar = Double.parseDouble(line1.substring(53,54).replace(' ','0') +
-                                   "." + line1.substring(54,59).replace(' ','0') +
-                                   "e" + line1.substring(59,61).replace(' ','0'));
-        ephemerisType = Integer.parseInt(line1.substring(62,63).replace(' ','0'));
-        elementNumber = Integer.parseInt(line1.substring(64,68).replace(' ','0'));
-        i = Math.toRadians(Double.parseDouble(line2.substring(8,16).replace(' ','0')));
-        raan = Math.toRadians(Double.parseDouble(line2.substring(17,25).replace(' ','0')));
-        e = Double.parseDouble("."+line2.substring(26,33).replace(' ','0'));
-        pa = Math.toRadians(Double.parseDouble(line2.substring(34,42).replace(' ','0')));
-        meanAnomaly = Math.toRadians(Double.parseDouble(line2.substring(43,51).replace(' ','0')));
-        meanMotion = Math.PI * Double.parseDouble(line2.substring(52,63).replace(' ','0')) / 43200.0;
-        revolutionNumberAtEpoch = Integer.parseInt(line2.substring(63,68).replace(' ','0'));
+        bStar = Double.parseDouble(line1.substring(53,54).replace(' ', '0') +
+                                   "." + line1.substring(54,59).replace(' ', '0') +
+                                   "e" + line1.substring(59,61).replace(' ', '0'));
+        ephemerisType = Integer.parseInt(line1.substring(62,63).replace(' ', '0'));
+        elementNumber = Integer.parseInt(line1.substring(64,68).replace(' ', '0'));
+        i = Math.toRadians(Double.parseDouble(line2.substring(8,16).replace(' ', '0')));
+        raan = Math.toRadians(Double.parseDouble(line2.substring(17,25).replace(' ', '0')));
+        e = Double.parseDouble("." + line2.substring(26,33).replace(' ', '0'));
+        pa = Math.toRadians(Double.parseDouble(line2.substring(34,42).replace(' ', '0')));
+        meanAnomaly = Math.toRadians(Double.parseDouble(line2.substring(43,51).replace(' ', '0')));
+        meanMotion = Math.PI * Double.parseDouble(line2.substring(52,63).replace(' ', '0')) / 43200.0;
+        revolutionNumberAtEpoch = Integer.parseInt(line2.substring(63,68).replace(' ', '0'));
 
     }
 
@@ -156,14 +155,14 @@ public class TLE {
         return ephemerisType;
     }
 
-    /** Gets the TLE current date
+    /** Gets the TLE current date.
      * @return the epoch
      */
     public AbsoluteDate getEpoch() {
         return epoch;
     }
 
-    /** Gets the inclination
+    /** Gets the inclination.
      * @return the inclination (rad)
      */
     public double getI() {
@@ -205,7 +204,7 @@ public class TLE {
         return pa;
     }
 
-    /** Gets Right Ascension of the Ascending node
+    /** Gets Right Ascension of the Ascending node.
      * @return the raan (rad)
      */
     public double getRaan() {
@@ -232,15 +231,16 @@ public class TLE {
      * @return true if format is recognised, false if not
      * @exception OrekitException if checksum is not valid
      */
-    public static boolean isFormatOK(String line1, String line2) throws OrekitException {
+    public static boolean isFormatOK(final String line1, final String line2)
+        throws OrekitException {
 
         if (line1 == null || line1.length() != 69 ||
             line2 == null || line2.length() != 69) {
             return false;
         }
 
-        if (! (line1Pattern.matcher(line1).matches() &&
-               line2Pattern.matcher(line2).matches())) {
+        if (!(LINE_1_PATTERN.matcher(line1).matches() &&
+               LINE_2_PATTERN.matcher(line2).matches())) {
             return false;
         }
 
@@ -248,9 +248,9 @@ public class TLE {
         int chksum1  = 0;
         int chksum2  = 0;
 
-        for (int j = 0 ; j < 68; j++) {
-            final String x = line1.substring(j,j+1);
-            final String y = line2.substring(j,j+1);
+        for (int j = 0; j < 68; j++) {
+            final String x = line1.substring(j, j + 1);
+            final String y = line2.substring(j, j + 1);
             try {
                 chksum1 += Integer.parseInt(x);
             } catch (NumberFormatException nb) {

@@ -16,11 +16,11 @@ import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
 
 /** This class is a space-dynamics aware fixed size step handler.
- * 
+ *
  * <p>It mirrors the {@link org.apache.commons.math.ode.FixedStepHandler
- * FixedStepHandler} interface from <a href="http://commons.apache.org/math/"
+ * FixedStepHandler} interface from <a href="http://commons.apache.org/math/">
  * commons-math</a> but provides a space-dynamics interface to the methods.</p>
- * 
+ *
  */
 public abstract class OrekitFixedStepHandler
     implements FixedStepHandler, Serializable {
@@ -43,8 +43,11 @@ public abstract class OrekitFixedStepHandler
      * @param mu central body attraction coefficient
      * @param attitudeLaw attitude law
      */
-    protected void initialize(AbsoluteDate reference, Frame frame, double mu,
-                              AttitudeLaw attitudeLaw) {
+    protected void initialize(// CHECKSTYLE: stop HiddenField check
+                              final AbsoluteDate reference, final Frame frame,
+                              final double mu, final AttitudeLaw attitudeLaw
+                              // CHECKSTYLE: resume HiddenField check
+                              ) {
         this.reference   = reference;
         this.frame       = frame;
         this.attitudeLaw = attitudeLaw;
@@ -56,10 +59,10 @@ public abstract class OrekitFixedStepHandler
      * @param isLast if true, this is the last integration step
      * @exception PropagationException if step cannot be handled
      */
-    public abstract void handleStep(SpacecraftState currentState, boolean isLast)
+    public abstract void handleStep(final SpacecraftState currentState, final boolean isLast)
         throws PropagationException;
 
-    /** Check if the handler requires dense output
+    /** Check if the handler requires dense output.
      * @return true if the handler requires dense output
      * @see org.apache.commons.math.ode.StepHandler#requiresDenseOutput()
      */
@@ -70,16 +73,10 @@ public abstract class OrekitFixedStepHandler
      * handled.
      * @see org.apache.commons.math.ode.StepHandler#reset()
      */
-    public abstract void reset() ;
+    public abstract void reset();
 
-    /**
-     * Handle the last accepted step
-     * @param t step time
-     * @param y step state
-     * @param isLast true if the step is the last one
-     * @see org.apache.commons.math.ode.StepHandler#handleStep(org.apache.commons.math.ode.StepInterpolator, boolean)
-     */
-    public void handleStep(double t, double[] y, boolean isLast) {
+    /** {@inheritDoc}  */
+    public void handleStep(final double t, final double[] y, final boolean isLast) {
         try {
             final OrbitalParameters op =
                 new EquinoctialParameters(y[0], y[1], y[2], y[3], y[4], y[5],
