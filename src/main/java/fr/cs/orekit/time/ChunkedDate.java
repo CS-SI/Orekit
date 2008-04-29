@@ -24,34 +24,34 @@ public class ChunkedDate implements Serializable, Comparable {
     private static final long serialVersionUID = 7127660151923617766L;
 
     /** Factory for proleptic julian calendar (up to 0000-12-31). */
-    private static final YearFactory prolepticJulianFactory = new ProlepticJulianFactory();
+    private static final YearFactory PROLEPTIC_JULIAN_FACTORY = new ProlepticJulianFactory();
 
     /** Factory for julian calendar (from 0001-01-01 to 1582-10-04). */
-    private static final YearFactory julianFactory          = new JulianFactory();
+    private static final YearFactory JULIAN_FACTORY           = new JulianFactory();
 
     /** Factory for gregorian calendar (from 1582-10-15). */
-    private static final YearFactory gregorianFactory       = new GregorianFactory();
+    private static final YearFactory GREGORIAN_FACTORY        = new GregorianFactory();
 
     /** Factory for leap years. */
-    private static final MonthDayFactory leapYearFactory    = new LeapYearFactory();
+    private static final MonthDayFactory LEAP_YEAR_FACTORY    = new LeapYearFactory();
 
     /** Factory for non-leap years. */
-    private static final MonthDayFactory commonYearFactory  = new CommonYearFactory();
+    private static final MonthDayFactory COMMON_YEAR_FACTORY  = new CommonYearFactory();
 
     /** Format for years. */
-    private static DecimalFormat fourDigits = new DecimalFormat("0000");
+    private static final DecimalFormat FOUR_DIGITS = new DecimalFormat("0000");
 
     /** Format for months and days. */
-    private static DecimalFormat twoDigits  = new DecimalFormat("00");
+    private static final DecimalFormat TWO_DIGITS  = new DecimalFormat("00");
 
     /** Year number. */
-    public final int year;
+    private final int year;
 
     /** Month number. */
-    public final int month;
+    private final int month;
 
     /** Day number. */
-    public final int day;
+    private final int day;
 
     /** Build a date from its calendar elements.
      * @param year year number (may be 0 or negative for BC years)
@@ -61,7 +61,8 @@ public class ChunkedDate implements Serializable, Comparable {
      * are given (parameters out of range, february 29 for non-leap years,
      * dates during the gregorian leap in 1582 ...)
      */
-    public ChunkedDate(int year, int month, int day) throws IllegalArgumentException {
+    public ChunkedDate(final int year, final int month, final int day)
+        throws IllegalArgumentException {
 
         // very rough range check
         // (just to avoid ArrayOutOfboundException in MonthDayFactory later)
@@ -98,7 +99,8 @@ public class ChunkedDate implements Serializable, Comparable {
      * @exception IllegalArgumentException if dayNumber is out of range
      * with respect to year
      */
-    public ChunkedDate(int year, int dayNumber) throws IllegalArgumentException {
+    public ChunkedDate(final int year, final int dayNumber)
+        throws IllegalArgumentException {
         this(new ChunkedDate(year - 1, 12, 31).getJ2000Day() + dayNumber);
         if (dayNumber != getDayOfYear()) {
             OrekitException.throwIllegalArgumentException("no day number {0} in year {1}",
@@ -112,19 +114,19 @@ public class ChunkedDate implements Serializable, Comparable {
     /** Build a date from its day number with respect to J2000 epoch.
      * @param j2000Day day number with respect to J2000 epoch
      */
-    public ChunkedDate(int j2000Day) {
+    public ChunkedDate(final int j2000Day) {
 
         // we follow the astronomical convention for calendars:
         // we consider a year zero and 10 days are missing in 1582
         // from 1582-10-15: gregorian calendar
         // from 0001-01-01 to 1582-10-04: julian calendar
         // up to 0000-12-31 : proleptic julian calendar
-        YearFactory yFactory = gregorianFactory;
+        YearFactory yFactory = GREGORIAN_FACTORY;
         if (j2000Day < -152384) {
             if (j2000Day > -730122) {
-                yFactory = julianFactory;
+                yFactory = JULIAN_FACTORY;
             } else {
-                yFactory = prolepticJulianFactory;
+                yFactory = PROLEPTIC_JULIAN_FACTORY;
             }
         }
         year = yFactory.getYear(j2000Day);
@@ -132,26 +134,47 @@ public class ChunkedDate implements Serializable, Comparable {
 
         // handle month/day according to the year being a common or leap year
         final MonthDayFactory mdFactory =
-            yFactory.isLeap(year) ? leapYearFactory : commonYearFactory;
+            yFactory.isLeap(year) ? LEAP_YEAR_FACTORY : COMMON_YEAR_FACTORY;
         month = mdFactory.getMonth(dayInYear);
         day   = mdFactory.getDay(dayInYear, month);
 
+    }
+
+    /** Get the year number.
+     * @return year number (may be 0 or negative for BC years)
+     */
+    public int getYear() {
+        return year;
+    }
+
+    /** Get the month.
+     * @return month number from 1 to 12
+     */
+    public int getMonth() {
+        return month;
+    }
+
+    /** Get the day.
+     * @return day number from 1 to 31
+     */
+    public int getDay() {
+        return day;
     }
 
     /** Get the day number with respect to J2000 epoch.
      * @return day number with respect to J2000 epoch
      */
     public int getJ2000Day() {
-        YearFactory yFactory = gregorianFactory;
+        YearFactory yFactory = GREGORIAN_FACTORY;
         if (year < 1583) {
             if (year < 1) {
-                yFactory = prolepticJulianFactory;
+                yFactory = PROLEPTIC_JULIAN_FACTORY;
             } else if ((year < 1582) || (month < 10) || ((month < 11) && (day < 5))) {
-                yFactory = julianFactory;
+                yFactory = JULIAN_FACTORY;
             }
         }
         final MonthDayFactory mdFactory =
-            yFactory.isLeap(year) ? leapYearFactory : commonYearFactory;
+            yFactory.isLeap(year) ? LEAP_YEAR_FACTORY : COMMON_YEAR_FACTORY;
         return yFactory.getLastJ2000DayOfYear(year - 1) +
                mdFactory.getDayInYear(month, day);
     }
@@ -179,14 +202,14 @@ public class ChunkedDate implements Serializable, Comparable {
      */
     public String toString() {
         return new StringBuffer().
-               append(fourDigits.format(year)).append('-').
-               append(twoDigits.format(month)).append('-').
-               append(twoDigits.format(day)).
+               append(FOUR_DIGITS.format(year)).append('-').
+               append(TWO_DIGITS.format(month)).append('-').
+               append(TWO_DIGITS.format(day)).
                toString();
     }
-    
+
     /** {@inheritDoc} */
-    public int compareTo(Object other) {
+    public int compareTo(final Object other) {
         final int j2000Day = getJ2000Day();
         final int otherJ2000Day = ((ChunkedDate) other).getJ2000Day();
         if (j2000Day < otherJ2000Day) {
@@ -198,7 +221,7 @@ public class ChunkedDate implements Serializable, Comparable {
     }
 
     /** {@inheritDoc} */
-    public boolean equals(Object other) {
+    public boolean equals(final Object other) {
         try {
             final ChunkedDate otherDate = (ChunkedDate) other;
             return (otherDate != null) && (year == otherDate.year) &&
@@ -220,19 +243,19 @@ public class ChunkedDate implements Serializable, Comparable {
          * @param j2000Day day number with respect to J2000 epoch
          * @return year number
          */
-        public int getYear(int j2000Day);
+        int getYear(int j2000Day);
 
         /** Get the day number with respect to J2000 epoch for new year's Eve.
          * @param year year number
          * @return day number with respect to J2000 epoch for new year's Eve
          */
-        public int getLastJ2000DayOfYear(int year);
+        int getLastJ2000DayOfYear(int year);
 
         /** Check if a year is a leap or common year.
          * @param year year number
          * @return true if year is a leap year
          */
-        public boolean isLeap(int year);
+        boolean isLeap(int year);
 
     }
 
@@ -240,17 +263,17 @@ public class ChunkedDate implements Serializable, Comparable {
     private static class ProlepticJulianFactory implements YearFactory {
 
         /** {@inheritDoc} */
-        public int getYear(int j2000Day) {
+        public int getYear(final int j2000Day) {
             return  -((-4 * j2000Day - 2920488) / 1461);
         }
 
         /** {@inheritDoc} */
-        public int getLastJ2000DayOfYear(int year) {
+        public int getLastJ2000DayOfYear(final int year) {
             return (1461 * year + 1) / 4 - 730123;
         }
 
         /** {@inheritDoc} */
-        public boolean isLeap(int year) {
+        public boolean isLeap(final int year) {
             return (year % 4) == 0;
         }
 
@@ -260,17 +283,17 @@ public class ChunkedDate implements Serializable, Comparable {
     private static class JulianFactory implements YearFactory {
 
         /** {@inheritDoc} */
-        public int getYear(int j2000Day) {
+        public int getYear(final int j2000Day) {
             return  (4 * j2000Day + 2921948) / 1461;
         }
 
         /** {@inheritDoc} */
-        public int getLastJ2000DayOfYear(int year) {
+        public int getLastJ2000DayOfYear(final int year) {
             return (1461 * year) / 4 - 730122;
         }
 
         /** {@inheritDoc} */
-        public boolean isLeap(int year) {
+        public boolean isLeap(final int year) {
             return (year % 4) == 0;
         }
 
@@ -280,7 +303,7 @@ public class ChunkedDate implements Serializable, Comparable {
     private static class GregorianFactory implements YearFactory {
 
         /** {@inheritDoc} */
-        public int getYear(int j2000Day) {
+        public int getYear(final int j2000Day) {
 
             // year estimate
             int year = (400 * j2000Day + 292194288) / 146097;
@@ -297,12 +320,12 @@ public class ChunkedDate implements Serializable, Comparable {
         }
 
         /** {@inheritDoc} */
-        public int getLastJ2000DayOfYear(int year) {
+        public int getLastJ2000DayOfYear(final int year) {
             return (1461 * year) / 4 - year / 100 + year / 400 - 730120;
         }
 
         /** {@inheritDoc} */
-        public boolean isLeap(int year) {
+        public boolean isLeap(final int year) {
             return ((year % 4) == 0) && (((year % 400) == 0) || ((year % 100) != 0));
         }
 
@@ -315,21 +338,21 @@ public class ChunkedDate implements Serializable, Comparable {
          * @param dayInYear day number within year
          * @return month number
          */
-        public int getMonth(int dayInYear);
+        int getMonth(int dayInYear);
 
         /** Get the day number for given month and day number within year.
          * @param dayInYear day number within year
          * @param month month number
          * @return day number
          */
-        public int getDay(int dayInYear, int month);
+        int getDay(int dayInYear, int month);
 
         /** Get the day number within year for given month and day numbers.
          * @param month month number
          * @param day day number
          * @return day number within year
          */
-        public int getDayInYear(int month, int day);
+        int getDayInYear(int month, int day);
 
     }
 
@@ -337,23 +360,23 @@ public class ChunkedDate implements Serializable, Comparable {
     private static class LeapYearFactory implements MonthDayFactory {
 
         /** Months succession definition. */
-        private static final int[] previousMonthEndDay = {
+        private static final int[] PREVIOUS_MONTH_END_DAY = {
             0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335
         };
 
         /** {@inheritDoc} */
-        public int getMonth(int dayInYear) {
+        public int getMonth(final int dayInYear) {
             return (dayInYear < 32) ? 1 : (10 * dayInYear + 313) / 306;
         }
 
         /** {@inheritDoc} */
-        public int getDay(int dayInYear, int month) {
-            return dayInYear - previousMonthEndDay[month];
+        public int getDay(final int dayInYear, final int month) {
+            return dayInYear - PREVIOUS_MONTH_END_DAY[month];
         }
 
         /** {@inheritDoc} */
-        public int getDayInYear(int month, int day) {
-            return day + previousMonthEndDay[month];
+        public int getDayInYear(final int month, final int day) {
+            return day + PREVIOUS_MONTH_END_DAY[month];
         }
 
     }
@@ -362,23 +385,23 @@ public class ChunkedDate implements Serializable, Comparable {
     private static class CommonYearFactory implements MonthDayFactory {
 
         /** Months succession definition. */
-        private static final int[] previousMonthEndDay = {
+        private static final int[] PREVIOUS_MONTH_END_DAY = {
             0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334
         };
 
         /** {@inheritDoc} */
-        public int getMonth(int dayInYear) {
+        public int getMonth(final int dayInYear) {
             return (dayInYear < 32) ? 1 : (10 * dayInYear + 323) / 306;
         }
 
         /** {@inheritDoc} */
-        public int getDay(int dayInYear, int month) {
-            return dayInYear - previousMonthEndDay[month];
+        public int getDay(final int dayInYear, final int month) {
+            return dayInYear - PREVIOUS_MONTH_END_DAY[month];
         }
 
         /** {@inheritDoc} */
-        public int getDayInYear(int month, int day) {
-            return day + previousMonthEndDay[month];
+        public int getDayInYear(final int month, final int day) {
+            return day + PREVIOUS_MONTH_END_DAY[month];
         }
 
     }

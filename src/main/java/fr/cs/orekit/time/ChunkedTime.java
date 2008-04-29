@@ -23,20 +23,20 @@ public class ChunkedTime implements Serializable, Comparable {
     private static final long serialVersionUID = 4492296986280760487L;
 
     /** Format for hours and minutes. */
-    private static final DecimalFormat twoDigits = new DecimalFormat("00");
+    private static final DecimalFormat TWO_DIGITS = new DecimalFormat("00");
 
     /** Format for seconds. */
-    private static final DecimalFormat secondsDigits =
+    private static final DecimalFormat SECONDS_FORMAT =
         new DecimalFormat("00.000", new DecimalFormatSymbols(Locale.US));
 
     /** Hour number. */
-    public final int hour;
+    private final int hour;
 
     /** Minute number. */
-    public final int minute;
+    private final int minute;
 
     /** Second number. */
-    public final double second;
+    private final double second;
 
     /** Build a time from its clock elements.
      * @param hour hour number from 0 to 23
@@ -45,7 +45,8 @@ public class ChunkedTime implements Serializable, Comparable {
      * @exception IllegalArgumentException if inconsistent arguments
      * are given (parameters out of range)
      */
-    public ChunkedTime(int hour, int minute, double second) throws IllegalArgumentException {
+    public ChunkedTime(final int hour, final int minute, final double second)
+        throws IllegalArgumentException {
 
         // range check
         if ((hour   < 0) || (hour   >  23) ||
@@ -69,7 +70,7 @@ public class ChunkedTime implements Serializable, Comparable {
      * @param secondInDay second number from 0.0 to 86400.0 (excluded)
      * @exception IllegalArgumentException if seconds number is out of range
      */
-    public ChunkedTime(double secondInDay) {
+    public ChunkedTime(final double secondInDay) {
         // range check
         if ((secondInDay < 0) || (secondInDay >= 86400.0)) {
             OrekitException.throwIllegalArgumentException("out of range seconds number: {0}",
@@ -80,11 +81,32 @@ public class ChunkedTime implements Serializable, Comparable {
 
         // extract the time chunks
         hour = (int) Math.floor(secondInDay / 3600.0);
-        secondInDay -= hour * 3600;
-        minute = (int) Math.floor(secondInDay / 60.0);
-        secondInDay -= minute * 60;
-        second = secondInDay;
+        double remains = secondInDay - hour * 3600;
+        minute = (int) Math.floor(remains / 60.0);
+        remains -= minute * 60;
+        second = remains;
 
+    }
+
+    /** Get the hour number.
+     * @return hour number from 0 to 23
+     */
+    public int getHour() {
+        return hour;
+    }
+
+    /** Get the minute number.
+     * @return minute minute number from 0 to 59
+     */
+    public int getMinute() {
+        return minute;
+    }
+
+    /** Get the seconds number.
+     * @return second second number from 0.0 to 60.0 (excluded)
+     */
+    public double getSecond() {
+        return second;
     }
 
     /** Get the second number within the day.
@@ -99,9 +121,9 @@ public class ChunkedTime implements Serializable, Comparable {
      */
     public String toString() {
         return new StringBuffer().
-        append(twoDigits.format(hour)).append(':').
-        append(twoDigits.format(minute)).append(':').
-        append(secondsDigits.format(second)).
+        append(TWO_DIGITS.format(hour)).append(':').
+        append(TWO_DIGITS.format(minute)).append(':').
+        append(SECONDS_FORMAT.format(second)).
         toString();
     }
 

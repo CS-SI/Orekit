@@ -29,9 +29,9 @@ extends TestCase {
         for (int i = 0; i < reference.length; ++i) {
             int day  = reference[i][3];
             ChunkedDate date = new ChunkedDate(day);
-            assertEquals(reference[i][0], date.year);
-            assertEquals(reference[i][1], date.month);
-            assertEquals(reference[i][2], date.day);
+            assertEquals(reference[i][0], date.getYear());
+            assertEquals(reference[i][1], date.getMonth());
+            assertEquals(reference[i][2], date.getDay());
         }
 
     }
@@ -105,7 +105,7 @@ extends TestCase {
         for (int i = start; i < start + n; ++i) {
             ChunkedDate date1 = new ChunkedDate(i);
             assertEquals(i, date1.getJ2000Day());
-            ChunkedDate date2 = new ChunkedDate(date1.year, date1.month, date1.day);
+            ChunkedDate date2 = new ChunkedDate(date1.getYear(), date1.getMonth(), date1.getDay());
             assertEquals(i, date2.getJ2000Day());
         }        
     }

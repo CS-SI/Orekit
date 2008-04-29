@@ -112,8 +112,8 @@ public class AbsoluteDate implements Comparable, Serializable {
     public AbsoluteDate(ChunkedDate date, ChunkedTime time, TimeScale timeScale) {
         // set the epoch at the start of the current minute
         final int j1970Day = date.getJ2000Day() + 10957;
-        epoch  = 60000l * ((j1970Day * 24l + time.hour) * 60l + time.minute);
-        offset = time.second + timeScale.offsetToTAI(epoch * 0.001 + time.second);
+        epoch  = 60000l * ((j1970Day * 24l + time.getHour()) * 60l + time.getMinute());
+        offset = time.getSecond() + timeScale.offsetToTAI(epoch * 0.001 + time.getSecond());
     }
 
     /** Build an instant from a location in a {@link TimeScale time scale}.

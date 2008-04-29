@@ -82,9 +82,9 @@ extends TestCase {
                                             boolean expectedCompletion) {
         try {
             ChunkedTime time = new ChunkedTime(hour, minute, second);
-            assertEquals(hour,   time.hour);
-            assertEquals(minute, time.minute);
-            assertEquals(second, time.second, 1.0e-10);
+            assertEquals(hour,   time.getHour());
+            assertEquals(minute, time.getMinute());
+            assertEquals(second, time.getSecond(), 1.0e-10);
             assertTrue(expectedCompletion);
         } catch (IllegalArgumentException iae) {
             assertTrue(! expectedCompletion);

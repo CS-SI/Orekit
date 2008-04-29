@@ -61,11 +61,11 @@ public class Orbit implements Serializable {
     /** Orbital parameters state. */
     private final OrbitalParameters parameters;
 
-    /** Create a new instance from date and orbital parameters
+    /** Create a new instance from date and orbital parameters.
      * @param t  date
      * @param parameters orbital parameters
      */
-    public Orbit(AbsoluteDate t, OrbitalParameters parameters) {
+    public Orbit(final AbsoluteDate t, final OrbitalParameters parameters) {
         this.t = t;
         this.parameters = parameters;
     }
@@ -102,7 +102,7 @@ public class Orbit implements Serializable {
      * @return e cos(&omega; + &Omega;), first component of eccentricity vector
      * @see #getE()
      */
-    public double getEx(){
+    public double getEx() {
         return parameters.getEquinoctialEx();
     }
 
@@ -110,7 +110,7 @@ public class Orbit implements Serializable {
      * @return e sin(&omega; + &Omega;), second component of the eccentricity vector
      * @see #getE()
      */
-    public double getEy(){
+    public double getEy() {
         return parameters.getEquinoctialEy();
     }
 
@@ -118,7 +118,7 @@ public class Orbit implements Serializable {
      * @return tan(i/2) cos(&Omega;), first component of the inclination vector
      * @see #getI()
      */
-    public double getHx(){
+    public double getHx() {
         return parameters.getHx();
     }
 
@@ -126,7 +126,7 @@ public class Orbit implements Serializable {
      * @return tan(i/2) sin(&Omega;), second component of the inclination vector
      * @see #getI()
      */
-    public double getHy(){
+    public double getHy() {
         return parameters.getHy();
     }
 
@@ -135,7 +135,7 @@ public class Orbit implements Serializable {
      * @see #getLE()
      * @see #getLM()
      */
-    public double getLv(){
+    public double getLv() {
         return parameters.getLv();
     }
 
@@ -144,7 +144,7 @@ public class Orbit implements Serializable {
      * @see #getLv()
      * @see #getLM()
      */
-    public double getLE(){
+    public double getLE() {
         return parameters.getLE();
     }
 
@@ -153,7 +153,7 @@ public class Orbit implements Serializable {
      * @see #getLv()
      * @see #getLE()
      */
-    public double getLM(){
+    public double getLM() {
         return parameters.getLM();
     }
 
@@ -188,12 +188,12 @@ public class Orbit implements Serializable {
      * @return pvCoordinates in inertial frame (reference to an
      * internally cached pvCoordinates which can change)
      */
-    public PVCoordinates getPVCoordinates(double mu) {
+    public PVCoordinates getPVCoordinates(final double mu) {
         return parameters.getPVCoordinates(mu);
     }
 
-    /**  Returns a string representation of this Orbit object
-     * @return a string representation of this object
+    /**  Returns a string representation of this Orbit instance.
+     * @return a string representation of this instance
      */
     public String toString() {
         final StringBuffer sb = new StringBuffer();
