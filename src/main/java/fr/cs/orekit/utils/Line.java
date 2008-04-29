@@ -32,7 +32,7 @@ public class Line {
      * @param direction direction of the line
      * @exception IllegalArgumentException if the direction norm is too small
      */
-    public Line(Vector3D p, Vector3D direction) {
+    public Line(final Vector3D p, final Vector3D direction) {
         this.direction = direction.normalize();
         zero =
             new Vector3D(1.0, p, -Vector3D.dotProduct(p, this.direction), this.direction);
@@ -42,7 +42,7 @@ public class Line {
      * @param line the line to revert
      * @return a new instance of Line which is the reverse of line
      */
-    public static Line revert(Line line) {
+    public static Line revert(final Line line) {
         return new Line(line.zero , line.direction.negate());
     }
 
@@ -67,7 +67,7 @@ public class Line {
      * @param point point to check
      * @return abscissa of the point
      */
-    public double getAbscissa(Vector3D point) {
+    public double getAbscissa(final Vector3D point) {
         return Vector3D.dotProduct(point.subtract(zero), direction);
     }
 
@@ -76,7 +76,7 @@ public class Line {
      * @return one point belonging to the line, at specified abscissa
      * (really a {@link Vector3D Vector3D} instance)
      */
-    public Vector3D pointAt(double abscissa) {
+    public Vector3D pointAt(final double abscissa) {
         return new Vector3D(1.0, zero, abscissa, direction);
     }
 
@@ -84,7 +84,7 @@ public class Line {
      * @param p point to check
      * @return true if p belongs to the line
      */
-    public boolean contains(Vector3D p) {
+    public boolean contains(final Vector3D p) {
         return distance(p) < 1.0e-10;
     }
 
@@ -92,7 +92,7 @@ public class Line {
      * @param p to check
      * @return distance between the instance and the point
      */
-    public double distance(Vector3D p) {
+    public double distance(final Vector3D p) {
         final Vector3D d = p.subtract(zero);
         return new Vector3D(1.0, d, -Vector3D.dotProduct(d, direction), direction).getNorm();
     }

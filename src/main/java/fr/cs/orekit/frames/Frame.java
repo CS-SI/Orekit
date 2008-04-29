@@ -476,10 +476,10 @@ public class Frame implements Serializable {
             return LazyTIRF2000AHolder.INSTANCE;
         }
         if (type == TIRF2000B) {
-            if (LazyTIRF2000BHolder.instance == null) {
-                throw LazyTIRF2000BHolder.orekitException;
+            if (LazyTIRF2000BHolder.INSTANCE == null) {
+                throw LazyTIRF2000BHolder.OREKIT_EXCEPTION;
             }
-            return LazyTIRF2000BHolder.instance;
+            return LazyTIRF2000BHolder.INSTANCE;
         }
         if (type == IRF2000A) {
             if (LazyIRF2000AHolder.INSTANCE == null) {
@@ -514,13 +514,19 @@ public class Frame implements Serializable {
 
     /** Holder for the J2000 frame singleton. */
     private static class LazyJ2000Holder {
+        /** Unique instance. */
         private static final Frame INSTANCE = new Frame("J2000");
     }
 
     /** Holder for the ITRF 2000 A frame singleton. */
     private static class LazyITRF2000AHolder {
+
+        /** Unique instance. */
         private static final Frame INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
         private static final OrekitException OREKIT_EXCEPTION;
+
         static {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
@@ -536,13 +542,18 @@ public class Frame implements Serializable {
 
     /** Holder for the ITRF 2000 B frame singleton. */
     private static class LazyITRF2000BHolder {
+
+        /** Unique instance. */
         private static final Frame INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
         private static final OrekitException OREKIT_EXCEPTION;
+
         static {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new ITRF2000Frame(LazyTIRF2000BHolder.instance, AbsoluteDate.J2000Epoch, ITRF2000B.name);
+                tmpFrame = new ITRF2000Frame(LazyTIRF2000BHolder.INSTANCE, AbsoluteDate.J2000Epoch, ITRF2000B.name);
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
@@ -553,8 +564,13 @@ public class Frame implements Serializable {
 
     /** Holder for the TIRF 2000 A frame singleton. */
     private static class LazyTIRF2000AHolder {
+
+        /** Unique instance. */
         private static final Frame INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
         private static final OrekitException OREKIT_EXCEPTION;
+
         static {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
@@ -570,8 +586,13 @@ public class Frame implements Serializable {
 
     /** Holder for the TIRF Frame 2000 B frame singleton. */
     private static class LazyTIRF2000BHolder {
-        private static final Frame instance;
-        private static final OrekitException orekitException;
+
+        /** Unique instance. */
+        private static final Frame INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
+
         static {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
@@ -580,15 +601,21 @@ public class Frame implements Serializable {
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
-            instance = tmpFrame;
-            orekitException = tmpException;
+            INSTANCE = tmpFrame;
+            OREKIT_EXCEPTION = tmpException;
         }
+
     }
 
     /** Holder for the IRF 2000 A frame singleton. */
     private static class LazyIRF2000AHolder {
+
+        /** Unique instance. */
         private static final Frame INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
         private static final OrekitException OREKIT_EXCEPTION;
+
         static {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
@@ -600,12 +627,18 @@ public class Frame implements Serializable {
             INSTANCE = tmpFrame;
             OREKIT_EXCEPTION = tmpException;
         }
+
     }
 
     /** Holder for the IRF 2000 B frame singleton. */
     private static class LazyIRF2000BHolder {
+
+        /** Unique instance. */
         private static final Frame INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
         private static final OrekitException OREKIT_EXCEPTION;
+
         static {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
@@ -617,11 +650,15 @@ public class Frame implements Serializable {
             INSTANCE = tmpFrame;
             OREKIT_EXCEPTION = tmpException;
         }
+
     }
 
     /** Holder for the Veis 1950 frame singleton. */
     private static class LazyVeis1950Holder {
+
+        /** Unique instance. */
         private static final Frame INSTANCE;
+
         static {
             final double q1 = -2.01425201682020570e-5;
             final double q2 = -2.43283773387856897e-3;
@@ -631,6 +668,7 @@ public class Frame implements Serializable {
                                  new Transform(new Rotation(q0, q1, q2, q3, true)),
                                  VEIS1950.name);
         }
+
     }
 
 }

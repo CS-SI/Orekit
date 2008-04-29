@@ -6,11 +6,11 @@ import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.propagation.SpacecraftState;
 
 /** This interface represents space-dynamics aware switching functions.
- * 
+ *
  * <p>It mirrors the {@link org.apache.commons.math.ode.SwitchingFunction
- * SwitchingFunction} interface from <a href="http://commons.apache.org/math/"
+ * SwitchingFunction} interface from <a href="http://commons.apache.org/math/">
  * commons-math</a> but provides a space-dynamics interface to the methods.</p>
- * 
+ *
  * <p>It should be implemented by all real force models before they
  * can be taken into account by the orbit extrapolation methods.</p>
  *
@@ -41,28 +41,28 @@ public interface OrekitSwitchingFunction extends Serializable {
      * @return value of the switching function
      * @exception OrekitException if some specific error occurs
      */
-    public double g(SpacecraftState s, double mu) throws OrekitException;
+    double g(SpacecraftState s, double mu) throws OrekitException;
 
     /** Handle an event and choose what to do next.
      * @param s the current state information : date, cinematics, attitude
-     * @param mu central gravtitation coefficient
+     * @param mu central gravitation coefficient
      * @exception OrekitException if some specific error occurs
      */
-    public void eventOccurred(SpacecraftState s, double mu) throws OrekitException;
+    void eventOccurred(SpacecraftState s, double mu) throws OrekitException;
 
     /** Get the convergence threshold in the event time search.
      * @return convergence threshold
      */
-    public double getThreshold();
+    double getThreshold();
 
     /** Get maximal time interval between switching function checks.
      * @return maximal time interval between switching function checks
      */
-    public double getMaxCheckInterval();
+    double getMaxCheckInterval();
 
     /** Get maximal number of iterations in the event time search.
      * @return maximal number of iterations in the event time search
      */
-    public int getMaxIterationCount();
+    int getMaxIterationCount();
 
 }

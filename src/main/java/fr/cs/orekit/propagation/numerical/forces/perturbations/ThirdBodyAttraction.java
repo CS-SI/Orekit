@@ -18,7 +18,7 @@ public class ThirdBodyAttraction implements ForceModel {
     /** Serializable UID. */
     private static final long serialVersionUID = 8395304968977051442L;
 
-    /** The body to consider */
+    /** The body to consider. */
     private final ThirdBody body;
 
     /** Simple constructor.
@@ -26,25 +26,20 @@ public class ThirdBodyAttraction implements ForceModel {
      * (ex: {@link fr.cs.orekit.models.bodies.Sun} or
      * {@link fr.cs.orekit.models.bodies.Moon})
      */
-    public ThirdBodyAttraction(ThirdBody body) {
+    public ThirdBodyAttraction(final ThirdBody body) {
         this.body = body;
     }
 
-    /** Compute the contribution of the body attraction to the perturbing
-     * acceleration.
-     * @param s the current state information : date, kinematics, attitude
-     * @param adder object where the contribution should be added
-     * @param mu central gravitation coefficient
-     * @exception OrekitException if some specific error occurs
-     */
-    public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
+    /** {@inheritDoc} */
+    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder,
+                                final double mu)
         throws OrekitException {
 
         Vector3D otherBody = body.getPosition(s.getDate(), s.getFrame());
         Vector3D centralBody =
-            new Vector3D(-1.0 , s.getPVCoordinates(mu).getPosition(), 1.0, otherBody);
-        centralBody = centralBody.scalarMultiply(1.0/Math.pow(centralBody.getNorm(), 3));
-        otherBody = otherBody.scalarMultiply(1.0/Math.pow(otherBody.getNorm(), 3));
+            new Vector3D(-1.0, s.getPVCoordinates(mu).getPosition(), 1.0, otherBody);
+        centralBody = centralBody.scalarMultiply(1.0 / Math.pow(centralBody.getNorm(), 3));
+        otherBody = otherBody.scalarMultiply(1.0 / Math.pow(otherBody.getNorm(), 3));
 
         Vector3D gamma = centralBody.subtract(otherBody);
         gamma = gamma.scalarMultiply(body.getMu());
@@ -52,9 +47,7 @@ public class ThirdBodyAttraction implements ForceModel {
 
     }
 
-    /** There are no SwitchingFunctions for this model.
-     * @return an empty array
-     */
+    /** {@inheritDoc} */
     public OrekitSwitchingFunction[] getSwitchingFunctions() {
         return new OrekitSwitchingFunction[0];
     }

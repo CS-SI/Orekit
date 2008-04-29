@@ -14,13 +14,13 @@ public interface AtmosphereDragSpacecraft {
      * @param direction direction of the flux in the spacecraft frame
      * @return surface (m<sup>2</sup>)
      */
-    public double getSurface(Vector3D direction);
+    double getSurface(Vector3D direction);
 
     /** Get the drag coefficients vector.
      * See {@link fr.cs.orekit.propagation.numerical.forces.perturbations.AtmosphericDrag} for more explanations.
      * @param direction direction of the flux in the spacecraft frame
      * @return drag coefficients vector (defined in the spacecraft frame)
      */
-    public Vector3D getDragCoef(Vector3D direction);
+    Vector3D getDragCoef(Vector3D direction);
 
 }

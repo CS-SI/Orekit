@@ -53,16 +53,17 @@ public class CunninghamAttractionModel implements ForceModel {
      * @param S un-normalized coefficients array (sine part)
      * @exception IllegalArgumentException if coefficients array do not match
      */
-    public CunninghamAttractionModel(Frame centralBodyFrame,
-                                     double equatorialRadius,
-                                     double[][] C, double[][] S) throws IllegalArgumentException {
+    public CunninghamAttractionModel(final Frame centralBodyFrame,
+                                     final double equatorialRadius,
+                                     final double[][] C, final double[][] S)
+        throws IllegalArgumentException {
 
         this.bodyFrame = centralBodyFrame;
         this.equatorialRadius = equatorialRadius;
         degree  = C.length - 1;
         order   = C[degree].length - 1;
 
-        if (C.length!=S.length||C[C.length-1].length!=S[S.length-1].length) {
+        if (C.length != S.length || C[C.length-1].length != S[S.length-1].length) {
             OrekitException.throwIllegalArgumentException("potential arrays sizes mismatch (C: {0}x{1}, S: {2}x{3})",
                                                           new Object[] {
                                                               new Integer(C.length),
@@ -95,18 +96,9 @@ public class CunninghamAttractionModel implements ForceModel {
 
     }
 
-    /** Compute the contribution of the central body potential to the perturbing
-     * acceleration.
-     * <p>
-     * The central part of the acceleration (mu/r<sup>2</sup> term) is not
-     * computed here, only the <em>perturbing</em> acceleration is considered.
-     * </p>
-     * @param s the current state information : date, cinematics, attitude
-     * @param adder object where the contribution should be added
-     * @param mu central gravitation coefficient
-     * @exception OrekitException if some specific error occurs
-     */
-    public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
+    /** {@inheritDoc} */
+    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder,
+                                final double mu)
         throws OrekitException {
         // get the position in body frame
         final Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), s.getDate());
@@ -359,9 +351,7 @@ public class CunninghamAttractionModel implements ForceModel {
 
     }
 
-    /** There are no SwitchingFunctions for this model.
-     * @return an empty array
-     */
+    /** {@inheritDoc} */
     public OrekitSwitchingFunction[] getSwitchingFunctions() {
         return new OrekitSwitchingFunction[0];
     }

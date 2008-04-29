@@ -63,10 +63,14 @@ public class JB2006Atmosphere {
     /** Avogadro's number in mks units (molecules/kmol). */
     private static final double AVOGAD = 6.02257e26;
 
+    /** Approximate value for 2 &pi;. */
     private static final double TWOPI   = 6.2831853;
+
+    /** Approximate value for &pi;. */
     private static final double PI      = 3.1415927;
+
+    /** Approximate value for &pi; / 2. */
     private static final double PIOV2   = 1.5707963;
-    private static final double DEGRAD  = Math.PI / 180.0;
 
     /** The FRAC are the assumed sea-level volume fractions in order: N2, O2, Ar, and He. */
     private static final double[] FRAC = {
@@ -203,7 +207,7 @@ public class JB2006Atmosphere {
         // Equation (16)
         final double h     = satLon - sunRA;
         final double tau   = h - 0.64577182 + 0.10471976 * Math.sin(h + 0.75049158);
-        double solTimeHour = (h + PI) / (15.0 * DEGRAD);
+        double solTimeHour = Math.toDegrees(h + PI) / 15.0;
         if (solTimeHour >= 24) {
             solTimeHour = solTimeHour - 24.;
         }

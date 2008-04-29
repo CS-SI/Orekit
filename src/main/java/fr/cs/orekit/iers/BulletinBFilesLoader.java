@@ -21,7 +21,7 @@ import fr.cs.orekit.frames.PoleCorrection;
 public class BulletinBFilesLoader extends IERSFileCrawler {
 
     /** Conversion factor. */
-    private static final double arcSecondsToRadians = 2 * Math.PI / 1296000;
+    private static final double ARC_SECONDS_TO_RADIANS = 2 * Math.PI / 1296000;
 
     /** Section header pattern. */
     private final Pattern sectionHeaderPattern;
@@ -38,10 +38,13 @@ public class BulletinBFilesLoader extends IERSFileCrawler {
     private TreeSet eop;
 
     /** Create a loader for IERS bulletin B files.
+     * @param eop set where to <em>add</em> EOP data
+     * (pre-existing data is preserved)
      */
-    public BulletinBFilesLoader() {
+    public BulletinBFilesLoader(TreeSet eop) {
 
         super("^bulletinb_IAU2000-(\\d\\d\\d)\\.txt(?:\\.gz)?$");
+        this.eop = eop;
 
         // the section headers lines in the bulletin B monthly data files have
         // the following form (the indentation discrepancy for section 6 is
@@ -70,17 +73,17 @@ public class BulletinBFilesLoader extends IERSFileCrawler {
         // in section 2:
         // FEB   3   53769  0.05025  0.38417  0.321173 -1.218   1.507   0.06  -0.31
         // FEB   4   53770  0.05015  0.38454  0.319753 -1.748   1.275   0.03  -0.35
-        final String monthField       = "\\p{Blank}*\\p{Upper}\\p{Upper}\\p{Upper}";
+        final String monthField       = "^\\p{Blank}*\\p{Upper}\\p{Upper}\\p{Upper}";
         final String dayField         = "\\p{Blank}+[ 0-9]\\p{Digit}";
         final String mjdField         = "\\p{Blank}+(\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit})";
         final String storedRealField  = "\\p{Blank}+(-?\\p{Digit}+\\.(?:\\p{Digit})+)";
         final String ignoredRealField = "\\p{Blank}+-?\\p{Digit}+\\.(?:\\p{Digit})+";
         final String finalBlanks      = "\\p{Blank}*$";
-        section1DataPattern = Pattern.compile("^" + monthField + dayField + mjdField +
+        section1DataPattern = Pattern.compile(monthField + dayField + mjdField +
                                               ignoredRealField + ignoredRealField + ignoredRealField +
                                               ignoredRealField + ignoredRealField + ignoredRealField +
                                               finalBlanks);
-        section2DataPattern = Pattern.compile("^" + monthField + dayField + mjdField +
+        section2DataPattern = Pattern.compile(monthField + dayField + mjdField +
                                               storedRealField  + storedRealField  + storedRealField +
                                               ignoredRealField + ignoredRealField +
                                               ignoredRealField + ignoredRealField +
@@ -91,18 +94,16 @@ public class BulletinBFilesLoader extends IERSFileCrawler {
     /** Load Earth Orientation Parameters.
      * <p>The data is concatenated from all bulletin B data files
      * which can be found in the configured IERS directory.</p>
-     * @param eop set where to <em>add</em> EOP data (pre-existing
-     * data is preserved)
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
      */
-    public void loadEOP(TreeSet eop) throws OrekitException {
-        this.eop = eop;
+    public void loadEOP() throws OrekitException {
         new IERSDirectoryCrawler().crawl(this);
     }
 
     /** {@inheritDoc} */
-    protected void visit(BufferedReader reader) throws OrekitException, IOException {
+    protected void visit(final BufferedReader reader)
+        throws OrekitException, IOException {
 
         // Extract mjd bounds from section 1
         int mjdMin = -1;
@@ -145,8 +146,8 @@ public class BulletinBFilesLoader extends IERSFileCrawler {
                 if (matcher.matches()) {
                     // this is a data line, build an entry from the extracted fields
                     final int    date = Integer.parseInt(matcher.group(1));
-                    final double x    = Double.parseDouble(matcher.group(2)) * arcSecondsToRadians;
-                    final double y    = Double.parseDouble(matcher.group(3)) * arcSecondsToRadians;
+                    final double x    = Double.parseDouble(matcher.group(2)) * ARC_SECONDS_TO_RADIANS;
+                    final double y    = Double.parseDouble(matcher.group(3)) * ARC_SECONDS_TO_RADIANS;
                     final double dtu1 = Double.parseDouble(matcher.group(4));
                     if (date >= mjdMin) {
                         eop.add(new EarthOrientationParameters(date, dtu1, new PoleCorrection(x, y)));

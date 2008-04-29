@@ -18,6 +18,8 @@ import fr.cs.orekit.time.UTCScale;
  */
 class DeepSDP4 extends SDP4 {
 
+    // CHECKSTYLE: stop JavadocVariable check
+
     /** Internal constants. */
     private static final double ZNS      = 1.19459E-5;
     private static final double ZES      = 0.01675;
@@ -134,11 +136,15 @@ class DeepSDP4 extends SDP4 {
 
     private double[] derivs;
 
-    /** Special orbits flags. */
+    // CHECKSTYLE: resume JavadocVariable check
+
+    /** Flag for reonant orbits. */
     private boolean resonant;
+
+    /** Flag for synchronous orbits. */
     private boolean synchronous;
 
-    /** Compliant with Dundee modifications. */
+    /** Flag for compliance with Dundee modifications. */
     private boolean isDundeeCompliant = true;
 
     /** Constructor for a unique initial TLE.

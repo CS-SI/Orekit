@@ -25,6 +25,8 @@ class IRF2000Frame extends Frame {
     /** Julian century per second. */
     private static final double JULIAN_CENTURY_PER_SECOND = 1.0 / (36525.0 * 86400.0);
 
+    // CHECKSTYLE: stop JavadocVariable check
+
     // lunisolar nutation elements
     private static final double F10 = Math.toRadians(134.96340251);
     private static final double F11 = 1717915923.217800  * RADIANS_PER_ARC_SECOND;
@@ -84,19 +86,27 @@ class IRF2000Frame extends Frame {
     private static final double F141 = 0.024381750;
     private static final double F142 = 0.00000538691;
 
+    // CHECKSTYLE: resume JavadocVariable check
+
     /** IERS conventions (2003) resources base directory. */
     private static final String IERS_2003_BASE = "/META-INF/IERS-conventions-2003/";
 
-    /** Resources for IERS table 5.2a from IERS conventions (2003). */
+    /** Resources for IERS table 5.2a from IERS conventions (2003), model A. */
     private static final String X_MODEL_2000A    = IERS_2003_BASE + "tab5.2a.txt";
+
+    /** Resources for IERS table 5.2a from IERS conventions (2003), model B. */
     private static final String X_MODEL_2000B    = IERS_2003_BASE + "tab5.2a.reduced.txt";
 
-    /** Resources for IERS table 5.2b from IERS conventions (2003). */
+    /** Resources for IERS table 5.2b from IERS conventions (2003), model A. */
     private static final String Y_MODEL_2000A    = IERS_2003_BASE + "tab5.2b.txt";
+
+    /** Resources for IERS table 5.2b from IERS conventions (2003), model B. */
     private static final String Y_MODEL_2000B    = IERS_2003_BASE + "tab5.2b.reduced.txt";
 
-    /** Resources for IERS table 5.2c from IERS conventions (2003). */
+    /** Resources for IERS table 5.2c from IERS conventions (2003), model A. */
     private static final String S_XY2_MODEL_2000A = IERS_2003_BASE + "tab5.2c.txt";
+
+    /** Resources for IERS table 5.2c from IERS conventions (2003), model B. */
     private static final String S_XY2_MODEL2000B = IERS_2003_BASE + "tab5.2c.reduced.txt";
 
     /** Indicator for complete or reduced precession-nutation model. */

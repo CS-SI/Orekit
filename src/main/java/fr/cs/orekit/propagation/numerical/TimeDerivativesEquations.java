@@ -83,6 +83,8 @@ public class TimeDerivativesEquations implements Serializable {
     /** Third vector of both the (q, s, w) and (t, n, w) local orbital frames. */
     private Vector3D lofW;
 
+    // CHECKSTYLE: stop JavadocVariable check
+
     /** Multiplicative coefficients for the perturbing accelerations along lofQ. */
     private double aQ;
     private double exQ;
@@ -108,6 +110,8 @@ public class TimeDerivativesEquations implements Serializable {
     private double hxW;
     private double hyW;
     private double lvW;
+
+    // CHECKSTYLE: resume JavadocVariable check
 
     /** Kepler evolution on true latitude argument. */
     private double lvKepler;

@@ -50,9 +50,9 @@ public class DrozinerAttractionModel implements ForceModel {
      * @param S un-normalized coefficients array (sine part)
      * @exception IllegalArgumentException if coefficients array do not match
      */
-    public DrozinerAttractionModel(Frame centralBodyFrame,
-                                   double equatorialRadius,
-                                   double[][] C, double[][] S)
+    public DrozinerAttractionModel(final Frame centralBodyFrame,
+                                   final double equatorialRadius,
+                                   final double[][] C, final double[][] S)
         throws IllegalArgumentException {
 
         this.equatorialRadius = equatorialRadius;
@@ -89,18 +89,9 @@ public class DrozinerAttractionModel implements ForceModel {
         }
     }
 
-    /**
-     * Computes the contribution of the central body potential to the perturbing
-     * acceleration, using the Drozyner algorithm. The central part of the
-     * acceleration (&mu;/r<sup>2</sup> term) is not computed here, only the
-     * <em>perturbing</em> acceleration is considered, not the main part.
-     * @param s the current state information : date, cinematics, attitude
-     * @param adder object where the contribution should be added
-     * @param mu central gravitation coefficient
-     * @exception OrekitException if some specific error occurs
-     */
-
-    public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
+    /** {@inheritDoc} */
+    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder,
+                                final double mu)
         throws OrekitException {
         // Get the position in body frame
         final Transform bodyToInertial = centralBodyFrame.getTransformTo(s.getFrame(), s.getDate());
@@ -261,9 +252,7 @@ public class DrozinerAttractionModel implements ForceModel {
 
     }
 
-    /** There are no SwitchingFunctions for this model.
-     * @return an empty array
-     */
+    /** {@inheritDoc} */
     public OrekitSwitchingFunction[] getSwitchingFunctions() {
         return new OrekitSwitchingFunction[0];
     }

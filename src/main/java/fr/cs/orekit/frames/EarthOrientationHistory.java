@@ -43,11 +43,11 @@ public class EarthOrientationHistory implements Serializable {
         eop = new TreeSet(new EOPComparator());
 
         // consider first the more accurate EOP C 04 entries
-        new EOPC04FilesLoader().loadEOP(eop);
+        new EOPC04FilesLoader(eop).loadEOP();
 
         // add the final values from bulletin B entries for new dates
         // (if duplicated dates occur, the existing data will be preserved)
-        new BulletinBFilesLoader().loadEOP(eop);
+        new BulletinBFilesLoader(eop).loadEOP();
 
         // check the continuity of the loaded data
         checkEOPContinuity(5);
@@ -90,14 +90,14 @@ public class EarthOrientationHistory implements Serializable {
      * @return the start date of the available data
      */
     public AbsoluteDate getStartDate() {
-        return ((EarthOrientationParameters)eop.first()).date;
+        return ((EarthOrientationParameters) eop.first()).date;
     }
 
     /** Get the date of the last available Earth Orientation Parameters.
      * @return the end date of the available data
      */
     public AbsoluteDate getEndDate() {
-        return ((EarthOrientationParameters)eop.last()).date;
+        return ((EarthOrientationParameters) eop.last()).date;
     }
 
     /** Get the UT1-UTC value.

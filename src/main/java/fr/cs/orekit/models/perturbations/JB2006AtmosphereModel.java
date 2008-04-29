@@ -9,6 +9,8 @@ import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.frames.Transform;
 import fr.cs.orekit.time.AbsoluteDate;
+import fr.cs.orekit.time.TimeScale;
+import fr.cs.orekit.time.UTCScale;
 import fr.cs.orekit.utils.PVCoordinates;
 
 /** This class is the OREKIT compliant realization of the JB2006 atmosphere model.
@@ -29,16 +31,16 @@ public class JB2006AtmosphereModel extends JB2006Atmosphere implements Atmospher
     /** Serializable UID.*/
     private static final long serialVersionUID = -4566140204081960905L;
 
-    /** Sun position */
+    /** Sun position. */
     private ThirdBody sun;
 
-    /** External data container */
+    /** External data container. */
     private JB2006InputParameters inputParams;
 
-    /** Earth body shape */
+    /** Earth body shape. */
     private BodyShape earth;
 
-    /** Earth fixed frame */
+    /** Earth fixed frame. */
     private Frame bodyFrame;
 
     /** Constructor with space environment information for internal computation.
@@ -47,9 +49,9 @@ public class JB2006AtmosphereModel extends JB2006Atmosphere implements Atmospher
      * @param earth the earth body shape
      * @param earthFixed the earth fixed frame
      */
-    public JB2006AtmosphereModel(JB2006InputParameters parameters,
-                                 ThirdBody sun, BodyShape earth, Frame earthFixed) {
-        super();
+    public JB2006AtmosphereModel(final JB2006InputParameters parameters,
+                                 final ThirdBody sun, final BodyShape earth,
+                                 final Frame earthFixed) {
         this.earth = earth;
         this.sun = sun;
         this.inputParams = parameters;
@@ -63,14 +65,20 @@ public class JB2006AtmosphereModel extends JB2006Atmosphere implements Atmospher
      * @return local density (kg/m<sup>3</sup>)
      * @exception OrekitException if date is out of range of solar activity
      */
-    public double getDensity(AbsoluteDate date, Vector3D position, Frame frame)
+    public double getDensity(final AbsoluteDate date, final Vector3D position,
+                             final Frame frame)
         throws OrekitException {
         // check if data are available :
-        if(date.compareTo(inputParams.getMaxDate())>0 ||
-                date.compareTo(inputParams.getMinDate())<0) {
-            throw new OrekitException("Current date is out of range. " +
-                                      "Solar activity data are not available",
-                                      new Object[0]);
+        if (date.compareTo(inputParams.getMaxDate()) > 0 ||
+            date.compareTo(inputParams.getMinDate()) < 0) {
+            final TimeScale utcScale = UTCScale.getInstance();
+            throw new OrekitException("no solar activity available at {0}, " +
+                                      "data available only in range [{1}, {2}]",
+                                      new Object[] {
+                                          date.toString(utcScale),
+                                          inputParams.getMinDate().toString(utcScale),
+                                          inputParams.getMaxDate().toString(utcScale)
+                                      });
         }
 
         // compute modified julian days date
@@ -80,9 +88,12 @@ public class JB2006AtmosphereModel extends JB2006Atmosphere implements Atmospher
         final GeodeticPoint inBody = earth.transform(position, frame, date);
 
         // compute sun position
-        final GeodeticPoint sunInBody = earth.transform(sun.getPosition(date, frame), frame, date);
-        return getDensity(dateMJD, sunInBody.longitude, sunInBody.latitude, inBody.longitude, inBody.latitude,
-                          inBody.altitude, inputParams.getF10(date), inputParams.getF10B(date),
+        final GeodeticPoint sunInBody =
+            earth.transform(sun.getPosition(date, frame), frame, date);
+        return getDensity(dateMJD, sunInBody.longitude, sunInBody.latitude,
+                          inBody.longitude, inBody.latitude,
+                          inBody.altitude, inputParams.getF10(date),
+                          inputParams.getF10B(date),
                           inputParams.getAp(date), inputParams.getS10(date),
                           inputParams.getS10B(date), inputParams.getXM10(date),
                           inputParams.getXM10B(date));
@@ -97,7 +108,8 @@ public class JB2006AtmosphereModel extends JB2006Atmosphere implements Atmospher
      * @return velocity (m/s) (defined in the same frame as the position)
      * @exception OrekitException if some frame conversion cannot be performed
      */
-    public Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame)
+    public Vector3D getVelocity(final AbsoluteDate date, final Vector3D position,
+                                final Frame frame)
         throws OrekitException {
         final Transform bodyToFrame = bodyFrame.getTransformTo(frame, date);
         final Vector3D posInBody = bodyToFrame.getInverse().transformPosition(position);

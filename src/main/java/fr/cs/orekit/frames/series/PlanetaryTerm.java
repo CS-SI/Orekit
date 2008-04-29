@@ -63,6 +63,7 @@ class PlanetaryTerm extends SeriesTerm {
         this.cPa = cPa;
     }
 
+    /** {@inheritDoc} */
     protected double argument(final BodiesElements elements) {
         return cMe * elements.lMe + cVe * elements.lVe + cE  * elements.lE +
                cMa * elements.lMa + cJu * elements.lJu +

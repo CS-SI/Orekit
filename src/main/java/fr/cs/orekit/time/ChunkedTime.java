@@ -128,7 +128,7 @@ public class ChunkedTime implements Serializable, Comparable {
     }
 
     /** {@inheritDoc} */
-    public int compareTo(Object other) {
+    public int compareTo(final Object other) {
         final double seconds = getSecondsInDay();
         final double otherSeconds = ((ChunkedTime) other).getSecondsInDay();
         if (seconds < otherSeconds) {
@@ -140,7 +140,7 @@ public class ChunkedTime implements Serializable, Comparable {
     }
 
     /** {@inheritDoc} */
-    public boolean equals(Object other) {
+    public boolean equals(final Object other) {
         try {
             final ChunkedTime otherTime = (ChunkedTime) other;
             return (otherTime != null) && (hour == otherTime.hour) &&

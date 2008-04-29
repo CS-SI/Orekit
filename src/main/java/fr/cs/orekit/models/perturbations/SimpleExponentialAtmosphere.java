@@ -43,8 +43,8 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
      * @param h0 Altitude of reference (m)
      * @param hscale Scale factor
      */
-    public SimpleExponentialAtmosphere(BodyShape shape, Frame bodyFrame,
-                                       double rho0, double h0, double hscale) {
+    public SimpleExponentialAtmosphere(final BodyShape shape, final Frame bodyFrame,
+                                       final double rho0, final double h0, final double hscale) {
         this.shape  = shape;
         this.bodyFrame = bodyFrame;
         this.rho0   = rho0;
@@ -52,27 +52,13 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
         this.hscale = hscale;
     }
 
-    /** Get the density at a given inertial position.
-     * @param date current date (ignored in this implementation)
-     * @param position current position
-     * @param frame the Frame in which is defined the position
-     * @return local density (kg/m<sup>3</sup>)
-     * @exception OrekitException if some frame conversion cannot be performed
-     */
-    public double getDensity(AbsoluteDate date, Vector3D position, Frame frame)
+    /** {@inheritDoc} */
+    public double getDensity(final AbsoluteDate date, final Vector3D position, final Frame frame)
         throws OrekitException {
         return rho0 * Math.exp((h0 - shape.transform(position, frame, date).altitude) / hscale);
     }
 
-    /** Get the inertial velocity of atmosphere modecules.
-     * Here the case is simplified : atmosphere is supposed to have a null velocity
-     * in earth frame.
-     * @param date current date
-     * @param position current position in frame
-     * @param frame the frame in which is defined the position
-     * @return velocity (m/s) (defined in the same frame than the position)
-     * @exception OrekitException if some frame conversion cannot be computed
-     */
+    /** {@inheritDoc} */
     public Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame)
         throws OrekitException {
         final Transform bodyToFrame = bodyFrame.getTransformTo(frame, date);

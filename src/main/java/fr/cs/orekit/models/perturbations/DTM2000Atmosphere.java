@@ -105,11 +105,15 @@ public class DTM2000Atmosphere {
     private static final double re = 6356.77;
 
     /** Reference altitude. */
-    private static final double zlb0 = 120.;
+    private static final double zlb0 = 120.0;
 
-    /** Magnetic Pole coordinates (79n,71w) */
+    /** Cosine of the latitude of the magnetic pole (79N, 71W). */
     private static final double cpmg = .19081;
+
+    /** Sine of the latitude of the magnetic pole (79N, 71W). */
     private static final double spmg = .98163;
+
+    /** Longitude (in radians) of the magnetic pole (79N, 71W). */
     private static final double xlmg = -1.2392;
 
     /** Gravity acceleration at 120 km altitude. */
@@ -127,7 +131,7 @@ public class DTM2000Atmosphere {
     /** Resources text file. */
     private static final String dtm2000 = "/META-INF/dtm_2000.txt";
 
-    // Dtm ressources :
+    // CHECKSTYLE: stop JavadocVariable check
 
     /** Elements coefficients. */
     private static double[] tt   = null;
@@ -150,6 +154,8 @@ public class DTM2000Atmosphere {
     private static double[] daz  = null;
     private static double[] dt0  = null;
     private static double[] dtp  = null;
+
+    // CHECKSTYLE: resume JavadocVariable check
 
     /** Number of days in current year. */
     private int day;
@@ -207,7 +213,7 @@ public class DTM2000Atmosphere {
      */
     private double[] d = new double[7];
 
-    // Intermediate coefficients :
+    // CHECKSTYLE: stop JavadocVariable check
 
     /** Legendre coefficients. */
     private double p10;
@@ -239,6 +245,8 @@ public class DTM2000Atmosphere {
     private double s2h;
     private double c3h;
     private double s3h;
+
+    // CHECKSTYLE: resume JavadocVariable check
 
     /** Simple constructor for independent computation.
      * @exception OrekitException if some resource file reading error occurs

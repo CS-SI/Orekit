@@ -40,7 +40,7 @@ public class IERSDirectoryCrawler {
 
         // check the root tree
         final String directoryName = System.getProperty(IERS_ROOT_DIRECTORY);
-        if ((directoryName != null) && ! "".equals(directoryName)) {
+        if ((directoryName != null) && !"".equals(directoryName)) {
 
             // try to find the root directory either in classpath or in filesystem
             // (classpath having higher priority)
@@ -48,13 +48,17 @@ public class IERSDirectoryCrawler {
             root = new File((url != null) ? url.getPath() : directoryName);
 
             // safety checks
-            if (! root.exists()) {
+            if (!root.exists()) {
                 throw new OrekitException("IERS root directory {0} does not exist",
-                                          new Object[] { root.getAbsolutePath() });
+                                          new Object[] {
+                                              root.getAbsolutePath()
+                                          });
             }
-            if (! root.isDirectory()) {
+            if (!root.isDirectory()) {
                 throw new OrekitException("{0} is not a directory",
-                                          new Object[] { root.getAbsolutePath() });
+                                          new Object[] {
+                                              root.getAbsolutePath()
+                                          });
             }
 
         }
@@ -66,7 +70,7 @@ public class IERSDirectoryCrawler {
      * @exception OrekitException if some data is missing, duplicated
      * or can't be read
      */
-    public void crawl(IERSFileCrawler visitor) throws OrekitException {
+    public void crawl(final IERSFileCrawler visitor) throws OrekitException {
         if (root != null) {
             crawl(visitor, root);
         }
@@ -78,7 +82,8 @@ public class IERSDirectoryCrawler {
      * @exception OrekitException if some data is missing, duplicated
      * or can't be read
      */
-    private void crawl(IERSFileCrawler visitor, File directory) throws OrekitException {
+    private void crawl(final IERSFileCrawler visitor, final File directory)
+        throws OrekitException {
 
         // search in current directory
         final File[] list = directory.listFiles();

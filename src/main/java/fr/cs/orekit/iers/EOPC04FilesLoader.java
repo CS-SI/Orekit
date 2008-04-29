@@ -30,10 +30,13 @@ public class EOPC04FilesLoader extends IERSFileCrawler {
     private TreeSet eop;
 
     /** Build a loader for IERS EOPC 04 files.
+     * @param eop set where to <em>add</em> EOP data
+     * (pre-existing data is preserved)
      */
-    public EOPC04FilesLoader() {
+    public EOPC04FilesLoader(TreeSet eop) {
 
         super("^eopc04_IAU2000\\.(\\d\\d)(?:\\.gz)?$");
+        this.eop = eop;
 
         // the data lines in the EOP C 04 yearly data files have the following fixed form:
         //   JAN   1  52275-0.176980 0.293952-0.1158223   0.0008163    0.00044  0.00071
@@ -58,13 +61,10 @@ public class EOPC04FilesLoader extends IERSFileCrawler {
     /** Load Earth Orientation Parameters.
      * <p>The data is concatenated from all EOP C 04 data files
      * which can be found in the configured IERS directory.</p>
-     * @param eop set where to <em>add</em> EOP data (pre-existing
-     * data is preserved)
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
      */
-    public void loadEOP(TreeSet eop) throws OrekitException {
-        this.eop = eop;
+    public void loadEOP() throws OrekitException {
         new IERSDirectoryCrawler().crawl(this);
     }
 

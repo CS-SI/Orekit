@@ -37,7 +37,9 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
     /** Mean parameters at the initial date. */
     private CircularParameters mean;
 
-    /** Preprocessed values. */
+    // CHECKSTYLE: stop JavadocVariable check
+
+    // preprocessed values
     private double q;
     private double ql;
     private double g2;
@@ -51,7 +53,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
     private double sinI4;
     private double sinI6;
 
-    /** Model parameters. */
+    // model parameters
     private double referenceRadius;
     private double mu;
     private double c20;
@@ -60,6 +62,8 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
     private double c50;
     private double c60;
     private double mass;
+
+    // CHECKSTYLE: resume JavadocVariable check
 
     /** Create a new instance.
      * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
