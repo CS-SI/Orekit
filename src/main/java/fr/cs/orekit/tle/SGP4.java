@@ -60,8 +60,8 @@ class SGP4 extends TLEPropagator {
                 xmcof = 0.;
             }
             else  {
-                final double c3 = coef * tsi * TLEConstants.a3ovk2 * xn0dp * TLEConstants.ae * sini0 / tle.getE();
-                xmcof = -TLEConstants.twoThirds * coef * tle.getBStar() * TLEConstants.ae / eeta;
+                final double c3 = coef * tsi * TLEConstants.A3OVK2 * xn0dp * TLEConstants.NORMALIZED_EQUATORIAL_RADIUS * sini0 / tle.getE();
+                xmcof = -TLEConstants.TWO_THIRD * coef * tle.getBStar() * TLEConstants.NORMALIZED_EQUATORIAL_RADIUS / eeta;
                 omgcof = tle.getBStar() * c3 * Math.cos(tle.getPerigeeArgument());
             }
         }

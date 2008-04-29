@@ -35,12 +35,11 @@ abstract class SDP4  extends TLEPropagator {
      * @param initialTLE the TLE to propagate.
      * @exception OrekitException if some specific error occurs
      */
-    protected SDP4(TLE initialTLE) throws OrekitException {
-        super (initialTLE);
+    protected SDP4(final TLE initialTLE) throws OrekitException {
+        super(initialTLE);
     }
 
     /** Initialization proper to each propagator (SGP or SDP).
-     * @param tSince the offset from initial epoch (min)
      * @exception OrekitException when UTC time steps can't be read
      */
     protected void sxpInitialize() throws OrekitException {
@@ -48,9 +47,9 @@ abstract class SDP4  extends TLEPropagator {
     }  // End of initialization
 
     /** Propagation proper to each propagator (SGP or SDP).
-     * @param tSince the offset from initial epoch (min)
+     * @param tSince the offset from initial epoch (minutes)
      */
-    protected void sxpPropagate(double tSince) throws OrekitException {
+    protected void sxpPropagate(final double tSince) {
 
         // Update for secular gravity and atmospheric drag
         omgadf = tle.getPerigeeArgument() + omgdot * tSince;
@@ -65,8 +64,8 @@ abstract class SDP4  extends TLEPropagator {
         deepSecularEffects(tSince);
 
         final double tempa = 1 - c1 * tSince;
-        a = Math.pow(TLEConstants.xke/xn, TLEConstants.twoThirds)*tempa*tempa;
-        em -= tle.getBStar()*c4*tSince;
+        a   = Math.pow(TLEConstants.XKE / xn, TLEConstants.TWO_THIRD) * tempa * tempa;
+        em -= tle.getBStar() * c4 * tSince;
 
         // Update for deep-space periodic effects
         xll += xn0dp * t2cof * tSinceSq;
@@ -89,7 +88,7 @@ abstract class SDP4  extends TLEPropagator {
      * @return the ERA (rad)
      * @exception OrekitException when UTC time steps can't be read
      */
-    protected static double thetaG(AbsoluteDate date) throws OrekitException {
+    protected static double thetaG(final AbsoluteDate date) throws OrekitException {
 
         // Reference:  The 1992 Astronomical Almanac, page B6.
         final double omega_E = 1.00273790934;
@@ -98,8 +97,7 @@ abstract class SDP4  extends TLEPropagator {
                           ) / 86400;
 
         // Earth rotations per sidereal day (non-constant)
-
-        final double UT = (jd + .5)%1;
+        final double UT = (jd + 0.5) % 1;
         final double seconds_per_day = 86400.;
         final double jd_2000 = 2451545.0;   /* 1.5 Jan 2000 = JD 2451545. */
         final double t_cen = (jd - UT - jd_2000) / 36525.;

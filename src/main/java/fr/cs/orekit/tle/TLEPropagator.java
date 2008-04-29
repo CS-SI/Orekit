@@ -143,19 +143,19 @@ public abstract class TLEPropagator {
      */
     public static TLEPropagator selectExtrapolator(final TLE tle) throws OrekitException {
 
-        final double a1 = Math.pow( TLEConstants.xke / (tle.getMeanMotion() * 60.0), TLEConstants.twoThirds);
+        final double a1 = Math.pow( TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
         final double cosi0 = Math.cos(tle.getI());
-        final double temp = TLEConstants.ck2 * 1.5 * (3 * cosi0 * cosi0 - 1.0) *
+        final double temp = TLEConstants.CK2 * 1.5 * (3 * cosi0 * cosi0 - 1.0) *
                             Math.pow(1.0 - tle.getE() * tle.getE(), -1.5);
         final double delta1 = temp / (a1 * a1);
-        final double a0 = a1 * (1.0 - delta1 * (TLEConstants.oneThird + delta1 * (delta1 * 134.0 / 81.0 + 1.0)));
+        final double a0 = a1 * (1.0 - delta1 * (TLEConstants.ONE_THIRD + delta1 * (delta1 * 134.0 / 81.0 + 1.0)));
         final double delta0 = temp / (a0 * a0);
 
         // recover original mean motion :
         final double xn0dp = tle.getMeanMotion() * 60.0 / (delta0 + 1.0);
 
         // Period >= 225 minutes is deep space
-        if (2 * Math.PI / (xn0dp * TLEConstants.minutesPerDay) >= (1.0 / 6.4)) {
+        if (2 * Math.PI / (xn0dp * TLEConstants.MINUTES_PER_DAY) >= (1.0 / 6.4)) {
             return new DeepSDP4(tle);
         } else {
             return new SGP4(tle);
@@ -180,16 +180,16 @@ public abstract class TLEPropagator {
      */
     private void initializeCommons() {
 
-        final double a1 = Math.pow(TLEConstants.xke / (tle.getMeanMotion() * 60.0), TLEConstants.twoThirds);
+        final double a1 = Math.pow(TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
         cosi0 = Math.cos(tle.getI());
         theta2 = cosi0 * cosi0;
         final double x3thm1 = 3.0 * theta2 - 1.0;
         e0sq = tle.getE() * tle.getE();
         beta02 = 1.0 - e0sq;
         beta0 = Math.sqrt(beta02);
-        final double tval = TLEConstants.ck2 * 1.5 * x3thm1 / (beta0 * beta02);
+        final double tval = TLEConstants.CK2 * 1.5 * x3thm1 / (beta0 * beta02);
         final double delta1 = tval / (a1 * a1);
-        final double a0 = a1 * (1.0 - delta1 * (TLEConstants.oneThird + delta1 * (1.0 + 134.0 / 81.0 * delta1)));
+        final double a0 = a1 * (1.0 - delta1 * (TLEConstants.ONE_THIRD + delta1 * (1.0 + 134.0 / 81.0 * delta1)));
         final double delta0 = tval / (a0 * a0);
 
         // recover original mean motion and semi-major axis :
@@ -197,10 +197,10 @@ public abstract class TLEPropagator {
         a0dp = a0 / (1.0 - delta0);
 
         // Values of s and qms2t :
-        s4 = TLEConstants.s;  // unmodified value for s
-        double q0ms24 = TLEConstants.qoms2t; // unmodified value for q0ms2T
+        s4 = TLEConstants.S;  // unmodified value for s
+        double q0ms24 = TLEConstants.QOMS2T; // unmodified value for q0ms2T
 
-        perige = (a0dp * (1 - tle.getE()) - TLEConstants.ae) * TLEConstants.er; // perige
+        perige = (a0dp * (1 - tle.getE()) - TLEConstants.NORMALIZED_EQUATORIAL_RADIUS) * TLEConstants.EARTH_RADIUS; // perige
 
         //  For perigee below 156 km, the values of s and qoms2t are changed :
         if (perige < 156.0) {
@@ -209,10 +209,10 @@ public abstract class TLEPropagator {
             } else {
                 s4 = perige - 78.0;
             }
-            final double temp_val = (120.0 - s4) * TLEConstants.ae / TLEConstants.er;
+            final double temp_val = (120.0 - s4) * TLEConstants.NORMALIZED_EQUATORIAL_RADIUS / TLEConstants.EARTH_RADIUS;
             final double temp_val_squared = temp_val * temp_val;
             q0ms24 = temp_val_squared * temp_val_squared;
-            s4 = s4 / TLEConstants.er + TLEConstants.ae; // new value for q0ms2T and s
+            s4 = s4 / TLEConstants.EARTH_RADIUS + TLEConstants.NORMALIZED_EQUATORIAL_RADIUS; // new value for q0ms2T and s
         }
 
         final double pinv = 1.0 / (a0dp * beta02);
@@ -229,7 +229,7 @@ public abstract class TLEPropagator {
 
         // C2 and C1 coefficients computation :
         c2 = coef1 * xn0dp * (a0dp * (1.0 + 1.5 * etasq + eeta * (4.0 + etasq)) +
-             0.75 * TLEConstants.ck2 * tsi / psisq * x3thm1 * (8.0 + 3.0 * etasq * (8.0 + etasq)));
+             0.75 * TLEConstants.CK2 * tsi / psisq * x3thm1 * (8.0 + 3.0 * etasq * (8.0 + etasq)));
         c1 = tle.getBStar() * c2;
         sini0 = Math.sin(tle.getI());
 
@@ -238,14 +238,14 @@ public abstract class TLEPropagator {
         // C4 coefficient computation :
         c4 = 2.0 * xn0dp * coef1 * a0dp * beta02 * (eta * (2.0 + 0.5 * etasq) +
              tle.getE() * (0.5 + 2.0 * etasq) -
-             2 * TLEConstants.ck2 * tsi / (a0dp * psisq) *
+             2 * TLEConstants.CK2 * tsi / (a0dp * psisq) *
              (-3.0 * x3thm1 * (1.0 - 2.0 * eeta + etasq * (1.5 - 0.5 * eeta)) +
               0.75 * x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) * Math.cos(2.0 * tle.getPerigeeArgument())));
 
         final double theta4 = theta2 * theta2;
-        final double temp1 = 3 * TLEConstants.ck2 * pinvsq * xn0dp;
-        final double temp2 = temp1 * TLEConstants.ck2 * pinvsq;
-        final double temp3 = 1.25 * TLEConstants.ck4 * pinvsq * pinvsq * xn0dp;
+        final double temp1 = 3 * TLEConstants.CK2 * pinvsq * xn0dp;
+        final double temp2 = temp1 * TLEConstants.CK2 * pinvsq;
+        final double temp3 = 1.25 * TLEConstants.CK4 * pinvsq * pinvsq * xn0dp;
 
         // atmospheric and gravitation coefs :(Mdf and OMEGAdf)
         xmdot = xn0dp +
@@ -276,8 +276,8 @@ public abstract class TLEPropagator {
         // Long period periodics
         final double axn = e * Math.cos(omega);
         double temp = 1.0 / (a * (1.0 - e * e));
-        final double xlcof = 0.125 * TLEConstants.a3ovk2 * sini0 * (3.0 + 5.0 * cosi0) / (1.0 + cosi0);
-        final double aycof = 0.25 * TLEConstants.a3ovk2 * sini0;
+        final double xlcof = 0.125 * TLEConstants.A3OVK2 * sini0 * (3.0 + 5.0 * cosi0) / (1.0 + cosi0);
+        final double aycof = 0.25 * TLEConstants.A3OVK2 * sini0;
         final double xll = temp * xlcof * axn;
         final double aynl = temp * aycof;
         final double xlt = xl + xll;
@@ -356,7 +356,7 @@ public abstract class TLEPropagator {
         final double u = Math.atan2(sinu, cosu);
         final double sin2u = 2.0 * sinu * cosu;
         final double cos2u = 2.0 * cosu * cosu - 1.0;
-        final double temp1 = TLEConstants.ck2 / pl;
+        final double temp1 = TLEConstants.CK2 / pl;
         temp2 = temp1 / pl;
 
         // Update for short periodics
@@ -379,19 +379,19 @@ public abstract class TLEPropagator {
         final double uz = sinik * sinuk;
 
         // Position and velocity
-        final double cr = 1000 * rk * TLEConstants.er;
+        final double cr = 1000 * rk * TLEConstants.EARTH_RADIUS;
         final Vector3D pos = new Vector3D(cr * ux, cr * uy, cr * uz);
 
-        final double rdot   = TLEConstants.xke * Math.sqrt(a) * esinE / r;
-        final double rfdot  = TLEConstants.xke * Math.sqrt(pl) / r;
-        final double xn     = TLEConstants.xke / (a * Math.sqrt(a));
+        final double rdot   = TLEConstants.XKE * Math.sqrt(a) * esinE / r;
+        final double rfdot  = TLEConstants.XKE * Math.sqrt(pl) / r;
+        final double xn     = TLEConstants.XKE / (a * Math.sqrt(a));
         final double rdotk  = rdot - xn * temp1 * x1mth2 * sin2u;
         final double rfdotk = rfdot + xn * temp1 * (x1mth2 * cos2u + 1.5 * x3thm1);
         final double vx     = xmx * cosuk - cosnok * sinuk;
         final double vy     = xmy * cosuk - sinnok * sinuk;
         final double vz     = sinik * cosuk;
 
-        final double cv = 1000.0 * TLEConstants.er / 60.0;
+        final double cv = 1000.0 * TLEConstants.EARTH_RADIUS / 60.0;
         final Vector3D vel = new Vector3D(cv * (rdotk * ux + rfdotk * vx),
                                           cv * (rdotk * uy + rfdotk * vy),
                                           cv * (rdotk * uz + rfdotk * vz));
