@@ -15,13 +15,13 @@ final class TLEConstants {
     /** Constant 2.0 / 3.0. */
     public static final double TWO_THIRD = 2.0 / 3.0;
 
-    /** Earth radius in km */
+    /** Earth radius in km. */
     public static final double EARTH_RADIUS = 6378.135;
 
-    /** Equatorial radius redimensioned (1.0) */
+    /** Equatorial radius redimensioned (1.0). */
     public static final double NORMALIZED_EQUATORIAL_RADIUS = 1.0;
 
-    /** Time units per julian day */
+    /** Time units per julian day. */
     public static final double MINUTES_PER_DAY = 1440.0;
 
     // CHECKSTYLE: stop JavadocVariable check

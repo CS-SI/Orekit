@@ -16,7 +16,7 @@ public abstract class TimeScale {
     /** Simple constructor.
      * @param name name of the time scale
      */
-    protected TimeScale(String name) {
+    protected TimeScale(final String name) {
         this.name = name;
     }
 

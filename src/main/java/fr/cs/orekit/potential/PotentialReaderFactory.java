@@ -14,7 +14,7 @@ import fr.cs.orekit.errors.OrekitException;
  */
 public class PotentialReaderFactory {
 
-    /** Potential readers tab */
+    /** Potential readers. */
     private List readers;
 
     /** Simple constructor.
@@ -30,7 +30,7 @@ public class PotentialReaderFactory {
      * and the {@link EGMFormatReader}.
      * @param reader the reader to add
      */
-    public void addPotentialReader(PotentialCoefficientsReader reader) {
+    public void addPotentialReader(final PotentialCoefficientsReader reader) {
         readers.add(reader);
     }
 
@@ -41,7 +41,7 @@ public class PotentialReaderFactory {
      * @exception OrekitException when no known reader can read the file
      * @exception IOException when the {@link InputStream} is not valid.
      */
-    public PotentialCoefficientsReader getPotentialReader(InputStream in)
+    public PotentialCoefficientsReader getPotentialReader(final InputStream in)
         throws OrekitException, IOException {
 
         BufferedInputStream filter = new BufferedInputStream(in);

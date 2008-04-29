@@ -51,8 +51,8 @@ public class SolarRadiationPressure implements ForceModel {
      * @param equatorialRadius spherical shape model (for umbra/penumbra computation)
      * @param spacecraft the object physical and geometrical information
      */
-    public SolarRadiationPressure(ThirdBody sun, double equatorialRadius,
-                                  SolarRadiationPressureSpacecraft spacecraft) {
+    public SolarRadiationPressure(final ThirdBody sun, final double equatorialRadius,
+                                  final SolarRadiationPressureSpacecraft spacecraft) {
         this(149597870000.0, 4.56e-6, sun, equatorialRadius, spacecraft);
     }
 
@@ -63,8 +63,9 @@ public class SolarRadiationPressure implements ForceModel {
      * @param equatorialRadius spherical shape model (for umbra/penumbra computation)
      * @param spacecraft the object physical and geometrical information
      */
-    public SolarRadiationPressure(double dRef, double pRef, ThirdBody sun,
-                                  double equatorialRadius, SolarRadiationPressureSpacecraft spacecraft) {
+    public SolarRadiationPressure(final double dRef, final double pRef, final ThirdBody sun,
+                                  final double equatorialRadius,
+                                  final SolarRadiationPressureSpacecraft spacecraft) {
         this.dRef  = dRef;
         this.pRef  = pRef;
         this.sun   = sun;
@@ -79,7 +80,8 @@ public class SolarRadiationPressure implements ForceModel {
      * @param mu central gravitation coefficient
      * @exception OrekitException if some specific error occurs
      */
-    public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
+    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder,
+                                final double mu)
         throws OrekitException {
         // raw radiation pressure
         final Vector3D satSunVector =
@@ -114,7 +116,8 @@ public class SolarRadiationPressure implements ForceModel {
      * @return lightning ratio
      * @exception OrekitException if the trajectory is inside the Earth
      */
-    public double getLightningRatio(Vector3D position, Frame frame, AbsoluteDate date)
+    public double getLightningRatio(final Vector3D position, final Frame frame,
+                                    final AbsoluteDate date)
         throws OrekitException {
         final Vector3D satSunVector = sun.getPosition(date, frame).subtract(position);
         // Earth apparent radius
@@ -181,7 +184,8 @@ public class SolarRadiationPressure implements ForceModel {
         /** Serializable UID. */
         private static final long serialVersionUID = 8164370576237170346L;
 
-        public void eventOccurred(SpacecraftState s, double mu) {
+        /** {@inheritDoc} */
+        public void eventOccurred(final SpacecraftState s, final double mu) {
             // do nothing
         }
 
@@ -233,7 +237,7 @@ public class SolarRadiationPressure implements ForceModel {
         private static final long serialVersionUID = -8548885301322210937L;
 
         /** {@inheritDoc} */
-        public void eventOccurred(SpacecraftState s, double mu) {
+        public void eventOccurred(final SpacecraftState s, final double mu) {
             // do nothing
         }
 
@@ -243,7 +247,7 @@ public class SolarRadiationPressure implements ForceModel {
          * @param mu central gravitation coefficient
          * @exception OrekitException if sun or spacecraft position cannot be computed
          */
-        public double g(SpacecraftState s, double mu)
+        public double g(final SpacecraftState s, final double mu)
             throws OrekitException {
             final PVCoordinates pv = s.getPVCoordinates(mu);
             final Vector3D satSunVector =
