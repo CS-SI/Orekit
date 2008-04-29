@@ -36,7 +36,9 @@
         </module>
         <module name="JavadocStyle"/>
         <module name="JavadocType"/>
-        <module name="JavadocVariable"/>
+        <module name="JavadocVariable">
+            <property name="scope" value="protected"/>
+        </module>
         <module name="MissingSwitchDefault"/>
         <module name="ModifierOrder"/>
         <module name="MultipleStringLiterals"/>
