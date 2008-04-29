@@ -157,7 +157,7 @@ class DeepSDP4 extends SDP4 {
 
         final double sinq = Math.sin(tle.getRaan());
         final double cosq = Math.cos(tle.getRaan());
-        final double aqnv = 1.0/a0dp;
+        final double aqnv = 1.0 / a0dp;
 
         // Compute julian days since 1900
         final double daysSince1900 =
@@ -182,9 +182,9 @@ class DeepSDP4 extends SDP4 {
         final double gam = 5.8351514 + 0.0019443680 * daysSince1900;
 
         zcosil = 0.91375164 - 0.03568096 * ctem;
-        zsinil = Math.sqrt(1. - zcosil * zcosil);
+        zsinil = Math.sqrt(1.0 - zcosil * zcosil);
         zsinhl = 0.089683511 * stem / zsinil;
-        zcoshl = Math.sqrt(1. - zsinhl*zsinhl);
+        zcoshl = Math.sqrt(1.0 - zsinhl*zsinhl);
         zmol = MathUtils.normalizeAngle(c_minus_gam, Math.PI);
 
         double zx = 0.39785416 * stem / zsinil;
@@ -212,7 +212,7 @@ class DeepSDP4 extends SDP4 {
         // down to this:  we compute the solar terms,  then the lunar terms.
         // On a second pass,  we recompute the solar terms, taking advantage
         // of the improved data that resulted from computing lunar terms.
-        for(int iteration = 0; iteration < 2; iteration++) {
+        for (int iteration = 0; iteration < 2; ++iteration) {
             final double a1 = zcosg * zcosh + zsing * zcosi * zsinh;
             final double a3 = -zsing * zcosh + zcosg * zcosi * zsinh;
             final double a7 = -zcosg * zsinh + zsing * zcosi * zcosh;
@@ -256,35 +256,34 @@ class DeepSDP4 extends SDP4 {
             z1 = z1 + z1 + beta02 * z31;
             z2 = z2 + z2 + beta02 * z32;
             z3 = z3 + z3 + beta02 * z33;
-            se = s1*zn*s5;
-            si = s2*zn*(z11+z13);
-            sl = -zn*s3*(z1+z3-14-6*e0sq);
-            sgh = s4*zn*(z31+z33-6);
-            if (tle.getI() < (Math.PI / 60.)) {// <==>  (< 3 degrees)
+            se = s1 * zn * s5;
+            si = s2 * zn * (z11 + z13);
+            sl = -zn * s3 * (z1 + z3 - 14 - 6 * e0sq);
+            sgh = s4 * zn * (z31 + z33 - 6);
+            if (tle.getI() < (Math.PI / 60.0)) {// <==>  (< 3 degrees)
                 sh = 0;
+            } else {
+                sh = -zn * s2 * (z21 + z23);
             }
-            else {
-                sh = -zn*s2*(z21+z23);
-            }
-            ee2 = 2*s1*s6;
-            e3 = 2*s1*s7;
-            xi2 = 2*s2*z12;
-            xi3 = 2*s2*(z13-z11);
-            xl2 = -2*s3*z2;
-            xl3 = -2*s3*(z3-z1);
-            xl4 = -2*s3*(-21-9*e0sq)*ze;
-            xgh2 = 2*s4*z32;
-            xgh3 = 2*s4*(z33-z31);
-            xgh4 = -18*s4*ze;
-            xh2 = -2*s2*z22;
-            xh3 = -2*s2*(z23-z21);
+            ee2  =  2 * s1 * s6;
+            e3   =  2 * s1 * s7;
+            xi2  =  2 * s2 * z12;
+            xi3  =  2 * s2 * (z13 - z11);
+            xl2  = -2 * s3 * z2;
+            xl3  = -2 * s3 * (z3 - z1);
+            xl4  = -2 * s3 * (-21 - 9 * e0sq) * ze;
+            xgh2 =  2 * s4 * z32;
+            xgh3 =  2 * s4 * (z33 - z31);
+            xgh4 = -18 * s4 * ze;
+            xh2  = -2 * s2 * z22;
+            xh3  = -2 * s2 * (z23 - z21);
 
-            if( iteration == 0 ) { // we compute lunar terms only on the first pass:
+            if (iteration == 0) { // we compute lunar terms only on the first pass:
                 sse = se;
                 ssi = si;
                 ssl = sl;
-                ssh = sh/sini0;
-                ssg = sgh-cosi0*ssh;
+                ssh = sh / sini0;
+                ssg = sgh - cosi0 * ssh;
                 se2 = ee2;
                 si2 = xi2;
                 sl2 = xl2;
@@ -301,8 +300,8 @@ class DeepSDP4 extends SDP4 {
                 zsing = zsingl;
                 zcosi = zcosil;
                 zsini = zsinil;
-                zcosh = zcoshl*cosq+zsinhl*sinq;
-                zsinh = sinq*zcoshl-cosq*zsinhl;
+                zcosh = zcoshl * cosq + zsinhl * sinq;
+                zsinh = sinq * zcoshl - cosq * zsinhl;
                 zn = znl;
                 cc = c1l;
                 ze = zel;
@@ -321,29 +320,25 @@ class DeepSDP4 extends SDP4 {
 
         double bfact = 0;
 
-        // if mean motion is 1.893053 to 2.117652 revs/day, and ecc >= .5,
-        // start of the 12-hour orbit, e >.5 section
-
-        if( (xnq >= 0.00826) && (xnq <= 0.00924) && (tle.getE()) >= .5) {
+        // if mean motion is 1.893053 to 2.117652 revs/day, and eccentricity >= 0.5,
+        // start of the 12-hour orbit, e > 0.5 section
+        if ((xnq >= 0.00826) && (xnq <= 0.00924) && (tle.getE() >= 0.5)) {
 
             final double g201 = -0.306 - (tle.getE()- 0.64) * 0.440;
             final double eoc = tle.getE() * e0sq;
-            final double sini2 = sini0*sini0;
-            final double f220 = 0.75*(1+2*cosi0+theta2);
+            final double sini2 = sini0 * sini0;
+            final double f220 = 0.75 * (1 + 2 * cosi0 + theta2);
             final double f221 = 1.5 * sini2;
-            final double f321 = 1.875 * sini0 * (1 - 2 * cosi0 - 3 * theta2);
-            final double f322 = -1.875*sini0*(1+2* cosi0-3*theta2);
+            final double f321 =  1.875 * sini0 * (1 - 2 * cosi0 - 3 * theta2);
+            final double f322 = -1.875 * sini0 * (1 + 2 * cosi0 - 3 * theta2);
             final double f441 = 35 * sini2 * f220;
             final double f442 = 39.3750 * sini2 * sini2;
-            final double f522 = 9.84375*sini0*(sini2*(1-2*cosi0-5*
-                    theta2)+0.33333333*(-2+4*cosi0+ 6*theta2));
-            final double f523 = sini0*(4.92187512*sini2*(-2-4*
-                    cosi0+10*theta2)+6.56250012   *(1+2*cosi0-3*theta2));
-            final double f542 = 29.53125*sini0*(2-8*
-                    cosi0+theta2* (-12+8*cosi0+10*theta2));
-            final double f543 = 29.53125*sini0*(-2-8*cosi0+
-                    theta2*(12+8*cosi0-10*
-                            theta2));
+            final double f522 = 9.84375 * sini0 * (sini2 * (1 - 2 * cosi0 - 5 * theta2) +
+                                                   0.33333333 * (-2 + 4 * cosi0 + 6 * theta2));
+            final double f523 = sini0 * (4.92187512 * sini2 * (-2 - 4 * cosi0 + 10 * theta2) +
+                                         6.56250012 * (1 + 2 * cosi0 - 3 * theta2));
+            final double f542 = 29.53125 * sini0 * (2 - 8 * cosi0 + theta2 * (-12 + 8 * cosi0 + 10 * theta2));
+            final double f543 = 29.53125 * sini0 * (-2 - 8 * cosi0 + theta2 * (12 + 8 * cosi0 - 10 * theta2));
             double g211;
             double g310;
             double g322;
@@ -356,73 +351,68 @@ class DeepSDP4 extends SDP4 {
 
             // Geopotential resonance initialization for 12 hour orbits :
             if (tle.getE() <= 0.65) {
-                g211 = 3.616-13.247*tle.getE()+16.290*e0sq;
-                g310 = -19.302+117.390*tle.getE()-228.419*e0sq+156.591*eoc;
-                g322 = -18.9068+109.7927*tle.getE()-214.6334*e0sq+146.5816*eoc;
-                g410 = -41.122+242.694*tle.getE()-471.094*e0sq+313.953*eoc;
-                g422 = -146.407+841.880*tle.getE()-1629.014*e0sq+1083.435*eoc;
-                g520 = -532.114+3017.977*tle.getE()-5740.032*e0sq+3708.276*eoc;
-            } // End if (tle.getE() <= 0.65)
-            else  {
-                g211 = -72.099+331.819*tle.getE()-508.738*e0sq+266.724*eoc;
-                g310 = -346.844+1582.851*tle.getE()-2415.925*e0sq+1246.113*eoc;
-                g322 = -342.585+1554.908*tle.getE()-2366.899*e0sq+1215.972*eoc;
-                g410 = -1052.797+4758.686*tle.getE()-7193.992*e0sq+3651.957*eoc;
-                g422 = -3581.69+16178.11*tle.getE()-24462.77*e0sq + 12422.52*eoc;
+                g211 =    3.616  -   13.247  * tle.getE() +   16.290  * e0sq;
+                g310 =  -19.302  +  117.390  * tle.getE() -  228.419  * e0sq +  156.591  * eoc;
+                g322 =  -18.9068 +  109.7927 * tle.getE() -  214.6334 * e0sq +  146.5816 * eoc;
+                g410 =  -41.122  +  242.694  * tle.getE() -  471.094  * e0sq +  313.953  * eoc;
+                g422 = -146.407  +  841.880  * tle.getE() - 1629.014  * e0sq + 1083.435  * eoc;
+                g520 = -532.114  + 3017.977  * tle.getE() - 5740.032  * e0sq + 3708.276  * eoc;
+            } else  {
+                g211 =   -72.099 +   331.819 * tle.getE() -   508.738 * e0sq +   266.724 * eoc;
+                g310 =  -346.844 +  1582.851 * tle.getE() -  2415.925 * e0sq +  1246.113 * eoc;
+                g322 =  -342.585 +  1554.908 * tle.getE() -  2366.899 * e0sq +  1215.972 * eoc;
+                g410 = -1052.797 +  4758.686 * tle.getE() -  7193.992 * e0sq +  3651.957 * eoc;
+                g422 = -3581.69  + 16178.11  * tle.getE() - 24462.77  * e0sq + 12422.52  * eoc;
                 if (tle.getE() <= 0.715) {
-                    g520 = 1464.74-4664.75*tle.getE()+3763.64*e0sq;
+                    g520 = 1464.74 - 4664.75 * tle.getE() + 3763.64 * e0sq;
+                } else {
+                    g520 = -5149.66 + 29936.92 * tle.getE() - 54087.36 * e0sq + 31324.56 * eoc;
                 }
-                else {
-                    g520 = -5149.66+29936.92*tle.getE()-54087.36*e0sq+31324.56*eoc;
-                }
-            } // end else tle.getE() <= 0.65
+            }
 
             double g533;
             double g521;
             double g532;
             if (tle.getE() < 0.7) {
-                g533 = -919.2277+4988.61*tle.getE()-9064.77*e0sq+5542.21*eoc;
-                g521 = -822.71072+4568.6173*tle.getE()-8491.4146*e0sq+5337.524*eoc;
-                g532 = -853.666+4690.25*tle.getE()-8624.77*e0sq+ 5341.4*eoc;
-            } // End if (tle.getE() <= 0.7)
-            else {
-                g533 = -37995.78+161616.52*tle.getE()-229838.2*e0sq+109377.94*eoc;
-                g521 = -51752.104+218913.95*tle.getE()-309468.16*e0sq+146349.42*eoc;
-                g532 = -40023.88+170470.89*tle.getE()-242699.48* e0sq+115605.82*eoc;
-            } // all e's have been tested
+                g533 = -919.2277  + 4988.61   * tle.getE() - 9064.77   * e0sq + 5542.21  * eoc;
+                g521 = -822.71072 + 4568.6173 * tle.getE() - 8491.4146 * e0sq + 5337.524 * eoc;
+                g532 = -853.666   + 4690.25   * tle.getE() - 8624.77   * e0sq + 5341.4   * eoc;
+            } else {
+                g533 = -37995.78  + 161616.52 * tle.getE() - 229838.2  * e0sq + 109377.94 * eoc;
+                g521 = -51752.104 + 218913.95 * tle.getE() - 309468.16 * e0sq + 146349.42 * eoc;
+                g532 = -40023.88  + 170470.89 * tle.getE() - 242699.48 * e0sq + 115605.82 * eoc;
+            }
 
             double temp1 = 3 * xnq * xnq * aqnv * aqnv;
             double temp = temp1*root22;
             d2201 = temp * f220 * g201;
             d2211 = temp * f221 * g211;
             temp1 *= aqnv;
-            temp = temp1*root32;
+            temp = temp1 * root32;
             d3210 = temp * f321 * g310;
             d3222 = temp * f322 * g322;
             temp1 *= aqnv;
-            temp = 2*temp1*root44;
+            temp = 2 * temp1 * root44;
             d4410 = temp * f441 * g410;
             d4422 = temp * f442 * g422;
             temp1 *= aqnv;
-            temp = temp1*root52;
+            temp = temp1 * root52;
             d5220 = temp * f522 * g520;
             d5232 = temp * f523 * g532;
-            temp = 2*temp1*root54;
+            temp = 2 * temp1 * root54;
             d5421 = temp * f542 * g521;
             d5433 = temp * f543 * g533;
-            xlamo = tle.getMeanAnomaly()+tle.getRaan()+tle.getRaan()-thgr-thgr;
+            xlamo = tle.getMeanAnomaly() + tle.getRaan() + tle.getRaan() - thgr - thgr;
             bfact = xmdot + xnodot + xnodot - thdt - thdt;
             bfact += ssl + ssh + ssh;
-        }        // end of 12-hour orbit, e >.5 section
+        } else if ((xnq < 0.0052359877) && (xnq > 0.0034906585)) {
+            // if mean motion is .8 to 1.2 revs/day : (geosynch)
 
-        // if mean motion is .8 to 1.2 revs/day : (geosynch)
-        else if( (xnq < 0.0052359877) && (xnq > 0.0034906585)) {
-
-            final double cosio_plus_1 = 1. + cosi0;
-            final double g200 = 1+e0sq*(-2.5+0.8125*e0sq);
-            final double g300 = 1+e0sq*(-6+6.60937*e0sq);
-            final double f311 = 0.9375*sini0*sini0*(1+3*cosi0)-0.75*cosio_plus_1;
-            final double g310 = 1+2*e0sq;
+            final double cosio_plus_1 = 1.0 + cosi0;
+            final double g200 = 1 + e0sq * (-2.5 + 0.8125  * e0sq);
+            final double g300 = 1 + e0sq * (-6   + 6.60937 * e0sq);
+            final double f311 = 0.9375 * sini0 * sini0 * (1 + 3 * cosi0) - 0.75 * cosio_plus_1;
+            final double g310 = 1 + 2 * e0sq;
             final double f220 = 0.75 * cosio_plus_1 * cosio_plus_1;
             final double f330 = 2.5 * f220 * cosio_plus_1;
 
@@ -430,25 +420,25 @@ class DeepSDP4 extends SDP4 {
             synchronous = true;
 
             // Synchronous resonance terms initialization
-            del1 = 3*xnq*xnq*aqnv*aqnv;
-            del2 = 2*del1*f220*g200*q22;
-            del3 = 3*del1*f330*g300*q33*aqnv;
-            del1 = del1*f311*g310*q31*aqnv;
-            xlamo = tle.getMeanAnomaly()+tle.getRaan()+tle.getPerigeeArgument()-thgr;
+            del1 = 3 * xnq * xnq * aqnv * aqnv;
+            del2 = 2 * del1 * f220 * g200 * q22;
+            del3 = 3 * del1 * f330 * g300 * q33 * aqnv;
+            del1 = del1 * f311 * g310 * q31 * aqnv;
+            xlamo = tle.getMeanAnomaly() + tle.getRaan() + tle.getPerigeeArgument() - thgr;
             bfact = xmdot + omgdot + xnodot - thdt;
-            bfact = bfact+ssl+ssg+ssh;
-        } // End of geosych case
-        else {
-            // it's neither a high-e 12-hr orbit nor a geosynch:
+            bfact = bfact + ssl + ssg + ssh;
+        } else {
+            // it's neither a high-e 12-hours orbit nor a geosynchronous:
             resonant = false;
             synchronous = false;
         }
-        if(resonant) {
-            xfact = bfact-xnq;
+
+        if (resonant) {
+            xfact = bfact - xnq;
 
             // Initialize integrator
-            xli = xlamo;
-            xni = xnq;
+            xli   = xlamo;
+            xni   = xnq;
             atime = 0;
         }
         derivs = new double[secularIntegrationOrder];
@@ -459,38 +449,36 @@ class DeepSDP4 extends SDP4 {
      */
     protected void deepSecularEffects(double t)  {
 
-        xll += ssl * t;
+        xll    += ssl * t;
         omgadf += ssg * t;
-        xnode += ssh * t;
-        em = tle.getE() + sse * t;
-        xinc = tle.getI() + ssi * t;
+        xnode  += ssh * t;
+        em      = tle.getE() + sse * t;
+        xinc    = tle.getI() + ssi * t;
 
-        if(resonant) {
-            /* If we're closer to t=0 than to the currently-stored data
-      from the previous call to this function,  then we're
-      better off "restarting",  going back to the initial data.
-      The Dundee code rigs things up to _always_ take 720-minute
-      steps from epoch to end time,  except for the final step.
-      Easiest way to arrange similar behavior in this code is
-      just to always do a restart,  if we're in Dundee-compliant
-      mode. */
-            if( Math.abs(t) < Math.abs(t-atime)||isDundeeCompliant)  {
-                /* Epoch restart */
+        if (resonant) {
+            // If we're closer to t = 0 than to the currently-stored data
+            // from the previous call to this function,  then we're
+            // better off "restarting",  going back to the initial data.
+            // The Dundee code rigs things up to _always_ take 720-minute
+            // steps from epoch to end time,  except for the final step.
+            // Easiest way to arrange similar behavior in this code is
+            // just to always do a restart,  if we're in Dundee-compliant
+            // mode.
+            if (Math.abs(t) < Math.abs(t-atime) || isDundeeCompliant)  {
+                // Epoch restart
                 atime = 0;
                 xni = xnq;
                 xli = xlamo;
             }
             boolean lastIntegrationStep = false;
             // if |step|>|step max| then do one step at step max
-            while ( lastIntegrationStep == false )    {
+            while (! lastIntegrationStep) {
                 double delt = t - atime;
-                if( delt > secularIntegrationStep) {
+                if (delt > secularIntegrationStep) {
                     delt = secularIntegrationStep;
-                }
-                else if( delt < -secularIntegrationStep) {
+                } else if (delt < -secularIntegrationStep) {
                     delt = -secularIntegrationStep;
-                }
-                else {
+                } else {
                     lastIntegrationStep = true;
                 }
 
@@ -502,7 +490,7 @@ class DeepSDP4 extends SDP4 {
                 xli += delt * xldot;
                 xni += delt * derivs[0];
                 double delt_factor = delt;
-                for( int j = 2; j <= secularIntegrationOrder; j++) {
+                for (int j = 2; j <= secularIntegrationOrder; ++j) {
                     xlpow *= xldot;
                     derivs[j - 1] *= xlpow;
                     delt_factor *= delt / (double)j;
@@ -522,46 +510,46 @@ class DeepSDP4 extends SDP4 {
      */
     protected void deepPeriodicEffects(double t)  {
 
-        /* If the time didn't change by more than 30 minutes,      */
-        /* there's no good reason to recompute the perturbations;  */
-        /* they don't change enough over so short a time span.     */
-        /* However,  the Dundee code _always_ recomputes,  so if   */
-        /* we're attempting to replicate its results,  we've gotta */
-        /* recompute everything,  too.                             */
-        if( Math.abs(savtsn-t) >= 30.|| isDundeeCompliant)  {
+        // If the time didn't change by more than 30 minutes,
+        // there's no good reason to recompute the perturbations;
+        // they don't change enough over so short a time span.
+        // However,  the Dundee code _always_ recomputes,  so if
+        // we're attempting to replicate its results,  we've gotta 
+        // recompute everything,  too.
+        if (Math.abs(savtsn - t) >= 30.|| isDundeeCompliant)  {
 
             savtsn = t;
 
-            /* Update solar perturbations for time T: */
-            double zm = zmos+zns*t;
-            double zf = zm+2*zes*Math.sin(zm);
+            // Update solar perturbations for time T
+            double zm = zmos + zns * t;
+            double zf = zm + 2 * zes * Math.sin(zm);
             double sinzf = Math.sin(zf);
-            double f2 = 0.5*sinzf*sinzf-0.25;
-            double f3 = -0.5*sinzf*Math.cos(zf);
-            final double ses = se2*f2+se3*f3;
-            final double sis = si2*f2+si3*f3;
-            final double sls = sl2*f2+sl3*f3+sl4*sinzf;
-            final double sghs = sgh2*f2+sgh3*f3+sgh4*sinzf;
-            final double shs = sh2*f2+sh3*f3;
+            double f2 = 0.5 * sinzf * sinzf - 0.25;
+            double f3 = -0.5 * sinzf * Math.cos(zf);
+            final double ses = se2 * f2 + se3 * f3;
+            final double sis = si2 * f2 + si3 * f3;
+            final double sls = sl2 * f2 + sl3 * f3 + sl4 * sinzf;
+            final double sghs = sgh2 * f2 + sgh3 * f3 + sgh4 * sinzf;
+            final double shs = sh2 * f2 + sh3 * f3;
 
-            /* Update lunar perturbations for time T: */
-            zm = zmol+znl*t;
-            zf = zm+2*zel*Math.sin(zm);
+            // Update lunar perturbations for time T
+            zm = zmol + znl * t;
+            zf = zm + 2 * zel * Math.sin(zm);
             sinzf = Math.sin(zf);
-            f2 = 0.5*sinzf*sinzf-0.25;
-            f3 = -0.5*sinzf*Math.cos(zf);
-            final double sel = ee2*f2+e3*f3;
-            final double sil = xi2*f2+xi3*f3;
-            final double sll = xl2*f2+xl3*f3+xl4*sinzf;
-            final double sghl = xgh2*f2+xgh3*f3+xgh4*sinzf;
-            final double sh1 = xh2*f2+xh3*f3;
+            f2 =  0.5 * sinzf * sinzf - 0.25;
+            f3 = -0.5 * sinzf * Math.cos(zf);
+            final double sel = ee2 * f2 + e3 * f3;
+            final double sil = xi2 * f2 + xi3 * f3;
+            final double sll = xl2 * f2 + xl3 * f3 + xl4 * sinzf;
+            final double sghl = xgh2 * f2 + xgh3 * f3 + xgh4 * sinzf;
+            final double sh1 = xh2 * f2 + xh3 * f3;
 
-            /* Sum the solar and lunar contributions: */
-            pe = ses+sel;
-            pinc = sis+sil;
-            pl = sls+sll;
-            pgh = sghs+sghl;
-            ph = shs+sh1;
+            // Sum the solar and lunar contributions
+            pe   = ses  + sel;
+            pinc = sis  + sil;
+            pl   = sls  + sll;
+            pgh  = sghs + sghl;
+            ph   = shs  + sh1;
         }
 
         xinc += pinc;
@@ -570,29 +558,27 @@ class DeepSDP4 extends SDP4 {
         final double cosis = Math.cos( xinc);
 
         /* Add solar/lunar perturbation correction to eccentricity: */
-        em += pe;
-        xll += pl;
+        em     += pe;
+        xll    += pl;
         omgadf += pgh;
-        xinc = MathUtils.normalizeAngle(xinc, 0);
+        xinc    = MathUtils.normalizeAngle(xinc, 0);
 
-        if( Math.abs(xinc) >= 0.2)
-        {
+        if (Math.abs(xinc) >= 0.2) {
             // Apply periodics directly
             final double temp_val = ph / sinis;
             omgadf -= cosis * temp_val;
             xnode += temp_val;
-        }
-        else {
-            /* Apply periodics with Lyddane modification */
+        } else {
+            // Apply periodics with Lyddane modification
             final double sinok = Math.sin(xnode);
             final double cosok = Math.cos(xnode);
             final double alfdp = ph * cosok + (pinc * cosis + sinis) * sinok;
             final double betdp = - ph * sinok + (pinc * cosis + sinis) * cosok;
-            final double delta_xnode = MathUtils.normalizeAngle(Math.atan2(alfdp,betdp) - xnode, 0);
+            final double delta_xnode = MathUtils.normalizeAngle(Math.atan2(alfdp, betdp) - xnode, 0);
             final double dls = -xnode * sinis * pinc;
             omgadf += dls - cosis * delta_xnode;
-            xnode += delta_xnode;
-        } /* End case dpper: */
+            xnode  += delta_xnode;
+        }
     }
 
     /** Computes internal secular derivs. */
@@ -604,30 +590,30 @@ class DeepSDP4 extends SDP4 {
         final double cos_2li = 2. * cos_li * cos_li - 1.;
 
         // Dot terms calculated :
-        if( synchronous )  {
+        if (synchronous)  {
             final double sin_3li = sin_2li * cos_li + cos_2li * sin_li;
             final double cos_3li = cos_2li * cos_li - sin_2li * sin_li;
             double term1a = del1 * (sin_li  * c_fasx2  - cos_li  * s_fasx2);
             double term2a = del2 * (sin_2li * c_2fasx4 - cos_2li * s_2fasx4);
             double term3a = del3 * (sin_3li * c_3fasx6 - cos_3li * s_3fasx6);
             double term1b = del1 * (cos_li  * c_fasx2  + sin_li  * s_fasx2);
-            double term2b = 2. * del2 * (cos_2li * c_2fasx4 + sin_2li * s_2fasx4);
-            double term3b = 3. * del3 * (cos_3li * c_3fasx6 + sin_3li * s_3fasx6);
+            double term2b = 2.0 * del2 * (cos_2li * c_2fasx4 + sin_2li * s_2fasx4);
+            double term3b = 3.0 * del3 * (cos_3li * c_3fasx6 + sin_3li * s_3fasx6);
 
-            for(int j = 0; j < secularIntegrationOrder; j += 2)  {
-                derivs[j] = term1a + term2a + term3a;
-                derivs[j+1] = term1b + term2b + term3b;
-                if( (i + 2) < secularIntegrationOrder)   {
-                    term1a = -term1a;
-                    term2a *= -4.;
-                    term3a *= -9.;
+            for (int j = 0; j < secularIntegrationOrder; j += 2)  {
+                derivs[j]     = term1a + term2a + term3a;
+                derivs[j + 1] = term1b + term2b + term3b;
+                if ((i + 2) < secularIntegrationOrder) {
+                    term1a  = -term1a;
+                    term2a *= -4.0;
+                    term3a *= -9.0;
                     term1b = -term1b;
-                    term2b *= -4.;
-                    term3b *= -9.;
+                    term2b *= -4.0;
+                    term3b *= -9.0;
                 }
             }
-        }        /* end of geosynch case */
-        else {        /* orbit is a 12-hour resonant one: */
+        } else {
+            // orbit is a 12-hour resonant one
             final double xomi = omegaq + omgdot * atime;
             final double sin_omi = Math.sin(xomi);
             final double cos_omi = Math.cos(xomi);
@@ -645,38 +631,38 @@ class DeepSDP4 extends SDP4 {
             final double cos_2li_p_2omi = cos_2li * cos_2omi - sin_2omi * sin_2li;
             final double sin_2omi_p_li = sin_li * cos_2omi + sin_2omi * cos_li;
             final double cos_2omi_p_li = cos_li * cos_2omi - sin_2omi * sin_li;
-            double term1a = d2201 * (sin_2omi_p_li*c_g22 - cos_2omi_p_li*s_g22) +
+            double term1a = d2201 * (sin_2omi_p_li * c_g22 - cos_2omi_p_li * s_g22) +
                             d2211 * (sin_li * c_g22 - cos_li * s_g22) +
-                            d3210 * (sin_li_p_omi*c_g32 - cos_li_p_omi*s_g32) +
-                            d3222 * (sin_li_m_omi*c_g32 - cos_li_m_omi*s_g32) +
-                            d5220 * (sin_li_p_omi*c_g52 - cos_li_p_omi*s_g52) +
-                            d5232 * (sin_li_m_omi*c_g52 - cos_li_m_omi*s_g52);
-            double term2a = d4410 * (sin_2li_p_2omi*c_g44 - cos_2li_p_2omi*s_g44) +
+                            d3210 * (sin_li_p_omi * c_g32 - cos_li_p_omi * s_g32) +
+                            d3222 * (sin_li_m_omi * c_g32 - cos_li_m_omi * s_g32) +
+                            d5220 * (sin_li_p_omi * c_g52 - cos_li_p_omi * s_g52) +
+                            d5232 * (sin_li_m_omi * c_g52 - cos_li_m_omi * s_g52);
+            double term2a = d4410 * (sin_2li_p_2omi * c_g44 - cos_2li_p_2omi * s_g44) +
                             d4422 * (sin_2li * c_g44 - cos_2li * s_g44) +
-                            d5421 * (sin_2li_p_omi*c_g54 - cos_2li_p_omi*s_g54) +
-                            d5433 * (sin_2li_m_omi*c_g54 - cos_2li_m_omi*s_g54);
-            double term1b = d2201 * (cos_2omi_p_li*c_g22 + sin_2omi_p_li*s_g22) +
+                            d5421 * (sin_2li_p_omi * c_g54 - cos_2li_p_omi * s_g54) +
+                            d5433 * (sin_2li_m_omi * c_g54 - cos_2li_m_omi * s_g54);
+            double term1b = d2201 * (cos_2omi_p_li * c_g22 + sin_2omi_p_li * s_g22) +
                             d2211 * (cos_li * c_g22 + sin_li * s_g22) +
-                            d3210 * (cos_li_p_omi*c_g32 + sin_li_p_omi*s_g32) +
-                            d3222 * (cos_li_m_omi*c_g32 + sin_li_m_omi*s_g32) +
-                            d5220 * (cos_li_p_omi*c_g52 + sin_li_p_omi*s_g52) +
-                            d5232 * (cos_li_m_omi*c_g52 + sin_li_m_omi*s_g52);
-            double term2b = 2. * (d4410 * (cos_2li_p_2omi*c_g44 + sin_2li_p_2omi*s_g44) +
-                                  d4422 * (cos_2li * c_g44 + sin_2li * s_g44) +
-                                  d5421 * (cos_2li_p_omi*c_g54 + sin_2li_p_omi*s_g54) +
-                                  d5433 * (cos_2li_m_omi*c_g54 + sin_2li_m_omi*s_g54));
+                            d3210 * (cos_li_p_omi * c_g32 + sin_li_p_omi * s_g32) +
+                            d3222 * (cos_li_m_omi * c_g32 + sin_li_m_omi * s_g32) +
+                            d5220 * (cos_li_p_omi * c_g52 + sin_li_p_omi * s_g52) +
+                            d5232 * (cos_li_m_omi * c_g52 + sin_li_m_omi * s_g52);
+            double term2b = 2.0 * (d4410 * (cos_2li_p_2omi * c_g44 + sin_2li_p_2omi * s_g44) +
+                                   d4422 * (cos_2li * c_g44 + sin_2li * s_g44) +
+                                   d5421 * (cos_2li_p_omi * c_g54 + sin_2li_p_omi * s_g54) +
+                                   d5433 * (cos_2li_m_omi * c_g54 + sin_2li_m_omi * s_g54));
 
             for (int j = 0; j < secularIntegrationOrder; j += 2) {
-                derivs[j] = term1a + term2a;
-                derivs[j+1] = term1b + term2b;
+                derivs[j]     = term1a + term2a;
+                derivs[j + 1] = term1b + term2b;
                 if( (j + 2) < secularIntegrationOrder)  {
-                    term1a = -term1a;
-                    term2a *= -4.;
-                    term1b = -term1b;
-                    term2b *= -4.;
+                    term1a  = -term1a;
+                    term2a *= -4.0;
+                    term1b  = -term1b;
+                    term2b *= -4.0;
                 }
             }
-        } /* End of 12-hr resonant case */
+        }
     }
 
 }
