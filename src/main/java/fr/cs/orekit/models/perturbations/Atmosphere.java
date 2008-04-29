@@ -22,7 +22,7 @@ public interface Atmosphere extends Serializable {
      * @exception OrekitException if date is out of range of solar activity model
      * or if some frame conversion cannot be performed
      */
-    public double getDensity(AbsoluteDate date, Vector3D position, Frame frame)
+    double getDensity(AbsoluteDate date, Vector3D position, Frame frame)
         throws OrekitException;
 
     /** Get the inertial velocity of atmosphere molecules.
@@ -32,7 +32,7 @@ public interface Atmosphere extends Serializable {
      * @return velocity (m/s) (defined in the same frame as the position)
      * @exception OrekitException if some conversion cannot be performed
      */
-    public Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame)
+    Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame)
         throws OrekitException;
 
 }

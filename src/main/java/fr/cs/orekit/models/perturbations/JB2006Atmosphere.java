@@ -46,18 +46,21 @@ public class JB2006Atmosphere {
 
     // data :
 
-    /** The alpha are the thermal diffusion coefficients in Eq. (6) */
+    /** The alpha are the thermal diffusion coefficients in equation (6). */
     private static final double[] ALPHA = {
         0, 0, 0, 0, 0, -0.38
     };
 
-    /** ln(10.0) */
+    /** Natural logarithm of 10.0. */
     private static final double AL10  = 2.3025851;
 
-    /** Molecular weights in order: N2, O2, O, Ar, He & H */
-    private static final double[] AMW = new double[] {0, 28.0134, 31.9988, 15.9994, 39.9480, 4.0026, 1.00797};
+    /** Molecular weights in order: N2, O2, O, Ar, He and H. */
+    private static final double[] AMW = {
+        0,
+        28.0134, 31.9988, 15.9994, 39.9480, 4.0026, 1.00797
+    };
 
-    /** Avogadro's number in mks units (molecules/kmol) */
+    /** Avogadro's number in mks units (molecules/kmol). */
     private static final double AVOGAD = 6.02257e26;
 
     private static final double TWOPI   = 6.2831853;
@@ -65,38 +68,44 @@ public class JB2006Atmosphere {
     private static final double PIOV2   = 1.5707963;
     private static final double DEGRAD  = Math.PI / 180.0;
 
-    /** The FRAC are the assumed sea-level volume fractions in order: N2, O2, Ar, and He */
-    private static final double[] FRAC = new double[] {0,0.78110,0.20955,9.3400e-3,1.2890e-5};
+    /** The FRAC are the assumed sea-level volume fractions in order: N2, O2, Ar, and He. */
+    private static final double[] FRAC = {
+        0,
+        0.78110, 0.20955, 9.3400e-3, 1.2890e-5
+    };
 
-    /** Universal gas-constant in mks units (joules/K/kmol) */
+    /** Universal gas-constant in mks units (joules/K/kmol). */
     private static final double RSTAR = 8314.32;
 
-    /** Values used to establish height step sizes in the regimes 90km to 105km,
-     * 105km to 500km and 500km upward. */
-    private static final double R1=0.010;
-    private static final double R2=0.025;
-    private static final double R3=0.075;
+    /** Values used to establish height step sizes.
+     * <p>They are suited in the regimes 90km to 105km,
+     * 105km to 500km and 500km upward.</p>
+     */
+    private static final double R1 = 0.010;
+    private static final double R2 = 0.025;
+    private static final double R3 = 0.075;
 
-    /** Weights for the Newton-Cotes Five-Point Quad. formula. */
+    /** Weights for the Newton-Cotes five-points quadrature formula. */
     private static final double[] WT = {
-        0, 0.311111111111111, 1.422222222222222,
+        0,
+        0.311111111111111, 1.422222222222222,
         0.533333333333333, 1.422222222222222,
         0.311111111111111
     };
 
-    /** Coefficients for high altitude density correction */
-    private static final double[] CHT= {
+    /** Coefficients for high altitude density correction. */
+    private static final double[] CHT = {
         0, 0.22, -0.20e-02, 0.115e-02, -0.211e-05
     };
 
-    /** FZ global model values (1978-2004 fit):  */
+    /** FZ global model values (1978-2004 fit).  */
     private static final double[] FZM = {
         0,
         0.111613e+00,-0.159000e-02, 0.126190e-01,
         -0.100064e-01,-0.237509e-04, 0.260759e-04
     };
 
-    /** gt global model values 1978-2004 fit: */
+    /** GT global model values (1978-2004 fit). */
     private static final double[] GTM = {
         0,
         -0.833646e+00,-0.265450e+00, 0.467603e+00,-0.299906e+00,
@@ -107,15 +116,15 @@ public class JB2006Atmosphere {
         0.134078e-04,-0.614176e-05, 0.343423e-05
     };
 
-    /** XAMBAR relative data */
+    /** XAMBAR relative data. */
     private static final double[] CXAMB = {
         0,
         28.15204,-8.5586e-2,+1.2840e-4,-1.0056e-5,
         -1.0210e-5,+1.5044e-6,+9.9826e-8
     };
 
-    /** DTSUB relative data */
-    private static final double[] BdtSub = {
+    /** DTSUB relative data. */
+    private static final double[] BDT_SUB = {
         0,
         -0.457512297e+01, -0.512114909e+01, -0.693003609e+02,
         0.203716701e+03,  0.703316291e+03, -0.194349234e+04,
@@ -126,8 +135,8 @@ public class JB2006Atmosphere {
         0.361416936e+02
     };
 
-    /** DTSUB relative data */
-    private static final double[] CdtSub = {
+    /** DTSUB relative data. */
+    private static final double[] CDT_SUB = {
         0,
         -0.155986211e+02, -0.512114909e+01, -0.693003609e+02,
         0.203716701e+03,  0.703316291e+03, -0.194349234e+04,
@@ -143,11 +152,15 @@ public class JB2006Atmosphere {
     private static double[] ALN   = new double[7];
     private static double[] AL10N = new double[7];
 
-    /** TEMP(1): Exospheric Temperature above Input Position (deg K)
-      * TEMP(2): Temperature at Input Position (deg K)*/
+    /** Temperatures.
+     *  <p><ul>
+     *  <li>TEMP(1): Exospheric Temperature above Input Position (deg K)</li>
+     *  <li>TEMP(2): Temperature at Input Position (deg K)</li>
+     *  </ul></p>
+     */
     private double[] temp = new double[3];
 
-    /** Total Mass-Density at Input Position (kg/m<sup>3</sup>) */
+    /** Total Mass-Density at Input Position (kg/m<sup>3</sup>). */
     private double rho;
 
     /** Simple constructor. */
@@ -172,30 +185,29 @@ public class JB2006Atmosphere {
      * @param xm10B MG2 81-day ave. centered index. Tabular time 5.0 days earlier.
      * @return total mass-Density at input position (kg/m<sup>3</sup>)
      */
-    public double getDensity(double dateMJD, double sunRA, double sunDecli, double satLon,
-                             double satLat, double satAlt, double f10, double f10B, double ap,
-                             double s10, double s10B, double xm10, double xm10B) {
+    public double getDensity(final double dateMJD, final double sunRA, final double sunDecli,
+                             final double satLon, final double satLat, final double satAlt,
+                             final double f10, final double f10B, final double ap,
+                             final double s10, final double s10B, final double xm10, final double xm10B) {
 
-        satAlt /= 1000.0;
+        final double scaledSatAlt = satAlt / 1000.0;
 
         // Equation (14)
-
         final double tc = 379 + 3.353 * f10B + 0.358 * (f10 - f10B) +
                           2.094 * (s10 - s10B) + 0.343 * (xm10 - xm10B);
 
         // Equation (15)
-
         final double eta =   0.5 * Math.abs(satLat - sunDecli);
         final double theta = 0.5 * Math.abs(satLat + sunDecli);
 
         // Equation (16)
         final double h     = satLon - sunRA;
         final double tau   = h - 0.64577182 + 0.10471976 * Math.sin(h + 0.75049158);
-        double solTimeHour = ((h + PI)/DEGRAD)*(24./360.);
+        double solTimeHour = (h + PI) / (15.0 * DEGRAD);
         if (solTimeHour >= 24) {
             solTimeHour = solTimeHour - 24.;
         }
-        if(solTimeHour < 0) {
+        if (solTimeHour < 0) {
             solTimeHour = solTimeHour + 24.;
         }
 
@@ -211,7 +223,7 @@ public class JB2006Atmosphere {
         final double DTG = ap + 100. * (1. - EXPAP);
 
         // Compute correction to dTc for local solar time and lat correction
-        final double DTCLST = dTc(f10, solTimeHour, satLat, satAlt);
+        final double DTCLST = dTc(f10, solTimeHour, satLat, scaledSatAlt);
 
         // Compute the local exospheric temperature.
         final double TINF = TSUBL + DTG + DTCLST;
@@ -229,17 +241,17 @@ public class JB2006Atmosphere {
         TC[2] = GSUBX;
 
         //   A AND GSUBX/A OF Equation (13)
-        TC[3] = (TINF - TSUBX)/PIOV2;
-        TC[4] = GSUBX/TC[3];
+        TC[3] = (TINF - TSUBX) / PIOV2;
+        TC[4] = GSUBX / TC[3];
 
         // Equation (5)
         final double Z1 = 90.;
-        final double Z2 = Math.min(satAlt, 105.0);
+        final double Z2 = Math.min(scaledSatAlt, 105.0);
         double AL = Math.log(Z2 / Z1);
         int N = (int) Math.floor(AL / R1) + 1;
         double ZR = Math.exp(AL / N);
         final double AMBAR1 = xAmbar(Z1);
-        final double TLOC1 = xLocal(Z1, TC);
+        final double TLOC1 = xLocal(Z1);
         double ZEND   = Z1;
         double SUM2   = 0.;
         double AIN    = AMBAR1 * xGrav(Z1) / TLOC1;
@@ -256,7 +268,7 @@ public class JB2006Atmosphere {
             for (int j = 2; j <= 5; ++j) {
                 Z += DZ;
                 AMBAR2 = xAmbar(Z);
-                TLOC2  = xLocal(Z, TC);
+                TLOC2  = xLocal(Z);
                 GRAVL  = xGrav(Z);
                 AIN    = AMBAR2 * GRAVL / TLOC2;
                 SUM1  += WT[j] * AIN;
@@ -280,13 +292,13 @@ public class JB2006Atmosphere {
         ALN[2] = Math.log(FACT2 * (1. + FRAC[2]) - AN);
         ALN[3] = Math.log(2. * (AN - FACT2));
 
-        if (satAlt <= 105.0) {
+        if (scaledSatAlt <= 105.0) {
             temp[2] = TLOC2;
             // Put in negligible hydrogen for use in DO-LOOP 13
             ALN[6] = ALN[5] - 25.0;
         } else {
             // Equation (6)
-            final double Z3 = Math.min(satAlt, 500.0);
+            final double Z3 = Math.min(scaledSatAlt, 500.0);
             AL   = Math.log(Z3 / Z);
             N    = (int) Math.floor(AL / R2) + 1;
             ZR   = Math.exp(AL / N);
@@ -301,7 +313,7 @@ public class JB2006Atmosphere {
                 double SUM1 = WT[1] * AIN;
                 for (int J = 2; J <= 5; ++J) {
                     Z    += DZ;
-                    TLOC3 = xLocal(Z, TC);
+                    TLOC3 = xLocal(Z);
                     GRAVL = xGrav(Z);
                     AIN   = GRAVL / TLOC3;
                     SUM1  = SUM1 + WT[J] * AIN;
@@ -309,10 +321,10 @@ public class JB2006Atmosphere {
                 SUM2 = SUM2 + DZ * SUM1;
             }
 
-            final double Z4 = Math.max(satAlt, 500.0);
+            final double Z4 = Math.max(scaledSatAlt, 500.0);
             AL = Math.log(Z4 / Z);
             double R = R2;
-            if (satAlt > 500.0) {
+            if (scaledSatAlt > 500.0) {
                 R = R3;
             }
             N = (int) Math.floor(AL / R) + 1;
@@ -326,7 +338,7 @@ public class JB2006Atmosphere {
                 double SUM1 = WT[1] * AIN;
                 for (int J = 2; J <= 5; ++J) {
                     Z    += DZ;
-                    TLOC4 = xLocal(Z, TC);
+                    TLOC4 = xLocal(Z);
                     GRAVL = xGrav(Z);
                     AIN   = GRAVL / TLOC4;
                     SUM1  = SUM1 + WT[J] * AIN;
@@ -335,7 +347,7 @@ public class JB2006Atmosphere {
             }
             double ALTR;
             double HSIGN;
-            if (satAlt <= 500.) {
+            if (scaledSatAlt <= 500.) {
                 temp[2] = TLOC3;
                 ALTR = Math.log(TLOC3 / TLOC2);
                 FACT2 = FACT1 * SUM2;
@@ -363,7 +375,7 @@ public class JB2006Atmosphere {
         final double CAPPHI = TRASH % 1;
         final int signum = (satLat >= 0) ? 1 : -1;
         final double sinLat = Math.sin(satLat);
-        final double DLRSL = 0.02 * (satAlt - 90.) * Math.exp(-0.045 * (satAlt - 90.)) *
+        final double DLRSL = 0.02 * (scaledSatAlt - 90.) * Math.exp(-0.045 * (scaledSatAlt - 90.)) *
                              signum * Math.sin(TWOPI * CAPPHI + 1.72) * sinLat * sinLat;
 
         // Equation (23) - Computes the semiannual variation
@@ -371,7 +383,7 @@ public class JB2006Atmosphere {
         if (Z < 2000.0) {
             final double D1950 = dateMJD - 33281.0;
             // Use new semiannual model DELTA LOG RHO
-            DLRSA = semian(dayOfYear(D1950), satAlt, f10B);
+            DLRSA = semian(dayOfYear(D1950), scaledSatAlt, f10B);
         }
 
         // Sum the delta-log-rhos and apply to the number densities.
@@ -400,8 +412,8 @@ public class JB2006Atmosphere {
 
         // Compute the high altitude exospheric density correction factor
         double FEX = 1.0;
-        if ((satAlt >= 1000.0) && (satAlt < 1500.0)) {
-            final double ZETA   = (satAlt - 1000.) * 0.002;
+        if ((scaledSatAlt >= 1000.0) && (scaledSatAlt < 1500.0)) {
+            final double ZETA   = (scaledSatAlt - 1000.) * 0.002;
             final double ZETA2  =  ZETA * ZETA;
             final double ZETA3  =  ZETA * ZETA2;
             final double F15C   = CHT[1] + CHT[2] * f10B + CHT[3] * 1500.0 + CHT[4] * f10B * 1500.0;
@@ -410,8 +422,8 @@ public class JB2006Atmosphere {
             final double FEX3   = F15C_ZETA - 2.0 * F15C + 2.0;
             FEX    = 1.0 + FEX2 * ZETA2 + FEX3 * ZETA3;
         }
-        if (satAlt >= 1500.0) {
-            FEX    = CHT[1] + CHT[2] * f10B + CHT[3] * satAlt + CHT[4] * f10B * satAlt;
+        if (scaledSatAlt >= 1500.0) {
+            FEX    = CHT[1] + CHT[2] * f10B + CHT[3] * scaledSatAlt + CHT[4] * f10B * scaledSatAlt;
         }
 
         // Apply the exospheric density correction factor.
@@ -428,7 +440,8 @@ public class JB2006Atmosphere {
      * @param satAlt height (km)
      * @return dTc correction
      */
-    private static double dTc(double f10, double solTimeHour, double satLat, double satAlt) {
+    private static double dTc(final double f10, final double solTimeHour,
+                              final double satLat, final double satAlt) {
 
         double dTc = 0;
         final double tx  = solTimeHour / 24.0;
@@ -443,14 +456,14 @@ public class JB2006Atmosphere {
 
         // Calculates dTc
         if ((satAlt >= 120) && (satAlt <= 200)) {
-            final double DTC200 = CdtSub[17] + CdtSub[18] * tx * ycs + CdtSub[19] * tx2 * ycs +
-                                  CdtSub[20] * tx3 * ycs + CdtSub[21] * f * ycs + CdtSub[22] * tx * f * ycs +
-                                  CdtSub[23] * tx2 * f * ycs;
-            sum = CdtSub[1] + BdtSub[2] * f + CdtSub[3] * tx * f + CdtSub[4] * tx2 * f +
-                  CdtSub[5] * tx3 * f + CdtSub[6] * tx4 * f + CdtSub[7] * tx5 * f +
-                  CdtSub[8] * tx * ycs + CdtSub[9] * tx2 * ycs + CdtSub[10] * tx3 * ycs +
-                  CdtSub[11] * tx4 * ycs + CdtSub[12] * tx5 * ycs + CdtSub[13] * ycs +
-                  CdtSub[14] * f * ycs + CdtSub[15] * tx * f * ycs  + CdtSub[16] * tx2 * f * ycs;
+            final double DTC200 = CDT_SUB[17] + CDT_SUB[18] * tx * ycs + CDT_SUB[19] * tx2 * ycs +
+                                  CDT_SUB[20] * tx3 * ycs + CDT_SUB[21] * f * ycs + CDT_SUB[22] * tx * f * ycs +
+                                  CDT_SUB[23] * tx2 * f * ycs;
+            sum = CDT_SUB[1] + BDT_SUB[2] * f + CDT_SUB[3] * tx * f + CDT_SUB[4] * tx2 * f +
+                  CDT_SUB[5] * tx3 * f + CDT_SUB[6] * tx4 * f + CDT_SUB[7] * tx5 * f +
+                  CDT_SUB[8] * tx * ycs + CDT_SUB[9] * tx2 * ycs + CDT_SUB[10] * tx3 * ycs +
+                  CDT_SUB[11] * tx4 * ycs + CDT_SUB[12] * tx5 * ycs + CDT_SUB[13] * ycs +
+                  CDT_SUB[14] * f * ycs + CDT_SUB[15] * tx * f * ycs  + CDT_SUB[16] * tx2 * f * ycs;
             final double DTC200DZ = sum;
             final double CC  = 3.0 * DTC200 - DTC200DZ;
             final double DD  = DTC200 - CC;
@@ -460,44 +473,44 @@ public class JB2006Atmosphere {
 
         if ((satAlt > 200.0) && (satAlt <= 240.0)) {
             h = (satAlt - 200.0) / 50.0;
-            sum = CdtSub[1] * h + BdtSub[2] * f * h + CdtSub[3] * tx * f * h + CdtSub[4] * tx2 * f * h +
-                  CdtSub[5] * tx3 * f * h + CdtSub[6] * tx4 * f * h + CdtSub[7] * tx5 * f * h +
-                  CdtSub[8] * tx * ycs * h + CdtSub[9] * tx2 * ycs * h + CdtSub[10] * tx3 * ycs * h +
-                  CdtSub[11] * tx4 * ycs * h + CdtSub[12] * tx5 * ycs * h + CdtSub[13] * ycs * h +
-                  CdtSub[14] * f * ycs * h + CdtSub[15] * tx * f * ycs * h  + CdtSub[16] * tx2 * f * ycs * h +
-                  CdtSub[17] + CdtSub[18] * tx * ycs + CdtSub[19] * tx2 * ycs +
-                  CdtSub[20] * tx3 * ycs + CdtSub[21] * f * ycs + CdtSub[22] * tx * f * ycs +
-                  CdtSub[23] * tx2 * f * ycs;
+            sum = CDT_SUB[1] * h + BDT_SUB[2] * f * h + CDT_SUB[3] * tx * f * h + CDT_SUB[4] * tx2 * f * h +
+                  CDT_SUB[5] * tx3 * f * h + CDT_SUB[6] * tx4 * f * h + CDT_SUB[7] * tx5 * f * h +
+                  CDT_SUB[8] * tx * ycs * h + CDT_SUB[9] * tx2 * ycs * h + CDT_SUB[10] * tx3 * ycs * h +
+                  CDT_SUB[11] * tx4 * ycs * h + CDT_SUB[12] * tx5 * ycs * h + CDT_SUB[13] * ycs * h +
+                  CDT_SUB[14] * f * ycs * h + CDT_SUB[15] * tx * f * ycs * h  + CDT_SUB[16] * tx2 * f * ycs * h +
+                  CDT_SUB[17] + CDT_SUB[18] * tx * ycs + CDT_SUB[19] * tx2 * ycs +
+                  CDT_SUB[20] * tx3 * ycs + CDT_SUB[21] * f * ycs + CDT_SUB[22] * tx * f * ycs +
+                  CDT_SUB[23] * tx2 * f * ycs;
             dTc = sum;
         }
 
         if ((satAlt > 240.0) && (satAlt <= 300.0)) {
             h = 40.0 / 50.0;
-            sum = CdtSub[1] * h + BdtSub[2] * f * h + CdtSub[3] * tx * f * h + CdtSub[4] * tx2 * f * h +
-                  CdtSub[5] * tx3 * f * h + CdtSub[6] * tx4 * f * h + CdtSub[7] * tx5 * f * h +
-                  CdtSub[8] * tx * ycs * h + CdtSub[9] * tx2 * ycs * h + CdtSub[10] * tx3 * ycs * h +
-                  CdtSub[11] * tx4 * ycs * h + CdtSub[12] * tx5 * ycs * h + CdtSub[13] * ycs * h +
-                  CdtSub[14] * f * ycs * h + CdtSub[15] * tx * f * ycs * h  + CdtSub[16] * tx2 * f * ycs * h +
-                  CdtSub[17] + CdtSub[18] * tx * ycs + CdtSub[19] * tx2 * ycs +
-                  CdtSub[20] * tx3 * ycs + CdtSub[21] * f * ycs + CdtSub[22] * tx * f * ycs +
-                  CdtSub[23] * tx2 * f * ycs;
+            sum = CDT_SUB[1] * h + BDT_SUB[2] * f * h + CDT_SUB[3] * tx * f * h + CDT_SUB[4] * tx2 * f * h +
+                  CDT_SUB[5] * tx3 * f * h + CDT_SUB[6] * tx4 * f * h + CDT_SUB[7] * tx5 * f * h +
+                  CDT_SUB[8] * tx * ycs * h + CDT_SUB[9] * tx2 * ycs * h + CDT_SUB[10] * tx3 * ycs * h +
+                  CDT_SUB[11] * tx4 * ycs * h + CDT_SUB[12] * tx5 * ycs * h + CDT_SUB[13] * ycs * h +
+                  CDT_SUB[14] * f * ycs * h + CDT_SUB[15] * tx * f * ycs * h  + CDT_SUB[16] * tx2 * f * ycs * h +
+                  CDT_SUB[17] + CDT_SUB[18] * tx * ycs + CDT_SUB[19] * tx2 * ycs +
+                  CDT_SUB[20] * tx3 * ycs + CDT_SUB[21] * f * ycs + CDT_SUB[22] * tx * f * ycs +
+                  CDT_SUB[23] * tx2 * f * ycs;
             final double AA = sum;
-            final double BB = CdtSub[1] + BdtSub[2] * f + CdtSub[3] * tx * f + CdtSub[4] * tx2 * f +
-                        CdtSub[5] * tx3 * f + CdtSub[6] * tx4 * f + CdtSub[7] * tx5 * f +
-                        CdtSub[8] * tx * ycs + CdtSub[9] * tx2 * ycs + CdtSub[10] * tx3 * ycs +
-                        CdtSub[11] * tx4 * ycs + CdtSub[12] * tx5 * ycs + CdtSub[13] * ycs +
-                        CdtSub[14] * f * ycs + CdtSub[15] * tx * f * ycs + CdtSub[16] * tx2 * f * ycs;
+            final double BB = CDT_SUB[1] + BDT_SUB[2] * f + CDT_SUB[3] * tx * f + CDT_SUB[4] * tx2 * f +
+                        CDT_SUB[5] * tx3 * f + CDT_SUB[6] * tx4 * f + CDT_SUB[7] * tx5 * f +
+                        CDT_SUB[8] * tx * ycs + CDT_SUB[9] * tx2 * ycs + CDT_SUB[10] * tx3 * ycs +
+                        CDT_SUB[11] * tx4 * ycs + CDT_SUB[12] * tx5 * ycs + CDT_SUB[13] * ycs +
+                        CDT_SUB[14] * f * ycs + CDT_SUB[15] * tx * f * ycs + CDT_SUB[16] * tx2 * f * ycs;
             h   = 300.0 / 100.0;
-            sum = BdtSub[1] + BdtSub[2] * f  + BdtSub[3] * tx * f         + BdtSub[4] * tx2 * f +
-                  BdtSub[5] * tx3 * f      + BdtSub[6] * tx4 * f      + BdtSub[7] * tx5 * f +
-                  BdtSub[8] * tx * ycs       + BdtSub[9] * tx2 * ycs    + BdtSub[10] * tx3 * ycs +
-                  BdtSub[11] * tx4 * ycs   + BdtSub[12] * tx5 * ycs   + BdtSub[13] * h * ycs +
-                  BdtSub[14] * tx * h * ycs    + BdtSub[15] * tx2 * h * ycs + BdtSub[16] * tx3 * h * ycs +
-                  BdtSub[17] * tx4 * h * ycs + BdtSub[18] * tx5 * h * ycs + BdtSub[19] * ycs;
+            sum = BDT_SUB[1] + BDT_SUB[2] * f  + BDT_SUB[3] * tx * f         + BDT_SUB[4] * tx2 * f +
+                  BDT_SUB[5] * tx3 * f      + BDT_SUB[6] * tx4 * f      + BDT_SUB[7] * tx5 * f +
+                  BDT_SUB[8] * tx * ycs       + BDT_SUB[9] * tx2 * ycs    + BDT_SUB[10] * tx3 * ycs +
+                  BDT_SUB[11] * tx4 * ycs   + BDT_SUB[12] * tx5 * ycs   + BDT_SUB[13] * h * ycs +
+                  BDT_SUB[14] * tx * h * ycs    + BDT_SUB[15] * tx2 * h * ycs + BDT_SUB[16] * tx3 * h * ycs +
+                  BDT_SUB[17] * tx4 * h * ycs + BDT_SUB[18] * tx5 * h * ycs + BDT_SUB[19] * ycs;
             final double DTC300 = sum;
-            sum = BdtSub[13] * ycs +
-                  BdtSub[14] * tx * ycs    + BdtSub[15] * tx2 * ycs + BdtSub[16] * tx3 * ycs +
-                  + BdtSub[17] * tx4 * ycs + BdtSub[18] * tx5 * ycs;
+            sum = BDT_SUB[13] * ycs +
+                  BDT_SUB[14] * tx * ycs + BDT_SUB[15] * tx2 * ycs + BDT_SUB[16] * tx3 * ycs +
+                  BDT_SUB[17] * tx4 * ycs + BDT_SUB[18] * tx5 * ycs;
             final double DTC300DZ = sum;
             final double CC = 3.0 * DTC300 - DTC300DZ - 3.0 * AA - 2.0 * BB;
             final double  DD = DTC300 - AA - BB - CC;
@@ -507,27 +520,27 @@ public class JB2006Atmosphere {
 
         if ((satAlt > 300.0) && (satAlt <= 600.0)) {
             h   = satAlt / 100.0;
-            sum = BdtSub[1]    + BdtSub[2] * f  + BdtSub[3] * tx * f         + BdtSub[4] * tx2 * f +
-                  BdtSub[5] * tx3 * f      + BdtSub[6] * tx4 * f      + BdtSub[7] * tx5 * f +
-                  BdtSub[8] * tx * ycs       + BdtSub[9] * tx2 * ycs    + BdtSub[10] * tx3 * ycs +
-                  BdtSub[11] * tx4 * ycs   + BdtSub[12] * tx5 * ycs   + BdtSub[13] * h * ycs +
-                  BdtSub[14] * tx * h * ycs    + BdtSub[15] * tx2 * h * ycs + BdtSub[16] * tx3 * h * ycs +
-                  BdtSub[17] * tx4 * h * ycs + BdtSub[18] * tx5 * h * ycs + BdtSub[19] * ycs;
+            sum = BDT_SUB[1]    + BDT_SUB[2] * f  + BDT_SUB[3] * tx * f         + BDT_SUB[4] * tx2 * f +
+                  BDT_SUB[5] * tx3 * f      + BDT_SUB[6] * tx4 * f      + BDT_SUB[7] * tx5 * f +
+                  BDT_SUB[8] * tx * ycs       + BDT_SUB[9] * tx2 * ycs    + BDT_SUB[10] * tx3 * ycs +
+                  BDT_SUB[11] * tx4 * ycs   + BDT_SUB[12] * tx5 * ycs   + BDT_SUB[13] * h * ycs +
+                  BDT_SUB[14] * tx * h * ycs    + BDT_SUB[15] * tx2 * h * ycs + BDT_SUB[16] * tx3 * h * ycs +
+                  BDT_SUB[17] * tx4 * h * ycs + BDT_SUB[18] * tx5 * h * ycs + BDT_SUB[19] * ycs;
             dTc = sum;
         }
 
         if ((satAlt > 600.0) && (satAlt <= 800.0)) {
             final double ZP = (satAlt - 600.0) / 100.0;
             final double HP = 600.0 / 100.0;
-            final double AA  = BdtSub[1]    + BdtSub[2] * f  + BdtSub[3] * tx * f         + BdtSub[4] * tx2 * f +
-                               BdtSub[5] * tx3 * f      + BdtSub[6] * tx4 * f      + BdtSub[7] * tx5 * f +
-                               BdtSub[8] * tx * ycs       + BdtSub[9] * tx2 * ycs    + BdtSub[10] * tx3 * ycs +
-                               BdtSub[11] * tx4 * ycs   + BdtSub[12] * tx5 * ycs   + BdtSub[13] * HP * ycs +
-                               BdtSub[14] * tx * HP * ycs   + BdtSub[15] * tx2 * HP * ycs+ BdtSub[16] * tx3 * HP * ycs +
-                               BdtSub[17] * tx4 * HP * ycs + BdtSub[18] * tx5 * HP * ycs + BdtSub[19] * ycs;
-            final double BB  = BdtSub[13] * ycs +
-                               BdtSub[14] * tx * ycs    + BdtSub[15] * tx2 * ycs + BdtSub[16] * tx3 * ycs +
-                               BdtSub[17] * tx4 * ycs + BdtSub[18] * tx5 * ycs;
+            final double AA  = BDT_SUB[1]    + BDT_SUB[2] * f  + BDT_SUB[3] * tx * f         + BDT_SUB[4] * tx2 * f +
+                               BDT_SUB[5] * tx3 * f      + BDT_SUB[6] * tx4 * f      + BDT_SUB[7] * tx5 * f +
+                               BDT_SUB[8] * tx * ycs       + BDT_SUB[9] * tx2 * ycs    + BDT_SUB[10] * tx3 * ycs +
+                               BDT_SUB[11] * tx4 * ycs   + BDT_SUB[12] * tx5 * ycs   + BDT_SUB[13] * HP * ycs +
+                               BDT_SUB[14] * tx * HP * ycs   + BDT_SUB[15] * tx2 * HP * ycs + BDT_SUB[16] * tx3 * HP * ycs +
+                               BDT_SUB[17] * tx4 * HP * ycs + BDT_SUB[18] * tx5 * HP * ycs + BDT_SUB[19] * ycs;
+            final double BB  = BDT_SUB[13] * ycs +
+                               BDT_SUB[14] * tx * ycs    + BDT_SUB[15] * tx2 * ycs + BDT_SUB[16] * tx3 * ycs +
+                               BDT_SUB[17] * tx4 * ycs + BDT_SUB[18] * tx5 * ycs;
             final double CC  = -(3.0 * AA + 4.0 * BB) / 4.0;
             final double DD  = (AA + BB) / 4.0;
             dTc = AA + BB * ZP + CC * ZP * ZP + DD * ZP * ZP * ZP;
@@ -536,11 +549,11 @@ public class JB2006Atmosphere {
         return dTc;
     }
 
-    /** Evaluates Equation (1)
-     * @param z
-     * @return
+    /** Evaluates Equation (1).
+     * @param z altitude
+     * @return equation (1) value
      */
-    private static double xAmbar(double z) {
+    private static double xAmbar(final double z) {
         final double dz = z - 100.;
         double amb = CXAMB[7];
         for (int i = 6; i >= 1; --i) {
@@ -549,33 +562,33 @@ public class JB2006Atmosphere {
         return amb;
     }
 
-    /**  Evaluates Equation (10) or Equation (13), depending on Z
-     * @param Z
-     * @param TC
-     * @return result of equation (10)
+    /**  Evaluates Equation (10) or Equation (13), depending on Z.
+     * @param z altitude
+     * @return equation (10) value
      */
-    private static double xLocal(double Z,double[] TC) {
-        final double DZ = Z - 125;
-        if (DZ <= 0) {
-            return ((-9.8204695e-6 * DZ - 7.3039742e-4) * DZ * DZ + 1.0) * DZ * TC[2] + TC[1];
+    private static double xLocal(final double z) {
+        final double dz = z - 125;
+        if (dz <= 0) {
+            return ((-9.8204695e-6 * dz - 7.3039742e-4) * dz * dz + 1.0) * dz * TC[2] + TC[1];
         } else {
-            return TC[1] + TC[3] * Math.atan(TC[4] * DZ * (1 + 4.5e-6 * Math.pow(DZ, 2.5)));
+            return TC[1] + TC[3] * Math.atan(TC[4] * dz * (1 + 4.5e-6 * Math.pow(dz, 2.5)));
         }
     }
 
-    /** Evaluates Equation (8) of gravity field
-     * @param Z altitude
+    /** Evaluates Equation (8) of gravity field.
+     * @param z altitude
      * @return the gravity field
      */
-    private static double xGrav(double Z) {
-        final double temp = 1.0 + Z / 6356.766;
+    private static double xGrav(final double z) {
+        final double temp = 1.0 + z / 6356.766;
         return 9.80665 / (temp * temp);
     }
 
-    /** COMPUTE SEMIANNUAL VARIATION (DELTA LOG RHO)
-     * @param day DAY OF YEAR
-     * @param height HEIGHT (KM)
-     * @param f10Bar2  AVE 81-DAY CENTERED F10
+    /** Compute semi-annual variation (delta log(rho)).
+     * @param day day of year
+     * @param height height (km)
+     * @param f10Bar average 81-day centered f10
+     * @return semi-annual variation
      */
     private static double semian (final double day, final double height, final double f10Bar) {
 
@@ -583,9 +596,9 @@ public class JB2006Atmosphere {
         final double htz = height / 1000.0;
 
         // SEMIANNUAL AMPLITUDE
-        double fzz = FZM[1] + FZM[2] * f10Bar  + FZM[3] * f10Bar * htz +
-                     FZM[4] * f10Bar * htz * htz + FZM[5] * f10Bar * f10Bar * htz +
-                     FZM[6] * f10Bar * f10Bar * htz * htz;
+        final double fzz = FZM[1] + FZM[2] * f10Bar  + FZM[3] * f10Bar * htz +
+                           FZM[4] * f10Bar * htz * htz + FZM[5] * f10Bar * f10Bar * htz +
+                           FZM[6] * f10Bar * f10Bar * htz * htz;
 
         // SEMIANNUAL PHASE FUNCTION
         final double tau   = TWOPI * (day - 1.0) / 365;
@@ -616,7 +629,7 @@ public class JB2006Atmosphere {
      * @param d1950 (days since 1950)
      * @return the number days in year
      */
-    private static double dayOfYear(double d1950) {
+    private static double dayOfYear(final double d1950) {
 
         int iyday = (int) d1950;
         final double frac = d1950 - iyday;

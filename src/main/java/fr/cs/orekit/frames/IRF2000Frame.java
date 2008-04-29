@@ -17,87 +17,87 @@ class IRF2000Frame extends Frame {
     private static final long serialVersionUID = 2781008917378714616L;
 
     /** 2&pi;. */
-    private static final double twoPi = 2.0 * Math.PI;
+    private static final double TWO_PI = 2.0 * Math.PI;
 
     /** Radians per arcsecond. */
-    private static final double radiansPerArcsecond = twoPi / 1296000;
+    private static final double RADIANS_PER_ARC_SECOND = TWO_PI / 1296000;
 
     /** Julian century per second. */
-    private static final double julianCenturyPerSecond = 1.0 / (36525.0 * 86400.0);
+    private static final double JULIAN_CENTURY_PER_SECOND = 1.0 / (36525.0 * 86400.0);
 
     // lunisolar nutation elements
-    private static final double f10 = Math.toRadians(134.96340251);
-    private static final double f11 = 1717915923.217800  * radiansPerArcsecond;
-    private static final double f12 =         31.879200  * radiansPerArcsecond;
-    private static final double f13 =          0.051635  * radiansPerArcsecond;
-    private static final double f14 =         -0.0002447 * radiansPerArcsecond;
+    private static final double F10 = Math.toRadians(134.96340251);
+    private static final double F11 = 1717915923.217800  * RADIANS_PER_ARC_SECOND;
+    private static final double F12 =         31.879200  * RADIANS_PER_ARC_SECOND;
+    private static final double F13 =          0.051635  * RADIANS_PER_ARC_SECOND;
+    private static final double F14 =         -0.0002447 * RADIANS_PER_ARC_SECOND;
 
-    private static final double f20 = Math.toRadians(357.52910918);
-    private static final double f21 = 129596581.048100   * radiansPerArcsecond;
-    private static final double f22 =        -0.553200   * radiansPerArcsecond;
-    private static final double f23 =         0.000136   * radiansPerArcsecond;
-    private static final double f24 =        -0.00001149 * radiansPerArcsecond;
+    private static final double F20 = Math.toRadians(357.52910918);
+    private static final double F21 = 129596581.048100   * RADIANS_PER_ARC_SECOND;
+    private static final double F22 =        -0.553200   * RADIANS_PER_ARC_SECOND;
+    private static final double F23 =         0.000136   * RADIANS_PER_ARC_SECOND;
+    private static final double F24 =        -0.00001149 * RADIANS_PER_ARC_SECOND;
 
-    private static final double f30 = Math.toRadians(93.27209062);
-    private static final double f31 = 1739527262.847800   * radiansPerArcsecond;
-    private static final double f32 =        -12.751200   * radiansPerArcsecond;
-    private static final double f33 =         -0.001037   * radiansPerArcsecond;
-    private static final double f34 =          0.00000417 * radiansPerArcsecond;
+    private static final double F30 = Math.toRadians(93.27209062);
+    private static final double F31 = 1739527262.847800   * RADIANS_PER_ARC_SECOND;
+    private static final double F32 =        -12.751200   * RADIANS_PER_ARC_SECOND;
+    private static final double F33 =         -0.001037   * RADIANS_PER_ARC_SECOND;
+    private static final double F34 =          0.00000417 * RADIANS_PER_ARC_SECOND;
 
-    private static final double f40 = Math.toRadians(297.85019547);
-    private static final double f41 = 1602961601.209000   * radiansPerArcsecond;
-    private static final double f42 =         -6.370600   * radiansPerArcsecond;
-    private static final double f43 =          0.006593   * radiansPerArcsecond;
-    private static final double f44 =         -0.00003169 * radiansPerArcsecond;
+    private static final double F40 = Math.toRadians(297.85019547);
+    private static final double F41 = 1602961601.209000   * RADIANS_PER_ARC_SECOND;
+    private static final double F42 =         -6.370600   * RADIANS_PER_ARC_SECOND;
+    private static final double F43 =          0.006593   * RADIANS_PER_ARC_SECOND;
+    private static final double F44 =         -0.00003169 * RADIANS_PER_ARC_SECOND;
 
-    private static final double f50 = Math.toRadians(125.04455501);
-    private static final double f51 = -6962890.543100   * radiansPerArcsecond;
-    private static final double f52 =        7.472200   * radiansPerArcsecond;
-    private static final double f53 =        0.007702   * radiansPerArcsecond;
-    private static final double f54 =       -0.00005939 * radiansPerArcsecond;
+    private static final double F50 = Math.toRadians(125.04455501);
+    private static final double F51 = -6962890.543100   * RADIANS_PER_ARC_SECOND;
+    private static final double F52 =        7.472200   * RADIANS_PER_ARC_SECOND;
+    private static final double F53 =        0.007702   * RADIANS_PER_ARC_SECOND;
+    private static final double F54 =       -0.00005939 * RADIANS_PER_ARC_SECOND;
 
     // planetary nutation elements
-    private static final double f60 = 4.402608842;
-    private static final double f61 = 2608.7903141574;
+    private static final double F60 = 4.402608842;
+    private static final double F61 = 2608.7903141574;
 
-    private static final double f70 = 3.176146697;
-    private static final double f71 = 1021.3285546211;
+    private static final double F70 = 3.176146697;
+    private static final double F71 = 1021.3285546211;
 
-    private static final double f80 = 1.753470314;
-    private static final double f81 = 628.3075849991;
+    private static final double F80 = 1.753470314;
+    private static final double F81 = 628.3075849991;
 
-    private static final double f90 = 6.203480913;
-    private static final double f91 = 334.0612426700;
+    private static final double F90 = 6.203480913;
+    private static final double F91 = 334.0612426700;
 
-    private static final double f100 = 0.599546497;
-    private static final double f101 = 52.9690962641;
+    private static final double F100 = 0.599546497;
+    private static final double F101 = 52.9690962641;
 
-    private static final double f110 = 0.874016757;
-    private static final double f111 = 21.3299104960;
+    private static final double F110 = 0.874016757;
+    private static final double F111 = 21.3299104960;
 
-    private static final double f120 = 5.481293872;
-    private static final double f121 = 7.4781598567;
+    private static final double F120 = 5.481293872;
+    private static final double F121 = 7.4781598567;
 
-    private static final double f130 = 5.311886287;
-    private static final double f131 = 3.8133035638;
+    private static final double F130 = 5.311886287;
+    private static final double F131 = 3.8133035638;
 
-    private static final double f141 = 0.024381750;
-    private static final double f142 = 0.00000538691;
+    private static final double F141 = 0.024381750;
+    private static final double F142 = 0.00000538691;
 
     /** IERS conventions (2003) resources base directory. */
-    private static final String iers2003Base = "/META-INF/IERS-conventions-2003/";
+    private static final String IERS_2003_BASE = "/META-INF/IERS-conventions-2003/";
 
     /** Resources for IERS table 5.2a from IERS conventions (2003). */
-    private static final String xModel2000A    = iers2003Base + "tab5.2a.txt";
-    private static final String xModel2000B    = iers2003Base + "tab5.2a.reduced.txt";
+    private static final String X_MODEL_2000A    = IERS_2003_BASE + "tab5.2a.txt";
+    private static final String X_MODEL_2000B    = IERS_2003_BASE + "tab5.2a.reduced.txt";
 
     /** Resources for IERS table 5.2b from IERS conventions (2003). */
-    private static final String yModel2000A    = iers2003Base + "tab5.2b.txt";
-    private static final String yModel2000B    = iers2003Base + "tab5.2b.reduced.txt";
+    private static final String Y_MODEL_2000A    = IERS_2003_BASE + "tab5.2b.txt";
+    private static final String Y_MODEL_2000B    = IERS_2003_BASE + "tab5.2b.reduced.txt";
 
     /** Resources for IERS table 5.2c from IERS conventions (2003). */
-    private static final String sxy2Model2000A = iers2003Base + "tab5.2c.txt";
-    private static final String sxy2Model2000B = iers2003Base + "tab5.2c.reduced.txt";
+    private static final String S_XY2_MODEL_2000A = IERS_2003_BASE + "tab5.2c.txt";
+    private static final String S_XY2_MODEL2000B = IERS_2003_BASE + "tab5.2c.reduced.txt";
 
     /** Indicator for complete or reduced precession-nutation model. */
     private final boolean useIAU2000B;
@@ -111,7 +111,7 @@ class IRF2000Frame extends Frame {
     /** Pole position (S + XY/2). */
     private final Development sxy2Development;
 
-    /** Cached date to avoid useless calculus */
+    /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
     /** Build the IRF2000 frame singleton.
@@ -123,11 +123,12 @@ class IRF2000Frame extends Frame {
      * is only slightly degraded (1 milliarcsecond instead of 0.2 milliarcsecond).</p>
      * @param date the date.
      * @param useIAU2000B if true (recommended value), the IAU2000B model will be used
+     * @param name name of the frame
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
      * @see Frame
      */
-    protected IRF2000Frame(AbsoluteDate date, boolean useIAU2000B, String name)
+    protected IRF2000Frame(final AbsoluteDate date, final boolean useIAU2000B, final String name)
         throws OrekitException {
 
         super(getJ2000(), null , name);
@@ -136,15 +137,15 @@ class IRF2000Frame extends Frame {
 
         // nutation models are in micro arcseconds
         final Class c = getClass();
-        final String xModel = useIAU2000B ? xModel2000B : xModel2000A;
+        final String xModel = useIAU2000B ? X_MODEL_2000B : X_MODEL_2000A;
         xDevelopment =
-            new Development(c.getResourceAsStream(xModel), radiansPerArcsecond * 1.0e-6, xModel);
-        final String yModel = useIAU2000B ? yModel2000B : yModel2000A;
+            new Development(c.getResourceAsStream(xModel), RADIANS_PER_ARC_SECOND * 1.0e-6, xModel);
+        final String yModel = useIAU2000B ? Y_MODEL_2000B : Y_MODEL_2000A;
         yDevelopment =
-            new Development(c.getResourceAsStream(yModel), radiansPerArcsecond * 1.0e-6, yModel);
-        final String sxy2Model = useIAU2000B ? sxy2Model2000B : sxy2Model2000A;
+            new Development(c.getResourceAsStream(yModel), RADIANS_PER_ARC_SECOND * 1.0e-6, yModel);
+        final String sxy2Model = useIAU2000B ? S_XY2_MODEL2000B : S_XY2_MODEL_2000A;
         sxy2Development =
-            new Development(c.getResourceAsStream(sxy2Model), radiansPerArcsecond * 1.0e-6, sxy2Model);
+            new Development(c.getResourceAsStream(sxy2Model), RADIANS_PER_ARC_SECOND * 1.0e-6, sxy2Model);
 
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
@@ -156,12 +157,12 @@ class IRF2000Frame extends Frame {
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */
-    protected void updateFrame(AbsoluteDate date) throws OrekitException {
+    protected void updateFrame(final AbsoluteDate date) throws OrekitException {
 
         if (cachedDate == null || cachedDate != date) {
             //    offset from J2000 epoch in julian centuries
             final double tts = date.minus(AbsoluteDate.J2000Epoch);
-            final double ttc =  tts * julianCenturyPerSecond;
+            final double ttc =  tts * JULIAN_CENTURY_PER_SECOND;
 
             // luni-solar and planetary elements
             final BodiesElements elements = computeBodiesElements(ttc);
@@ -183,30 +184,30 @@ class IRF2000Frame extends Frame {
      * @param tt offset from J2000.0 epoch in julian centuries
      * @return luni-solar and planetary elements
      */
-    private BodiesElements computeBodiesElements(double tt) {
+    private BodiesElements computeBodiesElements(final double tt) {
         if (useIAU2000B) {
-            return new BodiesElements(f11 * tt + f10, // mean anomaly of the Moon
-                                      f21 * tt + f20, // mean anomaly of the Sun
-                                      f31 * tt + f30, // L - &Omega; where L is the mean longitude of the Moon
-                                      f41 * tt + f40, // mean elongation of the Moon from the Sun
-                                      f51 * tt + f50, // mean longitude of the ascending node of the Moon
+            return new BodiesElements(F11 * tt + F10, // mean anomaly of the Moon
+                                      F21 * tt + F20, // mean anomaly of the Sun
+                                      F31 * tt + F30, // L - &Omega; where L is the mean longitude of the Moon
+                                      F41 * tt + F40, // mean elongation of the Moon from the Sun
+                                      F51 * tt + F50, // mean longitude of the ascending node of the Moon
                                       Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
                                       Double.NaN, Double.NaN, Double.NaN, Double.NaN);
         }
-        return new BodiesElements((((f14 * tt + f13) * tt + f12) * tt + f11) * tt + f10, // mean anomaly of the Moon
-                                  (((f24 * tt + f23) * tt + f22) * tt + f21) * tt + f20, // mean anomaly of the Sun
-                                  (((f34 * tt + f33) * tt + f32) * tt + f31) * tt + f30, // L - &Omega; where L is the mean longitude of the Moon
-                                  (((f44 * tt + f43) * tt + f42) * tt + f41) * tt + f40, // mean elongation of the Moon from the Sun
-                                  (((f54 * tt + f53) * tt + f52) * tt + f51) * tt + f50, // mean longitude of the ascending node of the Moon
-                                  f61  * tt +  f60, // mean Mercury longitude
-                                  f71  * tt +  f70, // mean Venus longitude
-                                  f81  * tt +  f80, // mean Earth longitude
-                                  f91  * tt +  f90, // mean Mars longitude
-                                  f101 * tt + f100, // mean Jupiter longitude
-                                  f111 * tt + f110, // mean Saturn longitude
-                                  f121 * tt + f120, // mean Uranus longitude
-                                  f131 * tt + f130, // mean Neptune longitude
-                                  (f142 * tt + f141) * tt); // general accumulated precession in longitude
+        return new BodiesElements((((F14 * tt + F13) * tt + F12) * tt + F11) * tt + F10, // mean anomaly of the Moon
+                                  (((F24 * tt + F23) * tt + F22) * tt + F21) * tt + F20, // mean anomaly of the Sun
+                                  (((F34 * tt + F33) * tt + F32) * tt + F31) * tt + F30, // L - &Omega; where L is the mean longitude of the Moon
+                                  (((F44 * tt + F43) * tt + F42) * tt + F41) * tt + F40, // mean elongation of the Moon from the Sun
+                                  (((F54 * tt + F53) * tt + F52) * tt + F51) * tt + F50, // mean longitude of the ascending node of the Moon
+                                  F61  * tt +  F60, // mean Mercury longitude
+                                  F71  * tt +  F70, // mean Venus longitude
+                                  F81  * tt +  F80, // mean Earth longitude
+                                  F91  * tt +  F90, // mean Mars longitude
+                                  F101 * tt + F100, // mean Jupiter longitude
+                                  F111 * tt + F110, // mean Saturn longitude
+                                  F121 * tt + F120, // mean Uranus longitude
+                                  F131 * tt + F130, // mean Neptune longitude
+                                  (F142 * tt + F141) * tt); // general accumulated precession in longitude
     }
 
     /** Compute precession and nutation effects.
@@ -214,7 +215,7 @@ class IRF2000Frame extends Frame {
      * @param elements luni-solar and planetary elements for the current date
      * @return precession and nutation rotation
      */
-    public Rotation precessionNutationEffect(double t, BodiesElements elements) {
+    public Rotation precessionNutationEffect(final double t, final BodiesElements elements) {
 
         // pole position
         final double x =    xDevelopment.value(t, elements);

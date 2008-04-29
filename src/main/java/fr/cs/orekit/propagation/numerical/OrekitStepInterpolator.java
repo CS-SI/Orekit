@@ -16,11 +16,11 @@ import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
 
 /** This class is a space-dynamics aware step interpolator.
- * 
+ *
  * <p>It mirrors the {@link org.apache.commons.math.ode.StepInterpolator
- * StepInterpolator} interface from <a href="http://commons.apache.org/math/"
+ * StepInterpolator} interface from <a href="http://commons.apache.org/math/">
  * commons-math</a> but provides a space-dynamics interface to the methods.</p>
- * 
+ *
  */
 public class OrekitStepInterpolator implements Serializable {
 
@@ -49,9 +49,9 @@ public class OrekitStepInterpolator implements Serializable {
      * @param attitudeLaw attitude law
      * @param interpolator underlying non space dynamics interpolator
      */
-    public OrekitStepInterpolator(AbsoluteDate reference, Frame frame, double mu,
-                                  AttitudeLaw attitudeLaw,
-                                  StepInterpolator interpolator) {
+    public OrekitStepInterpolator(final AbsoluteDate reference, final Frame frame,
+                                  final double mu, final AttitudeLaw attitudeLaw,
+                                  final StepInterpolator interpolator) {
         this.reference    = reference;
         this.frame        = frame;
         this.mu           = mu;
@@ -94,7 +94,8 @@ public class OrekitStepInterpolator implements Serializable {
      * @see #getInterpolatedDate()
      * @see #getInterpolatedState()
      */
-    public void setInterpolatedDate(AbsoluteDate date) throws PropagationException {
+    public void setInterpolatedDate(final AbsoluteDate date)
+        throws PropagationException {
         try {
             interpolator.setInterpolatedTime(date.minus(reference));
         } catch (DerivativeException de) {

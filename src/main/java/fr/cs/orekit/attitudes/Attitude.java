@@ -7,22 +7,12 @@ import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.orekit.frames.Frame;
 
-/**
- * This class handles attitude definition.
+/** This class handles attitude definition.
 
- * <p>This class represents the rotation between reference frame and 
- * satellite frame, and the spin axis and velocity of the satellite.
- * </p>
- * <p>The parameters used internally are the following:
- *   <pre>
- *     referenceFrame
- *     rotation
- *     spin
- *   </pre>
- * </p>
- * <p>
- * The instance <code>Attitude</code> is guaranteed to be immutable.
- * </p>
+ * <p>This class represents the rotation between a reference frame and
+ * the satellite frame, as well as the spin of the satellite (axis and
+ * rotation rate).</p>
+ * <p>The instance <code>Attitude</code> is guaranteed to be immutable.</p>
  * @see     Orbit
  * @version $Id:KeplerianParameters.java 1310 2007-07-05 16:04:25Z luc $
  * @author  V. Pommier-Maurussane
@@ -33,7 +23,7 @@ public class Attitude implements Serializable {
     /** Serializable UID. */
     private static final long serialVersionUID = 2840719248123327714L;
 
-    /** Reference frame.  */
+    /** Reference frame. */
     private final Frame referenceFrame;
 
      /** Attitude defined by a rotation. */
@@ -42,19 +32,17 @@ public class Attitude implements Serializable {
     /** Spin (spin axis AND velocity).  */
     private final Vector3D spin;
 
-   
-    /** Creates a new instance
+    /** Creates a new instance.
      * @param referenceFrame reference frame from which attitude is defined
      * @param attitude rotation between reference frame and satellite frame
-     * @param spin satellite spin (axis and velocity)
+     * @param spin satellite spin (axis and velocity, in <strong>satellite</strong> frame)
      */
-    public Attitude(Frame referenceFrame, Rotation attitude, Vector3D spin) {
-        this.referenceFrame =    referenceFrame;
-        this.attitude       =    attitude;
-        this.spin           =    spin;
-        
+    public Attitude(final Frame referenceFrame, final Rotation attitude, final Vector3D spin) {
+        this.referenceFrame = referenceFrame;
+        this.attitude       = attitude;
+        this.spin           = spin;
     }
-    
+
     /** Get the reference frame.
      * @return referenceFrame satellite rotation from reference frame.
      */
@@ -70,12 +58,11 @@ public class Attitude implements Serializable {
     }
 
     /** Get the satellite spin.
+     * <p>The spin vector is defined in <strong>satellite</strong> frame.</p>
      * @return spin satellite spin (axis and velocity).
      */
     public Vector3D getSpin() {
         return spin;
     }
-
-
 
 }
