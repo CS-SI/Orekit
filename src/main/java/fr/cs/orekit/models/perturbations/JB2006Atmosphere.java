@@ -244,7 +244,7 @@ public class JB2006Atmosphere {
 
         //   A AND GSUBX/A OF Equation (13)
         TC[2] = (TINF - TSUBX) / PIOV2;
-        TC[3] = GSUBX / TC[3];
+        TC[3] = GSUBX / TC[2];
 
         // Equation (5)
         final double Z1 = 90.;
