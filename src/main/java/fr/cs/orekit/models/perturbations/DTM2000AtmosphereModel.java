@@ -10,6 +10,7 @@ import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.frames.Transform;
 import fr.cs.orekit.time.AbsoluteDate;
+import fr.cs.orekit.time.TimeScale;
 import fr.cs.orekit.time.UTCScale;
 import fr.cs.orekit.utils.PVCoordinates;
 
@@ -31,16 +32,16 @@ public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosph
     /** Serializable UID.*/
     private static final long serialVersionUID = 7601194421088896381L;
 
-    /** Sun position */
+    /** Sun position. */
     private ThirdBody sun;
 
-    /** External data container */
+    /** External data container. */
     private DTM2000InputParameters inputParams;
 
-    /** Earth body shape */
+    /** Earth body shape. */
     private BodyShape earth;
 
-    /** Earth fixed frame */
+    /** Earth fixed frame. */
     private Frame bodyFrame;
 
     /** Constructor with space environment information for internal computation.
@@ -50,9 +51,10 @@ public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosph
      * @param earthFixed the earth fixed frame
      * @exception OrekitException if some specific resource file reading error occurs
      */
-    public DTM2000AtmosphereModel(DTM2000InputParameters parameters,
-                                  ThirdBody sun, BodyShape earth, Frame earthFixed) throws OrekitException {
-        super();
+    public DTM2000AtmosphereModel(final DTM2000InputParameters parameters,
+                                  final ThirdBody sun, final BodyShape earth,
+                                  final Frame earthFixed)
+        throws OrekitException {
         this.earth = earth;
         this.sun = sun;
         this.inputParams = parameters;
@@ -68,15 +70,21 @@ public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosph
      * @exception OrekitException if date is out of range of solar activity model
      * or if some frame conversion cannot be performed
      */
-    public double getDensity(AbsoluteDate date, Vector3D position, Frame frame)
+    public double getDensity(final AbsoluteDate date, final Vector3D position,
+                             final Frame frame)
         throws OrekitException {
 
         // check if data are available :
-        if(date.compareTo(inputParams.getMaxDate())>0 ||
-                date.compareTo(inputParams.getMinDate())<0) {
-            throw new OrekitException("Current date is out of range. " +
-                                      "Solar activity data are not available",
-                                      new Object[0]);
+        if ((date.compareTo(inputParams.getMaxDate()) > 0) ||
+            (date.compareTo(inputParams.getMinDate()) < 0)) {
+            final TimeScale utcScale = UTCScale.getInstance();
+            throw new OrekitException("no solar activity available at {0}, " +
+                                      "data available only in range [{1}, {2}]",
+                                      new Object[] {
+                                          date.toString(utcScale),
+                                          inputParams.getMinDate().toString(utcScale),
+                                          inputParams.getMaxDate().toString(utcScale)
+                                      });
         }
 
         // compute day number in current year
@@ -111,7 +119,8 @@ public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosph
      * @return velocity (m/s) (defined in the same frame as the position)
      * @exception OrekitException if some frame conversion cannot be performed
      */
-    public Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame)
+    public Vector3D getVelocity(final AbsoluteDate date, final Vector3D position,
+                                final Frame frame)
         throws OrekitException {
         final Transform bodyToFrame = bodyFrame.getTransformTo(frame, date);
         final Vector3D posInBody = bodyToFrame.getInverse().transformPosition(position);
