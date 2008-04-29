@@ -81,12 +81,13 @@ public class JB2006Atmosphere {
     /** Universal gas-constant in mks units (joules/K/kmol). */
     private static final double RSTAR = 8314.32;
 
-    /** Values used to establish height step sizes.
-     * <p>They are suited in the regimes 90km to 105km,
-     * 105km to 500km and 500km upward.</p>
-     */
+    /** Value used to establish height step sizes in the regime 90km to 105km. */
     private static final double R1 = 0.010;
+
+    /** Value used to establish height step sizes in the regime 105km to 500km. */
     private static final double R2 = 0.025;
+
+    /** Value used to establish height step sizes in the regime above 500km. */
     private static final double R3 = 0.075;
 
     /** Weights for the Newton-Cotes five-points quadrature formula. */
@@ -151,10 +152,6 @@ public class JB2006Atmosphere {
         -0.751640284e+03,  0.637876542e+03,  0.127093998e+02,
         -0.212825156e+02,  0.275555432e+01
     };
-
-    private static double[] TC    = new double[5];
-    private static double[] ALN   = new double[7];
-    private static double[] AL10N = new double[7];
 
     /** Temperatures.
      *  <p><ul>
@@ -241,12 +238,13 @@ public class JB2006Atmosphere {
 
         // The TC array will be an argument in the call to
         // XLOCAL, which evaluates Equation (10) or Equation (13)
-        TC[1] = TSUBX;
-        TC[2] = GSUBX;
+        final double[] TC = new double[4];
+        TC[0] = TSUBX;
+        TC[1] = GSUBX;
 
         //   A AND GSUBX/A OF Equation (13)
-        TC[3] = (TINF - TSUBX) / PIOV2;
-        TC[4] = GSUBX / TC[3];
+        TC[2] = (TINF - TSUBX) / PIOV2;
+        TC[3] = GSUBX / TC[3];
 
         // Equation (5)
         final double Z1 = 90.;
@@ -255,7 +253,7 @@ public class JB2006Atmosphere {
         int N = (int) Math.floor(AL / R1) + 1;
         double ZR = Math.exp(AL / N);
         final double AMBAR1 = xAmbar(Z1);
-        final double TLOC1 = xLocal(Z1);
+        final double TLOC1 = xLocal(Z1, TC);
         double ZEND   = Z1;
         double SUM2   = 0.;
         double AIN    = AMBAR1 * xGrav(Z1) / TLOC1;
@@ -272,7 +270,7 @@ public class JB2006Atmosphere {
             for (int j = 2; j <= 5; ++j) {
                 Z += DZ;
                 AMBAR2 = xAmbar(Z);
-                TLOC2  = xLocal(Z);
+                TLOC2  = xLocal(Z, TC);
                 GRAVL  = xGrav(Z);
                 AIN    = AMBAR2 * GRAVL / TLOC2;
                 SUM1  += WT[j] * AIN;
@@ -288,6 +286,7 @@ public class JB2006Atmosphere {
 
         // Equation (3)
         double FACT2  = ANM / 28.960;
+        final double[] ALN = new double[7];
         ALN[1] = Math.log(FRAC[1] * FACT2);
         ALN[4] = Math.log(FRAC[3] * FACT2);
         ALN[5] = Math.log(FRAC[4] * FACT2);
@@ -317,7 +316,7 @@ public class JB2006Atmosphere {
                 double SUM1 = WT[1] * AIN;
                 for (int J = 2; J <= 5; ++J) {
                     Z    += DZ;
-                    TLOC3 = xLocal(Z);
+                    TLOC3 = xLocal(Z, TC);
                     GRAVL = xGrav(Z);
                     AIN   = GRAVL / TLOC3;
                     SUM1  = SUM1 + WT[J] * AIN;
@@ -342,7 +341,7 @@ public class JB2006Atmosphere {
                 double SUM1 = WT[1] * AIN;
                 for (int J = 2; J <= 5; ++J) {
                     Z    += DZ;
-                    TLOC4 = xLocal(Z);
+                    TLOC4 = xLocal(Z, TC);
                     GRAVL = xGrav(Z);
                     AIN   = GRAVL / TLOC4;
                     SUM1  = SUM1 + WT[J] * AIN;
@@ -375,8 +374,7 @@ public class JB2006Atmosphere {
         }
 
         // Equation (24)  - J70 Seasonal-Latitudinal Variation
-        final double TRASH = (dateMJD - 36204.0) / 365.2422;
-        final double CAPPHI = TRASH % 1;
+        final double CAPPHI = ((dateMJD - 36204.0) / 365.2422) % 1;
         final int signum = (satLat >= 0) ? 1 : -1;
         final double sinLat = Math.sin(satLat);
         final double DLRSL = 0.02 * (scaledSatAlt - 90.) * Math.exp(-0.045 * (scaledSatAlt - 90.)) *
@@ -409,7 +407,6 @@ public class JB2006Atmosphere {
             AN = Math.exp(ALN[I]);
             SUMN += AN;
             SUMNM += AN * AMW[I];
-            AL10N[I] = ALN[I] / AL10;
         }
 
         rho = SUMNM / AVOGAD;
@@ -437,7 +434,7 @@ public class JB2006Atmosphere {
 
     }
 
-    /** Compute dTc correction for Jacchia-Bowman model.
+    /** Compute daily temperature correction for Jacchia-Bowman model.
      * @param f10 solar flux index
      * @param solTimeHour local solar time (hours 0-23.999)
      * @param satLat sat lat (radians)
@@ -568,14 +565,15 @@ public class JB2006Atmosphere {
 
     /**  Evaluates Equation (10) or Equation (13), depending on Z.
      * @param z altitude
+     * @param TC tc array ???
      * @return equation (10) value
      */
-    private static double xLocal(final double z) {
+    private static double xLocal(final double z, final double[] TC) {
         final double dz = z - 125;
         if (dz <= 0) {
-            return ((-9.8204695e-6 * dz - 7.3039742e-4) * dz * dz + 1.0) * dz * TC[2] + TC[1];
+            return ((-9.8204695e-6 * dz - 7.3039742e-4) * dz * dz + 1.0) * dz * TC[1] + TC[0];
         } else {
-            return TC[1] + TC[3] * Math.atan(TC[4] * dz * (1 + 4.5e-6 * Math.pow(dz, 2.5)));
+            return TC[0] + TC[2] * Math.atan(TC[3] * dz * (1 + 4.5e-6 * Math.pow(dz, 2.5)));
         }
     }
 
