@@ -15,7 +15,7 @@ public class PropagationException extends OrekitException {
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
      */
-    public PropagationException(String specifier, Object[] parts) {
+    public PropagationException(final String specifier, final Object[] parts) {
         super(specifier, parts);
     }
 
@@ -24,7 +24,7 @@ public class PropagationException extends OrekitException {
      * @param message descriptive message
      * @param cause underlying cause
      */
-    public PropagationException(String message, Throwable cause) {
+    public PropagationException(final String message, final Throwable cause) {
         super(message, cause);
     }
 

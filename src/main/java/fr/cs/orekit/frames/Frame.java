@@ -531,7 +531,7 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new ITRF2000Frame(LazyTIRF2000AHolder.INSTANCE, AbsoluteDate.J2000Epoch, ITRF2000A.name);
+                tmpFrame = new ITRF2000Frame(LazyTIRF2000AHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, ITRF2000A.name);
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
@@ -553,7 +553,7 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new ITRF2000Frame(LazyTIRF2000BHolder.INSTANCE, AbsoluteDate.J2000Epoch, ITRF2000B.name);
+                tmpFrame = new ITRF2000Frame(LazyTIRF2000BHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, ITRF2000B.name);
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
@@ -575,7 +575,7 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new TIRF2000Frame(LazyIRF2000AHolder.INSTANCE, AbsoluteDate.J2000Epoch, TIRF2000A.name);
+                tmpFrame = new TIRF2000Frame(LazyIRF2000AHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, TIRF2000A.name);
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
@@ -597,7 +597,7 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new TIRF2000Frame(LazyIRF2000BHolder.INSTANCE, AbsoluteDate.J2000Epoch, TIRF2000B.name);
+                tmpFrame = new TIRF2000Frame(LazyIRF2000BHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, TIRF2000B.name);
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
@@ -620,7 +620,7 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new IRF2000Frame(AbsoluteDate.J2000Epoch, false, IRF2000A.name);
+                tmpFrame = new IRF2000Frame(AbsoluteDate.J2000_EPOCH, false, IRF2000A.name);
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
@@ -643,7 +643,7 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new IRF2000Frame(AbsoluteDate.J2000Epoch, true, IRF2000B.name);
+                tmpFrame = new IRF2000Frame(AbsoluteDate.J2000_EPOCH, true, IRF2000B.name);
             } catch (OrekitException oe) {
                 tmpException = oe;
             }

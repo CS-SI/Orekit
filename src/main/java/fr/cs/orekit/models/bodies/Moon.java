@@ -20,7 +20,7 @@ public class Moon extends ThirdBody {
 
     /** Reference date. */
     private static final AbsoluteDate reference =
-        new AbsoluteDate(AbsoluteDate.FiftiesEpoch, 864000000.0);
+        new AbsoluteDate(AbsoluteDate.FIFTIES_EPOCH, 864000000.0);
 
     /** Transform from Veis1950 to J2000. */
     private final Transform transform;
@@ -57,7 +57,7 @@ public class Moon extends ThirdBody {
         final double e   = Math.toRadians(23.44223 - 3.5626e-07 * t);
         final double ce  = Math.cos(e);
         final double se  = Math.sin(e);
-        final double rot = 0.6119022e-06 * date.minus(AbsoluteDate.FiftiesEpoch) / 86400.0;
+        final double rot = 0.6119022e-06 * date.minus(AbsoluteDate.FIFTIES_EPOCH) / 86400.0;
         final double cr  = Math.cos(rot);
         final double sr  = Math.sin(rot);
 

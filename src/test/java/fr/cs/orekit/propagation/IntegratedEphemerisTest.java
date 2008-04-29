@@ -28,7 +28,7 @@ public class IntegratedEphemerisTest extends TestCase {
         Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
         double mu = 3.9860047e14;
 
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
+        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         SpacecraftState initialOrbit =
             new SpacecraftState(new Orbit(initDate,
                                           new EquinoctialParameters(new PVCoordinates(position, velocity),

@@ -24,7 +24,7 @@ public class NumericalPropagatorTest extends TestCase {
         Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
         double mu = 3.986e14;
         Orbit initialOrbit =
-            new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
+            new Orbit(new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 0.0),
                       new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
 
 
@@ -63,7 +63,7 @@ public class NumericalPropagatorTest extends TestCase {
         Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
         double mu = 3.986e14;
         Orbit initialOrbit =
-            new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
+            new Orbit(new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 0.0),
                       new EquinoctialParameters(new PVCoordinates(position,  velocity),Frame.getJ2000(), mu));
 
         // Extrapolator definition

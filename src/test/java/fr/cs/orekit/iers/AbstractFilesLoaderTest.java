@@ -22,7 +22,7 @@ public abstract class AbstractFilesLoaderTest extends TestCase {
             EarthOrientationParameters previous = current;
             current = (EarthOrientationParameters) iterator.next();
             if (previous != null) {
-                maxGap = Math.max(maxGap, current.mjd - previous.mjd);
+                maxGap = Math.max(maxGap, current.getMjd() - previous.getMjd());
             }
         }
         return maxGap;
@@ -41,7 +41,7 @@ public abstract class AbstractFilesLoaderTest extends TestCase {
         public int compare(Object o1, Object o2) {
             EarthOrientationParameters eop1 = (EarthOrientationParameters) o1;
             EarthOrientationParameters eop2 = (EarthOrientationParameters) o2;
-            return eop1.mjd - eop2.mjd;
+            return eop1.getMjd() - eop2.getMjd();
         }
     }
 

@@ -51,15 +51,15 @@ public class AbsoluteDate implements Comparable, Serializable {
      * in year -4713 as can be seen in other documents or programs that obey
      * a different convention (for example the <code>convcal</code> utility).</p>
      */
-    public static final AbsoluteDate JulianEpoch =
+    public static final AbsoluteDate JULIAN_EPOCH =
         new AbsoluteDate(new ChunkedDate(-4712,  1,  1), ChunkedTime.H12, TTScale.getInstance());
 
     /** Reference epoch for modified julian dates: 1858-11-17T00:00:00. */
-    public static final AbsoluteDate ModifiedJulianEpoch =
+    public static final AbsoluteDate MODIFIED_JULIAN_EPOCH =
         new AbsoluteDate(new ChunkedDate( 1858, 11, 17), ChunkedTime.H00, TTScale.getInstance());
 
     /** Reference epoch for 1950 dates: 1950-01-01T00:00:00. */
-    public static final AbsoluteDate FiftiesEpoch =
+    public static final AbsoluteDate FIFTIES_EPOCH =
         new AbsoluteDate(new ChunkedDate( 1950,  1,  1), ChunkedTime.H00, TTScale.getInstance());
 
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 UTC. */
@@ -67,25 +67,25 @@ public class AbsoluteDate implements Comparable, Serializable {
     // we use a date in TAI here for safety reasons, to avoid calling
     // UTCScale.getInstance() which may throw an exception as this is not
     // desired in this very early run part of code
-    public static final AbsoluteDate GPSEpoch =
+    public static final AbsoluteDate GPS_EPOCH =
         new AbsoluteDate(new ChunkedDate(1980, 1, 6), new ChunkedTime(0, 0, 19), TAIScale.getInstance());
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC). */
-    public static final AbsoluteDate J2000Epoch =
+    public static final AbsoluteDate J2000_EPOCH =
         new AbsoluteDate(new ChunkedDate( 2000,  1,  1), ChunkedTime.H12, TTScale.getInstance());
 
     /** Java Reference epoch: 1970-01-01T00:00:00 TT. */
-    public static final AbsoluteDate JavaEpoch =
+    public static final AbsoluteDate JAVA_EPOCH =
         new AbsoluteDate(new ChunkedDate( 1970,  1,  1), ChunkedTime.H00, TTScale.getInstance());
 
     /** Date formats to use for string conversion. */
-    private static final SimpleDateFormat output = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+    private static final SimpleDateFormat OUTPUT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
     static {
         // The time zone set here as NOTHING to do with the time scale represented by the
         // UTCScale class. It is ONLY a way to make sure the standard SimpleDateFormat class
         // does not add spurious daylight saving times or country-related offsets while generating
         // the string representation. We can safely use it with non-UTC scales like TAI or TT
-        output.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
+        OUTPUT.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
     }
 
     /** Serializable UID. */
@@ -97,11 +97,11 @@ public class AbsoluteDate implements Comparable, Serializable {
     /** Offset from the reference epoch in seconds. */
     private final double offset;
 
-    /** Create an instance with a default value ({@link #J2000Epoch}).
+    /** Create an instance with a default value ({@link #J2000_EPOCH}).
      */
     public AbsoluteDate() {
-        epoch  = J2000Epoch.epoch;
-        offset = J2000Epoch.offset;
+        epoch  = J2000_EPOCH.epoch;
+        offset = J2000_EPOCH.offset;
     }
 
     /** Build an instant from a location in a {@link TimeScale time scale}.
@@ -109,7 +109,8 @@ public class AbsoluteDate implements Comparable, Serializable {
      * @param time time location in the time scale
      * @param timeScale time scale
      */
-    public AbsoluteDate(ChunkedDate date, ChunkedTime time, TimeScale timeScale) {
+    public AbsoluteDate(final ChunkedDate date, final ChunkedTime time,
+                        final TimeScale timeScale) {
         // set the epoch at the start of the current minute
         final int j1970Day = date.getJ2000Day() + 10957;
         epoch  = 60000l * ((j1970Day * 24l + time.getHour()) * 60l + time.getMinute());
@@ -120,7 +121,7 @@ public class AbsoluteDate implements Comparable, Serializable {
      * @param location location in the time scale
      * @param timeScale time scale
      */
-    public AbsoluteDate(Date location, TimeScale timeScale) {
+    public AbsoluteDate(final Date location, final TimeScale timeScale) {
         epoch  = location.getTime();
         offset = timeScale.offsetToTAI(epoch * 0.001);
     }
@@ -136,21 +137,22 @@ public class AbsoluteDate implements Comparable, Serializable {
      * @param offset offset from the reference instant (seconds physically
      * separating the two instants)
      */
-    public AbsoluteDate(AbsoluteDate instant, double offset) {
+    public AbsoluteDate(final AbsoluteDate instant, final double offset) {
         epoch = instant.epoch;
         this.offset = instant.offset + offset;
     }
 
     /** Build an instant corresponding to a GPS date.
      * <p>GPS dates are provided as a week number starting at
-     * {@link #GPSEpoch GPS epoch} and as a number of milliseconds
+     * {@link #GPS_EPOCH GPS epoch} and as a number of milliseconds
      * since week start.</p>
-     * @param weekNumber week number since {@link #GPSEpoch GPS epoch}
+     * @param weekNumber week number since {@link #GPS_EPOCH GPS epoch}
      * @param milliInWeek number of milliseconds since week start
      * @return a new instant
      */
-    public static AbsoluteDate createGPSDate(int weekNumber, double milliInWeek) {
-        return new AbsoluteDate(GPSEpoch,
+    public static AbsoluteDate createGPSDate(final int weekNumber,
+                                             final double milliInWeek) {
+        return new AbsoluteDate(GPS_EPOCH,
                                 weekNumber * 604800 + milliInWeek / 1000);
     }
 
@@ -161,7 +163,7 @@ public class AbsoluteDate implements Comparable, Serializable {
      * @return offset in seconds between the two instant (positive
      * if the instance is posterior to the argument)
      */
-    public double minus(AbsoluteDate instant) {
+    public double minus(final AbsoluteDate instant) {
         return 0.001 * (epoch - instant.epoch) + (offset - instant.offset);
     }
 
@@ -175,7 +177,8 @@ public class AbsoluteDate implements Comparable, Serializable {
      * @return offset in seconds between the two time scales at the
      * current instant
      */
-    public double timeScalesOffset(TimeScale scale1, TimeScale scale2) {
+    public double timeScalesOffset(final TimeScale scale1,
+                                   final TimeScale scale2) {
         final double taiTime = 0.001 * epoch + offset;
         return scale1.offsetFromTAI(taiTime) - scale2.offsetFromTAI(taiTime);
     }
@@ -188,7 +191,7 @@ public class AbsoluteDate implements Comparable, Serializable {
      * @return a {@link java.util.Date Date} instance representing the location
      * of the instant in the time scale
      */
-    public Date toDate(TimeScale timeScale) {
+    public Date toDate(final TimeScale timeScale) {
         double time = 0.001 * epoch + offset;
         time += timeScale.offsetFromTAI(time);
         return new Date(Math.round(time * 1000));
@@ -201,7 +204,7 @@ public class AbsoluteDate implements Comparable, Serializable {
      * @exception ClassCastException if the parameter is not an AbsoluteDate
      * instance
      */
-    public int compareTo(Object date) {
+    public int compareTo(final Object date) {
         final double delta = minus((AbsoluteDate) date);
         if (delta < 0) {
             return -1;
@@ -215,7 +218,7 @@ public class AbsoluteDate implements Comparable, Serializable {
      * @param date other date
      * @return true if the instance and the other date refer to the same instant
      */
-    public boolean equals(Object date) {
+    public boolean equals(final Object date) {
         if ((date != null) && (date instanceof AbsoluteDate)) {
             try {
                 return minus((AbsoluteDate) date) == 0;
@@ -230,7 +233,7 @@ public class AbsoluteDate implements Comparable, Serializable {
      * @return hashcode
      */
     public int hashCode() {
-        final long l = Double.doubleToLongBits(minus(J2000Epoch));
+        final long l = Double.doubleToLongBits(minus(J2000_EPOCH));
         return (int) (l ^ (l >>> 32));
     }
 
@@ -251,8 +254,8 @@ public class AbsoluteDate implements Comparable, Serializable {
      * @return a string representation of the instance,
      * in ISO-8601 format with milliseconds accuracy
      */
-    public String toString(TimeScale timeScale) {
-        return output.format(toDate(timeScale));
+    public String toString(final TimeScale timeScale) {
+        return OUTPUT.format(toDate(timeScale));
     }
 
 }

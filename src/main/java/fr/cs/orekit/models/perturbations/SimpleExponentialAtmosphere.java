@@ -59,7 +59,8 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
     }
 
     /** {@inheritDoc} */
-    public Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame)
+    public Vector3D getVelocity(final AbsoluteDate date,
+                                final Vector3D position, final Frame frame)
         throws OrekitException {
         final Transform bodyToFrame = bodyFrame.getTransformTo(frame, date);
         final Vector3D posInBody = bodyToFrame.getInverse().transformPosition(position);

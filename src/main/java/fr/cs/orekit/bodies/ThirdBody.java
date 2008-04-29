@@ -14,16 +14,16 @@ import org.apache.commons.math.geometry.Vector3D;
 public abstract class ThirdBody implements Serializable {
 
     /** Reference radius. */
-    protected double radius;
+    private double radius;
 
     /** Attraction coefficient. */
-    protected double mu;
+    private double mu;
 
     /** Simple constructor.
      * @param radius reference radius
      * @param mu attraction coefficient
      */
-    protected ThirdBody(double radius, double mu) {
+    protected ThirdBody(final double radius, final double mu) {
         this.radius = radius;
         this.mu = mu;
     }

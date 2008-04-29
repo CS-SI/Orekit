@@ -8,14 +8,14 @@ import fr.cs.orekit.utils.PVCoordinates;
 
  * <p>
  * The parameters used internally are the cartesian coordinates:
- *   <pre>
- *     x
- *     y
- *     z
- *     xDot
- *     yDot
- *     zDot
- *   </pre>
+ *   <ul>
+ *     <li>x</li>
+ *     <li>y</li>
+ *     <li>z</li>
+ *     <li>xDot</li>
+ *     <li>yDot</li>
+ *     <li>zDot</li>
+ *   </ul>
  * contained in {@link PVCoordinates}.
  * </p>
 
@@ -49,16 +49,17 @@ public class CartesianParameters extends OrbitalParameters {
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public CartesianParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
+    public CartesianParameters(final PVCoordinates pvCoordinates, final Frame frame,
+                               final double mu) {
         super(pvCoordinates, frame, mu);
         equinoctial = new EquinoctialParameters(pvCoordinates, frame, mu);
     }
 
-    /** Constructor from any kind of orbital parameters
+    /** Constructor from any kind of orbital parameters.
      * @param op orbital parameters to copy
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public CartesianParameters(OrbitalParameters op, double mu) {
+    public CartesianParameters(final OrbitalParameters op, final double mu) {
         super(op.frame);
         equinoctial = new EquinoctialParameters(getPVCoordinates(mu), frame, mu);
     }
@@ -133,7 +134,7 @@ public class CartesianParameters extends OrbitalParameters {
         return equinoctial.getLM();
     }
 
-    /**  Returns a string representation of this Orbit object
+    /**  Returns a string representation of this Orbit object.
      * @return a string representation of this object
      */
     public String toString() {

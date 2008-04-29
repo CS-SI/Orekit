@@ -18,14 +18,14 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
         setRoot("regular-data");
         new BulletinBFilesLoader(eop).loadEOP();
         assertTrue(getMaxGap() < 5);
-        assertEquals(53709, ((EarthOrientationParameters) eop.first()).mjd);
+        assertEquals(53709, ((EarthOrientationParameters) eop.first()).getMjd());
     }
 
     public void testEndDate() throws OrekitException, ParseException {
         setRoot("regular-data");
         new BulletinBFilesLoader(eop).loadEOP();
         assertTrue(getMaxGap() < 5);
-        assertEquals(53799, ((EarthOrientationParameters) eop.last()).mjd);
+        assertEquals(53799, ((EarthOrientationParameters) eop.last()).getMjd());
     }
 
 

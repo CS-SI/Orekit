@@ -21,7 +21,7 @@ import fr.cs.orekit.frames.PoleCorrection;
 public class EOPC04FilesLoader extends IERSFileCrawler {
 
     /** Conversion factor. */
-    private static final double arcSecondsToRadians = 2 * Math.PI / 1296000;
+    private static final double ARC_SECONDS_TO_RADIANS = 2 * Math.PI / 1296000;
 
     /** Data line pattern. */
     private final Pattern dataPattern;
@@ -33,7 +33,7 @@ public class EOPC04FilesLoader extends IERSFileCrawler {
      * @param eop set where to <em>add</em> EOP data
      * (pre-existing data is preserved)
      */
-    public EOPC04FilesLoader(TreeSet eop) {
+    public EOPC04FilesLoader(final TreeSet eop) {
 
         super("^eopc04_IAU2000\\.(\\d\\d)(?:\\.gz)?$");
         this.eop = eop;
@@ -69,7 +69,8 @@ public class EOPC04FilesLoader extends IERSFileCrawler {
     }
 
     /** {@inheritDoc} */
-    protected void visit(BufferedReader reader) throws IOException, OrekitException {
+    protected void visit(final BufferedReader reader)
+        throws IOException, OrekitException {
 
         // read all file, ignoring header
         int lineNumber = 0;
@@ -83,8 +84,8 @@ public class EOPC04FilesLoader extends IERSFileCrawler {
                 try {
                     // this is a data line, build an entry from the extracted fields
                     final int    date = Integer.parseInt(matcher.group(1));
-                    final double x    = Double.parseDouble(matcher.group(2)) * arcSecondsToRadians;
-                    final double y    = Double.parseDouble(matcher.group(3)) * arcSecondsToRadians;
+                    final double x    = Double.parseDouble(matcher.group(2)) * ARC_SECONDS_TO_RADIANS;
+                    final double y    = Double.parseDouble(matcher.group(3)) * ARC_SECONDS_TO_RADIANS;
                     final double dtu1 = Double.parseDouble(matcher.group(4));
                     eop.add(new EarthOrientationParameters(date, dtu1, new PoleCorrection(x, y)));
                     parsed = true;
@@ -92,7 +93,7 @@ public class EOPC04FilesLoader extends IERSFileCrawler {
                     // ignored, will be handled by the parsed boolean
                 }
             }
-            if (! (inHeader || parsed)) {
+            if (!(inHeader || parsed)) {
                 throw new OrekitException("unable to parse line {0} in IERS data file {1}",
                                           new Object[] {
                                               new Integer(lineNumber),
@@ -104,7 +105,9 @@ public class EOPC04FilesLoader extends IERSFileCrawler {
         // check if we have read something
         if (inHeader) {
             throw new OrekitException("file {0} is not an IERS data file",
-                                      new Object[] { file.getAbsolutePath() });
+                                      new Object[] {
+                                          file.getAbsolutePath()
+                                      });
         }
 
     }

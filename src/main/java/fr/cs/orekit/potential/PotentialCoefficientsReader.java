@@ -25,28 +25,28 @@ public abstract class PotentialCoefficientsReader {
     private static final String TOO_LARGE_ORDER =
         "too large order (m = {0}), potential maximal order is {1})";
 
-    /** Central body reference radius */
+    /** Central body reference radius. */
     protected double ae;
 
     /** Central body attraction coefficient. */
     protected double mu;
 
-    /** fully normalized zonal coefficients array */
+    /** fully normalized zonal coefficients array. */
     protected double[] normalizedJ;
 
-    /** fully normalized tesseral-sectorial coefficients matrix */
+    /** fully normalized tesseral-sectorial coefficients matrix. */
     protected double[][] normalizedC;
 
-    /** fully normalized tesseral-sectorial coefficients matrix */
+    /** fully normalized tesseral-sectorial coefficients matrix. */
     protected double[][] normalizedS;
 
-    /** un-normalized zonal coefficients array */
+    /** un-normalized zonal coefficients array. */
     private double[] unNormalizedJ;
 
-    /** un-normalized tesseral-sectorial coefficients matrix */
+    /** un-normalized tesseral-sectorial coefficients matrix. */
     private double[][] unNormalizedC;
 
-    /** un-normalized tesseral-sectorial coefficients matrix */
+    /** un-normalized tesseral-sectorial coefficients matrix. */
     private double[][] unNormalizedS;
 
     /** Simple constructor.
@@ -68,7 +68,7 @@ public abstract class PotentialCoefficientsReader {
      */
     public abstract boolean isFileOK(InputStream in) throws IOException;
 
-    /** Computes the coefficients by reading the selected (and tested) file
+    /** Computes the coefficients by reading the selected (and tested) file.
      * @exception OrekitException when the file has not been initialized or checked.
      * @exception IOException when the file is corrupted.
      */
@@ -81,7 +81,8 @@ public abstract class PotentialCoefficientsReader {
      * @exception OrekitException if the requested maximal degree exceeds the
      * available degree
      */
-    public double[] getJ(boolean normalized, int n) throws OrekitException {
+    public double[] getJ(final boolean normalized, final int n)
+        throws OrekitException {
         if (n >= normalizedC.length) {
             throw new OrekitException(TOO_LARGE_DEGREE,
                                       new Object[] {
@@ -108,7 +109,8 @@ public abstract class PotentialCoefficientsReader {
      * @exception OrekitException if the requested maximal degree or order exceeds the
      * available degree or order
      */
-    public double[][] getC(int n, int m, boolean normalized) throws OrekitException {
+    public double[][] getC(final int n, final int m, final boolean normalized)
+        throws OrekitException {
         return truncateArray(n, m, normalized ? getNormalizedC() : getUnNormalizedC());
     }
 
@@ -120,19 +122,21 @@ public abstract class PotentialCoefficientsReader {
      * @exception OrekitException if the requested maximal degree or order exceeds the
      * available degree or order
      */
-    public double[][] getS(int n, int m, boolean normalized) throws OrekitException {
+    public double[][] getS(final int n, final int m, final boolean normalized)
+        throws OrekitException {
         return truncateArray(n, m, normalized ? getNormalizedS() : getUnNormalizedS());
     }
 
     /** Get the tesseral-sectorial and zonal coefficients.
-     * @param normalized (true) or un-normalized (false)
      * @param n the degree
      * @param m the order
-     * @return C the coefficients matrix
+     * @param complete the complete array
+     * @return the trunctated coefficients array
      * @exception OrekitException if the requested maximal degree or order exceeds the
      * available degree or order
      */
-    private double[][] truncateArray(int n, int m, double[][] complete) throws OrekitException {
+    private double[][] truncateArray(final int n, final int m, final double[][] complete)
+        throws OrekitException {
 
         // safety checks
         if (n >= complete.length) {
@@ -227,11 +231,13 @@ public abstract class PotentialCoefficientsReader {
      * @param normalized normalized coefficients array
      * @return unnormalized array
      */
-    private double[][] unNormalize(double[][] normalized) {
+    private double[][] unNormalize(final double[][] normalized) {
 
         // allocate a triangular array
         final double[][] unNormalized = new double[normalized.length][];
-        unNormalized[0] = new double[] { normalized[0][0] };
+        unNormalized[0] = new double[] {
+                              normalized[0][0]
+                          };
 
         // initialization
         double factN = 1.0;
@@ -259,7 +265,7 @@ public abstract class PotentialCoefficientsReader {
 
     }
 
-    /** Get the central body attraction coefficient
+    /** Get the central body attraction coefficient.
      * @return mu (m<sup>3</sup>/s<sup>2</sup>)
      */
     public double getMu() {

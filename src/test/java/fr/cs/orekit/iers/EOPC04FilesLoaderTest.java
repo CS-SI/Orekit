@@ -17,13 +17,13 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
     public void testStartDate() throws OrekitException, ParseException {
         setRoot("regular-data");
         new EOPC04FilesLoader(eop).loadEOP();
-        assertEquals(52640, ((EarthOrientationParameters) eop.first()).mjd);
+        assertEquals(52640, ((EarthOrientationParameters) eop.first()).getMjd());
     }
 
     public void testEndDate() throws OrekitException, ParseException {
         setRoot("regular-data");
         new EOPC04FilesLoader(eop).loadEOP();
-        assertEquals(53735, ((EarthOrientationParameters) eop.last()).mjd);
+        assertEquals(53735, ((EarthOrientationParameters) eop.last()).getMjd());
     }
 
     public static Test suite() {

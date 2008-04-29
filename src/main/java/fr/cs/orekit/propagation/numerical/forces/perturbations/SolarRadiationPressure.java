@@ -123,7 +123,10 @@ public class SolarRadiationPressure implements ForceModel {
         // Earth apparent radius
         final double r = position.getNorm();
         if (r <= equatorialRadius) {
-            throw new OrekitException(LOW_TRAJECTORY_MESSAGE, new Object[] { new Double(r) });
+            throw new OrekitException(LOW_TRAJECTORY_MESSAGE,
+                                      new Object[] {
+                                          new Double(r)
+                                      });
         }
 
         final double alphaEarth = Math.atan(equatorialRadius / r);
@@ -141,7 +144,8 @@ public class SolarRadiationPressure implements ForceModel {
             result = 0.0;
         }
         // Compute a lightning ratio in penumbra
-        if ((sunEarthAngle - alphaEarth + alphaSun >= 0.0)&&((sunEarthAngle - alphaEarth - alphaSun <= 0.0))) {
+        if ((sunEarthAngle - alphaEarth + alphaSun >= 0.0) &&
+            (sunEarthAngle - alphaEarth - alphaSun <= 0.0)) {
 
             //result = (alphaSun + sunEarthAngle - alphaEarth) / (2*alphaSun);
 
@@ -173,7 +177,9 @@ public class SolarRadiationPressure implements ForceModel {
      * @return umbra/penumbra switching functions
      */
     public OrekitSwitchingFunction[] getSwitchingFunctions() {
-        return new OrekitSwitchingFunction[] { new UmbraSwitch(), new PenumbraSwitch() };
+        return new OrekitSwitchingFunction[] {
+            new UmbraSwitch(), new PenumbraSwitch()
+        };
     }
 
     /** This class defines the Umbra switching function.
@@ -190,12 +196,13 @@ public class SolarRadiationPressure implements ForceModel {
         }
 
         /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
-         * the Earth's apparent radius
+         * the Earth's apparent radius.
          * @param s the current state information : date, cinematics, attitude
          * @param mu central gravitation coefficient
+         * @return value of the g function
          * @exception OrekitException if sun or spacecraft position cannot be computed
          */
-        public double g(SpacecraftState s, double mu)
+        public double g(final SpacecraftState s, final double mu)
             throws OrekitException {
             final PVCoordinates pv = s.getPVCoordinates(mu);
             final Vector3D satSunVector =
@@ -203,7 +210,10 @@ public class SolarRadiationPressure implements ForceModel {
             final double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pv.getPosition());
             final double r = pv.getPosition().getNorm();
             if (r <= equatorialRadius) {
-                throw new OrekitException(LOW_TRAJECTORY_MESSAGE, new Object[] { new Double(r) });
+                throw new OrekitException(LOW_TRAJECTORY_MESSAGE,
+                                          new Object[] {
+                                              new Double(r)
+                                          });
             }
             final double alphaEarth = equatorialRadius / r;
             return sunEarthAngle - alphaEarth;
@@ -242,9 +252,10 @@ public class SolarRadiationPressure implements ForceModel {
         }
 
         /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
-         * the sum of the Earth's and Sun's apparent radius
+         * the sum of the Earth's and Sun's apparent radius.
          * @param s the current state information : date, cinematics, attitude
          * @param mu central gravitation coefficient
+         * @return value of the g function
          * @exception OrekitException if sun or spacecraft position cannot be computed
          */
         public double g(final SpacecraftState s, final double mu)
@@ -255,7 +266,10 @@ public class SolarRadiationPressure implements ForceModel {
             final double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pv.getPosition());
             final double r = pv.getPosition().getNorm();
             if (r <= equatorialRadius) {
-                throw new OrekitException(LOW_TRAJECTORY_MESSAGE, new Object[] { new Double(r) });
+                throw new OrekitException(LOW_TRAJECTORY_MESSAGE,
+                                          new Object[] {
+                                              new Double(r)
+                                          });
             }
             final double alphaEarth = equatorialRadius / r;
             final double alphaSun   = sun.getRadius() / satSunVector.getNorm();

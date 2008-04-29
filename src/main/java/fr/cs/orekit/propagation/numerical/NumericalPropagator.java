@@ -92,7 +92,7 @@ public class NumericalPropagator
     /** Switching functions used during the extrapolation of the Orbit. */
     private final List forceSwf;
 
-    /** State vector */
+    /** State vector. */
     private final double[] state;
 
     /** Start date. */
@@ -115,7 +115,7 @@ public class NumericalPropagator
      * @param mu central body gravitational constant (GM).
      * @param integrator numerical integrator to use for propagation.
      */
-    public NumericalPropagator(double mu, FirstOrderIntegrator integrator) {
+    public NumericalPropagator(final double mu, final FirstOrderIntegrator integrator) {
         this.mu           = mu;
         this.forceModels  = new ArrayList();
         this.forceSwf     = new ArrayList();
@@ -134,11 +134,11 @@ public class NumericalPropagator
      * a keplerian evolution only.
      * @param model perturbing {@link ForceModel} to add
      */
-    public void addForceModel(ForceModel model) {
+    public void addForceModel(final ForceModel model) {
         forceModels.add(model);
         final OrekitSwitchingFunction[] swf = model.getSwitchingFunctions();
         if (swf != null) {
-            for (int i = 0 ; i < swf.length ; i++) {
+            for (int i = 0; i < swf.length; i++) {
                 forceSwf.add(swf[i]);
             }
         }
@@ -156,7 +156,7 @@ public class NumericalPropagator
     }
 
     /** {@inheritDoc} */
-    public void setAttitudeLaw(AttitudeLaw attitudeLaw) {
+    public void setAttitudeLaw(final AttitudeLaw attitudeLaw) {
         this.attitudeLaw = attitudeLaw;
     }
 
@@ -166,8 +166,9 @@ public class NumericalPropagator
      * @return the state at the final date
      * @exception OrekitException if integration cannot be performed
      */
-    public SpacecraftState propagate(SpacecraftState initialState,
-                                     AbsoluteDate finalDate) throws OrekitException {
+    public SpacecraftState propagate(final SpacecraftState initialState,
+                                     final AbsoluteDate finalDate)
+        throws OrekitException {
         return propagate(initialState, finalDate, DummyStepHandler.getInstance());
     }
 
@@ -179,9 +180,9 @@ public class NumericalPropagator
      * @return the state at the final date
      * @exception OrekitException if integration cannot be performed
      */
-    public SpacecraftState propagate(SpacecraftState initialState,
-                                     AbsoluteDate finalDate,
-                                     IntegratedEphemeris ephemeris)
+    public SpacecraftState propagate(final SpacecraftState initialState,
+                                     final AbsoluteDate finalDate,
+                                     final IntegratedEphemeris ephemeris)
         throws OrekitException {
         final ContinuousOutputModel model = new ContinuousOutputModel();
         final SpacecraftState finalState =
@@ -201,8 +202,10 @@ public class NumericalPropagator
      * @return the state at the final date
      * @exception OrekitException if integration cannot be performed
      */
-    public SpacecraftState propagate(SpacecraftState initialState, AbsoluteDate finalDate,
-                                     double h, OrekitFixedStepHandler handler)
+    public SpacecraftState propagate(final SpacecraftState initialState,
+                                     final AbsoluteDate finalDate,
+                                     final double h,
+                                     final OrekitFixedStepHandler handler)
         throws OrekitException {
         handler.initialize(initialState.getDate(), initialState.getFrame(), mu, attitudeLaw);
         return propagate(initialState, finalDate, new StepNormalizer(h, handler));
@@ -215,8 +218,9 @@ public class NumericalPropagator
      * @return the state at the final date
      * @exception OrekitException if integration cannot be performed
      */
-    public SpacecraftState propagate(SpacecraftState initialState, AbsoluteDate finalDate,
-                                     OrekitStepHandler handler)
+    public SpacecraftState propagate(final SpacecraftState initialState,
+                                     final AbsoluteDate finalDate,
+                                     final OrekitStepHandler handler)
         throws OrekitException {
         handler.initialize(initialState.getDate(), initialState.getFrame(), mu, attitudeLaw);
         return propagate(initialState, finalDate, (StepHandler) handler);
@@ -230,8 +234,9 @@ public class NumericalPropagator
      * @return the {@link SpacecraftState} at the final date
      * @exception OrekitException if integration cannot be performed
      */
-    private SpacecraftState propagate(SpacecraftState initialState,
-                                      AbsoluteDate finalDate, StepHandler handler)
+    private SpacecraftState propagate(final SpacecraftState initialState,
+                                      final AbsoluteDate finalDate,
+                                      final StepHandler handler)
         throws OrekitException {
 
         if (initialState.getDate().equals(finalDate)) {
@@ -336,7 +341,7 @@ public class NumericalPropagator
      * @exception DerivativeException this exception is propagated to the caller
      * if the underlying user function triggers one
      */
-    public void computeDerivatives(double t, double[] y, double[] yDot)
+    public void computeDerivatives(final double t, final double[] y, final double[] yDot)
         throws DerivativeException {
 
         try {
@@ -367,7 +372,7 @@ public class NumericalPropagator
 
     }
 
-    /** Convert state array to space dynamics objects (AbsoluteDate and OrbitalParameters)
+    /** Convert state array to space dynamics objects (AbsoluteDate and OrbitalParameters).
      * @param t integration time (s)
      * @param y state as a flat array
      * @param referenceDate reference date from which t is counted
@@ -375,11 +380,13 @@ public class NumericalPropagator
      * @param integrationFrame frame in which integration is performed
      * @param attitudeLaw spacecraft attitude law
      * @return state corresponding to the flat array as a space dynamics object
-     * @exception OrekitException
+     * @exception OrekitException if the attitude state cannot be determined
+     * by the attitude law
      */
-    private static SpacecraftState mapState(double t, double [] y,
-                                            AbsoluteDate referenceDate, double mu,
-                                            Frame integrationFrame, AttitudeLaw attitudeLaw)
+    private static SpacecraftState mapState(final double t, final double [] y,
+                                            final AbsoluteDate referenceDate, final double mu,
+                                            final Frame integrationFrame,
+                                            final AttitudeLaw attitudeLaw)
         throws OrekitException {
 
         // update space dynamics view

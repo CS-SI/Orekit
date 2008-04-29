@@ -71,9 +71,9 @@ public class ConstantThrustManeuver implements ForceModel {
      * @see #TNW
      * @see #INERTIAL
      */
-    public ConstantThrustManeuver(AbsoluteDate date, double duration,
-                                  double thrust, double isp, Vector3D direction,
-                                  int frameType)
+    public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
+                                  final double thrust, final double isp,
+                                  final Vector3D direction, final int frameType)
         throws IllegalArgumentException {
 
         if ((frameType != QSW) && (frameType != TNW) &&
@@ -109,7 +109,8 @@ public class ConstantThrustManeuver implements ForceModel {
      * @param mu central gravitation coefficient
      * @exception OrekitException if some specific error occurs
      */
-    public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
+    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder,
+                                final double mu)
         throws OrekitException {
 
         if (firing) {
@@ -151,7 +152,9 @@ public class ConstantThrustManeuver implements ForceModel {
      * @return start / stop switching functions
      */
     public OrekitSwitchingFunction[] getSwitchingFunctions() {
-        return new OrekitSwitchingFunction[] { new StartSwitch(), new StopSwitch() };
+        return new OrekitSwitchingFunction[] {
+            new StartSwitch(), new StopSwitch()
+        };
     }
 
     /** This class defines the beginning of the acceleration switching function.
@@ -162,7 +165,8 @@ public class ConstantThrustManeuver implements ForceModel {
         /** Serializable UID. */
         private static final long serialVersionUID = -3763244241136150814L;
 
-        public void eventOccurred(SpacecraftState s, double mu) {
+        /** {@inheritDoc} */
+        public void eventOccurred(final SpacecraftState s, final double mu) {
             // start the maneuver
             firing = true;
         }
@@ -170,20 +174,24 @@ public class ConstantThrustManeuver implements ForceModel {
         /** The G-function is the difference between the start date and the current date.
          * @param s the current state information : date, kinematics, attitude
          * @param mu central gravitation coefficient
+         * @return value of the g function
          */
-        public double g(SpacecraftState s, double mu) throws OrekitException {
+        public double g(final SpacecraftState s, final double mu) {
             return startDate.minus(s.getDate());
         }
 
+        /** {@inheritDoc} */
         public double getMaxCheckInterval() {
             return duration;
         }
 
+        /** {@inheritDoc} */
         public double getThreshold() {
             // convergence threshold in seconds
             return 1.0e-4;
         }
 
+        /** {@inheritDoc} */
         public int getMaxIterationCount() {
             return 10;
         }
@@ -198,7 +206,8 @@ public class ConstantThrustManeuver implements ForceModel {
         /** Serializable UID. */
         private static final long serialVersionUID = -4081671157610680754L;
 
-        public void eventOccurred(SpacecraftState s, double mu) {
+        /** {@inheritDoc} */
+        public void eventOccurred(final SpacecraftState s, final double mu) {
             // stop the maneuver
             firing = false;
         }
@@ -206,20 +215,24 @@ public class ConstantThrustManeuver implements ForceModel {
         /** The G-function is the difference between the end date and the current date.
          * @param s the current state information : date, kinematics, attitude
          * @param mu central gravitation coefficient
+         * @return value of the g function
          */
-        public double g(SpacecraftState s, double mu) throws OrekitException {
+        public double g(final SpacecraftState s, final double mu) {
             return endDate.minus(s.getDate());
         }
 
+        /** {@inheritDoc} */
         public double getMaxCheckInterval() {
             return duration;
         }
 
+        /** {@inheritDoc} */
         public double getThreshold() {
             // convergence threshold in seconds
             return 1.0e-4;
         }
 
+        /** {@inheritDoc} */
         public int getMaxIterationCount() {
             return 10;
         }

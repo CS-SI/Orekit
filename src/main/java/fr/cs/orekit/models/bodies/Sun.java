@@ -18,8 +18,8 @@ public class Sun extends ThirdBody {
     private static final long serialVersionUID = 6780721457181916297L;
 
     /** Reference date. */
-    private static final AbsoluteDate reference =
-        new AbsoluteDate(AbsoluteDate.FiftiesEpoch, 864000000.0);
+    private static final AbsoluteDate REFERENCE_DATE =
+        new AbsoluteDate(AbsoluteDate.FIFTIES_EPOCH, 864000000.0);
 
     /** Transform from Veis1950 to J2000. */
     private final Transform transform;
@@ -31,7 +31,7 @@ public class Sun extends ThirdBody {
         Transform t;
         try {
             t  =
-                Frame.getReferenceFrame(Frame.VEIS1950, reference).getTransformTo(Frame.getJ2000(), reference);
+                Frame.getReferenceFrame(Frame.VEIS1950, REFERENCE_DATE).getTransformTo(Frame.getJ2000(), REFERENCE_DATE);
         } catch (OrekitException e) {
             // should not happen
             t = new Transform();
@@ -47,9 +47,10 @@ public class Sun extends ThirdBody {
      * @return position of the sun (m) in the J2000 Frame
      * @exception OrekitException if a frame conversion cannot be computed
      */
-    public Vector3D getPosition(AbsoluteDate date, Frame frame) throws OrekitException {
+    public Vector3D getPosition(final AbsoluteDate date, final Frame frame)
+        throws OrekitException {
 
-        final double t = date.minus(reference) / 86400.0;
+        final double t = date.minus(REFERENCE_DATE) / 86400.0;
         final double f = Math.toRadians(225.768 + 13.2293505 * t);
         final double d = Math.toRadians(11.786 + 12.190749 * t);
         final double xlp = Math.toRadians(134.003 + 0.9856 * t);
@@ -57,7 +58,7 @@ public class Sun extends ThirdBody {
         final double e = Math.toRadians(23.44223 - 3.5626E-07 * t);
         final double ce = Math.cos(e);
         final double se = Math.sin(e);
-        final double rot = 0.6119022e-6 * date.minus(AbsoluteDate.FiftiesEpoch) / 86400.0;
+        final double rot = 0.6119022e-6 * date.minus(AbsoluteDate.FIFTIES_EPOCH) / 86400.0;
         final double cr = Math.cos(rot);
         final double sr = Math.sin(rot);
 

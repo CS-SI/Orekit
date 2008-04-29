@@ -22,35 +22,65 @@ public class EarthOrientationParameters implements Serializable {
     private static final long serialVersionUID = 1696930845545878568L;
 
     /** Entry date (modified julian day, 00h00 UTC scale). */
-    public final int mjd;
+    private final int mjd;
 
     /** UT1-UTC (seconds). */
-    public final double ut1MinusUtc;
+    private final double ut1MinusUtc;
 
     /** Pole correction. */
-    public final PoleCorrection pole;
+    private final PoleCorrection poleCorrection;
 
     /** Entry date (absolute date). */
-    public final AbsoluteDate date;
+    private final AbsoluteDate date;
 
     /** Simple constructor.
      * @param mjd entry date
      * @param ut1MinusUtc UT1-UTC (seconds)
-     * @param pole pole correction
+     * @param poleCorrection pole correction
      * @exception OrekitException if the UTC scale cannot be initialized
      */
-    public EarthOrientationParameters(int mjd, double ut1MinusUtc,
-                                      PoleCorrection pole)
+    public EarthOrientationParameters(final int mjd, final double ut1MinusUtc,
+                                      final PoleCorrection poleCorrection)
         throws OrekitException {
 
-        this.mjd         = mjd;
-        this.ut1MinusUtc = ut1MinusUtc;
-        this.pole        = pole;
+        this.mjd            = mjd;
+        this.ut1MinusUtc    = ut1MinusUtc;
+        this.poleCorrection = poleCorrection;
 
         // convert mjd date at 00h00 UTC to absolute date
         final long javaTime = (mjd - 40587) * 86400000l;
         date = new AbsoluteDate(new Date(javaTime), UTCScale.getInstance());
 
+    }
+
+    /** Get the entry date (modified julian day, 00h00 UTC scale).
+     * @return entry date
+     * @see #getDate()
+     */
+    public int getMjd() {
+        return mjd;
+    }
+
+    /** Get the entry date (absolute date).
+     * @return entry date
+     * @see #getMjd()
+     */
+    public AbsoluteDate getDate() {
+        return date;
+    }
+
+    /** Get the difference between UT1 and UTC.
+     * @return UT1-UTC (seconds)
+     */
+    public double getUT1MinusUTC() {
+        return ut1MinusUtc;
+    }
+
+    /** Get the pole correction.
+     * @return pole correction
+     */
+    public PoleCorrection getPoleCorrection() {
+        return poleCorrection;
     }
 
 }

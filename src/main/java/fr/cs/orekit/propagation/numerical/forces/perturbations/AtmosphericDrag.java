@@ -27,7 +27,7 @@ public class AtmosphericDrag implements ForceModel {
     /** Serializable UID. */
     private static final long serialVersionUID = 3822165927877548061L;
 
-    /** Atmospheric model */
+    /** Atmospheric model. */
     private final Atmosphere atmosphere;
 
     /** Spacecraft. */
@@ -37,7 +37,8 @@ public class AtmosphericDrag implements ForceModel {
      * @param atmosphere atmospheric model
      * @param spacecraft the object physical and geometrical information
      */
-    public AtmosphericDrag(Atmosphere atmosphere, AtmosphereDragSpacecraft spacecraft) {
+    public AtmosphericDrag(final Atmosphere atmosphere,
+                           final AtmosphereDragSpacecraft spacecraft) {
         this.atmosphere = atmosphere;
         this.spacecraft = spacecraft;
     }
@@ -48,9 +49,12 @@ public class AtmosphericDrag implements ForceModel {
      * @param mu central gravitation coefficient
      * @exception OrekitException if some specific error occurs
      */
-    public void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
+    public void addContribution(final SpacecraftState s,
+                                final TimeDerivativesEquations adder,
+                                final double mu)
         throws OrekitException {
-        final double rho = atmosphere.getDensity(s.getDate(), s.getPVCoordinates(mu).getPosition(), s.getFrame());
+        final double rho =
+            atmosphere.getDensity(s.getDate(), s.getPVCoordinates(mu).getPosition(), s.getFrame());
 
         final Vector3D vAtm =
             atmosphere.getVelocity(s.getDate(), s.getPVCoordinates(mu).getPosition(), s.getFrame());

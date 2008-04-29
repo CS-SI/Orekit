@@ -128,7 +128,7 @@ public class DrozinerAttractionModelTest extends TestCase {
     OrekitException, DerivativeException, IntegratorException {
 
         //  Definition of initial conditions with position and velocity
-        AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
+        AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         Vector3D position = new Vector3D(3220103., 69623., 6449822.);
         Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
 

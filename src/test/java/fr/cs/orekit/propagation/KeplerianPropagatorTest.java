@@ -29,7 +29,7 @@ public class KeplerianPropagatorTest extends TestCase {
         Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
         double mu = 3.9860047e14;
 
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
+        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         Orbit initialOrbit =
             new Orbit(initDate,
                       new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
@@ -63,7 +63,7 @@ public class KeplerianPropagatorTest extends TestCase {
     public void testSameDateKeplerian() throws PropagationException {
         // Definition of initial conditions with keplerian parameters
         //-----------------------------------------------------------
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
+        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         Orbit initialOrbit =
             new Orbit(initDate,
                       new KeplerianParameters(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
@@ -105,7 +105,7 @@ public class KeplerianPropagatorTest extends TestCase {
         Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
         double mu = 3.9860047e14;
 
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
+        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         Orbit initialOrbit =
             new Orbit(initDate,
                       new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
@@ -194,7 +194,7 @@ public class KeplerianPropagatorTest extends TestCase {
 
         // Definition of initial conditions with keplerian parameters
         //-----------------------------------------------------------
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
+        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         Orbit initialOrbit =
             new Orbit(initDate,
                       new KeplerianParameters(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,

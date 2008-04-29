@@ -31,7 +31,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
         double mu = 3.9860047e14;
 
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
+        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         Orbit initialOrbit =
             new Orbit(initDate, new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
 
@@ -74,7 +74,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
         // Definition of initial conditions with keplerian parameters
         // -----------------------------------------------------------
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
+        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         Orbit initialOrbit =
             new Orbit(initDate,
                       new KeplerianParameters(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
@@ -127,7 +127,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         Vector3D position = new Vector3D(3220103., 69623., 6449822.);
         Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
 
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
+        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         Orbit initialOrbit =
             new Orbit(initDate,
                       new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
@@ -194,7 +194,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         Vector3D position = new Vector3D(3220103., 69623., 6449822.);
         Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
 
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
+        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         Orbit initialOrbit =
             new Orbit(initDate,
                       new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
@@ -273,7 +273,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
     public void testPropagatedKeplerian() throws PropagationException {
         // Definition of initial conditions with keplerian parameters
         // -----------------------------------------------------------
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, 584.);
+        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         Orbit initialOrbit =
             new Orbit(initDate,
                       new KeplerianParameters(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
@@ -354,7 +354,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
         // Comparison with a given extrapolated orbit
         // -----------------------------------------
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.FiftiesEpoch, 12584. * 86400.);
+        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.FIFTIES_EPOCH, 12584. * 86400.);
 
         double a = 7200000.;
         double exp = .9848e-4; // e * cos(pom)
@@ -421,7 +421,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
             Vector3D velocity = new Vector3D(-500.0, 800.0, 100.0);
 
             Orbit initialOrbit =
-                new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
+                new Orbit(new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 0.0),
                           new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
 
             // Extrapolator definition
@@ -433,7 +433,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
             // Extrapolation at the initial date
             // ---------------------------------
             double delta_t = 0.0;
-            AbsoluteDate extrapDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, delta_t);
+            AbsoluteDate extrapDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, delta_t);
             extrapolator.getSpacecraftState(extrapDate);
         } catch (PropagationException oe) {
             // expected behaviour
@@ -450,7 +450,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
             Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
 
             Orbit initialOrbit =
-                new Orbit(new AbsoluteDate(AbsoluteDate.J2000Epoch, 0.0),
+                new Orbit(new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 0.0),
                           new EquinoctialParameters(new PVCoordinates(position, velocity),Frame.getJ2000(), mu));
 
             // Extrapolator definition
@@ -462,7 +462,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
             // Extrapolation at the initial date
             // ---------------------------------
             double delta_t = 0.0;
-            AbsoluteDate extrapDate = new AbsoluteDate(AbsoluteDate.J2000Epoch, delta_t);
+            AbsoluteDate extrapDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, delta_t);
             extrapolator.getSpacecraftState(extrapDate);
         } catch (PropagationException oe) {
             // expected behaviour

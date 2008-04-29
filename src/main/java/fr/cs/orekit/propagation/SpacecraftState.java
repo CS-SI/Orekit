@@ -42,7 +42,8 @@ public class SpacecraftState implements Serializable {
      * @param mass the mass (kg)
      * @param attitude attitude
      */
-    public SpacecraftState(Orbit orbit, double mass, Attitude attitude) {
+    public SpacecraftState(final Orbit orbit, final double mass,
+                           final Attitude attitude) {
         this.orbit    = orbit;
         this.mass     = mass;
         this.attitude = attitude;
@@ -55,7 +56,8 @@ public class SpacecraftState implements Serializable {
      * @param mass the mass (kg)
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public SpacecraftState(Orbit orbit, double mass, double mu) {
+    public SpacecraftState(final Orbit orbit, final double mass,
+                           final double mu) {
         this.orbit    = orbit;
         this.mass     = mass;
         this.attitude = DefaultAttitude.getInstance().getState(orbit.getDate(),
@@ -69,7 +71,7 @@ public class SpacecraftState implements Serializable {
      * @param orbit the orbit
      * @param mu central body attraction coefficient
      */
-    public SpacecraftState(Orbit orbit, double mu) {
+    public SpacecraftState(final Orbit orbit, final double mu) {
         this(orbit, 1000.0, mu);
     }
 
@@ -126,7 +128,7 @@ public class SpacecraftState implements Serializable {
      * @return e cos(&omega; + &Omega;), first component of eccentricity vector
      * @see #getE()
      */
-    public double getEx(){
+    public double getEx() {
         return orbit.getParameters().getEquinoctialEx();
     }
 
@@ -134,7 +136,7 @@ public class SpacecraftState implements Serializable {
      * @return e sin(&omega; + &Omega;), second component of the eccentricity vector
      * @see #getE()
      */
-    public double getEy(){
+    public double getEy() {
         return orbit.getParameters().getEquinoctialEy();
     }
 
@@ -142,7 +144,7 @@ public class SpacecraftState implements Serializable {
      * @return tan(i/2) cos(&Omega;), first component of the inclination vector
      * @see #getI()
      */
-    public double getHx(){
+    public double getHx() {
         return orbit.getHx();
     }
 
@@ -150,7 +152,7 @@ public class SpacecraftState implements Serializable {
      * @return tan(i/2) sin(&Omega;), second component of the inclination vector
      * @see #getI()
      */
-    public double getHy(){
+    public double getHy() {
         return orbit.getHy();
     }
 
@@ -159,7 +161,7 @@ public class SpacecraftState implements Serializable {
      * @see #getLE()
      * @see #getLM()
      */
-    public double getLv(){
+    public double getLv() {
         return orbit.getLv();
     }
 
@@ -168,7 +170,7 @@ public class SpacecraftState implements Serializable {
      * @see #getLv()
      * @see #getLM()
      */
-    public double getLE(){
+    public double getLE() {
         return orbit.getLE();
     }
 
@@ -177,7 +179,7 @@ public class SpacecraftState implements Serializable {
      * @see #getLv()
      * @see #getLE()
      */
-    public double getLM(){
+    public double getLM() {
         return orbit.getLM();
     }
 
@@ -211,7 +213,7 @@ public class SpacecraftState implements Serializable {
      * @return pvCoordinates in inertial frame (reference to an
      * internally cached pvCoordinates which can change)
      */
-    public PVCoordinates getPVCoordinates(double mu) {
+    public PVCoordinates getPVCoordinates(final double mu) {
         return orbit.getPVCoordinates(mu);
     }
 

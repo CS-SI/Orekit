@@ -19,35 +19,35 @@ extends TestCase {
     public void testStandardEpoch() {
         TimeScale tai = TAIScale.getInstance();
         TimeScale tt  = TTScale.getInstance();
-        assertEquals(-210866760000000l, AbsoluteDate.JulianEpoch.toDate(tt).getTime());
-        assertEquals(-3506716800000l,   AbsoluteDate.ModifiedJulianEpoch.toDate(tt).getTime());
-        assertEquals(-631152000000l,    AbsoluteDate.FiftiesEpoch.toDate(tt).getTime());
-        assertEquals(315964819000l,     AbsoluteDate.GPSEpoch.toDate(tai).getTime());
-        assertEquals(946728000000l,     AbsoluteDate.J2000Epoch.toDate(tt).getTime());
+        assertEquals(-210866760000000l, AbsoluteDate.JULIAN_EPOCH.toDate(tt).getTime());
+        assertEquals(-3506716800000l,   AbsoluteDate.MODIFIED_JULIAN_EPOCH.toDate(tt).getTime());
+        assertEquals(-631152000000l,    AbsoluteDate.FIFTIES_EPOCH.toDate(tt).getTime());
+        assertEquals(315964819000l,     AbsoluteDate.GPS_EPOCH.toDate(tai).getTime());
+        assertEquals(946728000000l,     AbsoluteDate.J2000_EPOCH.toDate(tt).getTime());
     }
 
     public void testOutput() {
         TimeScale tt = TTScale.getInstance();
         assertEquals("1950-01-01T01:01:01.000",
-                     new AbsoluteDate(AbsoluteDate.FiftiesEpoch, 3661.0).toString(tt));
+                     new AbsoluteDate(AbsoluteDate.FIFTIES_EPOCH, 3661.0).toString(tt));
         assertEquals("2000-01-01T13:01:01.000",
-                     new AbsoluteDate(AbsoluteDate.J2000Epoch, 3661.0).toString(tt));
+                     new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 3661.0).toString(tt));
     }
 
     public void testJ2000() {
         assertEquals("2000-01-01T12:00:00.000",
-                     AbsoluteDate.J2000Epoch.toString(TTScale.getInstance()));
+                     AbsoluteDate.J2000_EPOCH.toString(TTScale.getInstance()));
         assertEquals("2000-01-01T11:59:27.816",
-                     AbsoluteDate.J2000Epoch.toString(TAIScale.getInstance()));
+                     AbsoluteDate.J2000_EPOCH.toString(TAIScale.getInstance()));
         assertEquals("2000-01-01T11:58:55.816",
-                     AbsoluteDate.J2000Epoch.toString(utc));
+                     AbsoluteDate.J2000_EPOCH.toString(utc));
     }
 
     public void testFraction() {
         AbsoluteDate d =
             new AbsoluteDate(new ChunkedDate(2000, 01, 01), new ChunkedTime(11, 59, 27.816),
                              TAIScale.getInstance());
-        assertEquals(0, d.minus(AbsoluteDate.J2000Epoch), 1.0e-10);
+        assertEquals(0, d.minus(AbsoluteDate.J2000_EPOCH), 1.0e-10);
     }
 
     public void testScalesOffset() {

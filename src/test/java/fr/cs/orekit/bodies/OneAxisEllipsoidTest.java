@@ -77,7 +77,7 @@ public class OneAxisEllipsoidTest extends TestCase {
         OneAxisEllipsoid model =
             new OneAxisEllipsoid(6378137.0, 1.0 / 298.257222101,
                                  Frame.getReferenceFrame(Frame.ITRF2000B,
-                                                         AbsoluteDate.J2000Epoch));
+                                                         AbsoluteDate.J2000_EPOCH));
         GeodeticPoint nsp =
             new GeodeticPoint(0.0423149994747243, 0.852479154923577, 111.6);
         Vector3D p = model.transform(nsp);
@@ -87,7 +87,7 @@ public class OneAxisEllipsoidTest extends TestCase {
     }
 
     public void testLineIntersection() throws OrekitException {
-        AbsoluteDate date = AbsoluteDate.J2000Epoch;
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = Frame.getReferenceFrame(Frame.ITRF2000B, date);    
         OneAxisEllipsoid model =
             new OneAxisEllipsoid(100.0, 0.9, frame);
@@ -127,7 +127,7 @@ public class OneAxisEllipsoidTest extends TestCase {
     }
 
     public void testNoLineIntersection() throws OrekitException {
-        AbsoluteDate date = AbsoluteDate.J2000Epoch;
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = Frame.getReferenceFrame(Frame.ITRF2000B, date);    
         OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 0.9, frame);
         Line line = new Line(new Vector3D(0.0, 93.7139699, 3.5930796),
@@ -141,7 +141,7 @@ public class OneAxisEllipsoidTest extends TestCase {
                                              double altitude)
         throws OrekitException {
 
-        AbsoluteDate date = AbsoluteDate.J2000Epoch;
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = Frame.getReferenceFrame(Frame.ITRF2000B, date);    
         OneAxisEllipsoid model = new OneAxisEllipsoid(ae, f, frame);
         GeodeticPoint gp = model.transform(new Vector3D(x, y, z), frame, date);

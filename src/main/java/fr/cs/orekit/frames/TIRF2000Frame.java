@@ -24,7 +24,7 @@ class TIRF2000Frame extends Frame {
 
     /** Offset between J2000.0 epoch and Java epoch in seconds. */
     private static final double J2000_MINUS_JAVA =
-        AbsoluteDate.J2000Epoch.minus(AbsoluteDate.JavaEpoch);
+        AbsoluteDate.J2000_EPOCH.minus(AbsoluteDate.JAVA_EPOCH);
 
     /** Rate term of Capitaine's Earth Rotation Angle model.
      * (radians per day, main part) */
@@ -64,7 +64,7 @@ class TIRF2000Frame extends Frame {
         if ((cachedDate == null) || !cachedDate.equals(date)) {
 
             //    offset from J2000 epoch in julian centuries
-            final double tts = date.minus(AbsoluteDate.J2000Epoch);
+            final double tts = date.minus(AbsoluteDate.J2000_EPOCH);
 
             // compute Earth Rotation Angle using Nicole Capitaine model (2000)
             final double dtu1 = EarthOrientationHistory.getInstance().getUT1MinusUTC(date);

@@ -63,7 +63,8 @@ public class CunninghamAttractionModel implements ForceModel {
         degree  = C.length - 1;
         order   = C[degree].length - 1;
 
-        if (C.length != S.length || C[C.length-1].length != S[S.length-1].length) {
+        if ((C.length != S.length) ||
+            (C[C.length - 1].length != S[S.length - 1].length)) {
             OrekitException.throwIllegalArgumentException("potential arrays sizes mismatch (C: {0}x{1}, S: {2}x{3})",
                                                           new Object[] {
                                                               new Integer(C.length),
@@ -116,7 +117,9 @@ public class CunninghamAttractionModel implements ForceModel {
         final double r = Math.sqrt(r2);
         if (r <= equatorialRadius) {
             throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
-                                      new Object[] { new Double(r) });
+                                      new Object[] {
+                                          new Double(r)
+                                      });
         }
 
         // define some intermediate variables
@@ -229,7 +232,7 @@ public class CunninghamAttractionModel implements ForceModel {
 
             for (int n = m; n <= degree; n++) {
 
-                if(n==m) {
+                if (n == m) {
                     // calculate the first element of the next column
                     Vrd = (cx + dx) * Vrn1 - (cy + dy) * Vin1;
                     Vid = (cy + dy) * Vrn1 + (cx + dx) * Vin1;

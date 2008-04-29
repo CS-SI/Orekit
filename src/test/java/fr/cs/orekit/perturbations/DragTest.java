@@ -23,7 +23,7 @@ public class DragTest extends TestCase {
 
     public void testExpAtmosphere() throws OrekitException {
         Vector3D posInJ2000 = new Vector3D(10000,Vector3D.plusI);
-        AbsoluteDate date = AbsoluteDate.J2000Epoch;
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, date);
         SimpleExponentialAtmosphere atm =
             new SimpleExponentialAtmosphere(new OneAxisEllipsoid(Utils.ae, 1.0 / 298.257222101, itrf),
