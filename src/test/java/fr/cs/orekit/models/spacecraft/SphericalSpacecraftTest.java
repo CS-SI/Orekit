@@ -36,9 +36,9 @@ extends TestCase {
     public void testSettersGetters() {
         SphericalSpacecraft s = new SphericalSpacecraft(0, 0, 0, 0);
         s.setSurface(1.0);
-        s.setDragCoef(2.0);
-        s.setAbsCoef(3.0);
-        s.setReflectionCoef(4.0);
+        s.setDragCoeff(2.0);
+        s.setAbsorptionCoeff(3.0);
+        s.setReflectionCoeff(4.0);
         Vector3D[] directions = { Vector3D.plusI, Vector3D.plusJ, Vector3D.plusK };
         for (int i = 0; i < directions.length; ++i) {
             assertEquals(1.0, s.getSurface(directions[i]), 1.0e-15);
