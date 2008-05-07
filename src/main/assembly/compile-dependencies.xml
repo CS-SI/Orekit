@@ -9,7 +9,7 @@
   <fileSets>
     <fileSet>
       <includes>
-        <include>LICENSE-apache</include>
+        <include>LICENSE-apache.txt</include>
       </includes>
     </fileSet>
   </fileSets>
