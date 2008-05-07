@@ -2,7 +2,7 @@
   <fileSets>
     <fileSet>
       <includes>
-        <include>BUILDING</include>
+        <include>BUILDING.txt</include>
         <include>pom.xml</include>
         <include>build.xml</include>
         <include>maven-build.xml</include>
