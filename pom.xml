@@ -176,22 +176,6 @@
               </execution>
             </executions>
           </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>create-javadoc-jar</id>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
-                <phase>package</phase>
-                <configuration>
-                  <source>${maven.compile.source}</source>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
         </plugins>
       </build>
     </profile>
