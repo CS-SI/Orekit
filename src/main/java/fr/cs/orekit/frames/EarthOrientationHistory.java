@@ -129,10 +129,10 @@ public class EarthOrientationHistory implements Serializable {
             final double sum    = dtN + dtP;
             final double coeffP = dtN / sum;
             final double coeffN = dtP / sum;
-            return new PoleCorrection(coeffP * previous.getPoleCorrection().xp +
-                                      coeffN * next.getPoleCorrection().xp,
-                                      coeffP * previous.getPoleCorrection().yp +
-                                      coeffN * next.getPoleCorrection().yp);
+            return new PoleCorrection(coeffP * previous.getPoleCorrection().getXp() +
+                                      coeffN * next.getPoleCorrection().getXp(),
+                                      coeffP * previous.getPoleCorrection().getYp() +
+                                      coeffN * next.getPoleCorrection().getYp());
         }
         return PoleCorrection.NULL_CORRECTION;
     }

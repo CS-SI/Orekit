@@ -107,7 +107,7 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
         // compute mean parameters
         initialDate = initialState.getDate();
         mass = initialState.getMass();
-        AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
+        final AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
         this.attitudeLaw = lofAligned;
         computeMeanParameters(osculating);
 

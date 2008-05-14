@@ -59,14 +59,14 @@ public class SpacecraftState implements Serializable {
      * @param orbit the orbit
      * @param mass the mass (kg)
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @exception OrekitException is attitude law cannot compute the current state
      */
     public SpacecraftState(final Orbit orbit, final double mass,
-                           final double mu) 
-        throws OrekitException
-    {
+                           final double mu)
+        throws OrekitException {
         this.orbit    = orbit;
         this.mass     = mass;
-        AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
+        final AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
         this.attitude = lofAligned.getState(orbit.getDate(),
                                             orbit.getPVCoordinates(mu),
                                             orbit.getFrame());
@@ -77,10 +77,10 @@ public class SpacecraftState implements Serializable {
      * use the {@link DefaultAttitude default attitude law}).</p>
      * @param orbit the orbit
      * @param mu central body attraction coefficient
+     * @exception OrekitException is attitude law cannot compute the current state
      */
-    public SpacecraftState(final Orbit orbit, final double mu) 
-        throws OrekitException 
-    {
+    public SpacecraftState(final Orbit orbit, final double mu)
+        throws OrekitException  {
         this(orbit, 1000.0, mu);
     }
 

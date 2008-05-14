@@ -6,7 +6,7 @@ import junit.framework.*;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
 
-import fr.cs.orekit.errors.PropagationException;
+import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.KeplerianParameters;
@@ -21,7 +21,7 @@ public class KeplerianPropagatorTest extends TestCase {
         super(name);
     }
 
-    public void testSameDateCartesian() throws PropagationException {
+    public void testSameDateCartesian() throws OrekitException {
 
         // Definition of initial conditions with position and velocity
         //------------------------------------------------------------
@@ -60,7 +60,7 @@ public class KeplerianPropagatorTest extends TestCase {
 
     }
 
-    public void testSameDateKeplerian() throws PropagationException {
+    public void testSameDateKeplerian() throws OrekitException {
         // Definition of initial conditions with keplerian parameters
         //-----------------------------------------------------------
         AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
@@ -97,7 +97,7 @@ public class KeplerianPropagatorTest extends TestCase {
     }
 
 
-    public void testPropagatedCartesian() throws PropagationException {
+    public void testPropagatedCartesian() throws OrekitException {
 
         // Definition of initial conditions with position and velocity
         //------------------------------------------------------------
@@ -190,7 +190,7 @@ public class KeplerianPropagatorTest extends TestCase {
 
     }
 
-    public void testPropagatedKeplerian() throws PropagationException {
+    public void testPropagatedKeplerian() throws OrekitException {
 
         // Definition of initial conditions with keplerian parameters
         //-----------------------------------------------------------

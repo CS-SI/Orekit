@@ -23,8 +23,10 @@ import fr.cs.orekit.errors.OrekitException;
  */
 public class SHMFormatReader extends PotentialCoefficientsReader {
 
-    /** Field labels. */
+    /** First field labels. */
     private static final String GRCOEF = "GRCOEF";
+
+    /** Second field labels. */
     private static final String GRCOF2 = "GRCOF2";
 
     /** Format compatibility flag. */
@@ -34,7 +36,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
     private InputStream in;
 
     /** Simple constructor (the first method to call then is <code>isFileOK</code>.
-     *  It is done automaticaly by the factory).
+     *  It is done automatically by the factory).
      */
     protected SHMFormatReader() {
         in = null;
@@ -42,14 +44,14 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
     }
 
     /** Check the file to determine if its format is understood by the reader or not.
-     * @param in the input to check
+     * @param input the input to check
      * @return true if it is readable, false if not.
      * @exception IOException when the {@link InputStream} cannot be buffered.
      */
-    public boolean isFileOK(InputStream in) throws IOException {
+    public boolean isFileOK(final InputStream input) throws IOException {
 
-        this.in = in;
-        final BufferedReader r = new BufferedReader(new InputStreamReader(in));
+        this.in = input;
+        final BufferedReader r = new BufferedReader(new InputStreamReader(input));
         // tests variables
         boolean iKnow = false;
         boolean earth = false;
@@ -100,7 +102,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
         return fileIsOK;
     }
 
-    /** Computes the coefficients by reading the selected (and tested) file
+    /** Computes the coefficients by reading the selected (and tested) file.
      * @exception OrekitException when the file has not been initialized or checked.
      * @exception IOException when the file is corrupted.
      */

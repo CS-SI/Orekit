@@ -25,6 +25,8 @@ public abstract class PotentialCoefficientsReader {
     private static final String TOO_LARGE_ORDER =
         "too large order (m = {0}), potential maximal order is {1})";
 
+    // CHECKSTYLE: stop VisibilityModifierCheck
+
     /** Central body reference radius. */
     protected double ae;
 
@@ -48,6 +50,8 @@ public abstract class PotentialCoefficientsReader {
 
     /** un-normalized tesseral-sectorial coefficients matrix. */
     private double[][] unNormalizedS;
+
+    // CHECKSTYLE: resume VisibilityModifierCheck
 
     /** Simple constructor.
      * <p>Build an uninitialized reader.</p>
@@ -236,8 +240,8 @@ public abstract class PotentialCoefficientsReader {
         // allocate a triangular array
         final double[][] unNormalized = new double[normalized.length][];
         unNormalized[0] = new double[] {
-                              normalized[0][0]
-                          };
+            normalized[0][0]
+        };
 
         // initialization
         double factN = 1.0;

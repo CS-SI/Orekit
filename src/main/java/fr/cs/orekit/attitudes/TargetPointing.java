@@ -16,7 +16,7 @@ import fr.cs.orekit.utils.PVCoordinates;
  * This class represents the attitude law where the satellite z axis is
  * pointing to a ground point target.</p>
  * <p>
- * The target position and velocity are defined in a body frame specified by the user. 
+ * The target position and velocity are defined in a body frame specified by the user.
  * It is important to make sure this frame is consistent.
  * </p>
  * <p>
@@ -39,7 +39,7 @@ public class TargetPointing extends GroundPointing {
      * @param bodyFrame body frame.
      * @param target target expressed in position/velocity coordinates in body frame
      */
-    public TargetPointing(Frame bodyFrame, PVCoordinates target) {
+    public TargetPointing(final Frame bodyFrame, final PVCoordinates target) {
         super(bodyFrame);
         this.target = target;
     }
@@ -48,12 +48,10 @@ public class TargetPointing extends GroundPointing {
      * @param targetGeo target defined as a geodetic point in body shape frame
      * @param shape body shape
      */
-    public TargetPointing(GeodeticPoint targetGeo, BodyShape shape) {
+    public TargetPointing(final GeodeticPoint targetGeo, final BodyShape shape) {
         super(shape.getBodyFrame());
-        
-        // Transform target from geodetic coordinates to position-velocity coordinates 
-        final Vector3D target = shape.transform(targetGeo);
-        this.target = new PVCoordinates(target, Vector3D.zero);
+        // Transform target from geodetic coordinates to position-velocity coordinates
+        target = new PVCoordinates(shape.transform(targetGeo), Vector3D.zero);
     }
 
     /** Get target expressed in body frame at given date.
@@ -61,12 +59,12 @@ public class TargetPointing extends GroundPointing {
      * @param pv satellite position-velocity vector at given date in given frame.
      * @param frame frame in which satellite position-velocity is given.
      * @return target position/velocity in body frame.
-     * 
+     *
      * <p>User should check that position/velocity and frame is consistent with given frame.
      * </p>
      */
-    protected PVCoordinates getTargetInBodyFrame(AbsoluteDate date,
-                                                 PVCoordinates pv, Frame frame) {
+    protected PVCoordinates getTargetInBodyFrame(final AbsoluteDate date,
+                                                 final PVCoordinates pv, final Frame frame) {
         // Returns attribute target
         return target;
     }

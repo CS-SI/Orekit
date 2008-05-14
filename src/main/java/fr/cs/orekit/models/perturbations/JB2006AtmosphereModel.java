@@ -90,9 +90,10 @@ public class JB2006AtmosphereModel extends JB2006Atmosphere implements Atmospher
         // compute sun position
         final GeodeticPoint sunInBody =
             earth.transform(sun.getPosition(date, frame), frame, date);
-        return getDensity(dateMJD, sunInBody.longitude, sunInBody.latitude,
-                          inBody.longitude, inBody.latitude,
-                          inBody.altitude, inputParams.getF10(date),
+        return getDensity(dateMJD,
+                          sunInBody.getLongitude(), sunInBody.getLatitude(),
+                          inBody.getLongitude(), inBody.getLatitude(),
+                          inBody.getAltitude(), inputParams.getF10(date),
                           inputParams.getF10B(date),
                           inputParams.getAp(date), inputParams.getS10(date),
                           inputParams.getS10B(date), inputParams.getXM10(date),

@@ -34,7 +34,7 @@ public class NadirPointing extends GroundPointing {
     /** Creates new instance.
      * @param shape Body shape
      */
-    public NadirPointing(BodyShape shape) {
+    public NadirPointing(final BodyShape shape) {
         // Call constructor of superclass
         super(shape.getBodyFrame());
         this.shape = shape;
@@ -46,20 +46,21 @@ public class NadirPointing extends GroundPointing {
      * @param frame Frame in which satellite position-velocity is given.
      * @return target position/velocity in body frame
      * @throws OrekitException if some specific error occurs
-     * 
+     *
      * <p>User should check that position/velocity and frame is consistent with given frame.
      * </p>
      */
-    protected PVCoordinates getTargetInBodyFrame(AbsoluteDate date,
-                                                 PVCoordinates pv, Frame frame) 
+    protected PVCoordinates getTargetInBodyFrame(final AbsoluteDate date,
+                                                 final PVCoordinates pv, final Frame frame)
         throws OrekitException {
-        
+
         // Satellite position in geodetic coordinates
         final GeodeticPoint gpSat = shape.transform(pv.getPosition(), frame, date);
 
         // Ground point under satellite vertical
-        final GeodeticPoint gpGround = new GeodeticPoint(gpSat.longitude, gpSat.latitude, 0.);
-        
+        final GeodeticPoint gpGround =
+            new GeodeticPoint(gpSat.getLongitude(), gpSat.getLatitude(), 0.0);
+
         // Return target = this intersection point, with null velocity
         return new PVCoordinates(shape.transform(gpGround), Vector3D.zero);
     }

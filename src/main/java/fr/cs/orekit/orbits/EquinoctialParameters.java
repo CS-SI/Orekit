@@ -64,7 +64,7 @@ public class EquinoctialParameters extends OrbitalParameters {
     /** True latitude argument (rad). */
     private final double lv;
 
-    /** Creates a new instance
+    /** Creates a new instance.
      * @param a  semi-major axis (m)
      * @param ex e cos(&omega; + &Omega;), first component of eccentricity vector
      * @param ey e sin(&omega; + &Omega;), second component of eccentricity vector
@@ -81,9 +81,9 @@ public class EquinoctialParameters extends OrbitalParameters {
      * @see #ECCENTRIC_LATITUDE_ARGUMENT
      * @see #TRUE_LATITUDE_ARGUMENT
      */
-    public EquinoctialParameters(double a, double ex, double ey,
-                                 double hx, double hy,
-                                 double l, int type, Frame frame)
+    public EquinoctialParameters(final double a, final double ex, final double ey,
+                                 final double hx, final double hy,
+                                 final double l, final int type, final Frame frame)
         throws IllegalArgumentException {
         super(frame);
         this.a  =  a;
@@ -120,7 +120,8 @@ public class EquinoctialParameters extends OrbitalParameters {
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public EquinoctialParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
+    public EquinoctialParameters(final PVCoordinates pvCoordinates, final Frame frame,
+                                 final double mu) {
         super(pvCoordinates, frame,  mu);
 
         //  compute semi-major axis
@@ -153,12 +154,12 @@ public class EquinoctialParameters extends OrbitalParameters {
         ey = a * (f * sLv - g * cLv) / r;
     }
 
-    /** Constructor from any kind of orbital parameters
+    /** Constructor from any kind of orbital parameters.
      * @param op orbital parameters to copy
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public EquinoctialParameters(OrbitalParameters op, double mu) {
-        super(op.frame);
+    public EquinoctialParameters(final OrbitalParameters op, final double mu) {
+        super(op.getFrame());
         a  = op.getA();
         ex = op.getEquinoctialEx();
         ey = op.getEquinoctialEy();
@@ -225,7 +226,7 @@ public class EquinoctialParameters extends OrbitalParameters {
      * @param lE = E + &omega; + &Omega; eccentric latitude argument (rad)
      * @return the true latitude argument
      */
-    private double computeLE(double lE) {
+    private double computeLE(final double lE) {
         final double epsilon = Math.sqrt(1 - ex * ex - ey * ey);
         final double cosLE   = Math.cos(lE);
         final double sinLE   = Math.sin(lE);
@@ -246,7 +247,7 @@ public class EquinoctialParameters extends OrbitalParameters {
      * @param lM = M + &omega; + &Omega; mean latitude argument (rad)
      * @return the true latitude argument
      */
-    private double computeLM(double lM) {
+    private double computeLM(final double lM) {
         // Generalization of Kepler equation to equinoctial parameters
         // with lE = PA + RAAN + E and
         //      lM = PA + RAAN + M = lE - ex.sin(lE) + ey.cos(lE)
@@ -289,7 +290,7 @@ public class EquinoctialParameters extends OrbitalParameters {
         return 2 * Math.atan(Math.sqrt(hx * hx + hy * hy));
     }
 
-    /**  Returns a string representation of this Orbit object
+    /**  Returns a string representation of this equinoctial parameters object.
      * @return a string representation of this object
      */
     public String toString() {

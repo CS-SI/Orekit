@@ -20,7 +20,7 @@ public class TTScale extends TimeScale {
      * @return the unique instance
      */
     public static TimeScale getInstance() {
-        return LazyHolder.instance;
+        return LazyHolder.INSTANCE;
     }
 
     /** Get the offset to convert locations from {@link TAIScale}  to instance.
@@ -29,7 +29,7 @@ public class TTScale extends TimeScale {
      * @return offset to <em>add</em> to taiTime to get a location
      * in instance time scale
      */
-    public double offsetFromTAI(double taiTime) {
+    public double offsetFromTAI(final double taiTime) {
         return 32.184;
     }
 
@@ -39,7 +39,7 @@ public class TTScale extends TimeScale {
      * @return offset to <em>add</em> to instanceTime to get a location
      * in {@link TAIScale}  time scale
      */
-    public double offsetToTAI(double instanceTime) {
+    public double offsetToTAI(final double instanceTime) {
         return -32.184;
     }
 
@@ -48,9 +48,9 @@ public class TTScale extends TimeScale {
      * the singleton, as it is both thread-safe, efficient (no
      * synchronization) and works with all version of java.</p>
      */
-    private static class LazyHolder 
-    {
-        private static final TTScale instance = new TTScale();
+    private static class LazyHolder {
+        /** Unique instance. */
+        private static final TTScale INSTANCE = new TTScale();
     }
 
 }

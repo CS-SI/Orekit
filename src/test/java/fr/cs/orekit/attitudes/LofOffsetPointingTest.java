@@ -12,7 +12,6 @@ import fr.cs.orekit.bodies.GeodeticPoint;
 import fr.cs.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.frames.Transform;
 import fr.cs.orekit.orbits.CircularParameters;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.ChunkedDate;
@@ -31,9 +30,6 @@ public class LofOffsetPointingTest extends TestCase {
     // Reference frame = ITRF 2000B 
     private Frame frameItrf2000B;
         
-    // Transform from J2000 to ITRF2000B 
-    private Transform j2000ToItrf;
-    
     // Earth shape
     OneAxisEllipsoid earthSpheric;
     
@@ -71,16 +67,16 @@ public class LofOffsetPointingTest extends TestCase {
         PVCoordinates lofTarget = lofPointing.getTargetInBodyFrame(date, pvSatJ2000, Frame.getJ2000());
         System.out.println("Lof target = " + lofTarget);
         GeodeticPoint lofGeoTarget = earthSpheric.transform(lofTarget.getPosition(), earthSpheric.getBodyFrame(), date);
-        System.out.println("Lof geodetic target lat (deg) = " + Math.toDegrees(lofGeoTarget.latitude)
-                           + " lon (deg) = " + Math.toDegrees(lofGeoTarget.longitude)
-                           + " alt (m) = " + lofGeoTarget.altitude);
+        System.out.println("Lof geodetic target lat (deg) = " + Math.toDegrees(lofGeoTarget.getLatitude())
+                           + " lon (deg) = " + Math.toDegrees(lofGeoTarget.getLongitude())
+                           + " alt (m) = " + lofGeoTarget.getAltitude());
 
         PVCoordinates lofObserved = lofPointing.getObservedGroundPoint(date, pvSatJ2000, Frame.getJ2000());
         System.out.println("Lof observed = " + lofObserved);
         GeodeticPoint lofGeoObserved = earthSpheric.transform(lofObserved.getPosition(), Frame.getJ2000(), date);
-        System.out.println("Lof geodetic observed lat (deg) = " + Math.toDegrees(lofGeoObserved.latitude)
-                           + " lon (deg) = " + Math.toDegrees(lofGeoObserved.longitude)
-                           + " alt (m) = " + lofGeoObserved.altitude);
+        System.out.println("Lof geodetic observed lat (deg) = " + Math.toDegrees(lofGeoObserved.getLatitude())
+                           + " lon (deg) = " + Math.toDegrees(lofGeoObserved.getLongitude())
+                           + " alt (m) = " + lofGeoObserved.getAltitude());
 
         // Compare to body center pointing law
         //*************************************
@@ -99,9 +95,9 @@ public class LofOffsetPointingTest extends TestCase {
         PVCoordinates nadirObserved = nadirLaw.getObservedGroundPoint(date, pvSatJ2000, Frame.getJ2000());
         System.out.println("Nadir observed" + nadirObserved);
         GeodeticPoint nadirGeoObserved = earthSpheric.transform(nadirObserved.getPosition(), Frame.getJ2000(), date);
-        System.out.println("Nadir geodetic observed lat (deg) = " + Math.toDegrees(nadirGeoObserved.latitude)
-                           + " lon (deg) = " + Math.toDegrees(nadirGeoObserved.longitude)
-                           + " alt (m) = " + nadirGeoObserved.altitude);
+        System.out.println("Nadir geodetic observed lat (deg) = " + Math.toDegrees(nadirGeoObserved.getLatitude())
+                           + " lon (deg) = " + Math.toDegrees(nadirGeoObserved.getLongitude())
+                           + " alt (m) = " + nadirGeoObserved.getAltitude());
 
         double angleNadir = nadirRot.applyInverseTo(lofRot).getAngle();
         System.out.println("Angle compo (deg) = " + Math.toDegrees(angleNadir));
@@ -143,9 +139,6 @@ public class LofOffsetPointingTest extends TestCase {
             // Reference frame = ITRF 2000B
             frameItrf2000B = Frame.getReferenceFrame(Frame.ITRF2000B, date);
 
-            // Transform from J2000 to ITRF2000B
-            j2000ToItrf = Frame.getJ2000().getTransformTo(frameItrf2000B, date);
-
             // Elliptic earth shape
             earthSpheric =
                 new OneAxisEllipsoid(6378136.460, 0., frameItrf2000B);
@@ -159,7 +152,6 @@ public class LofOffsetPointingTest extends TestCase {
     public void tearDown() {
         date = null;
         frameItrf2000B = null;
-        j2000ToItrf = null;
         earthSpheric = null;
     }
 

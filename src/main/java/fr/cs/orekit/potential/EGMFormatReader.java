@@ -42,7 +42,10 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
      * @return true if it is readable, false if not.
      * @exception IOException when the {@link InputStream} cannot be buffered.
      */
-    public boolean isFileOK(InputStream in) throws IOException {
+    public boolean isFileOK(// CHECKSTYLE: stop HiddenField check
+                            final InputStream in
+                            // CHECKSTYLE: resume HiddenField check
+                            ) throws IOException {
 
         this.in = in;
         final BufferedReader r = new BufferedReader(new InputStreamReader(in));
@@ -82,7 +85,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
         return fileIsOK;
     }
 
-    /** Computes the coefficients by reading the selected (and tested) file
+    /** Computes the coefficients by reading the selected (and tested) file.
      * @exception OrekitException when the file has not been initialized or checked.
      * @exception IOException when the file is corrupted.
      */

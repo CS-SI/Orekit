@@ -22,7 +22,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         super(name);
     }
 
-    public void testSameDateCartesian() throws PropagationException {
+    public void testSameDateCartesian() throws OrekitException {
 
         // Definition of initial conditions with position and velocity
         // ------------------------------------------------------------
@@ -119,7 +119,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
     }
 
-    public void testAlmostSphericalBody() throws PropagationException {
+    public void testAlmostSphericalBody() throws OrekitException {
 
         // Definition of initial conditions
         // ---------------------------------
@@ -187,7 +187,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
     }
 
-    public void testPropagatedCartesian() throws PropagationException {
+    public void testPropagatedCartesian() throws OrekitException {
         // Definition of initial conditions with position and velocity
         // ------------------------------------------------------------
         // with e around e = 1.4e-4 and i = 1.7 rad
@@ -270,7 +270,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
     }
 
-    public void testPropagatedKeplerian() throws PropagationException {
+    public void testPropagatedKeplerian() throws OrekitException {
         // Definition of initial conditions with keplerian parameters
         // -----------------------------------------------------------
         AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
@@ -350,7 +350,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
     }
 
-    public void testPropagatedEquinoctial() throws PropagationException {
+    public void testPropagatedEquinoctial() throws OrekitException {
 
         // Comparison with a given extrapolated orbit
         // -----------------------------------------

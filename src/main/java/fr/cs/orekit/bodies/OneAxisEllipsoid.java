@@ -29,7 +29,7 @@ public class OneAxisEllipsoid implements BodyShape {
     private static final long serialVersionUID = -1418386024561514172L;
 
     /** One third. */
-    private static final double ot = 1.0 / 3.0;
+    private static final double ONE_THIRD = 1.0 / 3.0;
 
     /** Body frame related to body shape. */
     private final Frame bodyFrame;
@@ -50,7 +50,7 @@ public class OneAxisEllipsoid implements BodyShape {
     private final double ae2;
 
     /** Convergence limit. */
-    private double epsilon;
+    private double closeApproachThreshold;
 
     /** Convergence limit. */
     private double angularThreshold;
@@ -66,7 +66,7 @@ public class OneAxisEllipsoid implements BodyShape {
      * @param f the flattening ( f = (a-b)/a )
      * @param bodyFrame body frame related to body shape
      */
-    public OneAxisEllipsoid(double ae, double f, Frame bodyFrame) {
+    public OneAxisEllipsoid(final double ae, final double f, final Frame bodyFrame) {
         this.ae = ae;
         e2      = f * (2.0 - f);
         g       = 1.0 - f;
@@ -91,10 +91,10 @@ public class OneAxisEllipsoid implements BodyShape {
      * </ul>
      * <p>If this method is not called, the default value is set to
      * 10<sup>-10</sup>.</p>
-     * @param epsilon close approach threshold (no unit)
+     * @param closeApproachThreshold close approach threshold (no unit)
      */
-    public void setCloseApproachThreshold(double epsilon) {
-        this.epsilon = epsilon;
+    public void setCloseApproachThreshold(final double closeApproachThreshold) {
+        this.closeApproachThreshold = closeApproachThreshold;
     }
 
     /** Set the angular convergence threshold.
@@ -108,7 +108,7 @@ public class OneAxisEllipsoid implements BodyShape {
      * 10<sup>-14</sup>.</p>
      * @param angularThreshold angular convergence threshold (rad)
      */
-    public void setAngularThreshold(double angularThreshold) {
+    public void setAngularThreshold(final double angularThreshold) {
         this.angularThreshold = angularThreshold;
     }
 
@@ -119,24 +119,24 @@ public class OneAxisEllipsoid implements BodyShape {
         return ae;
     }
 
-    /** Get the body frame related to body shape
+    /** Get the body frame related to body shape.
      * @return body frame related to body shape
      */
     public Frame getBodyFrame() {
-        return bodyFrame;  
+        return bodyFrame;
     }
 
     /** {@inheritDoc} */
-    public GeodeticPoint getIntersectionPoint(Line line, Vector3D close,
-                                              Frame frame, AbsoluteDate date) 
+    public GeodeticPoint getIntersectionPoint(final Line line, final Vector3D close,
+                                              final Frame frame, final AbsoluteDate date)
         throws OrekitException {
-        
+
         // transform line and close to body frame
         final Transform frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
         final Line lineInBodyFrame = frameToBodyFrame.transformLine(line);
         final Vector3D closeInBodyFrame = frameToBodyFrame.transformPosition(close);
         final double closeAbscissa = lineInBodyFrame.getAbscissa(closeInBodyFrame);
-        
+
         // compute some miscellaneous variables outside of the loop
         final Vector3D point    = lineInBodyFrame.getOrigin();
         final double x          = point.getX();
@@ -183,14 +183,17 @@ public class OneAxisEllipsoid implements BodyShape {
      * @param point surface-relative point
      * @return point at the same location but as a cartesian point
      */
-    public Vector3D transform(GeodeticPoint point) {
-        final double cPhi = Math.cos(point.latitude);
-        final double sPhi = Math.sin(point.latitude);
-        final double n    = ae / Math.sqrt(1.0 - e2 * sPhi * sPhi);
-        final double r    = (n + point.altitude) * cPhi;
-        return new Vector3D(r * Math.cos (point.longitude),
-                            r * Math.sin (point.longitude),
-                            (g2 * n + point.altitude) * sPhi);
+    public Vector3D transform(final GeodeticPoint point) {
+        final double longitude = point.getLongitude();
+        final double cLambda   = Math.cos(longitude);
+        final double sLambda   = Math.sin(longitude);
+        final double latitude  = point.getLatitude();
+        final double cPhi      = Math.cos(latitude);
+        final double sPhi      = Math.sin(latitude);
+        final double h         = point.getAltitude();
+        final double n         = ae / Math.sqrt(1.0 - e2 * sPhi * sPhi);
+        final double r         = (n + h) * cPhi;
+        return new Vector3D(r * cLambda, r * sLambda, (g2 * n + h) * sPhi);
     }
 
     /** Transform a cartesian point to a surface-relative point.
@@ -200,17 +203,19 @@ public class OneAxisEllipsoid implements BodyShape {
      * @return point at the same location but as a surface-relative point, expressed in body frame
      * @exception OrekitException if point cannot be converted to body frame
      */
-    public GeodeticPoint transform(Vector3D point, Frame frame, AbsoluteDate date) 
+    public GeodeticPoint transform(final Vector3D point, final Frame frame,
+                                   final AbsoluteDate date)
         throws OrekitException {
 
         // transform line to body frame
         final Vector3D pointInBodyFrame =
             frame.getTransformTo(bodyFrame, date).transformPosition(point);
-        
+
         // compute some miscellaneous variables outside of the loop
         final double z          = pointInBodyFrame.getZ();
         final double z2         = z * z;
-        final double r2         = pointInBodyFrame.getX() * pointInBodyFrame.getX() + pointInBodyFrame.getY() * pointInBodyFrame.getY();
+        final double r2         = pointInBodyFrame.getX() * pointInBodyFrame.getX() +
+                                  pointInBodyFrame.getY() * pointInBodyFrame.getY();
         final double r          = Math.sqrt(r2);
         final double g2r2ma2    = g2 * (r2 - ae2);
         final double g2r2ma2pz2 = g2r2ma2 + z2;
@@ -218,13 +223,13 @@ public class OneAxisEllipsoid implements BodyShape {
         final boolean inside    = g2r2ma2pz2 <= 0;
 
         // point at the center
-        if (dist < (epsilon * ae)) {
+        if (dist < (closeApproachThreshold * ae)) {
             return new GeodeticPoint(0.0, 0.5 * Math.PI, -ae * Math.sqrt(1.0 - e2));
         }
 
         final double cz = r / dist;
-        final double sz = z /dist;
-        double t  = z / (dist + r);
+        final double sz = z / dist;
+        double t = z / (dist + r);
 
         // distance to the ellipse along the current line
         // as the smallest root of a 2nd degree polynom :
@@ -239,7 +244,7 @@ public class OneAxisEllipsoid implements BodyShape {
         double phi    = Math.atan2(z - k * sz, g2 * (r - k * cz));
 
         // point on the ellipse
-        if (Math.abs(k) < (epsilon * dist)) {
+        if (Math.abs(k) < (closeApproachThreshold * dist)) {
             return new GeodeticPoint(lambda, phi, k);
         }
 
@@ -274,20 +279,20 @@ public class OneAxisEllipsoid implements BodyShape {
                 final double rPr = R + rootD;
                 // if Java 1.5 is available, the following statement can be rewritten
                 // tildeT = Math.cbrt(rPr) + Math.cbrt(rMr) - b * ot;
-                tildeT = ((rPr > 0) ?  Math.pow(rPr, ot) : -Math.pow(-rPr, ot)) +
-                         ((rMr > 0) ?  Math.pow(rMr, ot) : -Math.pow(-rMr, ot)) -
-                         b * ot;
+                tildeT = ((rPr > 0) ?  Math.pow(rPr, ONE_THIRD) : -Math.pow(-rPr, ONE_THIRD)) +
+                         ((rMr > 0) ?  Math.pow(rMr, ONE_THIRD) : -Math.pow(-rMr, ONE_THIRD)) -
+                         b * ONE_THIRD;
                 final double tildeT2   = tildeT * tildeT;
                 final double tildeT2P1 = 1.0 + tildeT2;
-                tildePhi= Math.atan2(z * tildeT2P1 - 2 * k * tildeT,
-                                     g2 * (r * tildeT2P1 - k * (1.0 - tildeT2)));
+                tildePhi = Math.atan2(z * tildeT2P1 - 2 * k * tildeT,
+                                      g2 * (r * tildeT2P1 - k * (1.0 - tildeT2)));
             } else {
                 Q = -Q;
                 final double qRoot     = Math.sqrt(Q);
                 final double theta     = Math.acos(R / (Q * qRoot));
 
                 // first root based on theta / 3,
-                tildeT           = 2.0 * qRoot * Math.cos(theta * ot) - b * ot;
+                tildeT           = 2.0 * qRoot * Math.cos(theta * ONE_THIRD) - b * ONE_THIRD;
                 double tildeT2   = tildeT * tildeT;
                 double tildeT2P1 = 1.0 + tildeT2;
                 tildePhi         = Math.atan2(z * tildeT2P1 - 2 * k * tildeT,
@@ -295,7 +300,7 @@ public class OneAxisEllipsoid implements BodyShape {
                 if ((tildePhi * phi) < 0) {
                     // the first root was on the wrong hemisphere,
                     // try the second root based on (theta + 2PI) / 3
-                    tildeT    = 2.0 * qRoot * Math.cos((theta + 2.0 * Math.PI) * ot) - b * ot;
+                    tildeT    = 2.0 * qRoot * Math.cos((theta + 2.0 * Math.PI) * ONE_THIRD) - b * ONE_THIRD;
                     tildeT2   = tildeT * tildeT;
                     tildeT2P1 = 1.0 + tildeT2;
                     tildePhi  = Math.atan2(z * tildeT2P1 - 2 * k * tildeT,
@@ -303,7 +308,7 @@ public class OneAxisEllipsoid implements BodyShape {
                     if (tildePhi * phi < 0) {
                         // the second root was on the wrong  hemisphere,
                         // try the third (and last) root based on (theta + 4PI) / 3
-                        tildeT    = 2.0 * qRoot * Math.cos((theta + 4.0 * Math.PI) * ot) - b * ot;
+                        tildeT    = 2.0 * qRoot * Math.cos((theta + 4.0 * Math.PI) * ONE_THIRD) - b * ONE_THIRD;
                         tildeT2   = tildeT * tildeT;
                         tildeT2P1 = 1.0 + tildeT2;
                         tildePhi  = Math.atan2(z * tildeT2P1 - 2 * k * tildeT,

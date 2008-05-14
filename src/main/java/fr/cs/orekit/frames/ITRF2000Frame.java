@@ -70,8 +70,8 @@ class ITRF2000Frame extends Frame {
             final PoleCorrection nCorr = nutationCorrection(date);
 
             // elementary rotations due to pole motion in terrestrial frame
-            final Rotation r1 = new Rotation(Vector3D.plusI, -(iCorr.yp + tCorr.yp + nCorr.yp));
-            final Rotation r2 = new Rotation(Vector3D.plusJ, -(iCorr.xp + tCorr.xp + nCorr.xp));
+            final Rotation r1 = new Rotation(Vector3D.plusI, -(iCorr.getYp() + tCorr.getYp() + nCorr.getYp()));
+            final Rotation r2 = new Rotation(Vector3D.plusJ, -(iCorr.getXp() + tCorr.getXp() + nCorr.getXp()));
             final Rotation r3 = new Rotation(Vector3D.plusK, S_PRIME_RATE * ttc);
 
             // complete pole motion in terrestrial frame

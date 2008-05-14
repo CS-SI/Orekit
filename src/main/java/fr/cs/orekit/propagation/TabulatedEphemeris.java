@@ -29,14 +29,16 @@ public class TabulatedEphemeris implements BoundedEphemeris {
     /** All entries. */
     private final TreeSet data;
 
-    /** Enclosing states */
+    /** Previous state in the cached selection. */
     private SpacecraftState previous;
+
+    /** Next state in the cached selection. */
     private SpacecraftState next;
 
     /** Constructor with tabulated entries.
      * @param tabulatedStates states table
      */
-    public TabulatedEphemeris(SpacecraftState[] tabulatedStates) {
+    public TabulatedEphemeris(final SpacecraftState[] tabulatedStates) {
 
         if (tabulatedStates.length < 2) {
             throw new IllegalArgumentException("There should be at least 2 entries.");
@@ -70,7 +72,7 @@ public class TabulatedEphemeris implements BoundedEphemeris {
      * @param date desired date for the state
      * @return the state at the specified date; null if date is out of range
      */
-    public SpacecraftState getSpacecraftState(AbsoluteDate date) {
+    public SpacecraftState getSpacecraftState(final AbsoluteDate date) {
         // Check if date is in the specified range
         if (enclosinbracketDate(date)) {
 
@@ -94,18 +96,18 @@ public class TabulatedEphemeris implements BoundedEphemeris {
      * @param tn time in seconds until next date
      * @return the new equinoctial paramteters
      */
-    private OrbitalParameters getInterpolatedOp(double tp, double tn) {
+    private OrbitalParameters getInterpolatedOp(final double tp, final double tn) {
 
         final double dt = tp + tn;
         final double cP = tp / dt;
         final double cN = tn / dt;
 
-        final double a  = cN * previous.getA()  + cP *next.getA();
-        final double ex = cN * previous.getEx() + cP *next.getEx();
-        final double ey = cN * previous.getEy() + cP *next.getEy();
-        final double hx = cN * previous.getHx() + cP *next.getHx();
-        final double hy = cN * previous.getHy() + cP *next.getHy();
-        final double lv = cN * previous.getLv() + cP *next.getLv();
+        final double a  = cN * previous.getA()  + cP * next.getA();
+        final double ex = cN * previous.getEx() + cP * next.getEx();
+        final double ey = cN * previous.getEy() + cP * next.getEy();
+        final double hx = cN * previous.getHx() + cP * next.getHx();
+        final double hy = cN * previous.getHy() + cP * next.getHy();
+        final double lv = cN * previous.getLv() + cP * next.getLv();
 
         return new EquinoctialParameters(a, ex, ey, hx, hy, lv,
                                          EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
@@ -118,7 +120,7 @@ public class TabulatedEphemeris implements BoundedEphemeris {
      * @param tn time in seconds until next date
      * @return the new attitude kinematics
      */
-    private Attitude interpolatedAttitude(double tp, double tn) {
+    private Attitude interpolatedAttitude(final double tp, final double tn) {
 
         final double dt = tp + tn;
 
@@ -149,7 +151,7 @@ public class TabulatedEphemeris implements BoundedEphemeris {
      * @param tn time in seconds until next date
      * @return the new mass
      */
-    private double interpolatedMass(double tp, double tn) {
+    private double interpolatedMass(final double tp, final double tn) {
         return (tn * previous.getMass() + tp * next.getMass()) / (tn + tp);
     }
 
@@ -157,7 +159,7 @@ public class TabulatedEphemeris implements BoundedEphemeris {
      * @param date date to bracket
      * @return true if bracketing states have been found
      */
-    private boolean enclosinbracketDate(AbsoluteDate date) {
+    private boolean enclosinbracketDate(final AbsoluteDate date) {
 
         if (date.minus(getMinDate()) < 0 || date.minus(getMaxDate()) > 0) {
             return false;
@@ -197,10 +199,10 @@ public class TabulatedEphemeris implements BoundedEphemeris {
          * {@link SpacecraftState} instances.
          * @param o1 first object
          * @param o2 second object
-         * return a negative integer if o1 is before o2, 0 if they are
+         * @return a negative integer if o1 is before o2, 0 if they are
          * are the same time, a positive integer otherwise
          */
-        public int compare(Object o1, Object o2) {
+        public int compare(final Object o1, final Object o2) {
             final AbsoluteDate d1 =
                 (o1 instanceof AbsoluteDate) ? ((AbsoluteDate) o1) : ((SpacecraftState) o1).getDate();
             final AbsoluteDate d2 =

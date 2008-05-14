@@ -93,7 +93,7 @@ public class IERSDirectoryCrawler {
                 // recurse in the sub-directory
                 crawl(visitor, list[i]);
 
-            } else  if (visitor.fileIsSupported(list[i])) {
+            } else  if (visitor.fileIsSupported(list[i].getName())) {
 
                 // visit the current file
                 visitor.visit(list[i]);

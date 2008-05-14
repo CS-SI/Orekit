@@ -91,12 +91,12 @@ class GeneralTerm extends SeriesTerm {
 
     /** {@inheritDoc} */
     protected double argument(final BodiesElements elements) {
-        return cL * elements.l + cLPrime * elements.lPrime + cF * elements.f +
-               cD * elements.d + cOmega * elements.omega +
-               cMe * elements.lMe + cVe * elements.lVe + cE  * elements.lE +
-               cMa * elements.lMa + cJu * elements.lJu +
-               cSa * elements.lSa + cUr * elements.lUr +
-               cNe * elements.lNe + cPa * elements.pa;
+        return cL * elements.getL() + cLPrime * elements.getLPrime() + cF * elements.getF() +
+               cD * elements.getD() + cOmega * elements.getOmega() +
+               cMe * elements.getLMe() + cVe * elements.getLVe() + cE  * elements.getLE() +
+               cMa * elements.getLMa() + cJu * elements.getLJu() +
+               cSa * elements.getLSa() + cUr * elements.getLUr() +
+               cNe * elements.getLNe() + cPa * elements.getPa();
 
     }
 

@@ -14,21 +14,35 @@ public class PoleCorrection implements Serializable {
         new PoleCorrection(0, 0);
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -7225297729553686894L;
+    private static final long serialVersionUID = 8695216598525302806L;
 
     /** x<sub>p</sub> parameter (radians). */
-    public final double xp;
+    private final double xp;
 
     /** y<sub>p</sub> parameter (radians). */
-    public final double yp;
+    private final double yp;
 
     /** Simple constructor.
      * @param xp x<sub>p</sub> parameter (radians)
      * @param yp y<sub>p</sub> parameter (radians)
      */
-    public PoleCorrection(double xp, double yp) {
+    public PoleCorrection(final double xp, final double yp) {
         this.xp = xp;
         this.yp = yp;
+    }
+
+    /** Get the x<sub>p</sub> parameter.
+     * @return x<sub>p</sub> parameter
+     */
+    public double getXp() {
+        return xp;
+    }
+
+    /** Get the y<sub>p</sub> parameter.
+     * @return y<sub>p</sub> parameter
+     */
+    public double getYp() {
+        return yp;
     }
 
 }

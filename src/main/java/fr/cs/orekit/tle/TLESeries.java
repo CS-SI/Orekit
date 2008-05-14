@@ -24,11 +24,15 @@ import fr.cs.orekit.utils.PVCoordinates;
 public class TLESeries {
 
     /** Comparator for TLEs. */
-    private static final TLEComparator comparator = new TLEComparator();
+    private static final TLEComparator COMPARATOR = new TLEComparator();
 
-    /** TLE entries. */
+    /** Set containing all TLE entries. */
     private SortedSet tles;
+
+    /** Previous TLE in the cached selection. */
     private TLE previous;
+
+    /** Next TLE in the cached selection. */
     private TLE next;
 
     /** Last used TLE. */
@@ -37,14 +41,16 @@ public class TLESeries {
     /** Associated propagator. */
     private TLEPropagator lastPropagator;
 
-    /** Bounds *. */
+    /** Date of the first TLE. */
     private AbsoluteDate firstDate;
+
+    /** Date of the last TLE. */
     private AbsoluteDate lastDate;
 
-    /** The satellite id */
+    /** The satellite id. */
     private int satelliteNumber;
 
-    /** International designator */
+    /** International designator. */
     private String internationalDesignator;
 
     /** Simple constructor with a TLE file.
@@ -53,8 +59,9 @@ public class TLESeries {
      * @exception IOException when the {@link InputStream} cannot be buffered.
      * @exception OrekitException when a file format error occurs
      */
-    public TLESeries(InputStream in) throws IOException, OrekitException {
-        tles = new TreeSet(comparator);
+    public TLESeries(final InputStream in)
+        throws IOException, OrekitException {
+        tles = new TreeSet(COMPARATOR);
         internationalDesignator = null;
         satelliteNumber = 0;
         previous = null;
@@ -68,8 +75,10 @@ public class TLESeries {
      * @exception IOException when the {@link InputStream} cannot be buffered.
      * @exception OrekitException when a format error occurs
      */
-    private void read(InputStream in) throws IOException, OrekitException {
-//      TODO different formats, not portable enough
+    private void read(final InputStream in)
+        throws IOException, OrekitException {
+
+        // TODO support additional formats, not portable enough
         final BufferedReader r = new BufferedReader(new InputStreamReader(checkCompressed(in)));
         try {
             for (String line1 = r.readLine(); line1 != null; line1 = r.readLine()) {
@@ -81,7 +90,7 @@ public class TLESeries {
                 }
 
                 // safety checks
-                if (! TLE.isFormatOK(line1, line2)) {
+                if (!TLE.isFormatOK(line1, line2)) {
                     r.close();
                     throw new OrekitException("Non-TLE line in TLE data file", new Object[0]);
                 }
@@ -92,7 +101,7 @@ public class TLESeries {
                     satelliteNumber = satNum;
                     internationalDesignator = iD;
                 } else {
-                    if (satNum != satelliteNumber || ! iD.equals(internationalDesignator)) {
+                    if ((satNum != satelliteNumber) || !iD.equals(internationalDesignator)) {
                         throw new OrekitException("The TLE's are not representing the same object.",
                                                   new Object[0]);
                     }
@@ -121,9 +130,10 @@ public class TLESeries {
      * @return the final PVCoordinates
      * @exception OrekitException if the underlying propagator cannot be initialized
      */
-    public PVCoordinates getPVCoordinates(AbsoluteDate date) throws OrekitException {
+    public PVCoordinates getPVCoordinates(final AbsoluteDate date)
+        throws OrekitException {
         final TLE toExtrapolate = getClosestTLE(date);
-        if ((lastTLE == null) || (comparator.compare(toExtrapolate, lastTLE) != 0)) {
+        if ((lastTLE == null) || (COMPARATOR.compare(toExtrapolate, lastTLE) != 0)) {
             lastTLE = toExtrapolate;
             lastPropagator = TLEPropagator.selectExtrapolator(lastTLE);
         }
@@ -134,7 +144,7 @@ public class TLESeries {
      * @param date the date
      * @return the TLE that will suit the most for propagation.
      */
-    public TLE getClosestTLE(AbsoluteDate date) {
+    public TLE getClosestTLE(final AbsoluteDate date) {
 
         //  don't search if the cached selection is fine
         if ((previous != null) && (date.minus(previous.getEpoch()) >= 0) &&
@@ -194,7 +204,8 @@ public class TLESeries {
      * @return a readable file.
      * @exception IOException if the file format is not understood.
      */
-    private BufferedInputStream checkCompressed(InputStream in) throws IOException {
+    private BufferedInputStream checkCompressed(final InputStream in)
+        throws IOException {
 
         BufferedInputStream filter = new BufferedInputStream(in);
         filter.mark(1024 * 1024);
@@ -225,10 +236,10 @@ public class TLESeries {
         /** Build a comparator for either {@link AbsoluteDate} or {@link TLE} instances.
          * @param o1 first object
          * @param o2 second object
-         * return a negative integer if o1 is before o2, 0 if they are
+         * @return a negative integer if o1 is before o2, 0 if they are
          * are the same time, a positive integer otherwise
          */
-        public int compare(Object o1, Object o2) {
+        public int compare(final Object o1, final Object o2) {
             final AbsoluteDate d1 =
                 (o1 instanceof AbsoluteDate) ? ((AbsoluteDate) o1) : ((TLE) o1).getEpoch();
             final AbsoluteDate d2 =

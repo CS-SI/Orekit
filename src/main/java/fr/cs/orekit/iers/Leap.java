@@ -8,23 +8,45 @@ package fr.cs.orekit.iers;
 public class Leap {
 
     /** Time in UTC at which the step occurs. */
-    public final double utcTime;
+    private final double utcTime;
 
     /** Step value. */
-    public final double step;
+    private final double step;
 
     /** Offset in seconds after the leap. */
-    public final double offsetAfter;
+    private final double offsetAfter;
 
     /** Simple constructor.
      * @param utcTime time in UTC at which the step occurs
      * @param step step value
      * @param offsetAfter offset in seconds after the leap
      */
-    public Leap(double utcTime, double step, double offsetAfter) {
+    public Leap(final double utcTime, final double step,
+                final double offsetAfter) {
         this.utcTime     = utcTime;
         this.step        = step;
         this.offsetAfter = offsetAfter;
+    }
+
+    /** Get the time in UTC at which the step occurs.
+     * @return time in UTC at which the step occurs.
+     */
+    public double getUtcTime() {
+        return utcTime;
+    }
+
+    /** Get the step value.
+     * @return step value.
+     */
+    public double getStep() {
+        return step;
+    }
+
+    /** Get the offset in seconds after the leap.
+     * @return offset in seconds after the leap.
+     */
+    public double getOffsetAfter() {
+        return offsetAfter;
     }
 
 }

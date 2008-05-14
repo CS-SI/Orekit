@@ -101,7 +101,7 @@ public class OneAxisEllipsoidTest extends TestCase {
         Vector3D direction     = new Vector3D(0.0, 1.0, 1.0);
         Line line = new Line(point, direction);
         GeodeticPoint gp = model.getIntersectionPoint(line, point, frame, date);
-        assertEquals(gp.altitude, 0.0, 1.0e-12);
+        assertEquals(gp.getAltitude(), 0.0, 1.0e-12);
         assertTrue(line.contains(model.transform(gp)));
 
         model = new OneAxisEllipsoid(100.0, 0.9, frame);
@@ -129,13 +129,13 @@ public class OneAxisEllipsoidTest extends TestCase {
         direction = new Vector3D(0.0, 0.0, 1.0);
         line = new Line(point, direction);
         gp = model.getIntersectionPoint(line, point, frame, date);
-        assertEquals(gp.latitude, Math.PI/2, 1.0e-12);
+        assertEquals(gp.getLatitude(), Math.PI/2, 1.0e-12);
         
         point = new Vector3D(0.0, 110, 0);
         direction = new Vector3D(0.0, 1.0, 0.0);
         line = new Line(point, direction);
         gp = model.getIntersectionPoint(line, point, frame, date);
-        assertEquals(gp.latitude,0, 1.0e-12);
+        assertEquals(gp.getLatitude(),0, 1.0e-12);
 
     }
 
@@ -176,8 +176,8 @@ public class OneAxisEllipsoidTest extends TestCase {
         Vector3D direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         Line line = new Line(pSatItrf, direction);
         GeodeticPoint geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        assertEquals(geoPoint.longitude, geoInter.longitude, Utils.epsilonAngle);
-        assertEquals(geoPoint.latitude, geoInter.latitude, Utils.epsilonAngle);
+        assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // Test second visible surface points
         geoPoint = new GeodeticPoint(Math.toRadians(-120.), Math.toRadians(65.), 0.);
@@ -185,8 +185,8 @@ public class OneAxisEllipsoidTest extends TestCase {
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        assertEquals(geoPoint.longitude, geoInter.longitude, Utils.epsilonAngle);
-        assertEquals(geoPoint.latitude, geoInter.latitude, Utils.epsilonAngle);
+        assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // Test non visible surface points
         geoPoint = new GeodeticPoint(Math.toRadians(60.), Math.toRadians(30.), 0.);
@@ -197,8 +197,8 @@ public class OneAxisEllipsoidTest extends TestCase {
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
         
         // For polar satellite position, intersection point is at the same longitude but different latitude
-        assertEquals(Math.toRadians(59.83813849072837), geoInter.longitude, Utils.epsilonAngle);
-        assertEquals(Math.toRadians(78.0357178015876), geoInter.latitude, Utils.epsilonAngle);
+        assertEquals(Math.toRadians(59.83813849072837), geoInter.getLongitude(), Utils.epsilonAngle);
+        assertEquals(Math.toRadians(78.0357178015876), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // Satellite on equatorial position
         // ********************************
@@ -232,15 +232,15 @@ public class OneAxisEllipsoidTest extends TestCase {
         System.out.println("Sat abscissa = " + line.getAbscissa(pSatItrf));
         assertTrue(line.getAbscissa(pSatItrf) > 0);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        assertEquals(geoPoint.longitude, geoInter.longitude, Utils.epsilonAngle);
-        assertEquals(geoPoint.latitude, geoInter.latitude, Utils.epsilonAngle);
+        assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // With the point opposite to satellite point along the line
         GeodeticPoint geoInter2 = earth.getIntersectionPoint(line, line.pointAt(-line.getAbscissa(pSatItrf)), frame, date);
-        System.out.println("Opposite intersection : lon = " + Math.toDegrees(geoInter2.longitude)
-                                                + " lat = " + Math.toDegrees(geoInter2.latitude));
-        assertTrue(Math.abs(geoInter.longitude - geoInter2.longitude) > Math.toRadians(0.1));
-        assertTrue(Math.abs(geoInter.latitude - geoInter2.latitude) > Math.toRadians(0.1));
+        System.out.println("Opposite intersection : lon = " + Math.toDegrees(geoInter2.getLongitude())
+                                                + " lat = " + Math.toDegrees(geoInter2.getLatitude()));
+        assertTrue(Math.abs(geoInter.getLongitude() - geoInter2.getLongitude()) > Math.toRadians(0.1));
+        assertTrue(Math.abs(geoInter.getLatitude() - geoInter2.getLatitude()) > Math.toRadians(0.1));
         
         // Test second visible surface points
         geoPoint = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(-5.), 0.);
@@ -248,26 +248,26 @@ public class OneAxisEllipsoidTest extends TestCase {
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        assertEquals(geoPoint.longitude, geoInter.longitude, Utils.epsilonAngle);
-        assertEquals(geoPoint.latitude, geoInter.latitude, Utils.epsilonAngle);
+        assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // Test non visible surface points
         geoPoint = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(40.), 0.);
-        System.out.println("Point donne : lon = " + Math.toDegrees(geoPoint.longitude) 
-                           + " lat = " + Math.toDegrees(geoPoint.latitude) 
-                           + " alt = " + geoPoint.altitude); 
+        System.out.println("Point donne : lon = " + Math.toDegrees(geoPoint.getLongitude()) 
+                           + " lat = " + Math.toDegrees(geoPoint.getLatitude()) 
+                           + " alt = " + geoPoint.getAltitude()); 
         pointItrf     = earth.transform(geoPoint);
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
         
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        System.out.println("Point intersection : lon = " + Math.toDegrees(geoInter.longitude) 
-                           + " lat = " + Math.toDegrees(geoInter.latitude) 
-                           + " alt = " + geoInter.altitude); 
+        System.out.println("Point intersection : lon = " + Math.toDegrees(geoInter.getLongitude()) 
+                           + " lat = " + Math.toDegrees(geoInter.getLatitude()) 
+                           + " alt = " + geoInter.getAltitude()); 
         System.out.println();
         
-//        assertEquals(Math.toRadians(10.424082030386236), geoInter.longitude, Utils.epsilonAngle);
-//        assertEquals(Math.toRadians(17.492951473090244), geoInter.latitude, Utils.epsilonAngle);
+//        assertEquals(Math.toRadians(10.424082030386236), geoInter.getLongitude(), Utils.epsilonAngle);
+//        assertEquals(Math.toRadians(17.492951473090244), geoInter.getLatitude(), Utils.epsilonAngle);
 
 
         // Satellite on any position
@@ -288,8 +288,8 @@ public class OneAxisEllipsoidTest extends TestCase {
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        assertEquals(geoPoint.longitude, geoInter.longitude, Utils.epsilonAngle);
-        assertEquals(geoPoint.latitude, geoInter.latitude, Utils.epsilonAngle);
+        assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // Test second visible surface points
         geoPoint = new GeodeticPoint(Math.toRadians(90.), Math.toRadians(60.), 0.);
@@ -297,26 +297,26 @@ public class OneAxisEllipsoidTest extends TestCase {
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        assertEquals(geoPoint.longitude, geoInter.longitude, Utils.epsilonAngle);
-        assertEquals(geoPoint.latitude, geoInter.latitude, Utils.epsilonAngle);
+        assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // Test non visible surface points
         geoPoint = new GeodeticPoint(Math.toRadians(90.), Math.toRadians(0.), 0.);
-        System.out.println("Point donne : lon = " + Math.toDegrees(geoPoint.longitude) 
-                                      + " lat = " + Math.toDegrees(geoPoint.latitude) 
-                                      + " alt = " + geoPoint.altitude); 
+        System.out.println("Point donne : lon = " + Math.toDegrees(geoPoint.getLongitude()) 
+                                      + " lat = " + Math.toDegrees(geoPoint.getLatitude()) 
+                                      + " alt = " + geoPoint.getAltitude()); 
         pointItrf     = earth.transform(geoPoint);
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
         
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        System.out.println("Point intersection : lon = " + Math.toDegrees(geoInter.longitude) 
-                           + " lat = " + Math.toDegrees(geoInter.latitude) 
-                           + " alt = " + geoInter.altitude); 
+        System.out.println("Point intersection : lon = " + Math.toDegrees(geoInter.getLongitude()) 
+                           + " lat = " + Math.toDegrees(geoInter.getLatitude()) 
+                           + " alt = " + geoInter.getAltitude()); 
         System.out.println();
         
-//        assertEquals(Math.toRadians(10.424082030386236), geoInter.longitude, Utils.epsilonAngle);
-//        assertEquals(Math.toRadians(17.492951473090244), geoInter.latitude, Utils.epsilonAngle);
+//        assertEquals(Math.toRadians(10.424082030386236), geoInter.getLongitude(), Utils.epsilonAngle);
+//        assertEquals(Math.toRadians(17.492951473090244), geoInter.getLatitude(), Utils.epsilonAngle);
 
 
     }
@@ -331,9 +331,9 @@ public class OneAxisEllipsoidTest extends TestCase {
         Frame frame = Frame.getReferenceFrame(Frame.ITRF2000B, date);    
         OneAxisEllipsoid model = new OneAxisEllipsoid(ae, f, frame);
         GeodeticPoint gp = model.transform(new Vector3D(x, y, z), frame, date);
-        assertEquals(longitude, MathUtils.normalizeAngle(gp.longitude, longitude), 1.0e-10);
-        assertEquals(latitude,  gp.latitude,  1.0e-10);
-        assertEquals(altitude,  gp.altitude,  1.0e-10 * Math.abs(altitude));
+        assertEquals(longitude, MathUtils.normalizeAngle(gp.getLongitude(), longitude), 1.0e-10);
+        assertEquals(latitude,  gp.getLatitude(),  1.0e-10);
+        assertEquals(altitude,  gp.getAltitude(),  1.0e-10 * Math.abs(altitude));
     }
 
     public static Test suite() {

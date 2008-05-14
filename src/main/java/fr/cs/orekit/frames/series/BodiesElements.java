@@ -1,53 +1,58 @@
 package fr.cs.orekit.frames.series;
 
+import java.io.Serializable;
+
 /** Elements of the bodies having an effect on nutation.
  * <p>This class is a simple placeholder,
  * it does not provide any processing method.</p>
  * @author Luc Maisonobe
  */
-public final class BodiesElements {
+public final class BodiesElements implements Serializable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 9193325350743225370L;
 
     /** Mean anomaly of the Moon. */
-    public final double l;
+    private final double l;
 
     /** Mean anomaly of the Sun. */
-    public final double lPrime;
+    private final double lPrime;
 
     /** L - &Omega; where L is the mean longitude of the Moon. */
-    public final double f;
+    private final double f;
 
     /** Mean elongation of the Moon from the Sun. */
-    public final double d;
+    private final double d;
 
     /** Mean longitude of the ascending node of the Moon. */
-    public final double omega;
+    private final double omega;
 
     /** Mean Mercury longitude. */
-    public final double lMe;
+    private final double lMe;
 
     /** Mean Venus longitude. */
-    public final double lVe;
+    private final double lVe;
 
     /** Mean Earth longitude. */
-    public final double lE;
+    private final double lE;
 
     /** Mean Mars longitude. */
-    public final double lMa;
+    private final double lMa;
 
     /** Mean Jupiter longitude. */
-    public final double lJu;
+    private final double lJu;
 
     /** Mean Saturn longitude. */
-    public final double lSa;
+    private final double lSa;
 
     /** Mean Uranus longitude. */
-    public final double lUr;
+    private final double lUr;
 
     /** Mean Neptune longitude. */
-    public final double lNe;
+    private final double lNe;
 
     /** General accumulated precession in longitude. */
-    public final double pa;
+    private final double pa;
 
     /** Simple constructor.
      * @param l mean anomaly of the Moon
@@ -82,6 +87,96 @@ public final class BodiesElements {
         this.lUr    = lUr;
         this.lNe    = lNe;
         this.pa     = pa;
+    }
+
+    /** Get the mean anomaly of the Moon.
+     * @return mean anomaly of the Moon
+     */
+    public double getL() {
+        return l;
+    }
+
+    /** Get the mean anomaly of the Sun.
+     * @return mean anomaly of the Sun.
+     */
+    public double getLPrime() {
+        return lPrime;
+    }
+
+    /** Get L - &Omega; where L is the mean longitude of the Moon.
+     * @return L - &Omega;
+     */
+    public double getF() {
+        return f;
+    }
+
+    /** Get the mean elongation of the Moon from the Sun.
+     * @return mean elongation of the Moon from the Sun.
+     */
+    public double getD() {
+        return d;
+    }
+
+    /** Get the mean longitude of the ascending node of the Moon.
+     * @return mean longitude of the ascending node of the Moon.
+     */
+    public double getOmega() {
+        return omega;
+    }
+
+    /** Get the mean Mercury longitude.
+     * @return mean Mercury longitude.
+     */
+    public double getLMe() {
+        return lMe;
+    }
+
+    /** Get the mean Venus longitude.
+     * @return mean Venus longitude. */
+    public double getLVe() {
+        return lVe;
+    }
+
+    /** Get the mean Earth longitude.
+     * @return mean Earth longitude. */
+    public double getLE() {
+        return lE;
+    }
+
+    /** Get the mean Mars longitude.
+     * @return mean Mars longitude. */
+    public double getLMa() {
+        return lMa;
+    }
+
+    /** Get the mean Jupiter longitude.
+     * @return mean Jupiter longitude. */
+    public double getLJu() {
+        return lJu;
+    }
+
+    /** Get the mean Saturn longitude.
+     * @return mean Saturn longitude. */
+    public double getLSa() {
+        return lSa;
+    }
+
+    /** Get the mean Uranus longitude.
+     * @return mean Uranus longitude. */
+    public double getLUr() {
+        return lUr;
+    }
+
+    /** Get the mean Neptune longitude.
+     * @return mean Neptune longitude. */
+    public double getLNe() {
+        return lNe;
+    }
+
+    /** Get the general accumulated precession in longitude.
+     * @return general accumulated precession in longitude. */
+    public double getPa() {
+        return pa;
     }
 
 }

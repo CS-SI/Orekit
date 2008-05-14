@@ -131,7 +131,7 @@ public class YawCompensationTest extends TestCase {
             PVCoordinates extrapPvSatJ2000 = extrapOrbit.getPVCoordinates(mu);
             
             // Satellite latitude at date
-            double extrapLat = earthShape.transform(extrapPvSatJ2000.getPosition(), Frame.getJ2000(), extrapDate).latitude;
+            double extrapLat = earthShape.transform(extrapPvSatJ2000.getPosition(), Frame.getJ2000(), extrapDate).getLatitude();
             
             // Compute yaw compensation angle -- rotations composition
             double yawAngle = yawCompensLaw.getYawAngle(extrapDate, extrapPvSatJ2000, Frame.getJ2000());

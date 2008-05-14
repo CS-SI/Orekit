@@ -84,52 +84,52 @@ public class DTM2000Atmosphere {
     // Constants :
 
     /** Number of parameters. */
-    private static final int nlatm = 96;
+    private static final int NLATM = 96;
 
     /** Thermal diffusion coefficient. */
-    private static final double[] alefa = {
+    private static final double[] ALEFA = {
         0, -0.40, -0.38, 0, 0, 0, 0
     };
 
-    /** Atomic mass  H, He, O, N2, O2, N */
-    private static final double[] ma = {
+    /** Atomic mass  H, He, O, N2, O2, N. */
+    private static final double[] MA = {
         0, 1, 4, 16, 28, 32, 14
     };
 
-    /** Atomic mass  H, He, O, N2, O2, N */
-    private static final double[] vma = {
+    /** Atomic mass  H, He, O, N2, O2, N. */
+    private static final double[] VMA = {
         0, 1.6606e-24, 6.6423e-24, 26.569e-24, 46.4958e-24, 53.1381e-24, 23.2479e-24
     };
 
-    /** Polar Earth radius */
-    private static final double re = 6356.77;
+    /** Polar Earth radius. */
+    private static final double RE = 6356.77;
 
     /** Reference altitude. */
-    private static final double zlb0 = 120.0;
+    private static final double ZLB0 = 120.0;
 
     /** Cosine of the latitude of the magnetic pole (79N, 71W). */
-    private static final double cpmg = .19081;
+    private static final double CPMG = .19081;
 
     /** Sine of the latitude of the magnetic pole (79N, 71W). */
-    private static final double spmg = .98163;
+    private static final double SPMG = .98163;
 
     /** Longitude (in radians) of the magnetic pole (79N, 71W). */
-    private static final double xlmg = -1.2392;
+    private static final double XLMG = -1.2392;
 
     /** Gravity acceleration at 120 km altitude. */
-    private static final double gsurf = 980.665;
+    private static final double GSURF = 980.665;
 
     // TODO determine what this is
-    private static final double rgas = 831.4;
+    private static final double RGAS = 831.4;
 
     /** 2 * &pi; / 365. */
-    private static final double rot = 0.017214206;
+    private static final double ROT = 0.017214206;
 
     /** 2 * rot. */
-    private static final double rot2 = 0.034428412;
+    private static final double ROT2 = 0.034428412;
 
     /** Resources text file. */
-    private static final String dtm2000 = "/META-INF/dtm_2000.txt";
+    private static final String DTM2000 = "/META-INF/dtm_2000.txt";
 
     // CHECKSTYLE: stop JavadocVariable check
 
@@ -158,13 +158,13 @@ public class DTM2000Atmosphere {
     // CHECKSTYLE: resume JavadocVariable check
 
     /** Number of days in current year. */
-    private int day;
+    private int cachedDay;
 
     /** Instant solar flux. f[1] = instantaneous flux; f[2] = 0. (not used). */
-    private double[] f = new double[3];
+    private double[] cachedF = new double[3];
 
     /** Mean solar flux. fbar[1] = mean flux; fbar[2] = 0. (not used). */
-    private double[] fbar = new double[3];
+    private double[] cachedFbar = new double[3];
 
     /** Kp coefficients.
      * <p><ul>
@@ -177,10 +177,10 @@ public class DTM2000Atmosphere {
     private double[] akp = new double[5];
 
     /** Geodetic altitude in km (minimum altitude: 120 km). */
-    private double alti;
+    private double cachedAlti;
 
-    /** Local solar time (rad) */
-    private double hl;
+    /** Local solar time (rad). */
+    private double cachedHl;
 
     /** Geodetic Latitude (rad). */
     private double alat;
@@ -281,13 +281,13 @@ public class DTM2000Atmosphere {
                                           new Double(alti)
                                       });
         }
-        this.day  = day;
-        this.alti = alti / 1000;
+        this.cachedDay  = day;
+        this.cachedAlti = alti / 1000;
         xlon = lon;
         alat = lat;
-        this.hl = hl;
-        this.f[1] = f;
-        this.fbar[1] = fbar;
+        this.cachedHl = hl;
+        this.cachedF[1] = f;
+        this.cachedFbar[1] = fbar;
         akp[1] = akp3;
         akp[3] = akp24;
         computation();
@@ -300,7 +300,7 @@ public class DTM2000Atmosphere {
     private void computation() {
         ro = 0.0;
 
-        final double zlb = zlb0; // + dzlb ??
+        final double zlb = ZLB0; // + dzlb ??
 
         // compute Legendre polynomials wrt geographic pole
         final double c = Math.sin(alat);
@@ -327,8 +327,8 @@ public class DTM2000Atmosphere {
         p33 = 15.0 * s * s2;
 
         // compute Legendre polynomials wrt magnetic pole (79N, 71W)
-        final double clmlmg = Math.cos(xlon - xlmg);
-        final double cmg  = s * cpmg * clmlmg + c * spmg;
+        final double clmlmg = Math.cos(xlon - XLMG);
+        final double cmg  = s * CPMG * clmlmg + c * SPMG;
         final double cmg2 = cmg * cmg;
         final double cmg4 = cmg2 * cmg2;
         p10mg = cmg;
@@ -336,7 +336,7 @@ public class DTM2000Atmosphere {
         p40mg = 4.375 * cmg4 - 3.75 * cmg2 + 0.375;
 
         // local time
-        hl0 = hl;
+        hl0 = cachedHl;
         ch  = Math.cos(hl0);
         sh  = Math.sin(hl0);
         c2h = ch * ch - sh * sh;
@@ -352,10 +352,10 @@ public class DTM2000Atmosphere {
 
         kleq = 0; // equinox
 
-        if ((day < 59) || (day > 284)) {
+        if ((cachedDay < 59) || (cachedDay > 284)) {
             kleq = -1; // north winter
         }
-        if ((day > 99) && (day < 244)) {
+        if ((cachedDay > 99) && (cachedDay < 244)) {
             kleq = 1; // north summer
         }
 
@@ -368,8 +368,8 @@ public class DTM2000Atmosphere {
 
         // compute n(z) concentrations: H, He, O, N2, O2, N
         final double sigma   = tp120 / (tinf - t120);
-        final double dzeta   = (re + zlb) / (re + alti);
-        final double zeta    = (alti - zlb) * dzeta;
+        final double dzeta   = (RE + zlb) / (RE + cachedAlti);
+        final double zeta    = (cachedAlti - zlb) * dzeta;
         final double sigzeta = sigma * zeta;
         final double expsz   = Math.exp(-sigzeta);
         tz = tinf - (tinf - t120) * expsz;
@@ -402,27 +402,27 @@ public class DTM2000Atmosphere {
         daz[1] = Math.exp(gdelaz);
         dbase[6] = az[1] * daz[1];
 
-        final double zlbre  = 1.0 + zlb / re;
-        final double glb    = gsurf / (zlbre * zlbre) / (sigma * rgas * tinf);
+        final double zlbre  = 1.0 + zlb / RE;
+        final double glb    = (GSURF / (zlbre * zlbre)) / (sigma * RGAS * tinf);
         final double t120tz = t120 / tz;
 
         final double[] cc = new double[7];
         final double[] fz = new double[7];
 
         for (int i = 1; i <= 6; i++) {
-            final double gamma = ma[i] * glb;
-            final double upapg = 1.0 + alefa[i] + gamma;
+            final double gamma = MA[i] * glb;
+            final double upapg = 1.0 + ALEFA[i] + gamma;
             fz[i] = Math.pow(t120tz, upapg) * Math.exp(-sigzeta * gamma);
             // concentrations of H, He, O, N2, O2, N (particles/cm<sup>3</sup>)
             cc[i] = dbase[i] * fz[i];
             // densities of H, He, O, N2, O2, N (g/cm<sup>3</sup>)
-            d[i]  = cc[i] * vma[i];
+            d[i]  = cc[i] * VMA[i];
             // total density
             ro += d[i];
         }
 
         // mean atomic mass
-        wmm = ro / (vma[1] * (cc[1] + cc[2] + cc[3] + cc[4] + cc[5] + cc[6]));
+        wmm = ro / (VMA[1] * (cc[1] + cc[2] + cc[3] + cc[4] + cc[5] + cc[6]));
 
     }
 
@@ -463,10 +463,10 @@ public class DTM2000Atmosphere {
         da[79] = p60;
 
         // flux terms
-        fmfb[1]   = f[1] - fbar[1];
-        fmfb[2]   = f[2] - fbar[2];
-        fbm150[1] = fbar[1] - 150.0;
-        fbm150[2] = fbar[2];
+        fmfb[1]   = cachedF[1] - cachedFbar[1];
+        fmfb[2]   = cachedF[2] - cachedFbar[2];
+        fbm150[1] = cachedFbar[1] - 150.0;
+        fbm150[2] = cachedFbar[2];
         da[4]     = fmfb[1];
         da[6]     = fbm150[1];
         da[4]     = da[4] + a[70] * fmfb[2];
@@ -526,18 +526,18 @@ public class DTM2000Atmosphere {
              a[72] * da[72] + a[73] * da[73] + a[75] * da[75] +
              a[76] * da[76] + a78   * da[78] + a[79] * da[79];
 //      termes annuels symetriques en latitude
-        da[9]  = Math.cos(rot * (day - a[11]));
+        da[9]  = Math.cos(ROT * (cachedDay - a[11]));
         da[10] = p20 * da[9];
 //      termes semi-annuels symetriques en latitude
-        da[12] = Math.cos(rot2 * (day - a[14]));
+        da[12] = Math.cos(ROT2 * (cachedDay - a[14]));
         da[13] = p20 * da[12];
 //      termes annuels non symetriques en latitude
-        final double coste = Math.cos(rot * (day - a[18]));
+        final double coste = Math.cos(ROT * (cachedDay - a[18]));
         da[15] = p10 * coste;
         da[16] = p30 * coste;
         da[17] = p50 * coste;
 //      terme  semi-annuel  non symetrique  en latitude
-        final double cos2te = Math.cos(rot2 * (day - a[20]));
+        final double cos2te = Math.cos(ROT2 * (cachedDay - a[20]));
         da[19] = p10 * cos2te;
         da[39] = p30 * cos2te;
         da[59] = p50 * cos2te;
@@ -649,11 +649,11 @@ public class DTM2000Atmosphere {
         final int debeq_au = 244;
         double xmult;
         double result;
-        if (day >= 100) {
-            xmult  = (day - debeq_au) / 40.0;
+        if (cachedDay >= 100) {
+            xmult  = (cachedDay - debeq_au) / 40.0;
             result = param - 2.0 * param * xmult;
         } else {
-            xmult  = (day - debeq_pr) / 40.0;
+            xmult  = (cachedDay - debeq_pr) / 40.0;
             result = 2.0 * param * xmult - param;
         }
         return result;
@@ -665,7 +665,7 @@ public class DTM2000Atmosphere {
      */
     private static void readcoefficients() throws OrekitException {
 
-        final int size = nlatm + 1;
+        final int size = NLATM + 1;
         tt   = new double[size];
         h    = new double[size];
         he   = new double[size];
@@ -696,11 +696,11 @@ public class DTM2000Atmosphere {
         Arrays.fill(dtp,  Double.NaN);
 
         final InputStream in =
-            DTM2000Atmosphere.class.getResourceAsStream(dtm2000);
+            DTM2000Atmosphere.class.getResourceAsStream(DTM2000);
         if (in == null) {
             throw new OrekitException("unable to find dtm 2000 model data file {0}",
                                       new Object[] {
-                                          dtm2000
+                                          DTM2000
                                       });
         }
 
@@ -780,7 +780,7 @@ public class DTM2000Atmosphere {
      * {@link #ATOMIC_OXYGEN}, {@link #MOLECULAR_NITROGEN},  {@link #MOLECULAR_OXYGEN}, {@link #ATOMIC_NITROGEN}
      * @return the local partial density (kg/m<sup>3</sup>)
      */
-    public double getPartialDensities(int identifier) {
+    public double getPartialDensities(final int identifier) {
         if (identifier < 1 || identifier > 6) {
             throw new IllegalArgumentException("element identifier is not correct");
         }

@@ -115,9 +115,9 @@ public class TargetPointingTest extends TestCase {
         PVCoordinates pvObservedJ2000 = geoTargetAttitudeLaw.getObservedGroundPoint(date, pvSatJ2000, Frame.getJ2000());
         GeodeticPoint geoObserved = earthShape.transform(pvObservedJ2000.getPosition(), Frame.getJ2000(), date);
 
-        assertEquals(geoObserved.longitude, geoTargetItrf2000B.longitude, Utils.epsilonAngle);
-        assertEquals(geoObserved.latitude, geoTargetItrf2000B.latitude, Utils.epsilonAngle);
-        assertEquals(geoObserved.altitude, geoTargetItrf2000B.altitude, 1.e-8);
+        assertEquals(geoObserved.getLongitude(), geoTargetItrf2000B.getLongitude(), Utils.epsilonAngle);
+        assertEquals(geoObserved.getLatitude(), geoTargetItrf2000B.getLatitude(), Utils.epsilonAngle);
+        assertEquals(geoObserved.getAltitude(), geoTargetItrf2000B.getAltitude(), 1.e-8);
 
     }
 
@@ -275,8 +275,8 @@ public class TargetPointingTest extends TestCase {
       
         // Create target pointing attitude law with target 5° from nadir target 
         // ******************************************************************** 
-        GeodeticPoint geoTarget = new GeodeticPoint(geoNadirObserved.longitude - Math.toRadians(5),
-                                                    geoNadirObserved.latitude, geoNadirObserved.altitude);
+        GeodeticPoint geoTarget = new GeodeticPoint(geoNadirObserved.getLongitude() - Math.toRadians(5),
+                                                    geoNadirObserved.getLatitude(), geoNadirObserved.getAltitude());
         PVCoordinates pvTargetItrf2000B = new PVCoordinates(earthShape.transform(geoTarget), Vector3D.zero);
         TargetPointing targetLaw = new TargetPointing(frameItrf2000B, pvTargetItrf2000B);
         

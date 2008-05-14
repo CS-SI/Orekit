@@ -44,8 +44,8 @@ class LuniSolarTerm extends SeriesTerm {
 
     /** {@inheritDoc} */
     protected double argument(final BodiesElements elements) {
-        return cL * elements.l + cLPrime * elements.lPrime + cF * elements.f +
-               cD * elements.d + cOmega * elements.omega;
+        return cL * elements.getL() + cLPrime * elements.getLPrime() + cF * elements.getF() +
+               cD * elements.getD() + cOmega * elements.getOmega();
     }
 
 }

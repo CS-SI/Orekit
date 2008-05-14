@@ -16,7 +16,7 @@ import fr.cs.orekit.utils.PVCoordinates;
  * This class provides a default attitude law.
 
  * <p>
- * The attitude pointing law is defined by an attitude law and 
+ * The attitude pointing law is defined by an attitude law and
  * the satellite axis vector chosen for pointing.
  * <p>
  * @version $Id:OrbitalParameters.java 1310 2007-07-05 16:04:25Z luc $
@@ -38,10 +38,11 @@ public class LofOffsetPointing extends GroundPointing {
 
     /** Creates new instance.
      * @param shape Body shape
-     * @param attLaw Attitude law 
-     * @param alpha3 angle of the third elementary rotation
+     * @param attLaw Attitude law
+     * @param satVector satellite vector defining the pointing direction
      */
-    public LofOffsetPointing(BodyShape shape, AttitudeLaw attLaw, Vector3D satVector) {
+    public LofOffsetPointing(final BodyShape shape, final AttitudeLaw attLaw,
+                             final Vector3D satVector) {
         super(shape.getBodyFrame());
         this.shape = shape;
         this.attitudeLaw = attLaw;
@@ -54,47 +55,47 @@ public class LofOffsetPointing extends GroundPointing {
      * @param frame the frame in which pv is defined
      * @return satellite attitude state at date
      * @throws OrekitException if some specific error occurs
-     * 
+     *
      * <p>User should check that position/velocity and frame is consistent with given frame.
      * </p> */
-    public Attitude getState(AbsoluteDate date, PVCoordinates pv, Frame frame) 
-        throws OrekitException
-    {
+    public Attitude getState(final AbsoluteDate date,
+                             final PVCoordinates pv, final Frame frame)
+        throws OrekitException {
         return attitudeLaw.getState(date, pv, frame);
     }
-   
+
     /** Get target expressed in body frame at given date.
      * @param date computation date.
      * @param pv satellite position-velocity vector at given date in given frame.
      * @param frame Frame in which satellite position-velocity is given.
      * @return target position/velocity in body frame
      * @throws OrekitException if some specific error occurs
-     * 
+     *
      * <p>User should check that position/velocity and frame is consistent with given frame.
      * </p>
      */
-    protected PVCoordinates getTargetInBodyFrame(AbsoluteDate date,
-                                                 PVCoordinates pv, Frame frame) 
+    protected PVCoordinates getTargetInBodyFrame(final AbsoluteDate date,
+                                                 final PVCoordinates pv, final Frame frame)
         throws OrekitException {
 
         // Compute satellite state at given date in given frame
-        Rotation satRot = getState(date, pv, frame).getRotation();
+        final Rotation satRot = getState(date, pv, frame).getRotation();
 
         // Compute satellite Z axis in given frame
-        Vector3D vectorFrame = satRot.applyInverseTo(satVector);
+        final Vector3D vectorFrame = satRot.applyInverseTo(satVector);
 
         // Compute satellite Z axis and position/velocity in body frame
-        Transform t = frame.getTransformTo(shape.getBodyFrame(), date);
-        Vector3D vectorBodyFrame = t.transformVector(vectorFrame);
-        PVCoordinates pvBodyFrame = t.transformPVCoordinates(pv);
+        final Transform t = frame.getTransformTo(shape.getBodyFrame(), date);
+        final Vector3D vectorBodyFrame = t.transformVector(vectorFrame);
+        final PVCoordinates pvBodyFrame = t.transformPVCoordinates(pv);
 
         // Line from satellite following Z direction
-        Line groundLine = new Line(pvBodyFrame.getPosition(), vectorBodyFrame);
-        System.out.println("Contains body center = " + groundLine.contains(Vector3D.zero));
+        final Line groundLine = new Line(pvBodyFrame.getPosition(), vectorBodyFrame);
 
         // Intersection with body shape
-        GeodeticPoint gpGround = shape.getIntersectionPoint(groundLine, pvBodyFrame.getPosition(), 
-                                                            shape.getBodyFrame(), date);
+        final GeodeticPoint gpGround =
+            shape.getIntersectionPoint(groundLine, pvBodyFrame.getPosition(),
+                                       shape.getBodyFrame(), date);
 
         return new PVCoordinates(shape.transform(gpGround), Vector3D.zero);
     }

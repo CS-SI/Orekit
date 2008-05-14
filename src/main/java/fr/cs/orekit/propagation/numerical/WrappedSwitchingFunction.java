@@ -39,9 +39,9 @@ class WrappedSwitchingFunction implements SwitchingFunction {
      * @param integrationFrame frame in which integration is performed
      * @param attitudeLaw spacecraft attitude law
      */
-    public WrappedSwitchingFunction(OrekitSwitchingFunction swf,
-                                   AbsoluteDate referenceDate, double mu,
-                                   Frame integrationFrame, AttitudeLaw attitudeLaw) {
+    public WrappedSwitchingFunction(final OrekitSwitchingFunction swf,
+                                    final AbsoluteDate referenceDate, final double mu,
+                                    final Frame integrationFrame, final AttitudeLaw attitudeLaw) {
         this.swf              = swf;
         this.referenceDate    = referenceDate;
         this.mu               = mu;
@@ -50,7 +50,8 @@ class WrappedSwitchingFunction implements SwitchingFunction {
     }
 
     /** {@inheritDoc} */
-    public double g(double t, double[] y) throws SwitchException {
+    public double g(final double t, final double[] y)
+        throws SwitchException {
         try {
             return swf.g(mapState(t, y, referenceDate, mu, integrationFrame, attitudeLaw), mu);
         } catch (OrekitException oe) {
@@ -59,7 +60,8 @@ class WrappedSwitchingFunction implements SwitchingFunction {
     }
 
     /** {@inheritDoc} */
-    public int eventOccurred(double t, double[] y) throws SwitchException {
+    public int eventOccurred(final double t, final double[] y)
+        throws SwitchException {
         try {
             swf.eventOccurred(mapState(t, y, referenceDate, mu, integrationFrame, attitudeLaw), mu);
             return RESET_DERIVATIVES;
@@ -69,11 +71,13 @@ class WrappedSwitchingFunction implements SwitchingFunction {
     }
 
     /** {@inheritDoc} */
-    public void resetState(double t, double[] y) {
+    public void resetState(final double t, final double[] y) {
         // never called since eventOccured never returns CallResetState
     }
 
-    /** Convert state array to space dynamics objects (AbsoluteDate and OrbitalParameters)
+    /** Convert state array to space dynamics objects
+     * ({@link fr.cs.orekit.time.AbsoluteDate AbsoluteDate} and
+     * ({@link fr.cs.orekit.orbits.OrbitalParameters OrbitalParameters}).
      * @param t integration time (s)
      * @param y state as a flat array
      * @param referenceDate reference date from which t is counted
@@ -81,11 +85,12 @@ class WrappedSwitchingFunction implements SwitchingFunction {
      * @param integrationFrame frame in which integration is performed
      * @param attitudeLaw spacecraft attitude law
      * @return state corresponding to the flat array as a space dynamics object
-     * @exception OrekitException
+     * @exception OrekitException if attitude law cannot provide state
      */
-    private static SpacecraftState mapState(double t, double [] y,
-                                            AbsoluteDate referenceDate, double mu,
-                                            Frame integrationFrame, AttitudeLaw attitudeLaw)
+    private static SpacecraftState mapState(final double t, final double [] y,
+                                            final AbsoluteDate referenceDate, final double mu,
+                                            final Frame integrationFrame,
+                                            final AttitudeLaw attitudeLaw)
         throws OrekitException {
 
         // update space dynamics view

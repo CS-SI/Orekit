@@ -34,6 +34,8 @@ import fr.cs.orekit.utils.PVCoordinates;
  */
 public abstract class TLEPropagator {
 
+    // CHECKSTYLE: stop VisibilityModifierCheck
+
     /** Initial state. */
     protected final TLE tle;
 
@@ -125,6 +127,8 @@ public abstract class TLEPropagator {
 
     /** 3/2 * C1. */
     protected double t2cof;
+
+    // CHECKSTYLE: resume VisibilityModifierCheck
 
     /** Protected constructor for derived classes.
      * @param initialTLE the unique TLE to propagate

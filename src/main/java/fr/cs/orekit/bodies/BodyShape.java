@@ -19,7 +19,7 @@ public interface BodyShape extends Serializable {
     /** Get body frame related to body shape.
      * @return body frame related to body shape
      */
-    public Frame getBodyFrame();
+    Frame getBodyFrame();
 
     /** Get the intersection point of a line with the surface of the body.
      * <p>A line may have several intersection points with a closed
@@ -37,9 +37,9 @@ public interface BodyShape extends Serializable {
      * @see fr.cs.orekit.utils.Line#getAbscissa(Vector3D)
      * @see fr.cs.orekit.utils.Line#pointAt(double)
      */
-    public GeodeticPoint getIntersectionPoint(Line line, Vector3D close,
-                                              Frame frame, AbsoluteDate date)
-      throws OrekitException;
+    GeodeticPoint getIntersectionPoint(Line line, Vector3D close,
+                                       Frame frame, AbsoluteDate date)
+        throws OrekitException;
 
     /** Transform a cartesian point to a surface-relative point.
      * @param point cartesian point
@@ -48,13 +48,13 @@ public interface BodyShape extends Serializable {
      * @return point at the same location but as a surface-relative point
      * @exception OrekitException if point cannot be converted to body frame
      */
-    public GeodeticPoint transform(Vector3D point, Frame frame, AbsoluteDate date)
-        throws OrekitException ;
+    GeodeticPoint transform(Vector3D point, Frame frame, AbsoluteDate date)
+        throws OrekitException;
 
     /** Transform a surface-relative point to a cartesian point.
      * @param point surface-relative point
      * @return point at the same location but as a cartesian point
      */
-    public Vector3D transform(GeodeticPoint point);
+    Vector3D transform(GeodeticPoint point);
 
 }

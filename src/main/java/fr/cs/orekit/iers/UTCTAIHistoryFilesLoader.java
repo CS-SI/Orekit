@@ -106,7 +106,7 @@ public class UTCTAIHistoryFilesLoader extends IERSFileCrawler {
                                       "{0} and {1}",
                                       new Object[] {
                                           readFile.getAbsolutePath(),
-                                          file.getAbsolutePath()
+                                          getFile().getAbsolutePath()
                                       });
         }
 
@@ -126,7 +126,7 @@ public class UTCTAIHistoryFilesLoader extends IERSFileCrawler {
                     throw new OrekitException("unexpected data after line {0} in file {1}: {2}",
                                               new Object[] {
                                                   new Integer(lastLine),
-                                                  file.getAbsolutePath(),
+                                                  getFile().getAbsolutePath(),
                                                   line
                                               });
                 }
@@ -156,17 +156,17 @@ public class UTCTAIHistoryFilesLoader extends IERSFileCrawler {
                     final String sDate =
                         year + ' ' + matcher.group(2) + ' ' + matcher.group(3) + " +0000";
                     final double utcTime = format.parse(sDate).getTime() * 1.0e-3;
-                    if ((last != null) && (utcTime < last.utcTime)) {
+                    if ((last != null) && (utcTime < last.getUtcTime())) {
                         throw new OrekitException("non-chronological dates in file {0}, line {1}",
                                                   new Object[] {
-                                                      file.getAbsolutePath(),
+                                                      getFile().getAbsolutePath(),
                                                       new Integer(lineNumber)
                                                   });
                     }
 
                     final double offset = -Double.parseDouble(matcher.group(matcher.groupCount()));
                     last = new Leap(utcTime,
-                                    offset - ((last == null) ? 0 : last.offsetAfter),
+                                    offset - ((last == null) ? 0 : last.getOffsetAfter()),
                                     offset);
                     leaps.add(last);
 
@@ -174,7 +174,7 @@ public class UTCTAIHistoryFilesLoader extends IERSFileCrawler {
                     throw new OrekitException("unable to parse line {0} in IERS UTC-TAI history file {1}",
                                               new Object[] {
                                                   new Integer(lineNumber),
-                                                  file.getAbsolutePath()
+                                                  getFile().getAbsolutePath()
                                               });
                 }
             }
@@ -183,11 +183,11 @@ public class UTCTAIHistoryFilesLoader extends IERSFileCrawler {
         if (leaps.isEmpty()) {
             throw new OrekitException("file {0} is not an IERS UTC-TAI history file",
                                       new Object[] {
-                                          file.getAbsolutePath()
+                                          getFile().getAbsolutePath()
                                       });
         }
 
-        readFile = file;
+        readFile = getFile();
 
     }
 

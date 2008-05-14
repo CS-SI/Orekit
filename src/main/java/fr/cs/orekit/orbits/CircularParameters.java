@@ -173,7 +173,7 @@ public class CircularParameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
     public CircularParameters(final OrbitalParameters op, final double mu) {
-        super(op.frame);
+        super(op.getFrame());
         a    = op.getA();
         i    = op.getI();
         raan = Math.atan2(op.getHy(), op.getHx());

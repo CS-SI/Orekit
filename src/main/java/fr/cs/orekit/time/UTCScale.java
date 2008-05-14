@@ -51,10 +51,10 @@ public class UTCScale extends TimeScale {
      * @exception OrekitException if the time steps cannot be read
      */
     public static TimeScale getInstance() throws OrekitException {
-        if (LazyHolder.instance == null) {
-            throw LazyHolder.orekitException;
+        if (LazyHolder.INSTANCE == null) {
+            throw LazyHolder.OREKIT_EXCEPTION;
         }
-        return LazyHolder.instance;
+        return LazyHolder.INSTANCE;
     }
 
     /** Get the offset to convert locations from {@link TAIScale}  to instance.
@@ -63,11 +63,11 @@ public class UTCScale extends TimeScale {
      * @return offset to <em>add</em> to taiTime to get a location
      * in instance time scale
      */
-    public double offsetFromTAI(double taiTime) {
+    public double offsetFromTAI(final double taiTime) {
         for (int i = 0; i < leaps.length; ++i) {
             final Leap leap = leaps[i];
-            if ((taiTime  + (leap.offsetAfter - leap.step)) >= leap.utcTime) {
-                return leap.offsetAfter;
+            if ((taiTime  + (leap.getOffsetAfter() - leap.getStep())) >= leap.getUtcTime()) {
+                return leap.getOffsetAfter();
             }
         }
         return 0;
@@ -79,11 +79,11 @@ public class UTCScale extends TimeScale {
      * @return offset to <em>add</em> to instanceTime to get a location
      * in {@link TAIScale}  time scale
      */
-    public double offsetToTAI(double instanceTime) {
+    public double offsetToTAI(final double instanceTime) {
         for (int i = 0; i < leaps.length; ++i) {
             final Leap leap = leaps[i];
-            if (instanceTime >= leap.utcTime) {
-                return -leap.offsetAfter;
+            if (instanceTime >= leap.getUtcTime()) {
+                return -leap.getOffsetAfter();
             }
         }
         return 0;
@@ -99,7 +99,7 @@ public class UTCScale extends TimeScale {
                                  new ChunkedTime(0, 0, 0),
                                  this);
             final Leap firstLeap = leaps[leaps.length - 1];
-            UTCStartDate = new AbsoluteDate(ref, firstLeap.utcTime - firstLeap.step);
+            UTCStartDate = new AbsoluteDate(ref, firstLeap.getUtcTime() - firstLeap.getStep());
         }
         return UTCStartDate;
     }
@@ -110,8 +110,13 @@ public class UTCScale extends TimeScale {
      * synchronization) and works with all version of java.</p>
      */
     private static class LazyHolder {
-        private static final UTCScale instance;
-        private static final OrekitException orekitException;
+
+        /** Unique instance. */
+        private static final UTCScale INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
+
         static {
             UTCScale tmpInstance = null;
             OrekitException tmpException = null;
@@ -120,8 +125,8 @@ public class UTCScale extends TimeScale {
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
-            instance        = tmpInstance;
-            orekitException = tmpException;
+            INSTANCE         = tmpInstance;
+            OREKIT_EXCEPTION = tmpException;
         }
     }
 

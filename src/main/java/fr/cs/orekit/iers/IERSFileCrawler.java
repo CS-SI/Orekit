@@ -20,7 +20,7 @@ import fr.cs.orekit.errors.OrekitException;
 public abstract class IERSFileCrawler {
 
     /** Current file. */
-    protected File file;
+    private File file;
 
     /** File name pattern. */
     private final Pattern supportedFilesPattern;
@@ -28,17 +28,23 @@ public abstract class IERSFileCrawler {
     /** Simple constructor.
      * @param supportedFilesPattern file name pattern for supported files
      */
-    protected IERSFileCrawler(String supportedFilesPattern) {
+    protected IERSFileCrawler(final String supportedFilesPattern) {
         this.supportedFilesPattern = Pattern.compile(supportedFilesPattern);
     }
 
+    /** Get the current file.
+     * @return current file
+     */
+    protected File getFile() {
+        return file;
+    }
+
     /** Check if a file is supported.
-     * <p>Checking is performed only on file name</p>
-     * @param file file to check
+     * @param fileName file to check
      * @return true if file name correspond to a supported file
      */
-    public boolean fileIsSupported(File file) {
-        return supportedFilesPattern.matcher(file.getName()).matches();
+    public boolean fileIsSupported(final String fileName) {
+        return supportedFilesPattern.matcher(fileName).matches();
     }
 
     /** Visit a file.
@@ -46,7 +52,10 @@ public abstract class IERSFileCrawler {
      * @exception OrekitException if some data is missing, can't be read
      * or if some loader specific error occurs
      */
-    public void visit(File file)
+    public void visit(// CHECKSTYLE: stop HiddenField check
+                      final File file
+                      // CHECKSTYLE: resume HiddenField check
+                      )
         throws OrekitException {
         BufferedReader reader = null;
         try {

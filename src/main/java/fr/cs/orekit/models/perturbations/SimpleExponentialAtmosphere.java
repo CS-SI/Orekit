@@ -3,6 +3,7 @@ package fr.cs.orekit.models.perturbations;
 import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.orekit.bodies.BodyShape;
+import fr.cs.orekit.bodies.GeodeticPoint;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.frames.Transform;
@@ -55,7 +56,8 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
     /** {@inheritDoc} */
     public double getDensity(final AbsoluteDate date, final Vector3D position, final Frame frame)
         throws OrekitException {
-        return rho0 * Math.exp((h0 - shape.transform(position, frame, date).altitude) / hscale);
+        final GeodeticPoint gp = shape.transform(position, frame, date);
+        return rho0 * Math.exp((h0 - gp.getAltitude()) / hscale);
     }
 
     /** {@inheritDoc} */

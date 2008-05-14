@@ -39,19 +39,23 @@ class NoFarPlanetsTerm extends SeriesTerm {
     private final int cSa;
 
     /** Build a planetary term for nutation series.
+     * @param sinCoeff coefficient for the sine of the argument
+     * @param cosCoeff coefficient for the cosine of the argument
+     * @param cL coefficient for mean anomaly of the Moon
+     * @param cF coefficient for L - &Omega; where L is the mean longitude of the Moon
+     * @param cD coefficient for mean elongation of the Moon from the Sun
+     * @param cOmega coefficient for mean longitude of the ascending node of the Moon
      * @param cMe coefficient for mean Mercury longitude
      * @param cVe coefficient for mean Venus longitude
      * @param cE coefficient for mean Earth longitude
      * @param cMa coefficient for mean Mars longitude
      * @param cJu coefficient for mean Jupiter longitude
      * @param cSa coefficient for mean Saturn longitude
-     * @param cUr coefficient for mean Uranus longitude
-     * @param cNe coefficient for mean Neptune longitude
-     * @param cPa coefficient for general accumulated precession in longitude
-      */
+     */
     public NoFarPlanetsTerm(final double sinCoeff, final double cosCoeff,
                             final int cL, final int cF, final int cD, final int cOmega,
-                            final int cMe, final int cVe, final int cE, final int cMa, final int cJu, final int cSa) {
+                            final int cMe, final int cVe, final int cE, final int cMa,
+                            final int cJu, final int cSa) {
         super(sinCoeff, cosCoeff);
         this.cL     = cL;
         this.cF     = cF;
@@ -67,10 +71,10 @@ class NoFarPlanetsTerm extends SeriesTerm {
 
     /** {@inheritDoc} */
     protected double argument(final BodiesElements elements) {
-        return cL * elements.l + cF * elements.f +
-               cD * elements.d + cOmega * elements.omega +
-               cMe * elements.lMe + cVe * elements.lVe + cE  * elements.lE +
-               cMa * elements.lMa + cJu * elements.lJu + cSa * elements.lSa;
+        return cL * elements.getL() + cF * elements.getF() +
+               cD * elements.getD() + cOmega * elements.getOmega() +
+               cMe * elements.getLMe() + cVe * elements.getLVe() + cE  * elements.getLE() +
+               cMa * elements.getLMa() + cJu * elements.getLJu() + cSa * elements.getLSa();
 
     }
 

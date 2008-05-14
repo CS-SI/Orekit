@@ -25,7 +25,7 @@ public class BodyCenterPointing extends GroundPointing {
     /** Creates new instance.
      * @param bodyFrame Body frame
      */
-    public BodyCenterPointing(Frame bodyFrame) {
+    public BodyCenterPointing(final Frame bodyFrame) {
         super(bodyFrame);
     }
 
@@ -34,12 +34,12 @@ public class BodyCenterPointing extends GroundPointing {
      * @param pv satellite position-velocity vector at given date in given frame.
      * @param frame the frame in which satellite position-velocity is given.
      * @return target position/velocity in body frame.
-     * 
+     *
      * <p>User should check that position/velocity and frame is consistent with given frame.
      * </p>
      */
-    protected PVCoordinates getTargetInBodyFrame(AbsoluteDate date,
-                                                 PVCoordinates pv, Frame frame) {
+    protected PVCoordinates getTargetInBodyFrame(final AbsoluteDate date,
+                                                 final PVCoordinates pv, final Frame frame) {
         return PVCoordinates.ZERO;
     }
 

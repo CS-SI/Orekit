@@ -27,10 +27,10 @@ public class OrekitException extends Exception {
     private static final long serialVersionUID = 8837701027854807120L;
 
     /** Resources bundle. */
-    private static final ResourceBundle resources;
+    private static final ResourceBundle RESOURCES;
 
     static {
-        resources = ResourceBundle.getBundle("META-INF/localization/ExceptionsMessages");
+        RESOURCES = ResourceBundle.getBundle("META-INF/localization/ExceptionsMessages");
     }
 
     /** Simple constructor.
@@ -38,7 +38,7 @@ public class OrekitException extends Exception {
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
      */
-    public OrekitException(String specifier, Object[] parts) {
+    public OrekitException(final String specifier, final Object[] parts) {
         super(translate(specifier, parts));
     }
 
@@ -47,7 +47,7 @@ public class OrekitException extends Exception {
      * @param message descriptive message
      * @param cause underlying cause
      */
-    public OrekitException(String message, Throwable cause) {
+    public OrekitException(final String message, final Throwable cause) {
         super(message, cause);
     }
 
@@ -57,7 +57,8 @@ public class OrekitException extends Exception {
      * @param parts parts to insert in the format (no translation)
      * @param cause underlying cause
      */
-    public OrekitException(String specifier, Object[] parts, Throwable cause) {
+    public OrekitException(final String specifier, final Object[] parts,
+                           final Throwable cause) {
         super(translate(specifier, parts), cause);
     }
 
@@ -66,7 +67,7 @@ public class OrekitException extends Exception {
      * @return translated string, or original string if no translation
      * can be found)
      */
-    public static String translate(String s) {
+    public static String translate(final String s) {
         return translate(s, new Object[0]);
     }
 
@@ -75,10 +76,10 @@ public class OrekitException extends Exception {
      * @param parts parts to insert in the format (no translation)
      * @return translated and formatted message
      */
-    public static String translate(String specifier, Object[] parts) {
+    public static String translate(final String specifier, final Object[] parts) {
         String translated;
         try {
-            translated = resources.getString(specifier);
+            translated = RESOURCES.getString(specifier);
         } catch (MissingResourceException mre) {
             translated = specifier;
         }
@@ -90,8 +91,8 @@ public class OrekitException extends Exception {
      * @param parts parts to insert in the format (no translation)
      * @exception IllegalArgumentException always throws an exception
      */
-    public static void throwIllegalArgumentException(String specifier,
-                                                     Object[] parts)
+    public static void throwIllegalArgumentException(final String specifier,
+                                                     final Object[] parts)
         throws IllegalArgumentException {
         throw new IllegalArgumentException(translate(specifier, parts));
     }

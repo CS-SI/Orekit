@@ -97,7 +97,7 @@ public class EOPC04FilesLoader extends IERSFileCrawler {
                 throw new OrekitException("unable to parse line {0} in IERS data file {1}",
                                           new Object[] {
                                               new Integer(lineNumber),
-                                              file.getAbsolutePath()
+                                              getFile().getAbsolutePath()
                                           });
             }
         }
@@ -106,7 +106,7 @@ public class EOPC04FilesLoader extends IERSFileCrawler {
         if (inHeader) {
             throw new OrekitException("file {0} is not an IERS data file",
                                       new Object[] {
-                                          file.getAbsolutePath()
+                                          getFile().getAbsolutePath()
                                       });
         }
 

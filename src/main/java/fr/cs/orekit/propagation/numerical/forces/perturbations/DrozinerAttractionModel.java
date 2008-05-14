@@ -36,7 +36,7 @@ public class DrozinerAttractionModel implements ForceModel {
     /** Frame for the central body. */
     private final Frame centralBodyFrame;
 
-    /** Number of zonal coefficients */
+    /** Number of zonal coefficients. */
     private final int degree;
 
     /** Number of tesseral coefficients. */
@@ -58,9 +58,9 @@ public class DrozinerAttractionModel implements ForceModel {
         this.equatorialRadius = equatorialRadius;
         this.centralBodyFrame = centralBodyFrame;
         degree = C.length - 1;
-        order = C[degree].length-1;
+        order = C[degree].length - 1;
 
-        if (C.length != S.length || C[C.length-1].length != S[S.length-1].length) {
+        if ((C.length != S.length) || (C[C.length - 1].length != S[S.length - 1].length)) {
             OrekitException.throwIllegalArgumentException("potential arrays sizes mismatch (C: {0}x{1}, S: {2}x{3})",
                                                           new Object[] {
                                                               new Integer(C.length),
@@ -106,17 +106,21 @@ public class DrozinerAttractionModel implements ForceModel {
         final double r1 = Math.sqrt(r12);
         if (r1 <= 10e-2) {
             throw new OrekitException("polar trajectory (distance to polar axis: {0})",
-                                      new Object[] { new Double(r1) });
+                                      new Object[] {
+                                          new Double(r1)
+                                      });
         }
         final double r2 = r12 + zBody * zBody;
         final double r  = Math.sqrt(r2);
         if (r <= equatorialRadius) {
             throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
-                                      new Object[] { new Double(r) });
+                                      new Object[] {
+                                          new Double(r)
+                                      });
         }
         final double r3    = r2  * r;
         final double aeOnr = equatorialRadius / r;
-        final double zOnr  = zBody/ r;
+        final double zOnr  = zBody / r;
         final double r1Onr = r1 / r;
 
         // Definition of the first acceleration terms
@@ -133,7 +137,7 @@ public class DrozinerAttractionModel implements ForceModel {
         double jk = -cC[1];
 
         // first zonal term
-        sumA += jk *( 2 * aeOnr * bk1 - zOnr * bk0);
+        sumA += jk * (2 * aeOnr * bk1 - zOnr * bk0);
         sumB += jk * bk0;
 
         // other terms
@@ -171,14 +175,14 @@ public class DrozinerAttractionModel implements ForceModel {
             double betaK = 0;
             double Bkj = 0.0;
             double Bkm1j = 3 * betaKminus1 * zOnr * r1Onr;
-            double Bkm2j= 0;
+            double Bkm2j = 0;
             double Bkminus1kminus1 = Bkm1j;
 
             // first terms
             double Gkj  = C[1][1] * cosL + S[1][1] * sinL;
             double Hkj  = C[1][1] * sinL - S[1][1] * cosL;
             double Akj  = 2 * r1Onr * betaKminus1 - zOnr * Bkminus1kminus1;
-            double Dkj  = (Akj + zOnr * Bkminus1kminus1) * 0.5 ;
+            double Dkj  = (Akj + zOnr * Bkminus1kminus1) * 0.5;
             double sum1 = Akj * Gkj;
             double sum2 = Bkminus1kminus1 * Gkj;
             double sum3 = Dkj * Hkj;
@@ -214,7 +218,7 @@ public class DrozinerAttractionModel implements ForceModel {
                             Bkminus1kminus1 = Bkj;
                         }
 
-                        Dkj =  (Akj + zOnr * Bkj) * j / (k + 1.0) ;
+                        Dkj =  (Akj + zOnr * Bkj) * j / (k + 1.0);
 
                         Bkm2j = Bkm1j;
                         Bkm1j = Bkj;

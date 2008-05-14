@@ -60,8 +60,8 @@ public class CartesianParameters extends OrbitalParameters {
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
     public CartesianParameters(final OrbitalParameters op, final double mu) {
-        super(op.frame);
-        equinoctial = new EquinoctialParameters(getPVCoordinates(mu), frame, mu);
+        super(op.getFrame());
+        equinoctial = new EquinoctialParameters(getPVCoordinates(mu), getFrame(), mu);
     }
 
     /** Get the semi-major axis.

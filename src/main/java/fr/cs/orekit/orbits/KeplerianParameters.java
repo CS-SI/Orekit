@@ -68,7 +68,7 @@ public class KeplerianParameters extends OrbitalParameters {
     /** True anomaly (rad). */
     private final double v;
 
-    /** Creates a new instance
+    /** Creates a new instance.
      * @param a  semi-major axis (m)
      * @param e eccentricity
      * @param i inclination (rad)
@@ -85,9 +85,9 @@ public class KeplerianParameters extends OrbitalParameters {
      * @see #ECCENTRIC_ANOMALY
      * @see #TRUE_ANOMALY
      */
-    public KeplerianParameters(double a, double e, double i,
-                               double pa, double raan,
-                               double anomaly, int type, Frame frame)
+    public KeplerianParameters(final double a, final double e, final double i,
+                               final double pa, final double raan,
+                               final double anomaly, final int type, final Frame frame)
         throws IllegalArgumentException {
         super(frame);
         this.a    =    a;
@@ -124,7 +124,8 @@ public class KeplerianParameters extends OrbitalParameters {
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public KeplerianParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
+    public KeplerianParameters(final PVCoordinates pvCoordinates, final Frame frame,
+                               final double mu) {
         super(pvCoordinates, frame, mu);
 
         // compute semi-major axis
@@ -159,7 +160,7 @@ public class KeplerianParameters extends OrbitalParameters {
         } else {
             final double E = Math.atan2(eSE, eCE);
             final double k = 1 / (1 + Math.sqrt(m2 / muA));
-            v = E + 2 * Math.atan(k * eSE / (1 - k *eCE));
+            v = E + 2 * Math.atan(k * eSE / (1 - k * eCE));
         }
 
         // compute perigee argument
@@ -176,8 +177,8 @@ public class KeplerianParameters extends OrbitalParameters {
      * @param op orbital parameters to copy
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public KeplerianParameters(OrbitalParameters op, double mu) {
-        super(op.frame);
+    public KeplerianParameters(final OrbitalParameters op, final double mu) {
+        super(op.getFrame());
         a    = op.getA();
         e    = op.getE();
         i    = op.getI();
@@ -240,7 +241,7 @@ public class KeplerianParameters extends OrbitalParameters {
      * @param E eccentric anomaly (rad)
      * @return v the true anomaly
      */
-    private double computeEccentricAnomaly (double E) {
+    private double computeEccentricAnomaly (final double E) {
         final double beta = e / (1 + Math.sqrt((1 - e) * (1 + e)));
         return E + 2 * Math.atan(beta * Math.sin(E) / (1 - beta * Math.cos(E)));
     }
@@ -257,7 +258,7 @@ public class KeplerianParameters extends OrbitalParameters {
      * @param M mean anomaly (rad)
      * @return v the true anomaly
      */
-    private double computeMeanAnomaly (double M) {
+    private double computeMeanAnomaly (final double M) {
 
         // resolution of Kepler equation for keplerian parameters
         double E = M;
@@ -330,7 +331,7 @@ public class KeplerianParameters extends OrbitalParameters {
         return pa + raan + getMeanAnomaly();
     }
 
-    /**  Returns a string representation of this Orbit object
+    /**  Returns a string representation of this keplerian parameters object.
      * @return a string representation of this object
      */
     public String toString() {

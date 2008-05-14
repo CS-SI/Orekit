@@ -49,7 +49,7 @@ public class KeplerianPropagator implements Ephemeris, AttitudePropagator {
         this.initialParameters = new EquinoctialParameters(initialState.getParameters(), mu);
         this.mass = initialState.getMass();
         this.n = Math.sqrt(mu / initialParameters.getA()) / initialParameters.getA();
-        AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
+        final AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
         this.attitudeLaw = lofAligned;
         this.mu = mu;
     }

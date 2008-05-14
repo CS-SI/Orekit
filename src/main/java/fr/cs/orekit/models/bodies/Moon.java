@@ -19,7 +19,7 @@ public class Moon extends ThirdBody {
     private static final long serialVersionUID = -594863231826264667L;
 
     /** Reference date. */
-    private static final AbsoluteDate reference =
+    private static final AbsoluteDate REFERENCE_DATE =
         new AbsoluteDate(AbsoluteDate.FIFTIES_EPOCH, 864000000.0);
 
     /** Transform from Veis1950 to J2000. */
@@ -31,8 +31,8 @@ public class Moon extends ThirdBody {
         super(1737400.0, 4.9027989e12);
         Transform t;
         try {
-            final Frame veisFrame = Frame.getReferenceFrame(Frame.VEIS1950, reference);
-            t  = veisFrame.getTransformTo(Frame.getJ2000(), reference);
+            final Frame veisFrame = Frame.getReferenceFrame(Frame.VEIS1950, REFERENCE_DATE);
+            t  = veisFrame.getTransformTo(Frame.getJ2000(), REFERENCE_DATE);
         } catch (OrekitException e) {
             // should not happen
             t = new Transform();
@@ -47,9 +47,10 @@ public class Moon extends ThirdBody {
      * @return position of the Moon wrt the central body (m)
      * @exception OrekitException if a frame conversion cannot be computed
      */
-    public Vector3D getPosition(AbsoluteDate date, Frame frame) throws OrekitException {
+    public Vector3D getPosition(final AbsoluteDate date, final Frame frame)
+        throws OrekitException {
 
-        final double t   = date.minus(reference) / 86400.0;
+        final double t   = date.minus(REFERENCE_DATE) / 86400.0;
         final double f   = Math.toRadians(225.768 + 13.2293505 * t);
         final double xl  = Math.toRadians(185.454 + 13.064992 * t);
         final double d   = Math.toRadians(11.786 + 12.190749 * t);

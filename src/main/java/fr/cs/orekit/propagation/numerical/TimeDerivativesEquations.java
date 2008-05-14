@@ -57,13 +57,13 @@ import fr.cs.orekit.utils.PVCoordinates;
 public class TimeDerivativesEquations implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -5105883494297693930L;
+    private static final long serialVersionUID = -3337021992571488188L;
 
     /** Orbital parameters. */
-    private EquinoctialParameters parameters;
+    private EquinoctialParameters storedParameters;
 
     /** Reference to the derivatives array to initialize. */
-    private double[] yDot;
+    private double[] storedYDot;
 
     /** Central body attraction coefficient. */
     private double mu;
@@ -120,8 +120,9 @@ public class TimeDerivativesEquations implements Serializable {
      * @param parameters current orbit parameters
      * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
      */
-    protected TimeDerivativesEquations(EquinoctialParameters parameters, double mu) {
-        this.parameters = parameters;
+    protected TimeDerivativesEquations(final EquinoctialParameters parameters,
+                                       final double mu) {
+        this.storedParameters = parameters;
         this.mu = mu;
         lofQ = new Vector3D();
         lofS = new Vector3D();
@@ -135,7 +136,7 @@ public class TimeDerivativesEquations implements Serializable {
     private void updateOrbitalFrames() {
 
         // get the position/velocity vectors
-        final PVCoordinates pvCoordinates = parameters.getPVCoordinates(mu);
+        final PVCoordinates pvCoordinates = storedParameters.getPVCoordinates(mu);
 
         // compute orbital plane normal vector
         lofW = Vector3D.crossProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity()).normalize();
@@ -155,38 +156,41 @@ public class TimeDerivativesEquations implements Serializable {
      * @param parameters current orbit parameters
      * @exception PropagationException if the orbit evolve out of supported range
      */
-    protected void initDerivatives(double[] yDot, EquinoctialParameters parameters)
+    protected void initDerivatives(final double[] yDot,
+                                   final EquinoctialParameters parameters)
         throws PropagationException {
 
 
-        this.parameters = parameters;
+        this.storedParameters = parameters;
         updateOrbitalFrames();
 
         // store derivatives array reference
-        this.yDot = yDot;
+        this.storedYDot = yDot;
 
         // initialize derivatives to zero
-        Arrays.fill(yDot, 0.0);
+        Arrays.fill(storedYDot, 0.0);
 
         // intermediate variables
-        final double ex  = parameters.getEquinoctialEx();
-        final double ey  = parameters.getEquinoctialEy();
+        final double ex  = storedParameters.getEquinoctialEx();
+        final double ey  = storedParameters.getEquinoctialEy();
         final double ex2 = ex * ex;
         final double ey2 = ey * ey;
         final double e2  = ex2 + ey2;
         final double e   = Math.sqrt(e2);
         if (e >= 1) {
             throw new PropagationException("orbit becomes hyperbolic, unable to propagate it further (e: {0})",
-                                           new Object[] { new Double(e) });
+                                           new Object[] {
+                                               new Double(e)
+                                           });
         }
 
         // intermediate variables
         final double oMe2        = (1 - e) * (1 + e);
         final double epsilon     = Math.sqrt(oMe2);
-        final double a           = parameters.getA();
+        final double a           = storedParameters.getA();
         final double na          = Math.sqrt(mu / a);
         final double n           = na / a;
-        final double lv          = parameters.getLv();
+        final double lv          = storedParameters.getLv();
         final double cLv         = Math.cos(lv);
         final double sLv         = Math.sin(lv);
         final double excLv       = ex * cLv;
@@ -196,9 +200,9 @@ public class TimeDerivativesEquations implements Serializable {
         final double nu          = ex * sLv - ey * cLv;
         final double sqrt        = Math.sqrt(ksi * ksi + nu * nu);
         final double oPksi       = 2 + excLvPeysLv;
-        final double hx          = parameters.getHx();
-        final double hy          = parameters.getHy();
-        final double h2          = hx * hx  + hy * hy ;
+        final double hx          = storedParameters.getHx();
+        final double hy          = storedParameters.getHy();
+        final double h2          = hx * hx  + hy * hy;
         final double oPh2        = 1 + h2;
         final double hxsLvMhycLv = hx * sLv - hy * cLv;
 
@@ -246,7 +250,7 @@ public class TimeDerivativesEquations implements Serializable {
      * numerical accuracy.</p>
      */
     protected void addKeplerContribution() {
-        yDot[5] += lvKepler;
+        storedYDot[5] += lvKepler;
     }
 
     /** Add the contribution of an acceleration expressed in (t, n, w)
@@ -255,13 +259,13 @@ public class TimeDerivativesEquations implements Serializable {
      * @param n acceleration along the N axis (m/s<sup>2</sup>)
      * @param w acceleration along the W axis (m/s<sup>2</sup>)
      */
-    public void addTNWAcceleration(double t, double n, double w) {
-        yDot[0] += aT  * t;
-        yDot[1] += exT * t + exN * n + exW * w;
-        yDot[2] += eyT * t + eyN * n + eyW * w;
-        yDot[3] += hxW * w;
-        yDot[4] += hyW * w;
-        yDot[5] += lvW * w;
+    public void addTNWAcceleration(final double t, final double n, final double w) {
+        storedYDot[0] += aT  * t;
+        storedYDot[1] += exT * t + exN * n + exW * w;
+        storedYDot[2] += eyT * t + eyN * n + eyW * w;
+        storedYDot[3] += hxW * w;
+        storedYDot[4] += hyW * w;
+        storedYDot[5] += lvW * w;
     }
 
     /** Add the contribution of an acceleration expressed in (q, s, w)
@@ -270,13 +274,13 @@ public class TimeDerivativesEquations implements Serializable {
      * @param s acceleration along the S axis (m/s<sup>2</sup>)
      * @param w acceleration along the W axis (m/s<sup>2</sup>)
      */
-    public void addQSWAcceleration(double q, double s, double w) {
-        yDot[0] += aQ  * q + aS  * s;
-        yDot[1] += exQ * q + exS * s + exW * w;
-        yDot[2] += eyQ * q + eyS * s + eyW * w;
-        yDot[3] += hxW * w;
-        yDot[4] += hyW * w;
-        yDot[5] += lvW * w;
+    public void addQSWAcceleration(final double q, final double s, final double w) {
+        storedYDot[0] += aQ  * q + aS  * s;
+        storedYDot[1] += exQ * q + exS * s + exW * w;
+        storedYDot[2] += eyQ * q + eyS * s + eyW * w;
+        storedYDot[3] += hxW * w;
+        storedYDot[4] += hyW * w;
+        storedYDot[5] += lvW * w;
     }
 
 
@@ -287,7 +291,7 @@ public class TimeDerivativesEquations implements Serializable {
      * @param y acceleration along the Y axis (m/s<sup>2</sup>)
      * @param z acceleration along the Z axis (m/s<sup>2</sup>)
      */
-    public void addXYZAcceleration(double x, double y, double z) {
+    public void addXYZAcceleration(final double x, final double y, final double z) {
         addTNWAcceleration(x * lofT.getX() + y * lofT.getY() + z * lofT.getZ(),
                            x * lofN.getX() + y * lofN.getY() + z * lofN.getZ(),
                            x * lofW.getX() + y * lofW.getY() + z * lofW.getZ());
@@ -296,9 +300,9 @@ public class TimeDerivativesEquations implements Serializable {
     /** Add the contribution of an acceleration expressed in inertial frame
      *  (it is important to make sure this acceleration is expressed in the
      *  same frame as the orbit) .
-     * @param gamma acceleration vector in the intertial frame (m/s<sup>2</sup>)
+     * @param gamma acceleration vector in the inertial frame (m/s<sup>2</sup>)
      */
-    public void addAcceleration(Vector3D gamma) {
+    public void addAcceleration(final Vector3D gamma) {
         addTNWAcceleration(Vector3D.dotProduct(gamma, lofT),
                            Vector3D.dotProduct(gamma, lofN),
                            Vector3D.dotProduct(gamma, lofW));
@@ -308,12 +312,14 @@ public class TimeDerivativesEquations implements Serializable {
      * @param q the flow rate, must be negative (dm/dt)
      * @exception IllegalArgumentException if flow-rate is positive
      */
-    public void addMassDerivative(double q) {
+    public void addMassDerivative(final double q) {
         if (q > 0) {
             OrekitException.throwIllegalArgumentException("positive flow rate (q: {0})",
-                                                          new Object[] { new Double(q) });
+                                                          new Object[] {
+                                                              new Double(q)
+                                                          });
         }
-        yDot[6] += q;
+        storedYDot[6] += q;
     }
 
     /** Get the first vector of the (q, s, w) local orbital frame.

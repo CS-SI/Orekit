@@ -29,7 +29,7 @@ public interface Ephemeris extends Serializable {
      * @return the orbit at the specified date
      * @exception PropagationException if state cannot be extrapolated
      */
-    public SpacecraftState getSpacecraftState(AbsoluteDate date)
+    SpacecraftState getSpacecraftState(AbsoluteDate date)
         throws PropagationException;
 
 }

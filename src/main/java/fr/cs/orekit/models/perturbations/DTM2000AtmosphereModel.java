@@ -93,9 +93,9 @@ public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosph
         final int day = cal.get(Calendar.DAY_OF_YEAR);
         // compute geodetic position
         final GeodeticPoint inBody = earth.transform(position, frame, date);
-        final double alti = inBody.altitude;
-        final double lon = inBody.longitude;
-        final double lat = inBody.latitude;
+        final double alti = inBody.getAltitude();
+        final double lon = inBody.getLongitude();
+        final double lat = inBody.getLatitude();
 
         // compute local solar time
 

@@ -11,19 +11,18 @@ package fr.cs.orekit.time;
 public class TCGScale extends TimeScale {
 
     /** LG rate. */
-    private static double lg = 6.969290134e-10;
+    private static double LG_RATE = 6.969290134e-10;
 
     /** Inverse rate. */
-    private static double inverse = 1.0 / (1.0 + lg);
+    private static double INVERSE_RATE = 1.0 / (1.0 + LG_RATE);
 
-    // reference time scale
-    private static final TimeScale tt = TTScale.getInstance();
+    /** Reference time scale. */
+    private static final TimeScale TT_SCALE = TTScale.getInstance();
 
-    // reference time for TCG is 1977-01-01 (2557 days after 1970-01-01)
-    private static final double reference = 2557l * 86400000l;
+    /** Reference time for TCG is 1977-01-01 (2557 days after 1970-01-01). */
+    private static final double REFERENCE_DATE = 2557l * 86400000l;
 
-    /** Private constructor for the singleton.
-     */
+    /** Private constructor for the singleton. */
     private TCGScale() {
         super("TCG");
     }
@@ -32,7 +31,7 @@ public class TCGScale extends TimeScale {
      * @return the unique instance
      */
     public static TimeScale getInstance() {
-        return LazyHolder.instance;
+        return LazyHolder.INSTANCE;
     }
 
     /** Get the offset to convert locations from {@link TAIScale}  to instance.
@@ -41,9 +40,9 @@ public class TCGScale extends TimeScale {
      * @return offset to <em>add</em> to taiTime to get a location
      * in instance time scale
      */
-    public double offsetFromTAI(double taiTime) {
-        final double ttOffset = tt.offsetFromTAI(taiTime);
-        return ttOffset + lg * (ttOffset + taiTime - reference);
+    public double offsetFromTAI(final double taiTime) {
+        final double ttOffset = TT_SCALE.offsetFromTAI(taiTime);
+        return ttOffset + LG_RATE * (ttOffset + taiTime - REFERENCE_DATE);
     }
 
     /** Get the offset to convert locations from instance to {@link TAIScale} .
@@ -52,9 +51,9 @@ public class TCGScale extends TimeScale {
      * @return offset to <em>add</em> to instanceTime to get a location
      * in {@link TAIScale}  time scale
      */
-    public double offsetToTAI(double instanceTime) {
-        final double ttTime = inverse * (instanceTime + lg * reference);
-        return tt.offsetToTAI(ttTime) - lg * inverse * (instanceTime - reference);
+    public double offsetToTAI(final double instanceTime) {
+        final double ttTime = INVERSE_RATE * (instanceTime + LG_RATE * REFERENCE_DATE);
+        return TT_SCALE.offsetToTAI(ttTime) - LG_RATE * INVERSE_RATE * (instanceTime - REFERENCE_DATE);
     }
 
     /** Holder for the singleton.
@@ -62,9 +61,9 @@ public class TCGScale extends TimeScale {
      * the singleton, as it is both thread-safe, efficient (no
      * synchronization) and works with all version of java.</p>
      */
-    private static class LazyHolder 
-    {
-        private static final TCGScale instance = new TCGScale();
+    private static class LazyHolder  {
+        /** Unique instance. */
+        private static final TCGScale INSTANCE = new TCGScale();
     }
 
 }

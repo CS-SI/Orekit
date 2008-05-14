@@ -16,6 +16,8 @@ import fr.cs.orekit.time.UTCScale;
  */
 abstract class SDP4  extends TLEPropagator {
 
+    // CHECKSTYLE: stop VisibilityModifierCheck
+
     /** New perigee argument. */
     protected double omgadf;
 
@@ -30,6 +32,8 @@ abstract class SDP4  extends TLEPropagator {
 
     /** New inclination. */
     protected double xinc;
+
+    // CHECKSTYLE: resume VisibilityModifierCheck
 
     /** Constructor for a unique initial TLE.
      * @param initialTLE the TLE to propagate.

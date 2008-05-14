@@ -27,15 +27,15 @@ public class YawCompensation extends GroundPointing {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 5370690180672669249L;
-    
+
     /** Basic ground pointing attitude law.  */
     private final GroundPointing groundPointingLaw;
 
-    /** Creates a new instance
+    /** Creates a new instance.
      * @param groundPointingLaw Ground pointing attitude law before yaw compensation
-     * @param shape Body shape 
+     * @param shape Body shape
      */
-    public YawCompensation(GroundPointing groundPointingLaw, BodyShape shape) {
+    public YawCompensation(final GroundPointing groundPointingLaw, final BodyShape shape) {
         super(shape.getBodyFrame());
         this.groundPointingLaw = groundPointingLaw;
     }
@@ -54,15 +54,14 @@ public class YawCompensation extends GroundPointing {
      * @return target position/velocity in body frame at date.
      * @throws OrekitException if some specific error occurs
      */
-    protected PVCoordinates getTargetInBodyFrame(AbsoluteDate date,
-                                                 PVCoordinates pv, Frame frame)
+    protected PVCoordinates getTargetInBodyFrame(final AbsoluteDate date,
+                                                 final PVCoordinates pv, final Frame frame)
         throws OrekitException {
-        
+
         /* Return basic attitude law target. */
         return groundPointingLaw.getTargetInBodyFrame(date, pv, frame);
     }
 
-    
     /** Compute the base system state at given date, without yaw compensation.
      * @param date date when the system state shall be computed
      * @param pv satellite position-velocity vector at given date in given frame.
@@ -70,24 +69,26 @@ public class YawCompensation extends GroundPointing {
      * @return satellite base attitude state, i.e without yaw compensation.
      * @throws OrekitException if some specific error occurs
      */
-    public Attitude getBaseState(AbsoluteDate date, PVCoordinates pv, Frame frame)  
+    public Attitude getBaseState(final AbsoluteDate date,
+                                 final PVCoordinates pv, final Frame frame)
         throws OrekitException {
         final Attitude base = groundPointingLaw.getState(date, pv, frame);
         return base;
     }
-    
+
     /** Compute the system yaw compensation rotation at given date.
      * @param date date when the system state shall be computed
      * @param pv satellite position-velocity vector at given date in given frame.
      * @param base base satellite attitude in given frame.
      * @param frame the frame in which satellite position-velocity an attitude are given.
-     * @return yaw compensation rotation at date, i.e rotation between non compensated attitude state and compensated state.
+     * @return yaw compensation rotation at date, i.e rotation between non compensated
+     * attitude state and compensated state.
      * @throws OrekitException if some specific error occurs
      */
-    public Rotation getCompensation(AbsoluteDate date, PVCoordinates pv, 
-                                    Attitude base, Frame frame)  
+    public Rotation getCompensation(final AbsoluteDate date, final PVCoordinates pv,
+                                    final Attitude base, final Frame frame)
         throws OrekitException {
-        
+
         // Compensation rotation definition :
         //  . Z satellite axis is unchanged
         //  . X satellite axis shall be aligned to target relative velocity
@@ -95,11 +96,11 @@ public class YawCompensation extends GroundPointing {
         final PVCoordinates targetPV = groundPointingLaw.getObservedGroundPoint(date, pv, frame);
         final Vector3D targetVelocity = targetPV.getVelocity();
         final Vector3D relativeVelocity = targetVelocity.subtract(satVelocity);
-        
-        // Create rotation transforming zsat to zsat and relativeVelocity to -xsat 
+
+        // Create rotation transforming zsat to zsat and relativeVelocity to -xsat
         final Rotation compensation = new Rotation(Vector3D.plusK, base.getRotation().applyTo(relativeVelocity),
                                                    Vector3D.plusK, Vector3D.minusI);
-        
+
         return compensation;
     }
         /** Compute the system state at given date.
@@ -109,15 +110,16 @@ public class YawCompensation extends GroundPointing {
      * @return satellite attitude state at date, in given frame.
      * @throws OrekitException if some specific error occurs
      */
-    public Attitude getState(AbsoluteDate date, PVCoordinates pv, Frame frame)  
+    public Attitude getState(final AbsoluteDate date,
+                             final PVCoordinates pv, final Frame frame)
         throws OrekitException {
-        
+
         //1/ Get attitude from base attitude law
         final Attitude base = getBaseState(date, pv, frame);
-        
+
         // 2/ Get yaw compensation
         final Rotation compensation = getCompensation(date, pv, base, frame);
-        
+
         // 3/ Combination of base attitude and yaw compensation
         return new Attitude(frame, compensation.applyTo(base.getRotation()), compensation.applyTo(base.getSpin()));
     }
@@ -129,19 +131,21 @@ public class YawCompensation extends GroundPointing {
      * @return yaw compensation angle at date.
      * @throws OrekitException if some specific error occurs
      */
-    public double getYawAngle(AbsoluteDate date, PVCoordinates pv, Frame frame)  
+    public double getYawAngle(final AbsoluteDate date,
+                              final PVCoordinates pv, final Frame frame)
         throws OrekitException {
-        
+
         // Attitude rotation without yaw compensation
         final Rotation rotNoYaw = groundPointingLaw.getState(date, pv, frame).getRotation();
 
         // Attitude rotation without yaw compensation
         final Rotation rotYaw = getState(date, pv, frame).getRotation();
-        
+
         // Compute yaw compensation angle by composition of both rotations
         final Rotation compoRot = rotYaw.applyTo(rotNoYaw.revert());
         final double yawAngle = compoRot.getAngle();
 
         return yawAngle;
     }
+
 }

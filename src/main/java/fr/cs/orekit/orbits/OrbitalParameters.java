@@ -38,8 +38,8 @@ import java.io.Serializable;
  */
 public abstract class OrbitalParameters implements Serializable {
 
-    /** Frame in which are defined the orbital parameters */
-    protected final Frame frame;
+    /** Frame in which are defined the orbital parameters. */
+    private final Frame frame;
 
     /** Last value of mu used to compute position and velocity (m<sup>3</sup>/s<sup>2</sup>). */
     private double cachedMu;
@@ -54,7 +54,7 @@ public abstract class OrbitalParameters implements Serializable {
      * Build a new instance with arbitrary default elements.
      * @param frame the inertial frame
      */
-    protected OrbitalParameters(Frame frame) {
+    protected OrbitalParameters(final Frame frame) {
         cachedMu = Double.NaN;
         cachedPVCoordinates = new PVCoordinates(new Vector3D(Double.NaN, Double.NaN, Double.NaN),
                                                 new Vector3D(Double.NaN, Double.NaN, Double.NaN));
@@ -67,7 +67,8 @@ public abstract class OrbitalParameters implements Serializable {
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * @param mu central attraction coefficient (m^3/s^2)
      */
-    protected OrbitalParameters(PVCoordinates pvCoordinates, Frame frame, double mu) {
+    protected OrbitalParameters(final PVCoordinates pvCoordinates, final Frame frame,
+                                final double mu) {
         cachedMu = mu;
         cachedPVCoordinates = pvCoordinates;
         this.frame = frame;
@@ -119,14 +120,17 @@ public abstract class OrbitalParameters implements Serializable {
     /** Get the eccentricity.
      * @return eccentricity
      */
-    public abstract double getE() ;
+    public abstract double getE();
 
     /** Get the inclination.
      * @return inclination (rad)
      */
-    public abstract double getI() ;
+    public abstract double getI();
 
-    private void initPVCoordinates(double mu) {
+    /** Initialize the position/velocity coordinates.
+     * @param mu central term acceleration coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     */
+    private void initPVCoordinates(final double mu) {
 
         // get equinoctial parameters
         final double a  = getA();
@@ -208,15 +212,15 @@ public abstract class OrbitalParameters implements Serializable {
      * @return pvCoordinates in inertial frame (reference to an
      * internally cached pvCoordinates which can change)
      */
-    public PVCoordinates getPVCoordinates(double mu) {
+    public PVCoordinates getPVCoordinates(final double mu) {
         if (dirtyCache || ((mu - cachedMu) != 0)) {
             initPVCoordinates(mu);
         }
         return cachedPVCoordinates;
     }
 
-    /** Get the frame in which are defined the orbital parameters.
-     * @return frame the frame
+    /** Get the frame in which the orbital parameters are defined.
+     * @return frame in which the orbital parameters are defined
      */
     public Frame getFrame() {
         return frame;

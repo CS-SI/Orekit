@@ -124,7 +124,7 @@ public class NumericalPropagator
         this.startDate    = new AbsoluteDate();
         this.currentState = null;
         this.adder        = null;
-        AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
+        final AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
         this.attitudeLaw = lofAligned;
         this.state        = new double[getDimension()];
     }

@@ -194,9 +194,9 @@ public class NadirPointingTest extends TestCase {
         GeodeticPoint geoTarget = earthShape.transform(pvTargetItrf2000B.getPosition(), frameItrf2000B, date);
 
         // Compute local vertical axis
-        double xVert = Math.cos(geoTarget.longitude)*Math.cos(geoTarget.latitude);
-        double yVert = Math.sin(geoTarget.longitude)*Math.cos(geoTarget.latitude);
-        double zVert = Math.sin(geoTarget.latitude);
+        double xVert = Math.cos(geoTarget.getLongitude())*Math.cos(geoTarget.getLatitude());
+        double yVert = Math.sin(geoTarget.getLongitude())*Math.cos(geoTarget.getLatitude());
+        double zVert = Math.sin(geoTarget.getLatitude());
         Vector3D targetVertical = new Vector3D(xVert, yVert, zVert);
         
         // Get attitude rotation state
