@@ -63,13 +63,13 @@ public abstract class GroundPointing implements AttitudeLaw {
                                                 Frame frame) 
         throws OrekitException {
         
-        /* Get target in body frame */
+        // Get target in body frame
         final PVCoordinates targetInBodyFrame = getTargetInBodyFrame(date, pv, frame);
 
-        /* Transform to given frame */
+        // Transform to given frame
         final Transform t = bodyFrame.getTransformTo(frame, date);        
         
-        /* Target in given frame. */
+        // Target in given frame.
         return t.transformPVCoordinates(targetInBodyFrame);
     }
     
@@ -86,23 +86,23 @@ public abstract class GroundPointing implements AttitudeLaw {
     public Attitude getState(AbsoluteDate date, PVCoordinates pv, Frame frame) 
         throws OrekitException {
         
-        /* Construction of the satellite-target position/velocity vector */
+        // Construction of the satellite-target position/velocity vector 
         final PVCoordinates pointing =  new PVCoordinates(1, getObservedGroundPoint(date, pv, frame), -1, pv);
         final Vector3D pos = pointing.getPosition();
         final Vector3D vel = pointing.getVelocity();
             
-        /* New orekit exception if null position. */
+        // New orekit exception if null position. 
         if (pos.equals(Vector3D.zero)) {
             throw new OrekitException("satellite smashed on its target",
                                       new Object[] {pos});
         }
         
-        /* Attitude rotation in given frame : 
-         * line of sight -> z satellite axis, 
-         * satellite velocity -> x satellite axis. */
+        // Attitude rotation in given frame : 
+        // line of sight -> z satellite axis, 
+        // satellite velocity -> x satellite axis. 
         final Rotation rot = new Rotation(pos, pv.getVelocity(), Vector3D.plusK, Vector3D.plusI);
         
-        /* Attitude spin */
+        // Attitude spin
         final Vector3D spin = new Vector3D(1/Vector3D.dotProduct(pos, pos), Vector3D.crossProduct(pos, vel));
         
         return new Attitude(frame, rot, rot.applyTo(spin));

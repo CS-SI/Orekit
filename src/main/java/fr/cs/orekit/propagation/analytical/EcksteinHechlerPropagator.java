@@ -1,9 +1,10 @@
 package fr.cs.orekit.propagation.analytical;
 
+import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.util.MathUtils;
 
 import fr.cs.orekit.attitudes.AttitudeLaw;
-import fr.cs.orekit.attitudes.DefaultAttitude;
+import fr.cs.orekit.attitudes.LofOffset;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.orbits.CircularParameters;
@@ -106,7 +107,8 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
         // compute mean parameters
         initialDate = initialState.getDate();
         mass = initialState.getMass();
-        this.attitudeLaw = DefaultAttitude.getInstance();
+        AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
+        this.attitudeLaw = lofAligned;
         computeMeanParameters(osculating);
 
     }

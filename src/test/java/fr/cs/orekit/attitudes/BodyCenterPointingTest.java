@@ -58,8 +58,7 @@ public class BodyCenterPointingTest extends TestCase {
         // Check that target is body center
         double normPos = target.getPosition().getNorm();
         double normVel = target.getVelocity().getNorm();
-        boolean test = ((normPos < Utils.epsilonTest) && (normVel < Utils.epsilonTest));
-        assertEquals(test, true);
+        assertTrue((normPos < Utils.epsilonTest) && (normVel < Utils.epsilonTest));
 
     }
 
@@ -91,8 +90,7 @@ public class BodyCenterPointingTest extends TestCase {
         // Check that the line contains earth center (distance from line to point less than 1.e-8 m)
         double distance = pointingLine.distance(Vector3D.zero);
         
-        boolean test = (distance < 1.e-8);
-        assertEquals(test, true);
+        assertTrue(distance < 1.e-8);
     }
 
     public void setUp() {

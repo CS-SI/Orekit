@@ -22,15 +22,24 @@ public interface BodyShape extends Serializable {
     public Frame getBodyFrame();
 
     /** Get the intersection point of a line with the surface of the body.
-     * @param line test line in inertial frame (may intersect the body or not)
+     * <p>A line may have several intersection points with a closed
+     * surface (we consider the one point case as a degenerated two
+     * points case). The close parameter is used to select which of
+     * these points should be returned. The selected point is the one
+     * that is closest to the close point.</p>
+     * @param line test line (may intersect the body or not)
+     * @param close point used for intersections selection
      * @param frame frame in which line is expressed
-     * @param date date of the computation (used for frames conversions)
+     * @param date date of the line in given frame
      * @return intersection point at altitude zero or null if the line does
      * not intersect the surface
      * @exception OrekitException if line cannot be converted to body frame
+     * @see fr.cs.orekit.utils.Line#getAbscissa(Vector3D)
+     * @see fr.cs.orekit.utils.Line#pointAt(double)
      */
-    public GeodeticPoint getIntersectionPoint(Line line, Frame frame, AbsoluteDate date)
-        throws OrekitException ;
+    public GeodeticPoint getIntersectionPoint(Line line, Vector3D close,
+                                              Frame frame, AbsoluteDate date)
+      throws OrekitException;
 
     /** Transform a cartesian point to a surface-relative point.
      * @param point cartesian point

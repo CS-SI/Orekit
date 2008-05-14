@@ -35,7 +35,7 @@ public class NadirPointing extends GroundPointing {
      * @param shape Body shape
      */
     public NadirPointing(BodyShape shape) {
-        /* Call constructor of superclass */
+        // Call constructor of superclass
         super(shape.getBodyFrame());
         this.shape = shape;
     }
@@ -54,13 +54,13 @@ public class NadirPointing extends GroundPointing {
                                                  PVCoordinates pv, Frame frame) 
         throws OrekitException {
         
-        /* Satellite position in geodetic coordinates */
+        // Satellite position in geodetic coordinates
         final GeodeticPoint gpSat = shape.transform(pv.getPosition(), frame, date);
 
-        /* Ground point under satellite vertical */
+        // Ground point under satellite vertical
         final GeodeticPoint gpGround = new GeodeticPoint(gpSat.longitude, gpSat.latitude, 0.);
         
-        /* Return target = this intersection point, with null velocity */
+        // Return target = this intersection point, with null velocity
         return new PVCoordinates(shape.transform(gpGround), Vector3D.zero);
     }
 

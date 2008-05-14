@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.ode.ContinuousOutputModel;
 import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.DummyStepHandler;
@@ -14,7 +15,7 @@ import org.apache.commons.math.ode.StepHandler;
 import org.apache.commons.math.ode.StepNormalizer;
 
 import fr.cs.orekit.attitudes.AttitudeLaw;
-import fr.cs.orekit.attitudes.DefaultAttitude;
+import fr.cs.orekit.attitudes.LofOffset;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.orbits.EquinoctialParameters;
@@ -123,7 +124,8 @@ public class NumericalPropagator
         this.startDate    = new AbsoluteDate();
         this.currentState = null;
         this.adder        = null;
-        this.attitudeLaw  = DefaultAttitude.getInstance();
+        AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
+        this.attitudeLaw = lofAligned;
         this.state        = new double[getDimension()];
     }
 

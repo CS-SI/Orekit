@@ -1,7 +1,9 @@
 package fr.cs.orekit.propagation.analytical;
 
+import org.apache.commons.math.geometry.RotationOrder;
+
 import fr.cs.orekit.attitudes.AttitudeLaw;
-import fr.cs.orekit.attitudes.DefaultAttitude;
+import fr.cs.orekit.attitudes.LofOffset;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.orbits.EquinoctialParameters;
@@ -47,7 +49,8 @@ public class KeplerianPropagator implements Ephemeris, AttitudePropagator {
         this.initialParameters = new EquinoctialParameters(initialState.getParameters(), mu);
         this.mass = initialState.getMass();
         this.n = Math.sqrt(mu / initialParameters.getA()) / initialParameters.getA();
-        this.attitudeLaw = DefaultAttitude.getInstance();
+        AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
+        this.attitudeLaw = lofAligned;
         this.mu = mu;
     }
 

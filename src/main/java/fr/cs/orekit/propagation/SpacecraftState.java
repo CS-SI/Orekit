@@ -2,8 +2,12 @@ package fr.cs.orekit.propagation;
 
 import java.io.Serializable;
 
+import org.apache.commons.math.geometry.RotationOrder;
+
 import fr.cs.orekit.attitudes.Attitude;
-import fr.cs.orekit.attitudes.DefaultAttitude;
+import fr.cs.orekit.attitudes.AttitudeLaw;
+import fr.cs.orekit.attitudes.LofOffset;
+import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.orbits.OrbitalParameters;
@@ -57,12 +61,15 @@ public class SpacecraftState implements Serializable {
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
     public SpacecraftState(final Orbit orbit, final double mass,
-                           final double mu) {
+                           final double mu) 
+        throws OrekitException
+    {
         this.orbit    = orbit;
         this.mass     = mass;
-        this.attitude = DefaultAttitude.getInstance().getState(orbit.getDate(),
-                                                               orbit.getPVCoordinates(mu),
-                                                               orbit.getFrame());
+        AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
+        this.attitude = lofAligned.getState(orbit.getDate(),
+                                            orbit.getPVCoordinates(mu),
+                                            orbit.getFrame());
     }
 
     /** Create a new instance from orbital state only.
@@ -71,7 +78,9 @@ public class SpacecraftState implements Serializable {
      * @param orbit the orbit
      * @param mu central body attraction coefficient
      */
-    public SpacecraftState(final Orbit orbit, final double mu) {
+    public SpacecraftState(final Orbit orbit, final double mu) 
+        throws OrekitException 
+    {
         this(orbit, 1000.0, mu);
     }
 

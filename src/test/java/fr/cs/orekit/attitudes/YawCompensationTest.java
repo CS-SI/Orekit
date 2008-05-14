@@ -149,34 +149,30 @@ public class YawCompensationTest extends TestCase {
             if ( (Math.abs(extrapLat) < Math.toRadians(2.))
                     && (extrapPvSatJ2000.getVelocity().getZ() >= 0. ) )
             {
-                boolean test = (    (Math.abs(yawAngle) >= Math.toRadians(2.8488911779424484)) 
-                                 && (Math.abs(yawAngle) <= Math.toRadians(2.8531667023319462)) );
-                assertEquals(true, test);
+                assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.8488911779424484)) 
+                        && (Math.abs(yawAngle) <= Math.toRadians(2.8531667023319462)));
             }
             
             // 2/ Check yaw values around maximum positive latitude (min yaw)
             if ( extrapLat > Math.toRadians(50.) )
             {
-                boolean test = (    (Math.abs(yawAngle) <= Math.toRadians(0.2627860468476059)) 
-                                 && (Math.abs(yawAngle) >= Math.toRadians(0.0032285415586776798)) );
-                assertEquals(true, test);
+                assertTrue((Math.abs(yawAngle) <= Math.toRadians(0.2627860468476059)) 
+                        && (Math.abs(yawAngle) >= Math.toRadians(0.0032285415586776798)));
             }
             
             // 3/ Check yaw values around descending node (max yaw)
             if ( (Math.abs(extrapLat) < Math.toRadians(2.))
                     && (extrapPvSatJ2000.getVelocity().getZ() <= 0. ) )
             {
-                boolean test = (    (Math.abs(yawAngle) >= Math.toRadians(2.8485147320218904)) 
-                                 && (Math.abs(yawAngle) <= Math.toRadians(2.8535230849061097)) );
-                assertEquals(true, test);
+                assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.8485147320218904)) 
+                             && (Math.abs(yawAngle) <= Math.toRadians(2.8535230849061097)));
             }
          
             // 4/ Check yaw values around maximum negative latitude (min yaw)
             if ( extrapLat < Math.toRadians(-50.) )
             {
-                boolean test = (    (Math.abs(yawAngle) <= Math.toRadians(0.2358843505723192)) 
-                                 && (Math.abs(yawAngle) >= Math.toRadians(0.014143120809540489)) );
-                assertEquals(true, test);
+                assertTrue((Math.abs(yawAngle) <= Math.toRadians(0.2358843505723192)) 
+                             && (Math.abs(yawAngle) >= Math.toRadians(0.014143120809540489)));
             }
 
         }
@@ -214,18 +210,6 @@ public class YawCompensationTest extends TestCase {
         assertEquals(0., yawAxis.getX(), Utils.epsilonTest);
         assertEquals(0., yawAxis.getY(), Utils.epsilonTest);
         assertEquals(1., yawAxis.getZ(), Utils.epsilonTest);
-//            }
-            
-            // 2/ Check yaw values around maximum positive latitude
-            
-            // 3/ Check yaw values around descending node
-//            if ( (Math.abs(yawAngle) < Math.toRadians(3.))
-//                    && (extrapPvSatJ2000.getVelocity().getZ() <= 0. ) )
-//            {
-//                assertEquals(Math.abs(yawAngle), Math.toRadians(2.8455), Utils.epsilonTest);
-//            }
-            
-            // 4/ Check yaw values around maximum negative latitude
 
     }
     
@@ -271,6 +255,7 @@ public class YawCompensationTest extends TestCase {
         circ = null;
         pvSatJ2000 = null;
         pvSatItrf2000B = null;
+        earthShape = null;
     }
 
     public static Test suite() {

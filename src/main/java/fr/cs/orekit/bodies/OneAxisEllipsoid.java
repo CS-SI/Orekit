@@ -4,6 +4,7 @@ import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
+import fr.cs.orekit.frames.Transform;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.Line;
 
@@ -125,52 +126,55 @@ public class OneAxisEllipsoid implements BodyShape {
         return bodyFrame;  
     }
 
-    /** Get the intersection point of a line with the surface of the body.
-     * @param line test line in inertial frame (may intersect the body or not)
-     * @param frame frame in which line is expressed
-     * @param date date of the line in given frame
-     * @return intersection point at altitude zero or null if the line does
-     * not intersect the surface
-     * @exception OrekitException if line cannot be converted to body frame
-     */
-    public GeodeticPoint getIntersectionPoint(Line line, Frame frame, AbsoluteDate date) 
+    /** {@inheritDoc} */
+    public GeodeticPoint getIntersectionPoint(Line line, Vector3D close,
+                                              Frame frame, AbsoluteDate date) 
         throws OrekitException {
         
-        // transform line to body frame
-        final Line lineInBodyFrame =
-            frame.getTransformTo(bodyFrame, date).transformLine(line);
+        // transform line and close to body frame
+        final Transform frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
+        final Line lineInBodyFrame = frameToBodyFrame.transformLine(line);
+        final Vector3D closeInBodyFrame = frameToBodyFrame.transformPosition(close);
+        final double closeAbscissa = lineInBodyFrame.getAbscissa(closeInBodyFrame);
         
         // compute some miscellaneous variables outside of the loop
         final Vector3D point    = lineInBodyFrame.getOrigin();
+        final double x          = point.getX();
+        final double y          = point.getY();
         final double z          = point.getZ();
         final double z2         = z * z;
-        final double r2         = point.getX() * point.getX() + point.getY() * point.getY();
-        final double r          = Math.sqrt(r2);
-        final double g2r2ma2    = g2 * (r2 - ae2);
-        final double g2r2ma2pz2 = g2r2ma2 + z2;
+        final double r2         = x * x + y * y;
 
         final Vector3D direction = lineInBodyFrame.getDirection();
-        final double cz = Math.sqrt(direction.getX() * direction.getX() +
-                                    direction.getY() * direction.getY());
-        final double sz = direction.getZ();
+        final double dx         = direction.getX();
+        final double dy         = direction.getY();
+        final double dz         = direction.getZ();
+        final double cz2        = dx * dx + dy * dy;
 
-        // distance to the ellipse along the current line
-        // as the smallest root of a 2nd degree polynom :
+        // abscissa of the intersection as a root of a 2nd degree polynomial :
         // a k^2 - 2 b k + c = 0
-        final double a  = 1.0 - e2 * cz * cz;
-        final double b  = g2 * r * cz + z * sz;
-        final double c  = g2r2ma2pz2;
+        final double a  = 1.0 - e2 * cz2;
+        final double b  = -(g2 * (x * dx + y * dy) + z * dz);
+        final double c  = g2 * (r2 - ae2) + z2;
         final double b2 = b * b;
         final double ac = a * c;
         if (b2 < ac) {
             return null;
         }
-        final double k  = c / (b + Math.sqrt(b2 - ac));
+        final double s  = Math.sqrt(b2 - ac);
+        final double k1 = (b < 0) ? (b - s) / a : c / (b + s);
+        final double k2 = c / (a * k1);
 
-        final double lambda = Math.atan2(point.getY(), point.getX());
-        final double y = z - k * sz;
-        final double x = g2 * (r - k * cz);
-        final double phi = Math.atan2(y, x);
+        // select the right point
+        final double k =
+            (Math.abs(k1 - closeAbscissa) < Math.abs(k2 - closeAbscissa)) ? k1 : k2;
+        final Vector3D intersection = lineInBodyFrame.pointAt(k);
+        final double ix = intersection.getX();
+        final double iy = intersection.getY();
+        final double iz = intersection.getZ();
+
+        final double lambda = Math.atan2(iy, ix);
+        final double phi    = Math.atan2(iz, g2 * Math.sqrt(ix * ix + iy * iy));
         return new GeodeticPoint(lambda, phi, 0.0);
 
     }

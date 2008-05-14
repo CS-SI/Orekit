@@ -1,5 +1,7 @@
 package fr.cs.orekit.bodies;
 
+import org.apache.commons.math.util.MathUtils;
+
 /** Point location relative to a 2D body surface.
  * <p>This class is a simple immutable container,
  * it does not provide any processing method.</p>
@@ -23,8 +25,8 @@ public class GeodeticPoint {
      * @param altitude altitude of the point
      */
     public GeodeticPoint(double longitude, double latitude, double altitude) {
-        this.longitude = longitude;
-        this.latitude  = latitude;
+        this.longitude = MathUtils.normalizeAngle(longitude, 0.);
+        this.latitude  = MathUtils.normalizeAngle(latitude, 0.);
         this.altitude  = altitude;
     }
 

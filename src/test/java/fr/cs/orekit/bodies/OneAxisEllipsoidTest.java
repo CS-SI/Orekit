@@ -4,10 +4,16 @@ package fr.cs.orekit.bodies;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
 
+import fr.cs.orekit.Utils;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
+import fr.cs.orekit.orbits.CircularParameters;
 import fr.cs.orekit.time.AbsoluteDate;
+import fr.cs.orekit.time.ChunkedDate;
+import fr.cs.orekit.time.ChunkedTime;
+import fr.cs.orekit.time.UTCScale;
 import fr.cs.orekit.utils.Line;
+import fr.cs.orekit.utils.PVCoordinates;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -89,39 +95,46 @@ public class OneAxisEllipsoidTest extends TestCase {
     public void testLineIntersection() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = Frame.getReferenceFrame(Frame.ITRF2000B, date);    
-        OneAxisEllipsoid model =
-            new OneAxisEllipsoid(100.0, 0.9, frame);
-        Line line = new Line(new Vector3D(0.0, 93.7139699, 3.5930796),
-                             new Vector3D(0.0, 1.0, 1.0));
-        GeodeticPoint gp = model.getIntersectionPoint(line, frame, date);
+        
+        OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 0.9, frame);
+        Vector3D point         = new Vector3D(0.0, 93.7139699, 3.5930796);
+        Vector3D direction     = new Vector3D(0.0, 1.0, 1.0);
+        Line line = new Line(point, direction);
+        GeodeticPoint gp = model.getIntersectionPoint(line, point, frame, date);
         assertEquals(gp.altitude, 0.0, 1.0e-12);
         assertTrue(line.contains(model.transform(gp)));
 
         model = new OneAxisEllipsoid(100.0, 0.9, frame);
-        line = new Line(new Vector3D(0.0, -93.7139699, -3.5930796),
-                        new Vector3D(0.0, -1.0, -1.0));
-        gp = model.getIntersectionPoint(line, frame, date);
+        point = new Vector3D(0.0, -93.7139699, -3.5930796);
+        direction = new Vector3D(0.0, -1.0, -1.0);
+        line = new Line(point, direction);
+        gp = model.getIntersectionPoint(line, point, frame, date);
         assertTrue(line.contains(model.transform(gp)));
 
         model = new OneAxisEllipsoid(100.0, 0.9, frame);
-        line = new Line(new Vector3D(0.0, -93.7139699, 3.5930796),
-                        new Vector3D(0.0, -1.0, 1.0));
-        gp = model.getIntersectionPoint(line, frame, date);
+        point = new Vector3D(0.0, -93.7139699, 3.5930796);
+        direction = new Vector3D(0.0, -1.0, 1.0);
+        line = new Line(point, direction);
+        gp = model.getIntersectionPoint(line, point, frame, date);
         assertTrue(line.contains(model.transform(gp)));
 
         model = new OneAxisEllipsoid(100.0, 0.9, frame);
-        line = new Line(new Vector3D(-93.7139699, 0.0, 3.5930796),
-                        new Vector3D(-1.0, 0.0, 1.0));
-        gp = model.getIntersectionPoint(line, frame, date);
+        point = new Vector3D(-93.7139699, 0.0, 3.5930796);
+        direction = new Vector3D(-1.0, 0.0, 1.0);
+        line = new Line(point, direction);
+        gp = model.getIntersectionPoint(line, point, frame, date);
         assertTrue(line.contains(model.transform(gp)));
 
-        line = new Line(new Vector3D(0.0, 0.0, 110),
-                        new Vector3D(0.0, 0.0, 1.0));
-        gp = model.getIntersectionPoint(line, frame, date);
+        point = new Vector3D(0.0, 0.0, 110);
+        direction = new Vector3D(0.0, 0.0, 1.0);
+        line = new Line(point, direction);
+        gp = model.getIntersectionPoint(line, point, frame, date);
         assertEquals(gp.latitude, Math.PI/2, 1.0e-12);
-        line = new Line(new Vector3D(0.0, 110, 0),
-                        new Vector3D(0.0, 1.0, 0.0));
-        gp = model.getIntersectionPoint(line, frame, date);
+        
+        point = new Vector3D(0.0, 110, 0);
+        direction = new Vector3D(0.0, 1.0, 0.0);
+        line = new Line(point, direction);
+        gp = model.getIntersectionPoint(line, point, frame, date);
         assertEquals(gp.latitude,0, 1.0e-12);
 
     }
@@ -130,9 +143,182 @@ public class OneAxisEllipsoidTest extends TestCase {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = Frame.getReferenceFrame(Frame.ITRF2000B, date);    
         OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 0.9, frame);
-        Line line = new Line(new Vector3D(0.0, 93.7139699, 3.5930796),
-                             new Vector3D(0.0, 9.0, -2.0));
-        assertNull(model.getIntersectionPoint(line, frame, date));
+        Vector3D point     = new Vector3D(0.0, 93.7139699, 3.5930796);
+        Vector3D direction = new Vector3D(0.0, 9.0, -2.0);
+        Line line = new Line(point, direction);
+        assertNull(model.getIntersectionPoint(line, point, frame, date));
+    }
+
+    public void testIntersectionFromPoints() throws OrekitException {
+        AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2008, 03, 21),
+                                             ChunkedTime.H12,
+                                             UTCScale.getInstance());
+        
+        Frame frame = Frame.getReferenceFrame(Frame.ITRF2000B, date); 
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frame);
+        
+        // Satellite on polar position
+        // ***************************
+        final double mu = 3.9860047e14;
+        CircularParameters circ =
+            new CircularParameters(7178000.0, 0.5e-4, 0., Math.toRadians(90.), Math.toRadians(60.),
+                                   Math.toRadians(90.), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
+        System.out.println("POLAR");
+      
+        // Transform satellite position to position/velocity parameters in J2000 and ITRF200B
+        PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
+        PVCoordinates pvSatItrf  = frame.getTransformTo(Frame.getJ2000(), date).transformPVCoordinates(pvSatJ2000);
+        Vector3D pSatItrf  = pvSatItrf.getPosition();
+        
+        // Test first visible surface points
+        GeodeticPoint geoPoint = new GeodeticPoint(Math.toRadians(60.), Math.toRadians(70.), 0.);
+        Vector3D pointItrf     = earth.transform(geoPoint);
+        Vector3D direction = new Vector3D(1., pSatItrf, -1., pointItrf);
+        Line line = new Line(pSatItrf, direction);
+        GeodeticPoint geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
+        assertEquals(geoPoint.longitude, geoInter.longitude, Utils.epsilonAngle);
+        assertEquals(geoPoint.latitude, geoInter.latitude, Utils.epsilonAngle);
+        
+        // Test second visible surface points
+        geoPoint = new GeodeticPoint(Math.toRadians(-120.), Math.toRadians(65.), 0.);
+        pointItrf     = earth.transform(geoPoint);
+        direction = new Vector3D(1., pSatItrf, -1., pointItrf);
+        line = new Line(pSatItrf, direction);
+        geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
+        assertEquals(geoPoint.longitude, geoInter.longitude, Utils.epsilonAngle);
+        assertEquals(geoPoint.latitude, geoInter.latitude, Utils.epsilonAngle);
+        
+        // Test non visible surface points
+        geoPoint = new GeodeticPoint(Math.toRadians(60.), Math.toRadians(30.), 0.);
+        pointItrf     = earth.transform(geoPoint);
+        direction = new Vector3D(1., pSatItrf, -1., pointItrf);
+        line = new Line(pSatItrf, direction);
+        
+        geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
+        
+        // For polar satellite position, intersection point is at the same longitude but different latitude
+        assertEquals(Math.toRadians(59.83813849072837), geoInter.longitude, Utils.epsilonAngle);
+        assertEquals(Math.toRadians(78.0357178015876), geoInter.latitude, Utils.epsilonAngle);
+        
+        // Satellite on equatorial position
+        // ********************************
+        circ =
+            new CircularParameters(7178000.0, 0.5e-4, 0., Math.toRadians(1.e-4), Math.toRadians(0.),
+                                   Math.toRadians(0.), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
+        System.out.println("EQUATORIAL");
+      
+        // Transform satellite position to position/velocity parameters in J2000 and ITRF200B
+        pvSatJ2000 = circ.getPVCoordinates(mu);
+        pvSatItrf  = frame.getTransformTo(Frame.getJ2000(), date).transformPVCoordinates(pvSatJ2000);
+        pSatItrf  = pvSatItrf.getPosition();
+        
+        // Test first visible surface points
+        geoPoint = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(5.), 0.);
+        pointItrf     = earth.transform(geoPoint);
+        direction = new Vector3D(1., pSatItrf, -1., pointItrf);
+        line = new Line(pSatItrf, direction);
+        System.out.println("Sat point = " + pSatItrf.getX()
+                                    + " " + pSatItrf.getY() 
+                                    + " " + pSatItrf.getZ());
+        System.out.println("Point = " + pointItrf.getX()
+                           + " " + pointItrf.getY() 
+                           + " " + pointItrf.getZ());
+        System.out.println("Direction = " + direction.getX()
+                                          + " " + direction.getY() 
+                                          + " " + direction.getZ());
+        System.out.println("Line direction = " + line.getDirection().getX()
+                           + " " + line.getDirection().getY() 
+                           + " " + line.getDirection().getZ());
+        System.out.println("Sat abscissa = " + line.getAbscissa(pSatItrf));
+        assertTrue(line.getAbscissa(pSatItrf) > 0);
+        geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
+        assertEquals(geoPoint.longitude, geoInter.longitude, Utils.epsilonAngle);
+        assertEquals(geoPoint.latitude, geoInter.latitude, Utils.epsilonAngle);
+        
+        // With the point opposite to satellite point along the line
+        GeodeticPoint geoInter2 = earth.getIntersectionPoint(line, line.pointAt(-line.getAbscissa(pSatItrf)), frame, date);
+        System.out.println("Opposite intersection : lon = " + Math.toDegrees(geoInter2.longitude)
+                                                + " lat = " + Math.toDegrees(geoInter2.latitude));
+        assertTrue(Math.abs(geoInter.longitude - geoInter2.longitude) > Math.toRadians(0.1));
+        assertTrue(Math.abs(geoInter.latitude - geoInter2.latitude) > Math.toRadians(0.1));
+        
+        // Test second visible surface points
+        geoPoint = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(-5.), 0.);
+        pointItrf     = earth.transform(geoPoint);
+        direction = new Vector3D(1., pSatItrf, -1., pointItrf);
+        line = new Line(pSatItrf, direction);
+        geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
+        assertEquals(geoPoint.longitude, geoInter.longitude, Utils.epsilonAngle);
+        assertEquals(geoPoint.latitude, geoInter.latitude, Utils.epsilonAngle);
+        
+        // Test non visible surface points
+        geoPoint = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(40.), 0.);
+        System.out.println("Point donne : lon = " + Math.toDegrees(geoPoint.longitude) 
+                           + " lat = " + Math.toDegrees(geoPoint.latitude) 
+                           + " alt = " + geoPoint.altitude); 
+        pointItrf     = earth.transform(geoPoint);
+        direction = new Vector3D(1., pSatItrf, -1., pointItrf);
+        line = new Line(pSatItrf, direction);
+        
+        geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
+        System.out.println("Point intersection : lon = " + Math.toDegrees(geoInter.longitude) 
+                           + " lat = " + Math.toDegrees(geoInter.latitude) 
+                           + " alt = " + geoInter.altitude); 
+        System.out.println();
+        
+//        assertEquals(Math.toRadians(10.424082030386236), geoInter.longitude, Utils.epsilonAngle);
+//        assertEquals(Math.toRadians(17.492951473090244), geoInter.latitude, Utils.epsilonAngle);
+
+
+        // Satellite on any position
+        // *************************
+        circ =
+            new CircularParameters(7178000.0, 0.5e-4, 0., Math.toRadians(50.), Math.toRadians(0.),
+                                   Math.toRadians(90.), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
+        System.out.println("ANY");
+        
+        // Transform satellite position to position/velocity parameters in J2000 and ITRF200B
+        pvSatJ2000 = circ.getPVCoordinates(mu);
+        pvSatItrf  = frame.getTransformTo(Frame.getJ2000(), date).transformPVCoordinates(pvSatJ2000);
+        pSatItrf  = pvSatItrf.getPosition();
+        
+        // Test first visible surface points
+        geoPoint = new GeodeticPoint(Math.toRadians(90.), Math.toRadians(40.), 0.);
+        pointItrf     = earth.transform(geoPoint);
+        direction = new Vector3D(1., pSatItrf, -1., pointItrf);
+        line = new Line(pSatItrf, direction);
+        geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
+        assertEquals(geoPoint.longitude, geoInter.longitude, Utils.epsilonAngle);
+        assertEquals(geoPoint.latitude, geoInter.latitude, Utils.epsilonAngle);
+        
+        // Test second visible surface points
+        geoPoint = new GeodeticPoint(Math.toRadians(90.), Math.toRadians(60.), 0.);
+        pointItrf     = earth.transform(geoPoint);
+        direction = new Vector3D(1., pSatItrf, -1., pointItrf);
+        line = new Line(pSatItrf, direction);
+        geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
+        assertEquals(geoPoint.longitude, geoInter.longitude, Utils.epsilonAngle);
+        assertEquals(geoPoint.latitude, geoInter.latitude, Utils.epsilonAngle);
+        
+        // Test non visible surface points
+        geoPoint = new GeodeticPoint(Math.toRadians(90.), Math.toRadians(0.), 0.);
+        System.out.println("Point donne : lon = " + Math.toDegrees(geoPoint.longitude) 
+                                      + " lat = " + Math.toDegrees(geoPoint.latitude) 
+                                      + " alt = " + geoPoint.altitude); 
+        pointItrf     = earth.transform(geoPoint);
+        direction = new Vector3D(1., pSatItrf, -1., pointItrf);
+        line = new Line(pSatItrf, direction);
+        
+        geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
+        System.out.println("Point intersection : lon = " + Math.toDegrees(geoInter.longitude) 
+                           + " lat = " + Math.toDegrees(geoInter.latitude) 
+                           + " alt = " + geoInter.altitude); 
+        System.out.println();
+        
+//        assertEquals(Math.toRadians(10.424082030386236), geoInter.longitude, Utils.epsilonAngle);
+//        assertEquals(Math.toRadians(17.492951473090244), geoInter.latitude, Utils.epsilonAngle);
+
+
     }
 
     private void checkCartesianToEllipsoidic(double ae, double f,

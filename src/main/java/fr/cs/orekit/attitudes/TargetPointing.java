@@ -51,7 +51,7 @@ public class TargetPointing extends GroundPointing {
     public TargetPointing(GeodeticPoint targetGeo, BodyShape shape) {
         super(shape.getBodyFrame());
         
-        /* Transform target from geodetic coordinates to position-velocity coordinates */
+        // Transform target from geodetic coordinates to position-velocity coordinates 
         final Vector3D target = shape.transform(targetGeo);
         this.target = new PVCoordinates(target, Vector3D.zero);
     }
@@ -67,7 +67,7 @@ public class TargetPointing extends GroundPointing {
      */
     protected PVCoordinates getTargetInBodyFrame(AbsoluteDate date,
                                                  PVCoordinates pv, Frame frame) {
-        /* Returns attribute target */
+        // Returns attribute target
         return target;
     }
 
