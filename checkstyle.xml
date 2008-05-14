@@ -39,7 +39,9 @@
         <module name="JavadocVariable"/>
         <module name="MissingSwitchDefault"/>
         <module name="ModifierOrder"/>
-        <module name="MultipleStringLiterals"/>
+        <module name="MultipleStringLiterals">
+            <property name="ignoreStringsRegexp" value='^"."$'/>
+        </module>
         <module name="MultipleVariableDeclarations"/>
         <module name="NoWhitespaceAfter"/>
         <module name="NoWhitespaceBefore"/>
@@ -76,5 +78,10 @@
         <property name="offCommentFormat" value="CHECKSTYLE\: stop HiddenField check"/>
         <property name="onCommentFormat"  value="CHECKSTYLE\: resume HiddenField check"/>
         <property name="checkFormat"      value="HiddenField"/>
+    </module>
+    <module name="SuppressionCommentFilter">
+        <property name="offCommentFormat" value="CHECKSTYLE\: stop VisibilityModifierCheck"/>
+        <property name="onCommentFormat"  value="CHECKSTYLE\: resume VisibilityModifierCheck"/>
+        <property name="checkFormat"      value="VisibilityModifierCheck"/>
     </module>
 </module>
