@@ -163,7 +163,6 @@ public class OneAxisEllipsoidTest extends TestCase {
         CircularParameters circ =
             new CircularParameters(7178000.0, 0.5e-4, 0., Math.toRadians(90.), Math.toRadians(60.),
                                    Math.toRadians(90.), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
-        System.out.println("POLAR");
       
         // Transform satellite position to position/velocity parameters in J2000 and ITRF200B
         PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
@@ -205,7 +204,6 @@ public class OneAxisEllipsoidTest extends TestCase {
         circ =
             new CircularParameters(7178000.0, 0.5e-4, 0., Math.toRadians(1.e-4), Math.toRadians(0.),
                                    Math.toRadians(0.), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
-        System.out.println("EQUATORIAL");
       
         // Transform satellite position to position/velocity parameters in J2000 and ITRF200B
         pvSatJ2000 = circ.getPVCoordinates(mu);
@@ -217,19 +215,6 @@ public class OneAxisEllipsoidTest extends TestCase {
         pointItrf     = earth.transform(geoPoint);
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
-        System.out.println("Sat point = " + pSatItrf.getX()
-                                    + " " + pSatItrf.getY() 
-                                    + " " + pSatItrf.getZ());
-        System.out.println("Point = " + pointItrf.getX()
-                           + " " + pointItrf.getY() 
-                           + " " + pointItrf.getZ());
-        System.out.println("Direction = " + direction.getX()
-                                          + " " + direction.getY() 
-                                          + " " + direction.getZ());
-        System.out.println("Line direction = " + line.getDirection().getX()
-                           + " " + line.getDirection().getY() 
-                           + " " + line.getDirection().getZ());
-        System.out.println("Sat abscissa = " + line.getAbscissa(pSatItrf));
         assertTrue(line.getAbscissa(pSatItrf) > 0);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
         assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
@@ -237,8 +222,6 @@ public class OneAxisEllipsoidTest extends TestCase {
         
         // With the point opposite to satellite point along the line
         GeodeticPoint geoInter2 = earth.getIntersectionPoint(line, line.pointAt(-line.getAbscissa(pSatItrf)), frame, date);
-        System.out.println("Opposite intersection : lon = " + Math.toDegrees(geoInter2.getLongitude())
-                                                + " lat = " + Math.toDegrees(geoInter2.getLatitude()));
         assertTrue(Math.abs(geoInter.getLongitude() - geoInter2.getLongitude()) > Math.toRadians(0.1));
         assertTrue(Math.abs(geoInter.getLatitude() - geoInter2.getLatitude()) > Math.toRadians(0.1));
         
@@ -253,21 +236,12 @@ public class OneAxisEllipsoidTest extends TestCase {
         
         // Test non visible surface points
         geoPoint = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(40.), 0.);
-        System.out.println("Point donne : lon = " + Math.toDegrees(geoPoint.getLongitude()) 
-                           + " lat = " + Math.toDegrees(geoPoint.getLatitude()) 
-                           + " alt = " + geoPoint.getAltitude()); 
         pointItrf     = earth.transform(geoPoint);
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
-        
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        System.out.println("Point intersection : lon = " + Math.toDegrees(geoInter.getLongitude()) 
-                           + " lat = " + Math.toDegrees(geoInter.getLatitude()) 
-                           + " alt = " + geoInter.getAltitude()); 
-        System.out.println();
-        
-//        assertEquals(Math.toRadians(10.424082030386236), geoInter.getLongitude(), Utils.epsilonAngle);
-//        assertEquals(Math.toRadians(17.492951473090244), geoInter.getLatitude(), Utils.epsilonAngle);
+        assertEquals(Math.toRadians(-0.44030958392161806), geoInter.getLongitude(), Utils.epsilonAngle);
+        assertEquals(Math.toRadians(18.43803030983077), geoInter.getLatitude(), Utils.epsilonAngle);
 
 
         // Satellite on any position
@@ -275,7 +249,6 @@ public class OneAxisEllipsoidTest extends TestCase {
         circ =
             new CircularParameters(7178000.0, 0.5e-4, 0., Math.toRadians(50.), Math.toRadians(0.),
                                    Math.toRadians(90.), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
-        System.out.println("ANY");
         
         // Transform satellite position to position/velocity parameters in J2000 and ITRF200B
         pvSatJ2000 = circ.getPVCoordinates(mu);
@@ -302,22 +275,12 @@ public class OneAxisEllipsoidTest extends TestCase {
         
         // Test non visible surface points
         geoPoint = new GeodeticPoint(Math.toRadians(90.), Math.toRadians(0.), 0.);
-        System.out.println("Point donne : lon = " + Math.toDegrees(geoPoint.getLongitude()) 
-                                      + " lat = " + Math.toDegrees(geoPoint.getLatitude()) 
-                                      + " alt = " + geoPoint.getAltitude()); 
         pointItrf     = earth.transform(geoPoint);
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
-        
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        System.out.println("Point intersection : lon = " + Math.toDegrees(geoInter.getLongitude()) 
-                           + " lat = " + Math.toDegrees(geoInter.getLatitude()) 
-                           + " alt = " + geoInter.getAltitude()); 
-        System.out.println();
-        
-//        assertEquals(Math.toRadians(10.424082030386236), geoInter.getLongitude(), Utils.epsilonAngle);
-//        assertEquals(Math.toRadians(17.492951473090244), geoInter.getLatitude(), Utils.epsilonAngle);
-
+        assertEquals(Math.toRadians(89.5364061088196), geoInter.getLongitude(), Utils.epsilonAngle);
+        assertEquals(Math.toRadians(35.555543683351125), geoInter.getLatitude(), Utils.epsilonAngle);
 
     }
 
