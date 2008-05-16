@@ -79,12 +79,10 @@ public class LofOffsetTest extends TestCase {
         // Elliptic earth shape
         final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameItrf2000B);
         final GeodeticPoint geoTargetItrf2000B = new GeodeticPoint(Math.toRadians(1.26), Math.toRadians(43.36), 600.);
-        final PVCoordinates pvTargetItrf2000B = new PVCoordinates(earthShape.transform(geoTargetItrf2000B), Vector3D.zero);
             
         // Attitude law definition from geodetic point target 
         final TargetPointing targetLaw = new TargetPointing(geoTargetItrf2000B, earthShape);
         final Rotation targetRot = targetLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();       
-        final double[] anglesTargetRot = targetRot.getAngles(RotationOrder.ZYX);
         
         // Create lof aligned attitude law
         // *******************************  
