@@ -8,7 +8,7 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
 
-import fr.cs.orekit.bodies.GeodeticPoint;
+import fr.cs.orekit.Utils;
 import fr.cs.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
@@ -44,38 +44,30 @@ public class LofOffsetPointingTest extends TestCase {
     public void testLof() throws OrekitException {
 
         //  Satellite position
-        CircularParameters circ =
+        final CircularParameters circ =
             new CircularParameters(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(0.), Math.toRadians(270.),
                                    Math.toRadians(5.300), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
-        PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
+        final PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
 
         // Create lof aligned law
         //************************
-        LofOffset lofLaw = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
-        LofOffsetPointing lofPointing = new LofOffsetPointing(earthSpheric, lofLaw, Vector3D.plusK);
-        Rotation lofRot = lofPointing.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
-        PVCoordinates lofTarget = lofPointing.getTargetInBodyFrame(date, pvSatJ2000, Frame.getJ2000());
-        GeodeticPoint lofGeoTarget = earthSpheric.transform(lofTarget.getPosition(), earthSpheric.getBodyFrame(), date);
-
-        PVCoordinates lofObserved = lofPointing.getObservedGroundPoint(date, pvSatJ2000, Frame.getJ2000());
-        GeodeticPoint lofGeoObserved = earthSpheric.transform(lofObserved.getPosition(), Frame.getJ2000(), date);
-
+        final LofOffset lofLaw = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
+        final LofOffsetPointing lofPointing = new LofOffsetPointing(earthSpheric, lofLaw, Vector3D.plusK);
+        final Rotation lofRot = lofPointing.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
+ 
         // Compare to body center pointing law
         //*************************************
-        BodyCenterPointing centerLaw = new BodyCenterPointing(earthSpheric.getBodyFrame());
-        Rotation centerRot = centerLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
-        PVCoordinates centerObserved = centerLaw.getObservedGroundPoint(date, pvSatJ2000, Frame.getJ2000());
+        final BodyCenterPointing centerLaw = new BodyCenterPointing(earthSpheric.getBodyFrame());
+        final Rotation centerRot = centerLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
+        final double angleBodyCenter = centerRot.applyInverseTo(lofRot).getAngle();
+        assertEquals(0., angleBodyCenter, Utils.epsilonAngle);
 
-        double angleBodyCenter = centerRot.applyInverseTo(lofRot).getAngle();
- 
         // Compare to nadir pointing law
         //*******************************
-        NadirPointing nadirLaw = new NadirPointing(earthSpheric);
-        Rotation nadirRot = nadirLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
-        PVCoordinates nadirObserved = nadirLaw.getObservedGroundPoint(date, pvSatJ2000, Frame.getJ2000());
-        GeodeticPoint nadirGeoObserved = earthSpheric.transform(nadirObserved.getPosition(), Frame.getJ2000(), date);
-
-        double angleNadir = nadirRot.applyInverseTo(lofRot).getAngle();
+        final NadirPointing nadirLaw = new NadirPointing(earthSpheric);
+        final Rotation nadirRot = nadirLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
+        final double angleNadir = nadirRot.applyInverseTo(lofRot).getAngle();
+        assertEquals(0., angleNadir, Utils.epsilonAngle);
 
    } 
     
