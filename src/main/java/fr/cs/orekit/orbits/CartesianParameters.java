@@ -41,6 +41,12 @@ public class CartesianParameters extends OrbitalParameters {
     /** Serializable UID. */
     private static final long serialVersionUID = 2006917870170399349L;
 
+    /** Initial position and velocity. */
+    private final PVCoordinates initialPV;
+
+    /** Initial central attraction coefficient. */
+    private final double initialMu;
+
     /** Underlying equinoctial orbit providing non-cartesian elements. */
     private final EquinoctialParameters equinoctial;
 
@@ -52,6 +58,8 @@ public class CartesianParameters extends OrbitalParameters {
     public CartesianParameters(final PVCoordinates pvCoordinates, final Frame frame,
                                final double mu) {
         super(pvCoordinates, frame, mu);
+        initialPV   = pvCoordinates;
+        initialMu   = mu;
         equinoctial = new EquinoctialParameters(pvCoordinates, frame, mu);
     }
 
@@ -61,7 +69,9 @@ public class CartesianParameters extends OrbitalParameters {
      */
     public CartesianParameters(final OrbitalParameters op, final double mu) {
         super(op.getFrame());
-        equinoctial = new EquinoctialParameters(getPVCoordinates(mu), getFrame(), mu);
+        initialPV   = getPVCoordinates(mu);
+        initialMu   = mu;
+        equinoctial = new EquinoctialParameters(initialPV, getFrame(), mu);
     }
 
     /** Get the semi-major axis.
@@ -134,11 +144,29 @@ public class CartesianParameters extends OrbitalParameters {
         return equinoctial.getLM();
     }
 
+    /** Get the initial central acceleration constant.
+     * @return initial central acceleration constant
+     */
+    public double getMu() {
+        return initialMu;
+    }
+
+    /** Get the initial {@link PVCoordinates}.
+     * <p>Contrary to the general {@link #getPVCoordinates(double)} method
+     * which can use any value for mu, this method always return the values
+     * set at construction time, which never change.</p>
+     * @return pvCoordinates in the definition frame
+     * @see #getPVCoordinates(double)
+     */
+    public PVCoordinates getPVCoordinates() {
+        return initialPV;
+    }
+
     /**  Returns a string representation of this Orbit object.
      * @return a string representation of this object
      */
     public String toString() {
-        return "cartesian parameters: " + getPVCoordinates(getCachedMu()).toString();
+        return "cartesian parameters: " + initialPV.toString();
     }
 
 }
