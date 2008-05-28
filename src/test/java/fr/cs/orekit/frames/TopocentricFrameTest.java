@@ -111,6 +111,24 @@ public class TopocentricFrameTest extends TestCase {
     /** Test with a point at zenith position over the surface point */
     public void testAntipodes() 
         throws OrekitException {
+        
+        // First point at latitude 45° and longitude 30
+        final GeodeticPoint point1 = new GeodeticPoint(Math.toRadians(30.), Math.toRadians(45.), 0.);
+        final TopocentricFrame topoFrame1 = new TopocentricFrame(earthSpheric, point1, "lon 30");
+        
+        // Second point at latitude -45° and longitude 210
+        final GeodeticPoint point2 = new GeodeticPoint(Math.toRadians(210.), Math.toRadians(-45.), 0.);
+        final TopocentricFrame topoFrame2 = new TopocentricFrame(earthSpheric, point2, "lon 210");
+      
+        // Check that frame Zenith directions are opposite to each other, 
+        // and East and North are the same
+        final double xDiff = Vector3D.dotProduct(topoFrame1.getEast(), topoFrame2.getWest());
+        final double yDiff = Vector3D.dotProduct(topoFrame1.getNorth(), topoFrame2.getNorth());
+        final double zDiff = Vector3D.dotProduct(topoFrame1.getZenith(), topoFrame2.getZenith());
+        
+        assertEquals(1., xDiff, Utils.epsilonTest);
+        assertEquals(1., yDiff, Utils.epsilonTest);
+        assertEquals(-1., zDiff, Utils.epsilonTest);
     }
         
         /** Test with a point at zenith position over the surface point */
@@ -222,38 +240,33 @@ public class TopocentricFrameTest extends TestCase {
         // Transform satellite position to position/velocity parameters in body frame
         final Transform j2000ToItrf = Frame.getJ2000().getTransformTo(earthSpheric.getBodyFrame(), date);
         final PVCoordinates pvSatItrf = j2000ToItrf.transformPVCoordinates(circ.getPVCoordinates(mu));
-        final GeodeticPoint satPoint = earthSpheric.transform(pvSatItrf.getPosition(), earthSpheric.getBodyFrame(), date);
-//        System.out.println(  "sat lon = " + Math.toDegrees(satPoint.getLongitude()) 
-//                           + " sat lat (deg) = " + Math.toDegrees(satPoint.getLatitude())
-//                           + " sat alt = " + satPoint.getAltitude()) ;
-        
         
         // Compute range rate directly
         //********************************************
         final double dop = topoFrame.getRangeRate(pvSatItrf, earthSpheric.getBodyFrame(), date);
-//        System.out.println("Sat doppler (m/s) = " + dop);
-     
-        // Compare to finite difference computation
-        //********************************************
-        final double dt = 1;
+        
+        // Compare to finite difference computation (2 points)
+        //*****************************************************
+        final double dt = 0.1;
         KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(orbit, mu), mu);
         
         // Extrapolate satellite position a short while after reference date
-        final AbsoluteDate dateP = new AbsoluteDate(date, dt);
+        AbsoluteDate dateP = new AbsoluteDate(date, dt);
+        Transform j2000ToItrfP = Frame.getJ2000().getTransformTo(earthSpheric.getBodyFrame(), dateP);
         SpacecraftState orbitP = extrapolator.getSpacecraftState(dateP);
-        Vector3D satPointP = j2000ToItrf.transformPVCoordinates(orbitP.getPVCoordinates(mu)).getPosition();
+        Vector3D satPointGeoP = j2000ToItrfP.transformPVCoordinates(orbitP.getPVCoordinates(mu)).getPosition();
         
         // Retropolate satellite position a short while before reference date
-        final AbsoluteDate dateM = new AbsoluteDate(date, -dt);
+        AbsoluteDate dateM = new AbsoluteDate(date, -dt);
+        Transform j2000ToItrfM = Frame.getJ2000().getTransformTo(earthSpheric.getBodyFrame(), dateM);
         SpacecraftState orbitM = extrapolator.getSpacecraftState(dateM);
-        Vector3D satPointM = j2000ToItrf.transformPVCoordinates(orbitM.getPVCoordinates(mu)).getPosition();
+        Vector3D satPointGeoM = j2000ToItrfM.transformPVCoordinates(orbitM.getPVCoordinates(mu)).getPosition();
         
         // Compute ranges at both instants
-        final double rangeP = topoFrame.getRange(satPointP, earthSpheric.getBodyFrame(), dateP);
-        final double rangeM = topoFrame.getRange(satPointM, earthSpheric.getBodyFrame(), dateM);
-        final double dopRef = (rangeP - rangeM) / (2. * dt);
-        
-//        System.out.println("Sat doppler by finite difference (m/s) = " + dopRef);
+        double rangeP = topoFrame.getRange(satPointGeoP, earthSpheric.getBodyFrame(), dateP);
+        double rangeM = topoFrame.getRange(satPointGeoM, earthSpheric.getBodyFrame(), dateM);
+        final double dopRef2 = (rangeP - rangeM) / (2. * dt);
+        assertEquals(dopRef2, dop, 1.e-3);
         
     }
 

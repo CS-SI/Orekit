@@ -177,8 +177,8 @@ class TopocentricFrame extends Frame {
         final PVCoordinates extPVTopo = t.transformPVCoordinates(extPV);
         
         // Compute range rate (doppler) : relative rate along the line of sight
-        final Vector3D direction = extPV.getPosition().normalize();
-        return Vector3D.dotProduct(direction, extPVTopo.getVelocity());
+        return Vector3D.dotProduct(extPVTopo.getPosition(), extPVTopo.getVelocity()) 
+               / extPVTopo.getPosition().getNorm();
         
     }
 }
