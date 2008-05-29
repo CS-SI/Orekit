@@ -13,7 +13,7 @@ import fr.cs.orekit.utils.PVCoordinates;
  * <p> Frame associated to a position at the surface of a body shape.</p>
  * @author Véronique Pommier-Maurussane
  */
-class TopocentricFrame extends Frame {
+public class TopocentricFrame extends Frame {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 720487682019109221L;
@@ -26,7 +26,7 @@ class TopocentricFrame extends Frame {
      * @param point local surface point where topocentric frame is defined
      * @param name the string representation
      */
-    protected TopocentricFrame(final BodyShape parentShape, final GeodeticPoint point,
+    public TopocentricFrame(final BodyShape parentShape, final GeodeticPoint point,
                             final String name) {
         
         super(parentShape.getBodyFrame(), null, name);
