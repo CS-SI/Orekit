@@ -69,7 +69,6 @@ import fr.cs.orekit.time.AbsoluteDate;
  * @see StepHandler
  * @see OrekitFixedStepHandler
  * @see IntegratedEphemeris
- * @see AttitudeKinematicsProvider
  * @see TimeDerivativesEquations
  *
  * @author  M. Romero

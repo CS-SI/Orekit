@@ -54,8 +54,8 @@ public class SpacecraftState implements Serializable {
     }
 
     /** Create a new instance from orbital state and mass.
-     * <p>Initialize the attitude law to the
-     * {@link DefaultAttitude default attitude law}).</p>
+     * <p>The attitude law is set to a default perfectly
+     * {@link LofOffset LOF-aligned} law.</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
@@ -74,7 +74,8 @@ public class SpacecraftState implements Serializable {
 
     /** Create a new instance from orbital state only.
      * <p>Gives an arbitrary value (1000 kg) for the mass and
-     * use the {@link DefaultAttitude default attitude law}).</p>
+     * set the attitude law to a default perfectly
+     * {@link LofOffset LOF-aligned} law.</p>
      * @param orbit the orbit
      * @param mu central body attraction coefficient
      * @exception OrekitException is attitude law cannot compute the current state
