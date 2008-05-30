@@ -20,7 +20,6 @@ import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.propagation.AttitudePropagator;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.propagation.numerical.forces.ForceModel;
 import fr.cs.orekit.time.AbsoluteDate;
@@ -79,7 +78,7 @@ import fr.cs.orekit.time.AbsoluteDate;
  * @author  F. Maussion
  */
 public class NumericalPropagator
-    implements FirstOrderDifferentialEquations, AttitudePropagator {
+    implements FirstOrderDifferentialEquations {
 
     /** Attitude law. */
     private AttitudeLaw attitudeLaw;
@@ -155,11 +154,6 @@ public class NumericalPropagator
     public void removeForceModels() {
         forceModels.clear();
         forceSwf.clear();
-    }
-
-    /** {@inheritDoc} */
-    public void setAttitudeLaw(final AttitudeLaw attitudeLaw) {
-        this.attitudeLaw = attitudeLaw;
     }
 
     /** Propagate an orbit up to a specific target date.

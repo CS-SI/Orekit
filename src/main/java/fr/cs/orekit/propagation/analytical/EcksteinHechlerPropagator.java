@@ -10,7 +10,6 @@ import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.orbits.CircularParameters;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.orbits.OrbitalParameters;
-import fr.cs.orekit.propagation.AttitudePropagator;
 import fr.cs.orekit.propagation.Ephemeris;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
@@ -24,10 +23,10 @@ import fr.cs.orekit.time.AbsoluteDate;
  * @see Orbit
  * @author G. Prat
  */
-public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator {
+public class EcksteinHechlerPropagator implements Ephemeris {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 8185876333076861718L;
+    private static final long serialVersionUID = 7822712271905182848L;
 
     /** Attitude law. */
     private AttitudeLaw attitudeLaw;
@@ -404,10 +403,6 @@ public class EcksteinHechlerPropagator implements Ephemeris, AttitudePropagator 
                                       MathUtils.normalizeAngle(xlm + rdxl, Math.PI),
                                       CircularParameters.MEAN_LONGITUDE_ARGUMENT, mean.getFrame());
 
-    }
-
-    public void setAttitudeLaw(final AttitudeLaw attitudeLaw) {
-        this.attitudeLaw = attitudeLaw;
     }
 
 }

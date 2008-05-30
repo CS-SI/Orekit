@@ -8,7 +8,6 @@ import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.orbits.EquinoctialParameters;
 import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.propagation.AttitudePropagator;
 import fr.cs.orekit.propagation.Ephemeris;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
@@ -17,10 +16,10 @@ import fr.cs.orekit.time.AbsoluteDate;
  * @author G. Prat
  * @version $Id$
  */
-public class KeplerianPropagator implements Ephemeris, AttitudePropagator {
+public class KeplerianPropagator implements Ephemeris {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -4355212980078171786L;
+    private static final long serialVersionUID = -693601563947742186L;
 
     /** Attitude law. */
     private AttitudeLaw attitudeLaw;
@@ -78,10 +77,6 @@ public class KeplerianPropagator implements Ephemeris, AttitudePropagator {
             throw new PropagationException(oe.getMessage(), oe);
         }
 
-    }
-
-    public void setAttitudeLaw(final AttitudeLaw attitudeLaw) {
-        this.attitudeLaw = attitudeLaw;
     }
 
 }
