@@ -8,11 +8,11 @@ import fr.cs.orekit.frames.Transform;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.Line;
 
-/** Modeling of one-axis ellipsoid.
+/** Modeling of a one-axis ellipsoid.
 
  * <p>One-axis ellipsoids is a good approximate model for most planet-size
  * and larger natural bodies. It is the equilibrium shape reached by
- * a fluid body under its own gravity field when it rotates. The symetry
+ * a fluid body under its own gravity field when it rotates. The symmetry
  * axis is the rotation or polar axis.</p>
 
  * <p>This class is a simple adaptation of the <a
@@ -56,14 +56,14 @@ public class OneAxisEllipsoid implements BodyShape {
     private double angularThreshold;
 
     /** Simple constructor.
-     * <p> Frequently used parameters for earth are :
-     * <pre>
-     * ae = 6378136.460 m
-     * f  = 1 / 298.257222101
-     * </pre>
-     * </p>
-     * @param ae earth equatorial radius
-     * @param f the flattening ( f = (a-b)/a )
+     * <p>The following table provides conventional parameters for global Earth models:</p>
+     * <table border="1" cellpadding="5">
+     * <tr bgcolor="#ccccff"><font size="+3"><th>model</th><th>a<sub>e</sub> (m)</th><th>f</th></font></tr>
+     * <tr><th bgcolor="#eeeeff">GRS 80</th><th>6378137.0</th><th>1.0 / 298.257222101</th></tr>
+     * <tr><th bgcolor="#eeeeff">WGS84</th><th>6378137.0</th><th>1.0 / 298.257223563</th></tr>
+     * </table>
+     * @param ae equatorial radius
+     * @param f the flattening (f = (a-b)/a)
      * @param bodyFrame body frame related to body shape
      */
     public OneAxisEllipsoid(final double ae, final double f, final Frame bodyFrame) {
@@ -79,7 +79,8 @@ public class OneAxisEllipsoid implements BodyShape {
 
     /** Set the close approach threshold.
      * <p>The close approach threshold is a ratio used to identify
-     * special cases in the {@link #transform(Vector3D)} method.</p>
+     * special cases in the {@link #transform(Vector3D, Frame,
+     * AbsoluteDate)} method.</p>
      * <p>Let d = (x<sup>2</sup>+y<sup>2</sup>+z<sup>2</sup>)<sup>&frac12;</sup>
      * be the distance between the point and the ellipsoid center.</p>
      * <ul>
@@ -99,7 +100,8 @@ public class OneAxisEllipsoid implements BodyShape {
 
     /** Set the angular convergence threshold.
      * <p>The angular threshold is the convergence threshold used to
-     * stop the iterations in the {@link #transform(Vector3D)} method.
+     * stop the iterations in the {@link #transform(Vector3D, Frame,
+     * AbsoluteDate)} method.
      * It applies directly to the latitude. When convergence is reached,
      * the real latitude is guaranteed to be between &phi; - &delta;&phi/2
      * and &phi; + &delta;&phi/2 where &phi; is the computed latitude
@@ -200,7 +202,8 @@ public class OneAxisEllipsoid implements BodyShape {
      * @param point cartesian point
      * @param frame frame in which cartesian point is expressed
      * @param date date of the point in given frame
-     * @return point at the same location but as a surface-relative point, expressed in body frame
+     * @return point at the same location but as a surface-relative point,
+     * expressed in body frame
      * @exception OrekitException if point cannot be converted to body frame
      */
     public GeodeticPoint transform(final Vector3D point, final Frame frame,
