@@ -65,6 +65,9 @@ public class OneAxisEllipsoid implements BodyShape {
      * @param ae equatorial radius
      * @param f the flattening (f = (a-b)/a)
      * @param bodyFrame body frame related to body shape
+     * @see Frame#getReferenceFrame(fr.cs.orekit.frames.Frame.FrameType, AbsoluteDate)
+     * @see Frame#ITRF2000A
+     * @see Frame#ITRF2000B
      */
     public OneAxisEllipsoid(final double ae, final double f, final Frame bodyFrame) {
         this.ae = ae;
