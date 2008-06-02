@@ -105,31 +105,31 @@ public class TLE {
      */
     public TLE(final String line1, final String line2) throws OrekitException {
 
-        satelliteNumber = Integer.parseInt(line1.substring(2,7).replace(' ', '0'));
-        internationalDesignator = line1.substring(9,17);
+        satelliteNumber = Integer.parseInt(line1.substring(2, 7).replace(' ', '0'));
+        internationalDesignator = line1.substring(9, 17);
 
         // Date format transform :
-        int year = 2000 + Integer.parseInt(line1.substring(18,20).replace(' ', '0'));
+        int year = 2000 + Integer.parseInt(line1.substring(18, 20).replace(' ', '0'));
         if (year > 2056) {
             year -= 100;
         }
         final ChunkedDate date = new ChunkedDate(year, 1, 1);
-        final double dayNb = Double.parseDouble(line1.substring(20,32).replace(' ', '0'));
+        final double dayNb = Double.parseDouble(line1.substring(20, 32).replace(' ', '0'));
         epoch = new AbsoluteDate(new AbsoluteDate(date, ChunkedTime.H00, UTCScale.getInstance()),
                                  (dayNb - 1) * 86400); //-1 is due to TLE date definition
         // Fields transform :
-        bStar = Double.parseDouble(line1.substring(53,54).replace(' ', '0') +
-                                   "." + line1.substring(54,59).replace(' ', '0') +
-                                   "e" + line1.substring(59,61).replace(' ', '0'));
-        ephemerisType = Integer.parseInt(line1.substring(62,63).replace(' ', '0'));
-        elementNumber = Integer.parseInt(line1.substring(64,68).replace(' ', '0'));
-        i = Math.toRadians(Double.parseDouble(line2.substring(8,16).replace(' ', '0')));
-        raan = Math.toRadians(Double.parseDouble(line2.substring(17,25).replace(' ', '0')));
-        e = Double.parseDouble("." + line2.substring(26,33).replace(' ', '0'));
-        pa = Math.toRadians(Double.parseDouble(line2.substring(34,42).replace(' ', '0')));
-        meanAnomaly = Math.toRadians(Double.parseDouble(line2.substring(43,51).replace(' ', '0')));
-        meanMotion = Math.PI * Double.parseDouble(line2.substring(52,63).replace(' ', '0')) / 43200.0;
-        revolutionNumberAtEpoch = Integer.parseInt(line2.substring(63,68).replace(' ', '0'));
+        bStar = Double.parseDouble(line1.substring(53, 54).replace(' ', '0') +
+                                   "." + line1.substring(54, 59).replace(' ', '0') +
+                                   "e" + line1.substring(59, 61).replace(' ', '0'));
+        ephemerisType = Integer.parseInt(line1.substring(62, 63).replace(' ', '0'));
+        elementNumber = Integer.parseInt(line1.substring(64, 68).replace(' ', '0'));
+        i = Math.toRadians(Double.parseDouble(line2.substring(8, 16).replace(' ', '0')));
+        raan = Math.toRadians(Double.parseDouble(line2.substring(17, 25).replace(' ', '0')));
+        e = Double.parseDouble("." + line2.substring(26, 33).replace(' ', '0'));
+        pa = Math.toRadians(Double.parseDouble(line2.substring(34, 42).replace(' ', '0')));
+        meanAnomaly = Math.toRadians(Double.parseDouble(line2.substring(43, 51).replace(' ', '0')));
+        meanMotion = Math.PI * Double.parseDouble(line2.substring(52, 63).replace(' ', '0')) / 43200.0;
+        revolutionNumberAtEpoch = Integer.parseInt(line2.substring(63, 68).replace(' ', '0'));
 
     }
 
