@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright 2002-2008 CS Communication & Systèmes
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+ 
+    http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<faqs title="Frequently Asked Questions" toplink="false">
+
+  <part id="general">
+    <title>General</title>
+    <faq id="general-empty">
+      <question>
+        Why is this section empty ?
+      </question>
+      <answer>
+        <p>Because there is no frequently asked question for this topic yet.</p>
+      </answer>
+    </faq>
+  </part>
+
+  <part id="dynamics">
+    <title>Space dynamics</title>
+    <faq id="dynamics-empty">
+      <question>
+        Why is this section empty ?
+      </question>
+      <answer>
+        <p>Because there is no frequently asked question for this topic yet.</p>
+      </answer>
+    </faq>
+  </part>
+
+  <part id="Java">
+    <title>Java</title>
+    <faq id="java-empty">
+      <question>
+        Why is this section empty ?
+      </question>
+      <answer>
+        <p>Because there is no frequently asked question for this topic yet.</p>
+      </answer>
+    </faq>
+  </part>
+
+</faqs>
