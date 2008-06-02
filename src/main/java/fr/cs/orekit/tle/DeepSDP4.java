@@ -502,7 +502,7 @@ class DeepSDP4 extends SDP4 {
                 for (int j = 2; j <= SECULAR_INTEGRATION_ORDER; ++j) {
                     xlpow *= xldot;
                     derivs[j - 1] *= xlpow;
-                    delt_factor *= delt / (double)j;
+                    delt_factor *= delt / (double) j;
                     xli += delt_factor * derivs[j - 2];
                     xni += delt_factor * derivs[j - 1];
                 }

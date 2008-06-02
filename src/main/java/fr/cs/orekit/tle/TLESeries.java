@@ -95,8 +95,8 @@ public class TLESeries {
                     throw new OrekitException("Non-TLE line in TLE data file", new Object[0]);
                 }
 
-                final int satNum = Integer.parseInt(line1.substring(2,7).replace(' ','0'));
-                final String iD = line1.substring(9,17);
+                final int satNum = Integer.parseInt(line1.substring(2, 7).replace(' ', '0'));
+                final String iD = line1.substring(9, 17);
                 if (satelliteNumber == 0 && internationalDesignator == null) {
                     satelliteNumber = satNum;
                     internationalDesignator = iD;

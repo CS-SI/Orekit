@@ -181,7 +181,7 @@ public class NumericalPropagator
         throws OrekitException {
         final ContinuousOutputModel model = new ContinuousOutputModel();
         final SpacecraftState finalState =
-            propagate(initialState, finalDate, (StepHandler)model);
+            propagate(initialState, finalDate, (StepHandler) model);
         ephemeris.initialize(model , initialState.getDate(),
                              initialState.getParameters().getFrame(),
                              attitudeLaw, mu);
@@ -311,11 +311,12 @@ public class NumericalPropagator
         final AbsoluteDate date = new AbsoluteDate(startDate, t1);
 
         final EquinoctialParameters parameters =
-            new EquinoctialParameters(state[0], state[1],state[2],state[3],
-                                      state[4],state[5], EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
+            new EquinoctialParameters(state[0], state[1], state[2], state[3],
+                                      state[4], state[5],
+                                      EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
                                       initialParameters.getFrame());
 
-        return new SpacecraftState(new Orbit(date , parameters), state[6],
+        return new SpacecraftState(new Orbit(date, parameters), state[6],
                                    attitudeLaw.getState(date,
                                                         parameters.getPVCoordinates(mu),
                                                         parameters.getFrame()));
@@ -351,8 +352,9 @@ public class NumericalPropagator
                                                                   new Double(currentState.getMass())
                                                               });
             }
+
             // initialize derivatives
-            adder.initDerivatives(yDot, (EquinoctialParameters)currentState.getParameters());
+            adder.initDerivatives(yDot, (EquinoctialParameters) currentState.getParameters());
 
             // compute the contributions of all perturbing forces
             for (final Iterator iter = forceModels.iterator(); iter.hasNext();) {
@@ -386,7 +388,7 @@ public class NumericalPropagator
 
         // update space dynamics view
         final EquinoctialParameters currentParameters =
-            new EquinoctialParameters(y[0], y[1],y[2],y[3],y[4],y[5],
+            new EquinoctialParameters(y[0], y[1], y[2], y[3], y[4], y[5],
                                       EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
                                       integrationFrame);
         final AbsoluteDate currentDate = new AbsoluteDate(referenceDate, t);

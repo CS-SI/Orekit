@@ -108,7 +108,7 @@ public class IntegratedEphemeris implements BoundedEphemeris {
 
             final EquinoctialParameters eq =
                 new EquinoctialParameters(state[0], state[1], state[2],
-                                          state[3], state[4],state[5], 2, frame);
+                                          state[3], state[4], state[5], 2, frame);
             final double mass = state[6];
 
             try {
