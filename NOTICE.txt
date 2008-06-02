@@ -1,0 +1,8 @@
+OREKIT
+Copyright 2002-2008 Communications et Systèmes
+
+This product includes software developed by
+Communication et Systèmes (http://www.c-s.fr/).
+
+This product depends on software developed by
+The Apache Software Foundation (http://www.apache.org/).

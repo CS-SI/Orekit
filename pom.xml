@@ -18,43 +18,57 @@
 
   <url>http://www.c-s.fr/</url>
 
-  <scm>
-    <connection>
-      scm:svn:svn://aicsrv.si.c-s.fr:3693/orekit/trunk
-    </connection>
-  </scm>
-
   <developers>
-    <developer>
-      <name>Luc Maisonobe</name>
-      <id>luc</id>
-      <email>Luc.Maisonobe at c-s dot fr</email>
-    </developer>
-    <developer>
-      <name>Guylaine Prat</name>
-      <id>guylaine</id>
-      <email>Guylaine.Prat at c-s dot fr</email>
-    </developer>
     <developer>
       <name>Romain Di Costanzo</name>
       <id>romain</id>
       <email>Romain.Di-Costanzo at c-s dot fr</email>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Luc Maisonobe</name>
+      <id>luc</id>
+      <email>Luc.Maisonobe at c-s dot fr</email>
+      <roles>
+        <role>architect</role>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Fabien Maussion</name>
+      <roles>
+        <role>developer</role>
+      </roles>
     </developer>
     <developer>
       <name>V&#233;ronique Pommier-Maurussane</name>
       <id>v&#233;ronique</id>
       <email>Veronique.Pommier at c-s dot fr</email>
+      <roles>
+        <role>developer</role>
+      </roles>
     </developer>
     <developer>
-      <name>&#201;douard Delente</name>
-    </developer>
-    <developer>
-      <name>Mathieu Rom&#233;ro</name>
-    </developer>
-    <developer>
-      <name>Fabien Maussion</name>
+      <name>Guylaine Prat</name>
+      <id>guylaine</id>
+      <email>Guylaine.Prat at c-s dot fr</email>
+      <roles>
+        <role>developer</role>
+      </roles>
     </developer>
   </developers>
+
+  <contributors>
+    <contributor>
+      <name>&#201;douard Delente</name>
+    </contributor>
+    <contributor>
+      <name>Mathieu Rom&#233;ro</name>
+    </contributor>
+  </contributors>
+
   <organization>
     <name>CS</name>
     <url>http://www.c-s.fr/</url>
