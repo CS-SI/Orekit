@@ -95,7 +95,7 @@ class WrappedSwitchingFunction implements SwitchingFunction {
 
         // update space dynamics view
         final EquinoctialParameters currentParameters =
-            new EquinoctialParameters(y[0], y[1],y[2],y[3],y[4],y[5],
+            new EquinoctialParameters(y[0], y[1], y[2], y[3], y[4], y[5],
                                       EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
                                       integrationFrame);
         final AbsoluteDate currentDate = new AbsoluteDate(referenceDate, t);
