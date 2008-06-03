@@ -6,9 +6,8 @@ import fr.cs.orekit.attitudes.AttitudeLaw;
 import fr.cs.orekit.attitudes.LofOffset;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
-import fr.cs.orekit.orbits.EquinoctialParameters;
-import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.propagation.Ephemeris;
+import fr.cs.orekit.orbits.EquinoctialOrbit;
+import fr.cs.orekit.propagation.Propagator;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
 
@@ -16,10 +15,10 @@ import fr.cs.orekit.time.AbsoluteDate;
  * @author G. Prat
  * @version $Id$
  */
-public class KeplerianPropagator implements Ephemeris {
+public class KeplerianPropagator implements Propagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -693601563947742186L;
+    private static final long serialVersionUID = 3701238437110897073L;
 
     /** Attitude law. */
     private AttitudeLaw attitudeLaw;
@@ -28,13 +27,10 @@ public class KeplerianPropagator implements Ephemeris {
     private AbsoluteDate initialDate;
 
     /** Initial orbit parameters. */
-    private EquinoctialParameters initialParameters;
+    private EquinoctialOrbit initialParameters;
 
     /** Initial mass. */
     private double mass;
-
-    /** Central body attraction coefficient. */
-    private double mu;
 
     /** Mean motion. */
     private double n;
@@ -43,14 +39,13 @@ public class KeplerianPropagator implements Ephemeris {
      * @param initialState initial state
      * @param mu central acceleration coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public KeplerianPropagator(final SpacecraftState initialState, final double mu) {
+    public KeplerianPropagator(final SpacecraftState initialState) {
         this.initialDate = initialState.getDate();
-        this.initialParameters = new EquinoctialParameters(initialState.getParameters(), mu);
+        this.initialParameters = new EquinoctialOrbit(initialState.getOrbit());
         this.mass = initialState.getMass();
-        this.n = Math.sqrt(mu / initialParameters.getA()) / initialParameters.getA();
+        this.n = Math.sqrt(initialState.getOrbit().getMu() / initialParameters.getA()) / initialParameters.getA();
         final AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
         this.attitudeLaw = lofAligned;
-        this.mu = mu;
     }
 
     /** {@inheritDoc} */
@@ -59,19 +54,20 @@ public class KeplerianPropagator implements Ephemeris {
 
         // evaluation of LM = PA + RAAN + M at extrapolated time
 
-        final EquinoctialParameters extrapolated =
-            new EquinoctialParameters(initialParameters.getA(), initialParameters.getEquinoctialEx(),
+        final EquinoctialOrbit extrapolated =
+            new EquinoctialOrbit(initialParameters.getA(), initialParameters.getEquinoctialEx(),
                                       initialParameters.getEquinoctialEy(), initialParameters.getHx(),
                                       initialParameters.getHy(),
                                       initialParameters.getLM() + n * date.minus(initialDate) ,
-                                      EquinoctialParameters.MEAN_LATITUDE_ARGUMENT,
-                                      initialParameters.getFrame());
+                                      EquinoctialOrbit.MEAN_LATITUDE_ARGUMENT,
+                                      initialParameters.getFrame(),
+                                      date, initialParameters.getMu());
 
         try {
-            return new SpacecraftState(new Orbit(date, extrapolated),
+            return new SpacecraftState(extrapolated,
                                        mass,
                                        attitudeLaw.getState(date,
-                                                            extrapolated.getPVCoordinates(mu),
+                                                            extrapolated.getPVCoordinates(),
                                                             extrapolated.getFrame()));
         } catch (OrekitException oe) {
             throw new PropagationException(oe.getMessage(), oe);

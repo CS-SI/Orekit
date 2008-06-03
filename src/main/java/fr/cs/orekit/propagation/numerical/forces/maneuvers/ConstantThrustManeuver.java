@@ -12,8 +12,12 @@ import fr.cs.orekit.time.AbsoluteDate;
 /** This class implements a simple maneuver with constant thrust.
  *
  * @author F. Maussion
+ * @author V. Pommier-Maurussane
  */
 public class ConstantThrustManeuver implements ForceModel {
+
+    /**Serializable UID */
+    private static final long serialVersionUID = 5349622732741384211L;
 
     /** Identifier for QSW frame. */
     public static final int QSW = 0;
@@ -31,7 +35,6 @@ public class ConstantThrustManeuver implements ForceModel {
     public static final double G0 = 9.80665;
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7645945521681837759L;
 
     /** State of the engine. */
     private boolean firing;
@@ -106,11 +109,9 @@ public class ConstantThrustManeuver implements ForceModel {
     /** Compute the contribution of maneuver to the global acceleration.
      * @param s the current state information : date, cinematics, attitude
      * @param adder object where the contribution should be added
-     * @param mu central gravitation coefficient
      * @exception OrekitException if some specific error occurs
      */
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder,
-                                final double mu)
+    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
         throws OrekitException {
 
         if (firing) {
@@ -163,20 +164,19 @@ public class ConstantThrustManeuver implements ForceModel {
     private class StartSwitch implements OrekitSwitchingFunction {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -3763244241136150814L;
+        private static final long serialVersionUID = -3767637291885982229L;
 
         /** {@inheritDoc} */
-        public void eventOccurred(final SpacecraftState s, final double mu) {
+        public void eventOccurred(final SpacecraftState s) {
             // start the maneuver
             firing = true;
         }
 
         /** The G-function is the difference between the start date and the current date.
          * @param s the current state information : date, kinematics, attitude
-         * @param mu central gravitation coefficient
          * @return value of the g function
          */
-        public double g(final SpacecraftState s, final double mu) {
+        public double g(final SpacecraftState s) {
             return startDate.minus(s.getDate());
         }
 
@@ -207,17 +207,16 @@ public class ConstantThrustManeuver implements ForceModel {
         private static final long serialVersionUID = -4081671157610680754L;
 
         /** {@inheritDoc} */
-        public void eventOccurred(final SpacecraftState s, final double mu) {
+        public void eventOccurred(final SpacecraftState s) {
             // stop the maneuver
             firing = false;
         }
 
         /** The G-function is the difference between the end date and the current date.
          * @param s the current state information : date, kinematics, attitude
-         * @param mu central gravitation coefficient
          * @return value of the g function
          */
-        public double g(final SpacecraftState s, final double mu) {
+        public double g(final SpacecraftState s) {
             return endDate.minus(s.getDate());
         }
 

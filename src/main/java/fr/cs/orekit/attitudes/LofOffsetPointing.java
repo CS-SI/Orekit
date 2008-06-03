@@ -34,19 +34,19 @@ public class LofOffsetPointing extends GroundPointing {
     private final BodyShape shape;
 
     /** Chosen satellite axis for pointing, given in satellite frame. */
-    private final Vector3D satVector;
+    private final Vector3D satPointingVector;
 
     /** Creates new instance.
      * @param shape Body shape
      * @param attLaw Attitude law
-     * @param satVector satellite vector defining the pointing direction
+     * @param satPointingVector satellite vector defining the pointing direction
      */
     public LofOffsetPointing(final BodyShape shape, final AttitudeLaw attLaw,
-                             final Vector3D satVector) {
+                             final Vector3D satPointingVector) {
         super(shape.getBodyFrame());
         this.shape = shape;
         this.attitudeLaw = attLaw;
-        this.satVector = satVector;
+        this.satPointingVector = satPointingVector;
     }
 
     /** Compute the system state at given date in given frame.
@@ -81,21 +81,26 @@ public class LofOffsetPointing extends GroundPointing {
         // Compute satellite state at given date in given frame
         final Rotation satRot = getState(date, pv, frame).getRotation();
 
-        // Compute satellite Z axis in given frame
-        final Vector3D vectorFrame = satRot.applyInverseTo(satVector);
+        // Compute satellite pointing axis in given frame
+        final Vector3D vectorFrame = satRot.applyInverseTo(satPointingVector);
 
-        // Compute satellite Z axis and position/velocity in body frame
+        // Compute satellite pointing axis and position/velocity in body frame
         final Transform t = frame.getTransformTo(shape.getBodyFrame(), date);
         final Vector3D vectorBodyFrame = t.transformVector(vectorFrame);
         final PVCoordinates pvBodyFrame = t.transformPVCoordinates(pv);
 
-        // Line from satellite following Z direction
+        // Line from satellite following pointing direction
         final Line groundLine = new Line(pvBodyFrame.getPosition(), vectorBodyFrame);
 
         // Intersection with body shape
         final GeodeticPoint gpGround =
             shape.getIntersectionPoint(groundLine, pvBodyFrame.getPosition(),
                                        shape.getBodyFrame(), date);
+        
+        // Case with no intersection
+        if (gpGround == null) {
+            throw new OrekitException("attitude pointing law misses the Earth", new Object[0]);
+        }
 
         return new PVCoordinates(shape.transform(gpGround), Vector3D.zero);
     }

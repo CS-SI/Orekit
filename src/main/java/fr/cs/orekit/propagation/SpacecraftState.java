@@ -10,27 +10,27 @@ import fr.cs.orekit.attitudes.LofOffset;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
 
 /** This class is the representation of a complete state holding orbit, attitude
  * and mass information.
  *
- * <p> It contains an {@link OrbitalParameters orbital state} at a current
- * {@link AbsoluteDate} both handled by an {@link Orbit}, plus the current
+ * <p> It contains an {@link Orbit orbital state} at a current
+ * {@link AbsoluteDate} both handled by an {@link OrbitOld}, plus the current
  * mass and attitude.
  * </p>
  * <p>
  * The instance <code>SpacecraftState</code> is guaranteed to be immutable.
  * </p>
- * @see fr.cs.orekit.propagation.numerical.NumericalPropagator
+ * @see fr.cs.orekit.propagation.numerical.NumericalModel
  * @author F. Maussion
+ * @author V. Pommier-Maurussane
  */
 public class SpacecraftState implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 4422087150083556410L;
+    private static final long serialVersionUID = -6033960736544357234L;
 
     /** Orbital state. */
     private final Orbit orbit;
@@ -58,17 +58,15 @@ public class SpacecraftState implements Serializable {
      * {@link LofOffset LOF-aligned} law.</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception OrekitException is attitude law cannot compute the current state
      */
-    public SpacecraftState(final Orbit orbit, final double mass,
-                           final double mu)
+    public SpacecraftState(final Orbit orbit, final double mass)
         throws OrekitException {
         this.orbit    = orbit;
         this.mass     = mass;
         final AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
         this.attitude = lofAligned.getState(orbit.getDate(),
-                                            orbit.getPVCoordinates(mu),
+                                            orbit.getPVCoordinates(),
                                             orbit.getFrame());
     }
 
@@ -77,12 +75,11 @@ public class SpacecraftState implements Serializable {
      * set the attitude law to a default perfectly
      * {@link LofOffset LOF-aligned} law.</p>
      * @param orbit the orbit
-     * @param mu central body attraction coefficient
      * @exception OrekitException is attitude law cannot compute the current state
      */
-    public SpacecraftState(final Orbit orbit, final double mu)
+    public SpacecraftState(final Orbit orbit)
         throws OrekitException  {
-        this(orbit, 1000.0, mu);
+        this(orbit, 1000.0);
     }
 
     /** Gets the current orbit.
@@ -106,18 +103,18 @@ public class SpacecraftState implements Serializable {
         return orbit.getDate();
     }
 
-    /** Get the orbital parameters.
-     * @return orbital parameters
-     */
-    public OrbitalParameters getParameters() {
-        return orbit.getParameters();
-    }
-
     /** Get the inertial frame.
      * @return the frame
      */
     public Frame getFrame() {
         return orbit.getFrame();
+    }
+
+    /** Get the inertial frame.
+     * @return mu central attraction coefficient (m^3/s^2)
+     */
+    public double getMu() {
+        return orbit.getMu();
     }
 
     /** Gets the attitude.
@@ -138,16 +135,16 @@ public class SpacecraftState implements Serializable {
      * @return e cos(&omega; + &Omega;), first component of eccentricity vector
      * @see #getE()
      */
-    public double getEx() {
-        return orbit.getParameters().getEquinoctialEx();
+    public double getEquinoctialEx() {
+        return orbit.getEquinoctialEx();
     }
 
     /** Get the second component of the eccentricity vector (as per equinoctial parameters).
      * @return e sin(&omega; + &Omega;), second component of the eccentricity vector
      * @see #getE()
      */
-    public double getEy() {
-        return orbit.getParameters().getEquinoctialEy();
+    public double getEquinoctialEy() {
+        return orbit.getEquinoctialEy();
     }
 
     /** Get the first component of the inclination vector (as per equinoctial parameters).
@@ -197,8 +194,8 @@ public class SpacecraftState implements Serializable {
 
     /** Get the eccentricity.
      * @return eccentricity
-     * @see #getEx()
-     * @see #getEy()
+     * @see #getEquinoctialEx()
+     * @see #getEquinoctialEy()
      */
     public double getE() {
         return orbit.getE();
@@ -213,18 +210,30 @@ public class SpacecraftState implements Serializable {
         return orbit.getI();
     }
 
-    /** Get the {@link PVCoordinates}.
+    /** Get the {@link PVCoordinates} in orbit definition frame.
      * Compute the position and velocity of the satellite. This method caches its
      * results, and recompute them only when the method is called with a new value
      * for mu. The result is provided as a reference to the internally cached
      * {@link PVCoordinates}, so the caller is responsible to copy it in a separate
      * {@link PVCoordinates} if it needs to keep the value for a while.
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     * @return pvCoordinates in inertial frame (reference to an
-     * internally cached pvCoordinates which can change)
+     * @return pvCoordinates in orbit definition frame 
      */
-    public PVCoordinates getPVCoordinates(final double mu) {
-        return orbit.getPVCoordinates(mu);
+    public PVCoordinates getPVCoordinates() {
+        return orbit.getPVCoordinates();
+    }
+
+    /** Get the {@link PVCoordinates} in given output frame.
+     * Compute the position and velocity of the satellite. This method caches its
+     * results, and recompute them only when the method is called with a new value
+     * for mu. The result is provided as a reference to the internally cached
+     * {@link PVCoordinates}, so the caller is responsible to copy it in a separate
+     * {@link PVCoordinates} if it needs to keep the value for a while.
+     * @return pvCoordinates in orbit definition frame 
+     * @exception OrekitException if the transformation between frames cannot be computed
+     */
+    public PVCoordinates getPVCoordinates(final Frame outputFrame) 
+        throws OrekitException {
+        return orbit.getPVCoordinates(outputFrame);
     }
 
 }

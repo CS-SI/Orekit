@@ -11,9 +11,7 @@ import fr.cs.orekit.Utils;
 import fr.cs.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.frames.Transform;
-import fr.cs.orekit.orbits.CircularParameters;
-import fr.cs.orekit.orbits.Orbit;
+import fr.cs.orekit.orbits.CircularOrbit;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.propagation.analytical.KeplerianPropagator;
 import fr.cs.orekit.time.AbsoluteDate;
@@ -33,18 +31,11 @@ public class YawCompensationTest extends TestCase {
     // Computation date 
     private AbsoluteDate date;
     
-    // Body mu 
-    private double mu;
-
     // Reference frame = ITRF 2000B 
     private Frame frameItrf2000B;
     
-    // Transform from J2000 to ITRF2000B 
-    private Transform j2000ToItrf;
-    
     // Satellite position
-    CircularParameters circ;
-    PVCoordinates pvSatJ2000;
+    CircularOrbit circOrbit;
     PVCoordinates pvSatItrf2000B;
     
     // Earth shape
@@ -99,8 +90,6 @@ public class YawCompensationTest extends TestCase {
      */
     public void testCompensMinMax() throws OrekitException {
 
-        Orbit orbit = new Orbit(date, circ);
-
         //  Attitude laws
         // **************
         // Target pointing attitude law over satellite nadir at date, without yaw compensation
@@ -111,9 +100,9 @@ public class YawCompensationTest extends TestCase {
 
         
         // Extrapolation over one orbital period (sec)
-        double n = Math.sqrt(mu/Math.pow(orbit.getA(), 3));
+        double n = Math.sqrt(circOrbit.getMu()/Math.pow(circOrbit.getA(), 3));
         double duration = 2.0*Math.PI/n;
-        KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(orbit, mu), mu);
+        KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(circOrbit));
         
         // Extrapolation initializations
         double delta_t = 15.0; // extrapolation duration in seconds
@@ -128,7 +117,7 @@ public class YawCompensationTest extends TestCase {
 
             // Extrapolated orbit state at date
             SpacecraftState extrapOrbit = extrapolator.getSpacecraftState(extrapDate);
-            PVCoordinates extrapPvSatJ2000 = extrapOrbit.getPVCoordinates(mu);
+            PVCoordinates extrapPvSatJ2000 = extrapOrbit.getPVCoordinates();
             
             // Satellite latitude at date
             double extrapLat = earthShape.transform(extrapPvSatJ2000.getPosition(), Frame.getJ2000(), extrapDate).getLatitude();
@@ -187,8 +176,7 @@ public class YawCompensationTest extends TestCase {
      */
     public void testCompensAxis() throws OrekitException {
 
-        Orbit orbit = new Orbit(date, circ);
-        PVCoordinates pvSatJ2000 = orbit.getPVCoordinates(mu);
+        PVCoordinates pvSatJ2000 = circOrbit.getPVCoordinates();
 
         //  Attitude laws
         // **************
@@ -221,23 +209,17 @@ public class YawCompensationTest extends TestCase {
                                     UTCScale.getInstance());
 
             // Body mu
-            mu = 3.9860047e14;
+            final double mu = 3.9860047e14;
             
             // Reference frame = ITRF 2000B
             frameItrf2000B = Frame.getReferenceFrame(Frame.ITRF2000B, date);
 
-            // Transform from J2000 to ITRF2000B
-            j2000ToItrf = Frame.getJ2000().getTransformTo(frameItrf2000B, date);
-
             //  Satellite position
-            circ =
-                new CircularParameters(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
-                                       Math.toRadians(5.300), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
+            circOrbit =
+                new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
+                                       Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                       Frame.getJ2000(), date, mu);
             
-            // Transform satellite position to position/velocity parameters in J2000 frame
-            pvSatJ2000 = circ.getPVCoordinates(mu);
-            pvSatItrf2000B = j2000ToItrf.transformPVCoordinates(pvSatJ2000);
-         
             // Elliptic earth shape */
             earthShape =
                 new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameItrf2000B);
@@ -251,9 +233,7 @@ public class YawCompensationTest extends TestCase {
     public void tearDown() {
         date = null;
         frameItrf2000B = null;
-        j2000ToItrf = null;
-        circ = null;
-        pvSatJ2000 = null;
+        circOrbit = null;
         pvSatItrf2000B = null;
         earthShape = null;
     }

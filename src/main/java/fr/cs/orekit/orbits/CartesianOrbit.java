@@ -1,6 +1,8 @@
 package fr.cs.orekit.orbits;
 
+import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
+import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
 
 
@@ -22,56 +24,51 @@ import fr.cs.orekit.utils.PVCoordinates;
  * <p>
  * Note that the implementation of this class delegates all non-cartesian related
  * computations ({@link #getA()}, {@link #getEquinoctialEx()}, ...) to an underlying
- * instance of the {@link EquinoctialParameters} class that is lazily built only
- * as needed. This imply that using this class only for analytical computations which
- * are always based on non-cartesian parameters is perfectly possible but somewhat
- * suboptimal. This class is more targeted towards numerical orbit propagation.
+ * instance of the {@link EquinoctialOrbit} class. This implies that using this class
+ * only for analytical computations which are always based on non-cartesian
+ * parameters is perfectly possible but somewhat sub-optimal.
  * </p>
  * <p>
- * The instance <code>CartesianParameters</code> is guaranteed to be immutable.
+ * The instance <code>CartesianOrbit</code> is guaranteed to be immutable.
  * </p>
  * @see     Orbit
  * @version $Id:CartesianParameters.java 1310 2007-07-05 16:04:25Z luc $
  * @author  L. Maisonobe
  * @author  G. Prat
- * @author  F.Maussion
+ * @author  F. Maussion
+ * @author  V. Pommier-Maurussane
  */
-public class CartesianParameters extends OrbitalParameters {
+public class CartesianOrbit extends Orbit {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 2006917870170399349L;
-
-    /** Initial position and velocity. */
-    private final PVCoordinates initialPV;
-
-    /** Initial central attraction coefficient. */
-    private final double initialMu;
+    private static final long serialVersionUID = -6035381767203311530L;
 
     /** Underlying equinoctial orbit providing non-cartesian elements. */
-    private final EquinoctialParameters equinoctial;
+    private final EquinoctialOrbit equinoctial;
 
     /** Constructor from cartesian parameters.
      * @param pvCoordinates the position and velocity of the satellite.
-     * @param frame the frame in which are defined the {@link PVCoordinates}
+     * @param frame the frame in which the {@link PVCoordinates} are defined
+     * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public CartesianParameters(final PVCoordinates pvCoordinates, final Frame frame,
-                               final double mu) {
-        super(pvCoordinates, frame, mu);
-        initialPV   = pvCoordinates;
-        initialMu   = mu;
-        equinoctial = new EquinoctialParameters(pvCoordinates, frame, mu);
+    public CartesianOrbit(final PVCoordinates pvCoordinates, final Frame frame,
+                               final AbsoluteDate date, final double mu) {
+        super(pvCoordinates, frame, date, mu);
+        equinoctial = new EquinoctialOrbit(pvCoordinates, frame, date, mu);
     }
 
     /** Constructor from any kind of orbital parameters.
      * @param op orbital parameters to copy
+     * @param frame the frame in which the {@link PVCoordinates} are defined
+     * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @exception OrekitException if some specific error occurs
      */
-    public CartesianParameters(final OrbitalParameters op, final double mu) {
-        super(op.getFrame());
-        initialPV   = getPVCoordinates(mu);
-        initialMu   = mu;
-        equinoctial = new EquinoctialParameters(initialPV, getFrame(), mu);
+    public CartesianOrbit(final Orbit op) 
+        throws OrekitException {
+        super(op.getFrame(), op.getDate(), op.getMu());
+        equinoctial = new EquinoctialOrbit(op);
     }
 
     /** Get the semi-major axis.
@@ -110,14 +107,14 @@ public class CartesianParameters extends OrbitalParameters {
     }
 
     /** Get the first component of the inclination vector.
-     * @return first component oof the inclination vector.
+     * @return first component of the inclination vector.
      */
     public double getHx() {
         return equinoctial.getHx();
     }
 
     /** Get the second component of the inclination vector.
-     * @return second component oof the inclination vector.
+     * @return second component of the inclination vector.
      */
     public double getHy() {
         return equinoctial.getHy();
@@ -144,29 +141,11 @@ public class CartesianParameters extends OrbitalParameters {
         return equinoctial.getLM();
     }
 
-    /** Get the initial central acceleration constant.
-     * @return initial central acceleration constant
-     */
-    public double getMu() {
-        return initialMu;
-    }
-
-    /** Get the initial {@link PVCoordinates}.
-     * <p>Contrary to the general {@link #getPVCoordinates(double)} method
-     * which can use any value for mu, this method always return the values
-     * set at construction time, which never change.</p>
-     * @return pvCoordinates in the definition frame
-     * @see #getPVCoordinates(double)
-     */
-    public PVCoordinates getPVCoordinates() {
-        return initialPV;
-    }
-
     /**  Returns a string representation of this Orbit object.
      * @return a string representation of this object
      */
     public String toString() {
-        return "cartesian parameters: " + initialPV.toString();
+        return "cartesian parameters: " + getPVCoordinates().toString();
     }
 
 }

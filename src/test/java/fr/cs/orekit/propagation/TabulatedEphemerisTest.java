@@ -8,9 +8,8 @@ import junit.framework.TestSuite;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.orbits.KeplerianParameters;
+import fr.cs.orekit.orbits.KeplerianOrbit;
 import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.ChunkedDate;
@@ -30,10 +29,6 @@ public class TabulatedEphemerisTest extends TestCase {
         double OMEGA = Math.toRadians(261);
         double lv = 0;
 
-        OrbitalParameters transPar = new KeplerianParameters(a, e, i,
-                                                             omega, OMEGA,
-                                                             lv, KeplerianParameters.TRUE_ANOMALY, Frame.getJ2000());
-
         AbsoluteDate initDate = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
                                                  ChunkedTime.H00,
                                                  UTCScale.getInstance());
@@ -42,9 +37,13 @@ public class TabulatedEphemerisTest extends TestCase {
                                                   UTCScale.getInstance());
         double deltaT = finalDate.minus(initDate);
 
+        Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA,
+                                            lv, KeplerianOrbit.TRUE_ANOMALY, 
+                                            Frame.getJ2000(), initDate, mu);
+
         int nbIntervals = 720;
         EcksteinHechlerPropagator eck =
-            new EcksteinHechlerPropagator(new SpacecraftState(new Orbit(initDate, transPar), mass),
+            new EcksteinHechlerPropagator(new SpacecraftState(transPar, mass),
                                           ae, mu, c20, c30, c40, c50, c60);
         SpacecraftState[] tab = new SpacecraftState[nbIntervals+1];
         for (int j = 0; j<= nbIntervals; j++) {
@@ -63,14 +62,14 @@ public class TabulatedEphemerisTest extends TestCase {
 
     }
 
-    private void checkEphemerides(Ephemeris eph1, Ephemeris eph2, AbsoluteDate date,
+    private void checkEphemerides(Propagator eph1, Propagator eph2, AbsoluteDate date,
                                   double threshold, boolean expectedBelow)
         throws PropagationException {
         SpacecraftState state1 = eph1.getSpacecraftState(date);
         SpacecraftState state2 = eph2.getSpacecraftState(date);
         double maxError = Math.abs(state1.getA() - state2.getA());
-        maxError = Math.max(maxError, Math.abs(state1.getEx() - state2.getEx()));
-        maxError = Math.max(maxError, Math.abs(state1.getEy() - state2.getEy()));
+        maxError = Math.max(maxError, Math.abs(state1.getEquinoctialEx() - state2.getEquinoctialEx()));
+        maxError = Math.max(maxError, Math.abs(state1.getEquinoctialEy() - state2.getEquinoctialEy()));
         maxError = Math.max(maxError, Math.abs(state1.getHx() - state2.getHx()));
         maxError = Math.max(maxError, Math.abs(state1.getHy() - state2.getHy()));
         maxError = Math.max(maxError, Math.abs(state1.getLv() - state2.getLv()));

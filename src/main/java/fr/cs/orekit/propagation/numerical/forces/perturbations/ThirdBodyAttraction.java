@@ -12,11 +12,12 @@ import fr.cs.orekit.propagation.numerical.forces.ForceModel;
 /** Third body attraction force model.
  *
  * @author F. Maussion
+ * @author  V. Pommier-Maurussane
  */
 public class ThirdBodyAttraction implements ForceModel {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 8395304968977051442L;
+    private static final long serialVersionUID = 9017402538195695004L;
 
     /** The body to consider. */
     private final ThirdBody body;
@@ -31,18 +32,17 @@ public class ThirdBodyAttraction implements ForceModel {
     }
 
     /** {@inheritDoc} */
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder,
-                                final double mu)
+    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
         throws OrekitException {
 
         Vector3D otherBody = body.getPosition(s.getDate(), s.getFrame());
         Vector3D centralBody =
-            new Vector3D(-1.0, s.getPVCoordinates(mu).getPosition(), 1.0, otherBody);
+            new Vector3D(-1.0, s.getPVCoordinates().getPosition(), 1.0, otherBody);
         centralBody = centralBody.scalarMultiply(1.0 / Math.pow(centralBody.getNorm(), 3));
         otherBody = otherBody.scalarMultiply(1.0 / Math.pow(otherBody.getNorm(), 3));
 
         Vector3D gamma = centralBody.subtract(otherBody);
-        gamma = gamma.scalarMultiply(body.getMu());
+        gamma = gamma.scalarMultiply(s.getOrbit().getMu());
         adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
 
     }

@@ -17,11 +17,10 @@ import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.iers.IERSDirectoryCrawler;
 import fr.cs.orekit.models.bodies.Moon;
 import fr.cs.orekit.models.bodies.Sun;
-import fr.cs.orekit.orbits.EquinoctialParameters;
+import fr.cs.orekit.orbits.EquinoctialOrbit;
 import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.propagation.SpacecraftState;
-import fr.cs.orekit.propagation.numerical.NumericalPropagator;
+import fr.cs.orekit.propagation.numerical.NumericalModel;
 import fr.cs.orekit.propagation.numerical.OrekitFixedStepHandler;
 import fr.cs.orekit.propagation.numerical.forces.perturbations.ThirdBodyAttraction;
 import fr.cs.orekit.time.AbsoluteDate;
@@ -37,27 +36,26 @@ public class ThirdBodyAttractionTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 07, 01),
                                              new ChunkedTime(13, 59, 27.816),
                                              UTCScale.getInstance());
-        OrbitalParameters op = new EquinoctialParameters(42164000,10e-3,10e-3,
+        Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
                                                          Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
-                                                         0.1, 2, Frame.getJ2000());
-        Orbit orbit = new Orbit(date , op);
+                                                         0.1, 2, Frame.getJ2000(), date, mu);
         Sun sun = new Sun();
 
         // creation of the force model
         ThirdBodyAttraction TBA =  new ThirdBodyAttraction(sun);
 
-        double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/mu);
+        double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
 
         // creation of the propagator
         FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, period, 0, 10e-5);
-        NumericalPropagator calc = new NumericalPropagator(mu, integrator);
+        NumericalModel calc = new NumericalModel(mu, integrator);
         calc.addForceModel(TBA);
 
         // Step Handler
 
         TBAStepHandler sh = new TBAStepHandler(TBAStepHandler.SUN, date);
         AbsoluteDate finalDate = new AbsoluteDate(date , 2*365*period);
-        calc.propagate(new SpacecraftState(orbit, mu), finalDate, Math.floor(period), sh);
+        calc.propagate(new SpacecraftState(orbit), finalDate, Math.floor(period), sh);
 
     }
 
@@ -69,29 +67,28 @@ public class ThirdBodyAttractionTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 07, 01),
                                              new ChunkedTime(13, 59, 27.816),
                                              UTCScale.getInstance());
-        OrbitalParameters op =
-            new EquinoctialParameters(42164000,10e-3,10e-3,
+        Orbit orbit =
+            new EquinoctialOrbit(42164000,10e-3,10e-3,
                                       Math.tan(0.001745329) * Math.cos(2 * Math.PI / 3),
                                       Math.tan(0.001745329) * Math.sin(2 * Math.PI / 3),
-                                      0.1, 2, Frame.getJ2000());
-        Orbit orbit = new Orbit(date , op);
+                                      0.1, 2, Frame.getJ2000(), date, mu);
         Moon moon = new Moon();
 
         // creation of the force model
         ThirdBodyAttraction TBA =  new ThirdBodyAttraction(moon);
 
-        double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/mu);
+        double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
 
         // creation of the propagator
         FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, period, 0, 10e-5);
-        NumericalPropagator calc = new NumericalPropagator(mu, integrator);
+        NumericalModel calc = new NumericalModel(mu, integrator);
         calc.addForceModel(TBA);
 
         // Step Handler
 
         TBAStepHandler sh = new TBAStepHandler(TBAStepHandler.MOON, date);
         AbsoluteDate finalDate = new AbsoluteDate(date , 365*period);
-        calc.propagate(new SpacecraftState(orbit, mu), finalDate, Math.floor(period), sh);
+        calc.propagate(new SpacecraftState(orbit), finalDate, Math.floor(period), sh);
 
     }
 

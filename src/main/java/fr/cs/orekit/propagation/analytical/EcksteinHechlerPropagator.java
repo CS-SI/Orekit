@@ -7,10 +7,9 @@ import fr.cs.orekit.attitudes.AttitudeLaw;
 import fr.cs.orekit.attitudes.LofOffset;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
-import fr.cs.orekit.orbits.CircularParameters;
+import fr.cs.orekit.orbits.CircularOrbit;
 import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.orbits.OrbitalParameters;
-import fr.cs.orekit.propagation.Ephemeris;
+import fr.cs.orekit.propagation.Propagator;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
 
@@ -23,7 +22,7 @@ import fr.cs.orekit.time.AbsoluteDate;
  * @see Orbit
  * @author G. Prat
  */
-public class EcksteinHechlerPropagator implements Ephemeris {
+public class EcksteinHechlerPropagator implements Propagator {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 7822712271905182848L;
@@ -35,7 +34,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
     private final AbsoluteDate initialDate;
 
     /** Mean parameters at the initial date. */
-    private CircularParameters mean;
+    private CircularOrbit mean;
 
     // CHECKSTYLE: stop JavadocVariable check
 
@@ -101,7 +100,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
 
         // transformation into circular adapted parameters
         // (used by the Eckstein-Hechler model)
-        final CircularParameters osculating = new CircularParameters(initialState.getParameters(), mu);
+        final CircularOrbit osculating = new CircularOrbit(initialState.getOrbit());
 
         // compute mean parameters
         initialDate = initialState.getDate();
@@ -121,10 +120,10 @@ public class EcksteinHechlerPropagator implements Ephemeris {
      */
     public SpacecraftState getSpacecraftState(final AbsoluteDate date)
         throws PropagationException {
-        final OrbitalParameters op = propagate(date);
+        final Orbit op = propagate(date);
         try {
-            return new SpacecraftState(new Orbit(date, op), mass,
-                                       attitudeLaw.getState(date, op.getPVCoordinates(mu), op.getFrame()));
+            return new SpacecraftState(op, mass,
+                                       attitudeLaw.getState(date, op.getPVCoordinates(), op.getFrame()));
         } catch (OrekitException oe) {
             throw new PropagationException(oe.getMessage(), oe);
         }
@@ -136,7 +135,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
      * (trajectory inside the Brillouin sphere, too excentric, equatorial, critical
      * inclination) or if convergence cannot be reached
      */
-    private void computeMeanParameters(final CircularParameters osculating)
+    private void computeMeanParameters(final CircularOrbit osculating)
         throws PropagationException {
 
         // sanity check
@@ -148,7 +147,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
         }
 
         // rough initialization of the mean parameters
-        mean = new CircularParameters(osculating , mu);
+        mean = new CircularOrbit(osculating);
 
         // threshold for each parameter
         final double epsilon         = 1.0e-13;
@@ -179,7 +178,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
             sinI6 = sinI2 * sinI4;
 
             // recompute the osculation parameters from the current mean parameters
-            final CircularParameters rebuilt = propagate(initialDate);
+            final CircularOrbit rebuilt = propagate(initialDate);
 
             // adapted parameters residuals
             final double deltaA      = osculating.getA()  - rebuilt.getA();
@@ -192,14 +191,15 @@ public class EcksteinHechlerPropagator implements Ephemeris {
             final double deltaAlphaM = MathUtils.normalizeAngle(osculating.getAlphaM() - rebuilt.getAlphaM(), 0.0);
 
             // update mean parameters
-            mean = new CircularParameters(mean.getA()          + deltaA,
+            mean = new CircularOrbit(mean.getA()          + deltaA,
                                           mean.getCircularEx() + deltaEx,
                                           mean.getCircularEy() + deltaEy,
                                           mean.getI()          + deltaI,
                                           mean.getRightAscensionOfAscendingNode() + deltaRAAN,
                                           mean.getAlphaM()     + deltaAlphaM,
-                                          CircularParameters.MEAN_LONGITUDE_ARGUMENT,
-                                          mean.getFrame());
+                                          CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
+                                          mean.getFrame(),
+                                          mean.getDate(), mean.getMu());
 
             // check convergence
             if ((Math.abs(deltaA)      < thresholdA) &&
@@ -253,7 +253,7 @@ public class EcksteinHechlerPropagator implements Ephemeris {
      * @return extrapolated parameters
      * @exception PropagationException if some parameters are out of bounds
      */
-    private CircularParameters propagate(final AbsoluteDate date)
+    private CircularOrbit propagate(final AbsoluteDate date)
         throws PropagationException {
 
         // keplerian evolution
@@ -398,10 +398,11 @@ public class EcksteinHechlerPropagator implements Ephemeris {
         rdxl += ql * f;
 
         // osculating parameters
-        return new CircularParameters(mean.getA() * (1.0 + rda), exm + rdex, eym + rdey,
+        return new CircularOrbit(mean.getA() * (1.0 + rda), exm + rdex, eym + rdey,
                                       xim + rdxi, MathUtils.normalizeAngle(omm + rdom, Math.PI),
                                       MathUtils.normalizeAngle(xlm + rdxl, Math.PI),
-                                      CircularParameters.MEAN_LONGITUDE_ARGUMENT, mean.getFrame());
+                                      CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                      mean.getFrame(), mean.getDate(), mean.getMu());
 
     }
 

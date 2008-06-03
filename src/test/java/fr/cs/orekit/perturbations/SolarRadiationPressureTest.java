@@ -19,12 +19,11 @@ import fr.cs.orekit.iers.IERSDirectoryCrawler;
 import fr.cs.orekit.models.bodies.Sun;
 import fr.cs.orekit.models.spacecraft.SolarRadiationPressureSpacecraft;
 import fr.cs.orekit.models.spacecraft.SphericalSpacecraft;
-import fr.cs.orekit.orbits.EquinoctialParameters;
+import fr.cs.orekit.orbits.EquinoctialOrbit;
 import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.propagation.analytical.KeplerianPropagator;
-import fr.cs.orekit.propagation.numerical.NumericalPropagator;
+import fr.cs.orekit.propagation.numerical.NumericalModel;
 import fr.cs.orekit.propagation.numerical.OrekitFixedStepHandler;
 import fr.cs.orekit.propagation.numerical.forces.perturbations.SolarRadiationPressure;
 import fr.cs.orekit.time.AbsoluteDate;
@@ -39,10 +38,9 @@ public class SolarRadiationPressureTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 3, 21),
                                              new ChunkedTime(13, 59, 27.816),
                                              UTCScale.getInstance());
-        OrbitalParameters op = new EquinoctialParameters(42164000,10e-3,10e-3,
-                                                         Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
-                                                         0.1, 2, Frame.getJ2000());
-        Orbit orbit = new Orbit(date , op);
+        Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
+                                           Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
+                                           0.1, 2, Frame.getJ2000(), date, mu);
         Sun sun = new Sun();
         OneAxisEllipsoid earth =
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
@@ -51,11 +49,11 @@ public class SolarRadiationPressureTest extends TestCase {
             new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
                                        (SolarRadiationPressureSpacecraft) new SphericalSpacecraft(50.0, 0.5, 0.5, 0.5));
 
-        double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/mu);
+        double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
         assertEquals(86164, period,1);
 
         // creation of the propagator
-        KeplerianPropagator k = new KeplerianPropagator(new SpacecraftState(orbit, 1500.0), mu);
+        KeplerianPropagator k = new KeplerianPropagator(new SpacecraftState(orbit, 1500.0));
 
         // intermediate variables
         AbsoluteDate currentDate;
@@ -66,7 +64,7 @@ public class SolarRadiationPressureTest extends TestCase {
             currentDate = new AbsoluteDate(date , t);
             try {
 
-                double ratio = SRP.getLightningRatio(k.getSpacecraftState(currentDate).getPVCoordinates(mu).getPosition(),Frame.getJ2000(), currentDate );
+                double ratio = SRP.getLightningRatio(k.getSpacecraftState(currentDate).getPVCoordinates().getPosition(),Frame.getJ2000(), currentDate );
 
                 if(Math.floor(ratio)!=changed) {
                     changed = Math.floor(ratio);
@@ -87,10 +85,9 @@ public class SolarRadiationPressureTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 7, 1),
                                              new ChunkedTime(13, 59, 27.816),
                                              UTCScale.getInstance());
-        OrbitalParameters op = new EquinoctialParameters(42164000,10e-3,10e-3,
+        Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
                                                          Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
-                                                         0.1, 2, Frame.getJ2000());
-        Orbit orbit = new Orbit(date , op);
+                                                         0.1, 2, Frame.getJ2000(), date, mu);
         Sun sun = new Sun();
 
         // creation of the force model
@@ -106,7 +103,7 @@ public class SolarRadiationPressureTest extends TestCase {
         assertEquals(86164, period,1);
         // creation of the propagator
         FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, period/4, 0, 10e-4);
-        NumericalPropagator calc = new NumericalPropagator(mu, integrator);
+        NumericalModel calc = new NumericalModel(mu, integrator);
         calc.addForceModel(SRP);
 
         // Step Handler
@@ -136,8 +133,8 @@ public class SolarRadiationPressureTest extends TestCase {
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {
-            double radius = Math.sqrt((currentState.getEx()-0.00940313)*(currentState.getEx()-0.00940313)
-                                      + (currentState.getEy()-0.013679)*(currentState.getEy()-0.013679));
+            double radius = Math.sqrt((currentState.getEquinoctialEx()-0.00940313)*(currentState.getEquinoctialEx()-0.00940313)
+                                      + (currentState.getEquinoctialEy()-0.013679)*(currentState.getEquinoctialEy()-0.013679));
             checkRadius(radius , 0.00351 , 0.00394);
         }
 

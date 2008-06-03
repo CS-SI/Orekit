@@ -20,12 +20,13 @@ import org.apache.commons.math.geometry.Vector3D;
  *
  * @author F. Maussion
  * @author L. Maisonobe
+ * @author V. Pommier-Maurussane
  */
 
 public class CunninghamAttractionModel implements ForceModel {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -7911862263330769844L;
+    private static final long serialVersionUID = 2609845747545125479L;
 
     /** Equatorial radius of the Central Body. */
     private final double equatorialRadius;
@@ -98,13 +99,12 @@ public class CunninghamAttractionModel implements ForceModel {
     }
 
     /** {@inheritDoc} */
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder,
-                                final double mu)
+    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
         throws OrekitException {
         // get the position in body frame
         final Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), s.getDate());
         final Transform toBodyFrame   = fromBodyFrame.getInverse();
-        final Vector3D relative = toBodyFrame.transformPosition(s.getPVCoordinates(mu).getPosition());
+        final Vector3D relative = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
 
         final double x = relative.getX();
         final double y = relative.getY();
@@ -349,7 +349,7 @@ public class CunninghamAttractionModel implements ForceModel {
 
         // compute acceleration in inertial frame
         final Vector3D acceleration =
-            fromBodyFrame.transformVector(new Vector3D(mu * vdX, mu * vdY, mu * vdZ));
+            fromBodyFrame.transformVector(new Vector3D(s.getOrbit().getMu() * vdX, s.getOrbit().getMu() * vdY, s.getOrbit().getMu() * vdZ));
         adder.addXYZAcceleration(acceleration.getX(), acceleration.getY(), acceleration.getZ());
 
     }

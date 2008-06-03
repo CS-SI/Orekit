@@ -4,6 +4,7 @@ import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
+import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
 
 /**
@@ -23,16 +24,17 @@ import fr.cs.orekit.utils.PVCoordinates;
  * &alpha;<sub>v</sub> stands for the true longitude argument
  * </p>
  * <p>
- * The instance <code>CircularParameters</code> is guaranteed to be immutable.
+ * The instance <code>CircularOrbit</code> is guaranteed to be immutable.
  * </p>
  * @see     Orbit
  * @version $Id$
  * @author  L. Maisonobe
- * @author  F.Maussion
+ * @author  F. Maussion
+ * @author  V. Pommier-Maurussane
  */
 
-public class CircularParameters
-    extends OrbitalParameters {
+public class CircularOrbit
+    extends Orbit {
 
     /** Identifier for mean longitude argument. */
     public static final int MEAN_LONGITUDE_ARGUMENT = 0;
@@ -44,7 +46,7 @@ public class CircularParameters
     public static final int TRUE_LONGITUDE_ARGUMENT = 2;
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2984595977828653812L;
+    private static final long serialVersionUID = -5031200932453701026L;
 
     /** Semi-major axis (m). */
     private final double a;
@@ -74,6 +76,8 @@ public class CircularParameters
      * @param type type of longitude argument, must be one of {@link #MEAN_LONGITUDE_ARGUMENT},
      * {@link #ECCENTRIC_LONGITUDE_ARGUMENT} or  {@link #TRUE_LONGITUDE_ARGUMENT}
      * @param frame the frame in which are defined the parameters
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if the longitude argument type is not
      * one of {@link #MEAN_LONGITUDE_ARGUMENT}, @link #ECCENTRIC_LONGITUDE_ARGUMENT}
      * or  {@link #TRUE_LONGITUDE_ARGUMENT}
@@ -81,11 +85,12 @@ public class CircularParameters
      * @see #ECCENTRIC_LONGITUDE_ARGUMENT
      * @see #TRUE_LONGITUDE_ARGUMENT
      */
-    public CircularParameters(final double a, final double ex, final double ey,
+    public CircularOrbit(final double a, final double ex, final double ey,
                               final double i, final double raan,
-                              final double alpha, final int type, final Frame frame)
+                              final double alpha, final int type, 
+                              final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        super(frame);
+        super(frame, date, mu);
         this.a    =  a;
         this.ex   = ex;
         this.ey   = ey;
@@ -118,11 +123,12 @@ public class CircularParameters
     /** Constructor from cartesian parameters.
      * @param pvCoordinates the {@link PVCoordinates} in inertial frame
      * @param frame the frame in which are defined the {@link PVCoordinates}
+     * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public CircularParameters(final PVCoordinates pvCoordinates, final Frame frame,
-                              final double mu) {
-        super(pvCoordinates, frame, mu);
+    public CircularOrbit(final PVCoordinates pvCoordinates, final Frame frame,
+                              final AbsoluteDate date, final double mu) {
+        super(pvCoordinates, frame, date, mu);
 
         // compute semi-major axis
         final Vector3D pvP = pvCoordinates.getPosition();
@@ -170,10 +176,9 @@ public class CircularParameters
 
     /** Constructor from any kind of orbital parameters.
      * @param op orbital parameters to copy
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public CircularParameters(final OrbitalParameters op, final double mu) {
-        super(op.getFrame());
+    public CircularOrbit(final Orbit op) {
+        super(op.getFrame(), op.getDate(), op.getMu());
         a    = op.getA();
         i    = op.getI();
         raan = Math.atan2(op.getHy(), op.getHx());

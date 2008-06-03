@@ -49,7 +49,8 @@ public abstract class GroundPointing implements AttitudeLaw {
      * @param date date when the target point shall be computed
      * @param pv position/velocity of the point
      * @param frame frame in which the point shall be computed
-     * @throws OrekitException if some specific error occurs
+     * @throws OrekitException if some specific error occurs,
+     * such as no target reached
      * @return target in body frame
      */
     protected abstract PVCoordinates getTargetInBodyFrame(AbsoluteDate date,

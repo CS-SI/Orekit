@@ -13,7 +13,7 @@ import fr.cs.orekit.time.AbsoluteDate;
  * @author L. Maisonobe
  *
  */
-public interface BoundedEphemeris extends Ephemeris {
+public interface BoundedPropagator extends Propagator {
 
     /** Get the first date of the range.
      * @return the first date of the range

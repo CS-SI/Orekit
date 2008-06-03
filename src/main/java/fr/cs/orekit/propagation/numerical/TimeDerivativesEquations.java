@@ -6,14 +6,14 @@ import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
-import fr.cs.orekit.orbits.EquinoctialParameters;
+import fr.cs.orekit.orbits.EquinoctialOrbit;
 import fr.cs.orekit.utils.PVCoordinates;
 
 /** This class sums up the contribution of several forces into orbit and mass derivatives.
  *
  * <p>The aim of this class is to gather the contributions of various perturbing
  * forces expressed as accelerations into one set of time-derivatives of
- * {@link fr.cs.orekit.orbits.EquinoctialParameters} plus one mass derivatives.
+ * {@link fr.cs.orekit.orbits.EquinoctialOrbit} plus one mass derivatives.
  * It implements Gauss equations for the equinoctial parameters.</p>
  *  <p>
  * The state vector handled internally has the form that follows:
@@ -35,7 +35,7 @@ import fr.cs.orekit.utils.PVCoordinates;
  * <ul>
  *   <li>
  *     reinitialize the instance using the
- *     {@link #initDerivatives(double[], EquinoctialParameters)} method
+ *     {@link #initDerivatives(double[], EquinoctialOrbit)} method
  *   </li>
  *   <li>
  *     pass the instance to each force model in turn so that they can put their
@@ -47,26 +47,24 @@ import fr.cs.orekit.utils.PVCoordinates;
  *   </li>
  * </ul>
  * </p>
- * @see fr.cs.orekit.orbits.EquinoctialParameters
- * @see fr.cs.orekit.propagation.numerical.NumericalPropagator
+ * @see fr.cs.orekit.orbits.EquinoctialOrbit
+ * @see fr.cs.orekit.propagation.numerical.NumericalModel
  * @version $Id: OrbitDerivativesAdder.java 1052 2006-10-11 10:49:23 +0000 (mer., 11 oct. 2006) fabien $
  * @author L. Maisonobe
- * @author F.Maussion
+ * @author F. Maussion
+ * @author V. Pommier-Maurussane
  *
  */
 public class TimeDerivativesEquations implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -3337021992571488188L;
+    private static final long serialVersionUID = 1524631993375841290L;
 
     /** Orbital parameters. */
-    private EquinoctialParameters storedParameters;
+    private EquinoctialOrbit storedParameters;
 
     /** Reference to the derivatives array to initialize. */
     private double[] storedYDot;
-
-    /** Central body attraction coefficient. */
-    private double mu;
 
     /** First vector of the (q, s, w) local orbital frame. */
     private Vector3D lofQ;
@@ -117,13 +115,11 @@ public class TimeDerivativesEquations implements Serializable {
     private double lvKepler;
 
     /** Create a new instance.
-     * @param parameters current orbit parameters
+     * @param orbit current orbit parameters
      * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
      */
-    protected TimeDerivativesEquations(final EquinoctialParameters parameters,
-                                       final double mu) {
-        this.storedParameters = parameters;
-        this.mu = mu;
+    protected TimeDerivativesEquations(final EquinoctialOrbit orbit) {
+        this.storedParameters = orbit;
         lofQ = new Vector3D();
         lofS = new Vector3D();
         lofT = new Vector3D();
@@ -136,7 +132,7 @@ public class TimeDerivativesEquations implements Serializable {
     private void updateOrbitalFrames() {
 
         // get the position/velocity vectors
-        final PVCoordinates pvCoordinates = storedParameters.getPVCoordinates(mu);
+        final PVCoordinates pvCoordinates = storedParameters.getPVCoordinates();
 
         // compute orbital plane normal vector
         lofW = Vector3D.crossProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity()).normalize();
@@ -153,15 +149,15 @@ public class TimeDerivativesEquations implements Serializable {
 
     /** Initialize all derivatives to zero.
      * @param yDot reference to the array where to put the derivatives.
-     * @param parameters current orbit parameters
+     * @param orbit current orbit parameters
      * @exception PropagationException if the orbit evolve out of supported range
      */
     protected void initDerivatives(final double[] yDot,
-                                   final EquinoctialParameters parameters)
+                                   final EquinoctialOrbit orbit)
         throws PropagationException {
 
 
-        this.storedParameters = parameters;
+        this.storedParameters = orbit;
         updateOrbitalFrames();
 
         // store derivatives array reference
@@ -188,7 +184,7 @@ public class TimeDerivativesEquations implements Serializable {
         final double oMe2        = (1 - e) * (1 + e);
         final double epsilon     = Math.sqrt(oMe2);
         final double a           = storedParameters.getA();
-        final double na          = Math.sqrt(mu / a);
+        final double na          = Math.sqrt(orbit.getMu() / a);
         final double n           = na / a;
         final double lv          = storedParameters.getLv();
         final double cLv         = Math.cos(lv);

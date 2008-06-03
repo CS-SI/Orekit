@@ -11,7 +11,7 @@ import fr.cs.orekit.Utils;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.frames.Transform;
-import fr.cs.orekit.orbits.CircularParameters;
+import fr.cs.orekit.orbits.CircularOrbit;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.ChunkedDate;
 import fr.cs.orekit.time.ChunkedTime;
@@ -25,10 +25,7 @@ public class BodyCenterPointingTest extends TestCase {
     private AbsoluteDate date;
     
     // Orbit 
-    private CircularParameters circ;
-
-    // Body mu 
-    private double mu;
+    private CircularOrbit circ;
 
     // Reference frame = ITRF 2000B 
     private Frame frameItrf2000B;
@@ -50,7 +47,7 @@ public class BodyCenterPointingTest extends TestCase {
     public void testTarget() throws OrekitException {
         
         // Transform satellite position to position/velocity parameters in J2000 frame 
-        PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
+        PVCoordinates pvSatJ2000 = circ.getPVCoordinates();
         
         // Call get target method 
         PVCoordinates target = earthCenterAttitudeLaw.getTargetInBodyFrame(date, pvSatJ2000, Frame.getJ2000());
@@ -68,7 +65,7 @@ public class BodyCenterPointingTest extends TestCase {
     public void testBodyCenterInPointingDirection() throws OrekitException {
         
         // Transform satellite position to position/velocity parameters in J2000 frame
-        PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
+        PVCoordinates pvSatJ2000 = circ.getPVCoordinates();
         
         //  Pointing direction
         // ******************** 
@@ -101,13 +98,13 @@ public class BodyCenterPointingTest extends TestCase {
                                     UTCScale.getInstance());
 
             // Satellite position as circular parameters
-            double raan = 270.;
+            final double mu = 3.9860047e14;
+            final double raan = 270.;
             circ =
-                new CircularParameters(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(raan),
-                                       Math.toRadians(5.300 - raan), CircularParameters.MEAN_LONGITUDE_ARGUMENT,
-                                       Frame.getJ2000());
+                new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(raan),
+                                       Math.toRadians(5.300 - raan), CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
+                                       Frame.getJ2000(), date, mu);
             
-            mu = 3.9860047e14;
             
             // Reference frame = ITRF 2000B
             frameItrf2000B = Frame.getReferenceFrame(Frame.ITRF2000B, date);

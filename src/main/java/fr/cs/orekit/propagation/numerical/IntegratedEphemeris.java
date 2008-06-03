@@ -6,9 +6,8 @@ import fr.cs.orekit.attitudes.AttitudeLaw;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.orbits.EquinoctialParameters;
-import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.propagation.BoundedEphemeris;
+import fr.cs.orekit.orbits.EquinoctialOrbit;
+import fr.cs.orekit.propagation.BoundedPropagator;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
 
@@ -16,7 +15,7 @@ import fr.cs.orekit.time.AbsoluteDate;
  * later retrieval.
  *
  * <p>Instances of this class are built and then must be filled with the results
- * provided by {@link NumericalPropagator} objects in order to allow random
+ * provided by {@link NumericalModel} objects in order to allow random
  * access to any intermediate state of the orbit throughout the integration range.
  * Numerically integrated orbits can therefore be used by algorithms that
  * need to wander around according to their own algorithm without cumbersome
@@ -25,13 +24,14 @@ import fr.cs.orekit.time.AbsoluteDate;
  * <p> This class handles a {@link ContinuousOutputModel} and can be very
  *  voluminous. Refer to {@link ContinuousOutputModel} for more information.</p>
  *
- * @see NumericalPropagator
+ * @see NumericalModel
  *
  * @version $Id$
  * @author M. Romero
  * @author L. Maisonobe
+ * @author V. Pommier-Maurussane
  */
-public class IntegratedEphemeris implements BoundedEphemeris {
+public class IntegratedEphemeris implements BoundedPropagator {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -5016030285313444680L;
@@ -106,14 +106,14 @@ public class IntegratedEphemeris implements BoundedEphemeris {
             model.setInterpolatedTime(date.minus(startDate));
             final double[] state = model.getInterpolatedState();
 
-            final EquinoctialParameters eq =
-                new EquinoctialParameters(state[0], state[1], state[2],
-                                          state[3], state[4], state[5], 2, frame);
+            final EquinoctialOrbit eq =
+                new EquinoctialOrbit(state[0], state[1], state[2],
+                                          state[3], state[4],state[5], 2, frame, date, mu);
             final double mass = state[6];
 
             try {
-                return new SpacecraftState(new Orbit(date , eq), mass,
-                                           attitudeLaw.getState(date, eq.getPVCoordinates(mu), frame));
+                return new SpacecraftState(eq, mass,
+                                           attitudeLaw.getState(date, eq.getPVCoordinates(), frame));
             } catch (OrekitException oe) {
                 throw new PropagationException(oe.getMessage(), oe);
             }

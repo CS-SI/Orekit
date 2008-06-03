@@ -4,6 +4,7 @@ import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
+import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
 
 /**
@@ -23,16 +24,17 @@ import fr.cs.orekit.utils.PVCoordinates;
  * Right Ascension of the Ascending Node.
  * </p>
  * <p>
- * The instance <code>EquinoctialParameters</code> is guaranteed to be immutable.
+ * The instance <code>EquinoctialOrbit</code> is guaranteed to be immutable.
  * </p>
  * @see     Orbit
  * @version $Id:EquinoctialParameters.java 1310 2007-07-05 16:04:25Z luc $
  * @author  M. Romero
  * @author  L. Maisonobe
  * @author  G. Prat
- * @author  F.Maussion
+ * @author  F. Maussion
+ * @author  V. Pommier-Maurussane
  */
-public class EquinoctialParameters extends OrbitalParameters {
+public class EquinoctialOrbit extends Orbit {
 
     /** Identifier for mean latitude argument. */
     public static final int MEAN_LATITUDE_ARGUMENT = 0;
@@ -44,7 +46,7 @@ public class EquinoctialParameters extends OrbitalParameters {
     public static final int TRUE_LATITUDE_ARGUMENT = 2;
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 8009346527263842780L;
+    private static final long serialVersionUID = -1779638201767656602L;
 
     /** Semi-major axis (m). */
     private final double a;
@@ -73,7 +75,9 @@ public class EquinoctialParameters extends OrbitalParameters {
      * @param l  an + &omega; + &Omega;, mean, eccentric or true latitude argument (rad)
      * @param type type of latitude argument, must be one of {@link #MEAN_LATITUDE_ARGUMENT},
      * {@link #ECCENTRIC_LATITUDE_ARGUMENT} or  {@link #TRUE_LATITUDE_ARGUMENT}
-     * @param frame the frame in which are defined the parameters
+     * @param frame the frame in which the parameters are defined
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if the longitude argument type is not
      * one of {@link #MEAN_LATITUDE_ARGUMENT}, @link #ECCENTRIC_LATITUDE_ARGUMENT}
      * or  {@link #TRUE_LATITUDE_ARGUMENT}
@@ -81,11 +85,12 @@ public class EquinoctialParameters extends OrbitalParameters {
      * @see #ECCENTRIC_LATITUDE_ARGUMENT
      * @see #TRUE_LATITUDE_ARGUMENT
      */
-    public EquinoctialParameters(final double a, final double ex, final double ey,
+    public EquinoctialOrbit(final double a, final double ex, final double ey,
                                  final double hx, final double hy,
-                                 final double l, final int type, final Frame frame)
+                                 final double l, final int type, 
+                                 final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        super(frame);
+        super(frame, date, mu);
         this.a  =  a;
         this.ex = ex;
         this.ey = ey;
@@ -118,11 +123,12 @@ public class EquinoctialParameters extends OrbitalParameters {
     /** Constructor from cartesian parameters.
      * @param pvCoordinates the position end velocity
      * @param frame the frame in which are defined the {@link PVCoordinates}
+     * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public EquinoctialParameters(final PVCoordinates pvCoordinates, final Frame frame,
-                                 final double mu) {
-        super(pvCoordinates, frame,  mu);
+    public EquinoctialOrbit(final PVCoordinates pvCoordinates, final Frame frame,
+                                 final AbsoluteDate date, final double mu) {
+        super(pvCoordinates, frame, date, mu);
 
         //  compute semi-major axis
         final Vector3D pvP = pvCoordinates.getPosition();
@@ -156,10 +162,9 @@ public class EquinoctialParameters extends OrbitalParameters {
 
     /** Constructor from any kind of orbital parameters.
      * @param op orbital parameters to copy
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public EquinoctialParameters(final OrbitalParameters op, final double mu) {
-        super(op.getFrame());
+    public EquinoctialOrbit(final Orbit op) {
+        super(op.getFrame(), op.getDate(), op.getMu());
         a  = op.getA();
         ex = op.getEquinoctialEx();
         ey = op.getEquinoctialEy();

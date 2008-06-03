@@ -28,6 +28,7 @@ import fr.cs.orekit.propagation.SpacecraftState;
  *  method, wich is called when the step is placed on the wanted date. <p>
  *
  * @author L. Maisonobe
+ * @author V. Pommier-Maurussane
  */
 
 
@@ -37,18 +38,16 @@ public interface OrekitSwitchingFunction extends Serializable {
      * This function must be continuous (at least in its roots neighborhood),
      * as the integrator will need to find its roots to locate the events.
      * @param s the current state information: date, kinematics, attitude
-     * @param mu central body attraction coefficient
      * @return value of the switching function
      * @exception OrekitException if some specific error occurs
      */
-    double g(SpacecraftState s, double mu) throws OrekitException;
+    double g(SpacecraftState s) throws OrekitException;
 
     /** Handle an event and choose what to do next.
      * @param s the current state information : date, cinematics, attitude
-     * @param mu central gravitation coefficient
      * @exception OrekitException if some specific error occurs
      */
-    void eventOccurred(SpacecraftState s, double mu) throws OrekitException;
+    void eventOccurred(SpacecraftState s) throws OrekitException;
 
     /** Get the convergence threshold in the event time search.
      * @return convergence threshold

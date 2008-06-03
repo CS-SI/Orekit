@@ -6,8 +6,7 @@ import org.apache.commons.math.ode.SwitchingFunction;
 import fr.cs.orekit.attitudes.AttitudeLaw;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.orbits.EquinoctialParameters;
-import fr.cs.orekit.orbits.Orbit;
+import fr.cs.orekit.orbits.EquinoctialOrbit;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
 
@@ -53,7 +52,7 @@ class WrappedSwitchingFunction implements SwitchingFunction {
     public double g(final double t, final double[] y)
         throws SwitchException {
         try {
-            return swf.g(mapState(t, y, referenceDate, mu, integrationFrame, attitudeLaw), mu);
+            return swf.g(mapState(t, y, referenceDate, mu, integrationFrame, attitudeLaw));
         } catch (OrekitException oe) {
             throw new SwitchException(oe);
         }
@@ -63,7 +62,7 @@ class WrappedSwitchingFunction implements SwitchingFunction {
     public int eventOccurred(final double t, final double[] y)
         throws SwitchException {
         try {
-            swf.eventOccurred(mapState(t, y, referenceDate, mu, integrationFrame, attitudeLaw), mu);
+            swf.eventOccurred(mapState(t, y, referenceDate, mu, integrationFrame, attitudeLaw));
             return RESET_DERIVATIVES;
         } catch (OrekitException oe) {
             throw new SwitchException(oe);
@@ -77,7 +76,7 @@ class WrappedSwitchingFunction implements SwitchingFunction {
 
     /** Convert state array to space dynamics objects
      * ({@link fr.cs.orekit.time.AbsoluteDate AbsoluteDate} and
-     * ({@link fr.cs.orekit.orbits.OrbitalParameters OrbitalParameters}).
+     * ({@link fr.cs.orekit.orbits.Orbit OrbitalParameters}).
      * @param t integration time (s)
      * @param y state as a flat array
      * @param referenceDate reference date from which t is counted
@@ -94,15 +93,15 @@ class WrappedSwitchingFunction implements SwitchingFunction {
         throws OrekitException {
 
         // update space dynamics view
-        final EquinoctialParameters currentParameters =
-            new EquinoctialParameters(y[0], y[1], y[2], y[3], y[4], y[5],
-                                      EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                      integrationFrame);
         final AbsoluteDate currentDate = new AbsoluteDate(referenceDate, t);
+        final EquinoctialOrbit currentOrbit =
+            new EquinoctialOrbit(y[0], y[1],y[2],y[3],y[4],y[5],
+                                      EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
+                                      integrationFrame, currentDate, mu);
         return
-            new SpacecraftState(new Orbit(currentDate, currentParameters), y[6],
+            new SpacecraftState(currentOrbit, y[6],
                                 attitudeLaw.getState(currentDate,
-                                                     currentParameters.getPVCoordinates(mu),
+                                                     currentOrbit.getPVCoordinates(),
                                                      integrationFrame));
     }
 

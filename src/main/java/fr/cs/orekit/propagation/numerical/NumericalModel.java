@@ -18,8 +18,7 @@ import fr.cs.orekit.attitudes.AttitudeLaw;
 import fr.cs.orekit.attitudes.LofOffset;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.orbits.EquinoctialParameters;
-import fr.cs.orekit.orbits.Orbit;
+import fr.cs.orekit.orbits.EquinoctialOrbit;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.propagation.numerical.forces.ForceModel;
 import fr.cs.orekit.time.AbsoluteDate;
@@ -69,14 +68,16 @@ import fr.cs.orekit.time.AbsoluteDate;
  * @see StepHandler
  * @see OrekitFixedStepHandler
  * @see IntegratedEphemeris
+ * @see AttitudeKinematicsProvider
  * @see TimeDerivativesEquations
  *
  * @author  M. Romero
  * @author  L. Maisonobe
  * @author  G. Prat
  * @author  F. Maussion
+ * @author  V. Pommier-Maurussane
  */
-public class NumericalPropagator
+public class NumericalModel
     implements FirstOrderDifferentialEquations {
 
     /** Attitude law. */
@@ -106,7 +107,7 @@ public class NumericalPropagator
     /** Gauss equations handler. */
     private TimeDerivativesEquations adder;
 
-    /** Create a new instance of NumericalExtrapolationModel.
+    /** Create a new instance of NumericalModel, based on a specified mu.
      * After creation, the instance is empty, i.e. there is no perturbing force
      * at all. This means that if {@link #addForceModel addForceModel} is not
      * called after creation, the integrated orbit will follow a keplerian
@@ -114,7 +115,7 @@ public class NumericalPropagator
      * @param mu central body gravitational constant (GM).
      * @param integrator numerical integrator to use for propagation.
      */
-    public NumericalPropagator(final double mu, final FirstOrderIntegrator integrator) {
+    public NumericalModel(final double mu, final FirstOrderIntegrator integrator) {
         this.mu           = mu;
         this.forceModels  = new ArrayList();
         this.forceSwf     = new ArrayList();
@@ -123,7 +124,27 @@ public class NumericalPropagator
         this.currentState = null;
         this.adder        = null;
         final AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
-        this.attitudeLaw = lofAligned;
+        this.attitudeLaw  = lofAligned;
+        this.state        = new double[getDimension()];
+    }
+
+    /** Create a new instance of NumericalModel, based on orbit definition mu.
+     * After creation, the instance is empty, i.e. there is no perturbing force
+     * at all. This means that if {@link #addForceModel addForceModel} is not
+     * called after creation, the integrated orbit will follow a keplerian
+     * evolution only.
+     * @param integrator numerical integrator to use for propagation.
+     */
+    public NumericalModel(final FirstOrderIntegrator integrator) {
+        this.mu           = currentState.getMu();
+        this.forceModels  = new ArrayList();
+        this.forceSwf     = new ArrayList();
+        this.integrator   = integrator;
+        this.startDate    = new AbsoluteDate();
+        this.currentState = null;
+        this.adder        = null;
+        final AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
+        this.attitudeLaw  = lofAligned;
         this.state        = new double[getDimension()];
     }
 
@@ -155,6 +176,11 @@ public class NumericalPropagator
         forceSwf.clear();
     }
 
+    /** {@inheritDoc} */
+    public void setAttitudeLaw(final AttitudeLaw attitudeLaw) {
+        this.attitudeLaw = attitudeLaw;
+    }
+
     /** Propagate an orbit up to a specific target date.
      * @param initialState state to extrapolate
      * @param finalDate target date for the orbit
@@ -181,10 +207,9 @@ public class NumericalPropagator
         throws OrekitException {
         final ContinuousOutputModel model = new ContinuousOutputModel();
         final SpacecraftState finalState =
-            propagate(initialState, finalDate, (StepHandler) model);
+            propagate(initialState, finalDate, (StepHandler)model);
         ephemeris.initialize(model , initialState.getDate(),
-                             initialState.getParameters().getFrame(),
-                             attitudeLaw, mu);
+                             initialState.getOrbit().getFrame(), attitudeLaw, mu);
         return finalState;
     }
 
@@ -242,14 +267,13 @@ public class NumericalPropagator
         // space dynamics view
         startDate  = initialState.getDate();
 
-        final EquinoctialParameters initialParameters =
-            new EquinoctialParameters(initialState.getParameters(), mu);
+        final EquinoctialOrbit initialOrbit =
+            new EquinoctialOrbit(initialState.getOrbit());
 
         currentState =
-            new SpacecraftState(new Orbit(initialState.getDate(), initialParameters),
-                                initialState.getMass(), initialState.getAttitude());
+            new SpacecraftState(initialOrbit, initialState.getMass(), initialState.getAttitude());
 
-        adder = new TimeDerivativesEquations(initialParameters , mu);
+        adder = new TimeDerivativesEquations(initialOrbit);
 
         if (initialState.getMass() <= 0.0) {
             throw new IllegalArgumentException("Mass is null or negative");
@@ -260,12 +284,12 @@ public class NumericalPropagator
         final double t1 = finalDate.minus(startDate);
 
         // Map state to array
-        state[0] = initialParameters.getA();
-        state[1] = initialParameters.getEquinoctialEx();
-        state[2] = initialParameters.getEquinoctialEy();
-        state[3] = initialParameters.getHx();
-        state[4] = initialParameters.getHy();
-        state[5] = initialParameters.getLv();
+        state[0] = initialOrbit.getA();
+        state[1] = initialOrbit.getEquinoctialEx();
+        state[2] = initialOrbit.getEquinoctialEy();
+        state[3] = initialOrbit.getHx();
+        state[4] = initialOrbit.getHy();
+        state[5] = initialOrbit.getLv();
         state[6] = initialState.getMass();
 
         // Set up the switching functions
@@ -310,16 +334,15 @@ public class NumericalPropagator
         // back to space dynamics view
         final AbsoluteDate date = new AbsoluteDate(startDate, t1);
 
-        final EquinoctialParameters parameters =
-            new EquinoctialParameters(state[0], state[1], state[2], state[3],
-                                      state[4], state[5],
-                                      EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                      initialParameters.getFrame());
+        final EquinoctialOrbit orbit =
+            new EquinoctialOrbit(state[0], state[1],state[2],state[3],
+                                 state[4],state[5], EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
+                                 initialOrbit.getFrame(), initialOrbit.getDate(), mu);
 
-        return new SpacecraftState(new Orbit(date, parameters), state[6],
+        return new SpacecraftState(orbit, state[6],
                                    attitudeLaw.getState(date,
-                                                        parameters.getPVCoordinates(mu),
-                                                        parameters.getFrame()));
+                                                        orbit.getPVCoordinates(),
+                                                        orbit.getFrame()));
     }
 
     /** Gets the dimension of the handled state vector (always 7).
@@ -352,13 +375,12 @@ public class NumericalPropagator
                                                                   new Double(currentState.getMass())
                                                               });
             }
-
             // initialize derivatives
-            adder.initDerivatives(yDot, (EquinoctialParameters) currentState.getParameters());
+            adder.initDerivatives(yDot, (EquinoctialOrbit)currentState.getOrbit());
 
             // compute the contributions of all perturbing forces
             for (final Iterator iter = forceModels.iterator(); iter.hasNext();) {
-                ((ForceModel) iter.next()).addContribution(currentState, adder, mu);
+                ((ForceModel) iter.next()).addContribution(currentState, adder);
             }
 
             // finalize derivatives by adding the Kepler contribution
@@ -387,15 +409,15 @@ public class NumericalPropagator
         throws OrekitException {
 
         // update space dynamics view
-        final EquinoctialParameters currentParameters =
-            new EquinoctialParameters(y[0], y[1], y[2], y[3], y[4], y[5],
-                                      EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                      integrationFrame);
         final AbsoluteDate currentDate = new AbsoluteDate(referenceDate, t);
+        final EquinoctialOrbit currentOrbit =
+            new EquinoctialOrbit(y[0], y[1],y[2],y[3],y[4],y[5],
+                                      EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
+                                      integrationFrame, currentDate, mu);
         return
-            new SpacecraftState(new Orbit(currentDate, currentParameters), y[6],
+            new SpacecraftState(currentOrbit, y[6],
                                 attitudeLaw.getState(currentDate,
-                                                     currentParameters.getPVCoordinates(mu),
+                                                     currentOrbit.getPVCoordinates(),
                                                      integrationFrame));
     }
 

@@ -7,12 +7,11 @@ import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
 
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.orbits.KeplerianParameters;
+import fr.cs.orekit.orbits.KeplerianOrbit;
 import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.propagation.numerical.IntegratedEphemeris;
-import fr.cs.orekit.propagation.numerical.NumericalPropagator;
+import fr.cs.orekit.propagation.numerical.NumericalModel;
 import fr.cs.orekit.propagation.numerical.OrekitFixedStepHandler;
 import fr.cs.orekit.propagation.numerical.forces.ForceModel;
 import fr.cs.orekit.propagation.numerical.forces.perturbations.CunninghamAttractionModel;
@@ -45,7 +44,7 @@ public class NumericalPropagation {
         double e = 0.72831215; // eccentricity
         double i = Math.toRadians(7); // inclination
         double omega = Math.toRadians(180); // perigee argument
-        double raan = Math.toRadians(261); // right ascention of ascending node
+        double raan = Math.toRadians(261); // right ascencion of ascending node
         double lv = 0; // mean anomaly
 
         double mass = 2500; // mass of the spacecraft in Kg
@@ -60,11 +59,9 @@ public class NumericalPropagation {
 
         // OREKIT objects construction:
 
-        OrbitalParameters initialParameters =
-            new KeplerianParameters(a, e, i, omega, raan, lv,
-                                    KeplerianParameters.MEAN_ANOMALY, inertialFrame);
-
-        Orbit initialOrbit = new Orbit(initialDate , initialParameters);
+        Orbit initialOrbit =
+            new KeplerianOrbit(a, e, i, omega, raan, lv,
+                                    KeplerianOrbit.MEAN_ANOMALY, inertialFrame, initialDate, mu);
 
         SpacecraftState initialState = new SpacecraftState(initialOrbit, mass);
 
@@ -77,7 +74,7 @@ public class NumericalPropagation {
         FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-8);
         // adaptive step integrator with a minimum step of 1 and a maximum step of 1000, and a relative precision of 1.0e-8
 
-        NumericalPropagator propagator = new NumericalPropagator(mu, integrator);
+        NumericalModel propagator = new NumericalModel(mu, integrator);
 
         // Pertubative gravity field :
 
@@ -95,11 +92,11 @@ public class NumericalPropagation {
         IntegratedEphemeris ephemeris = new IntegratedEphemeris();
         SpacecraftState finalState = propagator.propagate(initialState, finalDate, ephemeris);
         System.out.println(" Final state  : " +
-                           finalState.getParameters());
+                           finalState.getOrbit());
         AbsoluteDate intermediateDate = new AbsoluteDate(initialDate, 214);
         SpacecraftState intermediateState = ephemeris.getSpacecraftState(intermediateDate);
         System.out.println("  intermediate state  :  " +
-                           intermediateState.getParameters());
+                           intermediateState.getOrbit());
     }
 
     public static void numericalPropagationWithStepHandler() throws ParseException, OrekitException {
@@ -133,11 +130,10 @@ public class NumericalPropagation {
 
         // OREKIT objects construction:
 
-        OrbitalParameters initialParameters =
-            new KeplerianParameters(a, e, i, omega, raan, lv,
-                                    KeplerianParameters.MEAN_ANOMALY, inertialFrame);
-
-        Orbit initialOrbit = new Orbit(initialDate , initialParameters);
+        Orbit initialOrbit =
+            new KeplerianOrbit(a, e, i, omega, raan, lv,
+                                    KeplerianOrbit.MEAN_ANOMALY, 
+                                    inertialFrame, initialDate, mu);
 
         SpacecraftState initialState = new SpacecraftState(initialOrbit, ae);
 
@@ -150,7 +146,7 @@ public class NumericalPropagation {
         FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-8);
         // adaptive step integrator with a minimum step of 1 and a maximum step of 1000, and a relative precision of 1.0e-8
 
-        NumericalPropagator propagator = new NumericalPropagator(mu, integrator);
+        NumericalModel propagator = new NumericalModel(mu, integrator);
 
         // Pertubative gravity field :
 
@@ -166,7 +162,7 @@ public class NumericalPropagation {
         SpacecraftState finalState =
             propagator.propagate(initialState, finalDate, 100, new TutorialStepHandler());
         System.out.println(" Final state  : " +
-                           finalState.getParameters());
+                           finalState.getOrbit());
     }
 
     private static class TutorialStepHandler extends OrekitFixedStepHandler {
@@ -180,7 +176,7 @@ public class NumericalPropagation {
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {
             System.out.println(" step time : " + currentState.getDate());
-            System.out.println(" step state : " + currentState.getParameters());
+            System.out.println(" step state : " + currentState.getOrbit());
             if (isLast) {
                 System.out.println(" this was the last step ");
             }

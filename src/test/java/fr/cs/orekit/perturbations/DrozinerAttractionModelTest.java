@@ -21,13 +21,12 @@ import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.frames.Transform;
 import fr.cs.orekit.iers.IERSDirectoryCrawler;
 import fr.cs.orekit.models.bodies.Sun;
-import fr.cs.orekit.orbits.EquinoctialParameters;
-import fr.cs.orekit.orbits.KeplerianParameters;
+import fr.cs.orekit.orbits.EquinoctialOrbit;
+import fr.cs.orekit.orbits.KeplerianOrbit;
 import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.propagation.analytical.EcksteinHechlerPropagator;
-import fr.cs.orekit.propagation.numerical.NumericalPropagator;
+import fr.cs.orekit.propagation.numerical.NumericalModel;
 import fr.cs.orekit.propagation.numerical.OrekitFixedStepHandler;
 import fr.cs.orekit.propagation.numerical.forces.perturbations.CunninghamAttractionModel;
 import fr.cs.orekit.propagation.numerical.forces.perturbations.DrozinerAttractionModel;
@@ -63,19 +62,18 @@ public class DrozinerAttractionModelTest extends TestCase {
         double i     = Math.toRadians(98.7);
         double omega = Math.toRadians(93.0);
         double OMEGA = Math.toRadians(15.0 * 22.5);
-        OrbitalParameters op = new KeplerianParameters(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                                       0, KeplerianParameters.MEAN_ANOMALY,
-                                                       poleAligned);
-        Orbit orbit = new Orbit(date , op);
-
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                                       0, KeplerianOrbit.MEAN_ANOMALY,
+                                                       poleAligned, date, mu);
+        
         propagator.addForceModel(new DrozinerAttractionModel(itrf2000,
                                                              6378136.460,
                                                              new double[][] { { 0.0 }, { 0.0 }, { c20 } },
                                                              new double[][] { { 0.0 }, { 0.0 }, { 0.0 } }));
 
         // let the step handler perform the test
-        propagator.propagate(new SpacecraftState(orbit, mu), new AbsoluteDate(date, 7 * 86400),
-                             86400, new SpotStepHandler(mu));
+        propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date, 7 * 86400),
+                             86400, new SpotStepHandler());
 
     }
 
@@ -84,19 +82,17 @@ public class DrozinerAttractionModelTest extends TestCase {
         /** Serializable UID. */
         private static final long serialVersionUID = -3917769828973243346L;
 
-        public SpotStepHandler(double mu) {
-            this.mu   = mu;
+        public SpotStepHandler() {
             sun       = new Sun();
             previous  = Double.NaN;
         }
 
-        private double mu;
         private Sun sun;
         private double previous;
         public void handleStep(SpacecraftState currentState, boolean isLast) {
 
-            Vector3D pos = currentState.getPVCoordinates(mu).getPosition();
-            Vector3D vel = currentState.getPVCoordinates(mu).getVelocity();
+            Vector3D pos = currentState.getPVCoordinates().getPosition();
+            Vector3D vel = currentState.getPVCoordinates().getVelocity();
             AbsoluteDate current = currentState.getDate();
             Vector3D sunPos;
             try {
@@ -138,10 +134,8 @@ public class DrozinerAttractionModelTest extends TestCase {
                                            new Transform(new Rotation(pole, Vector3D.plusK)),
         "pole aligned");
 
-        Orbit initialOrbit =
-            new Orbit(date,
-                      new EquinoctialParameters(new PVCoordinates(position, velocity),
-                                                poleAligned, mu));
+        Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
+                                                poleAligned, date, mu);
 
         propagator.addForceModel(new DrozinerAttractionModel(itrf2000, ae,
                                                              new double[][] {
@@ -165,15 +159,12 @@ public class DrozinerAttractionModelTest extends TestCase {
         /** Serializable UID. */
         private static final long serialVersionUID = -7974453505641400294L;
 
-        private final double mu;
-
         private EckStepHandler(Orbit initialOrbit, double ae, double mu,
                                double c20, double c30, double c40, double c50, double c60)
         throws FileNotFoundException, OrekitException {
             referencePropagator =
                 new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit, mu),
                                               ae, mu, c20, c30, c40, c50, c60);
-            this.mu = mu;
         }
 
         public void handleStep(double t, double[] y, boolean isLastStep) {
@@ -185,9 +176,9 @@ public class DrozinerAttractionModelTest extends TestCase {
             try {
 
                 SpacecraftState EHPOrbit   = referencePropagator.getSpacecraftState(currentState.getDate());
-                Vector3D posEHP  = EHPOrbit.getPVCoordinates(mu).getPosition();
-                Vector3D posDROZ = currentState.getPVCoordinates(mu).getPosition();
-                Vector3D velEHP  = EHPOrbit.getPVCoordinates(mu).getVelocity();
+                Vector3D posEHP  = EHPOrbit.getPVCoordinates().getPosition();
+                Vector3D posDROZ = currentState.getPVCoordinates().getPosition();
+                Vector3D velEHP  = EHPOrbit.getPVCoordinates().getVelocity();
                 Vector3D dif     = posEHP.subtract(posDROZ);
 
                 Vector3D T = new Vector3D(1 / velEHP.getNorm(), velEHP);
@@ -223,11 +214,10 @@ public class DrozinerAttractionModelTest extends TestCase {
         double i     = Math.toRadians(98.7);
         double omega = Math.toRadians(93.0);
         double OMEGA = Math.toRadians(15.0 * 22.5);
-        OrbitalParameters op = new KeplerianParameters(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                                       0, KeplerianParameters.MEAN_ANOMALY,
-                                                       Frame.getJ2000());
-        Orbit orbit = new Orbit(date , op);
-        propagator = new NumericalPropagator(mu,
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                                       0, KeplerianOrbit.MEAN_ANOMALY,
+                                                       Frame.getJ2000(), date, mu);
+       propagator = new NumericalModel(mu,
                                              new ClassicalRungeKuttaIntegrator(100));
         propagator.addForceModel(new CunninghamAttractionModel(itrf2000, ae,C, S));
 
@@ -240,9 +230,9 @@ public class DrozinerAttractionModelTest extends TestCase {
                                                              C, S));
 
         SpacecraftState drozOrb =
-            propagator.propagate(new SpacecraftState(orbit, mu), new AbsoluteDate(date,  86400));
+            propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date,  86400));
 
-        Vector3D dif = cunnOrb.getPVCoordinates(mu).getPosition().subtract(drozOrb.getPVCoordinates(mu).getPosition());
+        Vector3D dif = cunnOrb.getPVCoordinates().getPosition().subtract(drozOrb.getPVCoordinates().getPosition());
         assertEquals(0, dif.getNorm(), 1.0e-8);
     }
 
@@ -258,7 +248,7 @@ public class DrozinerAttractionModelTest extends TestCase {
             c60 = -5.40618601332e-7;
             itrf2000 = Frame.getReferenceFrame(Frame.ITRF2000B, new AbsoluteDate());
             propagator =
-                new NumericalPropagator(mu,
+                new NumericalModel(mu,
                                         new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
 
         } catch (OrekitException oe) {
@@ -309,7 +299,7 @@ public class DrozinerAttractionModelTest extends TestCase {
     };
 
     private Frame   itrf2000;
-    private NumericalPropagator propagator;
+    private NumericalModel propagator;
 
 }
 

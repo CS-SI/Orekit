@@ -9,9 +9,8 @@ import fr.cs.orekit.attitudes.AttitudeLaw;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.orbits.EquinoctialParameters;
+import fr.cs.orekit.orbits.EquinoctialOrbit;
 import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
 
@@ -78,15 +77,15 @@ public abstract class OrekitFixedStepHandler
     /** {@inheritDoc}  */
     public void handleStep(final double t, final double[] y, final boolean isLast) {
         try {
-            final OrbitalParameters op =
-                new EquinoctialParameters(y[0], y[1], y[2], y[3], y[4], y[5],
-                                          EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                          frame);
             final AbsoluteDate current = new AbsoluteDate(reference, t);
+            final Orbit orbit =
+                new EquinoctialOrbit(y[0], y[1], y[2], y[3], y[4], y[5],
+                                          EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
+                                          frame, current, mu);
             final Attitude attitude =
-                attitudeLaw.getState(current, op.getPVCoordinates(mu), frame);
+                attitudeLaw.getState(current, orbit.getPVCoordinates(), frame);
             final SpacecraftState state =
-                new SpacecraftState(new Orbit(current, op), y[6], attitude);
+                new SpacecraftState(orbit, y[6], attitude);
             handleStep(state, isLast);
         } catch (OrekitException e) {
             throw new RuntimeException(e.getLocalizedMessage());

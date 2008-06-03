@@ -13,8 +13,7 @@ import fr.cs.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.frames.Transform;
-import fr.cs.orekit.orbits.CircularParameters;
-import fr.cs.orekit.orbits.Orbit;
+import fr.cs.orekit.orbits.CircularOrbit;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.propagation.analytical.KeplerianPropagator;
 import fr.cs.orekit.time.AbsoluteDate;
@@ -50,12 +49,13 @@ public class TargetPointingTest extends TestCase {
 
         //  Satellite position
         // ********************
-        CircularParameters circ =
-            new CircularParameters(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
-                                   Math.toRadians(5.300), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
+        CircularOrbit circ =
+            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
+                                   Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                   Frame.getJ2000(), date, mu);
         
         // Transform satellite position to position/velocity parameters in J2000 frame
-        PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
+        PVCoordinates pvSatJ2000 = circ.getPVCoordinates();
      
         //  Attitude laws
         // *************** 
@@ -92,12 +92,13 @@ public class TargetPointingTest extends TestCase {
 
         //  Satellite position
         // ******************** 
-        CircularParameters circ =
-            new CircularParameters(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
-                                   Math.toRadians(5.300), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
+        CircularOrbit circ =
+            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
+                                   Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                   Frame.getJ2000(), date, mu);
         
         // Transform satellite position to position/velocity parameters in J2000 frame 
-        PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
+        PVCoordinates pvSatJ2000 = circ.getPVCoordinates();
      
         //  Attitude law
         // ************** 
@@ -130,13 +131,13 @@ public class TargetPointingTest extends TestCase {
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameItrf2000B);
                 
         // Satellite on any position 
-        CircularParameters circ =
-            new CircularParameters(7178000.0, 1.e-5, 0., Math.toRadians(50.), 0.,
-                                   Math.toRadians(90.), CircularParameters.TRUE_LONGITUDE_ARGUMENT, Frame.getJ2000());
-        Orbit orbit = new Orbit(date, circ);
+        CircularOrbit circOrbit =
+            new CircularOrbit(7178000.0, 1.e-5, 0., Math.toRadians(50.), 0.,
+                                   Math.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
+                                   Frame.getJ2000(), date, mu);
 
         // Transform satellite position to position/velocity parameters in J2000 frame
-        PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
+        PVCoordinates pvSatJ2000 = circOrbit.getPVCoordinates();
         
         
         //  Target attitude law with target under satellite nadir 
@@ -174,11 +175,11 @@ public class TargetPointingTest extends TestCase {
         // **********************************************************
 
         // Extrapolation one minute later
-        KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(orbit, mu), mu);
+        KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(circOrbit));
         double delta_t = 60.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = new AbsoluteDate(date, delta_t);
         SpacecraftState extrapOrbit = extrapolator.getSpacecraftState(extrapDate);
-        PVCoordinates extrapPvSatJ2000 = extrapOrbit.getPVCoordinates(mu);
+        PVCoordinates extrapPvSatJ2000 = extrapOrbit.getPVCoordinates();
         
         // Get satellite rotation from target pointing law at date + 1min
         Rotation extrapRotTarget = targetAttitudeLaw.getState(extrapDate, extrapPvSatJ2000, Frame.getJ2000()).getRotation();
@@ -215,12 +216,13 @@ public class TargetPointingTest extends TestCase {
         //  Satellite position
         // ********************
         // Create satellite position as circular parameters
-        CircularParameters circ =
-            new CircularParameters(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
-                                   Math.toRadians(5.300), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
+        CircularOrbit circ =
+            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
+                                   Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                   Frame.getJ2000(), date, mu);
         
         // Transform satellite position to position/velocity parameters in J2000 frame
-        PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
+        PVCoordinates pvSatJ2000 = circ.getPVCoordinates();
         
         //  Pointing direction
         // ********************
@@ -249,12 +251,13 @@ public class TargetPointingTest extends TestCase {
         //  Satellite position
         // ********************
         // Create satellite position as circular parameters
-        CircularParameters circ =
-            new CircularParameters(42164000.0, 0.5e-8, -0.5e-8, 0., 0.,
-                                   Math.toRadians(5.300), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
+        CircularOrbit circ =
+            new CircularOrbit(42164000.0, 0.5e-8, -0.5e-8, 0., 0.,
+                                   Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                   Frame.getJ2000(), date, mu);
         
         // Transform satellite position to position/velocity parameters in J2000 frame
-        PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
+        PVCoordinates pvSatJ2000 = circ.getPVCoordinates();
         
         // Create nadir pointing attitude law 
         // ********************************** 

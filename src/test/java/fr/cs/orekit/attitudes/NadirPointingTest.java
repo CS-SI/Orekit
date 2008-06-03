@@ -12,9 +12,8 @@ import fr.cs.orekit.bodies.GeodeticPoint;
 import fr.cs.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.frames.Transform;
-import fr.cs.orekit.orbits.CircularParameters;
-import fr.cs.orekit.orbits.KeplerianParameters;
+import fr.cs.orekit.orbits.CircularOrbit;
+import fr.cs.orekit.orbits.KeplerianOrbit;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.ChunkedDate;
 import fr.cs.orekit.time.ChunkedTime;
@@ -32,9 +31,6 @@ public class NadirPointingTest extends TestCase {
     // Reference frame = ITRF 2000B 
     private Frame frameItrf2000B;
     
-    // Transform from J2000 to ITRF2000B 
-    private Transform j2000ToItrf;
-
     /** Test class for body center pointing attitude law.
      */
     public NadirPointingTest(String name) {
@@ -56,12 +52,13 @@ public class NadirPointingTest extends TestCase {
         BodyCenterPointing earthCenterAttitudeLaw = new BodyCenterPointing(frameItrf2000B);
         
         // Create satellite position as circular parameters 
-        CircularParameters circ =
-            new CircularParameters(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
-                                   Math.toRadians(5.300), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
+        CircularOrbit circ =
+            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
+                                   Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                   Frame.getJ2000(), date, mu);
         
         // Transform satellite position to position/velocity parameters in J2000 frame 
-        PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
+        PVCoordinates pvSatJ2000 = circ.getPVCoordinates();
         
         // Get nadir attitude
         Rotation rotNadir = nadirAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
@@ -95,12 +92,12 @@ public class NadirPointingTest extends TestCase {
         
         //  Satellite on equatorial position
         // ********************************** 
-        KeplerianParameters kep =
-            new KeplerianParameters(7178000.0, 1.e-8, Math.toRadians(50.), 0., 0.,
-                                    0., KeplerianParameters.TRUE_ANOMALY, Frame.getJ2000());
+        KeplerianOrbit kep =
+            new KeplerianOrbit(7178000.0, 1.e-8, Math.toRadians(50.), 0., 0.,
+                                    0., KeplerianOrbit.TRUE_ANOMALY, Frame.getJ2000(), date, mu);
  
         // Transform satellite position to position/velocity parameters in J2000 frame 
-        PVCoordinates pvSatJ2000 = kep.getPVCoordinates(mu);
+        PVCoordinates pvSatJ2000 = kep.getPVCoordinates();
         
         // Get nadir attitude 
         Rotation rotNadir = nadirAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
@@ -117,12 +114,13 @@ public class NadirPointingTest extends TestCase {
        
         //  Satellite on polar position
         // ***************************** 
-        CircularParameters circ =
-            new CircularParameters(7178000.0, 1.e-5, 0., Math.toRadians(90.), 0.,
-                                   Math.toRadians(90.), CircularParameters.TRUE_LONGITUDE_ARGUMENT, Frame.getJ2000());
+        CircularOrbit circ =
+            new CircularOrbit(7178000.0, 1.e-5, 0., Math.toRadians(90.), 0.,
+                                   Math.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
+                                   Frame.getJ2000(), date, mu);
  
         // Transform satellite position to position/velocity parameters in J2000 frame */
-        pvSatJ2000 = circ.getPVCoordinates(mu);
+        pvSatJ2000 = circ.getPVCoordinates();
                 
         // Get nadir attitude 
         rotNadir = nadirAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
@@ -140,11 +138,12 @@ public class NadirPointingTest extends TestCase {
         //  Satellite on any position
         // *************************** 
         circ =
-            new CircularParameters(7178000.0, 1.e-5, 0., Math.toRadians(50.), 0.,
-                                   Math.toRadians(90.), CircularParameters.TRUE_LONGITUDE_ARGUMENT, Frame.getJ2000());
+            new CircularOrbit(7178000.0, 1.e-5, 0., Math.toRadians(50.), 0.,
+                                   Math.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
+                                   Frame.getJ2000(), date, mu);
  
         // Transform satellite position to position/velocity parameters in J2000 frame 
-        pvSatJ2000 = circ.getPVCoordinates(mu);
+        pvSatJ2000 = circ.getPVCoordinates();
         
         // Get nadir attitude 
         rotNadir = nadirAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
@@ -177,21 +176,22 @@ public class NadirPointingTest extends TestCase {
         NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
 
         //  Satellite on any position
-        CircularParameters circ =
-            new CircularParameters(7178000.0, 1.e-5, 0., Math.toRadians(50.), 0.,
-                                   Math.toRadians(90.), CircularParameters.TRUE_LONGITUDE_ARGUMENT, Frame.getJ2000());
+        CircularOrbit circ =
+            new CircularOrbit(7178000.0, 1.e-5, 0., Math.toRadians(50.), 0.,
+                                   Math.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
+                                   Frame.getJ2000(), date, mu);
  
         // Transform satellite position to position/velocity parameters in J2000 frame */
-        PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
+        PVCoordinates pvSatJ2000 = circ.getPVCoordinates();
+        PVCoordinates pvSatItrf = circ.getPVCoordinates(frameItrf2000B);
         
         //  Vertical test
         // *************** 
         // Get observed ground point position/velocity 
-        PVCoordinates pvTargetJ2000 = nadirAttitudeLaw.getObservedGroundPoint(date, pvSatJ2000, Frame.getJ2000());
-        PVCoordinates pvTargetItrf2000B = j2000ToItrf.transformPVCoordinates(pvTargetJ2000);
+        PVCoordinates pvTargetItrf = nadirAttitudeLaw.getObservedGroundPoint(date, pvSatItrf, frameItrf2000B);
         
         // Convert to geodetic coordinates
-        GeodeticPoint geoTarget = earthShape.transform(pvTargetItrf2000B.getPosition(), frameItrf2000B, date);
+        GeodeticPoint geoTarget = earthShape.transform(pvTargetItrf.getPosition(), frameItrf2000B, date);
 
         // Compute local vertical axis
         double xVert = Math.cos(geoTarget.getLongitude())*Math.cos(geoTarget.getLatitude());
@@ -204,10 +204,10 @@ public class NadirPointingTest extends TestCase {
                 
         // Get satellite Z axis in J2000 frame
         Vector3D zSatJ2000 = rotSatJ2000.applyInverseTo(Vector3D.plusK);
-        Vector3D zSatItrf2000B = j2000ToItrf.transformVector(zSatJ2000);
+        Vector3D zSatItrf = Frame.getJ2000().getTransformTo(frameItrf2000B, date).transformVector(zSatJ2000);
         
         // Check that satellite Z axis is colinear to local vertical axis
-        double angle= Vector3D.angle(zSatItrf2000B, targetVertical);        
+        double angle= Vector3D.angle(zSatItrf, targetVertical);        
         assertEquals(Math.sin(angle), 0.0, Utils.epsilonTest);
         
     }
@@ -226,9 +226,6 @@ public class NadirPointingTest extends TestCase {
             // Reference frame = ITRF 2000B
             frameItrf2000B = Frame.getReferenceFrame(Frame.ITRF2000B, date);
 
-            // Transform from J2000 to ITRF2000B
-            j2000ToItrf = Frame.getJ2000().getTransformTo(frameItrf2000B, date);
-
         } catch (OrekitException oe) {
             fail(oe.getMessage());
         }
@@ -238,7 +235,7 @@ public class NadirPointingTest extends TestCase {
     public void tearDown() {
         date = null;
         frameItrf2000B = null;
-        j2000ToItrf = null;
+        //j2000ToItrf = null;
     }
 
     public static Test suite() {

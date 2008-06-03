@@ -14,7 +14,7 @@ import fr.cs.orekit.bodies.GeodeticPoint;
 import fr.cs.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.orbits.CircularParameters;
+import fr.cs.orekit.orbits.CircularOrbit;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.ChunkedDate;
 import fr.cs.orekit.time.ChunkedTime;
@@ -46,10 +46,11 @@ public class LofOffsetTest extends TestCase {
     public void testZero() throws OrekitException, CardanEulerSingularityException {
 
         //  Satellite position
-        final CircularParameters circ =
-           new CircularParameters(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(0.), Math.toRadians(270.),
-                                   Math.toRadians(5.300), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
-        final PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
+        final CircularOrbit circ =
+           new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(0.), Math.toRadians(270.),
+                                   Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                   Frame.getJ2000(), date, mu);
+        final PVCoordinates pvSatJ2000 = circ.getPVCoordinates();
 
         // Lof aligned attitude law
         final LofOffset lofAlignedLaw = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
@@ -69,10 +70,11 @@ public class LofOffsetTest extends TestCase {
     public void testOffset() throws OrekitException, CardanEulerSingularityException {
 
         //  Satellite position
-        final CircularParameters circ =
-           new CircularParameters(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(0.), Math.toRadians(270.),
-                                   Math.toRadians(5.300), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
-        final PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
+        final CircularOrbit circ =
+           new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(0.), Math.toRadians(270.),
+                                   Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                   Frame.getJ2000(), date, mu);
+        final PVCoordinates pvSatJ2000 = circ.getPVCoordinates();
 
         // Create target pointing attitude law
         // ************************************  

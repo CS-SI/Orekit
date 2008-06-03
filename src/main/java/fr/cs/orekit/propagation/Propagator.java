@@ -22,7 +22,7 @@ import fr.cs.orekit.time.AbsoluteDate;
  *
  */
 
-public interface Ephemeris extends Serializable {
+public interface Propagator extends Serializable {
 
     /** Get the orbit at a specific date.
      * @param date desired date for the orbit

@@ -7,7 +7,7 @@ import org.apache.commons.math.util.MathUtils;
 import fr.cs.orekit.Utils;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.orbits.CircularParameters;
+import fr.cs.orekit.orbits.CircularOrbit;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.ChunkedDate;
 import fr.cs.orekit.time.ChunkedTime;
@@ -160,12 +160,13 @@ public class OneAxisEllipsoidTest extends TestCase {
         // Satellite on polar position
         // ***************************
         final double mu = 3.9860047e14;
-        CircularParameters circ =
-            new CircularParameters(7178000.0, 0.5e-4, 0., Math.toRadians(90.), Math.toRadians(60.),
-                                   Math.toRadians(90.), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
+        CircularOrbit circ =
+            new CircularOrbit(7178000.0, 0.5e-4, 0., Math.toRadians(90.), Math.toRadians(60.),
+                                   Math.toRadians(90.), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                   Frame.getJ2000(), date, mu);
       
         // Transform satellite position to position/velocity parameters in J2000 and ITRF200B
-        PVCoordinates pvSatJ2000 = circ.getPVCoordinates(mu);
+        PVCoordinates pvSatJ2000 = circ.getPVCoordinates();
         PVCoordinates pvSatItrf  = frame.getTransformTo(Frame.getJ2000(), date).transformPVCoordinates(pvSatJ2000);
         Vector3D pSatItrf  = pvSatItrf.getPosition();
         
@@ -202,11 +203,12 @@ public class OneAxisEllipsoidTest extends TestCase {
         // Satellite on equatorial position
         // ********************************
         circ =
-            new CircularParameters(7178000.0, 0.5e-4, 0., Math.toRadians(1.e-4), Math.toRadians(0.),
-                                   Math.toRadians(0.), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
+            new CircularOrbit(7178000.0, 0.5e-4, 0., Math.toRadians(1.e-4), Math.toRadians(0.),
+                                   Math.toRadians(0.), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                   Frame.getJ2000(), date, mu);
       
         // Transform satellite position to position/velocity parameters in J2000 and ITRF200B
-        pvSatJ2000 = circ.getPVCoordinates(mu);
+        pvSatJ2000 = circ.getPVCoordinates();
         pvSatItrf  = frame.getTransformTo(Frame.getJ2000(), date).transformPVCoordinates(pvSatJ2000);
         pSatItrf  = pvSatItrf.getPosition();
         
@@ -247,11 +249,12 @@ public class OneAxisEllipsoidTest extends TestCase {
         // Satellite on any position
         // *************************
         circ =
-            new CircularParameters(7178000.0, 0.5e-4, 0., Math.toRadians(50.), Math.toRadians(0.),
-                                   Math.toRadians(90.), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
+            new CircularOrbit(7178000.0, 0.5e-4, 0., Math.toRadians(50.), Math.toRadians(0.),
+                                   Math.toRadians(90.), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                   Frame.getJ2000(), date, mu);
         
         // Transform satellite position to position/velocity parameters in J2000 and ITRF200B
-        pvSatJ2000 = circ.getPVCoordinates(mu);
+        pvSatJ2000 = circ.getPVCoordinates();
         pvSatItrf  = frame.getTransformTo(Frame.getJ2000(), date).transformPVCoordinates(pvSatJ2000);
         pSatItrf  = pvSatItrf.getPosition();
         

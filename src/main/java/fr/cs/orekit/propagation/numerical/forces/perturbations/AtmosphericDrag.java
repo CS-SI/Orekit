@@ -20,12 +20,13 @@ import fr.cs.orekit.propagation.numerical.forces.ForceModel;
  *
  * @author E. Delente
  * @author F. Maussion
+ * @author V. Pommier-Maurussane
  */
 
 public class AtmosphericDrag implements ForceModel {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 3822165927877548061L;
+    private static final long serialVersionUID = 3430941727178712005L;
 
     /** Atmospheric model. */
     private final Atmosphere atmosphere;
@@ -50,16 +51,15 @@ public class AtmosphericDrag implements ForceModel {
      * @exception OrekitException if some specific error occurs
      */
     public void addContribution(final SpacecraftState s,
-                                final TimeDerivativesEquations adder,
-                                final double mu)
+                                final TimeDerivativesEquations adder)
         throws OrekitException {
         final double rho =
-            atmosphere.getDensity(s.getDate(), s.getPVCoordinates(mu).getPosition(), s.getFrame());
+            atmosphere.getDensity(s.getDate(), s.getPVCoordinates().getPosition(), s.getFrame());
 
         final Vector3D vAtm =
-            atmosphere.getVelocity(s.getDate(), s.getPVCoordinates(mu).getPosition(), s.getFrame());
+            atmosphere.getVelocity(s.getDate(), s.getPVCoordinates().getPosition(), s.getFrame());
 
-        final Vector3D incidence = vAtm.subtract(s.getPVCoordinates(mu).getVelocity());
+        final Vector3D incidence = vAtm.subtract(s.getPVCoordinates().getVelocity());
         final double v2 = Vector3D.dotProduct(incidence, incidence);
 
         final Vector3D inSpacecraft =

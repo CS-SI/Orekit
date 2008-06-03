@@ -16,11 +16,12 @@ import fr.cs.orekit.utils.PVCoordinates;
  *
  * @author F. Maussion
  * @author E.Delente
+ * @author V. Pommier-Maurussane
  */
 public class SolarRadiationPressure implements ForceModel {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -3831043970561319297L;
+    private static final long serialVersionUID = 8874297900604482921L;
 
     /** Error message for too low trajectory. */
     private static final String LOW_TRAJECTORY_MESSAGE =
@@ -80,17 +81,16 @@ public class SolarRadiationPressure implements ForceModel {
      * @param mu central gravitation coefficient
      * @exception OrekitException if some specific error occurs
      */
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder,
-                                final double mu)
+    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
         throws OrekitException {
         // raw radiation pressure
         final Vector3D satSunVector =
             sun.getPosition(s.getDate() ,
-                            s.getFrame()).subtract(s.getPVCoordinates(mu).getPosition());
+                            s.getFrame()).subtract(s.getPVCoordinates().getPosition());
 
         final double dRatio = dRef / satSunVector.getNorm();
         final double rawP   =
-            pRef * dRatio * dRatio * getLightningRatio(s.getPVCoordinates(mu).getPosition(),
+            pRef * dRatio * dRatio * getLightningRatio(s.getPVCoordinates().getPosition(),
                                                        s.getFrame(), s.getDate());
 
         // spacecraft characteristics effects
@@ -191,7 +191,7 @@ public class SolarRadiationPressure implements ForceModel {
         private static final long serialVersionUID = 8164370576237170346L;
 
         /** {@inheritDoc} */
-        public void eventOccurred(final SpacecraftState s, final double mu) {
+        public void eventOccurred(final SpacecraftState s) {
             // do nothing
         }
 
@@ -202,9 +202,9 @@ public class SolarRadiationPressure implements ForceModel {
          * @return value of the g function
          * @exception OrekitException if sun or spacecraft position cannot be computed
          */
-        public double g(final SpacecraftState s, final double mu)
+        public double g(final SpacecraftState s)
             throws OrekitException {
-            final PVCoordinates pv = s.getPVCoordinates(mu);
+            final PVCoordinates pv = s.getPVCoordinates();
             final Vector3D satSunVector =
                 sun.getPosition(s.getDate(), s.getFrame()).subtract(pv.getPosition());
             final double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pv.getPosition());
@@ -247,7 +247,7 @@ public class SolarRadiationPressure implements ForceModel {
         private static final long serialVersionUID = -8548885301322210937L;
 
         /** {@inheritDoc} */
-        public void eventOccurred(final SpacecraftState s, final double mu) {
+        public void eventOccurred(final SpacecraftState s) {
             // do nothing
         }
 
@@ -258,9 +258,9 @@ public class SolarRadiationPressure implements ForceModel {
          * @return value of the g function
          * @exception OrekitException if sun or spacecraft position cannot be computed
          */
-        public double g(final SpacecraftState s, final double mu)
+        public double g(final SpacecraftState s)
             throws OrekitException {
-            final PVCoordinates pv = s.getPVCoordinates(mu);
+            final PVCoordinates pv = s.getPVCoordinates();
             final Vector3D satSunVector =
                 sun.getPosition(s.getDate() , s.getFrame()).subtract(pv.getPosition());
             final double sunEarthAngle = Math.PI - Vector3D.angle(satSunVector, pv.getPosition());

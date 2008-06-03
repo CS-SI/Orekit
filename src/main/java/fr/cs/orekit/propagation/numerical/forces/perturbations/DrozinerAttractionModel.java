@@ -17,12 +17,13 @@ import fr.cs.orekit.propagation.numerical.forces.ForceModel;
  *
  * @author F. Maussion
  * @author L. Maisonobe
+ * @author V. Pommier-Maurussane
  */
 
 public class DrozinerAttractionModel implements ForceModel {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 4257498117810293391L;
+    private static final long serialVersionUID = 9117000158528461356L;
 
     /** Reference equatorial radius of the potential. */
     private final double equatorialRadius;
@@ -90,13 +91,12 @@ public class DrozinerAttractionModel implements ForceModel {
     }
 
     /** {@inheritDoc} */
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder,
-                                final double mu)
+    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
         throws OrekitException {
         // Get the position in body frame
         final Transform bodyToInertial = centralBodyFrame.getTransformTo(s.getFrame(), s.getDate());
         final Vector3D posInBody =
-            bodyToInertial.getInverse().transformVector(s.getPVCoordinates(mu).getPosition());
+            bodyToInertial.getInverse().transformVector(s.getPVCoordinates().getPosition());
         final double xBody = posInBody.getX();
         final double yBody = posInBody.getY();
         final double zBody = posInBody.getZ();
@@ -124,7 +124,7 @@ public class DrozinerAttractionModel implements ForceModel {
         final double r1Onr = r1 / r;
 
         // Definition of the first acceleration terms
-        final double mMuOnr3  = -mu / r3;
+        final double mMuOnr3  = -s.getOrbit().getMu() / r3;
         final double xDotDotk = xBody * mMuOnr3;
         final double yDotDotk = yBody * mMuOnr3;
 
@@ -156,7 +156,7 @@ public class DrozinerAttractionModel implements ForceModel {
         final double p = -sumA / (r1Onr * r1Onr);
         double aX = xDotDotk * p;
         double aY = yDotDotk * p;
-        double aZ = mu * sumB / r2;
+        double aZ = s.getOrbit().getMu() * sumB / r2;
 
 
         // Tessereal-sectorial part of acceleration
@@ -245,7 +245,7 @@ public class DrozinerAttractionModel implements ForceModel {
             final double p2 = r2Onr12 * yDotDotk;
             aX += p1 * sum1 - p2 * sum3;
             aY += p2 * sum1 + p1 * sum3;
-            aZ -= mu * sum2 / r2;
+            aZ -= s.getOrbit().getMu() * sum2 / r2;
 
         }
 

@@ -1,22 +1,23 @@
 package fr.cs.orekit.propagation;
 
 import java.io.FileNotFoundException;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
 
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.orbits.EquinoctialParameters;
-import fr.cs.orekit.orbits.Orbit;
+import fr.cs.orekit.orbits.EquinoctialOrbit;
 import fr.cs.orekit.propagation.analytical.KeplerianPropagator;
 import fr.cs.orekit.propagation.numerical.IntegratedEphemeris;
-import fr.cs.orekit.propagation.numerical.NumericalPropagator;
+import fr.cs.orekit.propagation.numerical.NumericalModel;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 public class IntegratedEphemerisTest extends TestCase {
 
@@ -30,19 +31,17 @@ public class IntegratedEphemerisTest extends TestCase {
 
         AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         SpacecraftState initialOrbit =
-            new SpacecraftState(new Orbit(initDate,
-                                          new EquinoctialParameters(new PVCoordinates(position, velocity),
-                                                                    Frame.getJ2000(), mu)),
-                                mu);
+            new SpacecraftState(new EquinoctialOrbit(new PVCoordinates(position, velocity),
+                                                     Frame.getJ2000(), initDate, mu));
 
         // Keplerian propagator definition
 
-        KeplerianPropagator keplerEx = new KeplerianPropagator(initialOrbit, mu);
+        KeplerianPropagator keplerEx = new KeplerianPropagator(initialOrbit);
 
         // Numerical propagator definition
 
         FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, 86400, 0, 10e-13);
-        NumericalPropagator numericEx = new NumericalPropagator(mu, integrator);
+        NumericalModel numericEx = new NumericalModel(mu, integrator);
 
         // Integrated ephemeris
 
@@ -63,8 +62,7 @@ public class IntegratedEphemerisTest extends TestCase {
             keplerIntermediateOrbit = keplerEx.getSpacecraftState(intermediateDate);
             numericIntermediateOrbit = ephemeris.getSpacecraftState(intermediateDate);
 
-            Vector3D test = keplerIntermediateOrbit.getPVCoordinates(mu).getPosition().subtract(
-                                                                                                numericIntermediateOrbit.getPVCoordinates(mu).getPosition());
+            Vector3D test = keplerIntermediateOrbit.getPVCoordinates().getPosition().subtract(numericIntermediateOrbit.getPVCoordinates().getPosition());
             assertEquals(0, test.getNorm(), 10e-2);
         }
 
@@ -75,8 +73,7 @@ public class IntegratedEphemerisTest extends TestCase {
         numericEx.propagate(initialOrbit , initDate , ephemeris );
         numericIntermediateOrbit = ephemeris.getSpacecraftState(intermediateDate);
 
-        Vector3D test = keplerIntermediateOrbit.getPVCoordinates(mu).getPosition().subtract(
-                                                                                            numericIntermediateOrbit.getPVCoordinates(mu).getPosition());
+        Vector3D test = keplerIntermediateOrbit.getPVCoordinates().getPosition().subtract(numericIntermediateOrbit.getPVCoordinates().getPosition());
         assertEquals(0, test.getNorm(), 10e-2);
 
     }

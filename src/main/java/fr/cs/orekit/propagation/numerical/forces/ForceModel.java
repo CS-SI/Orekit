@@ -20,6 +20,7 @@ import fr.cs.orekit.propagation.numerical.TimeDerivativesEquations;
  *
  * @author M. Romero
  * @author L. Maisonobe
+ * @author V. Pommier-Maurussane
  */
 
 public interface ForceModel extends Serializable {
@@ -28,10 +29,9 @@ public interface ForceModel extends Serializable {
      * acceleration.
      * @param s the current state information : date, cinematics, attitude
      * @param adder object where the contribution should be added
-     * @param mu central gravitation coefficient
      * @exception OrekitException if some specific error occurs
      */
-    void addContribution(SpacecraftState s, TimeDerivativesEquations adder, double mu)
+    void addContribution(SpacecraftState s, TimeDerivativesEquations adder)
         throws OrekitException;
 
     /** Get the switching functions internally used by the model itself.

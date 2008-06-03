@@ -15,12 +15,11 @@ import org.apache.commons.math.util.MathUtils;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.iers.IERSDirectoryCrawler;
-import fr.cs.orekit.orbits.CircularParameters;
-import fr.cs.orekit.orbits.KeplerianParameters;
+import fr.cs.orekit.orbits.CircularOrbit;
+import fr.cs.orekit.orbits.KeplerianOrbit;
 import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.propagation.SpacecraftState;
-import fr.cs.orekit.propagation.numerical.NumericalPropagator;
+import fr.cs.orekit.propagation.numerical.NumericalModel;
 import fr.cs.orekit.propagation.numerical.OrekitSwitchingFunction;
 import fr.cs.orekit.propagation.numerical.forces.maneuvers.ConstantThrustManeuver;
 import fr.cs.orekit.time.AbsoluteDate;
@@ -31,6 +30,15 @@ import fr.cs.orekit.utils.PVCoordinates;
 
 
 public class ConstantThrustManeuverTest extends TestCase {
+
+ // Body mu 
+    private double mu;
+
+    private CircularOrbit dummyOrbit(AbsoluteDate date)
+    {
+        return new CircularOrbit(new PVCoordinates(Vector3D.plusI, Vector3D.plusJ),
+                             Frame.getJ2000(), date, mu);
+    }
 
     public void testBadFrame() {
         try {
@@ -54,20 +62,17 @@ public class ConstantThrustManeuverTest extends TestCase {
             new ConstantThrustManeuver(date, 10.0, 400.0, 300.0, Vector3D.plusK,
                                        ConstantThrustManeuver.INERTIAL);
         OrekitSwitchingFunction[] switches = maneuver.getSwitchingFunctions();
-        double mu = 3.986004415e14;
-        OrbitalParameters dummyParameters =
-            new CircularParameters(new PVCoordinates(Vector3D.plusI, Vector3D.plusJ),
-                                   Frame.getJ2000(), mu);
-        Orbit o1 = new Orbit(new AbsoluteDate(date, - 1.0), dummyParameters);
-        assertTrue(switches[0].g(new SpacecraftState(o1, mu), mu) > 0);
-        Orbit o2 = new Orbit(new AbsoluteDate(date,   1.0), dummyParameters);
-        assertTrue(switches[0].g(new SpacecraftState(o2, mu), mu) < 0);
-        Orbit o3 = new Orbit(new AbsoluteDate(date,   9.0), dummyParameters);
-        assertTrue(switches[1].g(new SpacecraftState(o3, mu), mu) > 0);
-        Orbit o4 = new Orbit(new AbsoluteDate(date,  11.0), dummyParameters);
-        assertTrue(switches[1].g(new SpacecraftState(o4, mu), mu) < 0);
-    }
 
+        Orbit o1 = dummyOrbit(new AbsoluteDate(date, - 1.0));
+        assertTrue(switches[0].g(new SpacecraftState(o1)) > 0);
+        Orbit o2 = dummyOrbit(new AbsoluteDate(date,   1.0));
+        assertTrue(switches[0].g(new SpacecraftState(o2)) < 0);
+        Orbit o3 = dummyOrbit(new AbsoluteDate(date,   9.0));
+        assertTrue(switches[1].g(new SpacecraftState(o3)) > 0);
+        Orbit o4 = dummyOrbit(new AbsoluteDate(date,  11.0));
+        assertTrue(switches[1].g(new SpacecraftState(o4)) < 0);
+    }
+    
     public void testNegativeDuration() throws OrekitException {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
                                              new ChunkedTime(23, 30, 00.000),
@@ -76,59 +81,55 @@ public class ConstantThrustManeuverTest extends TestCase {
             new ConstantThrustManeuver(date, -10.0, 400.0, 300.0, Vector3D.plusK,
                                        ConstantThrustManeuver.INERTIAL);
         OrekitSwitchingFunction[] switches = maneuver.getSwitchingFunctions();
-        double mu = 3.986004415e14;
-        OrbitalParameters dummyParameters =
-            new CircularParameters(new PVCoordinates(Vector3D.plusI, Vector3D.plusJ),
-                                   Frame.getJ2000(), mu);
-        Orbit o1 = new Orbit(new AbsoluteDate(date, -11.0), dummyParameters);
-        assertTrue(switches[0].g(new SpacecraftState(o1, mu), mu) > 0);
-        Orbit o2 = new Orbit(new AbsoluteDate(date,  -9.0), dummyParameters);
-        assertTrue(switches[0].g(new SpacecraftState(o2, mu), mu) < 0);
-        Orbit o3 = new Orbit(new AbsoluteDate(date,  -1.0), dummyParameters);
-        assertTrue(switches[1].g(new SpacecraftState(o3, mu), mu) > 0);
-        Orbit o4 = new Orbit(new AbsoluteDate(date,   1.0), dummyParameters);
-        assertTrue(switches[1].g(new SpacecraftState(o4, mu), mu) < 0);
+
+        Orbit o1 = dummyOrbit(new AbsoluteDate(date, -11.0));
+        assertTrue(switches[0].g(new SpacecraftState(o1)) > 0);
+        Orbit o2 = dummyOrbit(new AbsoluteDate(date,  -9.0));
+        assertTrue(switches[0].g(new SpacecraftState(o2)) < 0);
+        Orbit o3 = dummyOrbit(new AbsoluteDate(date,  -1.0));
+        assertTrue(switches[1].g(new SpacecraftState(o3)) > 0);
+        Orbit o4 = dummyOrbit(new AbsoluteDate(date,   1.0));
+        assertTrue(switches[1].g(new SpacecraftState(o4)) < 0);
     }
 
     public void testRoughBehaviour() throws DerivativeException, IntegratorException, OrekitException, ParseException {
-        double mu =  3.9860064e+14;
-        double isp = 318;
-        double mass = 2500;
-        double a = 24396159;
-        double e = 0.72831215;
-        double i = Math.toRadians(7);
-        double omega = Math.toRadians(180);
-        double OMEGA = Math.toRadians(261);
-        double lv = 0;
+        final double isp = 318;
+        final double mass = 2500;
+        final double a = 24396159;
+        final double e = 0.72831215;
+        final double i = Math.toRadians(7);
+        final double omega = Math.toRadians(180);
+        final double OMEGA = Math.toRadians(261);
+        final double lv = 0;
 
-        double duration = 3653.99;
-        double f = 420;
-        double delta = Math.toRadians(-7.4978);
-        double alpha = Math.toRadians(351);
+        final double duration = 3653.99;
+        final double f = 420;
+        final double delta = Math.toRadians(-7.4978);
+        final double alpha = Math.toRadians(351);
 
-        Vector3D dir = new Vector3D (Math.cos(alpha) * Math.cos(delta),
-                                     Math.cos(alpha) * Math.sin(delta),
-                                     Math.sin(delta));
+        final Vector3D dir = new Vector3D (Math.cos(alpha) * Math.cos(delta),
+                                           Math.cos(alpha) * Math.sin(delta),
+                                           Math.sin(delta));
 
-        OrbitalParameters transPar = new KeplerianParameters(a, e, i,
-                                                             omega, OMEGA,
-                                                             lv, KeplerianParameters.TRUE_ANOMALY, Frame.getJ2000());
+        final AbsoluteDate initDate = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
+                                                       new ChunkedTime(23, 30, 00.000),
+                                                       UTCScale.getInstance());
+        final AbsoluteDate fireDate = new AbsoluteDate(new ChunkedDate(2004, 01, 02),
+                                                       new ChunkedTime(04, 15, 34.080),
+                                                       UTCScale.getInstance());
 
-        AbsoluteDate initDate = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
-                                                 new ChunkedTime(23, 30, 00.000),
-                                                 UTCScale.getInstance());
-        AbsoluteDate fireDate = new AbsoluteDate(new ChunkedDate(2004, 01, 02),
-                                                 new ChunkedTime(04, 15, 34.080),
-                                                 UTCScale.getInstance());
+        final Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA,
+                                                  lv, KeplerianOrbit.TRUE_ANOMALY, 
+                                                  Frame.getJ2000(), initDate, mu);
 
-        SpacecraftState transOrb = new SpacecraftState(new Orbit(initDate, transPar), mass, mu);
+        final SpacecraftState transOrb = new SpacecraftState(transPar, mass);
 
-        NumericalPropagator propagator =
-            new NumericalPropagator(mu, new GraggBulirschStoerIntegrator(1e-50, 1000, 0, 1e-08));
+        final NumericalModel propagator =
+            new NumericalModel(mu, new GraggBulirschStoerIntegrator(1e-50, 1000, 0, 1e-08));
         propagator.addForceModel(new ConstantThrustManeuver(fireDate, duration, f, isp, dir,
                                                             ConstantThrustManeuver.INERTIAL));
 
-        SpacecraftState finalorb =
+        final SpacecraftState finalorb =
             propagator.propagate(transOrb, new AbsoluteDate(fireDate, 3800));
 
         assertEquals(2007.88245442614, finalorb.getMass(), 1e-10);
@@ -139,6 +140,10 @@ public class ConstantThrustManeuverTest extends TestCase {
 
     public void setUp() {
         System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
+
+        // Body mu
+        mu = 3.9860047e14;
+        
     }
 
     public static Test suite() {

@@ -4,6 +4,7 @@ import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
+import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
 
 /**
@@ -23,15 +24,16 @@ import fr.cs.orekit.utils.PVCoordinates;
  * Right Ascension of the Ascending Node and v stands for the true anomaly.
  * </p>
  * <p>
- * The instance <code>KeplerianParameters</code> is guaranteed to be immutable.
+ * The instance <code>KeplerianOrbit</code> is guaranteed to be immutable.
  * </p>
  * @see     Orbit
  * @version $Id:KeplerianParameters.java 1310 2007-07-05 16:04:25Z luc $
  * @author  L. Maisonobe
  * @author  G. Prat
- * @author  F.Maussion
+ * @author  F. Maussion
+ * @author  V. Pommier-Maurussane
  */
-public class KeplerianParameters extends OrbitalParameters {
+public class KeplerianOrbit extends Orbit {
 
     /** Identifier for mean anomaly. */
     public static final int MEAN_ANOMALY = 0;
@@ -48,7 +50,7 @@ public class KeplerianParameters extends OrbitalParameters {
     public static final double E_CIRC = 1.e-10;
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 8246107953352737072L;
+    private static final long serialVersionUID = -8628129146897296527L;
 
     /** Semi-major axis (m). */
     private final double a;
@@ -77,7 +79,9 @@ public class KeplerianParameters extends OrbitalParameters {
      * @param anomaly mean, eccentric or true anomaly (rad)
      * @param type type of anomaly, must be one of {@link #MEAN_ANOMALY},
      * {@link #ECCENTRIC_ANOMALY} or  {@link #TRUE_ANOMALY}
-     * @param frame the frame in which are defined the parameters
+     * @param frame the frame in which the parameters are defined
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if the longitude argument type is not
      * one of {@link #MEAN_ANOMALY}, @link {@link #ECCENTRIC_ANOMALY}}
      * or  {@link #TRUE_ANOMALY}
@@ -85,11 +89,12 @@ public class KeplerianParameters extends OrbitalParameters {
      * @see #ECCENTRIC_ANOMALY
      * @see #TRUE_ANOMALY
      */
-    public KeplerianParameters(final double a, final double e, final double i,
+    public KeplerianOrbit(final double a, final double e, final double i,
                                final double pa, final double raan,
-                               final double anomaly, final int type, final Frame frame)
+                               final double anomaly, final int type, 
+                               final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        super(frame);
+        super(frame, date, mu);
         this.a    =    a;
         this.e    =    e;
         this.i    =    i;
@@ -122,11 +127,12 @@ public class KeplerianParameters extends OrbitalParameters {
     /** Constructor from cartesian parameters.
      * @param pvCoordinates the PVCoordinates of the satellite
      * @param frame the frame in which are defined the {@link PVCoordinates}
+     * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public KeplerianParameters(final PVCoordinates pvCoordinates, final Frame frame,
-                               final double mu) {
-        super(pvCoordinates, frame, mu);
+    public KeplerianOrbit(final PVCoordinates pvCoordinates, 
+                               final Frame frame, final AbsoluteDate date, final double mu) {
+        super(pvCoordinates, frame, date, mu);
 
         // compute semi-major axis
         final Vector3D pvP = pvCoordinates.getPosition();
@@ -175,10 +181,9 @@ public class KeplerianParameters extends OrbitalParameters {
 
     /** Constructor from any kind of orbital parameters.
      * @param op orbital parameters to copy
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public KeplerianParameters(final OrbitalParameters op, final double mu) {
-        super(op.getFrame());
+    public KeplerianOrbit(final Orbit op) {
+        super(op.getFrame(), op.getDate(), op.getMu());
         a    = op.getA();
         e    = op.getE();
         i    = op.getI();

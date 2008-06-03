@@ -7,12 +7,11 @@ import org.apache.commons.math.ode.FirstOrderIntegrator;
 
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.orbits.KeplerianParameters;
+import fr.cs.orekit.orbits.KeplerianOrbit;
 import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.propagation.analytical.KeplerianPropagator;
-import fr.cs.orekit.propagation.numerical.NumericalPropagator;
+import fr.cs.orekit.propagation.numerical.NumericalModel;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.ChunkedDate;
 import fr.cs.orekit.time.ChunkedTime;
@@ -51,11 +50,9 @@ public class KeplerianPropagation {
 
         // OREKIT objects construction:
 
-        OrbitalParameters initialParameters =
-            new KeplerianParameters(a, e, i, omega, raan, lv,
-                                    KeplerianParameters.MEAN_ANOMALY, inertialFrame);
-
-        Orbit initialOrbit = new Orbit(initialDate , initialParameters);
+        Orbit initialOrbit =
+            new KeplerianOrbit(a, e, i, omega, raan, lv,
+                                    KeplerianOrbit.MEAN_ANOMALY, inertialFrame, initialDate, mu);
 
         SpacecraftState initialState = new SpacecraftState(initialOrbit, mass);
 
@@ -65,7 +62,7 @@ public class KeplerianPropagation {
 
         // Simple Keplerian extrapolation
 
-        KeplerianPropagator kepler = new KeplerianPropagator(initialState, mu);
+        KeplerianPropagator kepler = new KeplerianPropagator(initialState);
 
         double deltaT = 1000; // extrapolation lenght in seconds
 
@@ -73,7 +70,7 @@ public class KeplerianPropagation {
         SpacecraftState finalState = kepler.getSpacecraftState(finalDate);
 
         System.out.println(" Final parameters with deltaT = +1000 s : " +
-                           finalState.getParameters());
+                           finalState.getOrbit());
 
         deltaT = -1000; // extrapolation lenght
 
@@ -81,19 +78,19 @@ public class KeplerianPropagation {
         finalState = kepler.getSpacecraftState(finalDate);
 
         System.out.println(" Final parameters with deltaT = -1000 s : " +
-                           finalState.getParameters());
+                           finalState.getOrbit());
 
         // numerical propagation with no perturbation (only keplerian movement)
         // we use a very simple integrator with a fixed step : Runge Kutta
 
         FirstOrderIntegrator integrator = new ClassicalRungeKuttaIntegrator(1); // the step is one second
 
-        NumericalPropagator propagator = new NumericalPropagator(mu, integrator);
+        NumericalModel propagator = new NumericalModel(mu, integrator);
 
         finalState = propagator.propagate(initialState, finalDate);
 
         System.out.println(" Final parameters with deltaT = -1000 s : " +
-                           finalState.getParameters());
+                           finalState.getOrbit());
     }
 
 }

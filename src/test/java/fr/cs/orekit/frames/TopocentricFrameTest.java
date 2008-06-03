@@ -10,8 +10,7 @@ import fr.cs.orekit.Utils;
 import fr.cs.orekit.bodies.GeodeticPoint;
 import fr.cs.orekit.bodies.OneAxisEllipsoid;
 import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.orbits.CircularParameters;
-import fr.cs.orekit.orbits.Orbit;
+import fr.cs.orekit.orbits.CircularOrbit;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.propagation.analytical.KeplerianPropagator;
 import fr.cs.orekit.time.AbsoluteDate;
@@ -232,14 +231,14 @@ public class TopocentricFrameTest extends TestCase {
         
         // Point at 30 deg longitude
         // ***************************
-        final CircularParameters circ =
-            new CircularParameters(7178000.0, 0.5e-8, -0.5e-8, Math.toRadians(50.), Math.toRadians(120.),
-                                   Math.toRadians(90.), CircularParameters.MEAN_LONGITUDE_ARGUMENT, Frame.getJ2000());
-        final Orbit orbit = new Orbit(date, circ);
+        final CircularOrbit orbit =
+            new CircularOrbit(7178000.0, 0.5e-8, -0.5e-8, Math.toRadians(50.), Math.toRadians(120.),
+                                   Math.toRadians(90.), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                   Frame.getJ2000(), date, mu);
 
         // Transform satellite position to position/velocity parameters in body frame
         final Transform j2000ToItrf = Frame.getJ2000().getTransformTo(earthSpheric.getBodyFrame(), date);
-        final PVCoordinates pvSatItrf = j2000ToItrf.transformPVCoordinates(circ.getPVCoordinates(mu));
+        final PVCoordinates pvSatItrf = j2000ToItrf.transformPVCoordinates(orbit.getPVCoordinates());
         
         // Compute range rate directly
         //********************************************
@@ -248,19 +247,19 @@ public class TopocentricFrameTest extends TestCase {
         // Compare to finite difference computation (2 points)
         //*****************************************************
         final double dt = 0.1;
-        KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(orbit, mu), mu);
+        KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(orbit));
         
         // Extrapolate satellite position a short while after reference date
         AbsoluteDate dateP = new AbsoluteDate(date, dt);
         Transform j2000ToItrfP = Frame.getJ2000().getTransformTo(earthSpheric.getBodyFrame(), dateP);
         SpacecraftState orbitP = extrapolator.getSpacecraftState(dateP);
-        Vector3D satPointGeoP = j2000ToItrfP.transformPVCoordinates(orbitP.getPVCoordinates(mu)).getPosition();
+        Vector3D satPointGeoP = j2000ToItrfP.transformPVCoordinates(orbitP.getPVCoordinates()).getPosition();
         
         // Retropolate satellite position a short while before reference date
         AbsoluteDate dateM = new AbsoluteDate(date, -dt);
         Transform j2000ToItrfM = Frame.getJ2000().getTransformTo(earthSpheric.getBodyFrame(), dateM);
         SpacecraftState orbitM = extrapolator.getSpacecraftState(dateM);
-        Vector3D satPointGeoM = j2000ToItrfM.transformPVCoordinates(orbitM.getPVCoordinates(mu)).getPosition();
+        Vector3D satPointGeoM = j2000ToItrfM.transformPVCoordinates(orbitM.getPVCoordinates()).getPosition();
         
         // Compute ranges at both instants
         double rangeP = topoFrame.getRange(satPointGeoP, earthSpheric.getBodyFrame(), dateP);

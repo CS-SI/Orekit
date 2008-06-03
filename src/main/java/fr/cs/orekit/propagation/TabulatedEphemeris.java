@@ -10,9 +10,8 @@ import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.orekit.attitudes.Attitude;
 import fr.cs.orekit.frames.Transform;
-import fr.cs.orekit.orbits.EquinoctialParameters;
+import fr.cs.orekit.orbits.EquinoctialOrbit;
 import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.orbits.OrbitalParameters;
 import fr.cs.orekit.time.AbsoluteDate;
 
 /** This class is designed to accept and handle tabulated orbital entries.
@@ -20,12 +19,13 @@ import fr.cs.orekit.time.AbsoluteDate;
  * continuous output, with accuracy and computation methods configured by the user.
  *
  * @author F. Maussion
+ * @author V. Pommier-Maurussane
  */
-public class TabulatedEphemeris implements BoundedEphemeris {
+public class TabulatedEphemeris implements BoundedPropagator {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 3896701058258948968L;
-
+ 
     /** All entries. */
     private final TreeSet data;
 
@@ -82,7 +82,7 @@ public class TabulatedEphemeris implements BoundedEphemeris {
                 return previous;
             }
             // Classical interpolation
-            return new SpacecraftState(new Orbit(date, getInterpolatedOp(tp, tn)),
+            return new SpacecraftState(getInterpolatedOp(tp, tn, date),
                                        interpolatedMass(tp, tn),
                                        interpolatedAttitude(tp, tn));
 
@@ -94,24 +94,25 @@ public class TabulatedEphemeris implements BoundedEphemeris {
     /** Get the interpolated orbital parameters.
      * @param tp time in seconds since previous date
      * @param tn time in seconds until next date
-     * @return the new equinoctial paramteters
+     * @param date desired date for the state
+     * @return the new equinoctial parameters
      */
-    private OrbitalParameters getInterpolatedOp(final double tp, final double tn) {
+    private Orbit getInterpolatedOp(final double tp, final double tn, final AbsoluteDate date) {
 
         final double dt = tp + tn;
         final double cP = tp / dt;
         final double cN = tn / dt;
 
         final double a  = cN * previous.getA()  + cP * next.getA();
-        final double ex = cN * previous.getEx() + cP * next.getEx();
-        final double ey = cN * previous.getEy() + cP * next.getEy();
+        final double ex = cN * previous.getEquinoctialEx() + cP * next.getEquinoctialEx();
+        final double ey = cN * previous.getEquinoctialEy() + cP * next.getEquinoctialEy();
         final double hx = cN * previous.getHx() + cP * next.getHx();
         final double hy = cN * previous.getHy() + cP * next.getHy();
         final double lv = cN * previous.getLv() + cP * next.getLv();
 
-        return new EquinoctialParameters(a, ex, ey, hx, hy, lv,
-                                         EquinoctialParameters.TRUE_LATITUDE_ARGUMENT,
-                                         previous.getFrame());
+        return new EquinoctialOrbit(a, ex, ey, hx, hy, lv,
+                                         EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
+                                         previous.getFrame(), date, previous.getMu());
 
     }
 

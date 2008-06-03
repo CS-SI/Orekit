@@ -1,208 +1,247 @@
 package fr.cs.orekit.orbits;
 
-import java.io.Serializable;
+import org.apache.commons.math.geometry.Vector3D;
 
+import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
+import fr.cs.orekit.frames.Transform;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
+import java.io.Serializable;
 
 /**
- * This class handles orbits around a central body.
+ * This class handles orbital parameters without date.
 
  * <p>
- * In OREKIT architecture, an Orbit is only a state at a specific date.
- * Orbit evolution is represented by the {@link
- * fr.cs.orekit.propagation.Ephemeris Ephemeris} interface,
- * which contains only the {@link
- * fr.cs.orekit.propagation.Ephemeris#getSpacecraftState(AbsoluteDate)} method to
- * provide new states for new dates. This interface can be implemented by
- * several means like file-based interpolation, analytical model or numerical
- * integration.
- * </p>
+ * The aim of this class is to separate the orbital parameters from the date
+ * for cases where dates are managed elsewhere. This occurs for example during
+ * numerical integration and interpolation because date is the free parameter
+ * whereas the orbital parameters are bound to either differential or
+ * interpolation equations.</p>
 
  * <p>
- * This class handles periodic orbits (it does neither handle parabolic nor
- * hyperbolic orbits). Several different internal representations can
- * be used for the parameters, the more general one being {@link
- * EquinoctialParameters equinoctial parameters} which can handle
- * circular and equatorial orbits without problem and have
- * singularities only for purely retrograd orbit (inclination = &pi;).
- * </p>
-
- * <p>
- * For the sake of numerical stability, only the always non-ambiguous classical
- * keplerian elements are provided ({@link #getE() eccentricity} and {@link #getI()
- * inclination}, not the potentialy ambiguous ones like perigee argument or right
- * ascension of ascending node. If these elements are needed, the user must
- * explicitely convert the parameters to {@link KeplerianParameters keplerian
- * parameters}, if he considers the orbit is sufficiently non-circular or
- * non-equatorial.
+ * For user convenience, both the cartesian and the equinoctial elements
+ * are provided by this class, regardless of the canonical representation
+ * implemented in the derived class (which may be classical keplerian
+ * elements for example).
  * </p>
  * <p>
- * The instance <code>Orbit</code> is guaranteed to be immutable.
+ * The parameters are defined in a frame specified by the user. It is important
+ * to make sure this frame is consistent : it probably is inertial and centered
+ * on the central body. This information is used for example by some
+ * force models.
  * </p>
- * @see     OrbitalParameters
- * @see     fr.cs.orekit.propagation.Ephemeris
- * @version $Id:Orbit.java 1310 2007-07-05 16:04:25Z luc $
+ * <p>
+ * The object <code>OrbitalParameters</code> is guaranteed to be immutable.
+ * </p>
+ * @see     OrbitOld
+ * @version $Id:OrbitalParameters.java 1310 2007-07-05 16:04:25Z luc $
  * @author  L. Maisonobe
  * @author  G. Prat
  * @author  F.Maussion
-
+ * @author  V.Pommier-Maurussane
  */
+public abstract class Orbit implements Serializable {
 
-public class Orbit implements Serializable {
+    /** Frame in which are defined the orbital parameters. */
+    private final Frame frame;
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -1020615214010191133L;
+    /** Date of the orbital parameters. */
+    private final AbsoluteDate date;
 
-    /** Date of the current state. */
-    private final AbsoluteDate t;
+    /** Value of mu used to compute position and velocity (m<sup>3</sup>/s<sup>2</sup>). */
+    private final double mu;
 
-    /** Orbital parameters state. */
-    private final OrbitalParameters parameters;
+    /** Computed PVCoordinates. */
+    private PVCoordinates pvCoordinates;
 
-    /** Create a new instance from date and orbital parameters.
-     * @param t  date
-     * @param parameters orbital parameters
+    /** Default constructor.
+     * Build a new instance with arbitrary default elements.
+     * @param frame the frame in which the parameters are defined
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m^3/s^2)
      */
-    public Orbit(final AbsoluteDate t, final OrbitalParameters parameters) {
-        this.t = t;
-        this.parameters = parameters;
+    protected Orbit(final Frame frame, final AbsoluteDate date, final double mu) {
+        this.date = date;
+        this.mu = mu;
+        this.pvCoordinates = null;
+        this.frame =  frame;
     }
 
-    /** Get the date.
-     * @return date
+    /** Set the orbit from cartesian parameters.
+     * @param pvCoordinates the position and velocity in the inertial frame
+     * @param frame the frame in which the {@link PVCoordinates} are defined
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m^3/s^2)
      */
-    public AbsoluteDate getDate() {
-        return t;
+    protected Orbit(final PVCoordinates pvCoordinates, final Frame frame,
+                                final AbsoluteDate date, final double mu) {
+        this.date = date;
+        this.mu = mu;
+        this.pvCoordinates = pvCoordinates;
+        this.frame = frame;
     }
 
-    /** Get the orbital parameters.
-     * @return orbital parameters
-     */
-    public OrbitalParameters getParameters() {
-        return parameters;
-    }
-
-    /** Get the inertial frame.
-     * @return the frame
+    /** Get the frame in which the orbital parameters are defined.
+     * @return frame in which the orbital parameters are defined
      */
     public Frame getFrame() {
-        return parameters.getFrame();
+        return frame;
     }
 
     /** Get the semi-major axis.
      * @return semi-major axis (m)
      */
-    public double getA() {
-        return parameters.getA();
-    }
+    public abstract double getA();
 
-    /** Get the first component of the eccentricity vector (as per equinoctial parameters).
-     * @return e cos(&omega; + &Omega;), first component of eccentricity vector
-     * @see #getE()
+    /** Get the first component of the equinoctial eccentricity vector.
+     * @return first component of the equinoctial eccentricity vector
      */
-    public double getEx() {
-        return parameters.getEquinoctialEx();
-    }
+    public abstract double getEquinoctialEx();
 
-    /** Get the second component of the eccentricity vector (as per equinoctial parameters).
-     * @return e sin(&omega; + &Omega;), second component of the eccentricity vector
-     * @see #getE()
+    /** Get the second component of the equinoctial eccentricity vector.
+     * @return second component of the equinoctial eccentricity vector
      */
-    public double getEy() {
-        return parameters.getEquinoctialEy();
-    }
+    public abstract double getEquinoctialEy();
 
-    /** Get the first component of the inclination vector (as per equinoctial parameters).
-     * @return tan(i/2) cos(&Omega;), first component of the inclination vector
-     * @see #getI()
+    /** Get the first component of the inclination vector.
+     * @return first component of the inclination vector
      */
-    public double getHx() {
-        return parameters.getHx();
-    }
+    public abstract double getHx();
 
-    /** Get the second component of the inclination vector (as per equinoctial parameters).
-     * @return tan(i/2) sin(&Omega;), second component of the inclination vector
-     * @see #getI()
+    /** Get the second component of the inclination vector.
+     * @return second component of the inclination vector
      */
-    public double getHy() {
-        return parameters.getHy();
-    }
+    public abstract double getHy();
 
-    /** Get the true latitude argument (as per equinoctial parameters).
-     * @return v + &omega; + &Omega; true latitude argument (rad)
-     * @see #getLE()
-     * @see #getLM()
+    /** Get the eccentric latitude argument.
+     * @return eccentric latitude argument (rad)
      */
-    public double getLv() {
-        return parameters.getLv();
-    }
+    public abstract double getLE();
 
-    /** Get the eccentric latitude argument (as per equinoctial parameters).
-     * @return E + &omega; + &Omega; eccentric latitude argument (rad)
-     * @see #getLv()
-     * @see #getLM()
+    /** Get the true latitude argument.
+     * @return true latitude argument (rad)
      */
-    public double getLE() {
-        return parameters.getLE();
-    }
+    public abstract double getLv();
 
-    /** Get the mean latitude argument (as per equinoctial parameters).
-     * @return M + &omega; + &Omega; mean latitude argument (rad)
-     * @see #getLv()
-     * @see #getLE()
+    /** Get the mean latitude argument.
+     * @return mean latitude argument (rad)
      */
-    public double getLM() {
-        return parameters.getLM();
-    }
-
+    public abstract double getLM();
 
     // Additional orbital elements
 
     /** Get the eccentricity.
      * @return eccentricity
-     * @see #getEx()
-     * @see #getEy()
      */
-    public double getE() {
-        return parameters.getE();
-    }
+    public abstract double getE();
 
     /** Get the inclination.
      * @return inclination (rad)
-     * @see #getHx()
-     * @see #getHy()
      */
-    public double getI() {
-        return parameters.getI();
+    public abstract double getI();
+
+    /** Get the central acceleration constant.
+     * @return central acceleration constant
+     */
+    public double getMu() {
+        return mu;
+    }
+
+    /** Get the date of orbital parameters.
+     * @return date of the orbital parameters
+     */
+    public AbsoluteDate getDate() {
+        return date;
     }
 
     /** Get the {@link PVCoordinates}.
-     * Compute the position and velocity of the satellite. This method caches its
-     * results, and recompute them only when the method is called with a new value
-     * for mu. The result is provided as a reference to the internally cached
-     * {@link PVCoordinates}, so the caller is responsible to copy it in a separate
-     * {@link PVCoordinates} if it needs to keep the value for a while.
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     * @return pvCoordinates in inertial frame (reference to an
-     * internally cached pvCoordinates which can change)
+     * @param outputFrame frame in which the position/velocity coordinates shall be computed
+     * @return pvCoordinates in the specified output frame
+     * @exception OrekitException if transformation between frames cannot be computed
+     * @see #getPVCoordinates()
      */
-    public PVCoordinates getPVCoordinates(final double mu) {
-        return parameters.getPVCoordinates(mu);
+    public PVCoordinates getPVCoordinates(final Frame outputFrame) 
+    throws OrekitException {
+        if (pvCoordinates == null) {
+            initPVCoordinates();
+        }
+        
+        // If output frame requested is the same as definition frame, 
+        // PV coordinates are returned directly
+        if (outputFrame == frame) {
+            return pvCoordinates;
+        }
+        
+        // Else, PV coordinates are transformed to output frame
+        Transform t = frame.getTransformTo(outputFrame, date);
+        return t.transformPVCoordinates(pvCoordinates);
     }
 
-    /**  Returns a string representation of this Orbit instance.
-     * @return a string representation of this instance
+    /** Get the {@link PVCoordinates} in definition frame.
+     * @return pvCoordinates in the definition frame
+     * @see #getPVCoordinates(Frame)
      */
-    public String toString() {
-        final StringBuffer sb = new StringBuffer();
-        sb.append('{');
-        sb.append(t.toString());
-        sb.append(' ');
-        sb.append(parameters.toString());
-        sb.append('}');
-        return sb.toString();
+    public PVCoordinates getPVCoordinates() {
+        if (pvCoordinates == null) {
+            initPVCoordinates();
+        }
+        return pvCoordinates;
+    }
+
+    /** Initialize the position/velocity coordinates.
+     */
+    private void initPVCoordinates() {
+
+        // get equinoctial parameters
+        final double a  = getA();
+        final double ex = getEquinoctialEx();
+        final double ey = getEquinoctialEy();
+        final double hx = getHx();
+        final double hy = getHy();
+        final double lE = getLE();
+
+        // inclination-related intermediate parameters
+        final double hx2   = hx * hx;
+        final double hy2   = hy * hy;
+        final double factH = 1. / (1 + hx2 + hy2);
+
+        // reference axes defining the orbital plane
+        final double ux = (1 + hx2 - hy2) * factH;
+        final double uy =  2 * hx * hy * factH;
+        final double uz = -2 * hy * factH;
+
+        final double vx = uy;
+        final double vy = (1 - hx2 + hy2) * factH;
+        final double vz =  2 * hx * factH;
+
+        // eccentricity-related intermediate parameters
+        final double exey = ex * ey;
+        final double ex2  = ex * ex;
+        final double ey2  = ey * ey;
+        final double e2   = ex2 + ey2;
+        final double eta  = 1 + Math.sqrt(1 - e2);
+        final double beta = 1. / eta;
+
+        // eccentric latitude argument
+        final double cLe    = Math.cos(lE);
+        final double sLe    = Math.sin(lE);
+        final double exCeyS = ex * cLe + ey * sLe;
+
+        // coordinates of position and velocity in the orbital plane
+        final double x      = a * ((1 - beta * ey2) * cLe + beta * exey * sLe - ex);
+        final double y      = a * ((1 - beta * ex2) * sLe + beta * exey * cLe - ey);
+
+        final double factor = Math.sqrt(mu / a) / (1 - exCeyS);
+        final double xdot   = factor * (-sLe + beta * ey * exCeyS);
+        final double ydot   = factor * ( cLe - beta * ex * exCeyS);
+
+        final Vector3D position =
+            new Vector3D(x * ux + y * vx, x * uy + y * vy, x * uz + y * vz);
+        final Vector3D velocity =
+            new Vector3D(xdot * ux + ydot * vx, xdot * uy + ydot * vy, xdot * uz + ydot * vz);
+        pvCoordinates = new PVCoordinates(position, velocity);
+
     }
 
 }
