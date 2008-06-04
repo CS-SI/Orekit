@@ -8,10 +8,11 @@ import fr.cs.orekit.time.AbsoluteDate;
 import org.apache.commons.math.geometry.Vector3D;
 
 /** This class represents an attracting body different from the central one.
+ * @version $Id$
  * @author E. Delente
  */
 
-public abstract class ThirdBody implements Serializable {
+public abstract class ThirdBody implements Body, Serializable {
 
     /** Reference radius. */
     private double radius;
@@ -28,13 +29,9 @@ public abstract class ThirdBody implements Serializable {
         this.mu = mu;
     }
 
-    /** Get the position of the body in the selected frame.
-     * @param date current date
-     * @param frame the frame where to define the position
-     * @return position of the body (m)
-     * @exception OrekitException if position cannot be computed in given frame
-     */
-    public abstract Vector3D getPosition(AbsoluteDate date, Frame frame) throws OrekitException;
+    /** {@inheritDoc} */
+    public abstract Vector3D getPosition(AbsoluteDate date, Frame frame)
+        throws OrekitException;
 
     /** Get the reference radius of the body.
      * @return reference radius of the body (m)
