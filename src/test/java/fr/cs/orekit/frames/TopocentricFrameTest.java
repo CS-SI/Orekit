@@ -252,13 +252,13 @@ public class TopocentricFrameTest extends TestCase {
         // Extrapolate satellite position a short while after reference date
         AbsoluteDate dateP = new AbsoluteDate(date, dt);
         Transform j2000ToItrfP = Frame.getJ2000().getTransformTo(earthSpheric.getBodyFrame(), dateP);
-        SpacecraftState orbitP = extrapolator.getSpacecraftState(dateP);
+        SpacecraftState orbitP = extrapolator.propagate(dateP);
         Vector3D satPointGeoP = j2000ToItrfP.transformPVCoordinates(orbitP.getPVCoordinates()).getPosition();
         
         // Retropolate satellite position a short while before reference date
         AbsoluteDate dateM = new AbsoluteDate(date, -dt);
         Transform j2000ToItrfM = Frame.getJ2000().getTransformTo(earthSpheric.getBodyFrame(), dateM);
-        SpacecraftState orbitM = extrapolator.getSpacecraftState(dateM);
+        SpacecraftState orbitM = extrapolator.propagate(dateM);
         Vector3D satPointGeoM = j2000ToItrfM.transformPVCoordinates(orbitM.getPVCoordinates()).getPosition();
         
         // Compute ranges at both instants

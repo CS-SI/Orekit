@@ -64,7 +64,7 @@ public class SolarRadiationPressureTest extends TestCase {
             currentDate = new AbsoluteDate(date , t);
             try {
 
-                double ratio = SRP.getLightningRatio(k.getSpacecraftState(currentDate).getPVCoordinates().getPosition(),Frame.getJ2000(), currentDate );
+                double ratio = SRP.getLightningRatio(k.propagate(currentDate).getPVCoordinates().getPosition(),Frame.getJ2000(), currentDate );
 
                 if(Math.floor(ratio)!=changed) {
                     changed = Math.floor(ratio);

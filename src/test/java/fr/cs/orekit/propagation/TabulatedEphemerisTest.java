@@ -48,7 +48,7 @@ public class TabulatedEphemerisTest extends TestCase {
         SpacecraftState[] tab = new SpacecraftState[nbIntervals+1];
         for (int j = 0; j<= nbIntervals; j++) {
             AbsoluteDate current = new AbsoluteDate(initDate, (j * deltaT) / nbIntervals);
-            tab[j] = eck.getSpacecraftState(current);
+            tab[j] = eck.propagate(current);
         }
 
         TabulatedEphemeris te = new TabulatedEphemeris(tab);
@@ -65,8 +65,8 @@ public class TabulatedEphemerisTest extends TestCase {
     private void checkEphemerides(Propagator eph1, Propagator eph2, AbsoluteDate date,
                                   double threshold, boolean expectedBelow)
         throws PropagationException {
-        SpacecraftState state1 = eph1.getSpacecraftState(date);
-        SpacecraftState state2 = eph2.getSpacecraftState(date);
+        SpacecraftState state1 = eph1.propagate(date);
+        SpacecraftState state2 = eph2.propagate(date);
         double maxError = Math.abs(state1.getA() - state2.getA());
         maxError = Math.max(maxError, Math.abs(state1.getEquinoctialEx() - state2.getEquinoctialEx()));
         maxError = Math.max(maxError, Math.abs(state1.getEquinoctialEy() - state2.getEquinoctialEy()));

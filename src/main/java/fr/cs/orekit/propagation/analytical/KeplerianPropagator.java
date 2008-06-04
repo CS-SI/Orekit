@@ -7,6 +7,7 @@ import fr.cs.orekit.attitudes.LofOffset;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
 import fr.cs.orekit.orbits.EquinoctialOrbit;
+import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.propagation.Propagator;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
@@ -48,8 +49,29 @@ public class KeplerianPropagator implements Propagator {
         this.attitudeLaw = lofAligned;
     }
 
+    /** Build a new instance.
+     * <p>This constructor allows to create a propagator from orbit only. 
+     * Mass is given an arbitrary value (1000 kg) and attitude law is set to
+     * a default perfectly {@link LofOffset LOF-aligned} law.</p>
+     * @param initialOrbit initial orbit
+     * @param mu central acceleration coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     */
+    public KeplerianPropagator(final Orbit initialOrbit) 
+        throws PropagationException, OrekitException {
+        
+        // create spacecraft state
+        SpacecraftState initialState = new SpacecraftState(initialOrbit);
+        
+        this.initialDate = initialState.getDate();
+        this.initialParameters = new EquinoctialOrbit(initialState.getOrbit());
+        this.mass = initialState.getMass();
+        this.n = Math.sqrt(initialState.getOrbit().getMu() / initialParameters.getA()) / initialParameters.getA();
+        final AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
+        this.attitudeLaw = lofAligned;
+    }
+
     /** {@inheritDoc} */
-    public SpacecraftState getSpacecraftState(final AbsoluteDate date)
+    public SpacecraftState propagate(final AbsoluteDate date)
         throws PropagationException {
 
         // evaluation of LM = PA + RAAN + M at extrapolated time

@@ -163,7 +163,7 @@ public class DrozinerAttractionModelTest extends TestCase {
                                double c20, double c30, double c40, double c50, double c60)
         throws FileNotFoundException, OrekitException {
             referencePropagator =
-                new EcksteinHechlerPropagator(new SpacecraftState(initialOrbit, mu),
+                new EcksteinHechlerPropagator(initialOrbit,
                                               ae, mu, c20, c30, c40, c50, c60);
         }
 
@@ -175,7 +175,7 @@ public class DrozinerAttractionModelTest extends TestCase {
         public void handleStep(SpacecraftState currentState, boolean isLast) {
             try {
 
-                SpacecraftState EHPOrbit   = referencePropagator.getSpacecraftState(currentState.getDate());
+                SpacecraftState EHPOrbit   = referencePropagator.propagate(currentState.getDate());
                 Vector3D posEHP  = EHPOrbit.getPVCoordinates().getPosition();
                 Vector3D posDROZ = currentState.getPVCoordinates().getPosition();
                 Vector3D velEHP  = EHPOrbit.getPVCoordinates().getVelocity();

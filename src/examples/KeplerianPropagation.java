@@ -67,7 +67,7 @@ public class KeplerianPropagation {
         double deltaT = 1000; // extrapolation lenght in seconds
 
         AbsoluteDate finalDate = new AbsoluteDate(initialDate, deltaT);
-        SpacecraftState finalState = kepler.getSpacecraftState(finalDate);
+        SpacecraftState finalState = kepler.propagate(finalDate);
 
         System.out.println(" Final parameters with deltaT = +1000 s : " +
                            finalState.getOrbit());
@@ -75,7 +75,7 @@ public class KeplerianPropagation {
         deltaT = -1000; // extrapolation lenght
 
         finalDate = new AbsoluteDate(initialDate, deltaT);
-        finalState = kepler.getSpacecraftState(finalDate);
+        finalState = kepler.propagate(finalDate);
 
         System.out.println(" Final parameters with deltaT = -1000 s : " +
                            finalState.getOrbit());

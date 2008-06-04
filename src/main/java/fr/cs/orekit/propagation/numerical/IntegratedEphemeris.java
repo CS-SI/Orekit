@@ -100,7 +100,7 @@ public class IntegratedEphemeris implements BoundedPropagator {
      * @return the {@link SpacecraftState} at the specified date and null if not initialized.
      * @exception PropagationException if the date is outside of the range
      */
-    public SpacecraftState getSpacecraftState(final AbsoluteDate date)
+    public SpacecraftState propagate(final AbsoluteDate date)
         throws PropagationException {
         if (isInitialized) {
             model.setInterpolatedTime(date.minus(startDate));

@@ -178,7 +178,7 @@ public class TargetPointingTest extends TestCase {
         KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(circOrbit));
         double delta_t = 60.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = new AbsoluteDate(date, delta_t);
-        SpacecraftState extrapOrbit = extrapolator.getSpacecraftState(extrapDate);
+        SpacecraftState extrapOrbit = extrapolator.propagate(extrapDate);
         PVCoordinates extrapPvSatJ2000 = extrapOrbit.getPVCoordinates();
         
         // Get satellite rotation from target pointing law at date + 1min

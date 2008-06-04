@@ -111,6 +111,59 @@ public class EcksteinHechlerPropagator implements Propagator {
 
     }
 
+    /** Create a new instance.
+     * <p>This constructor allows to create a propagator from orbit only. 
+     * Mass is given an arbitrary value (1000 kg) and attitude law is set to
+     * a default perfectly {@link LofOffset LOF-aligned} law.</p>
+     * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
+     * are related to both the normalized coefficients
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *  and the J<sub>n</sub> one as follows:</p>
+     * <pre>
+     *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup><span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *   C<sub>n,0</sub> = -J<sub>n</sub>
+     * </pre>
+     * @param initialOrbit initial orbit
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @exception PropagationException if the mean parameters cannot be computed
+     */
+    public EcksteinHechlerPropagator(final Orbit initialOrbit,
+                                     final double referenceRadius, final double mu,
+                                     final double c20, final double c30, final double c40,
+                                     final double c50, final double c60)
+        throws PropagationException, OrekitException {
+
+        // create spacecraft state
+        SpacecraftState initialState = new SpacecraftState(initialOrbit);
+        
+        // store model coefficients
+        this.referenceRadius = referenceRadius;
+        this.mu  = mu;
+        this.c20 = c20;
+        this.c30 = c30;
+        this.c40 = c40;
+        this.c50 = c50;
+        this.c60 = c60;
+
+        // transformation into circular adapted parameters
+        // (used by the Eckstein-Hechler model)
+        final CircularOrbit osculating = new CircularOrbit(initialState.getOrbit());
+
+        // compute mean parameters
+        initialDate = initialState.getDate();
+        mass = initialState.getMass();
+        final AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
+        this.attitudeLaw = lofAligned;
+        computeMeanParameters(osculating);
+
+    }
+
     /** Get the state extrapolated up to a given date with an analytical model.
      * The extrapolated parameters are osculating circular parameters.
      * @param date target date for the propagation
@@ -118,9 +171,9 @@ public class EcksteinHechlerPropagator implements Propagator {
      * @exception PropagationException if orbit or attitude cannot be
      * propagated at given date
      */
-    public SpacecraftState getSpacecraftState(final AbsoluteDate date)
+    public SpacecraftState propagate(final AbsoluteDate date)
         throws PropagationException {
-        final Orbit op = propagate(date);
+        final Orbit op = propagateOrbit(date);
         try {
             return new SpacecraftState(op, mass,
                                        attitudeLaw.getState(date, op.getPVCoordinates(), op.getFrame()));
@@ -178,7 +231,7 @@ public class EcksteinHechlerPropagator implements Propagator {
             sinI6 = sinI2 * sinI4;
 
             // recompute the osculation parameters from the current mean parameters
-            final CircularOrbit rebuilt = propagate(initialDate);
+            final CircularOrbit rebuilt = propagateOrbit(initialDate);
 
             // adapted parameters residuals
             final double deltaA      = osculating.getA()  - rebuilt.getA();
@@ -253,7 +306,7 @@ public class EcksteinHechlerPropagator implements Propagator {
      * @return extrapolated parameters
      * @exception PropagationException if some parameters are out of bounds
      */
-    private CircularOrbit propagate(final AbsoluteDate date)
+    private CircularOrbit propagateOrbit(final AbsoluteDate date)
         throws PropagationException {
 
         // keplerian evolution

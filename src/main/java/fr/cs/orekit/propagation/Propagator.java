@@ -29,7 +29,7 @@ public interface Propagator extends Serializable {
      * @return the orbit at the specified date
      * @exception PropagationException if state cannot be extrapolated
      */
-    SpacecraftState getSpacecraftState(AbsoluteDate date)
+    SpacecraftState propagate(AbsoluteDate date)
         throws PropagationException;
 
 }

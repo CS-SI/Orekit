@@ -94,7 +94,7 @@ public class NumericalPropagation {
         System.out.println(" Final state  : " +
                            finalState.getOrbit());
         AbsoluteDate intermediateDate = new AbsoluteDate(initialDate, 214);
-        SpacecraftState intermediateState = ephemeris.getSpacecraftState(intermediateDate);
+        SpacecraftState intermediateState = ephemeris.propagate(intermediateDate);
         System.out.println("  intermediate state  :  " +
                            intermediateState.getOrbit());
     }

@@ -116,7 +116,7 @@ public class YawCompensationTest extends TestCase {
             extrapDate = new AbsoluteDate(extrapDate, delta_t);
 
             // Extrapolated orbit state at date
-            SpacecraftState extrapOrbit = extrapolator.getSpacecraftState(extrapDate);
+            SpacecraftState extrapOrbit = extrapolator.propagate(extrapDate);
             PVCoordinates extrapPvSatJ2000 = extrapOrbit.getPVCoordinates();
             
             // Satellite latitude at date

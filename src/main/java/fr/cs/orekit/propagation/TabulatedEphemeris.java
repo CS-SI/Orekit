@@ -72,7 +72,7 @@ public class TabulatedEphemeris implements BoundedPropagator {
      * @param date desired date for the state
      * @return the state at the specified date; null if date is out of range
      */
-    public SpacecraftState getSpacecraftState(final AbsoluteDate date) {
+    public SpacecraftState propagate(final AbsoluteDate date) {
         // Check if date is in the specified range
         if (enclosinbracketDate(date)) {
 
