@@ -119,7 +119,7 @@ Overview
         (LOF aligned, offset on all axes),
 
       * space referenced attitudes
-        (inertial, sun-pointed, spin-stabilized)
+        (inertial, celestial body pointed, spin stabilized)
 
 * Free software
 
