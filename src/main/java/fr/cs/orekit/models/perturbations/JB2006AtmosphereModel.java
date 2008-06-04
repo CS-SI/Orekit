@@ -2,9 +2,9 @@ package fr.cs.orekit.models.perturbations;
 
 import org.apache.commons.math.geometry.Vector3D;
 
+import fr.cs.orekit.bodies.CelestialBody;
 import fr.cs.orekit.bodies.BodyShape;
 import fr.cs.orekit.bodies.GeodeticPoint;
-import fr.cs.orekit.bodies.ThirdBody;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.frames.Transform;
@@ -32,7 +32,7 @@ public class JB2006AtmosphereModel extends JB2006Atmosphere implements Atmospher
     private static final long serialVersionUID = -4566140204081960905L;
 
     /** Sun position. */
-    private ThirdBody sun;
+    private CelestialBody sun;
 
     /** External data container. */
     private JB2006InputParameters inputParams;
@@ -50,7 +50,7 @@ public class JB2006AtmosphereModel extends JB2006Atmosphere implements Atmospher
      * @param earthFixed the earth fixed frame
      */
     public JB2006AtmosphereModel(final JB2006InputParameters parameters,
-                                 final ThirdBody sun, final BodyShape earth,
+                                 final CelestialBody sun, final BodyShape earth,
                                  final Frame earthFixed) {
         this.earth = earth;
         this.sun = sun;

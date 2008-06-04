@@ -3,9 +3,10 @@ package fr.cs.orekit.models.perturbations;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import org.apache.commons.math.geometry.Vector3D;
+
+import fr.cs.orekit.bodies.CelestialBody;
 import fr.cs.orekit.bodies.BodyShape;
 import fr.cs.orekit.bodies.GeodeticPoint;
-import fr.cs.orekit.bodies.ThirdBody;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.frames.Transform;
@@ -33,7 +34,7 @@ public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosph
     private static final long serialVersionUID = 7601194421088896381L;
 
     /** Sun position. */
-    private ThirdBody sun;
+    private CelestialBody sun;
 
     /** External data container. */
     private DTM2000InputParameters inputParams;
@@ -52,7 +53,7 @@ public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosph
      * @exception OrekitException if some specific resource file reading error occurs
      */
     public DTM2000AtmosphereModel(final DTM2000InputParameters parameters,
-                                  final ThirdBody sun, final BodyShape earth,
+                                  final CelestialBody sun, final BodyShape earth,
                                   final Frame earthFixed)
         throws OrekitException {
         this.earth = earth;
