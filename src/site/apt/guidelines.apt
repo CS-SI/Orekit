@@ -13,4 +13,121 @@
 
 Development Guidelines
 
-  The following guidelines are used for Orekit development ...
+  The following guidelines are used for Orekit development.
+
+* Development
+
+  Orekit is a low level library. It may be used in very different contexts
+  which cannot be foreseen, from quick studies up to critical operations.
+  The main driving goals are the following ones:
+
+    * validation
+
+    * robustness
+
+    * maintainability
+
+    * efficiency
+
+  The first goal, validation, implies tests must be as extensive as possible.
+  They should include realistic operational cases but also contingency cases.
+  The {{{http://cobertura.sourceforge.net/}cobertura}} tool must be used to
+  monitor test coverage. Some efforts must be put to achieve a very high level
+  of coverage. We do not set up an objective figure, but clearly a 60% coverage
+  would not be acceptable at all.
+
+  The second goal, robustness, has some specific implications for a low level
+  component like Orekit. In some sense, it can be considered an extension of the
+  previous goal as it can also be improved by testing. This is not sufficient,
+  though. A library is intended to be used by applications unknown to the library
+  development team. The library development should be as flexible as possible to
+  be merged into an environment with specific constraints. For example, perhaps an
+  application should run 24/7 during months or years, so caching all results to
+  improve efficiency may prove disastrous in such a use case. Experience has shown
+  that developing libraries is more difficult than developing high level applications,
+  where most of the constraints are known beforehand.
+
+  The third goal, maintainability, implies code must be readable, clear and
+  well documented. Part of this goal is enforced by the stylistic rules explained
+  in the next section, but this is only for the <automatic> and simple checks. It
+  is important to keep a clean and extensible design. Achieving simplicity is
+  really hard, so this goal should not be taken too lightly. Good designs are a
+  matter of balance between two few objects that do too many things internally
+  an ignore each other and too many objects that do nothing alone and always need
+  a bunch of other objects to work. Always think in terms of balance, and check if
+  what happens if you remove something from the design. Quite often, removing something
+  improves the design and should be done.
+
+  The fourth goal, efficiency, should be handled with care to not conflict with the
+  second and third goals (robustness and maintainability). Efficiency is necessary but
+  trying too much too achieve it can lead to overly complex unmaintainable code, to too
+  specific fragile code, and unfortunately too often without any gain after all because
+  of premature optimization and unfounded second-guess.
+
+  One surprising trick, that at first sight might seem strange and inappropriate has
+  been used in many part for Orekit and should be considered a fondamental guideline. It
+  is the use of <immutable> objects. This trick improves efficiency because many costly
+  copying operation are avoided, even unneeded one added for defensive programming. It
+  improves maintainability because both the classes themselves and the classes that use
+  them are much simpler. It also improves robustness because many (really many ...)
+  difficult to catch bugs are caused by mutable objects that are changed in some deeply
+  burried code and have an impact on user code that forgot to perform a defensive copy.
+  Orbits, dates, vectors, and rotations are all immutable objects.
+
+* Style
+
+  For reading ease and consistency, the existing code style should be
+  preserved for all new developments. The rules are common ones, inherited
+  mainly from the Sun {{{http://java.sun.com/docs/codeconv/}Code Conventions
+  for the Java Programming Language}} guide style and from the default
+  {{{http://checkstyle.sourceforge.net/}checkstyle}} tool configuration. A few
+  of these rules are displayed below. The complete definition is given
+  by the checkstyle configuration file in the project root directory.
+
+  [header rule]
+  all source files start with the Apache license header,
+
+  [indentation rules]
+  no tabs, 4 spaces indentation, no indentation for case statements,
+
+  [operators wrapping rules]
+  break lines after operators (unlike Sun),
+
+  [whitespace rules]
+  around operators, not before method parameters parenthesis,
+  no white space at end of lines,
+
+  [curly brace rules]
+  open curly brace at end of line, closing curly brace aligned with
+  the start of the corresponding <<<if>>>, <<<for>>>, <<<while>>>,
+  <<<case>>> or <<<do>>>,
+
+  [encoding rules]
+  characters encoding is UTF8, end of line should be set to
+  native in subversion properties (to ensure proper conversion
+  on all operating systems),
+
+  [naming rules]
+  classes names begin with upper case, instance methods and fields
+  names begin with lower case, class fields are all upper case with
+  words separated by underscores,
+
+  [ordering rules]
+  class variables, followed by instance variables, followed by
+  constructors, followed by methods and public followed by protected
+  followed by private,
+
+  [javadoc rules]
+  complete javadoc everywhere, even on private fields and methods
+  (there are some rare exceptions, in case of code translated from
+  the fortran language and models with huge parameters sets),
+
+  [robustness rules]
+  use default statement in all switch/case construct, even when
+  all cases are already handled, use immutable classes as much as
+  possible,
+
+  [miscellaneous rules]
+  no use of <star> imports, use final parameters and local variables
+  wherever possible.
+  
