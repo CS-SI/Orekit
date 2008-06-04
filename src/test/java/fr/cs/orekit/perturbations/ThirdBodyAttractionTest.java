@@ -56,6 +56,7 @@ public class ThirdBodyAttractionTest extends TestCase {
         TBAStepHandler sh = new TBAStepHandler(TBAStepHandler.SUN, date);
         AbsoluteDate finalDate = new AbsoluteDate(date , 2*365*period);
         calc.propagate(new SpacecraftState(orbit), finalDate, Math.floor(period), sh);
+        assertTrue("incomplete test", false);
 
     }
 
@@ -89,6 +90,7 @@ public class ThirdBodyAttractionTest extends TestCase {
         TBAStepHandler sh = new TBAStepHandler(TBAStepHandler.MOON, date);
         AbsoluteDate finalDate = new AbsoluteDate(date , 365*period);
         calc.propagate(new SpacecraftState(orbit), finalDate, Math.floor(period), sh);
+        assertTrue("incomplete test", false);
 
     }
 

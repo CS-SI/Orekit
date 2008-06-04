@@ -12,7 +12,7 @@ import fr.cs.orekit.propagation.numerical.forces.ForceModel;
 /** Third body attraction force model.
  *
  * @author F. Maussion
- * @author  V. Pommier-Maurussane
+ * @author V. Pommier-Maurussane
  */
 public class ThirdBodyAttraction implements ForceModel {
 
@@ -35,14 +35,18 @@ public class ThirdBodyAttraction implements ForceModel {
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
         throws OrekitException {
 
-        Vector3D otherBody = body.getPosition(s.getDate(), s.getFrame());
-        Vector3D centralBody =
-            new Vector3D(-1.0, s.getPVCoordinates().getPosition(), 1.0, otherBody);
-        centralBody = centralBody.scalarMultiply(1.0 / Math.pow(centralBody.getNorm(), 3));
-        otherBody = otherBody.scalarMultiply(1.0 / Math.pow(otherBody.getNorm(), 3));
+        // compute bodies separation vectors and squared norm
+        final Vector3D centralToBody = body.getPosition(s.getDate(), s.getFrame());
+        final double r2Central       = Vector3D.dotProduct(centralToBody, centralToBody);
+        final Vector3D satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
+        final double r2Sat           = Vector3D.dotProduct(satToBody, satToBody);
 
-        Vector3D gamma = centralBody.subtract(otherBody);
-        gamma = gamma.scalarMultiply(s.getOrbit().getMu());
+        // compute relative acceleration
+        final Vector3D gamma =
+            new Vector3D(body.getMu() * Math.pow(r2Sat, -1.5), satToBody,
+                        -body.getMu() * Math.pow(r2Central, -1.5), centralToBody);
+
+        // add contribution to the ODE second member
         adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
 
     }
