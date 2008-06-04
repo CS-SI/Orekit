@@ -14,3 +14,114 @@
 Building Orekit
 
   Orekit can be built from source using several different tools.
+  
+  All these tools are Java based and can run on many different operating
+  systems, including Unix, GNU/Linux, Windows and Mac OS X. Some GNU/Linux
+  distributions provide these tools in their packages repositories (for
+  exemple Debian Lenny provides all of them but Debian Etch does not
+  provide maven 2).
+
+* Building with Maven 2
+
+  {{{http://maven.apache.org/}Maven}} is a build tool that goes far beyond
+  simply compiling and packaging a product. It is also able to resolve
+  dependencies (including downloading the appropriate versions from the public
+  repositories), to run automated tests, to launch various checking tools and
+  to create a web site for a project. It runs on any platform supporting Java.
+  
+  For systems not providing maven as a package, maven can be downloaded
+  from its site at the Apache Software Foundation:
+  {{http://maven.apache.org/download.html}}, this page also explains the
+  installation procedure.
+
+  As all maven enabled projects, building Orekit is straigthforward, simply
+  run:
+
++-------
+mvn package
++-------
+
+  The preceding command will perform all dependencies retrieval, compilation,
+  tests and packaging for you. At the end, it will create a file named
+  target/orekit-x.y.jar where x.y is the version number.
+
+  If you need to configure a proxy server for dependencies retrieval, see
+  the
+  {{{http://maven.apache.org/guides/mini/guide-proxies.html}Guide to using proxies}}
+  page at the maven site.
+
+  If you already use maven for your own projects (or simply eclipse, see
+  below), you may want to install Orekit in your local repository. This is done
+  with the following command:
+
++-------
+mvn install
++-------
+
+  For other commands like generating the site, or generating the
+  {{{http://checkstyle.sourceforge.net/}checkstyle}},
+  {{{http://findbugs.sourceforge.net/}findbugs}} or
+  {{{http://cobertura.sourceforge.net/}cobertura}} reports, see the maven
+  plugins documentation at maven site:
+  {{http://maven.apache.org/plugins/index.html}}.
+
+* Building with Ant
+
+  {{{http://ant.apache.org/}Ant}} is another well known build tool. It is
+  more ancient than maven and widely used. It does not provide as much
+  features as maven (no site generation for example) but is very extensible.
+
+  For systems not providing ant as a package, it can be downloaded from its
+  site at the Apache Software Foundation: {{http://ant.apache.org/bindownload.cgi}}.
+  The installation procedure is explained in the
+  {{{http://ant.apache.org/manual/index.html}on-line manual}}.
+
+  The build file for ant is in fact automatically generated when we create
+  a release for Orekit. It uses a configuration that is based on the maven
+  configuration and mimics maven behaviour.
+
+  Compiling is done by running the command:
+
++-------
+ant
++-------
+
+  Just as maven does, this command also retrieve the dependencies from
+  public repositories, compiles the sources and creates a file named
+  target/orekit-x.y.jar where x.y is the version number.
+
+
+  If you need to configure a proxy server for dependencies retrieval, see
+  the {{{http://ant.apache.org/manual/proxy.html}Proxy Configuration}} page
+  in the ant manual.
+
+* Building with Eclipse
+
+  {{{http://www.eclipse.org/}Eclipse}} is a very rich Integrated Development
+  Environment (IDE). It is a huge product and not a simple build tool.
+
+  For systems not providing eclipse as a package, it can be downloaded from its
+  site at the Eclipse Foundation: {{http://www.eclipse.org/downloads/}}.
+
+  The Orekit distribution already contains a .project and a .classpath files
+  that can be used by Eclipse. So the simplest way to use Orekit with Eclipse
+  is to unpack the distribution inside your Eclipse workspace and to create a
+  new project from existing sources.
+
+  There are chances that Eclipse will try to compile the project immediately after
+  project creation and fail because of missing dependencies. This is due to the
+  Java build path configuration already present in the .classpath file that
+  probably won't match your local settings. It can be fixed by editing the
+  Java build path configuration (select Build Path/Configure Build Path in the
+  package explorer menu, and select the Libraries tab). You will see that
+  the configuration uses a M2_REPO variable to point directly from Eclipse
+  to the local maven 2 repository, this variable is used for both the junit test
+  library and the commons-math mathematical library.
+  
+  If you also want to use both maven2 and eclipse, it is sufficient to set the
+  M2_REPO variable to your own local repository (typically
+  /home/your-username/.m2/repository on Unix, GNU/Linux and Mac OS X,
+  and C:\Documents and Settings\username\.m2 on Windows). If you want to use
+  Eclipse only, put the dependencies wherever you want and configure Eclipse
+  accordingly, with or without a user variable.
+  

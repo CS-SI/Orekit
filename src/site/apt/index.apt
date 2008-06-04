@@ -13,4 +13,128 @@
 
 Overview
 
-  Orekit is ...
+  OREKIT (ORbits Extrapolation KIT) is a free low level space dynamics library
+  written in Java.
+
+  It provides basic elements (orbits, dates, attitude, frames ...) and
+  various algorithms to handle them (conversions, analytical and numerical
+  propagation, pointing ...).
+
+* Features
+
+  ** Time
+
+    * high accuracy absolute dates
+
+    * time scales (TAI, UTC, GPS, TCG, TT ...)
+
+    * transparent handling of leap seconds
+
+  ** Geometry
+
+    * frames hierarchy supporting fixed and time-dependent (or telemetry-dependent) frames
+
+    * predefined frames (J2000, ITRF2000 (A and B) and intermediate frames, Veis, topocentric)
+
+    * user extensible (used operationally in real time with a set of about 60 frames on
+      several spacecrafts)
+
+    * transparent handling of IERS Earth Orientation Parameters
+
+    * transforms including kinematic combination effects
+
+    * composite transforms reduction and caching for efficiency
+
+    * extensible central body shapes models (with predefined spherical and ellipsoidic shapes)
+
+    * cartesian and geodesic coordinates, kinematics
+
+  ** Spacecraft state
+
+    * cartesian, keplerian, circular and equinoctial parameters
+
+    * Two-Lines Elements
+
+    * transparent conversion between all parameters
+
+    * automatic binding with frames
+
+    * attitude state and derivative
+
+    * mass management
+
+  ** Propagation
+
+    * analytical propagation models
+      (Kepler, Eckstein-Heschler, SDP4/SGP4 with 2006 corrections)
+
+    * numerical propagators
+
+      * customizable force models
+
+        * central attraction
+
+        * gravity models
+          (automatic reading of SHM (for Eigen models) and EGM formats potential files,
+          even compressed)
+
+        * atmospheric drag (DTM2000, Jaccia-Bowman 2006 and simple exponential models)
+
+        * third body attraction
+
+        * radiation pressure with eclipses
+
+        * multiple maneuvers
+
+      * handling of discrete events during integration
+        (models changes, G-stop, simple notifications ...)
+
+      * state of the art ODE integrators (adaptive stepsize with error control,
+        continuous output, switching functions, G-stop, step normalization ...)
+
+      * can be used in master mode (program drives integration), slave mode (integrator
+        drives program) or unattended mode (all intermediate results solved and
+        navigation feature enabled, to use the model as if it was an analytical model,
+        ideal for search and iterative algorithms)
+
+      * serialization mechanism to store complete results on persistent storage for
+        later use
+
+    * tabulated ephemerides
+
+    * unified interface above analytical/numerical/tabulated propagator for easy
+      switch from coarse analysis to fine simulation with one line change
+
+  ** Attitude
+
+    * extensible attitude evolution models
+
+    * predefined laws
+
+      * central body related attitude
+        (nadir pointing, center pointing, target pointing,
+         yaw compensation, yaw-steering),
+
+      * orbite referenced attitudes
+        (LOF aligned, offset on all axes),
+
+      * space referenced attitudes
+        (inertial, sun-pointed, spin-stabilized)
+
+* Free software
+
+  Orekit is freely available both in source and binary formats, with all related
+  documentation and tests.
+
+  It is distributed under the {{{./license.html}Apache License Version 2.0}}. This
+  is a well known business-friendly license. This means anybody can use it to build
+  any application, free or not. There are no strings attached to your own code.
+
+  Everybody is encouraged to use Orekit as a common low level layer to help
+  interoperability in space systems.
+
+* Maintained library
+
+  Orekit has been in development since 2002 inside {{{http://uk.c-s.fr/}CS Communication
+  & Syst\u00e8mes}} and is still used and maintained by its space dynamics experts.
+  It has already been successfully used for operational space projects.

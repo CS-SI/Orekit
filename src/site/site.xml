@@ -17,10 +17,11 @@
   <bannerLeft>
     <name>CS Communication &amp; Syst&#232;mes</name>
     <src>/images/logo_cs_2008_ang.jpg</src>
-    <href>http://www.c-s.fr/</href>
+    <href>http://uk.c-s.fr/</href>
   </bannerLeft>
   <bannerRight>
     <name>Orekit</name>
+    <src>/images/orekit-logo.png</src>
     <href>/index.html</href>
   </bannerRight>
   <body>
@@ -29,8 +30,10 @@
       <item name="Building"      href="/building.html"     />
       <item name="Architecture"  href="/architecture.html" />
       <item name="FAQ"           href="/faq.html"          />
+      <item name="License"       href="/license.html"      />
     </menu>
     <menu name="Development">
+      <item name="Contributing"  href="/contributing.html" />
       <item name="Guidelines"    href="/guidelines.html"   />
       <item name="Javadoc"       href="/apidocs/index.html"/>
     </menu>
