@@ -115,7 +115,7 @@ Overview
         (nadir pointing, center pointing, target pointing,
          yaw compensation, yaw-steering),
 
-      * orbite referenced attitudes
+      * orbit referenced attitudes
         (LOF aligned, offset on all axes),
 
       * space referenced attitudes
