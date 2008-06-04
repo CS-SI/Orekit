@@ -10,7 +10,7 @@ import fr.cs.orekit.time.AbsoluteDate;
  * @version $Id$
  * @author L. Maisonobe
  */
-public interface Body {
+public interface CelestialBody {
 
     /** Get the position of the body in the selected frame.
      * @param date current date

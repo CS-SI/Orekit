@@ -12,7 +12,7 @@ import org.apache.commons.math.geometry.Vector3D;
  * @author E. Delente
  */
 
-public abstract class ThirdBody implements Body, Serializable {
+public abstract class ThirdBody implements CelestialBody, Serializable {
 
     /** Reference radius. */
     private double radius;
