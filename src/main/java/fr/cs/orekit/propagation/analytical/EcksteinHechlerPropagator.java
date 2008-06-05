@@ -523,7 +523,7 @@ public class EcksteinHechlerPropagator implements Propagator {
                                       xim + rdxi, MathUtils.normalizeAngle(omm + rdom, Math.PI),
                                       MathUtils.normalizeAngle(xlm + rdxl, Math.PI),
                                       CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                      mean.getFrame(), mean.getDate(), mean.getMu());
+                                      mean.getFrame(), date, mean.getMu());
 
     }
 

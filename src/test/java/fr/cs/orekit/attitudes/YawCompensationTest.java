@@ -58,7 +58,7 @@ public class YawCompensationTest extends TestCase {
         // **************
         // without yaw compensation
         PVCoordinates noYawTarget = nadirLaw.getTargetInBodyFrame(date, pvSatItrf2000B, frameItrf2000B);
-
+         
         // with yaw compensation
         PVCoordinates yawTarget = yawCompensLaw.getTargetInBodyFrame(date, pvSatItrf2000B, frameItrf2000B);
 
@@ -219,6 +219,8 @@ public class YawCompensationTest extends TestCase {
                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
                                        Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
                                        Frame.getJ2000(), date, mu);
+            
+            pvSatItrf2000B = circOrbit.getPVCoordinates(frameItrf2000B);
             
             // Elliptic earth shape */
             earthShape =
