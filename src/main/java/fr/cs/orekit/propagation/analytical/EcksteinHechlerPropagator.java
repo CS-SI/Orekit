@@ -1,12 +1,14 @@
 package fr.cs.orekit.propagation.analytical;
 
-import org.apache.commons.math.geometry.RotationOrder;
+import org.apache.commons.math.geometry.Rotation;
+import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
 
 import fr.cs.orekit.attitudes.AttitudeLaw;
-import fr.cs.orekit.attitudes.LofOffset;
+import fr.cs.orekit.attitudes.InertialLaw;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
+import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.orbits.CircularOrbit;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.propagation.Propagator;
@@ -69,11 +71,13 @@ public class EcksteinHechlerPropagator implements Propagator {
      * are related to both the normalized coefficients
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
+     * <p>Attitude law is the specified one.</p>
      * <pre>
      *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup><span style="text-decoration: overline">C</span><sub>n,0</sub>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
      * </pre>
      * @param initialState initial state
+     * @param attitudeLaw attitude law
      * @param referenceRadius reference radius of the Earth for the potential model (m)
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
@@ -84,6 +88,7 @@ public class EcksteinHechlerPropagator implements Propagator {
      * @exception PropagationException if the mean parameters cannot be computed
      */
     public EcksteinHechlerPropagator(final SpacecraftState initialState,
+                                     final AttitudeLaw attitudeLaw,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60)
@@ -105,16 +110,45 @@ public class EcksteinHechlerPropagator implements Propagator {
         // compute mean parameters
         initialDate = initialState.getDate();
         mass = initialState.getMass();
-        final AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
-        this.attitudeLaw = lofAligned;
+        this.attitudeLaw = attitudeLaw;
         computeMeanParameters(osculating);
 
     }
 
     /** Create a new instance.
-     * <p>This constructor allows to create a propagator from orbit only. 
-     * Mass is given an arbitrary value (1000 kg) and attitude law is set to
-     * a default perfectly {@link LofOffset LOF-aligned} law.</p>
+     * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
+     * are related to both the normalized coefficients
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *  and the J<sub>n</sub> one as follows:</p>
+     * <p>Attitude law is set to an default inertial {@link Frame J2000} aligned law.</p>
+     * <pre>
+     *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup><span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *   C<sub>n,0</sub> = -J<sub>n</sub>
+     * </pre>
+     * @param initialState initial state
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @exception PropagationException if the mean parameters cannot be computed
+     */
+    public EcksteinHechlerPropagator(final SpacecraftState initialState,
+                                     final double referenceRadius, final double mu,
+                                     final double c20, final double c30, final double c40,
+                                     final double c50, final double c60)
+        throws PropagationException {
+
+        this(initialState, new InertialLaw(new Rotation(Vector3D.plusK, 0.)),
+             referenceRadius, mu, c20, c30, c40, c50, c60);
+    }
+
+    /** Create a new instance.
+     * <p>This constructor allows to create a propagator from orbit, 
+     * without spacecraft state. 
+     * Mass is given an arbitrary value (1000 kg), and attitude law is the specified one.</p>
      * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
      * are related to both the normalized coefficients
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
@@ -124,6 +158,7 @@ public class EcksteinHechlerPropagator implements Propagator {
      *   C<sub>n,0</sub> = -J<sub>n</sub>
      * </pre>
      * @param initialOrbit initial orbit
+     * @param attitudeLaw attitude law
      * @param referenceRadius reference radius of the Earth for the potential model (m)
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
@@ -134,6 +169,7 @@ public class EcksteinHechlerPropagator implements Propagator {
      * @exception PropagationException if the mean parameters cannot be computed
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
+                                     final AttitudeLaw attitudeLaw,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60)
@@ -158,9 +194,41 @@ public class EcksteinHechlerPropagator implements Propagator {
         // compute mean parameters
         initialDate = initialState.getDate();
         mass = initialState.getMass();
-        final AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
-        this.attitudeLaw = lofAligned;
+        this.attitudeLaw = attitudeLaw;
         computeMeanParameters(osculating);
+
+    }
+
+    /** Create a new instance.
+     * <p>This constructor allows to create a propagator from orbit, without . 
+     * Mass is given an arbitrary value (1000 kg) and attitude law is set to an 
+     * default inertial {@link Frame J2000} aligned law.</p>
+     * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
+     * are related to both the normalized coefficients
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *  and the J<sub>n</sub> one as follows:</p>
+     * <pre>
+     *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup><span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *   C<sub>n,0</sub> = -J<sub>n</sub>
+     * </pre>
+     * @param initialOrbit initial orbit
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @exception PropagationException if the mean parameters cannot be computed
+     */
+    public EcksteinHechlerPropagator(final Orbit initialOrbit,
+                                     final double referenceRadius, final double mu,
+                                     final double c20, final double c30, final double c40,
+                                     final double c50, final double c60)
+        throws PropagationException, OrekitException {
+
+        this(initialOrbit, new InertialLaw(new Rotation(Vector3D.plusK, 0.)),
+             referenceRadius, mu, c20, c30, c40, c50, c60);
 
     }
 

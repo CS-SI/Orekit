@@ -1,11 +1,13 @@
 package fr.cs.orekit.propagation.analytical;
 
-import org.apache.commons.math.geometry.RotationOrder;
+import org.apache.commons.math.geometry.Rotation;
+import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.orekit.attitudes.AttitudeLaw;
-import fr.cs.orekit.attitudes.LofOffset;
+import fr.cs.orekit.attitudes.InertialLaw;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
+import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.orbits.EquinoctialOrbit;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.propagation.Propagator;
@@ -37,24 +39,54 @@ public class KeplerianPropagator implements Propagator {
     private double n;
 
     /** Build a new instance.
+     * <p>This constructor allows to create a propagator from spacecraft state 
+     * and a specified attitude law.</p>
      * @param initialState initial state
-     * @param mu central acceleration coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param attitudeLaw attitude law
      */
-    public KeplerianPropagator(final SpacecraftState initialState) {
+    public KeplerianPropagator(final SpacecraftState initialState, 
+                               final AttitudeLaw attitudeLaw) {
         this.initialDate = initialState.getDate();
         this.initialParameters = new EquinoctialOrbit(initialState.getOrbit());
         this.mass = initialState.getMass();
         this.n = Math.sqrt(initialState.getOrbit().getMu() / initialParameters.getA()) / initialParameters.getA();
-        final AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
-        this.attitudeLaw = lofAligned;
+        this.attitudeLaw = attitudeLaw;
+    }
+
+    /** Build a new instance.
+     * <p>This constructor allows to create a propagator from spacecraft state. 
+     * Attitude law is set to a default inertial {@link Frame J2000} aligned law.</p>
+     * @param initialState initial state
+     */
+    public KeplerianPropagator(final SpacecraftState initialState) {
+        this(initialState, new InertialLaw(new Rotation(Vector3D.plusK, 0.)));
+    }
+
+    /** Build a new instance.
+     * <p>This constructor allows to create a propagator from orbit only, 
+     *  without spacecraft state. Mass is given an arbitrary value (1000 kg).
+     *  Attitude law is the one specified.</p>
+     * @param initialOrbit initial orbit
+     * @param attitudeLaw attitude law
+     */
+    public KeplerianPropagator(final Orbit initialOrbit, final AttitudeLaw attitudeLaw) 
+        throws PropagationException, OrekitException {
+        
+        // create spacecraft state
+        SpacecraftState initialState = new SpacecraftState(initialOrbit);
+        
+        this.initialDate = initialState.getDate();
+        this.initialParameters = new EquinoctialOrbit(initialState.getOrbit());
+        this.mass = initialState.getMass();
+        this.n = Math.sqrt(initialState.getOrbit().getMu() / initialParameters.getA()) / initialParameters.getA();
+        this.attitudeLaw = attitudeLaw;
     }
 
     /** Build a new instance.
      * <p>This constructor allows to create a propagator from orbit only. 
      * Mass is given an arbitrary value (1000 kg) and attitude law is set to
-     * a default perfectly {@link LofOffset LOF-aligned} law.</p>
+     * a default inertial {@link Frame J2000} aligned law.</p>
      * @param initialOrbit initial orbit
-     * @param mu central acceleration coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
     public KeplerianPropagator(final Orbit initialOrbit) 
         throws PropagationException, OrekitException {
@@ -66,8 +98,10 @@ public class KeplerianPropagator implements Propagator {
         this.initialParameters = new EquinoctialOrbit(initialState.getOrbit());
         this.mass = initialState.getMass();
         this.n = Math.sqrt(initialState.getOrbit().getMu() / initialParameters.getA()) / initialParameters.getA();
-        final AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
-        this.attitudeLaw = lofAligned;
+        // final AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
+        // this.attitudeLaw = lofAligned;
+        final AttitudeLaw inertialLaw = new InertialLaw(new Rotation(Vector3D.plusK, 0.));
+        this.attitudeLaw = inertialLaw;
     }
 
     /** {@inheritDoc} */
