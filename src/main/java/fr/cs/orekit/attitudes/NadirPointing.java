@@ -62,7 +62,7 @@ public class NadirPointing extends GroundPointing {
             new GeodeticPoint(gpSat.getLongitude(), gpSat.getLatitude(), 0.0);
 
         // Return target = this intersection point, with null velocity
-        return new PVCoordinates(shape.transform(gpGround), Vector3D.zero);
+        return new PVCoordinates(shape.transform(gpGround), Vector3D.ZERO);
     }
 
 }

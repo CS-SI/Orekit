@@ -140,10 +140,10 @@ public class CircularOrbit
 
         // compute inclination
         final Vector3D momentum = Vector3D.crossProduct(pvP, pvV);
-        i = Vector3D.angle(momentum, Vector3D.plusK);
+        i = Vector3D.angle(momentum, Vector3D.PLUS_K);
 
         // compute right ascension of ascending node
-        final Vector3D node     = Vector3D.crossProduct(Vector3D.plusK, momentum);
+        final Vector3D node     = Vector3D.crossProduct(Vector3D.PLUS_K, momentum);
         final double   n2       = Vector3D.dotProduct(node, node);
         // the following comparison with 0 IS REALLY numerically justified and stable
         raan = (n2 == 0) ? 0 : Math.atan2(node.getY(), node.getX());

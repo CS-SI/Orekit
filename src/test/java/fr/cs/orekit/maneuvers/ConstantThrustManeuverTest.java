@@ -36,7 +36,7 @@ public class ConstantThrustManeuverTest extends TestCase {
 
     private CircularOrbit dummyOrbit(AbsoluteDate date)
     {
-        return new CircularOrbit(new PVCoordinates(Vector3D.plusI, Vector3D.plusJ),
+        return new CircularOrbit(new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_J),
                              Frame.getJ2000(), date, mu);
     }
 
@@ -45,7 +45,7 @@ public class ConstantThrustManeuverTest extends TestCase {
             new ConstantThrustManeuver(new AbsoluteDate(new ChunkedDate(2004, 01, 01),
                                                         new ChunkedTime(23, 30, 00.000),
                                                         UTCScale.getInstance()),
-                                       10.0, 400.0, 300.0, Vector3D.plusK, Integer.MAX_VALUE);
+                                       10.0, 400.0, 300.0, Vector3D.PLUS_K, Integer.MAX_VALUE);
             fail("an exception should have been thrown");
         } catch (IllegalArgumentException iae) {
             // expected behavior
@@ -59,7 +59,7 @@ public class ConstantThrustManeuverTest extends TestCase {
                                              new ChunkedTime(23, 30, 00.000),
                                              UTCScale.getInstance());
         ConstantThrustManeuver maneuver =
-            new ConstantThrustManeuver(date, 10.0, 400.0, 300.0, Vector3D.plusK,
+            new ConstantThrustManeuver(date, 10.0, 400.0, 300.0, Vector3D.PLUS_K,
                                        ConstantThrustManeuver.INERTIAL);
         OrekitSwitchingFunction[] switches = maneuver.getSwitchingFunctions();
 
@@ -78,7 +78,7 @@ public class ConstantThrustManeuverTest extends TestCase {
                                              new ChunkedTime(23, 30, 00.000),
                                              UTCScale.getInstance());
         ConstantThrustManeuver maneuver =
-            new ConstantThrustManeuver(date, -10.0, 400.0, 300.0, Vector3D.plusK,
+            new ConstantThrustManeuver(date, -10.0, 400.0, 300.0, Vector3D.PLUS_K,
                                        ConstantThrustManeuver.INERTIAL);
         OrekitSwitchingFunction[] switches = maneuver.getSwitchingFunctions();
 

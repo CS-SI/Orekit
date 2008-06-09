@@ -24,8 +24,8 @@ public class TransformTest extends TestCase {
 
     public void testSimpleComposition() {
         Transform transform =
-            new Transform(new Transform(new Rotation(Vector3D.plusK, 0.5 * Math.PI)),
-                          new Transform(Vector3D.plusI));
+            new Transform(new Transform(new Rotation(Vector3D.PLUS_K, 0.5 * Math.PI)),
+                          new Transform(Vector3D.PLUS_I));
         Vector3D u = transform.transformPosition(new Vector3D(1.0, 1.0, 1.0));
         Vector3D v = new Vector3D(0.0, 1.0, 1.0);
         assertEquals(0, u.subtract(v).getNorm(), 1.0e-15);
@@ -39,7 +39,7 @@ public class TransformTest extends TestCase {
             // build a complex transform by compositing primitive ones
             int n = random.nextInt(20);
             Transform[] transforms = new Transform[n];
-            Transform combined = new Transform();
+            Transform combined = Transform.IDENTITY;
             for (int k = 0; k < n; ++k) {
                 transforms[k] = random.nextBoolean()
                 ? new Transform(randomVector(random))
@@ -73,7 +73,7 @@ public class TransformTest extends TestCase {
         Random random = new Random(0x9f82ba2b2c98dac5l);
         for (int i = 0; i < 20; ++i) {
             int n = random.nextInt(20);
-            Transform combined = new Transform();
+            Transform combined = Transform.IDENTITY;
             for (int k = 0; k < n; ++k) {
                 Transform t = random.nextBoolean()
                 ? new Transform(randomVector(random), randomVector(random))
@@ -106,11 +106,11 @@ public class TransformTest extends TestCase {
 
     public void testRoughTransPV() {
 
-        PVCoordinates pointP1 = new PVCoordinates(Vector3D.plusI, Vector3D.plusI);
+        PVCoordinates pointP1 = new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_I);
 
         // translation transform test
         PVCoordinates pointP2 = new PVCoordinates(new Vector3D(0, 0, 0), new Vector3D(0, 0, 0));
-        Transform R1toR2 = new Transform(Vector3D.minusI, Vector3D.minusI);
+        Transform R1toR2 = new Transform(Vector3D.MINUS_I, Vector3D.MINUS_I);
         PVCoordinates result1 = R1toR2.transformPVCoordinates(pointP1);
         checkVectors(pointP2.getPosition(), result1.getPosition());
         checkVectors(pointP2.getVelocity(), result1.getVelocity());
@@ -122,8 +122,8 @@ public class TransformTest extends TestCase {
         checkVectors(pointP1.getVelocity(), invResult1.getVelocity());
 
         // rotation transform test
-        PVCoordinates pointP3 = new PVCoordinates(Vector3D.plusJ, new Vector3D(-2, 1, 0));
-        Rotation R = new Rotation(Vector3D.plusK, Math.PI/2);
+        PVCoordinates pointP3 = new PVCoordinates(Vector3D.PLUS_J, new Vector3D(-2, 1, 0));
+        Rotation R = new Rotation(Vector3D.PLUS_K, Math.PI/2);
         Transform R1toR3 = new Transform(R, new Vector3D(0, 0, -2));
         PVCoordinates result2 = R1toR3.transformPVCoordinates(pointP1);
         checkVectors(pointP3.getPosition(), result2.getPosition());

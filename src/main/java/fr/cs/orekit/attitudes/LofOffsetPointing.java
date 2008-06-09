@@ -102,7 +102,7 @@ public class LofOffsetPointing extends GroundPointing {
             throw new OrekitException("attitude pointing law misses the Earth", new Object[0]);
         }
 
-        return new PVCoordinates(shape.transform(gpGround), Vector3D.zero);
+        return new PVCoordinates(shape.transform(gpGround), Vector3D.ZERO);
     }
 
 

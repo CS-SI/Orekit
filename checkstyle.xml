@@ -19,6 +19,10 @@
             <property name="format" value="System\.out\.println"/>
             <property name="message" value="forbidden print to standard output"/>
         </module>
+        <module name="Header">
+          <property name="headerFile" value="license-header.txt" />
+          <property name="ignoreLines" value="1"/>
+        </module>
         <module name="HiddenField">
             <property name="ignoreConstructorParameter" value="true"/>
             <property name="ignoreSetter" value="true"/>
@@ -55,6 +59,7 @@
         <module name="UnnecessaryParentheses"/>
         <module name="UnusedImports"/>
         <module name="VisibilityModifier"/>
+        <module name="WhitespaceAfter"/>
         <module name="WhitespaceAround">
             <property name="tokens"
                       value="ASSIGN, BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BSR, BSR_ASSIGN,

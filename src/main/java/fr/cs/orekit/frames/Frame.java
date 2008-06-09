@@ -142,7 +142,7 @@ public class Frame implements Serializable {
      */
     private Frame(final String name) {
         parent    = null;
-        transform = new Transform();
+        transform = Transform.IDENTITY;
         commons   = new HashMap();
         this.name = name;
     }
@@ -220,11 +220,16 @@ public class Frame implements Serializable {
     public Transform getTransformTo(final Frame destination, final AbsoluteDate date)
         throws OrekitException {
 
+        if (this == destination) {
+            // shortcut for special case that may be frequent
+            return Transform.IDENTITY;
+        }
+
         // common ancestor to both frames in the frames tree
         final Frame common = findCommon(this, destination);
 
         // transform from common to instance
-        Transform commonToInstance = new Transform();
+        Transform commonToInstance = Transform.IDENTITY;
         for (Frame frame = this; frame != common; frame = frame.parent) {
             frame.updateFrame(date);
             commonToInstance =
@@ -232,7 +237,7 @@ public class Frame implements Serializable {
         }
 
         // transform from destination up to common
-        Transform commonToDestination = new Transform();
+        Transform commonToDestination = Transform.IDENTITY;
         for (Frame frame = destination; frame != common; frame = frame.parent) {
             frame.updateFrame(date);
             commonToDestination =

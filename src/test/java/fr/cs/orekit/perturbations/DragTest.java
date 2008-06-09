@@ -22,7 +22,7 @@ public class DragTest extends TestCase {
     }
 
     public void testExpAtmosphere() throws OrekitException {
-        Vector3D posInJ2000 = new Vector3D(10000,Vector3D.plusI);
+        Vector3D posInJ2000 = new Vector3D(10000,Vector3D.PLUS_I);
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, date);
         SimpleExponentialAtmosphere atm =
@@ -31,7 +31,7 @@ public class DragTest extends TestCase {
         Vector3D vel = atm.getVelocity(date, posInJ2000, Frame.getJ2000());
 
         Transform toBody = Frame.getJ2000().getTransformTo(itrf, date);
-        Vector3D test = Vector3D.crossProduct(toBody.getRotAxis(),posInJ2000);
+        Vector3D test = Vector3D.crossProduct(toBody.getRotationRate(),posInJ2000);
         test = test.subtract(vel);
         assertEquals(0, test.getNorm(), 2.9e-5);
 

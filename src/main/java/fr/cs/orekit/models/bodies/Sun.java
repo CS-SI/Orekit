@@ -34,7 +34,7 @@ public class Sun extends ThirdBody {
                 Frame.getReferenceFrame(Frame.VEIS1950, REFERENCE_DATE).getTransformTo(Frame.getJ2000(), REFERENCE_DATE);
         } catch (OrekitException e) {
             // should not happen
-            t = new Transform();
+            t = Transform.IDENTITY;
         }
         transform = t;
     }

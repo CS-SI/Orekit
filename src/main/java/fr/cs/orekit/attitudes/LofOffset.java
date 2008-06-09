@@ -64,8 +64,8 @@ public class LofOffset implements AttitudeLaw {
         final double angularVelocity =
             Vector3D.dotProduct(momentum, momentum) / Vector3D.dotProduct(p, p);
 
-        final Rotation lofRot = new Rotation(p, momentum, Vector3D.minusK, Vector3D.minusJ);
-        final Vector3D spinAxis = new Vector3D(angularVelocity, Vector3D.minusJ);
+        final Rotation lofRot = new Rotation(p, momentum, Vector3D.MINUS_K, Vector3D.MINUS_J);
+        final Vector3D spinAxis = new Vector3D(angularVelocity, Vector3D.MINUS_J);
 
         // Compose with offset rotation
         return new Attitude(frame, offset.applyTo(lofRot), offset.applyTo(spinAxis));

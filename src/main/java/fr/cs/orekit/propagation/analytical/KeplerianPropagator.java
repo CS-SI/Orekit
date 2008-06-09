@@ -59,7 +59,7 @@ public class KeplerianPropagator implements Propagator {
      * @param initialState initial state
      */
     public KeplerianPropagator(final SpacecraftState initialState) {
-        this(initialState, new InertialLaw(new Rotation(Vector3D.plusK, 0.)));
+        this(initialState, new InertialLaw(new Rotation(Vector3D.PLUS_K, 0.)));
     }
 
     /** Build a new instance.
@@ -100,7 +100,7 @@ public class KeplerianPropagator implements Propagator {
         this.n = Math.sqrt(initialState.getOrbit().getMu() / initialParameters.getA()) / initialParameters.getA();
         // final AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
         // this.attitudeLaw = lofAligned;
-        final AttitudeLaw inertialLaw = new InertialLaw(new Rotation(Vector3D.plusK, 0.));
+        final AttitudeLaw inertialLaw = new InertialLaw(new Rotation(Vector3D.PLUS_K, 0.));
         this.attitudeLaw = inertialLaw;
     }
 

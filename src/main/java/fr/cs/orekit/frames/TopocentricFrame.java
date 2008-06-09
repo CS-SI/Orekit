@@ -39,8 +39,8 @@ public class TopocentricFrame extends Frame {
         // 2. Rotate axes
         final Vector3D Xtopo = getEast();
         final Vector3D Ztopo = getZenith();
-        final Transform rotation = new Transform(new Rotation(Xtopo, Ztopo, Vector3D.plusI, Vector3D.plusK),
-                                                 Vector3D.zero);
+        final Transform rotation = new Transform(new Rotation(Xtopo, Ztopo, Vector3D.PLUS_I, Vector3D.PLUS_K),
+                                                 Vector3D.ZERO);
 
         // Compose both transformations
         setTransform(new Transform(translation, rotation));

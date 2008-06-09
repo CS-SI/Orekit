@@ -54,9 +54,9 @@ public class DrozinerAttractionModelTest extends TestCase {
                                              new ChunkedTime(13, 59, 27.816),
                                              UTCScale.getInstance());
         Transform itrfToJ2000  = itrf2000.getTransformTo(Frame.getJ2000(), date);
-        Vector3D pole          = itrfToJ2000.transformVector(Vector3D.plusK);
+        Vector3D pole          = itrfToJ2000.transformVector(Vector3D.PLUS_K);
         Frame poleAligned      = new Frame(Frame.getJ2000(),
-                                           new Transform(new Rotation(pole, Vector3D.plusK)),
+                                           new Transform(new Rotation(pole, Vector3D.PLUS_K)),
         "pole aligned");
 
         double i     = Math.toRadians(98.7);
@@ -98,7 +98,7 @@ public class DrozinerAttractionModelTest extends TestCase {
             try {
                 sunPos = sun.getPosition(current , Frame.getJ2000());
             } catch (OrekitException e) {
-                sunPos = new Vector3D();
+                sunPos = Vector3D.ZERO;
                 System.out.println("exception during sun.getPosition");
                 e.printStackTrace();
             }
@@ -129,9 +129,9 @@ public class DrozinerAttractionModelTest extends TestCase {
         Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
 
         Transform itrfToJ2000  = itrf2000.getTransformTo(Frame.getJ2000(), date);
-        Vector3D pole          = itrfToJ2000.transformVector(Vector3D.plusK);
+        Vector3D pole          = itrfToJ2000.transformVector(Vector3D.PLUS_K);
         Frame poleAligned      = new Frame(Frame.getJ2000(),
-                                           new Transform(new Rotation(pole, Vector3D.plusK)),
+                                           new Transform(new Rotation(pole, Vector3D.PLUS_K)),
         "pole aligned");
 
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),

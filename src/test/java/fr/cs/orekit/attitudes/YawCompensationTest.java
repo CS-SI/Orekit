@@ -52,7 +52,7 @@ public class YawCompensationTest extends TestCase {
         NadirPointing nadirLaw = new NadirPointing(earthShape);
  
         // Target pointing attitude law with yaw compensation
-        YawCompensation yawCompensLaw = new YawCompensation(nadirLaw, earthShape);
+        YawCompensation yawCompensLaw = new YawCompensation(nadirLaw);
        
         //  Check target
         // **************
@@ -96,7 +96,7 @@ public class YawCompensationTest extends TestCase {
         NadirPointing nadirLaw = new NadirPointing(earthShape);
  
         // Target pointing attitude law with yaw compensation
-        YawCompensation yawCompensLaw = new YawCompensation(nadirLaw, earthShape);
+        YawCompensation yawCompensLaw = new YawCompensation(nadirLaw);
 
         
         // Extrapolation over one orbital period (sec)
@@ -184,7 +184,7 @@ public class YawCompensationTest extends TestCase {
         NadirPointing nadirLaw = new NadirPointing(earthShape);
  
         // Target pointing attitude law with yaw compensation
-        YawCompensation yawCompensLaw = new YawCompensation(nadirLaw, earthShape);
+        YawCompensation yawCompensLaw = new YawCompensation(nadirLaw);
 
         // Get attitude rotations from non yaw compensated / yaw compensated laws
         Rotation rotNoYaw = nadirLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();

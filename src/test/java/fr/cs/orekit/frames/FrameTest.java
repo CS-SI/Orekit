@@ -77,9 +77,9 @@ public class FrameTest extends TestCase {
 
     public void testVeis1950() throws OrekitException {
         Transform t = Frame.getReferenceFrame(Frame.VEIS1950, new AbsoluteDate()).getTransformTo(Frame.getJ2000(), new AbsoluteDate());
-        Vector3D i50    = t.transformVector(Vector3D.plusI);
-        Vector3D j50    = t.transformVector(Vector3D.plusJ);
-        Vector3D k50    = t.transformVector(Vector3D.plusK);
+        Vector3D i50    = t.transformVector(Vector3D.PLUS_I);
+        Vector3D j50    = t.transformVector(Vector3D.PLUS_J);
+        Vector3D k50    = t.transformVector(Vector3D.PLUS_K);
         Vector3D i50Ref = new Vector3D( 0.9999256489473456,
                                         0.011181451214217871,
                                         4.8653597990872734e-3);
@@ -193,7 +193,7 @@ public class FrameTest extends TestCase {
     }
 
     private Transform randomTransform(Random random) {
-        Transform transform = new Transform();
+        Transform transform = Transform.IDENTITY;
         for (int i = random.nextInt(10); i > 0; --i) {
             if (random.nextBoolean()) {
                 Vector3D u = new Vector3D(random.nextDouble() * 1000.0,

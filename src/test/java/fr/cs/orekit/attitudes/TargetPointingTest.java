@@ -64,7 +64,7 @@ public class TargetPointingTest extends TestCase {
                 
         // Target definition as a geodetic point AND as a position/velocity vector
         GeodeticPoint geoTargetItrf2000B = new GeodeticPoint(Math.toRadians(1.26), Math.toRadians(43.36), 600.);
-        PVCoordinates pvTargetItrf2000B = new PVCoordinates(earthShape.transform(geoTargetItrf2000B), Vector3D.zero);
+        PVCoordinates pvTargetItrf2000B = new PVCoordinates(earthShape.transform(geoTargetItrf2000B), Vector3D.ZERO);
             
         // Attitude law definition from geodetic point target 
         TargetPointing geoTargetAttitudeLaw = new TargetPointing(geoTargetItrf2000B, earthShape);
@@ -230,7 +230,7 @@ public class TargetPointingTest extends TestCase {
         Rotation rotSatJ2000 = targetAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
         
         // Transform Z axis from satellite frame to J2000 
-        Vector3D zSatJ2000 = rotSatJ2000.applyInverseTo(Vector3D.plusK);
+        Vector3D zSatJ2000 = rotSatJ2000.applyInverseTo(Vector3D.PLUS_K);
         
         // Line containing satellite point and following pointing direction
         Line pointingLine = new Line(j2000ToItrf.transformPosition(pvSatJ2000.getPosition()), j2000ToItrf.transformVector(zSatJ2000));
@@ -280,7 +280,7 @@ public class TargetPointingTest extends TestCase {
         // ******************************************************************** 
         GeodeticPoint geoTarget = new GeodeticPoint(geoNadirObserved.getLongitude() - Math.toRadians(5),
                                                     geoNadirObserved.getLatitude(), geoNadirObserved.getAltitude());
-        PVCoordinates pvTargetItrf2000B = new PVCoordinates(earthShape.transform(geoTarget), Vector3D.zero);
+        PVCoordinates pvTargetItrf2000B = new PVCoordinates(earthShape.transform(geoTarget), Vector3D.ZERO);
         TargetPointing targetLaw = new TargetPointing(frameItrf2000B, pvTargetItrf2000B);
         
         // Get attitude rotation 

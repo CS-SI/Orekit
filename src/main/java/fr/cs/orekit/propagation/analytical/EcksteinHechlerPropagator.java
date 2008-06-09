@@ -141,7 +141,7 @@ public class EcksteinHechlerPropagator implements Propagator {
                                      final double c50, final double c60)
         throws PropagationException {
 
-        this(initialState, new InertialLaw(new Rotation(Vector3D.plusK, 0.)),
+        this(initialState, new InertialLaw(new Rotation(Vector3D.PLUS_K, 0.)),
              referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
@@ -227,7 +227,7 @@ public class EcksteinHechlerPropagator implements Propagator {
                                      final double c50, final double c60)
         throws PropagationException, OrekitException {
 
-        this(initialOrbit, new InertialLaw(new Rotation(Vector3D.plusK, 0.)),
+        this(initialOrbit, new InertialLaw(new Rotation(Vector3D.PLUS_K, 0.)),
              referenceRadius, mu, c20, c30, c40, c50, c60);
 
     }

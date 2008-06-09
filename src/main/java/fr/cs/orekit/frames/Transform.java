@@ -19,6 +19,8 @@ import fr.cs.orekit.utils.PVCoordinates;
  * coordinates of a vector expressed in the old frame to obtain the
  * same vector expressed in the new frame. <p>
  *
+ * <p>Instances of this class are guaranteed to be immutable.</p>
+ *
  *  <h5> Example </h5>
  *
  * <pre>
@@ -26,15 +28,15 @@ import fr.cs.orekit.utils.PVCoordinates;
  * 1 ) Example of translation from R<sub>A</sub> to R<sub>B</sub>:
  * We want to transform the {@link PVCoordinates} PV<sub>A</sub> to PV<sub>B</sub>.
  *
- * With :  PV<sub>A</sub> = ( {1,0,0} , {1,0,0} );
- * and  :  PV<sub>B</sub> = ( {0,0,0} , {0,0,0} );
+ * With :  PV<sub>A</sub> = ({1, 0, 0} , {1, 0, 0});
+ * and  :  PV<sub>B</sub> = ({0, 0, 0} , {0, 0, 0});
  *
  * The transform to apply then is defined as follows :
  *
  * Vector3D translation = new Vector3D(-1,0,0);
  * Vector3D velocity = new Vector3D(-1,0,0);
  *
- * Transform RAtoRB = new Transform(translation , Velocity);
+ * Transform RAtoRB = new Transform(translation, Velocity);
  *
  * PV<sub>B</sub> = R1toR2.transformPVCoordinates(PV<sub>A</sub>);
  *
@@ -42,15 +44,15 @@ import fr.cs.orekit.utils.PVCoordinates;
  * 2 ) Example of rotation from R<sub>A</sub> to R<sub>B</sub>:
  * We want to transform the {@link PVCoordinates} PV<sub>A</sub> to PV<sub>B</sub>.
  *
- * With :  PV<sub>A</sub> = ( {1,0,0} , {1,0,0} );
- * and  :  PV<sub>B</sub> = ( {0,1,0} , {-2,1,0} );
+ * With :  PV<sub>A</sub> = ({1, 0, 0}, {1, 0, 0});
+ * and  :  PV<sub>B</sub> = ({0, 1, 0}, {-2, 1, 0});
  *
  * The transform to apply then is defined as follows :
  *
- * Rotation rotation = new Roation(new Vector3D(0,0,1), Math.PI/2);
- * Vector3D rotationRate = new Vector3D(0, 0, -2));
+ * Rotation rotation = new Rotation(Vector3D.PLUS_K, Math.PI / 2);
+ * Vector3D rotationRate = new Vector3D(0, 0, -2);
  *
- * Transform R1toR2 = new Transform(rotation , rotationRate);
+ * Transform R1toR2 = new Transform(rotation, rotationRate);
  *
  * PV<sub>B</sub> = R1toR2.transformPVCoordinates(PV<sub>A</sub>);
  *
@@ -61,20 +63,24 @@ import fr.cs.orekit.utils.PVCoordinates;
  */
 public class Transform implements Serializable {
 
-    /** serializable UID. */
-    private static final long serialVersionUID = -989814451927839248L;
+    /** Identity transform. */
+    public static final Transform IDENTITY =
+        new Transform(Vector3D.ZERO, Vector3D.ZERO, Rotation.IDENTITY, Vector3D.ZERO);
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = -7253696290377343283L;
 
     /** Global translation. */
-    private Vector3D translation;
+    private final Vector3D translation;
 
     /** First time derivative of the translation. */
-    private Vector3D velocity;
+    private final Vector3D velocity;
 
     /** Global rotation. */
-    private Rotation rotation;
+    private final Rotation rotation;
 
     /** First time derivative of the rotation (norm representing angular rate). */
-    private Vector3D rotationRate;
+    private final Vector3D rotationRate;
 
     /** Build a transform from its primitive operations.
      * @param translation first primitive operation to apply
@@ -90,19 +96,13 @@ public class Transform implements Serializable {
         this.rotationRate = rotationRate;
     }
 
-    /** Build an identity transform.
-     */
-    public Transform() {
-        this(new Vector3D(), new Vector3D(), new Rotation(), new Vector3D());
-    }
-
     /** Build a translation transform.
      * @param translation translation to apply (i.e. coordinates of
      * the transformed origin, or coordinates of the origin of the
      * old frame in the new frame)
      */
     public Transform(final Vector3D translation) {
-        this(translation, new Vector3D(), new Rotation(), new Vector3D());
+        this(translation, Vector3D.ZERO, Rotation.IDENTITY, Vector3D.ZERO);
     }
 
     /** Build a rotation transform.
@@ -111,7 +111,7 @@ public class Transform implements Serializable {
      * same vector expressed in the new frame )
      */
     public Transform(final Rotation rotation) {
-        this(new Vector3D(), new Vector3D(), rotation, new Vector3D());
+        this(Vector3D.ZERO, Vector3D.ZERO, rotation, Vector3D.ZERO);
     }
 
     /** Build a translation transform, with its first time derivative.
@@ -122,7 +122,7 @@ public class Transform implements Serializable {
      * of the old frame velocity in the new frame)
      */
     public Transform(final Vector3D translation, final Vector3D velocity) {
-        this(translation, velocity, new Rotation(), new Vector3D());
+        this(translation, velocity, Rotation.IDENTITY, Vector3D.ZERO);
     }
 
     /** Build a rotation transform.
@@ -133,7 +133,7 @@ public class Transform implements Serializable {
      * expressed in the new frame. (norm representing angular rate)
      */
     public Transform(final Rotation rotation, final Vector3D rotationRate) {
-        this(new Vector3D(), new Vector3D(), rotation, rotationRate);
+        this(Vector3D.ZERO, Vector3D.ZERO, rotation, rotationRate);
     }
 
     /** Build a transform by combining two existing ones.
@@ -266,7 +266,7 @@ public class Transform implements Serializable {
      * <p>The norm represents the angular rate.</p>
      * @return First time derivative of the rotation
      */
-    public Vector3D getRotAxis() {
+    public Vector3D getRotationRate() {
         return rotationRate;
     }
 

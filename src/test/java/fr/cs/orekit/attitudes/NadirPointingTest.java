@@ -203,7 +203,7 @@ public class NadirPointingTest extends TestCase {
         Rotation rotSatJ2000 = nadirAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
                 
         // Get satellite Z axis in J2000 frame
-        Vector3D zSatJ2000 = rotSatJ2000.applyInverseTo(Vector3D.plusK);
+        Vector3D zSatJ2000 = rotSatJ2000.applyInverseTo(Vector3D.PLUS_K);
         Vector3D zSatItrf = Frame.getJ2000().getTransformTo(frameItrf2000B, date).transformVector(zSatJ2000);
         
         // Check that satellite Z axis is colinear to local vertical axis

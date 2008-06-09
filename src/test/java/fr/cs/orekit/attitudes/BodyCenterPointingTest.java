@@ -73,7 +73,7 @@ public class BodyCenterPointingTest extends TestCase {
         Rotation rotSatJ2000 = earthCenterAttitudeLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
         
         // Transform Z axis from satellite frame to J2000 
-        Vector3D zSatJ2000 = rotSatJ2000.applyInverseTo(Vector3D.plusK);
+        Vector3D zSatJ2000 = rotSatJ2000.applyInverseTo(Vector3D.PLUS_K);
         
         // Transform Z axis from J2000 to ITRF2000B
         Vector3D zSatItrf2000B = j2000ToItrf.transformPosition(zSatJ2000);
@@ -85,7 +85,7 @@ public class BodyCenterPointingTest extends TestCase {
         Line pointingLine = new Line(pvSatItrf2000B.getPosition(), zSatItrf2000B);
         
         // Check that the line contains earth center (distance from line to point less than 1.e-8 m)
-        double distance = pointingLine.distance(Vector3D.zero);
+        double distance = pointingLine.distance(Vector3D.ZERO);
         
         assertTrue(distance < 1.e-8);
     }

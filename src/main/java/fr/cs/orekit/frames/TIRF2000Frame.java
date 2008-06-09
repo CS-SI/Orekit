@@ -75,12 +75,12 @@ class TIRF2000Frame extends Frame {
             era -= TWO_PI * Math.floor((era + Math.PI) / TWO_PI);
 
             // simple rotation around the Celestial Intermediate Pole
-            final Rotation rRot = new Rotation(Vector3D.plusK, era);
+            final Rotation rRot = new Rotation(Vector3D.PLUS_K, era);
 
             final Rotation combined = rRot.revert();
 
             // set up the transform from parent GCRS (J2000) to ITRF
-            final Vector3D rotationRate = new Vector3D((ERA_1A + ERA_1B) / 86400, Vector3D.plusK);
+            final Vector3D rotationRate = new Vector3D((ERA_1A + ERA_1B) / 86400, Vector3D.PLUS_K);
             setTransform(new Transform(combined , rotationRate));
             cachedDate = date;
         }

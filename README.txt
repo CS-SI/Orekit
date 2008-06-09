@@ -1,8 +1,9 @@
-Orekit (ORbit Extrapolation KIT) is a free CS java library
+Orekit (ORbit Extrapolation KIT) is a free java library
 providing basic space dynamics objects and services.
 
-It is distributed under the Apache License version 2.0, which you
-can find in the LICENSE.txt file.
+It is licensed by CS Communication & Systèmes under the
+Apache License Version 2.0. A copy of this license is
+provided in the LICENSE.txt file.
 
 The BUILDING.txt file explains how the library can be built from sources.
 

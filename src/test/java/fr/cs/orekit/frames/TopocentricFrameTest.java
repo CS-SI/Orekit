@@ -41,9 +41,9 @@ public class TopocentricFrameTest extends TestCase {
         final TopocentricFrame topoFrame = new TopocentricFrame(earthSpheric, point, "zero");
         
         // Check that frame directions are aligned
-        final double xDiff = Vector3D.dotProduct(topoFrame.getEast(), Vector3D.plusJ);
-        final double yDiff = Vector3D.dotProduct(topoFrame.getNorth(), Vector3D.plusK);
-        final double zDiff = Vector3D.dotProduct(topoFrame.getZenith(), Vector3D.plusI);
+        final double xDiff = Vector3D.dotProduct(topoFrame.getEast(), Vector3D.PLUS_J);
+        final double yDiff = Vector3D.dotProduct(topoFrame.getNorth(), Vector3D.PLUS_K);
+        final double zDiff = Vector3D.dotProduct(topoFrame.getZenith(), Vector3D.PLUS_I);
         assertEquals(1., xDiff, Utils.epsilonTest);
         assertEquals(1., yDiff, Utils.epsilonTest);
         assertEquals(1., zDiff, Utils.epsilonTest);
@@ -56,9 +56,9 @@ public class TopocentricFrameTest extends TestCase {
         final TopocentricFrame topoFrame = new TopocentricFrame(earthSpheric, point, "north pole");
         
         // Check that frame directions are aligned
-        final double xDiff = Vector3D.dotProduct(topoFrame.getEast(), Vector3D.plusJ);
-        final double yDiff = Vector3D.dotProduct(topoFrame.getNorth(), Vector3D.plusI.negate());
-        final double zDiff = Vector3D.dotProduct(topoFrame.getZenith(), Vector3D.plusK);
+        final double xDiff = Vector3D.dotProduct(topoFrame.getEast(), Vector3D.PLUS_J);
+        final double yDiff = Vector3D.dotProduct(topoFrame.getNorth(), Vector3D.PLUS_I.negate());
+        final double zDiff = Vector3D.dotProduct(topoFrame.getZenith(), Vector3D.PLUS_K);
         assertEquals(1., xDiff, Utils.epsilonTest);
         assertEquals(1., yDiff, Utils.epsilonTest);
         assertEquals(1., zDiff, Utils.epsilonTest);

@@ -12,7 +12,7 @@ import org.apache.commons.math.geometry.Vector3D;
 public class PVCoordinates implements Serializable {
 
     /** Fixed position/velocity at origin (both p and v are zero vectors). */
-    public static final PVCoordinates ZERO = new PVCoordinates(Vector3D.zero, Vector3D.zero);
+    public static final PVCoordinates ZERO = new PVCoordinates(Vector3D.ZERO, Vector3D.ZERO);
 
     /** Serializable UID. */
     private static final long serialVersionUID = 8581359579182947710L;
@@ -27,8 +27,8 @@ public class PVCoordinates implements Serializable {
      * <p> Sets the Coordinates to default : (0 0 0) (0 0 0).
      */
     public PVCoordinates() {
-        position = Vector3D.zero;
-        velocity = Vector3D.zero;
+        position = Vector3D.ZERO;
+        velocity = Vector3D.ZERO;
     }
 
     /** Builds a PVCoordinates couple.

@@ -120,11 +120,11 @@ public class TimeDerivativesEquations implements Serializable {
      */
     protected TimeDerivativesEquations(final EquinoctialOrbit orbit) {
         this.storedParameters = orbit;
-        lofQ = new Vector3D();
-        lofS = new Vector3D();
-        lofT = new Vector3D();
-        lofN = new Vector3D();
-        lofW = new Vector3D();
+        lofQ = Vector3D.ZERO;
+        lofS = Vector3D.ZERO;
+        lofT = Vector3D.ZERO;
+        lofN = Vector3D.ZERO;
+        lofW = Vector3D.ZERO;
         updateOrbitalFrames();
     }
 

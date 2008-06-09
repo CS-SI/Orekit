@@ -19,7 +19,7 @@ public class InertialLaw implements AttitudeLaw {
 
     /** Dummy attitude law, perfectly aligned with the J<sub>2000</sub> frame. */
     public static final InertialLaw J2000_ALIGNED =
-        new InertialLaw(new Rotation());
+        new InertialLaw(Rotation.IDENTITY);
 
     /** Serializable UID. */
     private static final long serialVersionUID = -8661629460150215557L;
@@ -38,7 +38,7 @@ public class InertialLaw implements AttitudeLaw {
     public Attitude getState(AbsoluteDate date, PVCoordinates pv, Frame frame)
         throws OrekitException {
         Transform t = frame.getTransformTo(satelliteFrame, date);
-        return new Attitude(frame, t.getRotation(), t.getRotAxis());
+        return new Attitude(frame, t.getRotation(), t.getRotationRate());
     }
 
 }

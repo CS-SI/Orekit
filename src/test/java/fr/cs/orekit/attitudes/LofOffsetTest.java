@@ -60,7 +60,7 @@ public class LofOffsetTest extends TestCase {
         final Vector3D v = pvSatJ2000.getVelocity();
         final Vector3D momentumJ2000 = Vector3D.crossProduct(p, v);
         final Vector3D momentumLof = lofOffsetRot.applyTo(momentumJ2000);
-        final double cosinus = Math.cos(Vector3D.dotProduct(momentumLof, Vector3D.plusK));
+        final double cosinus = Math.cos(Vector3D.dotProduct(momentumLof, Vector3D.PLUS_K));
         assertEquals(1., cosinus, Utils.epsilonAngle);
         
     }
@@ -130,7 +130,7 @@ public class LofOffsetTest extends TestCase {
         
         // Create a lof offset law from those values
         final LofOffset lofOffsetLaw = new LofOffset(RotationOrder.ZYX, yaw, pitch, roll);
-        final LofOffsetPointing lofOffsetPtLaw = new LofOffsetPointing(earthSpheric, lofOffsetLaw, Vector3D.plusK);
+        final LofOffsetPointing lofOffsetPtLaw = new LofOffsetPointing(earthSpheric, lofOffsetLaw, Vector3D.PLUS_K);
 
         // Check target pointed by this law : shall be the same as defined
         final PVCoordinates pvTargetRes = lofOffsetPtLaw.getTargetInBodyFrame(date, pvSatJ2000, Frame.getJ2000());

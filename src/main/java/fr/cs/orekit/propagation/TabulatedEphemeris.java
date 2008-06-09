@@ -132,18 +132,18 @@ public class TabulatedEphemeris implements BoundedPropagator {
         final Rotation newRot = new Rotation(prevToNext.getRotation().getAxis(),
                                              tp * prevToNext.getRotation().getAngle() / dt);
         Vector3D newInstRotAxis;
-        if (prevToNext.getRotAxis().getNorm() != 0) {
-            newInstRotAxis = new Vector3D(tp * prevToNext.getRotAxis().getNorm() / dt,
-                                          prevToNext.getRotAxis().normalize());
+        if (prevToNext.getRotationRate().getNorm() != 0) {
+            newInstRotAxis = new Vector3D(tp * prevToNext.getRotationRate().getNorm() / dt,
+                                          prevToNext.getRotationRate().normalize());
         } else {
-            newInstRotAxis = new Vector3D();
+            newInstRotAxis = Vector3D.ZERO;
         }
 
         final Transform newTrans =
             new Transform(new Transform(previous.getAttitude().getRotation()),
                           new Transform(newRot, newInstRotAxis));
 
-        return new Attitude(previous.getFrame(), newTrans.getRotation(), newTrans.getRotAxis());
+        return new Attitude(previous.getFrame(), newTrans.getRotation(), newTrans.getRotationRate());
 
     }
 

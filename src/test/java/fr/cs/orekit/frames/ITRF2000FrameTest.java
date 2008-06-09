@@ -33,7 +33,7 @@ public class ITRF2000FrameTest extends TestCase {
         Transform evolution = new Transform(t0.getInverse(), t1);
 
         assertEquals(0.0, evolution.transformPosition(new Vector3D(0,0,0)).getNorm(), 1.0e-10);
-        assertTrue(Vector3D.dotProduct(Vector3D.plusK, evolution.transformVector(new Vector3D(6000,6000,0))) < 0.01);
+        assertTrue(Vector3D.dotProduct(Vector3D.PLUS_K, evolution.transformVector(new Vector3D(6000,6000,0))) < 0.01);
         assertEquals(2 * Math.PI * dt / 86164, Vector3D.angle(
                                                               t0.transformVector(new Vector3D(6000,6000,0)), t1.transformVector(new Vector3D(6000,6000,0))),
                                                               1.0e-9);
@@ -47,20 +47,20 @@ public class ITRF2000FrameTest extends TestCase {
                                              UTCScale.getInstance());
         Frame itrf2000 = Frame.getReferenceFrame(Frame.ITRF2000B, date);
 
-        Vector3D u = itrf2000.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.plusI);
-        assertTrue(Vector3D.angle(u, Vector3D.minusI) < Math.toRadians(2));
+        Vector3D u = itrf2000.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.PLUS_I);
+        assertTrue(Vector3D.angle(u, Vector3D.MINUS_I) < Math.toRadians(2));
 
         date = new AbsoluteDate(date, 6 * 3600);
-        u = itrf2000.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.plusI);
-        assertTrue(Vector3D.angle(u, Vector3D.minusJ) < Math.toRadians(2));
+        u = itrf2000.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.PLUS_I);
+        assertTrue(Vector3D.angle(u, Vector3D.MINUS_J) < Math.toRadians(2));
 
         date = new AbsoluteDate(date, 6 * 3600);
-        u = itrf2000.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.plusI);
-        assertTrue(Vector3D.angle(u, Vector3D.plusI) < Math.toRadians(2));
+        u = itrf2000.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.PLUS_I);
+        assertTrue(Vector3D.angle(u, Vector3D.PLUS_I) < Math.toRadians(2));
 
         date = new AbsoluteDate(date, 6 * 3600);
-        u = itrf2000.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.plusI);
-        assertTrue(Vector3D.angle(u, Vector3D.plusJ) < Math.toRadians(2));
+        u = itrf2000.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.PLUS_I);
+        assertTrue(Vector3D.angle(u, Vector3D.PLUS_J) < Math.toRadians(2));
 
     }
 

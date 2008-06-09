@@ -185,7 +185,7 @@ class IRF2000Frame extends Frame {
             final Rotation combined = qRot.revert();
 
             // set up the transform from parent GCRS (J2000) to ITRF
-            setTransform(new Transform(combined , Vector3D.zero));
+            setTransform(new Transform(combined , Vector3D.ZERO));
             cachedDate = date;
         }
     }
@@ -237,9 +237,9 @@ class IRF2000Frame extends Frame {
         final double r2 = x2 + y2;
         final double e = Math.atan2(y, x);
         final double d = Math.acos(Math.sqrt(1 - r2));
-        final Rotation rpS = new Rotation(Vector3D.plusK, -s);
-        final Rotation rpE = new Rotation(Vector3D.plusK, -e);
-        final Rotation rmD = new Rotation(Vector3D.plusJ, +d);
+        final Rotation rpS = new Rotation(Vector3D.PLUS_K, -s);
+        final Rotation rpE = new Rotation(Vector3D.PLUS_K, -e);
+        final Rotation rmD = new Rotation(Vector3D.PLUS_J, +d);
 
         // combine the 4 rotations (rpE is used twice)
         // IERS conventions (2003), section 5.3, equation 6

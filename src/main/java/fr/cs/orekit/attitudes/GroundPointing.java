@@ -102,14 +102,14 @@ public abstract class GroundPointing implements AttitudeLaw {
         final Vector3D vel = pointing.getVelocity();
 
         // New orekit exception if null position.
-        if (pos.equals(Vector3D.zero)) {
+        if (pos.equals(Vector3D.ZERO)) {
             throw new OrekitException("satellite smashed on its target", new Object[0]);
         }
 
         // Attitude rotation in given frame :
         // line of sight -> z satellite axis,
         // satellite velocity -> x satellite axis.
-        final Rotation rot = new Rotation(pos, pv.getVelocity(), Vector3D.plusK, Vector3D.plusI);
+        final Rotation rot = new Rotation(pos, pv.getVelocity(), Vector3D.PLUS_K, Vector3D.PLUS_I);
 
         // Attitude spin
         final Vector3D spin = new Vector3D(1 / Vector3D.dotProduct(pos, pos),

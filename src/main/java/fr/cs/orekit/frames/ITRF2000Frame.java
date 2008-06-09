@@ -70,9 +70,9 @@ class ITRF2000Frame extends Frame {
             final PoleCorrection nCorr = nutationCorrection(date);
 
             // elementary rotations due to pole motion in terrestrial frame
-            final Rotation r1 = new Rotation(Vector3D.plusI, -(iCorr.getYp() + tCorr.getYp() + nCorr.getYp()));
-            final Rotation r2 = new Rotation(Vector3D.plusJ, -(iCorr.getXp() + tCorr.getXp() + nCorr.getXp()));
-            final Rotation r3 = new Rotation(Vector3D.plusK, S_PRIME_RATE * ttc);
+            final Rotation r1 = new Rotation(Vector3D.PLUS_I, -(iCorr.getYp() + tCorr.getYp() + nCorr.getYp()));
+            final Rotation r2 = new Rotation(Vector3D.PLUS_J, -(iCorr.getXp() + tCorr.getXp() + nCorr.getXp()));
+            final Rotation r3 = new Rotation(Vector3D.PLUS_K, S_PRIME_RATE * ttc);
 
             // complete pole motion in terrestrial frame
             final Rotation wRot = r3.applyTo(r2.applyTo(r1));
@@ -81,7 +81,7 @@ class ITRF2000Frame extends Frame {
             final Rotation combined = wRot.revert();
 
             // set up the transform from parent GCRS (J2000) to ITRF
-            setTransform(new Transform(combined, Vector3D.zero));
+            setTransform(new Transform(combined, Vector3D.ZERO));
             cachedDate = date;
 
         }
