@@ -96,7 +96,7 @@ public class LofOffsetPointing extends GroundPointing {
         final GeodeticPoint gpGround =
             shape.getIntersectionPoint(groundLine, pvBodyFrame.getPosition(),
                                        shape.getBodyFrame(), date);
-        
+
         // Case with no intersection
         if (gpGround == null) {
             throw new OrekitException("attitude pointing law misses the Earth", new Object[0]);

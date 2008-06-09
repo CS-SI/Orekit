@@ -11,14 +11,11 @@ import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.orbits.KeplerianOrbit;
 import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.propagation.analytical.KeplerianPropagator;
 import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.time.ChunkedDate;
 import fr.cs.orekit.time.ChunkedTime;
 import fr.cs.orekit.time.UTCScale;
-import fr.cs.orekit.utils.Line;
-import fr.cs.orekit.utils.PVCoordinates;
 
 public class InertialAttitudeTest extends TestCase {
 

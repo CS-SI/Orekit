@@ -5,7 +5,6 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Rotation;
-import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
 
 import fr.cs.orekit.Utils;
@@ -52,7 +51,7 @@ public class LofOffsetPointingTest extends TestCase {
 
         // Create lof aligned law
         //************************
-        final LofOffset lofLaw = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
+        final LofOffset lofLaw = LofOffset.LOF_ALIGNED;
         final LofOffsetPointing lofPointing = new LofOffsetPointing(earthSpheric, lofLaw, Vector3D.plusK);
         final Rotation lofRot = lofPointing.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
  

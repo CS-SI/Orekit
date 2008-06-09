@@ -25,6 +25,10 @@ import fr.cs.orekit.utils.PVCoordinates;
  */
 public class LofOffset implements AttitudeLaw {
 
+    /** Dummy attitude law, perfectly aligned with the LOF frame. */
+    public static final LofOffset LOF_ALIGNED =
+        new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
+
     /** Serializable UID. */
     private static final long serialVersionUID = -713570668596014285L;
 

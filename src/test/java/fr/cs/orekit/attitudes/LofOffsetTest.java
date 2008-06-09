@@ -35,6 +35,10 @@ public class LofOffsetTest extends TestCase {
     // Earth shape
     OneAxisEllipsoid earthSpheric;
     
+    //  Satellite position
+    CircularOrbit orbit;
+    PVCoordinates pvSatJ2000;
+    
     /** Test class for body center pointing attitude law.
      */
     public LofOffsetTest(String name) {
@@ -46,26 +50,21 @@ public class LofOffsetTest extends TestCase {
     public void testZero() throws OrekitException, CardanEulerSingularityException {
 
         //  Satellite position
-        final CircularOrbit circ =
-           new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(0.), Math.toRadians(270.),
-                                   Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   Frame.getJ2000(), date, mu);
-        final PVCoordinates pvSatJ2000 = circ.getPVCoordinates();
 
         // Lof aligned attitude law
-        final LofOffset lofAlignedLaw = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
+        final LofOffset lofAlignedLaw = LofOffset.LOF_ALIGNED;
         final Rotation lofOffsetRot = lofAlignedLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
         
         // Check that 
         final Vector3D p = pvSatJ2000.getPosition();
         final Vector3D v = pvSatJ2000.getVelocity();
         final Vector3D momentumJ2000 = Vector3D.crossProduct(p, v);
-        final Vector3D momentumLof = lofOffsetRot.applyInverseTo(momentumJ2000);
+        final Vector3D momentumLof = lofOffsetRot.applyTo(momentumJ2000);
         final double cosinus = Math.cos(Vector3D.dotProduct(momentumLof, Vector3D.plusK));
         assertEquals(1., cosinus, Utils.epsilonAngle);
         
     }
-        /** Test is the lof offset is the one expected
+    /** Test if the lof offset is the one expected
      */
     public void testOffset() throws OrekitException, CardanEulerSingularityException {
 
@@ -88,7 +87,7 @@ public class LofOffsetTest extends TestCase {
         
         // Create lof aligned attitude law
         // *******************************  
-        final LofOffset lofAlignedLaw = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
+        final LofOffset lofAlignedLaw = LofOffset.LOF_ALIGNED;
         final Rotation lofAlignedRot = lofAlignedLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
 
         // Get rotation from LOF to target pointing attitude
@@ -110,6 +109,38 @@ public class LofOffsetTest extends TestCase {
         
     } 
     
+    /** Test is the target pointed is the one expected
+     */
+    public void testTarget() 
+        throws OrekitException, CardanEulerSingularityException {
+        
+        // Create target point and target pointing law towards that point
+        final GeodeticPoint targetDef  = new GeodeticPoint(Math.toRadians(-40.), Math.toRadians(5.), 0.);
+        final TargetPointing targetLaw = new TargetPointing(targetDef, earthSpheric);
+       
+        // Get roll, pitch, yaw angles corresponding to this pointing law
+        final LofOffset lofAlignedLaw = LofOffset.LOF_ALIGNED;
+        final Rotation lofAlignedRot = lofAlignedLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
+        final Attitude targetAttitude = targetLaw.getState(date, pvSatJ2000, Frame.getJ2000());
+        final Rotation rollPitchYaw = targetAttitude.getRotation().applyTo(lofAlignedRot.revert());
+        final double[] angles = rollPitchYaw.getAngles(RotationOrder.ZYX);
+        final double yaw = angles[0];
+        final double pitch = angles[1];
+        final double roll = angles[2];
+        
+        // Create a lof offset law from those values
+        final LofOffset lofOffsetLaw = new LofOffset(RotationOrder.ZYX, yaw, pitch, roll);
+        final LofOffsetPointing lofOffsetPtLaw = new LofOffsetPointing(earthSpheric, lofOffsetLaw, Vector3D.plusK);
+
+        // Check target pointed by this law : shall be the same as defined
+        final PVCoordinates pvTargetRes = lofOffsetPtLaw.getTargetInBodyFrame(date, pvSatJ2000, Frame.getJ2000());
+        final GeodeticPoint targetRes = earthSpheric.transform(pvTargetRes.getPosition(), earthSpheric.getBodyFrame(), date);
+        
+        assertEquals(targetDef.getLongitude(), targetRes.getLongitude(), Utils.epsilonAngle);
+        assertEquals(targetDef.getLongitude(), targetRes.getLongitude(), Utils.epsilonAngle);
+        
+    }
+    
     public void setUp() {
         try {
             // Computation date
@@ -126,6 +157,14 @@ public class LofOffsetTest extends TestCase {
             // Elliptic earth shape
             earthSpheric =
                 new OneAxisEllipsoid(6378136.460, 0., frameItrf2000B);
+            
+            //  Satellite position
+            orbit =
+                new CircularOrbit(7178000.0, 0.5e-8, -0.5e-8, Math.toRadians(50.), Math.toRadians(150.),
+                                       Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                       Frame.getJ2000(), date, mu);
+            pvSatJ2000 = orbit.getPVCoordinates();
+
             
         } catch (OrekitException oe) {
             fail(oe.getMessage());
