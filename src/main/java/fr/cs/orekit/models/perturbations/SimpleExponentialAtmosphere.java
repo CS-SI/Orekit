@@ -13,7 +13,7 @@ import fr.cs.orekit.utils.PVCoordinates;
 /** Simple exponential atmospheric model.
  * <p>This model represents a simple atmosphere with an exponential
  * density and rigidly bound to the underlying rotating body.</p>
- * @version $Id: Atmosphere.java 840 2006-06-07 09:41:38Z internMS $
+ * @version $Id$
  * @author F.Maussion
  * @author L.Maisonobe
  */

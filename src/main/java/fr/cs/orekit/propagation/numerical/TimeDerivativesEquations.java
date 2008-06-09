@@ -49,7 +49,7 @@ import fr.cs.orekit.utils.PVCoordinates;
  * </p>
  * @see fr.cs.orekit.orbits.EquinoctialOrbit
  * @see fr.cs.orekit.propagation.numerical.NumericalModel
- * @version $Id: OrbitDerivativesAdder.java 1052 2006-10-11 10:49:23 +0000 (mer., 11 oct. 2006) fabien $
+ * @version $Id$
  * @author L. Maisonobe
  * @author F. Maussion
  * @author V. Pommier-Maurussane
