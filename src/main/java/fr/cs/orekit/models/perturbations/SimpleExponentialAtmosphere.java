@@ -1,3 +1,16 @@
+/* Copyright 2002-2008 CS Communication & Systèmes
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package fr.cs.orekit.models.perturbations;
 
 import org.apache.commons.math.geometry.Vector3D;
@@ -13,9 +26,9 @@ import fr.cs.orekit.utils.PVCoordinates;
 /** Simple exponential atmospheric model.
  * <p>This model represents a simple atmosphere with an exponential
  * density and rigidly bound to the underlying rotating body.</p>
- * @version $Id$
- * @author F.Maussion
- * @author L.Maisonobe
+ * @author Fabien Maussion
+ * @author Luc Maisonobe
+ * @version $Revision$ $Date$
  */
 public class SimpleExponentialAtmosphere implements Atmosphere {
 

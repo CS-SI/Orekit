@@ -1,3 +1,16 @@
+/* Copyright 2002-2008 CS Communication & Systèmes
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package fr.cs.orekit.attitudes;
 
 import org.apache.commons.math.geometry.Rotation;
@@ -8,8 +21,9 @@ import fr.cs.orekit.time.AbsoluteDate;
 import fr.cs.orekit.utils.PVCoordinates;
 
 /** This class leverages common parts for compensation modes around ground pointing attitudes.
- * @author V. Pommier-Maurussane
- * @author L. Maisonobe
+ * @author Véronique Pommier-Maurussane
+ * @author Luc Maisonobe
+ * @version $Revision$ $Date$
  */
 public abstract class GroundPointingWrapper extends GroundPointing {
 

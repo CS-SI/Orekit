@@ -1,15 +1,32 @@
+/* Copyright 2002-2008 CS Communication & Systèmes
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package fr.cs.orekit.tle;
 
 import fr.cs.orekit.errors.OrekitException;
 
 /** This class contains methods to compute propagated coordinates with the SGP4 model.
- *
+ * <p>
  * The user should not bother in this class since it is handled internaly by the
  * {@link TLEPropagator}.
- *
- * @author SPACETRACK Report #3 project. Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
- * @author Revisiting Spacetrack Report #3. David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
- * @author Fabien Maussion (Java translation)
+ * </p>
+ * <p>This implementation is largely inspired from the paper and source code <a
+ * href="http://www.celestrak.com/publications/AIAA/2006-6753/">Revisiting Spacetrack
+ * Report #3</a> and is fully compliant with its results and tests cases.</p>
+ * @author Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
+ * @author David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
+ * @author Fabien Maussion (java translation)
+ * @version $Revision$ $Date$
  */
 class SGP4 extends TLEPropagator {
 

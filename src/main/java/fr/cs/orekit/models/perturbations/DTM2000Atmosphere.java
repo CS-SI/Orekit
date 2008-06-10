@@ -1,3 +1,16 @@
+/* Copyright 2002-2008 CS Communication & Systèmes
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package fr.cs.orekit.models.perturbations;
 
 import java.io.BufferedReader;
@@ -20,7 +33,7 @@ import fr.cs.orekit.errors.OrekitException;
  *
  *</p>
  * <p>
- * Two computation methods are proposed to the user :
+ * Two computation methods are proposed to the user:
  * <ul>
  *   <li>one OREKIT independent and compliant with initial FORTRAN
  *       routine entry values:
@@ -32,7 +45,7 @@ import fr.cs.orekit.errors.OrekitException;
  * </ul>
  *</p>
  *<p>
- * This model provides dense output for altitudes beyond 120 km. Computed data are :
+ * This model provides dense output for altitudes beyond 120 km. Computed data are:
  * <ul>
  *   <li>Temperature at altitude z (K)</li>
  *   <li>Exospheric temperature above input position (K)</li>
@@ -47,19 +60,22 @@ import fr.cs.orekit.errors.OrekitException;
  * The model needs geographical and time information to compute general values,
  * but also needs space weather data : mean and instantaneous solar flux and
  * geomagnetic indices.
+ * </p>
+ * <p>
  * Mean solar flux is (for the moment) represented by the F10.7 indices. Instantaneous
- * flux can be setted to the mean value if the data is not available. Geomagnetic
- * acivity is represented by the Kp indice, which goes from 1 (very low activity) to
+ * flux can be set to the mean value if the data is not available. Geomagnetic
+ * activity is represented by the Kp indice, which goes from 1 (very low activity) to
  * 9 (high activity).
- * All these data can be found on the <a
- * href="http://sec.noaa.gov/Data/index.html">
- * NOAA (National Oceanic and Atmospheric
- * Administration) website.</a>
- *</p>
+ * <p>
+ * </p>
+ * All these data can be found on the <a href="http://sec.noaa.gov/Data/index.html">
+ * NOAA (National Oceanic and Atmospheric Administration) website.</a>
+ * </p>
  *
  *
- * @author S. Bruinsma, G. Thuillier, F. Barlier : original research and Fortran routine
- * @author F. Maussion : JAVA adaptation
+ * @author R. Biancale, S. Bruinsma: original fortran routine
+ * @author Fabien Maussion (java translation)
+ * @version $Revision$ $Date$
  */
 public class DTM2000Atmosphere {
 

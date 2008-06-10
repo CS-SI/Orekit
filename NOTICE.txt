@@ -4,5 +4,18 @@ Copyright 2002-2008 Communications et Systèmes
 This product includes software developed by
 Communication et Systèmes (http://www.c-s.fr/).
 
+This product includes software developed by
+Bruce R. Bowman (HQ AFSPC, Space Analysis Division)
+
+This product includes software translated from original work developed by
+David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso
+
+This product includes software translated from original work developed by
+Felix R. Hoots, Ronald L. Roehrich
+
+This product includes software translated from original work developed by
+R. Biancale, S. Bruinsma (CNES)
+
 This product depends on software developed by
 The Apache Software Foundation (http://www.apache.org/).
+

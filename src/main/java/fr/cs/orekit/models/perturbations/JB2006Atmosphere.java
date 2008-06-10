@@ -1,8 +1,21 @@
+/* Copyright 2002-2008 CS Communication & Systèmes
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package fr.cs.orekit.models.perturbations;
 
-/** This is the realization of the Jaccia-Bowman 2006 atmospheric model.
+/** This is the realization of the Jacchia-Bowman 2006 atmospheric model.
  * <p>
- * It is described in the paper : <br>
+ * It is described in the paper: <br>
  *
  * <a href="http://sol.spacenvironment.net/~JB2006/pubs/JB2006_AIAA-6166_model.pdf">A
  * New Empirical Thermospheric Density Model JB2006 Using New Solar Indices</a><br>
@@ -12,9 +25,9 @@ package fr.cs.orekit.models.perturbations;
  * AIAA 2006-6166<br>
  *</p>
  * <p>
- * Two computation methods are proposed to the user :
+ * Two computation methods are proposed to the user:
  * <ul>
- * <li> one OREKIT independent and compliant with initial FORTRAN routine entry values :
+ * <li> one OREKIT independent and compliant with initial FORTRAN routine entry values:
  *        {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double)}. </li>
  * <li> one compliant with OREKIT Atmosphere interface, necessary to the
  *        {@link fr.cs.orekit.propagation.numerical.forces.perturbations.AtmosphericDrag
@@ -23,7 +36,7 @@ package fr.cs.orekit.models.perturbations;
  * </ul>
  * </p>
  * <p>
- * This model provides dense output for all altidudes and positions. Output data are :
+ * This model provides dense output for all altitudes and positions. Output data are :
  * <ul>
  * <li>Exospheric Temperature above Input Position (deg K)</li>
  * <li>Temperature at Input Position (deg K)</li>
@@ -33,14 +46,15 @@ package fr.cs.orekit.models.perturbations;
  * <p>
  * The model needs geographical and time information to compute general values,
  * but also needs space weather data : mean and daily solar flux, retrieved threw
- * different indices, and planetary geomagnetic incides. <br>
+ * different indices, and planetary geomagnetic indices. <br>
  * More information on these indices can be found on the  <a
  * href="http://sol.spacenvironment.net/~JB2006/JB2006_index.html">
  * official JB2006 website.</a>
  *</p>
  *
- * @author Bruce R Bowman (HQ AFSPC, Space Analysis Division), Feb 2006 : FORTRAN routine
- * @author F. Maussion : JAVA adaptation
+ * @author Bruce R Bowman (HQ AFSPC, Space Analysis Division), Feb 2006: FORTRAN routine
+ * @author Fabien Maussion (java translation)
+ * @version $Revision$ $Date$
  */
 public class JB2006Atmosphere {
 
