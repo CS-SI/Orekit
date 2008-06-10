@@ -31,7 +31,6 @@ public interface CelestialBody {
      * @return position of the body (m)
      * @exception OrekitException if position cannot be computed in given frame
      */
-    public abstract Vector3D getPosition(AbsoluteDate date, Frame frame)
-        throws OrekitException;
+    Vector3D getPosition(AbsoluteDate date, Frame frame) throws OrekitException;
 
 }

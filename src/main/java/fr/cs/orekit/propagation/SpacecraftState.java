@@ -30,7 +30,7 @@ import fr.cs.orekit.utils.PVCoordinates;
  * and mass information.
  *
  * <p> It contains an {@link Orbit orbital state} at a current
- * {@link AbsoluteDate} both handled by an {@link OrbitOld}, plus the current
+ * {@link AbsoluteDate} both handled by an {@link Orbit}, plus the current
  * mass and attitude.
  * </p>
  * <p>

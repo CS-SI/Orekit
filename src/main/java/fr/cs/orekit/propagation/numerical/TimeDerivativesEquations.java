@@ -128,7 +128,6 @@ public class TimeDerivativesEquations implements Serializable {
 
     /** Create a new instance.
      * @param orbit current orbit parameters
-     * @param mu central body gravitational constant (m<sup>3</sup>/s<sup>2</sup>)
      */
     protected TimeDerivativesEquations(final EquinoctialOrbit orbit) {
         this.storedParameters = orbit;

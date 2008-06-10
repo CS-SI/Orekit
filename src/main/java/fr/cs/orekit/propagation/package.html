@@ -14,11 +14,11 @@ This package provides tools to propagate orbital states with different methods.
 </p>
 
 <p> <h5> Keplerian propagation </h5> The {@link fr.cs.orekit.propagation.analytical.KeplerianPropagator}
- implements the {@link fr.cs.orekit.propagation.Ephemeris} 
+ implements the {@link fr.cs.orekit.propagation.Propagator} 
  interface, which ensures that we can obtain a propagated SpacecraftState 
  at any time once the instance is initialized with an initial state. 
  This extrapolation is not a problem with a simple 
- {@link fr.cs.orekit.orbits.EquinoctialParameters} 
+ {@link fr.cs.orekit.orbits.EquinoctialOrbit} 
  representation: only the mean anomaly value changes.
 </p>
 
@@ -27,12 +27,12 @@ This package provides tools to propagate orbital states with different methods.
   neither equatorial nor critical. It considers J2 to J6 potential 
   coefficients correctors, and uses mean parameters to compute the new 
   position. As the keplerian propagator, it implements the 
-  {@link fr.cs.orekit.propagation.Ephemeris} interface. 
+  {@link fr.cs.orekit.propagation.Propagator} interface. 
 </p>
 	
 <p> <h5> Numerical propagation </h5> 
  It is the most important part of the OREKIT project. Based on commons-math
- integrators, the {@link fr.cs.orekit.propagation.numerical.NumericalPropagator}
+ integrators, the {@link fr.cs.orekit.propagation.numerical.NumericalModel}
  class realizes the interface between space mechanics and mathematical 
  resolutions. If its utilization seems difficult on first sight, it is in 
  fact quite clear and intuitive.
@@ -40,7 +40,7 @@ This package provides tools to propagate orbital states with different methods.
 
 <p> The mathematical problem to integrate is a seven dimension time derivative equations
  system. The six first equations are given by the Gauss equations (expressed
- in {@link fr.cs.orekit.orbits.EquinoctialParameters}) and the 
+ in {@link fr.cs.orekit.orbits.EquinoctialOrbit}) and the 
  seventh is simply the flow rate and mass equation. This first order 
  system is computed by the 
  {@link fr.cs.orekit.propagation.numerical.TimeDerivativesEquations} class.
@@ -55,8 +55,8 @@ This package provides tools to propagate orbital states with different methods.
  ask for the next first time derivative, etc. until it reaches the final 
  asked date. </p>
 
-@author L. Maisonobe
-@author F. Maussion
+@author Luc Maisonobe
+@author Fabien Maussion
 
 </body>
 </html>

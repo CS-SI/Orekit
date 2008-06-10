@@ -26,7 +26,7 @@ import fr.cs.orekit.frames.Frame;
  * the satellite frame, as well as the spin of the satellite (axis and
  * rotation rate).</p>
  * <p>The instance <code>Attitude</code> is guaranteed to be immutable.</p>
- * @see     Orbit
+ * @see     fr.cs.orekit.orbits.Orbit
  * @author Véronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */

@@ -23,7 +23,10 @@ import fr.cs.orekit.orbits.EquinoctialOrbit;
 import fr.cs.orekit.propagation.SpacecraftState;
 import fr.cs.orekit.time.AbsoluteDate;
 
-/** Converts OREKIT switching functions to commons-math interface. */
+/** Converts OREKIT switching functions to commons-math interface.
+ * @author Fabien Maussion
+ * @version $Revision$ $Date$
+ */
 class WrappedSwitchingFunction implements SwitchingFunction {
 
     /** Serializable UID. */
@@ -109,9 +112,9 @@ class WrappedSwitchingFunction implements SwitchingFunction {
         // update space dynamics view
         final AbsoluteDate currentDate = new AbsoluteDate(referenceDate, t);
         final EquinoctialOrbit currentOrbit =
-            new EquinoctialOrbit(y[0], y[1],y[2],y[3],y[4],y[5],
-                                      EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
-                                      integrationFrame, currentDate, mu);
+            new EquinoctialOrbit(y[0], y[1], y[2], y[3], y[4], y[5],
+                                 EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
+                                 integrationFrame, currentDate, mu);
         return
             new SpacecraftState(currentOrbit, y[6],
                                 attitudeLaw.getState(currentDate,

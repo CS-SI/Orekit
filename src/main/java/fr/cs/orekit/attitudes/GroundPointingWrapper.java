@@ -32,7 +32,6 @@ public abstract class GroundPointingWrapper extends GroundPointing {
 
     /** Creates a new instance.
      * @param groundPointingLaw ground pointing attitude law without compensation
-     * @param sun sun motion model
      */
     public GroundPointingWrapper(final GroundPointing groundPointingLaw) {
         super(groundPointingLaw.getBodyFrame());

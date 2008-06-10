@@ -120,7 +120,7 @@ public class IntegratedEphemeris implements BoundedPropagator {
 
             final EquinoctialOrbit eq =
                 new EquinoctialOrbit(state[0], state[1], state[2],
-                                          state[3], state[4],state[5], 2, frame, date, mu);
+                                          state[3], state[4], state[5], 2, frame, date, mu);
             final double mass = state[6];
 
             try {

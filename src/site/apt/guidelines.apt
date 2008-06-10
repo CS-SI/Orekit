@@ -32,20 +32,27 @@ Development Guidelines
   The first goal, validation, implies tests must be as extensive as possible.
   They should include realistic operational cases but also contingency cases.
   The {{{http://cobertura.sourceforge.net/}cobertura}} tool must be used to
-  monitor test coverage. Some efforts must be put to achieve a very high level
-  of coverage. We do not set up an objective figure, but clearly a 60% coverage
-  would not be acceptable at all.
+  monitor test coverage. A very high level of coverage is desired. We do not
+  set up mandatory objective figures, but only guidelines here. However,a 60%
+  line coverage would clearly not be acceptable at all and 80% would be considered
+  deceptive
 
   The second goal, robustness, has some specific implications for a low level
   component like Orekit. In some sense, it can be considered an extension of the
-  previous goal as it can also be improved by testing. This is not sufficient,
-  though. A library is intended to be used by applications unknown to the library
-  development team. The library development should be as flexible as possible to
-  be merged into an environment with specific constraints. For example, perhaps an
-  application should run 24/7 during months or years, so caching all results to
-  improve efficiency may prove disastrous in such a use case. Experience has shown
-  that developing libraries is more difficult than developing high level applications,
-  where most of the constraints are known beforehand.
+  previous goal as it can also be improved by testing. It can also be improved
+  by automatic checking tools that analyze either source code or binary code. The
+  {{{http://findbugs.sourceforge.net/}findbugs}} tool is already configured for
+  automatic checks of the library using a maven plugin.
+
+  This is however not sufficient. A library is intended to be used by applications
+  unknown to the library development team. The library development should be as
+  flexible as possible to be merged into an environment with specific constraints.
+  For example, perhaps an application should run 24/7 during months or years, so
+  caching all results to improve efficiency may prove disastrous in such a use case,
+  or it should be embedded in a server application, so printing to standard output
+  should never be done. Experience has shown that developing libraries is more
+  difficult than developing high level applications where most of the constraints
+  are known beforehand.
 
   The third goal, maintainability, implies code must be readable, clear and
   well documented. Part of this goal is enforced by the stylistic rules explained
@@ -65,7 +72,7 @@ Development Guidelines
   of premature optimization and unfounded second-guess.
 
   One surprising trick, that at first sight might seem strange and inappropriate has
-  been used in many part for Orekit and should be considered a fondamental guideline. It
+  been used in many part for Orekit and should be considered a core guideline. It
   is the use of <immutable> objects. This trick improves efficiency because many costly
   copying operation are avoided, even unneeded one added for defensive programming. It
   improves maintainability because both the classes themselves and the classes that use
@@ -91,20 +98,20 @@ Development Guidelines
   no tabs, 4 spaces indentation, no indentation for case statements,
 
   [operators wrapping rules]
-  break lines after operators (unlike Sun),
+  lines are wrapped after operators (unlike Sun),
 
   [whitespace rules]
-  around operators, not before method parameters parenthesis,
-  no white space at end of lines,
+  operators are surrounded by spaces, method parameters open parenthesis
+  is not preceded by space, lines do not end with white space,
 
   [curly brace rules]
-  open curly brace at end of line, closing curly brace aligned with
-  the start of the corresponding <<<if>>>, <<<for>>>, <<<while>>>,
-  <<<case>>> or <<<do>>>,
+  open curly brace are at end of line, with the matching closing curly brace
+  aligned with the start of the corresponding keyword (<<if>>, <<for>>,
+  <<while>>, <<case>> or <<do>>),
 
   [encoding rules]
-  characters encoding is UTF8, end of line should be set to
-  native in subversion properties (to ensure proper conversion
+  characters encoding is <<UTF8>>, end of line should be set to
+  <<native>> in subversion properties (to ensure proper conversion
   on all operating systems),
 
   [naming rules]
@@ -113,21 +120,43 @@ Development Guidelines
   words separated by underscores,
 
   [ordering rules]
-  class variables, followed by instance variables, followed by
-  constructors, followed by methods and public followed by protected
-  followed by private,
+  class variables come first, followed by instance variables, followed
+  by constructors, and followed by methods, public modifiers come first,
+  followed by protected modifiers followed by private modifiers,
 
   [javadoc rules]
-  complete javadoc everywhere, even on private fields and methods
+  all elements have complete javadoc, even private fields and methods
   (there are some rare exceptions, in case of code translated from
   the fortran language and models with huge parameters sets),
 
   [robustness rules]
-  use default statement in all switch/case construct, even when
-  all cases are already handled, use immutable classes as much as
-  possible,
+  switch/case construct have a default argument, even when all possible
+  cases are already handled, as many classes as possible are immutable,
 
   [miscellaneous rules]
-  no use of <star> imports, use final parameters and local variables
+  <star> imports are forbidden, parameters and local variables are final
   wherever possible.
-  
+
+* Rules summary
+
+*---*-----------------*----------------------------------------------------------------------------------+
+| 1 |    validation   | seek for a line test coverage of at least 80% (more is better)                   |
+*---*-----------------*----------------------------------------------------------------------------------+
+| 2 |    robustness   | fix <<all>> errors and warnings found by findbugs                                |
+*---*-----------------*----------------------------------------------------------------------------------+
+| 3 |    robustness   | do not make assumptions on the runtime environment of applications using Orekit  |
+|   |                 | (they may be embedded with no console, no possible user interaction, no network, |
+|   |                 | no writable file system, no stoppable main program, have memory constraints,     |
+|   |                 | time constraints, be run in different linguistic contexts ...)                   |
+*---*-----------------*----------------------------------------------------------------------------------+
+| 4 | maintainability | follow Occam's razor principle                                                   |
+|   |                 | or its declination in computer science: KISS (Keep It Simple, Stupid)            |
+*---*-----------------*----------------------------------------------------------------------------------+
+| 5 |    efficiency   | seek efficiency, but do not overstep robustness and maintainability              |
+*---*-----------------*----------------------------------------------------------------------------------+
+| 6 |    robustness   | use immutable objects as much as possible                                        |
+|   | maintainability |                                                                                  |
+|   |    efficiency   |                                                                                  |
+*---*-----------------*----------------------------------------------------------------------------------+
+| 7 |      style      | fix <<all>> errors and warnings found by checkstyle                              |
+*---*-----------------*----------------------------------------------------------------------------------+

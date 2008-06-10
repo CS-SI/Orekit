@@ -61,7 +61,6 @@ public class AtmosphericDrag implements ForceModel {
     /** Compute the contribution of the drag to the perturbing acceleration.
      * @param s the current state information : date, cinematics, attitude
      * @param adder object where the contribution should be added
-     * @param mu central gravitation coefficient
      * @exception OrekitException if some specific error occurs
      */
     public void addContribution(final SpacecraftState s,

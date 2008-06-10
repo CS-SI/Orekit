@@ -99,9 +99,9 @@ public class EquinoctialOrbit extends Orbit {
      * @see #TRUE_LATITUDE_ARGUMENT
      */
     public EquinoctialOrbit(final double a, final double ex, final double ey,
-                                 final double hx, final double hy,
-                                 final double l, final int type, 
-                                 final Frame frame, final AbsoluteDate date, final double mu)
+                            final double hx, final double hy,
+                            final double l, final int type,
+                            final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
         this.a  =  a;

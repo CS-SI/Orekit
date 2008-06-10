@@ -37,15 +37,13 @@ import fr.cs.orekit.propagation.SpacecraftState;
  * <p> Once the g function root is reached, we are sure the integrator
  *  won't miss the event relative to this date : a discontinuity in
  *  acceleration, a change in the state... This event can be initiated
- *  by the {@link #eventOccurred(SpacecraftState, double)}
+ *  by the {@link #eventOccurred(SpacecraftState)}
  *  method, wich is called when the step is placed on the wanted date. <p>
  *
  * @author Luc Maisonobe
  * @author Véronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
-
-
 public interface OrekitSwitchingFunction extends Serializable {
 
     /** Compute the value of the switching function.

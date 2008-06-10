@@ -81,7 +81,6 @@ import fr.cs.orekit.time.AbsoluteDate;
  * @see StepHandler
  * @see OrekitFixedStepHandler
  * @see IntegratedEphemeris
- * @see AttitudeKinematicsProvider
  * @see TimeDerivativesEquations
  *
  * @author Mathieu Roméro
@@ -188,11 +187,6 @@ public class NumericalModel
     public void removeForceModels() {
         forceModels.clear();
         forceSwf.clear();
-    }
-
-    /** {@inheritDoc} */
-    public void setAttitudeLaw(final AttitudeLaw attitudeLaw) {
-        this.attitudeLaw = attitudeLaw;
     }
 
     /** Propagate an orbit up to a specific target date.

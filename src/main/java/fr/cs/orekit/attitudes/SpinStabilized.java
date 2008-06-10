@@ -29,7 +29,6 @@ import fr.cs.orekit.utils.PVCoordinates;
  * of {@link CelestialBodyPointed} with the pointing axis equal to
  * the rotation axis, but can in fact be anything.</p>
  * <p>Instances of this class are guaranteed to be immutable.</p>
- * </p>
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
@@ -69,7 +68,7 @@ public class SpinStabilized implements AttitudeLaw {
         this.spin           = new Vector3D(rate / axis.getNorm(), axis);
     }
 
-    /** Get the underlying non-rotating attitude law
+    /** Get the underlying non-rotating attitude law.
      * @return underlying non-rotating attitude law
      */
     public AttitudeLaw getNonRotatingLaw() {

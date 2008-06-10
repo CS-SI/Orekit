@@ -24,7 +24,6 @@ import fr.cs.orekit.utils.PVCoordinates;
 /**
  * This class handles an inertial attitude law.
  * <p>Instances of this class are guaranteed to be immutable.</p>
- * </p>
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
@@ -36,7 +35,7 @@ public class InertialLaw implements AttitudeLaw {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -8661629460150215557L;
- 
+
     /** Fixed satellite frame. */
     private final Frame satelliteFrame;
 
@@ -48,7 +47,8 @@ public class InertialLaw implements AttitudeLaw {
     }
 
     /** {@inheritDoc} */
-    public Attitude getState(AbsoluteDate date, PVCoordinates pv, Frame frame)
+    public Attitude getState(final AbsoluteDate date,
+                             final PVCoordinates pv, final Frame frame)
         throws OrekitException {
         Transform t = frame.getTransformTo(satelliteFrame, date);
         return new Attitude(frame, t.getRotation(), t.getRotationRate());

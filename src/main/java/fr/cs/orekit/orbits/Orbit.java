@@ -47,7 +47,6 @@ import java.io.Serializable;
  * <p>
  * The object <code>OrbitalParameters</code> is guaranteed to be immutable.
  * </p>
- * @see     OrbitOld
  * @author Luc Maisonobe
  * @author Guylaine Prat
  * @author Fabien Maussion
@@ -174,20 +173,20 @@ public abstract class Orbit implements Serializable {
      * @exception OrekitException if transformation between frames cannot be computed
      * @see #getPVCoordinates()
      */
-    public PVCoordinates getPVCoordinates(final Frame outputFrame) 
-    throws OrekitException {
+    public PVCoordinates getPVCoordinates(final Frame outputFrame)
+        throws OrekitException {
         if (pvCoordinates == null) {
             initPVCoordinates();
         }
-        
-        // If output frame requested is the same as definition frame, 
+
+        // If output frame requested is the same as definition frame,
         // PV coordinates are returned directly
         if (outputFrame == frame) {
             return pvCoordinates;
         }
-        
+
         // Else, PV coordinates are transformed to output frame
-        Transform t = frame.getTransformTo(outputFrame, date);
+        final Transform t = frame.getTransformTo(outputFrame, date);
         return t.transformPVCoordinates(pvCoordinates);
     }
 

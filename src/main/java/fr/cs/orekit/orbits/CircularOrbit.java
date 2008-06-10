@@ -99,9 +99,9 @@ public class CircularOrbit
      * @see #TRUE_LONGITUDE_ARGUMENT
      */
     public CircularOrbit(final double a, final double ex, final double ey,
-                              final double i, final double raan,
-                              final double alpha, final int type, 
-                              final Frame frame, final AbsoluteDate date, final double mu)
+                         final double i, final double raan,
+                         final double alpha, final int type,
+                         final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
         this.a    =  a;

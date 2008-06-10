@@ -99,7 +99,7 @@ public class YawSteering extends GroundPointingWrapper {
         // Compensation rotation definition :
         //  . Z satellite axis is unchanged
         //  . phasing axis shall be aligned to sun direction
-        Vector3D sunDirection = sun.getPosition(date, frame).subtract(pv.getPosition());
+        final Vector3D sunDirection = sun.getPosition(date, frame).subtract(pv.getPosition());
         final Rotation compensation =
             new Rotation(Vector3D.PLUS_K, base.getRotation().applyTo(sunDirection),
                          Vector3D.PLUS_K, phasingAxis);

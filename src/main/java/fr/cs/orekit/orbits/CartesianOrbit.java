@@ -73,12 +73,9 @@ public class CartesianOrbit extends Orbit {
 
     /** Constructor from any kind of orbital parameters.
      * @param op orbital parameters to copy
-     * @param frame the frame in which the {@link PVCoordinates} are defined
-     * @param date date of the orbital parameters
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception OrekitException if some specific error occurs
      */
-    public CartesianOrbit(final Orbit op) 
+    public CartesianOrbit(final Orbit op)
         throws OrekitException {
         super(op.getFrame(), op.getDate(), op.getMu());
         equinoctial = new EquinoctialOrbit(op);

@@ -103,9 +103,9 @@ public class KeplerianOrbit extends Orbit {
      * @see #TRUE_ANOMALY
      */
     public KeplerianOrbit(final double a, final double e, final double i,
-                               final double pa, final double raan,
-                               final double anomaly, final int type, 
-                               final Frame frame, final AbsoluteDate date, final double mu)
+                          final double pa, final double raan,
+                          final double anomaly, final int type,
+                          final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
         this.a    =    a;
@@ -143,8 +143,8 @@ public class KeplerianOrbit extends Orbit {
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      */
-    public KeplerianOrbit(final PVCoordinates pvCoordinates, 
-                               final Frame frame, final AbsoluteDate date, final double mu) {
+    public KeplerianOrbit(final PVCoordinates pvCoordinates,
+                          final Frame frame, final AbsoluteDate date, final double mu) {
         super(pvCoordinates, frame, date, mu);
 
         // compute semi-major axis
