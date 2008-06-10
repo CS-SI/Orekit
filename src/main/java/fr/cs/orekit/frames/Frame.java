@@ -676,17 +676,14 @@ public class Frame implements Serializable {
     private static class LazyVeis1950Holder {
 
         /** Unique instance. */
-        private static final Frame INSTANCE;
-
-        static {
-            final double q1 = -2.01425201682020570e-5;
-            final double q2 = -2.43283773387856897e-3;
-            final double q3 =  5.59078052583013584e-3;
-            final double q0 = Math.sqrt(1.0 - q1 * q1 - q2 * q2 - q3 * q3);
-            INSTANCE = new Frame(getJ2000(),
-                                 new Transform(new Rotation(q0, q1, q2, q3, true)),
-                                 VEIS1950.name);
-        }
+        private static final Frame INSTANCE =
+            new Frame(getJ2000(),
+                      new Transform(new Rotation(0.99998141186121629647,
+                                                 -2.01425201682020570e-5,
+                                                 -2.43283773387856897e-3,
+                                                 5.59078052583013584e-3,
+                                                 true)),
+                      VEIS1950.name);
 
     }
 
