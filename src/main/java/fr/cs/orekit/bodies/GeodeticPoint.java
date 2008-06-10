@@ -13,6 +13,8 @@
  */
 package fr.cs.orekit.bodies;
 
+import java.io.Serializable;
+
 import org.apache.commons.math.util.MathUtils;
 
 /** Point location relative to a 2D body surface.
@@ -22,7 +24,10 @@ import org.apache.commons.math.util.MathUtils;
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-public class GeodeticPoint {
+public class GeodeticPoint implements Serializable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = -7038539219231406929L;
 
     /** Longitude of the point (rad). */
     private final double longitude;
