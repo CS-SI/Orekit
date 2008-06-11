@@ -20,6 +20,8 @@ import junit.framework.TestSuite;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.Utils;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
@@ -489,6 +491,30 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
                                    Frame.getJ2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
             EcksteinHechlerPropagator propagator =
                 new EcksteinHechlerPropagator(hyperbolic, ae, mu, c20, c30, c40, c50, c60);
+            propagator.propagate(new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10.0));
+            fail("an exception should have been thrown");
+        } catch (PropagationException pe) {
+            // expected behavior
+        } catch (Exception e) {
+            fail("wrong exception caught");
+        }
+    }
+
+    public void testWrongAttitude() {
+        try {
+            KeplerianOrbit orbit =
+                new KeplerianOrbit(1.0e10, 1.0e-4, 1.0e-2, 0, 0, 0, KeplerianOrbit.TRUE_ANOMALY,
+                                   Frame.getJ2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+            AttitudeLaw wrongLaw = new AttitudeLaw() {
+                private static final long serialVersionUID = 5918362126173997016L;
+                public Attitude getState(AbsoluteDate date, PVCoordinates pv,
+                                         Frame frame) throws OrekitException {
+                    throw new OrekitException("gasp", new Object[0], new RuntimeException());
+                }
+            };
+            EcksteinHechlerPropagator propagator =
+                new EcksteinHechlerPropagator(orbit, wrongLaw,
+                                              ae, mu, c20, c30, c40, c50, c60);
             propagator.propagate(new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10.0));
             fail("an exception should have been thrown");
         } catch (PropagationException pe) {

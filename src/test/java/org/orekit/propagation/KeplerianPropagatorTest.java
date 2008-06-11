@@ -20,12 +20,14 @@ import junit.framework.TestSuite;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.Utils;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -290,6 +292,43 @@ public class KeplerianPropagatorTest extends TestCase {
 
         assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm(), r.getNorm(), Utils.epsilonTest * r.getNorm());
 
+    }
+
+    public void testHyperbolic() {
+        try {
+            KeplerianOrbit hyperbolic =
+                new KeplerianOrbit(1.0e10, 2, 0, 0, 0, 0, KeplerianOrbit.TRUE_ANOMALY,
+                                   Frame.getJ2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+            KeplerianPropagator propagator = new KeplerianPropagator(hyperbolic);
+            propagator.propagate(new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10.0));
+            fail("an exception should have been thrown");
+        } catch (PropagationException pe) {
+            // expected behavior
+        } catch (Exception e) {
+            fail("wrong exception caught");
+        }
+    }
+
+    public void testWrongAttitude() {
+        try {
+            KeplerianOrbit orbit =
+                new KeplerianOrbit(1.0e10, 1.0e-4, 1.0e-2, 0, 0, 0, KeplerianOrbit.TRUE_ANOMALY,
+                                   Frame.getJ2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+            AttitudeLaw wrongLaw = new AttitudeLaw() {
+                private static final long serialVersionUID = 5918362126173997016L;
+                public Attitude getState(AbsoluteDate date, PVCoordinates pv,
+                                         Frame frame) throws OrekitException {
+                    throw new OrekitException("gasp", new Object[0], new RuntimeException());
+                }
+            };
+            KeplerianPropagator propagator = new KeplerianPropagator(orbit, wrongLaw);
+            propagator.propagate(new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10.0));
+            fail("an exception should have been thrown");
+        } catch (PropagationException pe) {
+            // expected behavior
+        } catch (Exception e) {
+            fail("wrong exception caught");
+        }
     }
 
     private static double tangLEmLv(double Lv,double ex,double ey){
