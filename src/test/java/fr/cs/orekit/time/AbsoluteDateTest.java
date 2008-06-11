@@ -13,7 +13,6 @@
  */
 package fr.cs.orekit.time;
 
-import java.text.ParseException;
 import java.util.Date;
 
 import junit.framework.Test;
@@ -115,7 +114,7 @@ extends TestCase {
         assertEquals(0, date.minus(ref), 1.0e-12);
     }
 
-    public void testEquals() throws ParseException {
+    public void testEquals() {
         AbsoluteDate d1 =
             new AbsoluteDate(new ChunkedDate(2006, 2, 25),
                              new ChunkedTime(17, 10, 34),
@@ -129,7 +128,30 @@ extends TestCase {
         assertFalse(d1.equals(this));
     }
 
-    public void testHashcode() throws ParseException {
+    public void testChunks() throws OrekitException {
+        // this is NOT J2000, it is a few seconds before or after depending on time scale
+        ChunkedDate date = new ChunkedDate(2000, 01,01);
+        ChunkedTime time = new ChunkedTime(11, 59, 10);
+        TimeScale[] scales = {
+            TAIScale.getInstance(), UTCScale.getInstance(),
+            TTScale.getInstance(), TCGScale.getInstance()      
+        };
+        for (int i = 0; i < scales.length; ++i) {
+            AbsoluteDate in = new AbsoluteDate(date, time, scales[i]);
+            for (int j = 0; j < scales.length; ++j) {
+                ChunksPair pair = in.getChunks(scales[j]);
+                if (i == j) {
+                    assertEquals(date, pair.getDate());
+                    assertEquals(time, pair.getTime());
+                } else {
+                    assertNotSame(date, pair.getDate());
+                    assertNotSame(time, pair.getTime());
+                }
+            }
+        }
+    }
+
+    public void testHashcode() {
         AbsoluteDate d1 =
             new AbsoluteDate(new ChunkedDate(2006, 2, 25),
                              new ChunkedTime(17, 10, 34),
