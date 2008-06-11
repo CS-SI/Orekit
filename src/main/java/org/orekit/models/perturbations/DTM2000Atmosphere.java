@@ -76,7 +76,7 @@ import org.orekit.errors.OrekitException;
  *
  * @author R. Biancale, S. Bruinsma: original fortran routine
  * @author Fabien Maussion (java translation)
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class DTM2000Atmosphere {
 
@@ -136,7 +136,7 @@ public class DTM2000Atmosphere {
     /** Gravity acceleration at 120 km altitude. */
     private static final double GSURF = 980.665;
 
-    // TODO determine what this is
+    /** Universal gas constant. */
     private static final double RGAS = 831.4;
 
     /** 2 * &pi; / 365. */
