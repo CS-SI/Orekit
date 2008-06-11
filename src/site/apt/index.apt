@@ -102,6 +102,12 @@ Overview
 
     * tabulated ephemerides
 
+      * file based
+
+      * memory based
+
+      * integration based
+
     * unified interface above analytical/numerical/tabulated propagator for easy
       switch from coarse analysis to fine simulation with one line change
 
