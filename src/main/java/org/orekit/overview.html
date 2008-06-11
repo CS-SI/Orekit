@@ -3,7 +3,7 @@ OREKIT
 <body>
 <h2>1. Purpose</h2>
 <p> 
-  OREKIT library is a low level libray for space mechanics projects. It is 
+  OREKIT library is a low level library for space mechanics projects. It is 
 implemented in the JAVA language. 
 </p>
 <p>OREKIT project was initiated by CS with the following goals in mind:</p>
@@ -24,35 +24,93 @@ implemented in the JAVA language.
      (environment variables, dynamic libraries versions, operating system,
       filesystem layout ...)</li>
 </ul>
+
 <h2>2. Features</h2>
 <p>
 Orekit can be used for many purposes, from simple geometrical or orbital tools 
 up to complex orbits propagators with several perturbing forces, maneuvers and
 discrete events. Here is a short list of the features offered by the library:</p>
+
 <ul>
- <li><strong>frames and transform handling</strong>. predefined frames for IERS and
- other common systems, user-extensible, geometrical conversions, time-derivative
- conversion, combinations, fixed, time-dependent and user-driven frames</li>
- <li><strong>time and instants handling</strong>. Absolute dates creation, computation
- and comparison across all epochs (julian, MJD, J2000, 1950, 1970, GPS ...) and time
- scales (TAI, UTC, TT, TU1, TCG ...), automatic and transparent leap seconds support</li>
- <li><strong>space mechanics objects implementation</strong>. Moon, Sun, terrestrial 
- frame ITRF2000, forces (gravity attraction field, third body attraction, 
- sun and atmospheric drag, maneuvers...)</li>
- <li><strong>orbits representation</strong>. Orbital parameters conversions (Keplerian,
- Circular, Cartesian, Equinoctial, Two-Lines Elements)</li>
- <li>orbit propagation
+  <li>Time
     <ul>
-      <li>analytical (Kepler, Eckstein-Heschler, SDP4/SGP4 2006 revision)</li>
-      <li>numerical (fixed and adaptive stepsize, fixed and adaptive order, switching functions,
-      G-stop, continuous output, several atmospheric models, direct reading of user-provided
-      gravity models, several satellite shape models for drag and radiation pressure, continuous
-      maneuvers, attitude-dependent models)</li>
-      <li>interpolated (file-based, memory-based, integration-based)</li>
+      <li>high accuracy absolute dates</li>
+      <li>time scales (TAI, UTC, GPS, TCG, TT ...)</li>
+      <li>transparent handling of leap seconds</li>
     </ul>
   </li>
- <li>attitude simulation (inertial, LOF-related, body center pointing, nadir pointing,
- target pointing, yaw compensation, sun pointing, yaw steering ...)</li>
+  <li>Geometry
+    <ul>
+      <li>frames hierarchy supporting fixed and time-dependent (or telemetry-dependent) frames</li>
+      <li>predefined frames (J2000, ITRF2000 (A and B) and intermediate frames, Veis, topocentric)</li>
+      <li>user extensible (used operationally in real time with a set of about 60 frames on several spacecrafts)</li>
+      <li>transparent handling of IERS Earth Orientation Parameters</li>
+      <li>transforms including kinematic combination effects</li>
+      <li>composite transforms reduction and caching for efficiency</li>
+      <li>extensible central body shapes models (with predefined spherical and ellipsoidic shapes)</li>
+      <li>cartesian and geodesic coordinates, kinematics</li>
+    </ul>
+  </li>
+  <li>Spacecraft state
+    <ul>
+      <li>cartesian, keplerian, circular and equinoctial parameters</li>
+      <li>Two-Lines Elements</li>
+      <li>transparent conversion between all parameters</li>
+      <li>automatic binding with frames</li>
+      <li>attitude state and derivative</li>
+      <li>mass management</li>
+    </ul>
+  </li>
+  <li>Propagation
+    <ul>
+      <li>analytical propagation models (Kepler, Eckstein-Heschler, SDP4/SGP4 with 2006 corrections)</li>
+      <li>numerical propagators
+        <ul>
+          <li>customizable force models
+            <ul>
+              <li>central attraction</li>
+              <li>gravity models (automatic reading of SHM (for Eigen models) and EGM formats potential files, even compressed)</li>
+              <li>atmospheric drag (DTM2000, Jacchia-Bowman 2006 and simple exponential models)</li>
+              <li>third body attraction</li>
+              <li>radiation pressure with eclipses</li>
+              <li>multiple maneuvers
+            </ul>
+          </li>
+          <li>handling of discrete events during integration (models changes, G-stop, simple notifications ...)</li>
+          <li>state of the art ODE integrators (adaptive stepsize with error control,
+              continuous output, switching functions, G-stop, step normalization ...)</li>
+          <li>can be used in master mode (program drives integration), slave mode (integrator
+              drives program) or unattended mode (all intermediate results solved and
+              navigation feature enabled, to use the model as if it was an analytical model,
+              ideal for search and iterative algorithms)</li>
+          <li>serialization mechanism to store complete results on persistent storage for later use</li>
+        </ul>
+      </li>
+      <li>tabulated ephemerides
+        <ul>
+          <li>file based</li>
+          <li>memory based</li>
+          <li>integration based</li>
+        </ul>
+      </li>
+      <li>unified interface above analytical/numerical/tabulated propagators for easy
+          switch from coarse analysis to fine simulation with one line change</li>
+    </ul>
+  </li>
+  <li>Attitude
+    <ul>
+      <li>extensible attitude evolution models</li>
+      <li>predefined laws
+        <ul>
+          <li>central body related attitude
+              (nadir pointing, center pointing, target pointing,
+               yaw compensation, yaw-steering)</li>
+          <li>orbit referenced attitudes (LOF aligned, offset on all axes)</li>
+          <li>space referenced attitudes (inertial, celestial body pointed, spin stabilized)</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
 </ul>
 
 <h2>3. Dependency</h2>
@@ -60,7 +118,7 @@ discrete events. Here is a short list of the features offered by the library:</p
 OREKIT has only one dependency: the <a href="http://commons.apache.org/math/">commons-math</a>
 open-source library. This library provides mathematical tools for many purposes: geometry,
 polynomial equations, differential equations, and more... It is distributed under the
-business-friendly Apache Software Licence version 2.0.
+business-friendly Apache Software License version 2.0.
 </p>
 <p>
 OREKIT is based on two commons-math packages:
