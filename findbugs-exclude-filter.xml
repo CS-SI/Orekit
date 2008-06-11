@@ -17,4 +17,44 @@
     <Bug pattern="SE_INNER_CLASS" />
   </Match>
 
+  <!-- the following are in fact false positives from findbugs -->
+  <!-- their occurrence depends on the java compiler used      -->
+  <Match>
+    <Class name="~.*\.EcksteinHechlerPropagator$"/>
+    <Method name="computeMeanParameters" />
+    <Or>
+      <Local name="epsilon" />
+      <Local name="thresholdAngles" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.DTM2000Atmosphere$"/>
+    <Method name="computation" />
+    <Or>
+      <Local name="zlb" />
+      <Local name="zlbre" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.SDP4$"/>
+    <Method name="thetaG" />
+    <Or>
+      <Local name="omega_E" />
+      <Local name="seconds_per_day" />
+      <Local name="jd_2000" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.TLEPropagator$"/>
+    <Method name="computePVCoordinates" />
+    <Or>
+      <Local name="newtonRaphsonEpsilon" />
+      <Local name="cv" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+
 </FindBugsFilter>
