@@ -31,6 +31,7 @@
       <item name="Architecture"  href="/architecture.html" />
       <item name="FAQ"           href="/faq.html"          />
       <item name="License"       href="/license.html"      />
+      <item name="Contact"       href="/contact.html"      />
     </menu>
     <menu name="Development">
       <item name="Contributing"  href="/contributing.html" />
