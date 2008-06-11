@@ -32,7 +32,7 @@ import java.util.ResourceBundle;
  *
  * @author Luc Maisonobe
 
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 
 public class OrekitException extends Exception {
@@ -74,15 +74,6 @@ public class OrekitException extends Exception {
     public OrekitException(final String specifier, final Object[] parts,
                            final Throwable cause) {
         super(translate(specifier, parts), cause);
-    }
-
-    /** Translate a string.
-     * @param s string to translate
-     * @return translated string, or original string if no translation
-     * can be found)
-     */
-    public static String translate(final String s) {
-        return translate(s, new Object[0]);
     }
 
     /** Translate and format a message.
