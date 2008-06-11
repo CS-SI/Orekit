@@ -69,7 +69,7 @@ public class CunninghamAttractionModelTest extends TestCase {
         Vector3D pole          = itrfToJ2000.transformVector(Vector3D.PLUS_K);
         Frame poleAligned      = new Frame(Frame.getJ2000(),
                                            new Transform(new Rotation(pole, Vector3D.PLUS_K)),
-        "pole aligned");
+                                           "pole aligned");
 
         double i     = Math.toRadians(98.7);
         double omega = Math.toRadians(93.0);
@@ -81,10 +81,10 @@ public class CunninghamAttractionModelTest extends TestCase {
         c[0][0] = 0.0;
         c[2][0] = c20;
         double[][] s = new double[3][1];
-        propagator.addForceModel(new CunninghamAttractionModel( itrf2000, 6378136.460, c, s));
+        propagator.addForceModel(new CunninghamAttractionModel(itrf2000, 6378136.460, c, s));
 
         // let the step handler perform the test
-        propagator.propagate(new SpacecraftState(orbit, mu), new AbsoluteDate(date , 7 * 86400),
+        propagator.propagate(new SpacecraftState(orbit, mu), new AbsoluteDate(date, 7 * 86400),
                              86400, new SpotStepHandler(date, mu));
 
     }
@@ -134,8 +134,8 @@ public class CunninghamAttractionModelTest extends TestCase {
 
     // test the difference with the analytical extrapolator Eckstein Hechler
     public void testEcksteinHechlerReference()
-    throws ParseException, FileNotFoundException,
-    OrekitException, DerivativeException, IntegratorException {
+        throws ParseException, FileNotFoundException,
+               OrekitException, DerivativeException, IntegratorException {
 
         //  Definition of initial conditions with position and velocity
         AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
@@ -146,7 +146,7 @@ public class CunninghamAttractionModelTest extends TestCase {
         Vector3D pole          = itrfToJ2000.transformVector(Vector3D.PLUS_K);
         Frame poleAligned      = new Frame(Frame.getJ2000(),
                                            new Transform(new Rotation(pole, Vector3D.PLUS_K)),
-        "pole aligned");
+                                           "pole aligned");
 
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                 poleAligned, date, mu);
@@ -281,8 +281,7 @@ public class CunninghamAttractionModelTest extends TestCase {
 
             itrf2000 = Frame.getReferenceFrame(Frame.ITRF2000B, new AbsoluteDate());
             propagator =
-                new NumericalModel(mu,
-                                        new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
+                new NumericalModel(mu, new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
         } catch (OrekitException oe) {
             fail(oe.getMessage());
         }
