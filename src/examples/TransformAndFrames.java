@@ -15,12 +15,12 @@
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinates;
 
-import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.frames.Transform;
-import fr.cs.orekit.time.AbsoluteDate;
-import fr.cs.orekit.utils.PVCoordinates;
 
 /** The aim of this tutorial is to manipulate transforms, frames and position and velocity coordinates.
  * @author Fabien Maussion

@@ -14,7 +14,8 @@
 
 
 import java.text.ParseException;
-import fr.cs.orekit.errors.OrekitException;
+
+import org.orekit.errors.OrekitException;
 
 public class TutorialOREKIT {
 

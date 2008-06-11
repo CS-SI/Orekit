@@ -1,0 +1,30 @@
+<html>
+<body>
+This package provides interfaces that will be used by the 
+{@link org.orekit.propagation.numerical.NumericalModel}.
+
+<p>
+The {@link org.orekit.propagation.numerical.forces.ForceModel} instance is added to the propagator 
+before the extrapolation. The propagator calls at each step the 
+{@link org.orekit.propagation.numerical.forces.ForceModel#addContribution(SpacecraftState s,
+TimeDerivativesEquations adder)}
+method, giving all the state information it needs : date, position, velocity, frame, 
+attitude, mass and above all the {@link org.orekit.propagation.numerical.TimeDerivativesEquations}
+ instance. The selected force model 
+computes the acceleration relative to the model and state, and adds it to the 
+Gauss equations. 
+</p>
+<p>
+A useful object has been developed to handle the discontinuities of the acceleration 
+(typically for maneuvers or solar drag for instance): the 
+{@link org.orekit.propagation.numerical.OrekitSwitchingFunction switching functions}. The g 
+function method is called at each step and must return a double. The integrator is 
+looking for its change of sign, it means that a particular step must coincide with the 
+g function sign change, so that no important event can be missed. A force model can 
+use several switching functions or none.  
+</p>
+
+@author Luc Maisonobe
+
+</body>
+</html>

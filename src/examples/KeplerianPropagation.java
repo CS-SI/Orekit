@@ -17,18 +17,18 @@ import java.text.ParseException;
 
 import org.apache.commons.math.ode.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
+import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.numerical.NumericalModel;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChunkedDate;
+import org.orekit.time.ChunkedTime;
+import org.orekit.time.UTCScale;
 
-import fr.cs.orekit.errors.OrekitException;
-import fr.cs.orekit.frames.Frame;
-import fr.cs.orekit.orbits.KeplerianOrbit;
-import fr.cs.orekit.orbits.Orbit;
-import fr.cs.orekit.propagation.SpacecraftState;
-import fr.cs.orekit.propagation.analytical.KeplerianPropagator;
-import fr.cs.orekit.propagation.numerical.NumericalModel;
-import fr.cs.orekit.time.AbsoluteDate;
-import fr.cs.orekit.time.ChunkedDate;
-import fr.cs.orekit.time.ChunkedTime;
-import fr.cs.orekit.time.UTCScale;
 
 /** The aim of this tutorial is to manipulate spacecraft states, orbital parameters
  * and keplerian propagation
