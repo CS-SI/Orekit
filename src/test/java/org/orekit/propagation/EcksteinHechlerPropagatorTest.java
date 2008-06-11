@@ -482,6 +482,22 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
     }
 
+    public void testHyperbolic() {
+        try {
+            KeplerianOrbit hyperbolic =
+                new KeplerianOrbit(1.0e10, 2, 0, 0, 0, 0, KeplerianOrbit.TRUE_ANOMALY,
+                                   Frame.getJ2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+            EcksteinHechlerPropagator propagator =
+                new EcksteinHechlerPropagator(hyperbolic, ae, mu, c20, c30, c40, c50, c60);
+            propagator.propagate(new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10.0));
+            fail("an exception should have been thrown");
+        } catch (PropagationException pe) {
+            // expected behavior
+        } catch (Exception e) {
+            fail("wrong exception caught");
+        }
+    }
+
     public static Test suite() {
         return new TestSuite(EcksteinHechlerPropagatorTest.class);
     }
