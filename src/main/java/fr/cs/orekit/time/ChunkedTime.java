@@ -22,6 +22,8 @@ import fr.cs.orekit.errors.OrekitException;
 
 /** Class representing a time within the day as hour, minute and second chunks.
  * <p>Instances of this class are guaranteed to be immutable.</p>
+ * @see ChunkedDate
+ * @see ChunksPair
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
@@ -68,8 +70,8 @@ public class ChunkedTime implements Serializable, Comparable {
                 (second < 0) || (second >= 60.0)) {
             OrekitException.throwIllegalArgumentException("non-existent hour {0}:{1}:{2}",
                                                           new Object[] {
-                                                              new Integer(hour),
-                                                              new Integer(minute),
+                                                              Integer.valueOf(hour),
+                                                              Integer.valueOf(minute),
                                                               new Double(second)
                                                           });
         }

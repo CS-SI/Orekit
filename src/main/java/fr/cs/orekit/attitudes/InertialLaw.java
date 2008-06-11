@@ -50,7 +50,7 @@ public class InertialLaw implements AttitudeLaw {
     public Attitude getState(final AbsoluteDate date,
                              final PVCoordinates pv, final Frame frame)
         throws OrekitException {
-        Transform t = frame.getTransformTo(satelliteFrame, date);
+        final Transform t = frame.getTransformTo(satelliteFrame, date);
         return new Attitude(frame, t.getRotation(), t.getRotationRate());
     }
 

@@ -211,7 +211,6 @@ public class SolarRadiationPressure implements ForceModel {
         /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
          * the Earth's apparent radius.
          * @param s the current state information : date, cinematics, attitude
-         * @param mu central gravitation coefficient
          * @return value of the g function
          * @exception OrekitException if sun or spacecraft position cannot be computed
          */
@@ -267,7 +266,6 @@ public class SolarRadiationPressure implements ForceModel {
         /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
          * the sum of the Earth's and Sun's apparent radius.
          * @param s the current state information : date, cinematics, attitude
-         * @param mu central gravitation coefficient
          * @return value of the g function
          * @exception OrekitException if sun or spacecraft position cannot be computed
          */

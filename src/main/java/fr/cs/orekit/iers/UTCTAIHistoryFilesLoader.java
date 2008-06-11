@@ -139,7 +139,7 @@ public class UTCTAIHistoryFilesLoader extends IERSFileCrawler {
                 if (lastLine > 0) {
                     throw new OrekitException("unexpected data after line {0} in file {1}: {2}",
                                               new Object[] {
-                                                  new Integer(lastLine),
+                                                  Integer.valueOf(lastLine),
                                                   getFile().getAbsolutePath(),
                                                   line
                                               });
@@ -174,7 +174,7 @@ public class UTCTAIHistoryFilesLoader extends IERSFileCrawler {
                         throw new OrekitException("non-chronological dates in file {0}, line {1}",
                                                   new Object[] {
                                                       getFile().getAbsolutePath(),
-                                                      new Integer(lineNumber)
+                                                      Integer.valueOf(lineNumber)
                                                   });
                     }
 
@@ -187,7 +187,7 @@ public class UTCTAIHistoryFilesLoader extends IERSFileCrawler {
                 } catch (NumberFormatException nfe) {
                     throw new OrekitException("unable to parse line {0} in IERS UTC-TAI history file {1}",
                                               new Object[] {
-                                                  new Integer(lineNumber),
+                                                  Integer.valueOf(lineNumber),
                                                   getFile().getAbsolutePath()
                                               });
                 }

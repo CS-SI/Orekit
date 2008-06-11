@@ -39,7 +39,7 @@ public class TabulatedEphemeris implements BoundedPropagator {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 3896701058258948968L;
- 
+
     /** All entries. */
     private final TreeSet data;
 

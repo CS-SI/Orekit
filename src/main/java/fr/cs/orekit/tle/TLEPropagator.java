@@ -318,14 +318,14 @@ public abstract class TLEPropagator {
             throw new OrekitException("eccentricity becomes too large for TLE propagation " +
                                       "(e: {0}, satellite number: {1})",
                                       new Object[] {
-                                          new Double(e), new Integer(tle.getSatelliteNumber())
+                                          new Double(e), Integer.valueOf(tle.getSatelliteNumber())
                                       });
         }
         if ((a * (1.0 - e) < 1.0) || (a * (1.0 + e) < 1.0)) {
             throw new OrekitException("too small perigee radius for TLE propagation " +
                                       "(r: {0}, satellite number: {1})",
                                       new Object[] {
-                                          new Double(a * (1. - e)), new Integer(tle.getSatelliteNumber())
+                                          new Double(a * (1. - e)), Integer.valueOf(tle.getSatelliteNumber())
                                       });
         }
 

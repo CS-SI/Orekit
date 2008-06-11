@@ -81,7 +81,7 @@ public abstract class GroundPointingWrapper extends GroundPointing {
      */
     public Attitude getState(final AbsoluteDate date, final PVCoordinates pv, final Frame frame)
         throws OrekitException {
-            
+
         // 1/ Get attitude from base attitude law
         final Attitude base = getBaseState(date, pv, frame);
 

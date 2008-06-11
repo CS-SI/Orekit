@@ -50,7 +50,6 @@ import fr.cs.orekit.utils.PVCoordinates;
  * these cases.
  * </p>
  * <p>Instances of this class are guaranteed to be immutable.</p>
- * </p>
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
@@ -101,7 +100,8 @@ public class CelestialBodyPointed implements AttitudeLaw {
     }
 
     /** {@inheritDoc} */
-    public Attitude getState(AbsoluteDate date, PVCoordinates pv, Frame frame)
+    public Attitude getState(final AbsoluteDate date,
+                             final PVCoordinates pv, final Frame frame)
         throws OrekitException {
 
         // compute celestial references at the specified date
@@ -114,9 +114,9 @@ public class CelestialBodyPointed implements AttitudeLaw {
             new Vector3D(1 / r2, Vector3D.dotProduct(pointingCel0, pointingCel1));
 
         // compute transform from celestial frame to satellite frame
-        Rotation celToSatRotation =
+        final Rotation celToSatRotation =
             new Rotation(pointingCel0, phasingCel, pointingSat, phasingSat);
-        Vector3D celToSatSpin = celToSatRotation.applyTo(rotAxisCel);
+        final Vector3D celToSatSpin = celToSatRotation.applyTo(rotAxisCel);
         Transform transform = new Transform(celToSatRotation, celToSatSpin);
 
         if (frame != celestialFrame) {

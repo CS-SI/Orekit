@@ -222,9 +222,9 @@ public class Development implements Serializable {
             throw new OrekitException("missing serie j = {0} in nutation " +
                                       "model file {1} (line {2})",
                                       new Object[] {
-                                          new Integer(expected),
+                                          Integer.valueOf(expected),
                                           name,
-                                          new Integer(lineNumber)
+                                          Integer.valueOf(lineNumber)
                                       });
         }
 
@@ -248,7 +248,7 @@ public class Development implements Serializable {
         if (line == null) {
             throw new OrekitException("unexpected end of nutation model file {0} (after line {1})",
                                       new Object[] {
-                                          name, new Integer(lineNumber - 1)
+                                          name, Integer.valueOf(lineNumber - 1)
                                       });
         }
 

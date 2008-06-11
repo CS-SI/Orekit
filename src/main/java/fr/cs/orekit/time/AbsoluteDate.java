@@ -13,10 +13,8 @@
  */
 package fr.cs.orekit.time;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
 import java.io.Serializable;
+import java.util.Date;
 
 import fr.cs.orekit.errors.OrekitException;
 
@@ -70,40 +68,34 @@ public class AbsoluteDate implements Comparable, Serializable {
 
     /** Reference epoch for modified julian dates: 1858-11-17T00:00:00. */
     public static final AbsoluteDate MODIFIED_JULIAN_EPOCH =
-        new AbsoluteDate(new ChunkedDate( 1858, 11, 17), ChunkedTime.H00, TTScale.getInstance());
+        new AbsoluteDate(new ChunkedDate(1858, 11, 17), ChunkedTime.H00, TTScale.getInstance());
 
     /** Reference epoch for 1950 dates: 1950-01-01T00:00:00. */
     public static final AbsoluteDate FIFTIES_EPOCH =
-        new AbsoluteDate(new ChunkedDate( 1950,  1,  1), ChunkedTime.H00, TTScale.getInstance());
+        new AbsoluteDate(new ChunkedDate(1950,  1,  1), ChunkedTime.H00, TTScale.getInstance());
 
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 UTC. */
     // GPS epoch is 1980-01-06T00:00:00Z (i.e. UTC), TAI - UTC = +19s at this time,
     // we use a date in TAI here for safety reasons, to avoid calling
-    // UTCScale.getInstance() which may throw an exception as this is not
-    // desired in this very early run part of code
+    // UTCScale.getInstance() which may throw an exception; such an exception would induce
+    // many problems in this part of code which runs very early
     public static final AbsoluteDate GPS_EPOCH =
         new AbsoluteDate(new ChunkedDate(1980, 1, 6), new ChunkedTime(0, 0, 19), TAIScale.getInstance());
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC). */
     public static final AbsoluteDate J2000_EPOCH =
-        new AbsoluteDate(new ChunkedDate( 2000,  1,  1), ChunkedTime.H12, TTScale.getInstance());
+        new AbsoluteDate(new ChunkedDate(2000,  1,  1), ChunkedTime.H12, TTScale.getInstance());
 
     /** Java Reference epoch: 1970-01-01T00:00:00 TT. */
     public static final AbsoluteDate JAVA_EPOCH =
-        new AbsoluteDate(new ChunkedDate( 1970,  1,  1), ChunkedTime.H00, TTScale.getInstance());
+        new AbsoluteDate(new ChunkedDate(1970,  1,  1), ChunkedTime.H00, TTScale.getInstance());
 
-    /** Date formats to use for string conversion. */
-    private static final SimpleDateFormat OUTPUT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-    static {
-        // The time zone set here as NOTHING to do with the time scale represented by the
-        // UTCScale class. It is ONLY a way to make sure the standard SimpleDateFormat class
-        // does not add spurious daylight saving times or country-related offsets while generating
-        // the string representation. We can safely use it with non-UTC scales like TAI or TT
-        OUTPUT.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
-    }
+    /** epoch slightly shifted from J2000: 2000-01-01T00:00:00 TAI. */
+    public static final AbsoluteDate SHIFTED_J2000_EPOCH =
+        new AbsoluteDate(new ChunkedDate(2000,  1,  1), ChunkedTime.H00, TAIScale.getInstance());
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 3675795014622410242L;
+    private static final long serialVersionUID = -2183070428299149543L;
 
     /** Reference epoch in milliseconds from 1970-01-01T00:00:00 TAI. */
     private final long epoch;
@@ -211,6 +203,23 @@ public class AbsoluteDate implements Comparable, Serializable {
         return new Date(Math.round(time * 1000));
     }
 
+    /** Split the instance into date/time chunks.
+     * @param timeScale time scale to use
+     * @return date/time chunks
+     */
+    public ChunksPair getChunks(final TimeScale timeScale) {
+
+        // compute offset from 2000-01-01T00:00:00 in specified time scale
+        final double offest = minus(SHIFTED_J2000_EPOCH) +
+                              timeScale.offsetFromTAI(0.001 * epoch + offset);
+        final int    day    = (int) Math.floor(offest / 86400.0);
+
+        // build the chunks
+        return new ChunksPair(new ChunkedDate(day),
+                              new ChunkedTime(offest - 86400 * day));
+
+    }
+
     /** Compare the instance with another date.
      * @param date other date to compare the instance to
      * @return a negative integer, zero, or a positive integer as this date
@@ -269,7 +278,7 @@ public class AbsoluteDate implements Comparable, Serializable {
      * in ISO-8601 format with milliseconds accuracy
      */
     public String toString(final TimeScale timeScale) {
-        return OUTPUT.format(toDate(timeScale));
+        return getChunks(timeScale).toString();
     }
 
 }

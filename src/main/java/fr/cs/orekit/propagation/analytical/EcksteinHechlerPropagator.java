@@ -17,11 +17,11 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
 
+import fr.cs.orekit.attitudes.Attitude;
 import fr.cs.orekit.attitudes.AttitudeLaw;
 import fr.cs.orekit.attitudes.InertialLaw;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.errors.PropagationException;
-import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.orbits.CircularOrbit;
 import fr.cs.orekit.orbits.Orbit;
 import fr.cs.orekit.propagation.Propagator;
@@ -41,10 +41,10 @@ import fr.cs.orekit.time.AbsoluteDate;
 public class EcksteinHechlerPropagator implements Propagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7822712271905182848L;
+    private static final long serialVersionUID = -4954471813926391514L;
 
     /** Attitude law. */
-    private AttitudeLaw attitudeLaw;
+    private final AttitudeLaw attitudeLaw;
 
     /** Initial date. */
     private final AbsoluteDate initialDate;
@@ -117,15 +117,13 @@ public class EcksteinHechlerPropagator implements Propagator {
         this.c50 = c50;
         this.c60 = c60;
 
-        // transformation into circular adapted parameters
-        // (used by the Eckstein-Hechler model)
-        final CircularOrbit osculating = new CircularOrbit(initialState.getOrbit());
-
         // compute mean parameters
         initialDate = initialState.getDate();
         mass = initialState.getMass();
         this.attitudeLaw = attitudeLaw;
-        computeMeanParameters(osculating);
+
+        // transform into circular adapted parameters used by the Eckstein-Hechler model
+        computeMeanParameters(new CircularOrbit(initialState.getOrbit()));
 
     }
 
@@ -134,7 +132,8 @@ public class EcksteinHechlerPropagator implements Propagator {
      * are related to both the normalized coefficients
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
-     * <p>Attitude law is set to an default inertial {@link Frame J2000} aligned law.</p>
+     * <p>Attitude law is set to an default inertial {@link fr.cs.orekit.frames.Frame
+     * J<sub>2000</sub>} aligned law.</p>
      * <pre>
      *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup><span style="text-decoration: overline">C</span><sub>n,0</sub>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
@@ -157,12 +156,12 @@ public class EcksteinHechlerPropagator implements Propagator {
 
         this(initialState, new InertialLaw(new Rotation(Vector3D.PLUS_K, 0.)),
              referenceRadius, mu, c20, c30, c40, c50, c60);
+
     }
 
     /** Create a new instance.
-     * <p>This constructor allows to create a propagator from orbit, 
-     * without spacecraft state. 
-     * Mass is given an arbitrary value (1000 kg), and attitude law is the specified one.</p>
+     * <p>This constructor creates a propagator from orbit, and attitude law.
+     * Mass is given an arbitrary value (1000 kg).</p>
      * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
      * are related to both the normalized coefficients
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
@@ -187,11 +186,8 @@ public class EcksteinHechlerPropagator implements Propagator {
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60)
-        throws PropagationException, OrekitException {
+        throws PropagationException {
 
-        // create spacecraft state
-        SpacecraftState initialState = new SpacecraftState(initialOrbit);
-        
         // store model coefficients
         this.referenceRadius = referenceRadius;
         this.mu  = mu;
@@ -201,22 +197,20 @@ public class EcksteinHechlerPropagator implements Propagator {
         this.c50 = c50;
         this.c60 = c60;
 
-        // transformation into circular adapted parameters
-        // (used by the Eckstein-Hechler model)
-        final CircularOrbit osculating = new CircularOrbit(initialState.getOrbit());
-
         // compute mean parameters
-        initialDate = initialState.getDate();
-        mass = initialState.getMass();
+        initialDate = initialOrbit.getDate();
+        mass = 1000.0;
         this.attitudeLaw = attitudeLaw;
-        computeMeanParameters(osculating);
+
+        // transform into circular adapted parameters used by the Eckstein-Hechler model
+        computeMeanParameters(new CircularOrbit(initialOrbit));
 
     }
 
     /** Create a new instance.
-     * <p>This constructor allows to create a propagator from orbit, without . 
-     * Mass is given an arbitrary value (1000 kg) and attitude law is set to an 
-     * default inertial {@link Frame J2000} aligned law.</p>
+     * <p>This constructor creates a propagator from orbit only.
+     * Mass is given an arbitrary value (1000 kg) and attitude law is set to an
+     * default inertial  {@link fr.cs.orekit.frames.Frame J<sub>2000</sub>} aligned law.</p>
      * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
      * are related to both the normalized coefficients
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
@@ -239,7 +233,7 @@ public class EcksteinHechlerPropagator implements Propagator {
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60)
-        throws PropagationException, OrekitException {
+        throws PropagationException {
 
         this(initialOrbit, new InertialLaw(new Rotation(Vector3D.PLUS_K, 0.)),
              referenceRadius, mu, c20, c30, c40, c50, c60);
@@ -255,10 +249,17 @@ public class EcksteinHechlerPropagator implements Propagator {
      */
     public SpacecraftState propagate(final AbsoluteDate date)
         throws PropagationException {
-        final Orbit op = propagateOrbit(date);
         try {
-            return new SpacecraftState(op, mass,
-                                       attitudeLaw.getState(date, op.getPVCoordinates(), op.getFrame()));
+
+            // evaluate orbit
+            final Orbit orbit = propagateOrbit(date);
+
+            // evaluate attitude
+            final Attitude attitude =
+                attitudeLaw.getState(date, orbit.getPVCoordinates(), orbit.getFrame());
+
+            return new SpacecraftState(orbit, mass, attitude);
+
         } catch (OrekitException oe) {
             throw new PropagationException(oe.getMessage(), oe);
         }
@@ -312,7 +313,7 @@ public class EcksteinHechlerPropagator implements Propagator {
             sinI4 = sinI2 * sinI2;
             sinI6 = sinI2 * sinI4;
 
-            // recompute the osculation parameters from the current mean parameters
+            // recompute the osculating parameters from the current mean parameters
             final CircularOrbit rebuilt = propagateOrbit(initialDate);
 
             // adapted parameters residuals
@@ -327,14 +328,14 @@ public class EcksteinHechlerPropagator implements Propagator {
 
             // update mean parameters
             mean = new CircularOrbit(mean.getA()          + deltaA,
-                                          mean.getCircularEx() + deltaEx,
-                                          mean.getCircularEy() + deltaEy,
-                                          mean.getI()          + deltaI,
-                                          mean.getRightAscensionOfAscendingNode() + deltaRAAN,
-                                          mean.getAlphaM()     + deltaAlphaM,
-                                          CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
-                                          mean.getFrame(),
-                                          mean.getDate(), mean.getMu());
+                                     mean.getCircularEx() + deltaEx,
+                                     mean.getCircularEy() + deltaEy,
+                                     mean.getI()          + deltaI,
+                                     mean.getRightAscensionOfAscendingNode() + deltaRAAN,
+                                     mean.getAlphaM()     + deltaAlphaM,
+                                     CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
+                                     mean.getFrame(),
+                                     mean.getDate(), mean.getMu());
 
             // check convergence
             if ((Math.abs(deltaA)      < thresholdA) &&
@@ -378,7 +379,7 @@ public class EcksteinHechlerPropagator implements Propagator {
         throw new PropagationException("unable to compute Eckstein-Hechler mean" +
                                        " parameters after {0} iterations",
                                        new Object[] {
-                                           new Integer(i)
+                                           Integer.valueOf(i)
                                        });
 
     }
@@ -536,7 +537,7 @@ public class EcksteinHechlerPropagator implements Propagator {
         return new CircularOrbit(mean.getA() * (1.0 + rda), exm + rdex, eym + rdey,
                                       xim + rdxi, MathUtils.normalizeAngle(omm + rdom, Math.PI),
                                       MathUtils.normalizeAngle(xlm + rdxl, Math.PI),
-                                      CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                      CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
                                       mean.getFrame(), date, mean.getMu());
 
     }

@@ -284,16 +284,16 @@ public class TLE {
         if (Integer.parseInt(line1.substring(68)) != (chksum1 % 10)) {
             throw new OrekitException(CHECKSUM_MESSAGE,
                                       new Object[] {
-                                          new Integer(1), line1.substring(68) ,
-                                          new Integer(chksum1 % 10), line1
+                                          Integer.valueOf(1), line1.substring(68) ,
+                                          Integer.valueOf(chksum1 % 10), line1
                                       });
         }
 
         if (Integer.parseInt(line2.substring(68)) != (chksum2 % 10)) {
             throw new OrekitException(CHECKSUM_MESSAGE,
                                       new Object[] {
-                                          new Integer(2), line2.substring(68) ,
-                                          new Integer(chksum2 % 10), line2
+                                          Integer.valueOf(2), line2.substring(68) ,
+                                          Integer.valueOf(chksum2 % 10), line2
                                       });
         }
 

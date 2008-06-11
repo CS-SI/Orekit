@@ -29,6 +29,8 @@ import fr.cs.orekit.errors.OrekitException;
  *   <li>from 1582-10-15: gregorian calendar</li>
  * </ul>
  * <p>Instances of this class are guaranteed to be immutable.</p>
+ * @see ChunkedTime
+ * @see ChunksPair
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
@@ -83,7 +85,7 @@ public class ChunkedDate implements Serializable, Comparable {
         if ((month < 1) || (month > 12)) {
             OrekitException.throwIllegalArgumentException("non-existent month {0}",
                                                           new Object[] {
-                                                              new Integer(month)
+                                                              Integer.valueOf(month)
                                                           });
         }
 
@@ -99,9 +101,9 @@ public class ChunkedDate implements Serializable, Comparable {
         if ((year != check.year) || (month != check.month) || (day != check.day)) {
             OrekitException.throwIllegalArgumentException("non-existent date {0}-{1}-{2}",
                                                           new Object[] {
-                                                              new Integer(year),
-                                                              new Integer(month),
-                                                              new Integer(day)
+                                                              Integer.valueOf(year),
+                                                              Integer.valueOf(month),
+                                                              Integer.valueOf(day)
                                                           });
         }
 
@@ -119,8 +121,8 @@ public class ChunkedDate implements Serializable, Comparable {
         if (dayNumber != getDayOfYear()) {
             OrekitException.throwIllegalArgumentException("no day number {0} in year {1}",
                                                           new Object[] {
-                                                              new Integer(dayNumber),
-                                                              new Integer(year)
+                                                              Integer.valueOf(dayNumber),
+                                                              Integer.valueOf(year)
                                                           });
         }
     }

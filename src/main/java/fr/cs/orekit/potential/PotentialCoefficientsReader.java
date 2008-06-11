@@ -104,8 +104,8 @@ public abstract class PotentialCoefficientsReader {
         if (n >= normalizedC.length) {
             throw new OrekitException(TOO_LARGE_DEGREE,
                                       new Object[] {
-                                          new Integer(n),
-                                          new Integer(normalizedC.length - 1)
+                                          Integer.valueOf(n),
+                                          Integer.valueOf(normalizedC.length - 1)
                                       });
         }
 
@@ -160,13 +160,13 @@ public abstract class PotentialCoefficientsReader {
         if (n >= complete.length) {
             throw new OrekitException(TOO_LARGE_DEGREE,
                                       new Object[] {
-                                          new Integer(n), new Integer(complete.length - 1)
+                                          Integer.valueOf(n), Integer.valueOf(complete.length - 1)
                                       });
         }
         if (m >= complete[complete.length - 1].length) {
             throw new OrekitException(TOO_LARGE_ORDER,
                                       new Object[] {
-                                          new Integer(m), new Integer(complete[complete.length - 1].length - 1)
+                                          Integer.valueOf(m), Integer.valueOf(complete[complete.length - 1].length - 1)
                                       });
         }
 

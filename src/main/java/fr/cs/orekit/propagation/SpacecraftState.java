@@ -15,11 +15,8 @@ package fr.cs.orekit.propagation;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.geometry.RotationOrder;
-
 import fr.cs.orekit.attitudes.Attitude;
-import fr.cs.orekit.attitudes.AttitudeLaw;
-import fr.cs.orekit.attitudes.LofOffset;
+import fr.cs.orekit.attitudes.InertialLaw;
 import fr.cs.orekit.errors.OrekitException;
 import fr.cs.orekit.frames.Frame;
 import fr.cs.orekit.orbits.Orbit;
@@ -44,7 +41,7 @@ import fr.cs.orekit.utils.PVCoordinates;
 public class SpacecraftState implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -6033960736544357234L;
+    private static final long serialVersionUID = 8402947544926710889L;
 
     /** Orbital state. */
     private final Orbit orbit;
@@ -69,7 +66,8 @@ public class SpacecraftState implements Serializable {
 
     /** Create a new instance from orbital state and mass.
      * <p>The attitude law is set to a default perfectly
-     * {@link LofOffset LOF-aligned} law.</p>
+     * default inertial {@link fr.cs.orekit.frames.Frame J<sub>2000</sub>}
+     * aligned law.</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
      * @exception OrekitException is attitude law cannot compute the current state
@@ -78,16 +76,16 @@ public class SpacecraftState implements Serializable {
         throws OrekitException {
         this.orbit    = orbit;
         this.mass     = mass;
-        final AttitudeLaw lofAligned = new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
-        this.attitude = lofAligned.getState(orbit.getDate(),
-                                            orbit.getPVCoordinates(),
-                                            orbit.getFrame());
+        this.attitude =
+            InertialLaw.J2000_ALIGNED.getState(orbit.getDate(),
+                                               orbit.getPVCoordinates(),
+                                               orbit.getFrame());
     }
 
     /** Create a new instance from orbital state only.
      * <p>Gives an arbitrary value (1000 kg) for the mass and
-     * set the attitude law to a default perfectly
-     * {@link LofOffset LOF-aligned} law.</p>
+     * set the attitude law to a default inertial {@link fr.cs.orekit.frames.Frame
+     * J<sub>2000</sub>} aligned law.</p>
      * @param orbit the orbit
      * @exception OrekitException is attitude law cannot compute the current state
      */
@@ -230,7 +228,7 @@ public class SpacecraftState implements Serializable {
      * for mu. The result is provided as a reference to the internally cached
      * {@link PVCoordinates}, so the caller is responsible to copy it in a separate
      * {@link PVCoordinates} if it needs to keep the value for a while.
-     * @return pvCoordinates in orbit definition frame 
+     * @return pvCoordinates in orbit definition frame
      */
     public PVCoordinates getPVCoordinates() {
         return orbit.getPVCoordinates();
@@ -242,10 +240,11 @@ public class SpacecraftState implements Serializable {
      * for mu. The result is provided as a reference to the internally cached
      * {@link PVCoordinates}, so the caller is responsible to copy it in a separate
      * {@link PVCoordinates} if it needs to keep the value for a while.
-     * @return pvCoordinates in orbit definition frame 
+     * @param outputFrame frame in which coordinates should be defined
+     * @return pvCoordinates in orbit definition frame
      * @exception OrekitException if the transformation between frames cannot be computed
      */
-    public PVCoordinates getPVCoordinates(final Frame outputFrame) 
+    public PVCoordinates getPVCoordinates(final Frame outputFrame)
         throws OrekitException {
         return orbit.getPVCoordinates(outputFrame);
     }

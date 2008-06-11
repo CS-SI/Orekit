@@ -78,10 +78,10 @@ public class DrozinerAttractionModel implements ForceModel {
         if ((C.length != S.length) || (C[C.length - 1].length != S[S.length - 1].length)) {
             OrekitException.throwIllegalArgumentException("potential arrays sizes mismatch (C: {0}x{1}, S: {2}x{3})",
                                                           new Object[] {
-                                                              new Integer(C.length),
-                                                              new Integer(C[degree].length),
-                                                              new Integer(S.length),
-                                                              new Integer(S[degree].length)
+                                                              Integer.valueOf(C.length),
+                                                              Integer.valueOf(C[degree].length),
+                                                              Integer.valueOf(S.length),
+                                                              Integer.valueOf(S[degree].length)
                                                           });
         }
 

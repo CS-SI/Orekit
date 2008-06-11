@@ -30,9 +30,6 @@ import fr.cs.orekit.time.AbsoluteDate;
  */
 public class ConstantThrustManeuver implements ForceModel {
 
-    /**Serializable UID */
-    private static final long serialVersionUID = 5349622732741384211L;
-
     /** Identifier for QSW frame. */
     public static final int QSW = 0;
 
@@ -49,6 +46,7 @@ public class ConstantThrustManeuver implements ForceModel {
     public static final double G0 = 9.80665;
 
     /** Serializable UID. */
+    private static final long serialVersionUID = 5349622732741384211L;
 
     /** State of the engine. */
     private boolean firing;
