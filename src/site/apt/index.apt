@@ -108,7 +108,7 @@ Overview
 
       * integration based
 
-    * unified interface above analytical/numerical/tabulated propagator for easy
+    * unified interface above analytical/numerical/tabulated propagators for easy
       switch from coarse analysis to fine simulation with one line change
 
   ** Attitude
