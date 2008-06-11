@@ -378,7 +378,7 @@ public class DTM2000Atmosphere {
 
         final double gdelt0 =  gFunction(t0, dt0, 0, kleq);
         dt0[1] = (t0[1] + gdelt0) / t0[1];
-        final double t120 = t0[1] + gdelt0; // TODO t120 ???
+        final double t120 = t0[1] + gdelt0;
         final double gdeltp = gFunction(tp, dtp, 0, kleq);
         dtp[1] = (tp[1] + gdeltp) / tp[1];
         tp120 = tp[1] + gdeltp;
