@@ -78,7 +78,7 @@ Overview
           (automatic reading of SHM (for Eigen models) and EGM formats potential files,
           even compressed)
 
-        * atmospheric drag (DTM2000, Jaccia-Bowman 2006 and simple exponential models)
+        * atmospheric drag (DTM2000, Jacchia-Bowman 2006 and simple exponential models)
 
         * third body attraction
 
