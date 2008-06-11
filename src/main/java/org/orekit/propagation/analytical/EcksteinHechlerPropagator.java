@@ -36,7 +36,7 @@ import org.orekit.time.AbsoluteDate;
  * retrograde).</p>
  * @see Orbit
  * @author Guylaine Prat
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class EcksteinHechlerPropagator implements Propagator {
 
@@ -235,7 +235,7 @@ public class EcksteinHechlerPropagator implements Propagator {
                                      final double c50, final double c60)
         throws PropagationException {
 
-        this(initialOrbit, new InertialLaw(new Rotation(Vector3D.PLUS_K, 0.)),
+        this(initialOrbit, InertialLaw.J2000_ALIGNED,
              referenceRadius, mu, c20, c30, c40, c50, c60);
 
     }
