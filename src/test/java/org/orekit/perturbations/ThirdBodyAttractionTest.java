@@ -13,17 +13,11 @@
  */
 package org.orekit.perturbations;
 
-import java.io.FileNotFoundException;
-import java.text.ParseException;
-
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.apache.commons.math.ode.DerivativeException;
-import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
-import org.apache.commons.math.ode.IntegratorException;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.iers.IERSDirectoryCrawler;
@@ -43,40 +37,44 @@ import org.orekit.time.UTCScale;
 
 public class ThirdBodyAttractionTest extends TestCase {
 
-    public void testSunContrib() throws ParseException, OrekitException, DerivativeException, IntegratorException, FileNotFoundException {
+    private double mu;
+
+    public void testSunContrib() throws OrekitException {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 07, 01),
                                              new ChunkedTime(13, 59, 27.816),
                                              UTCScale.getInstance());
-        Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
-                                           Math.tan(0.001745329)*Math.cos(2*Math.PI/3),
-                                           Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
+        Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
+                                           Math.tan(0.001745329) * Math.cos(2 * Math.PI / 3),
+                                           Math.tan(0.001745329) * Math.sin(2 * Math.PI / 3),
                                            0.1, 2, Frame.getJ2000(), date, mu);
-        Sun sun = new Sun();
+        double period = 2 * Math.PI * orbit.getA() * Math.sqrt(orbit.getA() / orbit.getMu());
 
-        // creation of the force model
-        ThirdBodyAttraction TBA =  new ThirdBodyAttraction(sun);
+        // set up propagator
+        NumericalPropagator calc =
+            new NumericalPropagator(new GraggBulirschStoerIntegrator(10.0, period, 0, 1.0e-5));
+        calc.addForceModel(new ThirdBodyAttraction(new Sun()));
 
-        double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
-
-        // creation of the propagator
-        FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, period, 0, 10e-5);
-        NumericalPropagator calc = new NumericalPropagator(integrator);
-        calc.addForceModel(TBA);
-
-        // Step Handler
-        calc.setMasterMode(Math.floor(period), new TBAStepHandler(TBAStepHandler.SUN, date));
-        AbsoluteDate finalDate = new AbsoluteDate(date , 2*365*period);
+        // set up step handler to perform checks
+        calc.setMasterMode(Math.floor(period), new ReferenceChecker(date) {
+            private static final long serialVersionUID = 6539780121834779598L;
+            protected double hXRef(double t) {
+                return -1.06757e-3 + 0.221415e-11 * t + 18.9421e-5 *
+                Math.cos(3.9820426e-7*t) - 7.59983e-5 * Math.sin(3.9820426e-7*t);
+            }
+            protected double hYRef(double t) {
+                return 1.43526e-3 + 7.49765e-11 * t + 6.9448e-5 *
+                Math.cos(3.9820426e-7*t) + 17.6083e-5 * Math.sin(3.9820426e-7*t);
+            }
+        });
+        AbsoluteDate finalDate = new AbsoluteDate(date, 365 * period);
         calc.setInitialState(new SpacecraftState(orbit));
         calc.propagate(finalDate);
-        assertTrue("incomplete test", false);
 
     }
 
-    public void testMoonContrib()
-        throws ParseException, OrekitException, DerivativeException,
-               IntegratorException, FileNotFoundException {
+    public void testMoonContrib() throws OrekitException {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 07, 01),
@@ -87,80 +85,43 @@ public class ThirdBodyAttractionTest extends TestCase {
                                       Math.tan(0.001745329) * Math.cos(2 * Math.PI / 3),
                                       Math.tan(0.001745329) * Math.sin(2 * Math.PI / 3),
                                       0.1, 2, Frame.getJ2000(), date, mu);
-        Moon moon = new Moon();
+        double period = 2 * Math.PI * orbit.getA() * Math.sqrt(orbit.getA() / orbit.getMu());
 
-        // creation of the force model
-        ThirdBodyAttraction TBA =  new ThirdBodyAttraction(moon);
+        // set up propagator
+        NumericalPropagator calc =
+            new NumericalPropagator(new GraggBulirschStoerIntegrator(10.0, period, 0, 1.0e-5));
+        calc.addForceModel(new ThirdBodyAttraction(new Moon()));
 
-        double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
-
-        // creation of the propagator
-        FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, period, 0, 10e-5);
-        NumericalPropagator calc = new NumericalPropagator(integrator);
-        calc.addForceModel(TBA);
-
-        // Step Handler
-        calc.setMasterMode(Math.floor(period), new TBAStepHandler(TBAStepHandler.MOON, date));
-        AbsoluteDate finalDate = new AbsoluteDate(date , 365*period);
+        // set up step handler to perform checks
+        calc.setMasterMode(Math.floor(period), new ReferenceChecker(date) {
+            private static final long serialVersionUID = -4725658720642817168L;
+            protected double hXRef(double t) {
+                return -0.909227e-3 - 0.309607e-10 * t + 2.68116e-5 *
+                Math.cos(5.29808e-6*t) - 1.46451e-5 * Math.sin(5.29808e-6*t);
+            }
+            protected double hYRef(double t) {
+                return 1.48482e-3 + 1.57598e-10 * t + 1.47626e-5 *
+                Math.cos(5.29808e-6*t) - 2.69654e-5 * Math.sin(5.29808e-6*t);
+            }
+        });
+        AbsoluteDate finalDate = new AbsoluteDate(date, 31 * period);
         calc.setInitialState(new SpacecraftState(orbit));
         calc.propagate(finalDate);
-        assertTrue("incomplete test", false);
 
     }
 
-    private double mu = 3.98600E14;
+    private static abstract class ReferenceChecker extends OrekitFixedStepHandler {
 
-    private static class TBAStepHandler extends OrekitFixedStepHandler {
+        private final AbsoluteDate reference;
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 8907114996643609848L;
-        public static final int MOON = 1;
-        public static final int SUN = 2;
-        public static final int SUNandMOON = 3;
-        private int type;
-        AbsoluteDate date;
-
-        private TBAStepHandler(int type, AbsoluteDate date) throws FileNotFoundException {
-            this.type = type;
-            this.date = date;
-        }
-
-        public void handleStep(double t, double[]y, boolean isLastStep) {
-            if (type == MOON) {
-                assertEquals(0, xMoon(t)-y[3], 1e-4);
-                assertEquals(0, yMoon(t)-y[4], 1e-4);
-            }
-            if (type == SUN) {
-                assertEquals(0, xSun(t)-y[3], 1e-4);
-                assertEquals(0, ySun(t)-y[4], 1e-4);
-            }
-            if (type == SUNandMOON) {
-
-            }
-        }
-
-        private double xMoon(double t) {
-            return -0.909227e-3 - 0.309607e-10 * t + 2.68116e-5 *
-            Math.cos(5.29808e-6*t) - 1.46451e-5 * Math.sin(5.29808e-6*t);
-        }
-
-        private double yMoon(double t) {
-            return 1.48482e-3 + 1.57598e-10 * t + 1.47626e-5 *
-            Math.cos(5.29808e-6*t) - 2.69654e-5 * Math.sin(5.29808e-6*t);
-        }
-
-        private double xSun(double t) {
-            return -1.06757e-3 + 0.221415e-11 * t + 18.9421e-5 *
-            Math.cos(3.9820426e-7*t) - 7.59983e-5 * Math.sin(3.9820426e-7*t);
-        }
-
-        private double ySun(double t) {
-            return 1.43526e-3 + 7.49765e-11 * t + 6.9448e-5 *
-            Math.cos(3.9820426e-7*t) + 17.6083e-5 * Math.sin(3.9820426e-7*t);
+        protected ReferenceChecker(AbsoluteDate reference) {
+            this.reference = reference;
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {
-            this.handleStep(currentState.getDate().minus(date), new double[] {0,0,0,currentState.getHx(), currentState.getHy()}, isLast);
+            double t = currentState.getDate().minus(reference);
+            assertEquals(hXRef(t), currentState.getHx(), 1e-4);
+            assertEquals(hYRef(t), currentState.getHy(), 1e-4);
         }
 
         public boolean requiresDenseOutput() {
@@ -170,9 +131,14 @@ public class ThirdBodyAttractionTest extends TestCase {
         public void reset() {
         }
 
+        protected abstract double hXRef(double t);
+
+        protected abstract double hYRef(double t);
+
     }
 
     public void setUp() {
+        mu = 3.986e14;
         System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
     }
 
