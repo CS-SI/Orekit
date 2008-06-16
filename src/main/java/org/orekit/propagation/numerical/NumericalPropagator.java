@@ -149,7 +149,7 @@ public class NumericalPropagator implements Propagator {
     /** Propagator mode handler. */
     private ModeHandler modeHandler;
 
-    /** Create a new instance of NumericalModel, based on orbit definition mu.
+    /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. there is no perturbing force
      * at all. This means that if {@link #addForceModel addForceModel} is not
      * called after creation, the integrated orbit will follow a keplerian
