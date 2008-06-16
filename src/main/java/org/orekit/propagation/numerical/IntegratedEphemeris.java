@@ -50,13 +50,16 @@ public class IntegratedEphemeris
     implements BoundedPropagator, ModeHandler, StepHandler {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2224785759508734554L;
+    private static final long serialVersionUID = -6359936988057905059L;
 
     /** Central body gravitational constant. */
     private double mu;
 
     /** Attitude law. */
     private AttitudeLaw attitudeLaw;
+
+    /** Reference date. */
+    private AbsoluteDate reference;
 
     /** Start date of the integration (can be min or max). */
     private AbsoluteDate startDate;
@@ -82,7 +85,7 @@ public class IntegratedEphemeris
 
     /** {@inheritDoc} */
     public void initialize(// CHECKSTYLE: stop HiddenField check
-                           final AbsoluteDate ref,
+                           final AbsoluteDate reference,
                            final Frame frame, final double mu,
                            final AttitudeLaw attitudeLaw
                            // CHECKSTYLE: resume HiddenField check
@@ -90,14 +93,13 @@ public class IntegratedEphemeris
         this.frame       = frame;
         this.attitudeLaw = attitudeLaw;
         this.mu          = mu;
-        startDate = new AbsoluteDate(ref, model.getInitialTime());
-        maxDate   = new AbsoluteDate(ref, model.getFinalTime());
-        if (maxDate.minus(startDate) < 0) {
-            minDate = maxDate;
-            maxDate = startDate;
-        } else {
-            minDate = startDate;
-        }
+        this.reference   = reference;
+
+        // dates will be set when last step is handled
+        startDate        = null;
+        minDate          = null;
+        maxDate          = null;
+
     }
 
     /** Get the orbit at a specific date.
@@ -142,6 +144,16 @@ public class IntegratedEphemeris
     public void handleStep(StepInterpolator interpolator, boolean isLast)
             throws DerivativeException {
         model.handleStep(interpolator, isLast);
+        if (isLast) {
+            startDate = new AbsoluteDate(reference, model.getInitialTime());
+            maxDate   = new AbsoluteDate(reference, model.getFinalTime());
+            if (maxDate.minus(startDate) < 0) {
+                minDate = maxDate;
+                maxDate = startDate;
+            } else {
+                minDate = startDate;
+            }
+        }
     }
 
     /** {@inheritDoc} */
