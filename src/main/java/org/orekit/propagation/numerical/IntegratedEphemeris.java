@@ -14,6 +14,9 @@
 package org.orekit.propagation.numerical;
 
 import org.apache.commons.math.ode.ContinuousOutputModel;
+import org.apache.commons.math.ode.DerivativeException;
+import org.apache.commons.math.ode.StepHandler;
+import org.apache.commons.math.ode.StepInterpolator;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
@@ -28,7 +31,7 @@ import org.orekit.time.AbsoluteDate;
  * later retrieval.
  *
  * <p>Instances of this class are built and then must be filled with the results
- * provided by {@link NumericalModel} objects in order to allow random
+ * provided by {@link NumericalPropagator} objects in order to allow random
  * access to any intermediate state of the orbit throughout the integration range.
  * Numerically integrated orbits can therefore be used by algorithms that
  * need to wander around according to their own algorithm without cumbersome
@@ -37,16 +40,17 @@ import org.orekit.time.AbsoluteDate;
  * <p> This class handles a {@link ContinuousOutputModel} and can be very
  *  voluminous. Refer to {@link ContinuousOutputModel} for more information.</p>
  *
- * @see NumericalModel
+ * @see NumericalPropagator
  * @author Mathieu Roméro
  * @author Luc Maisonobe
  * @author Véronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
-public class IntegratedEphemeris implements BoundedPropagator {
+public class IntegratedEphemeris
+    implements BoundedPropagator, ModeHandler, StepHandler {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -5016030285313444680L;
+    private static final long serialVersionUID = -2224785759508734554L;
 
     /** Central body gravitational constant. */
     private double mu;
@@ -69,42 +73,31 @@ public class IntegratedEphemeris implements BoundedPropagator {
     /** Frame. */
     private Frame frame;
 
-    /** Indicator for initialized instances. */
-    private boolean isInitialized;
-
     /** Creates a new instance of IntegratedEphemeris which must be
      *  filled by the propagator.
      */
     public IntegratedEphemeris() {
-        isInitialized = false;
+        model = new ContinuousOutputModel();
     }
 
-    /** Initialize the ephemeris propagator.
-     * @param model interpolation model containing the state evolution
-     * @param ref reference date
-     * @param frame frame in which state has been integrated
-     * @param attitudeLaw attitude law
-     * @param mu central body attraction coefficient
-     */
-    protected void initialize(// CHECKSTYLE: stop HiddenField check
-                              final ContinuousOutputModel model, final AbsoluteDate ref,
-                              final Frame frame,
-                              final AttitudeLaw attitudeLaw, final double mu
-                              // CHECKSTYLE: resume HiddenField check
-                              ) {
-        this.model     = model;
-        this.frame = frame;
+    /** {@inheritDoc} */
+    public void initialize(// CHECKSTYLE: stop HiddenField check
+                           final AbsoluteDate ref,
+                           final Frame frame, final double mu,
+                           final AttitudeLaw attitudeLaw
+                           // CHECKSTYLE: resume HiddenField check
+                          ) {
+        this.frame       = frame;
         this.attitudeLaw = attitudeLaw;
-        this.mu = mu;
+        this.mu          = mu;
         startDate = new AbsoluteDate(ref, model.getInitialTime());
-        maxDate = new AbsoluteDate(ref, model.getFinalTime());
+        maxDate   = new AbsoluteDate(ref, model.getFinalTime());
         if (maxDate.minus(startDate) < 0) {
             minDate = maxDate;
             maxDate = startDate;
         } else {
             minDate = startDate;
         }
-        this.isInitialized = true;
     }
 
     /** Get the orbit at a specific date.
@@ -114,23 +107,20 @@ public class IntegratedEphemeris implements BoundedPropagator {
      */
     public SpacecraftState propagate(final AbsoluteDate date)
         throws PropagationException {
-        if (isInitialized) {
-            model.setInterpolatedTime(date.minus(startDate));
-            final double[] state = model.getInterpolatedState();
+        model.setInterpolatedTime(date.minus(startDate));
+        final double[] state = model.getInterpolatedState();
 
-            final EquinoctialOrbit eq =
-                new EquinoctialOrbit(state[0], state[1], state[2],
-                                          state[3], state[4], state[5], 2, frame, date, mu);
-            final double mass = state[6];
+        final EquinoctialOrbit eq =
+            new EquinoctialOrbit(state[0], state[1], state[2],
+                                 state[3], state[4], state[5], 2, frame, date, mu);
+        final double mass = state[6];
 
-            try {
-                return new SpacecraftState(eq, mass,
-                                           attitudeLaw.getState(date, eq.getPVCoordinates(), frame));
-            } catch (OrekitException oe) {
-                throw new PropagationException(oe.getMessage(), oe);
-            }
-        } else {
-            return null;
+        try {
+            return new SpacecraftState(eq,
+                                       attitudeLaw.getState(date, eq.getPVCoordinates(), frame),
+                                       mass);
+        } catch (OrekitException oe) {
+            throw new PropagationException(oe.getMessage(), oe);
         }
     }
 
@@ -146,6 +136,22 @@ public class IntegratedEphemeris implements BoundedPropagator {
      */
     public AbsoluteDate getMaxDate() {
         return maxDate;
+    }
+
+    /** {@inheritDoc} */
+    public void handleStep(StepInterpolator interpolator, boolean isLast)
+            throws DerivativeException {
+        model.handleStep(interpolator, isLast);
+    }
+
+    /** {@inheritDoc} */
+    public boolean requiresDenseOutput() {
+        return model.requiresDenseOutput();
+    }
+
+    /** {@inheritDoc} */
+    public void reset() {
+        model.reset();
     }
 
 }

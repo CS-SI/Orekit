@@ -18,6 +18,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Rotation;
+import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
@@ -86,8 +87,25 @@ public class LofOffsetPointingTest extends TestCase {
         final double angleNadir = nadirRot.applyInverseTo(lofRot).getAngle();
         assertEquals(0., angleNadir, Utils.epsilonAngle);
 
-   } 
-    
+    } 
+
+    public void testMiss() {
+        final CircularOrbit circ =
+            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(0.), Math.toRadians(270.),
+                                   Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                   Frame.getJ2000(), date, mu);
+        final LofOffset upsideDown = new LofOffset(RotationOrder.XYX, Math.PI, 0, 0);
+        try {
+            final LofOffsetPointing pointing = new LofOffsetPointing(earthSpheric, upsideDown, Vector3D.PLUS_K);
+            pointing.getObservedGroundPoint(circ.getDate(), circ.getPVCoordinates(), circ.getFrame());
+            fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            // expected behavior
+        } catch (Exception e) {
+            fail("wrong exception caught");
+        }
+    }
+
     public void setUp() {
         try {
             // Computation date

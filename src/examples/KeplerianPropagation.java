@@ -23,7 +23,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.propagation.numerical.NumericalModel;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChunkedDate;
 import org.orekit.time.ChunkedTime;
@@ -52,10 +52,7 @@ public class KeplerianPropagation {
         double raan = Math.toRadians(261); // right ascention of ascending node
         double lv = 0; // mean anomaly
 
-        double mass = 2500; // mass of the spacecraft in Kg
-
         // date and frame
-
         AbsoluteDate initialDate = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
                                                     new ChunkedTime(23, 30, 00.000),
                                                     UTCScale.getInstance());
@@ -66,45 +63,38 @@ public class KeplerianPropagation {
 
         Orbit initialOrbit =
             new KeplerianOrbit(a, e, i, omega, raan, lv,
-                                    KeplerianOrbit.MEAN_ANOMALY, inertialFrame, initialDate, mu);
-
-        SpacecraftState initialState = new SpacecraftState(initialOrbit, mass);
+                               KeplerianOrbit.MEAN_ANOMALY,
+                               inertialFrame, initialDate, mu);
 
         /* ***************** */
         /*   Extrapolation   */
         /* ***************** */
 
         // Simple Keplerian extrapolation
+        KeplerianPropagator kepler = new KeplerianPropagator(initialOrbit);
 
-        KeplerianPropagator kepler = new KeplerianPropagator(initialState);
-
-        double deltaT = 1000; // extrapolation lenght in seconds
+        double deltaT = 1000; // extrapolation length in seconds
 
         AbsoluteDate finalDate = new AbsoluteDate(initialDate, deltaT);
         SpacecraftState finalState = kepler.propagate(finalDate);
-
         System.out.println(" Final parameters with deltaT = +1000 s : " +
                            finalState.getOrbit());
 
-        deltaT = -1000; // extrapolation lenght
+        deltaT = -1000; // extrapolation length
 
         finalDate = new AbsoluteDate(initialDate, deltaT);
         finalState = kepler.propagate(finalDate);
-
         System.out.println(" Final parameters with deltaT = -1000 s : " +
                            finalState.getOrbit());
 
         // numerical propagation with no perturbation (only keplerian movement)
-        // we use a very simple integrator with a fixed step : Runge Kutta
-
-        FirstOrderIntegrator integrator = new ClassicalRungeKuttaIntegrator(1); // the step is one second
-
-        NumericalModel propagator = new NumericalModel(mu, integrator);
-
-        finalState = propagator.propagate(initialState, finalDate);
-
+        // we use a very simple integrator with a fixed step: classical Runge-Kutta
+        FirstOrderIntegrator integrator = new ClassicalRungeKuttaIntegrator(1.0); // the step is one second
+        NumericalPropagator propagator = new NumericalPropagator(integrator);
+        finalState = propagator.propagate(finalDate);
         System.out.println(" Final parameters with deltaT = -1000 s : " +
                            finalState.getOrbit());
+
     }
 
 }

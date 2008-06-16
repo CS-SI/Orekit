@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation;
+package org.orekit.propagation.numerical;
 
 import java.io.FileNotFoundException;
 
@@ -25,10 +25,11 @@ import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.IntegratedEphemeris;
-import org.orekit.propagation.numerical.NumericalModel;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -38,57 +39,53 @@ public class IntegratedEphemerisTest extends TestCase {
     public void testNormalKeplerIntegration() throws OrekitException, FileNotFoundException {
 
         // Definition of initial conditions with position and velocity
-
         Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
         Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
         double mu = 3.9860047e14;
 
         AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
-        SpacecraftState initialOrbit =
-            new SpacecraftState(new EquinoctialOrbit(new PVCoordinates(position, velocity),
-                                                     Frame.getJ2000(), initDate, mu));
+        Orbit initialOrbit =
+            new EquinoctialOrbit(new PVCoordinates(position, velocity),
+                                 Frame.getJ2000(), initDate, mu);
 
         // Keplerian propagator definition
-
         KeplerianPropagator keplerEx = new KeplerianPropagator(initialOrbit);
 
         // Numerical propagator definition
-
         FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, 86400, 0, 10e-13);
-        NumericalModel numericEx = new NumericalModel(mu, integrator);
+        NumericalPropagator numericEx = new NumericalPropagator(integrator);
 
         // Integrated ephemeris
-
         IntegratedEphemeris ephemeris = new IntegratedEphemeris();
 
         // Propagation
-
-        AbsoluteDate finalDate = new AbsoluteDate(initDate , 86400);
-        numericEx.propagate(initialOrbit , finalDate , ephemeris );
-        SpacecraftState keplerIntermediateOrbit;
-        SpacecraftState numericIntermediateOrbit;
-        AbsoluteDate intermediateDate;
+        AbsoluteDate finalDate = new AbsoluteDate(initDate, 86400);
+        numericEx.setBatchMode(ephemeris);
+        numericEx.setInitialState(new SpacecraftState(initialOrbit));
+        numericEx.propagate(finalDate);
 
         // tests
-
-        for (int i = 1; i<=86400; i++) {
-            intermediateDate = new AbsoluteDate(initDate , i);
-            keplerIntermediateOrbit = keplerEx.propagate(intermediateDate);
-            numericIntermediateOrbit = ephemeris.propagate(intermediateDate);
-
-            Vector3D test = keplerIntermediateOrbit.getPVCoordinates().getPosition().subtract(numericIntermediateOrbit.getPVCoordinates().getPosition());
-            assertEquals(0, test.getNorm(), 10e-2);
+        for (int i = 1; i <= 86400; i++) {
+            AbsoluteDate intermediateDate = new AbsoluteDate(initDate, i);
+            SpacecraftState keplerIntermediateOrbit = keplerEx.propagate(intermediateDate);
+            SpacecraftState numericIntermediateOrbit = ephemeris.propagate(intermediateDate);
+            Vector3D kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
+            Vector3D numPosition = numericIntermediateOrbit.getPVCoordinates().getPosition();
+            assertEquals(0, kepPosition.subtract(numPosition).getNorm(), 10e-2);
         }
 
         // test inv
-        intermediateDate = new AbsoluteDate(initDate , 41589);
-        keplerIntermediateOrbit = keplerEx.propagate(intermediateDate);
-        initialOrbit = keplerEx.propagate(finalDate);
-        numericEx.propagate(initialOrbit , initDate , ephemeris );
-        numericIntermediateOrbit = ephemeris.propagate(intermediateDate);
-
-        Vector3D test = keplerIntermediateOrbit.getPVCoordinates().getPosition().subtract(numericIntermediateOrbit.getPVCoordinates().getPosition());
-        assertEquals(0, test.getNorm(), 10e-2);
+        IntegratedEphemeris invEphemeris = new IntegratedEphemeris();
+        AbsoluteDate intermediateDate = new AbsoluteDate(initDate, 41589);
+        SpacecraftState keplerIntermediateOrbit = keplerEx.propagate(intermediateDate);
+        SpacecraftState state = keplerEx.propagate(finalDate);
+        numericEx.setInitialState(state);
+        numericEx.setBatchMode(invEphemeris);
+        numericEx.propagate(initDate);
+        SpacecraftState numericIntermediateOrbit = invEphemeris.propagate(intermediateDate);
+        Vector3D kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
+        Vector3D numPosition = numericIntermediateOrbit.getPVCoordinates().getPosition();
+        assertEquals(0, kepPosition.subtract(numPosition).getNorm(), 10e-2);
 
     }
 

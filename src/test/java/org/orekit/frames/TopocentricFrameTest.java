@@ -263,7 +263,7 @@ public class TopocentricFrameTest extends TestCase {
         // Compare to finite difference computation (2 points)
         //*****************************************************
         final double dt = 0.1;
-        KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(orbit));
+        KeplerianPropagator extrapolator = new KeplerianPropagator(orbit);
         
         // Extrapolate satellite position a short while after reference date
         AbsoluteDate dateP = new AbsoluteDate(date, dt);

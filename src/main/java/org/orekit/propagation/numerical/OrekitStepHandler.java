@@ -33,7 +33,7 @@ import org.orekit.time.AbsoluteDate;
  * @version $Revision$ $Date$
  */
 public abstract class OrekitStepHandler
-    implements StepHandler, Serializable {
+    implements StepHandler, ModeHandler, Serializable {
 
     /** Reference date. */
     private AbsoluteDate reference;
@@ -47,17 +47,12 @@ public abstract class OrekitStepHandler
     /** Attitude law. */
     private AttitudeLaw attitudeLaw;
 
-    /** Initialize the handler.
-     * @param reference reference date
-     * @param frame reference frame
-     * @param mu central body attraction coefficient
-     * @param attitudeLaw attitude law
-     */
-    protected void initialize(// CHECKSTYLE: stop HiddenField check
-                              final AbsoluteDate reference, final Frame frame,
-                              final double mu, final AttitudeLaw attitudeLaw
-                              // CHECKSTYLE: resume HiddenField check
-                              ) {
+    /** {@inheritDoc} */
+    public void initialize(// CHECKSTYLE: stop HiddenField check
+                           final AbsoluteDate reference, final Frame frame,
+                           final double mu, final AttitudeLaw attitudeLaw
+                           // CHECKSTYLE: resume HiddenField check
+                          ) {
         this.reference   = reference;
         this.frame       = frame;
         this.attitudeLaw = attitudeLaw;

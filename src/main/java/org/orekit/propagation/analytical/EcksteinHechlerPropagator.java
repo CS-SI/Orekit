@@ -258,7 +258,7 @@ public class EcksteinHechlerPropagator implements Propagator {
             final Attitude attitude =
                 attitudeLaw.getState(date, orbit.getPVCoordinates(), orbit.getFrame());
 
-            return new SpacecraftState(orbit, mass, attitude);
+            return new SpacecraftState(orbit, attitude, mass);
 
         } catch (OrekitException oe) {
             throw new PropagationException(oe.getMessage(), oe);

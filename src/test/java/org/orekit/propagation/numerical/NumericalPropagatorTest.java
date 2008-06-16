@@ -11,20 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation;
+package org.orekit.propagation.numerical;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.ode.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.DormandPrince853Integrator;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.NumericalModel;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -48,15 +50,13 @@ public class NumericalPropagatorTest extends TestCase {
                                                   Frame.getJ2000(), initDate, mu);
 
 
-        // Extrapolator definition
-        NumericalModel extrapolator =
-            new NumericalModel(mu, new DormandPrince853Integrator(0.0, 10000.0,
-                                                                       1.0e-8, 1.0e-8));
+        // Propagator definition
+        NumericalPropagator propagator =
+            new NumericalPropagator(new DormandPrince853Integrator(0.0, 10000.0, 1.0e-8, 1.0e-8));
 
-        // Extrapolation of the initial at the initial date
-        SpacecraftState finalOrbit =
-            extrapolator.propagate(new SpacecraftState(initialOrbit, mu),
-                                   initialOrbit.getDate());
+        // Propagate of the initial at the initial date
+        propagator.setInitialState(new SpacecraftState(initialOrbit, mu));
+        SpacecraftState finalOrbit = propagator.propagate(initialOrbit.getDate());
 
         // Initial orbit definition
         Vector3D initialPosition = initialOrbit.getPVCoordinates().getPosition();
@@ -76,6 +76,19 @@ public class NumericalPropagatorTest extends TestCase {
 
     }
 
+    public void testNotInitialised() {
+        try {
+            NumericalPropagator propagator =
+                new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.0));
+            propagator.propagate(AbsoluteDate.J2000_EPOCH);
+            fail("an exception should have been thrown");
+        } catch (PropagationException pe) {
+            // expected behavior
+        } catch (Exception e) {
+            fail("wrong exception caught");
+        }
+    }
+
     public void testKepler() throws OrekitException {
 
         // Definition of initial conditions
@@ -86,16 +99,15 @@ public class NumericalPropagatorTest extends TestCase {
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                   Frame.getJ2000(), initDate, mu);
 
-        // Extrapolator definition
-        NumericalModel extrapolator =
-            new NumericalModel(mu, new DormandPrince853Integrator(0.0, 10000.0,
-                                                                       1.0e-8, 1.0e-8));
+        // Propagator definition
+        NumericalPropagator propagator =
+            new NumericalPropagator(new DormandPrince853Integrator(0.0, 10000.0, 1.0e-8, 1.0e-8));
         double dt = 3200;
 
-        // Extrapolation of the initial at t+dt
+        // Propagation of the initial at t+dt
+        propagator.setInitialState(new SpacecraftState(initialOrbit));
         SpacecraftState finalOrbit = 
-            extrapolator.propagate(new SpacecraftState(initialOrbit),
-                                   new AbsoluteDate(initialOrbit.getDate(), dt));
+            propagator.propagate(new AbsoluteDate(initialOrbit.getDate(), dt));
 
         // Check results
         double n = Math.sqrt(initialOrbit.getMu() / initialOrbit.getA()) / initialOrbit.getA();

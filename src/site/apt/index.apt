@@ -92,10 +92,12 @@ Overview
       * state of the art ODE integrators (adaptive stepsize with error control,
         continuous output, switching functions, G-stop, step normalization ...)
 
-      * can be used in master mode (program drives integration), slave mode (integrator
-        drives program) or unattended mode (all intermediate results solved and
-        navigation feature enabled, to use the model as if it was an analytical model,
-        ideal for search and iterative algorithms)
+      * can be used in slave mode (propagator is driven by calling application),
+        master mode (propagator drives application callback functions) or batch mode
+        (all intermediate results are stored during integration and provided back to
+        the application which can navigate at will through them, effectively using
+        the numerically propagated orbit as if it was computed by analytical model,
+        this is ideal for search and iterative algorithms)
 
       * serialization mechanism to store complete results on persistent storage for
         later use

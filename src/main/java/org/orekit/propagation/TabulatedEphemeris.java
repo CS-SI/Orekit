@@ -97,8 +97,8 @@ public class TabulatedEphemeris implements BoundedPropagator {
             }
             // Classical interpolation
             return new SpacecraftState(getInterpolatedOp(tp, tn, date),
-                                       interpolatedMass(tp, tn),
-                                       interpolatedAttitude(tp, tn));
+                                       interpolatedAttitude(tp, tn),
+                                       interpolatedMass(tp, tn));
 
         }
         // outside date range, return null

@@ -34,7 +34,7 @@ import org.orekit.utils.PVCoordinates;
  * <p>
  * The instance <code>SpacecraftState</code> is guaranteed to be immutable.
  * </p>
- * @see org.orekit.propagation.numerical.NumericalModel
+ * @see org.orekit.propagation.numerical.NumericalPropagator
  * @author Fabien Maussion
  * @author Véronique Pommier-Maurussane
  * @version $Revision$ $Date$
@@ -42,57 +42,68 @@ import org.orekit.utils.PVCoordinates;
 public class SpacecraftState implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 8402947544926710889L;
+    private static final long serialVersionUID = -3763720123831019443L;
+
+    /** Default mass. */
+    private static final double DEFAULT_MASS = 1000.0;
 
     /** Orbital state. */
     private final Orbit orbit;
 
-    /** Current mass (kg). */
-    private final double mass;
-
     /** Attitude. */
     private final Attitude attitude;
 
-    /** Create a new instance from orbital state and mass.
-     * @param orbit the orbit
-     * @param mass the mass (kg)
-     * @param attitude attitude
-     */
-    public SpacecraftState(final Orbit orbit, final double mass,
-                           final Attitude attitude) {
-        this.orbit    = orbit;
-        this.mass     = mass;
-        this.attitude = attitude;
-    }
+    /** Current mass (kg). */
+    private final double mass;
 
-    /** Create a new instance from orbital state and mass.
-     * <p>The attitude law is set to a default perfectly
-     * default inertial {@link org.orekit.frames.Frame J<sub>2000</sub>}
-     * aligned law.</p>
-     * @param orbit the orbit
-     * @param mass the mass (kg)
-     * @exception OrekitException is attitude law cannot compute the current state
-     */
-    public SpacecraftState(final Orbit orbit, final double mass)
-        throws OrekitException {
-        this.orbit    = orbit;
-        this.mass     = mass;
-        this.attitude =
-            InertialLaw.J2000_ALIGNED.getState(orbit.getDate(),
-                                               orbit.getPVCoordinates(),
-                                               orbit.getFrame());
-    }
-
-    /** Create a new instance from orbital state only.
-     * <p>Gives an arbitrary value (1000 kg) for the mass and
-     * set the attitude law to a default inertial {@link org.orekit.frames.Frame
-     * J<sub>2000</sub>} aligned law.</p>
-     * @param orbit the orbit
+    /** Build a spacecraft state from orbit only.
+     * <p>Attitude law is set to a default inertial {@link org.orekit.frames.Frame
+     * J<sub>2000</sub>} aligned law. Mass is set to an unspecified non-null
+     * arbitrary value.</p>
+    * @param orbit the orbit
      * @exception OrekitException is attitude law cannot compute the current state
      */
     public SpacecraftState(final Orbit orbit)
         throws OrekitException  {
-        this(orbit, 1000.0);
+        this(orbit, DEFAULT_MASS);
+    }
+
+    /** Build a spacecraft state from orbit and attitude law.
+     * <p>Mass is set to an unspecified non-null arbitrary value.</p>
+     * @param orbit the orbit
+     * @param attitude attitude
+     * @param mass the mass (kg)
+     */
+    public SpacecraftState(final Orbit orbit, final Attitude attitude) {
+        this(orbit, attitude, DEFAULT_MASS);
+    }
+
+    /** Create a new instance from orbit and mass.
+     * <p>Attitude law is set to a default inertial {@link org.orekit.frames.Frame
+     * J<sub>2000</sub>} aligned law.</p>
+     * @param orbit the orbit
+     * @param mass the mass (kg)
+     * @exception OrekitException if attitude law cannot compute the current state
+     */
+    public SpacecraftState(final Orbit orbit, final double mass)
+        throws OrekitException {
+        this(orbit,
+             InertialLaw.J2000_ALIGNED.getState(orbit.getDate(),
+                                                orbit.getPVCoordinates(),
+                                                orbit.getFrame()),
+             mass);
+    }
+
+    /** Build a spacecraft state from orbit, attitude law and mass.
+     * @param orbit the orbit
+     * @param attitude attitude
+     * @param mass the mass (kg)
+     */
+    public SpacecraftState(final Orbit orbit, final Attitude attitude,
+                           final double mass) {
+        this.orbit    = orbit;
+        this.attitude = attitude;
+        this.mass     = mass;
     }
 
     /** Gets the current orbit.
@@ -100,13 +111,6 @@ public class SpacecraftState implements Serializable {
      */
     public Orbit getOrbit() {
         return orbit;
-    }
-
-    /** Gets the current mass.
-     * @return the mass (kg)
-     */
-    public double getMass() {
-        return mass;
     }
 
     /** Get the date.
@@ -123,18 +127,11 @@ public class SpacecraftState implements Serializable {
         return orbit.getFrame();
     }
 
-    /** Get the inertial frame.
+    /** Get the central attraction coefficient.
      * @return mu central attraction coefficient (m^3/s^2)
      */
     public double getMu() {
         return orbit.getMu();
-    }
-
-    /** Gets the attitude.
-     * @return the attitude.
-     */
-    public Attitude getAttitude() {
-        return attitude;
     }
 
     /** Get the semi-major axis.
@@ -248,6 +245,20 @@ public class SpacecraftState implements Serializable {
     public PVCoordinates getPVCoordinates(final Frame outputFrame)
         throws OrekitException {
         return orbit.getPVCoordinates(outputFrame);
+    }
+
+    /** Get the attitude.
+     * @return the attitude.
+     */
+    public Attitude getAttitude() {
+        return attitude;
+    }
+
+    /** Gets the current mass.
+     * @return the mass (kg)
+     */
+    public double getMass() {
+        return mass;
     }
 
 }

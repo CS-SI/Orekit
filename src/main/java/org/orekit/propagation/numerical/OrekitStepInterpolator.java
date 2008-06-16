@@ -129,8 +129,9 @@ public class OrekitStepInterpolator implements Serializable {
             new EquinoctialOrbit(y[0], y[1], y[2], y[3], y[4], y[5],
                                       EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
                                       frame, current, mu);
-        return new SpacecraftState(orbit, y[6],
-                                   attitudeLaw.getState(current, orbit.getPVCoordinates(), frame));
+        return new SpacecraftState(orbit,
+                                   attitudeLaw.getState(current, orbit.getPVCoordinates(), frame),
+                                   y[6]);
     }
 
     /** Check is integration direction is forward in date.

@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation;
+package org.orekit.propagation.analytical;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -164,8 +164,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         EcksteinHechlerPropagator extrapolatorAna =
             new EcksteinHechlerPropagator(initialOrbit,
                                           ae, mu, zc20, zc30, zc40, zc50, zc60);
-        KeplerianPropagator extrapolatorKep =
-            new KeplerianPropagator(new SpacecraftState(initialOrbit));
+        KeplerianPropagator extrapolatorKep = new KeplerianPropagator(initialOrbit);
 
         // Extrapolation at a final date different from initial date
         // ---------------------------------------------------------

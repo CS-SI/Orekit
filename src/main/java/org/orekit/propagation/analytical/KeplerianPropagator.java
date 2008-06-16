@@ -27,79 +27,94 @@ import org.orekit.time.AbsoluteDate;
 /** Simple keplerian orbit propagator.
  * @see Orbit
  * @author Guylaine Prat
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class KeplerianPropagator implements Propagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -5001964704759409909L;
+    private static final long serialVersionUID = -986824848691837983L;
+
+    /** Default mass. */
+    private static final double DEFAULT_MASS = 1000.0;
+
+    /** Initial orbit. */
+    private final EquinoctialOrbit initialOrbit;
 
     /** Attitude law. */
     private final AttitudeLaw attitudeLaw;
 
-    /** Initial orbit date. */
-    private final AbsoluteDate initialDate;
-
-    /** Initial orbit parameters. */
-    private final EquinoctialOrbit initialParameters;
+    /** Central attraction coefficient (m^3/s^2). */
+    private final double mu;
 
     /** Initial mass. */
     private final double mass;
 
     /** Mean motion. */
-    private final double n;
+    private final double meanMotion;
 
-    /** Build a new instance.
-     * <p>This constructor allows to create a propagator from spacecraft state
-     * and a specified attitude law.</p>
-     * @param initialState initial state
-     * @param attitudeLaw attitude law
-     */
-    public KeplerianPropagator(final SpacecraftState initialState,
-                               final AttitudeLaw attitudeLaw) {
-        this.initialDate       = initialState.getDate();
-        this.initialParameters = new EquinoctialOrbit(initialState.getOrbit());
-        this.mass              = initialState.getMass();
-        final double a         = initialParameters.getA();
-        this.n                 = Math.sqrt(initialState.getOrbit().getMu() / a) / a;
-        this.attitudeLaw       = attitudeLaw;
-    }
-
-    /** Build a new instance.
-     * <p>This constructor allows to create a propagator from spacecraft state.
-     * Attitude law is set to a default inertial {@link org.orekit.frames.Frame
-     * J<sub>2000</sub>} aligned law.</p>
-     * @param initialState initial state
-     */
-    public KeplerianPropagator(final SpacecraftState initialState) {
-        this(initialState, InertialLaw.J2000_ALIGNED);
-    }
-
-    /** Build a new instance.
-     * <p>This constructor allows to create a propagator from orbit only,
-     *  without spacecraft state. Mass is given an arbitrary value (1000 kg).
-     *  Attitude law is the one specified.</p>
-     * @param initialOrbit initial orbit
-     * @param attitudeLaw attitude law
-     */
-    public KeplerianPropagator(final Orbit initialOrbit, final AttitudeLaw attitudeLaw) {
-        this.initialDate       = initialOrbit.getDate();
-        this.initialParameters = new EquinoctialOrbit(initialOrbit);
-        this.mass              = 1000.0;
-        final double a         = initialParameters.getA();
-        this.n                 = Math.sqrt(initialOrbit.getMu() / a) / a;
-        this.attitudeLaw       = attitudeLaw;
-    }
-
-    /** Build a new instance.
-     * <p>This constructor allows to create a propagator from orbit only.
-     * Mass is given an arbitrary value (1000 kg) and attitude law is set to
-     * a default inertial {@link org.orekit.frames.Frame J<sub>2000</sub>}
-     * aligned law.</p>
+    /** Build a propagator from orbit only.
+     * <p>Attitude law is set to a default inertial {@link org.orekit.frames.Frame
+     * J<sub>2000</sub>} aligned law. The central attraction coefficient &mu;
+     * is set to the same value used for the initial orbit definition. Mass is
+     * set to an unspecified non-null arbitrary value.</p>
      * @param initialOrbit initial orbit
      */
     public KeplerianPropagator(final Orbit initialOrbit)  {
-        this(initialOrbit, InertialLaw.J2000_ALIGNED);
+        this(initialOrbit, InertialLaw.J2000_ALIGNED,
+             initialOrbit.getMu(), DEFAULT_MASS);
+    }
+
+    /** Build a propagator from orbit and central attraction coefficient &mu;.
+     * <p>Attitude law is set to a default inertial {@link org.orekit.frames.Frame
+     * J<sub>2000</sub>} aligned law. Mass is set to an unspecified non-null
+     * arbitrary value.</p>
+     * @param initialOrbit initial orbit
+     * @param mu central attraction coefficient (m^3/s^2)
+     */
+    public KeplerianPropagator(final Orbit initialOrbit, final double mu)  {
+        this(initialOrbit, InertialLaw.J2000_ALIGNED, mu, DEFAULT_MASS);
+    }
+
+    /** Build a propagator from orbit and attitude law.
+     * <p>The central attraction coefficient &mu; is set to the same value
+     * used for the initial orbit definition. Mass is set to an unspecified
+     * non-null arbitrary value.</p>
+     * @param initialOrbit initial orbit
+     * @param attitudeLaw attitude law
+     */
+    public KeplerianPropagator(final Orbit initialOrbit,
+                               final AttitudeLaw attitudeLaw) {
+        this(initialOrbit, attitudeLaw, initialOrbit.getMu(), DEFAULT_MASS);
+    }
+
+    /** Build a propagator from orbit, attitude law and central attraction
+     * coefficient &mu;.
+     * <p>Mass is set to an unspecified non-null arbitrary value.</p>
+     * @param initialOrbit initial orbit
+     * @param attitudeLaw attitude law
+     * @param mu central attraction coefficient (m^3/s^2)
+     */
+    public KeplerianPropagator(final Orbit initialOrbit,
+                               final AttitudeLaw attitudeLaw,
+                               final double mu) {
+        this(initialOrbit, attitudeLaw, mu, DEFAULT_MASS);
+    }
+
+    /** Build propagator from orbit, attitude law, central attraction
+     * coefficient &mu; and mass.</p>
+     * @param initialOrbit initial orbit
+     * @param attitudeLaw attitude law
+     * @param mu central attraction coefficient (m^3/s^2)
+     * @param mass spacecraft mass (kg)
+     */
+    public KeplerianPropagator(final Orbit initialOrbit, final AttitudeLaw attitudeLaw,
+                               final double mu, final double mass) {
+        this.initialOrbit = new EquinoctialOrbit(initialOrbit);
+        this.attitudeLaw  = attitudeLaw;
+        this.mu           = mu;
+        this.mass         = mass;
+        final double a    = initialOrbit.getA();
+        this.meanMotion   = Math.sqrt(mu / a) / a;
     }
 
     /** {@inheritDoc} */
@@ -109,20 +124,20 @@ public class KeplerianPropagator implements Propagator {
 
             // evaluation of LM = PA + RAAN + M at extrapolated time
             final EquinoctialOrbit orbit =
-                new EquinoctialOrbit(initialParameters.getA(), initialParameters.getEquinoctialEx(),
-                                     initialParameters.getEquinoctialEy(), initialParameters.getHx(),
-                                     initialParameters.getHy(),
-                                     initialParameters.getLM() + n * date.minus(initialDate) ,
+                new EquinoctialOrbit(initialOrbit.getA(), initialOrbit.getEquinoctialEx(),
+                                     initialOrbit.getEquinoctialEy(), initialOrbit.getHx(),
+                                     initialOrbit.getHy(),
+                                     initialOrbit.getLM() +
+                                     meanMotion * date.minus(initialOrbit.getDate()) ,
                                      EquinoctialOrbit.MEAN_LATITUDE_ARGUMENT,
-                                     initialParameters.getFrame(),
-                                     date, initialParameters.getMu());
+                                     initialOrbit.getFrame(), date, mu);
 
             // evaluation of attitude
             final Attitude attitude = attitudeLaw.getState(date,
                                                            orbit.getPVCoordinates(),
                                                            orbit.getFrame());
 
-            return new SpacecraftState(orbit, mass, attitude);
+            return new SpacecraftState(orbit, attitude, mass);
 
         } catch (OrekitException oe) {
             throw new PropagationException(oe.getMessage(), oe);

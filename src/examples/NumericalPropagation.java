@@ -23,7 +23,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.IntegratedEphemeris;
-import org.orekit.propagation.numerical.NumericalModel;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.OrekitFixedStepHandler;
 import org.orekit.propagation.numerical.forces.ForceModel;
 import org.orekit.propagation.numerical.forces.perturbations.CunninghamAttractionModel;
@@ -88,7 +88,7 @@ public class NumericalPropagation {
         FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-8);
         // adaptive step integrator with a minimum step of 1 and a maximum step of 1000, and a relative precision of 1.0e-8
 
-        NumericalModel propagator = new NumericalModel(mu, integrator);
+        NumericalPropagator propagator = new NumericalPropagator(integrator);
 
         // Pertubative gravity field :
 
@@ -103,8 +103,10 @@ public class NumericalPropagation {
         // propagation with storage of the results in an integrated ephemeris
 
         AbsoluteDate finalDate = new AbsoluteDate(initialDate, 500);
+        propagator.setInitialState(initialState);
         IntegratedEphemeris ephemeris = new IntegratedEphemeris();
-        SpacecraftState finalState = propagator.propagate(initialState, finalDate, ephemeris);
+        propagator.setBatchMode(ephemeris);
+        SpacecraftState finalState = propagator.propagate(finalDate);
         System.out.println(" Final state  : " +
                            finalState.getOrbit());
         AbsoluteDate intermediateDate = new AbsoluteDate(initialDate, 214);
@@ -160,7 +162,7 @@ public class NumericalPropagation {
         FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-8);
         // adaptive step integrator with a minimum step of 1 and a maximum step of 1000, and a relative precision of 1.0e-8
 
-        NumericalModel propagator = new NumericalModel(mu, integrator);
+        NumericalPropagator propagator = new NumericalPropagator(integrator);
 
         // Pertubative gravity field :
 
@@ -173,10 +175,10 @@ public class NumericalPropagation {
         propagator.addForceModel(cunningham);
         AbsoluteDate finalDate = new AbsoluteDate(initialDate, 500);
 
-        SpacecraftState finalState =
-            propagator.propagate(initialState, finalDate, 100, new TutorialStepHandler());
-        System.out.println(" Final state  : " +
-                           finalState.getOrbit());
+        propagator.setInitialState(initialState);
+        propagator.setMasterMode(100, new TutorialStepHandler());
+        SpacecraftState finalState = propagator.propagate(finalDate);
+        System.out.println(" Final state  : " + finalState.getOrbit());
     }
 
     private static class TutorialStepHandler extends OrekitFixedStepHandler {

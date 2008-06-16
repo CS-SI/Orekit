@@ -31,7 +31,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.NumericalModel;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.OrekitSwitchingFunction;
 import org.orekit.propagation.numerical.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.time.AbsoluteDate;
@@ -137,13 +137,12 @@ public class ConstantThrustManeuverTest extends TestCase {
 
         final SpacecraftState transOrb = new SpacecraftState(transPar, mass);
 
-        final NumericalModel propagator =
-            new NumericalModel(mu, new GraggBulirschStoerIntegrator(1e-50, 1000, 0, 1e-08));
+        final NumericalPropagator propagator =
+            new NumericalPropagator(new GraggBulirschStoerIntegrator(1e-50, 1000, 0, 1e-08));
         propagator.addForceModel(new ConstantThrustManeuver(fireDate, duration, f, isp, dir,
                                                             ConstantThrustManeuver.INERTIAL));
-
-        final SpacecraftState finalorb =
-            propagator.propagate(transOrb, new AbsoluteDate(fireDate, 3800));
+        propagator.setInitialState(transOrb);
+        final SpacecraftState finalorb = propagator.propagate(new AbsoluteDate(fireDate, 3800));
 
         assertEquals(2007.88245442614, finalorb.getMass(), 1e-10);
         assertEquals(2.6792, Math.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), Math.PI)), 1e-4);

@@ -38,7 +38,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
-import org.orekit.propagation.numerical.NumericalModel;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.OrekitFixedStepHandler;
 import org.orekit.propagation.numerical.forces.perturbations.CunninghamAttractionModel;
 import org.orekit.propagation.numerical.forces.perturbations.DrozinerAttractionModel;
@@ -85,8 +85,9 @@ public class DrozinerAttractionModelTest extends TestCase {
                                                              new double[][] { { 0.0 }, { 0.0 }, { 0.0 } }));
 
         // let the step handler perform the test
-        propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date, 7 * 86400),
-                             86400, new SpotStepHandler());
+        propagator.setMasterMode(86400, new SpotStepHandler());
+        propagator.setInitialState(new SpacecraftState(orbit));
+        propagator.propagate(new AbsoluteDate(date, 7 * 86400));
 
     }
 
@@ -161,9 +162,10 @@ public class DrozinerAttractionModelTest extends TestCase {
         }));
 
         // let the step handler perform the test
-        propagator.propagate(new SpacecraftState(initialOrbit, mu), new AbsoluteDate(date, 50000), 20,
-                             new EckStepHandler(initialOrbit, ae, mu,
-                                                c20, c30, c40, c50, c60));
+        propagator.setMasterMode(20,
+                                 new EckStepHandler(initialOrbit, ae, mu, c20, c30, c40, c50, c60));
+        propagator.setInitialState(new SpacecraftState(initialOrbit, mu));
+        propagator.propagate(new AbsoluteDate(date, 50000));
 
     }
 
@@ -230,20 +232,16 @@ public class DrozinerAttractionModelTest extends TestCase {
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                                        0, KeplerianOrbit.MEAN_ANOMALY,
                                                        Frame.getJ2000(), date, mu);
-       propagator = new NumericalModel(mu,
-                                             new ClassicalRungeKuttaIntegrator(100));
+        propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(100));
         propagator.addForceModel(new CunninghamAttractionModel(itrf2000, ae,C, S));
-
-        SpacecraftState cunnOrb =
-            propagator.propagate(new SpacecraftState(orbit, mu), new AbsoluteDate(date, 86400));
+        propagator.setInitialState(new SpacecraftState(orbit, mu));
+        SpacecraftState cunnOrb = propagator.propagate(new AbsoluteDate(date, 86400));
 
         propagator.removeForceModels();
+        propagator.addForceModel(new DrozinerAttractionModel(itrf2000, ae, C, S));
 
-        propagator.addForceModel(new DrozinerAttractionModel(itrf2000, ae,
-                                                             C, S));
-
-        SpacecraftState drozOrb =
-            propagator.propagate(new SpacecraftState(orbit), new AbsoluteDate(date,  86400));
+        propagator.setInitialState(new SpacecraftState(orbit));
+        SpacecraftState drozOrb = propagator.propagate(new AbsoluteDate(date,  86400));
 
         Vector3D dif = cunnOrb.getPVCoordinates().getPosition().subtract(drozOrb.getPVCoordinates().getPosition());
         assertEquals(0, dif.getNorm(), 1.0e-8);
@@ -260,9 +258,7 @@ public class DrozinerAttractionModelTest extends TestCase {
             c50 =  2.27888264414e-7;
             c60 = -5.40618601332e-7;
             itrf2000 = Frame.getReferenceFrame(Frame.ITRF2000B, new AbsoluteDate());
-            propagator =
-                new NumericalModel(mu,
-                                        new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
+            propagator = new NumericalPropagator(new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
 
         } catch (OrekitException oe) {
             fail(oe.getMessage());
@@ -312,7 +308,7 @@ public class DrozinerAttractionModelTest extends TestCase {
     };
 
     private Frame   itrf2000;
-    private NumericalModel propagator;
+    private NumericalPropagator propagator;
 
 }
 

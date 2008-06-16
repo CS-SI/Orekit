@@ -50,6 +50,7 @@ public class InertialAttitudeTest extends TestCase {
                 propagator.propagate(new AbsoluteDate(t0, t)).getAttitude();
             Rotation evolution = attitude.getRotation().applyTo(initial.getRotation().revert());
             assertEquals(0, evolution.getAngle(), 1.0e-10);
+            assertEquals(Frame.getJ2000(), attitude.getReferenceFrame());
         }
     }
 
@@ -62,6 +63,7 @@ public class InertialAttitudeTest extends TestCase {
                 propagator.propagate(new AbsoluteDate(t0, t)).getAttitude();
             Rotation evolution = attitude.getRotation().applyTo(initial.getRotation().revert());
             assertEquals(0, evolution.getAngle(), 1.0e-10);
+            assertEquals(Frame.getJ2000(), attitude.getReferenceFrame());
         }
     }
 
@@ -76,9 +78,6 @@ public class InertialAttitudeTest extends TestCase {
         } catch (OrekitException oe) {
             fail(oe.getMessage());
         }
-    }
-
-    public void testDummy() {
     }
 
     public void tearDown() {

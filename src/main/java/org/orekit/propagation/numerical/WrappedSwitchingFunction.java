@@ -116,10 +116,11 @@ class WrappedSwitchingFunction implements SwitchingFunction {
                                  EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
                                  integrationFrame, currentDate, mu);
         return
-            new SpacecraftState(currentOrbit, y[6],
+            new SpacecraftState(currentOrbit,
                                 attitudeLaw.getState(currentDate,
                                                      currentOrbit.getPVCoordinates(),
-                                                     integrationFrame));
+                                                     integrationFrame),
+                                y[6]);
     }
 
 }

@@ -36,7 +36,7 @@ import org.orekit.time.AbsoluteDate;
  * @version $Revision$ $Date$
  */
 public abstract class OrekitFixedStepHandler
-    implements FixedStepHandler, Serializable {
+    implements FixedStepHandler, ModeHandler, Serializable {
 
     /** Reference date. */
     private AbsoluteDate reference;
@@ -50,17 +50,12 @@ public abstract class OrekitFixedStepHandler
     /** Attitude law. */
     private AttitudeLaw attitudeLaw;
 
-    /** Initialize the handler.
-     * @param reference reference date
-     * @param frame reference frame
-     * @param mu central body attraction coefficient
-     * @param attitudeLaw attitude law
-     */
-    protected void initialize(// CHECKSTYLE: stop HiddenField check
-                              final AbsoluteDate reference, final Frame frame,
-                              final double mu, final AttitudeLaw attitudeLaw
-                              // CHECKSTYLE: resume HiddenField check
-                              ) {
+    /** {@inheritDoc} */
+    public void initialize(// CHECKSTYLE: stop HiddenField check
+                           final AbsoluteDate reference, final Frame frame,
+                           final double mu, final AttitudeLaw attitudeLaw
+                           // CHECKSTYLE: resume HiddenField check
+                          ) {
         this.reference   = reference;
         this.frame       = frame;
         this.attitudeLaw = attitudeLaw;
@@ -99,7 +94,7 @@ public abstract class OrekitFixedStepHandler
             final Attitude attitude =
                 attitudeLaw.getState(current, orbit.getPVCoordinates(), frame);
             final SpacecraftState state =
-                new SpacecraftState(orbit, y[6], attitude);
+                new SpacecraftState(orbit, attitude, y[6]);
             handleStep(state, isLast);
         } catch (OrekitException e) {
             throw new RuntimeException(e.getLocalizedMessage());

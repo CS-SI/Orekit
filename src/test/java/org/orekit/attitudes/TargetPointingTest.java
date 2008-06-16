@@ -190,7 +190,7 @@ public class TargetPointingTest extends TestCase {
         // **********************************************************
 
         // Extrapolation one minute later
-        KeplerianPropagator extrapolator = new KeplerianPropagator(new SpacecraftState(circOrbit));
+        KeplerianPropagator extrapolator = new KeplerianPropagator(circOrbit);
         double delta_t = 60.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = new AbsoluteDate(date, delta_t);
         SpacecraftState extrapOrbit = extrapolator.propagate(extrapDate);

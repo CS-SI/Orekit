@@ -37,7 +37,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
-import org.orekit.propagation.numerical.NumericalModel;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.OrekitFixedStepHandler;
 import org.orekit.propagation.numerical.forces.perturbations.CunninghamAttractionModel;
 import org.orekit.propagation.numerical.forces.perturbations.DrozinerAttractionModel;
@@ -84,15 +84,16 @@ public class CunninghamAttractionModelTest extends TestCase {
         propagator.addForceModel(new CunninghamAttractionModel(itrf2000, 6378136.460, c, s));
 
         // let the step handler perform the test
-        propagator.propagate(new SpacecraftState(orbit, mu), new AbsoluteDate(date, 7 * 86400),
-                             86400, new SpotStepHandler(date, mu));
+        propagator.setMasterMode(86400, new SpotStepHandler(date, mu));
+        propagator.setInitialState(new SpacecraftState(orbit, mu));
+        propagator.propagate(new AbsoluteDate(date, 7 * 86400));
 
     }
 
     private static class SpotStepHandler extends OrekitFixedStepHandler {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 5870065503411913447L;
+        private static final long serialVersionUID = 6818305166004802991L;
 
         public SpotStepHandler(AbsoluteDate date, double mu) {
             sun       = new Sun();
@@ -162,10 +163,9 @@ public class CunninghamAttractionModelTest extends TestCase {
         }));
 
         // let the step handler perform the test
-        propagator.propagate(new SpacecraftState(initialOrbit),
-                             new AbsoluteDate(date , 50000), 20,
-                             new EckStepHandler(initialOrbit, ae,
-                                                c20, c30, c40, c50, c60));
+        propagator.setInitialState(new SpacecraftState(initialOrbit));
+        propagator.setMasterMode(20, new EckStepHandler(initialOrbit, ae, c20, c30, c40, c50, c60));
+        propagator.propagate(new AbsoluteDate(date , 50000));
 
     }
 
@@ -233,7 +233,7 @@ public class CunninghamAttractionModelTest extends TestCase {
                                                        0, KeplerianOrbit.MEAN_ANOMALY,
                                                        Frame.getJ2000(), date, mu);
         
-        propagator = new NumericalModel(mu, new ClassicalRungeKuttaIntegrator(1000));
+        propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(1000));
         propagator.addForceModel(new CunninghamAttractionModel(itrf2000, ae,
                                                                new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
@@ -244,9 +244,8 @@ public class CunninghamAttractionModelTest extends TestCase {
                 { 0.0 }, { 0.0 }, { 0.0 },
         }));
 
-        SpacecraftState cunnOrb =
-            propagator.propagate(new SpacecraftState(orbit, mu),
-                                 new AbsoluteDate(date, 86400));
+        propagator.setInitialState(new SpacecraftState(orbit, mu));
+        SpacecraftState cunnOrb = propagator.propagate(new AbsoluteDate(date, 86400));
 
         propagator.removeForceModels();
 
@@ -260,8 +259,8 @@ public class CunninghamAttractionModelTest extends TestCase {
                 { 0.0 }, { 0.0 }, { 0.0 },
         }));
 
-        SpacecraftState drozOrb =
-            propagator.propagate(new SpacecraftState(orbit, mu), new AbsoluteDate(date, 86400));
+        propagator.setInitialState(new SpacecraftState(orbit, mu));
+        SpacecraftState drozOrb = propagator.propagate(new AbsoluteDate(date, 86400));
 
         Vector3D dif = cunnOrb.getPVCoordinates().getPosition().subtract(drozOrb.getPVCoordinates().getPosition());
         assertEquals(0, dif.getNorm(), 1.0e-8);
@@ -281,7 +280,7 @@ public class CunninghamAttractionModelTest extends TestCase {
 
             itrf2000 = Frame.getReferenceFrame(Frame.ITRF2000B, new AbsoluteDate());
             propagator =
-                new NumericalModel(mu, new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
+                new NumericalPropagator(new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
         } catch (OrekitException oe) {
             fail(oe.getMessage());
         }
@@ -305,7 +304,7 @@ public class CunninghamAttractionModelTest extends TestCase {
     private double ae;
 
     private Frame   itrf2000;
-    private NumericalModel propagator;
+    private NumericalPropagator propagator;
 
 }
 

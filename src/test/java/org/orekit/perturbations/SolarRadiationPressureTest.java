@@ -35,7 +35,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.propagation.numerical.NumericalModel;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.OrekitFixedStepHandler;
 import org.orekit.propagation.numerical.forces.perturbations.SolarRadiationPressure;
 import org.orekit.time.AbsoluteDate;
@@ -66,7 +66,7 @@ public class SolarRadiationPressureTest extends TestCase {
         assertEquals(86164, period,1);
 
         // creation of the propagator
-        KeplerianPropagator k = new KeplerianPropagator(new SpacecraftState(orbit, 1500.0));
+        KeplerianPropagator k = new KeplerianPropagator(orbit);
 
         // intermediate variables
         AbsoluteDate currentDate;
@@ -116,15 +116,14 @@ public class SolarRadiationPressureTest extends TestCase {
         assertEquals(86164, period,1);
         // creation of the propagator
         FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, period/4, 0, 10e-4);
-        NumericalModel calc = new NumericalModel(mu, integrator);
+        NumericalPropagator calc = new NumericalPropagator(integrator);
         calc.addForceModel(SRP);
 
         // Step Handler
-
-        SolarStepHandler sh = new SolarStepHandler();
+        calc.setMasterMode(Math.floor(15 * period), new SolarStepHandler());
         AbsoluteDate finalDate = new AbsoluteDate(date , 90*period);
-        calc.propagate(new SpacecraftState(orbit, 1500.0) , finalDate, Math.floor(15*period), sh );
-
+        calc.setInitialState(new SpacecraftState(orbit, 1500.0));
+        calc.propagate(finalDate);
     }
 
     public static void checkRadius(double radius , double min , double max) {

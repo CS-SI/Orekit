@@ -17,7 +17,7 @@ package org.orekit.errors;
  * during the propagation computation.
  *
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class PropagationException extends OrekitException {
 

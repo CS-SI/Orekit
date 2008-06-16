@@ -61,7 +61,7 @@ import org.orekit.utils.PVCoordinates;
  * </ul>
  * </p>
  * @see org.orekit.orbits.EquinoctialOrbit
- * @see org.orekit.propagation.numerical.NumericalModel
+ * @see org.orekit.propagation.numerical.NumericalPropagator
  * @author Luc Maisonobe
  * @author Fabien Maussion
  * @author Véronique Pommier-Maurussane
