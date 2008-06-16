@@ -82,11 +82,6 @@
         <property name="checkFormat"      value="JavadocVariable"/>
     </module>
     <module name="SuppressionCommentFilter">
-        <property name="offCommentFormat" value="CHECKSTYLE\: stop HiddenField check"/>
-        <property name="onCommentFormat"  value="CHECKSTYLE\: resume HiddenField check"/>
-        <property name="checkFormat"      value="HiddenField"/>
-    </module>
-    <module name="SuppressionCommentFilter">
         <property name="offCommentFormat" value="CHECKSTYLE\: stop VisibilityModifierCheck"/>
         <property name="onCommentFormat"  value="CHECKSTYLE\: resume VisibilityModifierCheck"/>
         <property name="checkFormat"      value="VisibilityModifierCheck"/>

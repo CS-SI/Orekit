@@ -50,16 +50,19 @@ public class IntegratedEphemeris
     implements BoundedPropagator, ModeHandler, StepHandler {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -6359936988057905059L;
-
-    /** Central body gravitational constant. */
-    private double mu;
-
-    /** Attitude law. */
-    private AttitudeLaw attitudeLaw;
+    private static final long serialVersionUID = 1925214028731458572L;
 
     /** Reference date. */
-    private AbsoluteDate reference;
+    private AbsoluteDate initializedReference;
+
+    /** Frame. */
+    private Frame initializedFrame;
+
+    /** Central body gravitational constant. */
+    private double initializedMu;
+
+    /** Attitude law. */
+    private AttitudeLaw initializedAttitudeLaw;
 
     /** Start date of the integration (can be min or max). */
     private AbsoluteDate startDate;
@@ -73,9 +76,6 @@ public class IntegratedEphemeris
     /** Underlying raw mathematical model. */
     private ContinuousOutputModel model;
 
-    /** Frame. */
-    private Frame frame;
-
     /** Creates a new instance of IntegratedEphemeris which must be
      *  filled by the propagator.
      */
@@ -84,16 +84,13 @@ public class IntegratedEphemeris
     }
 
     /** {@inheritDoc} */
-    public void initialize(// CHECKSTYLE: stop HiddenField check
-                           final AbsoluteDate reference,
+    public void initialize(final AbsoluteDate reference,
                            final Frame frame, final double mu,
-                           final AttitudeLaw attitudeLaw
-                           // CHECKSTYLE: resume HiddenField check
-                          ) {
-        this.frame       = frame;
-        this.attitudeLaw = attitudeLaw;
-        this.mu          = mu;
-        this.reference   = reference;
+                           final AttitudeLaw attitudeLaw) {
+        this.initializedReference   = reference;
+        this.initializedFrame       = frame;
+        this.initializedMu          = mu;
+        this.initializedAttitudeLaw = attitudeLaw;
 
         // dates will be set when last step is handled
         startDate        = null;
@@ -114,12 +111,12 @@ public class IntegratedEphemeris
 
         final EquinoctialOrbit eq =
             new EquinoctialOrbit(state[0], state[1], state[2],
-                                 state[3], state[4], state[5], 2, frame, date, mu);
+                                 state[3], state[4], state[5], 2, initializedFrame, date, initializedMu);
         final double mass = state[6];
 
         try {
             return new SpacecraftState(eq,
-                                       attitudeLaw.getState(date, eq.getPVCoordinates(), frame),
+                                       initializedAttitudeLaw.getState(date, eq.getPVCoordinates(), initializedFrame),
                                        mass);
         } catch (OrekitException oe) {
             throw new PropagationException(oe.getMessage(), oe);
@@ -141,12 +138,13 @@ public class IntegratedEphemeris
     }
 
     /** {@inheritDoc} */
-    public void handleStep(StepInterpolator interpolator, boolean isLast)
-            throws DerivativeException {
+    public void handleStep(final StepInterpolator interpolator,
+                           final boolean isLast)
+        throws DerivativeException {
         model.handleStep(interpolator, isLast);
         if (isLast) {
-            startDate = new AbsoluteDate(reference, model.getInitialTime());
-            maxDate   = new AbsoluteDate(reference, model.getFinalTime());
+            startDate = new AbsoluteDate(initializedReference, model.getInitialTime());
+            maxDate   = new AbsoluteDate(initializedReference, model.getFinalTime());
             if (maxDate.minus(startDate) < 0) {
                 minDate = maxDate;
                 maxDate = startDate;

@@ -39,27 +39,24 @@ public abstract class OrekitFixedStepHandler
     implements FixedStepHandler, ModeHandler, Serializable {
 
     /** Reference date. */
-    private AbsoluteDate reference;
+    private AbsoluteDate initializedReference;
 
     /** Reference frame. */
-    private Frame frame;
+    private Frame initializedFrame;
 
     /** Central body attraction coefficient. */
-    private double mu;
+    private double initializedMu;
 
     /** Attitude law. */
-    private AttitudeLaw attitudeLaw;
+    private AttitudeLaw initializedAttitudeLaw;
 
     /** {@inheritDoc} */
-    public void initialize(// CHECKSTYLE: stop HiddenField check
-                           final AbsoluteDate reference, final Frame frame,
-                           final double mu, final AttitudeLaw attitudeLaw
-                           // CHECKSTYLE: resume HiddenField check
-                          ) {
-        this.reference   = reference;
-        this.frame       = frame;
-        this.attitudeLaw = attitudeLaw;
-        this.mu          = mu;
+    public void initialize(final AbsoluteDate reference, final Frame frame,
+                           final double mu, final AttitudeLaw attitudeLaw) {
+        this.initializedReference   = reference;
+        this.initializedFrame       = frame;
+        this.initializedAttitudeLaw = attitudeLaw;
+        this.initializedMu          = mu;
     }
 
     /** Handle the current step.
@@ -86,13 +83,13 @@ public abstract class OrekitFixedStepHandler
     /** {@inheritDoc}  */
     public void handleStep(final double t, final double[] y, final boolean isLast) {
         try {
-            final AbsoluteDate current = new AbsoluteDate(reference, t);
+            final AbsoluteDate current = new AbsoluteDate(initializedReference, t);
             final Orbit orbit =
                 new EquinoctialOrbit(y[0], y[1], y[2], y[3], y[4], y[5],
                                           EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
-                                          frame, current, mu);
+                                          initializedFrame, current, initializedMu);
             final Attitude attitude =
-                attitudeLaw.getState(current, orbit.getPVCoordinates(), frame);
+                initializedAttitudeLaw.getState(current, orbit.getPVCoordinates(), initializedFrame);
             final SpacecraftState state =
                 new SpacecraftState(orbit, attitude, y[6]);
             handleStep(state, isLast);

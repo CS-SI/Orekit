@@ -72,7 +72,6 @@ public class SpacecraftState implements Serializable {
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param orbit the orbit
      * @param attitude attitude
-     * @param mass the mass (kg)
      */
     public SpacecraftState(final Orbit orbit, final Attitude attitude) {
         this(orbit, attitude, DEFAULT_MASS);

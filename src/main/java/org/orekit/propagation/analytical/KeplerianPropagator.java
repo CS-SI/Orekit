@@ -101,7 +101,7 @@ public class KeplerianPropagator implements Propagator {
     }
 
     /** Build propagator from orbit, attitude law, central attraction
-     * coefficient &mu; and mass.</p>
+     * coefficient &mu; and mass.
      * @param initialOrbit initial orbit
      * @param attitudeLaw attitude law
      * @param mu central attraction coefficient (m^3/s^2)

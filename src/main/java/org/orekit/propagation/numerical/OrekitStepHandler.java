@@ -36,27 +36,24 @@ public abstract class OrekitStepHandler
     implements StepHandler, ModeHandler, Serializable {
 
     /** Reference date. */
-    private AbsoluteDate reference;
+    private AbsoluteDate initializedReference;
 
     /** Reference frame. */
-    private Frame frame;
+    private Frame initializedFrame;
 
     /** Central body attraction coefficient. */
-    private double mu;
+    private double initializedMu;
 
     /** Attitude law. */
-    private AttitudeLaw attitudeLaw;
+    private AttitudeLaw initializedAttitudeLaw;
 
     /** {@inheritDoc} */
-    public void initialize(// CHECKSTYLE: stop HiddenField check
-                           final AbsoluteDate reference, final Frame frame,
-                           final double mu, final AttitudeLaw attitudeLaw
-                           // CHECKSTYLE: resume HiddenField check
-                          ) {
-        this.reference   = reference;
-        this.frame       = frame;
-        this.attitudeLaw = attitudeLaw;
-        this.mu          = mu;
+    public void initialize(final AbsoluteDate reference, final Frame frame,
+                           final double mu, final AttitudeLaw attitudeLaw) {
+        this.initializedReference   = reference;
+        this.initializedFrame       = frame;
+        this.initializedAttitudeLaw = attitudeLaw;
+        this.initializedMu          = mu;
     }
 
     /** Handle the current step.
@@ -79,7 +76,7 @@ public abstract class OrekitStepHandler
         throws DerivativeException {
         try {
             final OrekitStepInterpolator orekitInterpolator =
-                new OrekitStepInterpolator(reference, frame, mu, attitudeLaw, interpolator);
+                new OrekitStepInterpolator(initializedReference, initializedFrame, initializedMu, initializedAttitudeLaw, interpolator);
             handleStep(orekitInterpolator, isLast);
         } catch (PropagationException pe) {
             throw new DerivativeException(pe);

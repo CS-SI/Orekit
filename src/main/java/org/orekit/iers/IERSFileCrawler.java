@@ -30,12 +30,12 @@ import org.orekit.errors.OrekitException;
 /** Base class for IERS files crawlers.
  * @see IERSDirectoryCrawler#crawl(IERSFileCrawler)
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public abstract class IERSFileCrawler {
 
     /** Current file. */
-    private File file;
+    private File currentFile;
 
     /** File name pattern. */
     private final Pattern supportedFilesPattern;
@@ -51,7 +51,7 @@ public abstract class IERSFileCrawler {
      * @return current file
      */
     protected File getFile() {
-        return file;
+        return currentFile;
     }
 
     /** Check if a file is supported.
@@ -67,14 +67,11 @@ public abstract class IERSFileCrawler {
      * @exception OrekitException if some data is missing, can't be read
      * or if some loader specific error occurs
      */
-    public void visit(// CHECKSTYLE: stop HiddenField check
-                      final File file
-                      // CHECKSTYLE: resume HiddenField check
-                      )
+    public void visit(final File file)
         throws OrekitException {
         BufferedReader reader = null;
         try {
-            this.file = file;
+            this.currentFile = file;
             InputStream is = new FileInputStream(file);
             if (file.getName().endsWith(".gz")) {
                 // add the decompression filter

@@ -32,7 +32,7 @@ import org.orekit.errors.OrekitException;
  *
  * @see org.orekit.potential.PotentialReaderFactory
  * @author Fabien Maussion
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class EGMFormatReader extends PotentialCoefficientsReader {
 
@@ -40,13 +40,13 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
     private boolean fileIsOK;
 
     /** The input to check and read. */
-    private InputStream in;
+    private InputStream input;
 
     /** Simple constructor (the first method to call after construction is
      * {@link #isFileOK(InputStream)}. It is done automaticaly by the factory).
      */
     protected EGMFormatReader() {
-        in = null;
+        input = null;
         fileIsOK = false;
         ae = 6378136.3;
         mu = 398600.4415e8;
@@ -57,12 +57,9 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
      * @return true if it is readable, false if not.
      * @exception IOException when the {@link InputStream} cannot be buffered.
      */
-    public boolean isFileOK(// CHECKSTYLE: stop HiddenField check
-                            final InputStream in
-                            // CHECKSTYLE: resume HiddenField check
-                            ) throws IOException {
+    public boolean isFileOK(final InputStream in) throws IOException {
 
-        this.in = in;
+        this.input = in;
         final BufferedReader r = new BufferedReader(new InputStreamReader(in));
 
         // tests variables
@@ -106,7 +103,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
      */
     public void read() throws OrekitException, IOException {
 
-        if (in == null) {
+        if (input == null) {
             throw new OrekitException("the reader has not been tested ",
                                       new Object[0]);
         }
@@ -115,7 +112,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
                                       new Object[0]);
         }
 
-        final BufferedReader r = new BufferedReader(new InputStreamReader(in));
+        final BufferedReader r = new BufferedReader(new InputStreamReader(input));
         final List cl = new ArrayList();
         final List sl = new ArrayList();
         for (String line = r.readLine(); line != null; line = r.readLine()) {

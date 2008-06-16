@@ -22,8 +22,8 @@ import org.apache.commons.math.ode.DummyStepHandler;
 import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
-import org.apache.commons.math.ode.StepHandler;
 import org.apache.commons.math.ode.StepNormalizer;
+import org.apache.commons.math.ode.SwitchingFunction;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.attitudes.InertialLaw;
@@ -50,11 +50,12 @@ import org.orekit.time.AbsoluteDate;
  * <p>The configuration parameters that can be set are:</p>
  * <ul>
  *   <li>the initial spacecraft state ({@link #setInitialState(SpacecraftState)})</li>
- *   <li>the central attraction coefficient ({@link #setMu()})</li>
+ *   <li>the central attraction coefficient ({@link #setMu(double)})</li>
  *   <li>the various force models ({@link #addForceModel(ForceModel)},
  *   {@link #removeForceModels()})</li>
  *   <li>the discrete events that should be triggered during propagation
- *   ({@link #addSwitchingFunction()}, {@link #removeSwitchingFunction()})</li>
+ *   ({@link #addSwitchingFunction(OrekitSwitchingFunction)},
+ *   {@link #removeSwitchingFunctions()})</li>
  *   <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
  *   {@link #setMasterMode(double, OrekitFixedStepHandler)}, {@link
  *   #setMasterMode(OrekitStepHandler)}, {@link #setBatchMode(IntegratedEphemeris)})</li>
@@ -69,37 +70,9 @@ import org.orekit.time.AbsoluteDate;
  * <p>The same propagator can be reused for several orbit extrapolations, by resetting
  * the initial state without modifying the other configuration parameters.</p>
 
- * <p>The binding logic with the rest of the application represents the way to provide
- * propagation results. Several modes exist to better suit user needs.
- * <dl>
- *  <dt>master mode</dt>
- *  <dt>unttended mode</dt>
- *  <dt>if the user needs to do some action at regular time steps during
- *      integration</dt>
- *  <dd>he will use {@link #propagate(SpacecraftState,AbsoluteDate,double,OrekitFixedStepHandler)}</dd>
- *  <dt>if the user needs to do some action during integration but do not need
- *      specific time steps</dt>
- *  <dd>he will use {@link #propagate(SpacecraftState,AbsoluteDate,StepHandler)}</dd>
- * </dl></p>
- *
- * <p>The two first methods are used when the user code needs to drive the
- * integration process, whereas the two last methods are used when the
- * integration process needs to drive the user code. To use the step handler,
- * the user must know the format of the handled state used internally,
- * which is expressed in equinoctial parameters :
- *  <pre>
- *     y[0] = a
- *     y[1] = ex
- *     y[2] = ey
- *     y[3] = hx
- *     y[4] = hy
- *     y[5] = lv
- *     y[6] = mass (kg)
- *   </pre>
- *
  * @see SpacecraftState
  * @see ForceModel
- * @see StepHandler
+ * @see OrekitStepHandler
  * @see OrekitFixedStepHandler
  * @see IntegratedEphemeris
  * @see TimeDerivativesEquations
@@ -125,8 +98,8 @@ public class NumericalPropagator implements Propagator {
     /** Force models used during the extrapolation of the Orbit. */
     private final List forceModels;
 
-    /** Switching functions used during the extrapolation of the Orbit. */
-    private final List forceSwf;
+    /** Switching functions not related to force models. */
+    private final List switchingFunctions;
 
     /** State vector. */
     private final double[] state;
@@ -157,20 +130,22 @@ public class NumericalPropagator implements Propagator {
      * @param integrator numerical integrator to use for propagation.
      */
     public NumericalPropagator(final FirstOrderIntegrator integrator) {
-        this.mu           = Double.NaN;
-        this.forceModels  = new ArrayList();
-        this.forceSwf     = new ArrayList();
-        this.integrator   = integrator;
-        this.startDate    = new AbsoluteDate();
-        this.currentState = null;
-        this.adder        = null;
-        this.attitudeLaw  = InertialLaw.J2000_ALIGNED;
-        this.state        = new double[7];
+        this.mu                 = Double.NaN;
+        this.forceModels        = new ArrayList();
+        this.switchingFunctions = new ArrayList();
+        this.integrator         = integrator;
+        this.startDate          = new AbsoluteDate();
+        this.currentState       = null;
+        this.adder              = null;
+        this.attitudeLaw        = InertialLaw.J2000_ALIGNED;
+        this.state              = new double[7];
         setSlaveMode();
     }
 
     /** Set the central attraction coefficient &mu;.
      * @param mu central attraction coefficient (m^3/s^2)
+     * @see #getMu()
+     * @see #addForceModel(ForceModel)
      */
     public void setMu(final double mu) {
         this.mu = mu;
@@ -178,37 +153,56 @@ public class NumericalPropagator implements Propagator {
 
     /** Get the central attraction coefficient &mu;.
      * @return mu central attraction coefficient (m^3/s^2)
+     * @see #setMu(double)
      */
     public double getMu() {
         return mu;
     }
 
-    /** Add a force model to the global perturbation model. The associated
-     * switching function is added to the switching functions vector.
-     * All models added by this method will be considered during integration.
-     * If this method is not called at all, the integrated orbit will follow
-     * a keplerian evolution only.
+    /** Add a non force model related switching function.
+     * <p>This method is devoted to user defined switching functions not related
+     * to force models. Switching functions related to force models are handled
+     * automatically when the model is added, so they must <strong>not</strong>
+     * be added using this method.</p>
+     * @param switchingFunction switching function to add
+     * @see #removeSwitchingFunctions()
+     * @see #addForceModel(ForceModel)
+     */
+    public void addSwitchingFunction(final OrekitSwitchingFunction switchingFunction) {
+        switchingFunctions.add(switchingFunction);
+    }
+
+    /** Remove all switching functions.
+     * @see #addSwitchingFunction(OrekitSwitchingFunction)
+     */
+    public void removeSwitchingFunctions() {
+        switchingFunctions.clear();
+    }
+
+    /** Add a force model to the global perturbation model.
+     * <p>If the force models is associated to switching functions, these
+     * switching functions will be handled automatically, they must
+     * <strong>not</strong> be added using the {@link
+     * #addSwitchingFunction(OrekitSwitchingFunction) addSwitchingFunction}
+     * method.</p>
+     * <p>If this method is not called at all, the integrated orbit will follow
+     * a keplerian evolution only.</p>
      * @param model perturbing {@link ForceModel} to add
+     * @see #removeForceModels()
+     * @see #setMu(double)
      */
     public void addForceModel(final ForceModel model) {
         forceModels.add(model);
-        final OrekitSwitchingFunction[] swf = model.getSwitchingFunctions();
-        if (swf != null) {
-            for (int i = 0; i < swf.length; i++) {
-                forceSwf.add(swf[i]);
-            }
-        }
     }
 
-    /** Remove all perturbing force models from the global perturbation model,
-     * and associated switching functions.
-     * Once all perturbing forces have been removed (and as long as no new force
+    /** Remove all perturbing force models from the global perturbation model.
+     * <p>Once all perturbing forces have been removed (and as long as no new force
      * model is added), the integrated orbit will follow a keplerian evolution
-     * only.
+     * only.</p>
+     * @see #addForceModel(ForceModel)
      */
     public void removeForceModels() {
         forceModels.clear();
-        forceSwf.clear();
     }
 
     /** Set the propagator to slave mode.
@@ -216,6 +210,9 @@ public class NumericalPropagator implements Propagator {
      *  The (slave) propagator computes this result and return it to the calling
      *  (master) application, without any intermediate feedback.<p>
      * <p>This is the default mode.</p>
+     * @see #setMasterMode(double, OrekitFixedStepHandler)
+     * @see #setMasterMode(OrekitStepHandler)
+     * @see #setBatchMode(IntegratedEphemeris)
      */
     public void setSlaveMode() {
         integrator.setStepHandler(DummyStepHandler.getInstance());
@@ -227,7 +224,10 @@ public class NumericalPropagator implements Propagator {
      * end of each finalized step during integration. The (master) propagator integration
      * loop calls the (slave) application callback methods at each finalized step.</p>
      * @param h fixed stepsize (s)
-     * @param handler object to call at fixed time steps
+     * @param handler handler called at the end of each finalized step
+     * @see #setSlaveMode()
+     * @see #setMasterMode(OrekitStepHandler)
+     * @see #setBatchMode(IntegratedEphemeris)
      */
     public void setMasterMode(final double h, final OrekitFixedStepHandler handler) {
         integrator.setStepHandler(new StepNormalizer(h, handler));
@@ -238,6 +238,10 @@ public class NumericalPropagator implements Propagator {
      * <p>This mode is used when the user needs to have some custom function called at the
      * end of each finalized step during integration. The (master) propagator integration
      * loop calls the (slave) application callback methods at each finalized step.</p>
+     * @param handler handler called at the end of each finalized step
+     * @see #setSlaveMode()
+     * @see #setMasterMode(double, OrekitFixedStepHandler)
+     * @see #setBatchMode(IntegratedEphemeris)
      */
     public void setMasterMode(final OrekitStepHandler handler) {
         integrator.setStepHandler(handler);
@@ -253,6 +257,9 @@ public class NumericalPropagator implements Propagator {
      *  it may be memory intensive for long integration ranges and high precision/short
      *  time steps.</p>
      * @param ephemeris instance to populate with the results
+     * @see #setSlaveMode()
+     * @see #setMasterMode(double, OrekitFixedStepHandler)
+     * @see #setMasterMode(OrekitStepHandler)
      */
     public void setBatchMode(final IntegratedEphemeris ephemeris) {
         integrator.setStepHandler(ephemeris);
@@ -261,6 +268,7 @@ public class NumericalPropagator implements Propagator {
 
     /** Set the initial state.
      * @param initialState initial state
+     * @see #propagate(AbsoluteDate)
      */
     public void setInitialState(final SpacecraftState initialState) {
         if (Double.isNaN(mu)) {
@@ -314,15 +322,23 @@ public class NumericalPropagator implements Propagator {
             state[5] = initialOrbit.getLv();
             state[6] = initialState.getMass();
 
-            // Set up the switching functions
             integrator.clearSwitchingFunctions();
-            for (final Iterator iter = forceSwf.iterator(); iter.hasNext(); ) {
+
+            // set up switching functions related to force models
+            for (final Iterator iterator = forceModels.iterator(); iterator.hasNext();) {
+                final OrekitSwitchingFunction[] swf =
+                    ((ForceModel) iterator.next()).getSwitchingFunctions();
+                if (swf != null) {
+                    for (int i = 0; i < swf.length; i++) {
+                        setUpSwitchingFunction(swf[i]);
+                    }
+                }
+            }
+
+            // set up switching functions added by user
+            for (final Iterator iter = switchingFunctions.iterator(); iter.hasNext(); ) {
                 final OrekitSwitchingFunction swf = (OrekitSwitchingFunction) iter.next();
-                integrator.addSwitchingFunction(new WrappedSwitchingFunction(swf, startDate, mu,
-                                                                             initialState.getFrame(),
-                                                                             attitudeLaw),
-                                                                             swf.getMaxCheckInterval(), swf.getThreshold(),
-                                                                             swf.getMaxIterationCount());
+                setUpSwitchingFunction(swf);
             }
 
             // mathematical integration
@@ -368,6 +384,19 @@ public class NumericalPropagator implements Propagator {
         }
     }
 
+    /** Wrap an Orekit switching function and register it in the integrator.
+     * @param osf switching function to wrap
+     */
+    private void setUpSwitchingFunction(final OrekitSwitchingFunction osf) {
+        final SwitchingFunction switchingFunction =
+            new WrappedSwitchingFunction(osf, startDate, mu,
+                                         initialState.getFrame(), attitudeLaw);
+        integrator.addSwitchingFunction(switchingFunction,
+                                        osf.getMaxCheckInterval(),
+                                        osf.getThreshold(),
+                                        osf.getMaxIterationCount());
+    }
+
     /** Internal class for differential equations representation. */
     private class DifferentialEquations implements FirstOrderDifferentialEquations {
 
@@ -382,15 +411,14 @@ public class NumericalPropagator implements Propagator {
 
             try {
                 // update space dynamics view
-                currentState =
-                    mapState(t, y, startDate, mu, currentState.getFrame(), attitudeLaw);
+                currentState = mapState(t, y, startDate, currentState.getFrame());
 
                 // compute cartesian coordinates
                 if (currentState.getMass() <= 0.0) {
                     OrekitException.throwIllegalArgumentException("spacecraft mass becomes negative (m: {0})",
                                                                   new Object[] {
-                            new Double(currentState.getMass())
-                    });
+                                                                      Double.valueOf(currentState.getMass())
+                                                                  });
                 }
                 // initialize derivatives
                 adder.initDerivatives(yDot, (EquinoctialOrbit) currentState.getOrbit());
@@ -412,17 +440,13 @@ public class NumericalPropagator implements Propagator {
          * @param t integration time (s)
          * @param y state as a flat array
          * @param referenceDate reference date from which t is counted
-         * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
          * @param frame frame in which integration is performed
-         * @param attitudeLaw spacecraft attitude law
          * @return state corresponding to the flat array as a space dynamics object
          * @exception OrekitException if the attitude state cannot be determined
          * by the attitude law
          */
         private SpacecraftState mapState(final double t, final double [] y,
-                                         final AbsoluteDate referenceDate, final double mu,
-                                         final Frame frame,
-                                         final AttitudeLaw attitudeLaw)
+                                         final AbsoluteDate referenceDate, final Frame frame)
             throws OrekitException {
 
             // convert raw mathematical data to space dynamics objects
