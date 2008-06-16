@@ -400,6 +400,9 @@ public class NumericalPropagator implements Propagator {
     /** Internal class for differential equations representation. */
     private class DifferentialEquations implements FirstOrderDifferentialEquations {
 
+        /** Serializable UID. */
+        private static final long serialVersionUID = -1927530118454989452L;
+
         /** {@inheritDoc} */
         public int getDimension() {
             return 7;
