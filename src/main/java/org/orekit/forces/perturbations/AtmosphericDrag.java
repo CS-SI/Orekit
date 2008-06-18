@@ -11,16 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical.forces.perturbations;
+package org.orekit.forces.perturbations;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.ForceModel;
 import org.orekit.models.perturbations.Atmosphere;
 import org.orekit.models.spacecraft.AtmosphereDragSpacecraft;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.OrekitSwitchingFunction;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
-import org.orekit.propagation.numerical.forces.ForceModel;
 
 
 /** Atmospheric drag force model.

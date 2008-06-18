@@ -11,16 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical.forces.perturbations;
+package org.orekit.forces.perturbations;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.OrekitSwitchingFunction;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
-import org.orekit.propagation.numerical.forces.ForceModel;
 
 /** This class represents the gravitational field of a celestial body.
  * <p>The algorithm implemented in this class has been designed by

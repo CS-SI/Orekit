@@ -29,6 +29,7 @@ import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.attitudes.InertialLaw;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
+import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.BoundedPropagator;
@@ -40,7 +41,6 @@ import org.orekit.propagation.events.AdaptedSwitchingFunction;
 import org.orekit.propagation.events.OrekitFixedStepHandler;
 import org.orekit.propagation.events.OrekitStepHandler;
 import org.orekit.propagation.events.OrekitSwitchingFunction;
-import org.orekit.propagation.numerical.forces.ForceModel;
 import org.orekit.time.AbsoluteDate;
 
 

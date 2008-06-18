@@ -19,6 +19,7 @@ import junit.framework.TestSuite;
 
 import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.perturbations.ThirdBodyAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.iers.IERSDirectoryCrawler;
 import org.orekit.models.bodies.Moon;
@@ -28,7 +29,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.OrekitFixedStepHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.forces.perturbations.ThirdBodyAttraction;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChunkedDate;
 import org.orekit.time.ChunkedTime;

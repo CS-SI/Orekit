@@ -30,7 +30,7 @@ package org.orekit.models.perturbations;
  * <li> one OREKIT independent and compliant with initial FORTRAN routine entry values:
  *        {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double)}. </li>
  * <li> one compliant with OREKIT Atmosphere interface, necessary to the
- *        {@link org.orekit.propagation.numerical.forces.perturbations.AtmosphericDrag
+ *        {@link org.orekit.forces.perturbations.AtmosphericDrag
  *        drag force model} computation. This implementation is realized
  *        by the subclass {@link JB2006AtmosphereModel}</li>
  * </ul>
@@ -54,7 +54,7 @@ package org.orekit.models.perturbations;
  *
  * @author Bruce R Bowman (HQ AFSPC, Space Analysis Division), Feb 2006: FORTRAN routine
  * @author Fabien Maussion (java translation)
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class JB2006Atmosphere {
 

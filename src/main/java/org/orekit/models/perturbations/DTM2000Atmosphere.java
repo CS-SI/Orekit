@@ -40,7 +40,7 @@ import org.orekit.errors.OrekitException;
  *       routine entry values:
  *        {@link #getDensity(int, double, double, double, double, double, double, double, double)}.</li>
  *   <li> one compliant with OREKIT Atmosphere interface, necessary to the
- *        {@link org.orekit.propagation.numerical.forces.perturbations.AtmosphericDrag drag force model}
+ *        {@link org.orekit.forces.perturbations.AtmosphericDrag drag force model}
  *        computation. This implementation is realized
  *        by the subclass {@link DTM2000AtmosphereModel}</li>
  * </ul>

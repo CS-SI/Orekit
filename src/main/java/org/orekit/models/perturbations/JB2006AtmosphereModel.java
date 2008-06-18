@@ -29,7 +29,7 @@ import org.orekit.utils.PVCoordinates;
 /** This class is the OREKIT compliant realization of the JB2006 atmosphere model.
  *
  * It should be instantiated to be used by the {@link
- * org.orekit.propagation.numerical.forces.perturbations.AtmosphericDrag
+ * org.orekit.forces.perturbations.AtmosphericDrag
  * drag force model} as it implements the {@link Atmosphere} interface.
  *
  *  The input parameters are computed with orbital state information, but solar
@@ -38,7 +38,7 @@ import org.orekit.utils.PVCoordinates;
  *
  * @author Fabien Maussion
  * @see JB2006Atmosphere
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class JB2006AtmosphereModel extends JB2006Atmosphere implements Atmosphere {
 
