@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical;
+package org.orekit.propagation.events;
 
 import java.io.Serializable;
 
@@ -22,14 +22,14 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.OrekitFixedStepHandler;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.numerical.ModeHandler;
 import org.orekit.time.AbsoluteDate;
 
-/** Adapt an {@link org.orekit.propagation.OrekitFixedStepHandler}
+/** Adapt an {@link org.orekit.propagation.events.OrekitFixedStepHandler}
  * to commons-math {@link FixedStepHandler} interface.
  * @author Luc Maisonobe
- * @version $Revision: 1686 $ $Date: 2008-06-16 11:26:18 +0200 (lun., 16 juin 2008) $
+ * @version $Revision$ $Date$
  */
 public class AdaptedFixedStepHandler
     implements FixedStepHandler, ModeHandler, Serializable {

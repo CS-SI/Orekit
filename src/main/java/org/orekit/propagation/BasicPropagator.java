@@ -26,7 +26,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @author Véronique Pommier-Maurussane
  *
- * @version $Revision: 1686 $ $Date: 2008-06-16 11:26:18 +0200 (lun., 16 juin 2008) $
+ * @version $Revision$ $Date$
  */
 
 public interface BasicPropagator extends Serializable {

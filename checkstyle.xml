@@ -76,6 +76,9 @@
         <module name="FileContentsHolder"/>
     </module>
     <module name="NewlineAtEndOfFile"/>
+    <module name="SuppressionFilter">
+        <property name="file" value="checkstyle-exclude-filter.xml"/>
+    </module>
     <module name="SuppressionCommentFilter">
         <property name="offCommentFormat" value="CHECKSTYLE\: stop JavadocVariable check"/>
         <property name="onCommentFormat"  value="CHECKSTYLE\: resume JavadocVariable check"/>

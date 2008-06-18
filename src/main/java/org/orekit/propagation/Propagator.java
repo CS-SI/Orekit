@@ -13,6 +13,10 @@
  */
 package org.orekit.propagation;
 
+import org.orekit.propagation.events.OrekitFixedStepHandler;
+import org.orekit.propagation.events.OrekitStepHandler;
+import org.orekit.propagation.events.OrekitSwitchingFunction;
+
 /** This interface provides a way to propagate an orbit at any time.
  *
  * <p>This interface is the top-level abstraction for orbit propagation.

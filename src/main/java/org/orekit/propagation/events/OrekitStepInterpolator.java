@@ -11,12 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation;
+package org.orekit.propagation.events;
 
 import java.io.Serializable;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 /** This interface is a space-dynamics aware step interpolator.

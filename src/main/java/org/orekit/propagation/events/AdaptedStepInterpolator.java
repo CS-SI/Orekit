@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical;
+package org.orekit.propagation.events;
 
 import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.StepInterpolator;
@@ -21,14 +21,13 @@ import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.OrekitStepInterpolator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 /** Adapt a commons-math {@link org.apache.commons.math.ode.StepInterpolator
  * StepInterpolator} to {@link OrekitStepInterpolator} interface.
  * @author Luc Maisonobe
- * @version $Revision: 1682 $ $Date: 2008-06-16 09:38:59 +0200 (lun., 16 juin 2008) $
+ * @version $Revision$ $Date$
  */
 public class AdaptedStepInterpolator implements OrekitStepInterpolator {
 

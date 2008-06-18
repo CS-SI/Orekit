@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical;
+package org.orekit.propagation.events;
 
 import java.io.Serializable;
 
@@ -21,14 +21,13 @@ import org.apache.commons.math.ode.StepInterpolator;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
-import org.orekit.propagation.OrekitStepHandler;
-import org.orekit.propagation.OrekitStepInterpolator;
+import org.orekit.propagation.numerical.ModeHandler;
 import org.orekit.time.AbsoluteDate;
 
-/** Adapt an {@link org.orekit.propagation.OrekitStepHandler}
+/** Adapt an {@link org.orekit.propagation.events.OrekitStepHandler}
  * to commons-math {@link StepHandler} interface.
  * @author Luc Maisonobe
- * @version $Revision: 1686 $ $Date: 2008-06-16 11:26:18 +0200 (lun., 16 juin 2008) $
+ * @version $Revision$ $Date$
  */
 public class AdaptedStepHandler
     implements StepHandler, ModeHandler, Serializable {

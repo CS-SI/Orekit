@@ -11,11 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation;
+package org.orekit.propagation.events;
 
 import java.io.Serializable;
 
 import org.orekit.errors.PropagationException;
+import org.orekit.propagation.SpacecraftState;
 
 /** This interface is a space-dynamics aware fixed size step handler.
  *

@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical;
+package org.orekit.propagation.events;
 
 import org.apache.commons.math.ode.SwitchException;
 import org.apache.commons.math.ode.SwitchingFunction;
@@ -19,19 +19,18 @@ import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.propagation.OrekitSwitchingFunction;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
-/** Adapt an {@link org.orekit.propagation.OrekitSwitchingFunction}
+/** Adapt an {@link org.orekit.propagation.events.OrekitSwitchingFunction}
  * to commons-math {@link SwitchingFunction} interface.
  * @author Fabien Maussion
  * @version $Revision$ $Date$
  */
-class AdaptedSwitchingFunction implements SwitchingFunction {
+public class AdaptedSwitchingFunction implements SwitchingFunction {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -6499642072896097404L;
+    private static final long serialVersionUID = -2628301871670676128L;
 
     /** Underlying Orekit switching function. */
     private final OrekitSwitchingFunction swf;

@@ -18,6 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.orekit.errors.PropagationException;
+import org.orekit.propagation.events.OrekitFixedStepHandler;
+import org.orekit.propagation.events.OrekitStepHandler;
+import org.orekit.propagation.events.OrekitStepInterpolator;
+import org.orekit.propagation.events.OrekitSwitchingFunction;
 import org.orekit.time.AbsoluteDate;
 
 /** Common handling of {@link Propagator} methods for analytical-like propagators.
@@ -95,7 +99,7 @@ public abstract class AbstractPropagator implements Propagator {
      * <p>This method is similar in spirit to the {@link #propagate} method,
      * except that it does <strong>not</strong> call any handler during
      * propagation, nor any switching function. It always stop exactly at
-     * the dpecified date.</p>
+     * the specified date.</p>
      * @param date
      * @return state at specified date
      * @exception PropagationException if propagation cannot reach specified date
@@ -141,6 +145,7 @@ public abstract class AbstractPropagator implements Propagator {
         /** {@inheritDoc} */
         public SpacecraftState propagate(AbsoluteDate date)
             throws PropagationException {
+            // TODO take switching functions into account
             return basicPropagate(date);
         }
 
@@ -185,6 +190,7 @@ public abstract class AbstractPropagator implements Propagator {
             // the n-1 first steps are exactly h seconds long
             for (int i = 0; i < (n - 1); ++i) {
                 SpacecraftState state = basicPropagate(new AbsoluteDate(start, i * signedH));
+                // TODO take switching functions into account
                 handler.handleStep(state, false);
             }
 
@@ -257,6 +263,7 @@ public abstract class AbstractPropagator implements Propagator {
                 previousDate = currentDate;
                 currentDate  = new AbsoluteDate(initialDate, i * signedH);
                 setInterpolatedDate(currentDate);
+                // TODO take switching functions into account
                 handler.handleStep(this, i == (n - 1));
             }
 
@@ -313,16 +320,17 @@ public abstract class AbstractPropagator implements Propagator {
         /** {@inheritDoc} */
         public SpacecraftState propagate(AbsoluteDate date)
             throws PropagationException {
+            // TODO implement propagation in ephemeris generation mode
             return basicPropagate(date);
         }
 
         public AbsoluteDate getMaxDate() {
-            // TODO Auto-generated method stub
+            // TODO get the max date
             return null;
         }
 
         public AbsoluteDate getMinDate() {
-            // TODO Auto-generated method stub
+            // TODO get the min date
             return null;
         }
 

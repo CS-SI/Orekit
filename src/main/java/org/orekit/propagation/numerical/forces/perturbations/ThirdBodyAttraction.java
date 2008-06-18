@@ -16,8 +16,8 @@ package org.orekit.propagation.numerical.forces.perturbations;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.bodies.ThirdBody;
 import org.orekit.errors.OrekitException;
-import org.orekit.propagation.OrekitSwitchingFunction;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.OrekitSwitchingFunction;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.numerical.forces.ForceModel;
 

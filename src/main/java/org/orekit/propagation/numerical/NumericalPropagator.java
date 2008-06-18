@@ -32,11 +32,14 @@ import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.BoundedPropagator;
-import org.orekit.propagation.OrekitFixedStepHandler;
-import org.orekit.propagation.OrekitStepHandler;
-import org.orekit.propagation.OrekitSwitchingFunction;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.AdaptedFixedStepHandler;
+import org.orekit.propagation.events.AdaptedStepHandler;
+import org.orekit.propagation.events.AdaptedSwitchingFunction;
+import org.orekit.propagation.events.OrekitFixedStepHandler;
+import org.orekit.propagation.events.OrekitStepHandler;
+import org.orekit.propagation.events.OrekitSwitchingFunction;
 import org.orekit.propagation.numerical.forces.ForceModel;
 import org.orekit.time.AbsoluteDate;
 

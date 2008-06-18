@@ -17,8 +17,8 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
-import org.orekit.propagation.OrekitSwitchingFunction;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.OrekitSwitchingFunction;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.numerical.forces.ForceModel;
 
