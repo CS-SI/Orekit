@@ -20,9 +20,8 @@ import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.TabulatedEphemeris;
+import org.orekit.propagation.Ephemeris;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChunkedDate;
@@ -60,7 +59,7 @@ public class TabulatedEphemerisTest extends TestCase {
 
         int nbIntervals = 720;
         EcksteinHechlerPropagator eck =
-            new EcksteinHechlerPropagator(new SpacecraftState(transPar, mass),
+            new EcksteinHechlerPropagator(transPar, mass,
                                           ae, mu, c20, c30, c40, c50, c60);
         SpacecraftState[] tab = new SpacecraftState[nbIntervals+1];
         for (int j = 0; j<= nbIntervals; j++) {
@@ -68,7 +67,7 @@ public class TabulatedEphemerisTest extends TestCase {
             tab[j] = eck.propagate(current);
         }
 
-        TabulatedEphemeris te = new TabulatedEphemeris(tab);
+        Ephemeris te = new Ephemeris(tab);
 
         assertEquals(te.getMaxDate(), finalDate);
         assertEquals(te.getMinDate(), initDate);
@@ -79,7 +78,7 @@ public class TabulatedEphemerisTest extends TestCase {
 
     }
 
-    private void checkEphemerides(Propagator eph1, Propagator eph2, AbsoluteDate date,
+    private void checkEphemerides(BasicPropagator eph1, BasicPropagator eph2, AbsoluteDate date,
                                   double threshold, boolean expectedBelow)
         throws PropagationException {
         SpacecraftState state1 = eph1.propagate(date);

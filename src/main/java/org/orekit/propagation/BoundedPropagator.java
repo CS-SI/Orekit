@@ -27,7 +27,7 @@ import org.orekit.time.AbsoluteDate;
  *
  * @version $Revision$ $Date$
  */
-public interface BoundedPropagator extends Propagator {
+public interface BoundedPropagator extends BasicPropagator {
 
     /** Get the first date of the range.
      * @return the first date of the range

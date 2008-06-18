@@ -26,10 +26,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.propagation.numerical.IntegratedEphemeris;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -56,13 +55,13 @@ public class IntegratedEphemerisTest extends TestCase {
         NumericalPropagator numericEx = new NumericalPropagator(integrator);
 
         // Integrated ephemeris
-        IntegratedEphemeris ephemeris = new IntegratedEphemeris();
 
         // Propagation
         AbsoluteDate finalDate = new AbsoluteDate(initDate, 86400);
-        numericEx.setBatchMode(ephemeris);
+        numericEx.setEphemerisMode();
         numericEx.setInitialState(new SpacecraftState(initialOrbit));
         numericEx.propagate(finalDate);
+        BoundedPropagator ephemeris = numericEx.getGeneratedEphemeris();
 
         // tests
         for (int i = 1; i <= 86400; i++) {
@@ -75,13 +74,13 @@ public class IntegratedEphemerisTest extends TestCase {
         }
 
         // test inv
-        IntegratedEphemeris invEphemeris = new IntegratedEphemeris();
         AbsoluteDate intermediateDate = new AbsoluteDate(initDate, 41589);
         SpacecraftState keplerIntermediateOrbit = keplerEx.propagate(intermediateDate);
         SpacecraftState state = keplerEx.propagate(finalDate);
         numericEx.setInitialState(state);
-        numericEx.setBatchMode(invEphemeris);
+        numericEx.setEphemerisMode();
         numericEx.propagate(initDate);
+        BoundedPropagator invEphemeris = numericEx.getGeneratedEphemeris();
         SpacecraftState numericIntermediateOrbit = invEphemeris.propagate(intermediateDate);
         Vector3D kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
         Vector3D numPosition = numericIntermediateOrbit.getPVCoordinates().getPosition();

@@ -36,10 +36,10 @@ import org.orekit.models.bodies.Sun;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.OrekitFixedStepHandler;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.OrekitFixedStepHandler;
 import org.orekit.propagation.numerical.forces.perturbations.CunninghamAttractionModel;
 import org.orekit.propagation.numerical.forces.perturbations.DrozinerAttractionModel;
 import org.orekit.time.AbsoluteDate;
@@ -91,7 +91,7 @@ public class DrozinerAttractionModelTest extends TestCase {
 
     }
 
-    private static class SpotStepHandler extends OrekitFixedStepHandler {
+    private static class SpotStepHandler implements OrekitFixedStepHandler {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -3917769828973243346L;
@@ -124,14 +124,8 @@ public class DrozinerAttractionModelTest extends TestCase {
             previous = angle;
         }
 
-        public boolean requiresDenseOutput() {
-            return false;
-        }
-
-        public void reset() {
-        }
-
     }
+
     // test the difference with the analytical extrapolator Eckstein Hechler
     public void testEcksteinHechlerReference()
     throws ParseException, FileNotFoundException,
@@ -169,7 +163,7 @@ public class DrozinerAttractionModelTest extends TestCase {
 
     }
 
-    private static class EckStepHandler extends org.orekit.propagation.numerical.OrekitFixedStepHandler {
+    private static class EckStepHandler implements OrekitFixedStepHandler {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -7974453505641400294L;
@@ -211,12 +205,6 @@ public class DrozinerAttractionModelTest extends TestCase {
 
         }
 
-        public boolean requiresDenseOutput() {
-            return false;
-        }
-
-        public void reset() {
-        }
     }
 
     // test the difference with the Cunningham model

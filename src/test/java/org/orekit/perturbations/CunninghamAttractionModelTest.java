@@ -35,10 +35,10 @@ import org.orekit.models.bodies.Sun;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.OrekitFixedStepHandler;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.OrekitFixedStepHandler;
 import org.orekit.propagation.numerical.forces.perturbations.CunninghamAttractionModel;
 import org.orekit.propagation.numerical.forces.perturbations.DrozinerAttractionModel;
 import org.orekit.time.AbsoluteDate;
@@ -90,7 +90,7 @@ public class CunninghamAttractionModelTest extends TestCase {
 
     }
 
-    private static class SpotStepHandler extends OrekitFixedStepHandler {
+    private static class SpotStepHandler implements OrekitFixedStepHandler {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 6818305166004802991L;
@@ -122,13 +122,6 @@ public class CunninghamAttractionModelTest extends TestCase {
                 assertEquals(previous, angle, 0.0005);
             }
             previous = angle;
-        }
-
-        public boolean requiresDenseOutput() {
-            return false;
-        }
-
-        public void reset() {
         }
 
     }
@@ -169,7 +162,7 @@ public class CunninghamAttractionModelTest extends TestCase {
 
     }
 
-    private static class EckStepHandler extends OrekitFixedStepHandler {
+    private static class EckStepHandler implements OrekitFixedStepHandler {
 
         /**Serializable UID. */
         private static final long serialVersionUID = 6132817809836153771L;
@@ -211,14 +204,8 @@ public class CunninghamAttractionModelTest extends TestCase {
 
         }
 
-        public boolean requiresDenseOutput() {
-            return false;
-        }
-
-        public void reset() {
-        }
-
     }
+
     // test the difference with the Cunningham model
     public void testZonalWithDrozinerReference()
     throws OrekitException, DerivativeException, IntegratorException, ParseException {

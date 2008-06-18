@@ -44,7 +44,7 @@ import org.orekit.utils.PVCoordinates;
  * @author Guylaine Prat
  * @author Fabien Maussion
  * @author Véronique Pommier-Maurussane
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class KeplerianOrbit extends Orbit {
 
@@ -126,13 +126,13 @@ public class KeplerianOrbit extends Orbit {
             break;
         default :
             this.v = Double.NaN;
-            OrekitException.throwIllegalArgumentException("angle type not supported, supported angles:" +
-                                                          " {0}, {1} and {2}",
-                                                          new Object[] {
-                                                              "MEAN_ANOMALY",
-                                                              "ECCENTRIC_ANOMALY",
-                                                              "TRUE_ANOMALY"
-                                                          });
+            throw OrekitException.createIllegalArgumentException("angle type not supported, supported angles:" +
+                                                                 " {0}, {1} and {2}",
+                                                                 new Object[] {
+                                                                     "MEAN_ANOMALY",
+                                                                     "ECCENTRIC_ANOMALY",
+                                                                     "TRUE_ANOMALY"
+                                                                 });
 
         }
     }

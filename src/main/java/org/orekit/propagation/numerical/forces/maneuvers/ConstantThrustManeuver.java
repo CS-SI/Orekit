@@ -15,8 +15,8 @@ package org.orekit.propagation.numerical.forces.maneuvers;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.propagation.OrekitSwitchingFunction;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.OrekitSwitchingFunction;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.numerical.forces.ForceModel;
 import org.orekit.time.AbsoluteDate;
@@ -26,7 +26,7 @@ import org.orekit.time.AbsoluteDate;
  *
  * @author Fabien Maussion
  * @author Véronique Pommier-Maurussane
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class ConstantThrustManeuver implements ForceModel {
 
@@ -93,11 +93,11 @@ public class ConstantThrustManeuver implements ForceModel {
 
         if ((frameType != QSW) && (frameType != TNW) &&
             (frameType != INERTIAL) && (frameType != SPACECRAFT)) {
-            OrekitException.throwIllegalArgumentException("unsupported thrust direction frame, " +
-                                                          "supported types: {0}, {1}, {2} and {3}",
-                                                          new Object[] {
-                                                              "QSW", "TNW", "INERTIAL", "SPACECRAFT"
-                                                          });
+            throw OrekitException.createIllegalArgumentException("unsupported thrust direction frame, " +
+                                                                 "supported types: {0}, {1}, {2} and {3}",
+                                                                 new Object[] {
+                                                                     "QSW", "TNW", "INERTIAL", "SPACECRAFT"
+                                                                 });
         }
 
         if (duration >= 0) {
@@ -176,12 +176,13 @@ public class ConstantThrustManeuver implements ForceModel {
     private class StartSwitch implements OrekitSwitchingFunction {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -3767637291885982229L;
+        private static final long serialVersionUID = 8256737374206837853L;
 
         /** {@inheritDoc} */
-        public void eventOccurred(final SpacecraftState s) {
+        public int eventOccurred(final SpacecraftState s) {
             // start the maneuver
             firing = true;
+            return RESET_DERIVATIVES;
         }
 
         /** The G-function is the difference between the start date and the current date.
@@ -208,6 +209,13 @@ public class ConstantThrustManeuver implements ForceModel {
             return 10;
         }
 
+        /** {@inheritDoc} */
+        public SpacecraftState resetState(SpacecraftState oldState)
+                throws OrekitException {
+            // never called since eventOccurred does never return RESET_STATE
+            return null;
+        }
+
     }
 
     /** This class defines the end of the acceleration switching function.
@@ -216,12 +224,13 @@ public class ConstantThrustManeuver implements ForceModel {
     private class StopSwitch implements OrekitSwitchingFunction {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -4081671157610680754L;
+        private static final long serialVersionUID = -3870095515033978202L;
 
         /** {@inheritDoc} */
-        public void eventOccurred(final SpacecraftState s) {
+        public int eventOccurred(final SpacecraftState s) {
             // stop the maneuver
             firing = false;
+            return RESET_DERIVATIVES;
         }
 
         /** The G-function is the difference between the end date and the current date.
@@ -246,6 +255,13 @@ public class ConstantThrustManeuver implements ForceModel {
         /** {@inheritDoc} */
         public int getMaxIterationCount() {
             return 10;
+        }
+
+        /** {@inheritDoc} */
+        public SpacecraftState resetState(SpacecraftState oldState)
+                throws OrekitException {
+            // never called since eventOccurred does never return RESET_STATE
+            return null;
         }
 
     }

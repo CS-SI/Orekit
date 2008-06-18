@@ -19,24 +19,23 @@ import org.apache.commons.math.ode.FixedStepHandler;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.OrekitFixedStepHandler;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
-
-/** This class is a space-dynamics aware fixed size step handler.
- *
- * <p>It mirrors the {@link org.apache.commons.math.ode.FixedStepHandler
- * FixedStepHandler} interface from <a href="http://commons.apache.org/math/">
- * commons-math</a> but provides a space-dynamics interface to the methods.</p>
- *
- * @version $Revision$ $Date$
+/** Adapt an {@link org.orekit.propagation.OrekitFixedStepHandler}
+ * to commons-math {@link FixedStepHandler} interface.
+ * @author Luc Maisonobe
+ * @version $Revision: 1686 $ $Date: 2008-06-16 11:26:18 +0200 (lun., 16 juin 2008) $
  */
-public abstract class OrekitFixedStepHandler
+public class AdaptedFixedStepHandler
     implements FixedStepHandler, ModeHandler, Serializable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = -9160552720711798090L;
 
     /** Reference date. */
     private AbsoluteDate initializedReference;
@@ -50,6 +49,16 @@ public abstract class OrekitFixedStepHandler
     /** Attitude law. */
     private AttitudeLaw initializedAttitudeLaw;
 
+    /** Underlying handler. */
+    private final OrekitFixedStepHandler handler;
+
+    /** Build an instance.
+     * @param handler underlying handler to wrap
+     */
+    public AdaptedFixedStepHandler(final OrekitFixedStepHandler handler) {
+        this.handler = handler;
+    }
+
     /** {@inheritDoc} */
     public void initialize(final AbsoluteDate reference, final Frame frame,
                            final double mu, final AttitudeLaw attitudeLaw) {
@@ -58,27 +67,6 @@ public abstract class OrekitFixedStepHandler
         this.initializedAttitudeLaw = attitudeLaw;
         this.initializedMu          = mu;
     }
-
-    /** Handle the current step.
-     * @param currentState current state at step time
-     * @param isLast if true, this is the last integration step
-     * @exception PropagationException if step cannot be handled
-     */
-    public abstract void handleStep(final SpacecraftState currentState, final boolean isLast)
-        throws PropagationException;
-
-    /** Check if the handler requires dense output.
-     * @return true if the handler requires dense output
-     * @see org.apache.commons.math.ode.StepHandler#requiresDenseOutput()
-     */
-    public abstract boolean requiresDenseOutput();
-
-    /** Reset the step handler.
-     * Initialize the internal data as required before the first step is
-     * handled.
-     * @see org.apache.commons.math.ode.StepHandler#reset()
-     */
-    public abstract void reset();
 
     /** {@inheritDoc}  */
     public void handleStep(final double t, final double[] y, final boolean isLast) {
@@ -92,7 +80,7 @@ public abstract class OrekitFixedStepHandler
                 initializedAttitudeLaw.getState(current, orbit.getPVCoordinates(), initializedFrame);
             final SpacecraftState state =
                 new SpacecraftState(orbit, attitude, y[6]);
-            handleStep(state, isLast);
+            handler.handleStep(state, isLast);
         } catch (OrekitException e) {
             throw new RuntimeException(e.getLocalizedMessage());
         }

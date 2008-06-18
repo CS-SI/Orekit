@@ -20,7 +20,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.Propagator;
+import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -29,16 +29,19 @@ import org.orekit.time.AbsoluteDate;
  * @author Guylaine Prat
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class KeplerianPropagator implements Propagator {
+public class KeplerianPropagator extends AbstractPropagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -986824848691837983L;
+    private static final long serialVersionUID = 9192576472088570265L;
 
     /** Default mass. */
     private static final double DEFAULT_MASS = 1000.0;
 
+    /** Default attitude law. */
+    private static final AttitudeLaw DEFAULT_LAW = InertialLaw.J2000_ALIGNED;
+
     /** Initial orbit. */
-    private final EquinoctialOrbit initialOrbit;
+    private EquinoctialOrbit initialOrbit;
 
     /** Attitude law. */
     private final AttitudeLaw attitudeLaw;
@@ -47,32 +50,28 @@ public class KeplerianPropagator implements Propagator {
     private final double mu;
 
     /** Initial mass. */
-    private final double mass;
+    private double mass;
 
     /** Mean motion. */
-    private final double meanMotion;
+    private double meanMotion;
 
     /** Build a propagator from orbit only.
-     * <p>Attitude law is set to a default inertial {@link org.orekit.frames.Frame
-     * J<sub>2000</sub>} aligned law. The central attraction coefficient &mu;
-     * is set to the same value used for the initial orbit definition. Mass is
-     * set to an unspecified non-null arbitrary value.</p>
+     * <p>The central attraction coefficient &mu; is set to the same value used
+     * for the initial orbit definition. Mass and attitude law are set to
+     * unspecified non-null arbitrary values.</p>
      * @param initialOrbit initial orbit
      */
     public KeplerianPropagator(final Orbit initialOrbit)  {
-        this(initialOrbit, InertialLaw.J2000_ALIGNED,
-             initialOrbit.getMu(), DEFAULT_MASS);
+        this(initialOrbit, DEFAULT_LAW, initialOrbit.getMu(), DEFAULT_MASS);
     }
 
     /** Build a propagator from orbit and central attraction coefficient &mu;.
-     * <p>Attitude law is set to a default inertial {@link org.orekit.frames.Frame
-     * J<sub>2000</sub>} aligned law. Mass is set to an unspecified non-null
-     * arbitrary value.</p>
+     * <p>Mass and attitude law are set to unspecified non-null arbitrary values.</p>
      * @param initialOrbit initial orbit
      * @param mu central attraction coefficient (m^3/s^2)
      */
     public KeplerianPropagator(final Orbit initialOrbit, final double mu)  {
-        this(initialOrbit, InertialLaw.J2000_ALIGNED, mu, DEFAULT_MASS);
+        this(initialOrbit, DEFAULT_LAW, mu, DEFAULT_MASS);
     }
 
     /** Build a propagator from orbit and attitude law.
@@ -118,7 +117,12 @@ public class KeplerianPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState propagate(final AbsoluteDate date)
+    protected AbsoluteDate getInitialDate() {
+        return initialOrbit.getDate();
+    }
+
+    /** {@inheritDoc} */
+    protected SpacecraftState basicPropagate(final AbsoluteDate date)
         throws PropagationException {
         try {
 
@@ -143,6 +147,15 @@ public class KeplerianPropagator implements Propagator {
             throw new PropagationException(oe.getMessage(), oe);
         }
 
+    }
+
+    /** {@inheritDoc} */
+    protected void resetInitialState(SpacecraftState state)
+        throws PropagationException {
+        initialOrbit   = new EquinoctialOrbit(state.getOrbit());
+        final double a = initialOrbit.getA();
+        meanMotion     = Math.sqrt(mu / a) / a;
+        mass           = state.getMass();
     }
 
 }

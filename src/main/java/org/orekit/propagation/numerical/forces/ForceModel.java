@@ -16,8 +16,8 @@ package org.orekit.propagation.numerical.forces;
 import java.io.Serializable;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.propagation.OrekitSwitchingFunction;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.OrekitSwitchingFunction;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 
 

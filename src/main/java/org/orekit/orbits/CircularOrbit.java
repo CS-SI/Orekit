@@ -43,7 +43,7 @@ import org.orekit.utils.PVCoordinates;
  * @author Luc Maisonobe
  * @author Fabien Maussion
  * @author Véronique Pommier-Maurussane
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 
 public class CircularOrbit
@@ -122,13 +122,13 @@ public class CircularOrbit
             break;
         default :
             this.alphaV = Double.NaN;
-            OrekitException.throwIllegalArgumentException("angle type not supported, supported angles:" +
-                                                          " {0}, {1} and {2}",
-                                                          new Object[] {
-                                                              "MEAN_LONGITUDE_ARGUMENT",
-                                                              "ECCENTRIC_LONGITUDE_ARGUMENT",
-                                                              "TRUE_LONGITUDE_ARGUMENT"
-                                                          });
+            throw OrekitException.createIllegalArgumentException("angle type not supported, supported angles:" +
+                                                                 " {0}, {1} and {2}",
+                                                                 new Object[] {
+                                                                     "MEAN_LONGITUDE_ARGUMENT",
+                                                                     "ECCENTRIC_LONGITUDE_ARGUMENT",
+                                                                     "TRUE_LONGITUDE_ARGUMENT"
+                                                                 });
         }
 
     }

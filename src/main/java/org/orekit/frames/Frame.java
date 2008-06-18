@@ -178,10 +178,10 @@ public class Frame implements Serializable {
         throws IllegalArgumentException {
 
         if (parent == null) {
-            OrekitException.throwIllegalArgumentException("null parent for frame {0}",
-                                                          new Object[] {
-                                                              name
-                                                          });
+            throw OrekitException.createIllegalArgumentException("null parent for frame {0}",
+                                                                 new Object[] {
+                                                                     name
+                                                                 });
         }
         this.name      = name;
         this.parent    = parent;
@@ -515,15 +515,12 @@ public class Frame implements Serializable {
         if (type == VEIS1950) {
             return LazyVeis1950Holder.INSTANCE;
         }
-        OrekitException.throwIllegalArgumentException("unknown frame type {0}, known types: " +
-                                                      "{1}, {2}, {3}, {4}, {5}, {6} and {7}",
-                                                      new Object[] {
-                                                          type, ITRF2000A, ITRF2000B, TIRF2000A,
-                                                          TIRF2000B, IRF2000A, IRF2000B, VEIS1950
-                                                      });
-
-        // in fact, this is never reached
-        return null;
+        throw OrekitException.createIllegalArgumentException("unknown frame type {0}, known types: " +
+                                                             "{1}, {2}, {3}, {4}, {5}, {6} and {7}",
+                                                             new Object[] {
+                                                                 type, ITRF2000A, ITRF2000B, TIRF2000A,
+                                                                 TIRF2000B, IRF2000A, IRF2000B, VEIS1950
+                                                             });
 
     }
 

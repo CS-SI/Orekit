@@ -21,10 +21,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.OrekitFixedStepHandler;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.IntegratedEphemeris;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.OrekitFixedStepHandler;
 import org.orekit.propagation.numerical.forces.ForceModel;
 import org.orekit.propagation.numerical.forces.perturbations.CunninghamAttractionModel;
 import org.orekit.time.AbsoluteDate;
@@ -104,9 +104,9 @@ public class NumericalPropagation {
 
         AbsoluteDate finalDate = new AbsoluteDate(initialDate, 500);
         propagator.setInitialState(initialState);
-        IntegratedEphemeris ephemeris = new IntegratedEphemeris();
-        propagator.setBatchMode(ephemeris);
+        propagator.setEphemerisMode();
         SpacecraftState finalState = propagator.propagate(finalDate);
+        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
         System.out.println(" Final state  : " +
                            finalState.getOrbit());
         AbsoluteDate intermediateDate = new AbsoluteDate(initialDate, 214);
@@ -181,10 +181,10 @@ public class NumericalPropagation {
         System.out.println(" Final state  : " + finalState.getOrbit());
     }
 
-    private static class TutorialStepHandler extends OrekitFixedStepHandler {
+    private static class TutorialStepHandler implements OrekitFixedStepHandler {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 3684310055133053883L;
+        private static final long serialVersionUID = -8909135870522456848L;
 
         private TutorialStepHandler() {
             //private constructor
@@ -197,13 +197,6 @@ public class NumericalPropagation {
                 System.out.println(" this was the last step ");
             }
 
-        }
-
-        public boolean requiresDenseOutput() {
-            return false;
-        }
-
-        public void reset() {
         }
 
     }

@@ -33,10 +33,10 @@ import org.orekit.models.spacecraft.SolarRadiationPressureSpacecraft;
 import org.orekit.models.spacecraft.SphericalSpacecraft;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.OrekitFixedStepHandler;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.OrekitFixedStepHandler;
 import org.orekit.propagation.numerical.forces.perturbations.SolarRadiationPressure;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChunkedDate;
@@ -133,7 +133,7 @@ public class SolarRadiationPressureTest extends TestCase {
 
     private double mu = 3.98600E14;
 
-    private static class SolarStepHandler extends OrekitFixedStepHandler {
+    private static class SolarStepHandler implements OrekitFixedStepHandler {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -2346826010279512941L;
@@ -148,13 +148,6 @@ public class SolarRadiationPressureTest extends TestCase {
             double radius = Math.sqrt((currentState.getEquinoctialEx()-0.00940313)*(currentState.getEquinoctialEx()-0.00940313)
                                       + (currentState.getEquinoctialEy()-0.013679)*(currentState.getEquinoctialEy()-0.013679));
             checkRadius(radius , 0.00351 , 0.00394);
-        }
-
-        public boolean requiresDenseOutput() {
-            return false;
-        }
-
-        public void reset() {
         }
 
     }

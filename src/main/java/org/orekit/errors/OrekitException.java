@@ -38,7 +38,7 @@ import java.util.ResourceBundle;
 public class OrekitException extends Exception {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 8837701027854807120L;
+    private static final long serialVersionUID = 445319503291578390L;
 
     /** Resources bundle. */
     private static final ResourceBundle RESOURCES;
@@ -91,15 +91,24 @@ public class OrekitException extends Exception {
         return new MessageFormat(translated).format(parts);
     }
 
-    /** Throw an {@link java.lang.IllegalArgumentException} with localized message.
+    /** Create an {@link java.lang.IllegalArgumentException} with localized message.
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
-     * @exception IllegalArgumentException always throws an exception
+     * @return an {@link java.lang.IllegalArgumentException} with localized message
      */
-    public static void throwIllegalArgumentException(final String specifier,
-                                                     final Object[] parts)
-        throws IllegalArgumentException {
-        throw new IllegalArgumentException(translate(specifier, parts));
+    public static IllegalArgumentException createIllegalArgumentException(final String specifier,
+                                                                          final Object[] parts) {
+        return new IllegalArgumentException(translate(specifier, parts));
+    }
+
+    /** Create an {@link java.lang.IllegalStateException} with localized message.
+     * @param specifier format specifier (to be translated)
+     * @param parts parts to insert in the format (no translation)
+     * @return an {@link java.lang.IllegalStateException} with localized message
+     */
+    public static IllegalStateException createIllegalStateException(final String specifier,
+                                                                          final Object[] parts) {
+        return new IllegalStateException(translate(specifier, parts));
     }
 
 }

@@ -23,34 +23,38 @@ import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
-
-/** This class stores numerically integrated orbital parameters for
+/** This class stores sequentially generated orbital parameters for
  * later retrieval.
  *
- * <p>Instances of this class are built and then must be filled with the results
- * provided by {@link NumericalPropagator} objects in order to allow random
- * access to any intermediate state of the orbit throughout the integration range.
- * Numerically integrated orbits can therefore be used by algorithms that
- * need to wander around according to their own algorithm without cumbersome
- * tight link with the integrator.</p>
+ * <p>Instances of this class are built and then must be fed with the results
+ * provided by {@link Propagator} objects configured in {@link
+ * Propagator#setBatchMode(BatchEphemeris) batch mode}. Once propagation is
+ * completed, random access to any intermediate state of the orbit throughout
+ * the propagation range is possible.</p>
+ * <p>A typical use case is for numerically integrated orbits, which thanks to
+ * this class can be used by algorithms that need to wander around according
+ * to their own algorithm without cumbersome tight links with the integrator.</p>
+ * <p>Another use case is for persistence, as this class is serializable.</p>
+ * <p>As this class implements the {@link Propagator Propagator} interface, it
+ * can itself be used in batch mode to build another instance of the same type.
+ * This is however not recommended since it would be a waste of resources.</p>
+ * <p>Note that this class stores all intermediate states along with interpolation
+ * models, so it may be memory intensive.</p>
  *
- * <p> This class handles a {@link ContinuousOutputModel} and can be very
- *  voluminous. Refer to {@link ContinuousOutputModel} for more information.</p>
- *
- * @see NumericalPropagator
+ * @see org.orekit.propagation.numerical.NumericalPropagator
  * @author Mathieu Roméro
  * @author Luc Maisonobe
  * @author Véronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
-public class IntegratedEphemeris
-    implements BoundedPropagator, ModeHandler, StepHandler {
+class IntegratedEphemeris implements BoundedPropagator, ModeHandler, StepHandler {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 1925214028731458572L;
+    private static final long serialVersionUID = 3312011510740592660L;
 
     /** Reference date. */
     private AbsoluteDate initializedReference;
@@ -80,7 +84,7 @@ public class IntegratedEphemeris
      *  filled by the propagator.
      */
     public IntegratedEphemeris() {
-        model = new ContinuousOutputModel();
+        this.model = new ContinuousOutputModel();
     }
 
     /** {@inheritDoc} */
@@ -99,11 +103,7 @@ public class IntegratedEphemeris
 
     }
 
-    /** Get the orbit at a specific date.
-     * @param date desired date for the orbit
-     * @return the {@link SpacecraftState} at the specified date and null if not initialized.
-     * @exception PropagationException if the date is outside of the range
-     */
+    /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate date)
         throws PropagationException {
         model.setInterpolatedTime(date.minus(startDate));

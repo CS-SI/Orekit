@@ -18,8 +18,8 @@ import org.orekit.bodies.ThirdBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.models.spacecraft.SolarRadiationPressureSpacecraft;
+import org.orekit.propagation.OrekitSwitchingFunction;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.OrekitSwitchingFunction;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.numerical.forces.ForceModel;
 import org.orekit.time.AbsoluteDate;
@@ -30,7 +30,7 @@ import org.orekit.utils.PVCoordinates;
  * @author Fabien Maussion
  * @author Édouard Delente
  * @author Véronique Pommier-Maurussane
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class SolarRadiationPressure implements ForceModel {
 
@@ -201,11 +201,11 @@ public class SolarRadiationPressure implements ForceModel {
     private class UmbraSwitch implements OrekitSwitchingFunction {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 8164370576237170346L;
+        private static final long serialVersionUID = 2437242565684831954L;
 
         /** {@inheritDoc} */
-        public void eventOccurred(final SpacecraftState s) {
-            // do nothing
+        public int eventOccurred(final SpacecraftState s) {
+            return RESET_DERIVATIVES;
         }
 
         /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
@@ -248,6 +248,13 @@ public class SolarRadiationPressure implements ForceModel {
             return 100;
         }
 
+        /** {@inheritDoc} */
+        public SpacecraftState resetState(SpacecraftState oldState)
+                throws OrekitException {
+            // never called since eventOccurred does never return RESET_STATE
+            return null;
+        }
+
     }
 
     /** This class defines the penumbra switching function.
@@ -256,11 +263,11 @@ public class SolarRadiationPressure implements ForceModel {
     private class PenumbraSwitch implements OrekitSwitchingFunction {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -8548885301322210937L;
+        private static final long serialVersionUID = -398690397397470283L;
 
         /** {@inheritDoc} */
-        public void eventOccurred(final SpacecraftState s) {
-            // do nothing
+        public int eventOccurred(final SpacecraftState s) {
+            return RESET_DERIVATIVES;
         }
 
         /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
@@ -302,6 +309,13 @@ public class SolarRadiationPressure implements ForceModel {
         /** {@inheritDoc} */
         public int getMaxIterationCount() {
             return 100;
+        }
+
+        /** {@inheritDoc} */
+        public SpacecraftState resetState(SpacecraftState oldState)
+                throws OrekitException {
+            // never called since eventOccurred does never return RESET_STATE
+            return null;
         }
 
     }

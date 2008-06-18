@@ -26,7 +26,6 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 
-
 /** This class is designed to accept and handle tabulated orbital entries.
  * Tabulated entries are classified and then extrapolated in way to obtain
  * continuous output, with accuracy and computation methods configured by the user.
@@ -35,10 +34,10 @@ import org.orekit.time.AbsoluteDate;
  * @author Véronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
-public class TabulatedEphemeris implements BoundedPropagator {
+public class Ephemeris implements BoundedPropagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 3896701058258948968L;
+    private static final long serialVersionUID = -2666966606003149885L;
 
     /** All entries. */
     private final TreeSet data;
@@ -52,7 +51,7 @@ public class TabulatedEphemeris implements BoundedPropagator {
     /** Constructor with tabulated entries.
      * @param tabulatedStates states table
      */
-    public TabulatedEphemeris(final SpacecraftState[] tabulatedStates) {
+    public Ephemeris(final SpacecraftState[] tabulatedStates) {
 
         if (tabulatedStates.length < 2) {
             throw new IllegalArgumentException("There should be at least 2 entries.");
@@ -82,10 +81,12 @@ public class TabulatedEphemeris implements BoundedPropagator {
         return ((SpacecraftState) data.last()).getDate();
     }
 
-    /** Get the state at a specific date.
-     * @param date desired date for the state
-     * @return the state at the specified date; null if date is out of range
-     */
+    /** {@inheritDoc} */
+    protected AbsoluteDate getInitialDate() {
+        return getMinDate();
+    }
+
+    /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate date) {
         // Check if date is in the specified range
         if (enclosinbracketDate(date)) {

@@ -18,8 +18,8 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
+import org.orekit.propagation.OrekitSwitchingFunction;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.OrekitSwitchingFunction;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.numerical.forces.ForceModel;
 
@@ -34,7 +34,7 @@ import org.orekit.propagation.numerical.forces.ForceModel;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  * @author Véronique Pommier-Maurussane
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 
 public class CunninghamAttractionModel implements ForceModel {
@@ -80,13 +80,13 @@ public class CunninghamAttractionModel implements ForceModel {
 
         if ((C.length != S.length) ||
             (C[C.length - 1].length != S[S.length - 1].length)) {
-            OrekitException.throwIllegalArgumentException("potential arrays sizes mismatch (C: {0}x{1}, S: {2}x{3})",
-                                                          new Object[] {
-                                                              Integer.valueOf(C.length),
-                                                              Integer.valueOf(C[degree].length),
-                                                              Integer.valueOf(S.length),
-                                                              Integer.valueOf(S[degree].length)
-                                                          });
+            throw OrekitException.createIllegalArgumentException("potential arrays sizes mismatch (C: {0}x{1}, S: {2}x{3})",
+                                                                 new Object[] {
+                                                                     Integer.valueOf(C.length),
+                                                                     Integer.valueOf(C[degree].length),
+                                                                     Integer.valueOf(S.length),
+                                                                     Integer.valueOf(S[degree].length)
+                                                                 });
         }
 
         if (C.length < 1) {

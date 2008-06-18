@@ -19,18 +19,19 @@ import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.propagation.OrekitSwitchingFunction;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
-
-/** Converts OREKIT switching functions to commons-math interface.
+/** Adapt an {@link org.orekit.propagation.OrekitSwitchingFunction}
+ * to commons-math {@link SwitchingFunction} interface.
  * @author Fabien Maussion
  * @version $Revision$ $Date$
  */
-class WrappedSwitchingFunction implements SwitchingFunction {
+class AdaptedSwitchingFunction implements SwitchingFunction {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 4547309170150559639L;
+    private static final long serialVersionUID = -6499642072896097404L;
 
     /** Underlying Orekit switching function. */
     private final OrekitSwitchingFunction swf;
@@ -55,7 +56,7 @@ class WrappedSwitchingFunction implements SwitchingFunction {
      * @param attitudeLaw spacecraft attitude law
  * @version $Revision$ $Date$
      */
-    public WrappedSwitchingFunction(final OrekitSwitchingFunction swf,
+    public AdaptedSwitchingFunction(final OrekitSwitchingFunction swf,
                                     final AbsoluteDate referenceDate, final double mu,
                                     final Frame integrationFrame, final AttitudeLaw attitudeLaw) {
         this.swf              = swf;
@@ -69,7 +70,7 @@ class WrappedSwitchingFunction implements SwitchingFunction {
     public double g(final double t, final double[] y)
         throws SwitchException {
         try {
-            return swf.g(mapState(t, y, referenceDate, mu, integrationFrame, attitudeLaw));
+            return swf.g(mapState(t, y));
         } catch (OrekitException oe) {
             throw new SwitchException(oe);
         }
@@ -79,16 +80,37 @@ class WrappedSwitchingFunction implements SwitchingFunction {
     public int eventOccurred(final double t, final double[] y)
         throws SwitchException {
         try {
-            swf.eventOccurred(mapState(t, y, referenceDate, mu, integrationFrame, attitudeLaw));
-            return RESET_DERIVATIVES;
+            final int whatNext = swf.eventOccurred(mapState(t, y));
+            switch (whatNext) {
+            case OrekitSwitchingFunction.STOP :
+                return STOP;
+            case OrekitSwitchingFunction.RESET_STATE :
+                return RESET_STATE;
+            case OrekitSwitchingFunction.RESET_DERIVATIVES :
+                return RESET_DERIVATIVES;
+            default :
+                return CONTINUE;
+            }
         } catch (OrekitException oe) {
             throw new SwitchException(oe);
         }
     }
 
     /** {@inheritDoc} */
-    public void resetState(final double t, final double[] y) {
-        // never called since eventOccured never returns CallResetState
+    public void resetState(final double t, final double[] y)
+        throws SwitchException {
+        try {
+            SpacecraftState newState = swf.resetState(mapState(t, y));
+            y[0] = newState.getA();
+            y[1] = newState.getEquinoctialEx();
+            y[2] = newState.getEquinoctialEy();
+            y[3] = newState.getHx();
+            y[4] = newState.getHy();
+            y[5] = newState.getLv();
+            y[6] = newState.getMass();
+        } catch (OrekitException oe) {
+            throw new SwitchException(oe);
+        }
     }
 
     /** Convert state array to space dynamics objects
@@ -103,10 +125,7 @@ class WrappedSwitchingFunction implements SwitchingFunction {
      * @return state corresponding to the flat array as a space dynamics object
      * @exception OrekitException if attitude law cannot provide state
      */
-    private static SpacecraftState mapState(final double t, final double [] y,
-                                            final AbsoluteDate referenceDate, final double mu,
-                                            final Frame integrationFrame,
-                                            final AttitudeLaw attitudeLaw)
+    private SpacecraftState mapState(final double t, final double [] y)
         throws OrekitException {
 
         // update space dynamics view

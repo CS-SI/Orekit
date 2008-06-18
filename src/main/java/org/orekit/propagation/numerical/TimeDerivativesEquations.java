@@ -321,10 +321,10 @@ public class TimeDerivativesEquations implements Serializable {
      */
     public void addMassDerivative(final double q) {
         if (q > 0) {
-            OrekitException.throwIllegalArgumentException("positive flow rate (q: {0})",
-                                                          new Object[] {
-                                                              new Double(q)
-                                                          });
+            throw OrekitException.createIllegalArgumentException("positive flow rate (q: {0})",
+                                                                 new Object[] {
+                                                                     new Double(q)
+                                                                 });
         }
         storedYDot[6] += q;
     }

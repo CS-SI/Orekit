@@ -21,19 +21,20 @@ import org.apache.commons.math.ode.StepInterpolator;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.OrekitStepHandler;
+import org.orekit.propagation.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
-
-/** This class is a space-dynamics aware step handler.
- *
- * <p>It mirrors the {@link org.apache.commons.math.ode.StepHandler
- * StepHandler} interface from <a href="http://commons.apache.org/math/">
- * commons-math</a> but provides a space-dynamics interface to the methods.</p>
- *
- * @version $Revision$ $Date$
+/** Adapt an {@link org.orekit.propagation.OrekitStepHandler}
+ * to commons-math {@link StepHandler} interface.
+ * @author Luc Maisonobe
+ * @version $Revision: 1686 $ $Date: 2008-06-16 11:26:18 +0200 (lun., 16 juin 2008) $
  */
-public abstract class OrekitStepHandler
+public class AdaptedStepHandler
     implements StepHandler, ModeHandler, Serializable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = -7846745534321472659L;
 
     /** Reference date. */
     private AbsoluteDate initializedReference;
@@ -47,6 +48,16 @@ public abstract class OrekitStepHandler
     /** Attitude law. */
     private AttitudeLaw initializedAttitudeLaw;
 
+    /** Underlying handler. */
+    private final OrekitStepHandler handler;
+
+    /** Build an instance.
+     * @param handler underlying handler to wrap
+     */
+    public AdaptedStepHandler(final OrekitStepHandler handler) {
+        this.handler = handler;
+    }
+
     /** {@inheritDoc} */
     public void initialize(final AbsoluteDate reference, final Frame frame,
                            final double mu, final AttitudeLaw attitudeLaw) {
@@ -56,28 +67,24 @@ public abstract class OrekitStepHandler
         this.initializedMu          = mu;
     }
 
-    /** Handle the current step.
-     * @param interpolator interpolator set up for the current step
-     * @param isLast if true, this is the last integration step
-     * @exception PropagationException if step cannot be handled
-     */
-    public abstract void handleStep(final OrekitStepInterpolator interpolator,
-                                    final boolean isLast)
-        throws PropagationException;
+    /** {@inheritDoc} */
+    public boolean requiresDenseOutput() {
+        return handler.requiresDenseOutput();
+    }
 
     /** {@inheritDoc} */
-    public abstract boolean requiresDenseOutput();
-
-    /** {@inheritDoc} */
-    public abstract void reset();
+    public void reset() {
+        handler.reset();
+    }
 
     /** {@inheritDoc} */
     public void handleStep(final StepInterpolator interpolator, final boolean isLast)
         throws DerivativeException {
         try {
             final OrekitStepInterpolator orekitInterpolator =
-                new OrekitStepInterpolator(initializedReference, initializedFrame, initializedMu, initializedAttitudeLaw, interpolator);
-            handleStep(orekitInterpolator, isLast);
+                new AdaptedStepInterpolator(initializedReference, initializedFrame, initializedMu,
+                                             initializedAttitudeLaw, interpolator);
+            handler.handleStep(orekitInterpolator, isLast);
         } catch (PropagationException pe) {
             throw new DerivativeException(pe);
         }

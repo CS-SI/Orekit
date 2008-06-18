@@ -26,7 +26,7 @@ import org.orekit.errors.OrekitException;
  * @see ChunkedDate
  * @see ChunksPair
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class ChunkedTime implements Serializable, Comparable {
 
@@ -69,12 +69,12 @@ public class ChunkedTime implements Serializable, Comparable {
         if ((hour   < 0) || (hour   >  23) ||
                 (minute < 0) || (minute >  59) ||
                 (second < 0) || (second >= 60.0)) {
-            OrekitException.throwIllegalArgumentException("non-existent hour {0}:{1}:{2}",
-                                                          new Object[] {
-                                                              Integer.valueOf(hour),
-                                                              Integer.valueOf(minute),
-                                                              new Double(second)
-                                                          });
+            throw OrekitException.createIllegalArgumentException("non-existent hour {0}:{1}:{2}",
+                                                                 new Object[] {
+                                                                     Integer.valueOf(hour),
+                                                                     Integer.valueOf(minute),
+                                                                     new Double(second)
+                                                                 });
         }
 
         this.hour = hour;
@@ -90,10 +90,10 @@ public class ChunkedTime implements Serializable, Comparable {
     public ChunkedTime(final double secondInDay) {
         // range check
         if ((secondInDay < 0) || (secondInDay >= 86400.0)) {
-            OrekitException.throwIllegalArgumentException("out of range seconds number: {0}",
-                                                          new Object[] {
-                                                              new Double(secondInDay)
-                                                          });
+            throw OrekitException.createIllegalArgumentException("out of range seconds number: {0}",
+                                                                 new Object[] {
+                                                                     new Double(secondInDay)
+                                                                 });
         }
 
         // extract the time chunks

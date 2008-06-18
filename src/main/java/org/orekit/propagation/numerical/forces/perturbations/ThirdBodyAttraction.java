@@ -16,8 +16,8 @@ package org.orekit.propagation.numerical.forces.perturbations;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.bodies.ThirdBody;
 import org.orekit.errors.OrekitException;
+import org.orekit.propagation.OrekitSwitchingFunction;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.OrekitSwitchingFunction;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.numerical.forces.ForceModel;
 
@@ -26,7 +26,7 @@ import org.orekit.propagation.numerical.forces.ForceModel;
  *
  * @author Fabien Maussion
  * @author Véronique Pommier-Maurussane
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class ThirdBodyAttraction implements ForceModel {
 

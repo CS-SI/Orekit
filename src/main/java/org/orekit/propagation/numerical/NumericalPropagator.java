@@ -31,6 +31,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.OrekitFixedStepHandler;
+import org.orekit.propagation.OrekitStepHandler;
+import org.orekit.propagation.OrekitSwitchingFunction;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.forces.ForceModel;
@@ -87,7 +91,7 @@ import org.orekit.time.AbsoluteDate;
 public class NumericalPropagator implements Propagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -329966842518411782L;
+    private static final long serialVersionUID = 1841481915093793894L;
 
     /** Attitude law. */
     private AttitudeLaw attitudeLaw;
@@ -121,6 +125,9 @@ public class NumericalPropagator implements Propagator {
 
     /** Propagator mode handler. */
     private ModeHandler modeHandler;
+
+    /** Current mode. */
+    private int mode;
 
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. there is no perturbing force
@@ -205,65 +212,50 @@ public class NumericalPropagator implements Propagator {
         forceModels.clear();
     }
 
-    /** Set the propagator to slave mode.
-     * <p>This mode is used when the user needs only the final orbit at the target time.
-     *  The (slave) propagator computes this result and return it to the calling
-     *  (master) application, without any intermediate feedback.<p>
-     * <p>This is the default mode.</p>
-     * @see #setMasterMode(double, OrekitFixedStepHandler)
-     * @see #setMasterMode(OrekitStepHandler)
-     * @see #setBatchMode(IntegratedEphemeris)
-     */
+    /** {@inheritDoc} */
+    public int getMode() {
+        return mode;
+    }
+
+    /** {@inheritDoc} */
     public void setSlaveMode() {
         integrator.setStepHandler(DummyStepHandler.getInstance());
         modeHandler = null;
+        mode = SLAVE_MODE;
     }
 
-    /** Set the propagator to master mode.
-     * <p>This mode is used when the user needs to have some custom function called at the
-     * end of each finalized step during integration. The (master) propagator integration
-     * loop calls the (slave) application callback methods at each finalized step.</p>
-     * @param h fixed stepsize (s)
-     * @param handler handler called at the end of each finalized step
-     * @see #setSlaveMode()
-     * @see #setMasterMode(OrekitStepHandler)
-     * @see #setBatchMode(IntegratedEphemeris)
-     */
+    /** {@inheritDoc} */
     public void setMasterMode(final double h, final OrekitFixedStepHandler handler) {
-        integrator.setStepHandler(new StepNormalizer(h, handler));
-        modeHandler = handler;
+        AdaptedFixedStepHandler wrapped = new AdaptedFixedStepHandler(handler);
+        integrator.setStepHandler(new StepNormalizer(h, wrapped));
+        modeHandler = wrapped;
+        mode = MASTER_FIXED_MODE;
     }
 
-    /** Set the propagator to master mode.
-     * <p>This mode is used when the user needs to have some custom function called at the
-     * end of each finalized step during integration. The (master) propagator integration
-     * loop calls the (slave) application callback methods at each finalized step.</p>
-     * @param handler handler called at the end of each finalized step
-     * @see #setSlaveMode()
-     * @see #setMasterMode(double, OrekitFixedStepHandler)
-     * @see #setBatchMode(IntegratedEphemeris)
-     */
+    /** {@inheritDoc} */
     public void setMasterMode(final OrekitStepHandler handler) {
-        integrator.setStepHandler(handler);
-        modeHandler = handler;
+        AdaptedStepHandler wrapped = new AdaptedStepHandler(handler);
+        integrator.setStepHandler(wrapped);
+        modeHandler = wrapped;
+        mode = MASTER_VARIABLE_MODE;
     }
 
-    /** Set the propagator to batch mode.
-     *  <p>This mode is used when the user needs random access to the orbit state at any time
-     *  between the initial and target times, and in no sequential order. A typical example is
-     *  the implementation of search and iterative algorithms that may navigate forward and
-     *  backward inside the integration range before finding their result.</p>
-     *  <p>Beware that since this mode stores <strong>all</strong> intermediate results,
-     *  it may be memory intensive for long integration ranges and high precision/short
-     *  time steps.</p>
-     * @param ephemeris instance to populate with the results
-     * @see #setSlaveMode()
-     * @see #setMasterMode(double, OrekitFixedStepHandler)
-     * @see #setMasterMode(OrekitStepHandler)
-     */
-    public void setBatchMode(final IntegratedEphemeris ephemeris) {
+    /** {@inheritDoc} */
+    public void setEphemerisMode() {
+        IntegratedEphemeris ephemeris = new IntegratedEphemeris();
         integrator.setStepHandler(ephemeris);
         modeHandler = ephemeris;
+        mode = EPHEMERIS_GENERATION_MODE;
+    }
+
+    /** {@inheritDoc} */
+    public BoundedPropagator getGeneratedEphemeris()
+        throws IllegalStateException {
+        if (mode != EPHEMERIS_GENERATION_MODE) {
+            throw OrekitException.createIllegalStateException("propagator is not in batch mode",
+                                                              new Object[0]);
+        }
+        return (IntegratedEphemeris) modeHandler;
     }
 
     /** Set the initial state.
@@ -337,8 +329,7 @@ public class NumericalPropagator implements Propagator {
 
             // set up switching functions added by user
             for (final Iterator iter = switchingFunctions.iterator(); iter.hasNext(); ) {
-                final OrekitSwitchingFunction swf = (OrekitSwitchingFunction) iter.next();
-                setUpSwitchingFunction(swf);
+                setUpSwitchingFunction((OrekitSwitchingFunction) iter.next());
             }
 
             // mathematical integration
@@ -389,7 +380,7 @@ public class NumericalPropagator implements Propagator {
      */
     private void setUpSwitchingFunction(final OrekitSwitchingFunction osf) {
         final SwitchingFunction switchingFunction =
-            new WrappedSwitchingFunction(osf, startDate, mu,
+            new AdaptedSwitchingFunction(osf, startDate, mu,
                                          initialState.getFrame(), attitudeLaw);
         integrator.addSwitchingFunction(switchingFunction,
                                         osf.getMaxCheckInterval(),
@@ -418,10 +409,10 @@ public class NumericalPropagator implements Propagator {
 
                 // compute cartesian coordinates
                 if (currentState.getMass() <= 0.0) {
-                    OrekitException.throwIllegalArgumentException("spacecraft mass becomes negative (m: {0})",
-                                                                  new Object[] {
-                                                                      Double.valueOf(currentState.getMass())
-                                                                  });
+                    throw OrekitException.createIllegalArgumentException("spacecraft mass becomes negative (m: {0})",
+                                                                         new Object[] {
+                                                                             Double.valueOf(currentState.getMass())
+                                                                         });
                 }
                 // initialize derivatives
                 adder.initDerivatives(yDot, (EquinoctialOrbit) currentState.getOrbit());

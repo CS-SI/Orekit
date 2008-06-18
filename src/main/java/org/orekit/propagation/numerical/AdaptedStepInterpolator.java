@@ -13,8 +13,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.io.Serializable;
-
 import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.StepInterpolator;
 import org.orekit.attitudes.AttitudeLaw;
@@ -23,22 +21,19 @@ import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.OrekitStepInterpolator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
-
-/** This class is a space-dynamics aware step interpolator.
- *
- * <p>It mirrors the {@link org.apache.commons.math.ode.StepInterpolator
- * StepInterpolator} interface from <a href="http://commons.apache.org/math/">
- * commons-math</a> but provides a space-dynamics interface to the methods.</p>
- *
- * @version $Revision$ $Date$
+/** Adapt a commons-math {@link org.apache.commons.math.ode.StepInterpolator
+ * StepInterpolator} to {@link OrekitStepInterpolator} interface.
+ * @author Luc Maisonobe
+ * @version $Revision: 1682 $ $Date: 2008-06-16 09:38:59 +0200 (lun., 16 juin 2008) $
  */
-public class OrekitStepInterpolator implements Serializable {
+public class AdaptedStepInterpolator implements OrekitStepInterpolator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7332721584479827727L;
+    private static final long serialVersionUID = 9012588570544755657L;
 
     /** Reference date. */
     private final AbsoluteDate reference;
@@ -62,9 +57,9 @@ public class OrekitStepInterpolator implements Serializable {
      * @param attitudeLaw attitude law
      * @param interpolator underlying non space dynamics interpolator
      */
-    public OrekitStepInterpolator(final AbsoluteDate reference, final Frame frame,
-                                  final double mu, final AttitudeLaw attitudeLaw,
-                                  final StepInterpolator interpolator) {
+    public AdaptedStepInterpolator(final AbsoluteDate reference, final Frame frame,
+                                    final double mu, final AttitudeLaw attitudeLaw,
+                                    final StepInterpolator interpolator) {
         this.reference    = reference;
         this.frame        = frame;
         this.mu           = mu;

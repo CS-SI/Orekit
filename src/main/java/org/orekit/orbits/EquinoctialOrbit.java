@@ -45,7 +45,7 @@ import org.orekit.utils.PVCoordinates;
  * @author Guylaine Prat
  * @author Fabien Maussion
  * @author Véronique Pommier-Maurussane
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class EquinoctialOrbit extends Orbit {
 
@@ -122,13 +122,13 @@ public class EquinoctialOrbit extends Orbit {
             break;
         default :
             this.lv = Double.NaN;
-            OrekitException.throwIllegalArgumentException("angle type not supported, supported angles:" +
-                                                          " {0}, {1} and {2}",
-                                                          new Object[] {
-                                                              "MEAN_LATITUDE_ARGUMENT",
-                                                              "ECCENTRIC_LATITUDE_ARGUMENT",
-                                                              "TRUE_LATITUDE_ARGUMENT"
-                                                          });
+            throw OrekitException.createIllegalArgumentException("angle type not supported, supported angles:" +
+                                                                 " {0}, {1} and {2}",
+                                                                 new Object[] {
+                                                                     "MEAN_LATITUDE_ARGUMENT",
+                                                                     "ECCENTRIC_LATITUDE_ARGUMENT",
+                                                                     "TRUE_LATITUDE_ARGUMENT"
+                                                                 });
         }
 
     }

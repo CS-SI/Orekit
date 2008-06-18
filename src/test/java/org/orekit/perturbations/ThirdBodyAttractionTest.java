@@ -25,9 +25,9 @@ import org.orekit.models.bodies.Moon;
 import org.orekit.models.bodies.Sun;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.OrekitFixedStepHandler;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.OrekitFixedStepHandler;
 import org.orekit.propagation.numerical.forces.perturbations.ThirdBodyAttraction;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChunkedDate;
@@ -110,7 +110,7 @@ public class ThirdBodyAttractionTest extends TestCase {
 
     }
 
-    private static abstract class ReferenceChecker extends OrekitFixedStepHandler {
+    private static abstract class ReferenceChecker implements OrekitFixedStepHandler {
 
         private final AbsoluteDate reference;
 
@@ -122,13 +122,6 @@ public class ThirdBodyAttractionTest extends TestCase {
             double t = currentState.getDate().minus(reference);
             assertEquals(hXRef(t), currentState.getHx(), 1e-4);
             assertEquals(hYRef(t), currentState.getHy(), 1e-4);
-        }
-
-        public boolean requiresDenseOutput() {
-            return false;
-        }
-
-        public void reset() {
         }
 
         protected abstract double hXRef(double t);

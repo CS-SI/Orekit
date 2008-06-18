@@ -33,7 +33,7 @@ import org.orekit.errors.OrekitException;
  * @see ChunkedTime
  * @see ChunksPair
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class ChunkedDate implements Serializable, Comparable {
 
@@ -84,10 +84,10 @@ public class ChunkedDate implements Serializable, Comparable {
         // very rough range check
         // (just to avoid ArrayOutOfboundException in MonthDayFactory later)
         if ((month < 1) || (month > 12)) {
-            OrekitException.throwIllegalArgumentException("non-existent month {0}",
-                                                          new Object[] {
-                                                              Integer.valueOf(month)
-                                                          });
+            throw OrekitException.createIllegalArgumentException("non-existent month {0}",
+                                                                 new Object[] {
+                                                                     Integer.valueOf(month)
+                                                                 });
         }
 
         // start by trusting the parameters
@@ -100,12 +100,12 @@ public class ChunkedDate implements Serializable, Comparable {
 
         // check the parameters for mismatch
         if ((year != check.year) || (month != check.month) || (day != check.day)) {
-            OrekitException.throwIllegalArgumentException("non-existent date {0}-{1}-{2}",
-                                                          new Object[] {
-                                                              Integer.valueOf(year),
-                                                              Integer.valueOf(month),
-                                                              Integer.valueOf(day)
-                                                          });
+            throw OrekitException.createIllegalArgumentException("non-existent date {0}-{1}-{2}",
+                                                                 new Object[] {
+                                                                     Integer.valueOf(year),
+                                                                     Integer.valueOf(month),
+                                                                     Integer.valueOf(day)
+                                                                 });
         }
 
     }
@@ -120,11 +120,11 @@ public class ChunkedDate implements Serializable, Comparable {
         throws IllegalArgumentException {
         this(new ChunkedDate(year - 1, 12, 31).getJ2000Day() + dayNumber);
         if (dayNumber != getDayOfYear()) {
-            OrekitException.throwIllegalArgumentException("no day number {0} in year {1}",
-                                                          new Object[] {
-                                                              Integer.valueOf(dayNumber),
-                                                              Integer.valueOf(year)
-                                                          });
+            throw OrekitException.createIllegalArgumentException("no day number {0} in year {1}",
+                                                                 new Object[] {
+                                                                     Integer.valueOf(dayNumber),
+                                                                     Integer.valueOf(year)
+                                                                 });
         }
     }
 

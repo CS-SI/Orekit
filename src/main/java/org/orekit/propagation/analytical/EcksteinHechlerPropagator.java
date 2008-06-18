@@ -13,8 +13,6 @@
  */
 package org.orekit.propagation.analytical;
 
-import org.apache.commons.math.geometry.Rotation;
-import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeLaw;
@@ -23,7 +21,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.Propagator;
+import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -38,16 +36,22 @@ import org.orekit.time.AbsoluteDate;
  * @author Guylaine Prat
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class EcksteinHechlerPropagator implements Propagator {
+public class EcksteinHechlerPropagator extends AbstractPropagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -4954471813926391514L;
+    private static final long serialVersionUID = -2154127352751738129L;
+
+    /** Default mass. */
+    private static final double DEFAULT_MASS = 1000.0;
+
+    /** Default attitude law. */
+    private static final AttitudeLaw DEFAULT_LAW = InertialLaw.J2000_ALIGNED;
 
     /** Attitude law. */
     private final AttitudeLaw attitudeLaw;
 
-    /** Initial date. */
-    private final AbsoluteDate initialDate;
+    /** Spacecraft mass. */
+    private double mass;
 
     /** Mean parameters at the initial date. */
     private CircularOrbit mean;
@@ -68,30 +72,40 @@ public class EcksteinHechlerPropagator implements Propagator {
     private double sinI4;
     private double sinI6;
 
-    // model parameters
-    private double referenceRadius;
-    private double mu;
-    private double c20;
-    private double c30;
-    private double c40;
-    private double c50;
-    private double c60;
-    private double mass;
-
     // CHECKSTYLE: resume JavadocVariable check
 
-    /** Create a new instance.
+    /** Reference radius of the central body attraction model (m). */
+    private double referenceRadius;
+
+    /** Central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    private double mu;
+
+    /** Un-normalized zonal coefficient (about -1.08e-3 for Earth). */
+    private double c20;
+
+    /** Un-normalized zonal coefficient (about +2.53e-6 for Earth). */
+    private double c30;
+
+    /** Un-normalized zonal coefficient (about +1.62e-6 for Earth). */
+    private double c40;
+
+    /** Un-normalized zonal coefficient (about +2.28e-7 for Earth). */
+    private double c50;
+
+    /** Un-normalized zonal coefficient (about -5.41e-7 for Earth). */
+    private double c60;
+
+    /** Build a propagator from orbit and potential.
+     * <p>Mass and attitude law are set to unspecified non-null arbitrary values.</p>
      * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
      * are related to both the normalized coefficients
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
-     * <p>Attitude law is the specified one.</p>
      * <pre>
      *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup><span style="text-decoration: overline">C</span><sub>n,0</sub>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
      * </pre>
-     * @param initialState initial state
-     * @param attitudeLaw attitude law
+     * @param initialOrbit initial orbit
      * @param referenceRadius reference radius of the Earth for the potential model (m)
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
@@ -101,44 +115,26 @@ public class EcksteinHechlerPropagator implements Propagator {
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
      * @exception PropagationException if the mean parameters cannot be computed
      */
-    public EcksteinHechlerPropagator(final SpacecraftState initialState,
-                                     final AttitudeLaw attitudeLaw,
+    public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60)
         throws PropagationException {
-
-        // store model coefficients
-        this.referenceRadius = referenceRadius;
-        this.mu  = mu;
-        this.c20 = c20;
-        this.c30 = c30;
-        this.c40 = c40;
-        this.c50 = c50;
-        this.c60 = c60;
-
-        // compute mean parameters
-        initialDate = initialState.getDate();
-        mass = initialState.getMass();
-        this.attitudeLaw = attitudeLaw;
-
-        // transform into circular adapted parameters used by the Eckstein-Hechler model
-        computeMeanParameters(new CircularOrbit(initialState.getOrbit()));
-
+        this(initialOrbit, DEFAULT_LAW, DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
-    /** Create a new instance.
+    /** Build a propagator from orbit, mass and potential.
+     * <p>Attitude law is set to an unspecified non-null arbitrary value.</p>
      * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
      * are related to both the normalized coefficients
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
-     * <p>Attitude law is set to an default inertial {@link org.orekit.frames.Frame
-     * J<sub>2000</sub>} aligned law.</p>
      * <pre>
      *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup><span style="text-decoration: overline">C</span><sub>n,0</sub>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
      * </pre>
-     * @param initialState initial state
+     * @param initialOrbit initial orbit
+     * @param mass spacecraft mass
      * @param referenceRadius reference radius of the Earth for the potential model (m)
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
@@ -148,20 +144,16 @@ public class EcksteinHechlerPropagator implements Propagator {
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
      * @exception PropagationException if the mean parameters cannot be computed
      */
-    public EcksteinHechlerPropagator(final SpacecraftState initialState,
+    public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60)
         throws PropagationException {
-
-        this(initialState, new InertialLaw(new Rotation(Vector3D.PLUS_K, 0.)),
-             referenceRadius, mu, c20, c30, c40, c50, c60);
-
+        this(initialOrbit, DEFAULT_LAW, mass, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
-    /** Create a new instance.
-     * <p>This constructor creates a propagator from orbit, and attitude law.
-     * Mass is given an arbitrary value (1000 kg).</p>
+    /** Build a propagator from orbit, attitude law and potential.
+     * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
      * are related to both the normalized coefficients
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
@@ -172,6 +164,7 @@ public class EcksteinHechlerPropagator implements Propagator {
      * </pre>
      * @param initialOrbit initial orbit
      * @param attitudeLaw attitude law
+     * @param mass spacecraft mass
      * @param referenceRadius reference radius of the Earth for the potential model (m)
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
@@ -187,6 +180,37 @@ public class EcksteinHechlerPropagator implements Propagator {
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60)
         throws PropagationException {
+        this(initialOrbit, attitudeLaw, DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, c60);
+    }
+
+    /** Build a propagator from orbit, attitude law, mass and potential.
+     * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
+     * are related to both the normalized coefficients
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *  and the J<sub>n</sub> one as follows:</p>
+     * <pre>
+     *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup><span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *   C<sub>n,0</sub> = -J<sub>n</sub>
+     * </pre>
+     * @param initialOrbit initial orbit
+     * @param attitudeLaw attitude law
+     * @param mass spacecraft mass
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @exception PropagationException if the mean parameters cannot be computed
+     */
+    public EcksteinHechlerPropagator(final Orbit initialOrbit,
+                                     final AttitudeLaw attitudeLaw,
+                                     final double mass,
+                                     final double referenceRadius, final double mu,
+                                     final double c20, final double c30, final double c40,
+                                     final double c50, final double c60)
+        throws PropagationException {
 
         // store model coefficients
         this.referenceRadius = referenceRadius;
@@ -198,8 +222,7 @@ public class EcksteinHechlerPropagator implements Propagator {
         this.c60 = c60;
 
         // compute mean parameters
-        initialDate = initialOrbit.getDate();
-        mass = 1000.0;
+        this.mass = mass;
         this.attitudeLaw = attitudeLaw;
 
         // transform into circular adapted parameters used by the Eckstein-Hechler model
@@ -207,47 +230,13 @@ public class EcksteinHechlerPropagator implements Propagator {
 
     }
 
-    /** Create a new instance.
-     * <p>This constructor creates a propagator from orbit only.
-     * Mass is given an arbitrary value (1000 kg) and attitude law is set to an
-     * default inertial  {@link org.orekit.frames.Frame J<sub>2000</sub>} aligned law.</p>
-     * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
-     * are related to both the normalized coefficients
-     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
-     *  and the J<sub>n</sub> one as follows:</p>
-     * <pre>
-     *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup><span style="text-decoration: overline">C</span><sub>n,0</sub>
-     *   C<sub>n,0</sub> = -J<sub>n</sub>
-     * </pre>
-     * @param initialOrbit initial orbit
-     * @param referenceRadius reference radius of the Earth for the potential model (m)
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
-     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
-     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
-     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-     * @exception PropagationException if the mean parameters cannot be computed
-     */
-    public EcksteinHechlerPropagator(final Orbit initialOrbit,
-                                     final double referenceRadius, final double mu,
-                                     final double c20, final double c30, final double c40,
-                                     final double c50, final double c60)
-        throws PropagationException {
-
-        this(initialOrbit, InertialLaw.J2000_ALIGNED,
-             referenceRadius, mu, c20, c30, c40, c50, c60);
-
+    /** {@inheritDoc} */
+    protected AbsoluteDate getInitialDate() {
+        return mean.getDate();
     }
 
-    /** Get the state extrapolated up to a given date with an analytical model.
-     * The extrapolated parameters are osculating circular parameters.
-     * @param date target date for the propagation
-     * @return propagated state (in circular parameters)
-     * @exception PropagationException if orbit or attitude cannot be
-     * propagated at given date
-     */
-    public SpacecraftState propagate(final AbsoluteDate date)
+    /** {@inheritDoc} */
+    protected SpacecraftState basicPropagate(final AbsoluteDate date)
         throws PropagationException {
         try {
 
@@ -263,6 +252,13 @@ public class EcksteinHechlerPropagator implements Propagator {
         } catch (OrekitException oe) {
             throw new PropagationException(oe.getMessage(), oe);
         }
+    }
+
+    /** {@inheritDoc} */
+    protected void resetInitialState(SpacecraftState state)
+        throws PropagationException {
+        mass = state.getMass();
+        computeMeanParameters(new CircularOrbit(state.getOrbit()));
     }
 
     /** Compute mean parameters according to the Eckstein-Hechler analytical model.
@@ -314,7 +310,7 @@ public class EcksteinHechlerPropagator implements Propagator {
             sinI6 = sinI2 * sinI4;
 
             // recompute the osculating parameters from the current mean parameters
-            final CircularOrbit rebuilt = propagateOrbit(initialDate);
+            final CircularOrbit rebuilt = propagateOrbit(mean.getDate());
 
             // adapted parameters residuals
             final double deltaA      = osculating.getA()  - rebuilt.getA();
@@ -393,7 +389,7 @@ public class EcksteinHechlerPropagator implements Propagator {
         throws PropagationException {
 
         // keplerian evolution
-        final double xnot = date.minus(initialDate) * Math.sqrt(mu / mean.getA()) / mean.getA();
+        final double xnot = date.minus(mean.getDate()) * Math.sqrt(mu / mean.getA()) / mean.getA();
 
         // secular effects
 
@@ -535,10 +531,10 @@ public class EcksteinHechlerPropagator implements Propagator {
 
         // osculating parameters
         return new CircularOrbit(mean.getA() * (1.0 + rda), exm + rdex, eym + rdey,
-                                      xim + rdxi, MathUtils.normalizeAngle(omm + rdom, Math.PI),
-                                      MathUtils.normalizeAngle(xlm + rdxl, Math.PI),
-                                      CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
-                                      mean.getFrame(), date, mean.getMu());
+                                 xim + rdxi, MathUtils.normalizeAngle(omm + rdom, Math.PI),
+                                 MathUtils.normalizeAngle(xlm + rdxl, Math.PI),
+                                 CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
+                                 mean.getFrame(), date, mean.getMu());
 
     }
 
