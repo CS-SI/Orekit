@@ -112,7 +112,7 @@ public interface Propagator extends BasicPropagator {
     /** Get the ephemeris generated during propagation.
      * @return generated ephemeris
      * @exception IllegalStateException if the propagator was not set in ephemeris
-     * generation mode
+     * generation mode before propagation
      * @see #setEphemerisMode()
      */
     BoundedPropagator getGeneratedEphemeris() throws IllegalStateException;
