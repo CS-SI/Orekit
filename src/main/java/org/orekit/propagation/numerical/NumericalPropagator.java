@@ -375,7 +375,7 @@ public class NumericalPropagator implements Propagator {
         }
     }
 
-    /** Wrap an Orekit switching function and register it in the integrator.
+    /** Wrap an Orekit switching function and register it to the integrator.
      * @param osf switching function to wrap
      */
     private void setUpSwitchingFunction(final OrekitSwitchingFunction osf) {
