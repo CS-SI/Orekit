@@ -31,7 +31,7 @@ import org.orekit.frames.PoleCorrection;
  * (or <code>bulletinb_IAU2000-###.txt.gz</code> for gzip-compressed files)
  * where # stands for a digit character.</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class BulletinBFilesLoader extends IERSFileCrawler {
 
@@ -54,13 +54,13 @@ public class BulletinBFilesLoader extends IERSFileCrawler {
     private final Pattern section2DataPattern;
 
     /** Earth Orientation Parameters entries. */
-    private TreeSet eop;
+    private TreeSet<EarthOrientationParameters> eop;
 
     /** Create a loader for IERS bulletin B files.
      * @param eop set where to <em>add</em> EOP data
      * (pre-existing data is preserved)
      */
-    public BulletinBFilesLoader(final TreeSet eop) {
+    public BulletinBFilesLoader(final TreeSet<EarthOrientationParameters> eop) {
 
         super("^bulletinb_IAU2000-(\\d\\d\\d)\\.txt(?:\\.gz)?$");
         this.eop = eop;

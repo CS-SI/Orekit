@@ -13,14 +13,13 @@
  */
 package org.orekit.propagation;
 
-import java.io.Serializable;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.attitudes.Attitude;
+import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -40,7 +39,7 @@ public class Ephemeris implements BoundedPropagator {
     private static final long serialVersionUID = -2666966606003149885L;
 
     /** All entries. */
-    private final TreeSet data;
+    private final TreeSet<SpacecraftState> data;
 
     /** Previous state in the cached selection. */
     private SpacecraftState previous;
@@ -57,7 +56,7 @@ public class Ephemeris implements BoundedPropagator {
             throw new IllegalArgumentException("There should be at least 2 entries.");
         }
 
-        data = new TreeSet(new StateComparator());
+        data = new TreeSet<SpacecraftState>();
         for (int i = 0; i < tabulatedStates.length; ++i) {
             data.add(tabulatedStates[i]);
         }
@@ -182,10 +181,10 @@ public class Ephemeris implements BoundedPropagator {
         }
 
         if (date.minus(getMinDate()) == 0) {
-            previous = (SpacecraftState) data.first();
-            final Iterator i = data.iterator();
+            previous = data.first();
+            final Iterator<SpacecraftState> i = data.iterator();
             i.next();
-            next = (SpacecraftState) i.next();
+            next = i.next();
             return true;
         }
 
@@ -197,35 +196,14 @@ public class Ephemeris implements BoundedPropagator {
         }
 
         // search bracketing states
-        previous = (SpacecraftState) data.headSet(date).last();
-        next     = (SpacecraftState) data.tailSet(date).first();
+        SpacecraftState dummyState =
+            new SpacecraftState(new EquinoctialOrbit(7.0e6, 0, 0, 0, 0, 0,
+                                                     EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
+                                                     Frame.getJ2000(), date, 3.986004415e14));
+        previous = data.headSet(dummyState).last();
+        next     = data.tailSet(dummyState).first();
 
         return true;
-    }
-
-    /** Specialized comparator handling both {@link SpacecraftState}
-     * and {@link AbsoluteDate} instances.
-     */
-    private static class StateComparator implements Comparator, Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 2878055547954956150L;
-
-        /** Build a comparator for either {@link AbsoluteDate} or
-         * {@link SpacecraftState} instances.
-         * @param o1 first object
-         * @param o2 second object
-         * @return a negative integer if o1 is before o2, 0 if they are
-         * are the same time, a positive integer otherwise
-         */
-        public int compare(final Object o1, final Object o2) {
-            final AbsoluteDate d1 =
-                (o1 instanceof AbsoluteDate) ? ((AbsoluteDate) o1) : ((SpacecraftState) o1).getDate();
-            final AbsoluteDate d2 =
-                (o2 instanceof AbsoluteDate) ? ((AbsoluteDate) o2) : ((SpacecraftState) o2).getDate();
-            return d1.compareTo(d2);
-        }
-
     }
 
 }

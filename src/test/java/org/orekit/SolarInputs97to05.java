@@ -19,7 +19,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.SortedSet;
 import java.util.TimeZone;
@@ -60,7 +59,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
     };
 
     /** All entries. */
-    private SortedSet data;
+    private SortedSet<LineParameters> data;
 
     private LineParameters currentParam;
     private AbsoluteDate firstDate;
@@ -73,7 +72,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
      */
     private SolarInputs97to05() throws OrekitException {
 
-        data = new TreeSet(new LineParametersComparator());
+        data = new TreeSet<LineParameters>();
         InputStream in = SolarInputs97to05.class.getResourceAsStream("/atmosphere/JB_All_97-05.txt");
         BufferedReader rFlux = new BufferedReader(new InputStreamReader(in));
 
@@ -191,7 +190,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
             new LineParameters(new AbsoluteDate(date, -86400), null, 0, 0, 0, 0, 0, 0);
 
         // search starting from entries a few steps before the target date
-        SortedSet tailSet = data.tailSet(before);
+        SortedSet<LineParameters> tailSet = data.tailSet(before);
         if (tailSet != null) {
             currentParam = (LineParameters)tailSet.first();
             if(currentParam.date.minus(date)==-86400) {
@@ -206,7 +205,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
     }
 
     /** Container class for Solar activity indexes.  */
-    private static class LineParameters implements Serializable {
+    private static class LineParameters implements Comparable<LineParameters>, Serializable {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 7061618989830597691L;
@@ -242,30 +241,13 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
             return date;
         }
 
-    }
-
-
-    /** Specialized comparator handling both {@link LineParameters}
-     * and {@link AbsoluteDate} instances.
-     */
-    private static class LineParametersComparator implements Comparator, Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -6133879098924083582L;
-
-        /** Build a comparator for either {@link AbsoluteDate} or
-         * {@link LineParameters} instances.
-         * @param o1 first object
-         * @param o2 second object
-         * return a negative integer if o1 is before o2, 0 if they are
-         * are the same time, a positive integer otherwise
+        /** Compare chronologically the instance with another state.
+         * @param other other spacecraft state to compare the instance to
+         * @return a negative integer, zero, or a positive integer as this state
+         * is before, simultaneous, or after the other one.
          */
-        public int compare(Object o1, Object o2) {
-            final AbsoluteDate d1 =
-                (o1 instanceof AbsoluteDate) ? ((AbsoluteDate) o1) : ((LineParameters) o1).getDate();
-            final AbsoluteDate d2 =
-                (o2 instanceof AbsoluteDate) ? ((AbsoluteDate) o2) : ((LineParameters) o2).getDate();
-            return d1.compareTo(d2);
+        public int compareTo(LineParameters other) {
+            return date.compareTo(other.date);
         }
 
     }

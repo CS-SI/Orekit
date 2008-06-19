@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
@@ -34,15 +33,15 @@ import org.orekit.utils.PVCoordinates;
  *  propagation.
  *
  * @author Fabien Maussion
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class TLESeries {
+public class TLESeries implements Serializable {
 
-    /** Comparator for TLEs. */
-    private static final TLEComparator COMPARATOR = new TLEComparator();
+    /** Serializable UID. */
+    private static final long serialVersionUID = -6657661179006608529L;
 
     /** Set containing all TLE entries. */
-    private SortedSet tles;
+    private SortedSet<TLE> tles;
 
     /** Previous TLE in the cached selection. */
     private TLE previous;
@@ -76,7 +75,7 @@ public class TLESeries {
      */
     public TLESeries(final InputStream in)
         throws IOException, OrekitException {
-        tles = new TreeSet(COMPARATOR);
+        tles = new TreeSet<TLE>();
         internationalDesignator = null;
         satelliteNumber = 0;
         previous = null;
@@ -148,7 +147,7 @@ public class TLESeries {
     public PVCoordinates getPVCoordinates(final AbsoluteDate date)
         throws OrekitException {
         final TLE toExtrapolate = getClosestTLE(date);
-        if ((lastTLE == null) || (COMPARATOR.compare(toExtrapolate, lastTLE) != 0)) {
+        if ((lastTLE == null) || (toExtrapolate.compareTo(lastTLE) != 0)) {
             lastTLE = toExtrapolate;
             lastPropagator = TLEPropagator.selectExtrapolator(lastTLE);
         }
@@ -174,8 +173,9 @@ public class TLESeries {
         // reset the selection before the search phase
         previous  = null;
         next      = null;
-        final SortedSet headSet = tles.headSet(date);
-        final SortedSet tailSet = tles.tailSet(date);
+        TLE dummyTLE = new TLE(date);
+        final SortedSet<TLE> headSet = tles.headSet(dummyTLE);
+        final SortedSet<TLE> tailSet = tles.tailSet(dummyTLE);
 
 
         if (headSet.isEmpty()) {
@@ -238,30 +238,6 @@ public class TLESeries {
         }
         filter.mark(1024 * 1024);
         return filter;
-    }
-
-    /** Specialized comparator handling both {@link TLE}
-     * and {@link AbsoluteDate} instances.
-     */
-    private static class TLEComparator implements Comparator, Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 6926599156228651913L;
-
-        /** Build a comparator for either {@link AbsoluteDate} or {@link TLE} instances.
-         * @param o1 first object
-         * @param o2 second object
-         * @return a negative integer if o1 is before o2, 0 if they are
-         * are the same time, a positive integer otherwise
-         */
-        public int compare(final Object o1, final Object o2) {
-            final AbsoluteDate d1 =
-                (o1 instanceof AbsoluteDate) ? ((AbsoluteDate) o1) : ((TLE) o1).getEpoch();
-            final AbsoluteDate d2 =
-                (o2 instanceof AbsoluteDate) ? ((AbsoluteDate) o2) : ((TLE) o2).getEpoch();
-            return d1.compareTo(d2);
-        }
-
     }
 
 }

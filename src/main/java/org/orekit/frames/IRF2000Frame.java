@@ -160,7 +160,7 @@ class IRF2000Frame extends Frame {
         this.useIAU2000B = useIAU2000B;
 
         // nutation models are in micro arcseconds
-        final Class c = getClass();
+        final Class<IRF2000Frame> c = IRF2000Frame.class;
         final String xModel = useIAU2000B ? X_MODEL_2000B : X_MODEL_2000A;
         xDevelopment =
             new Development(c.getResourceAsStream(xModel), RADIANS_PER_ARC_SECOND * 1.0e-6, xModel);

@@ -14,7 +14,6 @@
 package org.orekit.propagation.numerical;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.math.ode.DerivativeException;
@@ -94,7 +93,7 @@ import org.orekit.time.AbsoluteDate;
 public class NumericalPropagator implements Propagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 1841481915093793894L;
+    private static final long serialVersionUID = -2539860641139798181L;
 
     /** Attitude law. */
     private AttitudeLaw attitudeLaw;
@@ -103,10 +102,10 @@ public class NumericalPropagator implements Propagator {
     private double mu;
 
     /** Force models used during the extrapolation of the Orbit. */
-    private final List forceModels;
+    private final List<ForceModel> forceModels;
 
     /** Switching functions not related to force models. */
-    private final List switchingFunctions;
+    private final List<OrekitSwitchingFunction> switchingFunctions;
 
     /** State vector. */
     private final double[] state;
@@ -141,8 +140,8 @@ public class NumericalPropagator implements Propagator {
      */
     public NumericalPropagator(final FirstOrderIntegrator integrator) {
         this.mu                 = Double.NaN;
-        this.forceModels        = new ArrayList();
-        this.switchingFunctions = new ArrayList();
+        this.forceModels        = new ArrayList<ForceModel>();
+        this.switchingFunctions = new ArrayList<OrekitSwitchingFunction>();
         this.integrator         = integrator;
         this.startDate          = new AbsoluteDate();
         this.currentState       = null;
@@ -320,19 +319,18 @@ public class NumericalPropagator implements Propagator {
             integrator.clearSwitchingFunctions();
 
             // set up switching functions related to force models
-            for (final Iterator iterator = forceModels.iterator(); iterator.hasNext();) {
-                final OrekitSwitchingFunction[] swf =
-                    ((ForceModel) iterator.next()).getSwitchingFunctions();
-                if (swf != null) {
-                    for (int i = 0; i < swf.length; i++) {
-                        setUpSwitchingFunction(swf[i]);
+            for (final ForceModel forceModel : forceModels) {
+                final OrekitSwitchingFunction[] modelFunctions = forceModel.getSwitchingFunctions();
+                if (modelFunctions != null) {
+                    for (final OrekitSwitchingFunction switchingFunction : modelFunctions) {
+                        setUpSwitchingFunction(switchingFunction);
                     }
                 }
             }
 
             // set up switching functions added by user
-            for (final Iterator iter = switchingFunctions.iterator(); iter.hasNext(); ) {
-                setUpSwitchingFunction((OrekitSwitchingFunction) iter.next());
+            for (final OrekitSwitchingFunction switchingFunction : switchingFunctions) {
+                setUpSwitchingFunction(switchingFunction);
             }
 
             // mathematical integration
@@ -421,8 +419,8 @@ public class NumericalPropagator implements Propagator {
                 adder.initDerivatives(yDot, (EquinoctialOrbit) currentState.getOrbit());
 
                 // compute the contributions of all perturbing forces
-                for (final Iterator iter = forceModels.iterator(); iter.hasNext();) {
-                    ((ForceModel) iter.next()).addContribution(currentState, adder);
+                for (final ForceModel forceModel : forceModels) {
+                    forceModel.addContribution(currentState, adder);
                 }
 
                 // finalize derivatives by adding the Kepler contribution

@@ -15,8 +15,9 @@ package org.orekit.propagation;
 
 import java.io.Serializable;
 
+import org.apache.commons.math.geometry.Rotation;
+import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.attitudes.Attitude;
-import org.orekit.attitudes.InertialLaw;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
@@ -39,13 +40,17 @@ import org.orekit.utils.PVCoordinates;
  * @author Véronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
-public class SpacecraftState implements Serializable {
+public class SpacecraftState implements Comparable<SpacecraftState>, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -3763720123831019443L;
+    private static final long serialVersionUID = 6229927579350580132L;
 
     /** Default mass. */
     private static final double DEFAULT_MASS = 1000.0;
+
+    /** Default attitude law. */
+    private static final Attitude DEFAULT_ATTITUDE =
+        new Attitude(Frame.getJ2000(), Rotation.IDENTITY, Vector3D.ZERO);
 
     /** Orbital state. */
     private final Orbit orbit;
@@ -57,15 +62,11 @@ public class SpacecraftState implements Serializable {
     private final double mass;
 
     /** Build a spacecraft state from orbit only.
-     * <p>Attitude law is set to a default inertial {@link org.orekit.frames.Frame
-     * J<sub>2000</sub>} aligned law. Mass is set to an unspecified non-null
-     * arbitrary value.</p>
-    * @param orbit the orbit
-     * @exception OrekitException is attitude law cannot compute the current state
+     * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
+     * @param orbit the orbit
      */
-    public SpacecraftState(final Orbit orbit)
-        throws OrekitException  {
-        this(orbit, DEFAULT_MASS);
+    public SpacecraftState(final Orbit orbit) {
+        this(orbit, DEFAULT_ATTITUDE, DEFAULT_MASS);
     }
 
     /** Build a spacecraft state from orbit and attitude law.
@@ -78,19 +79,12 @@ public class SpacecraftState implements Serializable {
     }
 
     /** Create a new instance from orbit and mass.
-     * <p>Attitude law is set to a default inertial {@link org.orekit.frames.Frame
-     * J<sub>2000</sub>} aligned law.</p>
+     * <p>Attitude law is set to an unspecified default attitude.</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
-     * @exception OrekitException if attitude law cannot compute the current state
      */
-    public SpacecraftState(final Orbit orbit, final double mass)
-        throws OrekitException {
-        this(orbit,
-             InertialLaw.J2000_ALIGNED.getState(orbit.getDate(),
-                                                orbit.getPVCoordinates(),
-                                                orbit.getFrame()),
-             mass);
+    public SpacecraftState(final Orbit orbit, final double mass) {
+        this(orbit, DEFAULT_ATTITUDE, mass);
     }
 
     /** Build a spacecraft state from orbit, attitude law and mass.
@@ -258,6 +252,15 @@ public class SpacecraftState implements Serializable {
      */
     public double getMass() {
         return mass;
+    }
+
+    /** Compare chronologically the instance with another state.
+     * @param other other spacecraft state to compare the instance to
+     * @return a negative integer, zero, or a positive integer as this state
+     * is before, simultaneous, or after the other one.
+     */
+    public int compareTo(SpacecraftState other) {
+        return orbit.getDate().compareTo(other.orbit.getDate());
     }
 
 }

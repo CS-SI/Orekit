@@ -35,10 +35,10 @@ import org.orekit.errors.OrekitException;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class ChunkedDate implements Serializable, Comparable {
+public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7127660151923617766L;
+    private static final long serialVersionUID = -5883209203090288224L;
 
     /** Factory for proleptic julian calendar (up to 0000-12-31). */
     private static final YearFactory PROLEPTIC_JULIAN_FACTORY = new ProlepticJulianFactory();
@@ -226,9 +226,9 @@ public class ChunkedDate implements Serializable, Comparable {
     }
 
     /** {@inheritDoc} */
-    public int compareTo(final Object other) {
+    public int compareTo(final ChunkedDate other) {
         final int j2000Day = getJ2000Day();
-        final int otherJ2000Day = ((ChunkedDate) other).getJ2000Day();
+        final int otherJ2000Day = other.getJ2000Day();
         if (j2000Day < otherJ2000Day) {
             return -1;
         } else if (j2000Day > otherJ2000Day) {

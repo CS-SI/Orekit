@@ -34,12 +34,12 @@ public abstract class AbstractPropagator implements Propagator {
     private ModeSpecificPropagator propagator;
 
     /** Switching functions. */
-    private final List switchingFunctions;
+    private final List<OrekitSwitchingFunction> switchingFunctions;
 
     /** Build a new instance.
      */
     protected AbstractPropagator() {
-        switchingFunctions = new ArrayList();
+        switchingFunctions = new ArrayList<OrekitSwitchingFunction>();
         setSlaveMode();
     }
 

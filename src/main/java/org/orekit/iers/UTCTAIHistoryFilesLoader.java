@@ -36,7 +36,7 @@ import org.orekit.errors.OrekitException;
  * <p>Only one history file must be present in the IERS directories
  * hierarchy.</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class UTCTAIHistoryFilesLoader extends IERSFileCrawler {
 
@@ -53,7 +53,7 @@ public class UTCTAIHistoryFilesLoader extends IERSFileCrawler {
     private SimpleDateFormat format;
 
     /** Time leaps. */
-    private List leaps;
+    private List<Leap> leaps;
 
     /** Build a loader for UTC-TAI history file. */
     public UTCTAIHistoryFilesLoader() {
@@ -95,9 +95,9 @@ public class UTCTAIHistoryFilesLoader extends IERSFileCrawler {
      */
     public Leap[] getTimeSteps() throws OrekitException {
 
-        leaps = new ArrayList();
+        leaps = new ArrayList<Leap>();
         new IERSDirectoryCrawler().crawl(this);
-        final Leap[] timeSteps = (Leap[]) leaps.toArray(new Leap[leaps.size()]);
+        final Leap[] timeSteps = leaps.toArray(new Leap[leaps.size()]);
 
         // put the array in reversed chronological order
         // to optimize access to the more recent step (at index 0)

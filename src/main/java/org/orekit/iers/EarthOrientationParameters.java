@@ -29,9 +29,10 @@ import org.orekit.time.UTCScale;
  * @see EOPC04FilesLoader
  * @see BulletinBFilesLoader
  * @see org.orekit.frames.Frame
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class EarthOrientationParameters implements Serializable {
+public class EarthOrientationParameters
+    implements Comparable<EarthOrientationParameters>, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 1696930845545878568L;
@@ -96,6 +97,14 @@ public class EarthOrientationParameters implements Serializable {
      */
     public PoleCorrection getPoleCorrection() {
         return poleCorrection;
+    }
+
+    /** Compare instance with another parameters set.
+     * @return a negative integer, zero, or a positive integer as this parameters
+     * set is before, simultaneous, or after the specified set.
+     */
+    public int compareTo(EarthOrientationParameters o) {
+        return date.compareTo(o.date);
     }
 
 }

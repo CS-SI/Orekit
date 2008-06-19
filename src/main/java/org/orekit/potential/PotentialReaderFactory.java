@@ -17,7 +17,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
@@ -25,17 +24,17 @@ import org.orekit.errors.OrekitException;
 
 /** This pattern determines which reader to use with the selected file.
  * @author Fabien Maussion
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class PotentialReaderFactory {
 
     /** Potential readers. */
-    private List readers;
+    private List<PotentialCoefficientsReader> readers;
 
     /** Simple constructor.
      */
     public PotentialReaderFactory() {
-        readers = new ArrayList();
+        readers = new ArrayList<PotentialCoefficientsReader>();
         readers.add(new SHMFormatReader());
         readers.add(new EGMFormatReader());
     }
@@ -77,8 +76,7 @@ public class PotentialReaderFactory {
         PotentialCoefficientsReader result = null;
 
         // test the available readers
-        for (final Iterator iter = readers.iterator(); iter.hasNext();) {
-            final PotentialCoefficientsReader test = (PotentialCoefficientsReader) iter.next();
+        for (final PotentialCoefficientsReader test : readers) {
             if (test.isFileOK(filter)) {
                 result = test;
             }

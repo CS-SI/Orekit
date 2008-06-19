@@ -38,7 +38,7 @@ import org.orekit.errors.OrekitException;
  *
  * @author Luc Maisonobe
  * @see SeriesTerm
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class Development implements Serializable {
 
@@ -120,7 +120,7 @@ public class Development implements Serializable {
             ++lineNumber;
 
             // look for the non-polynomial part
-            final List array = new ArrayList();
+            final List<SeriesTerm[]> array = new ArrayList<SeriesTerm[]>();
             while (line != null) {
                 final int nTerms = parseSeriesHeader(seriesHeaderPattern.matcher(line),
                                                      array.size(), name, lineNumber);
@@ -184,7 +184,7 @@ public class Development implements Serializable {
         }
 
         // store the concatenated sign, integer and fractional parts of the monomial coefficient
-        final List coeffs = new ArrayList();
+        final List<String> coeffs = new ArrayList<String>();
         do {
             coeffs.add(termMatcher.group(1) + termMatcher.group(2) + termMatcher.group(3));
         } while (termMatcher.find());
@@ -192,7 +192,7 @@ public class Development implements Serializable {
         // parse the coefficients
         coefficients = new double[coeffs.size()];
         for (int i = 0; i < coefficients.length; ++i) {
-            coefficients[i] = factor * Double.parseDouble((String) coeffs.get(i));
+            coefficients[i] = factor * Double.parseDouble(coeffs.get(i));
         }
 
         return true;

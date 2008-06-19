@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.math.ConvergenceException;
@@ -42,10 +41,10 @@ import org.orekit.time.AbsoluteDate;
 public class SwitchingFunctionsHandler implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7016648996407731662L;
+    private static final long serialVersionUID = 6280340975051401661L;
 
     /** Switching functions. */
-    private List functions;
+    private List<SwitchState> functions;
 
     /** First active switching function. */
     private SwitchState first;
@@ -57,7 +56,7 @@ public class SwitchingFunctionsHandler implements Serializable {
      * Create an empty handler
      */
     public SwitchingFunctionsHandler() {
-        functions   = new ArrayList();
+        functions   = new ArrayList<SwitchState>();
         first       = null;
         initialized = false;
     }
@@ -76,7 +75,7 @@ public class SwitchingFunctionsHandler implements Serializable {
      * @see #addOrekitSwitchingFunction(OrekitSwitchingFunction, double, double, int)
      * @see #clearSwitchingFunctions()
      */
-    public Collection getSwitchingFunctions() {
+    public Collection<SwitchState> getSwitchingFunctions() {
         return Collections.unmodifiableCollection(functions);
     }
 
@@ -122,8 +121,8 @@ public class SwitchingFunctionsHandler implements Serializable {
             AbsoluteDate t0 = interpolator.getPreviousDate();
             interpolator.setInterpolatedDate(t0);
             SpacecraftState y = interpolator.getInterpolatedState();
-            for (Iterator iterator = functions.iterator(); iterator.hasNext();) {
-                ((SwitchState) iterator.next()).reinitializeBegin(y);
+            for (final SwitchState functionState : functions) {
+                functionState.reinitializeBegin(y);
             }
 
             initialized = true;
@@ -131,20 +130,19 @@ public class SwitchingFunctionsHandler implements Serializable {
         }
 
         // check events occurrence
-        for (Iterator iterator = functions.iterator(); iterator.hasNext();) {
+        for (final SwitchState functionState : functions) {
 
-            SwitchState function = (SwitchState) iterator.next();
-            if (function.evaluateStep(interpolator)) {
+            if (functionState.evaluateStep(interpolator)) {
                 if (first == null) {
-                    first = function;
+                    first = functionState;
                 } else {
                     if (interpolator.isForward()) {
-                        if (function.getEventTime().compareTo(first.getEventTime()) < 0) {
-                            first = function;
+                        if (functionState.getEventTime().compareTo(first.getEventTime()) < 0) {
+                            first = functionState;
                         }
                     } else {
-                        if (function.getEventTime().compareTo(first.getEventTime()) > 0) {
-                            first = function;
+                        if (functionState.getEventTime().compareTo(first.getEventTime()) > 0) {
+                            first = functionState;
                         }
                     }
                 }
@@ -174,8 +172,8 @@ public class SwitchingFunctionsHandler implements Serializable {
      */
     public void stepAccepted(SpacecraftState state)
         throws OrekitException {
-        for (Iterator iterator = functions.iterator(); iterator.hasNext();) {
-            ((SwitchState) iterator.next()).stepAccepted(state);
+        for (final SwitchState functionState : functions) {
+            functionState.stepAccepted(state);
         }
     }
 
@@ -184,8 +182,8 @@ public class SwitchingFunctionsHandler implements Serializable {
      * @return true if the integration should be stopped
      */
     public boolean stop() {
-        for (Iterator iterator = functions.iterator(); iterator.hasNext();) {
-            if (((SwitchState) iterator.next()).stop()) {
+        for (final SwitchState functionState : functions) {
+            if (functionState.stop()) {
                 return true;
             }
         }
@@ -201,8 +199,8 @@ public class SwitchingFunctionsHandler implements Serializable {
     public boolean reset(SpacecraftState state)
         throws OrekitException {
         boolean resetDerivatives = false;
-        for (Iterator iterator = functions.iterator(); iterator.hasNext();) {
-            if (((SwitchState) iterator.next()).reset(state)) {
+        for (final SwitchState functionState : functions) {
+            if (functionState.reset(state)) {
                 resetDerivatives = true;
             }
         }

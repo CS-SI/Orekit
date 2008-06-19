@@ -113,8 +113,8 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
         }
 
         final BufferedReader r = new BufferedReader(new InputStreamReader(input));
-        final List cl = new ArrayList();
-        final List sl = new ArrayList();
+        final List<double[]> cl = new ArrayList<double[]>();
+        final List<double[]> sl = new ArrayList<double[]>();
         for (String line = r.readLine(); line != null; line = r.readLine()) {
             if (line.length() >= 15) {
 
@@ -136,15 +136,15 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
                 }
 
                 // store the terms
-                ((double[]) cl.get(i))[j] = c;
-                ((double[]) sl.get(i))[j] = s;
+                cl.get(i)[j] = c;
+                sl.get(i)[j] = s;
 
             }
         }
 
         // convert to simple triangular arrays
-        normalizedC = (double[][]) cl.toArray(new double[cl.size()][]);
-        normalizedS = (double[][]) sl.toArray(new double[sl.size()][]);
+        normalizedC = cl.toArray(new double[cl.size()][]);
+        normalizedS = sl.toArray(new double[sl.size()][]);
 
     }
 

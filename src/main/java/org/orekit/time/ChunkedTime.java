@@ -28,7 +28,7 @@ import org.orekit.errors.OrekitException;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class ChunkedTime implements Serializable, Comparable {
+public class ChunkedTime implements Serializable, Comparable<ChunkedTime> {
 
     /** Constant for commonly used hour 00:00:00. */
     public static final ChunkedTime H00   = new ChunkedTime(0, 0, 0);
@@ -37,7 +37,7 @@ public class ChunkedTime implements Serializable, Comparable {
     public static final ChunkedTime H12 = new ChunkedTime(12, 0, 0);
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 4492296986280760487L;
+    private static final long serialVersionUID = 4337093028103368744L;
 
     /** Format for hours and minutes. */
     private static final DecimalFormat TWO_DIGITS = new DecimalFormat("00");
@@ -145,9 +145,9 @@ public class ChunkedTime implements Serializable, Comparable {
     }
 
     /** {@inheritDoc} */
-    public int compareTo(final Object other) {
+    public int compareTo(final ChunkedTime other) {
         final double seconds = getSecondsInDay();
-        final double otherSeconds = ((ChunkedTime) other).getSecondsInDay();
+        final double otherSeconds = other.getSecondsInDay();
         if (seconds < otherSeconds) {
             return -1;
         } else if (seconds > otherSeconds) {

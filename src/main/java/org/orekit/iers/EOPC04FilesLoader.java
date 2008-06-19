@@ -31,7 +31,7 @@ import org.orekit.frames.PoleCorrection;
  * (or <code>eopc04_IAU2000.##.gz</code> for gzip-compressed files)
  * where # stands for a digit character.</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class EOPC04FilesLoader extends IERSFileCrawler {
 
@@ -42,13 +42,13 @@ public class EOPC04FilesLoader extends IERSFileCrawler {
     private final Pattern dataPattern;
 
     /** Earth Orientation Parameters entries. */
-    private TreeSet eop;
+    private TreeSet<EarthOrientationParameters> eop;
 
     /** Build a loader for IERS EOPC 04 files.
      * @param eop set where to <em>add</em> EOP data
      * (pre-existing data is preserved)
      */
-    public EOPC04FilesLoader(final TreeSet eop) {
+    public EOPC04FilesLoader(final TreeSet<EarthOrientationParameters> eop) {
 
         super("^eopc04_IAU2000\\.(\\d\\d)(?:\\.gz)?$");
         this.eop = eop;
