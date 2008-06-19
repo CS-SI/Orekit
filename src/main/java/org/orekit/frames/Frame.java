@@ -137,7 +137,7 @@ public class Frame implements Serializable {
     public static final FrameType VEIS1950 = new FrameType("VEIS1950");
 
     /** Serialiazable UID. */
-    private static final long serialVersionUID = 2071889292905823128L;
+    private static final long serialVersionUID = 460402262661036745L;
 
     /**  parent frame (only J2000 doesn't have a parent). */
     private final Frame parent;
@@ -146,7 +146,7 @@ public class Frame implements Serializable {
     private Transform transform;
 
     /** Map of deepest frames commons with other frames. */
-    private final HashMap commons;
+    private final HashMap<Frame, Frame> commons;
 
     /** Instance name. */
     private final String name;
@@ -157,7 +157,7 @@ public class Frame implements Serializable {
     private Frame(final String name) {
         parent    = null;
         transform = Transform.IDENTITY;
-        commons   = new HashMap();
+        commons   = new HashMap<Frame, Frame>();
         this.name = name;
     }
 
@@ -186,7 +186,7 @@ public class Frame implements Serializable {
         this.name      = name;
         this.parent    = parent;
         this.transform = transform;
-        commons        = new HashMap();
+        commons        = new HashMap<Frame, Frame>();
 
     }
 
@@ -377,8 +377,8 @@ public class Frame implements Serializable {
         }
 
         // definitions of the path up to the head tree for each frame
-        final LinkedList pathFrom = from.pathToRoot();
-        final LinkedList pathTo   = to.pathToRoot();
+        final LinkedList<Frame> pathFrom = from.pathToRoot();
+        final LinkedList<Frame> pathTo   = to.pathToRoot();
 
         if (pathFrom.isEmpty() || pathTo.contains(from)) {
             // handle root case and same branch case
@@ -430,8 +430,8 @@ public class Frame implements Serializable {
      * @return path from instance to root, excluding instance itself
      * (empty if instance is root)
      */
-    private LinkedList pathToRoot() {
-        final LinkedList path = new LinkedList();
+    private LinkedList<Frame> pathToRoot() {
+        final LinkedList<Frame> path = new LinkedList<Frame>();
         for (Frame frame = parent; frame != null; frame = frame.parent) {
             path.add(frame);
         }
