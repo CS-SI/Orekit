@@ -15,19 +15,28 @@ package org.orekit.perturbations;
 
 import java.text.ParseException;
 
-import org.orekit.errors.OrekitException;
-import org.orekit.forces.drag.DTM2000Atmosphere;
-
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.orekit.SolarInputs97to05;
+import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.errors.OrekitException;
+import org.orekit.forces.drag.DTM2000;
+import org.orekit.forces.gravity.Sun;
+import org.orekit.frames.Frame;
+import org.orekit.time.AbsoluteDate;
 
 public class DTM2000AtmosphereTest extends TestCase {
 
     public void testWithOriginalTestsCases() throws OrekitException, ParseException {
 
-        DTM2000Atmosphere atm = new DTM2000Atmosphere();
+        Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, AbsoluteDate.J2000_EPOCH);
+        Sun sun = new Sun();
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
+        SolarInputs97to05 in = SolarInputs97to05.getInstance();
+        earth.setAngularThreshold(1e-10);
+        DTM2000 atm = new DTM2000(in, sun, earth, itrf);
         double roTestCase;
         double tzTestCase;
         double tinfTestCase;

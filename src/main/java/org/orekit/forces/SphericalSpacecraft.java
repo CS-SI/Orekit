@@ -14,7 +14,7 @@
 package org.orekit.forces;
 
 import org.apache.commons.math.geometry.Vector3D;
-import org.orekit.forces.drag.AtmosphereDragSpacecraft;
+import org.orekit.forces.drag.DraggingSpacecraft;
 import org.orekit.forces.radiation.SolarRadiationPressureSpacecraft;
 
 /** This class represents the features of a simplified spacecraft.
@@ -28,7 +28,7 @@ import org.orekit.forces.radiation.SolarRadiationPressureSpacecraft;
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class SphericalSpacecraft
-    implements SolarRadiationPressureSpacecraft, AtmosphereDragSpacecraft {
+    implements SolarRadiationPressureSpacecraft, DraggingSpacecraft {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 5457704222311833198L;

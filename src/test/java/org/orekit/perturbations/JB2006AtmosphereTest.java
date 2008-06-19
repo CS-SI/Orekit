@@ -25,9 +25,8 @@ import org.orekit.SolarInputs97to05;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.drag.DTM2000AtmosphereModel;
-import org.orekit.forces.drag.JB2006Atmosphere;
-import org.orekit.forces.drag.JB2006AtmosphereModel;
+import org.orekit.forces.drag.DTM2000;
+import org.orekit.forces.drag.JB2006;
 import org.orekit.forces.gravity.Sun;
 import org.orekit.frames.Frame;
 import org.orekit.iers.IERSDirectoryCrawler;
@@ -36,13 +35,17 @@ import org.orekit.time.ChunkedDate;
 import org.orekit.time.ChunkedTime;
 import org.orekit.time.UTCScale;
 
-
-
 public class JB2006AtmosphereTest extends TestCase {
 
     public void testWithOriginalTestsCases() throws OrekitException, ParseException {
 
-        JB2006Atmosphere atm = new JB2006Atmosphere();
+        Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, AbsoluteDate.J2000_EPOCH);
+        Sun sun = new Sun();
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
+
+        SolarInputs97to05 in = SolarInputs97to05.getInstance();
+        earth.setAngularThreshold(1e-10);
+        JB2006 atm = new JB2006(in, sun, earth, itrf);
         double myRo;
         double PI = 3.1415927;
 
@@ -182,8 +185,8 @@ public class JB2006AtmosphereTest extends TestCase {
 
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
         earth.setAngularThreshold(1e-10);
-        JB2006AtmosphereModel jb = new JB2006AtmosphereModel(in, sun, earth, itrf);
-        DTM2000AtmosphereModel dtm = new DTM2000AtmosphereModel(in, sun, earth, itrf);
+        JB2006 jb = new JB2006(in, sun, earth, itrf);
+        DTM2000 dtm = new DTM2000(in, sun, earth, itrf);
         // Positions
 
         Vector3D pos = new Vector3D(6500000.0,

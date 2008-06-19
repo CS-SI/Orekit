@@ -18,8 +18,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
+import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.bodies.BodyShape;
+import org.orekit.bodies.CelestialBody;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.UTCScale;
+import org.orekit.utils.PVCoordinates;
 
 /** This atmosphere model is the realization of the DTM-2000 model.
  * <p>
@@ -40,7 +52,7 @@ import org.orekit.errors.OrekitException;
  *       routine entry values:
  *        {@link #getDensity(int, double, double, double, double, double, double, double, double)}.</li>
  *   <li> one compliant with OREKIT Atmosphere interface, necessary to the
- *        {@link org.orekit.forces.drag.AtmosphericDrag drag force model}
+ *        {@link org.orekit.forces.drag.DragForce drag force model}
  *        computation. This implementation is realized
  *        by the subclass {@link DTM2000AtmosphereModel}</li>
  * </ul>
@@ -78,7 +90,7 @@ import org.orekit.errors.OrekitException;
  * @author Fabien Maussion (java translation)
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class DTM2000Atmosphere {
+public class DTM2000 implements Atmosphere {
 
     /** Identifier for hydrogen. */
     public static final int HYDROGEN = 1;
@@ -97,6 +109,9 @@ public class DTM2000Atmosphere {
 
     /** Identifier for atomic nitrogen. */
     public static final int ATOMIC_NITROGEN = 6;
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = -8901940398967553588L;
 
     // Constants :
 
@@ -265,10 +280,33 @@ public class DTM2000Atmosphere {
 
     // CHECKSTYLE: resume JavadocVariable check
 
+    /** Sun position. */
+    private CelestialBody sun;
+
+    /** External data container. */
+    private DTM2000InputParameters inputParams;
+
+    /** Earth body shape. */
+    private BodyShape earth;
+
+    /** Earth fixed frame. */
+    private Frame bodyFrame;
+
     /** Simple constructor for independent computation.
+     * @param parameters the solar and magnetic activity data
+     * @param sun the sun position
+     * @param earth the earth body shape
+     * @param earthFixed the earth fixed frame
      * @exception OrekitException if some resource file reading error occurs
      */
-    public DTM2000Atmosphere() throws OrekitException {
+    public DTM2000(final DTM2000InputParameters parameters,
+                             final CelestialBody sun, final BodyShape earth,
+                             final Frame earthFixed)
+        throws OrekitException {
+        this.earth = earth;
+        this.sun = sun;
+        this.inputParams = parameters;
+        this.bodyFrame = earthFixed;
         if (tt == null) {
             readcoefficients();
         }
@@ -713,7 +751,7 @@ public class DTM2000Atmosphere {
         Arrays.fill(dtp,  Double.NaN);
 
         final InputStream in =
-            DTM2000Atmosphere.class.getResourceAsStream(DTM2000);
+            DTM2000.class.getResourceAsStream(DTM2000);
         if (in == null) {
             throw new OrekitException("unable to find dtm 2000 model data file {0}",
                                       new Object[] {
@@ -802,6 +840,73 @@ public class DTM2000Atmosphere {
             throw new IllegalArgumentException("element identifier is not correct");
         }
         return d[identifier] * 1000;
+    }
+
+    /** Get the local density.
+     * @param date current date
+     * @param position current position in frame
+     * @param frame the frame in which is defined the position
+     * @return local density (kg/m<sup>3</sup>)
+     * @exception OrekitException if date is out of range of solar activity model
+     * or if some frame conversion cannot be performed
+     */
+    public double getDensity(final AbsoluteDate date, final Vector3D position,
+                             final Frame frame)
+        throws OrekitException {
+
+        // check if data are available :
+        if ((date.compareTo(inputParams.getMaxDate()) > 0) ||
+            (date.compareTo(inputParams.getMinDate()) < 0)) {
+            final TimeScale utcScale = UTCScale.getInstance();
+            throw new OrekitException("no solar activity available at {0}, " +
+                                      "data available only in range [{1}, {2}]",
+                                      new Object[] {
+                                          date.toString(utcScale),
+                                          inputParams.getMinDate().toString(utcScale),
+                                          inputParams.getMaxDate().toString(utcScale)
+                                      });
+        }
+
+        // compute day number in current year
+        final Calendar cal = new GregorianCalendar();
+        cal.setTime(date.toDate(UTCScale.getInstance()));
+        final int day = cal.get(Calendar.DAY_OF_YEAR);
+        // compute geodetic position
+        final GeodeticPoint inBody = earth.transform(position, frame, date);
+        final double alti = inBody.getAltitude();
+        final double lon = inBody.getLongitude();
+        final double lat = inBody.getLatitude();
+
+        // compute local solar time
+
+        final Vector3D sunPos = sun.getPosition(date, frame);
+        final double hl = Math.PI + Math.atan2(sunPos.getX() * position.getY() - sunPos.getY() * position.getX(),
+                                               sunPos.getX() * position.getX() + sunPos.getY() * position.getY());
+
+        // get current solar activity data and compute
+        return getDensity(day, alti, lon, lat, hl, inputParams.getInstantFlux(date),
+                          inputParams.getMeanFlux(date), inputParams.getThreeHourlyKP(date),
+                          inputParams.get24HoursKp(date));
+
+    }
+
+    /** Get the inertial velocity of atmosphere molecules.
+     * Here the case is simplified : atmosphere is supposed to have a null velocity
+     * in earth frame.
+     * @param date current date
+     * @param position current position in frame
+     * @param frame the frame in which is defined the position
+     * @return velocity (m/s) (defined in the same frame as the position)
+     * @exception OrekitException if some frame conversion cannot be performed
+     */
+    public Vector3D getVelocity(final AbsoluteDate date, final Vector3D position,
+                                final Frame frame)
+        throws OrekitException {
+        final Transform bodyToFrame = bodyFrame.getTransformTo(frame, date);
+        final Vector3D posInBody = bodyToFrame.getInverse().transformPosition(position);
+        final PVCoordinates pvBody = new PVCoordinates(posInBody, new Vector3D(0, 0, 0));
+        final PVCoordinates pvFrame = bodyToFrame.transformPVCoordinates(pvBody);
+        return pvFrame.getVelocity();
     }
 
 }

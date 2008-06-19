@@ -13,6 +13,18 @@
  */
 package org.orekit.forces.drag;
 
+import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.bodies.BodyShape;
+import org.orekit.bodies.CelestialBody;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.UTCScale;
+import org.orekit.utils.PVCoordinates;
+
 /** This is the realization of the Jacchia-Bowman 2006 atmospheric model.
  * <p>
  * It is described in the paper: <br>
@@ -30,7 +42,7 @@ package org.orekit.forces.drag;
  * <li> one OREKIT independent and compliant with initial FORTRAN routine entry values:
  *        {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double)}. </li>
  * <li> one compliant with OREKIT Atmosphere interface, necessary to the
- *        {@link org.orekit.forces.drag.AtmosphericDrag
+ *        {@link org.orekit.forces.drag.DragForce
  *        drag force model} computation. This implementation is realized
  *        by the subclass {@link JB2006AtmosphereModel}</li>
  * </ul>
@@ -56,9 +68,10 @@ package org.orekit.forces.drag;
  * @author Fabien Maussion (java translation)
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class JB2006Atmosphere {
+public class JB2006 implements Atmosphere {
 
-    // data :
+    /** Serializable UID. */
+    private static final long serialVersionUID = -4201270765122160831L;
 
     /** The alpha are the thermal diffusion coefficients in equation (6). */
     private static final double[] ALPHA = {
@@ -178,8 +191,31 @@ public class JB2006Atmosphere {
     /** Total Mass-Density at Input Position (kg/m<sup>3</sup>). */
     private double rho;
 
-    /** Simple constructor. */
-    public JB2006Atmosphere() {
+    /** Sun position. */
+    private CelestialBody sun;
+
+    /** External data container. */
+    private JB2006InputParameters inputParams;
+
+    /** Earth body shape. */
+    private BodyShape earth;
+
+    /** Earth fixed frame. */
+    private Frame bodyFrame;
+
+    /** Constructor with space environment information for internal computation.
+     * @param parameters the solar and magnetic activity data
+     * @param sun the sun position
+     * @param earth the earth body shape
+     * @param earthFixed the earth fixed frame
+     */
+    public JB2006(final JB2006InputParameters parameters,
+                            final CelestialBody sun, final BodyShape earth,
+                            final Frame earthFixed) {
+        this.earth = earth;
+        this.sun = sun;
+        this.inputParams = parameters;
+        this.bodyFrame = earthFixed;
     }
 
     /** Get the local density with initial entries.
@@ -680,6 +716,67 @@ public class JB2006Atmosphere {
      */
     public double getLocalTemp() {
         return temp[2];
+    }
+
+    /** Get the local density.
+     * @param date current date
+     * @param position current position in frame
+     * @param frame the frame in which is defined the position
+     * @return local density (kg/m<sup>3</sup>)
+     * @exception OrekitException if date is out of range of solar activity
+     */
+    public double getDensity(final AbsoluteDate date, final Vector3D position,
+                             final Frame frame)
+        throws OrekitException {
+        // check if data are available :
+        if (date.compareTo(inputParams.getMaxDate()) > 0 ||
+            date.compareTo(inputParams.getMinDate()) < 0) {
+            final TimeScale utcScale = UTCScale.getInstance();
+            throw new OrekitException("no solar activity available at {0}, " +
+                                      "data available only in range [{1}, {2}]",
+                                      new Object[] {
+                                          date.toString(utcScale),
+                                          inputParams.getMinDate().toString(utcScale),
+                                          inputParams.getMaxDate().toString(utcScale)
+                                      });
+        }
+
+        // compute modified julian days date
+        final double dateMJD = date.minus(AbsoluteDate.MODIFIED_JULIAN_EPOCH) / 86400.;
+
+        // compute geodetic position
+        final GeodeticPoint inBody = earth.transform(position, frame, date);
+
+        // compute sun position
+        final GeodeticPoint sunInBody =
+            earth.transform(sun.getPosition(date, frame), frame, date);
+        return getDensity(dateMJD,
+                          sunInBody.getLongitude(), sunInBody.getLatitude(),
+                          inBody.getLongitude(), inBody.getLatitude(),
+                          inBody.getAltitude(), inputParams.getF10(date),
+                          inputParams.getF10B(date),
+                          inputParams.getAp(date), inputParams.getS10(date),
+                          inputParams.getS10B(date), inputParams.getXM10(date),
+                          inputParams.getXM10B(date));
+    }
+
+    /** Get the inertial velocity of atmosphere molecules.
+     * Here the case is simplified : atmosphere is supposed to have a null velocity
+     * in earth frame.
+     * @param date current date
+     * @param position current position in frame
+     * @param frame the frame in which is defined the position
+     * @return velocity (m/s) (defined in the same frame as the position)
+     * @exception OrekitException if some frame conversion cannot be performed
+     */
+    public Vector3D getVelocity(final AbsoluteDate date, final Vector3D position,
+                                final Frame frame)
+        throws OrekitException {
+        final Transform bodyToFrame = bodyFrame.getTransformTo(frame, date);
+        final Vector3D posInBody = bodyToFrame.getInverse().transformPosition(position);
+        final PVCoordinates pvBody = new PVCoordinates(posInBody, new Vector3D(0, 0, 0));
+        final PVCoordinates pvFrame = bodyToFrame.transformPVCoordinates(pvBody);
+        return pvFrame.getVelocity();
     }
 
 }

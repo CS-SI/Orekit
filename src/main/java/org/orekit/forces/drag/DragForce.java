@@ -27,7 +27,7 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
  * &gamma = (1/2 * Ro * V<sup>2</sup> * S / Mass) * DragCoefVector
  *
  * With DragCoefVector = {Cx, Cy, Cz} and S given by the user threw the interface
- * {@link AtmosphereDragSpacecraft}
+ * {@link DraggingSpacecraft}
  *
  * @author Édouard Delente
  * @author Fabien Maussion
@@ -35,7 +35,7 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 
-public class AtmosphericDrag implements ForceModel {
+public class DragForce implements ForceModel {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 3430941727178712005L;
@@ -44,14 +44,14 @@ public class AtmosphericDrag implements ForceModel {
     private final Atmosphere atmosphere;
 
     /** Spacecraft. */
-    private final AtmosphereDragSpacecraft spacecraft;
+    private final DraggingSpacecraft spacecraft;
 
     /** Simple constructor.
      * @param atmosphere atmospheric model
      * @param spacecraft the object physical and geometrical information
      */
-    public AtmosphericDrag(final Atmosphere atmosphere,
-                           final AtmosphereDragSpacecraft spacecraft) {
+    public DragForce(final Atmosphere atmosphere,
+                           final DraggingSpacecraft spacecraft) {
         this.atmosphere = atmosphere;
         this.spacecraft = spacecraft;
     }
