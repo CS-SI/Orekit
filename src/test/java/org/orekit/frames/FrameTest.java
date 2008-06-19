@@ -91,7 +91,7 @@ public class FrameTest extends TestCase {
     }
 
     public void testVeis1950() throws OrekitException {
-        Transform t = Frame.getReferenceFrame(Frame.VEIS1950, new AbsoluteDate()).getTransformTo(Frame.getJ2000(), new AbsoluteDate());
+        Transform t = Frame.getVeis1950().getTransformTo(Frame.getJ2000(), new AbsoluteDate());
         Vector3D i50    = t.transformVector(Vector3D.PLUS_I);
         Vector3D j50    = t.transformVector(Vector3D.PLUS_J);
         Vector3D k50    = t.transformVector(Vector3D.PLUS_K);

@@ -45,7 +45,7 @@ public class Moon extends ThirdBody {
         super(1737400.0, 4.9027989e12);
         Transform t;
         try {
-            final Frame veisFrame = Frame.getReferenceFrame(Frame.VEIS1950, REFERENCE_DATE);
+            final Frame veisFrame = Frame.getVeis1950();
             t  = veisFrame.getTransformTo(Frame.getJ2000(), REFERENCE_DATE);
         } catch (OrekitException e) {
             // should not happen

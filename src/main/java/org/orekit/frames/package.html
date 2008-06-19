@@ -2,31 +2,35 @@
 <body>
 This package provides classes to handle frames and transforms between them.
 	
-<p> The {@link org.orekit.frames.Transform} class represents a full
- transform : rotation and translation, and its first time derivative to 
- handle kinematics. 
+<p>
+The {@link org.orekit.frames.Transform} class represents a full
+transform: combined rotation and translation, and their first time derivatives to 
+handle kinematics. 
 </p>
 
 <p> 
-A {@link org.orekit.frames.Frame} is then defined with a transform from 
-an other one, called Parent Frame. So the user can build its own frame tree and then 
-OREKIT can calculate any transform between frames. The first root of the tree 
-is necessarily the J2000 inertial frame, which is a singleton. In that way, there can
-be no exception and every couple of frame has at least a common root in the frame 
-tree which is the J2000 reference.
-</p>  
-<p> 
-The frames are time synchronized. To get a transform from one frame to another the
-date must be specified, and
-{@link org.orekit.frames.Frame#updateFrame(AbsoluteDate)} is internally
-called. If a user wants to implement its own date synchronized frame, he has to 
-implement by extension his own {@link org.orekit.frames.Frame#updateFrame(AbsoluteDate)}
-method.
-</p>
+Each {@link org.orekit.frames.Frame} is defined by a transform linking it to 
+another one, called its parent frame. The only exception is the predefined  J2000 inertial
+frame which has no parent. This implies that all frames are naturally organized as a tree
+with a single root: the J2000 frame.
+<p>
 
 <p>
-OREKIT provides one specific Earth fixed (and date dependent) frame, the 
-International Terrestrial Reference Frame (fixed by the IERS conventions 2003). 
+Several other frames are predefined. One set correspond to the frames from the IERS 2003
+conventions (ITRF2000 and others). Both complete 2000A and reduced 2000B versions are
+available. Another frame not belonging to the previous set is the Veis 1950 frame which is
+considered here as a simple rotation from J2000.
+<p>
+
+<p> 
+The frames can be time dependent (for example the ITRF2000A frame depends on time due to
+precession/nutation, Earth rotation and pole motion). In order to get a transform from one
+frame to another one, the date must be specified, and
+{@link org.orekit.frames.Frame#updateFrame(AbsoluteDate)} is called under the hood. If a
+user wants to implement his own date synchronized frame, he has to 
+implement by extension his own {@link org.orekit.frames.Frame#updateFrame(AbsoluteDate)}
+method, the default implementation provided by the base class does nothing and is suited
+for non time dependent frames.
 </p>
 
 @author Luc Maisonobe

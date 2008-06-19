@@ -39,7 +39,7 @@ public class JB2006AtmosphereTest extends TestCase {
 
     public void testWithOriginalTestsCases() throws OrekitException, ParseException {
 
-        Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, AbsoluteDate.J2000_EPOCH);
+        Frame itrf = Frame.getITRF2000B();
         Sun sun = new Sun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
 
@@ -179,7 +179,7 @@ public class JB2006AtmosphereTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2003, 01, 01),
                                              ChunkedTime.H00,
                                              UTCScale.getInstance());
-        Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, date);
+        Frame itrf = Frame.getITRF2000B();
         Sun sun = new Sun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
 

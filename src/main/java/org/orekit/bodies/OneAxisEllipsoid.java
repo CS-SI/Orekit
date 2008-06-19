@@ -35,7 +35,7 @@ import org.orekit.utils.Line;
  * computation of the distance between a point and an ellipse</a>.</p>
  *
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class OneAxisEllipsoid implements BodyShape {
 
@@ -79,7 +79,7 @@ public class OneAxisEllipsoid implements BodyShape {
      * @param ae equatorial radius
      * @param f the flattening (f = (a-b)/a)
      * @param bodyFrame body frame related to body shape
-     * @see Frame#getReferenceFrame(org.orekit.frames.Frame.FrameType, AbsoluteDate)
+     * @see Frame#getReferenceFrame(org.orekit.frames.Frame.FrameType)
      * @see Frame#ITRF2000A
      * @see Frame#ITRF2000B
      */

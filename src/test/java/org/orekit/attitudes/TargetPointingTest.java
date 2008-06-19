@@ -219,7 +219,7 @@ public class TargetPointingTest extends TestCase {
                                              UTCScale.getInstance());
         
         // Reference frame = ITRF 2000B
-        Frame frameItrf2000B = Frame.getReferenceFrame(Frame.ITRF2000B, date);
+        Frame frameItrf2000B = Frame.getITRF2000B();
 
         // Elliptic earth shape 
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameItrf2000B);
@@ -326,7 +326,7 @@ public class TargetPointingTest extends TestCase {
             mu = 3.9860047e14;
             
             // Reference frame = ITRF 2000B
-            frameItrf2000B = Frame.getReferenceFrame(Frame.ITRF2000B, date);
+            frameItrf2000B = Frame.getITRF2000B();
 
             // Transform from J2000 to ITRF2000B
             j2000ToItrf = Frame.getJ2000().getTransformTo(frameItrf2000B, date);

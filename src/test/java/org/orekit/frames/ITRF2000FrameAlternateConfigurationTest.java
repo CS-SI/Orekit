@@ -40,11 +40,11 @@ public class ITRF2000FrameAlternateConfigurationTest extends TestCase {
                                            UTCScale.getInstance());
         t0 = new AbsoluteDate(t0, 0.000009);
 
-        Frame itrfA = Frame.getReferenceFrame(Frame.ITRF2000A, t0);
+        Frame itrfA = Frame.getITRF2000A();
 
         Transform transA = itrfA.getTransformTo(Frame.getJ2000(), t0);
 
-        Frame itrfB = Frame.getReferenceFrame(Frame.ITRF2000B, t0);
+        Frame itrfB = Frame.getITRF2000B();
 
         Transform transB = itrfB.getTransformTo(Frame.getJ2000(), t0);
 
@@ -86,11 +86,11 @@ public class ITRF2000FrameAlternateConfigurationTest extends TestCase {
                                            ChunkedTime.H00,
                                            UTCScale.getInstance());
 
-        Frame itrfA = Frame.getReferenceFrame(Frame.ITRF2000A, t0);
+        Frame itrfA = Frame.getITRF2000A();
 
         Transform transA = itrfA.getTransformTo(Frame.getJ2000(), t0);
 
-        Frame itrfB = Frame.getReferenceFrame(Frame.ITRF2000B, t0);
+        Frame itrfB = Frame.getITRF2000B();
 
         Transform transB = itrfB.getTransformTo(Frame.getJ2000(), t0);
 

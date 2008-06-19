@@ -121,7 +121,7 @@ public class BodyCenterPointingTest extends TestCase {
             
             
             // Reference frame = ITRF 2000B
-            frameItrf2000B = Frame.getReferenceFrame(Frame.ITRF2000B, date);
+            frameItrf2000B = Frame.getITRF2000B();
 
             // Transform from J2000 to ITRF2000B
             j2000ToItrf = Frame.getJ2000().getTransformTo(frameItrf2000B, date);

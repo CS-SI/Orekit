@@ -117,7 +117,7 @@ public class LofOffsetPointingTest extends TestCase {
             mu = 3.9860047e14;
             
             // Reference frame = ITRF 2000B
-            frameItrf2000B = Frame.getReferenceFrame(Frame.ITRF2000B, date);
+            frameItrf2000B = Frame.getITRF2000B();
 
             // Elliptic earth shape
             earthSpheric =

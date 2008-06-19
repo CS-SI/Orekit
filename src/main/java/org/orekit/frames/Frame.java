@@ -45,7 +45,7 @@ import org.orekit.time.AbsoluteDate;
  *
  * <p>  <h5> Reference Frames </h5>
  *  Several Reference frames are implemented in OREKIT. The user can
- *  {@link #getReferenceFrame(Frame.FrameType, AbsoluteDate) use them}
+ *  {@link #getReferenceFrame(Frame.FrameType) use them}
  *  by specifying the {@link FrameType} (type enum) he wants.
  *
  *    <h5> International Terrestrial Reference Frame 2000 </h5>
@@ -101,43 +101,8 @@ import org.orekit.time.AbsoluteDate;
  */
 public class Frame implements Serializable {
 
-    /** International Terrestrial Reference Frame 2000 A.
-     * <p> Replaces the old ECEF representation. <p>
-     */
-    public static final FrameType ITRF2000A = new FrameType("ITRF2000A");
-
-    /** International Terrestrial Reference Frame 2000 B.
-     * <p> Replaces the old ECEF representation. <p>
-     */
-    public static final FrameType ITRF2000B = new FrameType("ITRF2000B");
-
-    /** Intermediate Reference Frame 2000 A : true equinox and equator of date.
-     * <p> Precession and nutation effects with maximal precision and no
-     * earth rotation. <p>
-     */
-    public static final FrameType IRF2000A = new FrameType("IRF2000A");
-
-    /** Intermediate Reference Frame 2000 B : true equinox and equator of date.
-     * <p> Precession and nutation effects with less precision and no
-     * earth rotation. <p>
-     */
-    public static final FrameType IRF2000B = new FrameType("IRF2000B");
-
-    /** Terrestrial Intermediate Reference Frame 2000 A.
-     * <p> The pole motion is not considered.</p> */
-    public static final FrameType TIRF2000A = new FrameType("TIRF2000A");
-
-    /** Terrestrial Intermediate Reference Frame 2000 B.
-     * <p> The pole motion is not considered.</p> */
-    public static final FrameType TIRF2000B = new FrameType("TIRF2000B");
-
-    /** Veis 1950 frame.
-     * <p>This frame is sometimes referred to as
-     * <em>&gamma;<sub>50</sub> CNES</em></p> */
-    public static final FrameType VEIS1950 = new FrameType("VEIS1950");
-
     /** Serialiazable UID. */
-    private static final long serialVersionUID = 460402262661036745L;
+    private static final long serialVersionUID = -3759353494152260205L;
 
     /**  parent frame (only J2000 doesn't have a parent). */
     private final Frame parent;
@@ -188,13 +153,6 @@ public class Frame implements Serializable {
         this.transform = transform;
         commons        = new HashMap<Frame, Frame>();
 
-    }
-
-    /** Get the unique J2000 frame.
-     * @return the unique instance of the J2000 frame
-     */
-    public static Frame getJ2000() {
-        return LazyJ2000Holder.INSTANCE;
     }
 
     /** Get the name.
@@ -438,90 +396,96 @@ public class Frame implements Serializable {
         return path;
     }
 
-    /** Frame Type enum for the
-     * {@link Frame#getReferenceFrame(Frame.FrameType, AbsoluteDate)} method.
+    /** Get the unique J2000 frame.
+     * @return the unique instance of the J2000 frame
      */
-    public static class FrameType implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -7876565578577219160L;
-
-        /** Name of the frame type. */
-        private final String name;
-
-        /** Build a frame type.
-         * @param name name of the frame type
-         */
-        private FrameType(final String name) {
-            this.name = name;
-        }
-
-        /** Return a string representation of this type.
-         * @return string representation of this type (i.e. its name)
-         */
-        public String toString() {
-            return name;
-        }
-
+    public static Frame getJ2000() {
+        return LazyJ2000Holder.INSTANCE;
     }
 
-    /** Get one of the 7 unique reference frames.
-     * Must be one of {@link #VEIS1950}, {@link #ITRF2000A}, {@link #ITRF2000B},
-     * {@link #TIRF2000A}, {@link #TIRF2000B}, {@link #IRF2000A}, {@link #IRF2000B}.
-     * @param type the frame type.
-     * @param date the current date
+    /** Get the ITRF2000A reference frame.
      * @return the selected reference frame singleton.
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
      */
-    public static Frame getReferenceFrame(final FrameType type, final AbsoluteDate date)
+    public static Frame getITRF2000A()
         throws OrekitException {
-        if (type == ITRF2000A) {
-            if (LazyITRF2000AHolder.INSTANCE == null) {
-                throw LazyITRF2000AHolder.OREKIT_EXCEPTION;
-            }
-            return LazyITRF2000AHolder.INSTANCE;
+        if (LazyITRF2000AHolder.INSTANCE == null) {
+            throw LazyITRF2000AHolder.OREKIT_EXCEPTION;
         }
-        if (type == ITRF2000B) {
-            if (LazyITRF2000BHolder.INSTANCE == null) {
-                throw LazyITRF2000BHolder.OREKIT_EXCEPTION;
-            }
-            return LazyITRF2000BHolder.INSTANCE;
-        }
-        if (type == TIRF2000A) {
-            if (LazyTIRF2000AHolder.INSTANCE == null) {
-                throw LazyTIRF2000AHolder.OREKIT_EXCEPTION;
-            }
-            return LazyTIRF2000AHolder.INSTANCE;
-        }
-        if (type == TIRF2000B) {
-            if (LazyTIRF2000BHolder.INSTANCE == null) {
-                throw LazyTIRF2000BHolder.OREKIT_EXCEPTION;
-            }
-            return LazyTIRF2000BHolder.INSTANCE;
-        }
-        if (type == IRF2000A) {
-            if (LazyIRF2000AHolder.INSTANCE == null) {
-                throw LazyIRF2000AHolder.OREKIT_EXCEPTION;
-            }
-            return LazyIRF2000AHolder.INSTANCE;
-        }
-        if (type == IRF2000B) {
-            if (LazyIRF2000BHolder.INSTANCE == null) {
-                throw LazyIRF2000BHolder.OREKIT_EXCEPTION;
-            }
-            return LazyIRF2000BHolder.INSTANCE;
-        }
-        if (type == VEIS1950) {
-            return LazyVeis1950Holder.INSTANCE;
-        }
-        throw OrekitException.createIllegalArgumentException("unknown frame type {0}, known types: " +
-                                                             "{1}, {2}, {3}, {4}, {5}, {6} and {7}",
-                                                             new Object[] {
-                                                                 type, ITRF2000A, ITRF2000B, TIRF2000A,
-                                                                 TIRF2000B, IRF2000A, IRF2000B, VEIS1950
-                                                             });
+        return LazyITRF2000AHolder.INSTANCE;
+    }
 
+    /** Get the ITRF2000B reference frame.
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if the nutation model data embedded in the
+     * library cannot be read.
+     */
+    public static Frame getITRF2000B()
+        throws OrekitException {
+        if (LazyITRF2000BHolder.INSTANCE == null) {
+            throw LazyITRF2000BHolder.OREKIT_EXCEPTION;
+        }
+        return LazyITRF2000BHolder.INSTANCE;
+    }
+
+    /** Get the TIRF2000A reference frame.
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if the nutation model data embedded in the
+     * library cannot be read.
+     */
+    public static Frame getTIRF2000A()
+        throws OrekitException {
+        if (LazyTIRF2000AHolder.INSTANCE == null) {
+            throw LazyTIRF2000AHolder.OREKIT_EXCEPTION;
+        }
+        return LazyTIRF2000AHolder.INSTANCE;
+    }
+
+    /** Get the TIRF2000B reference frame.
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if the nutation model data embedded in the
+     * library cannot be read.
+     */
+    public static Frame getTIRF2000B()
+        throws OrekitException {
+        if (LazyTIRF2000BHolder.INSTANCE == null) {
+            throw LazyTIRF2000BHolder.OREKIT_EXCEPTION;
+        }
+        return LazyTIRF2000BHolder.INSTANCE;
+    }
+
+    /** Get the IRF2000A reference frame.
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if the nutation model data embedded in the
+     * library cannot be read.
+     */
+    public static Frame getIRF2000A()
+        throws OrekitException {
+        if (LazyIRF2000AHolder.INSTANCE == null) {
+            throw LazyIRF2000AHolder.OREKIT_EXCEPTION;
+        }
+        return LazyIRF2000AHolder.INSTANCE;
+    }
+
+    /** Get the IRF2000B reference frame.
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if the nutation model data embedded in the
+     * library cannot be read.
+     */
+    public static Frame getIRF2000B()
+        throws OrekitException {
+        if (LazyIRF2000BHolder.INSTANCE == null) {
+            throw LazyIRF2000BHolder.OREKIT_EXCEPTION;
+        }
+        return LazyIRF2000BHolder.INSTANCE;
+    }
+
+    /** Get the VEIS 1950 reference frame.
+     * @return the selected reference frame singleton.
+     */
+    public static Frame getVeis1950() {
+        return LazyVeis1950Holder.INSTANCE;
     }
 
     // We use the Initialization on demand holder idiom to store
@@ -547,7 +511,7 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new ITRF2000Frame(LazyTIRF2000AHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, ITRF2000A.name);
+                tmpFrame = new ITRF2000Frame(LazyTIRF2000AHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, "ITRF2000A");
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
@@ -569,7 +533,7 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new ITRF2000Frame(LazyTIRF2000BHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, ITRF2000B.name);
+                tmpFrame = new ITRF2000Frame(LazyTIRF2000BHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, "ITRF2000B");
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
@@ -591,7 +555,7 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new TIRF2000Frame(LazyIRF2000AHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, TIRF2000A.name);
+                tmpFrame = new TIRF2000Frame(LazyIRF2000AHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, "TIRF2000A");
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
@@ -613,7 +577,7 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new TIRF2000Frame(LazyIRF2000BHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, TIRF2000B.name);
+                tmpFrame = new TIRF2000Frame(LazyIRF2000BHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, "TIRF2000B");
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
@@ -636,7 +600,7 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new IRF2000Frame(AbsoluteDate.J2000_EPOCH, false, IRF2000A.name);
+                tmpFrame = new IRF2000Frame(AbsoluteDate.J2000_EPOCH, false, "IRF2000A");
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
@@ -659,7 +623,7 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new IRF2000Frame(AbsoluteDate.J2000_EPOCH, true, IRF2000B.name);
+                tmpFrame = new IRF2000Frame(AbsoluteDate.J2000_EPOCH, true, "IRF2000B");
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
@@ -680,7 +644,7 @@ public class Frame implements Serializable {
                                                  -2.43283773387856897e-3,
                                                  5.59078052583013584e-3,
                                                  true)),
-                      VEIS1950.name);
+                      "VEIS1950");
 
     }
 

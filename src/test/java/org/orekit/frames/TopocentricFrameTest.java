@@ -394,7 +394,7 @@ public class TopocentricFrameTest extends TestCase {
         try {
 
             // Reference frame = ITRF 2000B
-            frameItrf2000B = Frame.getReferenceFrame(Frame.ITRF2000B, date);
+            frameItrf2000B = Frame.getITRF2000B();
 
             // Elliptic earth shape
             earthSpheric = new OneAxisEllipsoid(6378136.460, 0., frameItrf2000B);

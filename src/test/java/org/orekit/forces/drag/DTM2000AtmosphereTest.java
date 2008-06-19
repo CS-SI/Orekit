@@ -25,13 +25,12 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.DTM2000;
 import org.orekit.forces.gravity.Sun;
 import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
 
 public class DTM2000AtmosphereTest extends TestCase {
 
     public void testWithOriginalTestsCases() throws OrekitException, ParseException {
 
-        Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, AbsoluteDate.J2000_EPOCH);
+        Frame itrf = Frame.getITRF2000B();
         Sun sun = new Sun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
         SolarInputs97to05 in = SolarInputs97to05.getInstance();

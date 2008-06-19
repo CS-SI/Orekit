@@ -40,7 +40,7 @@ public class ITRF2000FrameTest extends TestCase {
         AbsoluteDate date1 = new AbsoluteDate(new ChunkedDate(2006, 02, 24),
                                               new ChunkedTime(15, 38, 00),
                                               UTCScale.getInstance());
-        Frame itrf2000 = Frame.getReferenceFrame(Frame.ITRF2000B, date1);
+        Frame itrf2000 = Frame.getITRF2000B();
         Transform t0 = itrf2000.getTransformTo(Frame.getJ2000(), date1 );
 
         double dt = 10.0;
@@ -61,7 +61,7 @@ public class ITRF2000FrameTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2001, 03, 21),
                                              ChunkedTime.H00,
                                              UTCScale.getInstance());
-        Frame itrf2000 = Frame.getReferenceFrame(Frame.ITRF2000B, date);
+        Frame itrf2000 = Frame.getITRF2000B();
 
         Vector3D u = itrf2000.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.PLUS_I);
         assertTrue(Vector3D.angle(u, Vector3D.MINUS_I) < Math.toRadians(2));
@@ -85,7 +85,7 @@ public class ITRF2000FrameTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2001, 03, 21),
                                              ChunkedTime.H00,
                                              UTCScale.getInstance());
-        TIRF2000Frame TIRF2000 = (TIRF2000Frame)Frame.getReferenceFrame(Frame.TIRF2000B, date);
+        TIRF2000Frame TIRF2000 = (TIRF2000Frame) Frame.getTIRF2000B();
 
         assertEquals(180, Math.toDegrees(TIRF2000.getEarthRotationAngle(date)), 2.0);
 
@@ -106,7 +106,7 @@ public class ITRF2000FrameTest extends TestCase {
                                              new ChunkedTime(02, 00, 00),
                                              UTCScale.getInstance());
 
-        Frame tirf = Frame.getReferenceFrame(Frame.TIRF2000B, date);
+        Frame tirf = Frame.getTIRF2000B();
 
         Transform trans = Frame.getJ2000().getTransformTo(tirf, date);
 
@@ -133,7 +133,7 @@ public class ITRF2000FrameTest extends TestCase {
                                            new ChunkedTime(02, 00, 00),
                                            UTCScale.getInstance());
 
-        Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, t0);
+        Frame itrf = Frame.getITRF2000B();
 
         Transform trans = Frame.getJ2000().getTransformTo(itrf, t0);
 
@@ -203,7 +203,7 @@ public class ITRF2000FrameTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2006, 05, 14),
                                              new ChunkedTime(0, 8, 51.423),
                                              UTCScale.getInstance());
-        Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000A, date);
+        Frame itrf = Frame.getITRF2000A();
         Transform trans = itrf.getTransformTo(Frame.getJ2000(), date);
         Vector3D posITRF = new Vector3D(6770000.000, -144000.000, 488000.000);
         Vector3D velITRF = new Vector3D(530.000, 4260.000, -5980.000);
@@ -220,7 +220,7 @@ public class ITRF2000FrameTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2006, 05, 14),
                                              new ChunkedTime(00, 16, 08.631),
                                              UTCScale.getInstance());
-        Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, date);
+        Frame itrf = Frame.getITRF2000B();
         Transform trans = itrf.getTransformTo(Frame.getJ2000(), date);
         Vector3D posITRF = new Vector3D(6254020.457, 1663297.258, -2070251.762);
         Vector3D velITRF = new Vector3D(-2861.533, 3913.691, -5536.168);
@@ -237,7 +237,7 @@ public class ITRF2000FrameTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2006, 05, 14),
                                              new ChunkedTime(00, 26, 06.833),
                                              UTCScale.getInstance());
-        Frame itrf = Frame.getReferenceFrame(Frame.ITRF2000B, date);
+        Frame itrf = Frame.getITRF2000B();
         Transform trans = itrf.getTransformTo(Frame.getJ2000(), date);
         Vector3D posITRF = new Vector3D(3376169.673, 3578504.767, -4685496.977);
         Vector3D velITRF = new Vector3D(-6374.220, 2284.616, -2855.447);
