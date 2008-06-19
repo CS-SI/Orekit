@@ -98,7 +98,7 @@ public class AdaptedSwitchingFunction implements SwitchingFunction {
     public void resetState(final double t, final double[] y)
         throws SwitchException {
         try {
-            SpacecraftState newState = swf.resetState(mapState(t, y));
+            final SpacecraftState newState = swf.resetState(mapState(t, y));
             y[0] = newState.getA();
             y[1] = newState.getEquinoctialEx();
             y[2] = newState.getEquinoctialEy();
@@ -116,10 +116,6 @@ public class AdaptedSwitchingFunction implements SwitchingFunction {
      * ({@link org.orekit.orbits.Orbit OrbitalParameters}).
      * @param t integration time (s)
      * @param y state as a flat array
-     * @param referenceDate reference date from which t is counted
-     * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     * @param integrationFrame frame in which integration is performed
-     * @param attitudeLaw spacecraft attitude law
      * @return state corresponding to the flat array as a space dynamics object
      * @exception OrekitException if attitude law cannot provide state
      */

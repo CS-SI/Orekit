@@ -15,7 +15,6 @@ package org.orekit.propagation.events;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.ode.SwitchException;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 
@@ -36,8 +35,8 @@ import org.orekit.propagation.SpacecraftState;
  * precision. </p>
  *
  * <p> Once the g function root is reached, we are sure the integrator
- *  won't miss the event relative to this date : a discontinuity in
- *  acceleration, a change in the state... This event can be initiated
+ *  won't miss the event relative to this date: a discontinuity in
+ *  acceleration, a change in the state ... This event can be initiated
  *  by the {@link #eventOccurred(SpacecraftState)}
  *  method, which is called when the step is placed on the wanted date. <p>
  *
@@ -105,7 +104,7 @@ public interface OrekitSwitchingFunction extends Serializable {
      * this function will never be called, and it is safe to simply return null.</p>
      * @param oldState old state
      * @return new state
-     * @exception SwitchException if the state cannot be reseted
+     * @exception OrekitException if the state cannot be reseted
      */
     SpacecraftState resetState(SpacecraftState oldState) throws OrekitException;
 

@@ -23,33 +23,42 @@ import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.BoundedPropagator;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 /** This class stores sequentially generated orbital parameters for
  * later retrieval.
  *
- * <p>Instances of this class are built and then must be fed with the results
- * provided by {@link Propagator} objects configured in {@link
- * Propagator#setBatchMode(BatchEphemeris) batch mode}. Once propagation is
- * completed, random access to any intermediate state of the orbit throughout
- * the propagation range is possible.</p>
- * <p>A typical use case is for numerically integrated orbits, which thanks to
- * this class can be used by algorithms that need to wander around according
- * to their own algorithm without cumbersome tight links with the integrator.</p>
- * <p>Another use case is for persistence, as this class is serializable.</p>
- * <p>As this class implements the {@link Propagator Propagator} interface, it
- * can itself be used in batch mode to build another instance of the same type.
- * This is however not recommended since it would be a waste of resources.</p>
- * <p>Note that this class stores all intermediate states along with interpolation
- * models, so it may be memory intensive.</p>
+ * <p>
+ * Instances of this class are built and then must be fed with the results
+ * provided by {@link org.orekit.propagation.Propagator Propagator} objects
+ * configured in {@link org.orekit.propagation.Propagator#setEphemerisMode()
+ * ephemeris generation mode}. Once propagation is o, random access to any
+ * intermediate state of the orbit throughout the propagation range is possible.
+ * </p>
+ * <p>
+ * A typical use case is for numerically integrated orbits, which can be used by
+ * algorithms that need to wander around according to their own algorithm without
+ * cumbersome tight links with the integrator.
+ * </p>
+ * <p>
+ * Another use case is for persistence, as this class is serializable.
+ * </p>
+ * <p>
+ * As this class implements the {@link org.orekit.propagation.Propagator Propagator}
+ * interface, it can itself be used in batch mode to build another instance of the
+ * same type. This is however not recommended since it would be a waste of resources.
+ * </p>
+ * <p>
+ * Note that this class stores all intermediate states along with interpolation
+ * models, so it may be memory intensive.
+ * </p>
  *
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @author Mathieu Roméro
  * @author Luc Maisonobe
  * @author Véronique Pommier-Maurussane
- * @version $Revision$ $Date$
+ * @version $Revision:1698 $ $Date:2008-06-18 16:01:17 +0200 (mer., 18 juin 2008) $
  */
 class IntegratedEphemeris implements BoundedPropagator, ModeHandler, StepHandler {
 

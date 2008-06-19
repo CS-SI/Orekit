@@ -18,27 +18,32 @@ import java.io.Serializable;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.OrekitSwitchingFunction;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 
 /** This interface represents a force modifying spacecraft motion.
  *
- * <p>Objects implementing this interface are intended to be added to a
- * {@link NumericalPropagator numerical propagator}  before the propagation is started.
+ * <p>
+ * Objects implementing this interface are intended to be added to a
+ * {@link org.orekit.propagation.numerical.NumericalPropagator numerical propagator} 
+ * before the propagation is started.
+ * <p>
+ * <p>
  * The propagator will call at each step the {@link #addContribution(SpacecraftState,
  * TimeDerivativesEquations)} method. The force model instance will extract all the
  * state data it needs (date,position, velocity, frame, attitude, mass) from the first
  * parameter. From these state data, it will compute the perturbing acceleration. It
  * will then add this acceleration to the second parameter which will take thins
  * contribution into account and will use the Gauss equations to evaluate its impact
- * on the global state derivative.</p>
- *
- * <p>Force models which create discontinuous acceleration patters (typically for maneuvers
+ * on the global state derivative.
+ * </p>
+ * <p>
+ * Force models which create discontinuous acceleration patters (typically for maneuvers
  * start/stop or solar eclipses entry/exit) must use one or more {@link
  * org.orekit.propagation.events.OrekitSwitchingFunction switching functions} to the
  * propagator thanks to the {@link #getSwitchingFunctions()} method which is called once
  * just before propagation starts. The switching functions will be checked by the propagator
- * to ensure accurate propagation and switch event crossing.</p>
+ * to ensure accurate propagation and switch event crossing.
+ * </p>
  *
  * @author Mathieu Roméro
  * @author Luc Maisonobe

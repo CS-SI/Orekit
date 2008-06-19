@@ -210,8 +210,8 @@ public class ConstantThrustManeuver implements ForceModel {
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState resetState(SpacecraftState oldState)
-                throws OrekitException {
+        public SpacecraftState resetState(final SpacecraftState oldState)
+            throws OrekitException {
             // never called since eventOccurred does never return RESET_STATE
             return null;
         }
@@ -258,8 +258,8 @@ public class ConstantThrustManeuver implements ForceModel {
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState resetState(SpacecraftState oldState)
-                throws OrekitException {
+        public SpacecraftState resetState(final SpacecraftState oldState)
+            throws OrekitException {
             // never called since eventOccurred does never return RESET_STATE
             return null;
         }

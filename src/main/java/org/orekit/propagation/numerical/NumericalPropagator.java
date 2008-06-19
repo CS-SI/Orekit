@@ -229,7 +229,7 @@ public class NumericalPropagator implements Propagator {
 
     /** {@inheritDoc} */
     public void setMasterMode(final double h, final OrekitFixedStepHandler handler) {
-        AdaptedFixedStepHandler wrapped = new AdaptedFixedStepHandler(handler);
+        final AdaptedFixedStepHandler wrapped = new AdaptedFixedStepHandler(handler);
         integrator.setStepHandler(new StepNormalizer(h, wrapped));
         modeHandler = wrapped;
         mode = MASTER_FIXED_MODE;
@@ -237,7 +237,7 @@ public class NumericalPropagator implements Propagator {
 
     /** {@inheritDoc} */
     public void setMasterMode(final OrekitStepHandler handler) {
-        AdaptedStepHandler wrapped = new AdaptedStepHandler(handler);
+        final AdaptedStepHandler wrapped = new AdaptedStepHandler(handler);
         integrator.setStepHandler(wrapped);
         modeHandler = wrapped;
         mode = MASTER_VARIABLE_MODE;
@@ -245,7 +245,7 @@ public class NumericalPropagator implements Propagator {
 
     /** {@inheritDoc} */
     public void setEphemerisMode() {
-        IntegratedEphemeris ephemeris = new IntegratedEphemeris();
+        final IntegratedEphemeris ephemeris = new IntegratedEphemeris();
         integrator.setStepHandler(ephemeris);
         modeHandler = ephemeris;
         mode = EPHEMERIS_GENERATION_MODE;

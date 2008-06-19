@@ -80,12 +80,6 @@ class SwitchState implements Serializable {
 
     /** Simple constructor.
      * @param function switching function
-     * @param maxCheckInterval maximal time interval between switching
-     * function checks (this interval prevents missing sign changes in
-     * case the integration steps becomes very large)
-     * @param convergence convergence threshold in the event time search
-     * @param maxIterationCount upper limit of the iteration count in
-     * the event time search
      */
     public SwitchState(final OrekitSwitchingFunction function) {
         this.function     = function;
@@ -111,7 +105,7 @@ class SwitchState implements Serializable {
         throws OrekitException {
         this.t0 = state0.getDate();
         g0 = function.g(state0);
-        g0Positive = (g0 >= 0);
+        g0Positive = g0 >= 0;
     }
 
     /** Evaluate the impact of the proposed step on the switching function.
@@ -143,19 +137,19 @@ class SwitchState implements Serializable {
                 // evaluate function value at the end of the substep
                 final AbsoluteDate tb = new AbsoluteDate(start, i * h);
                 interpolator.setInterpolatedDate(tb);
-                double gb = function.g(interpolator.getInterpolatedState());
+                final double gb = function.g(interpolator.getInterpolatedState());
 
                 // check events occurrence
                 if (g0Positive ^ (gb >= 0)) {
                     // there is a sign change: an event is expected during this step
 
                     // variation direction, with respect to the integration direction
-                    increasing = (gb >= ga);
+                    increasing = gb >= ga;
 
-                    UnivariateRealSolver solver = new BrentSolver(new UnivariateRealFunction() {
-                        public double value(double t) throws FunctionEvaluationException {
+                    final UnivariateRealSolver solver = new BrentSolver(new UnivariateRealFunction() {
+                        public double value(final double t) throws FunctionEvaluationException {
                             try {
-                                AbsoluteDate date = new AbsoluteDate(t0, t);
+                                final AbsoluteDate date = new AbsoluteDate(t0, t);
                                 interpolator.setInterpolatedDate(date);
                                 return function.g(interpolator.getInterpolatedState());
                             } catch (OrekitException e) {
@@ -165,7 +159,7 @@ class SwitchState implements Serializable {
                     });
                     solver.setAbsoluteAccuracy(function.getThreshold());
                     solver.setMaximalIterationCount(function.getMaxIterationCount());
-                    AbsoluteDate root = new AbsoluteDate(t0, solver.solve(ta.minus(t0), tb.minus(t0)));
+                    final AbsoluteDate root = new AbsoluteDate(t0, solver.solve(ta.minus(t0), tb.minus(t0)));
                     if ((previousEventTime == null) ||
                         (Math.abs(previousEventTime.minus(root)) > function.getThreshold())) {
                         pendingEventTime = root;
@@ -196,7 +190,7 @@ class SwitchState implements Serializable {
             return false;
 
         } catch (FunctionEvaluationException e) {
-            Throwable cause = e.getCause();
+            final Throwable cause = e.getCause();
             if ((cause != null) && (cause instanceof OrekitException)) {
                 throw (OrekitException) cause;
             }
@@ -231,7 +225,7 @@ class SwitchState implements Serializable {
             g0Positive        = increasing;
             nextAction        = function.eventOccurred(state);
         } else {
-            g0Positive = (g0 >= 0);
+            g0Positive = g0 >= 0;
             nextAction = OrekitSwitchingFunction.CONTINUE;
         }
     }
@@ -253,7 +247,7 @@ class SwitchState implements Serializable {
     public boolean reset(final SpacecraftState state)
         throws OrekitException {
 
-        if (! pendingEvent) {
+        if (!pendingEvent) {
             return false;
         }
 

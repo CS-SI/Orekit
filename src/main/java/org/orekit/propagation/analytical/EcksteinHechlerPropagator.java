@@ -254,7 +254,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
     }
 
     /** {@inheritDoc} */
-    protected void resetInitialState(SpacecraftState state)
+    protected void resetInitialState(final SpacecraftState state)
         throws PropagationException {
         mass = state.getMass();
         computeMeanParameters(new CircularOrbit(state.getOrbit()));

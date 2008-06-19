@@ -100,18 +100,18 @@ public abstract class AbstractPropagator implements Propagator {
      * except that it does <strong>not</strong> call any handler during
      * propagation, nor any switching function. It always stop exactly at
      * the specified date.</p>
-     * @param date
+     * @param date target date for propagation
      * @return state at specified date
      * @exception PropagationException if propagation cannot reach specified date
      */
-    protected abstract SpacecraftState basicPropagate(AbsoluteDate date)
+    protected abstract SpacecraftState basicPropagate(final AbsoluteDate date)
         throws PropagationException;
 
     /** Reset the basic propagator initial state.
      * @param state new initial state to consider
      * @exception PropagationException if initial state cannot be reset
      */
-    protected abstract void resetInitialState(SpacecraftState state)
+    protected abstract void resetInitialState(final SpacecraftState state)
         throws PropagationException;
 
     /** Mode-specific propagation interface. */
@@ -178,7 +178,7 @@ public abstract class AbstractPropagator implements Propagator {
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState propagate(AbsoluteDate date)
+        public SpacecraftState propagate(final AbsoluteDate date)
             throws PropagationException {
 
             // compute the number of steps
@@ -189,13 +189,13 @@ public abstract class AbstractPropagator implements Propagator {
 
             // the n-1 first steps are exactly h seconds long
             for (int i = 0; i < (n - 1); ++i) {
-                SpacecraftState state = basicPropagate(new AbsoluteDate(start, i * signedH));
+                final SpacecraftState state = basicPropagate(new AbsoluteDate(start, i * signedH));
                 // TODO take switching functions into account
                 handler.handleStep(state, false);
             }
 
             // last step is exactly at the target date
-            SpacecraftState state =  basicPropagate(date);
+            final SpacecraftState state =  basicPropagate(date);
             handler.handleStep(state, true);
 
             return state;
@@ -242,7 +242,7 @@ public abstract class AbstractPropagator implements Propagator {
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState propagate(AbsoluteDate date)
+        public SpacecraftState propagate(final AbsoluteDate date)
             throws PropagationException {
 
             // initial parameters
@@ -251,7 +251,7 @@ public abstract class AbstractPropagator implements Propagator {
             final double a  = interpolatedState.getA();
             final double mu = interpolatedState.getMu();
             final double duration = date.minus(initialDate);
-            forward = (duration >= 0);
+            forward = duration >= 0;
             final double period = 2.0 * Math.PI * a * Math.sqrt(a / mu);
 
             // compute the number of steps
@@ -297,7 +297,7 @@ public abstract class AbstractPropagator implements Propagator {
         }
 
         /** {@inheritDoc} */
-        public void setInterpolatedDate(AbsoluteDate date)
+        public void setInterpolatedDate(final AbsoluteDate date)
             throws PropagationException {
             interpolatedDate  = date;
             interpolatedState = basicPropagate(date);
@@ -318,7 +318,7 @@ public abstract class AbstractPropagator implements Propagator {
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState propagate(AbsoluteDate date)
+        public SpacecraftState propagate(final AbsoluteDate date)
             throws PropagationException {
             // TODO implement propagation in ephemeris generation mode
             return basicPropagate(date);

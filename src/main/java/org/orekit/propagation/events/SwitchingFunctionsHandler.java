@@ -66,7 +66,7 @@ public class SwitchingFunctionsHandler implements Serializable {
      * @see #getSwitchingFunctions()
      * @see #clearSwitchingFunctions()
      */
-    public void addSwitchingFunction(OrekitSwitchingFunction function) {
+    public void addSwitchingFunction(final OrekitSwitchingFunction function) {
         functions.add(new SwitchState(function));
     }
 
@@ -104,7 +104,7 @@ public class SwitchingFunctionsHandler implements Serializable {
      * compute the function somewhere within the step
      * @exception ConvergenceException if an event cannot be located
      */
-    public boolean evaluateStep(OrekitStepInterpolator interpolator)
+    public boolean evaluateStep(final OrekitStepInterpolator interpolator)
         throws OrekitException, ConvergenceException {
 
         first = null;
@@ -115,12 +115,12 @@ public class SwitchingFunctionsHandler implements Serializable {
             return false;
         }
 
-        if (! initialized) {
+        if (!initialized) {
 
             // initialize the switching functions
-            AbsoluteDate t0 = interpolator.getPreviousDate();
+            final AbsoluteDate t0 = interpolator.getPreviousDate();
             interpolator.setInterpolatedDate(t0);
-            SpacecraftState y = interpolator.getInterpolatedState();
+            final SpacecraftState y = interpolator.getInterpolatedState();
             for (final SwitchState functionState : functions) {
                 functionState.reinitializeBegin(y);
             }
@@ -170,7 +170,7 @@ public class SwitchingFunctionsHandler implements Serializable {
      * @exception OrekitException if the value of one of the
      * switching functions cannot be evaluated
      */
-    public void stepAccepted(SpacecraftState state)
+    public void stepAccepted(final SpacecraftState state)
         throws OrekitException {
         for (final SwitchState functionState : functions) {
             functionState.stepAccepted(state);
@@ -196,7 +196,7 @@ public class SwitchingFunctionsHandler implements Serializable {
      * @exception OrekitException if one of the switching functions
      * that should reset the state fails to do it
      */
-    public boolean reset(SpacecraftState state)
+    public boolean reset(final SpacecraftState state)
         throws OrekitException {
         boolean resetDerivatives = false;
         for (final SwitchState functionState : functions) {

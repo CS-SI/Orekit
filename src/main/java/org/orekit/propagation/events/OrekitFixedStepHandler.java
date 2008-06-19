@@ -33,7 +33,7 @@ public interface OrekitFixedStepHandler extends Serializable {
      * @param isLast if true, this is the last integration step
      * @exception PropagationException if step cannot be handled
      */
-    public abstract void handleStep(final SpacecraftState currentState, final boolean isLast)
+    void handleStep(final SpacecraftState currentState, final boolean isLast)
         throws PropagationException;
 
 }

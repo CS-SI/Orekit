@@ -150,7 +150,7 @@ public class KeplerianPropagator extends AbstractPropagator {
     }
 
     /** {@inheritDoc} */
-    protected void resetInitialState(SpacecraftState state)
+    protected void resetInitialState(final SpacecraftState state)
         throws PropagationException {
         initialOrbit   = new EquinoctialOrbit(state.getOrbit());
         final double a = initialOrbit.getA();

@@ -28,17 +28,17 @@ public class ChronologicalComparator implements Comparator<TimeStamped>, Seriali
     /** Serializable UID. */
     private static final long serialVersionUID = -602997163791160921L;
 
+    /** Private constructor for singleton.
+     */
+    private ChronologicalComparator() {
+        // nothing to do
+    }
+
     /** Get the unique instance.
      * @return the unique instance
      */
     public static ChronologicalComparator getInstance() {
         return LazyChronologicalComparatorHolder.INSTANCE;
-    }
-
-    /** Private constructor for singleton.
-     */
-    private ChronologicalComparator() {
-        // nothing to do
     }
 
     /** Compare two time-stamped instances.
@@ -47,7 +47,8 @@ public class ChronologicalComparator implements Comparator<TimeStamped>, Seriali
      * @return a negative integer, zero, or a positive integer as the first
      * instance is before, simultaneous, or after the second one.
      */
-    public int compare(TimeStamped timeStamped1, TimeStamped timeStamped2) {
+    public int compare(final TimeStamped timeStamped1,
+                       final TimeStamped timeStamped2) {
         return timeStamped1.getDate().compareTo(timeStamped2.getDate());
     }
 
@@ -58,7 +59,8 @@ public class ChronologicalComparator implements Comparator<TimeStamped>, Seriali
     /** Holder for the ChronologicalComparator frame singleton. */
     private static class LazyChronologicalComparatorHolder {
         /** Unique instance. */
-        private static final ChronologicalComparator INSTANCE = new ChronologicalComparator();
+        private static final ChronologicalComparator INSTANCE =
+            new ChronologicalComparator();
     }
 
 }
