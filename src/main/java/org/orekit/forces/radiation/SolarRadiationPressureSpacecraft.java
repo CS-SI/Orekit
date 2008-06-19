@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.spacecraft;
+package org.orekit.forces.radiation;
 
 import java.io.Serializable;
 
@@ -20,7 +20,7 @@ import org.apache.commons.math.geometry.Vector3D;
 /** Adapted container for the SolarRadiationPressure force model.
  *
  * @author Fabien Maussion
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public interface SolarRadiationPressureSpacecraft extends Serializable {
 

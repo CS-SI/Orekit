@@ -11,9 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.spacecraft;
+package org.orekit.forces;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.forces.drag.AtmosphereDragSpacecraft;
+import org.orekit.forces.radiation.SolarRadiationPressureSpacecraft;
 
 /** This class represents the features of a simplified spacecraft.
  * <p>The model of this spacecraft is a simple spherical model, this
@@ -23,7 +25,7 @@ import org.apache.commons.math.geometry.Vector3D;
  *
  * @author Édouard Delente
  * @author Fabien Maussion
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class SphericalSpacecraft
     implements SolarRadiationPressureSpacecraft, AtmosphereDragSpacecraft {

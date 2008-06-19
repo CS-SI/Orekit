@@ -14,7 +14,7 @@
 package org.orekit.models.spacecraft;
 
 import org.apache.commons.math.geometry.Vector3D;
-import org.orekit.models.spacecraft.SphericalSpacecraft;
+import org.orekit.forces.SphericalSpacecraft;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

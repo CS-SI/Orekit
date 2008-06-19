@@ -16,7 +16,6 @@ package org.orekit.forces.drag;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
-import org.orekit.models.spacecraft.AtmosphereDragSpacecraft;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.OrekitSwitchingFunction;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;

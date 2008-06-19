@@ -18,7 +18,6 @@ import org.orekit.bodies.ThirdBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
-import org.orekit.models.spacecraft.SolarRadiationPressureSpacecraft;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.OrekitSwitchingFunction;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
