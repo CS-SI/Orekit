@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces.perturbations;
+package org.orekit.forces.gravity;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.bodies.ThirdBody;
@@ -38,8 +38,8 @@ public class ThirdBodyAttraction implements ForceModel {
 
     /** Simple constructor.
      * @param body the third body to consider
-     * (ex: {@link org.orekit.models.bodies.Sun} or
-     * {@link org.orekit.models.bodies.Moon})
+     * (ex: {@link org.orekit.forces.gravity.Sun} or
+     * {@link org.orekit.forces.gravity.Moon})
      */
     public ThirdBodyAttraction(final ThirdBody body) {
         this.body = body;

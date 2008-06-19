@@ -25,8 +25,8 @@ import java.util.TimeZone;
 import java.util.TreeSet;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.models.perturbations.DTM2000InputParameters;
-import org.orekit.models.perturbations.JB2006InputParameters;
+import org.orekit.forces.drag.DTM2000InputParameters;
+import org.orekit.forces.drag.JB2006InputParameters;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;

@@ -19,11 +19,11 @@ import junit.framework.TestSuite;
 
 import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.perturbations.ThirdBodyAttraction;
+import org.orekit.forces.gravity.Moon;
+import org.orekit.forces.gravity.Sun;
+import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.iers.IERSDirectoryCrawler;
-import org.orekit.models.bodies.Moon;
-import org.orekit.models.bodies.Sun;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;

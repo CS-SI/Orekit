@@ -21,10 +21,10 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.drag.SimpleExponentialAtmosphere;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.iers.IERSDirectoryCrawler;
-import org.orekit.models.perturbations.SimpleExponentialAtmosphere;
 import org.orekit.time.AbsoluteDate;
 
 

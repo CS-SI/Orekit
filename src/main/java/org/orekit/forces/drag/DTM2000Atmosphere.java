@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.perturbations;
+package org.orekit.forces.drag;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -40,7 +40,7 @@ import org.orekit.errors.OrekitException;
  *       routine entry values:
  *        {@link #getDensity(int, double, double, double, double, double, double, double, double)}.</li>
  *   <li> one compliant with OREKIT Atmosphere interface, necessary to the
- *        {@link org.orekit.forces.perturbations.AtmosphericDrag drag force model}
+ *        {@link org.orekit.forces.drag.AtmosphericDrag drag force model}
  *        computation. This implementation is realized
  *        by the subclass {@link DTM2000AtmosphereModel}</li>
  * </ul>

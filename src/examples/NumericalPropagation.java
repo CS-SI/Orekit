@@ -19,7 +19,7 @@ import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.perturbations.CunninghamAttractionModel;
+import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;

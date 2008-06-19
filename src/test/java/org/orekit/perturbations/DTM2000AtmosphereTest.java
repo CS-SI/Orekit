@@ -16,7 +16,7 @@ package org.orekit.perturbations;
 import java.text.ParseException;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.models.perturbations.DTM2000Atmosphere;
+import org.orekit.forces.drag.DTM2000Atmosphere;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

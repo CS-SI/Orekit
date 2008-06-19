@@ -17,21 +17,21 @@ import org.apache.commons.math.geometry.Vector3D;
 
 /** Adapted container for the Atmosphere drag force model.
  *
- * @see org.orekit.forces.perturbations.AtmosphericDrag
+ * @see org.orekit.forces.drag.AtmosphericDrag
  * @author Fabien Maussion
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public interface AtmosphereDragSpacecraft {
 
     /** Get the visible surface from a specific direction.
-     * See {@link org.orekit.forces.perturbations.AtmosphericDrag} for more explanations.
+     * See {@link org.orekit.forces.drag.AtmosphericDrag} for more explanations.
      * @param direction direction of the flux in the spacecraft frame
      * @return surface (m<sup>2</sup>)
      */
     double getSurface(Vector3D direction);
 
     /** Get the drag coefficients vector.
-     * See {@link org.orekit.forces.perturbations.AtmosphericDrag} for more explanations.
+     * See {@link org.orekit.forces.drag.AtmosphericDrag} for more explanations.
      * @param direction direction of the flux in the spacecraft frame
      * @return drag coefficients vector (defined in the spacecraft frame)
      */

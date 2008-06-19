@@ -11,10 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.perturbations;
+package org.orekit.forces.drag;
 
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.CelestialBody;
@@ -28,30 +26,30 @@ import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
 
-/** This class is the OREKIT compliant realization of the DTM2000 atmosphere model.
+/** This class is the OREKIT compliant realization of the JB2006 atmosphere model.
  *
  * It should be instantiated to be used by the {@link
- * org.orekit.forces.perturbations.AtmosphericDrag
+ * org.orekit.forces.drag.AtmosphericDrag
  * drag force model} as it implements the {@link Atmosphere} interface.
  *
  *  The input parameters are computed with orbital state information, but solar
- *  activity and magnetic activity data must be provided by the user threw
- *  the interface {@link DTM2000InputParameters}.
+ *  activity and magnetic activity data must be provided by the user thanks to the
+ *  the interface {@link JB2006InputParameters}.
  *
  * @author Fabien Maussion
- * @see DTM2000Atmosphere
+ * @see JB2006Atmosphere
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosphere {
+public class JB2006AtmosphereModel extends JB2006Atmosphere implements Atmosphere {
 
     /** Serializable UID.*/
-    private static final long serialVersionUID = 7601194421088896381L;
+    private static final long serialVersionUID = -4566140204081960905L;
 
     /** Sun position. */
     private CelestialBody sun;
 
     /** External data container. */
-    private DTM2000InputParameters inputParams;
+    private JB2006InputParameters inputParams;
 
     /** Earth body shape. */
     private BodyShape earth;
@@ -64,17 +62,14 @@ public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosph
      * @param sun the sun position
      * @param earth the earth body shape
      * @param earthFixed the earth fixed frame
-     * @exception OrekitException if some specific resource file reading error occurs
      */
-    public DTM2000AtmosphereModel(final DTM2000InputParameters parameters,
-                                  final CelestialBody sun, final BodyShape earth,
-                                  final Frame earthFixed)
-        throws OrekitException {
+    public JB2006AtmosphereModel(final JB2006InputParameters parameters,
+                                 final CelestialBody sun, final BodyShape earth,
+                                 final Frame earthFixed) {
         this.earth = earth;
         this.sun = sun;
         this.inputParams = parameters;
         this.bodyFrame = earthFixed;
-
     }
 
     /** Get the local density.
@@ -82,16 +77,14 @@ public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosph
      * @param position current position in frame
      * @param frame the frame in which is defined the position
      * @return local density (kg/m<sup>3</sup>)
-     * @exception OrekitException if date is out of range of solar activity model
-     * or if some frame conversion cannot be performed
+     * @exception OrekitException if date is out of range of solar activity
      */
     public double getDensity(final AbsoluteDate date, final Vector3D position,
                              final Frame frame)
         throws OrekitException {
-
         // check if data are available :
-        if ((date.compareTo(inputParams.getMaxDate()) > 0) ||
-            (date.compareTo(inputParams.getMinDate()) < 0)) {
+        if (date.compareTo(inputParams.getMaxDate()) > 0 ||
+            date.compareTo(inputParams.getMinDate()) < 0) {
             final TimeScale utcScale = UTCScale.getInstance();
             throw new OrekitException("no solar activity available at {0}, " +
                                       "data available only in range [{1}, {2}]",
@@ -102,27 +95,23 @@ public class DTM2000AtmosphereModel extends DTM2000Atmosphere implements Atmosph
                                       });
         }
 
-        // compute day number in current year
-        final Calendar cal = new GregorianCalendar();
-        cal.setTime(date.toDate(UTCScale.getInstance()));
-        final int day = cal.get(Calendar.DAY_OF_YEAR);
+        // compute modified julian days date
+        final double dateMJD = date.minus(AbsoluteDate.MODIFIED_JULIAN_EPOCH) / 86400.;
+
         // compute geodetic position
         final GeodeticPoint inBody = earth.transform(position, frame, date);
-        final double alti = inBody.getAltitude();
-        final double lon = inBody.getLongitude();
-        final double lat = inBody.getLatitude();
 
-        // compute local solar time
-
-        final Vector3D sunPos = sun.getPosition(date, frame);
-        final double hl = Math.PI + Math.atan2(sunPos.getX() * position.getY() - sunPos.getY() * position.getX(),
-                                               sunPos.getX() * position.getX() + sunPos.getY() * position.getY());
-
-        // get current solar activity data and compute
-        return getDensity(day, alti, lon, lat, hl, inputParams.getInstantFlux(date),
-                          inputParams.getMeanFlux(date), inputParams.getThreeHourlyKP(date),
-                          inputParams.get24HoursKp(date));
-
+        // compute sun position
+        final GeodeticPoint sunInBody =
+            earth.transform(sun.getPosition(date, frame), frame, date);
+        return getDensity(dateMJD,
+                          sunInBody.getLongitude(), sunInBody.getLatitude(),
+                          inBody.getLongitude(), inBody.getLatitude(),
+                          inBody.getAltitude(), inputParams.getF10(date),
+                          inputParams.getF10B(date),
+                          inputParams.getAp(date), inputParams.getS10(date),
+                          inputParams.getS10B(date), inputParams.getXM10(date),
+                          inputParams.getXM10B(date));
     }
 
     /** Get the inertial velocity of atmosphere molecules.

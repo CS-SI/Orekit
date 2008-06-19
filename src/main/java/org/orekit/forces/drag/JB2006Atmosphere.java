@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.perturbations;
+package org.orekit.forces.drag;
 
 /** This is the realization of the Jacchia-Bowman 2006 atmospheric model.
  * <p>
@@ -30,7 +30,7 @@ package org.orekit.models.perturbations;
  * <li> one OREKIT independent and compliant with initial FORTRAN routine entry values:
  *        {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double)}. </li>
  * <li> one compliant with OREKIT Atmosphere interface, necessary to the
- *        {@link org.orekit.forces.perturbations.AtmosphericDrag
+ *        {@link org.orekit.forces.drag.AtmosphericDrag
  *        drag force model} computation. This implementation is realized
  *        by the subclass {@link JB2006AtmosphereModel}</li>
  * </ul>

@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.bodies;
+package org.orekit.forces.gravity;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.bodies.ThirdBody;
@@ -24,7 +24,7 @@ import org.orekit.time.AbsoluteDate;
 /** Moon model.
  * The position model is the Brown theory.
  * @author Édouard Delente
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 
 public class Moon extends ThirdBody {

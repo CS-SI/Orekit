@@ -16,8 +16,8 @@ package org.orekit.bodies;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.gravity.Sun;
 import org.orekit.frames.Frame;
-import org.orekit.models.bodies.Sun;
 import org.orekit.time.AbsoluteDate;
 
 import junit.framework.Test;
