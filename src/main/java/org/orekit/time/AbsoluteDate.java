@@ -53,9 +53,11 @@ import org.orekit.errors.OrekitException;
  * </p>
  * @author Luc Maisonobe
  * @see TimeScale
+ * @see TimeStamped
+ * @see ChronologicalComparator
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class AbsoluteDate implements Comparable<AbsoluteDate>, Serializable {
+public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Serializable {
 
     /** Reference epoch for julian dates: -4712-01-01T12:00:00.
      * <p>Both <code>java.util.Date</code> and {@link ChunkedDate} classes
@@ -96,7 +98,7 @@ public class AbsoluteDate implements Comparable<AbsoluteDate>, Serializable {
         new AbsoluteDate(new ChunkedDate(2000,  1,  1), ChunkedTime.H00, TAIScale.getInstance());
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -7939787698665074690L;
+    private static final long serialVersionUID = 4101033541456511524L;
 
     /** Reference epoch in milliseconds from 1970-01-01T00:00:00 TAI. */
     private final long epoch;
@@ -234,6 +236,11 @@ public class AbsoluteDate implements Comparable<AbsoluteDate>, Serializable {
             return +1;
         }
         return 0;
+    }
+
+    /** {@inheritDoc} */
+    public AbsoluteDate getDate() {
+        return this;
     }
 
     /** Check if the instance represent the same time as another instance.
