@@ -18,6 +18,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
 
 import java.io.Serializable;
@@ -53,7 +54,7 @@ import java.io.Serializable;
  * @author Véronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public abstract class Orbit implements Comparable<Orbit>, Serializable {
+public abstract class Orbit implements TimeStamped, Serializable {
 
     /** Frame in which are defined the orbital parameters. */
     private final Frame frame;
@@ -199,15 +200,6 @@ public abstract class Orbit implements Comparable<Orbit>, Serializable {
             initPVCoordinates();
         }
         return pvCoordinates;
-    }
-
-    /** Compare chronologically the instance with another orbit.
-     * @param other other orbit to compare the instance to
-     * @return a negative integer, zero, or a positive integer as this orbit
-     * is before, simultaneous, or after the other one.
-     */
-    public int compareTo(Orbit other) {
-        return date.compareTo(other.date);
     }
 
     /** Initialize the position/velocity coordinates.

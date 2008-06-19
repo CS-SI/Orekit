@@ -44,7 +44,7 @@ import org.orekit.utils.PVCoordinates;
  * @author David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
  * @author Fabien Maussion (java translation)
  * @see TLE
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public abstract class TLEPropagator {
 
@@ -188,7 +188,7 @@ public abstract class TLEPropagator {
     public PVCoordinates getPVCoordinates(final AbsoluteDate date)
         throws OrekitException {
 
-        sxpPropagate(date.minus(tle.getEpoch()) / 60.0);
+        sxpPropagate(date.minus(tle.getDate()) / 60.0);
 
         // Compute PV with previous calculated parameters
         return computePVCoordinates();

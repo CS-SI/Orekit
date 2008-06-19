@@ -31,7 +31,7 @@ import org.orekit.time.UTCScale;
  * @author Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
  * @author David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
  * @author Fabien Maussion (java translation)
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 class DeepSDP4 extends SDP4 {
 
@@ -186,8 +186,8 @@ class DeepSDP4 extends SDP4 {
 
         // Compute julian days since 1900
         final double daysSince1900 =
-            (tle.getEpoch().minus(AbsoluteDate.JULIAN_EPOCH) +
-             tle.getEpoch().timeScalesOffset(UTCScale.getInstance(), TTScale.getInstance())) / 86400.0 - 2415020;
+            (tle.getDate().minus(AbsoluteDate.JULIAN_EPOCH) +
+             tle.getDate().timeScalesOffset(UTCScale.getInstance(), TTScale.getInstance())) / 86400.0 - 2415020;
 
 
         double cc = C1SS;
@@ -196,7 +196,7 @@ class DeepSDP4 extends SDP4 {
         double zsinh = sinq;
         double zcosh = cosq;
 
-        thgr = thetaG(tle.getEpoch());
+        thgr = thetaG(tle.getDate());
         xnq = xn0dp;
         omegaq = tle.getPerigeeArgument();
 

@@ -28,6 +28,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.models.perturbations.DTM2000InputParameters;
 import org.orekit.models.perturbations.JB2006InputParameters;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.TimeStamped;
 import org.orekit.time.UTCScale;
 
 
@@ -42,7 +44,7 @@ import org.orekit.time.UTCScale;
 public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputParameters {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 8787560814852697082L;
+    private static final long serialVersionUID = -3687601846334870069L;
 
     private static final double third = 1.0/3.0;
 
@@ -59,7 +61,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
     };
 
     /** All entries. */
-    private SortedSet<LineParameters> data;
+    private SortedSet<TimeStamped> data;
 
     private LineParameters currentParam;
     private AbsoluteDate firstDate;
@@ -72,7 +74,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
      */
     private SolarInputs97to05() throws OrekitException {
 
-        data = new TreeSet<LineParameters>();
+        data = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
         InputStream in = SolarInputs97to05.class.getResourceAsStream("/atmosphere/JB_All_97-05.txt");
         BufferedReader rFlux = new BufferedReader(new InputStreamReader(in));
 
@@ -190,13 +192,11 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
             new LineParameters(new AbsoluteDate(date, -86400), null, 0, 0, 0, 0, 0, 0);
 
         // search starting from entries a few steps before the target date
-        SortedSet<LineParameters> tailSet = data.tailSet(before);
+        SortedSet<TimeStamped> tailSet = data.tailSet(before);
         if (tailSet != null) {
-            currentParam = (LineParameters)tailSet.first();
-            if(currentParam.date.minus(date)==-86400) {
-                before = new LineParameters(date, null, 0, 0, 0, 0, 0, 0);
-                tailSet = data.tailSet(before);
-                currentParam = (LineParameters)tailSet.first();
+            currentParam = (LineParameters) tailSet.first();
+            if (currentParam.date.minus(date) == -86400) {
+                currentParam = (LineParameters) data.tailSet(date).first();
             }
         } else {
             throw new OrekitException("unable to find data for date {0}",
@@ -205,11 +205,11 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
     }
 
     /** Container class for Solar activity indexes.  */
-    private static class LineParameters implements Comparable<LineParameters>, Serializable {
+    private static class LineParameters implements TimeStamped, Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 7061618989830597691L;
-   
+        private static final long serialVersionUID = -1127762834954768272L;
+
         /** Entries */
         private  final AbsoluteDate date;
         private final double[] ap;
@@ -239,15 +239,6 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
         /** Get the current date */
         public AbsoluteDate getDate() {
             return date;
-        }
-
-        /** Compare chronologically the instance with another state.
-         * @param other other spacecraft state to compare the instance to
-         * @return a negative integer, zero, or a positive integer as this state
-         * is before, simultaneous, or after the other one.
-         */
-        public int compareTo(LineParameters other) {
-            return date.compareTo(other.date);
         }
 
     }

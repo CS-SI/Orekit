@@ -20,6 +20,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChunkedDate;
 import org.orekit.time.ChunkedTime;
+import org.orekit.time.TimeStamped;
 import org.orekit.time.UTCScale;
 
 /** This class converts and contains TLE data.
@@ -39,7 +40,7 @@ import org.orekit.time.UTCScale;
  * @author Fabien Maussion
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class TLE implements Comparable<TLE>, Serializable {
+public class TLE implements TimeStamped, Serializable {
 
     /** Identifier for default type of ephemeris (SGP4/SDP4). */
     public static final int DEFAULT = 0;
@@ -74,7 +75,7 @@ public class TLE implements Comparable<TLE>, Serializable {
         "wrong cheksum of TLE line {0}, expected {1} but got {2} ({3})";
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -5099116520171943507L;
+    private static final long serialVersionUID = 493162737271645055L;
 
     /** The satellite id. */
     private final int satelliteNumber;
@@ -114,26 +115,6 @@ public class TLE implements Comparable<TLE>, Serializable {
 
     /** revolution number at epoch. */
     private final int revolutionNumberAtEpoch;
-
-    /** Dummy constructor, used <strong>only</strong> by {@link TLESeries}.
-     * @param epoch epoch to set the dummy TLE to
-     */
-    
-    public TLE(AbsoluteDate epoch) {
-        this.epoch              = epoch;
-        satelliteNumber         = -1;
-        internationalDesignator = null;
-        bStar                   = Double.NaN;
-        ephemerisType           = DEFAULT;
-        elementNumber           = -1;
-        i                       = Double.NaN;
-        raan                    = Double.NaN;
-        e                       = Double.NaN;
-        pa                      = Double.NaN;
-        meanAnomaly             = Double.NaN;
-        meanMotion              = Double.NaN;
-        revolutionNumberAtEpoch = -1;
-    }
 
     /** Simple constructor with one TLE.
      * <p> The static method {@link #isFormatOK(String, String)} should be called
@@ -197,7 +178,7 @@ public class TLE implements Comparable<TLE>, Serializable {
     /** Gets the TLE current date.
      * @return the epoch
      */
-    public AbsoluteDate getEpoch() {
+    public AbsoluteDate getDate() {
         return epoch;
     }
 
@@ -262,15 +243,6 @@ public class TLE implements Comparable<TLE>, Serializable {
      */
     public int getSatelliteNumber() {
         return satelliteNumber;
-    }
-
-    /** Compare chronologically the instance with another TLE.
-     * @param other other TLE to compare the instance to
-     * @return a negative integer, zero, or a positive integer as this TLE
-     * is before, simultaneous, or after the other one.
-     */
-    public int compareTo(final TLE other) {
-        return epoch.compareTo(other.epoch);
     }
 
     /** Check the entries to determine if the element format is correct.

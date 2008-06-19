@@ -25,6 +25,8 @@ import java.util.zip.GZIPInputStream;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
 
 /** This class reads and handles series of TLEs, that have to be (for the moment)
@@ -41,7 +43,7 @@ public class TLESeries implements Serializable {
     private static final long serialVersionUID = -6657661179006608529L;
 
     /** Set containing all TLE entries. */
-    private SortedSet<TLE> tles;
+    private SortedSet<TimeStamped> tles;
 
     /** Previous TLE in the cached selection. */
     private TLE previous;
@@ -75,7 +77,7 @@ public class TLESeries implements Serializable {
      */
     public TLESeries(final InputStream in)
         throws IOException, OrekitException {
-        tles = new TreeSet<TLE>();
+        tles = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
         internationalDesignator = null;
         satelliteNumber = 0;
         previous = null;
@@ -147,7 +149,7 @@ public class TLESeries implements Serializable {
     public PVCoordinates getPVCoordinates(final AbsoluteDate date)
         throws OrekitException {
         final TLE toExtrapolate = getClosestTLE(date);
-        if ((lastTLE == null) || (toExtrapolate.compareTo(lastTLE) != 0)) {
+        if ((lastTLE == null) || (toExtrapolate.getDate().compareTo(lastTLE.getDate()) != 0)) {
             lastTLE = toExtrapolate;
             lastPropagator = TLEPropagator.selectExtrapolator(lastTLE);
         }
@@ -161,10 +163,10 @@ public class TLESeries implements Serializable {
     public TLE getClosestTLE(final AbsoluteDate date) {
 
         //  don't search if the cached selection is fine
-        if ((previous != null) && (date.minus(previous.getEpoch()) >= 0) &&
-            (next     != null) && (date.minus(next.getEpoch())     <= 0)) {
+        if ((previous != null) && (date.minus(previous.getDate()) >= 0) &&
+            (next     != null) && (date.minus(next.getDate())     <= 0)) {
             // the current selection is already good
-            if (next.getEpoch().minus(date) > date.minus(previous.getEpoch())) {
+            if (next.getDate().minus(date) > date.minus(previous.getDate())) {
                 return previous;
             } else {
                 return next;
@@ -173,9 +175,8 @@ public class TLESeries implements Serializable {
         // reset the selection before the search phase
         previous  = null;
         next      = null;
-        TLE dummyTLE = new TLE(date);
-        final SortedSet<TLE> headSet = tles.headSet(dummyTLE);
-        final SortedSet<TLE> tailSet = tles.tailSet(dummyTLE);
+        final SortedSet<TimeStamped> headSet = tles.headSet(date);
+        final SortedSet<TimeStamped> tailSet = tles.tailSet(date);
 
 
         if (headSet.isEmpty()) {
@@ -187,7 +188,7 @@ public class TLESeries implements Serializable {
         previous = (TLE) headSet.last();
         next = (TLE) tailSet.first();
 
-        if (next.getEpoch().minus(date) > date.minus(previous.getEpoch())) {
+        if (next.getDate().minus(date) > date.minus(previous.getDate())) {
             return previous;
         } else {
             return next;
@@ -199,7 +200,7 @@ public class TLESeries implements Serializable {
      */
     public AbsoluteDate getFirstDate() {
         if (firstDate == null) {
-            firstDate = ((TLE) tles.first()).getEpoch();
+            firstDate = ((TLE) tles.first()).getDate();
         }
         return firstDate;
     }
@@ -209,7 +210,7 @@ public class TLESeries implements Serializable {
      */
     public AbsoluteDate getLastDate() {
         if (lastDate == null) {
-            lastDate = ((TLE) tles.last()).getEpoch();
+            lastDate = ((TLE) tles.last()).getDate();
         }
         return lastDate;
     }

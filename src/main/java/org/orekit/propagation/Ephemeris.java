@@ -14,16 +14,18 @@
 package org.orekit.propagation;
 
 import java.util.Iterator;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.attitudes.Attitude;
-import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.TimeStamped;
 
 /** This class is designed to accept and handle tabulated orbital entries.
  * Tabulated entries are classified and then extrapolated in way to obtain
@@ -36,10 +38,10 @@ import org.orekit.time.AbsoluteDate;
 public class Ephemeris implements BoundedPropagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2666966606003149885L;
+    private static final long serialVersionUID = 7364933371749057468L;
 
     /** All entries. */
-    private final TreeSet<SpacecraftState> data;
+    private final SortedSet<TimeStamped> data;
 
     /** Previous state in the cached selection. */
     private SpacecraftState previous;
@@ -56,7 +58,7 @@ public class Ephemeris implements BoundedPropagator {
             throw new IllegalArgumentException("There should be at least 2 entries.");
         }
 
-        data = new TreeSet<SpacecraftState>();
+        data = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
         for (int i = 0; i < tabulatedStates.length; ++i) {
             data.add(tabulatedStates[i]);
         }
@@ -70,14 +72,14 @@ public class Ephemeris implements BoundedPropagator {
      * @return the first date of the range
      */
     public AbsoluteDate getMinDate() {
-        return ((SpacecraftState) data.first()).getDate();
+        return data.first().getDate();
     }
 
     /** Get the last date of the range.
      * @return the last date of the range
      */
     public AbsoluteDate getMaxDate() {
-        return ((SpacecraftState) data.last()).getDate();
+        return data.last().getDate();
     }
 
     /** {@inheritDoc} */
@@ -181,10 +183,10 @@ public class Ephemeris implements BoundedPropagator {
         }
 
         if (date.minus(getMinDate()) == 0) {
-            previous = data.first();
-            final Iterator<SpacecraftState> i = data.iterator();
+            previous = (SpacecraftState) data.first();
+            final Iterator<TimeStamped> i = data.iterator();
             i.next();
-            next = i.next();
+            next = (SpacecraftState) i.next();
             return true;
         }
 
@@ -196,12 +198,8 @@ public class Ephemeris implements BoundedPropagator {
         }
 
         // search bracketing states
-        SpacecraftState dummyState =
-            new SpacecraftState(new EquinoctialOrbit(7.0e6, 0, 0, 0, 0, 0,
-                                                     EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
-                                                     Frame.getJ2000(), date, 3.986004415e14));
-        previous = data.headSet(dummyState).last();
-        next     = data.tailSet(dummyState).first();
+        previous = (SpacecraftState) data.headSet(date).last();
+        next     = (SpacecraftState) data.tailSet(date).first();
 
         return true;
     }

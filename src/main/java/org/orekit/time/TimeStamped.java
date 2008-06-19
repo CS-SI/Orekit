@@ -15,6 +15,17 @@ package org.orekit.time;
 
 /** This interface represents objects that have a {@link AbsoluteDate}
  * date attached to them.
+ * <p>Classes implementing this interface can be stored chronologically
+ * in sorted sets using {@link ChronologicalComparator} as the
+ * underlying comparator. An example using for {@link org.orekit.orbits.Orbit
+ * Orbit} instances is given here:</p>
+ * <pre>
+ *     SortedSet&lt;Orbit> sortedOrbits =
+ *         new TreeSet&lt;Orbit>(ChronologicalComparator.getInstance());
+ *     sortedOrbits.add(orbit1);
+ *     sortedOrbits.add(orbit2);
+ *     ...
+ * </pre>
  * @see AbsoluteDate
  * @see ChronologicalComparator
  * @author Luc Maisonobe

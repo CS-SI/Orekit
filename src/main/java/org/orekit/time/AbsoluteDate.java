@@ -44,7 +44,7 @@ import org.orekit.errors.OrekitException;
  *   (two instances of the class) or durations. They are counted in seconds,
  *   are continuous and could be measured using only a virtually perfect stopwatch.
  *   The related methods are {@link #AbsoluteDate(AbsoluteDate, double)},
- *   {@link #minus(AbsoluteDate)}, {@link #compareTo(Object)}, {@link #equals(Object)}
+ *   {@link #minus(AbsoluteDate)}, {@link #compareTo(AbsoluteDate)}, {@link #equals(Object)}
  *   and {@link #hashCode()}.</p>
  *   </li>
  * </ul>

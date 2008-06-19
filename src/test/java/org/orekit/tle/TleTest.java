@@ -97,18 +97,18 @@ public class TleTest extends TestCase {
                                             new ChunkedTime(11, 12, 15),
                                             UTCScale.getInstance());
         assertEquals(0,
-                     series.getClosestTLE(mid).getEpoch().minus(new AbsoluteDate(new ChunkedDate(2002, 6, 2),
+                     series.getClosestTLE(mid).getDate().minus(new AbsoluteDate(new ChunkedDate(2002, 6, 2),
                                                                                  new ChunkedTime(10, 8, 25.401),
                                                                                  UTCScale.getInstance())),
                                                                                  1e-3);
         mid = new AbsoluteDate(new ChunkedDate(2001, 06, 02),
                                new ChunkedTime(11, 12, 15),
                                UTCScale.getInstance());
-        assertTrue(series.getClosestTLE(mid).getEpoch().equals(series.getFirstDate()));
+        assertTrue(series.getClosestTLE(mid).getDate().equals(series.getFirstDate()));
         mid = new AbsoluteDate(new ChunkedDate(2003, 06, 02),
                                new ChunkedTime(11, 12, 15),
                                UTCScale.getInstance());
-        assertTrue(series.getClosestTLE(mid).getEpoch().equals(series.getLastDate()));
+        assertTrue(series.getClosestTLE(mid).getDate().equals(series.getLastDate()));
 
     }
 
@@ -195,7 +195,7 @@ public class TleTest extends TestCase {
                             Vector3D testPos = new Vector3D(pX, pY, pZ);
                             Vector3D testVel = new Vector3D(vX, vY, vZ);
 
-                            AbsoluteDate date = new AbsoluteDate(tle.getEpoch(), minFromStart*60);
+                            AbsoluteDate date = new AbsoluteDate(tle.getDate(), minFromStart*60);
                             PVCoordinates results = null;
                             try {
                                 results = ex.getPVCoordinates(date);

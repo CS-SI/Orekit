@@ -22,6 +22,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -40,10 +41,10 @@ import org.orekit.utils.PVCoordinates;
  * @author Véronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
-public class SpacecraftState implements Comparable<SpacecraftState>, Serializable {
+public class SpacecraftState implements TimeStamped, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 6229927579350580132L;
+    private static final long serialVersionUID = 3141803003950085500L;
 
     /** Default mass. */
     private static final double DEFAULT_MASS = 1000.0;
@@ -252,15 +253,6 @@ public class SpacecraftState implements Comparable<SpacecraftState>, Serializabl
      */
     public double getMass() {
         return mass;
-    }
-
-    /** Compare chronologically the instance with another state.
-     * @param other other spacecraft state to compare the instance to
-     * @return a negative integer, zero, or a positive integer as this state
-     * is before, simultaneous, or after the other one.
-     */
-    public int compareTo(SpacecraftState other) {
-        return orbit.getDate().compareTo(other.orbit.getDate());
     }
 
 }
