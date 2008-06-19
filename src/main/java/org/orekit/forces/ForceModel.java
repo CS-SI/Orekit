@@ -24,7 +24,7 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
  *
  * <p>
  * Objects implementing this interface are intended to be added to a
- * {@link org.orekit.propagation.numerical.NumericalPropagator numerical propagator} 
+ * {@link org.orekit.propagation.numerical.NumericalPropagator numerical propagator}
  * before the propagation is started.
  * <p>
  * <p>

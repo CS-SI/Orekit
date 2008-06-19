@@ -143,7 +143,7 @@ public abstract class AbstractPropagator implements Propagator {
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState propagate(AbsoluteDate date)
+        public SpacecraftState propagate(final AbsoluteDate date)
             throws PropagationException {
             // TODO take switching functions into account
             return basicPropagate(date);
