@@ -35,7 +35,7 @@ import org.orekit.time.ChunkedDate;
 import org.orekit.time.ChunkedTime;
 import org.orekit.time.UTCScale;
 
-public class JB2006AtmosphereTest extends TestCase {
+public class JB2006Test extends TestCase {
 
     public void testWithOriginalTestsCases() throws OrekitException, ParseException {
 
@@ -278,6 +278,6 @@ public class JB2006AtmosphereTest extends TestCase {
     }
 
     public static Test suite() {
-        return new TestSuite(JB2006AtmosphereTest.class);
+        return new TestSuite(JB2006Test.class);
     }
 }

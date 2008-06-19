@@ -26,7 +26,7 @@ import org.orekit.forces.Sun;
 import org.orekit.forces.drag.DTM2000;
 import org.orekit.frames.Frame;
 
-public class DTM2000AtmosphereTest extends TestCase {
+public class DTM2000Test extends TestCase {
 
     public void testWithOriginalTestsCases() throws OrekitException, ParseException {
 
@@ -131,6 +131,6 @@ public class DTM2000AtmosphereTest extends TestCase {
     }
 
     public static Test suite() {
-        return new TestSuite(DTM2000AtmosphereTest.class);
+        return new TestSuite(DTM2000Test.class);
     }
 }
