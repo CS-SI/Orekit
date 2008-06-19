@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.PoleCorrection;
+import org.orekit.time.TimeStamped;
 
 
 /** Loader for EOP C 04 files.
@@ -42,13 +43,13 @@ public class EOPC04FilesLoader extends IERSFileCrawler {
     private final Pattern dataPattern;
 
     /** Earth Orientation Parameters entries. */
-    private TreeSet<EarthOrientationParameters> eop;
+    private TreeSet<TimeStamped> eop;
 
     /** Build a loader for IERS EOPC 04 files.
      * @param eop set where to <em>add</em> EOP data
      * (pre-existing data is preserved)
      */
-    public EOPC04FilesLoader(final TreeSet<EarthOrientationParameters> eop) {
+    public EOPC04FilesLoader(final TreeSet<TimeStamped> eop) {
 
         super("^eopc04_IAU2000\\.(\\d\\d)(?:\\.gz)?$");
         this.eop = eop;

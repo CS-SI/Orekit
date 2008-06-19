@@ -19,6 +19,7 @@ import java.util.Date;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.PoleCorrection;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 import org.orekit.time.UTCScale;
 
 
@@ -31,11 +32,10 @@ import org.orekit.time.UTCScale;
  * @see org.orekit.frames.Frame
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class EarthOrientationParameters
-    implements Comparable<EarthOrientationParameters>, Serializable {
+public class EarthOrientationParameters implements TimeStamped, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 1696930845545878568L;
+    private static final long serialVersionUID = -6655551509699738718L;
 
     /** Entry date (modified julian day, 00h00 UTC scale). */
     private final int mjd;
@@ -97,14 +97,6 @@ public class EarthOrientationParameters
      */
     public PoleCorrection getPoleCorrection() {
         return poleCorrection;
-    }
-
-    /** Compare instance with another parameters set.
-     * @return a negative integer, zero, or a positive integer as this parameters
-     * set is before, simultaneous, or after the specified set.
-     */
-    public int compareTo(EarthOrientationParameters o) {
-        return date.compareTo(o.date);
     }
 
 }

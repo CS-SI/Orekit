@@ -18,26 +18,28 @@ import java.util.TreeSet;
 import junit.framework.TestCase;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.TimeStamped;
 
 public abstract class AbstractFilesLoaderTest extends TestCase {
 
-    protected TreeSet<EarthOrientationParameters> eop;
+    protected TreeSet<TimeStamped> eop;
 
     protected void setRoot(String directoryName) throws OrekitException {
         System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, directoryName);
-        eop = new TreeSet<EarthOrientationParameters>();
+        eop = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
     }
 
     protected int getMaxGap() {
-        int maxGap = 0;
-        EarthOrientationParameters previous = null;
-        for (final EarthOrientationParameters current : eop) {
+        double maxGap = 0;
+        TimeStamped previous = null;
+        for (final TimeStamped current : eop) {
             if (previous != null) {
-                maxGap = Math.max(maxGap, current.getMjd() - previous.getMjd());
+                maxGap = Math.max(maxGap, current.getDate().minus(previous.getDate()));
             }
             previous = current;
         }
-        return maxGap;
+        return (int) Math.round(maxGap / 86400.0);
     }
 
     public void tearDown() {

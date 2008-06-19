@@ -14,8 +14,6 @@
 package org.orekit.frames;
 
 import java.io.Serializable;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -24,7 +22,8 @@ import org.orekit.iers.BulletinBFilesLoader;
 import org.orekit.iers.EOPC04FilesLoader;
 import org.orekit.iers.EarthOrientationParameters;
 import org.orekit.time.AbsoluteDate;
-
+import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.TimeStamped;
 
 /** This class holds Earth Orientation data throughout a large time range.
  * It is a singleton since it handles voluminous data.
@@ -35,10 +34,10 @@ import org.orekit.time.AbsoluteDate;
 public class EarthOrientationHistory implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -6983677302885110865L;
+    private static final long serialVersionUID = 9141543606409905199L;
 
     /** Earth Orientation Parameters. */
-    private TreeSet eop = null;
+    private TreeSet<TimeStamped> eop = null;
 
     /** Previous EOP entry. */
     private EarthOrientationParameters previous;
@@ -55,7 +54,7 @@ public class EarthOrientationHistory implements Serializable {
         // EarthOrientationParameters or AbsoluteDate instances
         // (beware to use AbsoluteDate ONLY as arguments to
         // headSet or tailSet and NOT to add them in the set)
-        eop = new TreeSet(new EOPComparator());
+        eop = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
 
         // consider first the more accurate EOP C 04 entries
         new EOPC04FilesLoader(eop).loadEOP();
@@ -65,7 +64,7 @@ public class EarthOrientationHistory implements Serializable {
         new BulletinBFilesLoader(eop).loadEOP();
 
         // check the continuity of the loaded data
-        checkEOPContinuity(5);
+        checkEOPContinuity(5 * 86400.0);
 
     }
 
@@ -81,23 +80,25 @@ public class EarthOrientationHistory implements Serializable {
     }
 
     /** Check Earth orientation parameters continuity.
-     * @param maxGap maximal allowed gap between entries (in days)
+     * @param maxGap maximal allowed gap between entries (in seconds)
      * @exception OrekitException if there are holes in the data sequence
      */
-    private void checkEOPContinuity(final int maxGap) throws OrekitException {
-        EarthOrientationParameters current = null;
-        for (final Iterator iterator = eop.iterator(); iterator.hasNext();) {
-            final EarthOrientationParameters preceding = current;
-            current = (EarthOrientationParameters) iterator.next();
+    private void checkEOPContinuity(final double maxGap) throws OrekitException {
+        TimeStamped previous = null;
+        for (final TimeStamped current : eop) {
 
-            // compare the dates of preceding and current entries
-            if ((preceding != null) && ((current.getMjd() - preceding.getMjd()) > maxGap)) {
+            // compare the dates of previous and current entries
+            if ((previous != null) && ((current.getDate().minus(previous.getDate())) > maxGap)) {
                 throw new OrekitException("missing Earth Orientation Parameters between {0} and {1}",
                                           new Object[] {
-                                              preceding, current
+                                              previous, current
                                           });
 
             }
+
+            // prepare next iteration
+            previous = current;
+
         }
     }
 
@@ -105,14 +106,14 @@ public class EarthOrientationHistory implements Serializable {
      * @return the start date of the available data
      */
     public AbsoluteDate getStartDate() {
-        return ((EarthOrientationParameters) eop.first()).getDate();
+        return eop.first().getDate();
     }
 
     /** Get the date of the last available Earth Orientation Parameters.
      * @return the end date of the available data
      */
     public AbsoluteDate getEndDate() {
-        return ((EarthOrientationParameters) eop.last()).getDate();
+        return eop.last().getDate();
     }
 
     /** Get the UT1-UTC value.
@@ -166,39 +167,12 @@ public class EarthOrientationHistory implements Serializable {
         }
 
         // select the bracketing elements (may be null)
-        final SortedSet head = eop.headSet(date);
+        final SortedSet<TimeStamped> head = eop.headSet(date);
         previous = (EarthOrientationParameters) (head.isEmpty() ? null : head.last());
-        final SortedSet tail = eop.tailSet(date);
+        final SortedSet<TimeStamped> tail = eop.tailSet(date);
         next     = (EarthOrientationParameters) (tail.isEmpty() ? null : tail.first());
 
         return (previous != null) && (next != null);
-
-    }
-
-    /** Specialized comparator handling both {@link EarthOrientationParameters}
-     * and {@link AbsoluteDate} instances.
-     */
-    private static class EOPComparator implements Comparator, Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -8636906467091448424L;
-
-        /** Build a comparator for either {@link AbsoluteDate} or
-         * {@link EarthOrientationParameters} instances.
-         * @param o1 first object
-         * @param o2 second object
-         * @return a negative integer if o1 is before o2, 0 if they are
-         * are the same time, a positive integer otherwise
-         */
-        public int compare(final Object o1, final Object o2) {
-            final AbsoluteDate d1 =
-                (o1 instanceof AbsoluteDate) ?
-                        ((AbsoluteDate) o1) : ((EarthOrientationParameters) o1).getDate();
-            final AbsoluteDate d2 =
-                (o2 instanceof AbsoluteDate) ?
-                        ((AbsoluteDate) o2) : ((EarthOrientationParameters) o2).getDate();
-            return d1.compareTo(d2);
-        }
 
     }
 

@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.PoleCorrection;
+import org.orekit.time.TimeStamped;
 
 
 /** Loader for bulletin B files.
@@ -54,13 +55,13 @@ public class BulletinBFilesLoader extends IERSFileCrawler {
     private final Pattern section2DataPattern;
 
     /** Earth Orientation Parameters entries. */
-    private TreeSet<EarthOrientationParameters> eop;
+    private TreeSet<TimeStamped> eop;
 
     /** Create a loader for IERS bulletin B files.
      * @param eop set where to <em>add</em> EOP data
      * (pre-existing data is preserved)
      */
-    public BulletinBFilesLoader(final TreeSet<EarthOrientationParameters> eop) {
+    public BulletinBFilesLoader(final TreeSet<TimeStamped> eop) {
 
         super("^bulletinb_IAU2000-(\\d\\d\\d)\\.txt(?:\\.gz)?$");
         this.eop = eop;
