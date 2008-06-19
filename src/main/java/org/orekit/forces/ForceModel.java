@@ -35,7 +35,7 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
  *
  * <p>Force models which create discontinuous acceleration patters (typically for maneuvers
  * start/stop or solar eclipses entry/exit) must use one or more {@link
- * org.orekit.propagation.numerical.OrekitSwitchingFunction switching functions} to the
+ * org.orekit.propagation.events.OrekitSwitchingFunction switching functions} to the
  * propagator thanks to the {@link #getSwitchingFunctions()} method which is called once
  * just before propagation starts. The switching functions will be checked by the propagator
  * to ensure accurate propagation and switch event crossing.</p>

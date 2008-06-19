@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces.gravity;
+package org.orekit.forces;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.bodies.ThirdBody;

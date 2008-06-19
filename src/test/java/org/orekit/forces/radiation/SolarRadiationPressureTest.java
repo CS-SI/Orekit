@@ -27,7 +27,7 @@ import org.apache.commons.math.ode.IntegratorException;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.SphericalSpacecraft;
-import org.orekit.forces.gravity.Sun;
+import org.orekit.forces.Sun;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.forces.radiation.SolarRadiationPressureSpacecraft;
 import org.orekit.frames.Frame;

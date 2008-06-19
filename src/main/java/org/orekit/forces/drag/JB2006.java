@@ -43,8 +43,7 @@ import org.orekit.utils.PVCoordinates;
  *        {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double)}. </li>
  * <li> one compliant with OREKIT Atmosphere interface, necessary to the
  *        {@link org.orekit.forces.drag.DragForce
- *        drag force model} computation. This implementation is realized
- *        by the subclass {@link JB2006AtmosphereModel}</li>
+ *        drag force model} computation.</li>
  * </ul>
  * </p>
  * <p>

@@ -164,7 +164,6 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
      * </pre>
      * @param initialOrbit initial orbit
      * @param attitudeLaw attitude law
-     * @param mass spacecraft mass
      * @param referenceRadius reference radius of the Earth for the potential model (m)
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)

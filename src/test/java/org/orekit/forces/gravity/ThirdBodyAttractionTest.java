@@ -19,8 +19,8 @@ import junit.framework.TestSuite;
 
 import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.gravity.Moon;
-import org.orekit.forces.gravity.Sun;
+import org.orekit.forces.Moon;
+import org.orekit.forces.Sun;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.iers.IERSDirectoryCrawler;

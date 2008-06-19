@@ -52,7 +52,7 @@ public interface Propagator extends BasicPropagator {
      * @see #setSlaveMode()
      * @see #setMasterMode(double, OrekitFixedStepHandler)
      * @see #setMasterMode(OrekitStepHandler)
-     * @see #setEphemerisMode(BatchEphemeris)
+     * @see #setEphemerisMode()
      */
     int getMode();
 

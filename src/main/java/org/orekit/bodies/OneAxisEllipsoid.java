@@ -79,9 +79,8 @@ public class OneAxisEllipsoid implements BodyShape {
      * @param ae equatorial radius
      * @param f the flattening (f = (a-b)/a)
      * @param bodyFrame body frame related to body shape
-     * @see Frame#getReferenceFrame(org.orekit.frames.Frame.FrameType)
-     * @see Frame#ITRF2000A
-     * @see Frame#ITRF2000B
+     * @see Frame#getIRF2000A()
+     * @see Frame#getIRF2000B()
      */
     public OneAxisEllipsoid(final double ae, final double f, final Frame bodyFrame) {
         this.ae = ae;

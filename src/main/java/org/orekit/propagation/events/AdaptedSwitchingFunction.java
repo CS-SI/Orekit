@@ -53,7 +53,6 @@ public class AdaptedSwitchingFunction implements SwitchingFunction {
      * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @param integrationFrame frame in which integration is performed
      * @param attitudeLaw spacecraft attitude law
- * @version $Revision$ $Date$
      */
     public AdaptedSwitchingFunction(final OrekitSwitchingFunction swf,
                                     final AbsoluteDate referenceDate, final double mu,

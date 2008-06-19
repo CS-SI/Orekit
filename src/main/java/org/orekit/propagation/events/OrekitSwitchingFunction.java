@@ -103,7 +103,7 @@ public interface OrekitSwitchingFunction extends Serializable {
      * without perturbing the step handler of the finishing step. If the
      * {@link #eventOccurred} never returns the {@link #RESET_STATE} indicator,
      * this function will never be called, and it is safe to simply return null.</p>
-     * @param old state
+     * @param oldState old state
      * @return new state
      * @exception SwitchException if the state cannot be reseted
      */

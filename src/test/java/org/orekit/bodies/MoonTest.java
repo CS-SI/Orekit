@@ -16,7 +16,7 @@ package org.orekit.bodies;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.gravity.Moon;
+import org.orekit.forces.Moon;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 

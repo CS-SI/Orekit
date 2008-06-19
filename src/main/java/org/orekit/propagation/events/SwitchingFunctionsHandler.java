@@ -72,7 +72,7 @@ public class SwitchingFunctionsHandler implements Serializable {
 
     /** Get all the switching functions that have been added to the handler.
      * @return an unmodifiable collection of the added switching functions
-     * @see #addOrekitSwitchingFunction(OrekitSwitchingFunction, double, double, int)
+     * @see #addSwitchingFunction(OrekitSwitchingFunction)
      * @see #clearSwitchingFunctions()
      */
     public Collection<SwitchState> getSwitchingFunctions() {
@@ -80,7 +80,7 @@ public class SwitchingFunctionsHandler implements Serializable {
     }
 
     /** Remove all the switching functions that have been added to the handler.
-     * @see #addOrekitSwitchingFunction(OrekitSwitchingFunction, double, double, int)
+     * @see #addSwitchingFunction(OrekitSwitchingFunction)
      * @see #getSwitchingFunctions()
      */
     public void clearSwitchingFunctions() {

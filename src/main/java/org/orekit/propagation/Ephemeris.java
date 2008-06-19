@@ -83,11 +83,6 @@ public class Ephemeris implements BoundedPropagator {
     }
 
     /** {@inheritDoc} */
-    protected AbsoluteDate getInitialDate() {
-        return getMinDate();
-    }
-
-    /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate date) {
         // Check if date is in the specified range
         if (enclosinbracketDate(date)) {

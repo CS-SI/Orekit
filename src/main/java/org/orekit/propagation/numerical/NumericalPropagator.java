@@ -64,7 +64,8 @@ import org.orekit.time.AbsoluteDate;
  *   {@link #removeSwitchingFunctions()})</li>
  *   <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
  *   {@link #setMasterMode(double, OrekitFixedStepHandler)}, {@link
- *   #setMasterMode(OrekitStepHandler)}, {@link #setBatchMode(IntegratedEphemeris)})</li>
+ *   #setMasterMode(OrekitStepHandler)}, {@link #setEphemerisMode()}, {@link
+ *   #getGeneratedEphemeris()})</li>
  * </ul>
  * <p>From these configuration parameters, only the initial state is mandatory. If the
  * central attraction coefficient is not explicitly specified, the one used to define

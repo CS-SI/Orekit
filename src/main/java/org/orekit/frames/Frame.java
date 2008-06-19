@@ -45,8 +45,7 @@ import org.orekit.time.AbsoluteDate;
  *
  * <p>  <h5> Reference Frames </h5>
  *  Several Reference frames are implemented in OREKIT. The user can
- *  {@link #getReferenceFrame(Frame.FrameType) use them}
- *  by specifying the {@link FrameType} (type enum) he wants.
+ *  use them by specifying the {@link FrameType} (type enum) he wants.
  *
  *    <h5> International Terrestrial Reference Frame 2000 </h5>
  * This frame is the current (as of 2006) reference realization of
@@ -68,15 +67,15 @@ import org.orekit.time.AbsoluteDate;
  *        /     \   Precession and Nutation effects
  *       /       \   (the complexity of the parameters changes between A and B models)
  *      /         \
- *  {@link #IRF2000A}    {@link #IRF2000B}    (intermediate reference frame : true equinox and equator of date)
+ *  IRF2000A    IRF2000B    (intermediate reference frame : true equinox and equator of date)
  *      |          |
  *      |          |   Earth natural rotation
  *      |          |
- *  {@link #TIRF2000A}   {@link #TIRF2000B}   (terrestrial intermediate reference frame : Pseudo Earth Fixed Frame)
+ *  TIRF2000A   TIRF2000B   (terrestrial intermediate reference frame : Pseudo Earth Fixed Frame)
  *      |          |
  *      |          |   Pole motion
  *      |          |
- *  {@link #ITRF2000A}  {@link #ITRF2000B}   (international terrestrial reference frame)
+ *  ITRF2000A  ITRF2000B   (international terrestrial reference frame)
  *
  * </pre>
  * <p> This implementation follows the new non-rotating origin paradigm

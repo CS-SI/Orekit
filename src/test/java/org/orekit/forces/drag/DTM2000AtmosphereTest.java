@@ -22,8 +22,8 @@ import junit.framework.TestSuite;
 import org.orekit.SolarInputs97to05;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.Sun;
 import org.orekit.forces.drag.DTM2000;
-import org.orekit.forces.gravity.Sun;
 import org.orekit.frames.Frame;
 
 public class DTM2000AtmosphereTest extends TestCase {
