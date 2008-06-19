@@ -43,11 +43,17 @@ import org.orekit.time.AbsoluteDate;
  * methods that will compute the transform and call internally
  * the {@link #setTransform(Transform)} method.</p>
  *
- * <p>  <h5> Reference Frames </h5>
+ * <h5> Reference Frames </h5>
+ * <p>
  *  Several Reference frames are implemented in OREKIT. The user can
- *  use them by specifying the {@link FrameType} (type enum) he wants.
+ *  retrieve them using various static methods({@link #getJ2000()},
+ *  {@link #getITRF2000A()}, {@link #getITRF2000B()}, {@link #getIRF2000A()},
+ *  {@link #getIRF2000B()}, {@link #getTIRF2000A()}, {@link #getTIRF2000B()}
+ *  and {@link #getVeis1950()}).
+ * <p>
  *
- *    <h5> International Terrestrial Reference Frame 2000 </h5>
+ * <h5> International Terrestrial Reference Frame 2000 </h5>
+ * <p>
  * This frame is the current (as of 2006) reference realization of
  * the International Terrestrial Reference System produced by IERS.
  * It is described in <a
@@ -57,10 +63,12 @@ import org.orekit.time.AbsoluteDate;
  * <p>This frame is used to define position on solid Earth. It rotates with
  * the Earth and includes the pole motion with respect to Earth crust as
  * provided by {@link org.orekit.iers.IERSDirectoryCrawler IERS data}.
- * Its pole axis is the IERS Reference Pole (IRP).</p>
- *  OREKIT proposes all the intermediate frames used to build this specific frame.
- *  Here is a shematical representation of the ITRF frame tree :
- *
+ * Its pole axis is the IERS Reference Pole (IRP).
+ * </p>
+ * <p>
+ * OREKIT proposes all the intermediate frames used to build this specific frame.
+ * Here is a schematic representation of the ITRF frame tree :
+ * </p>
  * <pre>
  *
  *       - J2000 -
