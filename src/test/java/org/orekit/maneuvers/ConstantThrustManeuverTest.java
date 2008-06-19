@@ -44,13 +44,13 @@ import org.orekit.utils.PVCoordinates;
 
 public class ConstantThrustManeuverTest extends TestCase {
 
- // Body mu 
+    // Body mu
     private double mu;
 
     private CircularOrbit dummyOrbit(AbsoluteDate date)
     {
         return new CircularOrbit(new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_J),
-                             Frame.getJ2000(), date, mu);
+                                 Frame.getJ2000(), date, mu);
     }
 
     public void testBadFrame() {
