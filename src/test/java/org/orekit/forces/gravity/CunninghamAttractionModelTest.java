@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.perturbations;
+package org.orekit.forces.gravity;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
