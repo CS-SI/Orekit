@@ -18,31 +18,38 @@ import java.io.Serializable;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.OrekitSwitchingFunction;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 
-
-/** This interface represents a force model set.
+/** This interface represents a force modifying spacecraft motion.
  *
- * <p>It should be implemented by all real force models before they
- * can be taken into account by the orbit extrapolation methods.</p>
+ * <p>Objects implementing this interface are intended to be added to a
+ * {@link NumericalPropagator numerical propagator}  before the propagation is started.
+ * The propagator will call at each step the {@link #addContribution(SpacecraftState,
+ * TimeDerivativesEquations)} method. The force model instance will extract all the
+ * state data it needs (date,position, velocity, frame, attitude, mass) from the first
+ * parameter. From these state data, it will compute the perturbing acceleration. It
+ * will then add this acceleration to the second parameter which will take thins
+ * contribution into account and will use the Gauss equations to evaluate its impact
+ * on the global state derivative.</p>
  *
- * <p>For real problems, and according to the kind of forces we want to
- * represent (gravitational or non-gravitational perturbations), the
- * contribution of the perturbing acceleration is added like a disturbing term
- * in the partial derivatives coming from the Gauss equations or the Lagrange's
- * planetary equations.</p>
+ * <p>Force models which create discontinuous acceleration patters (typically for maneuvers
+ * start/stop or solar eclipses entry/exit) must use one or more {@link
+ * org.orekit.propagation.numerical.OrekitSwitchingFunction switching functions} to the
+ * propagator thanks to the {@link #getSwitchingFunctions()} method which is called once
+ * just before propagation starts. The switching functions will be checked by the propagator
+ * to ensure accurate propagation and switch event crossing.</p>
  *
  * @author Mathieu Roméro
  * @author Luc Maisonobe
  * @author Véronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
-
 public interface ForceModel extends Serializable {
 
     /** Compute the contribution of the force model to the perturbing
      * acceleration.
-     * @param s the current state information : date, cinematics, attitude
+     * @param s current state information: date, kinematics, attitude
      * @param adder object where the contribution should be added
      * @exception OrekitException if some specific error occurs
      */
