@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.potential;
+package org.orekit.forces.gravity.potential;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
