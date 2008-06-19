@@ -84,20 +84,20 @@ public class EarthOrientationHistory implements Serializable {
      * @exception OrekitException if there are holes in the data sequence
      */
     private void checkEOPContinuity(final double maxGap) throws OrekitException {
-        TimeStamped previous = null;
+        TimeStamped preceding = null;
         for (final TimeStamped current : eop) {
 
-            // compare the dates of previous and current entries
-            if ((previous != null) && ((current.getDate().minus(previous.getDate())) > maxGap)) {
+            // compare the dates of preceding and current entries
+            if ((preceding != null) && ((current.getDate().minus(preceding.getDate())) > maxGap)) {
                 throw new OrekitException("missing Earth Orientation Parameters between {0} and {1}",
                                           new Object[] {
-                                              previous, current
+                                              preceding, current
                                           });
 
             }
 
             // prepare next iteration
-            previous = current;
+            preceding = current;
 
         }
     }
