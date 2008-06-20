@@ -1,7 +1,10 @@
 /* Copyright 2002-2008 CS Communication & Systèmes
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to CS Communication & Systèmes (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *   http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -16,7 +19,7 @@ package org.orekit.errors;
 /** This class is the base class for exception thrown by
  * the {@link org.orekit.frames.Frame#updateTransform(Frame,
  * Frame,Transform,AbsoluteDate) Frame.updateTransform} method.
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class FrameAncestorException extends OrekitException {
 

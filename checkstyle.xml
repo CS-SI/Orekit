@@ -19,9 +19,8 @@
             <property name="format" value="System\.out\.println"/>
             <property name="message" value="forbidden print to standard output"/>
         </module>
-        <module name="Header">
+        <module name="RegexpHeader">
           <property name="headerFile" value="license-header.txt" />
-          <property name="ignoreLines" value="1"/>
         </module>
         <module name="HiddenField">
             <property name="ignoreConstructorParameter" value="true"/>
@@ -76,9 +75,6 @@
         <module name="FileContentsHolder"/>
     </module>
     <module name="NewlineAtEndOfFile"/>
-    <module name="SuppressionFilter">
-        <property name="file" value="checkstyle-exclude-filter.xml"/>
-    </module>
     <module name="SuppressionCommentFilter">
         <property name="offCommentFormat" value="CHECKSTYLE\: stop JavadocVariable check"/>
         <property name="onCommentFormat"  value="CHECKSTYLE\: resume JavadocVariable check"/>

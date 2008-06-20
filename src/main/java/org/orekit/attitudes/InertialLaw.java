@@ -1,7 +1,10 @@
 /* Copyright 2002-2008 CS Communication & Systèmes
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to CS Communication & Systèmes (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *   http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -25,7 +28,7 @@ import org.orekit.utils.PVCoordinates;
  * This class handles an inertial attitude law.
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
+ * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class InertialLaw implements AttitudeLaw {
 

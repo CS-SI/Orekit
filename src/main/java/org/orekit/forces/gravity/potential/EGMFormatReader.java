@@ -1,7 +1,10 @@
 /* Copyright 2002-2008 CS Communication & Systèmes
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to CS Communication & Systèmes (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *   http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -126,18 +129,22 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
                 final double s = Double.parseDouble(tab[3]);
 
                 // extend the cl array if needed
-                while (cl.size() <= i) {
-                    cl.add(new double[cl.size() + 1]);
+                final int ck = cl.size();
+                for (int k = ck; k <= i; ++k) {
+                    cl.add(new double[k + 1]);
                 }
+                final double[] cli = cl.get(i);
 
                 // extend the sl array if needed
-                while (sl.size() <= i) {
-                    sl.add(new double[sl.size() + 1]);
+                final int sk = sl.size();
+                for (int k = sk; k <= i; ++k) {
+                    sl.add(new double[k + 1]);
                 }
+                final double[] sli = sl.get(i);
 
                 // store the terms
-                cl.get(i)[j] = c;
-                sl.get(i)[j] = s;
+                cli[j] = c;
+                sli[j] = s;
 
             }
         }
