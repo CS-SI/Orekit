@@ -16,6 +16,8 @@
  */
 package org.orekit.tle;
 
+import java.io.Serializable;
+
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
@@ -49,7 +51,7 @@ import org.orekit.utils.PVCoordinates;
  * @see TLE
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public abstract class TLEPropagator {
+public abstract class TLEPropagator implements Serializable {
 
     // CHECKSTYLE: stop VisibilityModifierCheck
 

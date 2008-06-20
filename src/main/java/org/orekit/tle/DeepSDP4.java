@@ -38,9 +38,12 @@ import org.orekit.time.UTCScale;
  */
 class DeepSDP4 extends SDP4 {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 7155645502511295218L;
+
     // CHECKSTYLE: stop JavadocVariable check
 
-    /** Internal constants. */
+    // Internal constants
     private static final double ZNS      = 1.19459E-5;
     private static final double ZES      = 0.01675;
     private static final double ZNL      = 1.5835218E-4;
@@ -158,7 +161,7 @@ class DeepSDP4 extends SDP4 {
 
     // CHECKSTYLE: resume JavadocVariable check
 
-    /** Flag for reonant orbits. */
+    /** Flag for resonant orbits. */
     private boolean resonant;
 
     /** Flag for synchronous orbits. */
