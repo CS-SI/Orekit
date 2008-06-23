@@ -32,7 +32,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.Sun;
 import org.orekit.forces.radiation.SolarRadiationPressure;
-import org.orekit.forces.radiation.SolarRadiationPressureSpacecraft;
+import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
 import org.orekit.iers.IERSDirectoryCrawler;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -63,7 +63,7 @@ public class SolarRadiationPressureTest extends TestCase {
                                  Frame.getITRF2000B());
         SolarRadiationPressure SRP = 
             new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
-                                       (SolarRadiationPressureSpacecraft) new SphericalSpacecraft(50.0, 0.5, 0.5, 0.5));
+                                       (RadiationSensitive) new SphericalSpacecraft(50.0, 0.5, 0.5, 0.5));
 
         double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
         assertEquals(86164, period,1);
@@ -112,7 +112,7 @@ public class SolarRadiationPressureTest extends TestCase {
                                  Frame.getITRF2000B());
         SolarRadiationPressure SRP =
             new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
-                                       (SolarRadiationPressureSpacecraft) new SphericalSpacecraft(500.0, 0.7, 0.7, 0.7));
+                                       (RadiationSensitive) new SphericalSpacecraft(500.0, 0.7, 0.7, 0.7));
 
         double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/mu);
 

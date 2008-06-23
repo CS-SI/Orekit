@@ -57,7 +57,7 @@ public class SolarRadiationPressure implements ForceModel {
     private final double equatorialRadius;
 
     /** Spacecraft. */
-    private final SolarRadiationPressureSpacecraft spacecraft;
+    private final RadiationSensitive spacecraft;
 
     /** Simple constructor with default reference values.
      * <p>When this constructor is used, the reference values are:</p>
@@ -70,7 +70,7 @@ public class SolarRadiationPressure implements ForceModel {
      * @param spacecraft the object physical and geometrical information
      */
     public SolarRadiationPressure(final ThirdBody sun, final double equatorialRadius,
-                                  final SolarRadiationPressureSpacecraft spacecraft) {
+                                  final RadiationSensitive spacecraft) {
         this(149597870000.0, 4.56e-6, sun, equatorialRadius, spacecraft);
     }
 
@@ -83,7 +83,7 @@ public class SolarRadiationPressure implements ForceModel {
      */
     public SolarRadiationPressure(final double dRef, final double pRef, final ThirdBody sun,
                                   final double equatorialRadius,
-                                  final SolarRadiationPressureSpacecraft spacecraft) {
+                                  final RadiationSensitive spacecraft) {
         this.dRef  = dRef;
         this.pRef  = pRef;
         this.sun   = sun;
@@ -111,7 +111,7 @@ public class SolarRadiationPressure implements ForceModel {
             (1.0 - spacecraft.getReflectionCoef(inSpacecraft).getNorm());
 
         final double acceleration =
-            rawP * (1 + kd * 4.0 / 9.0 ) * spacecraft.getSurface(inSpacecraft) / s.getMass();
+            rawP * (1 + kd * 4.0 / 9.0 ) * spacecraft.getRadiationCrossSection(inSpacecraft) / s.getMass();
 
         // provide the perturbing acceleration to the derivatives adder
         adder.addXYZAcceleration(acceleration * u.getX(),

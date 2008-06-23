@@ -17,8 +17,8 @@
 package org.orekit.forces;
 
 import org.apache.commons.math.geometry.Vector3D;
-import org.orekit.forces.drag.DraggingSpacecraft;
-import org.orekit.forces.radiation.SolarRadiationPressureSpacecraft;
+import org.orekit.forces.drag.DragSensitive;
+import org.orekit.forces.radiation.RadiationSensitive;
 
 /** This class represents the features of a simplified spacecraft.
  * <p>The model of this spacecraft is a simple spherical model, this
@@ -30,14 +30,13 @@ import org.orekit.forces.radiation.SolarRadiationPressureSpacecraft;
  * @author Fabien Maussion
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class SphericalSpacecraft
-    implements SolarRadiationPressureSpacecraft, DraggingSpacecraft {
+public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 5457704222311833198L;
+    private static final long serialVersionUID = 7948570591152935928L;
 
-    /** Surface (m<sup>2</sup>). */
-    private double surface;
+    /** Cross section (m<sup>2</sup>). */
+    private double crossSection;
 
     /** Drag coefficient. */
     private double dragCoeff;
@@ -49,58 +48,50 @@ public class SphericalSpacecraft
     private double reflectionCoeff;
 
     /** Simple constructor.
-     * @param surface Surface (m<sup>2</sup>)
+     * @param crossSection Surface (m<sup>2</sup>)
      * @param dragCoeff Drag coefficient
      * @param absorptionCoeff coefficient Absorption coefficient
      * @param reflectionCoeff Specular reflection coefficient
      */
-    public SphericalSpacecraft(final double surface, final double dragCoeff,
+    public SphericalSpacecraft(final double crossSection, final double dragCoeff,
                                final double absorptionCoeff, final double reflectionCoeff) {
 
-        this.surface = surface;
+        this.crossSection = crossSection;
         this.dragCoeff = dragCoeff;
         this.absorptionCoeff = absorptionCoeff;
         this.reflectionCoeff = reflectionCoeff;
     }
 
-    /** Get the surface.
-     * @param direction direction of the flux
-     * (ignored in this implementation)
-     * @return surface (m<sup>2</sup>)
-     */
-    public double getSurface(final Vector3D direction) {
-        return surface;
+    /** {@inheritDoc} */
+    public double getDragCrossSection(final Vector3D direction) {
+        return crossSection;
     }
 
-    /** Get the drag coefficients vector.
-     * @param direction direction of the atmospheric flux
-     * @return drag coefficients vector
-     */
+    /** {@inheritDoc} */
     public Vector3D getDragCoef(final Vector3D direction) {
         return new Vector3D(dragCoeff, direction);
     }
 
-    /** Get the absorption coefficients vector.
-     * @param direction direction of the light flux
-     * @return absorption coefficients vector
-     */
+    /** {@inheritDoc} */
     public Vector3D getAbsCoef(final Vector3D direction) {
         return new Vector3D(absorptionCoeff, direction);
     }
 
-    /** Get the specular reflection coefficients vector.
-     * @param direction direction of the light flux
-     * @return specular reflection coefficients vector
-     */
+    /** {@inheritDoc} */
+    public double getRadiationCrossSection(final Vector3D direction) {
+        return crossSection;
+    }
+
+    /** {@inheritDoc} */
     public Vector3D getReflectionCoef(final Vector3D direction) {
         return new Vector3D(reflectionCoeff, direction);
     }
 
-    /** Set the surface.
-     * @param surface surface (m<sup>2</sup>)
+    /** Set the crossSection.
+     * @param crossSection crossSection (m<sup>2</sup>)
      */
     public void setSurface(final double surface) {
-        this.surface = surface;
+        this.crossSection = surface;
     }
 
     /** Set the drag coefficient.

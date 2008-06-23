@@ -34,7 +34,7 @@ extends TestCase {
         SphericalSpacecraft s = new SphericalSpacecraft(1.0, 2.0, 3.0, 4.0);
         Vector3D[] directions = { Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.PLUS_K };
         for (int i = 0; i < directions.length; ++i) {
-            assertEquals(1.0, s.getSurface(directions[i]), 1.0e-15);
+            assertEquals(1.0, s.getDragCrossSection(directions[i]), 1.0e-15);
             assertEquals(0.0,
                          new Vector3D(-1, s.getDragCoef(directions[i]),
                                       2.0, directions[i]).getNorm(),
@@ -58,7 +58,7 @@ extends TestCase {
         s.setReflectionCoeff(4.0);
         Vector3D[] directions = { Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.PLUS_K };
         for (int i = 0; i < directions.length; ++i) {
-            assertEquals(1.0, s.getSurface(directions[i]), 1.0e-15);
+            assertEquals(1.0, s.getDragCrossSection(directions[i]), 1.0e-15);
             assertEquals(0.0,
                          new Vector3D(-1, s.getDragCoef(directions[i]),
                                       2.0, directions[i]).getNorm(),

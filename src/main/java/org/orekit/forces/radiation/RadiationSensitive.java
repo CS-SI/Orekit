@@ -14,30 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces.drag;
+package org.orekit.forces.radiation;
+
+import java.io.Serializable;
 
 import org.apache.commons.math.geometry.Vector3D;
 
-/** Adapted container for the Atmosphere drag force model.
+/** Interface for spacecraft that are sensitive to radiation pressure forces.
  *
- * @see org.orekit.forces.drag.DragForce
  * @author Fabien Maussion
+ * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public interface DraggingSpacecraft {
+public interface RadiationSensitive extends Serializable {
 
-    /** Get the visible surface from a specific direction.
-     * See {@link org.orekit.forces.drag.DragForce} for more explanations.
-     * @param direction direction of the flux in the spacecraft frame
+    /** Get the cross section sensitive to radiation pressure.
+     * @param direction direction of the light flux in the spacecraft frame
      * @return surface (m<sup>2</sup>)
      */
-    double getSurface(Vector3D direction);
+    double getRadiationCrossSection(Vector3D direction);
 
-    /** Get the drag coefficients vector.
-     * See {@link org.orekit.forces.drag.DragForce} for more explanations.
-     * @param direction direction of the flux in the spacecraft frame
-     * @return drag coefficients vector (defined in the spacecraft frame)
+    /** Get the absorption coefficients vector.
+     * @param direction direction of the light flux in the spacecraft frame
+     * @return absorption coefficients vector in the spacecraft frame
      */
-    Vector3D getDragCoef(Vector3D direction);
+    Vector3D getAbsCoef(Vector3D direction);
+
+    /** Get the specular reflection coefficients vector.
+     * @param direction direction of the light flux in the spacecraft frame
+     * @return specular reflection coefficients vector in the spacecraft frame
+     */
+    Vector3D getReflectionCoef(Vector3D direction);
 
 }

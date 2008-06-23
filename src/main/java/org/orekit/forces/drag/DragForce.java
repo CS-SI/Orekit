@@ -30,7 +30,7 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
  * &gamma = (1/2 * Ro * V<sup>2</sup> * S / Mass) * DragCoefVector
  *
  * With DragCoefVector = {Cx, Cy, Cz} and S given by the user threw the interface
- * {@link DraggingSpacecraft}
+ * {@link DragSensitive}
  *
  * @author Édouard Delente
  * @author Fabien Maussion
@@ -47,14 +47,14 @@ public class DragForce implements ForceModel {
     private final Atmosphere atmosphere;
 
     /** Spacecraft. */
-    private final DraggingSpacecraft spacecraft;
+    private final DragSensitive spacecraft;
 
     /** Simple constructor.
      * @param atmosphere atmospheric model
      * @param spacecraft the object physical and geometrical information
      */
     public DragForce(final Atmosphere atmosphere,
-                           final DraggingSpacecraft spacecraft) {
+                           final DragSensitive spacecraft) {
         this.atmosphere = atmosphere;
         this.spacecraft = spacecraft;
     }
@@ -78,7 +78,7 @@ public class DragForce implements ForceModel {
 
         final Vector3D inSpacecraft =
             s.getAttitude().getRotation().applyTo(incidence.normalize());
-        final double k = rho * v2 * spacecraft.getSurface(inSpacecraft) / (2 * s.getMass());
+        final double k = rho * v2 * spacecraft.getDragCrossSection(inSpacecraft) / (2 * s.getMass());
         final Vector3D cD = spacecraft.getDragCoef(inSpacecraft);
 
         // Addition of calculated acceleration to adder

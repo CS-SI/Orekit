@@ -14,35 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces.radiation;
-
-import java.io.Serializable;
+package org.orekit.forces.drag;
 
 import org.apache.commons.math.geometry.Vector3D;
 
-/** Adapted container for the SolarRadiationPressure force model.
+/** Interface for spacecraft that are sensitive to atmospheric drag forces.
  *
+ * @see org.orekit.forces.drag.DragForce
  * @author Fabien Maussion
+ * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public interface SolarRadiationPressureSpacecraft extends Serializable {
+public interface DragSensitive {
 
-    /** Get the surface.
-     * @param direction direction of the light flux in the spacecraft frame
+    /** Get the visible surface from a specific direction.
+     * See {@link org.orekit.forces.drag.DragForce} for more explanations.
+     * @param direction direction of the flux in the spacecraft frame
      * @return surface (m<sup>2</sup>)
      */
-    double getSurface(Vector3D direction);
+    double getDragCrossSection(Vector3D direction);
 
-    /** Get the absorption coefficients vector.
-     * @param direction direction of the light flux in the spacecraft frame
-     * @return absorption coefficients vector in the spacecraft frame
+    /** Get the drag coefficients vector.
+     * See {@link org.orekit.forces.drag.DragForce} for more explanations.
+     * @param direction direction of the flux in the spacecraft frame
+     * @return drag coefficients vector (defined in the spacecraft frame)
      */
-    Vector3D getAbsCoef(Vector3D direction);
-
-    /** Get the specular reflection coefficients vector.
-     * @param direction direction of the light flux in the spacecraft frame
-     * @return specular reflection coefficients vector in the spacecraft frame
-     */
-    Vector3D getReflectionCoef(Vector3D direction);
+    Vector3D getDragCoef(Vector3D direction);
 
 }
