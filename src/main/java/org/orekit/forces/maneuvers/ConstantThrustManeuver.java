@@ -17,33 +17,29 @@
 package org.orekit.forces.maneuvers;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 
 
 /** This class implements a simple maneuver with constant thrust.
- *
+ * <p>The maneuver is defined by a direction in satelliteframe.
+ * The current attitude of the spacecraft, defined by the current
+ * spacecraft state, will be used to compute the thrust direction in
+ * inertial frame. A typical case for tangential maneuvers is to use a
+ * {@link LofOffset LOF aligned} attitude law for state propagation and a
+ * velocity increment along the +X satellite axis.</p>
  * @author Fabien Maussion
  * @author Véronique Pommier-Maurussane
+ * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class ConstantThrustManeuver implements ForceModel {
-
-    /** Identifier for QSW frame. */
-    public static final int QSW = 0;
-
-    /** Identifier for TNW frame. */
-    public static final int TNW = 1;
-
-    /** Identifier for inertial frame. */
-    public static final int INERTIAL = 2;
-
-    /** Identifier for spacecraft frame. */
-    public static final int SPACECRAFT = 3;
 
     /** Reference gravity acceleration constant (m/s<sup>2</sup>). */
     public static final double G0 = 9.80665;
@@ -54,17 +50,11 @@ public class ConstantThrustManeuver implements ForceModel {
     /** State of the engine. */
     private boolean firing;
 
-    /** Frame type. */
-    private final int frameType;
-
     /** Start of the maneuver. */
     private final AbsoluteDate startDate;
 
     /** End of the maneuver. */
     private final AbsoluteDate endDate;
-
-    /** Duration (s). */
-    private final double duration;
 
     /** Engine thrust. */
     private final double thrust;
@@ -72,7 +62,7 @@ public class ConstantThrustManeuver implements ForceModel {
     /** Engine flow-rate. */
     private final double flowRate;
 
-    /** Direction of the acceleration in selected frame. */
+    /** Direction of the acceleration in satellite frame. */
     private final Vector3D direction;
 
     /** Simple constructor for a constant direction and constant thrust.
@@ -81,42 +71,24 @@ public class ConstantThrustManeuver implements ForceModel {
      * the date is considered to be the stop date)
      * @param thrust the thrust force (N)
      * @param isp engine specific impulse (s)
-     * @param direction the acceleration direction in chosen frame.
-     * @param frameType the frame in which the direction is defined
-     * @exception IllegalArgumentException if frame type is not one of
-     * {@link #TNW}, {@link #QSW}, {@link #INERTIAL} or {@link #SPACECRAFT}
-     * @see #QSW
-     * @see #TNW
-     * @see #INERTIAL
+     * @param direction the acceleration direction in satellite frame.
      */
     public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
                                   final double thrust, final double isp,
-                                  final Vector3D direction, final int frameType)
+                                  final Vector3D direction)
         throws IllegalArgumentException {
-
-        if ((frameType != QSW) && (frameType != TNW) &&
-            (frameType != INERTIAL) && (frameType != SPACECRAFT)) {
-            throw OrekitException.createIllegalArgumentException("unsupported thrust direction frame, " +
-                                                                 "supported types: {0}, {1}, {2} and {3}",
-                                                                 new Object[] {
-                                                                     "QSW", "TNW", "INERTIAL", "SPACECRAFT"
-                                                                 });
-        }
 
         if (duration >= 0) {
             this.startDate = date;
             this.endDate   = new AbsoluteDate(date, duration);
-            this.duration  = duration;
         } else {
             this.endDate   = date;
             this.startDate = new AbsoluteDate(endDate, duration);
-            this.duration  = -duration;
         }
 
         this.thrust    = thrust;
         this.flowRate  = -thrust / (G0 * isp);
         this.direction = direction.normalize();
-        this.frameType = frameType;
         firing = false;
 
     }
@@ -127,33 +99,12 @@ public class ConstantThrustManeuver implements ForceModel {
 
         if (firing) {
 
-            // add thrust acceleration
-            final double acceleration = thrust / s.getMass();
-            switch (frameType) {
-            case QSW :
-                adder.addQSWAcceleration(acceleration * direction.getX(),
-                                         acceleration * direction.getY(),
-                                         acceleration * direction.getZ());
-                break;
-            case TNW :
-                adder.addTNWAcceleration(acceleration * direction.getX(),
-                                         acceleration * direction.getY(),
-                                         acceleration * direction.getZ());
-                break;
-            case INERTIAL :
-                adder.addXYZAcceleration(acceleration * direction.getX(),
-                                         acceleration * direction.getY(),
-                                         acceleration * direction.getZ());
-                break;
-            default :
-                // the thrust is in spacecraft frame, it depends on attitude
-                final Vector3D inertialThrust = s.getAttitude().getRotation().applyTo(direction);
-                adder.addXYZAcceleration(acceleration * inertialThrust.getX(),
-                                         acceleration * inertialThrust.getY(),
-                                         acceleration * inertialThrust.getZ());
-            }
+            // compute thrust acceleration in inertial frame
+            adder.addAcceleration(new Vector3D(thrust / s.getMass(),
+                                               s.getAttitude().getRotation().applyInverseTo(direction)),
+                                  s.getFrame());
 
-            // add flow rate
+            // compute flow rate
             adder.addMassDerivative(flowRate);
 
         }
@@ -168,10 +119,15 @@ public class ConstantThrustManeuver implements ForceModel {
     }
 
     /** Detector for start of maneuver. */
-    private class FiringStartDetector implements EventDetector {
+    private class FiringStartDetector extends DateDetector {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 5187277376496740694L;
+        private static final long serialVersionUID = 2934194165854130641L;
+
+        /** Build an instance. */
+        public FiringStartDetector() {
+            super(startDate);
+        }
 
         /** {@inheritDoc} */
         public int eventOccurred(final SpacecraftState s) {
@@ -180,75 +136,24 @@ public class ConstantThrustManeuver implements ForceModel {
             return RESET_DERIVATIVES;
         }
 
-        /** {@inheritDoc} */
-        public double g(final SpacecraftState s) {
-            return startDate.minus(s.getDate());
-        }
-
-        /** {@inheritDoc} */
-        public double getMaxCheckInterval() {
-            return duration;
-        }
-
-        /** {@inheritDoc} */
-        public double getThreshold() {
-            // convergence threshold in seconds
-            return 1.0e-4;
-        }
-
-        /** {@inheritDoc} */
-        public int getMaxIterationCount() {
-            return 10;
-        }
-
-        /** {@inheritDoc} */
-        public SpacecraftState resetState(final SpacecraftState oldState)
-            throws OrekitException {
-            // never called since eventOccurred does never return RESET_STATE
-            return null;
-        }
-
     }
 
     /** Detector for end of maneuver. */
-    private class FiringStopDetector implements EventDetector {
+    private class FiringStopDetector extends DateDetector {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -138796002223013117L;
+        private static final long serialVersionUID = 1909257179592824650L;
+
+        /** Build an instance. */
+        public FiringStopDetector() {
+            super(endDate);
+        }
 
         /** {@inheritDoc} */
         public int eventOccurred(final SpacecraftState s) {
             // stop the maneuver
             firing = false;
             return RESET_DERIVATIVES;
-        }
-
-        /** {@inheritDoc} */
-        public double g(final SpacecraftState s) {
-            return endDate.minus(s.getDate());
-        }
-
-        /** {@inheritDoc} */
-        public double getMaxCheckInterval() {
-            return duration;
-        }
-
-        /** {@inheritDoc} */
-        public double getThreshold() {
-            // convergence threshold in seconds
-            return 1.0e-4;
-        }
-
-        /** {@inheritDoc} */
-        public int getMaxIterationCount() {
-            return 10;
-        }
-
-        /** {@inheritDoc} */
-        public SpacecraftState resetState(final SpacecraftState oldState)
-            throws OrekitException {
-            // never called since eventOccurred does never return RESET_STATE
-            return null;
         }
 
     }

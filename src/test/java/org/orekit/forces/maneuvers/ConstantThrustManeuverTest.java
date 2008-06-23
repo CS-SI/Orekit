@@ -14,19 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.maneuvers;
-
-import java.text.ParseException;
+package org.orekit.forces.maneuvers;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
-import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
-import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.util.MathUtils;
+import org.orekit.attitudes.AttitudeLaw;
+import org.orekit.attitudes.InertialLaw;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.frames.Frame;
@@ -55,37 +54,22 @@ public class ConstantThrustManeuverTest extends TestCase {
                                  Frame.getJ2000(), date, mu);
     }
 
-    public void testBadFrame() {
-        try {
-            new ConstantThrustManeuver(new AbsoluteDate(new ChunkedDate(2004, 01, 01),
-                                                        new ChunkedTime(23, 30, 00.000),
-                                                        UTCScale.getInstance()),
-                                       10.0, 400.0, 300.0, Vector3D.PLUS_K, Integer.MAX_VALUE);
-            fail("an exception should have been thrown");
-        } catch (IllegalArgumentException iae) {
-            // expected behavior
-        } catch (OrekitException e) {
-            fail("wrong exception caught");
-        }
-    }
-
     public void testPositiveDuration() throws OrekitException {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
                                              new ChunkedTime(23, 30, 00.000),
                                              UTCScale.getInstance());
         ConstantThrustManeuver maneuver =
-            new ConstantThrustManeuver(date, 10.0, 400.0, 300.0, Vector3D.PLUS_K,
-                                       ConstantThrustManeuver.INERTIAL);
+            new ConstantThrustManeuver(date, 10.0, 400.0, 300.0, Vector3D.PLUS_K);
         EventDetector[] switches = maneuver.getEventsDetectors();
 
         Orbit o1 = dummyOrbit(new AbsoluteDate(date, - 1.0));
-        assertTrue(switches[0].g(new SpacecraftState(o1)) > 0);
+        assertTrue(switches[0].g(new SpacecraftState(o1)) < 0);
         Orbit o2 = dummyOrbit(new AbsoluteDate(date,   1.0));
-        assertTrue(switches[0].g(new SpacecraftState(o2)) < 0);
+        assertTrue(switches[0].g(new SpacecraftState(o2)) > 0);
         Orbit o3 = dummyOrbit(new AbsoluteDate(date,   9.0));
-        assertTrue(switches[1].g(new SpacecraftState(o3)) > 0);
+        assertTrue(switches[1].g(new SpacecraftState(o3)) < 0);
         Orbit o4 = dummyOrbit(new AbsoluteDate(date,  11.0));
-        assertTrue(switches[1].g(new SpacecraftState(o4)) < 0);
+        assertTrue(switches[1].g(new SpacecraftState(o4)) > 0);
     }
     
     public void testNegativeDuration() throws OrekitException {
@@ -93,21 +77,20 @@ public class ConstantThrustManeuverTest extends TestCase {
                                              new ChunkedTime(23, 30, 00.000),
                                              UTCScale.getInstance());
         ConstantThrustManeuver maneuver =
-            new ConstantThrustManeuver(date, -10.0, 400.0, 300.0, Vector3D.PLUS_K,
-                                       ConstantThrustManeuver.INERTIAL);
+            new ConstantThrustManeuver(date, -10.0, 400.0, 300.0, Vector3D.PLUS_K);
         EventDetector[] switches = maneuver.getEventsDetectors();
 
         Orbit o1 = dummyOrbit(new AbsoluteDate(date, -11.0));
-        assertTrue(switches[0].g(new SpacecraftState(o1)) > 0);
+        assertTrue(switches[0].g(new SpacecraftState(o1)) < 0);
         Orbit o2 = dummyOrbit(new AbsoluteDate(date,  -9.0));
-        assertTrue(switches[0].g(new SpacecraftState(o2)) < 0);
+        assertTrue(switches[0].g(new SpacecraftState(o2)) > 0);
         Orbit o3 = dummyOrbit(new AbsoluteDate(date,  -1.0));
-        assertTrue(switches[1].g(new SpacecraftState(o3)) > 0);
+        assertTrue(switches[1].g(new SpacecraftState(o3)) < 0);
         Orbit o4 = dummyOrbit(new AbsoluteDate(date,   1.0));
-        assertTrue(switches[1].g(new SpacecraftState(o4)) < 0);
+        assertTrue(switches[1].g(new SpacecraftState(o4)) > 0);
     }
 
-    public void testRoughBehaviour() throws DerivativeException, IntegratorException, OrekitException, ParseException {
+    public void testRoughBehaviour() throws OrekitException {
         final double isp = 318;
         final double mass = 2500;
         final double a = 24396159;
@@ -121,34 +104,33 @@ public class ConstantThrustManeuverTest extends TestCase {
         final double f = 420;
         final double delta = Math.toRadians(-7.4978);
         final double alpha = Math.toRadians(351);
-
-        final Vector3D dir = new Vector3D (Math.cos(alpha) * Math.cos(delta),
-                                           Math.cos(alpha) * Math.sin(delta),
-                                           Math.sin(delta));
+        final AttitudeLaw law = new InertialLaw(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
 
         final AbsoluteDate initDate = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
                                                        new ChunkedTime(23, 30, 00.000),
                                                        UTCScale.getInstance());
+        final Orbit orbit =
+            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, KeplerianOrbit.TRUE_ANOMALY,
+                               Frame.getJ2000(), initDate, mu);
+        final SpacecraftState initialState =
+            new SpacecraftState(orbit, law.getState(initDate, orbit.getPVCoordinates(), orbit.getFrame()), mass);
+
         final AbsoluteDate fireDate = new AbsoluteDate(new ChunkedDate(2004, 01, 02),
                                                        new ChunkedTime(04, 15, 34.080),
                                                        UTCScale.getInstance());
-
-        final Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA,
-                                                  lv, KeplerianOrbit.TRUE_ANOMALY, 
-                                                  Frame.getJ2000(), initDate, mu);
-
-        final SpacecraftState transOrb = new SpacecraftState(transPar, mass);
+        final ConstantThrustManeuver maneuver =
+            new ConstantThrustManeuver(fireDate, duration, f, isp, Vector3D.PLUS_I);
 
         final NumericalPropagator propagator =
             new NumericalPropagator(new GraggBulirschStoerIntegrator(1e-50, 1000, 0, 1e-08));
-        propagator.addForceModel(new ConstantThrustManeuver(fireDate, duration, f, isp, dir,
-                                                            ConstantThrustManeuver.INERTIAL));
-        propagator.setInitialState(transOrb);
+        propagator.setInitialState(initialState);
+        propagator.setAttitudeLaw(law);
+        propagator.addForceModel(maneuver);
         final SpacecraftState finalorb = propagator.propagate(new AbsoluteDate(fireDate, 3800));
 
         assertEquals(2007.88245442614, finalorb.getMass(), 1e-10);
-        assertEquals(2.6792, Math.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), Math.PI)), 1e-4);
-        assertEquals(28969, finalorb.getA()/1000, 1);
+        assertEquals(2.6872, Math.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), Math.PI)), 1e-4);
+        assertEquals(28970, finalorb.getA()/1000, 1);
 
     }
 
