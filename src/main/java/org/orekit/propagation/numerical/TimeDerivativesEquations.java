@@ -21,6 +21,8 @@ import java.util.Arrays;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
+import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.utils.PVCoordinates;
 
@@ -307,15 +309,19 @@ public class TimeDerivativesEquations implements Serializable {
                            x * lofW.getX() + y * lofW.getY() + z * lofW.getZ());
     }
 
-    /** Add the contribution of an acceleration expressed in inertial frame
-     *  (it is important to make sure this acceleration is expressed in the
-     *  same frame as the orbit) .
-     * @param gamma acceleration vector in the inertial frame (m/s<sup>2</sup>)
+    /** Add the contribution of an acceleration expressed in some inertial frame
+     * @param gamma acceleration vector (m/s<sup>2</sup>)
+     * @param frame frame in which acceleration is defined (must be an inertial frame)
+     * @exception OrekitException if frame transforms cannot be computed
      */
-    public void addAcceleration(final Vector3D gamma) {
-        addTNWAcceleration(Vector3D.dotProduct(gamma, lofT),
-                           Vector3D.dotProduct(gamma, lofN),
-                           Vector3D.dotProduct(gamma, lofW));
+    public void addAcceleration(final Vector3D gamma, final Frame frame)
+        throws OrekitException {
+        Transform t = frame.getTransformTo(storedParameters.getFrame(),
+                                           storedParameters.getDate());
+        Vector3D gammInRefFrame = t.transformVector(gamma);
+        addTNWAcceleration(Vector3D.dotProduct(gammInRefFrame, lofT),
+                           Vector3D.dotProduct(gammInRefFrame, lofN),
+                           Vector3D.dotProduct(gammInRefFrame, lofW));
     }
 
     /** Add the contribution of the flow rate (dm/dt).
