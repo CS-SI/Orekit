@@ -137,8 +137,9 @@ public class NumericalPropagator implements Propagator {
     private int mode;
 
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
-     * After creation, the instance is empty, i.e. there is no perturbing force
-     * at all. This means that if {@link #addForceModel addForceModel} is not
+     * After creation, the instance is empty, i.e. the attitude law is set to an
+     * unspecified default law and there are no perturbing forces at all.
+     * This means that if {@link #addForceModel addForceModel} is not
      * called after creation, the integrated orbit will follow a keplerian
      * evolution only.
      * @param integrator numerical integrator to use for propagation.
@@ -171,6 +172,13 @@ public class NumericalPropagator implements Propagator {
      */
     public double getMu() {
         return mu;
+    }
+
+    /** Set the attitude law.
+     * @param attitudeLaw attitude law
+     */
+    public void setAttitudeLaw(final AttitudeLaw attitudeLaw) {
+        this.attitudeLaw = attitudeLaw;
     }
 
     /** {@inheritDoc} */
