@@ -18,8 +18,8 @@
 
 import java.text.ParseException;
 
-import org.apache.commons.math.ode.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
+import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;

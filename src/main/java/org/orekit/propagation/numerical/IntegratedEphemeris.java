@@ -18,8 +18,8 @@ package org.orekit.propagation.numerical;
 
 import org.apache.commons.math.ode.ContinuousOutputModel;
 import org.apache.commons.math.ode.DerivativeException;
-import org.apache.commons.math.ode.StepHandler;
-import org.apache.commons.math.ode.StepInterpolator;
+import org.apache.commons.math.ode.sampling.StepHandler;
+import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;

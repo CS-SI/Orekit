@@ -22,7 +22,7 @@ import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.OrekitSwitchingFunction;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 
 /** This class represents the gravitational field of a celestial body.
@@ -45,6 +45,9 @@ public class DrozinerAttractionModel implements ForceModel {
     /** Reference equatorial radius of the potential. */
     private final double equatorialRadius;
 
+    /** Central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    private double mu;
+
     /** First normalized potential tesseral coefficients array. */
     private final double[][]   C;
 
@@ -64,17 +67,19 @@ public class DrozinerAttractionModel implements ForceModel {
      *
      * @param centralBodyFrame rotating body frame
      * @param equatorialRadius reference equatorial radius of the potential
+     * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @param C un-normalized coefficients array (cosine part)
      * @param S un-normalized coefficients array (sine part)
      * @exception IllegalArgumentException if coefficients array do not match
      */
     public DrozinerAttractionModel(final Frame centralBodyFrame,
-                                   final double equatorialRadius,
+                                   final double equatorialRadius, final double mu,
                                    final double[][] C, final double[][] S)
         throws IllegalArgumentException {
 
-        this.equatorialRadius = equatorialRadius;
         this.centralBodyFrame = centralBodyFrame;
+        this.equatorialRadius = equatorialRadius;
+        this.mu = mu;
         degree = C.length - 1;
         order = C[degree].length - 1;
 
@@ -141,7 +146,7 @@ public class DrozinerAttractionModel implements ForceModel {
         final double r1Onr = r1 / r;
 
         // Definition of the first acceleration terms
-        final double mMuOnr3  = -s.getOrbit().getMu() / r3;
+        final double mMuOnr3  = -mu / r3;
         final double xDotDotk = xBody * mMuOnr3;
         final double yDotDotk = yBody * mMuOnr3;
 
@@ -173,7 +178,7 @@ public class DrozinerAttractionModel implements ForceModel {
         final double p = -sumA / (r1Onr * r1Onr);
         double aX = xDotDotk * p;
         double aY = yDotDotk * p;
-        double aZ = s.getOrbit().getMu() * sumB / r2;
+        double aZ = mu * sumB / r2;
 
 
         // Tessereal-sectorial part of acceleration
@@ -262,7 +267,7 @@ public class DrozinerAttractionModel implements ForceModel {
             final double p2 = r2Onr12 * yDotDotk;
             aX += p1 * sum1 - p2 * sum3;
             aY += p2 * sum1 + p1 * sum3;
-            aZ -= s.getOrbit().getMu() * sum2 / r2;
+            aZ -= mu * sum2 / r2;
 
         }
 
@@ -274,8 +279,8 @@ public class DrozinerAttractionModel implements ForceModel {
     }
 
     /** {@inheritDoc} */
-    public OrekitSwitchingFunction[] getSwitchingFunctions() {
-        return new OrekitSwitchingFunction[0];
+    public EventDetector[] getEventsDetectors() {
+        return new EventDetector[0];
     }
 
 }

@@ -24,7 +24,7 @@ import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
-import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
+import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;

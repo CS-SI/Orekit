@@ -19,7 +19,7 @@
 import java.text.ParseException;
 
 import org.apache.commons.math.ode.FirstOrderIntegrator;
-import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
+import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
@@ -28,8 +28,8 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.OrekitFixedStepHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChunkedDate;
 import org.orekit.time.ChunkedTime;
@@ -93,14 +93,14 @@ public class NumericalPropagation {
 
         NumericalPropagator propagator = new NumericalPropagator(integrator);
 
-        // Pertubative gravity field :
+        // Pertubing gravity field :
 
         double[][] c = new double[3][1];
         c[0][0] = 0.0;
         c[2][0] = c20;
         double[][] s = new double[3][1]; // potential coeffs arrays (only J2 is considered here)
 
-        ForceModel cunningham = new CunninghamAttractionModel(itrf2000, ae, c, s);
+        ForceModel cunningham = new CunninghamAttractionModel(itrf2000, ae, mu, c, s);
         propagator.addForceModel(cunningham);
 
         // propagation with storage of the results in an integrated ephemeris
@@ -137,8 +137,6 @@ public class NumericalPropagation {
         double raan = Math.toRadians(261); // right ascention of ascending node
         double lv = 0; // mean anomaly
 
-        double mass = 2500; // mass of the spacecraft in Kg
-
         // date and frame
 
         AbsoluteDate initialDate = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
@@ -174,7 +172,7 @@ public class NumericalPropagation {
         c[2][0] = c20;
         double[][] s = new double[3][1]; // potential coeffs arrays (only J2 is considered here)
 
-        ForceModel cunningham = new CunninghamAttractionModel(itrf2000, mass, c, s);
+        ForceModel cunningham = new CunninghamAttractionModel(itrf2000, ae, mu, c, s);
         propagator.addForceModel(cunningham);
         AbsoluteDate finalDate = new AbsoluteDate(initialDate, 500);
 

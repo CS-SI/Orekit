@@ -24,7 +24,7 @@ import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.DerivativeException;
-import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
+import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
@@ -35,7 +35,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.OrekitSwitchingFunction;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChunkedDate;
@@ -76,7 +76,7 @@ public class ConstantThrustManeuverTest extends TestCase {
         ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(date, 10.0, 400.0, 300.0, Vector3D.PLUS_K,
                                        ConstantThrustManeuver.INERTIAL);
-        OrekitSwitchingFunction[] switches = maneuver.getSwitchingFunctions();
+        EventDetector[] switches = maneuver.getEventsDetectors();
 
         Orbit o1 = dummyOrbit(new AbsoluteDate(date, - 1.0));
         assertTrue(switches[0].g(new SpacecraftState(o1)) > 0);
@@ -95,7 +95,7 @@ public class ConstantThrustManeuverTest extends TestCase {
         ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(date, -10.0, 400.0, 300.0, Vector3D.PLUS_K,
                                        ConstantThrustManeuver.INERTIAL);
-        OrekitSwitchingFunction[] switches = maneuver.getSwitchingFunctions();
+        EventDetector[] switches = maneuver.getEventsDetectors();
 
         Orbit o1 = dummyOrbit(new AbsoluteDate(date, -11.0));
         assertTrue(switches[0].g(new SpacecraftState(o1)) > 0);

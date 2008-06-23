@@ -14,39 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.events;
+package org.orekit.propagation.sampling;
 
 import java.io.Serializable;
 
 import org.orekit.errors.PropagationException;
+import org.orekit.propagation.SpacecraftState;
 
-/** This interface is a space-dynamics aware step handler.
+/** This interface is a space-dynamics aware fixed size step handler.
  *
- * <p>It mirrors the {@link org.apache.commons.math.ode.StepHandler
- * StepHandler} interface from <a href="http://commons.apache.org/math/">
+ * <p>It mirrors the {@link org.apache.commons.math.ode.FixedStepHandler
+ * FixedStepHandler} interface from <a href="http://commons.apache.org/math/">
  * commons-math</a> but provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-public interface OrekitStepHandler extends Serializable {
+public interface OrekitFixedStepHandler extends Serializable {
 
     /** Handle the current step.
-     * @param interpolator interpolator set up for the current step
+     * @param currentState current state at step time
      * @param isLast if true, this is the last integration step
      * @exception PropagationException if step cannot be handled
      */
-    void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
+    void handleStep(final SpacecraftState currentState, final boolean isLast)
         throws PropagationException;
-
-    /** Determines whether this handler needs dense output.
-     * @return true if the handler needs dense output
-     * @see org.apache.commons.math.ode.StepHandler#requiresDenseOutput()
-     */
-    boolean requiresDenseOutput();
-
-    /** Reset the step handler.
-     * @see org.apache.commons.math.ode.StepHandler#reset()
-     */
-    void reset();
 
 }

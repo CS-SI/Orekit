@@ -16,9 +16,11 @@
  */
 package org.orekit.propagation;
 
-import org.orekit.propagation.events.OrekitFixedStepHandler;
-import org.orekit.propagation.events.OrekitStepHandler;
-import org.orekit.propagation.events.OrekitSwitchingFunction;
+import java.util.Collection;
+
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
+import org.orekit.propagation.sampling.OrekitStepHandler;
 
 /** This interface provides a way to propagate an orbit at any time.
  *
@@ -40,18 +42,15 @@ public interface Propagator extends BasicPropagator {
     /** Indicator for slave mode. */
     int SLAVE_MODE = 0;
 
-    /** Indicator for master mode with fixed steps. */
-    int MASTER_FIXED_MODE = 1;
-
-    /** Indicator for master mode with variable steps. */
-    int MASTER_VARIABLE_MODE = 2;
+    /** Indicator for master mode. */
+    int MASTER_MODE = 1;
 
     /** Indicator for ephemeris generation mode. */
-    int EPHEMERIS_GENERATION_MODE = 3;
+    int EPHEMERIS_GENERATION_MODE = 2;
 
     /** Get the current operating mode of the propagator.
-     * @return one of {@link #SLAVE_MODE}, {@link #MASTER_FIXED_MODE},
-     * {@link #MASTER_VARIABLE_MODE} or {@link #EPHEMERIS_GENERATION_MODE}
+     * @return one of {@link #SLAVE_MODE}, {@link #MASTER_MODE},
+     * {@link #EPHEMERIS_GENERATION_MODE}
      * @see #setSlaveMode()
      * @see #setMasterMode(double, OrekitFixedStepHandler)
      * @see #setMasterMode(OrekitStepHandler)
@@ -82,7 +81,7 @@ public interface Propagator extends BasicPropagator {
      * @see #setMasterMode(OrekitStepHandler)
      * @see #setEphemerisMode()
      * @see #getMode()
-     * @see #MASTER_FIXED_MODE
+     * @see #MASTER_MODE
      */
     void setMasterMode(double h, OrekitFixedStepHandler handler);
 
@@ -95,7 +94,7 @@ public interface Propagator extends BasicPropagator {
      * @see #setMasterMode(double, OrekitFixedStepHandler)
      * @see #setEphemerisMode()
      * @see #getMode()
-     * @see #MASTER_VARIABLE_MODE
+     * @see #MASTER_MODE
      */
     void setMasterMode(OrekitStepHandler handler);
 
@@ -124,15 +123,24 @@ public interface Propagator extends BasicPropagator {
      */
     BoundedPropagator getGeneratedEphemeris() throws IllegalStateException;
 
-    /** Add a switching function.
-     * @param switchingFunction switching function to add
-     * @see #removeSwitchingFunctions()
+    /** Add an event detector.
+     * @param detector event detector to add
+     * @see #clearEventsDetectors()
+     * @see #getEventsDetectors()
      */
-    void addSwitchingFunction(final OrekitSwitchingFunction switchingFunction);
+    void addEventDetector(final EventDetector detector);
 
-    /** Remove all switching functions.
-     * @see #addSwitchingFunction(OrekitSwitchingFunction)
+    /** Get all the events detectors that have been added.
+     * @return an unmodifiable collection of the added detectors
+     * @see #addEventDetector(EventDetector)
+     * @see #clearEventsDetectors()
      */
-    void removeSwitchingFunctions();
+    Collection<EventDetector> getEventsDetectors();
+
+    /** Remove all events detectors.
+     * @see #addEventDetector(EventDetector)
+     * @see #getEventsDetectors()
+     */
+    void clearEventsDetectors();
 
 }

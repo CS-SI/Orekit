@@ -21,8 +21,8 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Vector3D;
-import org.apache.commons.math.ode.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math.ode.DormandPrince853Integrator;
+import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;

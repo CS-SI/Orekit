@@ -25,15 +25,23 @@ import org.apache.commons.math.util.MathUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeLaw;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.ApsideDetector;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.ElevationDetector;
+import org.orekit.propagation.events.NodeDetector;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -524,6 +532,95 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         } catch (Exception e) {
             fail("wrong exception caught");
         }
+    }
+
+    public void testAscendingNode() throws OrekitException {
+        final KeplerianOrbit orbit =
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+                               Frame.getJ2000(), AbsoluteDate.J2000_EPOCH, mu);
+        EcksteinHechlerPropagator propagator =
+            new EcksteinHechlerPropagator(orbit, ae, mu, c20, c30, c40, c50, c60);
+        propagator.addEventDetector(new NodeDetector(orbit, Frame.getITRF2000B()));
+        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        SpacecraftState propagated = propagator.propagate(farTarget);
+        PVCoordinates pv = propagated.getPVCoordinates(Frame.getITRF2000B());
+        assertTrue(farTarget.minus(propagated.getDate()) > 3500.0);
+        assertTrue(farTarget.minus(propagated.getDate()) < 4000.0);
+        assertEquals(0, pv.getPosition().getZ(), 1.0e-6);
+        assertTrue(pv.getVelocity().getZ() > 0);
+    }
+
+    public void testPerigee() throws OrekitException {
+        final KeplerianOrbit orbit =
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+                               Frame.getJ2000(), AbsoluteDate.J2000_EPOCH, mu);
+        EcksteinHechlerPropagator propagator =
+            new EcksteinHechlerPropagator(orbit, ae, mu, c20, c30, c40, c50, c60);
+        propagator.addEventDetector(new ApsideDetector(orbit));
+        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        SpacecraftState propagated = propagator.propagate(farTarget);
+        PVCoordinates pv = propagated.getPVCoordinates(Frame.getITRF2000B());
+        assertTrue(farTarget.minus(propagated.getDate()) > 3000.0);
+        assertTrue(farTarget.minus(propagated.getDate()) < 3500.0);
+        assertEquals(orbit.getA() * (1.0 - orbit.getE()), pv.getPosition().getNorm(), 400);
+    }
+
+    public void testDate() throws OrekitException {
+        final KeplerianOrbit orbit =
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+                               Frame.getJ2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+        EcksteinHechlerPropagator propagator =
+            new EcksteinHechlerPropagator(orbit, ae, mu, c20, c30, c40, c50, c60);
+        final AbsoluteDate stopDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 500.0);
+        propagator.addEventDetector(new DateDetector(stopDate));
+        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        SpacecraftState propagated = propagator.propagate(farTarget);
+        assertEquals(0, stopDate.minus(propagated.getDate()), 1.0e-10);
+    }
+
+    public void testFixedStep() throws OrekitException {
+        final KeplerianOrbit orbit =
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+                               Frame.getJ2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+        EcksteinHechlerPropagator propagator =
+            new EcksteinHechlerPropagator(orbit, ae, mu, c20, c30, c40, c50, c60);
+        final double step = 100.0;
+        propagator.setMasterMode(step, new OrekitFixedStepHandler() {
+            private static final long serialVersionUID = 5343978335581094125L;
+            private AbsoluteDate previous;
+            public void handleStep(SpacecraftState currentState, boolean isLast)
+            throws PropagationException {
+                if (previous != null) {
+                    assertEquals(step, currentState.getDate().minus(previous), 1.0e-10);
+                }
+                previous = currentState.getDate();
+            }
+        });
+        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        propagator.propagate(farTarget);
+    }
+
+    public void testSetting() throws OrekitException {
+        final KeplerianOrbit orbit =
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+                               Frame.getJ2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+        EcksteinHechlerPropagator propagator =
+            new EcksteinHechlerPropagator(orbit, ae, mu, c20, c30, c40, c50, c60);
+        final OneAxisEllipsoid earthShape =
+            new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, Frame.getITRF2000B());
+        final TopocentricFrame topo =
+            new TopocentricFrame(earthShape, new GeodeticPoint(-2.962, 0.389, 0), null);
+        propagator.addEventDetector(new ElevationDetector(60, 0.09, topo));
+        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        SpacecraftState propagated = propagator.propagate(farTarget);
+        final double elevation = topo.getElevation(propagated.getPVCoordinates().getPosition(),
+                                                   propagated.getFrame(),
+                                                   propagated.getDate());
+        final double zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ();
+        assertTrue(farTarget.minus(propagated.getDate()) > 7800.0);
+        assertTrue(farTarget.minus(propagated.getDate()) < 7900.0);
+        assertEquals(0.09, elevation, 1.0e-11);
+        assertTrue(zVelocity < 0);
     }
 
     public static Test suite() {

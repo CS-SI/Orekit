@@ -131,6 +131,24 @@ public class SpacecraftState implements TimeStamped, Serializable {
         return orbit.getMu();
     }
 
+    /** Get the keplerian period.
+     * <p>The keplerian period is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return keplerian period in seconds
+     */
+    public double getKeplerianPeriod() {
+        return orbit.getKeplerianPeriod();
+    }
+
+    /** Get the keplerian mean motion.
+     * <p>The keplerian mean motion is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return keplerian mean motion in radians per second
+     */
+    public double getKeplerianMeanMotion() {
+        return orbit.getKeplerianMeanMotion();
+    }
+
     /** Get the semi-major axis.
      * @return semi-major axis (m)
      */

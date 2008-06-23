@@ -25,9 +25,9 @@ import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
-import org.apache.commons.math.ode.ClassicalRungeKuttaIntegrator;
+import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.DerivativeException;
-import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
+import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
@@ -42,7 +42,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
-import org.orekit.propagation.events.OrekitFixedStepHandler;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChunkedDate;
@@ -84,7 +84,7 @@ public class CunninghamAttractionModelTest extends TestCase {
         c[0][0] = 0.0;
         c[2][0] = c20;
         double[][] s = new double[3][1];
-        propagator.addForceModel(new CunninghamAttractionModel(itrf2000, 6378136.460, c, s));
+        propagator.addForceModel(new CunninghamAttractionModel(itrf2000, 6378136.460, mu, c, s));
 
         // let the step handler perform the test
         propagator.setMasterMode(86400, new SpotStepHandler(date, mu));
@@ -148,7 +148,7 @@ public class CunninghamAttractionModelTest extends TestCase {
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                 poleAligned, date, mu);
 
-        propagator.addForceModel(new CunninghamAttractionModel(itrf2000, ae,
+        propagator.addForceModel(new CunninghamAttractionModel(itrf2000, ae, mu,
                                                                new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -196,7 +196,8 @@ public class CunninghamAttractionModelTest extends TestCase {
                 Vector3D W = Vector3D.crossProduct(posEHP, velEHP).normalize();
                 Vector3D N = Vector3D.crossProduct(W, T);
 
-                assertTrue(dif.getNorm() < 104);
+                assertTrue("dif.getNorm() = " + dif.getNorm() + " " + dif.getX()
+                           + " " + dif.getY() + " " + dif.getZ(), dif.getNorm() < 104);
                 assertTrue(Math.abs(Vector3D.dotProduct(dif, T)) < 104);
                 assertTrue(Math.abs(Vector3D.dotProduct(dif, N)) <  53);
                 assertTrue(Math.abs(Vector3D.dotProduct(dif, W)) <  13);
@@ -224,7 +225,7 @@ public class CunninghamAttractionModelTest extends TestCase {
                                                        Frame.getJ2000(), date, mu);
         
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(1000));
-        propagator.addForceModel(new CunninghamAttractionModel(itrf2000, ae,
+        propagator.addForceModel(new CunninghamAttractionModel(itrf2000, ae, mu,
                                                                new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -239,7 +240,7 @@ public class CunninghamAttractionModelTest extends TestCase {
 
         propagator.removeForceModels();
 
-        propagator.addForceModel(new DrozinerAttractionModel(itrf2000, ae,
+        propagator.addForceModel(new DrozinerAttractionModel(itrf2000, ae, mu,
                                                              new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },

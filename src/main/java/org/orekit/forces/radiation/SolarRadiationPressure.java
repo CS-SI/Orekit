@@ -22,7 +22,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.OrekitSwitchingFunction;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -90,12 +90,7 @@ public class SolarRadiationPressure implements ForceModel {
         this.spacecraft = spacecraft;
     }
 
-    /** Compute the contribution of the solar radiation pressure to the perturbing
-     * acceleration.
-     * @param s the current state information : date, cinematics, attitude
-     * @param adder object where the contribution should be added
-     * @exception OrekitException if some specific error occurs
-     */
+    /** {@inheritDoc} */
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
         throws OrekitException {
         // raw radiation pressure
@@ -188,22 +183,18 @@ public class SolarRadiationPressure implements ForceModel {
 
     }
 
-    /** Get the switching functions related to umbra and penumbra passes.
-     * @return umbra/penumbra switching functions
-     */
-    public OrekitSwitchingFunction[] getSwitchingFunctions() {
-        return new OrekitSwitchingFunction[] {
-            new UmbraSwitch(), new PenumbraSwitch()
+    /** {@inheritDoc} */
+    public EventDetector[] getEventsDetectors() {
+        return new EventDetector[] {
+            new UmbraDetector(), new PenumbraDetector()
         };
     }
 
-    /** This class defines the Umbra switching function.
-     * It triggers when the satellite enters the umbra zone.
-     */
-    private class UmbraSwitch implements OrekitSwitchingFunction {
+    /** This class defines the umbra entry/exit detector. */
+    private class UmbraDetector implements EventDetector {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 2437242565684831954L;
+        private static final long serialVersionUID = 7932858255122460107L;
 
         /** {@inheritDoc} */
         public int eventOccurred(final SpacecraftState s) {
@@ -212,7 +203,7 @@ public class SolarRadiationPressure implements ForceModel {
 
         /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
          * the Earth's apparent radius.
-         * @param s the current state information : date, cinematics, attitude
+         * @param s the current state information : date, kinematics, attitude
          * @return value of the g function
          * @exception OrekitException if sun or spacecraft position cannot be computed
          */
@@ -259,13 +250,11 @@ public class SolarRadiationPressure implements ForceModel {
 
     }
 
-    /** This class defines the penumbra switching function.
-     * It triggers when the satellite enters the penumbra zone.
-     */
-    private class PenumbraSwitch implements OrekitSwitchingFunction {
+    /** This class defines the penumbra entry/exit detector. */
+    private class PenumbraDetector implements EventDetector {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -398690397397470283L;
+        private static final long serialVersionUID = -3041599327729427466L;
 
         /** {@inheritDoc} */
         public int eventOccurred(final SpacecraftState s) {
@@ -274,7 +263,7 @@ public class SolarRadiationPressure implements ForceModel {
 
         /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
          * the sum of the Earth's and Sun's apparent radius.
-         * @param s the current state information : date, cinematics, attitude
+         * @param s the current state information : date, kinematics, attitude
          * @return value of the g function
          * @exception OrekitException if sun or spacecraft position cannot be computed
          */

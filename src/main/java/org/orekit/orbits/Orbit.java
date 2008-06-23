@@ -164,6 +164,26 @@ public abstract class Orbit implements TimeStamped, Serializable {
         return mu;
     }
 
+    /** Get the keplerian period.
+     * <p>The keplerian period is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return keplerian period in seconds
+     */
+    public double getKeplerianPeriod() {
+        final double a = getA();
+        return 2.0 * Math.PI * a * Math.sqrt(a / mu);
+    }
+
+    /** Get the keplerian mean motion.
+     * <p>The keplerian mean motion is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return keplerian mean motion in radians per second
+     */
+    public double getKeplerianMeanMotion() {
+        final double a = getA();
+        return Math.sqrt(mu / a) / a;
+    }
+
     /** Get the date of orbital parameters.
      * @return date of the orbital parameters
      */

@@ -25,37 +25,38 @@ import org.apache.commons.math.analysis.UnivariateRealFunction;
 import org.apache.commons.math.analysis.UnivariateRealSolver;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
-/** This class handles the state for one {@link OrekitSwitchingFunction
- * switching function} during integration steps.
+/** This class handles the state for one {@link EventDetector
+ * event detector} during integration steps.
  *
  * <p>This class is heavily based on the class with the same name from the
  * Apache commons-math library. The changes performed consist in replacing
  * raw types (double and double arrays) with space dynamics types
  * ({@link AbsoluteDate}, {@link SpacecraftState}).</p>
- * <p>Each time the integrator proposes a step, the switching function
- * should be checked. This class handles the state of one function
- * during one integration step, with references to the state at the
+ * <p>Each time the propagator proposes a step, the event detector
+ * should be checked. This class handles the state of one detector
+ * during one propagation step, with references to the state at the
  * end of the preceding step. This information is used to determine if
- * the function should trigger an event or not during the proposed
+ * the detector should trigger an event or not during the proposed
  * step (and hence the step should be reduced to ensure the event
  * occurs at a bound rather than inside the step).</p>
  *
  * @version $Revision$ $Date$
  */
-class SwitchState implements Serializable {
+class EventState implements Serializable {
 
     /** Serializable version identifier. */
     private static final long serialVersionUID = 7498385558553820471L;
 
-    /** Switching function. */
-    private OrekitSwitchingFunction function;
+    /** Event detector. */
+    private EventDetector detector;
 
     /** Time at the beginning of the step. */
     private AbsoluteDate t0;
 
-    /** Value of the switching function at the beginning of the step. */
+    /** Value of the event detector at the beginning of the step. */
     private double g0;
 
     /** Simulated sign of g0 (we cheat when crossing events). */
@@ -79,10 +80,10 @@ class SwitchState implements Serializable {
     private int nextAction;
 
     /** Simple constructor.
-     * @param function switching function
+     * @param detector monitored event detector
      */
-    public SwitchState(final OrekitSwitchingFunction function) {
-        this.function     = function;
+    public EventState(final EventDetector detector) {
+        this.detector     = detector;
 
         // some dummy values ...
         t0                = null;
@@ -92,25 +93,32 @@ class SwitchState implements Serializable {
         pendingEventTime  = null;
         previousEventTime = null;
         increasing        = true;
-        nextAction        = OrekitSwitchingFunction.CONTINUE;
+        nextAction        = EventDetector.CONTINUE;
 
+    }
+
+    /** Get the underlying event detector.
+     * @return underlying event detector
+     */
+    public EventDetector getEventDetector() {
+        return detector;
     }
 
     /** Reinitialize the beginning of the step.
      * @param state0 state value at the beginning of the step
-     * @exception OrekitException if the switching function
+     * @exception OrekitException if the event detector
      * value cannot be evaluated at the beginning of the step
      */
     public void reinitializeBegin(final SpacecraftState state0)
         throws OrekitException {
         this.t0 = state0.getDate();
-        g0 = function.g(state0);
+        g0 = detector.g(state0);
         g0Positive = g0 >= 0;
     }
 
-    /** Evaluate the impact of the proposed step on the switching function.
+    /** Evaluate the impact of the proposed step on the event detector.
      * @param interpolator step interpolator for the proposed step
-     * @return true if the switching function triggers an event before
+     * @return true if the event detector triggers an event before
      * the end of the proposed step (this implies the step should be
      * rejected)
      * @exception OrekitException if the switching function
@@ -124,20 +132,20 @@ class SwitchState implements Serializable {
 
             final AbsoluteDate t1 = interpolator.getCurrentDate();
             final double dt = t1.minus(t0);
-            final int    n  = Math.max(1, (int) Math.ceil(Math.abs(dt) / function.getMaxCheckInterval()));
+            final int    n  = Math.max(1, (int) Math.ceil(Math.abs(dt) / detector.getMaxCheckInterval()));
             final double h  = dt / n;
 
             AbsoluteDate ta = t0;
             double ga = g0;
             final AbsoluteDate start = (t1.compareTo(t0) > 0) ?
-                    new AbsoluteDate(t0,  function.getThreshold()) :
-                    new AbsoluteDate(t0, -function.getThreshold());
+                    new AbsoluteDate(t0,  detector.getThreshold()) :
+                    new AbsoluteDate(t0, -detector.getThreshold());
             for (int i = 0; i < n; ++i) {
 
-                // evaluate function value at the end of the substep
-                final AbsoluteDate tb = new AbsoluteDate(start, i * h);
+                // evaluate detector value at the end of the substep
+                final AbsoluteDate tb = new AbsoluteDate(start, (i + 1) * h);
                 interpolator.setInterpolatedDate(tb);
-                final double gb = function.g(interpolator.getInterpolatedState());
+                final double gb = detector.g(interpolator.getInterpolatedState());
 
                 // check events occurrence
                 if (g0Positive ^ (gb >= 0)) {
@@ -151,19 +159,19 @@ class SwitchState implements Serializable {
                             try {
                                 final AbsoluteDate date = new AbsoluteDate(t0, t);
                                 interpolator.setInterpolatedDate(date);
-                                return function.g(interpolator.getInterpolatedState());
+                                return detector.g(interpolator.getInterpolatedState());
                             } catch (OrekitException e) {
                                 throw new FunctionEvaluationException(t, e);
                             }
                         }
                     });
-                    solver.setAbsoluteAccuracy(function.getThreshold());
-                    solver.setMaximalIterationCount(function.getMaxIterationCount());
+                    solver.setAbsoluteAccuracy(detector.getThreshold());
+                    solver.setMaximalIterationCount(detector.getMaxIterationCount());
                     final AbsoluteDate root = new AbsoluteDate(t0, solver.solve(ta.minus(t0), tb.minus(t0)));
                     if ((previousEventTime == null) ||
-                        (Math.abs(previousEventTime.minus(root)) > function.getThreshold())) {
+                        (Math.abs(previousEventTime.minus(root)) > detector.getThreshold())) {
                         pendingEventTime = root;
-                        if (pendingEvent && (Math.abs(t1.minus(pendingEventTime)) <= function.getThreshold())) {
+                        if (pendingEvent && (Math.abs(t1.minus(pendingEventTime)) <= detector.getThreshold())) {
                             // we were already waiting for this event which was
                             // found during a previous call for a step that was
                             // rejected, this step must now be accepted since it
@@ -208,7 +216,7 @@ class SwitchState implements Serializable {
         return pendingEventTime;
     }
 
-    /** Acknowledge the fact the step has been accepted by the integrator.
+    /** Acknowledge the fact the step has been accepted by the propagator.
      * @param state value of the state vector at the end of the step
      * @exception OrekitException if the value of the switching
      * function cannot be evaluated
@@ -217,48 +225,47 @@ class SwitchState implements Serializable {
         throws OrekitException {
 
         t0 = state.getDate();
-        g0 = function.g(state);
+        g0 = detector.g(state);
 
         if (pendingEvent) {
             // force the sign to its value "just after the event"
             previousEventTime = state.getDate();
             g0Positive        = increasing;
-            nextAction        = function.eventOccurred(state);
+            nextAction        = detector.eventOccurred(state);
         } else {
             g0Positive = g0 >= 0;
-            nextAction = OrekitSwitchingFunction.CONTINUE;
+            nextAction = EventDetector.CONTINUE;
         }
     }
 
-    /** Check if the integration should be stopped at the end of the
+    /** Check if the propagation should be stopped at the end of the
      * current step.
-     * @return true if the integration should be stopped
+     * @return true if the propagation should be stopped
      */
     public boolean stop() {
-        return nextAction == OrekitSwitchingFunction.STOP;
+        return nextAction == EventDetector.STOP;
     }
 
-    /** Let the switching function reset the state if it wants.
-     * @param state value of the state vector at the beginning of the next step
-     * @return true if the integrator should reset the derivatives too
-     * @exception OrekitException if the state cannot be reseted by the switching
-     * function
+    /** Let the event detector reset the state if it wants.
+     * @param oldState value of the state vector at the beginning of the next step
+     * @return new state (oldState of no reset is needed)
+     * @exception OrekitException if the state cannot be reset by the event
+     * detector
      */
-    public boolean reset(final SpacecraftState state)
+    public SpacecraftState reset(final SpacecraftState oldState)
         throws OrekitException {
 
         if (!pendingEvent) {
-            return false;
+            return oldState;
         }
 
-        if (nextAction == OrekitSwitchingFunction.RESET_STATE) {
-            function.resetState(state);
-        }
+        SpacecraftState newState =
+            (nextAction == EventDetector.RESET_STATE) ?
+            detector.resetState(oldState) : oldState;
         pendingEvent      = false;
         pendingEventTime  = null;
 
-        return (nextAction == OrekitSwitchingFunction.RESET_STATE) ||
-               (nextAction == OrekitSwitchingFunction.RESET_DERIVATIVES);
+        return newState;
 
     }
 

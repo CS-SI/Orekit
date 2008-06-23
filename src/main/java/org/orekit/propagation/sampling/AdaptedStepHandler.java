@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.events;
+package org.orekit.propagation.sampling;
 
 import java.io.Serializable;
 
 import org.apache.commons.math.ode.DerivativeException;
-import org.apache.commons.math.ode.StepHandler;
-import org.apache.commons.math.ode.StepInterpolator;
+import org.apache.commons.math.ode.sampling.StepHandler;
+import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.numerical.ModeHandler;
 import org.orekit.time.AbsoluteDate;
 
-/** Adapt an {@link org.orekit.propagation.events.OrekitStepHandler}
+/** Adapt an {@link org.orekit.propagation.sampling.OrekitStepHandler}
  * to commons-math {@link StepHandler} interface.
  * @author Luc Maisonobe
  * @version $Revision$ $Date$

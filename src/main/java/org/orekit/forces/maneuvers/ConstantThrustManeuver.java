@@ -20,7 +20,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.OrekitSwitchingFunction;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 
@@ -80,7 +80,7 @@ public class ConstantThrustManeuver implements ForceModel {
      * @param duration the duration of the thrust (s) (if negative,
      * the date is considered to be the stop date)
      * @param thrust the thrust force (N)
-     * @param isp the Isp (s)
+     * @param isp engine specific impulse (s)
      * @param direction the acceleration direction in chosen frame.
      * @param frameType the frame in which the direction is defined
      * @exception IllegalArgumentException if frame type is not one of
@@ -121,11 +121,7 @@ public class ConstantThrustManeuver implements ForceModel {
 
     }
 
-    /** Compute the contribution of maneuver to the global acceleration.
-     * @param s the current state information : date, cinematics, attitude
-     * @param adder object where the contribution should be added
-     * @exception OrekitException if some specific error occurs
-     */
+    /** {@inheritDoc} */
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
         throws OrekitException {
 
@@ -164,22 +160,18 @@ public class ConstantThrustManeuver implements ForceModel {
 
     }
 
-    /** Gets the switching functions related to start and stop passes.
-     * @return start / stop switching functions
-     */
-    public OrekitSwitchingFunction[] getSwitchingFunctions() {
-        return new OrekitSwitchingFunction[] {
-            new StartSwitch(), new StopSwitch()
+    /** {@inheritDoc} */
+    public EventDetector[] getEventsDetectors() {
+        return new EventDetector[] {
+            new FiringStartDetector(), new FiringStopDetector()
         };
     }
 
-    /** This class defines the beginning of the acceleration switching function.
-     * It triggers at the ignition.
-     */
-    private class StartSwitch implements OrekitSwitchingFunction {
+    /** Detector for start of maneuver. */
+    private class FiringStartDetector implements EventDetector {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 8256737374206837853L;
+        private static final long serialVersionUID = 5187277376496740694L;
 
         /** {@inheritDoc} */
         public int eventOccurred(final SpacecraftState s) {
@@ -188,10 +180,7 @@ public class ConstantThrustManeuver implements ForceModel {
             return RESET_DERIVATIVES;
         }
 
-        /** The G-function is the difference between the start date and the current date.
-         * @param s the current state information : date, kinematics, attitude
-         * @return value of the g function
-         */
+        /** {@inheritDoc} */
         public double g(final SpacecraftState s) {
             return startDate.minus(s.getDate());
         }
@@ -221,13 +210,11 @@ public class ConstantThrustManeuver implements ForceModel {
 
     }
 
-    /** This class defines the end of the acceleration switching function.
-     * It triggers at the end of the maneuver.
-     */
-    private class StopSwitch implements OrekitSwitchingFunction {
+    /** Detector for end of maneuver. */
+    private class FiringStopDetector implements EventDetector {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -3870095515033978202L;
+        private static final long serialVersionUID = -138796002223013117L;
 
         /** {@inheritDoc} */
         public int eventOccurred(final SpacecraftState s) {
@@ -236,10 +223,7 @@ public class ConstantThrustManeuver implements ForceModel {
             return RESET_DERIVATIVES;
         }
 
-        /** The G-function is the difference between the end date and the current date.
-         * @param s the current state information : date, kinematics, attitude
-         * @return value of the g function
-         */
+        /** {@inheritDoc} */
         public double g(final SpacecraftState s) {
             return endDate.minus(s.getDate());
         }

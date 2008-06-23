@@ -20,7 +20,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.OrekitSwitchingFunction;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 
 
@@ -60,7 +60,7 @@ public class DragForce implements ForceModel {
     }
 
     /** Compute the contribution of the drag to the perturbing acceleration.
-     * @param s the current state information : date, cinematics, attitude
+     * @param s the current state information : date, kinematics, attitude
      * @param adder object where the contribution should be added
      * @exception OrekitException if some specific error occurs
      */
@@ -86,11 +86,11 @@ public class DragForce implements ForceModel {
 
     }
 
-    /** There are no SwitchingFunctions for this model.
+    /** There are no discrete events for this model.
      * @return an empty array
      */
-    public OrekitSwitchingFunction[] getSwitchingFunctions() {
-        return new OrekitSwitchingFunction[0];
+    public EventDetector[] getEventsDetectors() {
+        return new EventDetector[0];
     }
 
 }

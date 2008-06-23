@@ -20,7 +20,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
+import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.Moon;
 import org.orekit.forces.Sun;
@@ -30,8 +30,8 @@ import org.orekit.iers.IERSDirectoryCrawler;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.OrekitFixedStepHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChunkedDate;
 import org.orekit.time.ChunkedTime;

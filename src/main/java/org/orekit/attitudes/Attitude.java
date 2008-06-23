@@ -60,7 +60,7 @@ public class Attitude implements Serializable {
     }
 
     /** Get the reference frame.
-     * @return referenceFrame satellite rotation from reference frame.
+     * @return referenceFrame reference frame from which attitude is defined.
      */
     public Frame getReferenceFrame() {
         return referenceFrame;

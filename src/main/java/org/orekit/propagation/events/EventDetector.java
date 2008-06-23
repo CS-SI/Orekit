@@ -21,33 +21,30 @@ import java.io.Serializable;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 
-/** This interface represents space-dynamics aware switching functions.
+/** This interface represents space-dynamics aware events detectors.
  *
- * <p>It mirrors the {@link org.apache.commons.math.ode.SwitchingFunction
- * SwitchingFunction} interface from <a href="http://commons.apache.org/math/">
+ * <p>It mirrors the {@link org.apache.commons.math.ode.events.EventHandler
+ * EventHandler} interface from <a href="http://commons.apache.org/math/">
  * commons-math</a> but provides a space-dynamics interface to the methods.</p>
  *
- * <p>It should be implemented by all real force models before they
- * can be taken into account by the orbit extrapolation methods.</p>
+ * <p>Events detectors are a useful solution to meet the requirements
+ * of propagators concerning discrete conditions. The state of each
+ * event detector is queried by the integrator at each step. When the
+ * sign of the underlying g switching function changes, the step is rejected
+ * and reduced, in order to make sure the signe changes occur only at steps
+ * boundaries.</p>
  *
- * <p>Switching functions are a useful solution to meet the requirements
- * of integrators concerning discontinuities problems. The value of the
- * switching function is asked by the integrator at each step. When the
- * value of the g function changes of sign, the step is rejected and reduced,
- * until the roots of the function is reached with the {@link #getThreshold()}
- * precision. </p>
- *
- * <p> Once the g function root is reached, we are sure the integrator
- *  won't miss the event relative to this date: a discontinuity in
- *  acceleration, a change in the state ... This event can be initiated
- *  by the {@link #eventOccurred(SpacecraftState)}
- *  method, which is called when the step is placed on the wanted date. <p>
+ * <p>When step ends exactly at a switching function sign change, the corresponding
+ * event is triggered, by calling the {@link #eventOccurred(SpacecraftState)}
+ * method. The method can do whatever it needs with the event (logging it, performing
+ * some processing, ignore it ...). The return value of the method will be used by
+ * the propagator to stop or resume propagation, possibly changing the state vector.<p>
  *
  * @author Luc Maisonobe
  * @author Véronique Pommier-Maurussane
- * @version $Revision$ $Date$
+ * @version $Revision: 1726 $ $Date: 2008-06-20 11:18:17 +0200 (ven., 20 juin 2008) $
  */
-public interface OrekitSwitchingFunction extends Serializable {
+public interface EventDetector extends Serializable {
 
     /** Stop indicator.
      * <p>This value should be used as the return value of the {@link
@@ -90,7 +87,7 @@ public interface OrekitSwitchingFunction extends Serializable {
     double g(SpacecraftState s) throws OrekitException;
 
     /** Handle an event and choose what to do next.
-     * @param s the current state information : date, cinematics, attitude
+     * @param s the current state information : date, kinematics, attitude
      * @return one of {@link #STOP}, {@link #RESET_STATE}, {@link #RESET_DERIVATIVES}
      * or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs

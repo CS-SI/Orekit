@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.events;
+package org.orekit.propagation.sampling;
 
 import org.apache.commons.math.ode.DerivativeException;
-import org.apache.commons.math.ode.StepInterpolator;
+import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
@@ -60,8 +60,8 @@ public class AdaptedStepInterpolator implements OrekitStepInterpolator {
      * @param interpolator underlying non space dynamics interpolator
      */
     public AdaptedStepInterpolator(final AbsoluteDate reference, final Frame frame,
-                                    final double mu, final AttitudeLaw attitudeLaw,
-                                    final StepInterpolator interpolator) {
+                                   final double mu, final AttitudeLaw attitudeLaw,
+                                   final StepInterpolator interpolator) {
         this.reference    = reference;
         this.frame        = frame;
         this.mu           = mu;

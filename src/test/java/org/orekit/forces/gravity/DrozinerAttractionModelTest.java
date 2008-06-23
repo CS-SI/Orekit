@@ -26,9 +26,9 @@ import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
-import org.apache.commons.math.ode.ClassicalRungeKuttaIntegrator;
+import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.DerivativeException;
-import org.apache.commons.math.ode.GraggBulirschStoerIntegrator;
+import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
@@ -43,7 +43,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
-import org.orekit.propagation.events.OrekitFixedStepHandler;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChunkedDate;
@@ -82,8 +82,7 @@ public class DrozinerAttractionModelTest extends TestCase {
                                                        0, KeplerianOrbit.MEAN_ANOMALY,
                                                        poleAligned, date, mu);
         
-        propagator.addForceModel(new DrozinerAttractionModel(itrf2000,
-                                                             6378136.460,
+        propagator.addForceModel(new DrozinerAttractionModel(itrf2000, 6378136.460, mu,
                                                              new double[][] { { 0.0 }, { 0.0 }, { c20 } },
                                                              new double[][] { { 0.0 }, { 0.0 }, { 0.0 } }));
 
@@ -148,7 +147,7 @@ public class DrozinerAttractionModelTest extends TestCase {
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                 poleAligned, date, mu);
 
-        propagator.addForceModel(new DrozinerAttractionModel(itrf2000, ae,
+        propagator.addForceModel(new DrozinerAttractionModel(itrf2000, ae, mu,
                                                              new double[][] {
                 { 1.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -224,12 +223,12 @@ public class DrozinerAttractionModelTest extends TestCase {
                                                        0, KeplerianOrbit.MEAN_ANOMALY,
                                                        Frame.getJ2000(), date, mu);
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(100));
-        propagator.addForceModel(new CunninghamAttractionModel(itrf2000, ae,C, S));
+        propagator.addForceModel(new CunninghamAttractionModel(itrf2000, ae, mu, C, S));
         propagator.setInitialState(new SpacecraftState(orbit, mu));
         SpacecraftState cunnOrb = propagator.propagate(new AbsoluteDate(date, 86400));
 
         propagator.removeForceModels();
-        propagator.addForceModel(new DrozinerAttractionModel(itrf2000, ae, C, S));
+        propagator.addForceModel(new DrozinerAttractionModel(itrf2000, ae, mu, C, S));
 
         propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState drozOrb = propagator.propagate(new AbsoluteDate(date,  86400));

@@ -52,6 +52,12 @@ import org.orekit.errors.OrekitException;
  *   </li>
  * </ul>
  * <p>
+ * In addition to reference epochs, two other constants are defined for convenience:
+ * {@link #PAST_INFINITY} and {@link #FUTURE_INFINITY}, which can be used either as
+ * dummy dates when a date is not yet initialized, or for initialization of loops
+ * searching for a min or max date.
+ * </p>
+ * <p>
  * Instances of the <code>AbsoluteDate</code> class are guaranteed to be immutable.
  * </p>
  * @author Luc Maisonobe
@@ -96,12 +102,20 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
     public static final AbsoluteDate JAVA_EPOCH =
         new AbsoluteDate(new ChunkedDate(1970,  1,  1), ChunkedTime.H00, TTScale.getInstance());
 
-    /** epoch slightly shifted from J2000: 2000-01-01T00:00:00 TAI. */
-    public static final AbsoluteDate SHIFTED_J2000_EPOCH =
+    /** Dummy date at infinity in the past direction. */
+    public static final AbsoluteDate PAST_INFINITY =
+        new AbsoluteDate(AbsoluteDate.JAVA_EPOCH, Double.NEGATIVE_INFINITY);
+
+    /** Dummy date at infinity in the future direction. */
+    public static final AbsoluteDate FUTURE_INFINITY =
+        new AbsoluteDate(AbsoluteDate.JAVA_EPOCH, Double.POSITIVE_INFINITY);
+
+    /** Epoch slightly shifted from J2000: 2000-01-01T00:00:00 TAI. */
+    private static final AbsoluteDate SHIFTED_J2000_EPOCH =
         new AbsoluteDate(new ChunkedDate(2000,  1,  1), ChunkedTime.H00, TAIScale.getInstance());
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 4101033541456511524L;
+    private static final long serialVersionUID = -897823396684528566L;
 
     /** Reference epoch in milliseconds from 1970-01-01T00:00:00 TAI. */
     private final long epoch;

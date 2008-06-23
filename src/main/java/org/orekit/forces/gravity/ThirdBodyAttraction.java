@@ -21,7 +21,7 @@ import org.orekit.bodies.ThirdBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.OrekitSwitchingFunction;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 
 
@@ -69,8 +69,8 @@ public class ThirdBodyAttraction implements ForceModel {
     }
 
     /** {@inheritDoc} */
-    public OrekitSwitchingFunction[] getSwitchingFunctions() {
-        return new OrekitSwitchingFunction[0];
+    public EventDetector[] getEventsDetectors() {
+        return new EventDetector[0];
     }
 
 }

@@ -20,7 +20,7 @@ import java.io.Serializable;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.OrekitSwitchingFunction;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 
 /** This interface represents a force modifying spacecraft motion.
@@ -40,12 +40,12 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
  * on the global state derivative.
  * </p>
  * <p>
- * Force models which create discontinuous acceleration patters (typically for maneuvers
- * start/stop or solar eclipses entry/exit) must use one or more {@link
- * org.orekit.propagation.events.OrekitSwitchingFunction switching functions} to the
- * propagator thanks to the {@link #getSwitchingFunctions()} method which is called once
- * just before propagation starts. The switching functions will be checked by the propagator
- * to ensure accurate propagation and switch event crossing.
+ * Force models which create discontinuous acceleration patterns (typically for maneuvers
+ * start/stop or solar eclipses entry/exit) must provide one or more {@link
+ * org.orekit.propagation.events.EventDetector events detectors} to the
+ * propagator thanks to their {@link #getEventsDetectors()} method. This method
+ * is called once just before propagation starts. The events states will be checked by
+ * the propagator to ensure accurate propagation and proper events handling.
  * </p>
  *
  * @author Mathieu Roméro
@@ -64,10 +64,10 @@ public interface ForceModel extends Serializable {
     void addContribution(SpacecraftState s, TimeDerivativesEquations adder)
         throws OrekitException;
 
-    /** Get the switching functions internally used by the model itself.
-     * @return array of switching functions or null if the model doesn't need
-     * any switching function by itself
+    /** Get the discrete events related to the model.
+     * @return array of events detectors or null if the model is not
+     * related to any discrete events
      */
-    OrekitSwitchingFunction[] getSwitchingFunctions();
+    EventDetector[] getEventsDetectors();
 
 }

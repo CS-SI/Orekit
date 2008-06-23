@@ -178,6 +178,17 @@ extends TestCase {
         assertTrue(d1.hashCode() != new AbsoluteDate(d1, 1.0e-3).hashCode());
     }
 
+    public void testInfinity() {
+        assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.JULIAN_EPOCH) < 0);
+        assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.J2000_EPOCH) < 0);
+        assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
+        assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.JULIAN_EPOCH) > 0);
+        assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.J2000_EPOCH) > 0);
+        assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.minus(AbsoluteDate.J2000_EPOCH)));
+        assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.minus(AbsoluteDate.PAST_INFINITY)));
+        assertTrue(Double.isInfinite(AbsoluteDate.PAST_INFINITY.minus(AbsoluteDate.J2000_EPOCH)));
+    }
+
     public void setUp() throws OrekitException {
         System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
         utc = UTCScale.getInstance();

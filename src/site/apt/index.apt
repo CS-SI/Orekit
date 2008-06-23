@@ -113,6 +113,18 @@ Overview
     * handling of discrete events during integration
       (models changes, G-stop, simple notifications ...)
 
+    * predefined discrete events
+
+      * ascending and descending node crossing
+
+      * apogee and perigee crossing
+
+      * elevation with respect to a topocentric frame (raising/setting)
+
+      * date
+
+      * impulse maneuvers
+
   ** Attitude
 
     * extensible attitude evolution models

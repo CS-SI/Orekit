@@ -16,81 +16,204 @@
  */
 package org.orekit.propagation;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
+import org.apache.commons.math.ConvergenceException;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
-import org.orekit.propagation.events.OrekitFixedStepHandler;
-import org.orekit.propagation.events.OrekitStepHandler;
-import org.orekit.propagation.events.OrekitStepInterpolator;
-import org.orekit.propagation.events.OrekitSwitchingFunction;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.CombinedEventsDetectorsManager;
+import org.orekit.propagation.sampling.BasicStepInterpolator;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
+import org.orekit.propagation.sampling.OrekitStepHandler;
+import org.orekit.propagation.sampling.OrekitStepNormalizer;
 import org.orekit.time.AbsoluteDate;
 
 /** Common handling of {@link Propagator} methods for analytical-like propagators.
+ * <p>
+ * This abstract class allows to provide easily the full set of {@link Propagator}
+ * methods, including all propagation modes support and discrete events support
+ * for any simple propagation method. Only two methods must be implemented by
+ * derived classes: {@link #basicPropagate(AbsoluteDate)} and {@link
+ * #resetInitialState(SpacecraftState)}. The first method should perform
+ * straightforward propagation starting from some internally stored initial state
+ * up to the specified target date. The second method should reset the initial state
+ * when called.
+ * </p>
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
 public abstract class AbstractPropagator implements Propagator {
 
-    /** Mode-specific propagator. */
-    private ModeSpecificPropagator propagator;
+    /** Propagation mode. */
+    private int mode;
 
-    /** Switching functions. */
-    private final List<OrekitSwitchingFunction> switchingFunctions;
+    /** Fixed step size. */
+    private double fixedStepSize;
+
+    /** Step handler. */
+    private OrekitStepHandler stepHandler;
+
+    /** Manager for events detectors. */
+    private final CombinedEventsDetectorsManager eventsDetectorsManager;
+
+    /** Internal steps interpolator. */
+    private final BasicStepInterpolator interpolator;
 
     /** Build a new instance.
      */
     protected AbstractPropagator() {
-        switchingFunctions = new ArrayList<OrekitSwitchingFunction>();
+        eventsDetectorsManager = new CombinedEventsDetectorsManager();
+        interpolator = new BasicStepInterpolator(new UnboundedPropagatorView());
         setSlaveMode();
     }
 
     /** {@inheritDoc} */
     public int getMode() {
-        return propagator.getMode();
+        return mode;
     }
 
     /** {@inheritDoc} */
     public void setSlaveMode() {
-        propagator = new SlavePropagator();
+        mode          = SLAVE_MODE;
+        stepHandler   = null;
+        fixedStepSize = Double.NaN;
     }
 
     /** {@inheritDoc} */
     public void setMasterMode(final double h,
                               final OrekitFixedStepHandler handler) {
-        propagator = new FixedPropagator(h, handler);
+        mode          = MASTER_MODE;
+        stepHandler   = new OrekitStepNormalizer(h, handler);
+        fixedStepSize = h;
     }
 
     /** {@inheritDoc} */
     public void setMasterMode(final OrekitStepHandler handler) {
-        propagator = new VariablePropagator(handler);
+        mode          = MASTER_MODE;
+        stepHandler   = handler;
+        fixedStepSize = Double.NaN;
     }
 
     /** {@inheritDoc} */
     public void setEphemerisMode() {
-        propagator = new EphemerisGenerationPropagator();
+        mode          = EPHEMERIS_GENERATION_MODE;
+        stepHandler   = null;
+        fixedStepSize = Double.NaN;
     }
 
     /** {@inheritDoc} */
     public BoundedPropagator getGeneratedEphemeris() {
-        return (EphemerisGenerationPropagator) propagator;
+        return new UnboundedPropagatorView();
     }
 
     /** {@inheritDoc} */
-    public void addSwitchingFunction(final OrekitSwitchingFunction switchingFunction) {
-        switchingFunctions.add(switchingFunction);
+    public void addEventDetector(final EventDetector detector) {
+        eventsDetectorsManager.addEventDetector(detector);
     }
 
     /** {@inheritDoc} */
-    public void removeSwitchingFunctions() {
-        switchingFunctions.clear();
+    public Collection<EventDetector> getEventsDetectors() {
+        return eventsDetectorsManager.getEventsDetetors();
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState propagate(final AbsoluteDate date)
+    public void clearEventsDetectors() {
+        eventsDetectorsManager.clearEventsDetectors();
+    }
+
+    /** {@inheritDoc} */
+    public SpacecraftState propagate(final AbsoluteDate target)
         throws PropagationException {
-        return propagator.propagate(date);
+        try {
+
+            // initial state
+            interpolator.storeDate(getInitialDate());
+            SpacecraftState state = interpolator.getInterpolatedState();
+
+            // evaluate step size
+            double stepSize;
+            if (mode == MASTER_MODE) {
+                if (Double.isNaN(fixedStepSize)) {
+                    stepSize = state.getKeplerianPeriod() / 100;
+                } else {
+                    stepSize = fixedStepSize;
+                }
+            } else {
+                stepSize = target.minus(interpolator.getCurrentDate());
+            }
+
+            // iterate over the propagation range
+            AbsoluteDate stepEnd =
+                new AbsoluteDate(interpolator.getCurrentDate(), stepSize);
+            for (boolean lastStep = false; !lastStep;) {
+
+                interpolator.shift();
+                boolean needUpdate = false;
+
+                // attempt to perform one step, with the current step size
+                // (this may loop if some discrete event is triggered)
+                for (boolean loop = true; loop;) {
+
+                    // go ahead one step size
+                    interpolator.storeDate(stepEnd);
+
+                    // check discrete events
+                    if (eventsDetectorsManager.evaluateStep(interpolator)) {
+                        needUpdate = true;
+                        stepEnd = eventsDetectorsManager.getEventTime();
+                    } else {
+                        loop = false;
+                    }
+
+                }
+
+                // handle the accepted step
+                state = interpolator.getInterpolatedState();
+                eventsDetectorsManager.stepAccepted(state);
+                if (eventsDetectorsManager.stop()) {
+                    lastStep = true;
+                } else {
+                    lastStep = stepEnd.compareTo(target) >= 0;
+                }
+                if (stepHandler != null) {
+                    stepHandler.handleStep(interpolator, lastStep);
+                }
+
+                // let the events detectors reset the state if needed
+                SpacecraftState newState = eventsDetectorsManager.reset(state);
+                if (newState != state) {
+                    resetInitialState(newState);
+                    state = newState;
+                }
+
+                if (needUpdate) {
+                    // an event detector has reduced the step
+                    // we need to adapt step size for next iteration
+                    stepEnd = new AbsoluteDate(interpolator.getPreviousDate(), stepSize);
+                } else {
+                    stepEnd = new AbsoluteDate(interpolator.getCurrentDate(), stepSize);
+                }
+
+            }
+
+            // return the last computed state
+            return state;
+
+        } catch (OrekitException oe) {
+
+            // recover a possible embedded PropagationException
+            for (Throwable t = oe; t != null; t = t.getCause()) {
+                if (t instanceof PropagationException) {
+                    throw (PropagationException) t;
+                }
+            }
+
+            throw new PropagationException(oe.getMessage(), oe);
+
+        } catch (ConvergenceException ce) {
+            throw new PropagationException(ce.getMessage(), ce);
+        }
     }
 
     /** Get the initial propagation date.
@@ -101,7 +224,7 @@ public abstract class AbstractPropagator implements Propagator {
     /** Propagate an orbit without any fancy features.
      * <p>This method is similar in spirit to the {@link #propagate} method,
      * except that it does <strong>not</strong> call any handler during
-     * propagation, nor any switching function. It always stop exactly at
+     * propagation, nor any discrete events. It always stop exactly at
      * the specified date.</p>
      * @param date target date for propagation
      * @return state at specified date
@@ -117,224 +240,26 @@ public abstract class AbstractPropagator implements Propagator {
     protected abstract void resetInitialState(final SpacecraftState state)
         throws PropagationException;
 
-    /** Mode-specific propagation interface. */
-    private interface ModeSpecificPropagator extends Serializable {
-        /** Get the propagation mode.
-         * @return one of {@link Propagator#SLAVE_MODE}, {@link Propagator#MASTER_FIXED_MODE},
-         * {@link Propagator#MASTER_VARIABLE_MODE} or {@link Propagator#EPHEMERIS_GENERATION_MODE}
-         */
-        int getMode();
-
-        /** Get the spacecraft state at a specific date in some predefined mode.
-         * @param date desired date for the orbit
-         * @return the spacecraft state at the specified date
-         * @exception PropagationException if state cannot be propagated
-         */
-        SpacecraftState propagate(AbsoluteDate date) throws PropagationException;
-
-    }
-
-    /** Propagator for slave mode. */
-    private class SlavePropagator implements ModeSpecificPropagator {
+    /** {@link BoundedPropagator} (but not really bounded) view of the instance. */
+    private class UnboundedPropagatorView implements BoundedPropagator {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -1285661320156654761L;
+        private static final long serialVersionUID = -3340036098040553110L;
 
         /** {@inheritDoc} */
-        public int getMode() {
-            return Propagator.SLAVE_MODE;
-        }
-
-        /** {@inheritDoc} */
-        public SpacecraftState propagate(final AbsoluteDate date)
-            throws PropagationException {
-            // TODO take switching functions into account
-            return basicPropagate(date);
-        }
-
-    }
-
-    /** Propagator for master mode with fixed steps. */
-    private class FixedPropagator implements ModeSpecificPropagator {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -81235523448943708L;
-
-        /** Step size. */
-        private double h;
-
-        /** Step handler. */
-        private OrekitFixedStepHandler handler;
-
-        /** Build an instance.
-         * @param h step size
-         * @param handler step handler
-         */
-        public FixedPropagator(final double h, final OrekitFixedStepHandler handler) {
-            this.h       = Math.abs(h);
-            this.handler = handler;
-        }
-
-        /** {@inheritDoc} */
-        public int getMode() {
-            return Propagator.MASTER_FIXED_MODE;
-        }
-
-        /** {@inheritDoc} */
-        public SpacecraftState propagate(final AbsoluteDate date)
-            throws PropagationException {
-
-            // compute the number of steps
-            final AbsoluteDate start = getInitialDate();
-            final double duration = date.minus(start);
-            final int n = Math.max(1, (int) Math.round(Math.abs(duration) / h));
-            final double signedH = (duration < 0) ? -h : h;
-
-            // the n-1 first steps are exactly h seconds long
-            for (int i = 0; i < (n - 1); ++i) {
-                final SpacecraftState state = basicPropagate(new AbsoluteDate(start, i * signedH));
-                // TODO take switching functions into account
-                handler.handleStep(state, false);
-            }
-
-            // last step is exactly at the target date
-            final SpacecraftState state =  basicPropagate(date);
-            handler.handleStep(state, true);
-
-            return state;
-
-        }
-
-    }
-
-    /** Propagator for master mode with variable steps. */
-    private class VariablePropagator
-        implements ModeSpecificPropagator, OrekitStepInterpolator {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -3751614127887257329L;
-
-        /** Previous date. */
-        private AbsoluteDate previousDate;
-
-        /** Current date. */
-        private AbsoluteDate currentDate;
-
-        /** Interpolated date. */
-        private AbsoluteDate interpolatedDate;
-
-        /** Interpolated state. */
-        private SpacecraftState interpolatedState;
-
-        /** Forward indicator. */
-        private boolean forward;
-
-        /** Step handler. */
-        private OrekitStepHandler handler;
-
-        /** Build an instance.
-         * @param handler step handler
-         */
-        public VariablePropagator(final OrekitStepHandler handler) {
-            this.handler = handler;
-        }
-
-        /** {@inheritDoc} */
-        public int getMode() {
-            return Propagator.MASTER_VARIABLE_MODE;
-        }
-
-        /** {@inheritDoc} */
-        public SpacecraftState propagate(final AbsoluteDate date)
-            throws PropagationException {
-
-            // initial parameters
-            final AbsoluteDate initialDate = getInitialDate();
-            setInterpolatedDate(initialDate);
-            final double a  = interpolatedState.getA();
-            final double mu = interpolatedState.getMu();
-            final double duration = date.minus(initialDate);
-            forward = duration >= 0;
-            final double period = 2.0 * Math.PI * a * Math.sqrt(a / mu);
-
-            // compute the number of steps
-            final int n = Math.max(1, (int) Math.round(Math.abs(duration) * 100 / period));
-            final double signedH = duration / n;
-
-            // all steps are exactly h seconds long
-            for (int i = 0; i < n; ++i) {
-                previousDate = currentDate;
-                currentDate  = new AbsoluteDate(initialDate, i * signedH);
-                setInterpolatedDate(currentDate);
-                // TODO take switching functions into account
-                handler.handleStep(this, i == (n - 1));
-            }
-
-            return interpolatedState;
-
-        }
-
-        /** {@inheritDoc} */
-        public AbsoluteDate getCurrentDate() {
-            return currentDate;
-        }
-
-        /** {@inheritDoc} */
-        public AbsoluteDate getInterpolatedDate() {
-            return interpolatedDate;
-        }
-
-        /** {@inheritDoc} */
-        public SpacecraftState getInterpolatedState() {
-            return interpolatedState;
-        }
-
-        /** {@inheritDoc} */
-        public AbsoluteDate getPreviousDate() {
-            return previousDate;
-        }
-
-        /** {@inheritDoc} */
-        public boolean isForward() {
-            return forward;
-        }
-
-        /** {@inheritDoc} */
-        public void setInterpolatedDate(final AbsoluteDate date)
-            throws PropagationException {
-            interpolatedDate  = date;
-            interpolatedState = basicPropagate(date);
-        }
-
-    }
-
-    /** Propagator for ephemeris generation mode. */
-    private class EphemerisGenerationPropagator
-        implements ModeSpecificPropagator, BoundedPropagator {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -3295493459759617818L;
-
-        /** {@inheritDoc} */
-        public int getMode() {
-            return Propagator.EPHEMERIS_GENERATION_MODE;
-        }
-
-        /** {@inheritDoc} */
-        public SpacecraftState propagate(final AbsoluteDate date)
-            throws PropagationException {
-            // TODO implement propagation in ephemeris generation mode
-            return basicPropagate(date);
-        }
-
-        public AbsoluteDate getMaxDate() {
-            // TODO get the max date
-            return null;
-        }
-
         public AbsoluteDate getMinDate() {
-            // TODO get the min date
-            return null;
+            return AbsoluteDate.PAST_INFINITY;
+        }
+
+        /** {@inheritDoc} */
+        public AbsoluteDate getMaxDate() {
+            return AbsoluteDate.FUTURE_INFINITY;
+        }
+
+        /** {@inheritDoc} */
+        public SpacecraftState propagate(AbsoluteDate target)
+                throws PropagationException {
+            return basicPropagate(target);
         }
 
     }

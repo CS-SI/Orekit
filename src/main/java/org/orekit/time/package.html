@@ -5,46 +5,41 @@ instants between them.
 	
 <p> The principal class is {@link org.orekit.time.AbsoluteDate}
 which represents a unique instant in time, with no ambiguity. For that
-purpose, the ways to define this object are really precise. </p>
+purpose, the ways to define this object are quite strict.</p>
 
-<p>The easiest and most evident way is to define an instant with an offset from an other
- one. OREKIT defines 6 reference epochs, which are the most commonly used by the space
- community :
- <pre>
- 
-  	  - Julian Epoch : -4712-01-01 at 12:00:00 , TTScale
-      - Modified Julian Epoch : 1858-11-17 at 00:00:00, TTScale
-      - CNES1950Epoch : 1950-01-01 at 00:00:00,  TTScale
-      - GPS Epoch : 1980-01-06 at 00:00:00,  UTCScale    
-      - Java Epoch : 1970-01-01 at 00:00:00, TTScale
-      - J2000Epoch  : 2000-01-01 at 12:00:00, TTScale
-
- </pre> 
+<p>The easiest and most evident way is to define an instant with an offset from another
+ one. Orekit defines 6 reference epochs. The first 5 are commonly used in the space
+ community and the last one is commonly used in the computer science field.
+ <ul>
+  	  <li>{@link org.orekit.time.AbsoluteDate#JULIAN_EPOCH Julian Epoch}: -4712-01-01 at 12:00:00, TTScale</li>
+      <li>{@link org.orekit.time.AbsoluteDate#MODIFIED_JULIAN_EPOCH Modified Julian Epoch}: 1858-11-17 at 00:00:00, TTScale</li>
+      <li>{@link org.orekit.time.AbsoluteDate#FIFTIES_EPOCH Fifties Epoch}: 1950-01-01 at 00:00:00,  TTScale</li>
+      <li>{@link org.orekit.time.AbsoluteDate#GPS_EPOCH GPS Epoch}: 1980-01-06 at 00:00:00,  UTCScale</li>
+      <li>{@link org.orekit.time.AbsoluteDate#J2000_EPOCH J2000 Epoch}: 2000-01-01 at 12:00:00, TTScale</li>
+      <li>{@link org.orekit.time.AbsoluteDate#JAVA_EPOCH Java Epoch}: 1970-01-01 at 00:00:00. TTScale</li>
+ </ul> 
 </p>
 
-<p>The second definition, that can be source of some confusion, is by giving a location
- (a date) in a specific timescale. It is very important to be familiar with the timescales
- definitions to avoid mistakes. OREKIT proposes 4 of the most important ones :
- <pre>
-	- TAIScale : International Atomic Time
-
-	- TTScale : Terrestrial Time as defined by IAU(1991) recommendation IV. Coordinate
-	  time at the surface of the Earth. It is the successor of Ephemeris Time TE.
-	  By convention, TT = TAI + 32.184 s. 
-	
-	- UTCScale : Coordinated Universal Time. UTC is related to TAI using step adjustments
-	  from time to time according to IERS (International Earth Rotation Service) rules. 
-	  These adjustments require introduction of leap seconds.
-	
-	- TGCScale : Geocentric Coordinate Time. Coordinate time at the center of mass of 
-	  the Earth. This time scale depends linearly from TTScale.
-	
- </pre> 
+<p>The second definition, that can be the source of some confusion, is by giving a location
+ (a date) in a specific <em>time scale</em>. It is of prime importance to understand the
+ various available time scales definitions to avoid mistakes. Orekit provides 4 of the most
+ important ones:
+ <ul>
+    <li>{@link org.orekit.time.TAIScale}: International Atomic Time,</li>
+    <li>{@link org.orekit.time.TTScale}: Terrestrial Time as defined by IAU(1991)
+	    recommendation IV. Coordinate time at the surface of the Earth. It is the
+	    successor of Ephemeris Time TE. By convention, TT = TAI + 32.184 s,</li>
+    <li>{@link org.orekit.time.UTCScale}: Coordinated Universal Time. UTC is related to
+        TAI using step adjustments from time to time according to IERS (International Earth
+        Rotation Service) rules. These adjustments require introduction of leap seconds,</li>
+    <li>{@link org.orekit.time.TGCScale}: Geocentric Coordinate Time. Coordinate time at the
+        center of mass of the Earth. This time scale depends linearly from TTScale.</li>
+ </ul> 
 </p>
  
 <p>Once it is built, an {@link org.orekit.time.AbsoluteDate} can be compared 
-to other ones, and expressed in other TimeScales. It is used to define states, orbits,
- frames...</p>
+to other ones, and expressed in other time scales. It is used to define states, orbits,
+frames...</p>
 
 @author L. Maisonobe
 

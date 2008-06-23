@@ -118,8 +118,7 @@ public class YawCompensationTest extends TestCase {
 
         
         // Extrapolation over one orbital period (sec)
-        double n = Math.sqrt(circOrbit.getMu()/Math.pow(circOrbit.getA(), 3));
-        double duration = 2.0*Math.PI/n;
+        double duration = circOrbit.getKeplerianPeriod();
         KeplerianPropagator extrapolator = new KeplerianPropagator(circOrbit);
         
         // Extrapolation initializations

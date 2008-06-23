@@ -17,15 +17,16 @@
 package org.orekit.propagation.numerical;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.math.ode.DerivativeException;
-import org.apache.commons.math.ode.DummyStepHandler;
+import org.apache.commons.math.ode.events.EventHandler;
+import org.apache.commons.math.ode.sampling.DummyStepHandler;
 import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
-import org.apache.commons.math.ode.StepNormalizer;
-import org.apache.commons.math.ode.SwitchingFunction;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.attitudes.InertialLaw;
@@ -37,12 +38,12 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AdaptedFixedStepHandler;
-import org.orekit.propagation.events.AdaptedStepHandler;
-import org.orekit.propagation.events.AdaptedSwitchingFunction;
-import org.orekit.propagation.events.OrekitFixedStepHandler;
-import org.orekit.propagation.events.OrekitStepHandler;
-import org.orekit.propagation.events.OrekitSwitchingFunction;
+import org.orekit.propagation.events.AdaptedEventDetector;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.sampling.AdaptedStepHandler;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
+import org.orekit.propagation.sampling.OrekitStepHandler;
+import org.orekit.propagation.sampling.OrekitStepNormalizer;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -63,8 +64,8 @@ import org.orekit.time.AbsoluteDate;
  *   <li>the various force models ({@link #addForceModel(ForceModel)},
  *   {@link #removeForceModels()})</li>
  *   <li>the discrete events that should be triggered during propagation
- *   ({@link #addSwitchingFunction(OrekitSwitchingFunction)},
- *   {@link #removeSwitchingFunctions()})</li>
+ *   ({@link #addEventDetector(EventDetector)},
+ *   {@link #clearEventsDetectors()})</li>
  *   <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
  *   {@link #setMasterMode(double, OrekitFixedStepHandler)}, {@link
  *   #setMasterMode(OrekitStepHandler)}, {@link #setEphemerisMode()}, {@link
@@ -97,7 +98,7 @@ import org.orekit.time.AbsoluteDate;
 public class NumericalPropagator implements Propagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2539860641139798181L;
+    private static final long serialVersionUID = -2385169798425713766L;
 
     /** Attitude law. */
     private AttitudeLaw attitudeLaw;
@@ -108,8 +109,8 @@ public class NumericalPropagator implements Propagator {
     /** Force models used during the extrapolation of the Orbit. */
     private final List<ForceModel> forceModels;
 
-    /** Switching functions not related to force models. */
-    private final List<OrekitSwitchingFunction> switchingFunctions;
+    /** Event detectors not related to force models. */
+    private final List<EventDetector> detectors;
 
     /** State vector. */
     private final double[] state;
@@ -145,7 +146,7 @@ public class NumericalPropagator implements Propagator {
     public NumericalPropagator(final FirstOrderIntegrator integrator) {
         this.mu                 = Double.NaN;
         this.forceModels        = new ArrayList<ForceModel>();
-        this.switchingFunctions = new ArrayList<OrekitSwitchingFunction>();
+        this.detectors = new ArrayList<EventDetector>();
         this.integrator         = integrator;
         this.startDate          = new AbsoluteDate();
         this.currentState       = null;
@@ -172,31 +173,25 @@ public class NumericalPropagator implements Propagator {
         return mu;
     }
 
-    /** Add a non force model related switching function.
-     * <p>This method is devoted to user defined switching functions not related
-     * to force models. Switching functions related to force models are handled
-     * automatically when the model is added, so they must <strong>not</strong>
-     * be added using this method.</p>
-     * @param switchingFunction switching function to add
-     * @see #removeSwitchingFunctions()
-     * @see #addForceModel(ForceModel)
-     */
-    public void addSwitchingFunction(final OrekitSwitchingFunction switchingFunction) {
-        switchingFunctions.add(switchingFunction);
+    /** {@inheritDoc} */
+    public void addEventDetector(final EventDetector detector) {
+        detectors.add(detector);
     }
 
-    /** Remove all switching functions.
-     * @see #addSwitchingFunction(OrekitSwitchingFunction)
-     */
-    public void removeSwitchingFunctions() {
-        switchingFunctions.clear();
+    /** {@inheritDoc} */
+    public Collection<EventDetector>getEventsDetectors() {
+        return Collections.unmodifiableCollection(detectors);
+    }
+
+    /** {@inheritDoc} */
+    public void clearEventsDetectors() {
+        detectors.clear();
     }
 
     /** Add a force model to the global perturbation model.
-     * <p>If the force models is associated to switching functions, these
-     * switching functions will be handled automatically, they must
-     * <strong>not</strong> be added using the {@link
-     * #addSwitchingFunction(OrekitSwitchingFunction) addSwitchingFunction}
+     * <p>If the force models is associated to discrete events, these
+     * events will be handled automatically, they must <strong>not</strong>
+     * be added using the {@link #addEventDetector(EventDetector) addEventDetector}
      * method.</p>
      * <p>If this method is not called at all, the integrated orbit will follow
      * a keplerian evolution only.</p>
@@ -232,10 +227,7 @@ public class NumericalPropagator implements Propagator {
 
     /** {@inheritDoc} */
     public void setMasterMode(final double h, final OrekitFixedStepHandler handler) {
-        final AdaptedFixedStepHandler wrapped = new AdaptedFixedStepHandler(handler);
-        integrator.setStepHandler(new StepNormalizer(h, wrapped));
-        modeHandler = wrapped;
-        mode = MASTER_FIXED_MODE;
+        setMasterMode(new OrekitStepNormalizer(h, handler));
     }
 
     /** {@inheritDoc} */
@@ -243,7 +235,7 @@ public class NumericalPropagator implements Propagator {
         final AdaptedStepHandler wrapped = new AdaptedStepHandler(handler);
         integrator.setStepHandler(wrapped);
         modeHandler = wrapped;
-        mode = MASTER_VARIABLE_MODE;
+        mode = MASTER_MODE;
     }
 
     /** {@inheritDoc} */
@@ -320,21 +312,21 @@ public class NumericalPropagator implements Propagator {
             state[5] = initialOrbit.getLv();
             state[6] = initialState.getMass();
 
-            integrator.clearSwitchingFunctions();
+            integrator.clearEventsHandlers();
 
-            // set up switching functions related to force models
+            // set up events related to force models
             for (final ForceModel forceModel : forceModels) {
-                final OrekitSwitchingFunction[] modelFunctions = forceModel.getSwitchingFunctions();
-                if (modelFunctions != null) {
-                    for (final OrekitSwitchingFunction switchingFunction : modelFunctions) {
-                        setUpSwitchingFunction(switchingFunction);
+                final EventDetector[] modelDetectors = forceModel.getEventsDetectors();
+                if (modelDetectors != null) {
+                    for (final EventDetector detector : modelDetectors) {
+                        setUpEventDetector(detector);
                     }
                 }
             }
 
-            // set up switching functions added by user
-            for (final OrekitSwitchingFunction switchingFunction : switchingFunctions) {
-                setUpSwitchingFunction(switchingFunction);
+            // set up events added by user
+            for (final EventDetector detector : detectors) {
+                setUpEventDetector(detector);
             }
 
             // mathematical integration
@@ -380,17 +372,17 @@ public class NumericalPropagator implements Propagator {
         }
     }
 
-    /** Wrap an Orekit switching function and register it to the integrator.
-     * @param osf switching function to wrap
+    /** Wrap an Orekit event detector and register it to the integrator.
+     * @param osf event handler to wrap
      */
-    private void setUpSwitchingFunction(final OrekitSwitchingFunction osf) {
-        final SwitchingFunction switchingFunction =
-            new AdaptedSwitchingFunction(osf, startDate, mu,
-                                         initialState.getFrame(), attitudeLaw);
-        integrator.addSwitchingFunction(switchingFunction,
-                                        osf.getMaxCheckInterval(),
-                                        osf.getThreshold(),
-                                        osf.getMaxIterationCount());
+    private void setUpEventDetector(final EventDetector osf) {
+        final EventHandler handler =
+            new AdaptedEventDetector(osf, startDate, mu,
+                                     initialState.getFrame(), attitudeLaw);
+        integrator.addEventHandler(handler,
+                                   osf.getMaxCheckInterval(),
+                                   osf.getThreshold(),
+                                   osf.getMaxIterationCount());
     }
 
     /** Internal class for differential equations representation. */

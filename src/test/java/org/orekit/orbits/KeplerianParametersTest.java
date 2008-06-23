@@ -401,6 +401,15 @@ public class KeplerianParametersTest extends TestCase {
 
     }
 
+    public void testPeriod() {
+        KeplerianOrbit orbit = new KeplerianOrbit(7654321.0, 0.1, 0.2, 0, 0, 0,
+                                                  KeplerianOrbit.TRUE_ANOMALY,
+                                                  Frame.getJ2000(), AbsoluteDate.J2000_EPOCH,
+                                                  mu);
+        assertEquals(6664.5521723383589487, orbit.getKeplerianPeriod(), 1.0e-12);
+        assertEquals(0.00094277682051291315229, orbit.getKeplerianMeanMotion(), 1.0e-16);
+    }
+
     public void setUp() {
 
         // Computation date

@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math.ode.SwitchException;
-import org.apache.commons.math.ode.SwitchingFunction;
+import org.apache.commons.math.ode.events.EventException;
+import org.apache.commons.math.ode.events.EventHandler;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -25,18 +25,18 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
-/** Adapt an {@link org.orekit.propagation.events.OrekitSwitchingFunction}
- * to commons-math {@link SwitchingFunction} interface.
+/** Adapt an {@link org.orekit.propagation.events.EventDetector}
+ * to commons-math {@link org.apache.commons.math.ode.events.EventHandler} interface.
  * @author Fabien Maussion
- * @version $Revision$ $Date$
+ * @version $Revision: 1726 $ $Date: 2008-06-20 11:18:17 +0200 (ven., 20 juin 2008) $
  */
-public class AdaptedSwitchingFunction implements SwitchingFunction {
+public class AdaptedEventDetector implements EventHandler {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2628301871670676128L;
+    private static final long serialVersionUID = -2156830611432730429L;
 
-    /** Underlying Orekit switching function. */
-    private final OrekitSwitchingFunction swf;
+    /** Underlying event detector. */
+    private final EventDetector detector;
 
     /** Reference date from which t is counted. */
     private final AbsoluteDate referenceDate;
@@ -50,17 +50,17 @@ public class AdaptedSwitchingFunction implements SwitchingFunction {
     /** attitudeLaw spacecraft attitude law. */
     private final AttitudeLaw attitudeLaw;
 
-    /** Build a wrapped switching function.
-     * @param swf Orekit switching function
+    /** Build a wrapped event detector.
+     * @param detector event detector to wrap
      * @param referenceDate reference date from which t is counted
      * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @param integrationFrame frame in which integration is performed
      * @param attitudeLaw spacecraft attitude law
      */
-    public AdaptedSwitchingFunction(final OrekitSwitchingFunction swf,
-                                    final AbsoluteDate referenceDate, final double mu,
-                                    final Frame integrationFrame, final AttitudeLaw attitudeLaw) {
-        this.swf              = swf;
+    public AdaptedEventDetector(final EventDetector detector,
+                                final AbsoluteDate referenceDate, final double mu,
+                                final Frame integrationFrame, final AttitudeLaw attitudeLaw) {
+        this.detector         = detector;
         this.referenceDate    = referenceDate;
         this.mu               = mu;
         this.integrationFrame = integrationFrame;
@@ -69,39 +69,39 @@ public class AdaptedSwitchingFunction implements SwitchingFunction {
 
     /** {@inheritDoc} */
     public double g(final double t, final double[] y)
-        throws SwitchException {
+        throws EventException {
         try {
-            return swf.g(mapState(t, y));
+            return detector.g(mapState(t, y));
         } catch (OrekitException oe) {
-            throw new SwitchException(oe);
+            throw new EventException(oe);
         }
     }
 
     /** {@inheritDoc} */
     public int eventOccurred(final double t, final double[] y)
-        throws SwitchException {
+        throws EventException {
         try {
-            final int whatNext = swf.eventOccurred(mapState(t, y));
+            final int whatNext = detector.eventOccurred(mapState(t, y));
             switch (whatNext) {
-            case OrekitSwitchingFunction.STOP :
+            case EventDetector.STOP :
                 return STOP;
-            case OrekitSwitchingFunction.RESET_STATE :
+            case EventDetector.RESET_STATE :
                 return RESET_STATE;
-            case OrekitSwitchingFunction.RESET_DERIVATIVES :
+            case EventDetector.RESET_DERIVATIVES :
                 return RESET_DERIVATIVES;
             default :
                 return CONTINUE;
             }
         } catch (OrekitException oe) {
-            throw new SwitchException(oe);
+            throw new EventException(oe);
         }
     }
 
     /** {@inheritDoc} */
     public void resetState(final double t, final double[] y)
-        throws SwitchException {
+        throws EventException {
         try {
-            final SpacecraftState newState = swf.resetState(mapState(t, y));
+            final SpacecraftState newState = detector.resetState(mapState(t, y));
             y[0] = newState.getA();
             y[1] = newState.getEquinoctialEx();
             y[2] = newState.getEquinoctialEy();
@@ -110,7 +110,7 @@ public class AdaptedSwitchingFunction implements SwitchingFunction {
             y[5] = newState.getLv();
             y[6] = newState.getMass();
         } catch (OrekitException oe) {
-            throw new SwitchException(oe);
+            throw new EventException(oe);
         }
     }
 
