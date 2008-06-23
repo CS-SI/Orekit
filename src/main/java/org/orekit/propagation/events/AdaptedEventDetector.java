@@ -28,7 +28,7 @@ import org.orekit.time.AbsoluteDate;
 /** Adapt an {@link org.orekit.propagation.events.EventDetector}
  * to commons-math {@link org.apache.commons.math.ode.events.EventHandler} interface.
  * @author Fabien Maussion
- * @version $Revision: 1726 $ $Date: 2008-06-20 11:18:17 +0200 (ven., 20 juin 2008) $
+ * @version $Revision$ $Date$
  */
 public class AdaptedEventDetector implements EventHandler {
 

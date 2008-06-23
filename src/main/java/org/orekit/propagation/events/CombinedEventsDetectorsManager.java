@@ -36,7 +36,7 @@ import org.orekit.time.AbsoluteDate;
  * raw types (double and double arrays) with space dynamics types
  * ({@link AbsoluteDate}, {@link SpacecraftState}).</p>
  * @see EventDetector
- * @version $Revision: 1722 $ $Date: 2008-06-19 17:44:30 +0200 (jeu., 19 juin 2008) $
+ * @version $Revision$ $Date$
  */
 public class CombinedEventsDetectorsManager implements Serializable {
 

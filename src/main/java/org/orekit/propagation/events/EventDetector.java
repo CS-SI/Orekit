@@ -42,7 +42,7 @@ import org.orekit.propagation.SpacecraftState;
  *
  * @author Luc Maisonobe
  * @author Véronique Pommier-Maurussane
- * @version $Revision: 1726 $ $Date: 2008-06-20 11:18:17 +0200 (ven., 20 juin 2008) $
+ * @version $Revision$ $Date$
  */
 public interface EventDetector extends Serializable {
 
