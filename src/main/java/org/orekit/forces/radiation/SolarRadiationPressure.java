@@ -22,6 +22,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
@@ -191,10 +192,15 @@ public class SolarRadiationPressure implements ForceModel {
     }
 
     /** This class defines the umbra entry/exit detector. */
-    private class UmbraDetector implements EventDetector {
+    private class UmbraDetector extends AbstractDetector {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 7932858255122460107L;
+        private static final long serialVersionUID = -165934451905681928L;
+
+        /** Build a new instance. */
+        public UmbraDetector() {
+            super(60.0, 1.0e-3);
+        }
 
         /** {@inheritDoc} */
         public int eventOccurred(final SpacecraftState s) {
@@ -224,37 +230,18 @@ public class SolarRadiationPressure implements ForceModel {
             return sunEarthAngle - alphaEarth;
         }
 
-        /** {@inheritDoc} */
-        public double getMaxCheckInterval() {
-            // we accept losing umbra passes shorter than one minute
-            return 60.0;
-        }
-
-        /** {@inheritDoc} */
-        public double getThreshold() {
-            // convergence threshold in seconds for umbra events
-            return 1.0e-3;
-        }
-
-        /** {@inheritDoc} */
-        public int getMaxIterationCount() {
-            return 100;
-        }
-
-        /** {@inheritDoc} */
-        public SpacecraftState resetState(final SpacecraftState oldState)
-            throws OrekitException {
-            // never called since eventOccurred does never return RESET_STATE
-            return null;
-        }
-
     }
 
     /** This class defines the penumbra entry/exit detector. */
-    private class PenumbraDetector implements EventDetector {
+    private class PenumbraDetector extends AbstractDetector {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -3041599327729427466L;
+        private static final long serialVersionUID = -6128481192702533563L;
+
+        /** Build a new instance. */
+        public PenumbraDetector() {
+            super(60.0, 1.0e-3);
+        }
 
         /** {@inheritDoc} */
         public int eventOccurred(final SpacecraftState s) {
@@ -283,30 +270,6 @@ public class SolarRadiationPressure implements ForceModel {
             final double alphaEarth = equatorialRadius / r;
             final double alphaSun   = sun.getRadius() / satSunVector.getNorm();
             return sunEarthAngle - alphaEarth - alphaSun;
-        }
-
-        /** {@inheritDoc} */
-        public double getMaxCheckInterval() {
-            // we accept losing penumbra passes shorter than one minute
-            return 60.0;
-        }
-
-        /** {@inheritDoc} */
-        public double getThreshold() {
-            // convergence threshold in seconds for penumbra events
-            return 1.0e-3;
-        }
-
-        /** {@inheritDoc} */
-        public int getMaxIterationCount() {
-            return 100;
-        }
-
-        /** {@inheritDoc} */
-        public SpacecraftState resetState(final SpacecraftState oldState)
-            throws OrekitException {
-            // never called since eventOccurred does never return RESET_STATE
-            return null;
         }
 
     }
