@@ -22,8 +22,12 @@ import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.orekit.attitudes.AttitudeLaw;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
+import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.ModeHandler;
 import org.orekit.time.AbsoluteDate;
 
@@ -33,10 +37,10 @@ import org.orekit.time.AbsoluteDate;
  * @version $Revision$ $Date$
  */
 public class AdaptedStepHandler
-    implements StepHandler, ModeHandler, Serializable {
+    implements OrekitStepInterpolator, StepHandler, ModeHandler, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -7846745534321472659L;
+    private static final long serialVersionUID = -8067262257341902186L;
 
     /** Reference date. */
     private AbsoluteDate initializedReference;
@@ -52,6 +56,9 @@ public class AdaptedStepHandler
 
     /** Underlying handler. */
     private final OrekitStepHandler handler;
+
+    /** Underlying raw interpolator. */
+    private StepInterpolator interpolator;
 
     /** Build an instance.
      * @param handler underlying handler to wrap
@@ -83,13 +90,83 @@ public class AdaptedStepHandler
     public void handleStep(final StepInterpolator interpolator, final boolean isLast)
         throws DerivativeException {
         try {
-            final OrekitStepInterpolator orekitInterpolator =
-                new AdaptedStepInterpolator(initializedReference, initializedFrame, initializedMu,
-                                             initializedAttitudeLaw, interpolator);
-            handler.handleStep(orekitInterpolator, isLast);
+            this.interpolator = interpolator;
+            handler.handleStep(this, isLast);
         } catch (PropagationException pe) {
             throw new DerivativeException(pe);
         }
+    }
+
+    /** Get the current grid date.
+     * @return current grid date
+     */
+    public AbsoluteDate getCurrentDate() {
+        return new AbsoluteDate(initializedReference, interpolator.getCurrentTime());
+    }
+
+    /** Get the previous grid date.
+     * @return previous grid date
+     */
+    public AbsoluteDate getPreviousDate() {
+        return new AbsoluteDate(initializedReference, interpolator.getPreviousTime());
+    }
+
+    /** Get the interpolated date.
+     * <p>If {@link #setInterpolatedDate(AbsoluteDate) setInterpolatedDate}
+     * has not been called, the date returned is the same as  {@link
+     * #getCurrentDate() getCurrentDate}.</p>
+     * @return interpolated date
+     * @see #setInterpolatedDate(AbsoluteDate)
+     * @see #getInterpolatedState()
+     */
+    public AbsoluteDate getInterpolatedDate() {
+        return new AbsoluteDate(initializedReference, interpolator.getInterpolatedTime());
+    }
+
+    /** Set the interpolated date.
+     * <p>It is possible to set the interpolation date outside of the current
+     * step range, but accuracy will decrease as date is farther.</p>
+     * @param date interpolated date to set
+     * @exception PropagationException if underlying interpolator cannot handle
+     * the date
+     * @see #getInterpolatedDate()
+     * @see #getInterpolatedState()
+     */
+    public void setInterpolatedDate(final AbsoluteDate date)
+        throws PropagationException {
+        try {
+            interpolator.setInterpolatedTime(date.minus(initializedReference));
+        } catch (DerivativeException de) {
+            throw new PropagationException(de.getMessage(), de);
+        }
+    }
+
+    /** Get the interpolated state.
+     * @return interpolated state at the current interpolation date
+     * @exception OrekitException if state cannot be interpolated or converted
+     * @see #getInterpolatedDate()
+     * @see #setInterpolatedDate(AbsoluteDate)
+     */
+    public SpacecraftState getInterpolatedState() throws OrekitException {
+        final double[] y = interpolator.getInterpolatedState();
+        final AbsoluteDate interpolatedDate =
+            new AbsoluteDate(initializedReference, interpolator.getInterpolatedTime());
+        final Orbit orbit =
+            new EquinoctialOrbit(y[0], y[1], y[2], y[3], y[4], y[5],
+                                      EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
+                                      initializedFrame, interpolatedDate, initializedMu);
+        return new SpacecraftState(orbit,
+                                   initializedAttitudeLaw.getState(interpolatedDate,
+                                                                   orbit.getPVCoordinates(),
+                                                                   initializedFrame),
+                                   y[6]);
+    }
+
+    /** Check is integration direction is forward in date.
+     * @return true if integration is forward in date
+     */
+    public boolean isForward() {
+        return interpolator.isForward();
     }
 
 }

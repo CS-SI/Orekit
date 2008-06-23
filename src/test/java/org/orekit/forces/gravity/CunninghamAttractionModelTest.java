@@ -196,8 +196,7 @@ public class CunninghamAttractionModelTest extends TestCase {
                 Vector3D W = Vector3D.crossProduct(posEHP, velEHP).normalize();
                 Vector3D N = Vector3D.crossProduct(W, T);
 
-                assertTrue("dif.getNorm() = " + dif.getNorm() + " " + dif.getX()
-                           + " " + dif.getY() + " " + dif.getZ(), dif.getNorm() < 104);
+                assertTrue(dif.getNorm() < 104);
                 assertTrue(Math.abs(Vector3D.dotProduct(dif, T)) < 104);
                 assertTrue(Math.abs(Vector3D.dotProduct(dif, N)) <  53);
                 assertTrue(Math.abs(Vector3D.dotProduct(dif, W)) <  13);

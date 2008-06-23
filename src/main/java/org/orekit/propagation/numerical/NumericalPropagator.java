@@ -22,11 +22,11 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.math.ode.DerivativeException;
-import org.apache.commons.math.ode.events.EventHandler;
-import org.apache.commons.math.ode.sampling.DummyStepHandler;
 import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
+import org.apache.commons.math.ode.events.EventHandler;
+import org.apache.commons.math.ode.sampling.DummyStepHandler;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.attitudes.InertialLaw;
@@ -228,7 +228,7 @@ public class NumericalPropagator implements Propagator {
     /** {@inheritDoc} */
     public void setMasterMode(final double h, final OrekitFixedStepHandler handler) {
         setMasterMode(new OrekitStepNormalizer(h, handler));
-    }
+   }
 
     /** {@inheritDoc} */
     public void setMasterMode(final OrekitStepHandler handler) {
@@ -421,6 +421,7 @@ public class NumericalPropagator implements Propagator {
 
                 // finalize derivatives by adding the Kepler contribution
                 adder.addKeplerContribution();
+
             } catch (OrekitException oe) {
                 throw new DerivativeException(oe.getMessage(), new String[0]);
             }
