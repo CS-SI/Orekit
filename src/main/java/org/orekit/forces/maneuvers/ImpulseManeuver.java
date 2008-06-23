@@ -34,16 +34,25 @@ import org.orekit.utils.PVCoordinates;
  * <p>This class implements an impulse maneuver as a discrete event
  * that can be provided to any {@link org.orekit.propagation.Propagator
  * Propagator}.</p>
- * <p>The maneuver is triggered by another underlying event. In the simple
- * cases, it may be a {@link DateDetector date event}, but it can also
- * be a more elaborate {@link ApsideDetector apside event} for apogee
- * maneuvers for example.</p>
+ * <p>The maneuver is triggered when an underlying event generates a
+ * {@link EventDetector#STOP STOP} event, in which case this class will
+ * generate a {@link EventDetector#RESET_STATE RESET_STATE} event (the
+ * stop event from the underlying object is therefore filtered out).
+ * In the simple cases, the underlying event detector may be a basic
+ * {@link DateDetector date event}, but it can also be a more elaborate
+ * {@link ApsideDetector apside event} for apogee maneuvers for example.</p>
  * <p>The maneuver is defined by a single velocity increment in satellite
  * frame. The current attitude of the spacecraft, defined by the current
  * spacecraft state, will be used to compute the velocity direction in
  * inertial frame. A typical case for tangential maneuvers is to use a
  * {@link LofOffset LOF aligned} attitude law for state propagation and a
  * velocity increment along the +X satellite axis.</p>
+ * <p>Beware that the triggering event detector must behave properly both
+ * before and after maneuver. If for example a node detector is used to trigger
+ * an inclination maneuver and the maneuver change the orbit to an equatorial one,
+ * the node detector will fail just after the maneuver, being unable to find a
+ * node on an equatorial orbit! This is a real case that has been encountered
+ * during validation ...</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
@@ -91,7 +100,8 @@ public class ImpulseManeuver implements EventDetector {
 
     /** {@inheritDoc} */
     public int eventOccurred(SpacecraftState s) throws OrekitException {
-        return RESET_STATE;
+        // filter underlying event
+        return (trigger.eventOccurred(s) == STOP) ? RESET_STATE : CONTINUE;
     }
 
     /** {@inheritDoc} */

@@ -30,6 +30,12 @@ import org.orekit.propagation.SpacecraftState;
  * at ascending node crossing. This can be changed by overriding the
  * {@link #eventOccurred(SpacecraftState) eventOccurred} method in a
  * derived class.</p>
+ * <p>Beware that node detection will fail for almost equatorial orbits. If
+ * for example a node detector is used to trigger an {@link
+ * org.orekit.forces.maneuvers.ImpulseManeuver ImpulseManeuver} and the maneuver
+ * turn the orbit plane to equator, then the detector may completely fail just
+ * after the maneuver has been performed! This is a real case that has been
+ * encountered during validation ...</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  * @version $Revision$ $Date$

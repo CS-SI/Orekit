@@ -30,6 +30,11 @@ import org.orekit.utils.PVCoordinates;
  * at perigee crossing. This can be changed by overriding the
  * {@link #eventOccurred(SpacecraftState) eventOccurred} method in a
  * derived class.</p>
+ * <p>Beware that apside detection will fail for almost circular orbits. If
+ * for example an apside detector is used to trigger an {@link
+ * org.orekit.forces.maneuvers.ImpulseManeuver ImpulseManeuver} and the maneuver
+ * change the orbit shape to circular, then the detector may completely fail just
+ * after the maneuver has been performed!</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
