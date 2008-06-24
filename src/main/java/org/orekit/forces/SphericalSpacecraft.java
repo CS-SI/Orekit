@@ -87,11 +87,11 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
         return new Vector3D(reflectionCoeff, direction);
     }
 
-    /** Set the crossSection.
+    /** Set the cross section.
      * @param crossSection crossSection (m<sup>2</sup>)
      */
-    public void setSurface(final double surface) {
-        this.crossSection = surface;
+    public void setCrossSection(final double crossSection) {
+        this.crossSection = crossSection;
     }
 
     /** Set the drag coefficient.
