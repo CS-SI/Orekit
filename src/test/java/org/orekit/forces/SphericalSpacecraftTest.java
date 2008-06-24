@@ -52,7 +52,7 @@ extends TestCase {
 
     public void testSettersGetters() {
         SphericalSpacecraft s = new SphericalSpacecraft(0, 0, 0, 0);
-        s.setSurface(1.0);
+        s.setCrossSection(1.0);
         s.setDragCoeff(2.0);
         s.setAbsorptionCoeff(3.0);
         s.setReflectionCoeff(4.0);
