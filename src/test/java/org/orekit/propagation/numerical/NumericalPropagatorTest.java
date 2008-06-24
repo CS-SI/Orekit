@@ -29,15 +29,18 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.events.DateDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 
 public class NumericalPropagatorTest extends TestCase {
 
-    // Body mu
-    private double mu;
+    private double               mu;
+    private AbsoluteDate         initDate;
+    private SpacecraftState      initialState;
+    private NumericalPropagator  propagator;
+    private boolean              gotHere;
     
     public NumericalPropagatorTest(String name) {
         super(name);
@@ -45,29 +48,17 @@ public class NumericalPropagatorTest extends TestCase {
 
     public void testNoExtrapolation() throws OrekitException {
 
-        // Definition of initial conditions
-        Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
-        Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
-        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
-        Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
-                                                  Frame.getJ2000(), initDate, mu);
-
-
-        // Propagator definition
-        NumericalPropagator propagator =
-            new NumericalPropagator(new DormandPrince853Integrator(0.0, 10000.0, 1.0e-8, 1.0e-8));
 
         // Propagate of the initial at the initial date
-        propagator.setInitialState(new SpacecraftState(initialOrbit, mu));
-        SpacecraftState finalOrbit = propagator.propagate(initialOrbit.getDate());
+        final SpacecraftState finalState = propagator.propagate(initDate);
 
         // Initial orbit definition
-        Vector3D initialPosition = initialOrbit.getPVCoordinates().getPosition();
-        Vector3D initialVelocity = initialOrbit.getPVCoordinates().getVelocity();
+        final Vector3D initialPosition = initialState.getPVCoordinates().getPosition();
+        final Vector3D initialVelocity = initialState.getPVCoordinates().getVelocity();
 
         // Final orbit definition
-        Vector3D finalPosition   = finalOrbit.getPVCoordinates().getPosition();
-        Vector3D finalVelocity   = finalOrbit.getPVCoordinates().getVelocity();
+        final Vector3D finalPosition   = finalState.getPVCoordinates().getPosition();
+        final Vector3D finalVelocity   = finalState.getPVCoordinates().getVelocity();
 
         // Check results
         assertEquals(initialPosition.getX(), finalPosition.getX(), 1.0e-10);
@@ -81,9 +72,9 @@ public class NumericalPropagatorTest extends TestCase {
 
     public void testNotInitialised() {
         try {
-            NumericalPropagator propagator =
+            final NumericalPropagator notInitialised =
                 new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.0));
-            propagator.propagate(AbsoluteDate.J2000_EPOCH);
+            notInitialised.propagate(AbsoluteDate.J2000_EPOCH);
             fail("an exception should have been thrown");
         } catch (PropagationException pe) {
             // expected behavior
@@ -94,41 +85,127 @@ public class NumericalPropagatorTest extends TestCase {
 
     public void testKepler() throws OrekitException {
 
-        // Definition of initial conditions
-        Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
-        Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
-        
-        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
-        Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
-                                                  Frame.getJ2000(), initDate, mu);
-
-        // Propagator definition
-        NumericalPropagator propagator =
-            new NumericalPropagator(new DormandPrince853Integrator(0.0, 10000.0, 1.0e-8, 1.0e-8));
-        double dt = 3200;
-
-        // Propagation of the initial at t+dt
-        propagator.setInitialState(new SpacecraftState(initialOrbit));
-        SpacecraftState finalOrbit = 
-            propagator.propagate(new AbsoluteDate(initialOrbit.getDate(), dt));
+        // Propagation of the initial at t + dt
+        final double dt = 3200;
+        final SpacecraftState finalState = 
+            propagator.propagate(new AbsoluteDate(initDate, dt));
 
         // Check results
-        double n = Math.sqrt(initialOrbit.getMu() / initialOrbit.getA()) / initialOrbit.getA();
-        assertEquals(initialOrbit.getA(),    finalOrbit.getA(),    1.0e-10);
-        assertEquals(initialOrbit.getEquinoctialEx(),    finalOrbit.getEquinoctialEx(),    1.0e-10);
-        assertEquals(initialOrbit.getEquinoctialEy(),    finalOrbit.getEquinoctialEy(),    1.0e-10);
-        assertEquals(initialOrbit.getHx(),    finalOrbit.getHx(),    1.0e-10);
-        assertEquals(initialOrbit.getHy(),    finalOrbit.getHy(),    1.0e-10);
-        assertEquals(initialOrbit.getLM() + n * dt, finalOrbit.getLM(), 4.0e-10);
+        final double n = Math.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
+        assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
+        assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
+        assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
+        assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
+        assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
+        assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 4.0e-10);
 
+    }
+
+    public void testStopEvent() throws OrekitException {
+        final AbsoluteDate stopDate = new AbsoluteDate(initDate, 1000);
+        propagator.addEventDetector(new DateDetector(stopDate) {
+            private static final long serialVersionUID = -5024861864672841095L;
+            public int eventOccurred(SpacecraftState s) throws OrekitException {
+                setGotHere(true);
+                return STOP;
+            }
+            public SpacecraftState resetState(SpacecraftState oldState) {
+                return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass() - 200.0);
+            }
+        });
+        assertFalse(gotHere);
+        final SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initDate, 3200));
+        assertTrue(gotHere);
+        assertEquals(0, finalState.getDate().minus(stopDate), 1.0e-10);
+    }
+
+    public void testResetStateEvent() throws OrekitException {
+        final AbsoluteDate resetDate = new AbsoluteDate(initDate, 1000);
+        propagator.addEventDetector(new DateDetector(resetDate) {
+            private static final long serialVersionUID = 6453983658076746705L;
+            public int eventOccurred(SpacecraftState s) throws OrekitException {
+                setGotHere(true);
+                return RESET_STATE;
+            }
+            public SpacecraftState resetState(SpacecraftState oldState) {
+                return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass() - 200.0);
+            }
+        });
+        assertFalse(gotHere);
+        final SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initDate, 3200));
+        assertTrue(gotHere);
+        assertEquals(initialState.getMass() - 200, finalState.getMass(), 1.0e-10);
+    }
+
+    public void testResetDerivativesEvent() throws OrekitException {
+        final AbsoluteDate resetDate = new AbsoluteDate(initDate, 1000);
+        propagator.addEventDetector(new DateDetector(resetDate) {
+            private static final long serialVersionUID = 4217482936692909475L;
+            public int eventOccurred(SpacecraftState s) throws OrekitException {
+                setGotHere(true);
+                return RESET_DERIVATIVES;
+            }
+        });
+        final double dt = 3200;
+        assertFalse(gotHere);
+        final SpacecraftState finalState = 
+            propagator.propagate(new AbsoluteDate(initDate, dt));
+        assertTrue(gotHere);
+        final double n = Math.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
+        assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
+        assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
+        assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
+        assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
+        assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
+        assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 4.0e-10);
+    }
+
+    public void testContinueEvent() throws OrekitException {
+        final AbsoluteDate resetDate = new AbsoluteDate(initDate, 1000);
+        propagator.addEventDetector(new DateDetector(resetDate) {
+            private static final long serialVersionUID = 5959523015368708867L;
+            public int eventOccurred(SpacecraftState s) throws OrekitException {
+                setGotHere(true);
+                return CONTINUE;
+            }
+        });
+        final double dt = 3200;
+        assertFalse(gotHere);
+        final SpacecraftState finalState = 
+            propagator.propagate(new AbsoluteDate(initDate, dt));
+        assertTrue(gotHere);
+        final double n = Math.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
+        assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
+        assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
+        assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
+        assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
+        assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
+        assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 4.0e-10);
+    }
+
+    private void setGotHere(boolean gotHere) {
+        this.gotHere = gotHere;
     }
 
     public void setUp() {
         mu  = 3.9860047e14;
+        final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
+        final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
+        initDate = AbsoluteDate.J2000_EPOCH;
+        final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
+                                                 Frame.getJ2000(), initDate, mu);
+        initialState = new SpacecraftState(orbit);
+        propagator =
+            new NumericalPropagator(new DormandPrince853Integrator(0.0, 10000.0, 1.0e-8, 1.0e-8));
+        propagator.setInitialState(initialState);
+        gotHere = false;
     }
 
     public void tearDown() {
-        mu   = Double.NaN;
+        initDate = null;
+        initialState = null;
+        propagator = null;
+        gotHere = false;
     }
     
     public static Test suite() {
