@@ -59,7 +59,10 @@ import org.orekit.utils.PVCoordinates;
 public class CelestialBodyPointed implements AttitudeLaw {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -7833491297099083507L;
+    private static final long serialVersionUID = 6222161082155807729L;
+
+    /** Step size for estimating body motion (seconds). */
+    private static final double STEP_SIZE = 0.1;
 
     /** Frame in which {@link #pointedBody} and {@link #phasingCel} are defined. */
     private final Frame celestialFrame;
@@ -76,9 +79,6 @@ public class CelestialBodyPointed implements AttitudeLaw {
     /** Phasing reference, in satellite frame. */
     private final Vector3D phasingSat;
 
-    /** Step size for estimating body motion. */
-    private final double step;
-
     /** Creates new instance.
      * @param celestialFrame frame in which <code>pointedBody</code>
      * and <code>phasingCel</code> are defined
@@ -86,20 +86,17 @@ public class CelestialBodyPointed implements AttitudeLaw {
      * @param phasingCel phasing reference, in celestial frame
      * @param pointingSat satellite vector defining the pointing direction
      * @param phasingSat phasing reference, in satellite frame
-     * @param step step size for estimating body motion
      */
     public CelestialBodyPointed(final Frame celestialFrame,
                                 final CelestialBody pointedBody,
                                 final Vector3D phasingCel,
                                 final Vector3D pointingSat,
-                                final Vector3D phasingSat,
-                                final double step) {
+                                final Vector3D phasingSat) {
         this.celestialFrame = celestialFrame;
         this.pointedBody    = pointedBody;
         this.phasingCel     = phasingCel;
         this.pointingSat    = pointingSat;
         this.phasingSat     = phasingSat;
-        this.step           = step;
     }
 
     /** {@inheritDoc} */
@@ -108,17 +105,30 @@ public class CelestialBodyPointed implements AttitudeLaw {
         throws OrekitException {
 
         // compute celestial references at the specified date
-        final Vector3D pointingCel0 =
-            pointedBody.getPosition(date, celestialFrame);
-        final double r2 = Vector3D.dotProduct(pointingCel0, pointingCel0);
-        final Vector3D pointingCel1 =
-            pointedBody.getPosition(new AbsoluteDate(date, step), celestialFrame);
+        final Vector3D body0     = pointedBody.getPosition(date, celestialFrame);
+        final Vector3D sat0      = pv.getPosition();
+        final Vector3D sat0Cel   = frame.getTransformTo(celestialFrame, date).transformPosition(sat0);
+        final Vector3D pointing0 = body0.subtract(sat0Cel);
+        final double r2 = Vector3D.dotProduct(pointing0, pointing0);
+
+        // compute celestial references a few seconds after specified date
+        final AbsoluteDate date1 = new AbsoluteDate(date, STEP_SIZE);
+        final Vector3D body1     = pointedBody.getPosition(date1, celestialFrame);
+        final Vector3D sat1      = pv.getPosition().add(STEP_SIZE, pv.getVelocity());
+        final Vector3D sat1Cel   = frame.getTransformTo(celestialFrame, date1).transformPosition(sat1);
+        final Vector3D pointing1 = body1.subtract(sat1Cel);
+
+        // evaluate instant rotation axis by finite differences
+        // note that despite we use forward difference and not centered differences,
+        // the error in this estimation is O(h^2) for Sun since because Earth-Body
+        // acceleration is in both case colinear to Earth-Body vector, so acceleration
+        // contribution is nullified by the cross product.
         final Vector3D rotAxisCel =
-            new Vector3D(1 / r2, Vector3D.dotProduct(pointingCel0, pointingCel1));
+            new Vector3D(1 / (r2 * STEP_SIZE), Vector3D.crossProduct(pointing0, pointing1));
 
         // compute transform from celestial frame to satellite frame
         final Rotation celToSatRotation =
-            new Rotation(pointingCel0, phasingCel, pointingSat, phasingSat);
+            new Rotation(pointing0, phasingCel, pointingSat, phasingSat);
         final Vector3D celToSatSpin = celToSatRotation.applyTo(rotAxisCel);
         Transform transform = new Transform(celToSatRotation, celToSatSpin);
 
