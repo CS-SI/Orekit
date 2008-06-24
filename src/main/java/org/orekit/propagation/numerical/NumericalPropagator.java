@@ -338,15 +338,15 @@ public class NumericalPropagator implements Propagator {
             }
 
             // mathematical integration
-            integrator.integrate(new DifferentialEquations(), t0, state, t1, state);
+            double stopTime = integrator.integrate(new DifferentialEquations(), t0, state, t1, state);
 
             // back to space dynamics view
-            final AbsoluteDate date = new AbsoluteDate(startDate, t1);
+            final AbsoluteDate date = new AbsoluteDate(startDate, stopTime);
 
             final EquinoctialOrbit orbit =
                 new EquinoctialOrbit(state[0], state[1], state[2], state[3],
                                      state[4], state[5], EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
-                                     initialOrbit.getFrame(), initialOrbit.getDate(), mu);
+                                     initialOrbit.getFrame(), date, mu);
 
             return new SpacecraftState(orbit,
                                        attitudeLaw.getState(date,
