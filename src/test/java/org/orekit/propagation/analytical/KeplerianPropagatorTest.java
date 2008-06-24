@@ -34,12 +34,15 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
+import org.orekit.propagation.sampling.OrekitStepHandler;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -410,6 +413,46 @@ public class KeplerianPropagatorTest extends TestCase {
         });
         AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
         propagator.propagate(farTarget);
+    }
+
+    public void testVariableStep() throws OrekitException {
+        final KeplerianOrbit orbit =
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+                               Frame.getJ2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+        KeplerianPropagator propagator = new KeplerianPropagator(orbit);
+        final double step = orbit.getKeplerianPeriod() / 100;
+        propagator.setMasterMode(new OrekitStepHandler() {
+            private static final long serialVersionUID = -7257691813065811595L;
+            private AbsoluteDate previous;
+            public void handleStep(OrekitStepInterpolator interpolator,
+                                   boolean isLast) throws PropagationException {
+                if (previous != null) {
+                    assertEquals(step, interpolator.getCurrentDate().minus(previous), 1.0e-10);
+                }
+                previous = interpolator.getCurrentDate();
+            }
+            public boolean requiresDenseOutput() {
+                return false;
+            }
+            public void reset() {
+            }
+        });
+        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        propagator.propagate(farTarget);
+    }
+
+    public void testEphemeris() throws OrekitException {
+        final KeplerianOrbit orbit =
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+                               Frame.getJ2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+        KeplerianPropagator propagator = new KeplerianPropagator(orbit);
+        propagator.setEphemerisMode();
+        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        propagator.setEphemerisMode();
+        propagator.propagate(farTarget);
+        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        assertTrue(Double.isInfinite(ephemeris.getMinDate().minus(AbsoluteDate.J2000_EPOCH)));
+        assertTrue(Double.isInfinite(ephemeris.getMaxDate().minus(AbsoluteDate.J2000_EPOCH)));
     }
 
     private static double tangLEmLv(double Lv,double ex,double ey){
