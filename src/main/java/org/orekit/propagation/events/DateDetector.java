@@ -42,7 +42,7 @@ public class DateDetector extends AbstractDetector {
      * @param target target date
      */
     public DateDetector(final AbsoluteDate target) {
-        super(1.0e9, 1.0e-12);
+        super(1.0e9, 1.0e-10);
         this.target = target;
     }
 
