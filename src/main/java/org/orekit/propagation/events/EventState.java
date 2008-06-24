@@ -259,7 +259,7 @@ class EventState implements Serializable {
             return oldState;
         }
 
-        SpacecraftState newState =
+        final SpacecraftState newState =
             (nextAction == EventDetector.RESET_STATE) ?
             detector.resetState(oldState) : oldState;
         pendingEvent      = false;

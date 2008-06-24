@@ -63,7 +63,7 @@ public abstract class AbstractDetector implements EventDetector {
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState resetState(SpacecraftState oldState) {
+    public SpacecraftState resetState(final SpacecraftState oldState) {
         return oldState;
     }
 

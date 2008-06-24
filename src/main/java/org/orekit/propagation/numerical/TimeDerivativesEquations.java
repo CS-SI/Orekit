@@ -309,16 +309,16 @@ public class TimeDerivativesEquations implements Serializable {
                            x * lofW.getX() + y * lofW.getY() + z * lofW.getZ());
     }
 
-    /** Add the contribution of an acceleration expressed in some inertial frame
+    /** Add the contribution of an acceleration expressed in some inertial frame.
      * @param gamma acceleration vector (m/s<sup>2</sup>)
      * @param frame frame in which acceleration is defined (must be an inertial frame)
      * @exception OrekitException if frame transforms cannot be computed
      */
     public void addAcceleration(final Vector3D gamma, final Frame frame)
         throws OrekitException {
-        Transform t = frame.getTransformTo(storedParameters.getFrame(),
-                                           storedParameters.getDate());
-        Vector3D gammInRefFrame = t.transformVector(gamma);
+        final Transform t = frame.getTransformTo(storedParameters.getFrame(),
+                                                 storedParameters.getDate());
+        final Vector3D gammInRefFrame = t.transformVector(gamma);
         addTNWAcceleration(Vector3D.dotProduct(gammInRefFrame, lofT),
                            Vector3D.dotProduct(gammInRefFrame, lofN),
                            Vector3D.dotProduct(gammInRefFrame, lofW));

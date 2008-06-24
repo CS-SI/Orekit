@@ -141,6 +141,7 @@ public class OneAxisEllipsoidTest extends TestCase {
         line = new Line(point, direction);
         gp = model.getIntersectionPoint(line, point, frame, date);
         assertTrue(line.contains(model.transform(gp)));
+        assertFalse(line.contains(new Vector3D(0, 0, 7000000)));
 
         point = new Vector3D(0.0, 0.0, 110);
         direction = new Vector3D(0.0, 0.0, 1.0);

@@ -70,13 +70,13 @@ public class ElevationDetector extends AbstractDetector {
      * or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
-    public int eventOccurred(SpacecraftState s) throws OrekitException {
+    public int eventOccurred(final SpacecraftState s) throws OrekitException {
         final double zVelocity = s.getPVCoordinates(topo).getVelocity().getZ();
         return (zVelocity > 0) ? CONTINUE : STOP;
     }
 
     /** {@inheritDoc} */
-    public double g(SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) throws OrekitException {
         return topo.getElevation(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate()) - elevation;
     }
 

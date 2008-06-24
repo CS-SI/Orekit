@@ -19,13 +19,10 @@ package org.orekit.forces.maneuvers;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.attitudes.Attitude;
-import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.ApsideDetector;
-import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -39,13 +36,15 @@ import org.orekit.utils.PVCoordinates;
  * generate a {@link EventDetector#RESET_STATE RESET_STATE} event (the
  * stop event from the underlying object is therefore filtered out).
  * In the simple cases, the underlying event detector may be a basic
- * {@link DateDetector date event}, but it can also be a more elaborate
- * {@link ApsideDetector apside event} for apogee maneuvers for example.</p>
+ * {@link org.orekit.propagation.events.DateDetector date event}, but it
+ * can also be a more elaborate {@link
+ * org.orekit.propagation.events.ApsideDetector apside event} for apogee
+ * maneuvers for example.</p>
  * <p>The maneuver is defined by a single velocity increment in satellite
  * frame. The current attitude of the spacecraft, defined by the current
  * spacecraft state, will be used to compute the velocity direction in
  * inertial frame. A typical case for tangential maneuvers is to use a
- * {@link LofOffset LOF aligned} attitude law for state propagation and a
+ * {@link org.orekit.attitudes.LofOffset LOF aligned} attitude law for state propagation and a
  * velocity increment along the +X satellite axis.</p>
  * <p>Beware that the triggering event detector must behave properly both
  * before and after maneuver. If for example a node detector is used to trigger
@@ -99,19 +98,19 @@ public class ImpulseManeuver implements EventDetector {
     }
 
     /** {@inheritDoc} */
-    public int eventOccurred(SpacecraftState s) throws OrekitException {
+    public int eventOccurred(final SpacecraftState s) throws OrekitException {
         // filter underlying event
         return (trigger.eventOccurred(s) == STOP) ? RESET_STATE : CONTINUE;
     }
 
     /** {@inheritDoc} */
-    public double g(SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) throws OrekitException {
         return trigger.g(s);
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState resetState(SpacecraftState oldState)
-            throws OrekitException {
+    public SpacecraftState resetState(final SpacecraftState oldState)
+        throws OrekitException {
 
         final Frame j2000       = Frame.getJ2000();
         final AbsoluteDate date = oldState.getDate();

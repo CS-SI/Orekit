@@ -56,12 +56,12 @@ public class DateDetector extends AbstractDetector {
      * or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
-    public int eventOccurred(SpacecraftState s) throws OrekitException {
+    public int eventOccurred(final SpacecraftState s) throws OrekitException {
         return STOP;
     }
 
     /** {@inheritDoc} */
-    public double g(SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) throws OrekitException {
         return s.getDate().minus(target);
     }
 

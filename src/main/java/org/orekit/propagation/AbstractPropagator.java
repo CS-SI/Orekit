@@ -181,7 +181,7 @@ public abstract class AbstractPropagator implements Propagator {
                 }
 
                 // let the events detectors reset the state if needed
-                SpacecraftState newState = eventsDetectorsManager.reset(state);
+                final SpacecraftState newState = eventsDetectorsManager.reset(state);
                 if (newState != state) {
                     resetInitialState(newState);
                     state = newState;
@@ -257,8 +257,8 @@ public abstract class AbstractPropagator implements Propagator {
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState propagate(AbsoluteDate target)
-                throws PropagationException {
+        public SpacecraftState propagate(final AbsoluteDate target)
+            throws PropagationException {
             return basicPropagate(target);
         }
 

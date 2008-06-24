@@ -83,7 +83,7 @@ public class BasicStepInterpolator implements OrekitStepInterpolator {
 
     /** {@inheritDoc} */
     public void setInterpolatedDate(final AbsoluteDate date)
-            throws PropagationException {
+        throws PropagationException {
         interpolatedState = propagator.propagate(date);
     }
 
@@ -92,18 +92,18 @@ public class BasicStepInterpolator implements OrekitStepInterpolator {
      * interpolator for future calls to {@link #storeDate storeDate}
      */
     public void shift() {
-      previousDate = currentDate;
+        previousDate = currentDate;
     }
 
     /** Store the current step date.
      * @param date current date
-     * @exception if the state cannot be propagated at specified date
+     * @exception PropagationException if the state cannot be propagated at specified date
      */
     public void storeDate(final AbsoluteDate date)
         throws PropagationException {
-      currentDate = date;
-      forward     = currentDate.compareTo(previousDate) >= 0;
-      setInterpolatedDate(currentDate);
+        currentDate = date;
+        forward     = currentDate.compareTo(previousDate) >= 0;
+        setInterpolatedDate(currentDate);
     }
 
 }

@@ -236,7 +236,7 @@ public class NumericalPropagator implements Propagator {
     /** {@inheritDoc} */
     public void setMasterMode(final double h, final OrekitFixedStepHandler handler) {
         setMasterMode(new OrekitStepNormalizer(h, handler));
-   }
+    }
 
     /** {@inheritDoc} */
     public void setMasterMode(final OrekitStepHandler handler) {
@@ -338,7 +338,7 @@ public class NumericalPropagator implements Propagator {
             }
 
             // mathematical integration
-            double stopTime = integrator.integrate(new DifferentialEquations(), t0, state, t1, state);
+            final double stopTime = integrator.integrate(new DifferentialEquations(), t0, state, t1, state);
 
             // back to space dynamics view
             final AbsoluteDate date = new AbsoluteDate(startDate, stopTime);

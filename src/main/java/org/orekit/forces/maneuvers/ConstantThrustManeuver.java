@@ -17,7 +17,6 @@
 package org.orekit.forces.maneuvers;
 
 import org.apache.commons.math.geometry.Vector3D;
-import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
@@ -26,13 +25,12 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 
-
 /** This class implements a simple maneuver with constant thrust.
  * <p>The maneuver is defined by a direction in satelliteframe.
  * The current attitude of the spacecraft, defined by the current
  * spacecraft state, will be used to compute the thrust direction in
  * inertial frame. A typical case for tangential maneuvers is to use a
- * {@link LofOffset LOF aligned} attitude law for state propagation and a
+ * {@link org.orekit.attitudes.LofOffset LOF aligned} attitude law for state propagation and a
  * velocity increment along the +X satellite axis.</p>
  * @author Fabien Maussion
  * @author Véronique Pommier-Maurussane
@@ -75,8 +73,7 @@ public class ConstantThrustManeuver implements ForceModel {
      */
     public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
                                   final double thrust, final double isp,
-                                  final Vector3D direction)
-        throws IllegalArgumentException {
+                                  final Vector3D direction) {
 
         if (duration >= 0) {
             this.startDate = date;

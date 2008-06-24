@@ -57,8 +57,8 @@ public class AdaptedStepHandler
     /** Underlying handler. */
     private final OrekitStepHandler handler;
 
-    /** Underlying raw interpolator. */
-    private StepInterpolator interpolator;
+    /** Underlying raw rawInterpolator. */
+    private StepInterpolator rawInterpolator;
 
     /** Build an instance.
      * @param handler underlying handler to wrap
@@ -90,7 +90,7 @@ public class AdaptedStepHandler
     public void handleStep(final StepInterpolator interpolator, final boolean isLast)
         throws DerivativeException {
         try {
-            this.interpolator = interpolator;
+            this.rawInterpolator = interpolator;
             handler.handleStep(this, isLast);
         } catch (PropagationException pe) {
             throw new DerivativeException(pe);
@@ -101,14 +101,14 @@ public class AdaptedStepHandler
      * @return current grid date
      */
     public AbsoluteDate getCurrentDate() {
-        return new AbsoluteDate(initializedReference, interpolator.getCurrentTime());
+        return new AbsoluteDate(initializedReference, rawInterpolator.getCurrentTime());
     }
 
     /** Get the previous grid date.
      * @return previous grid date
      */
     public AbsoluteDate getPreviousDate() {
-        return new AbsoluteDate(initializedReference, interpolator.getPreviousTime());
+        return new AbsoluteDate(initializedReference, rawInterpolator.getPreviousTime());
     }
 
     /** Get the interpolated date.
@@ -120,14 +120,14 @@ public class AdaptedStepHandler
      * @see #getInterpolatedState()
      */
     public AbsoluteDate getInterpolatedDate() {
-        return new AbsoluteDate(initializedReference, interpolator.getInterpolatedTime());
+        return new AbsoluteDate(initializedReference, rawInterpolator.getInterpolatedTime());
     }
 
     /** Set the interpolated date.
      * <p>It is possible to set the interpolation date outside of the current
      * step range, but accuracy will decrease as date is farther.</p>
      * @param date interpolated date to set
-     * @exception PropagationException if underlying interpolator cannot handle
+     * @exception PropagationException if underlying rawInterpolator cannot handle
      * the date
      * @see #getInterpolatedDate()
      * @see #getInterpolatedState()
@@ -135,7 +135,7 @@ public class AdaptedStepHandler
     public void setInterpolatedDate(final AbsoluteDate date)
         throws PropagationException {
         try {
-            interpolator.setInterpolatedTime(date.minus(initializedReference));
+            rawInterpolator.setInterpolatedTime(date.minus(initializedReference));
         } catch (DerivativeException de) {
             throw new PropagationException(de.getMessage(), de);
         }
@@ -148,9 +148,9 @@ public class AdaptedStepHandler
      * @see #setInterpolatedDate(AbsoluteDate)
      */
     public SpacecraftState getInterpolatedState() throws OrekitException {
-        final double[] y = interpolator.getInterpolatedState();
+        final double[] y = rawInterpolator.getInterpolatedState();
         final AbsoluteDate interpolatedDate =
-            new AbsoluteDate(initializedReference, interpolator.getInterpolatedTime());
+            new AbsoluteDate(initializedReference, rawInterpolator.getInterpolatedTime());
         final Orbit orbit =
             new EquinoctialOrbit(y[0], y[1], y[2], y[3], y[4], y[5],
                                       EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
@@ -166,7 +166,7 @@ public class AdaptedStepHandler
      * @return true if integration is forward in date
      */
     public boolean isForward() {
-        return interpolator.isForward();
+        return rawInterpolator.isForward();
     }
 
 }

@@ -55,7 +55,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
      * @param h fixed time step (sign is not used)
      * @param handler fixed time step handler to wrap
      */
-    public OrekitStepNormalizer(double h, OrekitFixedStepHandler handler) {
+    public OrekitStepNormalizer(final double h, final OrekitFixedStepHandler handler) {
         this.h       = Math.abs(h);
         this.handler = handler;
         reset();
@@ -91,10 +91,10 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
      * should build a local copy using the clone method and store this
      * copy.
      * @param isLast true if the step is the last one
-     * @throws DerivativeException this exception is propagated to the
+     * @throws PropagationException this exception is propagated to the
      * caller if the underlying user function triggers one
      */
-    public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
+    public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast)
         throws PropagationException {
         try {
 

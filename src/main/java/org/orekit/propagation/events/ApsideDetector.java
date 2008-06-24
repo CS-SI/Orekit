@@ -67,14 +67,14 @@ public class ApsideDetector extends AbstractDetector {
      * or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
-    public int eventOccurred(SpacecraftState s) throws OrekitException {
-        double r = s.getPVCoordinates().getPosition().getNorm();
+    public int eventOccurred(final SpacecraftState s) throws OrekitException {
+        final double r = s.getPVCoordinates().getPosition().getNorm();
         return (r > s.getA()) ? CONTINUE : STOP;
     }
 
     /** {@inheritDoc} */
-    public double g(SpacecraftState s) throws OrekitException {
-        PVCoordinates pv = s.getPVCoordinates();
+    public double g(final SpacecraftState s) throws OrekitException {
+        final PVCoordinates pv = s.getPVCoordinates();
         return Vector3D.dotProduct(pv.getPosition(), pv.getVelocity());
     }
 
