@@ -40,7 +40,7 @@ import org.orekit.utils.PVCoordinates;
 
 public class YawCompensationTest extends TestCase {
 
-    /** Test class for body center pointing attitude law.
+    /** Test class for yaw compensation attitude law.
      */
     public YawCompensationTest(String name) {
         super(name);
