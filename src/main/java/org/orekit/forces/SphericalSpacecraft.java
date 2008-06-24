@@ -73,7 +73,7 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
     }
 
     /** {@inheritDoc} */
-    public Vector3D getAbsCoef(final Vector3D direction) {
+    public Vector3D getAbsorptionCoef(final Vector3D direction) {
         return new Vector3D(absorptionCoeff, direction);
     }
 

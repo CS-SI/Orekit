@@ -107,7 +107,7 @@ public class SolarRadiationPressure implements ForceModel {
         // spacecraft characteristics effects
         final Vector3D u = satSunVector.normalize();
         final Vector3D inSpacecraft = s.getAttitude().getRotation().applyTo(u);
-        final double kd = (1.0 - spacecraft.getAbsCoef(inSpacecraft).getNorm()) *
+        final double kd = (1.0 - spacecraft.getAbsorptionCoef(inSpacecraft).getNorm()) *
             (1.0 - spacecraft.getReflectionCoef(inSpacecraft).getNorm());
 
         final double acceleration =

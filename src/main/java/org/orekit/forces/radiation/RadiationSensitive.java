@@ -38,7 +38,7 @@ public interface RadiationSensitive extends Serializable {
      * @param direction direction of the light flux in the spacecraft frame
      * @return absorption coefficients vector in the spacecraft frame
      */
-    Vector3D getAbsCoef(Vector3D direction);
+    Vector3D getAbsorptionCoef(Vector3D direction);
 
     /** Get the specular reflection coefficients vector.
      * @param direction direction of the light flux in the spacecraft frame

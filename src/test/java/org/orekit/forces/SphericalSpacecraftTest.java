@@ -40,7 +40,7 @@ extends TestCase {
                                       2.0, directions[i]).getNorm(),
                          1.0e-15);
             assertEquals(0.0,
-                         new Vector3D(-1, s.getAbsCoef(directions[i]),
+                         new Vector3D(-1, s.getAbsorptionCoef(directions[i]),
                                       3.0, directions[i]).getNorm(),
                          1.0e-15);
             assertEquals(0.0,
@@ -64,7 +64,7 @@ extends TestCase {
                                       2.0, directions[i]).getNorm(),
                          1.0e-15);
             assertEquals(0.0,
-                         new Vector3D(-1, s.getAbsCoef(directions[i]),
+                         new Vector3D(-1, s.getAbsorptionCoef(directions[i]),
                                       3.0, directions[i]).getNorm(),
                          1.0e-15);
             assertEquals(0.0,
