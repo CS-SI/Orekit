@@ -82,7 +82,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
     }
 
     /**
-     * Handle the last accepted step
+     * Handle the last accepted step.
      * @param interpolator interpolator for the last accepted step. For
      * efficiency purposes, the various propagators reuse the same
      * object on each call, so if the instance wants to keep it across
@@ -107,7 +107,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
 
                 // take the propagation direction into account
                 forward = interpolator.getCurrentDate().compareTo(lastDate) >= 0;
-                if (! forward) {
+                if (!forward) {
                     h = -h;
                 }
 
