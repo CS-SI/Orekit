@@ -11,6 +11,22 @@
 ~~ See the License for the specific language governing permissions and
 ~~ limitations under the License.
 
-Architecture
+Utils
 
-  The architecture of Orekit is ...
+  The "Utils" package provides useful objects for mathematical or geometrical handlings.
+
+* Utils Presentation
+
+  Implemented classes are :
+  
+  * <<Position/Velocity>> object, used to describe moving points by their position/velocity 
+  coordinates in a given frame, and associated useful operations.
+
+  * <<Line>> object, used to represent a geometric line and associated useful operations.
+
+* Author 
+
+  ** Luc Maisonobe
+  
+  ** V\u00e9ronique Pommier-Maurussane
+  

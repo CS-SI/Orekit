@@ -1,0 +1,132 @@
+~~ Copyright 2002-2008 CS Communication & Systèmes
+~~ Licensed under the Apache License, Version 2.0 (the "License");
+~~ you may not use this file except in compliance with the License.
+~~ You may obtain a copy of the License at
+~~
+~~   http://www.apache.org/licenses/LICENSE-2.0
+~~
+~~ Unless required by applicable law or agreed to in writing, software
+~~ distributed under the License is distributed on an "AS IS" BASIS,
+~~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~~ See the License for the specific language governing permissions and
+~~ limitations under the License.
+
+Frames
+
+  The "Frames" package provides classes to handle frames and transforms between them.
+	
+* Frames Presentation
+
+** Frames tree
+
+  The Transform class represents a full transform: combined rotation and translation,
+  and their first time derivatives to handle kinematics. 
+
+  The frames are organized as a tree with a single root: the J2000 frame.
+  Each Frame is defined by a transform (combination of translations and rotations)
+  linking it to another one, called its "parent frame". The only exception is the
+  predefined J2000 inertial frame which has no parent, and which is the root of the tree.
+   
+[./images/frametree.png]
+
+
+** Transform
+
+  When we say a transform t is <from frame<<A>>
+  to frame<<B>>, we mean that if the coordinates of some absolute
+  vector (say the direction of a distant star for example) has coordinates
+  u<A> in frame<<A>> and u<B> in frame<<B>>,
+  then u<B>=t.transformVector(u<A>).
+ 
+  The transforms may be constant or varying. For simple fixed transforms,
+  using this base class is sufficient. For varying transforms (time-dependent
+  or telemetry-based for example), it may be useful to define specific subclasses
+  that will implement <updateFrame(AbsoluteDate)> or that will add some specific 
+  <updateFromTelemetry(telemetry)> methods that will compute the transform and call 
+  internally the <setTransform(Transform)> method.
+ 
+  The frames can be time dependent (for example the ITRF2000A frame depends on time due 
+  to precession/nutation, Earth rotation and pole motion). In order to get a transform 
+  from one frame to another one, the date must be specified, and 
+  <updateFrame(AbsoluteDate)> is called under the hood. If a user wants to implement
+  his own date synchronized frame, he has to implement by extension his own 
+  <updateFrame(AbsoluteDate)> method, the default implementation provided by the 
+  base class does nothing and is suited for non time dependent frames.
+
+
+* Reference Frames
+
+  Several Reference frames are implemented in OREKIT. 
+  
+  One set corresponds to the frames from the IERS 2003 conventions (ITRF2000 and others). 
+  Both complete 2000A and reduced 2000B versions are available. 
+  Another frame not belonging to the previous set is the Veis 1950 
+  frame which is considered here as a simple rotation from J2000.
+  
+  The user can retrieve them using various static methods(<getJ2000()>,
+  <getITRF2000A()>, <getITRF2000B()>, <getIRF2000A()>, <getIRF2000B()>, 
+  <getTIRF2000A()>, <getTIRF2000B()> and <getVeis1950()>).
+  
+  A topocentric frame model also exist, allowing to define the frame associated 
+  to any position at the surface of a given body shape.
+
+  * International Terrestrial Reference Frame 2000
+  
+    This frame is the current (as of 2006) reference realization of
+    the International Terrestrial Reference System produced by IERS.
+    It is described in IERS conventions (2003) :
+    {{{http://www.iers.org/documents/publications/tn/tn32/tn32.pdf}IERS conventions (2003)}}. 
+    It replaces the Earth Centered Earth Fixed frame which is the reference frame 
+    for GPS satellites.
+    This frame is used to define position on solid Earth. It rotates with
+    the Earth and includes the pole motion with respect to Earth crust as
+    provided by <org.orekit.iers.IERSDirectoryCrawler IERS data>.
+    Its pole axis is the IERS Reference Pole (IRP).
+ 
+    OREKIT proposes all the intermediate frames used to build this specific frame.
+    Here is a schematic representation of the ITRF frame tree :
+    
+[./images/itrftree.png]
+ 
+ 
+    This implementation follows the new non-rotating origin paradigm
+    mandated by IAU 2000 resolution B1.8. It is therefore based on
+    Celestial Ephemeris Origin (CEO-based) and Earth Rotating Angle. Depending
+    on user choice at construction, it is either consistent to the complete IAU
+    2000A precession-nutation model with an accuracy level of 0.2 milliarcsecond
+    or consistent to the reduced IAU 2000B precession-nutation model with an
+    accuracy level of 1.0 milliarcsecond. The IAU2000B is recommended for most
+    applications since it is <<far less>> computation intensive than
+    the IAU2000A model and its accuracy is only slightly degraded.
+ 
+    Other implementations of the ITRF 2000 are possible by
+    ignoring the B1.8 resolution and using the classical paradigm which
+    is equinox-based and relies on a specifically tuned Greenwich Sidereal Time.
+    They are not yet available in the OREKIT library.
+
+  * Topocentric Frame
+  
+  This frame model allows to define the frame associated to any position at 
+  the surface of given body shape. It is defined by following axes :
+  
+    ** zenith direction (Z) is defined as the normal to local horizontal plane;
+    
+    ** north direction (Y) is defined in the horizontal plane
+    (normal to zenith direction) and following the local meridian;
+       
+    ** east direction (X) is defined in the horizontal plane
+    in order to complete direct triangle (east, north, zenith).
+    
+  In such a frame, the user can retrieve azimuth angle, elevation angle, 
+  range and range rate of any point given in any frame, at given date.
+
+
+* Authors
+
+   ** Luc Maisonobe
+  
+   ** Guylaine Prat
+  
+   ** Fabien Maussion
+  
+   ** V\u00e9ronique Pommier-Maurussane

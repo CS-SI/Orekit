@@ -28,10 +28,21 @@
     <menu name="Orekit">
       <item name="Overview"      href="/index.html"        />
       <item name="Building"      href="/building.html"     />
-      <item name="Architecture"  href="/architecture.html" />
       <item name="FAQ"           href="/faq.html"          />
       <item name="License"       href="/license.html"      />
       <item name="Contact"       href="/contact.html"      />
+    </menu>
+    <menu name="Architecture">
+      <item name="Attitudes"   href="/attitudes.html"     />
+      <item name="Bodies"      href="/bodies.html"        />
+      <item name="Errors"      href="/errors.html"        />
+      <item name="Frames"      href="/frames.html"        />
+      <item name="Iers"        href="/iers.html"          />
+      <item name="Orbits"      href="/orbits.html"        />
+      <item name="Propagation" href="/propagation.html"   />
+      <item name="Time"        href="/time.html"          />
+      <item name="Tle"         href="/tle.html"           />
+      <item name="Utils"       href="/utils.html"         />
     </menu>
     <menu name="Development">
       <item name="Contributing"  href="/contributing.html" />
