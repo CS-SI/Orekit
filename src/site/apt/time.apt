@@ -1,0 +1,77 @@
+~~ Copyright 2002-2008 CS Communication & Systèmes
+~~ Licensed under the Apache License, Version 2.0 (the "License");
+~~ you may not use this file except in compliance with the License.
+~~ You may obtain a copy of the License at
+~~
+~~   http://www.apache.org/licenses/LICENSE-2.0
+~~
+~~ Unless required by applicable law or agreed to in writing, software
+~~ distributed under the License is distributed on an "AS IS" BASIS,
+~~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~~ See the License for the specific language governing permissions and
+~~ limitations under the License.
+
+Time
+
+  The "Time" package is an independent package providing classes to handle epochs, 
+  time scales, and to compare instants between them.
+	
+* Time Presentation
+
+  The principal class is <AbsoluteDate> which represents a unique instant in time, 
+  with no ambiguity. For that purpose, the ways to define this object are quite strict.
+
+
+** Instant "relative" definition
+
+  The easiest and most evident way is to define an instant with an offset from another
+  one. Orekit defines 6 reference epochs. The first 5 are commonly used in the space
+  community and the last one is commonly used in the computer science field.
+
+  	  ** <Julian Epoch> : -4712-01-01 at 12:00:00, TTScale
+  	  
+      ** <Modified Julian Epoch> : 1858-11-17 at 00:00:00, TTScale
+      
+      ** <Fifties Epoch>: 1950-01-01 at 00:00:00,  TTScale
+
+      ** <GPS Epoch> : 1980-01-06 at 00:00:00,  UTCScale
+
+      ** <J2000 Epoch> : 2000-01-01 at 12:00:00, TTScale
+
+      ** <Java Epoch> : 1970-01-01 at 00:00:00. TTScale
+
+
+** Instant "absolute" definition
+
+  The second definition, that can be the source of some confusion, is by giving a 
+  location (a date) in a specific <time scale>. It is of prime importance to understand 
+  the various available time scales definitions to avoid mistakes. Orekit provides 
+  4 of the most important ones:
+
+    ** <<International Atomic Time>>,
+    
+    ** <<Terrestrial Time>> as defined by IAU(1991)
+	    recommendation IV. Coordinate time at the surface of the Earth. It is the
+	    successor of Ephemeris Time TE. By convention, TT = TAI + 32.184 s,
+	    
+    ** <<Coordinated Universal Time>>. UTC is related to
+        TAI using step adjustments from time to time according to IERS (International Earth
+        Rotation Service) rules. These adjustments require introduction of leap seconds,
+
+    ** <<Geocentric Coordinate Time>>. Coordinate time at the
+        center of mass of the Earth. This time scale depends linearly from TTScale.
+        
+  An instant can be defined by a chunked date, or by its coordinates on the time scale
+  (expressed as a number of seconds from the time scale origin).       
+ 
+ 
+* Time Use
+
+  Once it is built, an <AbsoluteDate> can be compared to other ones, and converted 
+  and expressed in other time scales. 
+  It is used to define states, orbits, frames...
+  
+
+* Authors
+
+  ** Luc Maisonobe

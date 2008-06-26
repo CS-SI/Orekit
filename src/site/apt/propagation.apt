@@ -1,0 +1,85 @@
+~~ Copyright 2002-2008 CS Communication & Systèmes
+~~ Licensed under the Apache License, Version 2.0 (the "License");
+~~ you may not use this file except in compliance with the License.
+~~ You may obtain a copy of the License at
+~~
+~~   http://www.apache.org/licenses/LICENSE-2.0
+~~
+~~ Unless required by applicable law or agreed to in writing, software
+~~ distributed under the License is distributed on an "AS IS" BASIS,
+~~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~~ See the License for the specific language governing permissions and
+~~ limitations under the License.
+
+Propagation
+
+  This package provides tools to propagate orbital states with different methods.
+	
+* Propagation Presentation
+
+  Propagation is the prediction of the evolution of a system from an initial state.
+  In Orekit, this initial state is represented by a <SpacecraftState>, which is a 
+  simple container for all needed information : mass, kinematics, attitude, date, frame. 
+  Several ways to computte this prediction and store its results are offered to the user:
+
+
+** Keplerian propagation
+
+ The <KeplerianPropagator> implements the <Propagator> interface, which ensures 
+ that we can obtain a propagated SpacecraftState at any time once the instance 
+ is initialized with an initial state. This extrapolation is not a problem with a 
+ simple <EquinoctialOrbit> representation: only the mean anomaly value changes.
+
+
+** Eckstein-Hechler propagation	
+
+  This analytical model is suited for near circular orbits and inclination neither 
+  equatorial nor critical. It considers J2 to J6 potential coefficients correctors, 
+  and uses mean parameters to compute the new position. As the keplerian propagator, 
+  it implements the <Propagator> interface. 
+
+	
+** Numerical propagation
+
+ It is the most important part of the OREKIT project. Based on commons-math
+ integrators, the {@link org.orekit.propagation.numerical.NumericalPropagator}
+ class realizes the interface between space mechanics and mathematical 
+ resolutions. If its utilization seems difficult on first sight, it is in 
+ fact quite clear and intuitive.
+
+
+  The mathematical problem to integrate is a seven dimension time derivative equations
+  system. The six first equations are given by the Gauss equations (expressed
+  in <EquinoctialOrbit>) and the seventh is simply the flow rate and mass equation. 
+  This first order system is computed by the <TimeDerivativesEquations> class.
+  It will be instanced by the propagator and then be modified at each step 
+  (a fixed t value) by all the needed force models which will add their contribution, 
+  the perturbing acceleration.
+ 
+  The integrators (<first order integrators>) provided by commons-math need 
+  the state vector at t0, the state vector first time derivative at t0,
+  and then calculates the next step state vector, and ask for the next first 
+  time derivative, etc. until it reaches the final asked date. 
+
+
+* Events management
+
+  Propagators can also take into account discrete events occurring during the propagation 
+  period. In order to perform that function, an events detector mechanism is used, 
+  it is implemented through the <EventDetector> interface. At each propagation step, the
+  propagator calls the event detector to check if some event has been detected, and if 
+  it has, the corresponding action is triggered.
+  Several use modes are available:
+  
+  ** 
+  
+  ** 
+  
+  ** 
+
+* Authors
+
+  ** Luc Maisonobe
+  
+  ** Fabien Maussion
+  

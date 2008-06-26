@@ -1,0 +1,72 @@
+~~ Copyright 2002-2008 CS Communication & Systèmes
+~~ Licensed under the Apache License, Version 2.0 (the "License");
+~~ you may not use this file except in compliance with the License.
+~~ You may obtain a copy of the License at
+~~
+~~   http://www.apache.org/licenses/LICENSE-2.0
+~~
+~~ Unless required by applicable law or agreed to in writing, software
+~~ distributed under the License is distributed on an "AS IS" BASIS,
+~~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~~ See the License for the specific language governing permissions and
+~~ limitations under the License.
+
+Forces
+
+  The "Forces" package provides the interface for force models that will be used by the 
+  <NumericalPropagator>.
+  
+* Forces presentation
+
+  Objects implementing the force model interface are intended to be added to a
+  numerical propagator before the propagation is started.
+  
+  The propagator will call at each step the force model contribution computation
+  method, to be added to its time derivative equations. The force model instance 
+  will extract all the state data it needs (date,position, velocity, frame, attitude, 
+  mass) from the first parameter. 
+  From these state data, it will compute the perturbing acceleration. It
+  will then add this acceleration to the second parameter which will take thins
+  contribution into account and will use the Gauss equations to evaluate its impact
+  on the global state derivative.
+
+  Force models which create discontinuous acceleration patterns (typically for maneuvers
+  start/stop or solar eclipses entry/exit) must provide one or more events detectors to 
+  the propagator thanks to their <getEventsDetectors()> method. This method
+  is called once just before propagation starts. The events states will be checked by
+  the propagator to ensure accurate propagation and proper events handling.
+
+
+* Available force models
+
+  The force models implemented are the following ones:
+
+  * atmospheric drag forces,
+  
+  * gravity forces. Several attraction model are available for representing 
+  the gravitational field of a celestial body: 
+  
+      ** Andrzej Droziner model (Institute of Mathematical Machines, Warsaw) in
+          his 1976 paper: <em>An algorithm for recurrent calculation of gravitational
+          acceleration</em> (artificial satellites, Vol. 12, No 2, June 1977),
+      
+      ** Leland E. Cunningham model (Lockheed Missiles and Space Company, Sunnyvale
+          and Astronomy Department University of California, Berkeley) in
+          his 1969 paper: <On the computation of the spherical harmonic
+          terms needed during the numerical integration of the orbital motion
+          of an artificial satellite> (Celestial Mechanics 2, 1970),
+  
+  * forces induced by maneuvers. At present, only constant thrust maneuvers 
+  are implemented, with the possibility to define an impulse maneuver, thanks 
+  to the event detector mechanism.
+  
+  * solar radiation pressure force.
+  
+
+* Authors
+
+ ** Luc Maisonobe
+ 
+ ** Mathieu Rom\u00e9ro
+ 
+ ** Edouard Delente

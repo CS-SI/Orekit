@@ -57,8 +57,8 @@ Orbits
   notions at a single time. They basically represent the current state, and
   serve as data holder. Most of methods provided by these orbits classes are
   getters. Some of them (the non-ambiguous ones that must be always available) are
-  defined in the top Orbit abstract class (Orbit.getA()}, Orbit.getDate()}, 
-  Orbit.getPVCoordinates()). The more specific ones depending on the type of 
+  defined in the top Orbit abstract class (<Orbit.getA()>, <Orbit.getDate()>, 
+  <Orbit.getPVCoordinates()>). The more specific ones depending on the type of 
   representation are only defined in the corresponding class 
   (CircularOrbit.getCircularEx() for example).
 
@@ -97,6 +97,7 @@ Orbits
 * Existing orbit representations
 
   Available orbit representations are :
+  
   \
   * Classic keplerian orbit, which parameters are :
    
