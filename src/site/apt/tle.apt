@@ -13,7 +13,7 @@
 
 TLE
 
-This package provides classes to read and extrapolate Two-Line orbits format.
+  This package provides classes to read and extrapolate Two-Line orbits format.
 
 * TLE Presentation
 
@@ -44,4 +44,8 @@ This package provides classes to read and extrapolate Two-Line orbits format.
 * Authors
 
   ** Fabien Maussion
+  
+  ** Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
+  
+  ** David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
   

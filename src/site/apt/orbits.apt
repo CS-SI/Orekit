@@ -69,7 +69,7 @@ Orbits
   are really used in many places in algorithms, for computation related to
   period (setting a convergence threshold or a search interval) or geometry
   (computing swath or lightning). A side-effect of this choice is that all orbits
-  do include a value for MU, the acceleration coefficient of the central body.
+  do include a value for \u00b5, the acceleration coefficient of the central body.
   This value is only used for the representation of the parameters and for conversion
   purposes, it is <not> always the same as the value used for propagation (but
   of course, using different values should be done with care).
@@ -193,4 +193,6 @@ Orbits
   ** Fabien Maussion
   
   ** V\u00e9ronique Pommier-Maurussane
+  
+  ** Mathieu Rom\u00e9ro
   

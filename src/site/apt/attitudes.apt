@@ -43,9 +43,12 @@ Attitude
 
 ** "Basic" attitude laws
 
-  ** Inertial law, which represents an inertial attitude law, perfectly 
+  ** inertial law, which represents an inertial attitude law, perfectly 
   aligned with the J2000 frame.
   
+  ** celestial body pointed, i.e satellite pointing axis directed towards given 
+  celestial body.
+    
   ** spin stabilized law, which is handled as a wrappers for an underlying
   non-rotating law. This underlying law is typically an instance
   of CelestialBodyPointed with the pointing axis equal to
@@ -62,9 +65,6 @@ Attitude
    ** body center pointing law, i.e satellite pointing axis directed towards 
       reference body frame center.
     
-   ** celestial body pointed, i.e satellite pointing axis directed towards given 
-      celestial body.
-    
    ** lof offset pointing, defined by a lof offset simple attitude law 
       and completed with ground pointing corresponding functions.
     
@@ -74,7 +74,8 @@ Attitude
    ** target pointing, i.e. satellite pointing axis directed towards given 
       point on reference body shape.
 
-   ** ground pointing wrapper, which is used for complex pointing laws described herebelow.
+   ** ground pointing wrapper, which is an abstract class used for complex pointing 
+   laws described herebelow.
 
   All these ground pointing laws are relative to corresponding body frame,
   which is used for their construction. Depending on their nature, each ground pointing 
@@ -84,17 +85,19 @@ Attitude
 
 ** "Complex" pointing laws
 
-  Several classes have been implemented in order to represent som attitude law in which a
+  Several classes have been implemented in order to represent some attitude law in which a
   "base" attitude law is used, and added a "complementary" rotation in order to fulfill specific 
-  mission constraints. Up to now, implemented laws of this kind are :
+  mission constraints. They are gathered under abstract class <GroundPointingWrapper>.*
+  Up to now, implemented laws of this kind are:
   
-  ** yaw compensation law : this law is used to fulfill ground observation constraints
+  ** yaw compensation law: this law is used to fulfill ground observation constraints
   which are to reduce geometrical distortion. Yaw angle is changed a little from 
   the basic ground pointing attitude, so that the apparent motion of ground points is 
   along a prescribed axis (orthogonal to the optical sensors rows), taking into account 
-  all effects.
+  all effects. It is the impact of earth proper rotation on ground points that is 
+  compensated.
 
-  ** yaw steering law : this lawg is mainly used for low Earth orbiting satellites 
+  ** yaw steering law: this law is mainly used for low Earth orbiting satellites 
   with no missions-related constraints on yaw angle. It sets the yaw angle in
   such a way the solar arrays have maximal lightning without changing the
   roll and pitch.
@@ -102,8 +105,6 @@ Attitude
 
 * Authors
 
-  ** Fabien Maussion
-  
   ** Luc Maisonobe
   
   ** V\u00e9ronique Pommier-Maurussane

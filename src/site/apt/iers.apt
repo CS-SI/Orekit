@@ -25,7 +25,7 @@ Iers
   of files in the tree is free, sub-directories can be used at will.
   Gzip-compressed files are supported.
  
-  Except for specifying a new directory containing this kind of data's, 
+  Except for specifying a new directory containing this kind of data, 
   the user should not bother understanding this package.
 
 * Authors

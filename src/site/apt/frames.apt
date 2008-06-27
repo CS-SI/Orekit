@@ -38,11 +38,11 @@ Frames
   ** to define the relationship between each frame and its parent frame. 
   In that case it is the element that allows creating a new frame relatively 
   to another one (its parent). It accounts for the "branches" of the frame tree 
-  (<<tdef>> on the scheme).
+  (<<tdef>> on the following scheme).
   
   ** to gather all individual transforms into one operation when converting 
   between any frames, whatever far away they are from each other
-  (<<trel>> on the scheme).
+  (<<trel>> on the following scheme).
   
 [./images/transform.png]
 
@@ -50,7 +50,7 @@ Frames
   The convention used in OREKIT is vectorial transformation. It means that a 
   transformation is defined as a transform to apply to the coordinates of a vector 
   expressed in the old frame to obtain the same vector expressed in the new frame:
-  When we say a transform t is <from frame<<A>> to frame<<B>>, we mean that if 
+  When we say a transform t is from frame<<A>> to frame<<B>>, we mean that if 
   the coordinates of some absolute vector (say the direction of a distant star for 
   example) has coordinates u<A> in frame<<A>> and u<B> in frame<<B>>,
   then u<B>=t.transformVector(u<A>).
