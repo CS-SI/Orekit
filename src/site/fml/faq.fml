@@ -17,36 +17,21 @@
 
   <part id="general">
     <title>General</title>
-    <faq id="general-empty">
+    <faq id="commons-math-unavailable">
       <question>
-        Why is this section empty ?
+        When I try to compile orekit, maven cannot find commons-math 2.0-SNAPSHOT, where is it ?
       </question>
       <answer>
-        <p>Because there is no frequently asked question for this topic yet.</p>
-      </answer>
-    </faq>
-  </part>
-
-  <part id="dynamics">
-    <title>Space dynamics</title>
-    <faq id="dynamics-empty">
-      <question>
-        Why is this section empty ?
-      </question>
-      <answer>
-        <p>Because there is no frequently asked question for this topic yet.</p>
-      </answer>
-    </faq>
-  </part>
-
-  <part id="Java">
-    <title>Java</title>
-    <faq id="java-empty">
-      <question>
-        Why is this section empty ?
-      </question>
-      <answer>
-        <p>Because there is no frequently asked question for this topic yet.</p>
+        <p>
+          Orekit depends on features of commons which have not been released as of early 2008.
+          You will have to retrieve the current version from Apache subversion repository, and
+          compile it yourself. This is done by the following three commands:
+        </p>
+        <pre>
+          svn checkout http://svn.apache.org/repos/asf/commons/proper/math/branches/MATH_2_0 commons-math
+          cd commons-math
+          mvn install
+        </pre>
       </answer>
     </faq>
   </part>
