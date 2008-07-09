@@ -113,7 +113,7 @@ Overview
         propagation and provided back to the application which can navigate at will
         through them, effectively using the propagated orbit as if it was an
         analytical model, even if it really is a numerically propagated one, which
-        is ideal for search and iterative algorithms)
+        is ideal for search and iterative algorithms
 
     * handling of discrete events during integration
       (models changes, G-stop, simple notifications ...)
