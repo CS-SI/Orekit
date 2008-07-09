@@ -89,13 +89,6 @@ Overview
       * state of the art ODE integrators (adaptive stepsize with error control,
         continuous output, switching functions, G-stop, step normalization ...)
 
-      * can be used in slave mode (propagator is driven by calling application),
-        master mode (propagator drives application callback functions) or ephemeris
-        generation mode (all intermediate results are stored during integration and
-        provided back to the application which can navigate at will through them,
-        effectively using the numerically propagated orbit as if it was computed by
-        an analytical model, this is ideal for search and iterative algorithms)
-
       * serialization mechanism to store complete results on persistent storage for
         later use
 
@@ -109,6 +102,18 @@ Overview
 
     * unified interface above analytical/numerical/tabulated propagators for easy
       switch from coarse analysis to fine simulation with one line change
+
+    * all propagators can be used in several different modes
+
+      * slave mode: propagator is driven by calling application
+
+      * master mode: propagator drives application callback functions
+
+      * ephemeris generation mode: all intermediate results are stored during
+        propagation and provided back to the application which can navigate at will
+        through them, effectively using the propagated orbit as if it was an
+        analytical model, even if it really is a numerically propagated one, which
+        is ideal for search and iterative algorithms)
 
     * handling of discrete events during integration
       (models changes, G-stop, simple notifications ...)
