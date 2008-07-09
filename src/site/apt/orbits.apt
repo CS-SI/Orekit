@@ -139,9 +139,9 @@ Orbits
      
      ** ey = e x sin(omega + Omega)
      
-     ** hx = tan(i/2) cos(&Omega;)
+     ** hx = tan(i/2) cos(Omega)
      
-     ** hx = tan(i/2) sin(&Omega;)
+     ** hx = tan(i/2) sin(Omega)
      
      ** lv, lM or lE (rad) : respectively true longitude (omega + v), 
      mean longitude (omega + M) or eccentric longitude (omega + E).
