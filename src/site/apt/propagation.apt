@@ -20,22 +20,79 @@ Propagation
   Propagation is the prediction of the evolution of a system from an initial state.
   In Orekit, this initial state is represented by a <SpacecraftState>, which is a 
   simple container for all needed information : orbit, mass, kinematics, attitude, date, 
-  frame. 
-  Several ways to compute this prediction and store its results are offered to the user:
+  frame.
+
+** Propagation modes
+
+  Depending on the needs of the calling application, all propagators can be used in
+  different modes:
+ 
+   * slave mode: This mode is used when the user needs only the final orbit at the target 
+  time. The (slave) propagator is passive: it computes this result and return it to the 
+  calling (master) application, without any intermediate feedback. In that case the events 
+  detection is made but the <step handler> does nothing, actions are managed directly by the
+  calling application.
+
+
+   * master mode: This mode is used when the user needs to have some custom function 
+  called at the end of each finalized step during integration. The (master) propagator 
+  is active: the integration loop calls the (slave) application callback methods at each 
+  finalized step, through the <step handler>.
+
+
+   * ephemeris generation mode: This mode is used when the user needs random access 
+  to the orbit state at any time between the initial and target times, and in no
+  sequential order. A typical example is the implementation of search and iterative 
+  algorithms that may navigate forward and backward inside the propagation range before 
+  finding their result.
+  Beware that this mode cannot support events that modify spacecraft initial state. 
+  Beware that since this mode stores <<all>> intermediate results, it may be memory 
+  intensive for long integration ranges and high precision/short time steps.
+
+
+** Events management
+
+  All propagators, including analytical ones, support discrete events handling during
+  propagation. This feature is activated by registering events detectors as defined by
+  the <EventDetector> interface to the propagator. At each propagation step, the
+  propagator checks the registered events detectors for the occurrence of some event.
+  If an event occurs, then the corresponding action is triggered, which can ask the
+  propagator to resume propagation, possibly with an updated state or to stop propagation.
+
+  Resuming propagation with changed state is used for example to in the <ImpulseManeuver>
+  class. When the maneuver is triggered, the orbit is changed according to the velocity increment
+  associated with the maneuver and the mass is reduced according to the consumption. This
+  allows to handle simple maneuvers transparently even inside basic propagators like
+  Kepler or Eckstein-Heschler.
+
+  Stopping propagation is useful when some specific state is desired but its real occurrence
+  time is unknown in advance. a typical example would be to find the next ascending node
+  or the next apogee. In this case, we can register a <NodeDetector> or an <ApsideDetector>
+  object and launch a propagation with a target time far away in the future. When the
+  event is triggered, it ask the propagator to stop and the returned value is the state
+  exactly at the event time.
+
+  Two other available events detectors are a simple <DateDetector> which is simply tirggered
+  at a predefined date and an <ElevationDetector> which is triggered at raising or setting
+  time of a satellite with respect to a ground point. The latter can be used to compute
+  easily operational forecasts.
+
+
+* Available propagators
 
 
 ** Keplerian propagation
 
  The <KeplerianPropagator> implements the <Propagator> interface, which ensures 
  that we can obtain a propagated SpacecraftState at any time once the instance 
- is initialized with an initial state. This propagation is not a problem with a 
- simple <EquinoctialOrbit> representation: only the mean anomaly value changes.
+ is initialized with an initial state. This model is based on Keplerian only
+ motion. It depends on \u00b5.
 
 
 ** Eckstein-Hechler propagation	
 
   This analytical model is suited for near circular orbits and inclination neither 
-  equatorial nor critical. It considers J2 to J6 potential coefficients correctors, 
+  equatorial nor critical. It considers J2 to J6 potential zonal coefficients, 
   and uses mean parameters to compute the new position. As the keplerian propagator, 
   it implements the <Propagator> interface. 
 
@@ -48,11 +105,11 @@ Propagation
   on first sight, it is in  fact quite clear and intuitive.
 
 
-  The mathematical problem to integrate is a seven dimension time derivative equations
+  The mathematical problem to integrate is a dimension seven time derivative equations
   system. The six first equations are given by the Gauss equations (expressed
-  in <EquinoctialOrbit>) and the seventh is simply the flow rate and mass equation. 
-  This first order system is computed by the <TimeDerivativesEquations> class.
-  It will be instanced by the propagator and then be modified at each step 
+  in <EquinoctialOrbit>) and the seventh one is simply the flow rate for mass evolution
+  during maneuvers. This first order system is computed by the <TimeDerivativesEquations>
+  class. It will be instanced by the propagator and then be modified at each step 
   (a fixed t value) by all the needed force models which will add their contribution, 
   the perturbing acceleration.
  
@@ -62,39 +119,6 @@ Propagation
   time derivative, etc. until it reaches the final asked date. 
 
 
-* Events management
-
-  Propagators can also take into account discrete events occurring during the propagation 
-  period. In order to perform that function, an events detector mechanism is used, 
-  it is implemented through the <EventDetector> interface. At each propagation step, the
-  propagator calls the event detector to check if some event has been detected, and if 
-  it has, the corresponding action is triggered, through to the <OrekitStepHandler> 
-  interface.
-  Several use modes are available:
-   
-   * slave mode: This mode is used when the user needs only the final orbit at the target 
-  time. The (slave) propagator is passive: it computes this result and return it to the 
-  calling (master) application, without any intermediate feedback. In that case the events 
-  detection is made but the <step handler> does nothing, actions are managed directly by the
-  calling application.
-  
-  
-   * master mode: This mode is used when the user needs to have some custom function 
-  called at the end of each finalized step during integration. The (master) propagator 
-  is active: the integration loop calls the (slave) application callback methods at each 
-  finalized step, through the <step handler>.
-  
-  
-   * ephemeris generation mode: This mode is used when the user needs random access 
-  to the orbit state at any time between the initial and target times, and in no
-  sequential order. A typical example is the implementation of search and iterative 
-  algorithms that may navigate forward and backward inside the propagation range before 
-  finding their result.
-  Beware that this mode cannot support events that modify spacecraft initial state. 
-  Beware that since this mode stores <<all>> intermediate results, it may be memory 
-  intensive for long integration ranges and high precision/short time steps.
-
-  
 * Authors
 
   ** Luc Maisonobe
