@@ -152,33 +152,31 @@ public class YawCompensationTest extends TestCase {
             // ------------------
             
             // 1/ Check yaw values around ascending node (max yaw)
-            if ( (Math.abs(extrapLat) < Math.toRadians(2.))
-                    && (extrapPvSatJ2000.getVelocity().getZ() >= 0. ) )
-            {
-                assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.8488911779424484)) 
-                        && (Math.abs(yawAngle) <= Math.toRadians(2.8531667023319462)));
+            if ((Math.abs(extrapLat) < Math.toRadians(2.)) &&
+                (extrapPvSatJ2000.getVelocity().getZ() >= 0. )) {
+                assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.8488)) 
+                        && (Math.abs(yawAngle) <= Math.toRadians(2.8532)));
             }
             
             // 2/ Check yaw values around maximum positive latitude (min yaw)
-            if ( extrapLat > Math.toRadians(50.) )
-            {
-                assertTrue((Math.abs(yawAngle) <= Math.toRadians(0.2627860468476059)) 
-                        && (Math.abs(yawAngle) >= Math.toRadians(0.0032285415586776798)));
+            if ( extrapLat > Math.toRadians(50.) ) {
+                assertTrue((Math.abs(yawAngle) <= Math.toRadians(0.2628)) 
+                        && (Math.abs(yawAngle) >= Math.toRadians(0.0032)));
             }
             
             // 3/ Check yaw values around descending node (max yaw)
             if ( (Math.abs(extrapLat) < Math.toRadians(2.))
                     && (extrapPvSatJ2000.getVelocity().getZ() <= 0. ) )
             {
-                assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.8485147320218904)) 
-                             && (Math.abs(yawAngle) <= Math.toRadians(2.8535230849061097)));
+                assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.8485)) 
+                             && (Math.abs(yawAngle) <= Math.toRadians(2.8536)));
             }
          
             // 4/ Check yaw values around maximum negative latitude (min yaw)
             if ( extrapLat < Math.toRadians(-50.) )
             {
-                assertTrue((Math.abs(yawAngle) <= Math.toRadians(0.2358843505723192)) 
-                             && (Math.abs(yawAngle) >= Math.toRadians(0.014143120809540489)));
+                assertTrue((Math.abs(yawAngle) <= Math.toRadians(0.2359)) 
+                             && (Math.abs(yawAngle) >= Math.toRadians(0.0141)));
             }
 
         }
