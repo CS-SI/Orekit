@@ -59,7 +59,7 @@ Propagation
   If an event occurs, then the corresponding action is triggered, which can ask the
   propagator to resume propagation, possibly with an updated state or to stop propagation.
 
-  Resuming propagation with changed state is used for example to in the <ImpulseManeuver>
+  Resuming propagation with changed state is used for example in the <ImpulseManeuver>
   class. When the maneuver is triggered, the orbit is changed according to the velocity increment
   associated with the maneuver and the mass is reduced according to the consumption. This
   allows to handle simple maneuvers transparently even inside basic propagators like
