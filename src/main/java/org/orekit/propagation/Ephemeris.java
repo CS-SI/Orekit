@@ -35,7 +35,7 @@ import org.orekit.time.TimeStamped;
  * continuous output, with accuracy and computation methods configured by the user.
  *
  * @author Fabien Maussion
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
 public class Ephemeris implements BoundedPropagator {

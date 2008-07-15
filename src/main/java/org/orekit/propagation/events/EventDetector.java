@@ -41,7 +41,7 @@ import org.orekit.propagation.SpacecraftState;
  * the propagator to stop or resume propagation, possibly changing the state vector.<p>
  *
  * @author Luc Maisonobe
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
 public interface EventDetector extends Serializable {

@@ -58,9 +58,9 @@ import org.orekit.time.AbsoluteDate;
  * </p>
  *
  * @see org.orekit.propagation.numerical.NumericalPropagator
- * @author Mathieu Roméro
+ * @author Mathieu Rom&eacute;ro
  * @author Luc Maisonobe
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1698 $ $Date:2008-06-18 16:01:17 +0200 (mer., 18 juin 2008) $
  */
 class IntegratedEphemeris implements BoundedPropagator, ModeHandler, StepHandler {

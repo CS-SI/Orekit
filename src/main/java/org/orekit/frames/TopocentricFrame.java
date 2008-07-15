@@ -27,7 +27,7 @@ import org.orekit.utils.PVCoordinates;
 
 /** Topocentric frame.
  * <p>Frame associated to a position at the surface of a body shape.</p>
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
 public class TopocentricFrame extends Frame {

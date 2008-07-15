@@ -25,7 +25,7 @@ import org.orekit.time.AbsoluteDate;
 
 /** Sun model.
  * The position model is the Newcomb theory.
- * @author Édouard Delente
+ * @author &Eacute;douard Delente
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 

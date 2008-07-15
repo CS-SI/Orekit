@@ -24,7 +24,7 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
 /** This class represents an attracting body different from the central one.
- * @author Édouard Delente
+ * @author &Eacute;douard Delente
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 

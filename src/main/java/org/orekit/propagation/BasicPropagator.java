@@ -27,7 +27,7 @@ import org.orekit.time.AbsoluteDate;
  * It only allows propagation to a predefined date.</p>
 
  * @author Luc Maisonobe
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  *
  * @version $Revision$ $Date$
  */

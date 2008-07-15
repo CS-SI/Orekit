@@ -45,7 +45,7 @@ import org.orekit.utils.PVCoordinates;
  * @see     Orbit
  * @author Luc Maisonobe
  * @author Fabien Maussion
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 

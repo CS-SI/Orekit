@@ -32,7 +32,7 @@ import org.orekit.propagation.sampling.OrekitStepHandler;
  * gathered.</p>
 
  * @author Luc Maisonobe
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  *
  * @version $Revision$ $Date$
  */

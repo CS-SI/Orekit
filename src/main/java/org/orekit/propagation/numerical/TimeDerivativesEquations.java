@@ -69,7 +69,7 @@ import org.orekit.utils.PVCoordinates;
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @author Luc Maisonobe
  * @author Fabien Maussion
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
 public class TimeDerivativesEquations implements Serializable {

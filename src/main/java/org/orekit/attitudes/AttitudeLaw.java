@@ -27,7 +27,7 @@ import org.orekit.utils.PVCoordinates;
 /** This interface represents an attitude law model set.
  * <p>An attitude law provides a way to compute an {@link Attitude Attitude}
  * state at any date given a center of gravity position and velocity.</p>
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public interface AttitudeLaw extends Serializable {

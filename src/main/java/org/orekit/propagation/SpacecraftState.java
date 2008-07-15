@@ -41,7 +41,7 @@ import org.orekit.utils.PVCoordinates;
  * </p>
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @author Fabien Maussion
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
 public class SpacecraftState implements TimeStamped, Serializable {

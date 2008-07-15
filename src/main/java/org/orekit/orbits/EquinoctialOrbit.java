@@ -43,11 +43,11 @@ import org.orekit.utils.PVCoordinates;
  * The instance <code>EquinoctialOrbit</code> is guaranteed to be immutable.
  * </p>
  * @see     Orbit
- * @author Mathieu Roméro
+ * @author Mathieu Rom&eacute;ro
  * @author Luc Maisonobe
  * @author Guylaine Prat
  * @author Fabien Maussion
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class EquinoctialOrbit extends Orbit {

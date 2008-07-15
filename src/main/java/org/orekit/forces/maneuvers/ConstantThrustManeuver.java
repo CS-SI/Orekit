@@ -33,7 +33,7 @@ import org.orekit.time.AbsoluteDate;
  * {@link org.orekit.attitudes.LofOffset LOF aligned} attitude law for state propagation and a
  * velocity increment along the +X satellite axis.</p>
  * @author Fabien Maussion
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */

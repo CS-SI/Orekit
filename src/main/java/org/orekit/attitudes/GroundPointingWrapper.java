@@ -24,7 +24,7 @@ import org.orekit.utils.PVCoordinates;
 
 
 /** This class leverages common parts for compensation modes around ground pointing attitudes.
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */

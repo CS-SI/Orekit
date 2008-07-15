@@ -32,9 +32,9 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
  * With DragCoefVector = {Cx, Cy, Cz} and S given by the user threw the interface
  * {@link DragSensitive}
  *
- * @author Édouard Delente
+ * @author &Eacute;douard Delente
  * @author Fabien Maussion
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 

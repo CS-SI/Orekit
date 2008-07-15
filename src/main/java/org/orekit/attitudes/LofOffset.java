@@ -36,7 +36,7 @@ import org.orekit.utils.PVCoordinates;
  *       X roughly along velocity (it would be perfectly aligned only for
  *       circular orbits or at perigee and apogee of non-circular orbits).</p>
  * <p>
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class LofOffset implements AttitudeLaw {

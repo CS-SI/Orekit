@@ -48,9 +48,9 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
  * the propagator to ensure accurate propagation and proper events handling.
  * </p>
  *
- * @author Mathieu Roméro
+ * @author Mathieu Rom&eacute;ro
  * @author Luc Maisonobe
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
 public interface ForceModel extends Serializable {

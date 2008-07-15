@@ -88,11 +88,11 @@ import org.orekit.time.AbsoluteDate;
  * @see IntegratedEphemeris
  * @see TimeDerivativesEquations
  *
- * @author Mathieu Roméro
+ * @author Mathieu Rom&eacute;ro
  * @author Luc Maisonobe
  * @author Guylaine Prat
  * @author Fabien Maussion
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
 public class NumericalPropagator implements Propagator {

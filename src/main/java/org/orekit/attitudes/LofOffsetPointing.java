@@ -35,7 +35,7 @@ import org.orekit.utils.PVCoordinates;
  * The attitude pointing law is defined by an attitude law and
  * the satellite axis vector chosen for pointing.
  * <p>
- * @author Véronique Pommier-Maurussane
+ * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class LofOffsetPointing extends GroundPointing {
