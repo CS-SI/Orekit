@@ -269,8 +269,6 @@ public class CunninghamAttractionModelTest extends TestCase {
             c60 = -5.40618601332e-7;
 
             itrf2000 = Frame.getITRF2000B();
-//            propagator =
-//                new NumericalPropagator(new AdamsMoultonIntegrator(10, 10.0));
             propagator =
                 new NumericalPropagator(new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
         } catch (OrekitException oe) {
