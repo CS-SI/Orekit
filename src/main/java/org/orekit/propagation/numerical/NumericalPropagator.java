@@ -228,7 +228,7 @@ public class NumericalPropagator implements Propagator {
 
     /** {@inheritDoc} */
     public void setSlaveMode() {
-        integrator.setStepHandler(DummyStepHandler.getInstance());
+        integrator.addStepHandler(DummyStepHandler.getInstance());
         modeHandler = null;
         mode = SLAVE_MODE;
     }
@@ -241,7 +241,7 @@ public class NumericalPropagator implements Propagator {
     /** {@inheritDoc} */
     public void setMasterMode(final OrekitStepHandler handler) {
         final AdaptedStepHandler wrapped = new AdaptedStepHandler(handler);
-        integrator.setStepHandler(wrapped);
+        integrator.addStepHandler(wrapped);
         modeHandler = wrapped;
         mode = MASTER_MODE;
     }
@@ -249,7 +249,7 @@ public class NumericalPropagator implements Propagator {
     /** {@inheritDoc} */
     public void setEphemerisMode() {
         final IntegratedEphemeris ephemeris = new IntegratedEphemeris();
-        integrator.setStepHandler(ephemeris);
+        integrator.addStepHandler(ephemeris);
         modeHandler = ephemeris;
         mode = EPHEMERIS_GENERATION_MODE;
     }
@@ -320,7 +320,7 @@ public class NumericalPropagator implements Propagator {
             state[5] = initialOrbit.getLv();
             state[6] = initialState.getMass();
 
-            integrator.clearEventsHandlers();
+            integrator.clearEventHandlers();
 
             // set up events related to force models
             for (final ForceModel forceModel : forceModels) {
