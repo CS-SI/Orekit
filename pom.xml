@@ -140,29 +140,25 @@
        <plugin>
       	<groupId>org.apache.maven.plugins</groupId>
       	<artifactId>maven-surefire-plugin</artifactId>
-        <version>2.4</version>
+        <version>2.4.3</version>
       	<configuration>
-             <configuration>
-               <!-- for default profile, we want the tests to run quickly, so we
-                    avoid the "pertest" fork mode used in release profile. This
-                    prevents us from playing with the singletons and hence the few
-                    tests that do this cannot be run with the others. This is the
-                    reason why we exclude them here. In order to run them, the
-                    "release" profile must be selected. -->
-               <excludes>
-                 <exclude>**/UTCTAIHistoryFilesLoaderCompressedDataTest.java</exclude>
-                 <exclude>**/UTCTAIHistoryFilesLoaderNoDataTest.java</exclude>
-               </excludes>
-             </configuration>
-          <!-- we need different JVM for some tests which use different
-               singletons configurations (tests-specific IERS reference files) -->
-          <forkMode>pertest</forkMode>
+           <!-- for default profile, we want the tests to run quickly, so we
+                avoid the "pertest" fork mode used in release profile. This
+                prevents us from playing with the singletons and hence the few
+                tests that do this cannot be run with the other ones. This is
+                the reason why we exclude them here. In order to run them, the
+                "release" profile must be selected. -->
+           <excludes>
+             <exclude>**/ITRF2000FrameAlternateConfigurationTest.java</exclude>
+             <exclude>**/UTCTAIHistoryFilesLoaderCompressedDataTest.java</exclude>
+             <exclude>**/UTCTAIHistoryFilesLoaderNoDataTest.java</exclude>
+           </excludes>
       	</configuration>
       </plugin>
       <plugin>
       	<groupId>org.apache.maven.plugins</groupId>
       	<artifactId>maven-checkstyle-plugin</artifactId>
-      	<version>2.1</version>
+      	<version>2.2</version>
       	<configuration>
       		<configLocation>checkstyle.xml</configLocation>
       		<enableRulesSummary>false</enableRulesSummary>
@@ -223,7 +219,7 @@
            <plugin>
              <groupId>org.apache.maven.plugins</groupId>
              <artifactId>maven-surefire-plugin</artifactId>
-             <version>2.4</version>
+             <version>2.4.3</version>
              <configuration>
                <!-- for release profile, we run ALL tests, including the few small
                     ones that play with singletons and hence need to be run on
