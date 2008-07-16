@@ -145,6 +145,15 @@ public class UTCScale extends TimeScale {
             INSTANCE         = tmpInstance;
             OREKIT_EXCEPTION = tmpException;
         }
+
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private LazyHolder() {
+        }
+
     }
 
 }

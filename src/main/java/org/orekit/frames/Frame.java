@@ -504,8 +504,18 @@ public class Frame implements Serializable {
 
     /** Holder for the J2000 frame singleton. */
     private static class LazyJ2000Holder {
+
         /** Unique instance. */
         private static final Frame INSTANCE = new Frame("J2000");
+
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private LazyJ2000Holder() {
+        }
+
     }
 
     /** Holder for the ITRF 2000 A frame singleton. */
@@ -528,6 +538,15 @@ public class Frame implements Serializable {
             INSTANCE = tmpFrame;
             OREKIT_EXCEPTION = tmpException;
         }
+
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private LazyITRF2000AHolder() {
+        }
+
     }
 
     /** Holder for the ITRF 2000 B frame singleton. */
@@ -550,6 +569,15 @@ public class Frame implements Serializable {
             INSTANCE = tmpFrame;
             OREKIT_EXCEPTION = tmpException;
         }
+
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private LazyITRF2000BHolder() {
+        }
+
     }
 
     /** Holder for the TIRF 2000 A frame singleton. */
@@ -572,6 +600,15 @@ public class Frame implements Serializable {
             INSTANCE = tmpFrame;
             OREKIT_EXCEPTION = tmpException;
         }
+
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private LazyTIRF2000AHolder() {
+        }
+
     }
 
     /** Holder for the TIRF Frame 2000 B frame singleton. */
@@ -593,6 +630,14 @@ public class Frame implements Serializable {
             }
             INSTANCE = tmpFrame;
             OREKIT_EXCEPTION = tmpException;
+        }
+
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private LazyTIRF2000BHolder() {
         }
 
     }
@@ -618,6 +663,14 @@ public class Frame implements Serializable {
             OREKIT_EXCEPTION = tmpException;
         }
 
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private LazyIRF2000AHolder() {
+        }
+
     }
 
     /** Holder for the IRF 2000 B frame singleton. */
@@ -641,6 +694,14 @@ public class Frame implements Serializable {
             OREKIT_EXCEPTION = tmpException;
         }
 
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private LazyIRF2000BHolder() {
+        }
+
     }
 
     /** Holder for the Veis 1950 frame singleton. */
@@ -655,6 +716,15 @@ public class Frame implements Serializable {
                                                  5.59078052583013584e-3,
                                                  true)),
                       "VEIS1950");
+
+
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private LazyVeis1950Holder() {
+        }
 
     }
 

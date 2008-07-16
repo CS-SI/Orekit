@@ -79,8 +79,18 @@ public class TCGScale extends TimeScale {
      * synchronization) and works with all version of java.</p>
      */
     private static class LazyHolder  {
+
         /** Unique instance. */
         private static final TCGScale INSTANCE = new TCGScale();
+
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private LazyHolder() {
+        }
+
     }
 
 }

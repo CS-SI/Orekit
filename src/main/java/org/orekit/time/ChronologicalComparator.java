@@ -41,7 +41,7 @@ public class ChronologicalComparator implements Comparator<TimeStamped>, Seriali
      * @return the unique instance
      */
     public static ChronologicalComparator getInstance() {
-        return LazyChronologicalComparatorHolder.INSTANCE;
+        return LazyHolder.INSTANCE;
     }
 
     /** Compare two time-stamped instances.
@@ -60,10 +60,20 @@ public class ChronologicalComparator implements Comparator<TimeStamped>, Seriali
     // synchronization) and works with all version of java.
 
     /** Holder for the ChronologicalComparator frame singleton. */
-    private static class LazyChronologicalComparatorHolder {
+    private static class LazyHolder {
+
         /** Unique instance. */
         private static final ChronologicalComparator INSTANCE =
             new ChronologicalComparator();
+
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private LazyHolder() {
+        }
+
     }
 
 }
