@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>3.1</version>
+  <version>3.2-SNAPSHOT</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -19,19 +19,19 @@
 
   <developers>
     <developer>
-      <name>Romain Di Costanzo</name>
-      <id>romain</id>
-      <email>Romain.Di-Costanzo at c-s dot fr</email>
-      <roles>
-        <role>developer</role>
-      </roles>
-    </developer>
-    <developer>
       <name>Luc Maisonobe</name>
       <id>luc</id>
       <email>Luc.Maisonobe at c-s dot fr</email>
       <roles>
         <role>architect</role>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Romain Di Costanzo</name>
+      <id>romain</id>
+      <email>Romain.Di-Costanzo at c-s dot fr</email>
+      <roles>
         <role>developer</role>
       </roles>
     </developer>
