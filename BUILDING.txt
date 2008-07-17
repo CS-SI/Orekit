@@ -4,6 +4,11 @@ ant or eclipse (with the m2eclipse plugin).
 Building with Maven 2:
  - Maven 2 can be downloaded here:
        http://maven.apache.org/download.html
+ - If you are behind a proxy (which is a traditional
+   setting in a corporate environment), then you need
+   to configure maven to use it. This is explained
+   in the maven documentation here:
+   http://maven.apache.org/guides/mini/guide-proxies.html
  - running "mvn package" automatically downloads all
    the required dependencies listed in the pom.xml file
    and creates a file named target/orekit-x.y.jar where
