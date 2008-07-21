@@ -51,6 +51,21 @@ extends TestCase {
         assertEquals(946728000000l,     AbsoluteDate.J2000_EPOCH.toDate(tt).getTime());
     }
 
+    public void testStandardEpochStrings() throws OrekitException {
+        assertEquals("-4712-01-01T12:00:00.000",
+                     AbsoluteDate.JULIAN_EPOCH.toString(TTScale.getInstance()));
+        assertEquals("1858-11-17T00:00:00.000",
+                     AbsoluteDate.MODIFIED_JULIAN_EPOCH.toString(TTScale.getInstance()));
+        assertEquals("1950-01-01T00:00:00.000",
+                     AbsoluteDate.FIFTIES_EPOCH.toString(TTScale.getInstance()));
+        assertEquals("1980-01-06T00:00:00.000",
+                     AbsoluteDate.GPS_EPOCH.toString(UTCScale.getInstance()));
+        assertEquals("2000-01-01T12:00:00.000",
+                     AbsoluteDate.J2000_EPOCH.toString(TTScale.getInstance()));
+        assertEquals("1970-01-01T00:00:00.000",
+                     AbsoluteDate.JAVA_EPOCH.toString(TTScale.getInstance()));
+    }
+
     public void testOutput() {
         TimeScale tt = TTScale.getInstance();
         assertEquals("1950-01-01T01:01:01.000",

@@ -22,10 +22,15 @@
   <body>
     <release version="3.2" date="TBD"
              description="TBD">
+      <action dev="luc" type="fix" due-to="quinput">
+        Fixed an overflow error in AbsoluteDate that generated an exception when any
+        attempts was made to print dates far away like AbsoluteDate.JULIAN_EPOCH or
+        AbsoluteDate.MODIFIED_JULIAN_EPOCH.
+      </action>
       <action dev="luc" type="add">
         Added the changes page to the generated site.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Changed test configuration to always use a new JVM for each test. This prevents
         some false positive to be generated.
       </action>

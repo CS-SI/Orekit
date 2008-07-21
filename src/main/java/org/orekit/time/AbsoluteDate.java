@@ -230,13 +230,13 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
     public ChunksPair getChunks(final TimeScale timeScale) {
 
         // compute offset from 2000-01-01T00:00:00 in specified time scale
-        final double offest = minus(SHIFTED_J2000_EPOCH) +
-                              timeScale.offsetFromTAI(0.001 * epoch + offset);
-        final int    day    = (int) Math.floor(offest / 86400.0);
+        final double offset2000 = minus(SHIFTED_J2000_EPOCH) +
+                                  timeScale.offsetFromTAI(0.001 * epoch + offset);
+        final int    day        = (int) Math.floor(offset2000 / 86400.0);
 
         // build the chunks
         return new ChunksPair(new ChunkedDate(day),
-                              new ChunkedTime(offest - 86400 * day));
+                              new ChunkedTime(offset2000 - 86400.0 * day));
 
     }
 
