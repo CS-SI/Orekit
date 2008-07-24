@@ -88,6 +88,9 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
     /** Format for months and days. */
     private static final DecimalFormat TWO_DIGITS  = new DecimalFormat("00");
 
+    /** Offset between J2000 epoch and modified julian day epoch. */
+    private static final int MJD_TO_J2000 = 51544;
+
     static {
         // this static statement makes sure the reference epoch are initialized
         // once AFTER the various factories have been set up
@@ -134,9 +137,10 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
         this.day   = day;
 
         // build a check date from the J2000 day
-        final ChunkedDate check = new ChunkedDate(getJ2000Day());
+        final ChunkedDate check = new ChunkedDate(J2000_EPOCH, getJ2000Day());
 
         // check the parameters for mismatch
+        // (i.e. invalid date chunks, like 29 february on non-leap years)
         if ((year != check.year) || (month != check.month) || (day != check.day)) {
             throw OrekitException.createIllegalArgumentException("non-existent date {0}-{1}-{2}",
                                                                  new Object[] {
@@ -156,7 +160,7 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
      */
     public ChunkedDate(final int year, final int dayNumber)
         throws IllegalArgumentException {
-        this(new ChunkedDate(year - 1, 12, 31).getJ2000Day() + dayNumber);
+        this(J2000_EPOCH, new ChunkedDate(year - 1, 12, 31).getJ2000Day() + dayNumber);
         if (dayNumber != getDayOfYear()) {
             throw OrekitException.createIllegalArgumentException("no day number {0} in year {1}",
                                                                  new Object[] {
@@ -166,10 +170,16 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
         }
     }
 
-    /** Build a date from its day number with respect to J2000 epoch.
-     * @param j2000Day day number with respect to J2000 epoch
+    /** Build a date from its offset with respect to a reference epoch.
+     * <p>This constructor is mainly useful to build a date from a J2000
+     * day (using {@link #J2000_EPOCH}) or from a modified julian day
+     * (using {@link #MODIFIED_JULIAN_EPOCH}).</p>
+     * @param epoch reference epoch
+     * @param offset offset with respect to a reference epoch
+     * @see #getJ2000Day()
+     * @see #getMJD()
      */
-    public ChunkedDate(final int j2000Day) {
+    public ChunkedDate(final ChunkedDate epoch, final int offset) {
 
         // we follow the astronomical convention for calendars:
         // we consider a year zero and 10 days are missing in 1582
@@ -177,15 +187,15 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
         // from 0001-01-01 to 1582-10-04: julian calendar
         // up to 0000-12-31 : proleptic julian calendar
         YearFactory yFactory = GREGORIAN_FACTORY;
-        if (j2000Day < -152384) {
-            if (j2000Day > -730122) {
+        if (offset < -152384) {
+            if (offset > -730122) {
                 yFactory = JULIAN_FACTORY;
             } else {
                 yFactory = PROLEPTIC_JULIAN_FACTORY;
             }
         }
-        year = yFactory.getYear(j2000Day);
-        final int dayInYear = j2000Day - yFactory.getLastJ2000DayOfYear(year - 1);
+        year = yFactory.getYear(offset);
+        final int dayInYear = offset - yFactory.getLastJ2000DayOfYear(year - 1);
 
         // handle month/day according to the year being a common or leap year
         final MonthDayFactory mdFactory =
@@ -232,6 +242,13 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
             yFactory.isLeap(year) ? LEAP_YEAR_FACTORY : COMMON_YEAR_FACTORY;
         return yFactory.getLastJ2000DayOfYear(year - 1) +
                mdFactory.getDayInYear(month, day);
+    }
+
+    /** Get the modified julian day.
+     * @return modified julian day
+     */
+    public int getMJD() {
+        return MJD_TO_J2000 + getJ2000Day();
     }
 
     /** Get the day of week.

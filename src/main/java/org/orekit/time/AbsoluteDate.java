@@ -231,7 +231,7 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
         final int    day        = (int) Math.floor(offset2000 / 86400.0);
 
         // build the chunks
-        return new ChunksPair(new ChunkedDate(day),
+        return new ChunksPair(new ChunkedDate(ChunkedDate.J2000_EPOCH, day),
                               new ChunkedTime(offset2000 - 86400.0 * day));
 
     }

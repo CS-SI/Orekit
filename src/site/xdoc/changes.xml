@@ -23,9 +23,11 @@
     <release version="3.2" date="TBD"
              description="TBD">
       <action dev="luc" type="add">
-        Added constants for reference epochs in calendar representation: ChunkedDate.JULIAN_EPOCH,
-        ChunkedDate.MODIFIED_JULIAN_EPOCH, ChunkedDate.FIFTIES_EPOCH, ChunkedDate.GPS_EPOCH,
-        ChunkedDate.J2000_EPOCH and ChunkedDate.JAVA_EPOCH.
+        Improved the class handling dates: ChunkedDate. Changed a constructor
+        to allow building from any reference epoch, not only J200 (thus simplifying
+        used of modified julian day), added getMJD() method, added several constants
+        JULIAN_EPOCH, MODIFIED_JULIAN_EPOCH, FIFTIES_EPOCH, GPS_EPOCH, J2000_EPOCH
+        and JAVA_EPOCH.
       </action>
       <action dev="luc" type="add">
         Added a new time scale: GPSScale.

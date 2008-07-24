@@ -46,7 +46,7 @@ extends TestCase {
 
         for (int i = 0; i < reference.length; ++i) {
             int day  = reference[i][3];
-            ChunkedDate date = new ChunkedDate(day);
+            ChunkedDate date = new ChunkedDate(ChunkedDate.J2000_EPOCH, day);
             assertEquals(reference[i][0], date.getYear());
             assertEquals(reference[i][1], date.getMonth());
             assertEquals(reference[i][2], date.getDay());
@@ -121,7 +121,7 @@ extends TestCase {
 
     private void checkSymmetry(int start, int n) {
         for (int i = start; i < start + n; ++i) {
-            ChunkedDate date1 = new ChunkedDate(i);
+            ChunkedDate date1 = new ChunkedDate(ChunkedDate.J2000_EPOCH, i);
             assertEquals(i, date1.getJ2000Day());
             ChunkedDate date2 = new ChunkedDate(date1.getYear(), date1.getMonth(), date1.getDay());
             assertEquals(i, date2.getJ2000Day());
@@ -129,8 +129,8 @@ extends TestCase {
     }
 
     public void testString() {
-        assertEquals("2000-01-01", new ChunkedDate(0).toString());
-        assertEquals("-4713-12-31", new ChunkedDate(-2451546).toString());
+        assertEquals("2000-01-01", new ChunkedDate(ChunkedDate.J2000_EPOCH, 0).toString());
+        assertEquals("-4713-12-31", new ChunkedDate(ChunkedDate.J2000_EPOCH, -2451546).toString());
     }
 
     public void testConstructorDoY() {
@@ -214,6 +214,12 @@ extends TestCase {
 
         assertEquals(endJ2000, --k);
 
+    }
+
+    public void testMJD() {
+        assertEquals(0, ChunkedDate.MODIFIED_JULIAN_EPOCH.getMJD());
+        assertEquals(37665, new ChunkedDate(1962, 1,  1).getMJD());
+        assertEquals(54600, new ChunkedDate(2008, 5, 14).getMJD());
     }
 
     public static Test suite() {
