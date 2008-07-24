@@ -34,6 +34,10 @@ purpose, the ways to define this object are quite strict.</p>
         Rotation Service) rules. These adjustments require introduction of leap seconds,</li>
     <li>{@link org.orekit.time.TCGScale}: Geocentric Coordinate Time. Coordinate time at the
         center of mass of the Earth. This time scale depends linearly from TTScale.</li>
+    <li>{@link org.orekit.time.GPSScale}: Global Positioning System reference scale. This scale
+        was equal to UTC at start of the {@link org.orekit.time.AbsoluteDate#GPS_EPOCH GPS Epoch}
+        when it was 19 seconds behind TAI, and stayed parallel to TAI since then (i.e. UTC is now
+        offset from GPS due to leap seconds). TGPS = TAI - 19 s.</li>
  </ul> 
 </p>
  

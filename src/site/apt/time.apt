@@ -62,8 +62,13 @@ Time
 
 
     ** <<Geocentric Coordinate Time>>. Coordinate time at the
-    center of mass of the Earth. This time scale depends linearly from TTScale.
-        
+    center of mass of the Earth. This time scale depends linearly from TTScale,
+
+    ** <<Global Positioning System reference scale>>. This scale
+    was equal to UTC at start of the GPS Epoch when it was 19 seconds behind TAI,
+    and stayed parallel to TAI since then (i.e. UTC is now offset from GPS due to
+    leap seconds). TGPS = TAI - 19 s.
+
 
   An instant can be defined by a chunked date, or by its coordinates on the time scale
   (expressed as a number of seconds from the time scale origin).       
