@@ -86,13 +86,9 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
     public static final AbsoluteDate FIFTIES_EPOCH =
         new AbsoluteDate(new ChunkedDate(1950,  1,  1), ChunkedTime.H00, TTScale.getInstance());
 
-    /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 UTC. */
-    // GPS epoch is 1980-01-06T00:00:00Z (i.e. UTC), TAI - UTC = +19s at this time,
-    // we use a date in TAI here for safety reasons, to avoid calling
-    // UTCScale.getInstance() which may throw an exception; such an exception would induce
-    // many problems in this part of code which runs very early
+    /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 GPS time. */
     public static final AbsoluteDate GPS_EPOCH =
-        new AbsoluteDate(new ChunkedDate(1980, 1, 6), new ChunkedTime(0, 0, 19), TAIScale.getInstance());
+        new AbsoluteDate(new ChunkedDate(1980, 1, 6), ChunkedTime.H00, GPSScale.getInstance());
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC). */
     public static final AbsoluteDate J2000_EPOCH =

@@ -22,6 +22,9 @@
   <body>
     <release version="3.2" date="TBD"
              description="TBD">
+      <action dev="luc" type="add">
+        Added a new time scale: GPSScale.
+      </action>
       <action dev="luc" type="fix" due-to="quinput">
         Fixed an overflow error in AbsoluteDate that generated an exception when any
         attempts was made to print dates far away like AbsoluteDate.JULIAN_EPOCH or
