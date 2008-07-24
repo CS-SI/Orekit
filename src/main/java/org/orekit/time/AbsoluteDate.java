@@ -76,27 +76,27 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      * a different convention (for example the <code>convcal</code> utility).</p>
      */
     public static final AbsoluteDate JULIAN_EPOCH =
-        new AbsoluteDate(new ChunkedDate(-4712,  1,  1), ChunkedTime.H12, TTScale.getInstance());
+        new AbsoluteDate(ChunkedDate.JULIAN_EPOCH, ChunkedTime.H12, TTScale.getInstance());
 
     /** Reference epoch for modified julian dates: 1858-11-17T00:00:00. */
     public static final AbsoluteDate MODIFIED_JULIAN_EPOCH =
-        new AbsoluteDate(new ChunkedDate(1858, 11, 17), ChunkedTime.H00, TTScale.getInstance());
+        new AbsoluteDate(ChunkedDate.MODIFIED_JULIAN_EPOCH, ChunkedTime.H00, TTScale.getInstance());
 
     /** Reference epoch for 1950 dates: 1950-01-01T00:00:00. */
     public static final AbsoluteDate FIFTIES_EPOCH =
-        new AbsoluteDate(new ChunkedDate(1950,  1,  1), ChunkedTime.H00, TTScale.getInstance());
+        new AbsoluteDate(ChunkedDate.FIFTIES_EPOCH, ChunkedTime.H00, TTScale.getInstance());
 
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 GPS time. */
     public static final AbsoluteDate GPS_EPOCH =
-        new AbsoluteDate(new ChunkedDate(1980, 1, 6), ChunkedTime.H00, GPSScale.getInstance());
+        new AbsoluteDate(ChunkedDate.GPS_EPOCH, ChunkedTime.H00, GPSScale.getInstance());
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC). */
     public static final AbsoluteDate J2000_EPOCH =
-        new AbsoluteDate(new ChunkedDate(2000,  1,  1), ChunkedTime.H12, TTScale.getInstance());
+        new AbsoluteDate(ChunkedDate.J2000_EPOCH, ChunkedTime.H12, TTScale.getInstance());
 
     /** Java Reference epoch: 1970-01-01T00:00:00 TT. */
     public static final AbsoluteDate JAVA_EPOCH =
-        new AbsoluteDate(new ChunkedDate(1970,  1,  1), ChunkedTime.H00, TTScale.getInstance());
+        new AbsoluteDate(ChunkedDate.JAVA_EPOCH, ChunkedTime.H00, TTScale.getInstance());
 
     /** Dummy date at infinity in the past direction. */
     public static final AbsoluteDate PAST_INFINITY =

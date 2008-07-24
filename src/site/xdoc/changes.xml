@@ -23,6 +23,11 @@
     <release version="3.2" date="TBD"
              description="TBD">
       <action dev="luc" type="add">
+        Added constants for reference epochs in calendar representation: ChunkedDate.JULIAN_EPOCH,
+        ChunkedDate.MODIFIED_JULIAN_EPOCH, ChunkedDate.FIFTIES_EPOCH, ChunkedDate.GPS_EPOCH,
+        ChunkedDate.J2000_EPOCH and ChunkedDate.JAVA_EPOCH.
+      </action>
+      <action dev="luc" type="add">
         Added a new time scale: GPSScale.
       </action>
       <action dev="luc" type="fix" due-to="quinput">

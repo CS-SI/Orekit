@@ -40,6 +40,30 @@ import org.orekit.errors.OrekitException;
  */
 public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
 
+    /** Reference epoch for julian dates: -4712-01-01.
+     * <p>Both <code>java.util.Date</code> and {@link ChunkedDate} classes
+     * follow the astronomical conventions and consider a year 0 between
+     * years -1 and +1, hence this reference date lies in year -4712 and not
+     * in year -4713 as can be seen in other documents or programs that obey
+     * a different convention (for example the <code>convcal</code> utility).</p>
+     */
+    public static final ChunkedDate JULIAN_EPOCH;
+
+    /** Reference epoch for modified julian dates: 1858-11-17. */
+    public static final ChunkedDate MODIFIED_JULIAN_EPOCH;
+
+    /** Reference epoch for 1950 dates: 1950-01-01. */
+    public static final ChunkedDate FIFTIES_EPOCH;
+
+    /** Reference epoch for GPS weeks: 1980-01-06. */
+    public static final ChunkedDate GPS_EPOCH;
+
+    /** J2000.0 Reference epoch: 2000-01-01. */
+    public static final ChunkedDate J2000_EPOCH;
+
+    /** Java Reference epoch: 1970-01-01. */
+    public static final ChunkedDate JAVA_EPOCH;
+
     /** Serializable UID. */
     private static final long serialVersionUID = -5883209203090288224L;
 
@@ -63,6 +87,17 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
 
     /** Format for months and days. */
     private static final DecimalFormat TWO_DIGITS  = new DecimalFormat("00");
+
+    static {
+        // this static statement makes sure the reference epoch are initialized
+        // once AFTER the various factories have been set up
+        JULIAN_EPOCH          = new ChunkedDate(-4712,  1,  1);
+        MODIFIED_JULIAN_EPOCH = new ChunkedDate(1858, 11, 17);
+        FIFTIES_EPOCH         = new ChunkedDate(1950, 1, 1);
+        GPS_EPOCH             = new ChunkedDate(1980, 1, 6);
+        J2000_EPOCH           = new ChunkedDate(2000, 1, 1);
+        JAVA_EPOCH            = new ChunkedDate(1970, 1, 1);
+    }
 
     /** Year number. */
     private final int year;
