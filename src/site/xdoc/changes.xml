@@ -22,6 +22,11 @@
   <body>
     <release version="3.2" date="TBD"
              description="TBD">
+      <action dev="luc" type="fix">
+        The J2000 frame was slightly mis-oriented (about 20 milli arcseconds). It
+        really was the GCRF frame. This has been fixed and now both the GCRF and
+        the J2000 are available.
+      </action>
       <action dev="luc" type="add">
         Improved the class handling dates: ChunkedDate. Changed a constructor
         to allow building from any reference epoch, not only J200 (thus simplifying

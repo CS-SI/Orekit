@@ -29,10 +29,10 @@ import org.orekit.time.AbsoluteDate;
  *
  * <p><h5> Frame Presentation </h5>
  * This class is the base class for all frames in OREKIT. The frames are
- * linked together in a tree with the J2000 frame as the root of the tree.
- * Each frame is defined by {@link Transform transforms} combining any number of translations and
- * rotations from a reference frame which is its parent frame in the tree
- * structure.</p>
+ * linked together in a tree with the <i>Geocentric Celestial Reference Frame</i>
+ * (GCRF) frame as the root of the tree. Each frame is defined by {@link Transform transforms}
+ * combining any number of translations and rotations from a reference frame which is its
+ * parent frame in the tree structure.</p>
  * <p>When we say a {@link Transform transform} t is <em>from frame<sub>A</sub>
  * to frame<sub>B</sub></em>, we mean that if the coordinates of some absolute
  * vector (say the direction of a distant star for example) has coordinates
@@ -49,15 +49,15 @@ import org.orekit.time.AbsoluteDate;
  * <h5> Reference Frames </h5>
  * <p>
  *  Several Reference frames are implemented in OREKIT. The user can
- *  retrieve them using various static methods({@link #getJ2000()},
- *  {@link #getITRF2000A()}, {@link #getITRF2000B()}, {@link #getIRF2000A()},
+ *  retrieve them using various static methods({@link #getGCRF()}, {@link #getJ2000()},
+ *  {@link #getITRF2005A()}, {@link #getITRF2005B()}, {@link #getIRF2000A()},
  *  {@link #getIRF2000B()}, {@link #getTIRF2000A()}, {@link #getTIRF2000B()}
  *  and {@link #getVeis1950()}).
  * <p>
  *
- * <h5> International Terrestrial Reference Frame 2000 </h5>
+ * <h5> International Terrestrial Reference Frame 2005 </h5>
  * <p>
- * This frame is the current (as of 2006) reference realization of
+ * This frame is the current (as of 2008) reference realization of
  * the International Terrestrial Reference System produced by IERS.
  * It is described in <a
  * href="http://www.iers.org/documents/publications/tn/tn32/tn32.pdf">
@@ -74,19 +74,24 @@ import org.orekit.time.AbsoluteDate;
  * </p>
  * <pre>
  *
- *       - J2000 -
- *        /     \   Precession and Nutation effects
- *       /       \   (the complexity of the parameters changes between A and B models)
- *      /         \
- *  IRF2000A    IRF2000B    (intermediate reference frame : true equinox and equator of date)
- *      |          |
- *      |          |   Earth natural rotation
- *      |          |
- *  TIRF2000A   TIRF2000B   (terrestrial intermediate reference frame : Pseudo Earth Fixed Frame)
- *      |          |
- *      |          |   Pole motion
- *      |          |
- *  ITRF2000A  ITRF2000B   (international terrestrial reference frame)
+ *           GCRF
+ *             |      (frame bias)
+ *             |-----------------------
+ *             |                      |
+ *             |                    J2000
+ *        -----------
+ *        |         |    Precession and Nutation effects
+ *        |         |    (the complexity of the parameters changes between A and B models)
+ *        |         |
+ *    IRF2000A   IRF2000B    (intermediate reference frame : true equinox and equator of date)
+ *        |         |
+ *        |         |   Earth natural rotation
+ *        |         |
+ *    TIRF2000A  TIRF2000B   (terrestrial intermediate reference frame : Pseudo Earth Fixed Frame)
+ *        |         |
+ *        |         |   Pole motion
+ *        |         |
+ *    ITRF2005A ITRF2005B   (international terrestrial reference frame)
  *
  * </pre>
  * <p> This implementation follows the new non-rotating origin paradigm
@@ -99,7 +104,7 @@ import org.orekit.time.AbsoluteDate;
  * applications since it is <strong>far less</strong> computation intensive than
  * the IAU2000A model and its accuracy is only slightly degraded.
  * </p>
- * <p>Other implementations of the ITRF 2000 are possible by
+ * <p>Other implementations of the ITRF 2005 are possible by
  * ignoring the B1.8 resolution and using the classical paradigm which
  * is equinox-based and relies on a specifically tuned Greenwich Sidereal Time.
  * They are not yet available in the OREKIT library.</p>
@@ -114,7 +119,7 @@ public class Frame implements Serializable {
     /** Serialiazable UID. */
     private static final long serialVersionUID = -3759353494152260205L;
 
-    /**  parent frame (only J2000 doesn't have a parent). */
+    /**  parent frame (only GCRF doesn't have a parent). */
     private final Frame parent;
 
     /** Transform from parent frame to instance. */
@@ -126,7 +131,7 @@ public class Frame implements Serializable {
     /** Instance name. */
     private final String name;
 
-    /** Private constructor used only for the J2000 root frame.
+    /** Private constructor used only for the GCRF root frame.
      * @param name name of the frame
      */
     private Frame(final String name) {
@@ -141,8 +146,8 @@ public class Frame implements Serializable {
      * frame to instance. This means that the two following frames
      * are similar:</p>
      * <pre>
-     * Frame frame1 = new Frame(Frame.getJ2000(), new Transform(t1, t2));
-     * Frame frame2 = new Frame(new Frame(Frame.getJ2000(), t1), t2);
+     * Frame frame1 = new Frame(Frame.getGCRF(), new Transform(t1, t2));
+     * Frame frame2 = new Frame(new Frame(Frame.getGCRF(), t1), t2);
      * </pre>
      * @param parent parent frame (must be non-null)
      * @param transform transform from parent frame to instance
@@ -252,7 +257,7 @@ public class Frame implements Serializable {
      * control handles. Consider the following simplified frames tree as an
      * example:</p>
      * <pre>
-     *               J<sub>2000</sub>
+     *               GCRF
      *                 |
      *  --------------------------------
      *  |             |                |
@@ -267,7 +272,7 @@ public class Frame implements Serializable {
      * these two frames, however neither frame is the direct parent frame of the
      * other ones: the path involves four intermediate frames. When we process a
      * measurement, what we really want to update is the transform that defines
-     * the satellite frame with respect to its parent J<sub>2000</sub> frame. This
+     * the satellite frame with respect to its parent GCRF frame. This
      * is the purpose of this method. This update is done by the following call,
      * where <code>measurementTransform</code> represent the measurement as a
      * simple translation transform between the two antenna frames:</p>
@@ -278,7 +283,7 @@ public class Frame implements Serializable {
      * <p>One way to represent the behavior of the method is to consider the
      * sub-tree rooted at the instance on one hand (satellite and on-board antenna
      * in the example above) and the tree containing all the other frames on the
-     * other hand (J<sub>2000</sub>, Sun, Earth, ground station, tracking antenna).
+     * other hand (GCRF, Sun, Earth, ground station, tracking antenna).
      * Both tree are considered as solid sets linked by a flexible spring, which is
      * the transform we want to update. The method stretches the spring to make
      * sure the transform between the two specified frames (one in each tree part)
@@ -406,6 +411,13 @@ public class Frame implements Serializable {
         return path;
     }
 
+    /** Get the unique GCRF frame.
+     * @return the unique instance of the GCRF frame
+     */
+    public static Frame getGCRF() {
+        return LazyGCRFHolder.INSTANCE;
+    }
+
     /** Get the unique J2000 frame.
      * @return the unique instance of the J2000 frame
      */
@@ -413,30 +425,30 @@ public class Frame implements Serializable {
         return LazyJ2000Holder.INSTANCE;
     }
 
-    /** Get the ITRF2000A reference frame.
+    /** Get the ITRF2005A reference frame.
      * @return the selected reference frame singleton.
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
      */
-    public static Frame getITRF2000A()
+    public static Frame getITRF2005A()
         throws OrekitException {
-        if (LazyITRF2000AHolder.INSTANCE == null) {
-            throw LazyITRF2000AHolder.OREKIT_EXCEPTION;
+        if (LazyITRF2005AHolder.INSTANCE == null) {
+            throw LazyITRF2005AHolder.OREKIT_EXCEPTION;
         }
-        return LazyITRF2000AHolder.INSTANCE;
+        return LazyITRF2005AHolder.INSTANCE;
     }
 
-    /** Get the ITRF2000B reference frame.
+    /** Get the ITRF2005B reference frame.
      * @return the selected reference frame singleton.
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
      */
-    public static Frame getITRF2000B()
+    public static Frame getITRF2005B()
         throws OrekitException {
-        if (LazyITRF2000BHolder.INSTANCE == null) {
-            throw LazyITRF2000BHolder.OREKIT_EXCEPTION;
+        if (LazyITRF2005BHolder.INSTANCE == null) {
+            throw LazyITRF2005BHolder.OREKIT_EXCEPTION;
         }
-        return LazyITRF2000BHolder.INSTANCE;
+        return LazyITRF2005BHolder.INSTANCE;
     }
 
     /** Get the TIRF2000A reference frame.
@@ -502,11 +514,27 @@ public class Frame implements Serializable {
     // the singletons, as it is both thread-safe, efficient (no
     // synchronization) and works with all version of java.
 
+    /** Holder for the GCRF frame singleton. */
+    private static class LazyGCRFHolder {
+
+        /** Unique instance. */
+        private static final Frame INSTANCE = new Frame("GCRF");
+
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private LazyGCRFHolder() {
+        }
+
+    }
+
     /** Holder for the J2000 frame singleton. */
     private static class LazyJ2000Holder {
 
         /** Unique instance. */
-        private static final Frame INSTANCE = new Frame("J2000");
+        private static final Frame INSTANCE = new J2000Frame("J2000");
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -518,8 +546,8 @@ public class Frame implements Serializable {
 
     }
 
-    /** Holder for the ITRF 2000 A frame singleton. */
-    private static class LazyITRF2000AHolder {
+    /** Holder for the ITRF 2005 A frame singleton. */
+    private static class LazyITRF2005AHolder {
 
         /** Unique instance. */
         private static final Frame INSTANCE;
@@ -531,7 +559,11 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new ITRF2000Frame(LazyTIRF2000AHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, "ITRF2000A");
+                if (LazyTIRF2000AHolder.INSTANCE == null) {
+                    tmpException = LazyTIRF2000AHolder.OREKIT_EXCEPTION;
+                } else {
+                    tmpFrame = new ITRF2005Frame(LazyTIRF2000AHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, "ITRF2005A");
+                }
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
@@ -544,13 +576,13 @@ public class Frame implements Serializable {
          * nor a default constructor. This private constructor prevents
          * the compiler from generating one automatically.</p>
          */
-        private LazyITRF2000AHolder() {
+        private LazyITRF2005AHolder() {
         }
 
     }
 
-    /** Holder for the ITRF 2000 B frame singleton. */
-    private static class LazyITRF2000BHolder {
+    /** Holder for the ITRF 2005 B frame singleton. */
+    private static class LazyITRF2005BHolder {
 
         /** Unique instance. */
         private static final Frame INSTANCE;
@@ -562,7 +594,11 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new ITRF2000Frame(LazyTIRF2000BHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, "ITRF2000B");
+                if (LazyTIRF2000BHolder.INSTANCE == null) {
+                    tmpException = LazyTIRF2000BHolder.OREKIT_EXCEPTION;
+                } else {
+                    tmpFrame = new ITRF2005Frame(LazyTIRF2000BHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, "ITRF2005B");
+                }
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
@@ -575,7 +611,7 @@ public class Frame implements Serializable {
          * nor a default constructor. This private constructor prevents
          * the compiler from generating one automatically.</p>
          */
-        private LazyITRF2000BHolder() {
+        private LazyITRF2005BHolder() {
         }
 
     }
@@ -593,7 +629,11 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new TIRF2000Frame(LazyIRF2000AHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, "TIRF2000A");
+                if (LazyIRF2000AHolder.INSTANCE == null) {
+                    tmpException = LazyIRF2000AHolder.OREKIT_EXCEPTION;
+                } else {
+                    tmpFrame = new TIRF2000Frame(LazyIRF2000AHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, "TIRF2000A");
+                }
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
@@ -624,7 +664,11 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new TIRF2000Frame(LazyIRF2000BHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, "TIRF2000B");
+                if (LazyIRF2000BHolder.INSTANCE == null) {
+                    tmpException = LazyIRF2000BHolder.OREKIT_EXCEPTION;
+                } else {
+                    tmpFrame = new TIRF2000Frame(LazyIRF2000BHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, "TIRF2000B");
+                }
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
