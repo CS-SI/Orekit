@@ -23,6 +23,11 @@
     <release version="3.2" date="TBD"
              description="TBD">
       <action dev="luc" type="fix">
+        The ITRF 2005 frame is now supported instead of the older ITRF 2000 frame. The
+        Earth Orientation Parameters data handling classes have been updated to match
+        this change and read the new file format provided by IERS.
+      </action>
+      <action dev="luc" type="fix">
         The J2000 frame was slightly mis-oriented (about 20 milli arcseconds). It
         really was the GCRF frame. This has been fixed and now both the GCRF and
         the J2000 are available.

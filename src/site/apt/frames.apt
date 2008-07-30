@@ -13,118 +13,151 @@
 
 Frames
 
-  The "Frames" package provides classes to handle frames and transforms between them.
+  The <<<org.orekit.frames>>> package provides classes to handle frames and
+  transforms between them.
 	
 * Frames Presentation
 
 ** Frames tree
 
-  The Transform class represents a full transform: combined rotation and translation,
-  and their first time derivatives to handle kinematics. 
+  The <<<Frame>>> class represent a single frame. All frames are organized as a
+  tree with a single root: the <Geocentric Celestial Reference Frame> which is the
+  absolute reference defined by IERS.
 
-  The frames are organized as a tree with a single root: the J2000 frame.
-  Each Frame is defined by a transform (combination of translations and rotations)
-  linking it to another one, called its "parent frame". The only exception is the
-  predefined J2000 inertial frame which has no parent, and which is the root of the tree.
-   
 [./images/frametree.png]
 
+  Each Frame is defined by a single <transform> linking it to one specific frame:
+  its <parent frame>. This defining transform may be fixed or time-dependent, for
+  example the Earth related frame ITRF2005A depends on time due to precession/nutation,
+  Earth rotation and pole motion). The predefined GCRF inertial frame is the only one
+  with no parent frames.
+
+  For each pair of frames, it is possible to find a single shortest path from one to
+  the other one by walking the tree from one frame up to the closest common ancestor
+  and then down to the other frame.
 
 ** Transform
 
-  The "Transform" class represents the transformation engine between frames.
-  It is used both :
+  The <<<Transform>>> class represents a full transform between two frames. It manages
+  combined rotation, translation and their first time derivatives to handle kinematics.
+  Transforms can convert position, directions and velocities from one frame to another
+  one, including velocity composition effects.
+
+  Transforms are used both:
   
-  ** to define the relationship between each frame and its parent frame. 
-  In that case it is the element that allows creating a new frame relatively 
-  to another one (its parent). It accounts for the "branches" of the frame tree 
-  (<<tdef>> on the following scheme).
+  ** to define the relationship from a parent to a child frames. 
+  This transform (<<tdef>> on the following scheme), is stored in the child frame.
   
-  ** to gather all individual transforms into one operation when converting 
-  between any frames, whatever far away they are from each other
-  (<<trel>> on the following scheme).
-  
+  ** to merge all individual transforms encountered while walking the tree from one
+  frame to any other one, whatever far away they are from each other (<<trel>> on the
+  following scheme).
+
 [./images/transform.png]
 
- 
   The convention used in OREKIT is vectorial transformation. It means that a 
-  transformation is defined as a transform to apply to the coordinates of a vector 
-  expressed in the old frame to obtain the same vector expressed in the new frame:
-  When we say a transform t is from frame<<A>> to frame<<B>>, we mean that if 
-  the coordinates of some absolute vector (say the direction of a distant star for 
-  example) has coordinates u<A> in frame<<A>> and u<B> in frame<<B>>,
-  then u<B>=t.transformVector(u<A>).
+  transformation is defined as an operator which is applied to the coordinates of a
+  vector expressed in the old frame to obtain the coordinates of the same vector expressed
+  in the new frame. When we say a transform t is from frame A to frame B, we mean
+  that if the coordinates of some absolute vector (say the direction of a distant star for 
+  example) are u<A> in frame A and u<B> in frame B, then u<B>=t.transformVector(u<A>).
  
-  The transforms may be constant or varying. For simple fixed transforms,
-  using this base class is sufficient. For varying transforms (time-dependent
-  or telemetry-based for example), it may be useful to define specific subclasses
-  that will implement <updateFrame(AbsoluteDate)> or that will add some specific 
-  <updateFromTelemetry(telemetry)> methods that will compute the transform and call 
-  internally the <setTransform(Transform)> method.
+* Predefined Frames
+
+  Several predefined reference frames are implemented in OREKIT. The user can retrieve them
+  using various static methods: <<<getGCRF()>>>, <<<getJ2000()>>>, <<<getITRF2005A()>>>,
+  <<<getITRF2005B()>>>, <<<getCIRF2000A()>>>, <<<getCIRF2000B()>>>, <<<getTIRF2000A()>>>,
+  <<<getTIRF2000B()>>> and <<<getVeis1950()>>>.
+
+** IERS 2003 Conventions
+
+  One predefined set corresponds to the frames from the
+  {{{http://www.iers.org/documents/publications/tn/tn32/tn32.pdf}IERS conventions (2003)}}. 
+  This set defines the GCRF reference frame on the celestial (i.e. inertial) side,
+  the ITRF (International Terrestrial Reference Frame) on the terrestrial side and several
+  intermediate frames between them. Several version of ITRF have been defined. Orekit
+  supports the last available version at time of writing (2008), which is ITRF 2005.
+
+*** New paradigm: CIO-based transformations
+
+  There are several different ways to compute transforms between GCRF and ITRF. Orekit uses
+  the new paradigm promoted by IERS, i.e. using a single transform for both bias, precession
+  and nutation, computed by the IAU-2000 precession-nutation model and the Earth Orientation
+  Parameters (EOP) data published online bu IERS. This single transform links the GCRF to a
+  Celestial Intermediate Reference Frame. From this, the Earth Rotation Angle is applied to
+  define a Terrestrial Intermediate Reference Frame which is a pseudo Earth fixed frame. A
+  last transform adds the pole motion with respect to Earth crust to reach the real Earth
+  fixed frame: the International Terrestrial Reference Frame.
+
+  In summary, four frames are involved along this path: GCRF, CIRF, TIRF and ITRF.
+
+*** Classical paradigm: equinox-based transformations
+
+  The classical paradigm used prior to IERS conventions 2003 is equinox based and uses
+  more intermediate frames. Only one of these frames is supported in Orekit.
+
+  Starting from GCRF, the first transform is a bias to convert to J2OOO, which was the
+  former reference. The J2000 frame is defined using the mean equinox at epoch J2000.0,
+  i.e. 2000-01-01T12:00:00 in Terrestrial Time (not UTC!). From this frame, applying
+  precession evolution between J2000.0 and current date defines a Mean Of Date frame
+  for current date and applying nutation defines a True Of Data frame. This frame is
+  similar in spirit to the CIRF in the new paradigm, but is not identical. From this, the
+  Greenwhich Apparent Sidereal Time is applied to reach the same Terrestrial Intermediate
+  Reference Frame as with the new paradigm. The last transform (pole motion) is the same
+  one already defined in the new paradigm.
+
+  In summary, six frames are involved along this path: GCRF, J2000, MoD, ToD, TIRS and ITRF.
+
+  This paradigm is deprecated by IERS. It also involves additional complexity, first because
+  of the larger number of frames and second because these frames are computed by mixed models
+  with IAU-76 precession, correction terms to match IAU-2000, and a need to convert Earth
+  Earth Orientation data from the published form to a form suitable for this model. Another
+  drawback of this method is that the intermediate frames do not match the similar frames
+  with the same names used prior to IERS conventions 2003 since a correction is added to the
+  IAU-76 precession model and the IAU-80 nutation model is completely replaced by the nutation
+  part extracted from IAU-2000 model. For these reasons, this paradigm is not completely
+  supported in Orekit. Only the J2000 frame, which can be computed by a single bias from GCRF
+  is supported. This is an historically very important frame and lots of systems rely on it.
+
+*** Simplified precession-nutation model
  
-  The frames can be time dependent (for example the ITRF2000A frame depends on time due 
-  to precession/nutation, Earth rotation and pole motion). In order to get a transform 
-  from one frame to another one, the date must be specified, and 
-  <updateFrame(AbsoluteDate)> is called under the hood. If a user wants to implement
-  his own date synchronized frame, he has to implement by extension his own 
-  <updateFrame(AbsoluteDate)> method, the default implementation provided by the 
-  base class does nothing and is suited for non time dependent frames.
+  The classical paradigm provides two nutation models: one consistent with IAU-2000 and a
+  simplified one with an accuracy reduced from 0.2 milli arcsecond to 1 milli arcsecond.
+  The simplified model is sufficient for many purposes and much faster to compute, since it
+  involves only 77 nutation terms instead of the 678 nutation terms and 687 planetary terms
+  of IAU-2000.
 
+  Unfortunately, no such simplifications have been published for the new paradigm with
+  combined bias-precession-nutation. It seemed however very interesting for the sake of
+  efficiency for Orekit, so we have derived and implemented this simplification for the new
+  paradigm. The simplified model was derived by mapping the signature of the terms in the
+  bias-precession-nutation IAU-2000 model and in the separated precession and nutation models
+  from the classical paradigm. The mapping is based on the integer coefficients with respect
+  to the solar, lunar and planetary elements. We have then discarded the same terms that were
+  discarded in the classical paradigm. Once the remaining terms have been collected, a simple
+  polynomial regression was made to fit the truncated model to the complete model over the
+  2000-2020 period.
 
-* Reference Frames
+  We have kept the same denomination of 2000A for the complete model and 2000B for the truncated
+  model.
 
-  Several Reference frames are implemented in OREKIT. 
-  
-  One set corresponds to the frames from the IERS 2003 conventions (ITRF2000 and others). 
-  Both complete 2000A and reduced 2000B versions are available. 
-  Another frame not belonging to the previous set is the Veis 1950 
-  frame which is considered here as a simple rotation from J2000.
-  
-  The user can retrieve them using various static methods(<getJ2000()>,
-  <getITRF2000A()>, <getITRF2000B()>, <getIRF2000A()>, <getIRF2000B()>, 
-  <getTIRF2000A()>, <getTIRF2000B()> and <getVeis1950()>).
-  
-  A topocentric frame model also exist, allowing to define the frame associated 
-  to any position at the surface of a given body shape.
+*** Orekit implementation of IERS 2003 convention
 
-  * International Terrestrial Reference Frame 2000
-  
-    This frame is the current (as of 2006) reference realization of
-    the International Terrestrial Reference System produced by IERS.
-    It is described in IERS conventions (2003) :
-    {{{http://www.iers.org/documents/publications/tn/tn32/tn32.pdf}IERS conventions (2003)}}. 
-    It replaces the Earth Centered Earth Fixed frame which is the reference frame 
-    for GPS satellites.
-    This frame is used to define position on solid Earth. It rotates with
-    the Earth and includes the pole motion with respect to Earth crust as
-    provided by <org.orekit.iers.IERSDirectoryCrawler IERS data>.
-    Its pole axis is the IERS Reference Pole (IRP).
- 
-    OREKIT proposes all the intermediate frames used to build this specific frame.
-    Here is a schematic representation of the ITRF frame tree :
+  In summary, Orekit implements 8 frames from IERS 2003 convention: GCRF, J2000, CIRF2000 A/B,
+  TIRF2000 A/B, ITRF2005 A/B.
+
+  Here is a schematic representation of the partial tree containing the supported IERS frames.
     
-[./images/itrftree.png]
- 
- 
-    This implementation follows the new non-rotating origin paradigm
-    mandated by IAU 2000 resolution B1.8. It is therefore based on
-    Celestial Ephemeris Origin (CEO-based) and Earth Rotating Angle. Depending
-    on user choice at construction, it is either consistent to the complete IAU
-    2000A precession-nutation model with an accuracy level of 0.2 milliarcsecond
-    or consistent to the reduced IAU 2000B precession-nutation model with an
-    accuracy level of 1.0 milliarcsecond. The IAU2000B is recommended for most
-    applications since it is <<far less>> computation intensive than
-    the IAU2000A model and its accuracy is only slightly degraded.
- 
-    Other implementations of the ITRF 2000 are possible by
-    ignoring the B1.8 resolution and using the classical paradigm which
-    is equinox-based and relies on a specifically tuned Greenwich Sidereal Time.
-    They are not yet available in the OREKIT library.
+[./images/iers-tree.png]
 
-  * Topocentric Frame
+  For most purposes, the recommended frames to use are ITRF2005B for terrestrial frame and
+  GCRF for celestial frame. J2000 could also be used for compatibility with older systems.
+ 
+** Topocentric Frame
   
   This frame model allows to define the frame associated to any position at 
-  the surface of given body shape. It is defined by following axes :
+  the surface of a body shape, which itself is referenced to a frame, typically
+  ITRF 2005A or ITRF 2005B for Earth. The frame is defined with the following
+  canonical axes:
   
     ** zenith direction (Z) is defined as the normal to local horizontal plane;
     
@@ -137,6 +170,41 @@ Frames
   In such a frame, the user can retrieve azimuth angle, elevation angle, 
   range and range rate of any point given in any frame, at given date.
 
+* User defined frames
+
+  The frames tree is can be extended by user which can add as many frames as he
+  wants for specific needs. This is done by adding frames one at a time, attaching
+  each frame to an already built one by specifying the transform from parent to child.
+
+  Transforms may be constant or varying. For simple fixed transforms, using directly the
+  <<<Frame>>> class is sufficient. For varying transforms (time-dependent or telemetry-based
+  for example), it may be useful to define specific subclasses that will implement
+  <<<updateFrame(AbsoluteDate)>>> or that will add some specific <<<updateFromTelemetry(telemetry)>>>
+  methods to recompute the transform and call internally the <<<setTransform(Transform)>>> method.
+ 
+  A basic example of such extension is to add a satellite frame representing the satellite
+  motion and attitude. Such a frame would have an inertial frame as its parent frame (GCRF or
+  J2000) and the <<<updateFrame(AbsoluteDate)>>> method would update the translation and rotation
+  from orbit and attitude data.
+
+  Frames are updated by resetting the transform from their parent frame to them. When such a
+  transform is changed, it basically move not only the child frame but all the sub-tree starting
+  at this frame with respect to the rest of the tree. This property can be used to update easily
+  complex trees without bothering about combining transforms oneself. The following example
+  explains a practical case.
+
+[./images/antenna-frames.png]
+
+  This case is an improvement of the basic previous extension to manage orbit and attitude. In this
+  case, we introduce several intermediate frames with elementary transforms and need to update the
+  whole tree. We also want to take into account the offset between the GPS receiver antenna and the
+  satellite center of mass. When a new GPS measurement is available, we want to update the complete
+  left subtree. This is done by updating the Local Orbital Frame (near the root) with a single
+  call to one of its <<<updateTransform>>> methods providing it a reference to the ICRF frame, a
+  reference to the GPS receiver antenna frame and the desired translation and relative velocity
+  between the two, i.e. the measurement itself. The method automatically locates the frames in the
+  global tree, combines all transforms and updates the single transform between itself and its parent
+  GCRF frame. 
 
 * Authors
 

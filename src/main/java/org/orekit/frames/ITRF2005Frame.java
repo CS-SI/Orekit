@@ -22,16 +22,16 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 
-/** International Terrestrial Reference Frame 2000.
- * <p> Handles pole motion effects and depends on {@link TIRF2000Frame}, its
- * parent frame .</p>
+/** International Terrestrial Reference Frame 2005.
+ * <p> Handles pole motion effects and depends on {@link TIRF2005Frame}, its
+ * parent frame.</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
+ * @version $Revision: 1726 $ $Date: 2008-06-20 11:18:17 +0200 (ven., 20 juin 2008) $
  */
-class ITRF2000Frame extends Frame {
+class ITRF2005Frame extends Frame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 720487682019109221L;
+    private static final long serialVersionUID = 7590749242876218167L;
 
     /** 2&pi;. */
     private static final double TWO_PI = 2.0 * Math.PI;
@@ -50,13 +50,13 @@ class ITRF2000Frame extends Frame {
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
-    /** Constructor for the singleton.
-     * @param parent the TIRF2000
+    /** Simple constructor.
+     * @param parent parent frame (must be either TIRF2000A or TIRF2000B)
      * @param date the current date
-     * @param name the string reprensentation
+     * @param name the string representation
      * @exception OrekitException if nutation cannot be computed
      */
-    protected ITRF2000Frame(final Frame parent, final AbsoluteDate date,
+    protected ITRF2005Frame(final Frame parent, final AbsoluteDate date,
                             final String name)
         throws OrekitException {
         super(parent, null, name);
@@ -121,7 +121,7 @@ class ITRF2000Frame extends Frame {
         // this factor seems to be of order of magnitude a few tens of
         // micro arcseconds. It is computed from the classical approach
         // (not the new one used here) and hence requires computation
-        // of GST, IAU2000A nutation, equations of equinoxe ...
+        // of GST, IAU2000A nutation, equations of equinox ...
         // For now, this term is ignored
         return PoleCorrection.NULL_CORRECTION;
     }

@@ -17,13 +17,13 @@ with a single root: the J2000 frame.
 
 <p>
 Several other frames are predefined. One set correspond to the frames from the IERS 2003
-conventions (ITRF2000 and others). Both complete 2000A and reduced 2000B versions are
+conventions (ITRF2005 and others). Both complete 2000A and reduced 2000B versions are
 available. Another frame not belonging to the previous set is the Veis 1950 frame which is
 considered here as a simple rotation from J2000.
 <p>
 
 <p> 
-The frames can be time dependent (for example the ITRF2000A frame depends on time due to
+The frames can be time dependent (for example the ITRF2005A frame depends on time due to
 precession/nutation, Earth rotation and pole motion). In order to get a transform from one
 frame to another one, the date must be specified, and
 {@link org.orekit.frames.Frame#updateFrame(AbsoluteDate)} is called under the hood. If a

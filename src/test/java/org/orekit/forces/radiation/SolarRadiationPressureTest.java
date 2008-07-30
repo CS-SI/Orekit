@@ -60,7 +60,7 @@ public class SolarRadiationPressureTest extends TestCase {
         Sun sun = new Sun();
         OneAxisEllipsoid earth =
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
-                                 Frame.getITRF2000B());
+                                 Frame.getITRF2005B());
         SolarRadiationPressure SRP = 
             new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
                                        (RadiationSensitive) new SphericalSpacecraft(50.0, 0.5, 0.5, 0.5));
@@ -109,7 +109,7 @@ public class SolarRadiationPressureTest extends TestCase {
         // creation of the force model
         OneAxisEllipsoid earth =
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
-                                 Frame.getITRF2000B());
+                                 Frame.getITRF2005B());
         SolarRadiationPressure SRP =
             new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
                                        (RadiationSensitive) new SphericalSpacecraft(500.0, 0.7, 0.7, 0.7));

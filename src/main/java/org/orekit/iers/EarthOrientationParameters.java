@@ -30,7 +30,7 @@ import org.orekit.time.UTCScale;
  * <p>Instances of this class correspond to lines from either the
  * EOP C 04 yearly files or the bulletin B monthly files.</p>
  * @author Luc Maisonobe
- * @see EOPC04FilesLoader
+ * @see EOP05C04FilesLoader
  * @see BulletinBFilesLoader
  * @see org.orekit.frames.Frame
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $

@@ -19,7 +19,7 @@ package org.orekit.iers;
 import java.text.ParseException;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.iers.EOPC04FilesLoader;
+import org.orekit.iers.EOP05C04FilesLoader;
 import org.orekit.iers.EarthOrientationParameters;
 
 import junit.framework.Test;
@@ -29,19 +29,19 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
 
     public void testMissingMonths() throws OrekitException {
         setRoot("missing-months");
-        new EOPC04FilesLoader(eop).loadEOP();
+        new EOP05C04FilesLoader(eop).loadEOP();
         assertTrue(getMaxGap() > 5);
     }
 
     public void testStartDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        new EOPC04FilesLoader(eop).loadEOP();
+        new EOP05C04FilesLoader(eop).loadEOP();
         assertEquals(52640, ((EarthOrientationParameters) eop.first()).getMjd());
     }
 
     public void testEndDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        new EOPC04FilesLoader(eop).loadEOP();
+        new EOP05C04FilesLoader(eop).loadEOP();
         assertEquals(53735, ((EarthOrientationParameters) eop.last()).getMjd());
     }
 

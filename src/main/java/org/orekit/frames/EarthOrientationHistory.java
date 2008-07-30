@@ -22,7 +22,7 @@ import java.util.TreeSet;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.iers.BulletinBFilesLoader;
-import org.orekit.iers.EOPC04FilesLoader;
+import org.orekit.iers.EOP05C04FilesLoader;
 import org.orekit.iers.EarthOrientationParameters;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
@@ -59,8 +59,8 @@ public class EarthOrientationHistory implements Serializable {
         // headSet or tailSet and NOT to add them in the set)
         eop = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
 
-        // consider first the more accurate EOP C 04 entries
-        new EOPC04FilesLoader(eop).loadEOP();
+        // consider first the more accurate EOP 05 C04 entries
+        new EOP05C04FilesLoader(eop).loadEOP();
 
         // add the final values from bulletin B entries for new dates
         // (if duplicated dates occur, the existing data will be preserved)

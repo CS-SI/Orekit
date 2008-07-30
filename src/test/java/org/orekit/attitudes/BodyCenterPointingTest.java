@@ -44,10 +44,10 @@ public class BodyCenterPointingTest extends TestCase {
     // Orbit 
     private CircularOrbit circ;
 
-    // Reference frame = ITRF 2000B 
-    private Frame frameItrf2000B;
+    // Reference frame = ITRF 2005B 
+    private Frame frameITRF2005B;
     
-    // Transform from J2000 to ITRF2000B 
+    // Transform from J2000 to ITRF2005B 
     private Transform j2000ToItrf;
     
     // Earth center pointing attitude law 
@@ -92,14 +92,14 @@ public class BodyCenterPointingTest extends TestCase {
         // Transform Z axis from satellite frame to J2000 
         Vector3D zSatJ2000 = rotSatJ2000.applyInverseTo(Vector3D.PLUS_K);
         
-        // Transform Z axis from J2000 to ITRF2000B
-        Vector3D zSatItrf2000B = j2000ToItrf.transformPosition(zSatJ2000);
+        // Transform Z axis from J2000 to ITRF2005B
+        Vector3D zSatITRF2005B = j2000ToItrf.transformPosition(zSatJ2000);
         
-        // Transform satellite position/velocity from J2000 to ITRF2000B 
-        PVCoordinates pvSatItrf2000B = j2000ToItrf.transformPVCoordinates(pvSatJ2000);
+        // Transform satellite position/velocity from J2000 to ITRF2005B 
+        PVCoordinates pvSatITRF2005B = j2000ToItrf.transformPVCoordinates(pvSatJ2000);
                 
        // Line containing satellite point and following pointing direction
-        Line pointingLine = new Line(pvSatItrf2000B.getPosition(), zSatItrf2000B);
+        Line pointingLine = new Line(pvSatITRF2005B.getPosition(), zSatITRF2005B);
         
         // Check that the line contains earth center (distance from line to point less than 1.e-8 m)
         double distance = pointingLine.distance(Vector3D.ZERO);
@@ -123,14 +123,14 @@ public class BodyCenterPointingTest extends TestCase {
                                        Frame.getJ2000(), date, mu);
             
             
-            // Reference frame = ITRF 2000B
-            frameItrf2000B = Frame.getITRF2000B();
+            // Reference frame = ITRF 2005B
+            frameITRF2005B = Frame.getITRF2005B();
 
-            // Transform from J2000 to ITRF2000B
-            j2000ToItrf = Frame.getJ2000().getTransformTo(frameItrf2000B, date);
+            // Transform from J2000 to ITRF2005B
+            j2000ToItrf = Frame.getJ2000().getTransformTo(frameITRF2005B, date);
 
             // Create earth center pointing attitude law */
-            earthCenterAttitudeLaw = new BodyCenterPointing(frameItrf2000B);
+            earthCenterAttitudeLaw = new BodyCenterPointing(frameITRF2005B);
             
         } catch (OrekitException oe) {
             fail(oe.getMessage());
@@ -140,7 +140,7 @@ public class BodyCenterPointingTest extends TestCase {
 
     public void tearDown() {
         date = null;
-        frameItrf2000B = null;
+        frameITRF2005B = null;
         j2000ToItrf = null;
         earthCenterAttitudeLaw = null;
         circ = null;

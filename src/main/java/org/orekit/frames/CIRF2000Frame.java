@@ -23,15 +23,21 @@ import org.orekit.frames.series.BodiesElements;
 import org.orekit.frames.series.Development;
 import org.orekit.time.AbsoluteDate;
 
-/** Intermediate Reference Frame 2000 : true equinox and equator of date.
- * <p> It considers precession and nutation effects and not the earth rotation. Its parent
- * frame is the J2000 frame. <p>
+/** Celestial Intermediate Reference Frame 2000.
+ * <p>This frame includes both precession and nutation effects according to
+ * the new IAU-2000 model. The single model replaces the two separate models
+ * used before: IAU-76 precession (Lieske) and IAU-80 theory of nutation (Wahr).
+ * It <strong>must</strong> with the Earth Rotation Angle (REA) defined by
+ * Capitaine's model and <strong>not</strong> IAU-82 sidereal time which is
+ * consistent with the previous models only.</p>
+ * Its parent frame is the GCRF frame.<p>
+ * <p>This frame uses the new</p>
  * @version $Revision$ $Date$
  */
-class IRF2000Frame extends Frame {
+class CIRF2000Frame extends Frame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 2781008917378714616L;
+    private static final long serialVersionUID = -4272940406399943961L;
 
     /** 2&pi;. */
     private static final double TWO_PI = 2.0 * Math.PI;
@@ -141,7 +147,7 @@ class IRF2000Frame extends Frame {
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
-    /** Build the IRF2000 frame singleton.
+    /** Simple constructor.
      * <p>If the <code>useIAU2000B</code> boolean parameter is true (which is the
      * recommended value) the reduced IAU2000B precession-nutation model will be
      * used, otherwise the complete IAU2000A precession-nutation model will be used.
@@ -155,15 +161,15 @@ class IRF2000Frame extends Frame {
      * library cannot be read.
      * @see Frame
      */
-    protected IRF2000Frame(final AbsoluteDate date, final boolean useIAU2000B, final String name)
+    protected CIRF2000Frame(final AbsoluteDate date, final boolean useIAU2000B, final String name)
         throws OrekitException {
 
-        super(getJ2000(), null , name);
+        super(getGCRF(), null , name);
 
         this.useIAU2000B = useIAU2000B;
 
         // nutation models are in micro arcseconds
-        final Class<IRF2000Frame> c = IRF2000Frame.class;
+        final Class<CIRF2000Frame> c = CIRF2000Frame.class;
         final String xModel = useIAU2000B ? X_MODEL_2000B : X_MODEL_2000A;
         xDevelopment =
             new Development(c.getResourceAsStream(xModel), RADIANS_PER_ARC_SECOND * 1.0e-6, xModel);
@@ -187,13 +193,12 @@ class IRF2000Frame extends Frame {
     protected void updateFrame(final AbsoluteDate date) throws OrekitException {
 
         if (cachedDate == null || cachedDate != date) {
-            //    offset from J2000 epoch in julian centuries
+            //    offset from J2000.0 epoch in julian centuries
             final double tts = date.minus(AbsoluteDate.J2000_EPOCH);
             final double ttc =  tts * JULIAN_CENTURY_PER_SECOND;
 
             // luni-solar and planetary elements
             final BodiesElements elements = computeBodiesElements(ttc);
-
 
             // precession and nutation effect (pole motion in celestial frame)
             final Rotation qRot = precessionNutationEffect(ttc, elements);
@@ -201,7 +206,7 @@ class IRF2000Frame extends Frame {
             // combined effects
             final Rotation combined = qRot.revert();
 
-            // set up the transform from parent GCRS (J2000) to ITRF
+            // set up the transform from parent GCRS to ITRF
             setTransform(new Transform(combined , Vector3D.ZERO));
             cachedDate = date;
         }

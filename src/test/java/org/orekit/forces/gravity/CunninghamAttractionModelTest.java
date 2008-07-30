@@ -55,7 +55,7 @@ public class CunninghamAttractionModelTest extends TestCase {
 
     public CunninghamAttractionModelTest(String name) {
         super(name);
-        itrf2000   = null;
+        ITRF2005   = null;
         propagator = null;
     }
 
@@ -68,7 +68,7 @@ public class CunninghamAttractionModelTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 07, 01),
                                              new ChunkedTime(13, 59, 27.816),
                                              UTCScale.getInstance());
-        Transform itrfToJ2000  = itrf2000.getTransformTo(Frame.getJ2000(), date);
+        Transform itrfToJ2000  = ITRF2005.getTransformTo(Frame.getJ2000(), date);
         Vector3D pole          = itrfToJ2000.transformVector(Vector3D.PLUS_K);
         Frame poleAligned      = new Frame(Frame.getJ2000(),
                                            new Transform(new Rotation(pole, Vector3D.PLUS_K)),
@@ -84,7 +84,7 @@ public class CunninghamAttractionModelTest extends TestCase {
         c[0][0] = 0.0;
         c[2][0] = c20;
         double[][] s = new double[3][1];
-        propagator.addForceModel(new CunninghamAttractionModel(itrf2000, 6378136.460, mu, c, s));
+        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, 6378136.460, mu, c, s));
 
         // let the step handler perform the test
         propagator.setMasterMode(86400, new SpotStepHandler(date, mu));
@@ -139,7 +139,7 @@ public class CunninghamAttractionModelTest extends TestCase {
         Vector3D position = new Vector3D(3220103., 69623., 6449822.);
         Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
 
-        Transform itrfToJ2000  = itrf2000.getTransformTo(Frame.getJ2000(), date);
+        Transform itrfToJ2000  = ITRF2005.getTransformTo(Frame.getJ2000(), date);
         Vector3D pole          = itrfToJ2000.transformVector(Vector3D.PLUS_K);
         Frame poleAligned      = new Frame(Frame.getJ2000(),
                                            new Transform(new Rotation(pole, Vector3D.PLUS_K)),
@@ -148,7 +148,7 @@ public class CunninghamAttractionModelTest extends TestCase {
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                 poleAligned, date, mu);
 
-        propagator.addForceModel(new CunninghamAttractionModel(itrf2000, ae, mu,
+        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, ae, mu,
                                                                new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -224,7 +224,7 @@ public class CunninghamAttractionModelTest extends TestCase {
                                                        Frame.getJ2000(), date, mu);
         
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(1000));
-        propagator.addForceModel(new CunninghamAttractionModel(itrf2000, ae, mu,
+        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, ae, mu,
                                                                new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -239,7 +239,7 @@ public class CunninghamAttractionModelTest extends TestCase {
 
         propagator.removeForceModels();
 
-        propagator.addForceModel(new DrozinerAttractionModel(itrf2000, ae, mu,
+        propagator.addForceModel(new DrozinerAttractionModel(ITRF2005, ae, mu,
                                                              new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -268,7 +268,7 @@ public class CunninghamAttractionModelTest extends TestCase {
             c50 =  2.27888264414e-7;
             c60 = -5.40618601332e-7;
 
-            itrf2000 = Frame.getITRF2000B();
+            ITRF2005 = Frame.getITRF2005B();
             propagator =
                 new NumericalPropagator(new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
         } catch (OrekitException oe) {
@@ -277,7 +277,7 @@ public class CunninghamAttractionModelTest extends TestCase {
     }
 
     public void tearDown() {
-        itrf2000   = null;
+        ITRF2005   = null;
         propagator = null;
     }
 
@@ -293,7 +293,7 @@ public class CunninghamAttractionModelTest extends TestCase {
     private double mu;
     private double ae;
 
-    private Frame   itrf2000;
+    private Frame   ITRF2005;
     private NumericalPropagator propagator;
 
 }

@@ -336,10 +336,10 @@ public class KeplerianPropagatorTest extends TestCase {
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
                                Frame.getJ2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
-        propagator.addEventDetector(new NodeDetector(orbit, Frame.getITRF2000B()));
+        propagator.addEventDetector(new NodeDetector(orbit, Frame.getITRF2005B()));
         AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        PVCoordinates pv = propagated.getPVCoordinates(Frame.getITRF2000B());
+        PVCoordinates pv = propagated.getPVCoordinates(Frame.getITRF2005B());
         assertTrue(farTarget.minus(propagated.getDate()) > 3500.0);
         assertTrue(farTarget.minus(propagated.getDate()) < 4000.0);
         assertEquals(0, pv.getPosition().getZ(), 1.0e-6);
@@ -354,7 +354,7 @@ public class KeplerianPropagatorTest extends TestCase {
         propagator.addEventDetector(new ApsideDetector(orbit));
         AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        PVCoordinates pv = propagated.getPVCoordinates(Frame.getITRF2000B());
+        PVCoordinates pv = propagated.getPVCoordinates(Frame.getITRF2005B());
         assertTrue(farTarget.minus(propagated.getDate()) > 3000.0);
         assertTrue(farTarget.minus(propagated.getDate()) < 3500.0);
         assertEquals(orbit.getA() * (1.0 - orbit.getE()), pv.getPosition().getNorm(), 1.0e-6);
@@ -378,7 +378,7 @@ public class KeplerianPropagatorTest extends TestCase {
                                Frame.getJ2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         final OneAxisEllipsoid earthShape =
-            new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, Frame.getITRF2000B());
+            new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, Frame.getITRF2005B());
         final TopocentricFrame topo =
             new TopocentricFrame(earthShape, new GeodeticPoint(-2.962, 0.389, 0), null);
         propagator.addEventDetector(new ElevationDetector(60, 0.09, topo));

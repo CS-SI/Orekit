@@ -121,7 +121,7 @@ public class TleTest extends TestCase {
 //      AbsoluteDate date = AbsoluteDate.J2000Epoch;
 //      double teta = SDP4.thetaG(date);
 
-//      TIRF2000Frame ITRF = (TIRF2000Frame)Frame.getReferenceFrame(Frame.TIRF2000B, date);
+//      TIRF2005Frame ITRF = (TIRF2005Frame)Frame.getReferenceFrame(Frame.TIRF2000B, date);
 //      double tetaTIRF = ITRF.getEarthRotationAngle(date);
 //      assertEquals( Math.toDegrees(Utils.trimAngle(tetaTIRF, Math.PI)), Math.toDegrees(Utils.trimAngle(teta, Math.PI)), 0.003);
 
