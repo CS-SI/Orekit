@@ -44,7 +44,7 @@ public class ITRF2005FrameAlternateConfigurationTest extends TestCase {
 
         // Positions LEO
         Frame itrfA = Frame.getITRF2005A();
-        Frame itrfB = Frame.getITRF2005C();
+        Frame itrfC = Frame.getITRF2005C();
         PVCoordinates pvITRF =
             new PVCoordinates(new Vector3D(-1033479.3830, 7901295.2754, 6380356.5958),
                               new Vector3D(-3225.636520, -2872.451450, 5531.924446));
@@ -55,28 +55,28 @@ public class ITRF2005FrameAlternateConfigurationTest extends TestCase {
                               new Vector3D(-4743.220156, 790.536497, 5533.755728));
         checkPV(pvGcrfIau2000A,
                 itrfA.getTransformTo(Frame.getGCRF(), t0).transformPVCoordinates(pvITRF),
-                0.015, 1.2e-5);
+                0.01, 1.6e-5);
 
         PVCoordinates pvJ2000EqA =
             new PVCoordinates(new Vector3D(5102509.0383, 6123011.9758, 6378136.3118),
                               new Vector3D(-4743.219766, 790.536344, 5533.756084));
         checkPV(pvJ2000EqA,
                 itrfA.getTransformTo(Frame.getJ2000(), t0).transformPVCoordinates(pvITRF),
-                0.015, 1.2e-5);
+                0.01, 1.6e-5);
 
         PVCoordinates pvGcrfIau2000B =
             new PVCoordinates(new Vector3D(5102508.9579, 6123011.4012, 6378136.9277),
                               new Vector3D(-4743.220156, 790.536495, 5533.755729));
         checkPV(pvGcrfIau2000B,
-                itrfB.getTransformTo(Frame.getGCRF(), t0).transformPVCoordinates(pvITRF),
-                0.027, 1.9e-5);
+                itrfC.getTransformTo(Frame.getGCRF(), t0).transformPVCoordinates(pvITRF),
+                0.02, 1.8e-5);
 
         PVCoordinates pvJ2000EqB =
             new PVCoordinates(new Vector3D(5102509.0383, 6123011.9733, 6378136.3142),
                               new Vector3D(-4743.219766, 790.536342, 5533.756085));
         checkPV(pvJ2000EqB,
-                itrfB.getTransformTo(Frame.getJ2000(), t0).transformPVCoordinates(pvITRF),
-                0.027, 1.9e-5);
+                itrfC.getTransformTo(Frame.getJ2000(), t0).transformPVCoordinates(pvITRF),
+                0.02, 1.8e-5);
 
     }
 
@@ -92,7 +92,7 @@ public class ITRF2005FrameAlternateConfigurationTest extends TestCase {
 
         //  Positions GEO
         Frame itrfA = Frame.getITRF2005A();
-        Frame itrfB = Frame.getITRF2005C();
+        Frame itrfC = Frame.getITRF2005C();
         PVCoordinates pvITRF =
             new PVCoordinates(new Vector3D(24796919.2915, -34115870.9234, 10226.0621),
                               new Vector3D(-0.979178, -1.476538, -0.928776));
@@ -103,29 +103,29 @@ public class ITRF2005FrameAlternateConfigurationTest extends TestCase {
                               new Vector3D(834.787458, -2958.305691, -1.172993));
         checkPV(pvGCRFiau2000A,
                 itrfA.getTransformTo(Frame.getGCRF(), t0).transformPVCoordinates(pvITRF),
-                0.21, 1.6e-5);
+                0.061, 0.5e-5);
 
         PVCoordinates pvJ2000EqA =
             new PVCoordinates(new Vector3D(-40588149.5482, -11462169.9118, 27146.8462),
                               new Vector3D(834.787667, -2958.305632, -1.172963));
         checkPV(pvJ2000EqA,
                 itrfA.getTransformTo(Frame.getJ2000(), t0).transformPVCoordinates(pvITRF),
-                0.21, 1.6e-5);
+                0.061, 0.5e-5);
 
         PVCoordinates pvGCRFiau2000B =
             new PVCoordinates(new Vector3D(-40588150.3617,-11462167.0397, 27143.2125),
                               new Vector3D(834.787458,-2958.305691,-1.172999));
 
         checkPV(pvGCRFiau2000B,
-                itrfB.getTransformTo(Frame.getGCRF(), t0).transformPVCoordinates(pvITRF),
-                0.21, 1.6e-5);
+                itrfC.getTransformTo(Frame.getGCRF(), t0).transformPVCoordinates(pvITRF),
+                0.063, 0.7e-5);
 
         PVCoordinates pvJ2000EqB =
             new PVCoordinates(new Vector3D(-40588149.5481, -11462169.9118, 27146.8613),
                               new Vector3D(834.787667, -2958.305632, -1.172968));
         checkPV(pvJ2000EqB,
                 itrfA.getTransformTo(Frame.getJ2000(), t0).transformPVCoordinates(pvITRF),
-                0.21, 1.6e-5);
+                0.063, 0.7e-5);
 
     }
 
