@@ -30,7 +30,14 @@ import org.orekit.time.AbsoluteDate;
  * It <strong>must</strong> with the Earth Rotation Angle (REA) defined by
  * Capitaine's model and <strong>not</strong> IAU-82 sidereal time which is
  * consistent with the previous models only.</p>
- * Its parent frame is the GCRF frame.<p>
+ * <p>Either the complete IAU-2000 precession-nutation model or a simplified
+ * model can be used. The simplified model is recommended for most applications
+ * since it is <strong>far less</strong> computation intensive than the complete
+ * IAU-2000 model and its accuracy is only slightly degraded (less than 1
+ * milliarcsecond over a 2 centuries period). This simplified model is similar
+ * in spirit to the IAU-2000B model used in the classical equinox-based approach,
+ * but is not identical.</p>
+ * <p>Its parent frame is the GCRF frame.<p>
  * <p>This frame uses the new</p>
  * @version $Revision$ $Date$
  */
@@ -114,26 +121,26 @@ class CIRF2000Frame extends Frame {
     /** IERS conventions (2003) resources base directory. */
     private static final String IERS_2003_BASE = "/META-INF/IERS-conventions-2003/";
 
-    /** Resources for IERS table 5.2a from IERS conventions (2003), model A. */
-    private static final String X_MODEL_2000A    = IERS_2003_BASE + "tab5.2a.txt";
+    /** Resources for IERS table 5.2a from IERS conventions (2003), complete model. */
+    private static final String X_MODEL_IAU_2000    = IERS_2003_BASE + "tab5.2a.txt";
 
-    /** Resources for IERS table 5.2a from IERS conventions (2003), model B. */
-    private static final String X_MODEL_2000B    = IERS_2003_BASE + "tab5.2a.reduced.txt";
+    /** Resources for IERS table 5.2a from IERS conventions (2003), simplified model. */
+    private static final String X_MODEL_SIMPLIFIED    = IERS_2003_BASE + "tab5.2a.simplified.txt";
 
-    /** Resources for IERS table 5.2b from IERS conventions (2003), model A. */
-    private static final String Y_MODEL_2000A    = IERS_2003_BASE + "tab5.2b.txt";
+    /** Resources for IERS table 5.2b from IERS conventions (2003), complete model. */
+    private static final String Y_MODEL_IAU_2000    = IERS_2003_BASE + "tab5.2b.txt";
 
-    /** Resources for IERS table 5.2b from IERS conventions (2003), model B. */
-    private static final String Y_MODEL_2000B    = IERS_2003_BASE + "tab5.2b.reduced.txt";
+    /** Resources for IERS table 5.2b from IERS conventions (2003), simplified model. */
+    private static final String Y_MODEL_SIMPLIFIED    = IERS_2003_BASE + "tab5.2b.simplified.txt";
 
-    /** Resources for IERS table 5.2c from IERS conventions (2003), model A. */
-    private static final String S_XY2_MODEL_2000A = IERS_2003_BASE + "tab5.2c.txt";
+    /** Resources for IERS table 5.2c from IERS conventions (2003), complete model. */
+    private static final String S_XY2_MODEL_IAU_2000 = IERS_2003_BASE + "tab5.2c.txt";
 
-    /** Resources for IERS table 5.2c from IERS conventions (2003), model B. */
-    private static final String S_XY2_MODEL2000B = IERS_2003_BASE + "tab5.2c.reduced.txt";
+    /** Resources for IERS table 5.2c from IERS conventions (2003), simplified model. */
+    private static final String S_XY2_MODEL_SIMPLIFIED = IERS_2003_BASE + "tab5.2c.simplified.txt";
 
     /** Indicator for complete or reduced precession-nutation model. */
-    private final boolean useIAU2000B;
+    private final boolean useSimplifiedModel;
 
     /** Pole position (X). */
     private final Development xDevelopment;
@@ -148,37 +155,36 @@ class CIRF2000Frame extends Frame {
     private AbsoluteDate cachedDate;
 
     /** Simple constructor.
-     * <p>If the <code>useIAU2000B</code> boolean parameter is true (which is the
-     * recommended value) the reduced IAU2000B precession-nutation model will be
-     * used, otherwise the complete IAU2000A precession-nutation model will be used.
-     * The IAU2000B is recommended for most applications since it is <strong>far
-     * less</strong> computation intensive than the IAU2000A model and its accuracy
-     * is only slightly degraded (1 milliarcsecond instead of 0.2 milliarcsecond).</p>
+     * <p>If the <code>useSimplifiedModel</code> boolean parameter is true (which is the
+     * recommended value) a reduced precession-nutation model will be
+     * used, otherwise the complete IAU-2000 precession-nutation model will be used.
+     * The reduced model is recommended for most applications since it is <strong>far
+     * less</strong> computation intensive than the complete IAU-2000 model and its accuracy
+     * is only slightly degraded (less than 1 milliarcsecond over a 2 centuries period).</p>
      * @param date the date.
-     * @param useIAU2000B if true (recommended value), the IAU2000B model will be used
+     * @param useSimplifiedModel if true (recommended value), a reduced precession-nutation
+     * model will be used
      * @param name name of the frame
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
      * @see Frame
      */
-    protected CIRF2000Frame(final AbsoluteDate date, final boolean useIAU2000B, final String name)
+    protected CIRF2000Frame(final AbsoluteDate date, final boolean useSimplifiedModel, final String name)
         throws OrekitException {
 
         super(getGCRF(), null , name);
 
-        this.useIAU2000B = useIAU2000B;
+        this.useSimplifiedModel = useSimplifiedModel;
 
         // nutation models are in micro arcseconds
+        final double factor = RADIANS_PER_ARC_SECOND * 1.0e-6;
         final Class<CIRF2000Frame> c = CIRF2000Frame.class;
-        final String xModel = useIAU2000B ? X_MODEL_2000B : X_MODEL_2000A;
-        xDevelopment =
-            new Development(c.getResourceAsStream(xModel), RADIANS_PER_ARC_SECOND * 1.0e-6, xModel);
-        final String yModel = useIAU2000B ? Y_MODEL_2000B : Y_MODEL_2000A;
-        yDevelopment =
-            new Development(c.getResourceAsStream(yModel), RADIANS_PER_ARC_SECOND * 1.0e-6, yModel);
-        final String sxy2Model = useIAU2000B ? S_XY2_MODEL2000B : S_XY2_MODEL_2000A;
-        sxy2Development =
-            new Development(c.getResourceAsStream(sxy2Model), RADIANS_PER_ARC_SECOND * 1.0e-6, sxy2Model);
+        final String xModel = useSimplifiedModel ? X_MODEL_SIMPLIFIED : X_MODEL_IAU_2000;
+        xDevelopment = new Development(c.getResourceAsStream(xModel), factor, xModel);
+        final String yModel = useSimplifiedModel ? Y_MODEL_SIMPLIFIED : Y_MODEL_IAU_2000;
+        yDevelopment = new Development(c.getResourceAsStream(yModel), factor, yModel);
+        final String sxyModel = useSimplifiedModel ? S_XY2_MODEL_SIMPLIFIED : S_XY2_MODEL_IAU_2000;
+        sxy2Development = new Development(c.getResourceAsStream(sxyModel), factor, sxyModel);
 
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
@@ -217,7 +223,7 @@ class CIRF2000Frame extends Frame {
      * @return luni-solar and planetary elements
      */
     private BodiesElements computeBodiesElements(final double tt) {
-        if (useIAU2000B) {
+        if (useSimplifiedModel) {
             return new BodiesElements(F11 * tt + F10, // mean anomaly of the Moon
                                       F21 * tt + F20, // mean anomaly of the Sun
                                       F31 * tt + F30, // L - &Omega; where L is the mean longitude of the Moon

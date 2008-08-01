@@ -65,8 +65,8 @@ Frames
 
   Several predefined reference frames are implemented in OREKIT. The user can retrieve them
   using various static methods: <<<getGCRF()>>>, <<<getJ2000()>>>, <<<getITRF2005A()>>>,
-  <<<getITRF2005B()>>>, <<<getCIRF2000A()>>>, <<<getCIRF2000B()>>>, <<<getTIRF2000A()>>>,
-  <<<getTIRF2000B()>>> and <<<getVeis1950()>>>.
+  <<<getITRF2005C()>>>, <<<getCIRF2000A()>>>, <<<getCIRF2000C()>>>, <<<getTIRF2000A()>>>,
+  <<<getTIRF2000C()>>> and <<<getVeis1950()>>>.
 
 ** IERS 2003 Conventions
 
@@ -80,13 +80,13 @@ Frames
 *** New paradigm: CIO-based transformations
 
   There are several different ways to compute transforms between GCRF and ITRF. Orekit uses
-  the new paradigm promoted by IERS, i.e. using a single transform for both bias, precession
+  the new paradigm promoted by IERS, i.e. it uses a single transform for both bias, precession
   and nutation, computed by the IAU-2000 precession-nutation model and the Earth Orientation
-  Parameters (EOP) data published online bu IERS. This single transform links the GCRF to a
-  Celestial Intermediate Reference Frame. From this, the Earth Rotation Angle is applied to
-  define a Terrestrial Intermediate Reference Frame which is a pseudo Earth fixed frame. A
-  last transform adds the pole motion with respect to Earth crust to reach the real Earth
-  fixed frame: the International Terrestrial Reference Frame.
+  Parameters (EOP) data published online by IERS. This single transform links the GCRF to a
+  Celestial Intermediate Reference Frame (CIRF). From CIRF, the Earth Rotation Angle is applied
+  to define a Terrestrial Intermediate Reference Frame (TIRF) which is a pseudo Earth fixed
+  frame. A last transform adds the pole motion with respect to Earth crust to reach the real
+  Earth fixed frame: the International Terrestrial Reference Frame.
 
   In summary, four frames are involved along this path: GCRF, CIRF, TIRF and ITRF.
 
@@ -120,30 +120,31 @@ Frames
 
 *** Simplified precession-nutation model
  
-  The classical paradigm provides two nutation models: one consistent with IAU-2000 and a
-  simplified one with an accuracy reduced from 0.2 milli arcsecond to 1 milli arcsecond.
-  The simplified model is sufficient for many purposes and much faster to compute, since it
-  involves only 77 nutation terms instead of the 678 nutation terms and 687 planetary terms
-  of IAU-2000.
+  The classical paradigm provides two nutation models: one called IAU-2000A consistent with
+  the IAU-2000 bias-precession-nutation converted to equinox based approach, and a simplified
+  one called IAU-2000B using no planetary terms and fewer luni-solar terms. The simplified
+  model is sufficient for many purposes. IAU-2000B is always within 1.0 milli arc second from
+  IAU-2000A, which itself is always withing 0.2 milli arc second from VLBI observed pole.
 
-  Unfortunately, no such simplifications have been published for the new paradigm with
-  combined bias-precession-nutation. It seemed however very interesting for the sake of
-  efficiency for Orekit, so we have derived and implemented this simplification for the new
-  paradigm. The simplified model was derived by mapping the signature of the terms in the
-  bias-precession-nutation IAU-2000 model and in the separated precession and nutation models
-  from the classical paradigm. The mapping is based on the integer coefficients with respect
-  to the solar, lunar and planetary elements. We have then discarded the same terms that were
-  discarded in the classical paradigm. Once the remaining terms have been collected, a simple
-  polynomial regression was made to fit the truncated model to the complete model over the
-  2000-2020 period.
+  Unfortunately, no such simplification has been published for the new paradigm with
+  combined bias-precession-nutation. For the sake of efficiency, Orekit includes such a
+  tailored simplified model, which has been derived especially for it. For consistency with the
+  existing IERS denomination scheme and to avoid confusion  with the IAU-2000B model used in
+  the classical approach, we have temporarily called this model IAU-2000C. This
+  simplified model was derived by first removing terms from the IERS published tables
+  ({{{ftp://maia.usno.navy.mil/conv2000/chapter5/tab5.2a.txt}tab5.2a.txt}} and
+  {{{ftp://maia.usno.navy.mil/conv2000/chapter5/tab5.2b.txt}tab5.2b.txt}}) and then adjusting
+  the polynomial part to match the complete (X, Y) series over a two centuries period (from
+  1800 to 2200).
 
-  We have kept the same denomination of 2000A for the complete model and 2000B for the truncated
-  model.
+  The pole direction computed with the simplified IAU-2000C model derived for Orekit is always
+  within 0.8 milli arcsecond from the direction computed with the complete IAU-2000A mode over
+  a two centuries period.
 
 *** Orekit implementation of IERS 2003 convention
 
-  In summary, Orekit implements 8 frames from IERS 2003 convention: GCRF, J2000, CIRF2000 A/B,
-  TIRF2000 A/B, ITRF2005 A/B.
+  In summary, Orekit implements 8 frames from IERS 2003 convention: GCRF, J2000, CIRF2000 A,
+  TIRF2000 A, ITRF2005 A, CIRF2000C, TIRF2000 C, ITRF2005 C.
 
   Here is a schematic representation of the partial tree containing the supported IERS frames.
     
@@ -156,7 +157,7 @@ Frames
   
   This frame model allows to define the frame associated to any position at 
   the surface of a body shape, which itself is referenced to a frame, typically
-  ITRF 2005A or ITRF 2005B for Earth. The frame is defined with the following
+  ITRF 2005A or ITRF 2005C for Earth. The frame is defined with the following
   canonical axes:
   
     ** zenith direction (Z) is defined as the normal to local horizontal plane;

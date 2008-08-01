@@ -49,12 +49,12 @@ public class YawCompensationTest extends TestCase {
     // Computation date 
     private AbsoluteDate date;
     
-    // Reference frame = ITRF 2005B 
-    private Frame frameITRF2005B;
+    // Reference frame = ITRF 2005C 
+    private Frame frameITRF2005C;
     
     // Satellite position
     CircularOrbit circOrbit;
-    PVCoordinates pvSatITRF2005B;
+    PVCoordinates pvSatITRF2005C;
     
     // Earth shape
     OneAxisEllipsoid earthShape;
@@ -75,10 +75,10 @@ public class YawCompensationTest extends TestCase {
         //  Check target
         // **************
         // without yaw compensation
-        PVCoordinates noYawTarget = nadirLaw.getTargetInBodyFrame(date, pvSatITRF2005B, frameITRF2005B);
+        PVCoordinates noYawTarget = nadirLaw.getTargetInBodyFrame(date, pvSatITRF2005C, frameITRF2005C);
          
         // with yaw compensation
-        PVCoordinates yawTarget = yawCompensLaw.getTargetInBodyFrame(date, pvSatITRF2005B, frameITRF2005B);
+        PVCoordinates yawTarget = yawCompensLaw.getTargetInBodyFrame(date, pvSatITRF2005C, frameITRF2005C);
 
         // Check difference
         PVCoordinates targetDiff = new PVCoordinates(1.0, yawTarget, -1.0, noYawTarget);
@@ -90,10 +90,10 @@ public class YawCompensationTest extends TestCase {
         //  Check observed ground point
         // *****************************
         // without yaw compensation
-        PVCoordinates noYawObserved = nadirLaw.getObservedGroundPoint(date, pvSatITRF2005B, frameITRF2005B);
+        PVCoordinates noYawObserved = nadirLaw.getObservedGroundPoint(date, pvSatITRF2005C, frameITRF2005C);
 
         // with yaw compensation
-        PVCoordinates yawObserved = yawCompensLaw.getObservedGroundPoint(date, pvSatITRF2005B, frameITRF2005B);
+        PVCoordinates yawObserved = yawCompensLaw.getObservedGroundPoint(date, pvSatITRF2005C, frameITRF2005C);
 
         // Check difference
         PVCoordinates observedDiff = new PVCoordinates(1.0, yawObserved, -1.0, noYawObserved);
@@ -182,8 +182,8 @@ public class YawCompensationTest extends TestCase {
         }
         
         // 5/ Check that minimum yaw compensation value is around maximum latitude
-        assertEquals(Math.toRadians(0.0032285415586776798), yawMin, Utils.epsilonAngle);
-        assertEquals(Math.toRadians(50.21484459355221), latMin, Utils.epsilonAngle);
+        assertEquals(Math.toRadians( 0.003229), yawMin, Utils.epsilonAngle);
+        assertEquals(Math.toRadians(50.214853), latMin, Utils.epsilonAngle);
 
     }
 
@@ -226,8 +226,8 @@ public class YawCompensationTest extends TestCase {
             // Body mu
             final double mu = 3.9860047e14;
             
-            // Reference frame = ITRF 2005B
-            frameITRF2005B = Frame.getITRF2005B();
+            // Reference frame = ITRF 2005C
+            frameITRF2005C = Frame.getITRF2005C();
 
             //  Satellite position
             circOrbit =
@@ -235,11 +235,11 @@ public class YawCompensationTest extends TestCase {
                                        Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
                                        Frame.getJ2000(), date, mu);
             
-            pvSatITRF2005B = circOrbit.getPVCoordinates(frameITRF2005B);
+            pvSatITRF2005C = circOrbit.getPVCoordinates(frameITRF2005C);
             
             // Elliptic earth shape */
             earthShape =
-                new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005B);
+                new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005C);
             
         } catch (OrekitException oe) {
             fail(oe.getMessage());
@@ -249,9 +249,9 @@ public class YawCompensationTest extends TestCase {
 
     public void tearDown() {
         date = null;
-        frameITRF2005B = null;
+        frameITRF2005C = null;
         circOrbit = null;
-        pvSatITRF2005B = null;
+        pvSatITRF2005C = null;
         earthShape = null;
     }
 

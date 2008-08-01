@@ -247,7 +247,7 @@ public class DrozinerAttractionModelTest extends TestCase {
             c40 =  1.61994537014e-6;
             c50 =  2.27888264414e-7;
             c60 = -5.40618601332e-7;
-            ITRF2005 = Frame.getITRF2005B();
+            ITRF2005 = Frame.getITRF2005C();
             propagator = new NumericalPropagator(new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
 
         } catch (OrekitException oe) {

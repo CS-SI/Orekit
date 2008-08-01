@@ -51,7 +51,7 @@ class ITRF2005Frame extends Frame {
     private AbsoluteDate cachedDate;
 
     /** Simple constructor.
-     * @param parent parent frame (must be either TIRF2000A or TIRF2000B)
+     * @param parent parent frame (must be either TIRF2000A or TIRF2000C)
      * @param date the current date
      * @param name the string representation
      * @exception OrekitException if nutation cannot be computed

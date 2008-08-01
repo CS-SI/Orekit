@@ -39,7 +39,7 @@ public class ITRF2005FrameTest extends TestCase {
         AbsoluteDate date1 = new AbsoluteDate(new ChunkedDate(2006, 02, 24),
                                               new ChunkedTime(15, 38, 00),
                                               UTCScale.getInstance());
-        Frame ITRF2005 = Frame.getITRF2005B();
+        Frame ITRF2005 = Frame.getITRF2005C();
         Transform t0 = ITRF2005.getTransformTo(Frame.getJ2000(), date1 );
 
         double dt = 10.0;
@@ -61,7 +61,7 @@ public class ITRF2005FrameTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2001, 03, 21),
                                              ChunkedTime.H00,
                                              UTCScale.getInstance());
-        Frame ITRF2005 = Frame.getITRF2005B();
+        Frame ITRF2005 = Frame.getITRF2005C();
 
         Vector3D u = ITRF2005.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.PLUS_I);
         assertTrue(Vector3D.angle(u, Vector3D.MINUS_I) < Math.toRadians(2));
@@ -85,7 +85,7 @@ public class ITRF2005FrameTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2001, 03, 21),
                                              ChunkedTime.H00,
                                              UTCScale.getInstance());
-        TIRF2000Frame TIRF2000 = (TIRF2000Frame) Frame.getTIRF2000B();
+        TIRF2000Frame TIRF2000 = (TIRF2000Frame) Frame.getTIRF2000C();
 
         assertEquals(180, Math.toDegrees(TIRF2000.getEarthRotationAngle(date)), 2.0);
 
@@ -105,7 +105,7 @@ public class ITRF2005FrameTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2003, 10, 14),
                                              new ChunkedTime(02, 00, 00),
                                              UTCScale.getInstance());
-        Transform trans = Frame.getJ2000().getTransformTo(Frame.getTIRF2000B(), date);
+        Transform trans = Frame.getJ2000().getTransformTo(Frame.getTIRF2000C(), date);
 
         // Positions
         Vector3D posTIRF =
@@ -121,7 +121,7 @@ public class ITRF2005FrameTest extends TestCase {
         AbsoluteDate t0 = new AbsoluteDate(new ChunkedDate(2003, 10, 14),
                                            new ChunkedTime(02, 00, 00),
                                            UTCScale.getInstance());
-        Frame itrf = Frame.getITRF2005B();
+        Frame itrf = Frame.getITRF2005C();
         Transform trans = Frame.getJ2000().getTransformTo(itrf, t0);
 
         // Coordinates in J2000
@@ -168,13 +168,13 @@ public class ITRF2005FrameTest extends TestCase {
     public void testMontenbruck() throws OrekitException {
         AbsoluteDate t0 = new AbsoluteDate(new ChunkedDate(1999, 3, 4), ChunkedTime.H00,
                                            GPSScale.getInstance());
-        Transform trans = Frame.getITRF2005B().getTransformTo(Frame.getGCRF(), t0);
+        Transform trans = Frame.getITRF2005A().getTransformTo(Frame.getGCRF(), t0);
         PVCoordinates pvWGS =
             new PVCoordinates(new Vector3D(19440953.805,16881609.273,-6777115.092),
                               new Vector3D(-811.1827456,-257.3799137,-3068.9508125));
         checkPV(new PVCoordinates(new Vector3D(-23830592.685,  -9747073.881,  -6779831.010),
                                   new Vector3D( 1561.9646362, -1754.3454485, -3068.8504996)),
-                                  trans.transformPVCoordinates(pvWGS), 4.7e-4, 7.0e-8);
+                                  trans.transformPVCoordinates(pvWGS), 0.12, 2.6e-5);
 
     }
 

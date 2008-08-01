@@ -54,7 +54,7 @@ public class NodeDetector extends AbstractDetector {
      * @param orbit initial orbit
      * @param frame frame in which the equator is defined (typical
      * values are {@link Frame#getJ2000() J<sub>2000</sub>} or
-     * {@link Frame#getITRF2005B() ITRF 2005})
+     * {@link Frame#getITRF2005C() ITRF 2005})
      */
     public NodeDetector(final Orbit orbit, final Frame frame) {
         super(orbit.getKeplerianPeriod() / 3, 1.0e-10);

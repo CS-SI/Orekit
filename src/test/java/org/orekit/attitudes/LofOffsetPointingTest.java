@@ -47,8 +47,8 @@ public class LofOffsetPointingTest extends TestCase {
     // Body mu 
     private double mu;
 
-    // Reference frame = ITRF 2005B 
-    private Frame frameItrf2005B;
+    // Reference frame = ITRF 2005C 
+    private Frame frameItrf2005C;
         
     // Earth shape
     OneAxisEllipsoid earthSpheric;
@@ -119,12 +119,12 @@ public class LofOffsetPointingTest extends TestCase {
             // Body mu
             mu = 3.9860047e14;
             
-            // Reference frame = ITRF 2005B
-            frameItrf2005B = Frame.getITRF2005B();
+            // Reference frame = ITRF 2005C
+            frameItrf2005C = Frame.getITRF2005C();
 
             // Elliptic earth shape
             earthSpheric =
-                new OneAxisEllipsoid(6378136.460, 0., frameItrf2005B);
+                new OneAxisEllipsoid(6378136.460, 0., frameItrf2005C);
             
         } catch (OrekitException oe) {
             fail(oe.getMessage());
@@ -134,7 +134,7 @@ public class LofOffsetPointingTest extends TestCase {
 
     public void tearDown() {
         date = null;
-        frameItrf2005B = null;
+        frameItrf2005C = null;
         earthSpheric = null;
     }
 

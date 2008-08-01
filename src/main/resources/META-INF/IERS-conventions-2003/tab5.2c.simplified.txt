@@ -1,5 +1,5 @@
-Expression for the quantity s(t)+XY/2 based on the IAU2000B precession-nutation 
-model 
+Expression for the quantity s(t)+XY/2 based on a simplification
+of the IAU2000A precession-nutation model (IAU2000C)
 
 
 Updated Table (12/11/2003) for ensuring continuity of UT1 on 1st January 2003

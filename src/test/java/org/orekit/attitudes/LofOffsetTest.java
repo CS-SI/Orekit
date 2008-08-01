@@ -49,8 +49,8 @@ public class LofOffsetTest extends TestCase {
     // Body mu 
     private double mu;
 
-    // Reference frame = ITRF 2005B 
-    private Frame frameITRF2005B;
+    // Reference frame = ITRF 2005C 
+    private Frame frameITRF2005C;
         
     // Earth shape
     OneAxisEllipsoid earthSpheric;
@@ -98,11 +98,11 @@ public class LofOffsetTest extends TestCase {
         // Create target pointing attitude law
         // ************************************  
         // Elliptic earth shape
-        final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005B);
-        final GeodeticPoint geoTargetITRF2005B = new GeodeticPoint(Math.toRadians(1.26), Math.toRadians(43.36), 600.);
+        final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005C);
+        final GeodeticPoint geoTargetITRF2005C = new GeodeticPoint(Math.toRadians(1.26), Math.toRadians(43.36), 600.);
             
         // Attitude law definition from geodetic point target 
-        final TargetPointing targetLaw = new TargetPointing(geoTargetITRF2005B, earthShape);
+        final TargetPointing targetLaw = new TargetPointing(geoTargetITRF2005C, earthShape);
         final Rotation targetRot = targetLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();       
         
         // Create lof aligned attitude law
@@ -171,12 +171,12 @@ public class LofOffsetTest extends TestCase {
             // Body mu
             mu = 3.9860047e14;
             
-            // Reference frame = ITRF 2005B
-            frameITRF2005B = Frame.getITRF2005B();
+            // Reference frame = ITRF 2005C
+            frameITRF2005C = Frame.getITRF2005C();
 
             // Elliptic earth shape
             earthSpheric =
-                new OneAxisEllipsoid(6378136.460, 0., frameITRF2005B);
+                new OneAxisEllipsoid(6378136.460, 0., frameITRF2005C);
             
             //  Satellite position
             orbit =
@@ -194,7 +194,7 @@ public class LofOffsetTest extends TestCase {
 
     public void tearDown() {
         date = null;
-        frameITRF2005B = null;
+        frameITRF2005C = null;
         earthSpheric = null;
     }
 

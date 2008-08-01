@@ -50,8 +50,8 @@ import org.orekit.time.AbsoluteDate;
  * <p>
  *  Several Reference frames are implemented in OREKIT. The user can
  *  retrieve them using various static methods({@link #getGCRF()}, {@link #getJ2000()},
- *  {@link #getITRF2005A()}, {@link #getITRF2005B()}, {@link #getCIRF2000A()},
- *  {@link #getCIRF2000B()}, {@link #getTIRF2000A()}, {@link #getTIRF2000B()}
+ *  {@link #getITRF2005A()}, {@link #getITRF2005C()}, {@link #getCIRF2000A()},
+ *  {@link #getCIRF2000C()}, {@link #getTIRF2000A()}, {@link #getTIRF2000C()}
  *  and {@link #getVeis1950()}).
  * <p>
  *
@@ -81,17 +81,17 @@ import org.orekit.time.AbsoluteDate;
  *             |                    J2000
  *        -----------
  *        |         |    Precession and Nutation effects
- *        |         |    (the complexity of the parameters changes between A and B models)
+ *        |         |    (the complexity of the parameters changes between A and C models)
  *        |         |
- *    CIRF2000A  CIRF2000B   (celestial intermediate reference frame)
+ *    CIRF2000A  CIRF2000C   (celestial intermediate reference frame)
  *        |         |
  *        |         |   Earth natural rotation
  *        |         |
- *    TIRF2000A  TIRF2000B   (terrestrial intermediate reference frame : Pseudo Earth Fixed Frame)
+ *    TIRF2000A  TIRF2000C   (terrestrial intermediate reference frame : Pseudo Earth Fixed Frame)
  *        |         |
  *        |         |   Pole motion
  *        |         |
- *    ITRF2005A ITRF2005B    (international terrestrial reference frame)
+ *    ITRF2005A ITRF2005C    (international terrestrial reference frame)
  *
  * </pre>
  * <p> This implementation follows the new non-rotating origin paradigm
@@ -99,10 +99,11 @@ import org.orekit.time.AbsoluteDate;
  * Celestial Ephemeris Origin (CEO-based) and Earth Rotating Angle. Depending
  * on user choice at construction, it is either consistent to the complete IAU
  * 2000A precession-nutation model with an accuracy level of 0.2 milliarcsecond
- * or consistent to the reduced IAU 2000B precession-nutation model with an
- * accuracy level of 1.0 milliarcsecond. The IAU2000B is recommended for most
- * applications since it is <strong>far less</strong> computation intensive than
- * the IAU2000A model and its accuracy is only slightly degraded.
+ * or consistent to the reduced IAU 2000C precession-nutation model with an
+ * accuracy level slightly better than 1.0 milliarcsecond. The IAU2000C is
+ * recommended for most applications since it is <strong>far less</strong>
+ * computation intensive than the IAU2000A model and its accuracy is only
+ * slightly degraded.
  * </p>
  * <p>Other implementations of the ITRF 2005 are possible by
  * ignoring the B1.8 resolution and using the classical paradigm which
@@ -438,17 +439,17 @@ public class Frame implements Serializable {
         return LazyITRF2005AHolder.INSTANCE;
     }
 
-    /** Get the ITRF2005B reference frame.
+    /** Get the ITRF2005C reference frame.
      * @return the selected reference frame singleton.
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
      */
-    public static Frame getITRF2005B()
+    public static Frame getITRF2005C()
         throws OrekitException {
-        if (LazyITRF2005BHolder.INSTANCE == null) {
-            throw LazyITRF2005BHolder.OREKIT_EXCEPTION;
+        if (LazyITRF2005CHolder.INSTANCE == null) {
+            throw LazyITRF2005CHolder.OREKIT_EXCEPTION;
         }
-        return LazyITRF2005BHolder.INSTANCE;
+        return LazyITRF2005CHolder.INSTANCE;
     }
 
     /** Get the TIRF2000A reference frame.
@@ -464,17 +465,17 @@ public class Frame implements Serializable {
         return LazyTIRF2000AHolder.INSTANCE;
     }
 
-    /** Get the TIRF2000B reference frame.
+    /** Get the TIRF2000C reference frame.
      * @return the selected reference frame singleton.
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
      */
-    public static Frame getTIRF2000B()
+    public static Frame getTIRF2000C()
         throws OrekitException {
-        if (LazyTIRF2000BHolder.INSTANCE == null) {
-            throw LazyTIRF2000BHolder.OREKIT_EXCEPTION;
+        if (LazyTIRF2000CHolder.INSTANCE == null) {
+            throw LazyTIRF2000CHolder.OREKIT_EXCEPTION;
         }
-        return LazyTIRF2000BHolder.INSTANCE;
+        return LazyTIRF2000CHolder.INSTANCE;
     }
 
     /** Get the CIRF2000A reference frame.
@@ -490,17 +491,17 @@ public class Frame implements Serializable {
         return LazyCIRF2000AHolder.INSTANCE;
     }
 
-    /** Get the CIRF2000B reference frame.
+    /** Get the CIRF2000C reference frame.
      * @return the selected reference frame singleton.
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
      */
-    public static Frame getCIRF2000B()
+    public static Frame getCIRF2000C()
         throws OrekitException {
-        if (LazyCIRF2000BHolder.INSTANCE == null) {
-            throw LazyCIRF2000BHolder.OREKIT_EXCEPTION;
+        if (LazyCIRF2000CHolder.INSTANCE == null) {
+            throw LazyCIRF2000CHolder.OREKIT_EXCEPTION;
         }
-        return LazyCIRF2000BHolder.INSTANCE;
+        return LazyCIRF2000CHolder.INSTANCE;
     }
 
     /** Get the VEIS 1950 reference frame.
@@ -581,8 +582,8 @@ public class Frame implements Serializable {
 
     }
 
-    /** Holder for the ITRF 2005 B frame singleton. */
-    private static class LazyITRF2005BHolder {
+    /** Holder for the ITRF 2005 C frame singleton. */
+    private static class LazyITRF2005CHolder {
 
         /** Unique instance. */
         private static final Frame INSTANCE;
@@ -594,10 +595,10 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                if (LazyTIRF2000BHolder.INSTANCE == null) {
-                    tmpException = LazyTIRF2000BHolder.OREKIT_EXCEPTION;
+                if (LazyTIRF2000CHolder.INSTANCE == null) {
+                    tmpException = LazyTIRF2000CHolder.OREKIT_EXCEPTION;
                 } else {
-                    tmpFrame = new ITRF2005Frame(LazyTIRF2000BHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, "ITRF2005B");
+                    tmpFrame = new ITRF2005Frame(LazyTIRF2000CHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, "ITRF2005C");
                 }
             } catch (OrekitException oe) {
                 tmpException = oe;
@@ -611,7 +612,7 @@ public class Frame implements Serializable {
          * nor a default constructor. This private constructor prevents
          * the compiler from generating one automatically.</p>
          */
-        private LazyITRF2005BHolder() {
+        private LazyITRF2005CHolder() {
         }
 
     }
@@ -651,8 +652,8 @@ public class Frame implements Serializable {
 
     }
 
-    /** Holder for the TIRF Frame 2000 B frame singleton. */
-    private static class LazyTIRF2000BHolder {
+    /** Holder for the TIRF Frame 2000 C frame singleton. */
+    private static class LazyTIRF2000CHolder {
 
         /** Unique instance. */
         private static final Frame INSTANCE;
@@ -664,10 +665,10 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                if (LazyCIRF2000BHolder.INSTANCE == null) {
-                    tmpException = LazyCIRF2000BHolder.OREKIT_EXCEPTION;
+                if (LazyCIRF2000CHolder.INSTANCE == null) {
+                    tmpException = LazyCIRF2000CHolder.OREKIT_EXCEPTION;
                 } else {
-                    tmpFrame = new TIRF2000Frame(LazyCIRF2000BHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, "TIRF2000B");
+                    tmpFrame = new TIRF2000Frame(LazyCIRF2000CHolder.INSTANCE, AbsoluteDate.J2000_EPOCH, "TIRF2000C");
                 }
             } catch (OrekitException oe) {
                 tmpException = oe;
@@ -681,7 +682,7 @@ public class Frame implements Serializable {
          * nor a default constructor. This private constructor prevents
          * the compiler from generating one automatically.</p>
          */
-        private LazyTIRF2000BHolder() {
+        private LazyTIRF2000CHolder() {
         }
 
     }
@@ -717,8 +718,8 @@ public class Frame implements Serializable {
 
     }
 
-    /** Holder for the CIRF 2000 B frame singleton. */
-    private static class LazyCIRF2000BHolder {
+    /** Holder for the CIRF 2000 C frame singleton. */
+    private static class LazyCIRF2000CHolder {
 
         /** Unique instance. */
         private static final Frame INSTANCE;
@@ -730,7 +731,7 @@ public class Frame implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                tmpFrame = new CIRF2000Frame(AbsoluteDate.J2000_EPOCH, true, "CIRF2000B");
+                tmpFrame = new CIRF2000Frame(AbsoluteDate.J2000_EPOCH, true, "CIRF2000C");
             } catch (OrekitException oe) {
                 tmpException = oe;
             }
@@ -743,7 +744,7 @@ public class Frame implements Serializable {
          * nor a default constructor. This private constructor prevents
          * the compiler from generating one automatically.</p>
          */
-        private LazyCIRF2000BHolder() {
+        private LazyCIRF2000CHolder() {
         }
 
     }

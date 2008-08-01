@@ -115,22 +115,6 @@ public class TleTest extends TestCase {
 
     }
 
-
-    public void testThetaG() throws OrekitException, ParseException {
-
-//      AbsoluteDate date = AbsoluteDate.J2000Epoch;
-//      double teta = SDP4.thetaG(date);
-
-//      TIRF2005Frame ITRF = (TIRF2005Frame)Frame.getReferenceFrame(Frame.TIRF2000B, date);
-//      double tetaTIRF = ITRF.getEarthRotationAngle(date);
-//      assertEquals( Math.toDegrees(Utils.trimAngle(tetaTIRF, Math.PI)), Math.toDegrees(Utils.trimAngle(teta, Math.PI)), 0.003);
-
-//      date = new AbsoluteDate(new ChunkedDate(2002, 03, 08), new ChunkedTime(01, 00, 45), UTCScale.getInstance());
-//      tetaTIRF = ITRF.getEarthRotationAngle(date);
-//      teta = SDP4.thetaG(date);
-//      assertEquals( Math.toDegrees(Utils.trimAngle(tetaTIRF, Math.PI)), Math.toDegrees(Utils.trimAngle(teta, Math.PI)), 0.04);
-    }
-
     public void testSatCodeCompliance() throws IOException, OrekitException, ParseException {
 
         boolean printResults = false;
