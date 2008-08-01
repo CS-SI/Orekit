@@ -34,7 +34,8 @@ Overview
 
     * frames hierarchy supporting fixed and time-dependent (or telemetry-dependent) frames
 
-    * predefined frames (J2000, ITRF2000 (A and B) and intermediate frames, Veis, topocentric)
+    * predefined frames (J2000, GCRF, ITRF2005 (complete and simplified precession-nutation)
+      and intermediate frames, Veis, topocentric)
 
     * user extensible (used operationally in real time with a set of about 60 frames on
       several spacecrafts)
