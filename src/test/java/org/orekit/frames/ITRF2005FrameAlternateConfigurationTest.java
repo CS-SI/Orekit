@@ -44,7 +44,7 @@ public class ITRF2005FrameAlternateConfigurationTest extends TestCase {
 
         // Positions LEO
         Frame itrfA = Frame.getITRF2005A();
-        Frame itrfC = Frame.getITRF2005C();
+        Frame itrfB = Frame.getITRF2005C();
         PVCoordinates pvITRF =
             new PVCoordinates(new Vector3D(-1033479.3830, 7901295.2754, 6380356.5958),
                               new Vector3D(-3225.636520, -2872.451450, 5531.924446));
@@ -68,14 +68,14 @@ public class ITRF2005FrameAlternateConfigurationTest extends TestCase {
             new PVCoordinates(new Vector3D(5102508.9579, 6123011.4012, 6378136.9277),
                               new Vector3D(-4743.220156, 790.536495, 5533.755729));
         checkPV(pvGcrfIau2000B,
-                itrfC.getTransformTo(Frame.getGCRF(), t0).transformPVCoordinates(pvITRF),
+                itrfB.getTransformTo(Frame.getGCRF(), t0).transformPVCoordinates(pvITRF),
                 0.02, 1.8e-5);
 
         PVCoordinates pvJ2000EqB =
             new PVCoordinates(new Vector3D(5102509.0383, 6123011.9733, 6378136.3142),
                               new Vector3D(-4743.219766, 790.536342, 5533.756085));
         checkPV(pvJ2000EqB,
-                itrfC.getTransformTo(Frame.getJ2000(), t0).transformPVCoordinates(pvITRF),
+                itrfB.getTransformTo(Frame.getJ2000(), t0).transformPVCoordinates(pvITRF),
                 0.02, 1.8e-5);
 
     }
