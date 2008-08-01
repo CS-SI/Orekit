@@ -102,7 +102,6 @@ public class EOP05C04FilesLoader extends IERSFileCrawler {
         super("^eopc04_IAU2000\\.(\\d\\d)(?:\\.gz)?$");
         this.eop = eop;
 
-        
     }
 
     /** Load Earth Orientation Parameters.
