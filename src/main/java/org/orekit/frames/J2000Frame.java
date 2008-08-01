@@ -52,10 +52,10 @@ class J2000Frame extends Frame {
         super(getGCRF(), null, name);
 
         // build the bias transform
-        Rotation r1 = new Rotation(Vector3D.PLUS_I, D_EPSILON_B);
-        Rotation r2 = new Rotation(Vector3D.PLUS_J, -D_PSI_B * Math.sin(EPSILON_0));
-        Rotation r3 = new Rotation(Vector3D.PLUS_K, -ALPHA_0);
-        Rotation bias = r1.applyTo(r2.applyTo(r3));
+        final Rotation r1 = new Rotation(Vector3D.PLUS_I, D_EPSILON_B);
+        final Rotation r2 = new Rotation(Vector3D.PLUS_J, -D_PSI_B * Math.sin(EPSILON_0));
+        final Rotation r3 = new Rotation(Vector3D.PLUS_K, -ALPHA_0);
+        final Rotation bias = r1.applyTo(r2.applyTo(r3));
 
         // store the bias transform
         setTransform(new Transform(bias));
