@@ -140,6 +140,35 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
     }
 
     /** Build an instant from a location in a {@link TimeScale time scale}.
+     * @param year year number (may be 0 or negative for BC years)
+     * @param month month number from 1 to 12
+     * @param day day number from 1 to 31
+     * @param hour hour number from 0 to 23
+     * @param minute minute number from 0 to 59
+     * @param second second number from 0.0 to 60.0 (excluded)
+     * @exception IllegalArgumentException if inconsistent arguments
+     * are given (parameters out of range)
+     */
+    public AbsoluteDate(final int year, final int month, final int day,
+                        final int hour, final int minute, final double second,
+                        final TimeScale timeScale) throws IllegalArgumentException {
+        this(new ChunkedDate(year, month, day), new ChunkedTime(hour, minute, second), timeScale);
+    }
+
+    /** Build an instant from a location in a {@link TimeScale time scale}.
+     * <p>The hour is set to 00:00:00.000.</p>
+     * @param year year number (may be 0 or negative for BC years)
+     * @param month month number from 1 to 12
+     * @param day day number from 1 to 31
+     * @exception IllegalArgumentException if inconsistent arguments
+     * are given (parameters out of range)
+     */
+    public AbsoluteDate(final int year, final int month, final int day,
+                        final TimeScale timeScale) throws IllegalArgumentException {
+        this(new ChunkedDate(year, month, day), ChunkedTime.H00, timeScale);
+    }
+
+    /** Build an instant from a location in a {@link TimeScale time scale}.
      * @param location location in the time scale
      * @param timeScale time scale
      */

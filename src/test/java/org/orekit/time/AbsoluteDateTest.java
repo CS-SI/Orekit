@@ -179,6 +179,23 @@ extends TestCase {
         }
     }
 
+    public void testExpandedConstructors() throws OrekitException {
+        assertEquals(new AbsoluteDate(new ChunkedDate(2002, 05, 28),
+                                      new ChunkedTime(15, 30, 0),
+                                      UTCScale.getInstance()),
+                     new AbsoluteDate(2002, 05, 28, 15, 30, 0, UTCScale.getInstance()));
+        assertEquals(new AbsoluteDate(new ChunkedDate(2002, 05, 28), ChunkedTime.H00,
+                                      UTCScale.getInstance()),
+                     new AbsoluteDate(2002, 05, 28, UTCScale.getInstance()));
+        try {
+            new AbsoluteDate(2002, 05, 28, 25, 30, 0, UTCScale.getInstance());
+        } catch (IllegalArgumentException iae) {
+            // expected behavior
+        } catch (Exception e) {
+            fail("wrong exception caught");
+        }
+    }
+
     public void testHashcode() {
         AbsoluteDate d1 =
             new AbsoluteDate(new ChunkedDate(2006, 2, 25),

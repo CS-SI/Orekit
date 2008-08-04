@@ -39,6 +39,10 @@
         the J2000 are available.
       </action>
       <action dev="luc" type="add">
+        Improved user-friendliness of the AbsoluteDate class by adding  a few constructors
+        for common cases.
+      </action>
+      <action dev="luc" type="add">
         Improved the class handling dates: ChunkedDate. Changed a constructor
         to allow building from any reference epoch, not only J200 (thus simplifying
         used of modified julian day), added getMJD() method, added several constants
