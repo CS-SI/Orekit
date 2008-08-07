@@ -137,7 +137,7 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
         this.day   = day;
 
         // build a check date from the J2000 day
-        final ChunkedDate check = new ChunkedDate(J2000_EPOCH, getJ2000Day());
+        final ChunkedDate check = new ChunkedDate(getJ2000Day());
 
         // check the parameters for mismatch
         // (i.e. invalid date chunks, like 29 february on non-leap years)
@@ -170,16 +170,11 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
         }
     }
 
-    /** Build a date from its offset with respect to a reference epoch.
-     * <p>This constructor is mainly useful to build a date from a J2000
-     * day (using {@link #J2000_EPOCH}) or from a modified julian day
-     * (using {@link #MODIFIED_JULIAN_EPOCH}).</p>
-     * @param epoch reference epoch
-     * @param offset offset with respect to a reference epoch
+    /** Build a date from its offset with respect to a {@link #J2000_EPOCH}.
+     * @param offset offset with respect to a {@link #J2000_EPOCH}
      * @see #getJ2000Day()
-     * @see #getMJD()
      */
-    public ChunkedDate(final ChunkedDate epoch, final int offset) {
+    public ChunkedDate(final int offset) {
 
         // we follow the astronomical convention for calendars:
         // we consider a year zero and 10 days are missing in 1582
@@ -203,6 +198,18 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
         month = mdFactory.getMonth(dayInYear);
         day   = mdFactory.getDay(dayInYear, month);
 
+    }
+
+    /** Build a date from its offset with respect to a reference epoch.
+     * <p>This constructor is mainly useful to build a date from a modified
+     * julian day (using {@link #MODIFIED_JULIAN_EPOCH}).</p>
+     * @param epoch reference epoch
+     * @param offset offset with respect to a reference epoch
+     * @see #ChunkedDate(int)
+     * @see #getMJD()
+     */
+    public ChunkedDate(final ChunkedDate epoch, final int offset) {
+        this(epoch.getJ2000Day() + offset);
     }
 
     /** Get the year number.
