@@ -23,7 +23,10 @@
     <release version="3.2" date="TBD"
              description="TBD">
       <action dev="luc" type="update">
-        Renamed the iers package into data, as it is not IERS specific anymore.
+        Renamed the iers package into data, as it is not IERS specific anymore. Some
+        classes where also moved out of the package and into the frame and time
+        package and their visibility reduced to package only. This improves decoupling
+        and reduces clutter on users by limiting the number of visible classes.
       </action>
       <action dev="luc" type="fix">
         The simplified precession-nutation model used for CIRF 2000 frame has been
