@@ -16,8 +16,8 @@
  */
 package org.orekit.time;
 
+import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.iers.IERSDirectoryCrawler;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -66,7 +66,7 @@ extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "regular-data");
     }
 
     public static Test suite() {
