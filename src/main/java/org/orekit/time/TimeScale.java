@@ -34,7 +34,7 @@ public interface TimeScale extends Serializable {
      * @return offset in seconds to add to a location in <em>{@link TAIScale}
      * time scale</em> to get a location in <em>instance time scale</em>
      * @see AbsoluteDate#getTAITime()
-     * @see #offsetToTAI(double)
+     * @see #offsetToTAI(ChunkedDate, ChunkedTime)
      */
     double offsetFromTAI(AbsoluteDate date);
 
@@ -43,6 +43,7 @@ public interface TimeScale extends Serializable {
      * @param time time location in the time scale
      * @return offset in seconds to add to a location in <em>instance time scale</em>
      * to get a location in <em>{@link TAIScale} time scale</em>
+     * @see #offsetFromTAI(AbsoluteDate)
      */
     double offsetToTAI(final ChunkedDate date, final ChunkedTime time);
 

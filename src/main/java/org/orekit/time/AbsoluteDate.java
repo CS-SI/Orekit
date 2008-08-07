@@ -129,7 +129,6 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
 
     /** Build an instant from a location in a {@link TimeScale time scale}.
      * @param dateTime location in the time scale
-     * @param time time location in the time scale
      * @param timeScale time scale
      */
     public AbsoluteDate(final ChunksPair dateTime, final TimeScale timeScale) {
