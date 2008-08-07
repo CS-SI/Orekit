@@ -50,6 +50,6 @@ public interface TimeScale extends Serializable {
     /** Get the name time scale.
      * @return name of the time scale
      */
-    public String getName();
+    String getName();
 
 }
