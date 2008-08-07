@@ -292,10 +292,10 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
         final int    day        = (int) Math.floor(offset2000 / 86400.0);
 
         // extract calendar elements
-        ChunkedDate date = new ChunkedDate(ChunkedDate.J2000_EPOCH, day);
+        final ChunkedDate date = new ChunkedDate(ChunkedDate.J2000_EPOCH, day);
         ChunkedTime time = new ChunkedTime(offset2000 - 86400.0 * day);
         try {
-            UTCScale utc = (UTCScale) timeScale;
+            final UTCScale utc = (UTCScale) timeScale;
             if (utc.insideLeap(this)) {
                 // fix the seconds number to take the leap into account
                 time = new ChunkedTime(time.getHour(), time.getMinute(),
