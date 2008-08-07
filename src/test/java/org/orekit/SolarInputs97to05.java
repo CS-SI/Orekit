@@ -399,7 +399,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
     /** Holder for the singleton.
      * <p>We use the Initialization on demand holder idiom to store
      * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all version of java.</p>
+     * synchronization) and works with all versions of java.</p>
      */
     private static class LazyHolder {
         private static final SolarInputs97to05 instance;
