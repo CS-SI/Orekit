@@ -39,6 +39,24 @@
         the J2000 are available.
       </action>
       <action dev="luc" type="add">
+        A lot more classes and interfaces are now serializable, to help users embed
+        instance in their own serializable classes.
+      </action>
+      <action dev="luc" type="update">
+        Changed TimeScale from base abstract class to interface only.
+      </action>
+      <action dev="luc" type="add">
+        Added predefined leap seconds to allow proper turn-key use of the library
+        even without an already configured environment. All known leap seconds at
+        time of writing (2008) are predefined, from 1972-01-01 to 2009-01-01 (the
+        last one has been announced in Bulletin C 36 on 2008-07-04 and is not yet
+        present in the UTC-TAI.history published file)
+      </action>
+      <action dev="luc" type="add">
+        Improved user-friendliness of the time-scales by changing methods parameters
+        types to more easily understandable ones.
+      </action>
+      <action dev="luc" type="add">
         Improved user-friendliness of the AbsoluteDate class by adding  a few constructors
         for common cases.
       </action>

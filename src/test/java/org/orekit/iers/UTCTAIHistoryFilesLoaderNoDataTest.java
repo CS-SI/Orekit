@@ -18,6 +18,7 @@ package org.orekit.iers;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.iers.IERSDirectoryCrawler;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.UTCScale;
 
 import junit.framework.Test;
@@ -27,7 +28,8 @@ import junit.framework.TestSuite;
 public class UTCTAIHistoryFilesLoaderNoDataTest extends TestCase {
 
     public void testNoData() throws OrekitException {
-        assertEquals(0.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);
+        // despite there is no data files, some leap seconds are predefined in the library
+        assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 1.0e-8);
     }
 
     public void setUp() {

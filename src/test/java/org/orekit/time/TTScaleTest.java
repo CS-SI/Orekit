@@ -16,9 +16,6 @@
  */
 package org.orekit.time;
 
-import org.orekit.time.TTScale;
-import org.orekit.time.TimeScale;
-
 import junit.framework.*;
 
 public class TTScaleTest
@@ -28,14 +25,22 @@ extends TestCase {
         super(name);
     }
 
-    public void testSymetry() {
-        // the loop is around the 1977-01-01 leap second introduction
-        double tLeap = 220924815;
+    public void testConstant() {
         TimeScale scale = TTScale.getInstance();
-        assertEquals("TT", scale.toString());
-        for (double taiTime = tLeap - 60; taiTime < tLeap + 60; taiTime += 0.3) {
-            double dt1 = scale.offsetFromTAI(taiTime);
-            double dt2 = scale.offsetToTAI(taiTime + dt1);
+        double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH);
+        for (double dt = -10000; dt < 10000; dt += 123.456789) {
+            AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
+            assertEquals(reference, scale.offsetFromTAI(date), 1.0e-15);
+        }
+    }
+
+    public void testSymmetry() {
+        TimeScale scale = TTScale.getInstance();
+        for (double dt = -10000; dt < 10000; dt += 123.456789) {
+            AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
+            double dt1 = scale.offsetFromTAI(date);
+            ChunksPair chunks = date.getChunks(scale);
+            double dt2 = scale.offsetToTAI(chunks.getDate(), chunks.getTime());
             assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }

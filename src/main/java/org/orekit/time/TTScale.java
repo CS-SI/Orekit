@@ -25,45 +25,57 @@ package org.orekit.time;
  * @see AbsoluteDate
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class TTScale extends TimeScale {
+public class TTScale implements TimeScale {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = -1586357980576711360L;
 
     /** Private constructor for the singleton.
      */
     private TTScale() {
-        super("TT");
     }
 
     /** Get the unique instance of this class.
      * @return the unique instance
      */
-    public static TimeScale getInstance() {
+    public static TTScale getInstance() {
         return LazyHolder.INSTANCE;
     }
 
-    /** Get the offset to convert locations from {@link TAIScale}  to instance.
-     * @param taiTime location of an event in the {@link TAIScale}  time scale
-     * as a seconds index starting at 1970-01-01T00:00:00
-     * @return offset to <em>add</em> to taiTime to get a location
-     * in instance time scale
-     */
-    public double offsetFromTAI(final double taiTime) {
+    /** {@inheritDoc} */
+    public double offsetFromTAI(final AbsoluteDate date) {
         return 32.184;
     }
 
-    /** Get the offset to convert locations from instance to {@link TAIScale} .
-     * @param instanceTime location of an event in the instance time scale
-     * as a seconds index starting at 1970-01-01T00:00:00
-     * @return offset to <em>add</em> to instanceTime to get a location
-     * in {@link TAIScale}  time scale
-     */
-    public double offsetToTAI(final double instanceTime) {
+    /** {@inheritDoc} */
+    public double offsetToTAI(final ChunkedDate date, final ChunkedTime time) {
         return -32.184;
+    }
+
+    /** {@inheritDoc} */
+    public String getName() {
+        return "TT";
+    }
+
+    /** {@inheritDoc} */
+    public String toString() {
+        return getName();
+    }
+
+    /** Change object upon deserialization.
+     * <p>Since {@link TimeScale} classes are serializable, they can
+     * be deserialized. This class being a singleton, we always replace the
+     * read object by the singleton instance at deserialization time.</p>
+     * @return the singleton instance
+     */
+    private Object readResolve() {
+        return LazyHolder.INSTANCE;
     }
 
     /** Holder for the singleton.
      * <p>We use the Initialization on demand holder idiom to store
      * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all version of java.</p>
+     * synchronization) and works with all versions of java.</p>
      */
     private static class LazyHolder {
 

@@ -20,7 +20,6 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TTScale;
 import org.orekit.time.UTCScale;
 
 /** Terrestrial Intermediate Reference Frame 2000.
@@ -31,17 +30,13 @@ import org.orekit.time.UTCScale;
 class TIRF2000Frame extends Frame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 5098003225016267874L;
+    private static final long serialVersionUID = 7980888698093771203L;
 
     /** 2&pi;. */
     private static final double TWO_PI = 2.0 * Math.PI;
 
     /** Constant term of Capitaine's Earth Rotation Angle model. */
     private static final double ERA_0 = TWO_PI * 0.7790572732640;
-
-    /** Offset between J2000.0 epoch and Java epoch in seconds. */
-    private static final double J2000_MINUS_JAVA =
-        AbsoluteDate.J2000_EPOCH.minus(AbsoluteDate.JAVA_EPOCH);
 
     /** Rate term of Capitaine's Earth Rotation Angle model.
      * (radians per day, main part) */
@@ -80,25 +75,16 @@ class TIRF2000Frame extends Frame {
 
         if ((cachedDate == null) || !cachedDate.equals(date)) {
 
-            //    offset from J2000 epoch in julian centuries
-            final double tts = date.minus(AbsoluteDate.J2000_EPOCH);
-
             // compute Earth Rotation Angle using Nicole Capitaine model (2000)
-            final double dtu1 = EarthOrientationHistory.getInstance().getUT1MinusUTC(date);
-            final double taiMinusTt  = TTScale.getInstance().offsetToTAI(tts + J2000_MINUS_JAVA);
-            final double utcMinusTai = UTCScale.getInstance().offsetFromTAI(tts + taiMinusTt + J2000_MINUS_JAVA);
-            final double tu = (tts + taiMinusTt + utcMinusTai + dtu1) / 86400.0;
+            final double dtu1        = EarthOrientationHistory.getInstance().getUT1MinusUTC(date);
+            final double utcMinusTai = UTCScale.getInstance().offsetFromTAI(date);
+            final double tu          = (date.getTAITime() + utcMinusTai + dtu1) / 86400.0;
             era  = ERA_0 + ERA_1A * tu + ERA_1B * tu;
             era -= TWO_PI * Math.floor((era + Math.PI) / TWO_PI);
 
-            // simple rotation around the Celestial Intermediate Pole
-            final Rotation rRot = new Rotation(Vector3D.PLUS_K, era);
-
-            final Rotation combined = rRot.revert();
-
             // set up the transform from parent GCRS (J2000) to ITRF
             final Vector3D rotationRate = new Vector3D((ERA_1A + ERA_1B) / 86400, Vector3D.PLUS_K);
-            setTransform(new Transform(combined , rotationRate));
+            setTransform(new Transform(new Rotation(Vector3D.PLUS_K, -era), rotationRate));
             cachedDate = date;
         }
     }

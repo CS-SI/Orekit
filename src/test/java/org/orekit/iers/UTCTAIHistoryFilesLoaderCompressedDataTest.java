@@ -18,6 +18,7 @@ package org.orekit.iers;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.iers.IERSDirectoryCrawler;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.UTCScale;
 
 import junit.framework.Test;
@@ -27,7 +28,7 @@ import junit.framework.TestSuite;
 public class UTCTAIHistoryFilesLoaderCompressedDataTest extends TestCase {
 
     public void testCompressed() throws OrekitException {
-        assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);
+        assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 1.0e-8);
     }
 
     public void setUp() {

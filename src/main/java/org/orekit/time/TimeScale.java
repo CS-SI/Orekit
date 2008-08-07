@@ -16,8 +16,10 @@
  */
 package org.orekit.time;
 
-/** Base class for time scales.
- * <p>This is the base class for all time scales. Time scales are related
+import java.io.Serializable;
+
+/** Interface for time scales.
+ * <p>This is the interface representing all time scales. Time scales are related
  * to each other by some offsets that may be discontinuous (for example
  * the {@link UTCScale UTC scale} with respect to the {@link TAIScale
  * TAI scale}).</p>
@@ -25,39 +27,28 @@ package org.orekit.time;
  * @see AbsoluteDate
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public abstract class TimeScale {
+public interface TimeScale extends Serializable {
 
-    /** Name of the time scale. */
-    private final String name;
-
-    /** Simple constructor.
-     * @param name name of the time scale
+    /** Get the offset to convert locations from {@link TAIScale} to instance.
+     * @param date conversion date
+     * @return offset in seconds to add to a location in <em>{@link TAIScale}
+     * time scale</em> to get a location in <em>instance time scale</em>
+     * @see AbsoluteDate#getTAITime()
+     * @see #offsetToTAI(double)
      */
-    protected TimeScale(final String name) {
-        this.name = name;
-    }
+    double offsetFromTAI(AbsoluteDate date);
 
-    /** Get the offset to convert locations from {@link TAIScale}  to instance.
-     * @param taiTime location of an event in the {@link TAIScale}  time scale
-     * as a seconds index starting at 1970-01-01T00:00:00
-     * @return offset to <em>add</em> to taiTime to get a location
-     * in instance time scale
+    /** Get the offset to convert locations from instance to {@link TAIScale}.
+     * @param date date location in the time scale
+     * @param time time location in the time scale
+     * @return offset in seconds to add to a location in <em>instance time scale</em>
+     * to get a location in <em>{@link TAIScale} time scale</em>
      */
-    public abstract double offsetFromTAI(double taiTime);
+    double offsetToTAI(final ChunkedDate date, final ChunkedTime time);
 
-    /** Get the offset to convert locations from instance to {@link TAIScale} .
-     * @param instanceTime location of an event in the instance time scale
-     * as a seconds index starting at 1970-01-01T00:00:00
-     * @return offset to <em>add</em> to instanceTime to get a location
-     * in {@link TAIScale}  time scale
+    /** Get the name time scale.
+     * @return name of the time scale
      */
-    public abstract double offsetToTAI(double instanceTime);
-
-    /** Convert the instance to a string (the name of the time scale).
-     * @return string representation of the time scale (standard abreviation)
-     */
-    public String toString() {
-        return name;
-    }
+    public String getName();
 
 }

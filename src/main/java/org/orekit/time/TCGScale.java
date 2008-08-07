@@ -18,14 +18,16 @@ package org.orekit.time;
 
 /** Geocentric Coordinate Time.
  * <p>Coordinate time at the center of mass of the Earth.
- * This time scale depends linearly from {@link TTScale
- * Terrestrial Time}.</p>
+ * This time scale depends linearly from {@link TTScale Terrestrial Time}.</p>
  * <p>This is a singleton class, so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class TCGScale extends TimeScale {
+public class TCGScale implements TimeScale {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = -8311852881965291194L;
 
     /** LG rate. */
     private static double LG_RATE = 6.969290134e-10;
@@ -33,50 +35,67 @@ public class TCGScale extends TimeScale {
     /** Inverse rate. */
     private static double INVERSE_RATE = 1.0 / (1.0 + LG_RATE);
 
-    /** Reference time scale. */
-    private static final TimeScale TT_SCALE = TTScale.getInstance();
+    /** Reference date for TCG.
+     * <p>The reference date is such that the three following instants are equal:</p>
+     * <ul>
+     *   <li>1977-01-01T00:00:32.184 TT</li>
+     *   <li>1977-01-01T00:00:32.184 TCG</li>
+     *   <li>1977-01-01T00:00:00.000 TAI</li>
+     * </ul>
+     */
+    private static final AbsoluteDate REFERENCE_DATE =
+        new AbsoluteDate(1977, 01, 01, TAIScale.getInstance());
 
-    /** Reference time for TCG is 1977-01-01 (2557 days after 1970-01-01). */
-    private static final double REFERENCE_DATE = 2557l * 86400000l;
+    /** Offset between TT and TAI scales. */
+    private static final double TT_OFFSET =
+        TTScale.getInstance().offsetFromTAI(REFERENCE_DATE);
 
     /** Private constructor for the singleton. */
     private TCGScale() {
-        super("TCG");
     }
 
     /** Get the unique instance of this class.
      * @return the unique instance
      */
-    public static TimeScale getInstance() {
+    public static TCGScale getInstance() {
         return LazyHolder.INSTANCE;
     }
 
-    /** Get the offset to convert locations from {@link TAIScale}  to instance.
-     * @param taiTime location of an event in the {@link TAIScale}  time scale
-     * as a seconds index starting at 1970-01-01T00:00:00
-     * @return offset to <em>add</em> to taiTime to get a location
-     * in instance time scale
-     */
-    public double offsetFromTAI(final double taiTime) {
-        final double ttOffset = TT_SCALE.offsetFromTAI(taiTime);
-        return ttOffset + LG_RATE * (ttOffset + taiTime - REFERENCE_DATE);
+    /** {@inheritDoc} */
+    public double offsetFromTAI(final AbsoluteDate date) {
+        return TT_OFFSET + LG_RATE * date.minus(REFERENCE_DATE);
     }
 
-    /** Get the offset to convert locations from instance to {@link TAIScale} .
-     * @param instanceTime location of an event in the instance time scale
-     * as a seconds index starting at 1970-01-01T00:00:00
-     * @return offset to <em>add</em> to instanceTime to get a location
-     * in {@link TAIScale}  time scale
+    /** {@inheritDoc} */
+    public double offsetToTAI(final ChunkedDate date, final ChunkedTime time) {
+        final double dt = (date.getJ2000Day() + 8400) * 86400.0 + time.getSecondsInDay();
+        return -TT_OFFSET - LG_RATE * INVERSE_RATE * (dt - TT_OFFSET);
+    }
+
+    /** {@inheritDoc} */
+    public String getName() {
+        return "TCG";
+    }
+
+    /** {@inheritDoc} */
+    public String toString() {
+        return getName();
+    }
+
+    /** Change object upon deserialization.
+     * <p>Since {@link TimeScale} classes are serializable, they can
+     * be deserialized. This class being a singleton, we always replace the
+     * read object by the singleton instance at deserialization time.</p>
+     * @return the singleton instance
      */
-    public double offsetToTAI(final double instanceTime) {
-        final double ttTime = INVERSE_RATE * (instanceTime + LG_RATE * REFERENCE_DATE);
-        return TT_SCALE.offsetToTAI(ttTime) - LG_RATE * INVERSE_RATE * (instanceTime - REFERENCE_DATE);
+    private Object readResolve() {
+        return LazyHolder.INSTANCE;
     }
 
     /** Holder for the singleton.
      * <p>We use the Initialization on demand holder idiom to store
      * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all version of java.</p>
+     * synchronization) and works with all versions of java.</p>
      */
     private static class LazyHolder  {
 

@@ -16,31 +16,30 @@
  */
 package org.orekit.iers;
 
-import java.text.ParseException;
-
-import org.orekit.errors.OrekitException;
-import org.orekit.iers.IERSDirectoryCrawler;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChunkedDate;
-import org.orekit.time.ChunkedTime;
-import org.orekit.time.UTCScale;
-
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.orekit.errors.OrekitException;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.UTCScale;
+
 public class UTCTAIHistoryFilesLoaderRegularDataTest extends TestCase {
 
     public void testRegular() throws OrekitException {
-        assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(946684800), 10e-8);
+        assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 10e-8);
     }
 
-    public void testUTCDate() throws OrekitException, ParseException {
-        UTCScale scale = (UTCScale) UTCScale.getInstance();
-        AbsoluteDate startDate = scale.getStartDate();
-        double delta = startDate.minus(new AbsoluteDate(new ChunkedDate(1972, 01, 01),
-                                                        ChunkedTime.H00, scale));
-        assertEquals(0, delta, 0);
+    public void testFirstLeap() throws OrekitException {
+        UTCScale utc = (UTCScale) UTCScale.getInstance();
+        assertEquals("1971-12-31T23:59:60.000", utc.getFirstKnownLeapSecond().toString(utc));
+    }
+
+    public void testLaststLeap() throws OrekitException {
+        // the data files ends at 2006-01-01,
+        // but predefined data also contain the leap second from 2009-01-01
+        UTCScale utc = (UTCScale) UTCScale.getInstance();
+        assertEquals("2008-12-31T23:59:60.000", utc.getLastKnownLeapSecond().toString(utc));
     }
 
     public void setUp() {
