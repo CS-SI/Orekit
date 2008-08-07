@@ -94,10 +94,10 @@ class UTCTAIOffset implements TimeStamped, Serializable {
     }
 
     /** Set the end time of validity for this offset.
-     * @param end of validity date
+     * @param validityEnd end of validity date
      * @see #getValidityEnd()
      */
-    void setValidityEnd(AbsoluteDate validityEnd) {
+    void setValidityEnd(final AbsoluteDate validityEnd) {
         this.validityEnd = validityEnd;
     }
 
