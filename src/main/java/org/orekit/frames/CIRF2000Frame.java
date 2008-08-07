@@ -177,14 +177,19 @@ class CIRF2000Frame extends Frame {
         this.useSimplifiedModel = useSimplifiedModel;
 
         // nutation models are in micro arcseconds
-        final double factor = RADIANS_PER_ARC_SECOND * 1.0e-6;
         final Class<CIRF2000Frame> c = CIRF2000Frame.class;
         final String xModel = useSimplifiedModel ? X_MODEL_SIMPLIFIED : X_MODEL_IAU_2000;
-        xDevelopment = new Development(c.getResourceAsStream(xModel), factor, xModel);
+        xDevelopment = new Development(c.getResourceAsStream(xModel),
+                                       RADIANS_PER_ARC_SECOND * 1.0e-6,
+                                       xModel);
         final String yModel = useSimplifiedModel ? Y_MODEL_SIMPLIFIED : Y_MODEL_IAU_2000;
-        yDevelopment = new Development(c.getResourceAsStream(yModel), factor, yModel);
+        yDevelopment = new Development(c.getResourceAsStream(yModel),
+                                       RADIANS_PER_ARC_SECOND * 1.0e-6,
+                                       yModel);
         final String sxyModel = useSimplifiedModel ? S_XY2_MODEL_SIMPLIFIED : S_XY2_MODEL_IAU_2000;
-        sxy2Development = new Development(c.getResourceAsStream(sxyModel), factor, sxyModel);
+        sxy2Development = new Development(c.getResourceAsStream(sxyModel),
+                                          RADIANS_PER_ARC_SECOND * 1.0e-6,
+                                          sxyModel);
 
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
