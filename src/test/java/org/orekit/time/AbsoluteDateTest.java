@@ -18,8 +18,8 @@ package org.orekit.time;
 
 import java.util.Date;
 
+import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.iers.IERSDirectoryCrawler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChunkedDate;
 import org.orekit.time.ChunkedTime;
@@ -157,7 +157,8 @@ extends TestCase {
     }
 
     public void testChunks() throws OrekitException {
-        // this is NOT J2000, it is a few seconds before or after depending on time scale
+        // this is NOT J2000.0,
+        // it is either a few seconds before or after depending on time scale
         ChunkedDate date = new ChunkedDate(2000, 01,01);
         ChunkedTime time = new ChunkedTime(11, 59, 10);
         TimeScale[] scales = {
@@ -222,7 +223,7 @@ extends TestCase {
     }
 
     public void setUp() throws OrekitException {
-        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "regular-data");
         utc = UTCScale.getInstance();
     }
 
