@@ -22,9 +22,9 @@ import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.attitudes.LofOffset;
+import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.iers.IERSDirectoryCrawler;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -60,7 +60,7 @@ public class ImpulseManeuverTest extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "regular-data");
     }
 
     public static Test suite() {

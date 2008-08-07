@@ -21,12 +21,12 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
+import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.Moon;
 import org.orekit.forces.Sun;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.frames.Frame;
-import org.orekit.iers.IERSDirectoryCrawler;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -135,7 +135,7 @@ public class ThirdBodyAttractionTest extends TestCase {
 
     public void setUp() {
         mu = 3.986e14;
-        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "regular-data");
     }
 
     public static Test suite() {

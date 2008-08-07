@@ -27,12 +27,12 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.SolarInputs97to05;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.Sun;
 import org.orekit.forces.drag.DTM2000;
 import org.orekit.forces.drag.JB2006;
 import org.orekit.frames.Frame;
-import org.orekit.iers.IERSDirectoryCrawler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChunkedDate;
 import org.orekit.time.ChunkedTime;
@@ -277,7 +277,7 @@ public class JB2006Test extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "regular-data");
     }
 
     public static Test suite() {

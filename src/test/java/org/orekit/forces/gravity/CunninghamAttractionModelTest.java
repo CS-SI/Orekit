@@ -29,6 +29,7 @@ import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
+import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.Sun;
@@ -36,7 +37,6 @@ import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.DrozinerAttractionModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
-import org.orekit.iers.IERSDirectoryCrawler;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -257,7 +257,7 @@ public class CunninghamAttractionModelTest extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "regular-data");
         try {
             // Eigen c1 model truncated to degree 6
             mu =  3.986004415e+14;

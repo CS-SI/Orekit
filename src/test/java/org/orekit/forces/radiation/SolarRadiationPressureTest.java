@@ -28,13 +28,13 @@ import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.Sun;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
-import org.orekit.iers.IERSDirectoryCrawler;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -156,7 +156,7 @@ public class SolarRadiationPressureTest extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "regular-data");
     }
 
     public static Test suite() {

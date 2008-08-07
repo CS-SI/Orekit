@@ -23,11 +23,11 @@ import junit.framework.TestSuite;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.SimpleExponentialAtmosphere;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
-import org.orekit.iers.IERSDirectoryCrawler;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -54,7 +54,7 @@ public class DragTest extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "regular-data");
     }
 
     public static Test suite() {
