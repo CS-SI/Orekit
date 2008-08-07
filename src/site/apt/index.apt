@@ -163,4 +163,7 @@ Overview
 
   Orekit has been in development since 2002 inside {{{http://uk.c-s.fr/}CS Communication
   & Syst\u00e8mes}} and is still used and maintained by its space dynamics experts.
-  It has already been successfully used for operational space projects.
+  It has already been successfully used during the real time monitoring of the rendez-vous
+  phase between the Automated Transfer Vehicle (ATV) and the International Space Station
+  (ISS) by the Centre National d'\u00c9tudes Spatiales (CNES, the French space agency) and
+  European Space Agency (ESA).
