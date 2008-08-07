@@ -61,7 +61,7 @@ public class UTCScale implements TimeScale {
     private synchronized void setTimeSteps() throws OrekitException {
 
         // gather all entries, both predefined and user supplied
-        SortedMap<ChunkedDate, Integer> entries = createPredefinedEntries();
+        final SortedMap<ChunkedDate, Integer> entries = createPredefinedEntries();
         entries.putAll(new UTCTAIHistoryFilesLoader().loadTimeSteps());
         offsets = new UTCTAIOffset[entries.size() + 1];
         current = 0;
@@ -93,7 +93,7 @@ public class UTCScale implements TimeScale {
      * (contains at least date between 1972-01-01 and 2009-01-01)
      */
     private SortedMap<ChunkedDate, Integer> createPredefinedEntries() {
-        SortedMap<ChunkedDate, Integer> entries = new TreeMap<ChunkedDate, Integer>();
+        final SortedMap<ChunkedDate, Integer> entries = new TreeMap<ChunkedDate, Integer>();
         entries.put(new ChunkedDate(1972, 1, 1), 10);
         entries.put(new ChunkedDate(1972, 7, 1), 11);
         entries.put(new ChunkedDate(1973, 1, 1), 12);
