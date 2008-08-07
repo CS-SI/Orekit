@@ -55,6 +55,10 @@
         last one has been announced in Bulletin C 36 on 2008-07-04 and is not yet
         present in the UTC-TAI.history published file)
       </action>
+      <action dev="luc" type="fix">
+        Dates in UTC within leap seconds are now displayed correctly (i.e. a 61st
+        second is added to the minute).
+      </action>
       <action dev="luc" type="add">
         Improved user-friendliness of the time-scales by changing methods parameters
         types to more easily understandable ones.

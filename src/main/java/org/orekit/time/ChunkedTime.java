@@ -59,9 +59,12 @@ public class ChunkedTime implements Serializable, Comparable<ChunkedTime> {
     private final double second;
 
     /** Build a time from its clock elements.
+     * <p>Note that seconds between 60.0 (inclusive) and 61.0 (exclusive) are allowed
+     * in this method, since they do occur during leap seconds introduction
+     * in the {@link UTCScale UTC} time scale.</p>
      * @param hour hour number from 0 to 23
      * @param minute minute number from 0 to 59
-     * @param second second number from 0.0 to 60.0 (excluded)
+     * @param second second number from 0.0 to 61.0 (excluded)
      * @exception IllegalArgumentException if inconsistent arguments
      * are given (parameters out of range)
      */
@@ -71,7 +74,7 @@ public class ChunkedTime implements Serializable, Comparable<ChunkedTime> {
         // range check
         if ((hour   < 0) || (hour   >  23) ||
                 (minute < 0) || (minute >  59) ||
-                (second < 0) || (second >= 60.0)) {
+                (second < 0) || (second >= 61.0)) {
             throw OrekitException.createIllegalArgumentException("non-existent hour {0}:{1}:{2}",
                                                                  new Object[] {
                                                                      Integer.valueOf(hour),

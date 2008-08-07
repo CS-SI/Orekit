@@ -33,7 +33,7 @@ extends TestCase {
         checkConstructorCompletion(10, -1, 10, false);
         checkConstructorCompletion(10, 60, 10, false);
         checkConstructorCompletion(10, 10, -1, false);
-        checkConstructorCompletion(10, 10, 60, false);
+        checkConstructorCompletion(10, 10, 61, false);
         checkConstructorCompletion(-1.0, false);
         checkConstructorCompletion(86401.0, false);
     }
@@ -41,6 +41,7 @@ extends TestCase {
     public void testInRange() {
         checkConstructorCompletion(10, 10, 10, true);
         checkConstructorCompletion(0.0, true);
+        checkConstructorCompletion(10, 10, 60.999, true);
         checkConstructorCompletion(43200.0, true);
         checkConstructorCompletion(86399.999, true);
     }
