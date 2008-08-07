@@ -513,7 +513,7 @@ public class Frame implements Serializable {
 
     // We use the Initialization on demand holder idiom to store
     // the singletons, as it is both thread-safe, efficient (no
-    // synchronization) and works with all version of java.
+    // synchronization) and works with all versions of java.
 
     /** Holder for the GCRF frame singleton. */
     private static class LazyGCRFHolder {

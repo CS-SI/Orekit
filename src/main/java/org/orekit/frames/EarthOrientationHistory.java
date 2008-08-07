@@ -182,7 +182,7 @@ public class EarthOrientationHistory implements Serializable {
     /** Holder for the singleton.
      * <p>We use the Initialization on demand holder idiom to store
      * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all version of java.</p>
+     * synchronization) and works with all versions of java.</p>
      */
     private static class LazyHolder {
 
