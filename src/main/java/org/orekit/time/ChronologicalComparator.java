@@ -57,7 +57,7 @@ public class ChronologicalComparator implements Comparator<TimeStamped>, Seriali
 
     // We use the Initialization on demand holder idiom to store
     // the singleton, as it is both thread-safe, efficient (no
-    // synchronization) and works with all version of java.
+    // synchronization) and works with all versions of java.
 
     /** Holder for the ChronologicalComparator frame singleton. */
     private static class LazyHolder {
