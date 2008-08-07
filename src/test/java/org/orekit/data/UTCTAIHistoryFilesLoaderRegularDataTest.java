@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.iers;
+package org.orekit.data;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.UTCScale;
@@ -43,7 +44,7 @@ public class UTCTAIHistoryFilesLoaderRegularDataTest extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "regular-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "regular-data");
     }
 
     public static Test suite() {

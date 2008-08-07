@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.iers;
+package org.orekit.data;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,7 +37,7 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class BulletinBFilesLoader extends IERSFileCrawler {
+public class BulletinBFilesLoader extends DataFileCrawler {
 
     /** Conversion factor. */
     private static final double ARC_SECONDS_TO_RADIANS = 2 * Math.PI / 1296000;
@@ -121,7 +121,7 @@ public class BulletinBFilesLoader extends IERSFileCrawler {
      * file content is corrupted
      */
     public void loadEOP() throws OrekitException {
-        new IERSDirectoryCrawler().crawl(this);
+        new DataDirectoryCrawler().crawl(this);
     }
 
     /** {@inheritDoc} */

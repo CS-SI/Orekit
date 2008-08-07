@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.iers;
+package org.orekit.data;
 
 import java.text.ParseException;
 
+import org.orekit.data.BulletinBFilesLoader;
+import org.orekit.data.EarthOrientationParameters;
 import org.orekit.errors.OrekitException;
-import org.orekit.iers.BulletinBFilesLoader;
-import org.orekit.iers.EarthOrientationParameters;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;

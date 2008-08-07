@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.iers;
+package org.orekit.data;
 
 import java.io.BufferedReader;
 
+import org.orekit.data.DataDirectoryCrawler;
+import org.orekit.data.DataFileCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.iers.IERSDirectoryCrawler;
-import org.orekit.iers.IERSFileCrawler;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-public class IERSDirectoryCrawlerTest extends TestCase {
+public class DataDirectoryCrawlerTest extends TestCase {
 
     public void testNoDirectory() {
         checkFailure("inexistant-directory");
@@ -38,8 +38,8 @@ public class IERSDirectoryCrawlerTest extends TestCase {
 
     private void checkFailure(String directoryName) {
         try {
-            System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, directoryName);
-            new IERSDirectoryCrawler().crawl(new DoNothingCrawler(".*"));
+            System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, directoryName);
+            new DataDirectoryCrawler().crawl(new DoNothingCrawler(".*"));
             fail("an exception should have been thrown");
         } catch (OrekitException e) {
             // expected behavior
@@ -49,7 +49,7 @@ public class IERSDirectoryCrawlerTest extends TestCase {
         }
     }
 
-    private static class DoNothingCrawler extends IERSFileCrawler {
+    private static class DoNothingCrawler extends DataFileCrawler {
         public DoNothingCrawler(String pattern) {
             super(pattern);
         }
@@ -59,7 +59,7 @@ public class IERSDirectoryCrawlerTest extends TestCase {
     }
 
     public static Test suite() {
-        return new TestSuite(IERSDirectoryCrawlerTest.class);
+        return new TestSuite(DataDirectoryCrawlerTest.class);
     }
 
 }

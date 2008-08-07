@@ -14,39 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.iers;
+package org.orekit.data;
 
-import java.text.ParseException;
-
+import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.iers.EOP05C04FilesLoader;
-import org.orekit.iers.EarthOrientationParameters;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.UTCScale;
 
 import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
+public class UTCTAIHistoryFilesLoaderCompressedDataTest extends TestCase {
 
-    public void testMissingMonths() throws OrekitException {
-        setRoot("missing-months");
-        new EOP05C04FilesLoader(eop).loadEOP();
-        assertTrue(getMaxGap() > 5);
+    public void testCompressed() throws OrekitException {
+        assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 1.0e-8);
     }
 
-    public void testStartDate() throws OrekitException, ParseException {
-        setRoot("regular-data");
-        new EOP05C04FilesLoader(eop).loadEOP();
-        assertEquals(52640, ((EarthOrientationParameters) eop.first()).getMjd());
-    }
-
-    public void testEndDate() throws OrekitException, ParseException {
-        setRoot("regular-data");
-        new EOP05C04FilesLoader(eop).loadEOP();
-        assertEquals(53735, ((EarthOrientationParameters) eop.last()).getMjd());
+    public void setUp() {
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "compressed-data");
     }
 
     public static Test suite() {
-        return new TestSuite(EOPC04FilesLoaderTest.class);
+        return new TestSuite(UTCTAIHistoryFilesLoaderCompressedDataTest.class);
     }
 
 }

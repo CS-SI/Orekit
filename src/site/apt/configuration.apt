@@ -1,0 +1,96 @@
+~~ Copyright 2002-2008 CS Communication & Systèmes
+~~ Licensed under the Apache License, Version 2.0 (the "License");
+~~ you may not use this file except in compliance with the License.
+~~ You may obtain a copy of the License at
+~~
+~~   http://www.apache.org/licenses/LICENSE-2.0
+~~
+~~ Unless required by applicable law or agreed to in writing, software
+~~ distributed under the License is distributed on an "AS IS" BASIS,
+~~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~~ See the License for the specific language governing permissions and
+~~ limitations under the License.
+
+Configuration
+
+  The Orekit library relies on some external data for physical models. Typical
+  are the Earth Orientation Parameters and the leap seconds history, both being
+  provided by the IERS. Such data is stored in text files with specific formats
+  that Orekit knows how to read.
+
+* Data sets
+
+  For user convenience, data that can be assumed to never change like precession-nutation
+  models or atmospheric models are already embedded in the library itself. Small and
+  simple data sets are defined by setting constants in the code itself. This is the case for
+  offset between Terrestrial Time and International Atomic Time scales for example. Large
+  or complex data sets are embedded by copying the corresponding resource files inside the
+  compiled jar, under the META-INF directory as is usual with the Java language. This is
+  the case for the IAU-2000 precession-nutation model for example. There is nothing to
+  configure for these data sets as they are embedded within the library.
+
+  Some useful data can change over time and cannot be reliably embedded within a specific
+  version of the library on the long run. Earth Orientation Parameters which are mandatory
+  for accurate frames conversion for example is published regularly by IERS. Orekit knows
+  how to find and read these files which should be provided by user at run time, provided
+  it is properly configured.
+
+* Data directory tree
+
+  Data that can change over time must be stored as simple files in a data directory tree
+  with read access permission.
+
+  There is no mandatory layout within the data directory tree. Orekit navigates through it
+  and its sub-directories. Files are identified by pattern matching rules on their names.
+  Files that don't match the rules are silently ignored. This allows the user to share the
+  data directory tree with other tools which need a specific layout or additional files.
+  A drawback of this behavior is that if the users sets up a deep data directory tree
+  containing a huge number of files, Orekit may need some time to explore it, even if it
+  really reads only a small subset of the total number of files.
+
+  There is only one configuration parameter for Orekit: the absolute path to the root of
+  the data directory tree. This path is configured using a java property named
+  <orekit.data.directory>. As any other java property, it can be initialized at application
+  launch time by the user (for example using the -D flag of the virtual machine) or from
+  within the application by calling the <System.setProperty> method. In the latter case,
+  rather than the literal string constant <orekit.data.directory>, the <DATA_ROOT_DIRECTORY>
+  static field from the <DataDirectoryCrawler> class can be used. If the property is set up
+  by the application, it must be done before any Orekit feature is called, since some data
+  are initialized very early (mainly frame and time related data).
+
+* Supported data files
+
+  The data files supported by Orekit are described in the following table, where the <#>
+  character represent any digit. The <[.gz]> part at the end of all naming patterns
+  means that a <.gz> suffix can be appended, in which case the files are considered to
+  be compressed with gzip. These files are uncompressed in memory upon reading (the
+  compressed files are preserved on disk).
+
+*---------------------------------*-----------------*--------------------------------------*-----------------------------------------------------------*
+|       file naming pattern       |      format     |               data type              |                           source                          |
+*---------------------------------*-----------------*--------------------------------------*-----------------------------------------------------------*
+|       UTC-TAI.history[.gz]      |   IERS history  |   leap seconds introduction history  | {{http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history}} |
+*---------------------------------*-----------------*--------------------------------------*-----------------------------------------------------------*
+|  bulletinb_IAU2000-###.txt[.gz] | IERS bulletin B | monthly Earth Orientation Parameters |{{http://www.iers.org/MainDisp.csl?pid=36-25788&prodid=18}}|
+*---------------------------------*-----------------*--------------------------------------*-----------------------------------------------------------*
+|      eopc04_IAU2000.##[.gz]     | IERS EOP 05 C04 | yearly Earth Orientation Parameters  |{{http://www.iers.org/MainDisp.csl?pid=36-25788&prodid=179}}|
+*---------------------------------*-----------------*--------------------------------------*-----------------------------------------------------------*
+supported data files
+
+There should generally be only one leap seconds introduction history file. However, since
+Orekit always explores all the data directory tree, a safety measure has been added in case
+older files remains around: all files are combined together and duplicates are removed, so the
+complete data set correspond to the file with the largest number of entries, regardless of its
+location within the tree. The entries read are then combined with a predefined set of entries that
+is already embedded within Orekit, hence the file is optional if a sufficiently recent version
+of the library is used. As of 2008, the predefined set contains all leap seconds history from
+1972-01-01 to 2009-01-01.
+
+All Earth Orientation Parameters files are combined together and should constitute a continuous
+time-line without holes. If data for a given date is not available, no errors are triggered
+and default values are used. The default values are zero angular offsets for pole motion and
+zero time offset for dTU1.
+
+* Authors
+
+  ** Luc Maisonobe  

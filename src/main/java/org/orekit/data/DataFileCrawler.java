@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.iers;
+package org.orekit.data;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,11 +31,11 @@ import org.orekit.errors.OrekitException;
 
 
 /** Base class for IERS files crawlers.
- * @see IERSDirectoryCrawler#crawl(IERSFileCrawler)
+ * @see DataDirectoryCrawler#crawl(DataFileCrawler)
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public abstract class IERSFileCrawler {
+public abstract class DataFileCrawler {
 
     /** Current file. */
     private File currentFile;
@@ -46,7 +46,7 @@ public abstract class IERSFileCrawler {
     /** Simple constructor.
      * @param supportedFilesPattern file name pattern for supported files
      */
-    protected IERSFileCrawler(final String supportedFilesPattern) {
+    protected DataFileCrawler(final String supportedFilesPattern) {
         this.supportedFilesPattern = Pattern.compile(supportedFilesPattern);
     }
 

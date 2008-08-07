@@ -34,17 +34,17 @@
       <item name="Contact"       href="/contact.html"      />
     </menu>
     <menu name="Architecture">
-      <item name="Attitudes"   href="/attitudes.html"     />
-      <item name="Bodies"      href="/bodies.html"        />
-      <item name="Errors"      href="/errors.html"        />
-      <item name="Forces"      href="/forces.html"        />
-      <item name="Frames"      href="/frames.html"        />
-      <item name="Iers"        href="/iers.html"          />
-      <item name="Orbits"      href="/orbits.html"        />
-      <item name="Propagation" href="/propagation.html"   />
-      <item name="Time"        href="/time.html"          />
-      <item name="Tle"         href="/tle.html"           />
-      <item name="Utils"       href="/utils.html"         />
+      <item name="Attitudes"     href="/attitudes.html"     />
+      <item name="Bodies"        href="/bodies.html"        />
+      <item name="Errors"        href="/errors.html"        />
+      <item name="Forces"        href="/forces.html"        />
+      <item name="Frames"        href="/frames.html"        />
+      <item name="Orbits"        href="/orbits.html"        />
+      <item name="Propagation"   href="/propagation.html"   />
+      <item name="Time"          href="/time.html"          />
+      <item name="Tle"           href="/tle.html"           />
+      <item name="Utils"         href="/utils.html"         />
+      <item name="Configuration" href="/configuration.html" />
     </menu>
     <menu name="Development">
       <item name="Contributing"  href="/contributing.html" />

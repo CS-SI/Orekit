@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.iers;
+package org.orekit.data;
 
 import java.io.File;
 import java.net.URL;
@@ -22,17 +22,21 @@ import java.net.URL;
 import org.orekit.errors.OrekitException;
 
 
-/** Helper class for loading IERS data files.
+/** Helper class for loading data files.
 
  * <p>
- * This class handles the IERS data files recursively starting
- * from a root root tree specified by the java property
- * <code>orekit.iers.directory</code>. If the property is not set or is null,
- * no IERS data will be used (i.e. no pole correction and no UTC steps will
- * be taken into account) and no errors will be triggered.
- * If the property is set, it must correspond to an
- * existing root tree otherwise an error will be triggered. The organisation
- * of files in the tree is free, sub-directories can be used at will.</p>
+ * This class handles data files recursively starting from a root root tree
+ * specified by the java property <code>orekit.data.directory</code>.
+ * If the property is not set or is null, no data will be available to the
+ * library (for example no pole correction will be applied and only predefined
+ * UTC steps will be taken into account). No errors will be triggered.
+ * If the property is set, it must correspond to an existing root tree otherwise
+ * an error will be triggered.
+ * <p>
+ * <p>
+ * The organization of files in the tree is free, files are found by matching
+ * name patterns while crawling into all sub-directories.
+ * </p>
  * <p>Gzip-compressed files are supported.</p>
  *
  * <p>
@@ -43,10 +47,10 @@ import org.orekit.errors.OrekitException;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class IERSDirectoryCrawler {
+public class DataDirectoryCrawler {
 
-    /** Name of the property defining the IERS root directory. */
-    public static final String IERS_ROOT_DIRECTORY = "orekit.iers.directory";
+    /** Name of the property defining the data root directory. */
+    public static final String DATA_ROOT_DIRECTORY = "orekit.data.directory";
 
     /** IERS root hierarchy root. */
     private File root;
@@ -54,10 +58,10 @@ public class IERSDirectoryCrawler {
     /** Build an IERS files crawler.
      * @exception OrekitException if some data is missing or can't be read
      */
-    public IERSDirectoryCrawler() throws OrekitException {
+    public DataDirectoryCrawler() throws OrekitException {
 
         // check the root tree
-        final String directoryName = System.getProperty(IERS_ROOT_DIRECTORY);
+        final String directoryName = System.getProperty(DATA_ROOT_DIRECTORY);
         if ((directoryName != null) && !"".equals(directoryName)) {
 
             // try to find the root directory either in classpath or in filesystem
@@ -83,24 +87,24 @@ public class IERSDirectoryCrawler {
 
     }
 
-    /** Crawl the IERS root hierarchy.
-     * @param visitor IERS file visitor to use
+    /** Crawl the data root hierarchy.
+     * @param visitor data file visitor to use
      * @exception OrekitException if some data is missing, duplicated
      * or can't be read
      */
-    public void crawl(final IERSFileCrawler visitor) throws OrekitException {
+    public void crawl(final DataFileCrawler visitor) throws OrekitException {
         if (root != null) {
             crawl(visitor, root);
         }
     }
 
     /** Crawl a directory hierarchy.
-     * @param visitor IERS file visitor to use
+     * @param visitor data file visitor to use
      * @param directory hierarchy root directory
      * @exception OrekitException if some data is missing, duplicated
      * or can't be read
      */
-    private void crawl(final IERSFileCrawler visitor, final File directory)
+    private void crawl(final DataFileCrawler visitor, final File directory)
         throws OrekitException {
 
         // search in current directory

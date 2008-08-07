@@ -22,6 +22,9 @@
   <body>
     <release version="3.2" date="TBD"
              description="TBD">
+      <action dev="luc" type="update">
+        Renamed the iers package into data, as it is not IERS specific anymore.
+      </action>
       <action dev="luc" type="fix">
         The simplified precession-nutation model used for CIRF 2000 frame has been
         enhanced. Its accuracy is similar to the accuracy of the IAU-2000B model
@@ -57,8 +60,8 @@
         types to more easily understandable ones.
       </action>
       <action dev="luc" type="add">
-        Improved user-friendliness of the AbsoluteDate class by adding  a few constructors
-        for common cases.
+        Improved user-friendliness of the AbsoluteDate class by adding a few constructors
+        and methods for common cases.
       </action>
       <action dev="luc" type="add">
         Improved the class handling dates: ChunkedDate. Changed a constructor

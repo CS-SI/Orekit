@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.iers;
+package org.orekit.data;
 
 import java.util.TreeSet;
 
 import junit.framework.TestCase;
 
+import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;
@@ -29,7 +30,7 @@ public abstract class AbstractFilesLoaderTest extends TestCase {
     protected TreeSet<TimeStamped> eop;
 
     protected void setRoot(String directoryName) throws OrekitException {
-        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, directoryName);
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, directoryName);
         eop = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
     }
 
