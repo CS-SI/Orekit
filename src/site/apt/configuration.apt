@@ -77,19 +77,19 @@ Configuration
 *---------------------------------*-----------------*--------------------------------------*-----------------------------------------------------------*
 supported data files
 
-There should generally be only one leap seconds introduction history file. However, since
-Orekit always explores all the data directory tree, a safety measure has been added in case
-older files remains around: all files are combined together and duplicates are removed, so the
-complete data set correspond to the file with the largest number of entries, regardless of its
-location within the tree. The entries read are then combined with a predefined set of entries that
-is already embedded within Orekit, hence the file is optional if a sufficiently recent version
-of the library is used. As of 2008, the predefined set contains all leap seconds history from
-1972-01-01 to 2009-01-01.
+  There should generally be only one leap seconds introduction history file. However, since
+  Orekit always explores all the data directory tree, a safety measure has been added in case
+  older files remains around: all files are combined together and duplicates are removed, so the
+  complete data set correspond to the file with the largest number of entries, regardless of its
+  location within the tree. The entries read are then combined with a predefined set of entries that
+  is already embedded within Orekit, hence the file is optional if a sufficiently recent version
+  of the library is used. As of 2008, the predefined set contains all leap seconds history from
+  1972-01-01 to 2009-01-01.
 
-All Earth Orientation Parameters files are combined together and should constitute a continuous
-time-line without holes. If data for a given date is not available, no errors are triggered
-and default values are used. The default values are zero angular offsets for pole motion and
-zero time offset for dTU1.
+  All Earth Orientation Parameters files are combined together and should constitute a continuous
+  time-line without holes. If data for a given date is not available, no errors are triggered
+  and default values are used. The default values are zero angular offsets for pole motion and
+  zero time offset for dTU1.
 
 * Authors
 
