@@ -1,7 +1,7 @@
 <html>
 <body>
 This independent package provides classes to handle epochs, time scales, and to compare 
-instants between them.
+instants together.
 	
 <p> The principal class is {@link org.orekit.time.AbsoluteDate}
 which represents a unique instant in time, with no ambiguity. For that
@@ -20,10 +20,10 @@ purpose, the ways to define this object are quite strict.</p>
  </ul> 
 </p>
 
-<p>The second definition, that can be the source of some confusion, is by giving a location
- (a date) in a specific <em>time scale</em>. It is of prime importance to understand the
- various available time scales definitions to avoid mistakes. Orekit provides 4 of the most
- important ones:
+<p>The second definition, which could be the source of some confusion if not used with care,
+ is by giving a location (a date) in a specific <em>time scale</em>. It is of prime importance
+ to understand the various available time scales definitions to avoid mistakes. Orekit provides
+ 5 of the most important ones:
  <ul>
     <li>{@link org.orekit.time.TAIScale}: International Atomic Time,</li>
     <li>{@link org.orekit.time.TTScale}: Terrestrial Time as defined by IAU(1991)
@@ -31,19 +31,24 @@ purpose, the ways to define this object are quite strict.</p>
 	    successor of Ephemeris Time TE. By convention, TT = TAI + 32.184 s,</li>
     <li>{@link org.orekit.time.UTCScale}: Coordinated Universal Time. UTC is related to
         TAI using step adjustments from time to time according to IERS (International Earth
-        Rotation Service) rules. These adjustments require introduction of leap seconds,</li>
+        Rotation Service) rules. These adjustments require introduction of leap seconds.
+        Some leaps are already known and predefined in the library (at least from 1972-01-01
+        to 2009-01-01) and other ones can be supported by providing UTC-TAI.history files somewhere
+        in the directory hierarchy pointed to by the <code>orekit.data.directory</code> property,</li>
     <li>{@link org.orekit.time.TCGScale}: Geocentric Coordinate Time. Coordinate time at the
         center of mass of the Earth. This time scale depends linearly from TTScale.</li>
     <li>{@link org.orekit.time.GPSScale}: Global Positioning System reference scale. This scale
         was equal to UTC at start of the {@link org.orekit.time.AbsoluteDate#GPS_EPOCH GPS Epoch}
-        when it was 19 seconds behind TAI, and stayed parallel to TAI since then (i.e. UTC is now
+        when it was 19 seconds behind TAI, and remained parallel to TAI since then (i.e. UTC is now
         offset from GPS due to leap seconds). TGPS = TAI - 19 s.</li>
  </ul> 
 </p>
  
 <p>Once it is built, an {@link org.orekit.time.AbsoluteDate} can be compared 
 to other ones, and expressed in other time scales. It is used to define states, orbits,
-frames...</p>
+frames... Classes that include a date implement the {@link org.orekit.time.TimeStamped} interface.
+The {@link org.orekit.time.ChronologicalComparator} singleton can sort objects implementing this
+interface chronologically.</p>
 
 @author L. Maisonobe
 

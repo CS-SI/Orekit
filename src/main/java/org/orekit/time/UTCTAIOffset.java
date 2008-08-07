@@ -27,11 +27,11 @@ import java.io.Serializable;
  * <p>This class represent the constant offset between the two scales that is
  * valid between two leap seconds occurrences./p>
  * @author Luc Maisonobe
- * @see org.orekit.time.UTCScale
- * @see org.orekit.iers.UTCTAIHistoryFilesLoader
+ * @see UTCScale
+ * @see UTCTAIHistoryFilesLoader
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class UTCTAIOffset implements TimeStamped, Serializable {
+class UTCTAIOffset implements TimeStamped, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 4742190573136348054L;

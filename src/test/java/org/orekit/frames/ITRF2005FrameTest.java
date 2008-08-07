@@ -22,8 +22,8 @@ import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.iers.IERSDirectoryCrawler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChunkedDate;
 import org.orekit.time.ChunkedTime;
@@ -188,7 +188,7 @@ public class ITRF2005FrameTest extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "compressed-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "compressed-data");
     }
 
     public static Test suite() {

@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.data;
+package org.orekit.frames;
 
 import java.io.Serializable;
 import java.util.Date;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.PoleCorrection;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.time.UTCScale;
@@ -35,7 +34,7 @@ import org.orekit.time.UTCScale;
  * @see org.orekit.frames.Frame
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class EarthOrientationParameters implements TimeStamped, Serializable {
+class EarthOrientationParameters implements TimeStamped, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -6655551509699738718L;

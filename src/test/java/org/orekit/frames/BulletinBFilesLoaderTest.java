@@ -14,39 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.data;
+package org.orekit.frames;
 
 import java.text.ParseException;
 
-import org.orekit.data.EOP05C04FilesLoader;
-import org.orekit.data.EarthOrientationParameters;
+import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.BulletinBFilesLoader;
+import org.orekit.frames.EarthOrientationParameters;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
+public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
 
     public void testMissingMonths() throws OrekitException {
         setRoot("missing-months");
-        new EOP05C04FilesLoader(eop).loadEOP();
+        new BulletinBFilesLoader(eop).loadEOP();
         assertTrue(getMaxGap() > 5);
     }
 
     public void testStartDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        new EOP05C04FilesLoader(eop).loadEOP();
-        assertEquals(52640, ((EarthOrientationParameters) eop.first()).getMjd());
+        new BulletinBFilesLoader(eop).loadEOP();
+        assertTrue(getMaxGap() < 5);
+        assertEquals(53709, ((EarthOrientationParameters) eop.first()).getMjd());
     }
 
     public void testEndDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        new EOP05C04FilesLoader(eop).loadEOP();
-        assertEquals(53735, ((EarthOrientationParameters) eop.last()).getMjd());
+        new BulletinBFilesLoader(eop).loadEOP();
+        assertTrue(getMaxGap() < 5);
+        assertEquals(53799, ((EarthOrientationParameters) eop.last()).getMjd());
     }
 
+
     public static Test suite() {
-        return new TestSuite(EOPC04FilesLoaderTest.class);
+        return new TestSuite(BulletinBFilesLoaderTest.class);
     }
 
 }

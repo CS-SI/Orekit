@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.data;
+package org.orekit.time;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,9 +26,9 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.orekit.data.DataDirectoryCrawler;
+import org.orekit.data.DataFileCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.time.ChunkedDate;
-import org.orekit.time.UTCTAIOffset;
 
 
 /** Loader for UTC versus TAI history files.
@@ -42,7 +42,7 @@ import org.orekit.time.UTCTAIOffset;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class UTCTAIHistoryFilesLoader extends DataFileCrawler {
+class UTCTAIHistoryFilesLoader extends DataFileCrawler {
 
     /** Regular data lines pattern. */
     private Pattern regularPattern;

@@ -65,7 +65,7 @@ import org.orekit.time.AbsoluteDate;
  * frame which is the reference frame for GPS satellites.
  * <p>This frame is used to define position on solid Earth. It rotates with
  * the Earth and includes the pole motion with respect to Earth crust as
- * provided by {@link org.orekit.iers.IERSDirectoryCrawler IERS data}.
+ * provided by {@link org.orekit.data.DataDirectoryCrawler IERS data}.
  * Its pole axis is the IERS Reference Pole (IRP).
  * </p>
  * <p>

@@ -14,41 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.data;
-
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+package org.orekit.time;
 
 import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.UTCScale;
 
-public class UTCTAIHistoryFilesLoaderRegularDataTest extends TestCase {
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
-    public void testRegular() throws OrekitException {
-        assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 10e-8);
-    }
+public class UTCTAIHistoryFilesLoaderNoDataTest extends TestCase {
 
-    public void testFirstLeap() throws OrekitException {
-        UTCScale utc = (UTCScale) UTCScale.getInstance();
-        assertEquals("1971-12-31T23:59:60.000", utc.getFirstKnownLeapSecond().toString(utc));
-    }
-
-    public void testLaststLeap() throws OrekitException {
-        // the data files ends at 2006-01-01,
-        // but predefined data also contain the leap second from 2009-01-01
-        UTCScale utc = (UTCScale) UTCScale.getInstance();
-        assertEquals("2008-12-31T23:59:60.000", utc.getLastKnownLeapSecond().toString(utc));
+    public void testNoData() throws OrekitException {
+        // despite there is no data files, some leap seconds are predefined in the library
+        assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 1.0e-8);
     }
 
     public void setUp() {
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "regular-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "no-data");
     }
 
     public static Test suite() {
-        return new TestSuite(UTCTAIHistoryFilesLoaderRegularDataTest.class);
+        return new TestSuite(UTCTAIHistoryFilesLoaderNoDataTest.class);
     }
 
 }

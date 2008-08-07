@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.data;
+package org.orekit.time;
 
 import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;

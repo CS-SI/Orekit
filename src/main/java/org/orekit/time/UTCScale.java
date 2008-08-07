@@ -21,7 +21,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.iers.UTCTAIHistoryFilesLoader;
 
 /** Coordinated Universal Time.
  * <p>UTC is related to TAI using step adjustments from time to time
@@ -33,7 +32,7 @@ import org.orekit.iers.UTCTAIHistoryFilesLoader;
  * at the end of 2005, the UTC time sequence was 2005-12-31T23:59:59 UTC,
  * followed by 2005-12-31T23:59:60 UTC, followed by 2006-01-01T00:00:00 UTC.</p>
  * <p>The OREKIT library retrieves time steps data thanks to the {@link
- * org.orekit.iers.IERSDirectoryCrawler IERSDirectoryCrawler} class.</p>
+ * org.orekit.data.DataDirectoryCrawler DataDirectoryCrawler} class.</p>
  * <p>This is a singleton class, so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate

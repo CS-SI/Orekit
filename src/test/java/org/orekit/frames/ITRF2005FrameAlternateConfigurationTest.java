@@ -21,8 +21,8 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.iers.IERSDirectoryCrawler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChunkedDate;
 import org.orekit.time.ChunkedTime;
@@ -130,7 +130,7 @@ public class ITRF2005FrameAlternateConfigurationTest extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(IERSDirectoryCrawler.IERS_ROOT_DIRECTORY, "testitrf-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "testitrf-data");
     }
 
     private void checkPV(PVCoordinates reference, PVCoordinates result,

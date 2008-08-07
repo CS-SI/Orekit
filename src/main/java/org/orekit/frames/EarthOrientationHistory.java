@@ -21,9 +21,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.iers.BulletinBFilesLoader;
-import org.orekit.iers.EOP05C04FilesLoader;
-import org.orekit.iers.EarthOrientationParameters;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;

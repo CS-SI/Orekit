@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.data;
+package org.orekit.frames;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,8 +22,9 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.orekit.data.DataDirectoryCrawler;
+import org.orekit.data.DataFileCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.PoleCorrection;
 import org.orekit.time.TimeStamped;
 
 
@@ -37,7 +38,7 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class BulletinBFilesLoader extends DataFileCrawler {
+class BulletinBFilesLoader extends DataFileCrawler {
 
     /** Conversion factor. */
     private static final double ARC_SECONDS_TO_RADIANS = 2 * Math.PI / 1296000;
