@@ -51,7 +51,7 @@ class UTCTAIHistoryFilesLoader extends DataFileCrawler {
     private Pattern lastPattern;
 
     /** Months map. */
-    private Map<String,Integer> monthsMap;
+    private Map<String, Integer> monthsMap;
 
     /** Time scales offsets. */
     private SortedMap<ChunkedDate, Integer> entries;
@@ -99,6 +99,7 @@ class UTCTAIHistoryFilesLoader extends DataFileCrawler {
      * they are chronologically sorted and only one entry remains for a given date.
      * If different files contain inconsistent data for the same date, the selected
      * entry will depend on file analysis order, which is undefined.</p>
+     * @return sorted UTC-TAI offsets entries
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
      */
@@ -156,7 +157,7 @@ class UTCTAIHistoryFilesLoader extends DataFileCrawler {
                             previousYear = matcher.group(4);
                         }
                     }
-                    Integer month = monthsMap.get(matcher.group(2));
+                    final Integer month = monthsMap.get(matcher.group(2));
                     if (month == null) {
                         throw new NumberFormatException();
                     }
@@ -172,6 +173,7 @@ class UTCTAIHistoryFilesLoader extends DataFileCrawler {
                                                       Integer.valueOf(lineNumber)
                                                   });
                     }
+                    lastDate = leapDay;
                     foundEntries = true;
                     entries.put(leapDay, offset);
 
