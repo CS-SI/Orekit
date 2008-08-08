@@ -16,6 +16,8 @@
  */
 package org.orekit.time;
 
+import org.orekit.errors.OrekitException;
+
 import junit.framework.*;
 
 public class TCGScaleTest
@@ -45,14 +47,18 @@ extends TestCase {
         }
     }
 
-    public void testReference() {
-        ChunkedDate referenceDate = new ChunkedDate(1977, 01, 01);
-        ChunkedTime thirtyTwo     = new ChunkedTime(0, 0, 32.184);
-        AbsoluteDate ttRef  = new AbsoluteDate(referenceDate, thirtyTwo, TTScale.getInstance());
-        AbsoluteDate tcgRef = new AbsoluteDate(referenceDate, thirtyTwo, TCGScale.getInstance());
-        AbsoluteDate taiRef = new AbsoluteDate(referenceDate, ChunkedTime.H00, TAIScale.getInstance());
+    public void testReference() throws OrekitException {
+        ChunkedDate  referenceDate = new ChunkedDate(1977, 01, 01);
+        ChunkedTime  thirtyTwo     = new ChunkedTime(0, 0, 32.184);
+        AbsoluteDate ttRef         = new AbsoluteDate(referenceDate, thirtyTwo, TTScale.getInstance());
+        AbsoluteDate tcgRef        = new AbsoluteDate(referenceDate, thirtyTwo, TCGScale.getInstance());
+        AbsoluteDate taiRef        = new AbsoluteDate(referenceDate, ChunkedTime.H00, TAIScale.getInstance());
+        AbsoluteDate utcRef        = new AbsoluteDate(new ChunkedDate(1976, 12, 31),
+                                                      new ChunkedTime(23, 59, 45),
+                                                      UTCScale.getInstance());
         assertEquals(0, ttRef.minus(tcgRef), 1.0e-15);
         assertEquals(0, ttRef.minus(taiRef), 1.0e-15);
+        assertEquals(0, ttRef.minus(utcRef), 1.0e-15);
     }
 
     public static Test suite() {
