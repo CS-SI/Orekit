@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.data.DataFileCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.time.ChunkedDate;
+import org.orekit.time.DateComponents;
 import org.orekit.time.TimeStamped;
 
 /** Loader for EOP 05 C04 files.
@@ -134,7 +134,7 @@ class EOP05C04FilesLoader extends DataFileCrawler {
                 final int    month = Integer.parseInt(fields[MONTH_FIELD]);
                 final int    day   = Integer.parseInt(fields[DAY_FIELD]);
                 final int    mjd   = Integer.parseInt(fields[MJD_FIELD]);
-                if (new ChunkedDate(year, month, day).getMJD() == mjd) {
+                if (new DateComponents(year, month, day).getMJD() == mjd) {
                     // the first four fields are consistent with the expected format
                     final double x     = Double.parseDouble(fields[POLE_X_FIELD]) * ARC_SECONDS_TO_RADIANS;
                     final double y     = Double.parseDouble(fields[POLE_Y_FIELD]) * ARC_SECONDS_TO_RADIANS;

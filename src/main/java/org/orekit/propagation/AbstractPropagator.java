@@ -140,7 +140,7 @@ public abstract class AbstractPropagator implements Propagator {
                     stepSize = fixedStepSize;
                 }
             } else {
-                stepSize = target.minus(interpolator.getCurrentDate());
+                stepSize = target.durationFrom(interpolator.getCurrentDate());
             }
 
             // iterate over the propagation range

@@ -27,8 +27,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.Ephemeris;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChunkedDate;
-import org.orekit.time.ChunkedTime;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 
 import junit.framework.Test;
@@ -48,13 +48,13 @@ public class TabulatedEphemerisTest extends TestCase {
         double OMEGA = Math.toRadians(261);
         double lv = 0;
 
-        AbsoluteDate initDate = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
-                                                 ChunkedTime.H00,
+        AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                                 TimeComponents.H00,
                                                  UTCScale.getInstance());
-        AbsoluteDate finalDate = new AbsoluteDate(new ChunkedDate(2004, 01, 02),
-                                                  ChunkedTime.H00,
+        AbsoluteDate finalDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
+                                                  TimeComponents.H00,
                                                   UTCScale.getInstance());
-        double deltaT = finalDate.minus(initDate);
+        double deltaT = finalDate.durationFrom(initDate);
 
         Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA,
                                             lv, KeplerianOrbit.TRUE_ANOMALY, 

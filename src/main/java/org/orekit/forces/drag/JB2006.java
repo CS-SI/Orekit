@@ -744,7 +744,7 @@ public class JB2006 implements Atmosphere {
         }
 
         // compute modified julian days date
-        final double dateMJD = date.minus(AbsoluteDate.MODIFIED_JULIAN_EPOCH) / 86400.;
+        final double dateMJD = date.durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH) / 86400.;
 
         // compute geodetic position
         final GeodeticPoint inBody = earth.transform(position, frame, date);

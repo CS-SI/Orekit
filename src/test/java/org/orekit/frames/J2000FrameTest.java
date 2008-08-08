@@ -24,8 +24,8 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChunkedDate;
-import org.orekit.time.ChunkedTime;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
@@ -38,8 +38,8 @@ public class J2000FrameTest extends TestCase {
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
         // David A. Vallado, John H. Seago, P. Kenneth Seidelmann
         // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
-        AbsoluteDate t0 = new AbsoluteDate(new ChunkedDate(2004, 04, 06),
-                                           new ChunkedTime(07, 51, 28.386009),
+        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 04, 06),
+                                           new TimeComponents(07, 51, 28.386009),
                                            UTCScale.getInstance());
 
         Transform t = Frame.getGCRF().getTransformTo(Frame.getJ2000(), t0);
@@ -68,8 +68,8 @@ public class J2000FrameTest extends TestCase {
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
         // David A. Vallado, John H. Seago, P. Kenneth Seidelmann
         // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
-        AbsoluteDate t0 = new AbsoluteDate(new ChunkedDate(2004, 06, 01),
-                                           ChunkedTime.H00,
+        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 06, 01),
+                                           TimeComponents.H00,
                                            UTCScale.getInstance());
 
         Transform t = Frame.getGCRF().getTransformTo(Frame.getJ2000(), t0);

@@ -19,13 +19,97 @@ Time
 * Time Presentation
 
   The principal class is <AbsoluteDate> which represents a unique instant in time, 
-  with no ambiguity. For that purpose, the ways to define this object are quite strict.
+  and to be able to locate it with respect to the many different times scales in
+  use in the space dynamics and astronomy fields.
 
 
-** Instant "relative" definition
+** Time Scales
 
-  The easiest and most evident way is to define an instant with an offset from another
-  one. Orekit defines 6 reference epochs. The first 5 are commonly used in the space
+  Dates are commonly defined by specifying a location in a specific <time scale>.
+  For example, the J2000.0 epoch is defined from its calendar components as
+  2000-01-01T12:00:00 in Terrestrial Time. It is of prime importance to understand 
+  the various available time scales definitions to avoid mistakes. Orekit provides 
+  5 of the most important ones:
+
+    ** <<International Atomic Time>>,
+    this is the most accurate and regular time scale that can be used for now at
+    the surface of the Earth,
+
+    ** <<Terrestrial Time>> as defined by IAU(1991)	recommendation IV.
+    Coordinate time at the surface of the Earth. It is the
+	successor of Ephemeris Time TE. By convention, TT = TAI + 32.184 s,
+
+    ** <<Coordinated Universal Time>>. UTC is mainly related to
+    TAI, but some step adjustments are introduced from time to time to keep take
+    into account Earth rotation irregularities and preventing the <legal> time to
+    drift with respect to day and night. The International Earth Rotation Service
+    (IERS) is in charge of this time-keeping. These adjustments require introduction
+    of leap seconds, which means some days are not 86400 seconds long,
+
+    ** <<Geocentric Coordinate Time>>. Coordinate time at the
+    center of mass of the Earth. This time scale depends linearly from TTScale
+    (and hence from TAI),
+
+    ** <<Global Positioning System reference scale>>. This scale
+    was equal to UTC at start of the GPS Epoch when UTC was 19 seconds behind TAI,
+    and stayed parallel to TAI since then (i.e. UTC is now offset from GPS due to
+    leap seconds). TGPS = TAI - 19 s.
+
+
+** Date Definition
+
+  There are two main ways to define a date:
+
+    ** using a location in a time scale as a set of calendar and hourly components
+
+    ** using a location in a time scale as an apparent seconds offset since an origin
+
+    ** using an elapsed physical duration since a reference date
+
+  The first option is the more straightforward one, but is not sufficient for some needs.
+  The two last options are confusingly similar, because of the complexity of time scales.
+  Understanding the differences between the two is a key point to avoid large errors.
+
+  An <apparent seconds offset> is the difference between two readings on a clock synchronized
+  with a time scale. If for example the first reading is 23:59:59 and the second reading is
+  00:00:00, the the apparent seconds offset is 1 second. An elapsed duration is the count
+  of seconds that could be measured by a stop watch started at the first instant and stopped
+  at the second instant. Most of the time, both times are identical. However, if the time scale
+  is UTC and if the readings are made when a leap second is introduced, then the duration
+  elapsed between the two events is 2 seconds and not 1 second!
+
+  The method <<<offsetFrom>>> method which takes both a date and a time scale as parameters
+  computes the apparent offset. The <<<durationFrom>>> method which takes only a date as
+  parameter computes the elapsed duration. In the exemple above, the first method would return
+  1 second while the second method would return 2 seconds:
+ 
++---------------------
+AbsoluteDate start = new AbsoluteDate(2005, 12, 31, 23, 59, 59, UTCScale.getInstance());
+AbsoluteDate stop  = new AbsoluteDate(2006,  1,  1,  0,  0,  0, UTCScale.getInstance());
+System.out.println(stop.offsetFrom(start, UTCScale.getInstance()));  // print 1.0
+System.out.println(stop.durationFrom(start));                        // print 2.0
++---------------------
+
+  This property is used in reverse to define dates. We can define the second instant either
+  as the instance which will occur when the reading of the clock is one second away for the
+  reading if the first date. We can also define it as the instant occurring when two seconds
+  have elapsed since the first instant, without any reference to an external clock. Both
+  approaches are possible, it depends on the available data and its meaning. The following
+  code shows both approaches:
+
++---------------------
+AbsoluteDate referenceDate = new AbsoluteDate(2005, 12, 31, 23, 59, 59, UTCScale.getInstance());
+AbsoluteDate date1         = new AbsoluteDate(referenceDate, 1.0, UTCScale.getInstance());
+AbsoluteDate date2         = new AbsoluteDate(referenceDate, 2.0);
++---------------------
+
+  The two variables <<<date1>>> and <<<date2>>> represent the same instant. The first one has been
+  defined relatively to a time scale, the second one has been defined independently of any time
+  scale.
+
+** Reference Epochs
+
+  Orekit defines 6 reference epochs. The first 5 are commonly used in the space
   community and the last one is commonly used in the computer science field.
 
       ** <Julian Epoch>: -4712-01-01 at 12:00:00, TTScale
@@ -39,40 +123,6 @@ Time
       ** <J2000 Epoch>: 2000-01-01 at 12:00:00, TTScale
 
       ** <Java Epoch>: 1970-01-01 at 00:00:00, TTScale
-  	  
-
-** Instant "absolute" definition
-
-  The second definition, that can be the source of some confusion, is by giving a 
-  location (a date) in a specific <time scale>. It is of prime importance to understand 
-  the various available time scales definitions to avoid mistakes. Orekit provides 
-  5 of the most important ones:
-
-    ** <<International Atomic Time>>,
-    
-
-    ** <<Terrestrial Time>> as defined by IAU(1991)
-	recommendation IV. Coordinate time at the surface of the Earth. It is the
-	successor of Ephemeris Time TE. By convention, TT = TAI + 32.184 s,
-	    
-
-    ** <<Coordinated Universal Time>>. UTC is related to
-    TAI using step adjustments from time to time according to IERS (International Earth
-    Rotation Service) rules. These adjustments require introduction of leap seconds,
-
-
-    ** <<Geocentric Coordinate Time>>. Coordinate time at the
-    center of mass of the Earth. This time scale depends linearly from TTScale,
-
-    ** <<Global Positioning System reference scale>>. This scale
-    was equal to UTC at start of the GPS Epoch when it was 19 seconds behind TAI,
-    and stayed parallel to TAI since then (i.e. UTC is now offset from GPS due to
-    leap seconds). TGPS = TAI - 19 s.
-
-
-  An instant can be defined by a chunked date, or by its coordinates on the time scale
-  (expressed as a number of seconds from the time scale origin).       
- 
  
 * Time Use
 

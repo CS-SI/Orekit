@@ -34,8 +34,8 @@ import org.orekit.forces.drag.DTM2000;
 import org.orekit.forces.drag.JB2006;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChunkedDate;
-import org.orekit.time.ChunkedTime;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 
 public class JB2006Test extends TestCase {
@@ -179,8 +179,8 @@ public class JB2006Test extends TestCase {
 
     public void testComparisonWithDTM2000() throws OrekitException, ParseException, FileNotFoundException {
 
-        AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2003, 01, 01),
-                                             ChunkedTime.H00,
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 01, 01),
+                                             TimeComponents.H00,
                                              UTCScale.getInstance());
         Frame itrf = Frame.getITRF2005C();
         Sun sun = new Sun();
@@ -240,8 +240,8 @@ public class JB2006Test extends TestCase {
 
     public void testSolarInputs() throws OrekitException, ParseException {
 
-        AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2001, 01, 14),
-                                             ChunkedTime.H00,
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2001, 01, 14),
+                                             TimeComponents.H00,
                                              UTCScale.getInstance());
 
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
@@ -260,8 +260,8 @@ public class JB2006Test extends TestCase {
         date = new AbsoluteDate(date, 11*3600);
         assertEquals(6 , in.getAp(date),0);
 
-        date = new AbsoluteDate(new ChunkedDate(1998, 02, 02),
-                                new ChunkedTime(18, 00, 00),
+        date = new AbsoluteDate(new DateComponents(1998, 02, 02),
+                                new TimeComponents(18, 00, 00),
                                 UTCScale.getInstance());
 //      1998  33   2450847.0  89.1  95.1  95.8  97.9  81.3  92.0  1
 //      33  89  95   4   5   4   4   2   0   0   3                          98

@@ -54,7 +54,7 @@ class UTCTAIHistoryFilesLoader extends DataFileCrawler {
     private Map<String, Integer> monthsMap;
 
     /** Time scales offsets. */
-    private SortedMap<ChunkedDate, Integer> entries;
+    private SortedMap<DateComponents, Integer> entries;
 
     /** Build a loader for UTC-TAI history file. */
     public UTCTAIHistoryFilesLoader() {
@@ -103,8 +103,8 @@ class UTCTAIHistoryFilesLoader extends DataFileCrawler {
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
      */
-    public SortedMap<ChunkedDate, Integer> loadTimeSteps() throws OrekitException {
-        entries = new TreeMap<ChunkedDate, Integer>();
+    public SortedMap<DateComponents, Integer> loadTimeSteps() throws OrekitException {
+        entries = new TreeMap<DateComponents, Integer>();
         new DataDirectoryCrawler().crawl(this);
         return entries;
     }
@@ -117,7 +117,7 @@ class UTCTAIHistoryFilesLoader extends DataFileCrawler {
         boolean foundEntries = false;
         final String emptyYear = "    ";
         int lineNumber = 0;
-        ChunkedDate lastDate = null;
+        DateComponents lastDate = null;
         int lastLine = 0;
         String previousYear = emptyYear;
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
@@ -161,7 +161,7 @@ class UTCTAIHistoryFilesLoader extends DataFileCrawler {
                     if (month == null) {
                         throw new NumberFormatException();
                     }
-                    final ChunkedDate leapDay = new ChunkedDate(Integer.parseInt(year.trim()),
+                    final DateComponents leapDay = new DateComponents(Integer.parseInt(year.trim()),
                                                                 month.intValue(),
                                                                 Integer.parseInt(matcher.group(3).trim()));
 

@@ -32,15 +32,15 @@ extends TestCase {
 
     public void testT0() {
         AbsoluteDate t0 =
-            new AbsoluteDate(new ChunkedDate(1980, 1, 6), ChunkedTime.H00, GPSScale.getInstance());
+            new AbsoluteDate(new DateComponents(1980, 1, 6), TimeComponents.H00, GPSScale.getInstance());
         assertEquals(AbsoluteDate.GPS_EPOCH, t0);
     }
 
     public void testArbitrary() throws OrekitException {
         AbsoluteDate tGPS =
-            new AbsoluteDate(new ChunkedDate(1999, 3, 4), ChunkedTime.H00, GPSScale.getInstance());
+            new AbsoluteDate(new DateComponents(1999, 3, 4), TimeComponents.H00, GPSScale.getInstance());
         AbsoluteDate tUTC =
-            new AbsoluteDate(new ChunkedDate(1999, 3, 3), new ChunkedTime(23, 59, 47),
+            new AbsoluteDate(new DateComponents(1999, 3, 3), new TimeComponents(23, 59, 47),
                              UTCScale.getInstance());
         assertEquals(tUTC, tGPS);
     }
@@ -59,8 +59,8 @@ extends TestCase {
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
             double dt1 = scale.offsetFromTAI(date);
-            ChunksPair chunks = date.getChunks(scale);
-            double dt2 = scale.offsetToTAI(chunks.getDate(), chunks.getTime());
+            DateTimeComponents components = date.getComponents(scale);
+            double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
             assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }

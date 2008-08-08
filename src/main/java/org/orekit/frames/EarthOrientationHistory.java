@@ -88,7 +88,7 @@ public class EarthOrientationHistory implements Serializable {
         for (final TimeStamped current : eop) {
 
             // compare the dates of preceding and current entries
-            if ((preceding != null) && ((current.getDate().minus(preceding.getDate())) > maxGap)) {
+            if ((preceding != null) && ((current.getDate().durationFrom(preceding.getDate())) > maxGap)) {
                 throw new OrekitException("missing Earth Orientation Parameters between {0} and {1}",
                                           new Object[] {
                                               preceding, current
@@ -124,8 +124,8 @@ public class EarthOrientationHistory implements Serializable {
      */
     protected double getUT1MinusUTC(final AbsoluteDate date) {
         if (selectBracketingEntries(date)) {
-            final double dtP = date.minus(previous.getDate());
-            final double dtN = next.getDate().minus(date);
+            final double dtP = date.durationFrom(previous.getDate());
+            final double dtN = next.getDate().durationFrom(date);
             return (dtP * next.getUT1MinusUTC() + dtN * previous.getUT1MinusUTC()) / (dtN + dtP);
         }
         return 0;
@@ -140,8 +140,8 @@ public class EarthOrientationHistory implements Serializable {
      */
     protected PoleCorrection getPoleCorrection(final AbsoluteDate date) {
         if (selectBracketingEntries(date)) {
-            final double dtP    = date.minus(previous.getDate());
-            final double dtN    = next.getDate().minus(date);
+            final double dtP    = date.durationFrom(previous.getDate());
+            final double dtN    = next.getDate().durationFrom(date);
             final double sum    = dtN + dtP;
             final double coeffP = dtN / sum;
             final double coeffN = dtP / sum;
@@ -160,8 +160,8 @@ public class EarthOrientationHistory implements Serializable {
     private boolean selectBracketingEntries(final AbsoluteDate date) {
 
         // don't search if the cached selection is fine
-        if ((previous != null) && (date.minus(previous.getDate()) >= 0) &&
-            (next != null) && (date.minus(next.getDate()) < 0)) {
+        if ((previous != null) && (date.durationFrom(previous.getDate()) >= 0) &&
+            (next != null) && (date.durationFrom(next.getDate()) < 0)) {
             // the current selection is already good
             return true;
         }

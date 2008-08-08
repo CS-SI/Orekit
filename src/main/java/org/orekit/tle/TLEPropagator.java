@@ -193,7 +193,7 @@ public abstract class TLEPropagator implements Serializable {
     public PVCoordinates getPVCoordinates(final AbsoluteDate date)
         throws OrekitException {
 
-        sxpPropagate(date.minus(tle.getDate()) / 60.0);
+        sxpPropagate(date.durationFrom(tle.getDate()) / 60.0);
 
         // Compute PV with previous calculated parameters
         return computePVCoordinates();

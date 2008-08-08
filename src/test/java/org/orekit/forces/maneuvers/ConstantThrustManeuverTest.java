@@ -37,8 +37,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChunkedDate;
-import org.orekit.time.ChunkedTime;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
@@ -55,8 +55,8 @@ public class ConstantThrustManeuverTest extends TestCase {
     }
 
     public void testPositiveDuration() throws OrekitException {
-        AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
-                                             new ChunkedTime(23, 30, 00.000),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                             new TimeComponents(23, 30, 00.000),
                                              UTCScale.getInstance());
         ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(date, 10.0, 400.0, 300.0, Vector3D.PLUS_K);
@@ -73,8 +73,8 @@ public class ConstantThrustManeuverTest extends TestCase {
     }
     
     public void testNegativeDuration() throws OrekitException {
-        AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
-                                             new ChunkedTime(23, 30, 00.000),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                             new TimeComponents(23, 30, 00.000),
                                              UTCScale.getInstance());
         ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(date, -10.0, 400.0, 300.0, Vector3D.PLUS_K);
@@ -106,8 +106,8 @@ public class ConstantThrustManeuverTest extends TestCase {
         final double alpha = Math.toRadians(351);
         final AttitudeLaw law = new InertialLaw(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
 
-        final AbsoluteDate initDate = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
-                                                       new ChunkedTime(23, 30, 00.000),
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                                       new TimeComponents(23, 30, 00.000),
                                                        UTCScale.getInstance());
         final Orbit orbit =
             new KeplerianOrbit(a, e, i, omega, OMEGA, lv, KeplerianOrbit.TRUE_ANOMALY,
@@ -115,8 +115,8 @@ public class ConstantThrustManeuverTest extends TestCase {
         final SpacecraftState initialState =
             new SpacecraftState(orbit, law.getState(initDate, orbit.getPVCoordinates(), orbit.getFrame()), mass);
 
-        final AbsoluteDate fireDate = new AbsoluteDate(new ChunkedDate(2004, 01, 02),
-                                                       new ChunkedTime(04, 15, 34.080),
+        final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
+                                                       new TimeComponents(04, 15, 34.080),
                                                        UTCScale.getInstance());
         final ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(fireDate, duration, f, isp, Vector3D.PLUS_I);

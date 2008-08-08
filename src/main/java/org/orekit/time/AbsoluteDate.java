@@ -27,16 +27,30 @@ import org.orekit.errors.OrekitException;
  * <p>Instances of this class are considered to be absolute in the sense
  * that each one represent the occurrence of some event and can be compared
  * to other instances or located in <em>any</em> {@link TimeScale time scale}. In
- * order to represent a specific event instant in two different time scales
- * (say {@link TAIScale TAI} and {@link UTCScale UTC} for example), only
- * one instance is needed, both representations being available by specifying
- * the time scales as parameter when calling the ad-hoc methods.</p>
+ * other words the different locations of an event with respect to two different
+ * time scale (say {@link TAIScale TAI} and {@link UTCScale UTC} for example) are
+ * simply different perspective related to a single object. Only one
+ * <code>AbsoluteDate</code> instance is needed, both representations being available
+ * from this single instance by specifying the time scales as parameter when calling
+ * the ad-hoc methods.</p>
+ *
+ * <p>Since an instance is not bound to a specific time-scale, all methods related
+ * to the location of the date within some time scale require to provide the time
+ * scale as an argument. It is therefore possible to define a date in one time scale
+ * and to use it in another one. An example of such use is to read a date from a file
+ * in UTC and write it in another file in TAI. This can be done as follows:</p>
+ * <pre>
+ *   DateTimeComponents utcComponents = readNextDate();
+ *   AbsoluteDate date = new AbsoluteDate(utcComponents, UTCScale.getInstance());
+ *   writeNextDate(date.getComponents(TAIScale.getInstance()));
+ * </pre>
+ *
  * <p>Two complementary views are available:</p>
  * <ul>
  *   <li><p>location view (mainly for input/output or conversions)</p>
  *   <p>locations represent the coordinate of one event with respect to a
  *   {@link TimeScale time scale}. The related methods are {@link
- *   #AbsoluteDate(ChunkedDate, ChunkedTime, TimeScale)}, {@link
+ *   #AbsoluteDate(DateComponents, TimeComponents, TimeScale)}, {@link
  *   #AbsoluteDate(int, int, int, int, int, double, TimeScale)}, {@link
  *   #AbsoluteDate(int, int, int, TimeScale)}, {@link #AbsoluteDate(Date,
  *   TimeScale)}, {@link #createGPSDate(int, double)}, toString(){@link
@@ -48,7 +62,7 @@ import org.orekit.errors.OrekitException;
  *   (two instances of the class) or durations. They are counted in seconds,
  *   are continuous and could be measured using only a virtually perfect stopwatch.
  *   The related methods are {@link #AbsoluteDate(AbsoluteDate, double)},
- *   {@link #minus(AbsoluteDate)}, {@link #compareTo(AbsoluteDate)}, {@link #equals(Object)}
+ *   {@link #durationFrom(AbsoluteDate)}, {@link #compareTo(AbsoluteDate)}, {@link #equals(Object)}
  *   and {@link #hashCode()}.</p>
  *   </li>
  * </ul>
@@ -73,34 +87,34 @@ import org.orekit.errors.OrekitException;
 public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Serializable {
 
     /** Reference epoch for julian dates: -4712-01-01T12:00:00.
-     * <p>Both <code>java.util.Date</code> and {@link ChunkedDate} classes
+     * <p>Both <code>java.util.Date</code> and {@link DateComponents} classes
      * follow the astronomical conventions and consider a year 0 between
      * years -1 and +1, hence this reference date lies in year -4712 and not
      * in year -4713 as can be seen in other documents or programs that obey
      * a different convention (for example the <code>convcal</code> utility).</p>
      */
     public static final AbsoluteDate JULIAN_EPOCH =
-        new AbsoluteDate(ChunkedDate.JULIAN_EPOCH, ChunkedTime.H12, TTScale.getInstance());
+        new AbsoluteDate(DateComponents.JULIAN_EPOCH, TimeComponents.H12, TTScale.getInstance());
 
     /** Reference epoch for modified julian dates: 1858-11-17T00:00:00. */
     public static final AbsoluteDate MODIFIED_JULIAN_EPOCH =
-        new AbsoluteDate(ChunkedDate.MODIFIED_JULIAN_EPOCH, ChunkedTime.H00, TTScale.getInstance());
+        new AbsoluteDate(DateComponents.MODIFIED_JULIAN_EPOCH, TimeComponents.H00, TTScale.getInstance());
 
     /** Reference epoch for 1950 dates: 1950-01-01T00:00:00. */
     public static final AbsoluteDate FIFTIES_EPOCH =
-        new AbsoluteDate(ChunkedDate.FIFTIES_EPOCH, ChunkedTime.H00, TTScale.getInstance());
+        new AbsoluteDate(DateComponents.FIFTIES_EPOCH, TimeComponents.H00, TTScale.getInstance());
 
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 GPS time. */
     public static final AbsoluteDate GPS_EPOCH =
-        new AbsoluteDate(ChunkedDate.GPS_EPOCH, ChunkedTime.H00, GPSScale.getInstance());
+        new AbsoluteDate(DateComponents.GPS_EPOCH, TimeComponents.H00, GPSScale.getInstance());
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC). */
     public static final AbsoluteDate J2000_EPOCH =
-        new AbsoluteDate(ChunkedDate.J2000_EPOCH, ChunkedTime.H12, TTScale.getInstance());
+        new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TTScale.getInstance());
 
     /** Java Reference epoch: 1970-01-01T00:00:00 TT. */
     public static final AbsoluteDate JAVA_EPOCH =
-        new AbsoluteDate(ChunkedDate.JAVA_EPOCH, ChunkedTime.H00, TTScale.getInstance());
+        new AbsoluteDate(DateComponents.JAVA_EPOCH, TimeComponents.H00, TTScale.getInstance());
 
     /** Dummy date at infinity in the past direction. */
     public static final AbsoluteDate PAST_INFINITY =
@@ -127,20 +141,20 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
         offset = J2000_EPOCH.offset;
     }
 
-    /** Build an instant from a location in a {@link TimeScale time scale}.
-     * @param dateTime location in the time scale
+    /** Build an instance from a location in a {@link TimeScale time scale}.
+     * @param location location in the time scale
      * @param timeScale time scale
      */
-    public AbsoluteDate(final ChunksPair dateTime, final TimeScale timeScale) {
-        this(dateTime.getDate(), dateTime.getTime(), timeScale);
+    public AbsoluteDate(final DateTimeComponents location, final TimeScale timeScale) {
+        this(location.getDate(), location.getTime(), timeScale);
     }
 
-    /** Build an instant from a location in a {@link TimeScale time scale}.
+    /** Build an instance from a location in a {@link TimeScale time scale}.
      * @param date date location in the time scale
      * @param time time location in the time scale
      * @param timeScale time scale
      */
-    public AbsoluteDate(final ChunkedDate date, final ChunkedTime time,
+    public AbsoluteDate(final DateComponents date, final TimeComponents time,
                         final TimeScale timeScale) {
         // set the epoch at the start of the current minute
         final int j2000Day = date.getJ2000Day();
@@ -148,7 +162,7 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
         offset = time.getSecond() + timeScale.offsetToTAI(date, time);
     }
 
-    /** Build an instant from a location in a {@link TimeScale time scale}.
+    /** Build an instance from a location in a {@link TimeScale time scale}.
      * @param year year number (may be 0 or negative for BC years)
      * @param month month number from 1 to 12
      * @param day day number from 1 to 31
@@ -162,22 +176,22 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
     public AbsoluteDate(final int year, final int month, final int day,
                         final int hour, final int minute, final double second,
                         final TimeScale timeScale) throws IllegalArgumentException {
-        this(new ChunkedDate(year, month, day), new ChunkedTime(hour, minute, second), timeScale);
+        this(new DateComponents(year, month, day), new TimeComponents(hour, minute, second), timeScale);
     }
 
-    /** Build an instant from a location in a {@link TimeScale time scale}.
+    /** Build an instance from a location in a {@link TimeScale time scale}.
      * <p>The hour is set to 00:00:00.000.</p>
      * @param date date location in the time scale
      * @param timeScale time scale
      * @exception IllegalArgumentException if inconsistent arguments
      * are given (parameters out of range)
      */
-    public AbsoluteDate(final ChunkedDate date, final TimeScale timeScale)
+    public AbsoluteDate(final DateComponents date, final TimeScale timeScale)
         throws IllegalArgumentException {
-        this(date, ChunkedTime.H00, timeScale);
+        this(date, TimeComponents.H00, timeScale);
     }
 
-    /** Build an instant from a location in a {@link TimeScale time scale}.
+    /** Build an instance from a location in a {@link TimeScale time scale}.
      * <p>The hour is set to 00:00:00.000.</p>
      * @param year year number (may be 0 or negative for BC years)
      * @param month month number from 1 to 12
@@ -188,37 +202,64 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      */
     public AbsoluteDate(final int year, final int month, final int day,
                         final TimeScale timeScale) throws IllegalArgumentException {
-        this(new ChunkedDate(year, month, day), ChunkedTime.H00, timeScale);
+        this(new DateComponents(year, month, day), TimeComponents.H00, timeScale);
     }
 
-    /** Build an instant from a location in a {@link TimeScale time scale}.
+    /** Build an instance from a location in a {@link TimeScale time scale}.
      * @param location location in the time scale
      * @param timeScale time scale
      */
     public AbsoluteDate(final Date location, final TimeScale timeScale) {
-        this(new ChunkedDate(ChunkedDate.JAVA_EPOCH,
+        this(new DateComponents(DateComponents.JAVA_EPOCH,
                              (int) (location.getTime() / 86400000l)),
-             new ChunkedTime(0.001 * (location.getTime() % 86400000l)),
+             new TimeComponents(0.001 * (location.getTime() % 86400000l)),
              timeScale);
     }
 
-    /** Build an instant from an offset with respect to another instant.
-     * <p>It is important to note that the <code>offset</code> is <em>not</em>
+    /** Build an instance from an elapsed duration since to another instant.
+     * <p>It is important to note that the elapsed duration is <em>not</em>
      * the difference between two readings on a time scale. As an example,
-     * the offset between the two instants leading to the readings
-     * 2005-12-31T23:59:59 and 2006-01-01T00:00:00 on {@link UTCScale UTC}
-     * time scale is <em>not</em> 1 second, but 2 seconds because a leap
-     * second has been introduced at the end of 2005 in this time scale.</p>
-     * @param instant reference instant
-     * @param offset offset from the reference instant (seconds physically
-     * separating the two instants)
+     * the duration between the two instants leading to the readings
+     * 2005-12-31T23:59:59 and 2006-01-01T00:00:00 in the {@link UTCScale UTC}
+     * time scale is <em>not</em> 1 second, but a stop watch would have measured
+     * an elapsed duration of 2 seconds between these two instances because a leap
+     * second was introduced at the end of 2005 in this time scale.</p>
+     * <p>This constructor is the reverse of the {@link #durationFrom(AbsoluteDate)}
+     * method.</p>
+     * @param since start instant of the measured duration
+     * @param elapsedDuration physically elapsed duration from the <code>since</code>
+     * instant, as measured in a regular time scale
+     * @see #durationFrom(AbsoluteDate)
      */
-    public AbsoluteDate(final AbsoluteDate instant, final double offset) {
-        epoch = instant.epoch;
-        this.offset = instant.offset + offset;
+    public AbsoluteDate(final AbsoluteDate since, final double elapsedDuration) {
+        epoch = since.epoch;
+        this.offset = since.offset + elapsedDuration;
     }
 
-    /** Build an instant corresponding to a GPS date.
+    /** Build an instance from an apparent clock offset with respect to another
+     * instant <em>in the perspective of a specific {@link TimeScale time scale}</em>.
+     * <p>It is important to note that the apparent clock offset <em>is</em> the
+     * difference between two readings on a time scale and <em>not</em> an elapsed
+     * duration. As an example, the apparent clock offset between the two instants
+     * leading to the readings 2005-12-31T23:59:59 and 2006-01-01T00:00:00 in the
+     * {@link UTCScale UTC} time scale is 1 second, but the elapsed duration is 2
+     * seconds because a leap second has been introduced at the end of 2005 in this
+     * time scale.</p>
+     * <p>This constructor is the reverse of the {@link #offsetFrom(AbsoluteDate,
+     * TimeScale)} method.</p>
+     * @param reference reference instant
+     * @param apparentOffset apparent clock offset from the reference instant
+     * (difference between two readings in the specified time scale)
+     * @param timeScale time scale with respect to which the offset is defined
+     * @see #offsetFrom(AbsoluteDate, TimeScale)
+     */
+    public AbsoluteDate(final AbsoluteDate reference, final double apparentOffset,
+                        final TimeScale timeScale) {
+        this(new DateTimeComponents(reference.getComponents(timeScale), apparentOffset),
+             timeScale);
+    }
+
+    /** Build an instance corresponding to a GPS date.
      * <p>GPS dates are provided as a week number starting at
      * {@link #GPS_EPOCH GPS epoch} and as a number of milliseconds
      * since week start.</p>
@@ -231,26 +272,57 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
         return new AbsoluteDate(GPS_EPOCH, weekNumber * 604800.0 + milliInWeek / 1000.0);
     }
 
-    /** Get the TAI time.
-     * <p>The TAI time is the number of seconds since 2000-01-01T12:00:00 in
-     * {@link TAIScale TAI}. Note that this reference epoch is <strong>not</strong>
-     * {@link #J2000_EPOCH J2000.0 epoch}, which is the same day but at noon in
-     * {@link TTScale TT}.</p>
-     * @return tai time in seconds
+    /** Compute the physically elapsed duration between two instants.
+     * <p>The returned duration is the number of seconds physically
+     * elapsed between the two instants, measured in a regular time
+     * scale with respect to surface of the Earth (i.e either the {@link
+     * TAIScale TAI scale}, the {@link TTScale TT scale} or the {@link
+     * GPSScale GPS scale}). It is the only method that gives a
+     * duration with a physical meaning.</p>
+     * <p>This method gives the same result (with less computation)
+     * as calling {@link #offsetFrom(AbsoluteDate, TimeScale)}
+     * with a second argument set to one of the regular scales cited
+     * above.</p>
+     * <p>This method is the reverse of the {@link #AbsoluteDate(AbsoluteDate,
+     * double)} constructor.</p>
+     * @param instant instant to subtract from the instance
+     * @return offset in seconds between the two instants (positive
+     * if the instance is posterior to the argument)
+     * @see #offsetFrom(AbsoluteDate, TimeScale)
+     * @see #AbsoluteDate(AbsoluteDate, double)
      */
-    public double getTAITime() {
-        return epoch + offset;
+    public double durationFrom(final AbsoluteDate instant) {
+        return (epoch - instant.epoch) + (offset - instant.offset);
     }
 
-    /** Compute the offset between two instant.
-     * <p>The offset is the number of seconds physically elapsed
-     * between the two instants.</p>
+    /** Compute the apparent clock offset between two instant <em>in the
+     * perspective of a specific {@link TimeScale time scale}</em>.
+     * <p>The offset is the number of seconds counted in the given
+     * time scale between the locations of the two instants, with
+     * all time scale irregularities removed (i.e. considering all
+     * days are exactly 86400 seconds long). This method will give
+     * a result that may not have a physical meaning if the time scale
+     * is irregular. For example since a leap second was introduced at
+     * the end of 2005, the apparent offset between 2005-12-31T23:59:59
+     * and 2006-01-01T00:00:00 is 1 second, but the physical duration
+     * of the corresponding time interval as returned by the {@link
+     * #durationFrom(AbsoluteDate)} method is 2 seconds.</p>
+     * <p>This method is the reverse of the {@link #AbsoluteDate(AbsoluteDate,
+     * double, TimeScale)} constructor.</p>
      * @param instant instant to subtract from the instance
-     * @return offset in seconds between the two instant (positive
-     * if the instance is posterior to the argument)
+     * @param timeScale time scale with respect to which the offset should
+     * be computed
+     * @return apparent clock offset in seconds between the two instants
+     * (positive if the instance is posterior to the argument)
+     * @see #durationFrom(AbsoluteDate)
+     * @see #AbsoluteDate(AbsoluteDate, double, TimeScale)
      */
-    public double minus(final AbsoluteDate instant) {
-        return (epoch - instant.epoch) + (offset - instant.offset);
+    public double offsetFrom(final AbsoluteDate instant, final TimeScale timeScale) {
+        final double elapsedDuration = (epoch - instant.epoch) +
+                                       (offset - instant.offset);
+        final double startOffset     = timeScale.offsetFromTAI(instant);
+        final double endOffset       = timeScale.offsetFromTAI(this);
+        return  elapsedDuration - startOffset + endOffset;
     }
 
     /** Compute the offset between two time scales at the current instant.
@@ -263,8 +335,7 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      * @return offset in seconds between the two time scales at the
      * current instant
      */
-    public double timeScalesOffset(final TimeScale scale1,
-                                   final TimeScale scale2) {
+    public double timeScalesOffset(final TimeScale scale1, final TimeScale scale2) {
         return scale1.offsetFromTAI(this) - scale2.offsetFromTAI(this);
     }
 
@@ -281,32 +352,32 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
         return new Date(Math.round((time + 10957.5 * 86400.0) * 1000));
     }
 
-    /** Split the instance into date/time chunks.
+    /** Split the instance into date/time components.
      * @param timeScale time scale to use
-     * @return date/time chunks
+     * @return date/time components
      */
-    public ChunksPair getChunks(final TimeScale timeScale) {
+    public DateTimeComponents getComponents(final TimeScale timeScale) {
 
         // compute offset from 2000-01-01T00:00:00 in specified time scale
         final double offset2000 = epoch + offset + 43200 + timeScale.offsetFromTAI(this);
         final int    day        = (int) Math.floor(offset2000 / 86400.0);
 
         // extract calendar elements
-        final ChunkedDate date = new ChunkedDate(ChunkedDate.J2000_EPOCH, day);
-        ChunkedTime time = new ChunkedTime(offset2000 - 86400.0 * day);
+        final DateComponents date = new DateComponents(DateComponents.J2000_EPOCH, day);
+        TimeComponents time = new TimeComponents(offset2000 - 86400.0 * day);
         try {
             final UTCScale utc = (UTCScale) timeScale;
             if (utc.insideLeap(this)) {
                 // fix the seconds number to take the leap into account
-                time = new ChunkedTime(time.getHour(), time.getMinute(),
+                time = new TimeComponents(time.getHour(), time.getMinute(),
                                        time.getSecond() + utc.getLeap(this));
             }
         } catch (ClassCastException cce) {
             // ignored
         }
 
-        // build the chunks
-        return new ChunksPair(date, time);
+        // build the components
+        return new DateTimeComponents(date, time);
 
     }
 
@@ -316,7 +387,7 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      * is before, simultaneous, or after the specified date.
      */
     public int compareTo(final AbsoluteDate date) {
-        final double delta = minus(date);
+        final double delta = durationFrom(date);
         if (delta < 0) {
             return -1;
         } else if (delta > 0) {
@@ -336,7 +407,7 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      */
     public boolean equals(final Object date) {
         if ((date != null) && (date instanceof AbsoluteDate)) {
-            return minus((AbsoluteDate) date) == 0;
+            return durationFrom((AbsoluteDate) date) == 0;
         }
         return false;
     }
@@ -345,7 +416,7 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      * @return hashcode
      */
     public int hashCode() {
-        final long l = Double.doubleToLongBits(minus(J2000_EPOCH));
+        final long l = Double.doubleToLongBits(durationFrom(J2000_EPOCH));
         return (int) (l ^ (l >>> 32));
     }
 
@@ -367,7 +438,7 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      * in ISO-8601 format with milliseconds accuracy
      */
     public String toString(final TimeScale timeScale) {
-        return getChunks(timeScale).toString();
+        return getComponents(timeScale).toString();
     }
 
 }

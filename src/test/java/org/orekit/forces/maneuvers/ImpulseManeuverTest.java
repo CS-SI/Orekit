@@ -31,8 +31,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.NodeDetector;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChunkedDate;
-import org.orekit.time.ChunkedTime;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 
 public class ImpulseManeuverTest extends TestCase {
@@ -42,8 +42,8 @@ public class ImpulseManeuverTest extends TestCase {
             new KeplerianOrbit(24532000.0, 0.72, 0.3, Math.PI, 0.4, 2.0,
                                KeplerianOrbit.MEAN_ANOMALY,
                                Frame.getJ2000(),
-                               new AbsoluteDate(new ChunkedDate(2008, 06, 23),
-                                                new ChunkedTime(14, 18, 37),
+                               new AbsoluteDate(new DateComponents(2008, 06, 23),
+                                                new TimeComponents(14, 18, 37),
                                                 UTCScale.getInstance()),
                                3.986004415e14);
         final double a  = initialOrbit.getA();

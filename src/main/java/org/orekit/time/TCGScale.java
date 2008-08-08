@@ -63,11 +63,11 @@ public class TCGScale implements TimeScale {
 
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate date) {
-        return TT_OFFSET + LG_RATE * date.minus(REFERENCE_DATE);
+        return TT_OFFSET + LG_RATE * date.durationFrom(REFERENCE_DATE);
     }
 
     /** {@inheritDoc} */
-    public double offsetToTAI(final ChunkedDate date, final ChunkedTime time) {
+    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
         final double dt = (date.getJ2000Day() + 8400) * 86400.0 + time.getSecondsInDay();
         return -TT_OFFSET - LG_RATE * INVERSE_RATE * (dt - TT_OFFSET);
     }

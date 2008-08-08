@@ -135,7 +135,7 @@ public class KeplerianPropagator extends AbstractPropagator {
                                      initialOrbit.getEquinoctialEy(), initialOrbit.getHx(),
                                      initialOrbit.getHy(),
                                      initialOrbit.getLM() +
-                                     meanMotion * date.minus(initialOrbit.getDate()) ,
+                                     meanMotion * date.durationFrom(initialOrbit.getDate()) ,
                                      EquinoctialOrbit.MEAN_LATITUDE_ARGUMENT,
                                      initialOrbit.getFrame(), date, mu);
 

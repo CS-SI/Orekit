@@ -166,10 +166,10 @@ public class TLESeries implements Serializable {
     public TLE getClosestTLE(final AbsoluteDate date) {
 
         //  don't search if the cached selection is fine
-        if ((previous != null) && (date.minus(previous.getDate()) >= 0) &&
-            (next     != null) && (date.minus(next.getDate())     <= 0)) {
+        if ((previous != null) && (date.durationFrom(previous.getDate()) >= 0) &&
+            (next     != null) && (date.durationFrom(next.getDate())     <= 0)) {
             // the current selection is already good
-            if (next.getDate().minus(date) > date.minus(previous.getDate())) {
+            if (next.getDate().durationFrom(date) > date.durationFrom(previous.getDate())) {
                 return previous;
             } else {
                 return next;
@@ -191,7 +191,7 @@ public class TLESeries implements Serializable {
         previous = (TLE) headSet.last();
         next = (TLE) tailSet.first();
 
-        if (next.getDate().minus(date) > date.minus(previous.getDate())) {
+        if (next.getDate().durationFrom(date) > date.durationFrom(previous.getDate())) {
             return previous;
         } else {
             return next;

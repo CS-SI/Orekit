@@ -21,8 +21,8 @@ import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChunkedDate;
-import org.orekit.time.ChunkedTime;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeStamped;
 import org.orekit.time.UTCScale;
 
@@ -136,9 +136,9 @@ public class TLE implements TimeStamped, Serializable {
         if (year > 2056) {
             year -= 100;
         }
-        final ChunkedDate date = new ChunkedDate(year, 1, 1);
+        final DateComponents date = new DateComponents(year, 1, 1);
         final double dayNb = Double.parseDouble(line1.substring(20, 32).replace(' ', '0'));
-        epoch = new AbsoluteDate(new AbsoluteDate(date, ChunkedTime.H00, UTCScale.getInstance()),
+        epoch = new AbsoluteDate(new AbsoluteDate(date, TimeComponents.H00, UTCScale.getInstance()),
                                  (dayNb - 1) * 86400); //-1 is due to TLE date definition
         // Fields transform :
         bStar = Double.parseDouble(line1.substring(53, 54).replace(' ', '0') +

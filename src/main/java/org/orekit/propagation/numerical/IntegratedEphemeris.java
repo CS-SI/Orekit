@@ -118,7 +118,7 @@ class IntegratedEphemeris implements BoundedPropagator, ModeHandler, StepHandler
     /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate date)
         throws PropagationException {
-        model.setInterpolatedTime(date.minus(startDate));
+        model.setInterpolatedTime(date.durationFrom(startDate));
         final double[] state = model.getInterpolatedState();
 
         final EquinoctialOrbit eq =
@@ -157,7 +157,7 @@ class IntegratedEphemeris implements BoundedPropagator, ModeHandler, StepHandler
         if (isLast) {
             startDate = new AbsoluteDate(initializedReference, model.getInitialTime());
             maxDate   = new AbsoluteDate(initializedReference, model.getFinalTime());
-            if (maxDate.minus(startDate) < 0) {
+            if (maxDate.durationFrom(startDate) < 0) {
                 minDate = maxDate;
                 maxDate = startDate;
             } else {

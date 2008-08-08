@@ -309,7 +309,7 @@ public class NumericalPropagator implements Propagator {
 
             // mathematical view
             final double t0 = 0;
-            final double t1 = finalDate.minus(startDate);
+            final double t1 = finalDate.durationFrom(startDate);
 
             // Map state to array
             state[0] = initialOrbit.getA();

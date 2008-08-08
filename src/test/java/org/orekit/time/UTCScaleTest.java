@@ -32,34 +32,34 @@ extends TestCase {
     }
 
     public void testNoLeap() {
-        AbsoluteDate d1 = new AbsoluteDate(new ChunkedDate(1999, 12, 31),
-                                           new ChunkedTime(23, 59, 59),
+        AbsoluteDate d1 = new AbsoluteDate(new DateComponents(1999, 12, 31),
+                                           new TimeComponents(23, 59, 59),
                                            utc);
-        AbsoluteDate d2 = new AbsoluteDate(new ChunkedDate(2000, 01, 01),
-                                           new ChunkedTime(00, 00, 01),
+        AbsoluteDate d2 = new AbsoluteDate(new DateComponents(2000, 01, 01),
+                                           new TimeComponents(00, 00, 01),
                                            utc);
-        assertEquals(2.0, d2.minus(d1), 1.0e-10);
+        assertEquals(2.0, d2.durationFrom(d1), 1.0e-10);
     }
 
     public void testLeap2006() {
         AbsoluteDate leapDate =
-            new AbsoluteDate(new ChunkedDate(2006, 01, 01), ChunkedTime.H00, utc);
+            new AbsoluteDate(new DateComponents(2006, 01, 01), TimeComponents.H00, utc);
         AbsoluteDate d1 = new AbsoluteDate(leapDate, -1);
         AbsoluteDate d2 = new AbsoluteDate(leapDate, +1);
-        assertEquals(2.0, d2.minus(d1), 1.0e-10);
+        assertEquals(2.0, d2.durationFrom(d1), 1.0e-10);
 
-        AbsoluteDate d3 = new AbsoluteDate(new ChunkedDate(2005, 12, 31),
-                                           new ChunkedTime(23, 59, 59),
+        AbsoluteDate d3 = new AbsoluteDate(new DateComponents(2005, 12, 31),
+                                           new TimeComponents(23, 59, 59),
                                            utc);
-        AbsoluteDate d4 = new AbsoluteDate(new ChunkedDate(2006, 01, 01),
-                                           new ChunkedTime(00, 00, 01),
+        AbsoluteDate d4 = new AbsoluteDate(new DateComponents(2006, 01, 01),
+                                           new TimeComponents(00, 00, 01),
                                            utc);
-        assertEquals(3.0, d4.minus(d3), 1.0e-10);
+        assertEquals(3.0, d4.durationFrom(d3), 1.0e-10);
     }
 
     public void testDuringLeap() {
-        AbsoluteDate d = new AbsoluteDate(new ChunkedDate(1983, 06, 30),
-                                          new ChunkedTime(23, 59, 59),
+        AbsoluteDate d = new AbsoluteDate(new DateComponents(1983, 06, 30),
+                                          new TimeComponents(23, 59, 59),
                                           utc);
         assertEquals("1983-06-30T23:59:59.000", d.toString(utc));
         d = new AbsoluteDate(d, 0.251);
@@ -85,8 +85,8 @@ extends TestCase {
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
             double dt1 = scale.offsetFromTAI(date);
-            ChunksPair chunks = date.getChunks(scale);
-            double dt2 = scale.offsetToTAI(chunks.getDate(), chunks.getTime());
+            DateTimeComponents components = date.getComponents(scale);
+            double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
             assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }

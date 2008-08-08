@@ -340,8 +340,8 @@ public class KeplerianPropagatorTest extends TestCase {
         AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         PVCoordinates pv = propagated.getPVCoordinates(Frame.getITRF2005C());
-        assertTrue(farTarget.minus(propagated.getDate()) > 3500.0);
-        assertTrue(farTarget.minus(propagated.getDate()) < 4000.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()) > 3500.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()) < 4000.0);
         assertEquals(0, pv.getPosition().getZ(), 1.0e-6);
         assertTrue(pv.getVelocity().getZ() > 0);
     }
@@ -355,8 +355,8 @@ public class KeplerianPropagatorTest extends TestCase {
         AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         PVCoordinates pv = propagated.getPVCoordinates(Frame.getITRF2005C());
-        assertTrue(farTarget.minus(propagated.getDate()) > 3000.0);
-        assertTrue(farTarget.minus(propagated.getDate()) < 3500.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()) > 3000.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()) < 3500.0);
         assertEquals(orbit.getA() * (1.0 - orbit.getE()), pv.getPosition().getNorm(), 1.0e-6);
     }
 
@@ -369,7 +369,7 @@ public class KeplerianPropagatorTest extends TestCase {
         propagator.addEventDetector(new DateDetector(stopDate));
         AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        assertEquals(0, stopDate.minus(propagated.getDate()), 1.0e-10);
+        assertEquals(0, stopDate.durationFrom(propagated.getDate()), 1.0e-10);
     }
 
     public void testSetting() throws OrekitException {
@@ -388,8 +388,8 @@ public class KeplerianPropagatorTest extends TestCase {
                                                    propagated.getFrame(),
                                                    propagated.getDate());
         final double zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ();
-        assertTrue(farTarget.minus(propagated.getDate()) > 7800.0);
-        assertTrue(farTarget.minus(propagated.getDate()) < 7900.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()) > 7800.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()) < 7900.0);
         assertEquals(0.09, elevation, 1.0e-11);
         assertTrue(zVelocity < 0);
     }
@@ -406,7 +406,7 @@ public class KeplerianPropagatorTest extends TestCase {
             public void handleStep(SpacecraftState currentState, boolean isLast)
             throws PropagationException {
                 if (previous != null) {
-                    assertEquals(step, currentState.getDate().minus(previous), 1.0e-10);
+                    assertEquals(step, currentState.getDate().durationFrom(previous), 1.0e-10);
                 }
                 previous = currentState.getDate();
             }
@@ -427,7 +427,7 @@ public class KeplerianPropagatorTest extends TestCase {
             public void handleStep(OrekitStepInterpolator interpolator,
                                    boolean isLast) throws PropagationException {
                 if (previous != null) {
-                    assertEquals(step, interpolator.getCurrentDate().minus(previous), 1.0e-10);
+                    assertEquals(step, interpolator.getCurrentDate().durationFrom(previous), 1.0e-10);
                 }
                 previous = interpolator.getCurrentDate();
             }
@@ -451,8 +451,8 @@ public class KeplerianPropagatorTest extends TestCase {
         propagator.setEphemerisMode();
         propagator.propagate(farTarget);
         BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
-        assertTrue(Double.isInfinite(ephemeris.getMinDate().minus(AbsoluteDate.J2000_EPOCH)));
-        assertTrue(Double.isInfinite(ephemeris.getMaxDate().minus(AbsoluteDate.J2000_EPOCH)));
+        assertTrue(Double.isInfinite(ephemeris.getMinDate().durationFrom(AbsoluteDate.J2000_EPOCH)));
+        assertTrue(Double.isInfinite(ephemeris.getMaxDate().durationFrom(AbsoluteDate.J2000_EPOCH)));
     }
 
     private static double tangLEmLv(double Lv,double ex,double ey){

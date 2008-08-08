@@ -20,6 +20,9 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TAIScale;
 import org.orekit.time.UTCScale;
 
 /** Terrestrial Intermediate Reference Frame 2000.
@@ -34,6 +37,10 @@ class TIRF2000Frame extends Frame {
 
     /** 2&pi;. */
     private static final double TWO_PI = 2.0 * Math.PI;
+
+    /** Reference date of Capitaine's Earth Rotation Angle model. */
+    private static final AbsoluteDate ERA_REFERENCE =
+        new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TAIScale.getInstance());
 
     /** Constant term of Capitaine's Earth Rotation Angle model. */
     private static final double ERA_0 = TWO_PI * 0.7790572732640;
@@ -78,7 +85,7 @@ class TIRF2000Frame extends Frame {
             // compute Earth Rotation Angle using Nicole Capitaine model (2000)
             final double dtu1        = EarthOrientationHistory.getInstance().getUT1MinusUTC(date);
             final double utcMinusTai = UTCScale.getInstance().offsetFromTAI(date);
-            final double tu          = (date.getTAITime() + utcMinusTai + dtu1) / 86400.0;
+            final double tu          = (date.durationFrom(ERA_REFERENCE) + utcMinusTai + dtu1) / 86400.0;
             era  = ERA_0 + ERA_1A * tu + ERA_1B * tu;
             era -= TWO_PI * Math.floor((era + Math.PI) / TWO_PI);
 

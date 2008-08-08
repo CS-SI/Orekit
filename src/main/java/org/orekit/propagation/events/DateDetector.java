@@ -62,7 +62,7 @@ public class DateDetector extends AbstractDetector {
 
     /** {@inheritDoc} */
     public double g(final SpacecraftState s) throws OrekitException {
-        return s.getDate().minus(target);
+        return s.getDate().durationFrom(target);
     }
 
 }

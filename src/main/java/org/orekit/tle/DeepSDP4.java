@@ -192,7 +192,7 @@ class DeepSDP4 extends SDP4 {
 
         // Compute julian days since 1900
         final double daysSince1900 =
-            (tle.getDate().minus(AbsoluteDate.JULIAN_EPOCH) +
+            (tle.getDate().durationFrom(AbsoluteDate.JULIAN_EPOCH) +
              tle.getDate().timeScalesOffset(UTCScale.getInstance(), TTScale.getInstance())) / 86400.0 - 2415020;
 
 

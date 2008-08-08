@@ -21,8 +21,7 @@ import java.text.DecimalFormat;
 
 import org.orekit.errors.OrekitException;
 
-
-/** Class representing a date as year, month and day chunks.
+/** Class representing a date broken up as year, month and day components.
  * <p>This class uses the astronomical convention for calendars,
  * which is also the convention used by <code>java.util.Date</code>:
  * a year zero is present between years -1 and +1, and 10 days are
@@ -33,39 +32,39 @@ import org.orekit.errors.OrekitException;
  *   <li>from 1582-10-15: gregorian calendar</li>
  * </ul>
  * <p>Instances of this class are guaranteed to be immutable.</p>
- * @see ChunkedTime
- * @see ChunksPair
+ * @see TimeComponents
+ * @see DateTimeComponents
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
+public class DateComponents implements Serializable, Comparable<DateComponents> {
 
     /** Reference epoch for julian dates: -4712-01-01.
-     * <p>Both <code>java.util.Date</code> and {@link ChunkedDate} classes
+     * <p>Both <code>java.util.Date</code> and {@link DateComponents} classes
      * follow the astronomical conventions and consider a year 0 between
      * years -1 and +1, hence this reference date lies in year -4712 and not
      * in year -4713 as can be seen in other documents or programs that obey
      * a different convention (for example the <code>convcal</code> utility).</p>
      */
-    public static final ChunkedDate JULIAN_EPOCH;
+    public static final DateComponents JULIAN_EPOCH;
 
     /** Reference epoch for modified julian dates: 1858-11-17. */
-    public static final ChunkedDate MODIFIED_JULIAN_EPOCH;
+    public static final DateComponents MODIFIED_JULIAN_EPOCH;
 
     /** Reference epoch for 1950 dates: 1950-01-01. */
-    public static final ChunkedDate FIFTIES_EPOCH;
+    public static final DateComponents FIFTIES_EPOCH;
 
     /** Reference epoch for GPS weeks: 1980-01-06. */
-    public static final ChunkedDate GPS_EPOCH;
+    public static final DateComponents GPS_EPOCH;
 
     /** J2000.0 Reference epoch: 2000-01-01. */
-    public static final ChunkedDate J2000_EPOCH;
+    public static final DateComponents J2000_EPOCH;
 
     /** Java Reference epoch: 1970-01-01. */
-    public static final ChunkedDate JAVA_EPOCH;
+    public static final DateComponents JAVA_EPOCH;
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -5883209203090288224L;
+    private static final long serialVersionUID = -8135106344024686522L;
 
     /** Factory for proleptic julian calendar (up to 0000-12-31). */
     private static final YearFactory PROLEPTIC_JULIAN_FACTORY = new ProlepticJulianFactory();
@@ -94,12 +93,12 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
     static {
         // this static statement makes sure the reference epoch are initialized
         // once AFTER the various factories have been set up
-        JULIAN_EPOCH          = new ChunkedDate(-4712,  1,  1);
-        MODIFIED_JULIAN_EPOCH = new ChunkedDate(1858, 11, 17);
-        FIFTIES_EPOCH         = new ChunkedDate(1950, 1, 1);
-        GPS_EPOCH             = new ChunkedDate(1980, 1, 6);
-        J2000_EPOCH           = new ChunkedDate(2000, 1, 1);
-        JAVA_EPOCH            = new ChunkedDate(1970, 1, 1);
+        JULIAN_EPOCH          = new DateComponents(-4712,  1,  1);
+        MODIFIED_JULIAN_EPOCH = new DateComponents(1858, 11, 17);
+        FIFTIES_EPOCH         = new DateComponents(1950, 1, 1);
+        GPS_EPOCH             = new DateComponents(1980, 1, 6);
+        J2000_EPOCH           = new DateComponents(2000, 1, 1);
+        JAVA_EPOCH            = new DateComponents(1970, 1, 1);
     }
 
     /** Year number. */
@@ -111,7 +110,7 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
     /** Day number. */
     private final int day;
 
-    /** Build a date from its calendar elements.
+    /** Build a date from its components.
      * @param year year number (may be 0 or negative for BC years)
      * @param month month number from 1 to 12
      * @param day day number from 1 to 31
@@ -119,7 +118,7 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
      * are given (parameters out of range, february 29 for non-leap years,
      * dates during the gregorian leap in 1582 ...)
      */
-    public ChunkedDate(final int year, final int month, final int day)
+    public DateComponents(final int year, final int month, final int day)
         throws IllegalArgumentException {
 
         // very rough range check
@@ -137,10 +136,10 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
         this.day   = day;
 
         // build a check date from the J2000 day
-        final ChunkedDate check = new ChunkedDate(getJ2000Day());
+        final DateComponents check = new DateComponents(getJ2000Day());
 
         // check the parameters for mismatch
-        // (i.e. invalid date chunks, like 29 february on non-leap years)
+        // (i.e. invalid date components, like 29 february on non-leap years)
         if ((year != check.year) || (month != check.month) || (day != check.day)) {
             throw OrekitException.createIllegalArgumentException("non-existent date {0}-{1}-{2}",
                                                                  new Object[] {
@@ -158,9 +157,9 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
      * @exception IllegalArgumentException if dayNumber is out of range
      * with respect to year
      */
-    public ChunkedDate(final int year, final int dayNumber)
+    public DateComponents(final int year, final int dayNumber)
         throws IllegalArgumentException {
-        this(J2000_EPOCH, new ChunkedDate(year - 1, 12, 31).getJ2000Day() + dayNumber);
+        this(J2000_EPOCH, new DateComponents(year - 1, 12, 31).getJ2000Day() + dayNumber);
         if (dayNumber != getDayOfYear()) {
             throw OrekitException.createIllegalArgumentException("no day number {0} in year {1}",
                                                                  new Object[] {
@@ -174,7 +173,7 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
      * @param offset offset with respect to a {@link #J2000_EPOCH}
      * @see #getJ2000Day()
      */
-    public ChunkedDate(final int offset) {
+    public DateComponents(final int offset) {
 
         // we follow the astronomical convention for calendars:
         // we consider a year zero and 10 days are missing in 1582
@@ -205,10 +204,10 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
      * julian day (using {@link #MODIFIED_JULIAN_EPOCH}).</p>
      * @param epoch reference epoch
      * @param offset offset with respect to a reference epoch
-     * @see #ChunkedDate(int)
+     * @see #DateComponents(int)
      * @see #getMJD()
      */
-    public ChunkedDate(final ChunkedDate epoch, final int offset) {
+    public DateComponents(final DateComponents epoch, final int offset) {
         this(epoch.getJ2000Day() + offset);
     }
 
@@ -273,7 +272,7 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
      * @return day number in year
      */
     public int getDayOfYear() {
-        return getJ2000Day() - new ChunkedDate(year - 1, 12, 31).getJ2000Day();
+        return getJ2000Day() - new DateComponents(year - 1, 12, 31).getJ2000Day();
     }
 
     /** Get a string representation (ISO-8601) of the date.
@@ -288,7 +287,7 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
     }
 
     /** {@inheritDoc} */
-    public int compareTo(final ChunkedDate other) {
+    public int compareTo(final DateComponents other) {
         final int j2000Day = getJ2000Day();
         final int otherJ2000Day = other.getJ2000Day();
         if (j2000Day < otherJ2000Day) {
@@ -302,7 +301,7 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
     /** {@inheritDoc} */
     public boolean equals(final Object other) {
         try {
-            final ChunkedDate otherDate = (ChunkedDate) other;
+            final DateComponents otherDate = (DateComponents) other;
             return (otherDate != null) && (year == otherDate.year) &&
                    (month == otherDate.month) && (day == otherDate.day);
         } catch (ClassCastException cce) {
@@ -312,7 +311,7 @@ public class ChunkedDate implements Serializable, Comparable<ChunkedDate> {
 
     /** {@inheritDoc} */
     public int hashCode() {
-        return (year << 16) | (month << 8) | day;
+        return (year << 16) ^ (month << 8) ^ day;
     }
 
     /** Interface for dealing with years sequences according to some calendar. */

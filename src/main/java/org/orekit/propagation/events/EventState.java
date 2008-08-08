@@ -131,7 +131,7 @@ class EventState implements Serializable {
         try {
 
             final AbsoluteDate t1 = interpolator.getCurrentDate();
-            final double dt = t1.minus(t0);
+            final double dt = t1.durationFrom(t0);
             final int    n  = Math.max(1, (int) Math.ceil(Math.abs(dt) / detector.getMaxCheckInterval()));
             final double h  = dt / n;
 
@@ -167,11 +167,11 @@ class EventState implements Serializable {
                     });
                     solver.setAbsoluteAccuracy(detector.getThreshold());
                     solver.setMaximalIterationCount(detector.getMaxIterationCount());
-                    final AbsoluteDate root = new AbsoluteDate(t0, solver.solve(ta.minus(t0), tb.minus(t0)));
+                    final AbsoluteDate root = new AbsoluteDate(t0, solver.solve(ta.durationFrom(t0), tb.durationFrom(t0)));
                     if ((previousEventTime == null) ||
-                        (Math.abs(previousEventTime.minus(root)) > detector.getThreshold())) {
+                        (Math.abs(previousEventTime.durationFrom(root)) > detector.getThreshold())) {
                         pendingEventTime = root;
-                        if (pendingEvent && (Math.abs(t1.minus(pendingEventTime)) <= detector.getThreshold())) {
+                        if (pendingEvent && (Math.abs(t1.durationFrom(pendingEventTime)) <= detector.getThreshold())) {
                             // we were already waiting for this event which was
                             // found during a previous call for a step that was
                             // rejected, this step must now be accepted since it

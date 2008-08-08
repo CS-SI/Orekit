@@ -135,7 +135,7 @@ public class AdaptedStepHandler
     public void setInterpolatedDate(final AbsoluteDate date)
         throws PropagationException {
         try {
-            rawInterpolator.setInterpolatedTime(date.minus(initializedReference));
+            rawInterpolator.setInterpolatedTime(date.durationFrom(initializedReference));
         } catch (DerivativeException de) {
             throw new PropagationException(de.getMessage(), de);
         }

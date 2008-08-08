@@ -46,8 +46,8 @@ import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChunkedDate;
-import org.orekit.time.ChunkedTime;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
@@ -66,8 +66,8 @@ public class DrozinerAttractionModelTest extends TestCase {
     OrekitException, DerivativeException, IntegratorException {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 07, 01),
-                                             new ChunkedTime(13, 59, 27.816),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+                                             new TimeComponents(13, 59, 27.816),
                                              UTCScale.getInstance());
         Transform itrfToJ2000  = ITRF2005.getTransformTo(Frame.getJ2000(), date);
         Vector3D pole          = itrfToJ2000.transformVector(Vector3D.PLUS_K);
@@ -213,8 +213,8 @@ public class DrozinerAttractionModelTest extends TestCase {
     public void testTesserealWithCunninghamReference()
     throws OrekitException, IOException, DerivativeException, IntegratorException, ParseException {
         //  initialization
-        AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 07, 01),
-                                             new ChunkedTime(13, 59, 27.816),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+                                             new TimeComponents(13, 59, 27.816),
                                              UTCScale.getInstance());
         double i     = Math.toRadians(98.7);
         double omega = Math.toRadians(93.0);

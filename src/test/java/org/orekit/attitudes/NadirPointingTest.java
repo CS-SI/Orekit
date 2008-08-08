@@ -32,8 +32,8 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChunkedDate;
-import org.orekit.time.ChunkedTime;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
@@ -234,8 +234,8 @@ public class NadirPointingTest extends TestCase {
     public void setUp() {
         try {
             // Computation date
-            date = new AbsoluteDate(new ChunkedDate(2008, 04, 07),
-                                    ChunkedTime.H00,
+            date = new AbsoluteDate(new DateComponents(2008, 04, 07),
+                                    TimeComponents.H00,
                                     UTCScale.getInstance());
 
             // Body mu

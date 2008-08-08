@@ -30,8 +30,8 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChunkedDate;
-import org.orekit.time.ChunkedTime;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 
 
@@ -72,7 +72,7 @@ public class InertialAttitudeTest extends TestCase {
 
     public void setUp() {
         try {
-        t0 = new AbsoluteDate(new ChunkedDate(2008, 06, 03), ChunkedTime.H12,
+        t0 = new AbsoluteDate(new DateComponents(2008, 06, 03), TimeComponents.H12,
                               UTCScale.getInstance());
         orbit0 =
             new KeplerianOrbit(12345678.9, 0.001, 2.3, 0.1, 3.04, 2.4,

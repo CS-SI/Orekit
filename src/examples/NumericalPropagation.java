@@ -31,8 +31,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChunkedDate;
-import org.orekit.time.ChunkedTime;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 
 
@@ -68,8 +68,8 @@ public class NumericalPropagation {
 
         // date and frame
 
-        AbsoluteDate initialDate = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
-                                                    new ChunkedTime(23, 30, 00.000),
+        AbsoluteDate initialDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                                    new TimeComponents(23, 30, 00.000),
                                                     UTCScale.getInstance());
 
         Frame inertialFrame = Frame.getJ2000();
@@ -139,8 +139,8 @@ public class NumericalPropagation {
 
         // date and frame
 
-        AbsoluteDate initialDate = new AbsoluteDate(new ChunkedDate(2004, 01, 01),
-                                                    new ChunkedTime(23, 30, 00.000),
+        AbsoluteDate initialDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                                    new TimeComponents(23, 30, 00.000),
                                                     UTCScale.getInstance());
 
         Frame inertialFrame = Frame.getJ2000();

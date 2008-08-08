@@ -116,7 +116,7 @@ abstract class SDP4  extends TLEPropagator {
 
         // Reference:  The 1992 Astronomical Almanac, page B6.
         final double omega_E = 1.00273790934;
-        final double jd = (date.minus(AbsoluteDate.JULIAN_EPOCH) +
+        final double jd = (date.durationFrom(AbsoluteDate.JULIAN_EPOCH) +
                            date.timeScalesOffset(UTCScale.getInstance(), TTScale.getInstance())
                           ) / 86400;
 

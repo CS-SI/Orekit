@@ -77,7 +77,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
         SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
 
-        assertEquals(finalOrbit.getDate().minus(extrapDate), 0.0, Utils.epsilonTest);
+        assertEquals(finalOrbit.getDate().durationFrom(extrapDate), 0.0, Utils.epsilonTest);
         assertEquals(finalOrbit.getA(), initialOrbit.getA(), Utils.epsilonTest
                      * initialOrbit.getA());
         assertEquals(finalOrbit.getEquinoctialEx(), initialOrbit.getEquinoctialEx(), Utils.epsilonE
@@ -121,7 +121,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
         SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
 
-        assertEquals(finalOrbit.getDate().minus(extrapDate), 0.0, Utils.epsilonTest);
+        assertEquals(finalOrbit.getDate().durationFrom(extrapDate), 0.0, Utils.epsilonTest);
         assertEquals(finalOrbit.getA(), initialOrbit.getA(), Utils.epsilonTest
                      * initialOrbit.getA());
         assertEquals(finalOrbit.getEquinoctialEx(), initialOrbit.getEquinoctialEx(), Utils.epsilonE
@@ -185,7 +185,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         SpacecraftState finalOrbitAna = extrapolatorAna.propagate(extrapDate);
         SpacecraftState finalOrbitKep = extrapolatorKep.propagate(extrapDate);
 
-        assertEquals(finalOrbitAna.getDate().minus(extrapDate), 0.0,
+        assertEquals(finalOrbitAna.getDate().durationFrom(extrapDate), 0.0,
                      Utils.epsilonTest);
         // comparison of each orbital parameters
         assertEquals(finalOrbitAna.getA(), finalOrbitKep.getA(), 10
@@ -236,7 +236,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
         SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
 
-        assertEquals(finalOrbit.getDate().minus(extrapDate), 0.0, Utils.epsilonTest);
+        assertEquals(finalOrbit.getDate().durationFrom(extrapDate), 0.0, Utils.epsilonTest);
 
         // computation of M final orbit
         double LM = finalOrbit.getLE() - finalOrbit.getEquinoctialEx()
@@ -315,7 +315,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
 
         SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
 
-        assertEquals(finalOrbit.getDate().minus(extrapDate), 0.0, Utils.epsilonTest);
+        assertEquals(finalOrbit.getDate().durationFrom(extrapDate), 0.0, Utils.epsilonTest);
 
         // computation of M final orbit
         double LM = finalOrbit.getLE() - finalOrbit.getEquinoctialEx()
@@ -422,7 +422,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         pom = Math.atan2(eyp, exp);
         ex = e * Math.cos(pom + gom);
         ey = e * Math.sin(pom + gom);
-        assertEquals(finalOrbit.getDate().minus(extrapDate), 0.0, Utils.epsilonTest);
+        assertEquals(finalOrbit.getDate().durationFrom(extrapDate), 0.0, Utils.epsilonTest);
         assertEquals(finalOrbit.getA(), a, 10. * Utils.epsilonTest * finalOrbit.getA());
         assertEquals(finalOrbit.getEquinoctialEx(), ex, Utils.epsilonE * finalOrbit.getE());
         assertEquals(finalOrbit.getEquinoctialEy(), ey, Utils.epsilonE * finalOrbit.getE());
@@ -544,8 +544,8 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         PVCoordinates pv = propagated.getPVCoordinates(Frame.getITRF2005C());
-        assertTrue(farTarget.minus(propagated.getDate()) > 3500.0);
-        assertTrue(farTarget.minus(propagated.getDate()) < 4000.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()) > 3500.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()) < 4000.0);
         assertEquals(0, pv.getPosition().getZ(), 1.0e-6);
         assertTrue(pv.getVelocity().getZ() > 0);
     }
@@ -560,8 +560,8 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         PVCoordinates pv = propagated.getPVCoordinates(Frame.getITRF2005C());
-        assertTrue(farTarget.minus(propagated.getDate()) > 3000.0);
-        assertTrue(farTarget.minus(propagated.getDate()) < 3500.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()) > 3000.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()) < 3500.0);
         assertEquals(orbit.getA() * (1.0 - orbit.getE()), pv.getPosition().getNorm(), 400);
     }
 
@@ -575,7 +575,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         propagator.addEventDetector(new DateDetector(stopDate));
         AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        assertEquals(0, stopDate.minus(propagated.getDate()), 1.0e-10);
+        assertEquals(0, stopDate.durationFrom(propagated.getDate()), 1.0e-10);
     }
 
     public void testFixedStep() throws OrekitException {
@@ -591,7 +591,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
             public void handleStep(SpacecraftState currentState, boolean isLast)
             throws PropagationException {
                 if (previous != null) {
-                    assertEquals(step, currentState.getDate().minus(previous), 1.0e-10);
+                    assertEquals(step, currentState.getDate().durationFrom(previous), 1.0e-10);
                 }
                 previous = currentState.getDate();
             }
@@ -617,8 +617,8 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
                                                    propagated.getFrame(),
                                                    propagated.getDate());
         final double zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ();
-        assertTrue(farTarget.minus(propagated.getDate()) > 7800.0);
-        assertTrue(farTarget.minus(propagated.getDate()) < 7900.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()) > 7800.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()) < 7900.0);
         assertEquals(0.09, elevation, 1.0e-11);
         assertTrue(zVelocity < 0);
     }

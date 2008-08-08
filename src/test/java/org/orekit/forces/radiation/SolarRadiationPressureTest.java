@@ -42,8 +42,8 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChunkedDate;
-import org.orekit.time.ChunkedTime;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 
 
@@ -51,8 +51,8 @@ public class SolarRadiationPressureTest extends TestCase {
 
     public void testLightning() throws OrekitException, ParseException, DerivativeException, IntegratorException{
         // Initialization
-        AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 3, 21),
-                                             new ChunkedTime(13, 59, 27.816),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 3, 21),
+                                             new TimeComponents(13, 59, 27.816),
                                              UTCScale.getInstance());
         Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
                                            Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
@@ -98,8 +98,8 @@ public class SolarRadiationPressureTest extends TestCase {
     public void testRoughOrbitalModifs() throws ParseException, OrekitException, DerivativeException, IntegratorException, FileNotFoundException {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2000, 7, 1),
-                                             new ChunkedTime(13, 59, 27.816),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 7, 1),
+                                             new TimeComponents(13, 59, 27.816),
                                              UTCScale.getInstance());
         Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
                                                          Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),

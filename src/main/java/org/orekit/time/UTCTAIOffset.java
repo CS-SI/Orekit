@@ -24,7 +24,7 @@ import java.io.Serializable;
  * continuous whether the {@link UTCScale UTC} includes some discontinuity when
  * leap seconds are introduced by the <a href="http://www.iers.org/">International
  * Earth Rotation Service</a> (IERS).</p>
- * <p>This class represent the constant offset between the two scales that is
+ * <p>This class represents the constant offset between the two scales that is
  * valid between two leap seconds occurrences./p>
  * @author Luc Maisonobe
  * @see UTCScale

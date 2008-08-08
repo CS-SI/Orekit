@@ -26,8 +26,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChunkedDate;
-import org.orekit.time.ChunkedTime;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 import org.orekit.utils.Line;
 import org.orekit.utils.PVCoordinates;
@@ -168,8 +168,8 @@ public class OneAxisEllipsoidTest extends TestCase {
     }
 
     public void testIntersectionFromPoints() throws OrekitException {
-        AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2008, 03, 21),
-                                             ChunkedTime.H12,
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 03, 21),
+                                             TimeComponents.H12,
                                              UTCScale.getInstance());
         
         Frame frame = Frame.getITRF2005C();

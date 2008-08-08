@@ -116,7 +116,7 @@ public class NumericalPropagatorTest extends TestCase {
         assertFalse(gotHere);
         final SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initDate, 3200));
         assertTrue(gotHere);
-        assertEquals(0, finalState.getDate().minus(stopDate), 1.0e-10);
+        assertEquals(0, finalState.getDate().durationFrom(stopDate), 1.0e-10);
     }
 
     public void testResetStateEvent() throws OrekitException {

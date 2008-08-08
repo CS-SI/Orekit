@@ -66,7 +66,7 @@ public class Sun extends ThirdBody {
     public Vector3D getPosition(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
-        final double t = date.minus(REFERENCE_DATE) / 86400.0;
+        final double t = date.durationFrom(REFERENCE_DATE) / 86400.0;
         final double f = Math.toRadians(225.768 + 13.2293505 * t);
         final double d = Math.toRadians(11.786 + 12.190749 * t);
         final double xlp = Math.toRadians(134.003 + 0.9856 * t);
@@ -74,7 +74,7 @@ public class Sun extends ThirdBody {
         final double e = Math.toRadians(23.44223 - 3.5626E-07 * t);
         final double ce = Math.cos(e);
         final double se = Math.sin(e);
-        final double rot = 0.6119022e-6 * date.minus(AbsoluteDate.FIFTIES_EPOCH) / 86400.0;
+        final double rot = 0.6119022e-6 * date.durationFrom(AbsoluteDate.FIFTIES_EPOCH) / 86400.0;
         final double cr = Math.cos(rot);
         final double sr = Math.sin(rot);
 

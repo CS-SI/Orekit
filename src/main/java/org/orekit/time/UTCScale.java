@@ -43,6 +43,10 @@ public class UTCScale implements TimeScale {
     /** Serializable UID. */
     private static final long serialVersionUID = -920132549431081663L;
 
+    /** Reference TAI date. */
+    private static final AbsoluteDate TAI_REFERENCE =
+        new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TAIScale.getInstance());
+
     /** Time steps. */
     private UTCTAIOffset[] offsets;
 
@@ -61,7 +65,7 @@ public class UTCScale implements TimeScale {
     private synchronized void setTimeSteps() throws OrekitException {
 
         // gather all entries, both predefined and user supplied
-        final SortedMap<ChunkedDate, Integer> entries = createPredefinedEntries();
+        final SortedMap<DateComponents, Integer> entries = createPredefinedEntries();
         entries.putAll(new UTCTAIHistoryFilesLoader().loadTimeSteps());
         offsets = new UTCTAIOffset[entries.size() + 1];
         current = 0;
@@ -71,7 +75,7 @@ public class UTCScale implements TimeScale {
         offsets[current++] = last;
 
         // add leap second entries in chronological order
-        for (Map.Entry<ChunkedDate, Integer> entry : entries.entrySet()) {
+        for (Map.Entry<DateComponents, Integer> entry : entries.entrySet()) {
             final double offset            = entry.getValue().doubleValue();
             final double leap              = offset - last.getOffset();
             final AbsoluteDate taiDayStart = new AbsoluteDate(entry.getKey(), TAIScale.getInstance());
@@ -92,33 +96,34 @@ public class UTCScale implements TimeScale {
      * @return predefined entries
      * (contains at least all leaps between 1972-01-01 and 2009-01-01)
      */
-    private SortedMap<ChunkedDate, Integer> createPredefinedEntries() {
-        final SortedMap<ChunkedDate, Integer> entries = new TreeMap<ChunkedDate, Integer>();
-        entries.put(new ChunkedDate(1972, 1, 1), 10);
-        entries.put(new ChunkedDate(1972, 7, 1), 11);
-        entries.put(new ChunkedDate(1973, 1, 1), 12);
-        entries.put(new ChunkedDate(1974, 1, 1), 13);
-        entries.put(new ChunkedDate(1975, 1, 1), 14);
-        entries.put(new ChunkedDate(1976, 1, 1), 15);
-        entries.put(new ChunkedDate(1977, 1, 1), 16);
-        entries.put(new ChunkedDate(1978, 1, 1), 17);
-        entries.put(new ChunkedDate(1979, 1, 1), 18);
-        entries.put(new ChunkedDate(1980, 1, 1), 19);
-        entries.put(new ChunkedDate(1981, 7, 1), 20);
-        entries.put(new ChunkedDate(1982, 7, 1), 21);
-        entries.put(new ChunkedDate(1983, 7, 1), 22);
-        entries.put(new ChunkedDate(1985, 7, 1), 23);
-        entries.put(new ChunkedDate(1988, 1, 1), 24);
-        entries.put(new ChunkedDate(1990, 1, 1), 25);
-        entries.put(new ChunkedDate(1991, 1, 1), 26);
-        entries.put(new ChunkedDate(1992, 7, 1), 27);
-        entries.put(new ChunkedDate(1993, 7, 1), 28);
-        entries.put(new ChunkedDate(1994, 7, 1), 29);
-        entries.put(new ChunkedDate(1996, 1, 1), 30);
-        entries.put(new ChunkedDate(1997, 7, 1), 31);
-        entries.put(new ChunkedDate(1999, 1, 1), 32);
-        entries.put(new ChunkedDate(2006, 1, 1), 33);
-        entries.put(new ChunkedDate(2009, 1, 1), 34);
+    private SortedMap<DateComponents, Integer> createPredefinedEntries() {
+        final SortedMap<DateComponents, Integer> entries =
+            new TreeMap<DateComponents, Integer>();
+        entries.put(new DateComponents(1972, 1, 1), 10);
+        entries.put(new DateComponents(1972, 7, 1), 11);
+        entries.put(new DateComponents(1973, 1, 1), 12);
+        entries.put(new DateComponents(1974, 1, 1), 13);
+        entries.put(new DateComponents(1975, 1, 1), 14);
+        entries.put(new DateComponents(1976, 1, 1), 15);
+        entries.put(new DateComponents(1977, 1, 1), 16);
+        entries.put(new DateComponents(1978, 1, 1), 17);
+        entries.put(new DateComponents(1979, 1, 1), 18);
+        entries.put(new DateComponents(1980, 1, 1), 19);
+        entries.put(new DateComponents(1981, 7, 1), 20);
+        entries.put(new DateComponents(1982, 7, 1), 21);
+        entries.put(new DateComponents(1983, 7, 1), 22);
+        entries.put(new DateComponents(1985, 7, 1), 23);
+        entries.put(new DateComponents(1988, 1, 1), 24);
+        entries.put(new DateComponents(1990, 1, 1), 25);
+        entries.put(new DateComponents(1991, 1, 1), 26);
+        entries.put(new DateComponents(1992, 7, 1), 27);
+        entries.put(new DateComponents(1993, 7, 1), 28);
+        entries.put(new DateComponents(1994, 7, 1), 29);
+        entries.put(new DateComponents(1996, 1, 1), 30);
+        entries.put(new DateComponents(1997, 7, 1), 31);
+        entries.put(new DateComponents(1999, 1, 1), 32);
+        entries.put(new DateComponents(2006, 1, 1), 33);
+        entries.put(new DateComponents(2009, 1, 1), 34);
         return entries;
     }
 
@@ -135,13 +140,14 @@ public class UTCScale implements TimeScale {
 
     /** {@inheritDoc} */
     public synchronized double offsetFromTAI(final AbsoluteDate date) {
-        setCurrentFromTAI(date);
+        setCurrent(date);
         return -offsets[current].getOffset();
     }
 
     /** {@inheritDoc} */
-    public synchronized double offsetToTAI(final ChunkedDate date, final ChunkedTime time) {
-        setCurrentFromUTC(date.getJ2000Day() * 86400.0 + time.getSecondsInDay() - 43200);
+    public synchronized double offsetToTAI(final DateComponents date,
+                                           final TimeComponents time) {
+        setCurrent(date.getJ2000Day() * 86400.0 + time.getSecondsInDay() - 43200);
         return offsets[current].getOffset();
     }
 
@@ -174,7 +180,7 @@ public class UTCScale implements TimeScale {
      * @return true if time is within a leap second introduction
      */
     public synchronized boolean insideLeap(final AbsoluteDate date) {
-        setCurrentFromTAI(date);
+        setCurrent(date);
         return date.compareTo(offsets[current].getValidityStart()) < 0;
     }
 
@@ -183,14 +189,14 @@ public class UTCScale implements TimeScale {
      * @return value of the previous leap
      */
     public synchronized double getLeap(final AbsoluteDate date) {
-        setCurrentFromTAI(date);
+        setCurrent(date);
         return offsets[current].getLeap();
     }
 
     /** Set the current index.
      * @param date current date
      */
-    public synchronized void setCurrentFromTAI(final AbsoluteDate date) {
+    private synchronized void setCurrent(final AbsoluteDate date) {
         while (date.compareTo(offsets[current].getValidityStart()) < 0) {
             --current;
         }
@@ -203,12 +209,12 @@ public class UTCScale implements TimeScale {
      * @param utcTime location of an event in the utc time scale
      * as a seconds index starting at 2000-01-01T12:00:00
      */
-    public synchronized void setCurrentFromUTC(final double utcTime) {
-        while (offsets[current].getValidityStart().getTAITime() >
+    private synchronized void setCurrent(final double utcTime) {
+        while (offsets[current].getValidityStart().durationFrom(TAI_REFERENCE) >
                (utcTime + offsets[current].getOffset())) {
             --current;
         }
-        while (offsets[current].getValidityEnd().getTAITime() <=
+        while (offsets[current].getValidityEnd().durationFrom(TAI_REFERENCE) <=
                (utcTime + offsets[current].getOffset())) {
             ++current;
         }

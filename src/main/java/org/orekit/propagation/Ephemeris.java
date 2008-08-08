@@ -90,8 +90,8 @@ public class Ephemeris implements BoundedPropagator {
         // Check if date is in the specified range
         if (enclosinbracketDate(date)) {
 
-            final double tp = date.minus(previous.getDate());
-            final double tn = next.getDate().minus(date);
+            final double tp = date.durationFrom(previous.getDate());
+            final double tn = next.getDate().durationFrom(date);
             if (tp == 0 && tn == 0) {
                 return previous;
             }
@@ -176,11 +176,11 @@ public class Ephemeris implements BoundedPropagator {
      */
     private boolean enclosinbracketDate(final AbsoluteDate date) {
 
-        if (date.minus(getMinDate()) < 0 || date.minus(getMaxDate()) > 0) {
+        if (date.durationFrom(getMinDate()) < 0 || date.durationFrom(getMaxDate()) > 0) {
             return false;
         }
 
-        if (date.minus(getMinDate()) == 0) {
+        if (date.durationFrom(getMinDate()) == 0) {
             previous = (SpacecraftState) data.first();
             final Iterator<TimeStamped> i = data.iterator();
             i.next();
@@ -189,8 +189,8 @@ public class Ephemeris implements BoundedPropagator {
         }
 
         // don't search if the cached selection is fine
-        if ((previous != null) && (date.minus(previous.getDate()) >= 0) &&
-            (next != null) && (date.minus(next.getDate()) < 0)) {
+        if ((previous != null) && (date.durationFrom(previous.getDate()) >= 0) &&
+            (next != null) && (date.durationFrom(next.getDate()) < 0)) {
             // the current selection is already good
             return true;
         }

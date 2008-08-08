@@ -46,7 +46,7 @@ public class GPSScale implements TimeScale {
     }
 
     /** {@inheritDoc} */
-    public double offsetToTAI(final ChunkedDate date, final ChunkedTime time) {
+    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
         return 19;
     }
 

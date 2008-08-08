@@ -75,7 +75,7 @@ class ITRF2005Frame extends Frame {
         if ((cachedDate == null) || !cachedDate.equals(date)) {
 
             // offset from J2000 epoch in julian centuries
-            final double tts = date.minus(AbsoluteDate.J2000_EPOCH);
+            final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
             final double ttc =  tts * JULIAN_CENTURY_PER_SECOND;
 
             // get the current IERS pole correction parameters

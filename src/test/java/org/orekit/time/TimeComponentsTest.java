@@ -16,14 +16,14 @@
  */
 package org.orekit.time;
 
-import org.orekit.time.ChunkedTime;
+import org.orekit.time.TimeComponents;
 
 import junit.framework.*;
 
-public class ChunkedTimeTest
+public class TimeComponentsTest
 extends TestCase {
 
-    public ChunkedTimeTest(String name) {
+    public TimeComponentsTest(String name) {
         super(name);
     }
 
@@ -47,29 +47,29 @@ extends TestCase {
     }
 
     public void testValues() {
-        assertEquals(    0.0, new ChunkedTime( 0, 0, 0).getSecondsInDay(), 1.0e-10);
-        assertEquals(21600.0, new ChunkedTime( 6, 0, 0).getSecondsInDay(), 1.0e-10);
-        assertEquals(43200.0, new ChunkedTime(12, 0, 0).getSecondsInDay(), 1.0e-10);
-        assertEquals(64800.0, new ChunkedTime(18, 0, 0).getSecondsInDay(), 1.0e-10);
-        assertEquals(86399.9, new ChunkedTime(23, 59, 59.9).getSecondsInDay(), 1.0e-10);
+        assertEquals(    0.0, new TimeComponents( 0, 0, 0).getSecondsInDay(), 1.0e-10);
+        assertEquals(21600.0, new TimeComponents( 6, 0, 0).getSecondsInDay(), 1.0e-10);
+        assertEquals(43200.0, new TimeComponents(12, 0, 0).getSecondsInDay(), 1.0e-10);
+        assertEquals(64800.0, new TimeComponents(18, 0, 0).getSecondsInDay(), 1.0e-10);
+        assertEquals(86399.9, new TimeComponents(23, 59, 59.9).getSecondsInDay(), 1.0e-10);
     }
 
     public void testString() {
-        assertEquals("00:00:00.000", new ChunkedTime(0).toString());
-        assertEquals("06:00:00.000", new ChunkedTime(21600).toString());
-        assertEquals("12:00:00.000", new ChunkedTime(43200).toString());
-        assertEquals("18:00:00.000", new ChunkedTime(64800).toString());
-        assertEquals("23:59:59.900", new ChunkedTime(86399.9).toString());
+        assertEquals("00:00:00.000", new TimeComponents(0).toString());
+        assertEquals("06:00:00.000", new TimeComponents(21600).toString());
+        assertEquals("12:00:00.000", new TimeComponents(43200).toString());
+        assertEquals("18:00:00.000", new TimeComponents(64800).toString());
+        assertEquals("23:59:59.900", new TimeComponents(86399.9).toString());
     }
 
     public void testComparisons() {
-        ChunkedTime[] times = {
-                 new ChunkedTime( 0,  0,  0.0),
-                 new ChunkedTime( 0,  0,  1.0e-15),
-                 new ChunkedTime( 0, 12,  3.0),
-                 new ChunkedTime(15,  9,  3.0),
-                 new ChunkedTime(23, 59, 59.0),
-                 new ChunkedTime(23, 59, 60.0 - 1.0e-12)
+        TimeComponents[] times = {
+                 new TimeComponents( 0,  0,  0.0),
+                 new TimeComponents( 0,  0,  1.0e-15),
+                 new TimeComponents( 0, 12,  3.0),
+                 new TimeComponents(15,  9,  3.0),
+                 new TimeComponents(23, 59, 59.0),
+                 new TimeComponents(23, 59, 60.0 - 1.0e-12)
         };
         for (int i = 0; i < times.length; ++i) {
             for (int j = 0; j < times.length; ++j) {
@@ -100,7 +100,7 @@ extends TestCase {
     private void checkConstructorCompletion(int hour, int minute, double second,
                                             boolean expectedCompletion) {
         try {
-            ChunkedTime time = new ChunkedTime(hour, minute, second);
+            TimeComponents time = new TimeComponents(hour, minute, second);
             assertEquals(hour,   time.getHour());
             assertEquals(minute, time.getMinute());
             assertEquals(second, time.getSecond(), 1.0e-10);
@@ -115,7 +115,7 @@ extends TestCase {
     private void checkConstructorCompletion(double seconds,
                                             boolean expectedCompletion) {
         try {
-            ChunkedTime time = new ChunkedTime(seconds);
+            TimeComponents time = new TimeComponents(seconds);
             assertEquals(seconds, time.getSecondsInDay(), 1.0e-10);
             assertTrue(expectedCompletion);
         } catch (IllegalArgumentException iae) {
@@ -126,7 +126,7 @@ extends TestCase {
     }
 
     public static Test suite() {
-        return new TestSuite(ChunkedTimeTest.class);
+        return new TestSuite(TimeComponentsTest.class);
     }
 
 }

@@ -391,7 +391,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
         throws PropagationException {
 
         // keplerian evolution
-        final double xnot = date.minus(mean.getDate()) * Math.sqrt(mu / mean.getA()) / mean.getA();
+        final double xnot = date.durationFrom(mean.getDate()) * Math.sqrt(mu / mean.getA()) / mean.getA();
 
         // secular effects
 

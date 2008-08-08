@@ -34,8 +34,8 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChunkedDate;
-import org.orekit.time.ChunkedTime;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 import org.orekit.utils.Line;
 import org.orekit.utils.PVCoordinates;
@@ -217,8 +217,8 @@ public class TargetPointingTest extends TestCase {
     public void testTargetInPointingDirection() throws OrekitException {
 
         // Create computation date 
-        AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2008, 04, 07),
-                                             ChunkedTime.H00,
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 04, 07),
+                                             TimeComponents.H00,
                                              UTCScale.getInstance());
         
         // Reference frame = ITRF 2005C
@@ -321,8 +321,8 @@ public class TargetPointingTest extends TestCase {
     public void setUp() {
         try {
             // Computation date
-            date = new AbsoluteDate(new ChunkedDate(2008, 04, 07),
-                                    ChunkedTime.H00,
+            date = new AbsoluteDate(new DateComponents(2008, 04, 07),
+                                    TimeComponents.H00,
                                     UTCScale.getInstance());
 
             // Body mu

@@ -25,8 +25,8 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChunkedDate;
-import org.orekit.time.ChunkedTime;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.GPSScale;
 import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
@@ -36,8 +36,8 @@ public class ITRF2005FrameTest extends TestCase {
 
     public void testRoughRotation() throws OrekitException {
 
-        AbsoluteDate date1 = new AbsoluteDate(new ChunkedDate(2006, 02, 24),
-                                              new ChunkedTime(15, 38, 00),
+        AbsoluteDate date1 = new AbsoluteDate(new DateComponents(2006, 02, 24),
+                                              new TimeComponents(15, 38, 00),
                                               UTCScale.getInstance());
         Frame ITRF2005 = Frame.getITRF2005C();
         Transform t0 = ITRF2005.getTransformTo(Frame.getJ2000(), date1 );
@@ -58,8 +58,8 @@ public class ITRF2005FrameTest extends TestCase {
 
     public void testRoughOrientation() throws OrekitException {
 
-        AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2001, 03, 21),
-                                             ChunkedTime.H00,
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2001, 03, 21),
+                                             TimeComponents.H00,
                                              UTCScale.getInstance());
         Frame ITRF2005 = Frame.getITRF2005C();
 
@@ -82,8 +82,8 @@ public class ITRF2005FrameTest extends TestCase {
 
     public void testRoughERA() throws OrekitException {
 
-        AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2001, 03, 21),
-                                             ChunkedTime.H00,
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2001, 03, 21),
+                                             TimeComponents.H00,
                                              UTCScale.getInstance());
         TIRF2000Frame TIRF2000 = (TIRF2000Frame) Frame.getTIRF2000C();
 
@@ -102,8 +102,8 @@ public class ITRF2005FrameTest extends TestCase {
 
     public void testMSLIBTransformJ2OOO_TerVrai() throws OrekitException {
 
-        AbsoluteDate date = new AbsoluteDate(new ChunkedDate(2003, 10, 14),
-                                             new ChunkedTime(02, 00, 00),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 10, 14),
+                                             new TimeComponents(02, 00, 00),
                                              UTCScale.getInstance());
         Transform trans = Frame.getJ2000().getTransformTo(Frame.getTIRF2000C(), date);
 
@@ -118,8 +118,8 @@ public class ITRF2005FrameTest extends TestCase {
 
     public void testMSLIBTransformJ2000_TerRef() throws OrekitException {
 
-        AbsoluteDate t0 = new AbsoluteDate(new ChunkedDate(2003, 10, 14),
-                                           new ChunkedTime(02, 00, 00),
+        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2003, 10, 14),
+                                           new TimeComponents(02, 00, 00),
                                            UTCScale.getInstance());
         Frame itrf = Frame.getITRF2005C();
         Transform trans = Frame.getJ2000().getTransformTo(itrf, t0);
@@ -166,7 +166,7 @@ public class ITRF2005FrameTest extends TestCase {
     }
 
     public void testMontenbruck() throws OrekitException {
-        AbsoluteDate t0 = new AbsoluteDate(new ChunkedDate(1999, 3, 4), ChunkedTime.H00,
+        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(1999, 3, 4), TimeComponents.H00,
                                            GPSScale.getInstance());
         Transform trans = Frame.getITRF2005A().getTransformTo(Frame.getGCRF(), t0);
         PVCoordinates pvWGS =

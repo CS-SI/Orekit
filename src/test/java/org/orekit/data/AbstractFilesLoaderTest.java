@@ -39,7 +39,7 @@ public abstract class AbstractFilesLoaderTest extends TestCase {
         TimeStamped previous = null;
         for (final TimeStamped current : eop) {
             if (previous != null) {
-                maxGap = Math.max(maxGap, current.getDate().minus(previous.getDate()));
+                maxGap = Math.max(maxGap, current.getDate().durationFrom(previous.getDate()));
             }
             previous = current;
         }

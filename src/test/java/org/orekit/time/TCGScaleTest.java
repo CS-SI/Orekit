@@ -41,24 +41,24 @@ extends TestCase {
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
             double dt1 = scale.offsetFromTAI(date);
-            ChunksPair chunks = date.getChunks(scale);
-            double dt2 = scale.offsetToTAI(chunks.getDate(), chunks.getTime());
+            DateTimeComponents components = date.getComponents(scale);
+            double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
             assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }
 
     public void testReference() throws OrekitException {
-        ChunkedDate  referenceDate = new ChunkedDate(1977, 01, 01);
-        ChunkedTime  thirtyTwo     = new ChunkedTime(0, 0, 32.184);
+        DateComponents  referenceDate = new DateComponents(1977, 01, 01);
+        TimeComponents  thirtyTwo     = new TimeComponents(0, 0, 32.184);
         AbsoluteDate ttRef         = new AbsoluteDate(referenceDate, thirtyTwo, TTScale.getInstance());
         AbsoluteDate tcgRef        = new AbsoluteDate(referenceDate, thirtyTwo, TCGScale.getInstance());
-        AbsoluteDate taiRef        = new AbsoluteDate(referenceDate, ChunkedTime.H00, TAIScale.getInstance());
-        AbsoluteDate utcRef        = new AbsoluteDate(new ChunkedDate(1976, 12, 31),
-                                                      new ChunkedTime(23, 59, 45),
+        AbsoluteDate taiRef        = new AbsoluteDate(referenceDate, TimeComponents.H00, TAIScale.getInstance());
+        AbsoluteDate utcRef        = new AbsoluteDate(new DateComponents(1976, 12, 31),
+                                                      new TimeComponents(23, 59, 45),
                                                       UTCScale.getInstance());
-        assertEquals(0, ttRef.minus(tcgRef), 1.0e-15);
-        assertEquals(0, ttRef.minus(taiRef), 1.0e-15);
-        assertEquals(0, ttRef.minus(utcRef), 1.0e-15);
+        assertEquals(0, ttRef.durationFrom(tcgRef), 1.0e-15);
+        assertEquals(0, ttRef.durationFrom(taiRef), 1.0e-15);
+        assertEquals(0, ttRef.durationFrom(utcRef), 1.0e-15);
     }
 
     public static Test suite() {

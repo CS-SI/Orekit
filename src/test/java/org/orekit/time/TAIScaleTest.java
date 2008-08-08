@@ -30,8 +30,8 @@ extends TestCase {
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
             assertEquals(0, scale.offsetFromTAI(date), 0);
-            ChunksPair chunks = date.getChunks(scale);
-            assertEquals(0, scale.offsetToTAI(chunks.getDate(), chunks.getTime()), 0);
+            DateTimeComponents components = date.getComponents(scale);
+            assertEquals(0, scale.offsetToTAI(components.getDate(), components.getTime()), 0);
         }
     }
 

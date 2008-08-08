@@ -67,15 +67,27 @@
         types to more easily understandable ones.
       </action>
       <action dev="luc" type="add">
-        Improved user-friendliness of the AbsoluteDate class by adding a few constructors
-        and methods for common cases.
+        Improved user-friendliness of the AbsoluteDate class by adding several
+        new constructors and methods for common cases. It is in particular now possible
+        to use offsets within a time scale, for example to build a date given as a
+        fractional number of days since a reference date in UTC, explicitly ignoring
+        intermediate leap seconds.
       </action>
       <action dev="luc" type="add">
-        Improved the class handling dates: ChunkedDate. Changed a constructor
-        to allow building from any reference epoch, not only J200 (thus simplifying
-        used of modified julian day), added getMJD() method, added several constants
-        JULIAN_EPOCH, MODIFIED_JULIAN_EPOCH, FIFTIES_EPOCH, GPS_EPOCH, J2000_EPOCH
-        and JAVA_EPOCH.
+        Improved the class handling date/time components: added a constructor to allow building
+        from an offset with respect to a reference epoch, implemented Comparable interface and
+        added equals and hashCode methods.
+      </action>
+      <action dev="luc" type="add">
+        Improved the class handling date components: added a constructor to allow building
+        from any reference epoch, not only J2000 (thus simplifying use of modified julian day),
+        added getMJD() method, added several constants JULIAN_EPOCH, MODIFIED_JULIAN_EPOCH,
+        FIFTIES_EPOCH, GPS_EPOCH, J2000_EPOCH and JAVA_EPOCH.
+      </action>
+      <action dev="luc" type="update">
+        Renamed some classes for better understanding: ChunkedDate is now DateComponents,
+        ChunkedTime is now TimeComponents, ChunksPair is now DateTimeComponents. The
+        getChunks method from AbsoluteDate as also been renamed into getComponents accordingly.
       </action>
       <action dev="luc" type="add">
         Added a new time scale: GPSScale.

@@ -16,14 +16,14 @@
  */
 package org.orekit.time;
 
-import org.orekit.time.ChunkedDate;
+import org.orekit.time.DateComponents;
 
 import junit.framework.*;
 
-public class ChunkedDateTest
+public class DateComponentsTest
 extends TestCase {
 
-    public ChunkedDateTest(String name) {
+    public DateComponentsTest(String name) {
         super(name);
     }
 
@@ -46,7 +46,7 @@ extends TestCase {
 
         for (int i = 0; i < reference.length; ++i) {
             int day  = reference[i][3];
-            ChunkedDate date = new ChunkedDate(ChunkedDate.J2000_EPOCH, day);
+            DateComponents date = new DateComponents(DateComponents.J2000_EPOCH, day);
             assertEquals(reference[i][0], date.getYear());
             assertEquals(reference[i][1], date.getMonth());
             assertEquals(reference[i][2], date.getDay());
@@ -55,37 +55,37 @@ extends TestCase {
     }
 
     public void testDayOfWeek() {
-        assertEquals(7, new ChunkedDate(-4713, 12, 31).getDayOfWeek());
-        assertEquals(1, new ChunkedDate(-4712, 01, 01).getDayOfWeek());
-        assertEquals(4, new ChunkedDate( 1582, 10, 04).getDayOfWeek());
-        assertEquals(5, new ChunkedDate( 1582, 10, 15).getDayOfWeek());
-        assertEquals(5, new ChunkedDate( 1999, 12, 31).getDayOfWeek());
-        assertEquals(6, new ChunkedDate( 2000, 01, 01).getDayOfWeek());
+        assertEquals(7, new DateComponents(-4713, 12, 31).getDayOfWeek());
+        assertEquals(1, new DateComponents(-4712, 01, 01).getDayOfWeek());
+        assertEquals(4, new DateComponents( 1582, 10, 04).getDayOfWeek());
+        assertEquals(5, new DateComponents( 1582, 10, 15).getDayOfWeek());
+        assertEquals(5, new DateComponents( 1999, 12, 31).getDayOfWeek());
+        assertEquals(6, new DateComponents( 2000, 01, 01).getDayOfWeek());
     }
 
     public void testDayOfYear() {
-        assertEquals(  1, new ChunkedDate(2003,  1,  1).getDayOfYear());
-        assertEquals(365, new ChunkedDate(2003, 12, 31).getDayOfYear());
-        assertEquals(366, new ChunkedDate(2004, 12, 31).getDayOfYear());
-        assertEquals( 59, new ChunkedDate(2003,  2, 28).getDayOfYear());
-        assertEquals( 60, new ChunkedDate(2003,  3,  1).getDayOfYear());
-        assertEquals( 59, new ChunkedDate(2004,  2, 28).getDayOfYear());
-        assertEquals( 60, new ChunkedDate(2004,  2, 29).getDayOfYear());
-        assertEquals( 61, new ChunkedDate(2004,  3,  1).getDayOfYear());
-        assertEquals(269, new ChunkedDate(2003,  9, 26).getDayOfYear());
+        assertEquals(  1, new DateComponents(2003,  1,  1).getDayOfYear());
+        assertEquals(365, new DateComponents(2003, 12, 31).getDayOfYear());
+        assertEquals(366, new DateComponents(2004, 12, 31).getDayOfYear());
+        assertEquals( 59, new DateComponents(2003,  2, 28).getDayOfYear());
+        assertEquals( 60, new DateComponents(2003,  3,  1).getDayOfYear());
+        assertEquals( 59, new DateComponents(2004,  2, 28).getDayOfYear());
+        assertEquals( 60, new DateComponents(2004,  2, 29).getDayOfYear());
+        assertEquals( 61, new DateComponents(2004,  3,  1).getDayOfYear());
+        assertEquals(269, new DateComponents(2003,  9, 26).getDayOfYear());
     }
 
     public void testComparisons() {
-        ChunkedDate[][] dates = {
-                { new ChunkedDate(2003,  1,  1), new ChunkedDate(2003,   1) },
-                { new ChunkedDate(2003,  2, 28), new ChunkedDate(2003,  59) },
-                { new ChunkedDate(2003,  3,  1), new ChunkedDate(2003,  60) },
-                { new ChunkedDate(2003,  9, 26), new ChunkedDate(2003, 269) },
-                { new ChunkedDate(2003, 12, 31), new ChunkedDate(2003, 365) },
-                { new ChunkedDate(2004,  2, 28), new ChunkedDate(2004,  59) },
-                { new ChunkedDate(2004,  2, 29), new ChunkedDate(2004,  60) },
-                { new ChunkedDate(2004,  3,  1), new ChunkedDate(2004,  61) },
-                { new ChunkedDate(2004, 12, 31), new ChunkedDate(2004, 366) }
+        DateComponents[][] dates = {
+                { new DateComponents(2003,  1,  1), new DateComponents(2003,   1) },
+                { new DateComponents(2003,  2, 28), new DateComponents(2003,  59) },
+                { new DateComponents(2003,  3,  1), new DateComponents(2003,  60) },
+                { new DateComponents(2003,  9, 26), new DateComponents(2003, 269) },
+                { new DateComponents(2003, 12, 31), new DateComponents(2003, 365) },
+                { new DateComponents(2004,  2, 28), new DateComponents(2004,  59) },
+                { new DateComponents(2004,  2, 29), new DateComponents(2004,  60) },
+                { new DateComponents(2004,  3,  1), new DateComponents(2004,  61) },
+                { new DateComponents(2004, 12, 31), new DateComponents(2004, 366) }
         };
         for (int i = 0; i < dates.length; ++i) {
             for (int j = 0; j < dates.length; ++j) {
@@ -121,16 +121,16 @@ extends TestCase {
 
     private void checkSymmetry(int start, int n) {
         for (int i = start; i < start + n; ++i) {
-            ChunkedDate date1 = new ChunkedDate(ChunkedDate.J2000_EPOCH, i);
+            DateComponents date1 = new DateComponents(DateComponents.J2000_EPOCH, i);
             assertEquals(i, date1.getJ2000Day());
-            ChunkedDate date2 = new ChunkedDate(date1.getYear(), date1.getMonth(), date1.getDay());
+            DateComponents date2 = new DateComponents(date1.getYear(), date1.getMonth(), date1.getDay());
             assertEquals(i, date2.getJ2000Day());
         }        
     }
 
     public void testString() {
-        assertEquals("2000-01-01", new ChunkedDate(ChunkedDate.J2000_EPOCH, 0).toString());
-        assertEquals("-4713-12-31", new ChunkedDate(ChunkedDate.J2000_EPOCH, -2451546).toString());
+        assertEquals("2000-01-01", new DateComponents(DateComponents.J2000_EPOCH, 0).toString());
+        assertEquals("-4713-12-31", new DateComponents(DateComponents.J2000_EPOCH, -2451546).toString());
     }
 
     public void testConstructorDoY() {
@@ -146,7 +146,7 @@ extends TestCase {
 
     private void checkConstructorDoY(int year, int day, boolean shouldFail) {
         try {
-            new ChunkedDate(year, day);
+            new DateComponents(year, day);
             if (shouldFail) {
                 fail("an exception should have been thrown");
             }
@@ -179,7 +179,7 @@ extends TestCase {
             for (int month = 0; month < 14; ++month) {
                 for (int day = 0; day < 33; ++day) {
 
-                    // ill-formed dates have predictable chunks
+                    // ill-formed dates have predictable components
                     boolean expectedIllFormed = false;
                     if ((month < 1) || (month > 12)) {
                         expectedIllFormed = true;
@@ -202,7 +202,7 @@ extends TestCase {
 
                     try {
                         // well-formed dates should have sequential J2000 days
-                        ChunkedDate date = new ChunkedDate(year, month, day);
+                        DateComponents date = new DateComponents(year, month, day);
                         assertEquals(k++, date.getJ2000Day());
                         assertTrue(!expectedIllFormed);
                     } catch (IllegalArgumentException iae) {
@@ -217,13 +217,13 @@ extends TestCase {
     }
 
     public void testMJD() {
-        assertEquals(0, ChunkedDate.MODIFIED_JULIAN_EPOCH.getMJD());
-        assertEquals(37665, new ChunkedDate(1962, 1,  1).getMJD());
-        assertEquals(54600, new ChunkedDate(2008, 5, 14).getMJD());
+        assertEquals(0, DateComponents.MODIFIED_JULIAN_EPOCH.getMJD());
+        assertEquals(37665, new DateComponents(1962, 1,  1).getMJD());
+        assertEquals(54600, new DateComponents(2008, 5, 14).getMJD());
     }
 
     public static Test suite() {
-        return new TestSuite(ChunkedDateTest.class);
+        return new TestSuite(DateComponentsTest.class);
     }
 
 }

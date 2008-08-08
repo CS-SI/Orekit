@@ -30,8 +30,8 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChunkedDate;
-import org.orekit.time.ChunkedTime;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 import org.orekit.tle.TLE;
 import org.orekit.tle.TLEPropagator;
@@ -86,30 +86,30 @@ public class TleTest extends TestCase {
             TleTest.class.getResourceAsStream("/tle/regular-data/spot-5.txt");
         TLESeries series = new TLESeries(in);
         assertEquals(0,
-                     series.getFirstDate().minus(new AbsoluteDate(new ChunkedDate(2002, 05, 04),
-                                                                  new ChunkedTime(11, 45, 15.695),
+                     series.getFirstDate().durationFrom(new AbsoluteDate(new DateComponents(2002, 05, 04),
+                                                                  new TimeComponents(11, 45, 15.695),
                                                                   UTCScale.getInstance())),
                                                                   1e-3);
         assertEquals(0,
-                     series.getLastDate().minus(new AbsoluteDate(new ChunkedDate(2002, 06, 24),
-                                                                 new ChunkedTime(18, 12, 44.592),
+                     series.getLastDate().durationFrom(new AbsoluteDate(new DateComponents(2002, 06, 24),
+                                                                 new TimeComponents(18, 12, 44.592),
                                                                  UTCScale.getInstance())),
                                                                  1e-3);
 
-        AbsoluteDate mid = new AbsoluteDate(new ChunkedDate(2002, 06, 02),
-                                            new ChunkedTime(11, 12, 15),
+        AbsoluteDate mid = new AbsoluteDate(new DateComponents(2002, 06, 02),
+                                            new TimeComponents(11, 12, 15),
                                             UTCScale.getInstance());
         assertEquals(0,
-                     series.getClosestTLE(mid).getDate().minus(new AbsoluteDate(new ChunkedDate(2002, 6, 2),
-                                                                                 new ChunkedTime(10, 8, 25.401),
+                     series.getClosestTLE(mid).getDate().durationFrom(new AbsoluteDate(new DateComponents(2002, 6, 2),
+                                                                                 new TimeComponents(10, 8, 25.401),
                                                                                  UTCScale.getInstance())),
                                                                                  1e-3);
-        mid = new AbsoluteDate(new ChunkedDate(2001, 06, 02),
-                               new ChunkedTime(11, 12, 15),
+        mid = new AbsoluteDate(new DateComponents(2001, 06, 02),
+                               new TimeComponents(11, 12, 15),
                                UTCScale.getInstance());
         assertTrue(series.getClosestTLE(mid).getDate().equals(series.getFirstDate()));
-        mid = new AbsoluteDate(new ChunkedDate(2003, 06, 02),
-                               new ChunkedTime(11, 12, 15),
+        mid = new AbsoluteDate(new DateComponents(2003, 06, 02),
+                               new TimeComponents(11, 12, 15),
                                UTCScale.getInstance());
         assertTrue(series.getClosestTLE(mid).getDate().equals(series.getLastDate()));
 

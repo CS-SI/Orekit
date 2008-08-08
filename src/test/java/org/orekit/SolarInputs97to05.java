@@ -182,13 +182,13 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
 
     private void findClosestLine(AbsoluteDate date) throws OrekitException {
 
-        if ((date.minus(firstDate) < 0) || (date.minus(lastDate) > 86400)) {
+        if ((date.durationFrom(firstDate) < 0) || (date.durationFrom(lastDate) > 86400)) {
             throw new OrekitException("out of range" , new Object[0]);
         }
 
         // don't search if the cached selection is fine
-        if ((currentParam != null) && (date.minus(currentParam.date) >= 0) &&
-                (date.minus(currentParam.date) < 86400 )) {
+        if ((currentParam != null) && (date.durationFrom(currentParam.date) >= 0) &&
+                (date.durationFrom(currentParam.date) < 86400 )) {
             return;
         }
         LineParameters before =
@@ -198,7 +198,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
         SortedSet<TimeStamped> tailSet = data.tailSet(before);
         if (tailSet != null) {
             currentParam = (LineParameters) tailSet.first();
-            if (currentParam.date.minus(date) == -86400) {
+            if (currentParam.date.durationFrom(date) == -86400) {
                 currentParam = (LineParameters) data.tailSet(date).first();
             }
         } else {

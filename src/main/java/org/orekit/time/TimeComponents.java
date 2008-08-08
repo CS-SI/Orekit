@@ -24,23 +24,24 @@ import java.util.Locale;
 import org.orekit.errors.OrekitException;
 
 
-/** Class representing a time within the day as hour, minute and second chunks.
+/** Class representing a time within the day broken up as hour,
+ * minute and second components.
  * <p>Instances of this class are guaranteed to be immutable.</p>
- * @see ChunkedDate
- * @see ChunksPair
+ * @see DateComponents
+ * @see DateTimeComponents
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class ChunkedTime implements Serializable, Comparable<ChunkedTime> {
+public class TimeComponents implements Serializable, Comparable<TimeComponents> {
 
     /** Constant for commonly used hour 00:00:00. */
-    public static final ChunkedTime H00   = new ChunkedTime(0, 0, 0);
+    public static final TimeComponents H00   = new TimeComponents(0, 0, 0);
 
     /** Constant for commonly used hour 12:00:00. */
-    public static final ChunkedTime H12 = new ChunkedTime(12, 0, 0);
+    public static final TimeComponents H12 = new TimeComponents(12, 0, 0);
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 4337093028103368744L;
+    private static final long serialVersionUID = -8566834296299377436L;
 
     /** Format for hours and minutes. */
     private static final DecimalFormat TWO_DIGITS = new DecimalFormat("00");
@@ -68,7 +69,7 @@ public class ChunkedTime implements Serializable, Comparable<ChunkedTime> {
      * @exception IllegalArgumentException if inconsistent arguments
      * are given (parameters out of range)
      */
-    public ChunkedTime(final int hour, final int minute, final double second)
+    public TimeComponents(final int hour, final int minute, final double second)
         throws IllegalArgumentException {
 
         // range check
@@ -93,7 +94,7 @@ public class ChunkedTime implements Serializable, Comparable<ChunkedTime> {
      * @param secondInDay second number from 0.0 to 86400.0 (excluded)
      * @exception IllegalArgumentException if seconds number is out of range
      */
-    public ChunkedTime(final double secondInDay) {
+    public TimeComponents(final double secondInDay) {
         // range check
         if ((secondInDay < 0) || (secondInDay >= 86400.0)) {
             throw OrekitException.createIllegalArgumentException("out of range seconds number: {0}",
@@ -102,7 +103,7 @@ public class ChunkedTime implements Serializable, Comparable<ChunkedTime> {
                                                                  });
         }
 
-        // extract the time chunks
+        // extract the time components
         hour = (int) Math.floor(secondInDay / 3600.0);
         double remains = secondInDay - hour * 3600;
         minute = (int) Math.floor(remains / 60.0);
@@ -151,7 +152,7 @@ public class ChunkedTime implements Serializable, Comparable<ChunkedTime> {
     }
 
     /** {@inheritDoc} */
-    public int compareTo(final ChunkedTime other) {
+    public int compareTo(final TimeComponents other) {
         final double seconds = getSecondsInDay();
         final double otherSeconds = other.getSecondsInDay();
         if (seconds < otherSeconds) {
@@ -165,7 +166,7 @@ public class ChunkedTime implements Serializable, Comparable<ChunkedTime> {
     /** {@inheritDoc} */
     public boolean equals(final Object other) {
         try {
-            final ChunkedTime otherTime = (ChunkedTime) other;
+            final TimeComponents otherTime = (TimeComponents) other;
             return (otherTime != null) && (hour == otherTime.hour) &&
                    (minute == otherTime.minute) && (second == otherTime.second);
         } catch (ClassCastException cce) {
@@ -176,7 +177,7 @@ public class ChunkedTime implements Serializable, Comparable<ChunkedTime> {
     /** {@inheritDoc} */
     public int hashCode() {
         final long bits = Double.doubleToLongBits(second);
-        return ((hour << 8) | (minute << 8)) ^ (int) (bits ^ (bits >>> 32));
+        return ((hour << 16) ^ (minute << 8)) ^ (int) (bits ^ (bits >>> 32));
     }
 
 }
