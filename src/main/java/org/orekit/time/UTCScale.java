@@ -90,7 +90,7 @@ public class UTCScale implements TimeScale {
      * <p>The predefined entries guarantee that at least already known values are
      * supported even if user as not set up a proper configuration.</p>
      * @return predefined entries
-     * (contains at least date between 1972-01-01 and 2009-01-01)
+     * (contains at least all leaps between 1972-01-01 and 2009-01-01)
      */
     private SortedMap<ChunkedDate, Integer> createPredefinedEntries() {
         final SortedMap<ChunkedDate, Integer> entries = new TreeMap<ChunkedDate, Integer>();
