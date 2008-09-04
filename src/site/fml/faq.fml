@@ -15,8 +15,88 @@
  -->
 <faqs title="Frequently Asked Questions" toplink="false">
 
-  <part id="general">
-    <title>General</title>
+  <part id="references">
+    <title>References</title>
+    <faq id="projects">
+      <question>
+        Has Orekit already been used ?
+      </question>
+      <answer>
+        <p>
+          Yes, it has been used in successful operational missions.
+        </p>
+        <p>The most prominent use of Orekit was for the Automated Transfer
+          Vehicle (ATV) mission to International Space station (ISS). Orekit
+          was used operationally during the real-time monitoring of the rendez-vous
+          phase up to the docking. It continuously recomputed the relative geometry
+          of the two spacecrafts using different sensors output to check their
+          consistency.
+        </p>
+      </answer>
+    </faq>
+    <faq id="validation">
+      <question>
+        Is Orekit validated ?
+      </question>
+      <answer>
+        <p>
+          Some parts are strongly validated, others are validated to a less extent.
+        </p>
+        <p>
+          The frames package is one of the best validated ones. The overall mechanism
+          (transforms, navigation between frames, kinematics ...) has really been challenged
+          a lot, both in theoretical tests and during real life operations. This part was
+          extensively used for Automated Transfer Vehicle (ATV) rendez-vous with International
+          Space Station (ISS). It was part of an operational ground program performing real
+          time monitoring of the rendez-vous and docking phase. This part has been checked to
+          below millimeter level for relative configuration. The reference frames part (ITRF
+          and the like) has been validated using public data down to meter-level precision for
+          version 3.1, and to centimeter level for the next version.
+        </p>
+        <p>
+          A new round of validation has been done after Orekit 3.1 has been published. Two
+          defects have been identified and fixed: the J2000 frame was misaligned with real J2000
+          by a constant rotation bias of about 18 milliarcsceonds (it was really GCRF, not J2000)
+          and the ITRF2000B implementation was wrong by a time-dependent rotation leading to about
+          0.6 meters error for orbits with a semi-minor axis of about 10000km. These errors have
+          been fixed for next version. Our tests show the new frames are compliant with reference
+          cases to about 10mm for LEO and 60mm for GEO.
+        </p>
+        <p>
+          The TLE package is also quite well validated, it has been checked against some reference
+          data published by Vallado along with his revision of the original spacetrack report, where
+          he fixed some errors in the original fortran implementation from Norad.
+        </p>
+        <p>
+          The atmosphere models have also been validated the same way, using published data.
+        </p>
+        <p>
+          The time package has been validated by its unit tests only, but since the behavior is
+          simpler it can be checked by hand. The unit tests include a lot of borderline cases
+          (for example behavior during the introduction of a leap second).
+        </p>
+        <p>
+          The Sun and Moon class for version 3.1 are very low precision and are defined in a
+          pseudo-inertial frame with loose definition. They can be compared only with very specific
+          software. There accuracy is probably limited to about 10 arcseconds. They have been replaced
+          by accurate reference models in the next version.
+        </p>
+        <p>
+          The least validated part is the numerical propagation. Only rough validation has been done
+          yet. Precise validation requires a good model for Sun, so it had been postponed until this
+          model have been re-implemented.
+        </p>
+        <p>
+          Validation is a continuous task for us, we are always working on improving it. We would be
+          happy to also have other teams perform independent validation runs. We have already received
+          some feedback and new tests cases after the first version has been published.
+        </p>
+      </answer>
+    </faq>
+  </part>
+
+  <part id="installation">
+    <title>Installation</title>
     <faq id="commons-math-unavailable">
       <question>
         When I try to compile orekit, maven cannot find commons-math 2.0-SNAPSHOT, where is it ?
