@@ -21,16 +21,15 @@ Frames
 ** Frames tree
 
   The <<<Frame>>> class represent a single frame. All frames are organized as a
-  tree with a single root: the <Geocentric Celestial Reference Frame> which is the
-  absolute reference defined by IERS.
+  tree with a single root.
 
 [./images/frametree.png]
 
   Each Frame is defined by a single <transform> linking it to one specific frame:
   its <parent frame>. This defining transform may be fixed or time-dependent, for
-  example the Earth related frame ITRF2005A depends on time due to precession/nutation,
-  Earth rotation and pole motion). The predefined GCRF inertial frame is the only one
-  with no parent frames.
+  example the Earth related frame ITRF2005 depends on time due to precession/nutation,
+  Earth rotation and pole motion). The predefined root frame is the only one with no
+  parent frames.
 
   For each pair of frames, it is possible to find a single shortest path from one to
   the other one by walking the tree from one frame up to the closest common ancestor
@@ -66,7 +65,9 @@ Frames
   Several predefined reference frames are implemented in OREKIT. The user can retrieve them
   using various static methods: <<<getGCRF()>>>, <<<getJ2000()>>>, <<<getITRF2005A()>>>,
   <<<getITRF2005C()>>>, <<<getCIRF2000A()>>>, <<<getCIRF2000C()>>>, <<<getTIRF2000A()>>>,
-  <<<getTIRF2000C()>>> and <<<getVeis1950()>>>.
+  <<<getTIRF2000C()>>> and <<<getVeis1950()>>>. One of these reference frames has been
+  arbitrarily chosen as the root of the frames tree: the <Geocentric Celestial Reference
+  Frame> (GCRF) which is an absolute inertial reference defined by IERS.
 
 ** IERS 2003 Conventions
 
@@ -105,7 +106,7 @@ Frames
   Reference Frame as with the new paradigm. The last transform (pole motion) is the same
   one already defined in the new paradigm.
 
-  In summary, six frames are involved along this path: GCRF, J2000, MoD, ToD, TIRS and ITRF.
+  In summary, six frames are involved along this path: GCRF, J2000, MoD, ToD, TIRF and ITRF.
 
   This paradigm is deprecated by IERS. It also involves additional complexity, first because
   of the larger number of frames and second because these frames are computed by mixed models
@@ -201,7 +202,7 @@ Frames
   whole tree. We also want to take into account the offset between the GPS receiver antenna and the
   satellite center of mass. When a new GPS measurement is available, we want to update the complete
   left subtree. This is done by updating the Local Orbital Frame (near the root) with a single
-  call to one of its <<<updateTransform>>> methods providing it a reference to the ICRF frame, a
+  call to one of its <<<updateTransform>>> methods providing it a reference to the GCRF frame, a
   reference to the GPS receiver antenna frame and the desired translation and relative velocity
   between the two, i.e. the measurement itself. The method automatically locates the frames in the
   global tree, combines all transforms and updates the single transform between itself and its parent
