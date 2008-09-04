@@ -20,8 +20,13 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="3.2" date="TBD"
+    <release version="4.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="update">
+        Changed priority order for external data: now filesystem has higher priority
+        and classpath lower priority. This allows individual users to override
+        system wide data more easily.
+      </action>
       <action dev="luc" type="update">
         Renamed the iers package into data, as it is not IERS specific anymore. Some
         classes where also moved out of the package and into the frame and time

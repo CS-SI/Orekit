@@ -25,7 +25,7 @@ import org.orekit.errors.OrekitException;
 /** Helper class for loading data files.
 
  * <p>
- * This class handles data files recursively starting from a root root tree
+ * This class handles data files recursively starting from a root tree
  * specified by the java property <code>orekit.data.directory</code>.
  * If the property is not set or is null, no data will be available to the
  * library (for example no pole correction will be applied and only predefined
@@ -64,10 +64,16 @@ public class DataDirectoryCrawler {
         final String directoryName = System.getProperty(DATA_ROOT_DIRECTORY);
         if ((directoryName != null) && !"".equals(directoryName)) {
 
-            // try to find the root directory either in classpath or in filesystem
-            // (classpath having higher priority)
-            final URL url = getClass().getClassLoader().getResource(directoryName);
-            root = new File((url != null) ? url.getPath() : directoryName);
+            // try to find the root directory either in filesystem or in classpath
+            // (filesystem having higher priority)
+            root = new File(directoryName);
+            if (!(root.exists() && root.isDirectory())) {
+                // not found in filesystem, try in classpath
+                final URL url = getClass().getClassLoader().getResource(directoryName);
+                if (url != null) {
+                    root = new File(url.getPath());
+                }
+            }
 
             // safety checks
             if (!root.exists()) {
