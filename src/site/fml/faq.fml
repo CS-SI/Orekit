@@ -103,7 +103,7 @@
       </question>
       <answer>
         <p>
-          Orekit depends on features of commons which have not been released as of early 2008.
+          Orekit depends on features of commons-math which have not been released as of mid 2008.
           You will have to retrieve the development version from Apache subversion repository,
           located in the MATH_2_0 branch and compile it yourself. This is done by the following
           three commands on a Unix or GNU/Linux system:
