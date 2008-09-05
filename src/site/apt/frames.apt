@@ -31,9 +31,8 @@ Frames
   Earth rotation and pole motion). The predefined root frame is the only one with no
   parent frames.
 
-  For each pair of frames, it is possible to find a single shortest path from one to
-  the other one by walking the tree from one frame up to the closest common ancestor
-  and then down to the other frame.
+  For each pair of frames, there is one single shortest path from one frame to
+  the other one.
 
 ** Transform
 
@@ -53,21 +52,27 @@ Frames
 
 [./images/transform.png]
 
-  The convention used in OREKIT is vectorial transformation. It means that a 
-  transformation is defined as an operator which is applied to the coordinates of a
-  vector expressed in the old frame to obtain the coordinates of the same vector expressed
+  The transform between any two frames is computed by merging individual transforms
+  while walking the shortest past between them. The walking/merging operations are
+  handled transparently by the library. Users only need to select the frames, provide
+  the date and ask for the transform, without knowing how the frames are related to
+  each-other.
+
+  Transformations are defined as operators which when applied to the coordinates of a
+  vector expressed in the old frame provide the coordinates of the same vector expressed
   in the new frame. When we say a transform t is from frame A to frame B, we mean
   that if the coordinates of some absolute vector (say the direction of a distant star for 
   example) are u<A> in frame A and u<B> in frame B, then u<B>=t.transformVector(u<A>).
+  Transforms provide specific methods for vectorial conversions, affine conversions, either
+  with or without first derivatives (i.e. angular and linear velocities composition).
  
 * Predefined Frames
 
-  Several predefined reference frames are implemented in OREKIT. The user can retrieve them
-  using various static methods: <<<getGCRF()>>>, <<<getJ2000()>>>, <<<getITRF2005A()>>>,
-  <<<getITRF2005C()>>>, <<<getCIRF2000A()>>>, <<<getCIRF2000C()>>>, <<<getTIRF2000A()>>>,
-  <<<getTIRF2000C()>>> and <<<getVeis1950()>>>. One of these reference frames has been
-  arbitrarily chosen as the root of the frames tree: the <Geocentric Celestial Reference
-  Frame> (GCRF) which is an absolute inertial reference defined by IERS.
+  Several predefined reference frames are implemented in Orekit. The user can retrieve them
+  using various static methods: <<<getGCRF()>>>, <<<getJ2000()>>>, <<<getITRF2005()>>>,
+  <<<getCIRF2000()>>>, <<<getTIRF2000()>>> and <<<getVeis1950()>>>. One of these reference
+  frames has been arbitrarily chosen as the root of the frames tree: the <Geocentric Celestial
+  Reference Frame> (GCRF) which is an inertial reference defined by IERS.
 
 ** IERS 2003 Conventions
 
@@ -119,46 +124,23 @@ Frames
   supported in Orekit. Only the J2000 frame, which can be computed by a single bias from GCRF
   is supported. This is an historically very important frame and lots of systems rely on it.
 
-*** Simplified precession-nutation model
- 
-  The classical paradigm provides two nutation models: one called IAU-2000A consistent with
-  the IAU-2000 bias-precession-nutation converted to equinox based approach, and a simplified
-  one called IAU-2000B using no planetary terms and fewer luni-solar terms. The simplified
-  model is sufficient for many purposes. IAU-2000B is always within 1.0 milli arc second from
-  IAU-2000A, which itself is always withing 0.2 milli arc second from VLBI observed pole.
-
-  Unfortunately, no such simplification has been published for the new paradigm with
-  combined bias-precession-nutation. For the sake of efficiency, Orekit includes such a
-  tailored simplified model, which has been derived especially for it. For consistency with the
-  existing IERS denomination scheme and to avoid confusion  with the IAU-2000B model used in
-  the classical approach, we have temporarily called this model IAU-2000C. This
-  simplified model was derived by first removing terms from the IERS published tables
-  ({{{ftp://maia.usno.navy.mil/conv2000/chapter5/tab5.2a.txt}tab5.2a.txt}} and
-  {{{ftp://maia.usno.navy.mil/conv2000/chapter5/tab5.2b.txt}tab5.2b.txt}}) and then adjusting
-  the polynomial part to match the complete (X, Y) series over a two centuries period (from
-  1800 to 2200).
-
-  The pole direction computed with the simplified IAU-2000C model derived for Orekit is always
-  within 0.8 milli arcsecond from the direction computed with the complete IAU-2000A mode over
-  a two centuries period.
-
 *** Orekit implementation of IERS 2003 convention
 
-  In summary, Orekit implements 8 frames from IERS 2003 convention: GCRF, J2000, CIRF2000 A,
-  TIRF2000 A, ITRF2005 A, CIRF2000C, TIRF2000 C, ITRF2005 C.
+  In summary, Orekit implements 5 frames from IERS 2003 convention: GCRF, J2000, CIRF 2000,
+  TIRF 2000, ITRF 2005.
 
   Here is a schematic representation of the partial tree containing the supported IERS frames.
     
 [./images/iers-tree.png]
 
-  For most purposes, the recommended frames to use are ITRF2005B for terrestrial frame and
+  For most purposes, the recommended frames to use are ITRF 2005 for terrestrial frame and
   GCRF for celestial frame. J2000 could also be used for compatibility with older systems.
  
 ** Topocentric Frame
   
   This frame model allows to define the frame associated to any position at 
   the surface of a body shape, which itself is referenced to a frame, typically
-  ITRF 2005A or ITRF 2005C for Earth. The frame is defined with the following
+  ITRF 2005 for Earth. The frame is defined with the following
   canonical axes:
   
     ** zenith direction (Z) is defined as the normal to local horizontal plane;
@@ -183,7 +165,7 @@ Frames
   for example), it may be useful to define specific subclasses that will implement
   <<<updateFrame(AbsoluteDate)>>> or that will add some specific <<<updateFromTelemetry(telemetry)>>>
   methods to recompute the transform and call internally the <<<setTransform(Transform)>>> method.
- 
+
   A basic example of such extension is to add a satellite frame representing the satellite
   motion and attitude. Such a frame would have an inertial frame as its parent frame (GCRF or
   J2000) and the <<<updateFrame(AbsoluteDate)>>> method would update the translation and rotation
