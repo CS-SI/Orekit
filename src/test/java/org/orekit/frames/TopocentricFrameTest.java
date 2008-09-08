@@ -44,7 +44,7 @@ public class TopocentricFrameTest extends TestCase {
     private AbsoluteDate date;
     
     // Reference frame = ITRF 2005C 
-    private Frame frameITRF2005C;
+    private Frame frameITRF2005;
         
     // Earth shape
     OneAxisEllipsoid earthSpheric;
@@ -294,7 +294,7 @@ public class TopocentricFrameTest extends TestCase {
         
         // Elliptic earth shape
         final OneAxisEllipsoid earthElliptic =
-            new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005C);
+            new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
         
         // Satellite point
         // Caution !!! Sat point target shall be the same whatever earth shape chosen !!
@@ -396,11 +396,11 @@ public class TopocentricFrameTest extends TestCase {
     public void setUp() {
         try {
 
-            // Reference frame = ITRF 2005C
-            frameITRF2005C = Frame.getITRF2005C();
+            // Reference frame = ITRF 2005
+            frameITRF2005 = Frame.getITRF2005();
 
             // Elliptic earth shape
-            earthSpheric = new OneAxisEllipsoid(6378136.460, 0., frameITRF2005C);
+            earthSpheric = new OneAxisEllipsoid(6378136.460, 0., frameITRF2005);
 
             // Reference date
             date = new AbsoluteDate(new DateComponents(2008, 04, 07),
@@ -417,7 +417,7 @@ public class TopocentricFrameTest extends TestCase {
     
     public void tearDown() {
         date = null;
-        frameITRF2005C = null;
+        frameITRF2005 = null;
         earthSpheric = null;
     }
 

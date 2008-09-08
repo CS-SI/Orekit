@@ -33,7 +33,7 @@ public class DTM2000Test extends TestCase {
 
     public void testWithOriginalTestsCases() throws OrekitException, ParseException {
 
-        Frame itrf = Frame.getITRF2005C();
+        Frame itrf = Frame.getITRF2005();
         Sun sun = new Sun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
         SolarInputs97to05 in = SolarInputs97to05.getInstance();

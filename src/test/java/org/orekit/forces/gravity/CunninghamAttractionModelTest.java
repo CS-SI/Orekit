@@ -253,11 +253,11 @@ public class CunninghamAttractionModelTest extends TestCase {
         SpacecraftState drozOrb = propagator.propagate(new AbsoluteDate(date, 86400));
 
         Vector3D dif = cunnOrb.getPVCoordinates().getPosition().subtract(drozOrb.getPVCoordinates().getPosition());
-        assertEquals(0, dif.getNorm(), 1.1e-7);
+        assertEquals(0, dif.getNorm(), 3.1e-7);
     }
 
     public void setUp() {
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "regular-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "regular-data");
         try {
             // Eigen c1 model truncated to degree 6
             mu =  3.986004415e+14;
@@ -268,7 +268,7 @@ public class CunninghamAttractionModelTest extends TestCase {
             c50 =  2.27888264414e-7;
             c60 = -5.40618601332e-7;
 
-            ITRF2005 = Frame.getITRF2005C();
+            ITRF2005 = Frame.getITRF2005();
             propagator =
                 new NumericalPropagator(new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
         } catch (OrekitException oe) {

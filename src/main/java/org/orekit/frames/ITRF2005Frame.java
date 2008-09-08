@@ -31,7 +31,7 @@ import org.orekit.time.AbsoluteDate;
 class ITRF2005Frame extends Frame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7590749242876218167L;
+    private static final long serialVersionUID = 8677025885319745348L;
 
     /** 2&pi;. */
     private static final double TWO_PI = 2.0 * Math.PI;
@@ -51,15 +51,13 @@ class ITRF2005Frame extends Frame {
     private AbsoluteDate cachedDate;
 
     /** Simple constructor.
-     * @param parent parent frame (must be either TIRF2000A or TIRF2000C)
      * @param date the current date
      * @param name the string representation
      * @exception OrekitException if nutation cannot be computed
      */
-    protected ITRF2005Frame(final Frame parent, final AbsoluteDate date,
-                            final String name)
+    protected ITRF2005Frame(final AbsoluteDate date, final String name)
         throws OrekitException {
-        super(parent, null, name);
+        super(getTIRF2000(), null, name);
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
     }

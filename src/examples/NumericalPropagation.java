@@ -51,7 +51,7 @@ public class NumericalPropagation {
         double mu =  3.9860064e+14; // gravitation coefficient
         double ae =  6378136.460; // equatorial radius in meter
         double c20 = -1.08262631303e-3; // J2 potential coefficent
-        Frame ITRF2005 = Frame.getITRF2005C(); // terrestrial frame at an arbitrary date
+        Frame ITRF2005 = Frame.getITRF2005(); // terrestrial frame at an arbitrary date
 
 
         //  Initial state definition :
@@ -124,7 +124,7 @@ public class NumericalPropagation {
         double mu =  3.9860064e+14; // gravitation coefficient
         double ae =  6378136.460; // equatorial radius in meter
         double c20 = -1.08262631303e-3; // J2 potential coefficent
-        Frame ITRF2005 = Frame.getITRF2005C(); // terrestrial frame at an arbitrary date
+        Frame ITRF2005 = Frame.getITRF2005(); // terrestrial frame at an arbitrary date
 
 
         //  Initial state definition :

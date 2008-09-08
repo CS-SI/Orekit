@@ -33,7 +33,7 @@ import org.orekit.time.UTCScale;
 class TIRF2000Frame extends Frame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7980888698093771203L;
+    private static final long serialVersionUID = 2172066829881904209L;
 
     /** 2&pi;. */
     private static final double TWO_PI = 2.0 * Math.PI;
@@ -60,14 +60,13 @@ class TIRF2000Frame extends Frame {
     private double era;
 
     /** Simple constructor.
-     * @param parent parent frame (must be either CIRF2000A or CIRF2000C)
      * @param date the current date
      * @param name the string representation
      * @exception OrekitException if nutation cannot be computed
      */
-    protected TIRF2000Frame(final Frame parent, final AbsoluteDate date, final String name)
+    protected TIRF2000Frame(final AbsoluteDate date, final String name)
         throws OrekitException {
-        super(parent, null, name);
+        super(getCIRF2000(), null, name);
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
     }

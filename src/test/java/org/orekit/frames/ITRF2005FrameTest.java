@@ -39,7 +39,7 @@ public class ITRF2005FrameTest extends TestCase {
         AbsoluteDate date1 = new AbsoluteDate(new DateComponents(2006, 02, 24),
                                               new TimeComponents(15, 38, 00),
                                               UTCScale.getInstance());
-        Frame ITRF2005 = Frame.getITRF2005C();
+        Frame ITRF2005 = Frame.getITRF2005();
         Transform t0 = ITRF2005.getTransformTo(Frame.getJ2000(), date1 );
 
         double dt = 10.0;
@@ -61,7 +61,7 @@ public class ITRF2005FrameTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2001, 03, 21),
                                              TimeComponents.H00,
                                              UTCScale.getInstance());
-        Frame ITRF2005 = Frame.getITRF2005C();
+        Frame ITRF2005 = Frame.getITRF2005();
 
         Vector3D u = ITRF2005.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.PLUS_I);
         assertTrue(Vector3D.angle(u, Vector3D.MINUS_I) < Math.toRadians(2));
@@ -85,7 +85,7 @@ public class ITRF2005FrameTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2001, 03, 21),
                                              TimeComponents.H00,
                                              UTCScale.getInstance());
-        TIRF2000Frame TIRF2000 = (TIRF2000Frame) Frame.getTIRF2000C();
+        TIRF2000Frame TIRF2000 = (TIRF2000Frame) Frame.getTIRF2000();
 
         assertEquals(180, Math.toDegrees(TIRF2000.getEarthRotationAngle(date)), 2.0);
 
@@ -105,7 +105,7 @@ public class ITRF2005FrameTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 10, 14),
                                              new TimeComponents(02, 00, 00),
                                              UTCScale.getInstance());
-        Transform trans = Frame.getJ2000().getTransformTo(Frame.getTIRF2000C(), date);
+        Transform trans = Frame.getJ2000().getTransformTo(Frame.getTIRF2000(), date);
 
         // Positions
         Vector3D posTIRF =
@@ -121,7 +121,7 @@ public class ITRF2005FrameTest extends TestCase {
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2003, 10, 14),
                                            new TimeComponents(02, 00, 00),
                                            UTCScale.getInstance());
-        Frame itrf = Frame.getITRF2005C();
+        Frame itrf = Frame.getITRF2005();
         Transform trans = Frame.getJ2000().getTransformTo(itrf, t0);
 
         // Coordinates in J2000
@@ -168,7 +168,7 @@ public class ITRF2005FrameTest extends TestCase {
     public void testMontenbruck() throws OrekitException {
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(1999, 3, 4), TimeComponents.H00,
                                            GPSScale.getInstance());
-        Transform trans = Frame.getITRF2005A().getTransformTo(Frame.getGCRF(), t0);
+        Transform trans = Frame.getITRF2005().getTransformTo(Frame.getGCRF(), t0);
         PVCoordinates pvWGS =
             new PVCoordinates(new Vector3D(19440953.805,16881609.273,-6777115.092),
                               new Vector3D(-811.1827456,-257.3799137,-3068.9508125));
@@ -188,7 +188,7 @@ public class ITRF2005FrameTest extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "compressed-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "compressed-data");
     }
 
     public static Test suite() {

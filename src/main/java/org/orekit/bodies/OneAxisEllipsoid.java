@@ -82,7 +82,7 @@ public class OneAxisEllipsoid implements BodyShape {
      * @param ae equatorial radius
      * @param f the flattening (f = (a-b)/a)
      * @param bodyFrame body frame related to body shape
-     * @see Frame#getCIRF2000A()
+     * @see Frame#getCIRF2000()
      * @see Frame#getCIRF2000C()
      */
     public OneAxisEllipsoid(final double ae, final double f, final Frame bodyFrame) {

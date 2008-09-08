@@ -50,7 +50,7 @@ public class TargetPointingTest extends TestCase {
     private double mu;
 
     // Reference frame = ITRF 2005C 
-    private Frame frameITRF2005C;
+    private Frame frameITRF2005;
         
     // Transform from J2000 to ITRF2005C 
     private Transform j2000ToItrf;
@@ -78,7 +78,7 @@ public class TargetPointingTest extends TestCase {
         //  Attitude laws
         // *************** 
         // Elliptic earth shape
-        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005C);
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
                 
         // Target definition as a geodetic point AND as a position/velocity vector
         GeodeticPoint geoTargetITRF2005C = new GeodeticPoint(Math.toRadians(1.26), Math.toRadians(43.36), 600.);
@@ -88,7 +88,7 @@ public class TargetPointingTest extends TestCase {
         TargetPointing geoTargetAttitudeLaw = new TargetPointing(geoTargetITRF2005C, earthShape);
         
         //  Attitude law definition from position/velocity target
-        TargetPointing pvTargetAttitudeLaw = new TargetPointing(frameITRF2005C, pvTargetITRF2005C);
+        TargetPointing pvTargetAttitudeLaw = new TargetPointing(frameITRF2005, pvTargetITRF2005C);
         
         // Check that both attitude are the same 
         // Get satellite rotation for target pointing law 
@@ -122,7 +122,7 @@ public class TargetPointingTest extends TestCase {
         // ************** 
         
         // Elliptic earth shape 
-        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005C);
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
                 
         // Target definition as a geodetic point 
         GeodeticPoint geoTargetITRF2005C = new GeodeticPoint(Math.toRadians(1.26), Math.toRadians(43.36), 600.);
@@ -146,7 +146,7 @@ public class TargetPointingTest extends TestCase {
     public void testNadirTarget() throws OrekitException {
 
         // Elliptic earth shape
-        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005C);
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
                 
         // Satellite on any position 
         CircularOrbit circOrbit =
@@ -166,8 +166,8 @@ public class TargetPointingTest extends TestCase {
         
         // Check nadir target 
         PVCoordinates pvNadirTarget = nadirAttitudeLaw.getObservedGroundPoint(date, j2000ToItrf.transformPVCoordinates(pvSatJ2000), 
-                                                                              frameITRF2005C);
-        GeodeticPoint geoNadirTarget = earthShape.transform(pvNadirTarget.getPosition(), frameITRF2005C, date);
+                                                                              frameITRF2005);
+        GeodeticPoint geoNadirTarget = earthShape.transform(pvNadirTarget.getPosition(), frameITRF2005, date);
         
         // Create target attitude law 
         TargetPointing targetAttitudeLaw = new TargetPointing(geoNadirTarget, earthShape);
@@ -221,11 +221,11 @@ public class TargetPointingTest extends TestCase {
                                              TimeComponents.H00,
                                              UTCScale.getInstance());
         
-        // Reference frame = ITRF 2005C
-        Frame frameITRF2005C = Frame.getITRF2005C();
+        // Reference frame = ITRF 2005
+        Frame frameITRF2005 = Frame.getITRF2005();
 
         // Elliptic earth shape 
-        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005C);
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
                 
         // Create target pointing attitude law 
         GeodeticPoint geoTarget = new GeodeticPoint(Math.toRadians(1.26), Math.toRadians(43.36), 600.);
@@ -264,7 +264,7 @@ public class TargetPointingTest extends TestCase {
     public void testSlewedTarget() throws OrekitException {
 
         // Spheric earth shape 
-        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., frameITRF2005C);
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., frameITRF2005);
         
         //  Satellite position
         // ********************
@@ -285,11 +285,11 @@ public class TargetPointingTest extends TestCase {
         PVCoordinates pvNadirObservedJ2000 = nadirAttitudeLaw.getObservedGroundPoint(date, pvSatJ2000, Frame.getJ2000());
         PVCoordinates pvNadirObservedITRF2005C = j2000ToItrf.transformPVCoordinates(pvNadirObservedJ2000);
         
-        GeodeticPoint geoNadirObserved = earthShape.transform(pvNadirObservedITRF2005C.getPosition(), frameITRF2005C, date);
+        GeodeticPoint geoNadirObserved = earthShape.transform(pvNadirObservedITRF2005C.getPosition(), frameITRF2005, date);
 
         // Create target pointing attitude law with target equal to nadir target 
         // ********************************************************************* 
-        TargetPointing targetLawRef = new TargetPointing(frameITRF2005C, pvNadirObservedITRF2005C);
+        TargetPointing targetLawRef = new TargetPointing(frameITRF2005, pvNadirObservedITRF2005C);
         
         // Get attitude rotation in J2000
         Rotation rotSatRefJ2000 = targetLawRef.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
@@ -299,7 +299,7 @@ public class TargetPointingTest extends TestCase {
         GeodeticPoint geoTarget = new GeodeticPoint(geoNadirObserved.getLongitude() - Math.toRadians(5),
                                                     geoNadirObserved.getLatitude(), geoNadirObserved.getAltitude());
         PVCoordinates pvTargetITRF2005C = new PVCoordinates(earthShape.transform(geoTarget), Vector3D.ZERO);
-        TargetPointing targetLaw = new TargetPointing(frameITRF2005C, pvTargetITRF2005C);
+        TargetPointing targetLaw = new TargetPointing(frameITRF2005, pvTargetITRF2005C);
         
         // Get attitude rotation 
         Rotation rotSatJ2000 = targetLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
@@ -328,11 +328,11 @@ public class TargetPointingTest extends TestCase {
             // Body mu
             mu = 3.9860047e14;
             
-            // Reference frame = ITRF 2005C
-            frameITRF2005C = Frame.getITRF2005C();
+            // Reference frame = ITRF 2005
+            frameITRF2005 = Frame.getITRF2005();
 
-            // Transform from J2000 to ITRF2005C
-            j2000ToItrf = Frame.getJ2000().getTransformTo(frameITRF2005C, date);
+            // Transform from J2000 to ITRF2005
+            j2000ToItrf = Frame.getJ2000().getTransformTo(frameITRF2005, date);
 
         } catch (OrekitException oe) {
             fail(oe.getMessage());
@@ -342,7 +342,7 @@ public class TargetPointingTest extends TestCase {
 
     public void tearDown() {
         date = null;
-        frameITRF2005C = null;
+        frameITRF2005 = null;
         j2000ToItrf = null;
     }
 

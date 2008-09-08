@@ -50,7 +50,7 @@ public class LofOffsetTest extends TestCase {
     private double mu;
 
     // Reference frame = ITRF 2005C 
-    private Frame frameITRF2005C;
+    private Frame frameITRF2005;
         
     // Earth shape
     OneAxisEllipsoid earthSpheric;
@@ -98,7 +98,7 @@ public class LofOffsetTest extends TestCase {
         // Create target pointing attitude law
         // ************************************  
         // Elliptic earth shape
-        final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005C);
+        final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
         final GeodeticPoint geoTargetITRF2005C = new GeodeticPoint(Math.toRadians(1.26), Math.toRadians(43.36), 600.);
             
         // Attitude law definition from geodetic point target 
@@ -171,12 +171,12 @@ public class LofOffsetTest extends TestCase {
             // Body mu
             mu = 3.9860047e14;
             
-            // Reference frame = ITRF 2005C
-            frameITRF2005C = Frame.getITRF2005C();
+            // Reference frame = ITRF 2005
+            frameITRF2005 = Frame.getITRF2005();
 
             // Elliptic earth shape
             earthSpheric =
-                new OneAxisEllipsoid(6378136.460, 0., frameITRF2005C);
+                new OneAxisEllipsoid(6378136.460, 0., frameITRF2005);
             
             //  Satellite position
             orbit =
@@ -194,7 +194,7 @@ public class LofOffsetTest extends TestCase {
 
     public void tearDown() {
         date = null;
-        frameITRF2005C = null;
+        frameITRF2005 = null;
         earthSpheric = null;
     }
 

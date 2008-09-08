@@ -45,7 +45,7 @@ public class BodyCenterPointingTest extends TestCase {
     private CircularOrbit circ;
 
     // Reference frame = ITRF 2005C 
-    private Frame frameITRF2005C;
+    private Frame frameITRF2005;
     
     // Transform from J2000 to ITRF2005C 
     private Transform j2000ToItrf;
@@ -123,14 +123,14 @@ public class BodyCenterPointingTest extends TestCase {
                                        Frame.getJ2000(), date, mu);
             
             
-            // Reference frame = ITRF 2005C
-            frameITRF2005C = Frame.getITRF2005C();
+            // Reference frame = ITRF 2005
+            frameITRF2005 = Frame.getITRF2005();
 
-            // Transform from J2000 to ITRF2005C
-            j2000ToItrf = Frame.getJ2000().getTransformTo(frameITRF2005C, date);
+            // Transform from J2000 to ITRF2005
+            j2000ToItrf = Frame.getJ2000().getTransformTo(frameITRF2005, date);
 
             // Create earth center pointing attitude law */
-            earthCenterAttitudeLaw = new BodyCenterPointing(frameITRF2005C);
+            earthCenterAttitudeLaw = new BodyCenterPointing(frameITRF2005);
             
         } catch (OrekitException oe) {
             fail(oe.getMessage());
@@ -140,7 +140,7 @@ public class BodyCenterPointingTest extends TestCase {
 
     public void tearDown() {
         date = null;
-        frameITRF2005C = null;
+        frameITRF2005 = null;
         j2000ToItrf = null;
         earthCenterAttitudeLaw = null;
         circ = null;
