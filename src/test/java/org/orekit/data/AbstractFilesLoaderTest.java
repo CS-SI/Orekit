@@ -30,7 +30,7 @@ public abstract class AbstractFilesLoaderTest extends TestCase {
     protected TreeSet<TimeStamped> eop;
 
     protected void setRoot(String directoryName) throws OrekitException {
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, directoryName);
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, directoryName);
         eop = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
     }
 

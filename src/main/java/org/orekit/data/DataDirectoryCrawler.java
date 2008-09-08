@@ -25,16 +25,18 @@ import org.orekit.errors.OrekitException;
 /** Helper class for loading data files.
 
  * <p>
- * This class handles data files recursively starting from a root tree
- * specified by the java property <code>orekit.data.directory</code>.
- * If the property is not set or is null, no data will be available to the
+ * This class handles data files recursively starting from root trees
+ * specified by the java properties <code>orekit.data.directory.filesystem</code>
+ * for data stored in filesystem and <code>orekit.data.directory.classpath</code>
+ * for data stored in classpath.
+ * If the properties are not set or are null, no data will be available to the
  * library (for example no pole correction will be applied and only predefined
  * UTC steps will be taken into account). No errors will be triggered.
- * If the property is set, it must correspond to an existing root tree otherwise
+ * If either property is set, it must correspond to an existing root tree otherwise
  * an error will be triggered.
+ * </p>
  * <p>
- * <p>
- * The organization of files in the tree is free, files are found by matching
+ * The organization of files in the tree is free. Files are found by matching
  * name patterns while crawling into all sub-directories.
  * </p>
  * <p>Gzip-compressed files are supported.</p>
@@ -49,48 +51,83 @@ import org.orekit.errors.OrekitException;
  */
 public class DataDirectoryCrawler {
 
-    /** Name of the property defining the data root directory. */
-    public static final String DATA_ROOT_DIRECTORY = "orekit.data.directory";
+    /** Name of the property defining the data root directory in filesystem. */
+    public static final String DATA_ROOT_DIRECTORY_FS = "orekit.data.directory.filesystem";
 
-    /** IERS root hierarchy root. */
-    private File root;
+    /** Name of the property defining the data root directory in classpath. */
+    public static final String DATA_ROOT_DIRECTORY_CP = "orekit.data.directory.classpath";
+
+    /** IERS root hierarchy root in filesystem. */
+    private final File rootInFileSystem;
+
+    /** IERS root hierarchy root in classpath. */
+    private final File rootInClasspath;
 
     /** Build an IERS files crawler.
      * @exception OrekitException if some data is missing or can't be read
      */
     public DataDirectoryCrawler() throws OrekitException {
 
-        // check the root tree
-        final String directoryName = System.getProperty(DATA_ROOT_DIRECTORY);
-        if ((directoryName != null) && !"".equals(directoryName)) {
+        File fsRoot = null;
+        File cpRoot = null;
 
-            // try to find the root directory either in filesystem or in classpath
-            // (filesystem having higher priority)
-            root = new File(directoryName);
-            if (!(root.exists() && root.isDirectory())) {
-                // not found in filesystem, try in classpath
-                final URL url = getClass().getClassLoader().getResource(directoryName);
+        try {
+
+            // set up the root tree in filesystem
+            final String directoryNameFileSystem = System.getProperty(DATA_ROOT_DIRECTORY_FS);
+            if ((directoryNameFileSystem != null) && !"".equals(directoryNameFileSystem)) {
+
+                // find the root directory
+                fsRoot = new File(directoryNameFileSystem);
+
+                // safety checks
+                checkRoot(fsRoot, directoryNameFileSystem);
+
+            }
+
+            // set up the root tree in classpath
+            final String directoryNameClasspath = System.getProperty(DATA_ROOT_DIRECTORY_CP);
+            if ((directoryNameClasspath != null) && !"".equals(directoryNameClasspath)) {
+
+                // find the root directory
+                final URL url =
+                    DataDirectoryCrawler.class.getClassLoader().getResource(directoryNameClasspath);
                 if (url != null) {
-                    root = new File(url.getPath());
+                    cpRoot = new File(url.getPath());
                 }
+
+                // safety checks
+                checkRoot(cpRoot, directoryNameClasspath);
+
             }
 
-            // safety checks
-            if (!root.exists()) {
-                throw new OrekitException("IERS root directory {0} does not exist",
-                                          new Object[] {
-                                              root.getAbsolutePath()
-                                          });
-            }
-            if (!root.isDirectory()) {
-                throw new OrekitException("{0} is not a directory",
-                                          new Object[] {
-                                              root.getAbsolutePath()
-                                          });
-            }
-
+        } finally {
+            rootInFileSystem = fsRoot;
+            rootInClasspath  = cpRoot;            
         }
 
+    }
+
+    /** Check root directory.
+     * @param root root directory to check (may be null)
+     * @param name root directory name
+     * @exception OrekitException if the root does not exist
+     * or is not a directory
+     */
+    private void checkRoot(final File root, final String name)
+        throws OrekitException {
+        if ((root == null) || !root.exists()) {           
+            throw new OrekitException("data root directory {0} does not exist",
+                                      new Object[] {
+                                          name
+                                      });
+        }
+        if (!root.isDirectory()) {
+            throw new OrekitException("{0} is not a directory",
+                                      new Object[] {
+                                          name
+                                      });
+        }
     }
 
     /** Crawl the data root hierarchy.
@@ -99,9 +136,26 @@ public class DataDirectoryCrawler {
      * or can't be read
      */
     public void crawl(final DataFileCrawler visitor) throws OrekitException {
-        if (root != null) {
-            crawl(visitor, root);
+
+        // first try in filesystem
+        // (if a data root directory has been defined in filesystem)
+        if (rootInFileSystem != null) {
+            try {
+                crawl(visitor, rootInFileSystem);
+                return;
+            } catch (OrekitException oe) {
+                if (rootInClasspath == null) {
+                    throw oe;
+                }
+            }
         }
+
+        // then try in classpath
+        // (if a data root directory has been defined in classpath and filesystem attempt failed)
+        if (rootInClasspath != null) {
+            crawl(visitor, rootInClasspath);
+        }
+
     }
 
     /** Crawl a directory hierarchy.

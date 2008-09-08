@@ -33,13 +33,20 @@ public class DataDirectoryCrawlerTest extends TestCase {
     }
 
     public void testNotADirectory() {
-        checkFailure("regular-data/UTC-TAI.history.gz");
+        checkFailure("regular-data/UTC-TAI.history");
+    }
+
+    public void testNominal() throws OrekitException {
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "regular-data");
+        CountingCrawler crawler = new CountingCrawler(".*");
+        new DataDirectoryCrawler().crawl(crawler);
+        assertTrue(crawler.getCount() > 0);
     }
 
     private void checkFailure(String directoryName) {
         try {
-            System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, directoryName);
-            new DataDirectoryCrawler().crawl(new DoNothingCrawler(".*"));
+            System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, directoryName);
+            new DataDirectoryCrawler().crawl(new CountingCrawler(".*"));
             fail("an exception should have been thrown");
         } catch (OrekitException e) {
             // expected behavior
@@ -49,12 +56,17 @@ public class DataDirectoryCrawlerTest extends TestCase {
         }
     }
 
-    private static class DoNothingCrawler extends DataFileCrawler {
-        public DoNothingCrawler(String pattern) {
+    private static class CountingCrawler extends DataFileCrawler {
+        private int count;
+        public CountingCrawler(String pattern) {
             super(pattern);
+            count = 0;
         }
         protected void visit(BufferedReader reader) {
-            // do nothing
+            ++count;
+        }
+        public int getCount() {
+            return count;
         }
     }
 

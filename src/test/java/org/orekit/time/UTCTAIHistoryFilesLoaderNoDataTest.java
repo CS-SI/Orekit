@@ -33,7 +33,7 @@ public class UTCTAIHistoryFilesLoaderNoDataTest extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "no-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "no-data");
     }
 
     public static Test suite() {

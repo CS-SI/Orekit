@@ -106,7 +106,7 @@ extends TestCase {
     }
 
     public void setUp() throws OrekitException {
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "regular-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "regular-data");
         utc = UTCScale.getInstance();
     }
 

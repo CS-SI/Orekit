@@ -32,7 +32,7 @@ public class UTCTAIHistoryFilesLoaderCompressedDataTest extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "compressed-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "compressed-data");
     }
 
     public static Test suite() {

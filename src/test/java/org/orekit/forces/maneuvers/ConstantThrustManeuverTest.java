@@ -135,7 +135,7 @@ public class ConstantThrustManeuverTest extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY, "regular-data");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "regular-data");
 
         // Body mu
         mu = 3.9860047e14;

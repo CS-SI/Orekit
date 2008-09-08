@@ -35,26 +35,37 @@ Configuration
   how to find and read these files which should be provided by user at run time, provided
   it is properly configured.
 
-* Data directory tree
+* Data directories trees
 
-  Data that can change over time must be stored as simple files in a data directory tree
-  with read access permission.
+  Data that can change over time must be stored as simple files directories trees with
+  read access permission. Two directories trees are supported: one is defined with
+  respect to the filesystem (i.e. with an absolute path), one is defined with respect
+  to the classpath (i.e. either with a relative path or with an absolute path within a
+  jar file). If both trees are configured, data is searched first in the filesystem
+  tree and search is attempted in the second tree only if the first one fails.
+  The filesystem choice is more convenient for user-specific data or for data that
+  should be shared with other tools. The latter choice is more convenient for system-wide
+  data shared by several users, for remote and embedded usage or for test data in
+  development projects (this is how Orekit own test data are found). 
 
-  There is no mandatory layout within the data directory tree. Orekit navigates through it
-  and its sub-directories. Files are identified by pattern matching rules on their names.
-  Files that don't match the rules are silently ignored. This allows the user to share the
-  data directory tree with other tools which need a specific layout or additional files.
-  A drawback of this behavior is that if the users sets up a deep data directory tree
-  containing a huge number of files, Orekit may need some time to explore it, even if it
-  really reads only a small subset of the total number of files.
+  There is no mandatory layout within the data directories trees. Orekit navigates through
+  them and their sub-directories when looking for data files. Files are identified by
+  pattern matching rules on their names. Files that don't match the rules are silently
+  ignored. This allows the user to share the data directories trees with other tools which
+  need a specific layout or additional files. A drawback of this behavior is that if the
+  users sets up a deep data directory tree containing a huge number of files, Orekit may need
+  some time to explore it, even if it really reads only a small subset of the total number
+  of files.
 
-  There is only one configuration parameter for Orekit: the absolute path to the root of
-  the data directory tree. This path is configured using a java property named
-  <orekit.data.directory>. As any other java property, it can be initialized at application
-  launch time by the user (for example using the -D flag of the virtual machine) or from
-  within the application by calling the <System.setProperty> method. In the latter case,
-  rather than the literal string constant <orekit.data.directory>, the <DATA_ROOT_DIRECTORY>
-  static field from the <DataDirectoryCrawler> class can be used. If the property is set up
+  There are only two configuration parameters for Orekit, set up as java properties. The
+  <orekit.data.directory.filesystem> property configures the root of the highest priority tree
+  located in filesystem. The <orekit.data.directory.classpath> property configures the root of
+  the lowest priority tree located in classpath. As any other java property, they can be
+  initialized at application launch time by the user (for example using the -D flag of the
+  virtual machine) or from within the application by calling the <System.setProperty> method.
+  In the latter case, rather than the literal string constants <orekit.data.directory.filesystem>
+  or <orekit.data.directory.classpath>, the <DATA_ROOT_DIRECTORY_FS> or <DATA_ROOT_DIRECTORY_CP>
+  static fields from the <DataDirectoryCrawler> class can be used. If the properties are set up
   by the application, it must be done before any Orekit feature is called, since some data
   are initialized very early (mainly frame and time related data).
 
@@ -78,8 +89,8 @@ Configuration
 supported data files
 
   There should generally be only one leap seconds introduction history file. However, since
-  Orekit always explores all the data directory tree, a safety measure has been added in case
-  older files remains around: all files are combined together and duplicates are removed, so the
+  Orekit always explores all the data directories tree, a safety measure has been added in case
+  older files remain around: all files are combined together and duplicates are removed, so the
   complete data set correspond to the file with the largest number of entries, regardless of its
   location within the tree. The entries read are then combined with a predefined set of entries that
   is already embedded within Orekit, hence the file is optional if a sufficiently recent version
