@@ -58,7 +58,7 @@ Time
 
 ** Date Definition
 
-  There are two main ways to define a date:
+  There are three main ways to define a date:
 
     ** using a location in a time scale as a set of calendar and hourly components
 
