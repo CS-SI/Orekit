@@ -99,17 +99,17 @@ Orbits
   Available orbit representations are :
   
   \
-  * Classic keplerian orbit, which parameters are :
+  * Classic elliptical keplerian orbit, which parameters are :
    
      ** a : semi-major axis (m)
      
-     ** e : eccentricity
+     ** e : eccentricity (currently only e smaller than 1.0, i.e elliptical orbits, are supported)
      
      ** i : inclination (rad)
      
-     ** omega : perigee argument (rad)
+     ** \u03c9 : perigee argument (rad)
      
-     ** Omega : right ascension of the ascending node (rad)
+     ** \u03a9 : right ascension of the ascending node (rad)
      
      ** v, M or E  (rad) : respectively true anomaly, mean anomaly or eccentric anomaly.
 
@@ -119,15 +119,15 @@ Orbits
    
      ** a : semi-major axis (m)
      
-     ** ex : X component of eccentricity vector : e x cos(omega)
+     ** ex : X component of eccentricity vector : e \u00d7 cos(\u03c9)
      
-     ** ey : Y component of eccentricity vector : e x sin(omega)
+     ** ey : Y component of eccentricity vector : e \u00d7 sin(\u03c9)
 
      ** i : inclination (rad)
      
-     ** Omega : right ascension of the ascending node (rad)
+     ** \u03a9 : right ascension of the ascending node (rad)
      
-     ** alpha_v, alpha_M or alpha_E (rad) : respectively (omega + v), (omega + M) or (omega + E).
+     ** \u03b1v, \u03b1M or \u03b1E (rad) : respectively (\u03c9 + v), (\u03c9 + M) or (\u03c9 + E).
 
   \
   * Equinoctial orbit, used to represent equinoctial orbits (quasi circular orbit with quasi
@@ -135,16 +135,16 @@ Orbits
    
      ** a : semi-major axis (m)
      
-     ** ex = e x cos(omega + Omega)
+     ** ex = e \u00d7 cos(\u03c9 + \u03a9)
      
-     ** ey = e x sin(omega + Omega)
+     ** ey = e \u00d7 sin(\u03c9 + \u03a9)
      
-     ** hx = tan(i/2) cos(Omega)
+     ** hx = tan(i/2) cos(\u03a9)
      
-     ** hx = tan(i/2) sin(Omega)
+     ** hx = tan(i/2) sin(\u03a9)
      
-     ** lv, lM or lE (rad) : respectively true longitude (omega + v), 
-     mean longitude (omega + M) or eccentric longitude (omega + E).
+     ** lv, lM or lE (rad) : respectively true longitude (\u03c9 + v), 
+     mean longitude (\u03c9 + M) or eccentric longitude (\u03c9 + E).
      
   \
   * Cartesian orbit, associated to its frame definition, which parameters are:
@@ -167,7 +167,7 @@ Orbits
   <infinite> possible number of values that all represent the same physical
   orbit. Orekit simply does an arbitrary choice, often choosing simply the value 0.
   In our example case, we would then get a converted orbit with a 0 perigee argument.
-  This choice is valid, just as any other choice (PI/2, PI, whatever ...) would
+  This choice is valid, just as any other choice (\u03c0/2, \u03c0, whatever ...) would
   have been valid, in the sense that it <does> represent correctly the orbit
   and when converted back to the original non-ambiguous representation it does give
   the right result.
