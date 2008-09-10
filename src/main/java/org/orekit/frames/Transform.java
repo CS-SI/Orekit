@@ -52,7 +52,7 @@ import org.orekit.utils.PVCoordinates;
  * Vector3D translation = new Vector3D(-1,0,0);
  * Vector3D velocity = new Vector3D(-1,0,0);
  *
- * Transform RAtoRB = new Transform(translation, Velocity);
+ * Transform R1toR2 = new Transform(translation, Velocity);
  *
  * PV<sub>B</sub> = R1toR2.transformPVCoordinates(PV<sub>A</sub>);
  *
