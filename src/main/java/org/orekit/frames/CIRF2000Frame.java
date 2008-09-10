@@ -16,8 +16,7 @@
  */
 package org.orekit.frames;
 
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
+import java.io.InputStream;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
@@ -34,18 +33,25 @@ import org.orekit.time.AbsoluteDate;
  * Capitaine's model and <strong>not</strong> IAU-82 sidereal time which is
  * consistent with the previous models only.</p>
  * <p>Its parent frame is the GCRF frame.<p>
+ * <p>This implementation includes a caching/interpolation feature to
+ * tremendously improve efficiency. The IAU-2000 model involves lots of terms
+ * (1600 components for x, 1275 components for y and 66 components for s). Recomputing
+ * all these components for each point is really slow. The shortest period for these
+ * components is about 5.5 days (one fifth of the moon revolution period), hence the
+ * pole motion is smooth at the day or week scale. This implies that these motions can
+ * be computed accurately using a few reference points per day or week and interpolated
+ * between these points. This implementation uses 12 points separated by 1/2 day
+ * (43200 seconds) each, the resulting maximal interpolation error on the frame is about
+ * 1.3&times;10<sup>-10</sup> arcseconds.</p>
  * @version $Revision$ $Date$
  */
 class CIRF2000Frame extends Frame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7506358936983934856L;
-
-    /** 2&pi;. */
-    private static final double TWO_PI = 2.0 * Math.PI;
+    private static final long serialVersionUID = 4112885226125872560L;
 
     /** Radians per arcsecond. */
-    private static final double RADIANS_PER_ARC_SECOND = TWO_PI / 1296000;
+    private static final double RADIANS_PER_ARC_SECOND = Math.PI / 648000;
 
     /** Julian century per second. */
     private static final double JULIAN_CENTURY_PER_SECOND = 1.0 / (36525.0 * 86400.0);
@@ -134,8 +140,38 @@ class CIRF2000Frame extends Frame {
     /** Pole position (S + XY/2). */
     private final Development sxy2Development;
 
-    /** Cached date to avoid useless computation. */
-    private AbsoluteDate cachedDate;
+    /** "Left-central" date of the interpolation array. */
+    private double tCenter;
+
+    /** Step size of the interpolation array. */
+    private final double h;
+
+    /** X coordinate of current pole. */
+    private double xCurrent;
+
+    /** Y coordinate of current pole. */
+    private double yCurrent;
+
+    /** S coordinate of current pole. */
+    private double sCurrent;
+
+    /** X coordinate of reference poles. */
+    private final double[] xRef;
+
+    /** Y coordinate of reference poles. */
+    private final double[] yRef;
+
+    /** S coordinate of reference poles. */
+    private final double[] sRef;
+
+    /** Neville interpolation array for X coordinate. */
+    private final double[] xNeville;
+
+    /** Neville interpolation array for Y coordinate. */
+    private final double[] yNeville;
+
+    /** Neville interpolation array for S coordinate. */
+    private final double[] sNeville;
 
     /** Simple constructor.
      * @param date the date.
@@ -149,17 +185,43 @@ class CIRF2000Frame extends Frame {
 
         super(getGCRF(), null , name);
 
-        // nutation models are in micro arcseconds
-        final Class<CIRF2000Frame> c = CIRF2000Frame.class;
-        xDevelopment =
-            new Development(c.getResourceAsStream(X_MODEL), RADIANS_PER_ARC_SECOND * 1.0e-6, X_MODEL);
-        yDevelopment =
-            new Development(c.getResourceAsStream(Y_MODEL), RADIANS_PER_ARC_SECOND * 1.0e-6, Y_MODEL);
-        sxy2Development =
-            new Development(c.getResourceAsStream(S_XY2_MODEL), RADIANS_PER_ARC_SECOND * 1.0e-6, S_XY2_MODEL);
+        // set up an interpolation model on 12 points with a 1/2 day step
+        // this leads to an interpolation error of about 1.1e-10 arcseconds
+        final int n = 12;
+        tCenter  = Double.NaN;
+        h        = 43200.0;
+        xRef     = new double[n];
+        yRef     = new double[n];
+        sRef     = new double[n];
+        xNeville = new double[n];
+        yNeville = new double[n];
+        sNeville = new double[n];
+
+        // load the nutation model
+        xDevelopment    = loadModel(X_MODEL);
+        yDevelopment    = loadModel(Y_MODEL);
+        sxy2Development = loadModel(S_XY2_MODEL);
 
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
+
+    }
+
+    /** Load a series development model.
+     * @param name file name of the series development
+     * @return series development model
+     * @exception OrekitException if table cannot be loaded
+     */
+    private static Development loadModel(final String name)
+        throws OrekitException {
+
+        // get the table data
+        final InputStream stream = CIRF2000Frame.class.getResourceAsStream(name);
+
+        // nutation models are in micro arcseconds in the data files
+        // we store and use them in radians
+        return new Development(stream, RADIANS_PER_ARC_SECOND * 1.0e-6, name);
+
     }
 
     /** Update the frame to the given date.
@@ -170,118 +232,137 @@ class CIRF2000Frame extends Frame {
      */
     protected void updateFrame(final AbsoluteDate date) throws OrekitException {
 
-        if (cachedDate == null || cachedDate != date) {
-            //    offset from J2000.0 epoch in julian centuries
-            final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
-            final double ttc =  tts * JULIAN_CENTURY_PER_SECOND;
+        //    offset from J2000.0 epoch
+        final double t = date.durationFrom(AbsoluteDate.J2000_EPOCH);
 
-            // precession and nutation effect (pole motion in celestial frame)
-            final Rotation qRot = precessionNutationEffect(ttc);
+        // evaluate pole motion in celestial frame
+        setInterpolatedPoleCoordinates(t);
 
-            // combined effects
-            final Rotation combined = qRot.revert();
+        // set up the bias, precession and nutation rotation
+        final double x2Py2  = xCurrent * xCurrent + yCurrent * yCurrent;
+        final double zP1    = 1 + Math.sqrt(1 - x2Py2);
+        final double r      = Math.sqrt(x2Py2);
+        final double sPe2   = 0.5 * (sCurrent + Math.atan2(yCurrent, xCurrent));
+        final double cos    = Math.cos(sPe2);
+        final double sin    = Math.sin(sPe2);
+        final double xPr    = xCurrent + r;
+        final double xPrCos = xPr * cos;
+        final double xPrSin = xPr * sin;
+        final double yCos   = yCurrent * cos;
+        final double ySin   = yCurrent * sin;
+        final Rotation bpn  = new Rotation(zP1 * (xPrCos + ySin), -r * (yCos + xPrSin),
+                                           r * (xPrCos - ySin), zP1 * (yCos - xPrSin),
+                                           true);
 
-            // set up the transform from parent GCRS to ITRF
-            setTransform(new Transform(combined , Vector3D.ZERO));
-            cachedDate = date;
-        }
+        // set up the transform from parent GCRS to CIRF
+        setTransform(new Transform(bpn, Vector3D.ZERO));
+
     }
 
-    public static void main(String[] args) {
-        try {
-            CIRF2000Frame frame = new CIRF2000Frame(AbsoluteDate.J2000_EPOCH, "");
-            final BodiesElements elements0 =
-                new BodiesElements(F10, F20, F30, F40, F50, F60, F70, F80, F90, F100, F110, F120, F130, 0);
-            // pole position
-            final double x0 = frame.xDevelopment.value(0, elements0);
-            final double y0 = frame.yDevelopment.value(0, elements0);
-            final double s0 = frame.sxy2Development.value(0, elements0) - x0 * y0 / 2;
-            Rotation r0 = frame.precessionNutationEffect(0);
-            PrintStream p = new PrintStream("/tmp/x.dat");
-            for (double tt = 0; tt < 1e7; tt += 900) {
-                final double t = tt * JULIAN_CENTURY_PER_SECOND;
-                final BodiesElements elements =
-                    new BodiesElements((((F14 * t + F13) * t + F12) * t + F11) * t + F10, // mean anomaly of the Moon
-                                       (((F24 * t + F23) * t + F22) * t + F21) * t + F20, // mean anomaly of the Sun
-                                       (((F34 * t + F33) * t + F32) * t + F31) * t + F30, // L - &Omega; where L is the mean longitude of the Moon
-                                       (((F44 * t + F43) * t + F42) * t + F41) * t + F40, // mean elongation of the Moon from the Sun
-                                       (((F54 * t + F53) * t + F52) * t + F51) * t + F50, // mean longitude of the ascending node of the Moon
-                                       F61  * t +  F60, // mean Mercury longitude
-                                       F71  * t +  F70, // mean Venus longitude
-                                       F81  * t +  F80, // mean Earth longitude
-                                       F91  * t +  F90, // mean Mars longitude
-                                       F101 * t + F100, // mean Jupiter longitude
-                                       F111 * t + F110, // mean Saturn longitude
-                                       F121 * t + F120, // mean Uranus longitude
-                                       F131 * t + F130, // mean Neptune longitude
-                                       (F142 * t + F141) * t); // general accumulated precession in longitude
-
-                // pole position
-                final double x =    frame.xDevelopment.value(t, elements);
-                final double y =    frame.yDevelopment.value(t, elements);
-                final double s = frame.sxy2Development.value(t, elements) - x * y / 2;
-
-                final double x2 = x * x;
-                final double y2 = y * y;
-                final double r2 = x2 + y2;
-                final double e = Math.atan2(y, x);
-                final double d = Math.acos(Math.sqrt(1 - r2));
-                final Rotation rpS = new Rotation(Vector3D.PLUS_K, -s);
-                final Rotation rpE = new Rotation(Vector3D.PLUS_K, -e);
-                final Rotation rmD = new Rotation(Vector3D.PLUS_J, +d);
-
-                // combine the 4 rotations (rpE is used twice)
-                // IERS conventions (2003), section 5.3, equation 6
-                Rotation r = rpE.applyInverseTo(rmD.applyTo(rpE.applyTo(rpS)));
-                p.println(tt + " " + (x - x0) + " " + (y - y0) + " " + (s - s0)
-                          + " " + Rotation.distance(r, r0));
-            }
-        } catch (FileNotFoundException fnfe) {
-            fnfe.printStackTrace(System.err);
-        } catch (OrekitException oe) {
-            oe.printStackTrace(System.err);
-        }
-    }
-
-    /** Compute precession and nutation effects.
-     * @param t offset from J2000.0 epoch in julian centuries
-     * @return precession and nutation rotation
+    /** Set the interpolated pole coordinates.
+     * @param t offset from J2000.0 epoch in seconds
      */
-    public Rotation precessionNutationEffect(final double t) {
+    protected void setInterpolatedPoleCoordinates(final double t) {
+
+        final int n    = xRef.length;
+        final int nM12 = (n - 1) / 2;
+        if (Double.isNaN(tCenter) || (t < tCenter) || (t > tCenter + h)) {
+            // recompute interpolation array
+            setReferencePoints(t);
+        }
+
+        // interpolate pole coordinates using Neville's algorithm
+        System.arraycopy(xRef, 0, xNeville, 0, n);
+        System.arraycopy(yRef, 0, yNeville, 0, n);
+        System.arraycopy(sRef, 0, sNeville, 0, n);
+        final double theta = (t - tCenter) / h;
+        for (int j = 1; j < n; ++j) {
+            for (int i = n - 1; i >= j; --i) {
+                final double c1 = (theta + nM12 - i + j) / j;
+                final double c2 = (theta + nM12 - i) / j;
+                xNeville[i] = c1 * xNeville[i] - c2 * xNeville[i - 1];
+                yNeville[i] = c1 * yNeville[i] - c2 * yNeville[i - 1];
+                sNeville[i] = c1 * sNeville[i] - c2 * sNeville[i - 1];
+            }
+        }
+
+        xCurrent = xNeville[n - 1];
+        yCurrent = yNeville[n - 1];
+        sCurrent = sNeville[n - 1];
+
+    }
+
+    /** Set the reference points array.
+     * @param t offset from J2000.0 epoch in seconds
+     */
+    private void setReferencePoints(final double t) {
+
+        final int n    = xRef.length;
+        final int nM12 = (n - 1) / 2;
+
+        // evaluate new location of center interval
+        final double newTCenter = h * Math.floor(t / h);
+
+        // shift reusable reference points
+        int iMin = 0, iMax = n;
+        final int shift = (int) Math.rint((newTCenter - tCenter) / h);
+        if (!Double.isNaN(tCenter) && (Math.abs(shift) < n)) {
+            if (shift >= 0) {
+                System.arraycopy(xRef, shift, xRef, 0, n - shift);
+                System.arraycopy(yRef, shift, yRef, 0, n - shift);
+                System.arraycopy(sRef, shift, sRef, 0, n - shift);
+                iMin = n - shift;
+            } else {
+                System.arraycopy(xRef, 0, xRef, -shift, n + shift);
+                System.arraycopy(yRef, 0, yRef, -shift, n + shift);
+                System.arraycopy(sRef, 0, sRef, -shift, n + shift);
+                iMax = -shift;
+            }
+        }
+
+        // compute new reference points
+        tCenter = newTCenter;
+        for (int i = iMin; i < iMax; ++i) {
+            computePoleCoordinates(tCenter + (i - nM12) * h);
+            xRef[i] = xCurrent;
+            yRef[i] = yCurrent;
+            sRef[i] = sCurrent;
+        }
+        
+    }
+
+    /** Compute pole coordinates from precession and nutation effects.
+     * <p>This method applies the complete IAU-2000 model and hence is
+     * extremely slow. It is called by the {@link
+     * #getInterpolatedPoleCoordinates(double)} on a small number of reference
+     * points only.</p>
+     * @param t offset from J2000.0 epoch in seconds
+     */
+    protected void computePoleCoordinates(final double t) {
+
+        // offset in julian centuries
+        final double tc =  t * JULIAN_CENTURY_PER_SECOND;
 
         final BodiesElements elements =
-            new BodiesElements((((F14 * t + F13) * t + F12) * t + F11) * t + F10, // mean anomaly of the Moon
-                               (((F24 * t + F23) * t + F22) * t + F21) * t + F20, // mean anomaly of the Sun
-                               (((F34 * t + F33) * t + F32) * t + F31) * t + F30, // L - &Omega; where L is the mean longitude of the Moon
-                               (((F44 * t + F43) * t + F42) * t + F41) * t + F40, // mean elongation of the Moon from the Sun
-                               (((F54 * t + F53) * t + F52) * t + F51) * t + F50, // mean longitude of the ascending node of the Moon
-                               F61  * t +  F60, // mean Mercury longitude
-                               F71  * t +  F70, // mean Venus longitude
-                               F81  * t +  F80, // mean Earth longitude
-                               F91  * t +  F90, // mean Mars longitude
-                               F101 * t + F100, // mean Jupiter longitude
-                               F111 * t + F110, // mean Saturn longitude
-                               F121 * t + F120, // mean Uranus longitude
-                               F131 * t + F130, // mean Neptune longitude
-                               (F142 * t + F141) * t); // general accumulated precession in longitude
+            new BodiesElements((((F14 * tc + F13) * tc + F12) * tc + F11) * tc + F10, // mean anomaly of the Moon
+                               (((F24 * tc + F23) * tc + F22) * tc + F21) * tc + F20, // mean anomaly of the Sun
+                               (((F34 * tc + F33) * tc + F32) * tc + F31) * tc + F30, // L - &Omega; where L is the mean longitude of the Moon
+                               (((F44 * tc + F43) * tc + F42) * tc + F41) * tc + F40, // mean elongation of the Moon from the Sun
+                               (((F54 * tc + F53) * tc + F52) * tc + F51) * tc + F50, // mean longitude of the ascending node of the Moon
+                               F61  * tc +  F60, // mean Mercury longitude
+                               F71  * tc +  F70, // mean Venus longitude
+                               F81  * tc +  F80, // mean Earth longitude
+                               F91  * tc +  F90, // mean Mars longitude
+                               F101 * tc + F100, // mean Jupiter longitude
+                               F111 * tc + F110, // mean Saturn longitude
+                               F121 * tc + F120, // mean Uranus longitude
+                               F131 * tc + F130, // mean Neptune longitude
+                               (F142 * tc + F141) * tc); // general accumulated precession in longitude
 
         // pole position
-        final double x =    xDevelopment.value(t, elements);
-        final double y =    yDevelopment.value(t, elements);
-        final double s = sxy2Development.value(t, elements) - x * y / 2;
-
-        final double x2 = x * x;
-        final double y2 = y * y;
-        final double r2 = x2 + y2;
-        final double e = Math.atan2(y, x);
-        final double d = Math.acos(Math.sqrt(1 - r2));
-        final Rotation rpS = new Rotation(Vector3D.PLUS_K, -s);
-        final Rotation rpE = new Rotation(Vector3D.PLUS_K, -e);
-        final Rotation rmD = new Rotation(Vector3D.PLUS_J, +d);
-
-        // combine the 4 rotations (rpE is used twice)
-        // IERS conventions (2003), section 5.3, equation 6
-        return rpE.applyInverseTo(rmD.applyTo(rpE.applyTo(rpS)));
+        xCurrent =    xDevelopment.value(tc, elements);
+        yCurrent =    yDevelopment.value(tc, elements);
+        sCurrent = sxy2Development.value(tc, elements) - xCurrent * yCurrent / 2;
 
     }
 

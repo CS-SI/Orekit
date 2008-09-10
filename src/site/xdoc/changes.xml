@@ -35,10 +35,10 @@
         and reduces clutter on users by limiting the number of visible classes.
       </action>
       <action dev="luc" type="fix">
-        The simplified precession-nutation model used for CIRF 2000 frame has been
-        enhanced. Its accuracy is similar to the accuracy of the IAU-2000B model
-        used in the equinox-based approach (but this simplified model uses the new
-        CIO based approach).
+        The performance of IAU-2000 precession-nutation model computation has been
+        tremendously improved, using a combined caching and interpolation approach. The
+        simplified model (which was quite inaccurate in version 3.1) has therefore been
+        removed as it was not needed anymore.
       </action>
       <action dev="luc" type="fix">
         The ITRF 2005 frame is now supported instead of the older ITRF 2000 frame. The
