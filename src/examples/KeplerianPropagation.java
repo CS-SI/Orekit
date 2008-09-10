@@ -94,6 +94,7 @@ public class KeplerianPropagation {
         // we use a very simple integrator with a fixed step: classical Runge-Kutta
         FirstOrderIntegrator integrator = new ClassicalRungeKuttaIntegrator(1.0); // the step is one second
         NumericalPropagator propagator = new NumericalPropagator(integrator);
+        propagator.setInitialState(new SpacecraftState(initialOrbit));
         finalState = propagator.propagate(finalDate);
         System.out.println(" Final parameters with deltaT = -1000 s : " +
                            finalState.getOrbit());
