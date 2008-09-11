@@ -114,7 +114,7 @@ public abstract class AbstractPropagator implements Propagator {
 
     /** {@inheritDoc} */
     public Collection<EventDetector> getEventsDetectors() {
-        return eventsDetectorsManager.getEventsDetetors();
+        return eventsDetectorsManager.getEventsDetectors();
     }
 
     /** {@inheritDoc} */
