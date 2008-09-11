@@ -102,16 +102,17 @@ Frames
   more intermediate frames. Only one of these frames is supported in Orekit.
 
   Starting from GCRF, the first transform is a bias to convert to J2OOO, which was the
-  former reference. The J2000 frame is defined using the mean equinox at epoch J2000.0,
-  i.e. 2000-01-01T12:00:00 in Terrestrial Time (not UTC!). From this frame, applying
-  precession evolution between J2000.0 and current date defines a Mean Of Date frame
-  for current date and applying nutation defines a True Of Data frame. This frame is
-  similar in spirit to the CIRF in the new paradigm, but is not identical. From this, the
-  Greenwhich Apparent Sidereal Time is applied to reach the same Terrestrial Intermediate
-  Reference Frame as with the new paradigm. The last transform (pole motion) is the same
-  one already defined in the new paradigm.
+  former reference. The J2000 frame (which is also known as EME2000) is defined using
+  the mean equinox at epoch J2000.0, i.e. 2000-01-01T12:00:00 in Terrestrial Time (not
+  UTC!). From this frame, applying precession evolution between J2000.0 and current date
+  defines a Mean Of Date frame for current date and applying nutation defines a True Of
+  Data frame. This frame is similar in spirit to the CIRF in the new paradigm, but is not
+  identical. From this, the Greenwhich Apparent Sidereal Time is applied to reach the same
+  Terrestrial Intermediate Reference Frame as with the new paradigm. The last transform
+  (pole motion) is the same one already defined in the new paradigm.
 
-  In summary, six frames are involved along this path: GCRF, J2000, MoD, ToD, TIRF and ITRF.
+  In summary, six frames are involved along this path: GCRF, J2000/EME2000, MoD, ToD, TIRF
+  and ITRF.
 
   This paradigm is deprecated by IERS. It also involves additional complexity, first because
   of the larger number of frames and second because these frames are computed by mixed models
@@ -126,16 +127,35 @@ Frames
 
 *** Orekit implementation of IERS 2003 convention
 
-  In summary, Orekit implements 5 frames from IERS 2003 convention: GCRF, J2000, CIRF 2000,
-  TIRF 2000, ITRF 2005.
+  In summary, Orekit implements 5 frames from IERS 2003 convention: GCRF, J2000/EME2000,
+  CIRF 2000, TIRF 2000, ITRF 2005.
 
   Here is a schematic representation of the partial tree containing the supported IERS frames.
     
 [./images/iers-tree.png]
 
+  Since Orekit uses the new paradigm for IERS frames, the IAU-2000 precession-nutation model
+  implemented is the complete model which thousands of luni-solar and planetary terms (1600
+  terms for the x components, 1275 components for the y component and 66 components for the s
+  correction). Recomputing all these terms each time the CIRF frame is used would be really
+  slow. Orekit therefore implements a caching/interpolation to improve efficiency. The shortest
+  period for all the terms is about 5.5 days (it is related to one fifth of the moon revolution
+  period). The pole motion is therefore quite smooth at the day or week scale. This implies that
+  this motion can be computed accurately using a few reference points per day or week and
+  interpolated between these points. The trade-off selected for Orekit implementation is to use
+  12 points separated by half a day (43200 seconds) each. The resulting maximal interpolation error
+  on the frame is about 0.13 nanoarcseconds, as depicted in the following plot. The 12 reference
+  points are cached so the computation cost is roughly to perform two complete evaluations of the
+  luni-solar and planetary terms per simulation day, and one interpolation per simulation step,
+  regardless of the step size. This represent huge savings for steps shorter than one half day,
+  which is the rule in most application (step sizes are mostly of the range of a few tens of
+  seconds).</p>
+
+[./images/cirf2000-interpolation-error.png]
+
   For most purposes, the recommended frames to use are ITRF 2005 for terrestrial frame and
-  GCRF for celestial frame. J2000 could also be used for compatibility with older systems.
- 
+  GCRF for celestial frame. J2000/EME2000 could also be used for compatibility with other systems.
+
 ** Topocentric Frame
   
   This frame model allows to define the frame associated to any position at 
