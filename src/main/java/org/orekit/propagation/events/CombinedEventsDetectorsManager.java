@@ -91,13 +91,6 @@ public class CombinedEventsDetectorsManager implements Serializable {
         states.clear();
     }
 
-    /** Check if the handler does not have any condition.
-     * @return true if handler is empty
-     */
-    public boolean isEmpty() {
-        return states.isEmpty();
-    }
-
     /** Evaluate the impact of the proposed step on all handled
      * events detectors.
      * @param interpolator step interpolator for the proposed step
