@@ -304,7 +304,8 @@ class CIRF2000Frame extends Frame {
         final double newTCenter = h * Math.floor(t / h);
 
         // shift reusable reference points
-        int iMin = 0, iMax = n;
+        int iMin = 0;
+        int iMax = n;
         final int shift = (int) Math.rint((newTCenter - tCenter) / h);
         if (!Double.isNaN(tCenter) && (Math.abs(shift) < n)) {
             if (shift >= 0) {
@@ -328,7 +329,7 @@ class CIRF2000Frame extends Frame {
             yRef[i] = yCurrent;
             sRef[i] = sCurrent;
         }
-        
+
     }
 
     /** Compute pole coordinates from precession and nutation effects.
