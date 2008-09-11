@@ -63,7 +63,7 @@ public class CombinedEventsDetectorsManager implements Serializable {
 
     /** Add an event detector.
      * @param detector event detector to add
-     * @see #getEventsDetetors()
+     * @see #getEventsDetectors()
      * @see #clearEventsDetectors()
      */
     public void addEventDetector(final EventDetector detector) {
@@ -75,7 +75,7 @@ public class CombinedEventsDetectorsManager implements Serializable {
      * @see #addEventDetector(EventDetector)
      * @see #clearEventsDetectors()
      */
-    public Collection<EventDetector> getEventsDetetors() {
+    public Collection<EventDetector> getEventsDetectors() {
         final List<EventDetector> list = new ArrayList<EventDetector>();
         for (EventState state : states) {
             list.add(state.getEventDetector());
@@ -85,7 +85,7 @@ public class CombinedEventsDetectorsManager implements Serializable {
 
     /** Remove all the events detectors that have been added to the handler.
      * @see #addEventDetector(EventDetector)
-     * @see #getEventsDetetors()
+     * @see #getEventsDetectors()
      */
     public void clearEventsDetectors() {
         states.clear();
