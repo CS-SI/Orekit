@@ -548,6 +548,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         assertTrue(farTarget.durationFrom(propagated.getDate()) < 4000.0);
         assertEquals(0, pv.getPosition().getZ(), 1.0e-6);
         assertTrue(pv.getVelocity().getZ() > 0);
+        assertEquals(1, propagator.getEventsDetectors().size());
     }
 
     public void testPerigee() throws OrekitException {
