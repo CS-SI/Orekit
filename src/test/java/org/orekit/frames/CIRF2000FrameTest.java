@@ -27,7 +27,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TAIScale;
 
-public class CIRF2005FrameTest extends TestCase {
+public class CIRF2000FrameTest extends TestCase {
 
     public void testInterpolationAccuracy() throws OrekitException, FileNotFoundException {
 
@@ -69,7 +69,7 @@ public class CIRF2005FrameTest extends TestCase {
     }
 
     public static Test suite() {
-        return new TestSuite(CIRF2005FrameTest.class);
+        return new TestSuite(CIRF2000FrameTest.class);
     }
 
 }
