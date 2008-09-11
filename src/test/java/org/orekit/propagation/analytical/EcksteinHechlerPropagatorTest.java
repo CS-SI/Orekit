@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.analytical;
 
+import java.util.Collection;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -40,6 +42,7 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.ElevationDetector;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
@@ -548,7 +551,8 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         assertTrue(farTarget.durationFrom(propagated.getDate()) < 4000.0);
         assertEquals(0, pv.getPosition().getZ(), 1.0e-6);
         assertTrue(pv.getVelocity().getZ() > 0);
-        assertEquals(1, propagator.getEventsDetectors().size());
+        Collection<EventDetector> detectors = propagator.getEventsDetectors();
+        assertEquals(1, detectors.size());
         propagator.clearEventsDetectors();
         assertEquals(0, propagator.getEventsDetectors().size());
     }
