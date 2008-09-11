@@ -257,6 +257,7 @@ public class CunninghamAttractionModelTest extends TestCase {
     }
 
     public void setUp() {
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_FS, "");
         System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "regular-data");
         try {
             // Eigen c1 model truncated to degree 6

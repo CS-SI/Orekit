@@ -230,6 +230,7 @@ public class TleTest extends TestCase {
 
 
     public void setUp() {
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_FS, "");
         System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "regular-data");
     }
 

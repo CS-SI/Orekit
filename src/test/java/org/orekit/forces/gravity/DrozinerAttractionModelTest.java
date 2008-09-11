@@ -238,6 +238,7 @@ public class DrozinerAttractionModelTest extends TestCase {
     }
 
     public void setUp() {
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_FS, "");
         System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "regular-data");
         try {
             mu  =  3.986004415e+14;
