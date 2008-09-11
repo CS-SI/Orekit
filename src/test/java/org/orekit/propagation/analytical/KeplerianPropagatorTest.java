@@ -331,6 +331,40 @@ public class KeplerianPropagatorTest extends TestCase {
         }
     }
 
+    public void testException() throws OrekitException {
+        final KeplerianOrbit orbit =
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+                               Frame.getJ2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+        KeplerianPropagator propagator = new KeplerianPropagator(orbit);
+        propagator.setMasterMode(new OrekitStepHandler() {
+            private static final long serialVersionUID = 8810565433766884660L;
+            private int countDown = 10;
+            private AbsoluteDate previousCall = null;
+            public void handleStep(OrekitStepInterpolator interpolator,
+                                   boolean isLast) throws PropagationException {
+                if (previousCall != null) {
+                    assertTrue(interpolator.getInterpolatedDate().compareTo(previousCall) < 0);
+                }
+                if (--countDown == 0) {
+                    throw new PropagationException("dummy error", (Throwable) null);
+                }
+            }
+            public boolean requiresDenseOutput() {
+                return false;
+            }
+            public void reset() {
+            }
+        });
+        try {
+            propagator.propagate(new AbsoluteDate(orbit.getDate(), -3600));
+        } catch (PropagationException pe) {
+            // expected behavior
+            assertEquals("dummy error", pe.getMessage());
+        } catch (Exception e) {
+            fail("wrong exception caught");
+        }
+    }
+
     public void testAscendingNode() throws OrekitException {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,

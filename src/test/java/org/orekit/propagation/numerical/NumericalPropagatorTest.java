@@ -27,9 +27,13 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.sampling.OrekitStepHandler;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -99,6 +103,36 @@ public class NumericalPropagatorTest extends TestCase {
         assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
         assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 4.0e-10);
 
+    }
+
+    public void testException() throws OrekitException {
+        propagator.setMasterMode(new OrekitStepHandler() {
+            private static final long serialVersionUID = -6857910416285189873L;
+            private int countDown = 10;
+            private AbsoluteDate previousCall = null;
+            public void handleStep(OrekitStepInterpolator interpolator,
+                                   boolean isLast) throws PropagationException {
+                if (previousCall != null) {
+                    assertTrue(interpolator.getInterpolatedDate().compareTo(previousCall) < 0);
+                }
+                if (--countDown == 0) {
+                    throw new PropagationException("dummy error", (Throwable) null);
+                }
+            }
+            public boolean requiresDenseOutput() {
+                return false;
+            }
+            public void reset() {
+            }
+        });
+        try {
+            propagator.propagate(new AbsoluteDate(initDate, -3600));
+        } catch (PropagationException pe) {
+            // expected behavior
+            assertEquals("dummy error", pe.getMessage());
+        } catch (Exception e) {
+            fail("wrong exception caught");
+        }
     }
 
     public void testStopEvent() throws OrekitException {
