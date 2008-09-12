@@ -20,9 +20,9 @@ import java.io.InputStream;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.data.BodiesElements;
+import org.orekit.data.PoissonSeries;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.series.BodiesElements;
-import org.orekit.frames.series.Development;
 import org.orekit.time.AbsoluteDate;
 
 /** Celestial Intermediate Reference Frame 2000.
@@ -132,13 +132,13 @@ class CIRF2000Frame extends Frame {
     private static final String S_XY2_MODEL = IERS_2003_BASE + "tab5.2c.txt";
 
     /** Pole position (X). */
-    private final Development xDevelopment;
+    private final PoissonSeries xDevelopment;
 
     /** Pole position (Y). */
-    private final Development yDevelopment;
+    private final PoissonSeries yDevelopment;
 
     /** Pole position (S + XY/2). */
-    private final Development sxy2Development;
+    private final PoissonSeries sxy2Development;
 
     /** "Left-central" date of the interpolation array. */
     private double tCenter;
@@ -212,7 +212,7 @@ class CIRF2000Frame extends Frame {
      * @return series development model
      * @exception OrekitException if table cannot be loaded
      */
-    private static Development loadModel(final String name)
+    private static PoissonSeries loadModel(final String name)
         throws OrekitException {
 
         // get the table data
@@ -220,7 +220,7 @@ class CIRF2000Frame extends Frame {
 
         // nutation models are in micro arcseconds in the data files
         // we store and use them in radians
-        return new Development(stream, RADIANS_PER_ARC_SECOND * 1.0e-6, name);
+        return new PoissonSeries(stream, RADIANS_PER_ARC_SECOND * 1.0e-6, name);
 
     }
 

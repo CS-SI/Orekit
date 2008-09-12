@@ -14,28 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.frames.series;
+package org.orekit.data;
 
-/** Class for terms that do not depend on far planets and some other elements.
+/** Class for planetary only terms.
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-class NoFarPlanetsTerm extends SeriesTerm {
+class PlanetaryTerm extends SeriesTerm {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -6466886528892169861L;
-
-    /** Coefficient for mean anomaly of the Moon. */
-    private final int cL;
-
-    /** Coefficient for L - &Omega; where L is the mean longitude of the Moon. */
-    private final int cF;
-
-    /** Coefficient for mean elongation of the Moon from the Sun. */
-    private final int cD;
-
-    /** Coefficient for mean longitude of the ascending node of the Moon. */
-    private final int cOmega;
+    private static final long serialVersionUID = -666953066880447449L;
 
     /** Coefficient for mean Mercury longitude. */
     private final int cMe;
@@ -55,44 +43,49 @@ class NoFarPlanetsTerm extends SeriesTerm {
     /** Coefficient for mean Saturn longitude. */
     private final int cSa;
 
+    /** Coefficient for mean Uranus longitude. */
+    private final int cUr;
+
+    /** Coefficient for mean Neptune longitude. */
+    private final int cNe;
+
+    /** Coefficient for general accumulated precession in longitude. */
+    private final int cPa;
+
     /** Build a planetary term for nutation series.
      * @param sinCoeff coefficient for the sine of the argument
      * @param cosCoeff coefficient for the cosine of the argument
-     * @param cL coefficient for mean anomaly of the Moon
-     * @param cF coefficient for L - &Omega; where L is the mean longitude of the Moon
-     * @param cD coefficient for mean elongation of the Moon from the Sun
-     * @param cOmega coefficient for mean longitude of the ascending node of the Moon
      * @param cMe coefficient for mean Mercury longitude
      * @param cVe coefficient for mean Venus longitude
      * @param cE coefficient for mean Earth longitude
      * @param cMa coefficient for mean Mars longitude
      * @param cJu coefficient for mean Jupiter longitude
      * @param cSa coefficient for mean Saturn longitude
-     */
-    public NoFarPlanetsTerm(final double sinCoeff, final double cosCoeff,
-                            final int cL, final int cF, final int cD, final int cOmega,
-                            final int cMe, final int cVe, final int cE, final int cMa,
-                            final int cJu, final int cSa) {
+     * @param cUr coefficient for mean Uranus longitude
+     * @param cNe coefficient for mean Neptune longitude
+     * @param cPa coefficient for general accumulated precession in longitude
+      */
+    public PlanetaryTerm(final double sinCoeff, final double cosCoeff,
+                         final int cMe, final int cVe, final int cE, final int cMa, final int cJu,
+                         final int cSa, final int cUr, final int cNe, final int cPa) {
         super(sinCoeff, cosCoeff);
-        this.cL     = cL;
-        this.cF     = cF;
-        this.cD     = cD;
-        this.cOmega = cOmega;
-        this.cMe    = cMe;
-        this.cVe    = cVe;
-        this.cE     = cE;
-        this.cMa    = cMa;
-        this.cJu    = cJu;
-        this.cSa    = cSa;
+        this.cMe = cMe;
+        this.cVe = cVe;
+        this.cE  = cE;
+        this.cMa = cMa;
+        this.cJu = cJu;
+        this.cSa = cSa;
+        this.cUr = cUr;
+        this.cNe = cNe;
+        this.cPa = cPa;
     }
 
     /** {@inheritDoc} */
     protected double argument(final BodiesElements elements) {
-        return cL * elements.getL() + cF * elements.getF() +
-               cD * elements.getD() + cOmega * elements.getOmega() +
-               cMe * elements.getLMe() + cVe * elements.getLVe() + cE  * elements.getLE() +
-               cMa * elements.getLMa() + cJu * elements.getLJu() + cSa * elements.getLSa();
-
+        return cMe * elements.getLMe() + cVe * elements.getLVe() + cE  * elements.getLE() +
+               cMa * elements.getLMa() + cJu * elements.getLJu() +
+               cSa * elements.getLSa() + cUr * elements.getLUr() +
+               cNe * elements.getLNe() + cPa * elements.getPa();
     }
 
 }

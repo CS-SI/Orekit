@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.frames.series;
+package org.orekit.data;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,14 +28,13 @@ import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 
-
 /**
- * Class representing a development for nutation or GST computations.
+ * Class representing a Poisson series for nutation or ephemeris computations.
  * <p>
- * Developments are composed of a time polynomial part and a non-polynomial
+ * A Poisson series is composed of a time polynomial part and a non-polynomial
  * part which consist in summation series. The {@link SeriesTerm series terms}
- * are harmonic functions (combination of sines and cosines) of general
- * <em>arguments</em>. The arguments are combination of luni-solar or
+ * are harmonic functions (combination of sines and cosines) of polynomial
+ * <em>arguments</em>. The polynomial arguments are combinations of luni-solar or
  * planetary {@link BodiesElements elements}.
  * </p>
  *
@@ -43,7 +42,7 @@ import org.orekit.errors.OrekitException;
  * @see SeriesTerm
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class Development implements Serializable {
+public class PoissonSeries implements Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -3016824169123970737L;
@@ -58,13 +57,13 @@ public class Development implements Serializable {
     /** Non-polynomial series. */
     private SeriesTerm[][] series;
 
-    /** Build a development from an IERS table file.
+    /** Build a Poisson series from an IERS table file.
      * @param stream stream containing the IERS table
      * @param factor multiplicative factor to use for coefficients
      * @param name name of the resource file (for error messages only)
      * @exception OrekitException if stream is null or the table cannot be parsed
      */
-    public Development(final InputStream stream, final double factor, final String name)
+    public PoissonSeries(final InputStream stream, final double factor, final String name)
         throws OrekitException {
 
         if (stream == null) {
