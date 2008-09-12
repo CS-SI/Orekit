@@ -14,20 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.frames.series;
+package org.orekit.data;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.series.Development;
-
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-public class DevelopmentTest extends TestCase {
+public class PoissonSeriesTest extends TestCase {
 
     public void testBadData() {
         checkBadData("");
@@ -40,8 +38,8 @@ public class DevelopmentTest extends TestCase {
     public void testNoFile() {
         try {
             InputStream stream =
-                DevelopmentTest.class.getResourceAsStream("/org/orekit/resources/missing");
-            new Development(stream, 1.0, "missing");
+                PoissonSeriesTest.class.getResourceAsStream("/org/orekit/resources/missing");
+            new PoissonSeries(stream, 1.0, "missing");
             fail("exception expected");
         } catch (OrekitException oe) {
             // expected behaviour
@@ -54,8 +52,8 @@ public class DevelopmentTest extends TestCase {
                 "  0.0 + 0.0 t - 0.0 t^2 - 0.0 t^3 - 0.0 t^4 + 0.0 t^5\n"
                 + "j = 0  Nb of terms = 1\n"
                 + "1 0.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
-            Development nd =
-                new Development(new ByteArrayInputStream(data.getBytes()), 1.0, "");
+            PoissonSeries nd =
+                new PoissonSeries(new ByteArrayInputStream(data.getBytes()), 1.0, "");
             assertNotNull(nd);
         } catch (OrekitException oe) {
             fail(oe.getMessage());
@@ -68,8 +66,8 @@ public class DevelopmentTest extends TestCase {
                 "  0''.0 + 0''.0 t - 0''.0 t^2 - 0''.0 t^3 - 0''.0 t^4 + 0''.0 t^5\n"
                 + "j = 0  Nb of terms = 1\n"
                 + "1 0.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
-            Development nd =
-                new Development(new ByteArrayInputStream(data.getBytes()), 1.0, "");
+            PoissonSeries nd =
+                new PoissonSeries(new ByteArrayInputStream(data.getBytes()), 1.0, "");
             assertNotNull(nd);
         } catch (OrekitException oe) {
             fail(oe.getMessage());
@@ -136,7 +134,7 @@ public class DevelopmentTest extends TestCase {
             + " j = 4  Nb of terms = 1\n"
             + "       \n"
             + "  1600          -0.10          -0.02    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n";
-        assertNotNull(new Development(new ByteArrayInputStream(data.getBytes()),
+        assertNotNull(new PoissonSeries(new ByteArrayInputStream(data.getBytes()),
                                       1.0, "dummy"));
     }
 
@@ -145,21 +143,21 @@ public class DevelopmentTest extends TestCase {
         String directory = "/META-INF/IERS-conventions-2003/";
         InputStream xStream =
             getClass().getResourceAsStream(directory + "tab5.2a.txt");
-        assertNotNull(new Development(xStream, 1.0, "tab5.2a.txt"));
+        assertNotNull(new PoissonSeries(xStream, 1.0, "tab5.2a.txt"));
         InputStream yStream =
             getClass().getResourceAsStream(directory + "tab5.2b.txt");
-        assertNotNull(new Development(yStream, 1.0, "tab5.2b.txt"));
+        assertNotNull(new PoissonSeries(yStream, 1.0, "tab5.2b.txt"));
         InputStream zStream =
             getClass().getResourceAsStream(directory + "tab5.2c.txt");
-        assertNotNull(new Development(zStream, 1.0, "tab5.2c.txt"));
+        assertNotNull(new PoissonSeries(zStream, 1.0, "tab5.2c.txt"));
         InputStream gstStream =
             getClass().getResourceAsStream(directory + "tab5.4.txt");
-        assertNotNull(new Development(gstStream, 1.0, "tab5.4.txt"));
+        assertNotNull(new PoissonSeries(gstStream, 1.0, "tab5.4.txt"));
     }
 
     private void checkBadData(String data) {
         try {
-            new Development(new ByteArrayInputStream(data.getBytes()),
+            new PoissonSeries(new ByteArrayInputStream(data.getBytes()),
                             1.0, "<file-content>" + data + "</file-content>");
             fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -170,7 +168,7 @@ public class DevelopmentTest extends TestCase {
     }
 
     public static Test suite() {
-        return new TestSuite(DevelopmentTest.class);
+        return new TestSuite(PoissonSeriesTest.class);
     }
 
 }
