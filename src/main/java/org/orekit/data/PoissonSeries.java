@@ -67,7 +67,7 @@ public class PoissonSeries implements Serializable {
         throws OrekitException {
 
         if (stream == null) {
-            throw new OrekitException("unable to find nutation model file {0}",
+            throw new OrekitException("unable to find file {0}",
                                       new Object[] {
                                           name
                                       });
@@ -222,8 +222,7 @@ public class PoissonSeries implements Serializable {
 
         // sanity check
         if (Integer.parseInt(headerMatcher.group(1)) != expected) {
-            throw new OrekitException("missing serie j = {0} in nutation " +
-                                      "model file {1} (line {2})",
+            throw new OrekitException("missing serie j = {0} in file {1} (line {2})",
                                       new Object[] {
                                           Integer.valueOf(expected),
                                           name,
@@ -249,13 +248,13 @@ public class PoissonSeries implements Serializable {
 
         // sanity check
         if (line == null) {
-            throw new OrekitException("unexpected end of nutation model file {0} (after line {1})",
+            throw new OrekitException("unexpected end of file {0} (after line {1})",
                                       new Object[] {
                                           name, Integer.valueOf(lineNumber - 1)
                                       });
         }
 
-        // parse the nutation serie term
+        // parse the Poisson series term
         final String[] fields = line.split("\\p{Space}+");
         final int l = fields.length;
         if ((l == 17) || ((l == 18) && (fields[0].length() == 0))) {
@@ -270,7 +269,7 @@ public class PoissonSeries implements Serializable {
                                         Integer.parseInt(fields[l -  2]), Integer.parseInt(fields[l -  1]));
         }
 
-        throw new OrekitException("unable to parse line {0} of nutation model file {1}:\n{2}",
+        throw new OrekitException("unable to parse line {0} of file {1}:\n{2}",
                                   new Object[] {
                                       Integer.toString(lineNumber), name, line
                                   });
