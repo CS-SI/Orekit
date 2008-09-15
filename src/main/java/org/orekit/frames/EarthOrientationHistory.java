@@ -17,7 +17,7 @@
 package org.orekit.frames;
 
 import java.io.Serializable;
-import java.util.SortedSet;
+import java.util.NoSuchElementException;
 import java.util.TreeSet;
 
 import org.orekit.errors.OrekitException;
@@ -123,12 +123,30 @@ public class EarthOrientationHistory implements Serializable {
      * @return UT1-UTC in seconds (0 if date is outside covered range)
      */
     protected double getUT1MinusUTC(final AbsoluteDate date) {
-        if (selectBracketingEntries(date)) {
-            final double dtP = date.durationFrom(previous.getDate());
-            final double dtN = next.getDate().durationFrom(date);
-            return (dtP * next.getUT1MinusUTC() + dtN * previous.getUT1MinusUTC()) / (dtN + dtP);
+
+        // compute offsets assuming the current selection brackets the date
+        double dtP = (previous == null) ? -1.0 : date.durationFrom(previous.getDate());
+        double dtN = (next == null) ? -1.0 : next.getDate().durationFrom(date);
+
+        // check if bracketing was correct
+        if ((dtP < 0) || (dtN < 0)) {
+
+            // bad luck, we need to recompute brackets
+            if (!selectBracketingEntries(date)) {
+                // the specified date is outside of supported range
+                return 0;
+            }
+
+            // recompute offsets
+            dtP = date.durationFrom(previous.getDate());
+            dtN = next.getDate().durationFrom(date);
+
         }
-        return 0;
+
+        // interpolate UT1 - UTC
+        return (dtP * next.getUT1MinusUTC() + dtN * previous.getUT1MinusUTC()) /
+               (dtP + dtN);
+
     }
 
     /** Get the pole IERS Reference Pole correction.
@@ -139,41 +157,52 @@ public class EarthOrientationHistory implements Serializable {
      * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
      */
     protected PoleCorrection getPoleCorrection(final AbsoluteDate date) {
-        if (selectBracketingEntries(date)) {
-            final double dtP    = date.durationFrom(previous.getDate());
-            final double dtN    = next.getDate().durationFrom(date);
-            final double sum    = dtN + dtP;
-            final double coeffP = dtN / sum;
-            final double coeffN = dtP / sum;
-            return new PoleCorrection(coeffP * previous.getPoleCorrection().getXp() +
-                                      coeffN * next.getPoleCorrection().getXp(),
-                                      coeffP * previous.getPoleCorrection().getYp() +
-                                      coeffN * next.getPoleCorrection().getYp());
+
+        // compute offsets assuming the current selection brackets the date
+        double dtP = (previous == null) ? -1.0 : date.durationFrom(previous.getDate());
+        double dtN = (next == null) ? -1.0 : next.getDate().durationFrom(date);
+
+        // check if bracketing was correct
+        if ((dtP < 0) || (dtN < 0)) {
+
+            // bad luck, we need to recompute brackets
+            if (!selectBracketingEntries(date)) {
+                // the specified date is outside of supported range
+                return PoleCorrection.NULL_CORRECTION;
+            }
+
+            // recompute offsets
+            dtP = date.durationFrom(previous.getDate());
+            dtN = next.getDate().durationFrom(date);
+
         }
-        return PoleCorrection.NULL_CORRECTION;
+
+        // interpolate pole correction
+        final PoleCorrection pCorr = previous.getPoleCorrection();
+        final PoleCorrection nCorr = next.getPoleCorrection();
+        final double sum = dtP + dtN;
+        return new PoleCorrection((dtP * nCorr.getXp() + dtN * pCorr.getXp()) / sum,
+                                  (dtP * nCorr.getYp() + dtN * pCorr.getYp()) / sum);
+
     }
 
     /** Select the entries bracketing a specified date.
+     * <p>If the date is either before the first entry or after the last entry,
+     * previous and next will be set to null.</p>
      * @param  date target date
      * @return true if the date was found in the tables
      */
     private boolean selectBracketingEntries(final AbsoluteDate date) {
-
-        // don't search if the cached selection is fine
-        if ((previous != null) && (date.durationFrom(previous.getDate()) >= 0) &&
-            (next != null) && (date.durationFrom(next.getDate()) < 0)) {
-            // the current selection is already good
+        try {
+            // select the bracketing elements
+            next     = (EarthOrientationParameters) (eop.tailSet(date).first());
+            previous = (EarthOrientationParameters) (eop.headSet(next).last());
             return true;
+        } catch (NoSuchElementException nsee) {
+            previous = null;
+            next     = null;
+            return false;
         }
-
-        // select the bracketing elements (may be null)
-        final SortedSet<TimeStamped> head = eop.headSet(date);
-        previous = (EarthOrientationParameters) (head.isEmpty() ? null : head.last());
-        final SortedSet<TimeStamped> tail = eop.tailSet(date);
-        next     = (EarthOrientationParameters) (tail.isEmpty() ? null : tail.first());
-
-        return (previous != null) && (next != null);
-
     }
 
     /** Holder for the singleton.
