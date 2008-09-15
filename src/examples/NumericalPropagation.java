@@ -19,6 +19,8 @@
 import java.text.ParseException;
 
 import org.apache.commons.math.ode.FirstOrderIntegrator;
+import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
@@ -152,21 +154,28 @@ public class NumericalPropagation {
                                     KeplerianOrbit.MEAN_ANOMALY, 
                                     inertialFrame, initialDate, mu);
 
-        SpacecraftState initialState = new SpacecraftState(initialOrbit, ae);
+        SpacecraftState initialState = new SpacecraftState(initialOrbit);
 
         /* ***************** */
         /*   Extrapolation   */
         /* ***************** */
 
         // Integrator
-
-        FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-8);
-        // adaptive step integrator with a minimum step of 1 and a maximum step of 1000, and a relative precision of 1.0e-8
+        final double minStep = 0.001;
+        final double maxstep = 1000.0;
+        final double[] absoluteTolerance = {
+            0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
+        };
+        final double[] relativeTolerance = {
+            1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
+        };
+        AdaptiveStepsizeIntegrator integrator =
+            new DormandPrince853Integrator(minStep, maxstep,
+                                           absoluteTolerance, relativeTolerance);
 
         NumericalPropagator propagator = new NumericalPropagator(integrator);
 
-        // Pertubative gravity field :
-
+        // Perturbing gravity field :
         double[][] c = new double[3][1];
         c[0][0] = 0.0;
         c[2][0] = c20;
