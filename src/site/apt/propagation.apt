@@ -99,25 +99,52 @@ Propagation
 	
 ** Numerical propagation
 
-  It is the most important part of the OREKIT project. Based on commons-math
+  It is the most important part of the Orekit project. Based on commons-math
   integrators, the <NumericalPropagator> class realizes the interface between 
   space mechanics and mathematical resolutions. If its utilization seems difficult 
   on first sight, it is in  fact quite clear and intuitive.
 
-
   The mathematical problem to integrate is a dimension seven time derivative equations
-  system. The six first equations are given by the Gauss equations (expressed
-  in <EquinoctialOrbit>) and the seventh one is simply the flow rate for mass evolution
-  during maneuvers. This first order system is computed by the <TimeDerivativesEquations>
-  class. It will be instanced by the propagator and then be modified at each step 
-  (a fixed t value) by all the needed force models which will add their contribution, 
-  the perturbing acceleration.
+  system. The six first elements of the state vector are the <EquinoctialOrbit> parameters,
+  i.e a, ex, ey, hx, hy, lv in meters and radians, and the last element is the mass in
+  kilograms. The time derivatives are computed automatically by the Orekit using the
+  Gauss equations for the first parameters and the flow rate for mass evolution
+  during maneuvers. The users only needs to register the various force models needed for
+  the simulation. Various force models are already available in the library and specialized
+  ones can be added by users easily for specific needs.
  
   The integrators (<first order integrators>) provided by commons-math need 
   the state vector at t0, the state vector first time derivative at t0,
   and then calculates the next step state vector, and ask for the next first 
-  time derivative, etc. until it reaches the final asked date. 
+  time derivative, etc. until it reaches the final asked date. These underlying numerical
+  integrators can also be configured. Typical tuning parameters for adaptive stepsize
+  integrators are the min, max and perhaps start step size as well as the absolute and/or
+  relative errors thresholds. The following code snippet shows a typical setting for Low
+  Earth Orbit propagation:
 
++---------------------
+// steps limits
+final double minStep  = 0.001;
+final double maxStep  = 1000;
+final double initStep = 60;
+
+// error control parameters (absolute and relative)
+final double[] absoluteTolerance = {
+    0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
+};
+final double[] relativeTolerance = {
+    1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
+};
+
+// set up mathematical integrator
+AdaptiveStepsizeIntegrator integrator =
+    new DormandPrince853Integrator(minStep, maxStep,
+                                   absoluteTolerance, relativeTolerance);
+integrator.setInitialStepSize(initStep);
+
+// set up space dynamics propagator
+propagator = new NumericalPropagator(integrator);
++---------------------
 
 * Authors
 
