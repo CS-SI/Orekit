@@ -78,8 +78,33 @@ import org.orekit.time.AbsoluteDate;
  * keplerian forces. In this case, the simpler {@link
  * org.orekit.propagation.analytical.KeplerianPropagator KeplerianPropagator} class would
  * perhaps be more effective. The propagator is only in one mode at a time.</p>
+ * <p>The underlying numerical integrator set up in the constructor can also be configured.
+ * Typical tuning parameters for adaptive stepsize integrators are the min, max and perhaps
+ * start step size as well as the absolute and/or relative errors thresholds. The state
+ * that is seen by the integrator is a simple seven elements double array. The six first
+ * elements are the {@link EquinoctialOrbit equinoxial orbit parameters} (a, e<sub>x</sub>,
+ * e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, l<sub>v</sub>) in meters and radians, and
+ * the last element is the mass in kilograms. The following code snippet shows a typical
+ * setting for Low Earth Orbit propagation:</p>
+ * <pre>
+ * final double minStep  = 0.001;
+ * final double maxStep  = 1000;
+ * final double initStep = 60;
+ * final double[] absTolerance = {
+ *     0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
+ * };
+ * final double[] relTolerance = {
+ *     1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
+ * };
+ * AdaptiveStepsizeIntegrator integrator =
+ *     new DormandPrince853Integrator(minStep, maxStep, absTolerance, relTolerance);
+ * integrator.setInitialStepSize(initStep);
+ * propagator = new NumericalPropagator(integrator);
+ * </pre>
  * <p>The same propagator can be reused for several orbit extrapolations, by resetting
- * the initial state without modifying the other configuration parameters.</p>
+ * the initial state without modifying the other configuration parameters. However, the
+ * same instance cannot be used simultaneously by different threads, the class is not
+ * thread-safe.</p>
 
  * @see SpacecraftState
  * @see ForceModel
@@ -126,6 +151,9 @@ public class NumericalPropagator implements Propagator {
 
     /** Integrator selected by the user for the orbital extrapolation process. */
     private final FirstOrderIntegrator integrator;
+
+    /** Counter for differential equations calls. */
+    private int calls;
 
     /** Gauss equations handler. */
     private TimeDerivativesEquations adder;
@@ -380,6 +408,15 @@ public class NumericalPropagator implements Propagator {
         }
     }
 
+    /** Get the number of calls to the differential equations computation method.
+     * <p>The number of calls is reset each time the {@link #propagate(AbsoluteDate)}
+     * method is called.</p>
+     * @return number of calls to the differential equations computation method
+     */
+    public int getCalls() {
+        return calls;
+    }
+
     /** Wrap an Orekit event detector and register it to the integrator.
      * @param osf event handler to wrap
      */
@@ -398,6 +435,11 @@ public class NumericalPropagator implements Propagator {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -1927530118454989452L;
+
+        /** Build a new instance. */
+        public DifferentialEquations() {
+            calls = 0;
+        }
 
         /** {@inheritDoc} */
         public int getDimension() {
@@ -429,6 +471,9 @@ public class NumericalPropagator implements Propagator {
 
                 // finalize derivatives by adding the Kepler contribution
                 adder.addKeplerContribution();
+
+                // increment calls counter
+                ++calls;
 
             } catch (OrekitException oe) {
                 throw new DerivativeException(oe.getMessage(), new String[0]);

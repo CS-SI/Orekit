@@ -22,6 +22,11 @@
   <body>
     <release version="4.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="add">
+        A getCalls() method has been added to the NumericalPropagator class to count the
+        number of calls to the differential equations computation method. This helps
+        tuning the underlying integrator settings in order to improve performances.
+      </action>
       <action dev="luc" type="update">
         Improved external data configuration. Now two different properties can be
         used to define both a filesystem-located and a classpath-located data
