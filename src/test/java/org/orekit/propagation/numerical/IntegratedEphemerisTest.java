@@ -23,8 +23,8 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Vector3D;
-import org.apache.commons.math.ode.FirstOrderIntegrator;
-import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
+import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -54,7 +54,15 @@ public class IntegratedEphemerisTest extends TestCase {
         KeplerianPropagator keplerEx = new KeplerianPropagator(initialOrbit);
 
         // Numerical propagator definition
-        FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, 86400, 0, 10e-13);
+        double[] absTolerance = {
+            0.0001, 1.0e-11, 1.0e-11, 1.0e-8, 1.0e-8, 1.0e-8, 0.001
+        };
+        double[] relTolerance = {
+            1.0e-8, 1.0e-8, 1.0e-8, 1.0e-9, 1.0e-9, 1.0e-9, 1.0e-7
+        };
+        AdaptiveStepsizeIntegrator integrator =
+            new DormandPrince853Integrator(0.001, 500, absTolerance, relTolerance);
+        integrator.setInitialStepSize(100);
         NumericalPropagator numericEx = new NumericalPropagator(integrator);
 
         // Integrated ephemeris
@@ -64,6 +72,7 @@ public class IntegratedEphemerisTest extends TestCase {
         numericEx.setEphemerisMode();
         numericEx.setInitialState(new SpacecraftState(initialOrbit));
         numericEx.propagate(finalDate);
+        assertTrue(numericEx.getCalls() < 3200);
         BoundedPropagator ephemeris = numericEx.getGeneratedEphemeris();
 
         // tests
@@ -73,7 +82,7 @@ public class IntegratedEphemerisTest extends TestCase {
             SpacecraftState numericIntermediateOrbit = ephemeris.propagate(intermediateDate);
             Vector3D kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
             Vector3D numPosition = numericIntermediateOrbit.getPVCoordinates().getPosition();
-            assertEquals(0, kepPosition.subtract(numPosition).getNorm(), 10e-2);
+            assertEquals(0, kepPosition.subtract(numPosition).getNorm(), 0.06);
         }
 
         // test inv

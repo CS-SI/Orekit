@@ -22,13 +22,13 @@ import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
-import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
+import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.attitudes.InertialLaw;
 import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -121,8 +121,16 @@ public class ConstantThrustManeuverTest extends TestCase {
         final ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(fireDate, duration, f, isp, Vector3D.PLUS_I);
 
-        final NumericalPropagator propagator =
-            new NumericalPropagator(new GraggBulirschStoerIntegrator(1e-50, 1000, 0, 1e-08));
+        double[] absTolerance = {
+            0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
+        };
+        double[] relTolerance = {
+            1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
+        };
+        AdaptiveStepsizeIntegrator integrator =
+            new DormandPrince853Integrator(0.001, 1000, absTolerance, relTolerance);
+        integrator.setInitialStepSize(60);
+        final NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setInitialState(initialState);
         propagator.setAttitudeLaw(law);
         propagator.addForceModel(maneuver);

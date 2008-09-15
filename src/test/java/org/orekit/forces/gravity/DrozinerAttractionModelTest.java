@@ -26,16 +26,15 @@ import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
-import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.DerivativeException;
-import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
+import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.Sun;
-import org.orekit.forces.gravity.CunninghamAttractionModel;
-import org.orekit.forces.gravity.DrozinerAttractionModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -43,8 +42,8 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
-import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -90,6 +89,7 @@ public class DrozinerAttractionModelTest extends TestCase {
         propagator.setMasterMode(86400, new SpotStepHandler());
         propagator.setInitialState(new SpacecraftState(orbit));
         propagator.propagate(new AbsoluteDate(date, 7 * 86400));
+        assertTrue(propagator.getCalls() < 9200);
 
     }
 
@@ -160,8 +160,9 @@ public class DrozinerAttractionModelTest extends TestCase {
         // let the step handler perform the test
         propagator.setMasterMode(20,
                                  new EckStepHandler(initialOrbit, ae, mu, c20, c30, c40, c50, c60));
-        propagator.setInitialState(new SpacecraftState(initialOrbit, mu));
+        propagator.setInitialState(new SpacecraftState(initialOrbit));
         propagator.propagate(new AbsoluteDate(date, 50000));
+        assertTrue(propagator.getCalls() < 1300);
 
     }
 
@@ -196,10 +197,10 @@ public class DrozinerAttractionModelTest extends TestCase {
                 Vector3D W = Vector3D.crossProduct(posEHP, velEHP).normalize();
                 Vector3D N = Vector3D.crossProduct(W, T);
 
-                assertTrue(dif.getNorm() < 104);
-                assertTrue(Math.abs(Vector3D.dotProduct(dif, T)) < 104);
-                assertTrue(Math.abs(Vector3D.dotProduct(dif, N)) <  53);
-                assertTrue(Math.abs(Vector3D.dotProduct(dif, W)) <  13);
+                assertTrue(dif.getNorm() < 111);
+                assertTrue(Math.abs(Vector3D.dotProduct(dif, T)) < 111);
+                assertTrue(Math.abs(Vector3D.dotProduct(dif, N)) <  54);
+                assertTrue(Math.abs(Vector3D.dotProduct(dif, W)) <  12);
 
             } catch (PropagationException e) {
                 e.printStackTrace();
@@ -224,7 +225,7 @@ public class DrozinerAttractionModelTest extends TestCase {
                                                        Frame.getJ2000(), date, mu);
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(100));
         propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, ae, mu, C, S));
-        propagator.setInitialState(new SpacecraftState(orbit, mu));
+        propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState cunnOrb = propagator.propagate(new AbsoluteDate(date, 86400));
 
         propagator.removeForceModels();
@@ -235,6 +236,8 @@ public class DrozinerAttractionModelTest extends TestCase {
 
         Vector3D dif = cunnOrb.getPVCoordinates().getPosition().subtract(drozOrb.getPVCoordinates().getPosition());
         assertEquals(0, dif.getNorm(), 1.0e-6);
+        assertTrue(propagator.getCalls() < 3500);
+
     }
 
     public void setUp() {
@@ -249,7 +252,16 @@ public class DrozinerAttractionModelTest extends TestCase {
             c50 =  2.27888264414e-7;
             c60 = -5.40618601332e-7;
             ITRF2005 = Frame.getITRF2005();
-            propagator = new NumericalPropagator(new GraggBulirschStoerIntegrator(1, 1000, 0, 1.0e-4));
+            double[] absTolerance = {
+                0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
+            };
+            double[] relTolerance = {
+                1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
+            };
+            AdaptiveStepsizeIntegrator integrator =
+                new DormandPrince853Integrator(0.001, 1000, absTolerance, relTolerance);
+            integrator.setInitialStepSize(60);
+            propagator = new NumericalPropagator(integrator);
 
         } catch (OrekitException oe) {
             fail(oe.getMessage());

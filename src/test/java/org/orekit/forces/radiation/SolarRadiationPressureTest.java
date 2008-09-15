@@ -24,16 +24,14 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.commons.math.ode.DerivativeException;
-import org.apache.commons.math.ode.FirstOrderIntegrator;
-import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
+import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.Sun;
-import org.orekit.forces.radiation.SolarRadiationPressure;
-import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -80,7 +78,8 @@ public class SolarRadiationPressureTest extends TestCase {
             currentDate = new AbsoluteDate(date , t);
             try {
 
-                double ratio = SRP.getLightningRatio(k.propagate(currentDate).getPVCoordinates().getPosition(),Frame.getJ2000(), currentDate );
+                double ratio = SRP.getLightningRatio(k.propagate(currentDate).getPVCoordinates().getPosition(),
+                                                     Frame.getJ2000(), currentDate);
 
                 if(Math.floor(ratio)!=changed) {
                     changed = Math.floor(ratio);
@@ -102,8 +101,11 @@ public class SolarRadiationPressureTest extends TestCase {
                                              new TimeComponents(13, 59, 27.816),
                                              UTCScale.getInstance());
         Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
-                                                         Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
-                                                         0.1, 2, Frame.getJ2000(), date, mu);
+                                           Math.tan(0.001745329)*Math.cos(2*Math.PI/3),
+                                           Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
+                                           0.1, 2, Frame.getJ2000(), date, mu);
+        final double period = orbit.getKeplerianPeriod();
+        assertEquals(86164, period, 1);
         Sun sun = new Sun();
 
         // creation of the force model
@@ -114,19 +116,25 @@ public class SolarRadiationPressureTest extends TestCase {
             new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
                                        (RadiationSensitive) new SphericalSpacecraft(500.0, 0.7, 0.7, 0.7));
 
-        double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/mu);
-
-        assertEquals(86164, period,1);
         // creation of the propagator
-        FirstOrderIntegrator integrator = new GraggBulirschStoerIntegrator(1, period/4, 0, 10e-4);
-        NumericalPropagator calc = new NumericalPropagator(integrator);
+        double[] absTolerance = {
+            0.1, 1.0e-9, 1.0e-9, 1.0e-5, 1.0e-5, 1.0e-5, 0.001
+        };
+        double[] relTolerance = {
+            1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6, 1.0e-6, 1.0e-6, 1.0e-7
+        };
+        AdaptiveStepsizeIntegrator integrator =
+            new DormandPrince853Integrator(900.0, 60000, absTolerance, relTolerance);
+        integrator.setInitialStepSize(3600);
+        final NumericalPropagator calc = new NumericalPropagator(integrator);
         calc.addForceModel(SRP);
 
         // Step Handler
         calc.setMasterMode(Math.floor(15 * period), new SolarStepHandler());
-        AbsoluteDate finalDate = new AbsoluteDate(date , 90*period);
+        AbsoluteDate finalDate = new AbsoluteDate(date, 20 * period);
         calc.setInitialState(new SpacecraftState(orbit, 1500.0));
         calc.propagate(finalDate);
+        assertTrue(calc.getCalls() < 7100);
     }
 
     public static void checkRadius(double radius , double min , double max) {
@@ -148,9 +156,9 @@ public class SolarRadiationPressureTest extends TestCase {
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {
-            double radius = Math.sqrt((currentState.getEquinoctialEx()-0.00940313)*(currentState.getEquinoctialEx()-0.00940313)
-                                      + (currentState.getEquinoctialEy()-0.013679)*(currentState.getEquinoctialEy()-0.013679));
-            checkRadius(radius , 0.00351 , 0.00394);
+            final double dex = currentState.getEquinoctialEx() - 0.00940313;
+            final double dey = currentState.getEquinoctialEy() - 0.013679;
+            checkRadius(Math.sqrt(dex * dex + dey * dey), 0.00351, 0.00394);
         }
 
     }

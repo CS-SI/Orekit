@@ -21,6 +21,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.orekit.errors.OrekitException;
@@ -99,7 +100,7 @@ public class NumericalPropagatorTest extends TestCase {
         assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
         assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
         assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
-        assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 4.0e-10);
+        assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 2.0e-9);
 
     }
 
@@ -189,7 +190,7 @@ public class NumericalPropagatorTest extends TestCase {
         assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
         assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
         assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
-        assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 4.0e-10);
+        assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 6.0e-10);
     }
 
     public void testContinueEvent() throws OrekitException {
@@ -212,7 +213,7 @@ public class NumericalPropagatorTest extends TestCase {
         assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
         assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
         assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
-        assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 4.0e-10);
+        assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 6.0e-10);
     }
 
     private void setGotHere(boolean gotHere) {
@@ -227,8 +228,16 @@ public class NumericalPropagatorTest extends TestCase {
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                  Frame.getJ2000(), initDate, mu);
         initialState = new SpacecraftState(orbit);
-        propagator =
-            new NumericalPropagator(new DormandPrince853Integrator(0.0, 10000.0, 1.0e-8, 1.0e-8));
+        double[] absTolerance = {
+            0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
+        };
+        double[] relTolerance = {
+            1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
+        };
+        AdaptiveStepsizeIntegrator integrator =
+            new DormandPrince853Integrator(0.001, 1000, absTolerance, relTolerance);
+        integrator.setInitialStepSize(60);
+        propagator = new NumericalPropagator(integrator);
         propagator.setInitialState(initialState);
         gotHere = false;
     }
