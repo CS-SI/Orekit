@@ -16,24 +16,32 @@
  */
 package org.orekit.bodies;
 
-import org.apache.commons.math.geometry.Vector3D;
+import java.io.Serializable;
+
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinates;
 
-
-/** Interface for celestial bodies like Sun or Moon.
+/** Interface for celestial bodies like Sun, Moon or solar system planets.
  * @author Luc Maisonobe
+ * @see SolarSystemBody
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public interface CelestialBody {
+public interface CelestialBody extends Serializable {
 
-    /** Get the position of the body in the selected frame.
+    /** Get the {@link PVCoordinates} of the body in the selected frame.
      * @param date current date
      * @param frame the frame where to define the position
-     * @return position of the body (m)
+     * @return position/velocity of the body (m and m/s)
      * @exception OrekitException if position cannot be computed in given frame
      */
-    Vector3D getPosition(AbsoluteDate date, Frame frame) throws OrekitException;
+    PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
+        throws OrekitException;
+
+    /** Get the attraction coefficient of the body.
+     * @return attraction coefficient of the body (m<sup>3</sup>/s<sup>2</sup>)
+     */
+    double getGM();
 
 }
