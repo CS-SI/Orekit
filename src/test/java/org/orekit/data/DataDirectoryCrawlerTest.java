@@ -16,8 +16,8 @@
  */
 package org.orekit.data;
 
-import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.text.ParseException;
 
@@ -80,7 +80,7 @@ public class DataDirectoryCrawlerTest extends TestCase {
         System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "");
         try {
             new DataDirectoryCrawler().crawl(new DataFileCrawler(".*") {
-                protected void visit(BufferedReader reader) throws IOException {
+                protected void visit(InputStream input) throws IOException {
                     if (getFile().getName().equals("UTC-TAI.history")) {
                         throw new IOException("dummy error");
                     }
@@ -104,7 +104,7 @@ public class DataDirectoryCrawlerTest extends TestCase {
         System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "");
         try {
             new DataDirectoryCrawler().crawl(new DataFileCrawler(".*") {
-                protected void visit(BufferedReader reader) throws ParseException {
+                protected void visit(InputStream input) throws ParseException {
                     if (getFile().getName().equals("UTC-TAI.history")) {
                         throw new ParseException("dummy error", 0);
                     }
@@ -140,7 +140,7 @@ public class DataDirectoryCrawlerTest extends TestCase {
             super(pattern);
             count = 0;
         }
-        protected void visit(BufferedReader reader) {
+        protected void visit(InputStream input) {
             ++count;
         }
         public int getCount() {

@@ -27,18 +27,18 @@ import org.orekit.time.TimeStamped;
 
 public abstract class AbstractFilesLoaderTest extends TestCase {
 
-    protected TreeSet<TimeStamped> eop;
+    protected TreeSet<TimeStamped> set;
 
     protected void setRoot(String directoryName) throws OrekitException {
         System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_FS, "");
         System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, directoryName);
-        eop = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
+        set = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
     }
 
     protected int getMaxGap() {
         double maxGap = 0;
         TimeStamped previous = null;
-        for (final TimeStamped current : eop) {
+        for (final TimeStamped current : set) {
             if (previous != null) {
                 maxGap = Math.max(maxGap, current.getDate().durationFrom(previous.getDate()));
             }
@@ -48,7 +48,7 @@ public abstract class AbstractFilesLoaderTest extends TestCase {
     }
 
     public void tearDown() {
-        eop = null;
+        set = null;
     }
 
 }

@@ -30,20 +30,20 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
 
     public void testMissingMonths() throws OrekitException {
         setRoot("missing-months");
-        new EOP05C04FilesLoader(eop).loadEOP();
+        new EOP05C04FilesLoader(set).loadEOP();
         assertTrue(getMaxGap() > 5);
     }
 
     public void testStartDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        new EOP05C04FilesLoader(eop).loadEOP();
-        assertEquals(52640, ((EarthOrientationParameters) eop.first()).getMjd());
+        new EOP05C04FilesLoader(set).loadEOP();
+        assertEquals(52640, ((EarthOrientationParameters) set.first()).getMjd());
     }
 
     public void testEndDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        new EOP05C04FilesLoader(eop).loadEOP();
-        assertEquals(53735, ((EarthOrientationParameters) eop.last()).getMjd());
+        new EOP05C04FilesLoader(set).loadEOP();
+        assertEquals(53735, ((EarthOrientationParameters) set.last()).getMjd());
     }
 
     public static Test suite() {

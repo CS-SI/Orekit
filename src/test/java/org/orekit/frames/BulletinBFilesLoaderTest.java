@@ -30,22 +30,22 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
 
     public void testMissingMonths() throws OrekitException {
         setRoot("missing-months");
-        new BulletinBFilesLoader(eop).loadEOP();
+        new BulletinBFilesLoader(set).loadEOP();
         assertTrue(getMaxGap() > 5);
     }
 
     public void testStartDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        new BulletinBFilesLoader(eop).loadEOP();
+        new BulletinBFilesLoader(set).loadEOP();
         assertTrue(getMaxGap() < 5);
-        assertEquals(53709, ((EarthOrientationParameters) eop.first()).getMjd());
+        assertEquals(53709, ((EarthOrientationParameters) set.first()).getMjd());
     }
 
     public void testEndDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        new BulletinBFilesLoader(eop).loadEOP();
+        new BulletinBFilesLoader(set).loadEOP();
         assertTrue(getMaxGap() < 5);
-        assertEquals(53799, ((EarthOrientationParameters) eop.last()).getMjd());
+        assertEquals(53799, ((EarthOrientationParameters) set.last()).getMjd());
     }
 
 
