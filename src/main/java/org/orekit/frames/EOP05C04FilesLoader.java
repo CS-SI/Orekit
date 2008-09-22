@@ -18,7 +18,9 @@ package org.orekit.frames;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.TreeSet;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.SortedSet;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataDirectoryCrawler;
@@ -92,13 +94,13 @@ class EOP05C04FilesLoader extends DataFileCrawler {
         Pattern.compile("^\\d+ +\\d+ +\\d+ +\\d+(?: +-?\\d+\\.\\d+){12}$");
 
     /** Earth Orientation Parameters entries. */
-    private TreeSet<TimeStamped> eop;
+    private SortedSet<TimeStamped> eop;
 
     /** Build a loader for IERS EOP 05 C04 files.
      * @param eop set where to <em>add</em> EOP data
      * (pre-existing data is preserved)
      */
-    public EOP05C04FilesLoader(final TreeSet<TimeStamped> eop) {
+    public EOP05C04FilesLoader(final SortedSet<TimeStamped> eop) {
 
         super("^eopc04_IAU2000\\.(\\d\\d)(?:\\.gz)?$");
         this.eop = eop;
@@ -116,8 +118,11 @@ class EOP05C04FilesLoader extends DataFileCrawler {
     }
 
     /** {@inheritDoc} */
-    protected void visit(final BufferedReader reader)
+    protected void visit(final InputStream input)
         throws IOException, OrekitException {
+
+        // set up a reader for line-oriented bulletin B files
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
         // read all file, ignoring header
         int lineNumber = 0;

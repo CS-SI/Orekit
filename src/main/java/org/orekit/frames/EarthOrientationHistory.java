@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 import java.util.NoSuchElementException;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.orekit.errors.OrekitException;
@@ -37,7 +38,7 @@ public class EarthOrientationHistory implements Serializable {
     private static final long serialVersionUID = 9141543606409905199L;
 
     /** Earth Orientation Parameters. */
-    private TreeSet<TimeStamped> eop = null;
+    private SortedSet<TimeStamped> eop = null;
 
     /** Previous EOP entry. */
     private EarthOrientationParameters previous;

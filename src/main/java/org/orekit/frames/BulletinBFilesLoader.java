@@ -18,7 +18,9 @@ package org.orekit.frames;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.TreeSet;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,13 +61,13 @@ class BulletinBFilesLoader extends DataFileCrawler {
     private final Pattern section2DataPattern;
 
     /** Earth Orientation Parameters entries. */
-    private TreeSet<TimeStamped> eop;
+    private SortedSet<TimeStamped> eop;
 
     /** Create a loader for IERS bulletin B files.
      * @param eop set where to <em>add</em> EOP data
      * (pre-existing data is preserved)
      */
-    public BulletinBFilesLoader(final TreeSet<TimeStamped> eop) {
+    public BulletinBFilesLoader(final SortedSet<TimeStamped> eop) {
 
         super("^bulletinb_IAU2000-(\\d\\d\\d)\\.txt(?:\\.gz)?$");
         this.eop = eop;
@@ -126,8 +128,11 @@ class BulletinBFilesLoader extends DataFileCrawler {
     }
 
     /** {@inheritDoc} */
-    protected void visit(final BufferedReader reader)
+    protected void visit(final InputStream input)
         throws OrekitException, IOException {
+
+        // set up a reader for line-oriented bulletin B files
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
         // Extract mjd bounds from section 1
         int mjdMin = -1;
