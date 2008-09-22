@@ -18,6 +18,8 @@ package org.orekit.time;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -110,8 +112,11 @@ class UTCTAIHistoryFilesLoader extends DataFileCrawler {
     }
 
     /** {@inheritDoc} */
-    protected void visit(final BufferedReader reader)
+    protected void visit(final InputStream input)
         throws OrekitException, IOException, ParseException {
+
+        // set up a reader for line-oriented bulletin B files
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
         // read all file, ignoring not recognized lines
         boolean foundEntries = false;

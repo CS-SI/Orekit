@@ -16,12 +16,10 @@
  */
 package org.orekit.data;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -72,25 +70,24 @@ public abstract class DataFileCrawler {
      */
     public void visit(final File file)
         throws OrekitException {
-        BufferedReader reader = null;
+        InputStream is = null;
         try {
             this.currentFile = file;
-            InputStream is = new FileInputStream(file);
+            is = new FileInputStream(file);
             if (file.getName().endsWith(".gz")) {
                 // add the decompression filter
                 is = new GZIPInputStream(is);
             }
-            reader = new BufferedReader(new InputStreamReader(is));
-            visit(reader);
-            reader.close();
+            visit(is);
+            is.close();
         } catch (IOException ioe) {
             throw new OrekitException(ioe.getMessage(), ioe);
         } catch (ParseException pe) {
             throw new OrekitException(pe.getMessage(), pe);
         } finally {
-            if (reader != null) {
+            if (is != null) {
                 try {
-                    reader.close();
+                    is.close();
                 } catch (IOException ioe) {
                     throw new OrekitException(ioe.getMessage(), ioe);
                 }
@@ -99,13 +96,13 @@ public abstract class DataFileCrawler {
     }
 
     /** Visit a file from a reader.
-     * @param reader data stream reader
+     * @param input data input stream
      * @exception IOException if data can't be read
      * @exception ParseException if data can't be parsed
      * @exception OrekitException if some data is missing
      * or if some loader specific error occurs
      */
-    protected abstract void visit(BufferedReader reader)
+    protected abstract void visit(InputStream input)
         throws IOException, ParseException, OrekitException;
 
 }
