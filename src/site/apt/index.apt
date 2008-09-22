@@ -35,12 +35,14 @@ Overview
     * frames hierarchy supporting fixed and time-dependent (or telemetry-dependent) frames
 
     * predefined frames (J2000, GCRF, ITRF2005 (complete and simplified precession-nutation)
-      and intermediate frames, Veis, topocentric)
+      and intermediate frames, Veis, topocentric, Moon, Sun, all solar system planets)
 
     * user extensible (used operationally in real time with a set of about 60 frames on
       several spacecrafts)
 
     * transparent handling of IERS Earth Orientation Parameters
+
+    * transparent handling of JPL DE 405 ephemerides
 
     * transforms including kinematic combination effects
 
@@ -81,7 +83,7 @@ Overview
 
         * atmospheric drag (DTM2000, Jacchia-Bowman 2006 and simple exponential models)
 
-        * third body attraction
+        * third body attraction (with data for Sun, Moon and all solar systems planets)
 
         * radiation pressure with eclipses
 
