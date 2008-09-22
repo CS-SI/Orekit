@@ -61,9 +61,6 @@ public class CelestialBodyPointed implements AttitudeLaw {
     /** Serializable UID. */
     private static final long serialVersionUID = 6222161082155807729L;
 
-    /** Step size for estimating body motion (seconds). */
-    private static final double STEP_SIZE = 0.1;
-
     /** Frame in which {@link #pointedBody} and {@link #phasingCel} are defined. */
     private final Frame celestialFrame;
 
@@ -105,18 +102,11 @@ public class CelestialBodyPointed implements AttitudeLaw {
         throws OrekitException {
 
         // compute celestial references at the specified date
-        final Vector3D body0     = pointedBody.getPosition(date, celestialFrame);
-        final Vector3D sat0      = pv.getPosition();
-        final Vector3D sat0Cel   = frame.getTransformTo(celestialFrame, date).transformPosition(sat0);
-        final Vector3D pointing0 = body0.subtract(sat0Cel);
-        final double r2 = Vector3D.dotProduct(pointing0, pointing0);
-
-        // compute celestial references a few seconds after specified date
-        final AbsoluteDate date1 = new AbsoluteDate(date, STEP_SIZE);
-        final Vector3D body1     = pointedBody.getPosition(date1, celestialFrame);
-        final Vector3D sat1      = pv.getPosition().add(STEP_SIZE, pv.getVelocity());
-        final Vector3D sat1Cel   = frame.getTransformTo(celestialFrame, date1).transformPosition(sat1);
-        final Vector3D pointing1 = body1.subtract(sat1Cel);
+        final PVCoordinates bodyPV    = pointedBody.getPVCoordinates(date, celestialFrame);
+        final PVCoordinates satCel    = frame.getTransformTo(celestialFrame, date).transformPVCoordinates(pv);
+        final PVCoordinates pointing  = new PVCoordinates(1.0, bodyPV, -1.0, satCel);
+        final Vector3D      pointingP = pointing.getPosition();
+        final double r2 = Vector3D.dotProduct(pointingP, pointingP);
 
         // evaluate instant rotation axis by finite differences
         // note that despite we use forward difference and not centered differences,
@@ -124,11 +114,11 @@ public class CelestialBodyPointed implements AttitudeLaw {
         // is colinear to Earth-Sun pointing vector, so acceleration contribution is
         // nullified by the cross product.
         final Vector3D rotAxisCel =
-            new Vector3D(1 / (r2 * STEP_SIZE), Vector3D.crossProduct(pointing0, pointing1));
+            new Vector3D(1 / r2, Vector3D.crossProduct(pointingP, pointing.getVelocity()));
 
         // compute transform from celestial frame to satellite frame
         final Rotation celToSatRotation =
-            new Rotation(pointing0, phasingCel, pointingSat, phasingSat);
+            new Rotation(pointingP, phasingCel, pointingSat, phasingSat);
         final Vector3D celToSatSpin = celToSatRotation.applyTo(rotAxisCel);
         Transform transform = new Transform(celToSatRotation, celToSatSpin);
 
