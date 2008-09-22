@@ -17,11 +17,12 @@
 package org.orekit.forces;
 
 import org.apache.commons.math.geometry.Vector3D;
-import org.orekit.bodies.ThirdBody;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinates;
 
 
 /** Moon model.
@@ -30,10 +31,13 @@ import org.orekit.time.AbsoluteDate;
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 
-public class Moon extends ThirdBody {
+public class Moon implements CelestialBody {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -594863231826264667L;
+    private static final long serialVersionUID = -7705996201568232424L;
+
+    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    private static final double GM = 1.32712440017987e20 / 27068700.387534;
 
     /** Reference date. */
     private static final AbsoluteDate REFERENCE_DATE =
@@ -45,7 +49,6 @@ public class Moon extends ThirdBody {
     /** Creates a new instance of ThirdBody Moon.
      */
     public Moon() {
-        super(1737400.0, 4.9027989e12);
         Transform t;
         try {
             final Frame veisFrame = Frame.getVeis1950();
@@ -55,6 +58,30 @@ public class Moon extends ThirdBody {
             t = Transform.IDENTITY;
         }
         transform = t;
+    }
+
+    /** {@inheritDoc} */
+    public double getGM() {
+        return GM;
+    }
+
+    /** {@inheritDoc} */
+    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+        throws OrekitException {
+
+        // four points finite differences estimation of the velocity
+        final double h = 10.0;
+        final Vector3D pm2h = getPosition(new AbsoluteDate(date, -2 * h), frame);
+        final Vector3D pm1h = getPosition(new AbsoluteDate(date,     -h), frame);
+        final Vector3D pp1h = getPosition(new AbsoluteDate(date,      h), frame);
+        final Vector3D pp2h = getPosition(new AbsoluteDate(date,  2 * h), frame);
+        final double c = 1.0 / (12 * h);
+        final Vector3D estimatedV =
+            new Vector3D(c, pm2h, -8 * c, pm1h, 8 * c, pp1h, -c, pp2h);
+
+        // combine position and velocity
+        return new PVCoordinates(getPosition(date, frame), estimatedV);
+
     }
 
     /** Gets the position of the Moon in the selected frame.

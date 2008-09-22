@@ -881,7 +881,7 @@ public class DTM2000 implements Atmosphere {
 
         // compute local solar time
 
-        final Vector3D sunPos = sun.getPosition(date, frame);
+        final Vector3D sunPos = sun.getPVCoordinates(date, frame).getPosition();
         final double hl = Math.PI + Math.atan2(sunPos.getX() * position.getY() - sunPos.getY() * position.getX(),
                                                sunPos.getX() * position.getX() + sunPos.getY() * position.getY());
 
