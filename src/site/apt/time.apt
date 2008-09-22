@@ -22,6 +22,12 @@ Time
   and to be able to locate it with respect to the many different times scales in
   use in the space dynamics and astronomy fields.
 
+  This greatly simplifies development as it hides some models internals. For example
+  when using JPL-based ephemerides, time must be in Terrestrial Time (formerly
+  known as Ephemeris Time). However, this is a implementation detail and someone
+  calling Orekit from an high level application should not deal with it. The <<AbsoluteDate>>
+  class allows users to pass a date regardless of the time scale it was defined in,
+  conversions will be added as required transparently.
 
 ** Time Scales
 
@@ -131,8 +137,43 @@ AbsoluteDate date2         = new AbsoluteDate(referenceDate, 2.0);
   Once it is built, an <AbsoluteDate> can be compared to other ones, and converted 
   and expressed in other time scales. It is used to define states, orbits, frames...
 
-  Classes that include a date implement the <<TimeStamped>> interface. The <<ChronologicalComparator>>
-  singleton can sort objects implementing this interface chronologically.
+  Classes that include a date implement the <<TimeStamped>> interface.
+  The <<ChronologicalComparator>> singleton can sort objects implementing this
+  interface chronologically. This is particularly interesting for ephemerides. One trick
+  that can be used for such collections is too really define them using generic
+  <<TimeStamped>> instances as in the following example. The trick is that we want to
+  be allowed to use <<AbsoluteDate>> instances in methods like <<headSet>>, <<tailSet>>
+  or <<subSet>>.
+
++---------------------
+public class MyClass implements TimeStamped {
+ ...
+}
+
+public class Ephemeris {
+
+  // we declare the ephemeris as containing general TimeStamped instances
+  private TreeSet<TimeStamped> ephemeris;
+
+  public Ephemeris(MyClass[] array) {
+    ephemeris = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
+    for (int i = 0; i < n; ++i) {
+        ephemeris.add(new MyClass(...));
+    }
+  }
+
+  public MyClass getBefore(AbsoluteDate date) {
+    // since AbsoluteDate implements TimeStamped, we can do the following
+    return (MyClass) ephemeris.headSet(date).last();
+  }
+
+  public MyClass getAfter(AbsoluteDate date) {
+    // since AbsoluteDate implements TimeStamped, we can do the following
+    return (MyClass) ephemeris.tailSet(date).first();
+  }
+
+}
++---------------------
 
 * Authors
 
