@@ -122,7 +122,7 @@ class EOP05C04FilesLoader extends DataFileCrawler {
         throws IOException, OrekitException {
 
         // set up a reader for line-oriented bulletin B files
-        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
         // read all file, ignoring header
         int lineNumber = 0;

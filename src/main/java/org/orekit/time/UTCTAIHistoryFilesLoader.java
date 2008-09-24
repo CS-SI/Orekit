@@ -116,7 +116,7 @@ class UTCTAIHistoryFilesLoader extends DataFileCrawler {
         throws OrekitException, IOException, ParseException {
 
         // set up a reader for line-oriented bulletin B files
-        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
         // read all file, ignoring not recognized lines
         boolean foundEntries = false;

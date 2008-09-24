@@ -132,7 +132,7 @@ class BulletinBFilesLoader extends DataFileCrawler {
         throws OrekitException, IOException {
 
         // set up a reader for line-oriented bulletin B files
-        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
         // Extract mjd bounds from section 1
         int mjdMin = -1;
