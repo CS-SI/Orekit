@@ -198,7 +198,7 @@ public class SolarRadiationPressure implements ForceModel {
         throws OrekitException {
         final PVCoordinates sunPV = sun.getPVCoordinates(state.getDate(), state.getFrame());
         final PVCoordinates satPV = state.getPVCoordinates();
-        return sunPV.getPosition().subtract(satPV.getPosition());   
+        return sunPV.getPosition().subtract(satPV.getPosition());
     }
 
     /** {@inheritDoc} */
