@@ -31,10 +31,11 @@ import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+import org.orekit.bodies.CelestialBody;
+import org.orekit.bodies.SolarSystemBody;
 import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
-import org.orekit.forces.Sun;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -65,14 +66,14 @@ public class DrozinerAttractionModelTest extends TestCase {
     OrekitException, DerivativeException, IntegratorException {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
                                              new TimeComponents(13, 59, 27.816),
                                              UTCScale.getInstance());
         Transform itrfToEME2000 = ITRF2005.getTransformTo(Frame.getEME2000(), date);
         Vector3D pole           = itrfToEME2000.transformVector(Vector3D.PLUS_K);
         Frame poleAligned       = new Frame(Frame.getEME2000(),
                                             new Transform(new Rotation(pole, Vector3D.PLUS_K)),
-        "pole aligned");
+                                            "pole aligned");
 
         double i     = Math.toRadians(98.7);
         double omega = Math.toRadians(93.0);
@@ -99,11 +100,11 @@ public class DrozinerAttractionModelTest extends TestCase {
         private static final long serialVersionUID = -3917769828973243346L;
 
         public SpotStepHandler() {
-            sun       = new Sun();
+            sun       = SolarSystemBody.getSun();
             previous  = Double.NaN;
         }
 
-        private Sun sun;
+        private CelestialBody sun;
         private double previous;
         public void handleStep(SpacecraftState currentState, boolean isLast) {
 
@@ -112,7 +113,7 @@ public class DrozinerAttractionModelTest extends TestCase {
             AbsoluteDate current = currentState.getDate();
             Vector3D sunPos;
             try {
-                sunPos = sun.getPosition(current , Frame.getEME2000());
+                sunPos = sun.getPVCoordinates(current , Frame.getEME2000()).getPosition();
             } catch (OrekitException e) {
                 sunPos = Vector3D.ZERO;
                 System.out.println("exception during sun.getPosition");
@@ -121,7 +122,7 @@ public class DrozinerAttractionModelTest extends TestCase {
             Vector3D normal = Vector3D.crossProduct(pos,vel);
             double angle = Vector3D.angle(sunPos , normal);
             if (! Double.isNaN(previous)) {
-                assertEquals(previous, angle, 0.0005);
+                assertEquals(previous, angle, 0.0013);
             }
             previous = angle;
         }

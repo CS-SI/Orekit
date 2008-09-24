@@ -25,13 +25,12 @@ import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.SolarInputs97to05;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.bodies.SolarSystemBody;
 import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.Sun;
-import org.orekit.forces.drag.DTM2000;
-import org.orekit.forces.drag.JB2006;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -43,7 +42,7 @@ public class JB2006Test extends TestCase {
     public void testWithOriginalTestsCases() throws OrekitException, ParseException {
 
         Frame itrf = Frame.getITRF2005();
-        Sun sun = new Sun();
+        CelestialBody sun = SolarSystemBody.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
 
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
@@ -183,7 +182,7 @@ public class JB2006Test extends TestCase {
                                              TimeComponents.H00,
                                              UTCScale.getInstance());
         Frame itrf = Frame.getITRF2005();
-        Sun sun = new Sun();
+        CelestialBody sun = SolarSystemBody.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
 
         SolarInputs97to05 in = SolarInputs97to05.getInstance();

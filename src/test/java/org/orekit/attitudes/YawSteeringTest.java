@@ -23,9 +23,11 @@ import junit.framework.TestSuite;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.bodies.SolarSystemBody;
+import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.Sun;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.time.AbsoluteDate;
@@ -67,7 +69,8 @@ public class YawSteeringTest extends TestCase {
         NadirPointing nadirLaw = new NadirPointing(earthShape);
  
         // Target pointing attitude law with yaw compensation
-        YawSteering yawCompensLaw = new YawSteering(nadirLaw, new Sun(), Vector3D.MINUS_I);
+        YawSteering yawCompensLaw =
+            new YawSteering(nadirLaw, SolarSystemBody.getSun(), Vector3D.MINUS_I);
        
         //  Check target
         // **************
@@ -112,12 +115,12 @@ public class YawSteeringTest extends TestCase {
         NadirPointing nadirLaw = new NadirPointing(earthShape);
  
         // Target pointing attitude law with yaw compensation
-        Sun sun = new Sun();
+        CelestialBody sun = SolarSystemBody.getSun();
         YawSteering yawCompensLaw = new YawSteering(nadirLaw, sun, Vector3D.MINUS_I);
 
         // Get sun direction in satellite frame
         Rotation rotYaw = yawCompensLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
-        Vector3D sunEME2000 = sun.getPosition(date, Frame.getEME2000());
+        Vector3D sunEME2000 = sun.getPVCoordinates(date, Frame.getEME2000()).getPosition();
         Vector3D sunSat = rotYaw.applyTo(sunEME2000);
             
         // Check sun is in (X,Z) plane
@@ -137,7 +140,8 @@ public class YawSteeringTest extends TestCase {
         NadirPointing nadirLaw = new NadirPointing(earthShape);
  
         // Target pointing attitude law with yaw compensation
-        YawSteering yawCompensLaw = new YawSteering(nadirLaw, new Sun(), Vector3D.MINUS_I);
+        YawSteering yawCompensLaw =
+            new YawSteering(nadirLaw, SolarSystemBody.getSun(), Vector3D.MINUS_I);
 
         // Get attitude rotations from non yaw compensated / yaw compensated laws
         Rotation rotNoYaw = nadirLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
@@ -156,8 +160,11 @@ public class YawSteeringTest extends TestCase {
     
     public void setUp() {
         try {
+            System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_FS, "");
+            System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "regular-data");
+
             // Computation date
-            date = new AbsoluteDate(new DateComponents(2008, 04, 07),
+            date = new AbsoluteDate(new DateComponents(1970, 04, 07),
                                     TimeComponents.H00,
                                     UTCScale.getInstance());
 

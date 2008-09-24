@@ -23,10 +23,11 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.orekit.SolarInputs97to05;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.bodies.SolarSystemBody;
+import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.Sun;
-import org.orekit.forces.drag.DTM2000;
 import org.orekit.frames.Frame;
 
 public class DTM2000Test extends TestCase {
@@ -34,7 +35,7 @@ public class DTM2000Test extends TestCase {
     public void testWithOriginalTestsCases() throws OrekitException, ParseException {
 
         Frame itrf = Frame.getITRF2005();
-        Sun sun = new Sun();
+        CelestialBody sun = SolarSystemBody.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
         earth.setAngularThreshold(1e-10);
@@ -131,6 +132,11 @@ public class DTM2000Test extends TestCase {
 //      tinf=    793.65549802348
         atm.getDensity(15, 800*1000, 0, Math.toRadians(-70), 16*Math.PI/12, 70, 70, 0, 0);
 
+    }
+
+    public void setUp() {
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_FS, "");
+        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "regular-data");
     }
 
     public static Test suite() {

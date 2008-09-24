@@ -27,11 +27,12 @@ import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.bodies.SolarSystemBody;
 import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.SphericalSpacecraft;
-import org.orekit.forces.Sun;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -49,13 +50,13 @@ public class SolarRadiationPressureTest extends TestCase {
 
     public void testLightning() throws OrekitException, ParseException, DerivativeException, IntegratorException{
         // Initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 3, 21),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
                                              new TimeComponents(13, 59, 27.816),
                                              UTCScale.getInstance());
         Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
                                            Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
                                            0.1, 2, Frame.getEME2000(), date, mu);
-        Sun sun = new Sun();
+        CelestialBody sun = SolarSystemBody.getSun();
         OneAxisEllipsoid earth =
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
                                  Frame.getITRF2005());
@@ -97,7 +98,7 @@ public class SolarRadiationPressureTest extends TestCase {
     public void testRoughOrbitalModifs() throws ParseException, OrekitException, DerivativeException, IntegratorException, FileNotFoundException {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 7, 1),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 7, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              UTCScale.getInstance());
         Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
@@ -106,7 +107,7 @@ public class SolarRadiationPressureTest extends TestCase {
                                            0.1, 2, Frame.getEME2000(), date, mu);
         final double period = orbit.getKeplerianPeriod();
         assertEquals(86164, period, 1);
-        Sun sun = new Sun();
+        CelestialBody sun = SolarSystemBody.getSun();
 
         // creation of the force model
         OneAxisEllipsoid earth =
