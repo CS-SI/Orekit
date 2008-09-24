@@ -23,10 +23,17 @@
     <release version="4.0" date="TBD"
              description="TBD">
       <action dev="luc" type="add">
+        Added a method to retrieve a body-centered inertial frame to the
+        <code>CelestialBody</code> interface. As a consequence, thirteen new frames are
+        predefined: Sun, Moon, planets and barycenters provided by JPL DE 405 binary
+        ephemerides.
+      </action>
+      <action dev="luc" type="add">
         Support for the JPL DE 405 binary ephemerides files has been added and a factory
         class <code>SolarSystemBody</code> uses these files to provide implementations
         of the <code>CelestialBody</code> interface for Sun, Moon, the eight solar system
-        planets and the Pluto dwarf planet.
+        planets,the Pluto dwarf planet as well as the solar system barycenter and Earth-Moon
+        barycenter points.
       </action>
       <action dev="luc" type="update">
         The <code>ThirdBody</code> abstract class has been removed and its specific method

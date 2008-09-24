@@ -31,7 +31,7 @@ import org.orekit.utils.PVCoordinates;
 /** Factory class for bodies of the solar system.
  * <p>The {@link #getSun() Sun}, the {@link #getMoon() Moon} and the planets
  * (including the Pluto dwarf planet) are provided by this factory. In addition,
- * two aggregate bodies are provided for convenience: the {@link
+ * two important points are provided for convenience: the {@link
  * #getSolarSystemBarycenter() solar system barycenter} and the {@link
  * #getEarthMoonBarycenter() Earth-Moon barycenter}.</p>
  * <p>The underlying body-centered frames are either direct children of {@link
