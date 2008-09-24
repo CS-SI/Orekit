@@ -16,34 +16,80 @@
  */
 package org.orekit.bodies;
 
+import java.util.NoSuchElementException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
 
-
-/** Model for bodies of the solar system.
- * <p>The position of the bodies are interpolated from JPL DE 405 ephemerides.</p>
- * <p>The various constants in this file come from E. M. Standish 1998-08-26
- * memorandum: <a href="ftp://ssd.jpl.nasa.gov/pub/eph/export/DE405/de405iom.ps">JPL
- * Planetary and Lunar Ephemerides, DE405/LE405</a> and from Goddard Space Flight
- * Center <a href="http://nssdc.gsfc.nasa.gov/planetary/planetfact.html">planetary
- * fact sheets</a>.</p>
+/** Factory class for bodies of the solar system.
+ * <p>The {@link #getSun() Sun}, the {@link #getMoon() Moon} and the planets
+ * (including the Pluto dwarf planet) are provided by this factory. In addition,
+ * two aggregate bodies are provided for convenience: the {@link
+ * #getSolarSystemBarycenter() solar system barycenter} and the {@link
+ * #getEarthMoonBarycenter() Earth-Moon barycenter}.</p>
+ * <p>The underlying body-centered frames are either direct children of {@link
+ * Frame#getJ2000() J2000/EME2000} (for {@link #getMoon() Moon} and {@link
+ * #getEarthMoonBarycenter() Earth-Moon barycenter}) or children from other
+ * body-centered frames. For example, the path from J2000/EME2000 to
+ * Jupiter-centered frame is: J2000/EME2000, Earth-Moon barycenter centered,
+ * solar system barycenter centered, Jupiter-centered. The defining transforms
+ * of these frames are combinations of simple linear {@link
+ * Transform#Transform(org.apache.commons.math.geometry.Vector3D,
+ * org.apache.commons.math.geometry.Vector3D) translation/velocity} transforms
+ * without any rotation. The frame axes are therefore always parallel to
+ * {@link Frame#getJ2000() J2000/EME2000} frame axes.</p>
+ * <p>The position of the bodies provided by this class are interpolated using
+ * the JPL DE 405 ephemerides. The various constants in this file come from E. M.
+ * Standish 1998-08-26 memorandum: <a
+ * href="ftp://ssd.jpl.nasa.gov/pub/eph/export/DE405/de405iom.ps">JPL Planetary
+ * and Lunar Ephemerides, DE405/LE405</a>.</p>
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-public class SolarSystemBody implements CelestialBody {
+public class SolarSystemBody extends AbstractCelestialBody {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -8420989064528998551L;
+    private static final long serialVersionUID = -4929971459387288203L;
 
-    /** Attraction coefficient of the body (m<sup>3</sup>/s<sup>2</sup>). */
-    private final double gm;
+    /** Sun attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    private static final double SUN_GM = 1.32712440017987e20;
+
+    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    private static final double MERCURY_GM = SUN_GM / 6023600.0;
+
+    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    private static final double VENUS_GM = SUN_GM / 408523.71;
+
+    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    private static final double EARTH_GM = SUN_GM / 332946.050895;
+
+    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    private static final double MOON_GM = SUN_GM / 27068700.387534;
+
+    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    private static final double MARS_GM = SUN_GM / 3098708;
+
+    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    private static final double JUPITER_GM = SUN_GM / 1047.3486;
+
+    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    private static final double SATURN_GM = SUN_GM / 3497.898;
+
+    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    private static final double URANUS_GM = SUN_GM / 22902.98;
+
+    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    private static final double NEPTUNE_GM = SUN_GM / 19412;
+
+    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    private static final double PLUTO_GM = SUN_GM / 135200000;
 
     /** Body ephemeris. */
     private final SortedSet<TimeStamped> ephemeris;
@@ -51,24 +97,97 @@ public class SolarSystemBody implements CelestialBody {
     /** Body type in DE 405 files. */
     private final DE405FilesLoader.EphemerisType type;
 
+    /** Current Chebyshev model. */
+    private PosVelChebyshev model;
+
+    /** Frame in which ephemeris are defined. */
+    private final Frame definingFrame;
+
+    /** Earth-Moon mass ratio. */
+    protected double earthMoonMassRatio;
+
     /** Private constructor for the singletons.
      * @param gm attraction coefficient (in m<sup>3</sup>/s<sup>2</sup>)
-     * @param type body type in DE 405 files
+     * @param definingFrame frame in which ephemeris are defined
+     * @param type DE 405 ephemeris type
+     * @param frameName name to use for the body-centered frame
      */
-    private SolarSystemBody(final double gm, final DE405FilesLoader.EphemerisType type) {
-        this.gm   = gm;
-        this.type = type;
-        ephemeris = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
+    private SolarSystemBody(final double gm, final Frame definingFrame,
+                            final DE405FilesLoader.EphemerisType type,
+                            final String frameName) {
+        super(gm, frameName, definingFrame);
+        this.ephemeris     = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
+        this.model         = null;
+        this.type          = type;
+        this.definingFrame = definingFrame;
     }
 
-    /** Get the attraction coefficient of the body.
-     * @return attraction coefficient of the body (m<sup>3</sup>/s<sup>2</sup>)
+    /** {@inheritDoc} */
+    public PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
+        throws OrekitException {
+
+        // get position/velocity in parent frame
+        setPVModel(date);
+        final PVCoordinates pv = model.getPositionVelocity(date);
+
+        // convert to required frame
+        if (frame == definingFrame) {
+            return pv;
+        } else {
+            final Transform transform = definingFrame.getTransformTo(frame, date);
+            return transform.transformPVCoordinates(pv);
+        }
+
+    }
+
+    /** Set the position-velocity model covering a specified date.
+     * @param date target date
+     * @exception OrekitException if current date is not covered by
+     * available ephemerides
      */
-    public double getGM() {
-        return gm;
+    private void setPVModel(final AbsoluteDate date)
+        throws OrekitException {
+
+        // first quick check: is the current model valid for specified date ?
+        if ((model != null) && model.inRange(date)) {
+            return;
+        }
+
+        // we need to update the model
+        model = null;
+        try {
+            model = (PosVelChebyshev) ephemeris.headSet(date).last();
+        } catch (NoSuchElementException nsee) {
+            // nothing to do here
+        }
+
+        if ((model == null) || !model.inRange(date)) {
+            final DE405FilesLoader loader = new DE405FilesLoader(type, date);
+            ephemeris.addAll(loader.loadEphemerides());
+            earthMoonMassRatio = loader.getEarthMoonMassRatio();
+            model = (PosVelChebyshev) ephemeris.headSet(date).last();
+            if (!model.inRange(date)) {
+                throw new OrekitException("out of range date for {0} ephemerides: {1}",
+                                          new Object[] {
+                                              type, date
+                                          });
+            }
+        }
+
+    }
+
+    /** Get the solar system barycenter singleton aggregated body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
+     * @return solar system barycenter aggregated body
+     */
+    public static CelestialBody getSolarSystemBarycenter() {
+        return SolarSystemBarycenterLazyHolder.INSTANCE;
     }
 
     /** Get the Sun singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
      * @return Sun body
      */
     public static CelestialBody getSun() {
@@ -76,6 +195,8 @@ public class SolarSystemBody implements CelestialBody {
     }
 
     /** Get the Mercury singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
      * @return Sun body
      */
     public static CelestialBody getMercury() {
@@ -83,20 +204,44 @@ public class SolarSystemBody implements CelestialBody {
     }
 
     /** Get the Venus singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
      * @return Venus body
      */
     public static CelestialBody getVenus() {
         return VenusLazyHolder.INSTANCE;
     }
 
+    /** Get the Earth-Moon barycenter singleton bodies pair.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
+     * @return Earth-Moon barycenter bodies pair
+     */
+    public static CelestialBody getEarthMoonBarycenter() {
+        return EarthMoonBarycenterLazyHolder.INSTANCE;
+    }
+
     /** Get the Earth singleton body.
+     * <p>The body-centered frame linked to this instance
+     * <is>is</em> the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
      * @return Earth body
      */
     public static CelestialBody getEarth() {
         return EarthLazyHolder.INSTANCE;
     }
 
+    /** Get the Moon singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
+     * @return Moon body
+     */
+    public static CelestialBody getMoon() {
+        return MoonLazyHolder.INSTANCE;
+    }
+
     /** Get the Mars singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
      * @return Mars body
      */
     public static CelestialBody getMars() {
@@ -104,6 +249,8 @@ public class SolarSystemBody implements CelestialBody {
     }
 
     /** Get the Jupiter singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
      * @return Jupiter body
      */
     public static CelestialBody getJupiter() {
@@ -111,6 +258,8 @@ public class SolarSystemBody implements CelestialBody {
     }
 
     /** Get the Saturn singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
      * @return Saturn body
      */
     public static CelestialBody getSaturn() {
@@ -118,6 +267,8 @@ public class SolarSystemBody implements CelestialBody {
     }
 
     /** Get the Uranus singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
      * @return Uranus body
      */
     public static CelestialBody getUranus() {
@@ -125,6 +276,8 @@ public class SolarSystemBody implements CelestialBody {
     }
 
     /** Get the Neptune singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
      * @return Neptune body
      */
     public static CelestialBody getNeptune() {
@@ -132,24 +285,51 @@ public class SolarSystemBody implements CelestialBody {
     }
 
     /** Get the Pluto singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
      * @return Pluto body
      */
     public static CelestialBody getPluto() {
         return PlutoLazyHolder.INSTANCE;
     }
 
-    /** Get the Moon singleton body.
-     * @return Moon body
+    /** Holder for the solar system barycenter singleton.
+     * <p>We use the Initialization on demand holder idiom to store
+     * the singleton, as it is both thread-safe, efficient (no
+     * synchronization) and works with all versions of java.</p>
      */
-    public static CelestialBody getMoon() {
-        return MoonLazyHolder.INSTANCE;
-    }
+    private static class SolarSystemBarycenterLazyHolder {
 
-    /** {@inheritDoc} */
-    public PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
-        throws OrekitException {
-        // TODO Auto-generated method stub
-        return null;
+        /** Unique instance. */
+        public static final SolarSystemBody INSTANCE =
+            new SolarSystemBody(SUN_GM + MERCURY_GM + VENUS_GM + EARTH_GM + MOON_GM + MARS_GM +
+                                JUPITER_GM + SATURN_GM + URANUS_GM + NEPTUNE_GM + PLUTO_GM,
+                                SolarSystemBody.getEarthMoonBarycenter().getFrame(),
+                                DE405FilesLoader.EphemerisType.EARTH_MOON,
+                                "solar system centered EME2000") {
+
+            /** Serializable UID. */
+            private static final long serialVersionUID = 7350102501303428347L;
+
+            /** {@inheritDoc} */
+            public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+                    throws OrekitException {
+                // we define solar system barycenter with respect to Earth-Moon barycenter
+                // so we need to revert the vectors provided by the JPL DE 405 ephemerides
+                final PVCoordinates emPV = super.getPVCoordinates(date, frame);
+                return new PVCoordinates(emPV.getPosition().negate(), emPV.getVelocity().negate());
+            }
+
+        };
+
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private SolarSystemBarycenterLazyHolder() {
+        }
+
     }
 
     /** Holder for the Sun singleton.
@@ -159,12 +339,12 @@ public class SolarSystemBody implements CelestialBody {
      */
     private static class SunLazyHolder {
 
-        /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-        private static final double GM = 1.32712440017987e20;
-
         /** Unique instance. */
         public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(GM, DE405FilesLoader.EphemerisType.SUN);
+            new SolarSystemBody(SUN_GM,
+                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                DE405FilesLoader.EphemerisType.SUN,
+                                "Sun centered EME2000");
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -183,12 +363,12 @@ public class SolarSystemBody implements CelestialBody {
      */
     private static class MercuryLazyHolder {
 
-        /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-        private static final double GM = SunLazyHolder.GM / 6023600.0;
-
         /** Unique instance. */
         public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(GM, DE405FilesLoader.EphemerisType.MERCURY);
+            new SolarSystemBody(MERCURY_GM,
+                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                DE405FilesLoader.EphemerisType.MERCURY,
+                                "Mercury centered EME2000");
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -207,12 +387,12 @@ public class SolarSystemBody implements CelestialBody {
      */
     private static class VenusLazyHolder {
 
-        /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-        private static final double GM = SunLazyHolder.GM / 408523.71;
-
         /** Unique instance. */
         public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(GM, DE405FilesLoader.EphemerisType.VENUS);
+            new SolarSystemBody(VENUS_GM,
+                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                DE405FilesLoader.EphemerisType.VENUS,
+                                "Venus centered EME2000");
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -224,6 +404,43 @@ public class SolarSystemBody implements CelestialBody {
 
     }
 
+    /** Holder for the Earth-Moon barycenter singleton.
+     * <p>We use the Initialization on demand holder idiom to store
+     * the singleton, as it is both thread-safe, efficient (no
+     * synchronization) and works with all versions of java.</p>
+     */
+    private static class EarthMoonBarycenterLazyHolder {
+
+        /** Unique instance. */
+        public static final SolarSystemBody INSTANCE =
+            new SolarSystemBody(EARTH_GM + MOON_GM, Frame.getJ2000(),
+                                DE405FilesLoader.EphemerisType.MOON,
+                                "Earth-Moon centered EME2000") {
+
+            /** Serializable UID. */
+            private static final long serialVersionUID = -6860799524750318529L;
+
+            /** {@inheritDoc} */
+            public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+                    throws OrekitException {
+                // we define Earth-Moon barycenter with respect to Earth center so we need
+                // to apply a scale factor to the Moon vectors provided by the JPL DE 405 ephemerides
+                final double scale = 1.0 / (1.0 + earthMoonMassRatio);
+                return new PVCoordinates(scale, super.getPVCoordinates(date, frame));
+            }
+
+        };
+
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private EarthMoonBarycenterLazyHolder() {
+        }
+
+    }
+
     /** Holder for the Earth singleton.
      * <p>We use the Initialization on demand holder idiom to store
      * the singleton, as it is both thread-safe, efficient (no
@@ -231,12 +448,28 @@ public class SolarSystemBody implements CelestialBody {
      */
     private static class EarthLazyHolder {
 
-        /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-        private static final double GM = SunLazyHolder.GM / 332946.050895;
-
         /** Unique instance. */
-        public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(GM, null);
+        public static final CelestialBody INSTANCE =
+            new AbstractCelestialBody(EARTH_GM, Frame.getJ2000()) {
+
+                /** Serializable UID. */
+                private static final long serialVersionUID = -2542177517458975694L;
+
+                /** {@inheritDoc} */
+                public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+                        throws OrekitException {
+
+                    // specific implementation for Earth:
+                    // the Earth is always exactly at the origin of its own J2000 frame
+                    PVCoordinates pv = PVCoordinates.ZERO;
+                    if (frame != getFrame()) {
+                        pv = getFrame().getTransformTo(frame, date).transformPVCoordinates(pv);
+                    }
+                    return pv;
+
+                }
+
+            };
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -248,6 +481,30 @@ public class SolarSystemBody implements CelestialBody {
 
     }
 
+    /** Holder for the Moon singleton.
+     * <p>We use the Initialization on demand holder idiom to store
+     * the singleton, as it is both thread-safe, efficient (no
+     * synchronization) and works with all versions of java.</p>
+     */
+    private static class MoonLazyHolder {
+
+        /** Unique instance. */
+        public static final SolarSystemBody INSTANCE =
+            new SolarSystemBody(MOON_GM,
+                                SolarSystemBody.getEarth().getFrame(),
+                                DE405FilesLoader.EphemerisType.MOON,
+                                "Moon centered EME2000");
+
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private MoonLazyHolder() {
+        }
+
+    }
+
     /** Holder for the Mars singleton.
      * <p>We use the Initialization on demand holder idiom to store
      * the singleton, as it is both thread-safe, efficient (no
@@ -255,12 +512,12 @@ public class SolarSystemBody implements CelestialBody {
      */
     private static class MarsLazyHolder {
 
-        /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-        private static final double GM = SunLazyHolder.GM / 3098708;
-
         /** Unique instance. */
         public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(GM, DE405FilesLoader.EphemerisType.MARS);
+            new SolarSystemBody(MARS_GM,
+                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                DE405FilesLoader.EphemerisType.MARS,
+                                "Mars centered EME2000");
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -279,12 +536,12 @@ public class SolarSystemBody implements CelestialBody {
      */
     private static class JupiterLazyHolder {
 
-        /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-        private static final double GM = SunLazyHolder.GM / 1047.3486;
-
         /** Unique instance. */
         public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(GM, DE405FilesLoader.EphemerisType.JUPITER);
+            new SolarSystemBody(JUPITER_GM,
+                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                DE405FilesLoader.EphemerisType.JUPITER,
+                                "Jupiter centered EME2000");
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -303,12 +560,12 @@ public class SolarSystemBody implements CelestialBody {
      */
     private static class SaturnLazyHolder {
 
-        /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-        private static final double GM = SunLazyHolder.GM / 3497.898;
-
         /** Unique instance. */
         public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(GM, DE405FilesLoader.EphemerisType.SATURN);
+            new SolarSystemBody(SATURN_GM,
+                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                DE405FilesLoader.EphemerisType.SATURN,
+                                "Saturn centered EME2000");
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -327,12 +584,12 @@ public class SolarSystemBody implements CelestialBody {
      */
     private static class UranusLazyHolder {
 
-        /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-        private static final double GM = SunLazyHolder.GM / 22902.98;
-
         /** Unique instance. */
         public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(GM, DE405FilesLoader.EphemerisType.URANUS);
+            new SolarSystemBody(URANUS_GM,
+                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                DE405FilesLoader.EphemerisType.URANUS,
+                                "Uranus centered EME2000");
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -351,12 +608,12 @@ public class SolarSystemBody implements CelestialBody {
      */
     private static class NeptuneLazyHolder {
 
-        /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-        private static final double GM = SunLazyHolder.GM / 19412;
-
         /** Unique instance. */
         public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(GM, DE405FilesLoader.EphemerisType.NEPTUNE);
+            new SolarSystemBody(NEPTUNE_GM,
+                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                DE405FilesLoader.EphemerisType.NEPTUNE,
+                                "Neptune centered EME2000");
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -375,12 +632,12 @@ public class SolarSystemBody implements CelestialBody {
      */
     private static class PlutoLazyHolder {
 
-        /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-        private static final double GM = SunLazyHolder.GM / 135200000;
-
         /** Unique instance. */
         public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(GM, DE405FilesLoader.EphemerisType.PLUTO);
+            new SolarSystemBody(PLUTO_GM,
+                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                DE405FilesLoader.EphemerisType.PLUTO,
+                                "Pluto centered EME2000");
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -388,30 +645,6 @@ public class SolarSystemBody implements CelestialBody {
          * the compiler from generating one automatically.</p>
          */
         private PlutoLazyHolder() {
-        }
-
-    }
-
-    /** Holder for the Moon singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
-     */
-    private static class MoonLazyHolder {
-
-        /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-        private static final double GM = SunLazyHolder.GM / 27068700.387534;
-
-        /** Unique instance. */
-        public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(GM, DE405FilesLoader.EphemerisType.MOON);
-
-        /** Private constructor.
-         * <p>This class is a utility class, it should neither have a public
-         * nor a default constructor. This private constructor prevents
-         * the compiler from generating one automatically.</p>
-         */
-        private MoonLazyHolder() {
         }
 
     }

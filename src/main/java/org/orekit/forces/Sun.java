@@ -17,10 +17,9 @@
 package org.orekit.forces;
 
 import org.apache.commons.math.geometry.Vector3D;
-import org.orekit.bodies.CelestialBody;
+import org.orekit.bodies.AbstractCelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -30,7 +29,7 @@ import org.orekit.utils.PVCoordinates;
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 
-public class Sun implements CelestialBody {
+public class Sun extends AbstractCelestialBody {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 3478319921384413638L;
@@ -42,25 +41,10 @@ public class Sun implements CelestialBody {
     private static final AbsoluteDate REFERENCE_DATE =
         new AbsoluteDate(AbsoluteDate.FIFTIES_EPOCH, 864000000.0);
 
-    /** Transform from Veis1950 to J2000. */
-    private final Transform transform;
-
     /** Simple constructor.
      */
     public Sun() {
-        Transform t;
-        try {
-            t  = Frame.getVeis1950().getTransformTo(Frame.getJ2000(), REFERENCE_DATE);
-        } catch (OrekitException e) {
-            // should not happen
-            t = Transform.IDENTITY;
-        }
-        transform = t;
-    }
-
-    /** {@inheritDoc} */
-    public double getGM() {
-        return GM;
+        super(GM, "Sun-centric (Newcomb)", Frame.getJ2000());
     }
 
     /** {@inheritDoc} */
@@ -132,17 +116,15 @@ public class Sun implements CelestialBody {
         final double sx = cl / q;
         final double sy = sl * ce / q;
         final Vector3D centralSun =
-            transform.transformVector(new Vector3D(sx * cr + sy * sr,
-                                                   sy * cr - sx * sr,
-                                                   sl * se / q));
+            new Vector3D(sx * cr + sy * sr, sy * cr - sx * sr, sl * se / q);
         final double dasr = 1672.2 * Math.cos(xlp) +
                             28.0 * Math.cos(xlp + xlp) -
                             0.35 * Math.cos(d);
 
-        final Vector3D posInJ2000 =
+        final Vector3D posInVeis =
             new Vector3D(1000.0 * 149597870.0 / (1.0 + 1.E-05 * dasr), centralSun);
 
-        return Frame.getJ2000().getTransformTo(frame, date).transformPosition(posInJ2000);
+        return Frame.getVeis1950().getTransformTo(frame, date).transformPosition(posInVeis);
 
     }
 

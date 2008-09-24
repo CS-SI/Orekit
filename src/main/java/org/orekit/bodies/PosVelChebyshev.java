@@ -70,6 +70,15 @@ class PosVelChebyshev implements TimeStamped {
         return start;
     }
 
+    /** Check if a date is in validity range.
+     * @param date date to check
+     * @return true if date is in validity range
+     */
+    public boolean inRange(final AbsoluteDate date) {
+        final double dt = date.durationFrom(start);
+        return (dt >= 0) && (dt <= duration);
+    }
+
     /** Get the position-velocity at a specified date.
      * @param date date at which position-velocity is requested
      * @return position-velocity at specified date

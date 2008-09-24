@@ -17,10 +17,9 @@
 package org.orekit.forces;
 
 import org.apache.commons.math.geometry.Vector3D;
-import org.orekit.bodies.CelestialBody;
+import org.orekit.bodies.AbstractCelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -31,7 +30,7 @@ import org.orekit.utils.PVCoordinates;
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 
-public class Moon implements CelestialBody {
+public class Moon extends AbstractCelestialBody {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -7705996201568232424L;
@@ -43,26 +42,10 @@ public class Moon implements CelestialBody {
     private static final AbsoluteDate REFERENCE_DATE =
         new AbsoluteDate(AbsoluteDate.FIFTIES_EPOCH, 864000000.0);
 
-    /** Transform from Veis1950 to J2000. */
-    private final Transform transform;
-
     /** Creates a new instance of ThirdBody Moon.
      */
     public Moon() {
-        Transform t;
-        try {
-            final Frame veisFrame = Frame.getVeis1950();
-            t  = veisFrame.getTransformTo(Frame.getJ2000(), REFERENCE_DATE);
-        } catch (OrekitException e) {
-            // should not happen
-            t = Transform.IDENTITY;
-        }
-        transform = t;
-    }
-
-    /** {@inheritDoc} */
-    public double getGM() {
-        return GM;
+        super(GM, "Moon-centric (Brown)", Frame.getJ2000());
     }
 
     /** {@inheritDoc} */
@@ -160,9 +143,7 @@ public class Moon implements CelestialBody {
         final double ry = su * cb * ce - sb * se;
 
         final Vector3D centralMoon =
-            transform.transformVector(new Vector3D(rx * cr + ry * sr,
-                                                   ry * cr - rx * sr,
-                                                   sb * ce + su * cb * se));
+            new Vector3D(rx * cr + ry * sr, ry * cr - rx * sr, sb * ce + su * cb * se);
 
         final double dasr = (5450.0 * Math.cos(xl) +
                              1002.0 * Math.cos(xl - d - d) +
@@ -186,9 +167,9 @@ public class Moon implements CelestialBody {
                              8.0 * Math.cos(xl + xl + d + d) +
                              8.0 * Math.cos(4.0 * d)) * 1.0e-5;
 
-        final Vector3D posInJ2000 = new Vector3D(1000.0 * 384389.3 / (1.0 + dasr), centralMoon);
+        final Vector3D posInVeis = new Vector3D(1000.0 * 384389.3 / (1.0 + dasr), centralMoon);
 
-        return Frame.getJ2000().getTransformTo(frame, date).transformPosition(posInJ2000);
+        return Frame.getVeis1950().getTransformTo(frame, date).transformPosition(posInVeis);
 
     }
 

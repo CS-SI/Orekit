@@ -39,6 +39,13 @@ public interface CelestialBody extends Serializable {
     PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
         throws OrekitException;
 
+    /** Get an inertially oriented body-centered frame.
+     * <p>The frame is always bound to the body center, and its axes have a
+     * fixed orientation with respecto to other inertial frames.</p>
+     * @return an inertially oriented body-centered frame
+     */
+    Frame getFrame();
+
     /** Get the attraction coefficient of the body.
      * @return attraction coefficient of the body (m<sup>3</sup>/s<sup>2</sup>)
      */

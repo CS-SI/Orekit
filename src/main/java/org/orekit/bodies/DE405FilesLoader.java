@@ -43,7 +43,7 @@ import org.orekit.time.TimeStamped;
 class DE405FilesLoader extends DataFileCrawler implements Serializable {
 
     /** Serializable version ID. */
-    private static final long serialVersionUID = 1541118712237046123L;
+    private static final long serialVersionUID = -4342523824693600786L;
 
     /** List of supported ephemerides types. */
     public enum EphemerisType {
@@ -81,8 +81,8 @@ class DE405FilesLoader extends DataFileCrawler implements Serializable {
     /** Number of coefficients for selected body. */
     private int coeffs;
 
-    /** Number of granules for the selected body. */
-    private int granules;
+    /** Number of chunks for the selected body. */
+    private int chunks;
 
     /** Current record. */
     private byte[] record;
@@ -237,7 +237,7 @@ class DE405FilesLoader extends DataFileCrawler implements Serializable {
                 ((i == 10) && (type == EphemerisType.SUN))) {
                 firstIndex = row1;
                 coeffs     = row2;
-                granules   = row3;
+                chunks   = row3;
             }
         }
 
@@ -267,15 +267,15 @@ class DE405FilesLoader extends DataFileCrawler implements Serializable {
             return;
         }
 
-        // loop over granules inside the time range
-        double granuleDuration = rangeEnd.durationFrom(rangeStart) / granules;
-        AbsoluteDate granuleEnd = rangeStart;
-        for (int i = 0; i < granules; ++i) {
+        // loop over chunks inside the time range
+        double chunkDuration = rangeEnd.durationFrom(rangeStart) / chunks;
+        AbsoluteDate chunkEnd = rangeStart;
+        for (int i = 0; i < chunks; ++i) {
 
-            // set up granule validity range
-            AbsoluteDate granuleStart = granuleEnd;
-            granuleEnd = (i == granules - 1) ?
-                         rangeEnd : new AbsoluteDate(rangeStart, (i + 1) * granuleDuration);
+            // set up chunk validity range
+            AbsoluteDate chunkStart = chunkEnd;
+            chunkEnd = (i == chunks - 1) ?
+                       rangeEnd : new AbsoluteDate(rangeStart, (i + 1) * chunkDuration);
 
             // extract Chebyshev coefficients for the selected body
             // and convert them from kilometers to meters
@@ -289,9 +289,9 @@ class DE405FilesLoader extends DataFileCrawler implements Serializable {
                 zCoeffs[k] = 1000.0 * extractDouble(8 * (index + 2 * coeffs));
             }
 
-            // build the position-velocity model for current granule
-            ephemerides.add(new PosVelChebyshev(granuleStart, granuleDuration,
-                                              xCoeffs, yCoeffs, zCoeffs));
+            // build the position-velocity model for current chunk
+            ephemerides.add(new PosVelChebyshev(chunkStart, chunkDuration,
+                                                xCoeffs, yCoeffs, zCoeffs));
 
         }
 
