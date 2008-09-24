@@ -104,7 +104,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
     private final Frame definingFrame;
 
     /** Earth-Moon mass ratio. */
-    protected double earthMoonMassRatio;
+    private double earthMoonMassRatio;
 
     /** Private constructor for the singletons.
      * @param gm attraction coefficient (in m<sup>3</sup>/s<sup>2</sup>)
@@ -123,7 +123,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
     }
 
     /** {@inheritDoc} */
-    public PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
+    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
         // get position/velocity in parent frame
@@ -138,6 +138,13 @@ public class SolarSystemBody extends AbstractCelestialBody {
             return transform.transformPVCoordinates(pv);
         }
 
+    }
+
+    /** Get the Earth-Moon mass ratio.
+     * @return Earth-Moon mass ratio
+     */
+    protected double getEarthMoonMassRatio() {
+        return earthMoonMassRatio;
     }
 
     /** Set the position-velocity model covering a specified date.
@@ -223,7 +230,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
     /** Get the Earth singleton body.
      * <p>The body-centered frame linked to this instance
-     * <is>is</em> the {@link Frame#getEME2000() EME2000} frame.</p>
+     * <em>is</em> the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Earth body
      */
     public static CelestialBody getEarth() {
@@ -308,19 +315,19 @@ public class SolarSystemBody extends AbstractCelestialBody {
                                 DE405FilesLoader.EphemerisType.EARTH_MOON,
                                 "solar system centered EME2000") {
 
-            /** Serializable UID. */
-            private static final long serialVersionUID = 7350102501303428347L;
+                /** Serializable UID. */
+                private static final long serialVersionUID = 7350102501303428347L;
 
-            /** {@inheritDoc} */
-            public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+                /** {@inheritDoc} */
+                public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
                     throws OrekitException {
-                // we define solar system barycenter with respect to Earth-Moon barycenter
-                // so we need to revert the vectors provided by the JPL DE 405 ephemerides
-                final PVCoordinates emPV = super.getPVCoordinates(date, frame);
-                return new PVCoordinates(emPV.getPosition().negate(), emPV.getVelocity().negate());
-            }
+                    // we define solar system barycenter with respect to Earth-Moon barycenter
+                    // so we need to revert the vectors provided by the JPL DE 405 ephemerides
+                    final PVCoordinates emPV = super.getPVCoordinates(date, frame);
+                    return new PVCoordinates(emPV.getPosition().negate(), emPV.getVelocity().negate());
+                }
 
-        };
+            };
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -417,19 +424,19 @@ public class SolarSystemBody extends AbstractCelestialBody {
                                 DE405FilesLoader.EphemerisType.MOON,
                                 "Earth-Moon centered EME2000") {
 
-            /** Serializable UID. */
-            private static final long serialVersionUID = -6860799524750318529L;
+                /** Serializable UID. */
+                private static final long serialVersionUID = -6860799524750318529L;
 
-            /** {@inheritDoc} */
-            public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+                /** {@inheritDoc} */
+                public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
                     throws OrekitException {
-                // we define Earth-Moon barycenter with respect to Earth center so we need
-                // to apply a scale factor to the Moon vectors provided by the JPL DE 405 ephemerides
-                final double scale = 1.0 / (1.0 + earthMoonMassRatio);
-                return new PVCoordinates(scale, super.getPVCoordinates(date, frame));
-            }
+                    // we define Earth-Moon barycenter with respect to Earth center so we need
+                    // to apply a scale factor to the Moon vectors provided by the JPL DE 405 ephemerides
+                    final double scale = 1.0 / (1.0 + getEarthMoonMassRatio());
+                    return new PVCoordinates(scale, super.getPVCoordinates(date, frame));
+                }
 
-        };
+            };
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -457,7 +464,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
                 /** {@inheritDoc} */
                 public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                        throws OrekitException {
+                    throws OrekitException {
 
                     // specific implementation for Earth:
                     // the Earth is always exactly at the origin of its own EME2000 frame

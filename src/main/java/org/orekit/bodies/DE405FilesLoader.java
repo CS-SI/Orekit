@@ -47,8 +47,40 @@ class DE405FilesLoader extends DataFileCrawler implements Serializable {
 
     /** List of supported ephemerides types. */
     public enum EphemerisType {
-        MERCURY, VENUS, EARTH_MOON, MARS, JUPITER,
-        SATURN, URANUS, NEPTUNE, PLUTO, MOON, SUN
+
+        /** Constant for Mercury. */
+        MERCURY,
+
+        /** Constant for Venus. */
+        VENUS,
+
+        /** Constant for the Earth-Moon barycenter. */
+        EARTH_MOON,
+
+        /** Constant for Mars. */
+        MARS,
+
+        /** Constant for Jupiter. */
+        JUPITER,
+
+        /** Constant for Saturn. */
+        SATURN,
+
+        /** Constant for Uranus. */
+        URANUS,
+
+        /** Constant for Neptune. */
+        NEPTUNE,
+
+        /** Constant for Pluto. */
+        PLUTO,
+
+        /** Constant for the Moon. */
+        MOON,
+
+        /** Constant for the Sun. */
+        SUN
+
     }
 
     /** Binary record size in bytes. */
@@ -195,7 +227,7 @@ class DE405FilesLoader extends DataFileCrawler implements Serializable {
         if (Double.isNaN(astronomicalUnit)) {
             astronomicalUnit = au;
         } else {
-            if (Math.abs(astronomicalUnit- au) >= 0.001) {
+            if (Math.abs(astronomicalUnit - au) >= 0.001) {
                 throw new OrekitException("inconsistent values of astronomical unit in DE 405 files: ({0} and {1})",
                                           new Object[] {
                                               Double.valueOf(astronomicalUnit),
@@ -209,7 +241,7 @@ class DE405FilesLoader extends DataFileCrawler implements Serializable {
         if (Double.isNaN(earthMoonMassRatio)) {
             earthMoonMassRatio = emRat;
         } else {
-            if (Math.abs(earthMoonMassRatio- emRat) >= 1.0e-8) {
+            if (Math.abs(earthMoonMassRatio - emRat) >= 1.0e-8) {
                 throw new OrekitException("inconsistent values of Earth/Moon mass ratio in DE 405 files: ({0} and {1})",
                                           new Object[] {
                                               Double.valueOf(earthMoonMassRatio),
@@ -241,7 +273,7 @@ class DE405FilesLoader extends DataFileCrawler implements Serializable {
             }
         }
 
-        int deNumber = extractInt(2840);
+        final int deNumber = extractInt(2840);
         ok = ok && (deNumber == 405);
 
         // sanity checks
@@ -268,20 +300,20 @@ class DE405FilesLoader extends DataFileCrawler implements Serializable {
         }
 
         // loop over chunks inside the time range
-        double chunkDuration = rangeEnd.durationFrom(rangeStart) / chunks;
+        final double chunkDuration = rangeEnd.durationFrom(rangeStart) / chunks;
         AbsoluteDate chunkEnd = rangeStart;
         for (int i = 0; i < chunks; ++i) {
 
             // set up chunk validity range
-            AbsoluteDate chunkStart = chunkEnd;
+            final AbsoluteDate chunkStart = chunkEnd;
             chunkEnd = (i == chunks - 1) ?
                        rangeEnd : new AbsoluteDate(rangeStart, (i + 1) * chunkDuration);
 
             // extract Chebyshev coefficients for the selected body
             // and convert them from kilometers to meters
-            double[] xCoeffs = new double[coeffs];
-            double[] yCoeffs = new double[coeffs];
-            double[] zCoeffs = new double[coeffs];
+            final double[] xCoeffs = new double[coeffs];
+            final double[] yCoeffs = new double[coeffs];
+            final double[] zCoeffs = new double[coeffs];
             for (int k = 0; k < coeffs; ++k) {
                 final int index = firstIndex + 3 * i * coeffs + k - 1;
                 xCoeffs[k] = 1000.0 * extractDouble(8 * index);

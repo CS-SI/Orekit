@@ -35,21 +35,21 @@ import org.orekit.utils.PVCoordinates;
 public abstract class AbstractCelestialBody implements CelestialBody {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 3550330976590666768L;
+    private static final long serialVersionUID = -8952752516350848089L;
 
     /** Attraction coefficient of the body (m<sup>3</sup>/s<sup>2</sup>). */
     private final double gm;
 
     /** Inertial body-centered frame. */
-    private final Frame frame;
+    private final Frame bodyCenteredFrame;
 
     /** Build an instance using an existing body-centered frame.
      * @param gm attraction coefficient (in m<sup>3</sup>/s<sup>2</sup>)
      * @param frame existing body-centered frame to use
      */
     protected AbstractCelestialBody(final double gm, final Frame frame) {
-        this.gm    = gm;
-        this.frame = frame;
+        this.gm = gm;
+        this.bodyCenteredFrame = frame;
     }
 
     /** Build an instance and the underlying frame.
@@ -58,7 +58,7 @@ public abstract class AbstractCelestialBody implements CelestialBody {
      * {@link Transform#Transform(org.apache.commons.math.geometry.Vector3D,
      * org.apache.commons.math.geometry.Vector3D) translation/velocity} transform
      * without any rotation. The frame axes are therefore always parallel to
-     * {@link Frame#getEME2000() EME2000} frame axes.</p></p>
+     * {@link Frame#getEME2000() EME2000} frame axes.</p>
      * @param gm attraction coefficient (in m<sup>3</sup>/s<sup>2</sup>)
      * @param frameName frame name to use
      * @param definingFrame frame in which celestial body coordinates are defined
@@ -66,7 +66,7 @@ public abstract class AbstractCelestialBody implements CelestialBody {
     protected AbstractCelestialBody(final double gm,
                                     final String frameName, final Frame definingFrame) {
         this.gm    = gm;
-        this.frame = new BodyCenteredFrame(frameName, definingFrame);
+        this.bodyCenteredFrame = new BodyCenteredFrame(frameName, definingFrame);
     }
 
     /** {@inheritDoc} */
@@ -76,12 +76,12 @@ public abstract class AbstractCelestialBody implements CelestialBody {
 
     /** {@inheritDoc} */
     public Frame getFrame() {
-        return frame;
+        return bodyCenteredFrame;
     }
 
     /** {@inheritDoc} */
     public abstract PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
-            throws OrekitException;
+        throws OrekitException;
 
     /** Inertially oriented body-centered frame aligned with EME2000. */
     private class BodyCenteredFrame extends Frame {
