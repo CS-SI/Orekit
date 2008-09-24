@@ -35,6 +35,11 @@
         planets,the Pluto dwarf planet as well as the solar system barycenter and Earth-Moon
         barycenter points.
       </action>
+      <action dev="luc" type="fix">
+        The low accuracy Sun model based on Newcomb theory and the Moon model based
+        on Brown theory have been withdrawn as they are superseded by the support of JPL
+        DE 405 binary ephemerides files.
+      </action>
       <action dev="luc" type="update">
         The ThirdBody abstract class has been removed and its specific method
         getMu has been moved up into CelestialBody interface and
