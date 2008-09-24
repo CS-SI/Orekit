@@ -24,21 +24,21 @@
              description="TBD">
       <action dev="luc" type="add">
         Added a method to retrieve a body-centered inertial frame to the
-        <code>CelestialBody</code> interface. As a consequence, thirteen new frames are
+        CelestialBody interface. As a consequence, thirteen new frames are
         predefined: Sun, Moon, planets and barycenters provided by JPL DE 405 binary
         ephemerides.
       </action>
       <action dev="luc" type="add">
         Support for the JPL DE 405 binary ephemerides files has been added and a factory
-        class <code>SolarSystemBody</code> uses these files to provide implementations
-        of the <code>CelestialBody</code> interface for Sun, Moon, the eight solar system
+        class SolarSystemBody uses these files to provide implementations
+        of the CelestialBody interface for Sun, Moon, the eight solar system
         planets,the Pluto dwarf planet as well as the solar system barycenter and Earth-Moon
         barycenter points.
       </action>
       <action dev="luc" type="update">
-        The <code>ThirdBody</code> abstract class has been removed and its specific method
-        <code>getMu</code> has been moved up into <code>CelestialBody</code> interface and
-        renamed <code>getGM</code>.
+        The ThirdBody abstract class has been removed and its specific method
+        getMu has been moved up into CelestialBody interface and
+        renamed getGM.
       </action>
       <action dev="luc" type="add">
         A getCalls() method has been added to the NumericalPropagator class to count the
@@ -77,7 +77,7 @@
       <action dev="luc" type="update">
         The J2000 frame has been renamed as EME2000 as this name seems to be more
         widely accepted and reduces confusion with the J2000.0 epoch. The
-        <code>Frame.getJ2000()</code> method is still available, but has been deprecated
+        Frame.getJ2000() method is still available, but has been deprecated
         and will be removed in the future.
       </action>
       <action dev="luc" type="add">
