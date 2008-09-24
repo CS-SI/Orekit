@@ -174,6 +174,18 @@ Frames
   In such a frame, the user can retrieve azimuth angle, elevation angle, 
   range and range rate of any point given in any frame, at given date.
 
+** Solar system frames
+
+  All celestial bodies are linked to their own body-centered inertial frame, just
+  like the Earth is linked to EME2000 and GCRF. Since Orekit provides implementations
+  of the main solar system celestial bodies, it also provides body-centered frames
+  for these bodies. The predefined ones are the Sun, the Moon, the eight planets and
+  the Pluto dwarf planet. In addition to these real bodies, two points are supported
+  for convenience as if they were real bodies: the solar system barycenter and the
+  Earth-Moon barycenter.
+
+[./images/solar-system-frames.png]
+
 * User defined frames
 
   The frames tree is can be extended by user which can add as many frames as he

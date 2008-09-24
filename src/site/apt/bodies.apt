@@ -13,28 +13,66 @@
 
 Bodies
 
-  This package provides interface to represent the geometry of space objects 
-  such as stars or planets.
+  This package provides interface to represent the position and geometry of
+  space objects such as stars, planets or asteroids.
 	
-* Bodies Presentation 
+* Position
+
+  The position of celestial bodies is represented by the <CelestialBody> interface.
+  This interface provides the methods needed to either consider the body as an
+  external one for its gravity or lighting influence on spacecraft (typically in
+  perturbing force computation) or as an internal one with its own frame.
+
+  The <SolarSystemBody> class is a factory providing several predefined instances
+  implementing the <CelestialBody> interface for the main solar system bodies. The Sun,
+  the Moon, the eight planets and the Pluto dwarf planet are the supported bodies. In
+  addition to these real bodies, two points are supported for convenience as if they
+  were real bodies: the solar system barycenter and the Earth-Moon barycenter. The
+  <SolarSystemBody> factory relies on the JPL DE 405 binary ephemerides files to
+  compute all positions and velocities. Note that the binary files are used, not the
+  ASCII ones, regardless of the processor endianness.
+
+  As an example, computing the position of the Sun and the Moon in the EME2000 frame,
+  this done as follows:
+
++---------------------
+CelestialBody sun  = SolarSystemBody.getSun();
+CelestialBody moon = SolarSystemBody.getMoon();
+Vector3D sunInEME2000 =
+    sun.getPVCoordinates(date, Frame.getEME2000()).getPosition();
+Vector3D moonInEME2000 =
+    moon.getPVCoordinates(date, Frame.getEME2000()).getPosition();
++---------------------
+
+  Since the supported bodies implement the <CelestialBody> interface, they all provide
+  their own body-centered inertial frame, hence adding a few more frames to the ones
+  provided by the frames package. Since the frames tree is rooted at an Earth-centered
+  frame, the solar system bodies frames tree does not seems in canonical shape. This of
+  course is only a side effect of the arbitrary choice of GCRF as the root frame and has
+  no effect at all on computations. The solar system bodies frames tree is shown below:
  
-  Their geometry is represented by a <BodyShape> and other informations such as 
-  position and mass are represented by a <ThirdBody>. 
+[./images/solar-system-frames.png]
 
-  Several implementations are provided by OREKIT : 
-  
-	** <OneAxisEllipsoid>, which represents the ellipsoid shape of 
-	space rotating bodies.
-	
-	** <Moon> and <Sun>, which provide position at a specific date 
-	and other informations such as the radius.
+* Shape
+ 
+  The shape of celestial bodies is represented by the <BodyShape> interface. 
 
+** Implementations
 
-*  Geodetic coordinates
+  Only one implementation is provided by OREKIT for now: the <OneAxisEllipsoid>
+  class which represents the natural flattened shape of big space rotating bodies
+  like planets or the Sun.
+
+  For asteroids, it is expected that users provide their own shape models, for example
+  based on triangulation. They should implement the <BodyShape> interface in order to
+  be used by Orekit.
+
+**  Geodetic coordinates
  
   When using <OneAxisEllipsoid> body representation, points are generally described in 
-  associated body frame, by coordinates called "geodetic" (longitude, latitude, altitude). 
-  The <GeodeticPoint> class allows handling of such coordinates.
+  associated body frame, by so-called <geodetic> coordinates (longitude, latitude, altitude). 
+  The <GeodeticPoint> class allows handling of such coordinates. It is a simple container
+  that does not provide processing methods.
 
 * Authors
 
