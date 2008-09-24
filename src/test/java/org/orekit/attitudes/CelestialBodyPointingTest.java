@@ -37,12 +37,12 @@ public class CelestialBodyPointingTest extends TestCase {
         Sun sun = new Sun();
         AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 12345.6789);
         AttitudeLaw sunPointing =
-            new CelestialBodyPointed(Frame.getJ2000(), sun, Vector3D.PLUS_K,
+            new CelestialBodyPointed(Frame.getEME2000(), sun, Vector3D.PLUS_K,
                                      Vector3D.PLUS_I, Vector3D.PLUS_K);
         PVCoordinates pv =
             new PVCoordinates(new Vector3D(28823536.58654545, 5893400.545304828, 0),
                               new Vector3D(0, 0, 3680.853673522056));
-        Attitude attitude = sunPointing.getState(date, pv, Frame.getJ2000());
+        Attitude attitude = sunPointing.getState(date, pv, Frame.getEME2000());
         Vector3D xDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Vector3D zDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_K);
         assertEquals(0,
@@ -54,7 +54,7 @@ public class CelestialBodyPointingTest extends TestCase {
         // the following statement checks we take parallax into account
         // Sun-Earth-Sat are in quadrature, with distance (Earth, Sat) == distance(Sun, Earth) / 5000
         assertEquals(Math.atan(1.0 / 5000.0),
-                     Vector3D.angle(xDirection, sun.getPosition(date, Frame.getJ2000())),
+                     Vector3D.angle(xDirection, sun.getPosition(date, Frame.getEME2000())),
                      1.0e-15);
 
     }

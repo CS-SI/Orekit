@@ -40,11 +40,11 @@ public class ITRF2005FrameTest extends TestCase {
                                               new TimeComponents(15, 38, 00),
                                               UTCScale.getInstance());
         Frame ITRF2005 = Frame.getITRF2005();
-        Transform t0 = ITRF2005.getTransformTo(Frame.getJ2000(), date1 );
+        Transform t0 = ITRF2005.getTransformTo(Frame.getEME2000(), date1 );
 
         double dt = 10.0;
         AbsoluteDate date2 = new AbsoluteDate(date1, dt);
-        Transform t1 = ITRF2005.getTransformTo(Frame.getJ2000(), date2);
+        Transform t1 = ITRF2005.getTransformTo(Frame.getEME2000(), date2);
         Transform evolution = new Transform(t0.getInverse(), t1);
 
         assertEquals(0.0, evolution.transformPosition(new Vector3D(0,0,0)).getNorm(), 1.0e-10);
@@ -63,19 +63,19 @@ public class ITRF2005FrameTest extends TestCase {
                                              UTCScale.getInstance());
         Frame ITRF2005 = Frame.getITRF2005();
 
-        Vector3D u = ITRF2005.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.PLUS_I);
+        Vector3D u = ITRF2005.getTransformTo(Frame.getEME2000(), date).transformVector(Vector3D.PLUS_I);
         assertTrue(Vector3D.angle(u, Vector3D.MINUS_I) < Math.toRadians(2));
 
         date = new AbsoluteDate(date, 6 * 3600);
-        u = ITRF2005.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.PLUS_I);
+        u = ITRF2005.getTransformTo(Frame.getEME2000(), date).transformVector(Vector3D.PLUS_I);
         assertTrue(Vector3D.angle(u, Vector3D.MINUS_J) < Math.toRadians(2));
 
         date = new AbsoluteDate(date, 6 * 3600);
-        u = ITRF2005.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.PLUS_I);
+        u = ITRF2005.getTransformTo(Frame.getEME2000(), date).transformVector(Vector3D.PLUS_I);
         assertTrue(Vector3D.angle(u, Vector3D.PLUS_I) < Math.toRadians(2));
 
         date = new AbsoluteDate(date, 6 * 3600);
-        u = ITRF2005.getTransformTo(Frame.getJ2000(), date).transformVector(Vector3D.PLUS_I);
+        u = ITRF2005.getTransformTo(Frame.getEME2000(), date).transformVector(Vector3D.PLUS_I);
         assertTrue(Vector3D.angle(u, Vector3D.PLUS_J) < Math.toRadians(2));
 
     }
@@ -105,7 +105,7 @@ public class ITRF2005FrameTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 10, 14),
                                              new TimeComponents(02, 00, 00),
                                              UTCScale.getInstance());
-        Transform trans = Frame.getJ2000().getTransformTo(Frame.getTIRF2000(), date);
+        Transform trans = Frame.getEME2000().getTransformTo(Frame.getTIRF2000(), date);
 
         // Positions
         Vector3D posTIRF =
@@ -122,10 +122,10 @@ public class ITRF2005FrameTest extends TestCase {
                                            new TimeComponents(02, 00, 00),
                                            UTCScale.getInstance());
         Frame itrf = Frame.getITRF2005();
-        Transform trans = Frame.getJ2000().getTransformTo(itrf, t0);
+        Transform trans = Frame.getEME2000().getTransformTo(itrf, t0);
 
-        // Coordinates in J2000
-        PVCoordinates pvJ2000 =
+        // Coordinates in EME2000
+        PVCoordinates pvEME2000 =
             new PVCoordinates(new Vector3D(6500000.0, -1234567.0, 4000000.0),
                               new Vector3D(3609.28229, 3322.88979, -7083.950661));
 
@@ -136,32 +136,32 @@ public class ITRF2005FrameTest extends TestCase {
 
 
         // tests using direct transform
-        checkPV(pvRef, trans.transformPVCoordinates(pvJ2000), 0.62, 5.0e-4);
+        checkPV(pvRef, trans.transformPVCoordinates(pvEME2000), 0.62, 5.0e-4);
 
         // compute local evolution using finite differences
         double h = 0.1;
         Rotation r0 = trans.getRotation();
         AbsoluteDate date = new AbsoluteDate(t0, -2 * h);
-        Rotation evoM2h = Frame.getJ2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
+        Rotation evoM2h = Frame.getEME2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
         double alphaM2h = -evoM2h.getAngle();
         Vector3D axisM2h = evoM2h.getAxis();
         date = new AbsoluteDate(t0, -h);
-        Rotation evoM1h = Frame.getJ2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
+        Rotation evoM1h = Frame.getEME2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
         double alphaM1h = -evoM1h.getAngle();
         Vector3D axisM1h = evoM1h.getAxis();
         date = new AbsoluteDate(t0,  h);
-        Rotation evoP1h = Frame.getJ2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
+        Rotation evoP1h = Frame.getEME2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
         double alphaP1h =  evoP1h.getAngle();
         Vector3D axisP1h = evoP1h.getAxis().negate();
         date = new AbsoluteDate(t0, 2 * h);
-        Rotation evoP2h = Frame.getJ2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
+        Rotation evoP2h = Frame.getEME2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
         double alphaP2h =  evoP2h.getAngle();
         Vector3D axisP2h = evoP2h.getAxis().negate();
         double w = (8 * (alphaP1h - alphaM1h) - (alphaP2h - alphaM2h)) / (12 * h);
         Vector3D axis = axisM2h.add(axisM1h).add(axisP1h.add(axisP2h)).normalize();
         Transform finiteDiffTransform = new Transform(trans.getRotation() , new Vector3D(w ,axis));
 
-        checkPV(pvRef, finiteDiffTransform.transformPVCoordinates(pvJ2000), 0.62, 4.1e-4);
+        checkPV(pvRef, finiteDiffTransform.transformPVCoordinates(pvEME2000), 0.62, 4.1e-4);
 
     }
 

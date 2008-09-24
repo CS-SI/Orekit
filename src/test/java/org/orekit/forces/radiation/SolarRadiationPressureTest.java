@@ -54,7 +54,7 @@ public class SolarRadiationPressureTest extends TestCase {
                                              UTCScale.getInstance());
         Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
                                            Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
-                                           0.1, 2, Frame.getJ2000(), date, mu);
+                                           0.1, 2, Frame.getEME2000(), date, mu);
         Sun sun = new Sun();
         OneAxisEllipsoid earth =
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
@@ -79,7 +79,7 @@ public class SolarRadiationPressureTest extends TestCase {
             try {
 
                 double ratio = SRP.getLightningRatio(k.propagate(currentDate).getPVCoordinates().getPosition(),
-                                                     Frame.getJ2000(), currentDate);
+                                                     Frame.getEME2000(), currentDate);
 
                 if(Math.floor(ratio)!=changed) {
                     changed = Math.floor(ratio);
@@ -103,7 +103,7 @@ public class SolarRadiationPressureTest extends TestCase {
         Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
                                            Math.tan(0.001745329)*Math.cos(2*Math.PI/3),
                                            Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
-                                           0.1, 2, Frame.getJ2000(), date, mu);
+                                           0.1, 2, Frame.getEME2000(), date, mu);
         final double period = orbit.getKeplerianPeriod();
         assertEquals(86164, period, 1);
         Sun sun = new Sun();

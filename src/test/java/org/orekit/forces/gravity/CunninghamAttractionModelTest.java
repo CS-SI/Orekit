@@ -67,11 +67,11 @@ public class CunninghamAttractionModelTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
                                              new TimeComponents(13, 59, 27.816),
                                              UTCScale.getInstance());
-        Transform itrfToJ2000  = ITRF2005.getTransformTo(Frame.getJ2000(), date);
-        Vector3D pole          = itrfToJ2000.transformVector(Vector3D.PLUS_K);
-        Frame poleAligned      = new Frame(Frame.getJ2000(),
-                                           new Transform(new Rotation(pole, Vector3D.PLUS_K)),
-                                           "pole aligned");
+        Transform itrfToEME2000 = ITRF2005.getTransformTo(Frame.getEME2000(), date);
+        Vector3D pole           = itrfToEME2000.transformVector(Vector3D.PLUS_K);
+        Frame poleAligned       = new Frame(Frame.getEME2000(),
+                                            new Transform(new Rotation(pole, Vector3D.PLUS_K)),
+                                            "pole aligned");
 
         double i     = Math.toRadians(98.7);
         double omega = Math.toRadians(93.0);
@@ -113,7 +113,7 @@ public class CunninghamAttractionModelTest extends TestCase {
             AbsoluteDate current = currentState.getDate();
             Vector3D sunPos;
             try {
-                sunPos = sun.getPosition(current , Frame.getJ2000());
+                sunPos = sun.getPosition(current , Frame.getEME2000());
             } catch (OrekitException e) {
                 sunPos = Vector3D.ZERO;
                 System.out.println("exception during sun.getPosition");
@@ -139,11 +139,11 @@ public class CunninghamAttractionModelTest extends TestCase {
         Vector3D position = new Vector3D(3220103., 69623., 6449822.);
         Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
 
-        Transform itrfToJ2000  = ITRF2005.getTransformTo(Frame.getJ2000(), date);
-        Vector3D pole          = itrfToJ2000.transformVector(Vector3D.PLUS_K);
-        Frame poleAligned      = new Frame(Frame.getJ2000(),
-                                           new Transform(new Rotation(pole, Vector3D.PLUS_K)),
-                                           "pole aligned");
+        Transform itrfToEME2000 = ITRF2005.getTransformTo(Frame.getEME2000(), date);
+        Vector3D pole           = itrfToEME2000.transformVector(Vector3D.PLUS_K);
+        Frame poleAligned       = new Frame(Frame.getEME2000(),
+                                            new Transform(new Rotation(pole, Vector3D.PLUS_K)),
+                                            "pole aligned");
 
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                 poleAligned, date, mu);
@@ -222,7 +222,7 @@ public class CunninghamAttractionModelTest extends TestCase {
         double OMEGA = Math.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                                        0, KeplerianOrbit.MEAN_ANOMALY,
-                                                       Frame.getJ2000(), date, mu);
+                                                       Frame.getEME2000(), date, mu);
         
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(1000));
         propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, ae, mu,

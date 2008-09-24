@@ -54,7 +54,7 @@ public class SpacecraftState implements TimeStamped, Serializable {
 
     /** Default attitude law. */
     private static final Attitude DEFAULT_ATTITUDE =
-        new Attitude(Frame.getJ2000(), Rotation.IDENTITY, Vector3D.ZERO);
+        new Attitude(Frame.getEME2000(), Rotation.IDENTITY, Vector3D.ZERO);
 
     /** Orbital state. */
     private final Orbit orbit;

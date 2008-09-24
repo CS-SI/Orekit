@@ -23,7 +23,7 @@ import org.orekit.time.AbsoluteDate;
 
 
 /** International Terrestrial Reference Frame 2005.
- * <p> Handles pole motion effects and depends on {@link TIRF2005Frame}, its
+ * <p> Handles pole motion effects and depends on {@link TIRF2000Frame}, its
  * parent frame.</p>
  * @author Luc Maisonobe
  * @version $Revision: 1726 $ $Date: 2008-06-20 11:18:17 +0200 (ven., 20 juin 2008) $
@@ -95,7 +95,7 @@ class ITRF2005Frame extends Frame {
             // combined effects
             final Rotation combined = wRot.revert();
 
-            // set up the transform from parent GCRS (J2000) to ITRF
+            // set up the transform from parent TIRF
             setTransform(new Transform(combined, Vector3D.ZERO));
             cachedDate = date;
 

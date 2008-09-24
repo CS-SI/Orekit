@@ -51,7 +51,7 @@ public class ThirdBodyAttractionTest extends TestCase {
         Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
                                            Math.tan(0.001745329) * Math.cos(2 * Math.PI / 3),
                                            Math.tan(0.001745329) * Math.sin(2 * Math.PI / 3),
-                                           0.1, 2, Frame.getJ2000(), date, mu);
+                                           0.1, 2, Frame.getEME2000(), date, mu);
         double period = 2 * Math.PI * orbit.getA() * Math.sqrt(orbit.getA() / orbit.getMu());
 
         // set up propagator
@@ -87,7 +87,7 @@ public class ThirdBodyAttractionTest extends TestCase {
             new EquinoctialOrbit(42164000,10e-3,10e-3,
                                       Math.tan(0.001745329) * Math.cos(2 * Math.PI / 3),
                                       Math.tan(0.001745329) * Math.sin(2 * Math.PI / 3),
-                                      0.1, 2, Frame.getJ2000(), date, mu);
+                                      0.1, 2, Frame.getEME2000(), date, mu);
         double period = 2 * Math.PI * orbit.getA() * Math.sqrt(orbit.getA() / orbit.getMu());
 
         // set up propagator

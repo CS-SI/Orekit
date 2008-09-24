@@ -42,9 +42,11 @@ discrete events. Here is a short list of the features offered by the library:</p
   <li>Geometry
     <ul>
       <li>frames hierarchy supporting fixed and time-dependent (or telemetry-dependent) frames</li>
-      <li>predefined frames (J2000, ITRF2005 (A and B) and intermediate frames, Veis, topocentric)</li>
+      <li>predefined frames (EME2000, GCRF, ITRF2005 and intermediate frames, Veis, topocentric, Moon, Sun,
+      planets, solar system barycenter, Earth-Moon barycenter)</li>
       <li>user extensible (used operationally in real time with a set of about 60 frames on several spacecrafts)</li>
       <li>transparent handling of IERS Earth Orientation Parameters</li>
+      <li>transparent handling of JPL DE 405 ephemerides</li>
       <li>transforms including kinematic combination effects</li>
       <li>composite transforms reduction and caching for efficiency</li>
       <li>extensible central body shapes models (with predefined spherical and ellipsoidic shapes)</li>
@@ -53,7 +55,7 @@ discrete events. Here is a short list of the features offered by the library:</p
   </li>
   <li>Spacecraft state
     <ul>
-      <li>cartesian, keplerian, circular and equinoctial parameters</li>
+      <li>cartesian, elliptical keplerian, circular and equinoctial parameters</li>
       <li>Two-Lines Elements</li>
       <li>transparent conversion between all parameters</li>
       <li>automatic binding with frames</li>
@@ -71,12 +73,11 @@ discrete events. Here is a short list of the features offered by the library:</p
               <li>central attraction</li>
               <li>gravity models (automatic reading of SHM (for Eigen models) and EGM formats potential files, even compressed)</li>
               <li>atmospheric drag (DTM2000, Jacchia-Bowman 2006 and simple exponential models)</li>
-              <li>third body attraction</li>
+              <li>third body attraction (with data for Sun, Moon and all solar systems planets)</li>
               <li>radiation pressure with eclipses</li>
               <li>multiple maneuvers
             </ul>
           </li>
-          <li>handling of discrete events during integration (models changes, G-stop, simple notifications ...)</li>
           <li>state of the art ODE integrators (adaptive stepsize with error control,
               continuous output, switching functions, G-stop, step normalization ...)</li>
           <li>can be used in master mode (program drives integration), slave mode (integrator
@@ -95,6 +96,17 @@ discrete events. Here is a short list of the features offered by the library:</p
       </li>
       <li>unified interface above analytical/numerical/tabulated propagators for easy
           switch from coarse analysis to fine simulation with one line change</li>
+      <li>all propagators can be used in several different modes
+        <ul>
+          <li>slave mode: propagator is driven by calling application</li>
+          <li>master mode: propagator drives application callback functions</li>
+          <li>ephemeris generation mode: all intermediate results are stored during
+              propagation and provided back to the application which can navigate at will
+              through them, effectively using the propagated orbit as if it was an
+              analytical model, even if it really is a numerically propagated one, which
+              is ideal for search and iterative algorithms</li>
+        </ul>
+      </li>
       <li>handling of discrete events during integration
           (models changes, G-stop, simple notifications ...)</li>
       <li>predefined discrete events

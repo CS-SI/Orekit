@@ -112,18 +112,18 @@ public class ImpulseManeuver implements EventDetector {
     public SpacecraftState resetState(final SpacecraftState oldState)
         throws OrekitException {
 
-        final Frame j2000       = Frame.getJ2000();
+        final Frame eme2000     = Frame.getEME2000();
         final AbsoluteDate date = oldState.getDate();
         final Attitude attitude = oldState.getAttitude();
 
-        // convert velocity increment in J2000 frame
-        final Rotation refToJ2000 =
-            attitude.getReferenceFrame().getTransformTo(j2000, date).getRotation();
-        final Rotation satToJ2000 = refToJ2000.applyTo(attitude.getRotation().revert());
-        final Vector3D deltaV = satToJ2000.applyTo(deltaVSat);
+        // convert velocity increment in EME2000 frame
+        final Rotation refToEME2000 =
+            attitude.getReferenceFrame().getTransformTo(eme2000, date).getRotation();
+        final Rotation satToEME2000 = refToEME2000.applyTo(attitude.getRotation().revert());
+        final Vector3D deltaV = satToEME2000.applyTo(deltaVSat);
 
         // apply increment to position/velocity
-        final PVCoordinates oldPV = oldState.getPVCoordinates(j2000);
+        final PVCoordinates oldPV = oldState.getPVCoordinates(eme2000);
         final PVCoordinates newPV = new PVCoordinates(oldPV.getPosition(),
                                                       oldPV.getVelocity().add(deltaV));
 
@@ -131,7 +131,7 @@ public class ImpulseManeuver implements EventDetector {
         final double newMass = oldState.getMass() * Math.exp(-deltaV.getNorm() / vExhaust);
 
         // pack everything in a new state
-        return new SpacecraftState(new EquinoctialOrbit(newPV, j2000, date, oldState.getMu()),
+        return new SpacecraftState(new EquinoctialOrbit(newPV, eme2000, date, oldState.getMu()),
                                    attitude, newMass);
 
     }

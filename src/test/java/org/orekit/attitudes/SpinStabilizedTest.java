@@ -38,16 +38,16 @@ public class SpinStabilizedTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 12345.6789);
         double rate = 2.0 * Math.PI / (12 * 60);
         AttitudeLaw bbq =
-            new SpinStabilized(new CelestialBodyPointed(Frame.getJ2000(), sun, Vector3D.PLUS_K,
+            new SpinStabilized(new CelestialBodyPointed(Frame.getEME2000(), sun, Vector3D.PLUS_K,
                                      Vector3D.PLUS_I, Vector3D.PLUS_K),
                                date, Vector3D.PLUS_K, rate);
         PVCoordinates pv =
             new PVCoordinates(new Vector3D(28823536.58654545, 5893400.545304828, 0),
                               new Vector3D(0, 0, 3680.853673522056));
-        Attitude attitude = bbq.getState(date, pv, Frame.getJ2000());
+        Attitude attitude = bbq.getState(date, pv, Frame.getEME2000());
         Vector3D xDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
         assertEquals(Math.atan(1.0 / 5000.0),
-                     Vector3D.angle(xDirection, sun.getPosition(date, Frame.getJ2000())),
+                     Vector3D.angle(xDirection, sun.getPosition(date, Frame.getEME2000())),
                      1.0e-15);
         assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-6);
 

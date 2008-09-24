@@ -134,13 +134,13 @@ public class YawCompensationTest extends TestCase {
 
             // Extrapolated orbit state at date
             SpacecraftState extrapOrbit = extrapolator.propagate(extrapDate);
-            PVCoordinates extrapPvSatJ2000 = extrapOrbit.getPVCoordinates();
+            PVCoordinates extrapPvSatEME2000 = extrapOrbit.getPVCoordinates();
             
             // Satellite latitude at date
-            double extrapLat = earthShape.transform(extrapPvSatJ2000.getPosition(), Frame.getJ2000(), extrapDate).getLatitude();
+            double extrapLat = earthShape.transform(extrapPvSatEME2000.getPosition(), Frame.getEME2000(), extrapDate).getLatitude();
             
             // Compute yaw compensation angle -- rotations composition
-            double yawAngle = yawCompensLaw.getYawAngle(extrapDate, extrapPvSatJ2000, Frame.getJ2000());
+            double yawAngle = yawCompensLaw.getYawAngle(extrapDate, extrapPvSatEME2000, Frame.getEME2000());
                         
             // Update minimum yaw compensation angle
             if (Math.abs(yawAngle) <= yawMin) {
@@ -153,7 +153,7 @@ public class YawCompensationTest extends TestCase {
             
             // 1/ Check yaw values around ascending node (max yaw)
             if ((Math.abs(extrapLat) < Math.toRadians(2.)) &&
-                (extrapPvSatJ2000.getVelocity().getZ() >= 0. )) {
+                (extrapPvSatEME2000.getVelocity().getZ() >= 0. )) {
                 assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.8488)) 
                         && (Math.abs(yawAngle) <= Math.toRadians(2.8532)));
             }
@@ -166,7 +166,7 @@ public class YawCompensationTest extends TestCase {
             
             // 3/ Check yaw values around descending node (max yaw)
             if ( (Math.abs(extrapLat) < Math.toRadians(2.))
-                    && (extrapPvSatJ2000.getVelocity().getZ() <= 0. ) )
+                    && (extrapPvSatEME2000.getVelocity().getZ() <= 0. ) )
             {
                 assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.8485)) 
                              && (Math.abs(yawAngle) <= Math.toRadians(2.8536)));
@@ -191,7 +191,7 @@ public class YawCompensationTest extends TestCase {
      */
     public void testCompensAxis() throws OrekitException {
 
-        PVCoordinates pvSatJ2000 = circOrbit.getPVCoordinates();
+        PVCoordinates pvSatEME2000 = circOrbit.getPVCoordinates();
 
         //  Attitude laws
         // **************
@@ -202,8 +202,8 @@ public class YawCompensationTest extends TestCase {
         YawCompensation yawCompensLaw = new YawCompensation(nadirLaw);
 
         // Get attitude rotations from non yaw compensated / yaw compensated laws
-        Rotation rotNoYaw = nadirLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
-        Rotation rotYaw = yawCompensLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
+        Rotation rotNoYaw = nadirLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
+        Rotation rotYaw = yawCompensLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
             
         // Compose rotations composition
         Rotation compoRot = rotYaw.applyTo(rotNoYaw.revert());
@@ -233,7 +233,7 @@ public class YawCompensationTest extends TestCase {
             circOrbit =
                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
                                        Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                       Frame.getJ2000(), date, mu);
+                                       Frame.getEME2000(), date, mu);
             
             pvSatITRF2005C = circOrbit.getPVCoordinates(frameITRF2005);
             

@@ -35,7 +35,7 @@ public class TransformAndFrames {
 
         // initial point in frame 1 :
 
-        Frame frame1 = new Frame(Frame.getJ2000(), Transform.IDENTITY, "frame 1");
+        Frame frame1 = new Frame(Frame.getEME2000(), Transform.IDENTITY, "frame 1");
         PVCoordinates pointP1 = new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_I);
 
         // translation transform

@@ -38,16 +38,16 @@ public class DragTest extends TestCase {
     }
 
     public void testExpAtmosphere() throws OrekitException {
-        Vector3D posInJ2000 = new Vector3D(10000,Vector3D.PLUS_I);
+        Vector3D posInEME2000 = new Vector3D(10000,Vector3D.PLUS_I);
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame itrf = Frame.getITRF2005();
         SimpleExponentialAtmosphere atm =
             new SimpleExponentialAtmosphere(new OneAxisEllipsoid(Utils.ae, 1.0 / 298.257222101, itrf),
                                             itrf, 0.0004, 42000.0, 7500.0);
-        Vector3D vel = atm.getVelocity(date, posInJ2000, Frame.getJ2000());
+        Vector3D vel = atm.getVelocity(date, posInEME2000, Frame.getEME2000());
 
-        Transform toBody = Frame.getJ2000().getTransformTo(itrf, date);
-        Vector3D test = Vector3D.crossProduct(toBody.getRotationRate(),posInJ2000);
+        Transform toBody = Frame.getEME2000().getTransformTo(itrf, date);
+        Vector3D test = Vector3D.crossProduct(toBody.getRotationRate(),posInEME2000);
         test = test.subtract(vel);
         assertEquals(0, test.getNorm(), 2.9e-5);
 

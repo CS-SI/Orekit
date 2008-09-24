@@ -35,31 +35,31 @@ public class FrameTest extends TestCase {
 
     public void testSameFrameRoot() throws OrekitException {
         Random random = new Random(0x29448c7d58b95565l);
-        Frame  frame  = Frame.getJ2000();
+        Frame  frame  = Frame.getEME2000();
         checkNoTransform(frame.getTransformTo(frame, new AbsoluteDate()), random);
     }
 
     public void testSameFrameNoRoot() throws OrekitException {
         Random random = new Random(0xc6e88d0f53e29116l);
         Transform t   = randomTransform(random);
-        Frame frame   = new Frame(Frame.getJ2000(), t, null);
+        Frame frame   = new Frame(Frame.getEME2000(), t, null);
         checkNoTransform(frame.getTransformTo(frame, new AbsoluteDate()), random);
     }
 
     public void testSimilarFrames() throws OrekitException {
         Random random = new Random(0x1b868f67a83666e5l);
         Transform t   = randomTransform(random);
-        Frame frame1  = new Frame(Frame.getJ2000(), t, null);
-        Frame frame2  = new Frame(Frame.getJ2000(), t, null);
+        Frame frame1  = new Frame(Frame.getEME2000(), t, null);
+        Frame frame2  = new Frame(Frame.getEME2000(), t, null);
         checkNoTransform(frame1.getTransformTo(frame2, new AbsoluteDate()), random);
     }
 
     public void testFromParent() throws OrekitException {
         Random random = new Random(0xb92fba1183fe11b8l);
-        Transform fromJ2000  = randomTransform(random);
-        Frame frame = new Frame(Frame.getJ2000(), fromJ2000, null);
-        Transform toJ2000 = frame.getTransformTo(Frame.getJ2000(), new AbsoluteDate());
-        checkNoTransform(new Transform(fromJ2000, toJ2000), random);
+        Transform fromEME2000  = randomTransform(random);
+        Frame frame = new Frame(Frame.getEME2000(), fromEME2000, null);
+        Transform toEME2000 = frame.getTransformTo(Frame.getEME2000(), new AbsoluteDate());
+        checkNoTransform(new Transform(fromEME2000, toEME2000), random);
     }
 
     public void testDecomposedTransform() throws OrekitException {
@@ -68,9 +68,9 @@ public class FrameTest extends TestCase {
         Transform t2  = randomTransform(random);
         Transform t3  = randomTransform(random);
         Frame frame1 =
-            new Frame(Frame.getJ2000(), new Transform(new Transform(t1, t2), t3), null);
+            new Frame(Frame.getEME2000(), new Transform(new Transform(t1, t2), t3), null);
         Frame frame2 =
-            new Frame(new Frame(new Frame(Frame.getJ2000(), t1, null), t2, null), t3, null);
+            new Frame(new Frame(new Frame(Frame.getEME2000(), t1, null), t2, null), t3, null);
         checkNoTransform(frame1.getTransformTo(frame2, new AbsoluteDate()), random);
     }
 
@@ -81,7 +81,7 @@ public class FrameTest extends TestCase {
         Transform t2  = randomTransform(random);
         Transform t3  = randomTransform(random);
 
-        Frame R1 = new Frame(Frame.getJ2000(),t1,"R1");
+        Frame R1 = new Frame(Frame.getEME2000(),t1,"R1");
         Frame R2 = new Frame(R1,t2,"R2");
         Frame R3 = new Frame(R2,t3,"R3");
 
@@ -94,7 +94,7 @@ public class FrameTest extends TestCase {
     }
 
     public void testVeis1950() throws OrekitException {
-        Transform t = Frame.getVeis1950().getTransformTo(Frame.getJ2000(), new AbsoluteDate());
+        Transform t = Frame.getVeis1950().getTransformTo(Frame.getEME2000(), new AbsoluteDate());
         Vector3D i50    = t.transformVector(Vector3D.PLUS_I);
         Vector3D j50    = t.transformVector(Vector3D.PLUS_J);
         Vector3D k50    = t.transformVector(Vector3D.PLUS_K);
@@ -114,25 +114,25 @@ public class FrameTest extends TestCase {
 
     public void testIsChildOf() throws OrekitException{
         Random random = new Random(0xb7d1a155e726da78l);
-        Frame j2000   = Frame.getJ2000();
+        Frame eme2000 = Frame.getEME2000();
 
-        Frame f1 = new Frame(j2000, randomTransform(random), "f1");
-        Frame f2 = new Frame(f1   , randomTransform(random), "f2");
-        Frame f4 = new Frame(f2   , randomTransform(random), "f4");
-        Frame f5 = new Frame(f4   , randomTransform(random), "f5");
-        Frame f6 = new Frame(j2000, randomTransform(random), "f6");
-        Frame f7 = new Frame(f6   , randomTransform(random), "f7");
-        Frame f8 = new Frame(f6   , randomTransform(random), "f8");
-        Frame f9 = new Frame(f7   , randomTransform(random), "f9");
+        Frame f1 = new Frame(eme2000, randomTransform(random), "f1");
+        Frame f2 = new Frame(f1     , randomTransform(random), "f2");
+        Frame f4 = new Frame(f2     , randomTransform(random), "f4");
+        Frame f5 = new Frame(f4     , randomTransform(random), "f5");
+        Frame f6 = new Frame(eme2000, randomTransform(random), "f6");
+        Frame f7 = new Frame(f6     , randomTransform(random), "f7");
+        Frame f8 = new Frame(f6     , randomTransform(random), "f8");
+        Frame f9 = new Frame(f7     , randomTransform(random), "f9");
 
         // check if the root frame can be an ancestor of another frame
-        assertEquals(false, j2000.isChildOf(f5));
+        assertEquals(false, eme2000.isChildOf(f5));
 
         // check if a frame which belongs to the same branch than the 2nd frame is a branch of it
         assertEquals(true, f5.isChildOf(f1));
 
         // check if a random frame is the child of the root frame 
-        assertEquals(true, f9.isChildOf(j2000));
+        assertEquals(true, f9.isChildOf(eme2000));
 
         // check that a frame is not its own child
         assertEquals(false, f4.isChildOf(f4));
@@ -141,7 +141,7 @@ public class FrameTest extends TestCase {
         assertEquals(false, f9.isChildOf(f5));
 
         // check if the root frame is not a child of itself
-        assertEquals(false, j2000.isChildOf(j2000));
+        assertEquals(false, eme2000.isChildOf(eme2000));
 
         assertEquals(false, f9.isChildOf(f8));
 
@@ -149,27 +149,27 @@ public class FrameTest extends TestCase {
 
     public void testUpdateTransform() throws OrekitException {
         Random random     = new Random(0x2f6769c23e53e96el);
-        Frame j2000       = Frame.getJ2000();
+        Frame eme2000     = Frame.getEME2000();
         AbsoluteDate date = new AbsoluteDate();
 
-        Frame f1 = new Frame(j2000, randomTransform(random), "f1");
-        Frame f2 = new Frame(f1   , randomTransform(random), "f2");
-        Frame f3 = new Frame(f2   , randomTransform(random), "f3");
-        Frame f4 = new Frame(f2   , randomTransform(random), "f4");
-        Frame f5 = new Frame(f4   , randomTransform(random), "f5");
-        Frame f6 = new Frame(j2000, randomTransform(random), "f6");
-        Frame f7 = new Frame(f6   , randomTransform(random), "f7");
-        Frame f8 = new Frame(f6   , randomTransform(random), "f8");
-        Frame f9 = new Frame(f7   , randomTransform(random), "f9");
+        Frame f1 = new Frame(eme2000, randomTransform(random), "f1");
+        Frame f2 = new Frame(f1     , randomTransform(random), "f2");
+        Frame f3 = new Frame(f2     , randomTransform(random), "f3");
+        Frame f4 = new Frame(f2     , randomTransform(random), "f4");
+        Frame f5 = new Frame(f4     , randomTransform(random), "f5");
+        Frame f6 = new Frame(eme2000, randomTransform(random), "f6");
+        Frame f7 = new Frame(f6     , randomTransform(random), "f7");
+        Frame f8 = new Frame(f6     , randomTransform(random), "f8");
+        Frame f9 = new Frame(f7     , randomTransform(random), "f9");
 
         checkFrameAncestorException(f6, f8, f9, randomTransform(random), date);
         checkFrameAncestorException(f6, f3, f5, randomTransform(random), date);
-        checkFrameAncestorException(j2000, f5, f9, randomTransform(random), date);
-        checkFrameAncestorException(f3, j2000, f6, randomTransform(random), date);    
+        checkFrameAncestorException(eme2000, f5, f9, randomTransform(random), date);
+        checkFrameAncestorException(f3, eme2000, f6, randomTransform(random), date);    
 
         checkUpdateTransform(f1, f5, f9, date, random);
         checkUpdateTransform(f7, f6, f9, date, random);
-        checkUpdateTransform(f6, j2000, f7, date, random);
+        checkUpdateTransform(f6, eme2000, f7, date, random);
 
         checkUpdateTransform(f6, f6.getParent(), f6, date, random);
 

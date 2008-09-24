@@ -44,7 +44,7 @@ public class Sun extends AbstractCelestialBody {
     /** Simple constructor.
      */
     public Sun() {
-        super(GM, "Sun-centric (Newcomb)", Frame.getJ2000());
+        super(GM, "Sun-centric (Newcomb)", Frame.getEME2000());
     }
 
     /** {@inheritDoc} */
@@ -71,7 +71,7 @@ public class Sun extends AbstractCelestialBody {
      * as used in the MSLIB library.</p>
      * @param date date
      * @param frame the frame where to define the position
-     * @return position of the sun (m) in the J2000 Frame
+     * @return position of the sun (m) in frame
      * @exception OrekitException if a frame conversion cannot be computed
      */
     public Vector3D getPosition(final AbsoluteDate date, final Frame frame)

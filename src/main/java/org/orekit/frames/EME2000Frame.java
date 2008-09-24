@@ -19,18 +19,18 @@ package org.orekit.frames;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 
-/** J2000 frame : mean equator at J2000.0.
- * <p>This frame was the standard intertial reference prior to GCRF. It was defined
+/** EME2000 frame : mean equator at J2000.0.
+ * <p>This frame was the standard inertial reference prior to GCRF. It was defined
  * using Lieske precession-nutation model for Earth. This frame has been superseded
  * by GCRF which is implicitly defined from a few hundred quasars coordinates.<p>
- * <p>The transformation between GCRF and J2000 is a constant rotation bias.</p>
+ * <p>The transformation between GCRF and EME2000 is a constant rotation bias.</p>
  * @version $Revision$ $Date$
  * @author Luc Maisonobe
  */
-class J2000Frame extends Frame {
+class EME2000Frame extends Frame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7664473096017360675L;
+    private static final long serialVersionUID = -1045789793339869819L;
 
     /** Obliquity of the ecliptic. */
     private static final double EPSILON_0 = 84381.44 * Math.PI / (180.0 * 3600.0);
@@ -47,7 +47,7 @@ class J2000Frame extends Frame {
     /** Simple constructor.
      * @param name name of the frame
      */
-    protected J2000Frame(final String name) {
+    protected EME2000Frame(final String name) {
 
         super(getGCRF(), null, name);
 

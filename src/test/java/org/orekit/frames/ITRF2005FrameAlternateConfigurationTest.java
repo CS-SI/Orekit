@@ -56,11 +56,11 @@ public class ITRF2005FrameAlternateConfigurationTest extends TestCase {
                 itrfA.getTransformTo(Frame.getGCRF(), t0).transformPVCoordinates(pvITRF),
                 0.01, 1.6e-5);
 
-        PVCoordinates pvJ2000EqA =
+        PVCoordinates pvEME2000EqA =
             new PVCoordinates(new Vector3D(5102509.0383, 6123011.9758, 6378136.3118),
                               new Vector3D(-4743.219766, 790.536344, 5533.756084));
-        checkPV(pvJ2000EqA,
-                itrfA.getTransformTo(Frame.getJ2000(), t0).transformPVCoordinates(pvITRF),
+        checkPV(pvEME2000EqA,
+                itrfA.getTransformTo(Frame.getEME2000(), t0).transformPVCoordinates(pvITRF),
                 0.01, 1.6e-5);
 
     }
@@ -89,11 +89,11 @@ public class ITRF2005FrameAlternateConfigurationTest extends TestCase {
                 itrfA.getTransformTo(Frame.getGCRF(), t0).transformPVCoordinates(pvITRF),
                 0.061, 0.5e-5);
 
-        PVCoordinates pvJ2000EqA =
+        PVCoordinates pvEME2000EqA =
             new PVCoordinates(new Vector3D(-40588149.5482, -11462169.9118, 27146.8462),
                               new Vector3D(834.787667, -2958.305632, -1.172963));
-        checkPV(pvJ2000EqA,
-                itrfA.getTransformTo(Frame.getJ2000(), t0).transformPVCoordinates(pvITRF),
+        checkPV(pvEME2000EqA,
+                itrfA.getTransformTo(Frame.getEME2000(), t0).transformPVCoordinates(pvITRF),
                 0.061, 0.5e-5);
 
     }

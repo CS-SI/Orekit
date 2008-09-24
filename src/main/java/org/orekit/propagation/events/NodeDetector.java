@@ -53,7 +53,7 @@ public class NodeDetector extends AbstractDetector {
      * max check interval to period/3.</p>
      * @param orbit initial orbit
      * @param frame frame in which the equator is defined (typical
-     * values are {@link Frame#getJ2000() J<sub>2000</sub>} or
+     * values are {@link Frame#getEME2000() J<sub>2000</sub>} or
      * {@link Frame#getITRF2005() ITRF 2005})
      */
     public NodeDetector(final Orbit orbit, final Frame frame) {

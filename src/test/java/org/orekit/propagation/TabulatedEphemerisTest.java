@@ -58,7 +58,7 @@ public class TabulatedEphemerisTest extends TestCase {
 
         Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA,
                                             lv, KeplerianOrbit.TRUE_ANOMALY, 
-                                            Frame.getJ2000(), initDate, mu);
+                                            Frame.getEME2000(), initDate, mu);
 
         int nbIntervals = 720;
         EcksteinHechlerPropagator eck =

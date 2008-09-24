@@ -88,10 +88,11 @@ class TIRF2000Frame extends Frame {
             era  = ERA_0 + ERA_1A * tu + ERA_1B * tu;
             era -= TWO_PI * Math.floor((era + Math.PI) / TWO_PI);
 
-            // set up the transform from parent GCRS (J2000) to ITRF
+            // set up the transform from parent CIRF
             final Vector3D rotationRate = new Vector3D((ERA_1A + ERA_1B) / 86400, Vector3D.PLUS_K);
             setTransform(new Transform(new Rotation(Vector3D.PLUS_K, -era), rotationRate));
             cachedDate = date;
+
         }
     }
 

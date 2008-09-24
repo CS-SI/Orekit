@@ -199,8 +199,8 @@ public class JB2006Test extends TestCase {
         // COMPUTE DENSITY KG/M3 RHO
 
         // alt = 400
-        double roJb = jb.getDensity(date, pos, Frame.getJ2000());
-        double roDtm = dtm.getDensity(date, pos, Frame.getJ2000());
+        double roJb = jb.getDensity(date, pos, Frame.getEME2000());
+        double roDtm = dtm.getDensity(date, pos, Frame.getEME2000());
 
         pos = new Vector3D(3011109.360780633,
                            -5889822.669411588,
@@ -209,8 +209,8 @@ public class JB2006Test extends TestCase {
         // COMPUTE DENSITY KG/M3 RHO
 
         // alt = 400
-        roJb = jb.getDensity(date, pos, Frame.getJ2000());
-        roDtm = dtm.getDensity(date, pos, Frame.getJ2000());
+        roJb = jb.getDensity(date, pos, Frame.getEME2000());
+        roDtm = dtm.getDensity(date, pos, Frame.getEME2000());
 
         pos =new Vector3D(-1033.4793830*1000,
                           7901.2952754*1000,
@@ -219,16 +219,16 @@ public class JB2006Test extends TestCase {
         // COMPUTE DENSITY KG/M3 RHO
 
         // alt = 400
-        roJb = jb.getDensity(date, pos, Frame.getJ2000());
-        roDtm = dtm.getDensity(date, pos, Frame.getJ2000());
+        roJb = jb.getDensity(date, pos, Frame.getEME2000());
+        roDtm = dtm.getDensity(date, pos, Frame.getEME2000());
 
         GeodeticPoint point;
         for (int i = 0; i<367; i++) {
             date = new AbsoluteDate(date, 86400);
             point = new GeodeticPoint(0, Math.toRadians(40), 300*1000);
             pos = earth.transform(point);
-            roJb = jb.getDensity(date, pos, Frame.getJ2000());
-            roDtm = dtm.getDensity(date, pos, Frame.getJ2000());
+            roJb = jb.getDensity(date, pos, Frame.getEME2000());
+            roDtm = dtm.getDensity(date, pos, Frame.getEME2000());
             double dif = Math.abs((roJb - roDtm) / roJb );
             if (dif>=1) {
                 System.out.println(date);

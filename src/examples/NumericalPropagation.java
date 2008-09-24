@@ -74,7 +74,7 @@ public class NumericalPropagation {
                                                     new TimeComponents(23, 30, 00.000),
                                                     UTCScale.getInstance());
 
-        Frame inertialFrame = Frame.getJ2000();
+        Frame inertialFrame = Frame.getEME2000();
 
         // OREKIT objects construction:
 
@@ -145,7 +145,7 @@ public class NumericalPropagation {
                                                     new TimeComponents(23, 30, 00.000),
                                                     UTCScale.getInstance());
 
-        Frame inertialFrame = Frame.getJ2000();
+        Frame inertialFrame = Frame.getEME2000();
 
         // OREKIT objects construction:
 

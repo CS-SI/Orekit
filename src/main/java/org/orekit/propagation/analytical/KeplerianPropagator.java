@@ -41,7 +41,7 @@ public class KeplerianPropagator extends AbstractPropagator {
     private static final double DEFAULT_MASS = 1000.0;
 
     /** Default attitude law. */
-    private static final AttitudeLaw DEFAULT_LAW = InertialLaw.J2000_ALIGNED;
+    private static final AttitudeLaw DEFAULT_LAW = InertialLaw.EME2000_ALIGNED;
 
     /** Initial orbit. */
     private EquinoctialOrbit initialOrbit;

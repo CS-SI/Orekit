@@ -35,16 +35,16 @@ import org.orekit.utils.PVCoordinates;
  * #getSolarSystemBarycenter() solar system barycenter} and the {@link
  * #getEarthMoonBarycenter() Earth-Moon barycenter}.</p>
  * <p>The underlying body-centered frames are either direct children of {@link
- * Frame#getJ2000() J2000/EME2000} (for {@link #getMoon() Moon} and {@link
+ * Frame#getEME2000() EME2000} (for {@link #getMoon() Moon} and {@link
  * #getEarthMoonBarycenter() Earth-Moon barycenter}) or children from other
- * body-centered frames. For example, the path from J2000/EME2000 to
- * Jupiter-centered frame is: J2000/EME2000, Earth-Moon barycenter centered,
+ * body-centered frames. For example, the path from EME2000 to
+ * Jupiter-centered frame is: EME2000, Earth-Moon barycenter centered,
  * solar system barycenter centered, Jupiter-centered. The defining transforms
  * of these frames are combinations of simple linear {@link
  * Transform#Transform(org.apache.commons.math.geometry.Vector3D,
  * org.apache.commons.math.geometry.Vector3D) translation/velocity} transforms
  * without any rotation. The frame axes are therefore always parallel to
- * {@link Frame#getJ2000() J2000/EME2000} frame axes.</p>
+ * {@link Frame#getEME2000() EME2000} frame axes.</p>
  * <p>The position of the bodies provided by this class are interpolated using
  * the JPL DE 405 ephemerides. The various constants in this file come from E. M.
  * Standish 1998-08-26 memorandum: <a
@@ -178,7 +178,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
     /** Get the solar system barycenter singleton aggregated body.
      * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return solar system barycenter aggregated body
      */
     public static CelestialBody getSolarSystemBarycenter() {
@@ -187,7 +187,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
     /** Get the Sun singleton body.
      * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Sun body
      */
     public static CelestialBody getSun() {
@@ -196,7 +196,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
     /** Get the Mercury singleton body.
      * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Sun body
      */
     public static CelestialBody getMercury() {
@@ -205,7 +205,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
     /** Get the Venus singleton body.
      * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Venus body
      */
     public static CelestialBody getVenus() {
@@ -214,7 +214,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
     /** Get the Earth-Moon barycenter singleton bodies pair.
      * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Earth-Moon barycenter bodies pair
      */
     public static CelestialBody getEarthMoonBarycenter() {
@@ -223,7 +223,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
     /** Get the Earth singleton body.
      * <p>The body-centered frame linked to this instance
-     * <is>is</em> the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
+     * <is>is</em> the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Earth body
      */
     public static CelestialBody getEarth() {
@@ -232,7 +232,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
     /** Get the Moon singleton body.
      * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Moon body
      */
     public static CelestialBody getMoon() {
@@ -241,7 +241,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
     /** Get the Mars singleton body.
      * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Mars body
      */
     public static CelestialBody getMars() {
@@ -250,7 +250,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
     /** Get the Jupiter singleton body.
      * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Jupiter body
      */
     public static CelestialBody getJupiter() {
@@ -259,7 +259,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
     /** Get the Saturn singleton body.
      * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Saturn body
      */
     public static CelestialBody getSaturn() {
@@ -268,7 +268,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
     /** Get the Uranus singleton body.
      * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Uranus body
      */
     public static CelestialBody getUranus() {
@@ -277,7 +277,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
     /** Get the Neptune singleton body.
      * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Neptune body
      */
     public static CelestialBody getNeptune() {
@@ -286,7 +286,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
     /** Get the Pluto singleton body.
      * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getJ2000() J2000/EME2000} frame.</p>
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Pluto body
      */
     public static CelestialBody getPluto() {
@@ -413,7 +413,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
         /** Unique instance. */
         public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(EARTH_GM + MOON_GM, Frame.getJ2000(),
+            new SolarSystemBody(EARTH_GM + MOON_GM, Frame.getEME2000(),
                                 DE405FilesLoader.EphemerisType.MOON,
                                 "Earth-Moon centered EME2000") {
 
@@ -450,7 +450,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
         /** Unique instance. */
         public static final CelestialBody INSTANCE =
-            new AbstractCelestialBody(EARTH_GM, Frame.getJ2000()) {
+            new AbstractCelestialBody(EARTH_GM, Frame.getEME2000()) {
 
                 /** Serializable UID. */
                 private static final long serialVersionUID = -2542177517458975694L;
@@ -460,7 +460,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
                         throws OrekitException {
 
                     // specific implementation for Earth:
-                    // the Earth is always exactly at the origin of its own J2000 frame
+                    // the Earth is always exactly at the origin of its own EME2000 frame
                     PVCoordinates pv = PVCoordinates.ZERO;
                     if (frame != getFrame()) {
                         pv = getFrame().getTransformTo(frame, date).transformPVCoordinates(pv);

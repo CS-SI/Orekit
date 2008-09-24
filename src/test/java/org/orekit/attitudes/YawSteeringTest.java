@@ -104,7 +104,7 @@ public class YawSteeringTest extends TestCase {
      */
     public void testSunAligned() throws OrekitException {
 
-        PVCoordinates pvSatJ2000 = circOrbit.getPVCoordinates();
+        PVCoordinates pvSatEME2000 = circOrbit.getPVCoordinates();
 
         //  Attitude laws
         // **************
@@ -116,9 +116,9 @@ public class YawSteeringTest extends TestCase {
         YawSteering yawCompensLaw = new YawSteering(nadirLaw, sun, Vector3D.MINUS_I);
 
         // Get sun direction in satellite frame
-        Rotation rotYaw = yawCompensLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
-        Vector3D sunJ2000 = sun.getPosition(date, Frame.getJ2000());
-        Vector3D sunSat = rotYaw.applyTo(sunJ2000);
+        Rotation rotYaw = yawCompensLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
+        Vector3D sunEME2000 = sun.getPosition(date, Frame.getEME2000());
+        Vector3D sunSat = rotYaw.applyTo(sunEME2000);
             
         // Check sun is in (X,Z) plane
         assertEquals(0.0, Math.sin(sunSat.getAlpha()), 1.0e-7);
@@ -129,7 +129,7 @@ public class YawSteeringTest extends TestCase {
      */
     public void testCompensAxis() throws OrekitException {
 
-        PVCoordinates pvSatJ2000 = circOrbit.getPVCoordinates();
+        PVCoordinates pvSatEME2000 = circOrbit.getPVCoordinates();
 
         //  Attitude laws
         // **************
@@ -140,8 +140,8 @@ public class YawSteeringTest extends TestCase {
         YawSteering yawCompensLaw = new YawSteering(nadirLaw, new Sun(), Vector3D.MINUS_I);
 
         // Get attitude rotations from non yaw compensated / yaw compensated laws
-        Rotation rotNoYaw = nadirLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
-        Rotation rotYaw = yawCompensLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
+        Rotation rotNoYaw = nadirLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
+        Rotation rotYaw = yawCompensLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
             
         // Compose rotations composition
         Rotation compoRot = rotYaw.applyTo(rotNoYaw.revert());
@@ -171,7 +171,7 @@ public class YawSteeringTest extends TestCase {
             circOrbit =
                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
                                        Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                       Frame.getJ2000(), date, mu);
+                                       Frame.getEME2000(), date, mu);
             
             pvSatITRF2005C = circOrbit.getPVCoordinates(frameITRF2005);
             

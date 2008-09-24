@@ -70,9 +70,15 @@
         this change and read the new file format provided by IERS.
       </action>
       <action dev="luc" type="fix">
-        The J2000 frame was slightly mis-oriented (about 20 milli arcseconds). It
+        The EME2000 frame was slightly mis-oriented (about 20 milli arcseconds). It
         really was the GCRF frame. This has been fixed and now both the GCRF and
-        the J2000 are available.
+        the EME2000 are available.
+      </action>
+      <action dev="luc" type="update">
+        The J2000 frame has been renamed as EME2000 as this name seems to be more
+        widely accepted and reduces confusion with the J2000.0 epoch. The
+        <code>Frame.getJ2000()</code> method is still available, but has been deprecated
+        and will be removed in the future.
       </action>
       <action dev="luc" type="add">
         A lot more classes and interfaces are now serializable, to help users embed
@@ -110,7 +116,7 @@
       </action>
       <action dev="luc" type="add">
         Improved the class handling date components: added a constructor to allow building
-        from any reference epoch, not only J2000 (thus simplifying use of modified julian day),
+        from any reference epoch, not only J2000.0 (thus simplifying use of modified julian day),
         added getMJD() method, added several constants JULIAN_EPOCH, MODIFIED_JULIAN_EPOCH,
         FIFTIES_EPOCH, GPS_EPOCH, J2000_EPOCH and JAVA_EPOCH.
       </action>

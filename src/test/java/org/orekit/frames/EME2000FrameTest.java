@@ -30,7 +30,7 @@ import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
 
-public class J2000FrameTest extends TestCase {
+public class EME2000FrameTest extends TestCase {
 
     public void testAASReferenceLEO() throws OrekitException {
 
@@ -42,23 +42,23 @@ public class J2000FrameTest extends TestCase {
                                            new TimeComponents(07, 51, 28.386009),
                                            UTCScale.getInstance());
 
-        Transform t = Frame.getGCRF().getTransformTo(Frame.getJ2000(), t0);
+        Transform t = Frame.getGCRF().getTransformTo(Frame.getEME2000(), t0);
 
         PVCoordinates pvGcrfIau2000A =
             new PVCoordinates(new Vector3D(5102508.9579, 6123011.4038, 6378136.9252),
                               new Vector3D(-4743.220156, 790.536497, 5533.755728));
-        PVCoordinates pvJ2000EqA =
+        PVCoordinates pvEME2000EqA =
             new PVCoordinates(new Vector3D(5102509.0383, 6123011.9758, 6378136.3118),
                               new Vector3D(-4743.219766, 790.536344, 5533.756084));
-        checkPV(pvJ2000EqA, t.transformPVCoordinates(pvGcrfIau2000A), 1.1e-4, 2.6e-7);
+        checkPV(pvEME2000EqA, t.transformPVCoordinates(pvGcrfIau2000A), 1.1e-4, 2.6e-7);
 
         PVCoordinates pvGcrfIau2000B =
             new PVCoordinates(new Vector3D(5102508.9579, 6123011.4012, 6378136.9277),
                               new Vector3D(-4743.220156, 790.536495, 5533.755729));
-        PVCoordinates pvJ2000EqB =
+        PVCoordinates pvEME2000EqB =
             new PVCoordinates(new Vector3D(5102509.0383, 6123011.9733, 6378136.3142),
                               new Vector3D(-4743.219766, 790.536342, 5533.756085));
-        checkPV(pvJ2000EqB, t.transformPVCoordinates(pvGcrfIau2000B), 7.4e-5, 2.6e-7);
+        checkPV(pvEME2000EqB, t.transformPVCoordinates(pvGcrfIau2000B), 7.4e-5, 2.6e-7);
 
     }
 
@@ -72,23 +72,23 @@ public class J2000FrameTest extends TestCase {
                                            TimeComponents.H00,
                                            UTCScale.getInstance());
 
-        Transform t = Frame.getGCRF().getTransformTo(Frame.getJ2000(), t0);
+        Transform t = Frame.getGCRF().getTransformTo(Frame.getEME2000(), t0);
 
         PVCoordinates pvGCRFiau2000A =
             new PVCoordinates(new Vector3D(-40588150.3617, -11462167.0397, 27143.1974),
                               new Vector3D(834.787458, -2958.305691, -1.172993));
-        PVCoordinates pvJ2000EqA =
+        PVCoordinates pvEME2000EqA =
             new PVCoordinates(new Vector3D(-40588149.5482, -11462169.9118, 27146.8462),
                               new Vector3D(834.787667, -2958.305632, -1.172963));
-        checkPV(pvJ2000EqA, t.transformPVCoordinates(pvGCRFiau2000A), 5.8e-5, 6.4e-7);
+        checkPV(pvEME2000EqA, t.transformPVCoordinates(pvGCRFiau2000A), 5.8e-5, 6.4e-7);
 
         PVCoordinates pvGCRFiau2000B =
             new PVCoordinates(new Vector3D(-40588150.3617,-11462167.0397, 27143.2125),
                               new Vector3D(834.787458,-2958.305691,-1.172999));
-        PVCoordinates pvJ2000EqB =
+        PVCoordinates pvEME2000EqB =
             new PVCoordinates(new Vector3D(-40588149.5481, -11462169.9118, 27146.8613),
                               new Vector3D(834.787667, -2958.305632, -1.172968));
-        checkPV(pvJ2000EqB, t.transformPVCoordinates(pvGCRFiau2000B), 1.1e-4, 5.6e-7);
+        checkPV(pvEME2000EqB, t.transformPVCoordinates(pvGCRFiau2000B), 1.1e-4, 5.6e-7);
 
     }
 
@@ -108,7 +108,7 @@ public class J2000FrameTest extends TestCase {
     }
 
     public static Test suite() {
-        return new TestSuite(J2000FrameTest.class);
+        return new TestSuite(EME2000FrameTest.class);
     }
 
 }

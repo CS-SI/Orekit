@@ -51,7 +51,7 @@ public class ConstantThrustManeuverTest extends TestCase {
 
     private CircularOrbit dummyOrbit(AbsoluteDate date) {
         return new CircularOrbit(new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_J),
-                                 Frame.getJ2000(), date, mu);
+                                 Frame.getEME2000(), date, mu);
     }
 
     public void testPositiveDuration() throws OrekitException {
@@ -111,7 +111,7 @@ public class ConstantThrustManeuverTest extends TestCase {
                                                        UTCScale.getInstance());
         final Orbit orbit =
             new KeplerianOrbit(a, e, i, omega, OMEGA, lv, KeplerianOrbit.TRUE_ANOMALY,
-                               Frame.getJ2000(), initDate, mu);
+                               Frame.getEME2000(), initDate, mu);
         final SpacecraftState initialState =
             new SpacecraftState(orbit, law.getState(initDate, orbit.getPVCoordinates(), orbit.getFrame()), mass);
 

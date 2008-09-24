@@ -69,7 +69,7 @@ Frames
 * Predefined Frames
 
   Several predefined reference frames are implemented in Orekit. The user can retrieve them
-  using various static methods: <<<getGCRF()>>>, <<<getJ2000()>>>, <<<getITRF2005()>>>,
+  using various static methods: <<<getGCRF()>>>, <<<getEME2000()>>>, <<<getITRF2005()>>>,
   <<<getCIRF2000()>>>, <<<getTIRF2000()>>> and <<<getVeis1950()>>>. One of these reference
   frames has been arbitrarily chosen as the root of the frames tree: the <Geocentric Celestial
   Reference Frame> (GCRF) which is an inertial reference defined by IERS.
@@ -101,8 +101,8 @@ Frames
   The classical paradigm used prior to IERS conventions 2003 is equinox based and uses
   more intermediate frames. Only one of these frames is supported in Orekit.
 
-  Starting from GCRF, the first transform is a bias to convert to J2OOO, which was the
-  former reference. The J2000 frame (which is also known as EME2000) is defined using
+  Starting from GCRF, the first transform is a bias to convert to EME2OOO, which was the
+  former reference. The EME2000 frame (which is also known as J2000) is defined using
   the mean equinox at epoch J2000.0, i.e. 2000-01-01T12:00:00 in Terrestrial Time (not
   UTC!). From this frame, applying precession evolution between J2000.0 and current date
   defines a Mean Of Date frame for current date and applying nutation defines a True Of
@@ -111,7 +111,7 @@ Frames
   Terrestrial Intermediate Reference Frame as with the new paradigm. The last transform
   (pole motion) is the same one already defined in the new paradigm.
 
-  In summary, six frames are involved along this path: GCRF, J2000/EME2000, MoD, ToD, TIRF
+  In summary, six frames are involved along this path: GCRF, EME2000, MoD, ToD, TIRF
   and ITRF.
 
   This paradigm is deprecated by IERS. It also involves additional complexity, first because
@@ -122,12 +122,12 @@ Frames
   with the same names used prior to IERS conventions 2003 since a correction is added to the
   IAU-76 precession model and the IAU-80 nutation model is completely replaced by the nutation
   part extracted from IAU-2000 model. For these reasons, this paradigm is not completely
-  supported in Orekit. Only the J2000 frame, which can be computed by a single bias from GCRF
+  supported in Orekit. Only the EME2000 frame, which can be computed by a single bias from GCRF
   is supported. This is an historically very important frame and lots of systems rely on it.
 
 *** Orekit implementation of IERS 2003 convention
 
-  In summary, Orekit implements 5 frames from IERS 2003 convention: GCRF, J2000/EME2000,
+  In summary, Orekit implements 5 frames from IERS 2003 convention: GCRF, EME2000,
   CIRF 2000, TIRF 2000, ITRF 2005.
 
   Here is a schematic representation of the partial tree containing the supported IERS frames.
@@ -154,7 +154,7 @@ Frames
 [./images/cirf2000-interpolation-error.png]
 
   For most purposes, the recommended frames to use are ITRF 2005 for terrestrial frame and
-  GCRF for celestial frame. J2000/EME2000 could also be used for compatibility with other systems.
+  GCRF for celestial frame. EME2000 could also be used for compatibility with other systems.
 
 ** Topocentric Frame
   
@@ -188,7 +188,7 @@ Frames
 
   A basic example of such extension is to add a satellite frame representing the satellite
   motion and attitude. Such a frame would have an inertial frame as its parent frame (GCRF or
-  J2000) and the <<<updateFrame(AbsoluteDate)>>> method would update the translation and rotation
+  EME2000) and the <<<updateFrame(AbsoluteDate)>>> method would update the translation and rotation
   from orbit and attitude data.
 
   Frames are updated by resetting the transform from their parent frame to them. When such a

@@ -44,7 +44,7 @@ Attitude
 ** "Basic" attitude laws
 
   ** inertial law, which represents an inertial attitude law, perfectly 
-  aligned with the J2000 frame.
+  aligned with the EME2000 frame.
   
   ** celestial body pointed, i.e satellite pointing axis directed towards given 
   celestial body.

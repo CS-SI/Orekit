@@ -32,21 +32,22 @@ import org.orekit.utils.PVCoordinates;
  */
 public class InertialLaw implements AttitudeLaw {
 
-    /** Dummy attitude law, perfectly aligned with the J<sub>2000</sub> frame. */
-    public static final InertialLaw J2000_ALIGNED =
+
+    /** Dummy attitude law, perfectly aligned with the EME2000 frame. */
+    public static final InertialLaw EME2000_ALIGNED =
         new InertialLaw(Rotation.IDENTITY);
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -8661629460150215557L;
+    private static final long serialVersionUID = -7550347669304660626L;
 
     /** Fixed satellite frame. */
     private final Frame satelliteFrame;
 
     /** Creates new instance.
-     * @param rotation rotation from J2000 to the desired satellite frame
+     * @param rotation rotation from EME2000 to the desired satellite frame
      */
     public InertialLaw(final Rotation rotation) {
-        satelliteFrame = new Frame(Frame.getJ2000(), new Transform(rotation), null);
+        satelliteFrame = new Frame(Frame.getEME2000(), new Transform(rotation), null);
     }
 
     /** {@inheritDoc} */

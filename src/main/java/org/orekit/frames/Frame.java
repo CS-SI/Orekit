@@ -49,7 +49,7 @@ import org.orekit.time.AbsoluteDate;
  * <h5> Reference Frames </h5>
  * <p>
  *  Several Reference frames are implemented in OREKIT. The user can
- *  retrieve them using various static methods({@link #getGCRF()}, {@link #getJ2000()},
+ *  retrieve them using various static methods({@link #getGCRF()}, {@link #getEME2000()},
  *  {@link #getITRF2005()}, {@link #getCIRF2000()}, {@link #getTIRF2000()} and
  *  {@link #getVeis1950()}).
  * <p>
@@ -77,7 +77,7 @@ import org.orekit.time.AbsoluteDate;
  *        |      (frame bias)
  *        |-----------------------
  *        |                      |
- *        |                    J2000
+ *        |                   EME2000
  *        |
  *        |  Bias, Precession and Nutation effects
  *        |
@@ -411,10 +411,23 @@ public class Frame implements Serializable {
     }
 
     /** Get the unique J2000 frame.
+     * <p>The J2000 frame is also called the EME2000 frame.
+     * The later denomination is preferred in Orekit.</p>
      * @return the unique instance of the J2000 frame
+     * @deprecated as of 4.0, replaced by {@link #getEME2000()}
+     * @see #getEME2000()
      */
     public static Frame getJ2000() {
-        return LazyJ2000Holder.INSTANCE;
+        return LazyEME2000Holder.INSTANCE;
+    }
+
+    /** Get the unique EME2000 frame.
+     * <p>The EME2000 frame is also called the J2000 frame.
+     * The former denomination is preferred in Orekit.</p>
+     * @return the unique instance of the EME2000 frame
+     */
+    public static Frame getEME2000() {
+        return LazyEME2000Holder.INSTANCE;
     }
 
     /** Get the ITRF2005 reference frame.
@@ -483,18 +496,18 @@ public class Frame implements Serializable {
 
     }
 
-    /** Holder for the J2000 frame singleton. */
-    private static class LazyJ2000Holder {
+    /** Holder for the EME2000 frame singleton. */
+    private static class LazyEME2000Holder {
 
         /** Unique instance. */
-        private static final Frame INSTANCE = new J2000Frame("J2000");
+        private static final Frame INSTANCE = new EME2000Frame("EME2000");
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
          * nor a default constructor. This private constructor prevents
          * the compiler from generating one automatically.</p>
          */
-        private LazyJ2000Holder() {
+        private LazyEME2000Holder() {
         }
 
     }
@@ -605,7 +618,7 @@ public class Frame implements Serializable {
 
         /** Unique instance. */
         private static final Frame INSTANCE =
-            new Frame(getJ2000(),
+            new Frame(getEME2000(),
                       new Transform(new Rotation(0.99998141186121629647,
                                                  -2.01425201682020570e-5,
                                                  -2.43283773387856897e-3,

@@ -37,7 +37,7 @@ public class SolarBodyTest extends TestCase {
 
     public void testGeocentricPV() throws OrekitException, ParseException {
         AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TTScale.getInstance());
-        Frame geocentricFrame = Frame.getJ2000();
+        Frame geocentricFrame = Frame.getEME2000();
         checkPV(SolarSystemBody.getMoon(), date, geocentricFrame,
                 new Vector3D(-0.0008081773279115, -0.0019946300016204, -0.0010872626608381),
                 new Vector3D( 0.0006010848166591, -0.0001674454606152, -0.0000855621449740));

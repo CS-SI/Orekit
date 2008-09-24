@@ -181,11 +181,11 @@ public class OneAxisEllipsoidTest extends TestCase {
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., Math.toRadians(90.), Math.toRadians(60.),
                                    Math.toRadians(90.), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   Frame.getJ2000(), date, mu);
+                                   Frame.getEME2000(), date, mu);
       
-        // Transform satellite position to position/velocity parameters in J2000 and ITRF200B
-        PVCoordinates pvSatJ2000 = circ.getPVCoordinates();
-        PVCoordinates pvSatItrf  = frame.getTransformTo(Frame.getJ2000(), date).transformPVCoordinates(pvSatJ2000);
+        // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
+        PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
+        PVCoordinates pvSatItrf  = frame.getTransformTo(Frame.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
         Vector3D pSatItrf  = pvSatItrf.getPosition();
         
         // Test first visible surface points
@@ -223,11 +223,11 @@ public class OneAxisEllipsoidTest extends TestCase {
         circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., Math.toRadians(1.e-4), Math.toRadians(0.),
                                    Math.toRadians(0.), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   Frame.getJ2000(), date, mu);
+                                   Frame.getEME2000(), date, mu);
       
-        // Transform satellite position to position/velocity parameters in J2000 and ITRF200B
-        pvSatJ2000 = circ.getPVCoordinates();
-        pvSatItrf  = frame.getTransformTo(Frame.getJ2000(), date).transformPVCoordinates(pvSatJ2000);
+        // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
+        pvSatEME2000 = circ.getPVCoordinates();
+        pvSatItrf  = frame.getTransformTo(Frame.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
         pSatItrf  = pvSatItrf.getPosition();
         
         // Test first visible surface points
@@ -269,11 +269,11 @@ public class OneAxisEllipsoidTest extends TestCase {
         circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., Math.toRadians(50.), Math.toRadians(0.),
                                    Math.toRadians(90.), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   Frame.getJ2000(), date, mu);
+                                   Frame.getEME2000(), date, mu);
         
-        // Transform satellite position to position/velocity parameters in J2000 and ITRF200B
-        pvSatJ2000 = circ.getPVCoordinates();
-        pvSatItrf  = frame.getTransformTo(Frame.getJ2000(), date).transformPVCoordinates(pvSatJ2000);
+        // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
+        pvSatEME2000 = circ.getPVCoordinates();
+        pvSatItrf  = frame.getTransformTo(Frame.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
         pSatItrf  = pvSatItrf.getPosition();
         
         // Test first visible surface points

@@ -226,7 +226,7 @@ public class NumericalPropagatorTest extends TestCase {
         final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
         initDate = AbsoluteDate.J2000_EPOCH;
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
-                                                 Frame.getJ2000(), initDate, mu);
+                                                 Frame.getEME2000(), initDate, mu);
         initialState = new SpacecraftState(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001

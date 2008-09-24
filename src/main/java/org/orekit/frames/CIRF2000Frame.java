@@ -254,7 +254,7 @@ class CIRF2000Frame extends Frame {
                                            r * (xPrCos - ySin), zP1 * (yCos - xPrSin),
                                            true);
 
-        // set up the transform from parent GCRS to CIRF
+        // set up the transform from parent GCRF
         setTransform(new Transform(bpn, Vector3D.ZERO));
 
     }

@@ -67,26 +67,26 @@ public class LofOffsetPointingTest extends TestCase {
         final CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(0.), Math.toRadians(270.),
                                    Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   Frame.getJ2000(), date, mu);
-        final PVCoordinates pvSatJ2000 = circ.getPVCoordinates();
+                                   Frame.getEME2000(), date, mu);
+        final PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
 
         // Create lof aligned law
         //************************
         final LofOffset lofLaw = LofOffset.LOF_ALIGNED;
         final LofOffsetPointing lofPointing = new LofOffsetPointing(earthSpheric, lofLaw, Vector3D.PLUS_K);
-        final Rotation lofRot = lofPointing.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
+        final Rotation lofRot = lofPointing.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
  
         // Compare to body center pointing law
         //*************************************
         final BodyCenterPointing centerLaw = new BodyCenterPointing(earthSpheric.getBodyFrame());
-        final Rotation centerRot = centerLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
+        final Rotation centerRot = centerLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
         final double angleBodyCenter = centerRot.applyInverseTo(lofRot).getAngle();
         assertEquals(0., angleBodyCenter, Utils.epsilonAngle);
 
         // Compare to nadir pointing law
         //*******************************
         final NadirPointing nadirLaw = new NadirPointing(earthSpheric);
-        final Rotation nadirRot = nadirLaw.getState(date, pvSatJ2000, Frame.getJ2000()).getRotation();
+        final Rotation nadirRot = nadirLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
         final double angleNadir = nadirRot.applyInverseTo(lofRot).getAngle();
         assertEquals(0., angleNadir, Utils.epsilonAngle);
 
@@ -96,7 +96,7 @@ public class LofOffsetPointingTest extends TestCase {
         final CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(0.), Math.toRadians(270.),
                                    Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   Frame.getJ2000(), date, mu);
+                                   Frame.getEME2000(), date, mu);
         final LofOffset upsideDown = new LofOffset(RotationOrder.XYX, Math.PI, 0, 0);
         try {
             final LofOffsetPointing pointing = new LofOffsetPointing(earthSpheric, upsideDown, Vector3D.PLUS_K);

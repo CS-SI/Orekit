@@ -45,7 +45,7 @@ public class Moon extends AbstractCelestialBody {
     /** Creates a new instance of ThirdBody Moon.
      */
     public Moon() {
-        super(GM, "Moon-centric (Brown)", Frame.getJ2000());
+        super(GM, "Moon-centric (Brown)", Frame.getEME2000());
     }
 
     /** {@inheritDoc} */

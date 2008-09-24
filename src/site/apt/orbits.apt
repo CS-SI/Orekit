@@ -79,7 +79,7 @@ Orbits
   externally preserve a mapping between orbits and their frame: it is already done. 
   As an example, getting the position and velocity of a satellite given by a circular
   orbit in a ground station frame is simply a matter of calling orbit.getPVCoordinates(stationFrame),
-  regardless of the frame in which the orbit is defined (J2000, Veis ...).
+  regardless of the frame in which the orbit is defined (EME2000, GCRF ...).
 
   Since orbits are used everywhere in space dynamics applications and since we
   have chosen to restrict them to a simple state holder, all orbit classes are

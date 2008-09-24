@@ -180,7 +180,7 @@ public class NumericalPropagator implements Propagator {
         this.startDate          = new AbsoluteDate();
         this.currentState       = null;
         this.adder              = null;
-        this.attitudeLaw        = InertialLaw.J2000_ALIGNED;
+        this.attitudeLaw        = InertialLaw.EME2000_ALIGNED;
         this.state              = new double[7];
         setSlaveMode();
     }
