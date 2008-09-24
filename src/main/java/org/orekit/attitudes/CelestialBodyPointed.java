@@ -108,11 +108,7 @@ public class CelestialBodyPointed implements AttitudeLaw {
         final Vector3D      pointingP = pointing.getPosition();
         final double r2 = Vector3D.dotProduct(pointingP, pointingP);
 
-        // evaluate instant rotation axis by finite differences
-        // note that despite we use forward difference and not centered differences,
-        // the error in this estimation is O(h^2) for Sun since Earth-Sun acceleration
-        // is colinear to Earth-Sun pointing vector, so acceleration contribution is
-        // nullified by the cross product.
+        // evaluate instant rotation axis
         final Vector3D rotAxisCel =
             new Vector3D(1 / r2, Vector3D.crossProduct(pointingP, pointing.getVelocity()));
 

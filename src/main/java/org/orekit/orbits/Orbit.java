@@ -59,6 +59,9 @@ import java.io.Serializable;
  */
 public abstract class Orbit implements TimeStamped, Serializable {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = -5391613859481554640L;
+
     /** Frame in which are defined the orbital parameters. */
     private final Frame frame;
 

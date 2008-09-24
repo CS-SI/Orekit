@@ -45,6 +45,9 @@ import org.orekit.time.AbsoluteDate;
  */
 public abstract class AbstractPropagator implements Propagator {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = -5509524223547965017L;
+
     /** Propagation mode. */
     private int mode;
 

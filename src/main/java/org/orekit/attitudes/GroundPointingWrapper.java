@@ -30,6 +30,9 @@ import org.orekit.utils.PVCoordinates;
  */
 public abstract class GroundPointingWrapper extends GroundPointing {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 262999520075931766L;
+
     /** Underlying ground pointing attitude law.  */
     private final GroundPointing groundPointingLaw;
 

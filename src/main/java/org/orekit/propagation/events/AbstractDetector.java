@@ -26,6 +26,9 @@ import org.orekit.propagation.SpacecraftState;
  */
 public abstract class AbstractDetector implements EventDetector {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = -8212002898109868489L;
+
     /** Max check interval. */
     private final double maxCheck;
 

@@ -53,6 +53,9 @@ import org.orekit.utils.PVCoordinates;
  */
 public abstract class TLEPropagator implements Serializable {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 6389584529961457799L;
+
     // CHECKSTYLE: stop VisibilityModifierCheck
 
     /** Initial state. */

@@ -42,6 +42,8 @@ import org.orekit.utils.PVCoordinates;
  */
 public abstract class GroundPointing implements AttitudeLaw {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = -1459257023765594793L;
 
     /** Body frame. */
     private final Frame bodyFrame;

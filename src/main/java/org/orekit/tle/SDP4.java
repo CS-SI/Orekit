@@ -36,6 +36,9 @@ import org.orekit.time.UTCScale;
  */
 abstract class SDP4  extends TLEPropagator {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 6739431592307605737L;
+
     // CHECKSTYLE: stop VisibilityModifierCheck
 
     /** New perigee argument. */
