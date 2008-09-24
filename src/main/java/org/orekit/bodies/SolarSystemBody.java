@@ -172,8 +172,18 @@ public class SolarSystemBody extends AbstractCelestialBody {
             final DE405FilesLoader loader = new DE405FilesLoader(type, date);
             ephemeris.addAll(loader.loadEphemerides());
             earthMoonMassRatio = loader.getEarthMoonMassRatio();
-            model = (PosVelChebyshev) ephemeris.headSet(date).last();
-            if (!model.inRange(date)) {
+            try {
+                model = (PosVelChebyshev) ephemeris.headSet(date).last();
+            } catch (NoSuchElementException nsee) {
+                // nothing to do here
+            }
+            if ((model == null) || !model.inRange(date)) {
+                if (ephemeris.isEmpty()) {
+                    throw new OrekitException("empty {0} ephemerides",
+                                              new Object[] {
+                                                  type
+                                              });                    
+                }
                 throw new OrekitException("out of range date for {0} ephemerides: {1}",
                                           new Object[] {
                                               type, date
@@ -432,8 +442,13 @@ public class SolarSystemBody extends AbstractCelestialBody {
                     throws OrekitException {
                     // we define Earth-Moon barycenter with respect to Earth center so we need
                     // to apply a scale factor to the Moon vectors provided by the JPL DE 405 ephemerides
+                    final PVCoordinates moonPV = super.getPVCoordinates(date, frame);
+
+                    // since we have computed moonPV, we know the ephemeris has been read
+                    // so now we know the Earth-Moon ratio is available
                     final double scale = 1.0 / (1.0 + getEarthMoonMassRatio());
-                    return new PVCoordinates(scale, super.getPVCoordinates(date, frame));
+
+                    return new PVCoordinates(scale, moonPV);
                 }
 
             };
