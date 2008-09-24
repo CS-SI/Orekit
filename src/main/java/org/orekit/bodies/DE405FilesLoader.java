@@ -18,7 +18,6 @@ package org.orekit.bodies;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -30,7 +29,6 @@ import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TTScale;
 import org.orekit.time.TimeStamped;
 
-
 /** Loader for JPL DE 405 ephemerides binary files.
  * <p>DE 405 binary files contain ephemerides for all solar system planets.</p>
  * <p>The DE 405 binary files are recognized thanks to their base names,
@@ -40,10 +38,11 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-class DE405FilesLoader extends DataFileCrawler implements Serializable {
+class DE405FilesLoader extends DataFileCrawler {
 
-    /** Serializable version ID. */
-    private static final long serialVersionUID = -4342523824693600786L;
+    /** Error message for header read error. */
+    private static final String HEADER_READ_ERROR =
+        "unable to read header record from DE 405 ephemerides binary file {0}";
 
     /** List of supported ephemerides types. */
     public enum EphemerisType {
@@ -168,7 +167,7 @@ class DE405FilesLoader extends DataFileCrawler implements Serializable {
 
         // parse header record
         if (input.read(record) != RECORD_SIZE) {
-            throw new OrekitException("unable to read header record from DE 405 ephemerides binary file {0}",
+            throw new OrekitException(HEADER_READ_ERROR,
                                       new Object[] {
                                           getFile().getAbsolutePath()
                                       });
@@ -183,7 +182,12 @@ class DE405FilesLoader extends DataFileCrawler implements Serializable {
 
         // the second record contains the values of the constants used for least-square filtering
         // we ignore all of them so don't do anything here
-        input.read(record);
+        if (input.read(record) != RECORD_SIZE) {
+            throw new OrekitException(HEADER_READ_ERROR,
+                                      new Object[] {
+                                          getFile().getAbsolutePath()
+                                      });
+        }
 
         // read ephemerides data
         while (input.read(record) == RECORD_SIZE) {

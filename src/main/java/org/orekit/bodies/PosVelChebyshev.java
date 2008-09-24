@@ -16,6 +16,8 @@
  */
 package org.orekit.bodies;
 
+import java.io.Serializable;
+
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
@@ -28,7 +30,10 @@ import org.orekit.utils.PVCoordinates;
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-class PosVelChebyshev implements TimeStamped {
+class PosVelChebyshev implements TimeStamped, Serializable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = -2220448511466595393L;
 
     /** Start of the validity range of the instance. */
     private final AbsoluteDate start;
