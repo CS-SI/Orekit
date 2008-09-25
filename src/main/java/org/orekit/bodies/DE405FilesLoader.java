@@ -106,6 +106,9 @@ class DE405FilesLoader extends DataFileCrawler {
     /** Earth to Moon mass ratio. */
     private double earthMoonMassRatio;
 
+    /** Chunks duration (in seconds). */
+    private double chunksDuration;
+
     /** Index of the first data for selected body. */
     private int firstIndex;
 
@@ -121,7 +124,7 @@ class DE405FilesLoader extends DataFileCrawler {
     /** Create a loader for DE 405 binary files.
      * @param type ephemeris type to load
      * @param centralDate desired central date
-     * (all data within a one year range from this date will be loaded)
+     * (all data within a +/-50 days range around this date will be loaded)
      */
     public DE405FilesLoader(final EphemerisType type, final AbsoluteDate centralDate) {
         super("^unxp(\\d\\d\\d\\d)\\.405(?:\\.gz)?$");
@@ -129,6 +132,7 @@ class DE405FilesLoader extends DataFileCrawler {
         this.centralDate   = centralDate;
         astronomicalUnit   = Double.NaN;
         earthMoonMassRatio = Double.NaN;
+        chunksDuration     = Double.NaN;
     }
 
     /** Load ephemerides.
@@ -157,6 +161,13 @@ class DE405FilesLoader extends DataFileCrawler {
      */
     public double getEarthMoonMassRatio() {
         return earthMoonMassRatio;
+    }
+
+    /** Get the chunks duration.
+     * @return chunks duration in seconds
+     */
+    public double getChunksDuration() {
+        return chunksDuration;
     }
 
     /** {@inheritDoc} */
@@ -206,12 +217,12 @@ class DE405FilesLoader extends DataFileCrawler {
      */
     private boolean tooFarRange(final AbsoluteDate start, final AbsoluteDate end) {
 
-        // one year in seconds
-        final double oneYear = 365.25 * 86400;
+        // 50 days in seconds
+        final double fiftyDays = 50 * 86400;
 
         // check range bounds
-        return (centralDate.durationFrom(end) > oneYear) ||
-               (start.durationFrom(centralDate) > oneYear);
+        return (centralDate.durationFrom(end) > fiftyDays) ||
+               (start.durationFrom(centralDate) > fiftyDays);
 
     }
 
@@ -273,10 +284,28 @@ class DE405FilesLoader extends DataFileCrawler {
                 ((i == 10) && (type == EphemerisType.SUN))) {
                 firstIndex = row1;
                 coeffs     = row2;
-                chunks   = row3;
+                chunks     = row3;
             }
         }
 
+        // compute chunks duration
+        final double timeSpan = extractDouble(2668);
+        ok = ok && (timeSpan > 0) && (timeSpan < 50);
+        final double cd = 86400.0 * (timeSpan / chunks);
+        if (Double.isNaN(chunksDuration)) {
+            chunksDuration = cd;
+        } else {
+            if (Math.abs(chunksDuration - cd) >= 1.0e-8) {
+                throw new OrekitException("inconsistent values of ephemerides chunks duration" +
+                                          " in DE 405 files: ({0} and {1})",
+                                          new Object[] {
+                                              Double.valueOf(chunksDuration),
+                                              Double.valueOf(cd)
+                                          });
+            }
+        }
+
+        // extract ephemeris identifier
         final int deNumber = extractInt(2840);
         ok = ok && (deNumber == 405);
 
@@ -304,14 +333,13 @@ class DE405FilesLoader extends DataFileCrawler {
         }
 
         // loop over chunks inside the time range
-        final double chunkDuration = rangeEnd.durationFrom(rangeStart) / chunks;
         AbsoluteDate chunkEnd = rangeStart;
         for (int i = 0; i < chunks; ++i) {
 
             // set up chunk validity range
             final AbsoluteDate chunkStart = chunkEnd;
             chunkEnd = (i == chunks - 1) ?
-                       rangeEnd : new AbsoluteDate(rangeStart, (i + 1) * chunkDuration);
+                       rangeEnd : new AbsoluteDate(rangeStart, (i + 1) * chunksDuration);
 
             // extract Chebyshev coefficients for the selected body
             // and convert them from kilometers to meters
@@ -326,7 +354,7 @@ class DE405FilesLoader extends DataFileCrawler {
             }
 
             // build the position-velocity model for current chunk
-            ephemerides.add(new PosVelChebyshev(chunkStart, chunkDuration,
+            ephemerides.add(new PosVelChebyshev(chunkStart, chunksDuration,
                                                 xCoeffs, yCoeffs, zCoeffs));
 
         }

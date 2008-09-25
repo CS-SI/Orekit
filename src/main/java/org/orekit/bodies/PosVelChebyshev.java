@@ -75,6 +75,13 @@ class PosVelChebyshev implements TimeStamped, Serializable {
         return start;
     }
 
+    /** Get model validity duration.
+     * @return model validity duration in seconds
+     */
+    public double getValidityDuration() {
+        return duration;
+    }
+
     /** Check if a date is in validity range.
      * @param date date to check
      * @return true if date is in validity range

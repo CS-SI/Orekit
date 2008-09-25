@@ -16,7 +16,7 @@
  */
 package org.orekit.bodies;
 
-import java.util.NoSuchElementException;
+import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -156,40 +156,45 @@ public class SolarSystemBody extends AbstractCelestialBody {
         throws OrekitException {
 
         // first quick check: is the current model valid for specified date ?
-        if ((model != null) && model.inRange(date)) {
-            return;
-        }
+        if (model != null) {
 
-        // we need to update the model
-        model = null;
-        try {
-            model = (PosVelChebyshev) ephemeris.headSet(date).last();
-        } catch (NoSuchElementException nsee) {
-            // nothing to do here
-        }
-
-        if ((model == null) || !model.inRange(date)) {
-            final DE405FilesLoader loader = new DE405FilesLoader(type, date);
-            ephemeris.addAll(loader.loadEphemerides());
-            earthMoonMassRatio = loader.getEarthMoonMassRatio();
-            try {
-                model = (PosVelChebyshev) ephemeris.headSet(date).last();
-            } catch (NoSuchElementException nsee) {
-                // nothing to do here
+            if (model.inRange(date)) {
+                return;
             }
-            if ((model == null) || !model.inRange(date)) {
-                if (ephemeris.isEmpty()) {
-                    throw new OrekitException("empty {0} ephemerides",
-                                              new Object[] {
-                                                  type
-                                              });                    
+
+            // try searching only within the already loaded ephemeris part
+            final AbsoluteDate before = new AbsoluteDate(date, -model.getValidityDuration());
+            for (Iterator<TimeStamped> iterator = ephemeris.tailSet(before).iterator();
+                 iterator.hasNext();) {
+                model = (PosVelChebyshev) iterator.next();
+                if (model.inRange(date)) {
+                    return;
                 }
-                throw new OrekitException("out of range date for {0} ephemerides: {1}",
-                                          new Object[] {
-                                              type, date
-                                          });
+            }
+
+        }
+
+        // existing ephemeris (if any) is too far from current date
+        // load a new part of ephemeris, centered around specified date
+        final DE405FilesLoader loader = new DE405FilesLoader(type, date);
+        ephemeris.addAll(loader.loadEphemerides());
+        earthMoonMassRatio = loader.getEarthMoonMassRatio();
+        final AbsoluteDate before = new AbsoluteDate(date, -loader.getChunksDuration());
+
+        // second try, searching newly loaded part designed to bracket date
+        for (Iterator<TimeStamped> iterator = ephemeris.tailSet(before).iterator();
+             iterator.hasNext();) {
+            model = (PosVelChebyshev) iterator.next();
+            if (model.inRange(date)) {
+                return;
             }
         }
+
+        // no way, this means we don't have available data for this date
+        throw new OrekitException("out of range date for {0} ephemerides: {1}",
+                                  new Object[] {
+                                      type, date
+                                  });
 
     }
 
