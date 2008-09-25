@@ -14,43 +14,49 @@
 Configuration
 
   The Orekit library relies on some external data for physical models. Typical
-  are the Earth Orientation Parameters and the leap seconds history, both being
-  provided by the IERS. Such data is stored in text or binary files with specific
-  formats that Orekit knows how to read. These files can be embedded or externally
-  provided.
+  data are the Earth Orientation Parameters and the leap seconds history, both being
+  provided by the IERS or the planetary ephemerides provided by JPL. Such data is
+  stored in text or binary files with specific formats that Orekit knows how to read.
+  These files can be embedded with the application or externally provided.
+
+  Orekit must be configured appropriately to find and use such data.
 
 * Data sets
 
-  For user convenience, data that can be assumed to never change like precession-nutation
-  models or atmospheric models are already embedded in the core library. Small and simple
-  data sets are defined by setting constants in the code itself. This is the case for
-  offset between Terrestrial Time and International Atomic Time scales for example. Large
-  or complex data sets are embedded by copying the corresponding resource files inside the
-  compiled jar, under the META-INF directory as is usual with the Java language. This is
-  the case for the IAU-2000 precession-nutation model tables for example. There is nothing to
-  configure for these data sets as they are embedded within the library.
+  For user convenience, data that is a few tens of kilobytes and can be assumed to never
+  change like precession-nutation models or atmospheric models are already embedded in
+  the core library. Small and simple data sets are defined by setting constants in the
+  code itself. This is the case for offset between Terrestrial Time and International
+  Atomic Time scales for example. Large or complex data sets are embedded by copying the
+  corresponding resource files inside the compiled jar, under the META-INF directory as
+  is usual with the Java language. This is the case for the IAU-2000 precession-nutation
+  model tables for example. There is nothing to configure for these data sets as they are
+  embedded within the library.
 
-  Some useful data can change over time and cannot be reliably embedded within a specific
-  version of the library on the long run. A typical example for such data set is Earth
-  Orientation Parameters which are mandatory for accurate frames conversion. IERS regularly
-  publishes new Earth Orientation Parameter files covering new time ranges. Orekit knows
-  how to find and read these data sets which should be provided by user at run time, provided
-  it is properly configured.
+  Some useful data is huge or can change over time. Such data sets cannot be realistically
+  embedded within a specific version of the library on the long run. A typical example
+  for such data set is Earth Orientation Parameters which are mandatory for accurate frames
+  conversion or planetary ephemerides. IERS regularly publishes new Earth Orientation Parameter
+  files covering new time ranges whereas planetary ephemerides represent megabytes-sized files.
+  Orekit knows how to find and read these data sets which should be provided by user at run
+  time, provided it is properly configured.
 
 * Data directories trees
 
-  Data that can change over time must be stored as simple files directories trees with
-  read access permission. Two types of directories trees are supported: one is defined with
+  Data sets stored externally to the library must be stored as simple files directories trees
+  with read access permission. Two types of directories trees are supported: one is defined with
   respect to the filesystem (i.e. with an absolute path), one is defined with respect
   to the classpath (i.e. either with a relative path or with an absolute path within a
   jar file). If both trees are configured, data is searched first in the filesystem
   tree and search is attempted in the second tree only if the first one fails.
   The filesystem choice is more convenient for user-specific data or for data that
-  should be shared with other tools. The latter choice is more convenient for system-wide
+  should be shared with other tools. The classpath choice is more convenient for system-wide
   data shared by several users, for remote and embedded usage or for test data in
-  development projects (this is how Orekit own test data are found). Classpath based directories
+  development projects (this is how Orekit own test data is found). Classpath based directories
   trees can also be embedded within a single jar file, which greatly simplifies data handling
   and configuration of autonomous or embedded systems.
+
+[./images/directories-tree.png]
 
   There is no mandatory layout within the data directories trees. Orekit navigates through
   them and their sub-directories when looking for data files. Files are identified by
@@ -78,8 +84,12 @@ Configuration
   The data files supported by Orekit are described in the following table, where the <#>
   character represent any digit. The <[.gz]> part at the end of all naming patterns
   means that a <.gz> suffix can be appended, in which case the files are considered to
-  be compressed with gzip. These files are uncompressed in memory upon reading (the
-  compressed files are preserved on disk).
+  be compressed with gzip. Compressed files are uncompressed in memory upon reading (the
+  compressed files are preserved on disk). Compressing text-based files like bulletinB
+  or EOPC04 saves a lot of disk space, but compressing the JPL binary files does almost
+  not save anything. Using compressed files for a classpath tree stored within a jar file
+  is also irrelevant as jar files are themselves compressed and stacking compression
+  algorithm only slows down reading speed without any disk space gain.
 
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
 |       file naming pattern       |      format     |               data type              |                            source                          |
