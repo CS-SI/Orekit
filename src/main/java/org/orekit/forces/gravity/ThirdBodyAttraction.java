@@ -18,6 +18,7 @@ package org.orekit.forces.gravity;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.bodies.CelestialBody;
+import org.orekit.bodies.SolarSystemBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
@@ -41,8 +42,8 @@ public class ThirdBodyAttraction implements ForceModel {
 
     /** Simple constructor.
      * @param body the third body to consider
-     * (ex: {@link org.orekit.forces.Sun} or
-     * {@link org.orekit.forces.Moon})
+     * (ex: {@link org.orekit.bodies.SolarSystemBody#getSun()} or
+     * {@link org.orekit.bodies.SolarSystemBody#getMoon()})
      */
     public ThirdBodyAttraction(final CelestialBody body) {
         this.body = body;
