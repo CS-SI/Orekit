@@ -79,6 +79,21 @@ Configuration
   by the application, it must be done before any Orekit feature is called, since some data
   are initialized very early (mainly frame and time related data).
 
+*----------------------------------*---------------- ------------------------------*
+|          java property           |                    usage                      |
+*----------------------------------*------------------ ----------------------------*
+| orekit.data.directory.filesystem | root of a data directories tree in filesystem |
+*----------------------------------*-----------------------------------------------*
+| orekit.data.directory.classpath  | root of a data directories tree in classpath  |
+*----------------------------------*-----------------------------------------------*
+configuration parameters
+
+  For convenience, a jar file containing some default data is available for download on
+  orekit site: {{http://www.orekit.org/downloads/orekit-data.jar}}. Putting this jar
+  file on your classpath and setting the <orekit.data.directory.classpath> property to
+  the value <<</orekit-data>>> (which is a directory with the jar file) is all that is
+  needed to use it. Similar files can be custom made by users with updated data.
+
 * Supported data files
 
   The data files supported by Orekit are described in the following table, where the <#>

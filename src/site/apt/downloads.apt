@@ -13,10 +13,23 @@
 
 Downloads
 
+* Library
+
   OREKIT is provided both in several packaging systems. You can pick up
   the one that better suits your needs. Source packages are the most complete
   ones since the other packages (binary jars, javadoc jars and even the bulk
   of this site) are created from these sources.
+
+*----------*--------------------------------------------------------*
+|  package |                          link                          |
+*----------*--------------------------------------------------------*
+|  source  | {{{./downloads/orekit-4.0-src.zip}orekit-4.0-src.zip}} |
+*----------*--------------------------------------------------------*
+|  binary  |     {{{./downloads/orekit-4.0.jar}orekit-4.0.jar}}     |
+*----------*--------------------------------------------------------*
+|  javadoc | {{{./downloads/orekit-4.0-doc.jar}orekit-4.0-doc.jar}} |
+*----------*--------------------------------------------------------*
+version 4.0 downloads (release date: 2008-xx-xx)
 
 *----------*--------------------------------------------------------*
 |  package |                          link                          |
@@ -28,3 +41,26 @@ Downloads
 |  javadoc | {{{./downloads/orekit-3.1-doc.jar}orekit-3.1-doc.jar}} |
 *----------*--------------------------------------------------------*
 version 3.1 downloads (release date: 2008-07-16)
+
+* Data
+
+  For convenience, a jar file containing some configuration data is
+  available for download. Putting this jar file on your classpath and setting the
+  <orekit.data.directory.classpath> property to the value <<</orekit-data>>> (which
+  is a directory with the jar file) is all that is needed to use it. Similar files
+  can be custom made by users with updated data.
+
+  This file contents is:
+
+    ** leap seconds data up to 2006 (i.e. the leap second introduced at the end of
+       2008 is NOT included as the file was not up to date when retrieved from IERS),
+
+    ** Earth Orientation Parameters up to mid-2008
+
+    ** planetary ephemerides from 1950 to 2050
+  
+  There is no guarantee that this file will be available indefinitely or that its
+  content will be updated. It should be considered as a simple configuration example.
+  Users are encouraged to set up their own configuration data.
+
+  The file is available by following this link: {{{./downloads/orekit-data.jar}orekit-data.jar}}.
