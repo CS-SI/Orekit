@@ -94,20 +94,20 @@ public class SolarBodyTest extends TestCase {
     public void testKepler() throws OrekitException {
         AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TTScale.getInstance());
         final double au = 149597870691.0;
-        //checkKepler(SolarSystemBody.getMoon(),    SolarSystemBody.getEarth(), date, 3.844e8);
-        checkKepler(SolarSystemBody.getMercury(), SolarSystemBody.getSun(),   date,  0.387 * au);
-        checkKepler(SolarSystemBody.getVenus(),   SolarSystemBody.getSun(),   date,  0.723 * au);
-        checkKepler(SolarSystemBody.getEarth(),   SolarSystemBody.getSun(),   date,  1.000 * au);
-        checkKepler(SolarSystemBody.getMars(),    SolarSystemBody.getSun(),   date,  1.52  * au);
-        checkKepler(SolarSystemBody.getJupiter(), SolarSystemBody.getSun(),   date,  5.20  * au);
-        checkKepler(SolarSystemBody.getSaturn(),  SolarSystemBody.getSun(),   date,  9.58  * au);
-        checkKepler(SolarSystemBody.getUranus(),  SolarSystemBody.getSun(),   date, 19.20  * au);
-        checkKepler(SolarSystemBody.getNeptune(), SolarSystemBody.getSun(),   date, 30.05  * au);
-        checkKepler(SolarSystemBody.getPluto(),   SolarSystemBody.getSun(),   date, 39.24  * au);
+        checkKepler(SolarSystemBody.getMoon(),    SolarSystemBody.getEarth(), date, 3.844e8, 0.012);
+        checkKepler(SolarSystemBody.getMercury(), SolarSystemBody.getSun(),   date,  0.387 * au, 4.0e-9);
+        checkKepler(SolarSystemBody.getVenus(),   SolarSystemBody.getSun(),   date,  0.723 * au, 8.0e-9);
+        checkKepler(SolarSystemBody.getEarth(),   SolarSystemBody.getSun(),   date,  1.000 * au, 2.0e-5);
+        checkKepler(SolarSystemBody.getMars(),    SolarSystemBody.getSun(),   date,  1.52  * au, 2.0e-7);
+        checkKepler(SolarSystemBody.getJupiter(), SolarSystemBody.getSun(),   date,  5.20  * au, 2.0e-6);
+        checkKepler(SolarSystemBody.getSaturn(),  SolarSystemBody.getSun(),   date,  9.58  * au, 8.0e-7);
+        checkKepler(SolarSystemBody.getUranus(),  SolarSystemBody.getSun(),   date, 19.20  * au, 6.0e-7);
+        checkKepler(SolarSystemBody.getNeptune(), SolarSystemBody.getSun(),   date, 30.05  * au, 4.0e-7);
+        checkKepler(SolarSystemBody.getPluto(),   SolarSystemBody.getSun(),   date, 39.24  * au, 3.0e-7);
     }
 
     private void checkKepler(final CelestialBody orbiting, final CelestialBody central,
-                             final AbsoluteDate start, final double a)
+                             final AbsoluteDate start, final double a, final double epsilon)
         throws OrekitException {
 
         // set up Keplerian orbit of orbiting body around central body
@@ -115,7 +115,7 @@ public class SolarBodyTest extends TestCase {
                                          central.getFrame(),start, central.getGM());
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         assertEquals(a, orbit.getA(), 0.02 * a);
-        double duration = 0.01 * orbit.getKeplerianPeriod();
+        double duration = Math.min(50 * 86400, 0.01 * orbit.getKeplerianPeriod());
 
         double max = 0;
         for (AbsoluteDate date = start;
@@ -126,7 +126,7 @@ public class SolarBodyTest extends TestCase {
             Vector3D error = keplerPV.getPosition().subtract(ephemPV.getPosition());
             max = Math.max(max, error.getNorm());
         }
-        assertTrue(max < 1.0e-4 * a);
+        assertTrue(max < epsilon * a);
     }
 
     public void setUp() {
