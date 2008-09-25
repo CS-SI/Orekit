@@ -164,7 +164,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
             // try searching only within the already loaded ephemeris part
             final AbsoluteDate before = new AbsoluteDate(date, -model.getValidityDuration());
-            for (Iterator<TimeStamped> iterator = ephemeris.tailSet(before).iterator();
+            for (final Iterator<TimeStamped> iterator = ephemeris.tailSet(before).iterator();
                  iterator.hasNext();) {
                 model = (PosVelChebyshev) iterator.next();
                 if (model.inRange(date)) {
@@ -182,7 +182,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
         final AbsoluteDate before = new AbsoluteDate(date, -loader.getChunksDuration());
 
         // second try, searching newly loaded part designed to bracket date
-        for (Iterator<TimeStamped> iterator = ephemeris.tailSet(before).iterator();
+        for (final Iterator<TimeStamped> iterator = ephemeris.tailSet(before).iterator();
              iterator.hasNext();) {
             model = (PosVelChebyshev) iterator.next();
             if (model.inRange(date)) {
