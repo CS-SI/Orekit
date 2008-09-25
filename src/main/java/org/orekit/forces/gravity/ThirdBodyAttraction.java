@@ -18,7 +18,6 @@ package org.orekit.forces.gravity;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.bodies.SolarSystemBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
