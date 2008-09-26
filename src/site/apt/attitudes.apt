@@ -87,7 +87,7 @@ Attitude
 
   Several classes have been implemented in order to represent some attitude law in which a
   "base" attitude law is used, and added a "complementary" rotation in order to fulfill specific 
-  mission constraints. They are gathered under abstract class <GroundPointingWrapper>.*
+  mission constraints. They are gathered under abstract class <GroundPointingWrapper>.
   Up to now, implemented laws of this kind are:
   
   ** yaw compensation law: this law is used to fulfill ground observation constraints
