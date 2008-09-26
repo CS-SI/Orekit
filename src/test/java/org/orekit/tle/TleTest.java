@@ -41,7 +41,7 @@ import org.orekit.utils.PVCoordinates;
 
 public class TleTest extends TestCase {
 
-    public void testTLEFormat() throws OrekitException, ParseException {
+    public void testTLEFormat() throws OrekitException {
 
         String line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
         String line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62";
@@ -49,16 +49,18 @@ public class TleTest extends TestCase {
         assertTrue(TLE.isFormatOK(line1, line2));
 
         TLE tle = new TLE(line1, line2);
-        assertEquals(tle.getSatelliteNumber(), 27421, 0);
-        assertTrue(tle.getInternationalDesignator().equals("02021A  "));
-        assertEquals(tle.getBStar(), -0.0089879, 0);
-        assertEquals(tle.getEphemerisType(), 0, 0);
-        assertEquals(Math.toDegrees(tle.getI()), 98.749, 1e-10);
-        assertEquals(Math.toDegrees(tle.getRaan()), 199.5121, 1e-10);
-        assertEquals(tle.getE(), 0.0001333, 0);
-        assertEquals(Math.toDegrees(tle.getPerigeeArgument()), 133.9522, 1e-10);
-        assertEquals(Math.toDegrees(tle.getMeanAnomaly()), 226.1918, 1e-10);
-        assertEquals(tle.getMeanMotion()*86400/(2*Math.PI), 14.26113993, 0);
+        assertEquals(27421, tle.getSatelliteNumber(), 0);
+        assertEquals(2002, tle.getLaunchYear());
+        assertEquals(21, tle.getLaunchNumber());
+        assertEquals("A", tle.getLaunchPiece());
+        assertEquals(-0.0089879, tle.getBStar(), 0);
+        assertEquals(0, tle.getEphemerisType());
+        assertEquals(98.749, Math.toDegrees(tle.getI()), 1e-10);
+        assertEquals(199.5121, Math.toDegrees(tle.getRaan()), 1e-10);
+        assertEquals(0.0001333, tle.getE(), 1e-10);
+        assertEquals(133.9522, Math.toDegrees(tle.getPerigeeArgument()), 1e-10);
+        assertEquals(226.1918, Math.toDegrees(tle.getMeanAnomaly()), 1e-10);
+        assertEquals(14.26113993, tle.getMeanMotion() * 86400 / (2 * Math.PI), 0);
         assertEquals(tle.getRevolutionNumberAtEpoch(), 6, 0);
         assertEquals(tle.getElementNumber(), 2 ,0);
 
@@ -79,8 +81,27 @@ public class TleTest extends TestCase {
         assertFalse(TLE.isFormatOK(line1, line2));
     }
 
+    public void testSymmetry() throws OrekitException {
+        checkSymmetry("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                      "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+        checkSymmetry("1 31928U 98067BA  08269.84884916  .00114257  17652-4  13615-3 0  4412",
+                      "2 31928  51.6257 175.4142 0001703  41.9031 318.2112 16.08175249 68368");
+    }
 
-    public void testTLESeriesFormat() throws IOException, OrekitException, ParseException {
+    private void checkSymmetry(String line1, String line2) throws OrekitException {
+        TLE tleRef = new TLE(line1, line2);
+        TLE tle = new TLE(tleRef.getSatelliteNumber(), tleRef.getClassification(),
+                          tleRef.getLaunchYear(), tleRef.getLaunchNumber(), tleRef.getLaunchPiece(),
+                          tleRef.getEphemerisType(), tleRef.getElementNumber(), tleRef.getDate(),
+                          tleRef.getMeanMotion(), tleRef.getMeanMotionFirstDerivative(),
+                          tleRef.getMeanMotionSecondDerivative(), tleRef.getE(), tleRef.getI(),
+                          tleRef.getPerigeeArgument(), tleRef.getRaan(), tleRef.getMeanAnomaly(),
+                          tleRef.getRevolutionNumberAtEpoch(), tleRef.getBStar());
+        assertEquals(line1, tle.getLine1());
+        assertEquals(line2, tle.getLine2());
+    }
+
+    public void testTLESeriesFormat() throws IOException, OrekitException {
 
         InputStream in =
             TleTest.class.getResourceAsStream("/tle/regular-data/spot-5.txt");

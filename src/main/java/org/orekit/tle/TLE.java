@@ -17,30 +17,34 @@
 package org.orekit.tle;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 import org.orekit.time.UTCScale;
 
-/** This class converts and contains TLE data.
+/** This class is a container for a single set of TLE data.
  *
- * An instance of TLE is created with the two lines string representation,
- * conversion of the data is made internally for easier retrieval and
- * future extrapolation.
- * All the values provided by a TLE only have sense when translated by the correspondent
- * {@link TLEPropagator propagator}. Even when no extrapolation in time is needed,
- * state information (position and velocity coordinates) can only be computed threw
- * the propagator. Untreated values like inclination, RAAN, mean Motion, etc. can't
- * be used by themselves without loosing precision.
- * <p>
- * More information on the TLE format can be found on the
- * <a href="http://www.celestrak.com/">CelesTrak website.</a>
- * </p>
+ * <p>TLE sets can be built either by providing directly the two lines, in
+ * which case parsing is performed internally or by providing the already
+ * parsed elements.</p>
+ * <p>TLE are not transparently convertible to {@link org.orekit.orbits.Orbit Orbit}
+ * instances. They are significant only with respect to their dedicated {@link
+ * TLEPropagator propagator}, which also computes position and velocity coordinates.
+ * Any attempt to directly use orbital parameters like {@link #getE() eccentricity},
+ * {@link #getI() inclination}, etc. without any reference to the {@link TLEPropagator
+ * TLE propagator} is prone to errors.</p>
+ * <p>More information on the TLE format can be found on the
+ * <a href="http://www.celestrak.com/">CelesTrak website.</a></p>
  * @author Fabien Maussion
+ * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class TLE implements TimeStamped, Serializable {
@@ -78,99 +82,396 @@ public class TLE implements TimeStamped, Serializable {
         "wrong cheksum of TLE line {0}, expected {1} but got {2} ({3})";
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 493162737271645055L;
+    private static final long serialVersionUID = -1596648022319057689L;
 
-    /** The satellite id. */
+    /** The satellite number. */
     private final int satelliteNumber;
 
-    /** International designator. */
-    private final String internationalDesignator;
+    /** Classification (U for unclassified). */
+    private final char classification;
 
-    /** the TLE current date. */
-    private final AbsoluteDate epoch;
+    /** Launch year. */
+    private final int launchYear;
 
-    /** Ballistic coefficient. */
-    private final double bStar;
+    /** Launch number. */
+    private final int launchNumber;
+
+    /** Piece of launch (from "A" to "ZZZ"). */
+    private final String launchPiece;
 
     /** Type of ephemeris. */
     private final int ephemerisType;
 
-    /** Line element number. */
+    /** Element number. */
     private final int elementNumber;
 
-    /** Inclination (rad). */
-    private final double i;
+    /** the TLE current date. */
+    private final AbsoluteDate epoch;
 
-    /** Right Ascension of the Ascending node (rad). */
-    private final double raan;
+    /** Mean motion (rad/s). */
+    private final double meanMotion;
+
+    /** Mean motion first derivative (rad/s<sup>2</sup>). */
+    private final double meanMotionFirstDerivative;
+
+    /** Mean motion second derivative (rad/s<sup>3</sup>). */
+    private final double meanMotionSecondDerivative;
 
     /** Eccentricity. */
-    private final double e;
+    private final double eccentricity;
+
+    /** Inclination (rad). */
+    private final double inclination;
 
     /** Argument of perigee (rad). */
     private final double pa;
 
+    /** Right Ascension of the Ascending node (rad). */
+    private final double raan;
+
     /** Mean anomaly (rad). */
     private final double meanAnomaly;
 
-    /** Mean Motion (rad/sec). */
-    private final double meanMotion;
-
-    /** revolution number at epoch. */
+    /** Revolution number at epoch. */
     private final int revolutionNumberAtEpoch;
 
-    /** Simple constructor with one TLE.
-     * <p> The static method {@link #isFormatOK(String, String)} should be called
-     * before trying to build this object. <p>
+    /** Ballistic coefficient. */
+    private final double bStar;
+
+    /** First line. */
+    private String line1;
+
+    /** Second line. */
+    private String line2;
+
+    /** Simple constructor from unparsed two lines.
+     * <p>The static method {@link #isFormatOK(String, String)} should be called
+     * before trying to build this object.<p>
      * @param line1 the first element (69 char String)
      * @param line2 the second element (69 char String)
      * @exception OrekitException if some format error occurs
      */
     public TLE(final String line1, final String line2) throws OrekitException {
 
-        satelliteNumber = Integer.parseInt(line1.substring(2, 7).replace(' ', '0'));
-        internationalDesignator = line1.substring(9, 17);
+        // identification
+        satelliteNumber = parseInteger(line1, 2, 5);
+        classification  = line1.charAt(7);
+        launchYear      = parseYear(line1, 9);
+        launchNumber    = parseInteger(line1, 11, 3);
+        launchPiece     = line1.substring(14, 17).trim();
+        ephemerisType   = parseInteger(line1, 62, 1);
+        elementNumber   = parseInteger(line1, 64, 4);
 
-        // Date format transform :
-        int year = 2000 + Integer.parseInt(line1.substring(18, 20).replace(' ', '0'));
-        if (year > 2056) {
-            year -= 100;
-        }
-        final DateComponents date = new DateComponents(year, 1, 1);
-        final double dayNb = Double.parseDouble(line1.substring(20, 32).replace(' ', '0'));
-        epoch = new AbsoluteDate(new AbsoluteDate(date, TimeComponents.H00, UTCScale.getInstance()),
+        // Date format transform:
+        final DateComponents date = new DateComponents(parseYear(line1, 18), 1, 1);
+        final double dayNb = parseDouble(line1, 20, 12);
+        epoch = new AbsoluteDate(new AbsoluteDate(date, TimeComponents.H00,
+                                                  UTCScale.getInstance()),
                                  (dayNb - 1) * 86400); //-1 is due to TLE date definition
-        // Fields transform :
-        bStar = Double.parseDouble(line1.substring(53, 54).replace(' ', '0') +
-                                   "." + line1.substring(54, 59).replace(' ', '0') +
-                                   "e" + line1.substring(59, 61).replace(' ', '0'));
-        ephemerisType = Integer.parseInt(line1.substring(62, 63).replace(' ', '0'));
-        elementNumber = Integer.parseInt(line1.substring(64, 68).replace(' ', '0'));
-        i = Math.toRadians(Double.parseDouble(line2.substring(8, 16).replace(' ', '0')));
-        raan = Math.toRadians(Double.parseDouble(line2.substring(17, 25).replace(' ', '0')));
-        e = Double.parseDouble("." + line2.substring(26, 33).replace(' ', '0'));
-        pa = Math.toRadians(Double.parseDouble(line2.substring(34, 42).replace(' ', '0')));
-        meanAnomaly = Math.toRadians(Double.parseDouble(line2.substring(43, 51).replace(' ', '0')));
-        meanMotion = Math.PI * Double.parseDouble(line2.substring(52, 63).replace(' ', '0')) / 43200.0;
-        revolutionNumberAtEpoch = Integer.parseInt(line2.substring(63, 68).replace(' ', '0'));
+
+        // mean motion development
+        // converted from rev/day, 2 * rev/day^2 and 6 * rev/day^3 to rad/s, rad/s^2 and rad/s^3
+        meanMotion                 = parseDouble(line2, 52, 11) * Math.PI / 43200.0;
+        meanMotionFirstDerivative  = parseDouble(line1, 33, 10) * Math.PI / 1.86624e9;
+        meanMotionSecondDerivative = Double.parseDouble((line1.substring(44, 45) + '.' +
+                                                         line1.substring(45, 50) + 'e' +
+                                                         line1.substring(50, 52)).replace(' ', '0')) *
+                                     Math.PI / 5.3747712e13;
+
+        eccentricity = Double.parseDouble("." + line2.substring(26, 33).replace(' ', '0'));
+        inclination  = Math.toRadians(parseDouble(line2, 8, 8));
+        pa           = Math.toRadians(parseDouble(line2, 34, 8));
+        raan         = Math.toRadians(Double.parseDouble(line2.substring(17, 25).replace(' ', '0')));
+        meanAnomaly  = Math.toRadians(parseDouble(line2, 43, 8));
+
+        revolutionNumberAtEpoch = parseInteger(line2, 63, 5);
+        bStar = Double.parseDouble((line1.substring(53, 54) + '.' +
+                                    line1.substring(54, 59) + 'e' +
+                                    line1.substring(59, 61)).replace(' ', '0'));
+
+        // save the lines
+        this.line1 = line1;
+        this.line2 = line2;
 
     }
 
-    /** Gets the ballistic coefficient.
-     * @return bStar
+    /** Simple constructor from already parsed elements.
+     * @param satelliteNumber satellite number
+     * @param classification classification (U for unclassified)
+     * @param launchYear launch year (all digits)
+     * @param launchNumber launch number
+     * @param launchPiece launch piece
+     * @param ephemerisType type of ephemeris
+     * @param elementNumber element number
+     * @param epoch elements epoch
+     * @param meanMotion mean motion (rad/s)
+     * @param meanMotionFirstDerivative mean motion first derivative (rad/s<sup>2</sup>)
+     * @param meanMotionSecondDerivative mean motion second derivative (rad/s<sup>3</sup>)
+     * @param e eccentricity
+     * @param i inclination (rad)
+     * @param pa argument of perigee (rad)
+     * @param raan right ascension of ascending node (rad)
+     * @param meanAnomaly mean anomaly (rad)
+     * @param revolutionNumberAtEpoch revolution number at epoch
+     * @param bStar ballistic coefficient
      */
-    public double getBStar() {
-        return bStar;
+    public TLE(final int satelliteNumber, final char classification,
+               final int launchYear, final int launchNumber, final String launchPiece,
+               final int ephemerisType, final int elementNumber, final AbsoluteDate epoch,
+               final double meanMotion, final double meanMotionFirstDerivative,
+               final double meanMotionSecondDerivative, final double e, final double i,
+               final double pa, final double raan, final double meanAnomaly,
+               final int revolutionNumberAtEpoch, final double bStar) {
+
+        // identification
+        this.satelliteNumber = satelliteNumber;
+        this.classification  = classification;
+        this.launchYear      = launchYear;
+        this.launchNumber    = launchNumber;
+        this.launchPiece     = launchPiece;
+        this.ephemerisType   = ephemerisType;
+        this.elementNumber   = elementNumber;
+
+        // orbital parameters
+        this.epoch                      = epoch;
+        this.meanMotion                 = meanMotion;
+        this.meanMotionFirstDerivative  = meanMotionFirstDerivative;
+        this.meanMotionSecondDerivative = meanMotionSecondDerivative;
+        this.inclination                = i;
+        this.raan                       = raan;
+        this.eccentricity               = e;
+        this.pa                         = pa;
+        this.meanAnomaly                = meanAnomaly;
+
+        this.revolutionNumberAtEpoch = revolutionNumberAtEpoch;
+        this.bStar                   = bStar;
+
+        // don't build the line until really needed
+        this.line1 = null;
+        this.line2 = null;
+
     }
 
-    /** Gets the eccentricity.
-     * @return the eccentricity
+    /** Get the first line.
+     * @return first line
+     * @exception OrekitException if UTC conversion cannot be done
      */
-    public double getE() {
-        return e;
+    public String getLine1()
+        throws OrekitException {
+        if (line1 == null) {
+            buildLine1();
+        }
+        return line1;
     }
 
-    /** Gets the type of ephemeris.
+    /** Get the second line.
+     * @return second line
+     */
+    public String getLine2() {
+        if (line2 == null) {
+            buildLine2();
+        }
+        return line2;
+    }
+
+    /** Build the line 1 from the parsed elements.
+     * @exception OrekitException if UTC conversion cannot be done
+     */
+    private void buildLine1()
+        throws OrekitException {
+
+        final StringBuffer buffer = new StringBuffer();
+        final DecimalFormatSymbols symbols =
+            DecimalFormatSymbols.getInstance(Locale.US);
+        final DecimalFormat f38  = new DecimalFormat("##0.00000000", symbols);
+        final DecimalFormat fExp = new DecimalFormat(".00000E0", symbols);
+
+        buffer.append('1');
+
+        buffer.append(' ');
+        buffer.append(addPadding(satelliteNumber, '0', 5, true));
+        buffer.append(classification);
+
+        buffer.append(' ');
+        buffer.append(addPadding(launchYear % 100, '0', 2, true));
+        buffer.append(addPadding(launchNumber, '0', 3, true));
+        buffer.append(addPadding(launchPiece, ' ', 3, false));
+
+        buffer.append(' ');
+        final TimeScale utc = UTCScale.getInstance();
+        final int year = epoch.getComponents(utc).getDate().getYear();
+        buffer.append(addPadding(year % 100, '0', 2, true));
+        final double day = 1.0 + epoch.durationFrom(new AbsoluteDate(year, 1, 1, utc)) / 86400;
+        buffer.append(f38.format(day));
+
+        buffer.append(' ');
+        final double n1 = meanMotionFirstDerivative * 1.86624e9 / Math.PI;
+        final String sn1 = addPadding(new DecimalFormat(".00000000", symbols).format(n1), ' ', 10, true);
+        buffer.append(sn1);
+
+        buffer.append(' ');
+        final double n2 = meanMotionSecondDerivative * 5.3747712e13 / Math.PI;
+        final String doubleDash = "--";
+        final String sn2 = fExp.format(n2).replace('E', '-').replace(doubleDash, "-").replace(".", "");
+        buffer.append(addPadding(sn2, ' ', 8, true));
+
+        buffer.append(' ');
+        final String sB = fExp.format(bStar).replace('E', '-').replace(doubleDash, "-").replace(".", "");
+        buffer.append(addPadding(sB, ' ', 8, true));
+
+        buffer.append(' ');
+        buffer.append(ephemerisType);
+
+        buffer.append(' ');
+        buffer.append(addPadding(elementNumber, ' ', 4, true));
+
+        buffer.append(Integer.toString(checksum(buffer)));
+
+        line1 = buffer.toString();
+
+    }
+
+    /** Build the line 2 from the parsed elements.
+     */
+    private void buildLine2() {
+
+        final StringBuffer buffer = new StringBuffer();
+        final DecimalFormatSymbols symbols =
+            DecimalFormatSymbols.getInstance(Locale.US);
+        final DecimalFormat f34   = new DecimalFormat("##0.0000", symbols);
+        final DecimalFormat f211  = new DecimalFormat("#0.00000000", symbols);
+
+        buffer.append('2');
+
+        buffer.append(' ');
+        buffer.append(addPadding(satelliteNumber, '0', 5, true));
+
+        buffer.append(' ');
+        buffer.append(addPadding(f34.format(Math.toDegrees(inclination)), ' ', 8, true));
+        buffer.append(' ');
+        buffer.append(addPadding(f34.format(Math.toDegrees(raan)), ' ', 8, true));
+        buffer.append(' ');
+        buffer.append(addPadding((int) Math.rint(eccentricity * 1.0e7), '0', 7, true));
+        buffer.append(' ');
+        buffer.append(addPadding(f34.format(Math.toDegrees(pa)), ' ', 8, true));
+        buffer.append(' ');
+        buffer.append(addPadding(f34.format(Math.toDegrees(meanAnomaly)), ' ', 8, true));
+
+        buffer.append(' ');
+        buffer.append(addPadding(f211.format(meanMotion * 43200.0 / Math.PI), ' ', 11, true));
+        buffer.append(addPadding(revolutionNumberAtEpoch, ' ', 5, true));
+
+        buffer.append(Integer.toString(checksum(buffer)));
+
+        line2 = buffer.toString();
+
+    }
+
+    /** Add padding characters before an integer.
+     * @param k integer to pad
+     * @param c padding character
+     * @param size desired size
+     * @param rightJustified if true, the resulting string is
+     * right justified (i.e. space are added to the left)
+     * @return padded string
+     */
+    private String addPadding(final int k, final char c,
+                              final int size, final boolean rightJustified) {
+        return addPadding(Integer.toString(k), c, size, rightJustified);
+    }
+
+    /** Add padding characters to a string.
+     * @param string string to pad
+     * @param c padding character
+     * @param size desired size
+     * @param rightJustified if true, the resulting string is
+     * right justified (i.e. space are added to the left)
+     * @return padded string
+     */
+    private String addPadding(final String string, final char c,
+                              final int size, final boolean rightJustified) {
+
+        final StringBuffer padding = new StringBuffer();
+        for (int i = 0; i < size; ++i) {
+            padding.append(c);
+        }
+
+        if (rightJustified) {
+            final String concatenated = padding + string;
+            final int l = concatenated.length();
+            return concatenated.substring(l - size, l);
+        }
+
+        return (string + padding).substring(0, size);
+
+    }
+
+    /** Parse a double.
+     * @param line line to parse
+     * @param start start index of the first character
+     * @param length length of the string
+     * @return value of the double
+     */
+    private double parseDouble(final String line, final int start, final int length) {
+        return Double.parseDouble(line.substring(start, start + length).replace(' ', '0'));
+    }
+
+    /** Parse an integer.
+     * @param line line to parse
+     * @param start start index of the first character
+     * @param length length of the string
+     * @return value of the integer
+     */
+    private int parseInteger(final String line, final int start, final int length) {
+        return Integer.parseInt(line.substring(start, start + length).replace(' ', '0'));
+    }
+
+    /** Parse a year written on 2 digits.
+     * @param line line to parse
+     * @param start start index of the first character
+     * @return value of the year
+     */
+    private int parseYear(final String line, final int start) {
+        final int year = 2000 + parseInteger(line, start, 2);
+        return (year > 2056) ? (year - 100) : year;
+    }
+
+    /** Get the satellite id.
+     * @return the satellite number
+     */
+    public int getSatelliteNumber() {
+        return satelliteNumber;
+    }
+
+    /** Get the classification.
+     * @return classification
+     */
+    public char getClassification() {
+        return classification;
+    }
+
+    /** Get the launch year.
+     * @return the launch year
+     */
+    public int getLaunchYear() {
+        return launchYear;
+    }
+
+    /** Get the launch number.
+     * @return the launch number
+     */
+    public int getLaunchNumber() {
+        return launchNumber;
+    }
+
+    /** Get the launch piece.
+     * @return the launch piece
+     */
+    public String getLaunchPiece() {
+        return launchPiece;
+    }
+
+    /** Get the type of ephemeris.
      * @return the ephemeris type (one of {@link #DEFAULT}, {@link #SGP},
      * {@link #SGP4}, {@link #SGP8}, {@link #SDP4}, {@link #SDP8})
      */
@@ -178,77 +479,104 @@ public class TLE implements TimeStamped, Serializable {
         return ephemerisType;
     }
 
-    /** Gets the TLE current date.
-     * @return the epoch
-     */
-    public AbsoluteDate getDate() {
-        return epoch;
-    }
-
-    /** Gets the inclination.
-     * @return the inclination (rad)
-     */
-    public double getI() {
-        return i;
-    }
-
-    /** Gets the international designator.
-     * @return the internationalDesignator
-     */
-    public String getInternationalDesignator() {
-        return internationalDesignator;
-    }
-
-    /** Gets the  element number.
+    /** Get the element number.
      * @return the element number
      */
     public int getElementNumber() {
         return elementNumber;
     }
 
-    /** Gets the mean anomaly.
-     * @return the mean anomaly  (rad)
+    /** Get the TLE current date.
+     * @return the epoch
      */
-    public double getMeanAnomaly() {
-        return meanAnomaly;
+    public AbsoluteDate getDate() {
+        return epoch;
     }
 
-    /** Gets the mean motion.
-     * @return the meanMotion (rad/s)
+    /** Get the mean motion.
+     * @return the mean motion (rad/s)
      */
     public double getMeanMotion() {
         return meanMotion;
     }
 
-    /** Gets the argument of perigee.
+    /** Get the mean motion first derivative.
+     * @return the mean motion first derivative (rad/s<sup>2</sup>)
+     */
+    public double getMeanMotionFirstDerivative() {
+        return meanMotionFirstDerivative;
+    }
+
+    /** Get the mean motion second derivative.
+     * @return the mean motion second derivative (rad/s<sup>3</sup>)
+     */
+    public double getMeanMotionSecondDerivative() {
+        return meanMotionSecondDerivative;
+    }
+
+    /** Get the eccentricity.
+     * @return the eccentricity
+     */
+    public double getE() {
+        return eccentricity;
+    }
+
+    /** Get the inclination.
+     * @return the inclination (rad)
+     */
+    public double getI() {
+        return inclination;
+    }
+
+    /** Get the argument of perigee.
      * @return omega (rad)
      */
     public double getPerigeeArgument() {
         return pa;
     }
 
-    /** Gets Right Ascension of the Ascending node.
+    /** Get Right Ascension of the Ascending node.
      * @return the raan (rad)
      */
     public double getRaan() {
         return raan;
     }
 
-    /** Gets the revolution number.
+    /** Get the mean anomaly.
+     * @return the mean anomaly (rad)
+     */
+    public double getMeanAnomaly() {
+        return meanAnomaly;
+    }
+
+    /** Get the revolution number.
      * @return the revolutionNumberAtEpoch
      */
     public int getRevolutionNumberAtEpoch() {
         return revolutionNumberAtEpoch;
     }
 
-    /** Gets the satellite id.
-     * @return the satellite number
+    /** Get the ballistic coefficient.
+     * @return bStar
      */
-    public int getSatelliteNumber() {
-        return satelliteNumber;
+    public double getBStar() {
+        return bStar;
     }
 
-    /** Check the entries to determine if the element format is correct.
+    /** Get a string representation of this TLE set.
+     * <p>The representation is simply the two lines separated by the
+     * platform line separator.</p>
+     * @return string representation of this TLE set
+     */
+    public String toString() {
+        try {
+            return getLine1() + System.getProperty("line.separator") + getLine2();
+        } catch (OrekitException oe) {
+            return "???";
+        }
+    }
+
+    /** Check the lines format validity.
      * @param line1 the first element (69 char String)
      * @param line2 the second element (69 char String)
      * @return true if format is recognised, false if not
@@ -263,51 +591,48 @@ public class TLE implements TimeStamped, Serializable {
         }
 
         if (!(LINE_1_PATTERN.matcher(line1).matches() &&
-               LINE_2_PATTERN.matcher(line2).matches())) {
+              LINE_2_PATTERN.matcher(line2).matches())) {
             return false;
         }
 
         // check sums
-        int chksum1  = 0;
-        int chksum2  = 0;
-
-        for (int j = 0; j < 68; j++) {
-            final String x = line1.substring(j, j + 1);
-            final String y = line2.substring(j, j + 1);
-            try {
-                chksum1 += Integer.parseInt(x);
-            } catch (NumberFormatException nb) {
-                if (x.equals("-")) {
-                    chksum1++;
-                }
-            }
-            try {
-                chksum2 += Integer.parseInt(y);
-            } catch (NumberFormatException nb) {
-                if (y.equals("-")) {
-                    chksum2++;
-                }
-            }
-        }
-
-        if (Integer.parseInt(line1.substring(68)) != (chksum1 % 10)) {
+        final int checksum1 = checksum(line1);
+        if (Integer.parseInt(line1.substring(68)) != (checksum1 % 10)) {
             throw new OrekitException(CHECKSUM_MESSAGE,
                                       new Object[] {
                                           Integer.valueOf(1), line1.substring(68) ,
-                                          Integer.valueOf(chksum1 % 10), line1
+                                          Integer.valueOf(checksum1 % 10), line1
                                       });
         }
 
-        if (Integer.parseInt(line2.substring(68)) != (chksum2 % 10)) {
+        final int checksum2 = checksum(line2);
+        if (Integer.parseInt(line2.substring(68)) != (checksum2 % 10)) {
             throw new OrekitException(CHECKSUM_MESSAGE,
                                       new Object[] {
                                           Integer.valueOf(2), line2.substring(68) ,
-                                          Integer.valueOf(chksum2 % 10), line2
+                                          Integer.valueOf(checksum2 % 10), line2
                                       });
         }
 
         return true;
 
+    }
+
+    /** Compute the checksum of the first 68 characters of a line.
+     * @param line line to check
+     * @return checksum
+     */
+    private static int checksum(final CharSequence line) {
+        int sum = 0;
+        for (int j = 0; j < 68; j++) {
+            final char c = line.charAt(j);
+            if (Character.isDigit(c)) {
+                sum += Character.digit(c, 10);
+            } else if (c == '-') {
+                ++sum;
+            }
+        }
+        return sum % 10;
     }
 
 }

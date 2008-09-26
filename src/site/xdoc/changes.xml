@@ -22,6 +22,15 @@
   <body>
     <release version="4.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="add" due-to="Derek Surka">
+        Added support for mean motion first and second derivatives fields in TLE.
+      </action>
+      <action dev="luc" type="add" >
+        Added a way to rebuild the two lines of TLE instances.
+      </action>
+      <action dev="luc" type="add" due-to="Derek Surka">
+        Added constructor from already parsed elements for TLE.
+      </action>
       <action dev="luc" type="add">
         Added a method to retrieve a body-centered inertial frame to the
         CelestialBody interface. As a consequence, thirteen new frames are
