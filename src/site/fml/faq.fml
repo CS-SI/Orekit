@@ -51,7 +51,7 @@
           time monitoring of the rendez-vous and docking phase. This part has been checked to
           below millimeter level for relative configuration. The reference frames part (ITRF
           and the like) has been validated using public data down to meter-level precision for
-          version 3.1, and to centimeter level for the next version.
+          version 3.1, and to centimeter level for the version 4.0.
         </p>
         <p>
           A new round of validation has been done after Orekit 3.1 has been published. Two
@@ -79,7 +79,7 @@
           The Sun and Moon class for version 3.1 are very low precision and are defined in a
           pseudo-inertial frame with loose definition. They can be compared only with very specific
           software. There accuracy is probably limited to about 10 arcseconds. They have been replaced
-          by accurate reference models in the next version.
+          by accurate reference models in the version 4.0.
         </p>
         <p>
           The least validated part is the numerical propagation. Only rough validation has been done
