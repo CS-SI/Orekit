@@ -143,8 +143,8 @@ Orbits
      
      ** hx = tan(i/2) sin(\u03a9)
      
-     ** lv, lM or lE (rad) : respectively true longitude (\u03c9 + v), 
-     mean longitude (\u03c9 + M) or eccentric longitude (\u03c9 + E).
+     ** lv, lM or lE (rad) : respectively true longitude argument (\u03c9 + \u03a9 + v), 
+     mean longitude argument (\u03c9 + \u03a9 + M) or eccentric longitude argument (\u03c9 + \u03a9 + E).
      
   \
   * Cartesian orbit, associated to its frame definition, which parameters are:
