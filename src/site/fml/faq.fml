@@ -59,7 +59,7 @@
           by a constant rotation bias of about 18 milliarcsceonds (it was really GCRF, not J2000)
           and the ITRF2000B implementation was wrong by a time-dependent rotation leading to about
           0.6 meters error for orbits with a semi-minor axis of about 10000km. These errors have
-          been fixed for next version. Our tests show the new frames are compliant with reference
+          been fixed as of version 4.0. Our tests show the new frames are compliant with reference
           cases to about 10mm for LEO and 60mm for GEO.
         </p>
         <p>
