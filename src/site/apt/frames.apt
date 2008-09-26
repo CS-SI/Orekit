@@ -135,7 +135,7 @@ Frames
 [./images/iers-tree.png]
 
   Since Orekit uses the new paradigm for IERS frames, the IAU-2000 precession-nutation model
-  implemented is the complete model which thousands of luni-solar and planetary terms (1600
+  implemented is the complete model with thousands of luni-solar and planetary terms (1600
   terms for the x components, 1275 components for the y component and 66 components for the s
   correction). Recomputing all these terms each time the CIRF frame is used would be really
   slow. Orekit therefore implements a caching/interpolation to improve efficiency. The shortest
