@@ -61,6 +61,13 @@ public class NodeDetector extends AbstractDetector {
         this.frame  = frame;
     }
 
+    /** Get the frame in which the equator is defined.
+     * @return the frame in which the equator is defined
+     */
+    public Frame getFrame() {
+        return frame;
+    }
+
     /** Handle a node crossing event and choose what to do next.
      * <p>The default implementation behavior is to {@link
      * EventDetector#CONTINUE continue} propagation at descending node

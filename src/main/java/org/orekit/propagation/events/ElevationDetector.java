@@ -59,6 +59,20 @@ public class ElevationDetector extends AbstractDetector {
         this.topo = topo;
     }
 
+    /** Get the threshold elevation value.
+     * @return the threshold elevation value
+     */
+    public double getElevation() {
+        return elevation;
+    }
+
+    /** Get the topocentric frame.
+     * @return the topocentric frame
+     */
+    public TopocentricFrame getTopocentricFrame() {
+        return topo;
+    }
+
     /** Handle an elevation event and choose what to do next.
      * <p>The default implementation behavior is to {@link
      * EventDetector#CONTINUE continue} propagation at raising and to
