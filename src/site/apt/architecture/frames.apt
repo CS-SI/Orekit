@@ -23,7 +23,7 @@ Frames
   The <<<Frame>>> class represent a single frame. All frames are organized as a
   tree with a single root.
 
-[./images/frametree.png]
+[../images/frametree.png]
 
   Each Frame is defined by a single <transform> linking it to one specific frame:
   its <parent frame>. This defining transform may be fixed or time-dependent, for
@@ -50,7 +50,7 @@ Frames
   frame to any other one, whatever far away they are from each other (<<trel>> on the
   following scheme).
 
-[./images/transform.png]
+[../images/transform.png]
 
   The transform between any two frames is computed by merging individual transforms
   while walking the shortest past between them. The walking/merging operations are
@@ -132,7 +132,7 @@ Frames
 
   Here is a schematic representation of the partial tree containing the supported IERS frames.
     
-[./images/iers-tree.png]
+[../images/iers-tree.png]
 
   Since Orekit uses the new paradigm for IERS frames, the IAU-2000 precession-nutation model
   implemented is the complete model with thousands of luni-solar and planetary terms (1600
@@ -151,7 +151,7 @@ Frames
   which is the rule in most application (step sizes are mostly of the range of a few tens of
   seconds).</p>
 
-[./images/cirf2000-interpolation-error.png]
+[../images/cirf2000-interpolation-error.png]
 
   For most purposes, the recommended frames to use are ITRF 2005 for terrestrial frame and
   GCRF for celestial frame. EME2000 could also be used for compatibility with other systems.
@@ -184,7 +184,7 @@ Frames
   for convenience as if they were real bodies: the solar system barycenter and the
   Earth-Moon barycenter.
 
-[./images/solar-system-frames.png]
+[../images/solar-system-frames.png]
 
 * User defined frames
 
@@ -209,7 +209,7 @@ Frames
   complex trees without bothering about combining transforms oneself. The following example
   explains a practical case.
 
-[./images/antenna-frames.png]
+[../images/antenna-frames.png]
 
   This case is an improvement of the basic previous extension to manage orbit and attitude. In this
   case, we introduce several intermediate frames with elementary transforms and need to update the

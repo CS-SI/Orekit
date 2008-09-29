@@ -51,7 +51,7 @@ Vector3D moonInEME2000 =
   course is only a side effect of the arbitrary choice of GCRF as the root frame and has
   no effect at all on computations. The solar system bodies frames tree is shown below:
  
-[./images/solar-system-frames.png]
+[../images/solar-system-frames.png]
 
 * Shape
  
