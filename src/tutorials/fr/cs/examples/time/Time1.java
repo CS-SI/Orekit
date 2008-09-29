@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.cs.examples.dates;
+package fr.cs.examples.time;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
@@ -29,7 +29,7 @@ import fr.cs.examples.Autoconfiguration;
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-public class Date1 {
+public class Time1 {
 
     /** Program entry point.
      * @param args program arguments (unused here)
