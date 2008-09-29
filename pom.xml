@@ -110,7 +110,6 @@
         <configuration>
           <descriptors>
             <descriptor>src/main/assembly/source-assembly.xml</descriptor>
-            <descriptor>src/main/assembly/source-with-deps-assembly.xml</descriptor>
             <descriptor>src/main/assembly/binary-assembly.xml</descriptor>
           </descriptors>
         </configuration>

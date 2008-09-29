@@ -4,6 +4,7 @@
       <includes>
        <include>README.txt</include>
        <include>LICENSE.txt</include>
+       <include>NOTICE.txt</include>
       </includes>
     </fileSet>
   </fileSets>

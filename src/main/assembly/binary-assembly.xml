@@ -6,6 +6,5 @@
   <componentDescriptors>
     <componentDescriptor>src/main/assembly/misc-files.xml</componentDescriptor>
     <componentDescriptor>src/main/assembly/jar-files.xml</componentDescriptor>
-    <componentDescriptor>src/main/assembly/compile-dependencies.xml</componentDescriptor>
   </componentDescriptors>
 </assembly>

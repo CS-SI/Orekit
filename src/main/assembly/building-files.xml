@@ -10,6 +10,7 @@
         <include>checkstyle.xml</include>
         <include>checkstyle-exclude-filter.xml</include>
         <include>findbugs-exclude-filter.xml</include>
+        <include>license-header.txt</include>
         <include>.classpath</include>
         <include>.project</include>
       </includes>
