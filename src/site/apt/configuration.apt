@@ -67,6 +67,15 @@ Configuration
   some time to explore it, even if it really reads only a small subset of the total number
   of files.
 
+*----------------------------------*---------------- ------------------------------*
+|          java property           |                    usage                      |
+*----------------------------------*------------------ ----------------------------*
+| orekit.data.directory.filesystem | root of a data directories tree in filesystem |
+*----------------------------------*-----------------------------------------------*
+| orekit.data.directory.classpath  | root of a data directories tree in classpath  |
+*----------------------------------*-----------------------------------------------*
+configuration parameters
+
   There are only two configuration parameters for Orekit, set up as java properties. The
   <orekit.data.directory.filesystem> property configures the root of the highest priority tree
   located in filesystem. The <orekit.data.directory.classpath> property configures the root of
@@ -78,15 +87,6 @@ Configuration
   static fields from the <DataDirectoryCrawler> class can be used. If the properties are set up
   by the application, it must be done before any Orekit feature is called, since some data
   are initialized very early (mainly frame and time related data).
-
-*----------------------------------*---------------- ------------------------------*
-|          java property           |                    usage                      |
-*----------------------------------*------------------ ----------------------------*
-| orekit.data.directory.filesystem | root of a data directories tree in filesystem |
-*----------------------------------*-----------------------------------------------*
-| orekit.data.directory.classpath  | root of a data directories tree in classpath  |
-*----------------------------------*-----------------------------------------------*
-configuration parameters
 
 * Quick setup using default data
 
