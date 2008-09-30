@@ -40,8 +40,11 @@ import fr.cs.examples.Autoconfiguration;
  * @author Fabien Maussion
  * @version $Revision$ $Date$
  */
-public class NumericalPropagation {
+public class EphemerisMode {
 
+    /** Program entry point.
+     * @param args program arguments (unused here)
+     */
     public static void main(String[] args) {
         try {
 
