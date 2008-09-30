@@ -88,6 +88,8 @@ Configuration
 *----------------------------------*-----------------------------------------------*
 configuration parameters
 
+* Quick setup using default data
+
   For convenience, a jar file containing some default data is available for download on
   orekit site: {{http://www.orekit.org/downloads/orekit-data.jar}}. Putting this jar
   file on your classpath and setting the <orekit.data.directory.classpath> property to
