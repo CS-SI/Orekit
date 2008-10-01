@@ -89,7 +89,9 @@ Frames
   the new paradigm promoted by IERS, i.e. it uses a single transform for both bias, precession
   and nutation, computed by the IAU-2000 precession-nutation model and the Earth Orientation
   Parameters (EOP) data published online by IERS. This single transform links the GCRF to a
-  Celestial Intermediate Reference Frame (CIRF). From CIRF, the Earth Rotation Angle is applied
+  Celestial Intermediate Reference Frame (CIRF). The X axis of this frame is the Celestial
+  Intermediate Origin (CIO) and its Z axis is the Celestial Intermediate Pole (CIP). The CIO is
+  <<<not linked to equinox any more>>>. From CIRF, the Earth Rotation Angle is applied
   to define a Terrestrial Intermediate Reference Frame (TIRF) which is a pseudo Earth fixed
   frame. A last transform adds the pole motion with respect to Earth crust to reach the real
   Earth fixed frame: the International Terrestrial Reference Frame.
