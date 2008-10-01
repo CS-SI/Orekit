@@ -182,7 +182,7 @@ public class KeplerianPropagatorTest extends TestCase {
 
         assertEquals(deltaM, deltaE - delta, Utils.epsilonAngle);
 
-        // the orbital elements except for Mean/True/Excentric latitude arguments are the same
+        // the orbital elements except for Mean/True/Eccentric latitude arguments are the same
         assertEquals(finalOrbit.getA(), initialOrbit.getA(), Utils.epsilonTest * initialOrbit.getA());
         assertEquals(finalOrbit.getEquinoctialEx(), initialOrbit.getEquinoctialEx(), Utils.epsilonE);
         assertEquals(finalOrbit.getEquinoctialEy(), initialOrbit.getEquinoctialEy(), Utils.epsilonE);
@@ -271,7 +271,7 @@ public class KeplerianPropagatorTest extends TestCase {
 
         assertEquals(deltaM, deltaE - delta, Utils.epsilonAngle);
 
-        // the orbital elements except for Mean/True/Excentric latitude arguments are the same
+        // the orbital elements except for Mean/True/Eccentric latitude arguments are the same
         assertEquals(finalOrbit.getA(), initialOrbit.getA(), Utils.epsilonTest * initialOrbit.getA());
         assertEquals(finalOrbit.getEquinoctialEx(), initialOrbit.getEquinoctialEx(), Utils.epsilonE);
         assertEquals(finalOrbit.getEquinoctialEy(), initialOrbit.getEquinoctialEy(), Utils.epsilonE);
