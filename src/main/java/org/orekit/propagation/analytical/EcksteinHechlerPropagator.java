@@ -266,7 +266,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
     /** Compute mean parameters according to the Eckstein-Hechler analytical model.
      * @param osculating osculating orbit
      * @exception PropagationException if orbit goes outside of supported range
-     * (trajectory inside the Brillouin sphere, too excentric, equatorial, critical
+     * (trajectory inside the Brillouin sphere, too eccentric, equatorial, critical
      * inclination) or if convergence cannot be reached
      */
     private void computeMeanParameters(final CircularOrbit osculating)
@@ -347,7 +347,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
                 final double e = mean.getE();
                 if (e > 0.1) {
                     // if 0.005 < e < 0.1 no error is triggered, but accuracy is poor
-                    throw new PropagationException("too excentric orbit (e = {0})",
+                    throw new PropagationException("too eccentric orbit (e = {0})",
                                                    new Object[] {
                                                        new Double(e)
                                                    });
