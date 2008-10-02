@@ -44,6 +44,14 @@ class JPLEphemeridesLoader extends DataFileCrawler {
     private static final String HEADER_READ_ERROR =
         "unable to read header record from JPL ephemerides binary file {0}";
 
+    /** Error message for unsupported file. */
+    private static final String NOT_JPL_EPHEMERIS =
+        "file {0} is not a JPL ephemerides binary file";
+
+    /** Error message for unsupported file. */
+    private static final String OUT_OF_RANGE_DATE =
+        "out of range date for ephemerides: {0}";
+
     /** List of supported ephemerides types. */
     public enum EphemerisType {
 
@@ -82,8 +90,10 @@ class JPLEphemeridesLoader extends DataFileCrawler {
 
     }
 
-    /** Binary record size in bytes. */
+    /** Binary record size in bytes for DE 405. */
     private static final int DE405_RECORD_SIZE = 1018 * 8;
+
+    /** Binary record size in bytes for DE 406. */
     private static final int DE406_RECORD_SIZE =  728 * 8;
 
     /** Ephemeris type to load. */
@@ -194,14 +204,14 @@ class JPLEphemeridesLoader extends DataFileCrawler {
             recordSize = DE406_RECORD_SIZE;
             break;
         default :
-            throw new OrekitException("file {0} is not a JPL ephemerides binary file",
+            throw new OrekitException(NOT_JPL_EPHEMERIS,
                                       new Object[] {
                                           getFile().getAbsolutePath()
                                       });
         }
 
         // build a record with the proper size and finish read of the first complete record
-        byte[] newRecord = new byte[recordSize];
+        final byte[] newRecord = new byte[recordSize];
         final int remaining = newRecord.length - record.length;
         System.arraycopy(record, 0, newRecord, 0, record.length);
         if (input.read(newRecord, record.length, remaining) != remaining) {
@@ -330,7 +340,7 @@ class JPLEphemeridesLoader extends DataFileCrawler {
 
         // sanity checks
         if (!ok) {
-            throw new OrekitException("file {0} is not a JPL ephemerides binary file",
+            throw new OrekitException(NOT_JPL_EPHEMERIS,
                                       new Object[] {
                                           getFile().getAbsolutePath()
                                       });
@@ -346,7 +356,7 @@ class JPLEphemeridesLoader extends DataFileCrawler {
         // extract time range covered by the record
         final AbsoluteDate rangeStart = extractDate(0);
         if (rangeStart.compareTo(startEpoch) < 0) {
-            throw new OrekitException("out of range date for ephemerides: {0}",
+            throw new OrekitException(OUT_OF_RANGE_DATE,
                                       new Object[] {
                                           rangeStart
                                       });
@@ -354,7 +364,7 @@ class JPLEphemeridesLoader extends DataFileCrawler {
 
         final AbsoluteDate rangeEnd   = extractDate(8);
         if (rangeEnd.compareTo(finalEpoch) > 0) {
-            throw new OrekitException("out of range date for ephemerides: {0}",
+            throw new OrekitException(OUT_OF_RANGE_DATE,
                                       new Object[] {
                                           rangeEnd
                                       });
@@ -400,11 +410,7 @@ class JPLEphemeridesLoader extends DataFileCrawler {
      */
     private AbsoluteDate extractDate(final int offset) {
         final double dt = extractDouble(offset) * 86400;
-        try {
         return new AbsoluteDate(AbsoluteDate.JULIAN_EPOCH, dt, TTScale.getInstance());
-        } catch (Exception e) {
-            return new AbsoluteDate(AbsoluteDate.JULIAN_EPOCH, dt, TTScale.getInstance());
-        }
     }
 
     /** Extract a double from a record.
