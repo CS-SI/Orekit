@@ -42,6 +42,14 @@
       </roles>
     </developer>
     <developer>
+      <name>Pascal Parraud</name>
+      <id>pascal</id>
+      <email>Pascal.Parraud at c-s dot fr</email>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
       <name>V&#233;ronique Pommier-Maurussane</name>
       <id>v&#233;ronique</id>
       <email>Veronique.Pommier at c-s dot fr</email>

@@ -22,6 +22,9 @@
   <body>
     <release version="4.0" date="TBD"
              description="TBD">
+      <action dev="pascal" type="fix">
+        The ephemeris produced by numerical propagator now checks date validity in propagate method.
+      </action>
       <action dev="luc" type="add" due-to="Francesco Coccoluto">
         Added italian localization for error messages.
       </action>

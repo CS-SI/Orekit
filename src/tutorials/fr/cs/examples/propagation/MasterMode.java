@@ -107,12 +107,14 @@ public class MasterMode {
             // Add force model to the propagator
             propagator.addForceModel(cunningham);
 
-            // Set up operating mode as master mode for the propagator
-            propagator.setMasterMode(100, new TutorialStepHandler());
+            // Set up operating mode for the propagator as master mode
+            // with fixed step and specialized step handler
+            propagator.setMasterMode(60., new TutorialStepHandler());
 
             // Extrapolate from the initial to the final date
-            SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initialDate, 1000.));
-            System.out.println(" Final state  : " + finalState.getOrbit());
+            SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initialDate, 630.));
+            System.out.println(" Final date  : " + finalState.getDate());
+            System.out.println(" Final state : " + finalState.getOrbit());
             
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());
@@ -120,7 +122,7 @@ public class MasterMode {
     }
     
     /** Specialized step handler.
-     * <p>This class extends the step handler in order to print on the output stream at each step.<p>
+     * <p>This class extends the step handler in order to print on the output stream at the given step.<p>
      * @author Pascal Parraud
      */
     private static class TutorialStepHandler implements OrekitFixedStepHandler {
@@ -133,8 +135,8 @@ public class MasterMode {
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {
-            System.out.println(" step time : " + currentState.getDate());
-            System.out.println(" step state : " + currentState.getOrbit());
+            System.out.println(" time : " + currentState.getDate());
+            System.out.println(" " + currentState.getOrbit());
             if (isLast) {
                 System.out.println(" this was the last step ");
             }

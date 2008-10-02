@@ -17,10 +17,6 @@
 
 package fr.cs.examples.frames;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
-
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
@@ -37,7 +33,7 @@ import fr.cs.examples.Autoconfiguration;
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
-public class TransformAndFrames {
+public class Frames1 {
 
     public static void main(String[] args) {
         try {
@@ -45,21 +41,10 @@ public class TransformAndFrames {
             // configure Orekit
             Autoconfiguration.configureOrekit();
 
-            final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.US);
-            final DecimalFormat pv  = new DecimalFormat("##0.00", symbols);
-
             // initial point in frame 1 :
             Frame frame1 = new Frame(Frame.getEME2000(), Transform.IDENTITY, "frame 1");
             PVCoordinates pointP1 = new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_I);
-            System.out.println(" point P1 in frame 1 : ");
-            System.out.println("       position :  "
-                               + pv.format(pointP1.getPosition().getX()) + " "
-                               + pv.format(pointP1.getPosition().getY()) + " "
-                               + pv.format(pointP1.getPosition().getZ()));
-            System.out.println("       velocity :  "
-                               + pv.format(pointP1.getVelocity().getX()) + " "
-                               + pv.format(pointP1.getVelocity().getY()) + " "
-                               + pv.format(pointP1.getVelocity().getZ()));
+            System.out.println(" point P1 in frame 1 : " + pointP1);
 
             // translation transform
             // We want to translate frame1 to the right at the speed of 1 so that P1 is fixed in it.
@@ -68,15 +53,7 @@ public class TransformAndFrames {
             Frame frame2 = new Frame(frame1, frame1toframe2, "frame 2");
             PVCoordinates pointP2 = frame1.getTransformTo(frame2, new AbsoluteDate())
                                           .transformPVCoordinates(pointP1);
-            System.out.println(" point P1 in frame 2 : ");
-            System.out.println("       position :  "
-                               + pv.format(pointP2.getPosition().getX()) + " "
-                               + pv.format(pointP2.getPosition().getY()) + " "
-                               + pv.format(pointP2.getPosition().getZ()));
-            System.out.println("       velocity :  "
-                               + pv.format(pointP2.getVelocity().getX()) + " "
-                               + pv.format(pointP2.getVelocity().getY()) + " "
-                               + pv.format(pointP2.getVelocity().getZ()));
+            System.out.println(" point P1 in frame 2 : " + pointP2);
 
             // rotation transform
             // We want to rotate frame1 of minus PI/2
@@ -88,15 +65,7 @@ public class TransformAndFrames {
             Frame frame3 = new Frame(frame1, frame1toframe3, "frame 3");
             PVCoordinates pointP3 = frame1.getTransformTo(frame3, new AbsoluteDate())
                                           .transformPVCoordinates(pointP1);
-            System.out.println(" point P1 in frame 3 : ");
-            System.out.println("       position :  "
-                               + pv.format(pointP3.getPosition().getX()) + " "
-                               + pv.format(pointP3.getPosition().getY()) + " "
-                               + pv.format(pointP3.getPosition().getZ()));
-            System.out.println("       velocity : "
-                               + pv.format(pointP3.getVelocity().getX()) + " "
-                               + pv.format(pointP3.getVelocity().getY()) + " "
-                               + pv.format(pointP3.getVelocity().getZ()));
+            System.out.println(" point P1 in frame 3 : " + pointP3);
 
             // combine translation and rotation
             // The origin of the frame 2 should become the point P3 in frame 3.
@@ -104,15 +73,7 @@ public class TransformAndFrames {
             PVCoordinates initialPoint = new PVCoordinates(new Vector3D(0,0,0), new Vector3D(0,0,0));
             PVCoordinates finalPoint = frame2.getTransformTo(frame3, new AbsoluteDate())
                                              .transformPVCoordinates(initialPoint);
-            System.out.println(" origin of frame 2 expressed in frame 3 : ");
-            System.out.println("       position :  "
-                               + pv.format(finalPoint.getPosition().getX()) + " "
-                               + pv.format(finalPoint.getPosition().getY()) + " "
-                               + pv.format(finalPoint.getPosition().getZ()));
-            System.out.println("       velocity : "
-                               + pv.format(finalPoint.getVelocity().getX()) + " "
-                               + pv.format(finalPoint.getVelocity().getY()) + " "
-                               + pv.format(finalPoint.getVelocity().getZ()));
+            System.out.println(" origin of frame 2 expressed in frame 3 : " + finalPoint);
 
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());

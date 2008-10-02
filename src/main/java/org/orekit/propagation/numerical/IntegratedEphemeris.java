@@ -118,6 +118,12 @@ class IntegratedEphemeris implements BoundedPropagator, ModeHandler, StepHandler
     /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate date)
         throws PropagationException {
+        if ((date.compareTo(minDate) < 0) || (date.compareTo(maxDate) > 0)) {
+            throw new PropagationException("out of range date for ephemerides: {0}",
+                                           new Object[] {
+                                               date
+                                           });
+        }
         model.setInterpolatedTime(date.durationFrom(startDate));
         final double[] state = model.getInterpolatedState();
 

@@ -26,6 +26,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.ElevationDetector;
@@ -62,7 +63,7 @@ public class VisibilityCheck {
             Orbit initialOrbit = new KeplerianOrbit(pvCoordinates, inertialFrame, initialDate, mu);
 
             // Propagator : consider a simple keplerian motion (could be more elaborate)
-            KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
+            Propagator kepler = new KeplerianPropagator(initialOrbit);
 
             // Earth and frame  
             double ae =  6378137.0; // equatorial radius in meter
@@ -83,10 +84,10 @@ public class VisibilityCheck {
             final EventDetector sta1Visi = new VisibilityDetector(maxcheck, elevation, sta1Frame);
 
             // Add event to be detected
-            propagator.addEventDetector(sta1Visi);
+            kepler.addEventDetector(sta1Visi);
 
             // Extrapolate from the initial date to the first raising or until the fixed duration
-            SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initialDate, 1500.));
+            SpacecraftState finalState = kepler.propagate(new AbsoluteDate(initialDate, 1500.));
 
             System.out.println(" Final state : " + finalState.getDate());
 
