@@ -103,7 +103,7 @@ public class DataDirectoryCrawler {
 
         } finally {
             rootInFileSystem = fsRoot;
-            rootInClasspath  = cpRoot;            
+            rootInClasspath  = cpRoot;
         }
 
     }
@@ -116,7 +116,7 @@ public class DataDirectoryCrawler {
      */
     private void checkRoot(final File root, final String name)
         throws OrekitException {
-        if ((root == null) || !root.exists()) {           
+        if ((root == null) || !root.exists()) {
             throw new OrekitException("data root directory {0} does not exist",
                                       new Object[] {
                                           name
