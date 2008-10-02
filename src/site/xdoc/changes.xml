@@ -22,6 +22,9 @@
   <body>
     <release version="4.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="add" due-to="Francesco Coccoluto">
+        Added italian localization for error messages.
+      </action>
       <action dev="luc" type="add" due-to="Derek Surka">
         Added support for mean motion first and second derivatives fields in TLE.
       </action>
