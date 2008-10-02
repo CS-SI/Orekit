@@ -95,7 +95,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
     private final SortedSet<TimeStamped> ephemeris;
 
     /** Body type in DE 405 files. */
-    private final DE405FilesLoader.EphemerisType type;
+    private final JPLEphemeridesLoader.EphemerisType type;
 
     /** Current Chebyshev model. */
     private PosVelChebyshev model;
@@ -113,7 +113,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * @param frameName name to use for the body-centered frame
      */
     private SolarSystemBody(final double gm, final Frame definingFrame,
-                            final DE405FilesLoader.EphemerisType type,
+                            final JPLEphemeridesLoader.EphemerisType type,
                             final String frameName) {
         super(gm, frameName, definingFrame);
         this.ephemeris     = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
@@ -176,10 +176,10 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
         // existing ephemeris (if any) is too far from current date
         // load a new part of ephemeris, centered around specified date
-        final DE405FilesLoader loader = new DE405FilesLoader(type, date);
+        final JPLEphemeridesLoader loader = new JPLEphemeridesLoader(type, date);
         ephemeris.addAll(loader.loadEphemerides());
         earthMoonMassRatio = loader.getEarthMoonMassRatio();
-        final AbsoluteDate before = new AbsoluteDate(date, -loader.getChunksDuration());
+        final AbsoluteDate before = new AbsoluteDate(date, -loader.getMaxChunksDuration());
 
         // second try, searching newly loaded part designed to bracket date
         for (final Iterator<TimeStamped> iterator = ephemeris.tailSet(before).iterator();
@@ -327,7 +327,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
             new SolarSystemBody(SUN_GM + MERCURY_GM + VENUS_GM + EARTH_GM + MOON_GM + MARS_GM +
                                 JUPITER_GM + SATURN_GM + URANUS_GM + NEPTUNE_GM + PLUTO_GM,
                                 SolarSystemBody.getEarthMoonBarycenter().getFrame(),
-                                DE405FilesLoader.EphemerisType.EARTH_MOON,
+                                JPLEphemeridesLoader.EphemerisType.EARTH_MOON,
                                 "solar system centered EME2000") {
 
                 /** Serializable UID. */
@@ -365,7 +365,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
         public static final SolarSystemBody INSTANCE =
             new SolarSystemBody(SUN_GM,
                                 SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                DE405FilesLoader.EphemerisType.SUN,
+                                JPLEphemeridesLoader.EphemerisType.SUN,
                                 "Sun centered EME2000");
 
         /** Private constructor.
@@ -389,7 +389,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
         public static final SolarSystemBody INSTANCE =
             new SolarSystemBody(MERCURY_GM,
                                 SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                DE405FilesLoader.EphemerisType.MERCURY,
+                                JPLEphemeridesLoader.EphemerisType.MERCURY,
                                 "Mercury centered EME2000");
 
         /** Private constructor.
@@ -413,7 +413,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
         public static final SolarSystemBody INSTANCE =
             new SolarSystemBody(VENUS_GM,
                                 SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                DE405FilesLoader.EphemerisType.VENUS,
+                                JPLEphemeridesLoader.EphemerisType.VENUS,
                                 "Venus centered EME2000");
 
         /** Private constructor.
@@ -436,7 +436,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
         /** Unique instance. */
         public static final SolarSystemBody INSTANCE =
             new SolarSystemBody(EARTH_GM + MOON_GM, Frame.getEME2000(),
-                                DE405FilesLoader.EphemerisType.MOON,
+                                JPLEphemeridesLoader.EphemerisType.MOON,
                                 "Earth-Moon centered EME2000") {
 
                 /** Serializable UID. */
@@ -519,7 +519,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
         public static final SolarSystemBody INSTANCE =
             new SolarSystemBody(MOON_GM,
                                 SolarSystemBody.getEarth().getFrame(),
-                                DE405FilesLoader.EphemerisType.MOON,
+                                JPLEphemeridesLoader.EphemerisType.MOON,
                                 "Moon centered EME2000");
 
         /** Private constructor.
@@ -543,7 +543,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
         public static final SolarSystemBody INSTANCE =
             new SolarSystemBody(MARS_GM,
                                 SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                DE405FilesLoader.EphemerisType.MARS,
+                                JPLEphemeridesLoader.EphemerisType.MARS,
                                 "Mars centered EME2000");
 
         /** Private constructor.
@@ -567,7 +567,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
         public static final SolarSystemBody INSTANCE =
             new SolarSystemBody(JUPITER_GM,
                                 SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                DE405FilesLoader.EphemerisType.JUPITER,
+                                JPLEphemeridesLoader.EphemerisType.JUPITER,
                                 "Jupiter centered EME2000");
 
         /** Private constructor.
@@ -591,7 +591,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
         public static final SolarSystemBody INSTANCE =
             new SolarSystemBody(SATURN_GM,
                                 SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                DE405FilesLoader.EphemerisType.SATURN,
+                                JPLEphemeridesLoader.EphemerisType.SATURN,
                                 "Saturn centered EME2000");
 
         /** Private constructor.
@@ -615,7 +615,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
         public static final SolarSystemBody INSTANCE =
             new SolarSystemBody(URANUS_GM,
                                 SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                DE405FilesLoader.EphemerisType.URANUS,
+                                JPLEphemeridesLoader.EphemerisType.URANUS,
                                 "Uranus centered EME2000");
 
         /** Private constructor.
@@ -639,7 +639,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
         public static final SolarSystemBody INSTANCE =
             new SolarSystemBody(NEPTUNE_GM,
                                 SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                DE405FilesLoader.EphemerisType.NEPTUNE,
+                                JPLEphemeridesLoader.EphemerisType.NEPTUNE,
                                 "Neptune centered EME2000");
 
         /** Private constructor.
@@ -663,7 +663,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
         public static final SolarSystemBody INSTANCE =
             new SolarSystemBody(PLUTO_GM,
                                 SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                DE405FilesLoader.EphemerisType.PLUTO,
+                                JPLEphemeridesLoader.EphemerisType.PLUTO,
                                 "Pluto centered EME2000");
 
         /** Private constructor.
