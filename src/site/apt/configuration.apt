@@ -99,14 +99,15 @@ configuration parameters
 * Supported data files
 
   The data files supported by Orekit are described in the following table, where the <#>
-  character represent any digit. The <[.gz]> part at the end of all naming patterns
-  means that a <.gz> suffix can be appended, in which case the files are considered to
-  be compressed with gzip. Compressed files are uncompressed in memory upon reading (the
-  compressed files are preserved on disk). Compressing text-based files like bulletinB
-  or EOPC04 saves a lot of disk space, but compressing the JPL binary files does almost
-  not save anything. Using compressed files for a classpath tree stored within a jar file
-  is also irrelevant as jar files are themselves compressed and stacking compression
-  algorithm only slows down reading speed without any disk space gain.
+  character represents any digit and <(m/p)> represents either the m character or the p
+  character. The <[.gz]> part at the end of all naming patterns means that a <.gz> suffix
+  can be appended, in which case the files are considered to be compressed with gzip.
+  Compressed files are uncompressed in memory upon reading (the compressed files are
+  preserved on disk). Compressing text-based files like bulletinB or EOPC04 saves a lot
+  of disk space, but compressing the JPL binary files does almost not save anything.
+  Using compressed files for a classpath tree stored within a jar file is also irrelevant
+  as jar files are themselves compressed and stacking compression algorithm only slows
+  down reading speed without any disk space gain.
 
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
 |       file naming pattern       |      format     |               data type              |                            source                          |
@@ -117,7 +118,9 @@ configuration parameters
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
 |      eopc04_IAU2000.##[.gz]     | IERS EOP 05 C04 | yearly Earth Orientation Parameters  |{{http://www.iers.org/MainDisp.csl?pid=36-25788&prodid=179}}|
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
-|         unxp####.405[.gz]       |  DE 405 binary  |    JPL DE 405 planets ephemerides    |    {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/unix/de405}}   |
+|       unx(m/p)####.405[.gz]     |  DE 405 binary  |    JPL DE 405 planets ephemerides    |    {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/unix/de405}}   |
+*---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
+|       unx(m/p)####.406[.gz]     |  DE 406 binary  |    JPL DE 406 planets ephemerides    |    {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/unix/de406}}   |
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
 supported data files
 
