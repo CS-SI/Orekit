@@ -42,7 +42,7 @@ Overview
 
     * transparent handling of IERS Earth Orientation Parameters
 
-    * transparent handling of JPL DE 405 ephemerides
+    * transparent handling of JPL DE 405 and DE 406 ephemerides
 
     * transforms including kinematic combination effects
 
