@@ -75,7 +75,7 @@ public class VisibilityCheck {
             final double longitude = Math.toRadians(45.);
             final double latitude  = Math.toRadians(25.);
             final double altitude  = 0.;
-            final GeodeticPoint station1 = new GeodeticPoint(longitude, latitude, altitude);
+            final GeodeticPoint station1 = new GeodeticPoint(latitude, longitude, altitude);
             final TopocentricFrame sta1Frame = new TopocentricFrame(earth, station1, "station1");
 
             // Event definition 

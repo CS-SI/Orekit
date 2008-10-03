@@ -71,7 +71,7 @@ public class TopocentricFrameTest extends TestCase {
     /** Test topocentric frame at pole (longitude 0, latitude 90, altitude 0) */
     public void testPole() {
         
-        final GeodeticPoint point = new GeodeticPoint(0., Math.PI/2., 0.);
+        final GeodeticPoint point = new GeodeticPoint(Math.PI/2., 0., 0.);
         final TopocentricFrame topoFrame = new TopocentricFrame(earthSpheric, point, "north pole");
         
         // Check that frame directions are aligned
@@ -87,11 +87,11 @@ public class TopocentricFrameTest extends TestCase {
     public void testNormalLatitudes() {
         
         // First point at latitude 45°
-        final GeodeticPoint point1 = new GeodeticPoint(Math.toRadians(30.), Math.toRadians(45.), 0.);
+        final GeodeticPoint point1 = new GeodeticPoint(Math.toRadians(45.), Math.toRadians(30.), 0.);
         final TopocentricFrame topoFrame1 = new TopocentricFrame(earthSpheric, point1, "lat 45");
         
         // Second point at latitude -45° and same longitude
-        final GeodeticPoint point2 = new GeodeticPoint(Math.toRadians(30.), Math.toRadians(-45.), 0.);
+        final GeodeticPoint point2 = new GeodeticPoint(Math.toRadians(-45.), Math.toRadians(30.), 0.);
         final TopocentricFrame topoFrame2 = new TopocentricFrame(earthSpheric, point2, "lat -45");
       
         // Check that frame North and Zenith directions are all normal to each other, and East are the same
@@ -108,11 +108,11 @@ public class TopocentricFrameTest extends TestCase {
     public void testOppositeLongitudes() {
         
         // First point at latitude 45°
-        final GeodeticPoint point1 = new GeodeticPoint(Math.toRadians(30.), Math.toRadians(45.), 0.);
+        final GeodeticPoint point1 = new GeodeticPoint(Math.toRadians(45.), Math.toRadians(30.), 0.);
         final TopocentricFrame topoFrame1 = new TopocentricFrame(earthSpheric, point1, "lon 30");
         
         // Second point at latitude -45° and same longitude
-        final GeodeticPoint point2 = new GeodeticPoint(Math.toRadians(210.), Math.toRadians(45.), 0.);
+        final GeodeticPoint point2 = new GeodeticPoint(Math.toRadians(45.), Math.toRadians(210.), 0.);
         final TopocentricFrame topoFrame2 = new TopocentricFrame(earthSpheric, point2, "lon 210");
       
         // Check that frame North and Zenith directions are all normal to each other, 
@@ -131,11 +131,11 @@ public class TopocentricFrameTest extends TestCase {
         throws OrekitException {
         
         // First point at latitude 45° and longitude 30
-        final GeodeticPoint point1 = new GeodeticPoint(Math.toRadians(30.), Math.toRadians(45.), 0.);
+        final GeodeticPoint point1 = new GeodeticPoint(Math.toRadians(45.), Math.toRadians(30.), 0.);
         final TopocentricFrame topoFrame1 = new TopocentricFrame(earthSpheric, point1, "lon 30");
         
         // Second point at latitude -45° and longitude 210
-        final GeodeticPoint point2 = new GeodeticPoint(Math.toRadians(210.), Math.toRadians(-45.), 0.);
+        final GeodeticPoint point2 = new GeodeticPoint(Math.toRadians(-45.), Math.toRadians(210.), 0.);
         final TopocentricFrame topoFrame2 = new TopocentricFrame(earthSpheric, point2, "lon 210");
       
         // Check that frame Zenith directions are opposite to each other, 
@@ -154,11 +154,11 @@ public class TopocentricFrameTest extends TestCase {
         throws OrekitException {
         
         // Surface point at latitude 45°
-        final GeodeticPoint point = new GeodeticPoint(Math.toRadians(30.), Math.toRadians(45.), 0.);
+        final GeodeticPoint point = new GeodeticPoint(Math.toRadians(45.), Math.toRadians(30.), 0.);
         final TopocentricFrame topoFrame = new TopocentricFrame(earthSpheric, point, "lon 30 lat 45");
         
         // Point at 800 km over zenith
-        final GeodeticPoint satPoint = new GeodeticPoint(Math.toRadians(30.), Math.toRadians(45.), 800000.); 
+        final GeodeticPoint satPoint = new GeodeticPoint(Math.toRadians(45.), Math.toRadians(30.), 800000.); 
         //System.out.println(  "sat lon = " + Math.toDegrees(satPoint.getLongitude()) 
         //                   + " sat lat (deg) = " + Math.toDegrees(satPoint.getLatitude())
         //                   + " sat alt = " + satPoint.getAltitude()) ;
@@ -179,12 +179,12 @@ public class TopocentricFrameTest extends TestCase {
         throws OrekitException {
         
         // Surface point at latitude 0
-        final GeodeticPoint point = new GeodeticPoint(Math.toRadians(30.), Math.toRadians(0.), 0.);
+        final GeodeticPoint point = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(30.), 0.);
         final TopocentricFrame topoFrame = new TopocentricFrame(earthSpheric, point, "lon 30 lat 0");
         
         // Point at infinite, separated by +20 deg in longitude
         // *****************************************************
-        GeodeticPoint infPoint = new GeodeticPoint(Math.toRadians(50.), Math.toRadians(0.), 1000000000.);
+        GeodeticPoint infPoint = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(50.), 1000000000.);
         
         // Azimuth = pi/2
         double azi = topoFrame.getAzimuth(earthSpheric.transform(infPoint), earthSpheric.getBodyFrame(), date);
@@ -198,7 +198,7 @@ public class TopocentricFrameTest extends TestCase {
 
         // Point at infinite, separated by -20 deg in longitude
         // *****************************************************
-        infPoint = new GeodeticPoint(Math.toRadians(10.), Math.toRadians(0.), 1000000000.);
+        infPoint = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(10.), 1000000000.);
         
         // Azimuth = pi/2
         azi = topoFrame.getAzimuth(earthSpheric.transform(infPoint), earthSpheric.getBodyFrame(), date);
@@ -217,12 +217,12 @@ public class TopocentricFrameTest extends TestCase {
         throws OrekitException {
         
         // Surface point at latitude 0
-        final GeodeticPoint point = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(89.999), 0.);
+        final GeodeticPoint point = new GeodeticPoint(Math.toRadians(89.999), Math.toRadians(0.), 0.);
         final TopocentricFrame topoFrame = new TopocentricFrame(earthSpheric, point, "lon 0 lat 90");
         
         // Point at 30 deg longitude
         // **************************
-        GeodeticPoint satPoint = new GeodeticPoint(Math.toRadians(30.), Math.toRadians(28.), 800000.);
+        GeodeticPoint satPoint = new GeodeticPoint(Math.toRadians(28.), Math.toRadians(30.), 800000.);
         
         // Azimuth = 
         double azi = topoFrame.getAzimuth(earthSpheric.transform(satPoint), earthSpheric.getBodyFrame(), date);
@@ -231,7 +231,7 @@ public class TopocentricFrameTest extends TestCase {
  
         // Point at -30 deg longitude
         // ***************************
-        satPoint = new GeodeticPoint(Math.toRadians(-30.), Math.toRadians(28.), 800000.);
+        satPoint = new GeodeticPoint(Math.toRadians(28.), Math.toRadians(-30.), 800000.);
         
         // Azimuth = 
         azi = topoFrame.getAzimuth(earthSpheric.transform(satPoint), earthSpheric.getBodyFrame(), date);
@@ -245,7 +245,7 @@ public class TopocentricFrameTest extends TestCase {
         throws OrekitException {
         
         // Surface point at latitude 45, longitude 5
-        final GeodeticPoint point = new GeodeticPoint(Math.toRadians(5.), Math.toRadians(45.), 0.);
+        final GeodeticPoint point = new GeodeticPoint(Math.toRadians(45.), Math.toRadians(5.), 0.);
         final TopocentricFrame topoFrame = new TopocentricFrame(earthSpheric, point, "lon 5 lat 45");
         
         // Point at 30 deg longitude
@@ -298,13 +298,13 @@ public class TopocentricFrameTest extends TestCase {
         
         // Satellite point
         // Caution !!! Sat point target shall be the same whatever earth shape chosen !!
-        final GeodeticPoint satPointGeo = new GeodeticPoint(Math.toRadians(15.), Math.toRadians(30.), 800000.);
+        final GeodeticPoint satPointGeo = new GeodeticPoint(Math.toRadians(30.), Math.toRadians(15.), 800000.);
         final Vector3D satPoint = earthElliptic.transform(satPointGeo);
 
         // ****************************
         // Test at equatorial position
         // ****************************
-        GeodeticPoint point = new GeodeticPoint(Math.toRadians(5.), Math.toRadians(0.), 0.);
+        GeodeticPoint point = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(5.), 0.);
         TopocentricFrame topoElliptic = new TopocentricFrame(earthElliptic, point, "elliptic, equatorial lon 5");
         TopocentricFrame topoSpheric = new TopocentricFrame(earthSpheric, point, "spheric, equatorial lon 5");
         
@@ -324,7 +324,7 @@ public class TopocentricFrameTest extends TestCase {
         
         // Infinite point separated by -20 deg in longitude
         // *************************************************
-        GeodeticPoint infPointGeo = new GeodeticPoint(Math.toRadians(-15.), Math.toRadians(0.), 1000000000.);
+        GeodeticPoint infPointGeo = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(-15.), 1000000000.);
         Vector3D infPoint = earthElliptic.transform(infPointGeo);
         
         // Azimuth = pi/2
@@ -337,7 +337,7 @@ public class TopocentricFrameTest extends TestCase {
 
         // Infinite point separated by +20 deg in longitude
         // *************************************************
-        infPointGeo = new GeodeticPoint(Math.toRadians(25.), Math.toRadians(0.), 1000000000.);
+        infPointGeo = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(25.), 1000000000.);
         infPoint = earthElliptic.transform(infPointGeo);
         
         // Azimuth = pi/2
@@ -351,7 +351,7 @@ public class TopocentricFrameTest extends TestCase {
         // ************************
         // Test at polar position
         // ************************
-        point = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(89.999), 0.);
+        point = new GeodeticPoint(Math.toRadians(89.999), Math.toRadians(0.), 0.);
         topoSpheric  = new TopocentricFrame(earthSpheric, point, "lon 0 lat 90");
         topoElliptic = new TopocentricFrame(earthElliptic, point, "lon 0 lat 90");
         
@@ -373,7 +373,7 @@ public class TopocentricFrameTest extends TestCase {
         // *********************
         // Test at any position
         // *********************
-        point = new GeodeticPoint(Math.toRadians(30.), Math.toRadians(60), 0.);
+        point = new GeodeticPoint(Math.toRadians(60), Math.toRadians(30.), 0.);
         topoSpheric  = new TopocentricFrame(earthSpheric, point, "lon 10 lat 45");
         topoElliptic = new TopocentricFrame(earthElliptic, point, "lon 10 lat 45");
         

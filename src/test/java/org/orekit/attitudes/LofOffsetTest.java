@@ -99,7 +99,7 @@ public class LofOffsetTest extends TestCase {
         // ************************************  
         // Elliptic earth shape
         final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
-        final GeodeticPoint geoTargetITRF2005 = new GeodeticPoint(Math.toRadians(1.26), Math.toRadians(43.36), 600.);
+        final GeodeticPoint geoTargetITRF2005 = new GeodeticPoint(Math.toRadians(43.36), Math.toRadians(1.26), 600.);
             
         // Attitude law definition from geodetic point target 
         final TargetPointing targetLaw = new TargetPointing(geoTargetITRF2005, earthShape);
@@ -135,7 +135,7 @@ public class LofOffsetTest extends TestCase {
         throws OrekitException, CardanEulerSingularityException {
         
         // Create target point and target pointing law towards that point
-        final GeodeticPoint targetDef  = new GeodeticPoint(Math.toRadians(-40.), Math.toRadians(5.), 0.);
+        final GeodeticPoint targetDef  = new GeodeticPoint(Math.toRadians(5.), Math.toRadians(-40.), 0.);
         final TargetPointing targetLaw = new TargetPointing(targetDef, earthSpheric);
        
         // Get roll, pitch, yaw angles corresponding to this pointing law

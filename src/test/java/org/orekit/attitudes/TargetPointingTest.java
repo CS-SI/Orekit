@@ -81,7 +81,7 @@ public class TargetPointingTest extends TestCase {
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
                 
         // Target definition as a geodetic point AND as a position/velocity vector
-        GeodeticPoint geoTargetITRF2005C = new GeodeticPoint(Math.toRadians(1.26), Math.toRadians(43.36), 600.);
+        GeodeticPoint geoTargetITRF2005C = new GeodeticPoint(Math.toRadians(43.36), Math.toRadians(1.26), 600.);
         PVCoordinates pvTargetITRF2005C = new PVCoordinates(earthShape.transform(geoTargetITRF2005C), Vector3D.ZERO);
             
         // Attitude law definition from geodetic point target 
@@ -125,7 +125,7 @@ public class TargetPointingTest extends TestCase {
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
                 
         // Target definition as a geodetic point 
-        GeodeticPoint geoTargetITRF2005 = new GeodeticPoint(Math.toRadians(1.26), Math.toRadians(43.36), 600.);
+        GeodeticPoint geoTargetITRF2005 = new GeodeticPoint(Math.toRadians(43.36), Math.toRadians(1.26), 600.);
             
         //  Attitude law definition 
         TargetPointing geoTargetAttitudeLaw = new TargetPointing(geoTargetITRF2005, earthShape);
@@ -228,7 +228,7 @@ public class TargetPointingTest extends TestCase {
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
                 
         // Create target pointing attitude law 
-        GeodeticPoint geoTarget = new GeodeticPoint(Math.toRadians(1.26), Math.toRadians(43.36), 600.);
+        GeodeticPoint geoTarget = new GeodeticPoint(Math.toRadians(43.36), Math.toRadians(1.26), 600.);
         TargetPointing targetAttitudeLaw = new TargetPointing(geoTarget, earthShape);
         
         //  Satellite position
@@ -296,8 +296,8 @@ public class TargetPointingTest extends TestCase {
       
         // Create target pointing attitude law with target 5° from nadir target 
         // ******************************************************************** 
-        GeodeticPoint geoTarget = new GeodeticPoint(geoNadirObserved.getLongitude() - Math.toRadians(5),
-                                                    geoNadirObserved.getLatitude(), geoNadirObserved.getAltitude());
+        GeodeticPoint geoTarget = new GeodeticPoint(geoNadirObserved.getLatitude(),
+                                                    geoNadirObserved.getLongitude() - Math.toRadians(5), geoNadirObserved.getAltitude());
         PVCoordinates pvTargetITRF2005C = new PVCoordinates(earthShape.transform(geoTarget), Vector3D.ZERO);
         TargetPointing targetLaw = new TargetPointing(frameITRF2005, pvTargetITRF2005C);
         

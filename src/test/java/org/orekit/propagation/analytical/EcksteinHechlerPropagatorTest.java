@@ -616,7 +616,7 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
         final OneAxisEllipsoid earthShape =
             new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, Frame.getITRF2005());
         final TopocentricFrame topo =
-            new TopocentricFrame(earthShape, new GeodeticPoint(-2.962, 0.389, 0), null);
+            new TopocentricFrame(earthShape, new GeodeticPoint(0.389, -2.962, 0), null);
         propagator.addEventDetector(new ElevationDetector(60, 0.09, topo));
         AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);

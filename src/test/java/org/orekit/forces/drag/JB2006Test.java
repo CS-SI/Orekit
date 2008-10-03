@@ -224,7 +224,7 @@ public class JB2006Test extends TestCase {
         GeodeticPoint point;
         for (int i = 0; i<367; i++) {
             date = new AbsoluteDate(date, 86400);
-            point = new GeodeticPoint(0, Math.toRadians(40), 300*1000);
+            point = new GeodeticPoint(Math.toRadians(40), 0, 300*1000);
             pos = earth.transform(point);
             roJb = jb.getDensity(date, pos, Frame.getEME2000());
             roDtm = dtm.getDensity(date, pos, Frame.getEME2000());

@@ -102,7 +102,7 @@ public class OneAxisEllipsoidTest extends TestCase {
             new OneAxisEllipsoid(6378137.0, 1.0 / 298.257222101,
                                  Frame.getITRF2005());
         GeodeticPoint nsp =
-            new GeodeticPoint(0.0423149994747243, 0.852479154923577, 111.6);
+            new GeodeticPoint(0.852479154923577, 0.0423149994747243, 111.6);
         Vector3D p = model.transform(nsp);
         assertEquals(4201866.69291890, p.getX(), 1.0e-6);
         assertEquals(177908.184625686, p.getY(), 1.0e-6);
@@ -189,7 +189,7 @@ public class OneAxisEllipsoidTest extends TestCase {
         Vector3D pSatItrf  = pvSatItrf.getPosition();
         
         // Test first visible surface points
-        GeodeticPoint geoPoint = new GeodeticPoint(Math.toRadians(60.), Math.toRadians(70.), 0.);
+        GeodeticPoint geoPoint = new GeodeticPoint(Math.toRadians(70.), Math.toRadians(60.), 0.);
         Vector3D pointItrf     = earth.transform(geoPoint);
         Vector3D direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         Line line = new Line(pSatItrf, direction);
@@ -198,7 +198,7 @@ public class OneAxisEllipsoidTest extends TestCase {
         assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // Test second visible surface points
-        geoPoint = new GeodeticPoint(Math.toRadians(-120.), Math.toRadians(65.), 0.);
+        geoPoint = new GeodeticPoint(Math.toRadians(65.), Math.toRadians(-120.), 0.);
         pointItrf     = earth.transform(geoPoint);
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
@@ -207,7 +207,7 @@ public class OneAxisEllipsoidTest extends TestCase {
         assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // Test non visible surface points
-        geoPoint = new GeodeticPoint(Math.toRadians(60.), Math.toRadians(30.), 0.);
+        geoPoint = new GeodeticPoint(Math.toRadians(30.), Math.toRadians(60.), 0.);
         pointItrf     = earth.transform(geoPoint);
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
@@ -231,7 +231,7 @@ public class OneAxisEllipsoidTest extends TestCase {
         pSatItrf  = pvSatItrf.getPosition();
         
         // Test first visible surface points
-        geoPoint = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(5.), 0.);
+        geoPoint = new GeodeticPoint(Math.toRadians(5.), Math.toRadians(0.), 0.);
         pointItrf     = earth.transform(geoPoint);
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
@@ -246,7 +246,7 @@ public class OneAxisEllipsoidTest extends TestCase {
         assertTrue(Math.abs(geoInter.getLatitude() - geoInter2.getLatitude()) > Math.toRadians(0.1));
         
         // Test second visible surface points
-        geoPoint = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(-5.), 0.);
+        geoPoint = new GeodeticPoint(Math.toRadians(-5.), Math.toRadians(0.), 0.);
         pointItrf     = earth.transform(geoPoint);
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
@@ -255,7 +255,7 @@ public class OneAxisEllipsoidTest extends TestCase {
         assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // Test non visible surface points
-        geoPoint = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(40.), 0.);
+        geoPoint = new GeodeticPoint(Math.toRadians(40.), Math.toRadians(0.), 0.);
         pointItrf     = earth.transform(geoPoint);
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
@@ -277,7 +277,7 @@ public class OneAxisEllipsoidTest extends TestCase {
         pSatItrf  = pvSatItrf.getPosition();
         
         // Test first visible surface points
-        geoPoint = new GeodeticPoint(Math.toRadians(90.), Math.toRadians(40.), 0.);
+        geoPoint = new GeodeticPoint(Math.toRadians(40.), Math.toRadians(90.), 0.);
         pointItrf     = earth.transform(geoPoint);
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
@@ -286,7 +286,7 @@ public class OneAxisEllipsoidTest extends TestCase {
         assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // Test second visible surface points
-        geoPoint = new GeodeticPoint(Math.toRadians(90.), Math.toRadians(60.), 0.);
+        geoPoint = new GeodeticPoint(Math.toRadians(60.), Math.toRadians(90.), 0.);
         pointItrf     = earth.transform(geoPoint);
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
@@ -295,7 +295,7 @@ public class OneAxisEllipsoidTest extends TestCase {
         assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // Test non visible surface points
-        geoPoint = new GeodeticPoint(Math.toRadians(90.), Math.toRadians(0.), 0.);
+        geoPoint = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(90.), 0.);
         pointItrf     = earth.transform(geoPoint);
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);

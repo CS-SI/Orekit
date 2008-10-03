@@ -45,6 +45,10 @@
         some false positive to be generated.
       </action>
       <action dev="luc" type="update">
+        The GeodeticPoint constructor arguments has been reordered to reflect more
+        traditional usage, latitude coming before longitude.
+      </action>
+      <action dev="luc" type="update">
         The low accuracy Sun model based on Newcomb theory and the Moon model based
         on Brown theory have been withdrawn as they are superseded by the support of JPL
         DE 405 binary ephemerides files.

@@ -195,7 +195,7 @@ public class OneAxisEllipsoid implements BodyShape {
 
         final double lambda = Math.atan2(iy, ix);
         final double phi    = Math.atan2(iz, g2 * Math.sqrt(ix * ix + iy * iy));
-        return new GeodeticPoint(lambda, phi, 0.0);
+        return new GeodeticPoint(phi, lambda, 0.0);
 
     }
 
@@ -245,7 +245,7 @@ public class OneAxisEllipsoid implements BodyShape {
 
         // point at the center
         if (dist < (closeApproachThreshold * ae)) {
-            return new GeodeticPoint(0.0, 0.5 * Math.PI, -ae * Math.sqrt(1.0 - e2));
+            return new GeodeticPoint(0.5 * Math.PI, 0.0, -ae * Math.sqrt(1.0 - e2));
         }
 
         final double cz = r / dist;
@@ -266,7 +266,7 @@ public class OneAxisEllipsoid implements BodyShape {
 
         // point on the ellipse
         if (Math.abs(k) < (closeApproachThreshold * dist)) {
-            return new GeodeticPoint(lambda, phi, k);
+            return new GeodeticPoint(phi, lambda, k);
         }
 
         for (int iterations = 0; iterations < 100; ++iterations) {
@@ -346,7 +346,7 @@ public class OneAxisEllipsoid implements BodyShape {
             final double coeff = Math.sqrt(1.0 - e2 * sPhi * sPhi);
             if (dPhi < angularThreshold) {
                 // angular convergence reached
-                return new GeodeticPoint(lambda, phi,
+                return new GeodeticPoint(phi, lambda,
                                          r * cPhi + z * sPhi - ae * coeff);
             }
 

@@ -66,70 +66,58 @@ public class TopocentricFrame extends Frame {
 
     /** Get the zenith direction of topocentric frame, expressed in parent shape frame.
      * <p>The zenith direction is defined as the normal to local horizontal plane.</p>
-     * @return zenith direction
+     * @return unit vector in the zenith direction
      * @see #getNadir()
      */
     public Vector3D getZenith() {
-
-        final double xZenith = Math.cos(point.getLongitude()) * Math.cos(point.getLatitude());
-        final double yZenith = Math.sin(point.getLongitude()) * Math.cos(point.getLatitude());
-        final double zZenith = Math.sin(point.getLatitude());
-
-        return  new Vector3D(xZenith, yZenith, zZenith);
+        return point.getZenith();
     }
 
     /** Get the nadir direction of topocentric frame, expressed in parent shape frame.
      * <p>The nadir direction is the opposite of zenith direction.</p>
-     * @return nadir direction
+     * @return unit vector in the nadir direction
      * @see #getZenith()
      */
     public Vector3D getNadir() {
-        return getZenith().negate();
+        return point.getNadir();
     }
 
    /** Get the north direction of topocentric frame, expressed in parent shape frame.
      * <p>The north direction is defined in the horizontal plane
      * (normal to zenith direction) and following the local meridian.</p>
-     * @return north direction
+     * @return unit vector in the north direction
      * @see #getSouth()
      */
     public Vector3D getNorth() {
-
-        final double xNorth = -Math.cos(point.getLongitude()) * Math.sin(point.getLatitude());
-        final double yNorth = -Math.sin(point.getLongitude()) * Math.sin(point.getLatitude());
-        final double zNorth =  Math.cos(point.getLatitude());
-
-        return new Vector3D(xNorth, yNorth, zNorth);
+        return point.getNorth();
     }
 
     /** Get the south direction of topocentric frame, expressed in parent shape frame.
      * <p>The south direction is the opposite of north direction.</p>
-     * @return south direction
+     * @return unit vector in the south direction
      * @see #getNorth()
      */
     public Vector3D getSouth() {
-        return getNorth().negate();
+        return point.getSouth();
     }
 
     /** Get the east direction of topocentric frame, expressed in parent shape frame.
      * <p>The east direction is defined in the horizontal plane
      * in order to complete direct triangle (east, north, zenith).</p>
-     * @return east direction
+     * @return unit vector in the east direction
      * @see #getWest()
      */
     public Vector3D getEast() {
-        return new Vector3D(-Math.sin(point.getLongitude()),
-                            Math.cos(point.getLongitude()),
-                            0.);
+        return point.getEast();
     }
 
     /** Get the west direction of topocentric frame, expressed in parent shape frame.
      * <p>The west direction is the opposite of east direction.</p>
-     * @return west direction
+     * @return unit vector in the west direction
      * @see #getEast()
      */
     public Vector3D getWest() {
-        return getEast().negate();
+        return point.getWest();
     }
 
     /** Get the elevation of a point with regards to the local point.
