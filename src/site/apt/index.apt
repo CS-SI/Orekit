@@ -130,6 +130,8 @@ Overview
       * raising/setting with respect to a ground location
         (with customizable triggering elevation)
 
+      * altitude crossing
+
       * date
 
       * impulse maneuvers occurrence
