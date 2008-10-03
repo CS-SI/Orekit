@@ -127,7 +127,7 @@ Overview
 
       * apogee and perigee crossing
 
-      * raising/setting with respect to a topocentric frame
+      * raising/setting with respect to a ground location
         (with customizable triggering elevation)
 
       * date
