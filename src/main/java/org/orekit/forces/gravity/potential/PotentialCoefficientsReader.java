@@ -37,11 +37,11 @@ public abstract class PotentialCoefficientsReader {
 
     /** Error message for too large degree. */
     private static final String TOO_LARGE_DEGREE =
-        "too large degree (n = {0}), potential maximal degree is {1})";
+        "too large degree (n = {0}, potential maximal degree is {1})";
 
     /** Error message for too large order. */
     private static final String TOO_LARGE_ORDER =
-        "too large order (m = {0}), potential maximal order is {1})";
+        "too large order (m = {0}, potential maximal order is {1})";
 
     // CHECKSTYLE: stop VisibilityModifierCheck
 
