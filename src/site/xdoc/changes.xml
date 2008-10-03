@@ -25,6 +25,9 @@
       <action dev="pascal" type="fix">
         The ephemeris produced by numerical propagator now checks date validity in propagate method.
       </action>
+      <action dev="luc" type="add" due-to="Espen Bjorntvedt">
+        Added norse localization for error messages.
+      </action>
       <action dev="luc" type="add" due-to="Francesco Coccoluto">
         Added italian localization for error messages.
       </action>
