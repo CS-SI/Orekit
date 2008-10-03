@@ -34,7 +34,7 @@ Overview
 
     * frames hierarchy supporting fixed and time-dependent (or telemetry-dependent) frames
 
-    * predefined frames (EME2000, GCRF, ITRF2005 and intermediate frames, Veis, topocentric,
+    * predefined frames (EME2000/J2000, GCRF, ITRF2005 and intermediate frames, Veis, topocentric,
       Moon, Sun, planets, solar system barycenter, Earth-Moon barycenter)
 
     * user extensible (used operationally in real time with a set of about 60 frames on
