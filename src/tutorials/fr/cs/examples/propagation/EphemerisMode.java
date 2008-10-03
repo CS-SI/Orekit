@@ -19,20 +19,14 @@ package fr.cs.examples.propagation;
 
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.ForceModel;
-import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.UTCScale;
 
@@ -79,7 +73,7 @@ public class EphemerisMode {
 
             // Numerical propagation with no perturbation (only keplerian movement)
             // Using a very simple integrator with a fixed step: classical Runge-Kutta
-            double stepSize = 10.;  // the step is ten seconds
+            double stepSize = 10;  // the step is ten seconds
             FirstOrderIntegrator integrator = new ClassicalRungeKuttaIntegrator(stepSize);
             NumericalPropagator propagator = new NumericalPropagator(integrator);
 
@@ -91,28 +85,32 @@ public class EphemerisMode {
             propagator.setInitialState(initialState);
             
             // Propagation with storage of the results in an integrated ephemeris
-            SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initialDate, 6000.));
+            SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initialDate, 6000));
+
+            System.out.println(" Numerical propagation :");
+            System.out.println("  Final date : " + finalState.getDate());
+            System.out.println("  " + finalState.getOrbit());
+
+            // Getting the integrated ephemeris
             BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
             
             System.out.println(" Ephemeris defined from " + ephemeris.getMinDate() + " to " + ephemeris.getMaxDate());
             
-            AbsoluteDate intermediateDate = new AbsoluteDate(initialDate, 3000.);
+            System.out.println(" Ephemeris propagation :");
+            AbsoluteDate intermediateDate = new AbsoluteDate(initialDate, 3000);
             SpacecraftState intermediateState = ephemeris.propagate(intermediateDate);
             System.out.println("  date :  " + intermediateState.getDate());
             System.out.println("  " + intermediateState.getOrbit());
             
-            intermediateDate = new AbsoluteDate(initialDate, -214.);
+            intermediateDate = finalState.getDate();
             intermediateState = ephemeris.propagate(intermediateDate);
             System.out.println("  date :  " + intermediateState.getDate());
             System.out.println("  " + intermediateState.getOrbit());
             
-            intermediateDate = initialDate;
+            intermediateDate = new AbsoluteDate(initialDate, -1000);
             intermediateState = ephemeris.propagate(intermediateDate);
             System.out.println("  date :  " + intermediateState.getDate());
             System.out.println("  " + intermediateState.getOrbit());
-
-            EquinoctialOrbit orbini = new EquinoctialOrbit(initialOrbit);
-            System.out.println("  " + orbini.toString());
 
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());

@@ -55,7 +55,7 @@ public class VisibilityCheck {
 
             //  Initial state definition : date, orbit
             AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, UTCScale.getInstance());
-            double mu =  3.9860064e+14; // gravitation coefficient
+            double mu =  3.986004415e+14; // gravitation coefficient
             Frame inertialFrame = Frame.getEME2000(); // inertial frame for orbit definition
             Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
             Vector3D velocity  = new Vector3D(505.8479685, 942.7809215, 7435.922231);
@@ -86,7 +86,7 @@ public class VisibilityCheck {
             // Add event to be detected
             kepler.addEventDetector(sta1Visi);
 
-            // Extrapolate from the initial date to the first raising or until the fixed duration
+            // Propagate from the initial date to the first raising or for the fixed duration
             SpacecraftState finalState = kepler.propagate(new AbsoluteDate(initialDate, 1500.));
 
             System.out.println(" Final state : " + finalState.getDate());

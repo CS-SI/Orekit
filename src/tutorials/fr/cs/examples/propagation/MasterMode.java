@@ -52,7 +52,7 @@ public class MasterMode {
             Autoconfiguration.configureOrekit();
 
             // gravitation coefficient
-            double mu =  3.9860064e+14;
+            double mu =  3.986004415e+14;
 
             // inertial frame
             Frame inertialFrame = Frame.getEME2000();
@@ -75,7 +75,7 @@ public class MasterMode {
             // Initial state definition
             SpacecraftState initialState = new SpacecraftState(initialOrbit);
 
-            // Integrator
+            // Adaptive step integrator with a minimum step of 0.001 and a maximum step of 1000
             final double minStep = 0.001;
             final double maxstep = 1000.0;
             final double[] absoluteTolerance = {
@@ -96,7 +96,7 @@ public class MasterMode {
 
             // Force Model (reduced to perturbing gravity field)
             Frame ITRF2005 = Frame.getITRF2005(); // terrestrial frame at an arbitrary date
-            double ae  =  6378136.460; // equatorial radius in meter
+            double ae  =  6378137.; // equatorial radius in meter
             double c20 = -1.08262631303e-3; // J2 potential coefficient
             double[][] c = new double[3][1];
             c[0][0] = 0.0;

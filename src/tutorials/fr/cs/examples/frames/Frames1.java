@@ -18,18 +18,20 @@
 package fr.cs.examples.frames;
 
 import org.apache.commons.math.geometry.Rotation;
+import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
 import fr.cs.examples.Autoconfiguration;
 
-/** Orekit tutorial for transform and frames support.
- * <p>The aim of this tutorial is to manipulate transforms, frames and position and velocity coordinates.<p>
- * @author Fabien Maussion
+/** Orekit tutorial for frames support.
+ * <p>This tutorial shows a smart usage of frames and transforms.</p>
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
@@ -41,39 +43,61 @@ public class Frames1 {
             // configure Orekit
             Autoconfiguration.configureOrekit();
 
-            // initial point in frame 1 :
-            Frame frame1 = new Frame(Frame.getEME2000(), Transform.IDENTITY, "frame 1");
-            PVCoordinates pointP1 = new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_I);
-            System.out.println(" point P1 in frame 1 : " + pointP1);
+            // The local orbital frame (LOF) has its origin at the satellite center of gravity (CoG).
+            // It is derived from EME2000 frame by an unknown transform which relies at some date on
+            // the position and the velocity to be found.
+            // Let's initialize this transform by the identity transform.
+            Frame lofFrame = new Frame(Frame.getEME2000(), Transform.IDENTITY, "LOF");
 
-            // translation transform
-            // We want to translate frame1 to the right at the speed of 1 so that P1 is fixed in it.
-            Transform frame1toframe2 = new Transform(Vector3D.MINUS_I, Vector3D.MINUS_I);
-            // in vectorial transform convention, the translation is actually minusI !
-            Frame frame2 = new Frame(frame1, frame1toframe2, "frame 2");
-            PVCoordinates pointP2 = frame1.getTransformTo(frame2, new AbsoluteDate())
-                                          .transformPVCoordinates(pointP1);
-            System.out.println(" point P1 in frame 2 : " + pointP2);
+            // Considering the following Computing/Measurement date in UTC time scale
+            TimeScale utc = UTCScale.getInstance();
+            AbsoluteDate date = new AbsoluteDate(2008, 10, 01, 12, 00, 00.000, utc);
+            
+            // The satellite frame, with origin the CoG, is related to the LOF.
+            // The satellite attitude with respect to LOF is known at some date
+            // by the (roll, pitch, yaw) angles according to the guidance laws.
+            // Let's assume the following values at the date :
+            double roll  = Math.toRadians(0);
+            double pitch = Math.toRadians(0);
+            double yaw   = Math.toRadians(0);
 
-            // rotation transform
-            // We want to rotate frame1 of minus PI/2
-            // so that P1 has now for coordinates :
-            // position : (0,1,0) and velocity : (-2, 1, 0)
-            Rotation R = new Rotation(Vector3D.PLUS_K, Math.PI/2);
-            // in vectorial transform convention, the rotation is actually PLUS pi/2 !
-            Transform frame1toframe3 = new Transform(R, new Vector3D(0, 0, -2));
-            Frame frame3 = new Frame(frame1, frame1toframe3, "frame 3");
-            PVCoordinates pointP3 = frame1.getTransformTo(frame3, new AbsoluteDate())
-                                          .transformPVCoordinates(pointP1);
-            System.out.println(" point P1 in frame 3 : " + pointP3);
+            // The transform between LOF and satellite frames at the date is defined by these rotation.
+            Transform loftosat = new Transform(new Rotation(RotationOrder.XYZ, roll, pitch, yaw));
 
-            // combine translation and rotation
-            // The origin of the frame 2 should become the point P3 in frame 3.
-            // Let's check this result by combining two transforms in the frame tree :
-            PVCoordinates initialPoint = new PVCoordinates(new Vector3D(0,0,0), new Vector3D(0,0,0));
-            PVCoordinates finalPoint = frame2.getTransformTo(frame3, new AbsoluteDate())
-                                             .transformPVCoordinates(initialPoint);
-            System.out.println(" origin of frame 2 expressed in frame 3 : " + finalPoint);
+            // The satellite CoG frame is defined with respect to the LOF
+            Frame cogFrame = new Frame(lofFrame, loftosat, "CoG");
+
+            // The GPS antenna frame can be defined from the satellite CoG frame by 2 transforms :
+            // a translation and a rotation
+            Vector3D translateGPS = new Vector3D(0, 0, 0);
+            Rotation rotateGPS = new Rotation(new Vector3D(1, 0, 0), Math.toRadians(0));
+            Frame gpsFrame = new Frame(cogFrame, new Transform(new Transform(translateGPS), new Transform(rotateGPS)), "GPS");
+
+            // Satellite position and velocity in ITRF2005 are measured by GPS antenna at the date
+            Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
+            Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
+            PVCoordinates pvgpsitrf2005 = new PVCoordinates(position, velocity);
+
+            // The transform between GPS antenna and ITRF2005 frames at this date is then
+            Transform itrftogps = new Transform(position, velocity);
+
+            // Satellite position and velocity in EME2000 as measured by GPS antenna at the date
+            PVCoordinates pvgpseme2000 = Frame.getITRF2005().getTransformTo(Frame.getEME2000(), date).transformPVCoordinates(pvgpsitrf2005);
+
+            // And we can get the position and velocity of satellite CoG in EME2000 frame
+            System.out.println("Position of satellite from GPS measurement in EME2000 : "
+                               + pvgpseme2000.getPosition());
+            System.out.println("Velocity of satellite from GPS measurement in EME2000 : "
+                               + pvgpseme2000.getVelocity());
+
+            // So we can update the transform from EME2000 to LOF frame
+            lofFrame.updateTransform(gpsFrame, Frame.getITRF2005(), itrftogps, date);
+
+            // And we can get the position and velocity of satellite CoG in EME2000 frame
+            System.out.println("Position of satellite CoG in EME2000 : "
+                               + lofFrame.getTransformTo(Frame.getEME2000(), date).getTranslation());
+            System.out.println("Velocity of satellite CoG in EME2000 : "
+                               + lofFrame.getTransformTo(Frame.getEME2000(), date).getVelocity());
 
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());

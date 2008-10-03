@@ -28,7 +28,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.UTCScale;
 
 /** Orekit tutorial for slave mode propagation.
- * <p>This tutorial shows a basic usage of the slave mode in which the user drives all the propagation.<p>
+ * <p>This tutorial shows a basic usage of the slave mode in which the user drives all propagation steps.<p>
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
@@ -56,7 +56,7 @@ public class SlaveMode {
             AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, utc);
 
             // gravitation coefficient
-            double mu =  3.9860064e+14;
+            double mu =  3.986004415e+14;
 
             // Orbit construction as Keplerian
             Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lv,
