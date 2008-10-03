@@ -22,7 +22,77 @@
   <body>
     <release version="4.0" date="TBD"
              description="TBD">
-      <action dev="luc" type="add" due-to="Espen Bjorntvedt">
+      <action dev="pascal" type="fix">
+        The ephemeris produced by numerical propagator now checks date validity in
+        propagate method.
+      </action>
+      <action dev="luc" type="fix">
+        The EME2000/J2000 frame was slightly mis-oriented (about 20 milli arcseconds).
+        It really was the GCRF frame. This has been fixed and now both the GCRF and
+        the EME2000/J2000 are available.
+      </action>
+      <action dev="luc" type="fix">
+        Dates in UTC within leap seconds are now displayed correctly (i.e. a 61st
+        second is added to the minute).
+      </action>
+      <action dev="luc" type="fix" due-to="quinput">
+        Fixed an overflow error in AbsoluteDate that generated an exception when any
+        attempts was made to print dates far away like AbsoluteDate.JULIAN_EPOCH or
+        AbsoluteDate.MODIFIED_JULIAN_EPOCH.
+      </action>
+      <action dev="luc" type="fix">
+        Changed test configuration to always use a new JVM for each test. This prevents
+        some false positive to be generated.
+      </action>
+      <action dev="luc" type="update">
+        The low accuracy Sun model based on Newcomb theory and the Moon model based
+        on Brown theory have been withdrawn as they are superseded by the support of JPL
+        DE 405 binary ephemerides files.
+      </action>
+      <action dev="luc" type="update">
+        The ThirdBody abstract class has been removed and its specific method
+        getMu has been moved up into CelestialBody interface and
+        renamed getGM.
+      </action>
+      <action dev="luc" type="update">
+        Improved external data configuration. Now two different properties can be
+        used to define both a filesystem-located and a classpath-located data
+        directories trees. This allows easy roll-out of system-wide configuration
+        data that individual users can override, and also allows embedding data for
+        autonomous configuration.
+      </action>
+      <action dev="luc" type="update">
+        Renamed the iers package into data, as it is not IERS specific anymore. Some
+        classes where also moved out of the package and into the frame and time
+        package and their visibility reduced to package only. This improves decoupling
+        and reduces clutter on users by limiting the number of visible classes.
+      </action>
+      <action dev="luc" type="update">
+        The performance of IAU-2000 precession-nutation model computation has been
+        tremendously improved, using a combined caching and interpolation approach. The
+        simplified model (which was quite inaccurate in version 3.1) has therefore been
+        removed as it was not needed anymore.
+      </action>
+      <action dev="luc" type="update">
+        The ITRF 2005 frame is now supported instead of the older ITRF 2000 frame. The
+        Earth Orientation Parameters data handling classes have been updated to match
+        this change and read the new file format provided by IERS.
+      </action>
+      <action dev="luc" type="update">
+        The J2000 frame has been renamed as EME2000 as this name seems to be more
+        widely accepted and reduces confusion with the J2000.0 epoch. The
+        Frame.getJ2000() method is still available, but has been deprecated
+        and will be removed in the future.
+      </action>
+      <action dev="luc" type="update">
+        Changed TimeScale from base abstract class to interface only.
+      </action>
+      <action dev="luc" type="update">
+        Renamed some classes for better understanding: ChunkedDate is now DateComponents,
+        ChunkedTime is now TimeComponents, ChunksPair is now DateTimeComponents. The
+        getChunks method from AbsoluteDate as also been renamed into getComponents accordingly.
+      </action>
+      <action dev="luc" type="add" due-to="Espen Bj&#248;rntvedt">
         Added norse localization for error messages.
       </action>
       <action dev="luc" type="add" due-to="Francesco Coccoluto">
@@ -96,75 +166,6 @@
       </action>
       <action dev="luc" type="add">
         Added the changes page to the generated site.
-      </action>
-      <action dev="luc" type="update">
-        The low accuracy Sun model based on Newcomb theory and the Moon model based
-        on Brown theory have been withdrawn as they are superseded by the support of JPL
-        DE 405 binary ephemerides files.
-      </action>
-      <action dev="luc" type="update">
-        The ThirdBody abstract class has been removed and its specific method
-        getMu has been moved up into CelestialBody interface and
-        renamed getGM.
-      </action>
-      <action dev="luc" type="update">
-        Improved external data configuration. Now two different properties can be
-        used to define both a filesystem-located and a classpath-located data
-        directories trees. This allows easy roll-out of system-wide configuration
-        data that individual users can override, and also allows embedding data for
-        autonomous configuration.
-      </action>
-      <action dev="luc" type="update">
-        Renamed the iers package into data, as it is not IERS specific anymore. Some
-        classes where also moved out of the package and into the frame and time
-        package and their visibility reduced to package only. This improves decoupling
-        and reduces clutter on users by limiting the number of visible classes.
-      </action>
-      <action dev="luc" type="update">
-        The performance of IAU-2000 precession-nutation model computation has been
-        tremendously improved, using a combined caching and interpolation approach. The
-        simplified model (which was quite inaccurate in version 3.1) has therefore been
-        removed as it was not needed anymore.
-      </action>
-      <action dev="luc" type="update">
-        The ITRF 2005 frame is now supported instead of the older ITRF 2000 frame. The
-        Earth Orientation Parameters data handling classes have been updated to match
-        this change and read the new file format provided by IERS.
-      </action>
-      <action dev="luc" type="update">
-        The J2000 frame has been renamed as EME2000 as this name seems to be more
-        widely accepted and reduces confusion with the J2000.0 epoch. The
-        Frame.getJ2000() method is still available, but has been deprecated
-        and will be removed in the future.
-      </action>
-      <action dev="luc" type="update">
-        Changed TimeScale from base abstract class to interface only.
-      </action>
-      <action dev="luc" type="update">
-        Renamed some classes for better understanding: ChunkedDate is now DateComponents,
-        ChunkedTime is now TimeComponents, ChunksPair is now DateTimeComponents. The
-        getChunks method from AbsoluteDate as also been renamed into getComponents accordingly.
-      </action>
-      <action dev="pascal" type="fix">
-        The ephemeris produced by numerical propagator now checks date validity in propagate method.
-      </action>
-      <action dev="luc" type="fix">
-        The EME2000 frame was slightly mis-oriented (about 20 milli arcseconds). It
-        really was the GCRF frame. This has been fixed and now both the GCRF and
-        the EME2000 are available.
-      </action>
-      <action dev="luc" type="fix">
-        Dates in UTC within leap seconds are now displayed correctly (i.e. a 61st
-        second is added to the minute).
-      </action>
-      <action dev="luc" type="fix" due-to="quinput">
-        Fixed an overflow error in AbsoluteDate that generated an exception when any
-        attempts was made to print dates far away like AbsoluteDate.JULIAN_EPOCH or
-        AbsoluteDate.MODIFIED_JULIAN_EPOCH.
-      </action>
-      <action dev="luc" type="fix">
-        Changed test configuration to always use a new JVM for each test. This prevents
-        some false positive to be generated.
       </action>
     </release>
     <release version="3.1" date="2008-07-16"
