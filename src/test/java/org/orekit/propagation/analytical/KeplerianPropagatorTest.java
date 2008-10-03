@@ -25,6 +25,7 @@ import org.apache.commons.math.util.MathUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeLaw;
+import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -36,6 +37,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.AltitudeDetector;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.ElevationDetector;
@@ -392,6 +394,27 @@ public class KeplerianPropagatorTest extends TestCase {
         assertTrue(farTarget.durationFrom(propagated.getDate()) > 3000.0);
         assertTrue(farTarget.durationFrom(propagated.getDate()) < 3500.0);
         assertEquals(orbit.getA() * (1.0 - orbit.getE()), pv.getPosition().getNorm(), 1.0e-6);
+    }
+
+    public void testAltitude() throws OrekitException {
+        final KeplerianOrbit orbit =
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+                               Frame.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+        KeplerianPropagator propagator = new KeplerianPropagator(orbit);
+        BodyShape bodyShape =
+            new OneAxisEllipsoid(6378137.0, 1.0 / 298.257222101, Frame.getITRF2005());
+        AltitudeDetector detector =
+            new AltitudeDetector(0.05 * orbit.getKeplerianPeriod(),
+                                 1500000, bodyShape);
+        assertEquals(1500000, detector.getAltitude(), 1.0e-12);
+        propagator.addEventDetector(detector);
+        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        SpacecraftState propagated = propagator.propagate(farTarget);
+        assertTrue(farTarget.durationFrom(propagated.getDate()) > 5400.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()) < 5500.0);
+        GeodeticPoint gp = bodyShape.transform(propagated.getPVCoordinates().getPosition(),
+                                               propagated.getFrame(), propagated.getDate());
+        assertEquals(1500000, gp.getAltitude(), 0.1);
     }
 
     public void testDate() throws OrekitException {

@@ -543,7 +543,9 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
                                Frame.getEME2000(), AbsoluteDate.J2000_EPOCH, mu);
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, ae, mu, c20, c30, c40, c50, c60);
-        propagator.addEventDetector(new NodeDetector(orbit, Frame.getITRF2005()));
+        NodeDetector detector = new NodeDetector(orbit, Frame.getITRF2005());
+        assertTrue(Frame.getITRF2005() == detector.getFrame());
+        propagator.addEventDetector(detector);
         AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         PVCoordinates pv = propagated.getPVCoordinates(Frame.getITRF2005());
@@ -617,7 +619,10 @@ public class EcksteinHechlerPropagatorTest extends TestCase {
             new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, Frame.getITRF2005());
         final TopocentricFrame topo =
             new TopocentricFrame(earthShape, new GeodeticPoint(0.389, -2.962, 0), null);
-        propagator.addEventDetector(new ElevationDetector(60, 0.09, topo));
+        ElevationDetector detector = new ElevationDetector(60, 0.09, topo);
+        assertEquals(0.09, detector.getElevation(), 1.0e-12);
+        assertTrue(topo == detector.getTopocentricFrame());
+        propagator.addEventDetector(detector);
         AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         final double elevation = topo.getElevation(propagated.getPVCoordinates().getPosition(),
