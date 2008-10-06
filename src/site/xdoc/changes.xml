@@ -103,6 +103,9 @@
         Added methods to get zenith, nadir, north, south, east and west direction for
         any GeodeticPoint.
       </action>
+      <action dev="luc" type="add" due-to="Silvia Ríos Bergantiños">
+        Added spanish localization for error messages.
+      </action>
       <action dev="luc" type="add" due-to="Espen Bj&#248;rntvedt">
         Added norse localization for error messages.
       </action>
