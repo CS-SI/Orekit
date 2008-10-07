@@ -98,7 +98,6 @@ public class VisibilityCheck {
 
     /** Finder for visibility event.
      * <p>This class extends the elevation detector modifying the event handler.<p>
-     * @author Pascal Parraud
      */
     private static class VisibilityDetector extends ElevationDetector {
 

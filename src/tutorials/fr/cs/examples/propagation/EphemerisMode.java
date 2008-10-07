@@ -70,6 +70,9 @@ public class EphemerisMode {
             Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lv,
                                                     KeplerianOrbit.MEAN_ANOMALY,
                                                     inertialFrame, initialDate, mu);
+            
+            // Initialize state
+            SpacecraftState initialState = new SpacecraftState(initialOrbit);
 
             // Numerical propagation with no perturbation (only keplerian movement)
             // Using a very simple integrator with a fixed step: classical Runge-Kutta
@@ -81,7 +84,6 @@ public class EphemerisMode {
             propagator.setEphemerisMode();
             
             // Initialize propagation
-            SpacecraftState initialState = new SpacecraftState(initialOrbit);
             propagator.setInitialState(initialState);
             
             // Propagation with storage of the results in an integrated ephemeris

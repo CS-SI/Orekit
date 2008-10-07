@@ -91,9 +91,6 @@ public class MasterMode {
             // Propagator
             NumericalPropagator propagator = new NumericalPropagator(integrator);
 
-            // Set up initial state in the propagator
-            propagator.setInitialState(initialState);
-
             // Force Model (reduced to perturbing gravity field)
             Frame ITRF2005 = Frame.getITRF2005(); // terrestrial frame at an arbitrary date
             double ae  =  6378137.; // equatorial radius in meter
@@ -106,6 +103,9 @@ public class MasterMode {
 
             // Add force model to the propagator
             propagator.addForceModel(cunningham);
+
+            // Set up initial state in the propagator
+            propagator.setInitialState(initialState);
 
             // Set up operating mode for the propagator as master mode
             // with fixed step and specialized step handler
