@@ -318,6 +318,8 @@ public class OneAxisEllipsoidTest extends TestCase {
         assertEquals(longitude, MathUtils.normalizeAngle(gp.getLongitude(), longitude), 1.0e-10);
         assertEquals(latitude,  gp.getLatitude(),  1.0e-10);
         assertEquals(altitude,  gp.getAltitude(),  1.0e-10 * Math.abs(altitude));
+        Vector3D rebuiltNadir = Vector3D.crossProduct(gp.getSouth(), gp.getWest());
+        assertEquals(0, rebuiltNadir.subtract(gp.getNadir()).getNorm(), 1.0e-15);
     }
 
     public static Test suite() {
