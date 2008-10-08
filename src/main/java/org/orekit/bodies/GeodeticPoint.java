@@ -42,22 +42,22 @@ public class GeodeticPoint implements Serializable {
     private final double altitude;
 
     /** Zenith direction. */
-    transient private Vector3D zenith;
+    private transient Vector3D zenith;
 
     /** Nadir direction. */
-    transient private Vector3D nadir;
+    private transient Vector3D nadir;
 
     /** North direction. */
-    transient private Vector3D north;
+    private transient Vector3D north;
 
     /** South direction. */
-    transient private Vector3D south;
+    private transient Vector3D south;
 
     /** East direction. */
-    transient private Vector3D east;
+    private transient Vector3D east;
 
     /** West direction. */
-    transient private Vector3D west;
+    private transient Vector3D west;
 
     /** Build a new instance.
      * @param latitude of the point
