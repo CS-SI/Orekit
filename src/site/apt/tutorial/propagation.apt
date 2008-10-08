@@ -486,7 +486,7 @@ kepler.addEventDetector(sta1Visi);
   in slave mode by default.
 
   It will propagate from the initial date to the first raising or for the fixed duration
-  according to the behavior 
+  according to the behavior implemented in the <VisibilityDetector> class.
 
 +---------------------
 SpacecraftState finalState = kepler.propagate(new AbsoluteDate(initialDate, 1500.));
