@@ -97,6 +97,10 @@
         getChunks method from AbsoluteDate as also been renamed into getComponents accordingly.
       </action>
       <action dev="luc" type="add">
+        Added predefined local orbital frames: the (t, n, w) frame aligned with velocity
+        and the (q, s, w) frame aligned with position.
+      </action>
+      <action dev="luc" type="add">
         Added a predefined detector for altitude crossing events.
       </action>
       <action dev="luc" type="add">

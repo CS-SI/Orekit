@@ -176,6 +176,18 @@ Frames
   In such a frame, the user can retrieve azimuth angle, elevation angle, 
   range and range rate of any point given in any frame, at given date.
 
+** Local Orbital Frame
+  
+  Local orbital frames are bound to an orbiting spacecraft. They move with
+  the spacecraft so they are time-dependent. Two local orbital frames are provided:
+  the (t, n, w) frame and the (q, s, w) frame.
+
+  The (t, n, w) frame has its X axis along velocity (tangential), its Z axis along orbital
+  momentum and its Y axis completes the right-handed trihedra (it is roughly pointing towards
+  the central body. The (q, s, w) frame has its X axis along position (radial), its Z axis
+  along orbital momentum and its Y axis completes the right-handed trihedra (it is roughly
+  along velocity).
+
 ** Solar system frames
 
   All celestial bodies are linked to their own body-centered inertial frame, just
