@@ -96,6 +96,9 @@
         ChunkedTime is now TimeComponents, ChunksPair is now DateTimeComponents. The
         getChunks method from AbsoluteDate as also been renamed into getComponents accordingly.
       </action>
+      <action dev="pascal" type="add">
+        Added new tutorials.
+      </action>
       <action dev="luc" type="add">
         Added predefined local orbital frames: the (t, n, w) frame aligned with velocity
         and the (q, s, w) frame aligned with position.
