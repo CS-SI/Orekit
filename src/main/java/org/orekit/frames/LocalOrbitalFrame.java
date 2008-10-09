@@ -32,7 +32,7 @@ import org.orekit.utils.PVCoordinates;
  *   <li>the (q, s, w) frame has its X axis along position (radial), its
  *   Z axis along orbital momentum and its Y axis completes the right-handed
  *   trihedra (it is roughly along velocity)</li>
- * <ul>
+ * </ul>
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
