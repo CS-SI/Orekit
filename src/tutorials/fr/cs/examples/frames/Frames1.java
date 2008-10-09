@@ -17,12 +17,23 @@
 
 package fr.cs.examples.frames;
 
-import org.apache.commons.math.geometry.Rotation;
-import org.apache.commons.math.geometry.RotationOrder;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
+
 import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.bodies.BodyShape;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.frames.LocalOrbitalFrame;
+import org.orekit.frames.TopocentricFrame;
+import org.orekit.frames.LocalOrbitalFrame.LOFType;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.UTCScale;
@@ -30,8 +41,8 @@ import org.orekit.utils.PVCoordinates;
 
 import fr.cs.examples.Autoconfiguration;
 
-/** Orekit tutorial for frames support.
- * <p>This tutorial shows a smart usage of frames and transforms.</p>
+/** Orekit tutorial for basic frames support.
+ * <p>This tutorial shows a simple usage of frames and transforms.</p>
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
@@ -42,55 +53,58 @@ public class Frames1 {
 
             // configure Orekit
             Autoconfiguration.configureOrekit();
+            DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.US);
+            DecimalFormat d3 = new DecimalFormat("0.000", symbols);
 
-            // The local orbital frame (LOF) has its origin at the satellite center of gravity (CoG).
-            // It is derived from EME2000 frame at any moment by an unknown transform which relies
-            // on the current position and the velocity to be found.
-            // Let's initialize this transform by the identity transform.
-            Frame lofFrame = new Frame(Frame.getEME2000(), Transform.IDENTITY, "LOF");
-
-            // Considering the following Computing/Measurement date in UTC time scale
+            //  Initial state definition : date, orbit
             TimeScale utc = UTCScale.getInstance();
-            AbsoluteDate date = new AbsoluteDate(2008, 10, 01, 12, 00, 00.000, utc);
-            
-            // The satellite frame, with origin the CoG, is related to the LOF.
-            // The satellite attitude with respect to LOF is known at all times
-            // by the (roll, pitch, yaw) angles according to the guidance laws.
-            // Let's assume the following values at the date :
-            double roll  = Math.toRadians(15);
-            double pitch = Math.toRadians(10);
-            double yaw   = Math.toRadians(5);
+            AbsoluteDate initialDate = new AbsoluteDate(2008, 10, 01, 0, 0, 00.000, utc);
+            double mu =  3.986004415e+14; // gravitation coefficient
+            Frame inertialFrame = Frame.getEME2000(); // inertial frame for orbit definition
+            Vector3D posisat = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
+            Vector3D velosat = new Vector3D(505.8479685, 942.7809215, 7435.922231);
+            PVCoordinates pvsat = new PVCoordinates(posisat, velosat);
+            Orbit initialOrbit = new CartesianOrbit(pvsat, inertialFrame, initialDate, mu);
 
-            // The transform between LOF and satellite frames at that moment is defined by these rotation.
-            Transform loftosat = new Transform(new Rotation(RotationOrder.XYZ, roll, pitch, yaw));
+            // Propagator : consider a simple keplerian motion
+            Propagator kepler = new KeplerianPropagator(initialOrbit);
 
-            // The satellite CoG frame is defined with respect to the LOF
-            Frame cogFrame = new Frame(lofFrame, loftosat, "CoG");
+            // The local orbital frame (LOF) is related to the orbit propagated by the kepler propagator.
+            LocalOrbitalFrame lof = new LocalOrbitalFrame(inertialFrame, LOFType.QSW, kepler, "LOF");
 
-            // Finally, the GPS antenna frame can be defined from the satellite CoG frame by 2 transforms:
-            // a translation and a rotation
-            Transform translateGPS = new Transform(new Vector3D(0, 0, 1));
-            Transform rotateGPS = new Transform(new Rotation(new Vector3D(0, 1, 3), Math.toRadians(10)));
-            Frame gpsFrame = new Frame(cogFrame, new Transform(translateGPS, rotateGPS), "GPS");
+            // Earth and frame  
+            double ae =  6378137.0; // equatorial radius in meter
+            double f  =  1.0 / 298.257223563; // flattening
+            Frame ITRF2005 = Frame.getITRF2005(); // terrestrial frame at an arbitrary date
+            BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
 
-            // Let's get the satellite position and velocity in ITRF2005 as measured by GPS antenna at this moment:
-            final Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
-            final Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
+            // Station
+            final double longitude = Math.toRadians(45.);
+            final double latitude  = Math.toRadians(25.);
+            final double altitude  = 0.;
+            final GeodeticPoint station = new GeodeticPoint(latitude, longitude, altitude);
+            final TopocentricFrame staF = new TopocentricFrame(earth, station, "station1");
 
-            System.out.println("Position in ITRF2005 from GPS measurement : " + position);
-            System.out.println("Velocity in ITRF2005 from GPS measurement : " + velocity);
+            System.out.println("          time           doppler (m/s)");
 
-            // The transform from GPS frame to ITRF2005 frame at this moment is defined by:
-            Transform gpstoitrf = new Transform(position, velocity);
+            // Stop date
+            final AbsoluteDate finalDate = new AbsoluteDate(initialDate, 6000, utc);
 
-            // So we can update the transform from EME2000 to LOF frame
-            lofFrame.updateTransform(gpsFrame, Frame.getITRF2005(), gpstoitrf, date);
+            // Loop
+            AbsoluteDate extrapDate = initialDate;
+            while (extrapDate.compareTo(finalDate) <= 0)  {
 
-            // And we can get the position and velocity of satellite CoG in EME2000 frame
-            PVCoordinates satEME2000 =
-                lofFrame.getTransformTo(Frame.getEME2000(), date).transformPVCoordinates(PVCoordinates.ZERO);
-            System.out.println("Position in EME2000 from update transform : " + satEME2000.getPosition());
-            System.out.println("Velocity in EME2000 from update transform : " + satEME2000.getVelocity());
+                // We can simply get the position and velocity of station in LOF frame at any time
+                PVCoordinates pv = staF.getTransformTo(lof, extrapDate).transformPVCoordinates(PVCoordinates.ZERO);
+
+                // And then calculate the doppler signal
+                double doppler = Vector3D.dotProduct(pv.getPosition(), pv.getVelocity()) / pv.getPosition().getNorm();
+
+                System.out.println(extrapDate + "  " + d3.format(doppler));
+
+                extrapDate = new AbsoluteDate(extrapDate, 600, utc);
+
+            }
 
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());

@@ -22,12 +22,109 @@ Frames
 
 ** A simple solution
 
+  On the one hand, we define the Local Orbital Frame (LOF) related to the satellite.
+
+  Let's first define some initial state for the satellite with:
+
+  ** an inertial frame
+
+  ** a date in some time scale
+    
+  ** a central attraction coefficient
+    
+  ** an orbit defined by the position and the velocity of the satellite in the inertial frame at the date.
+    
+  []
+
+  The initial orbit is just set as a <CartesianOrbit>. 
+  More precisions on the orbit representation can be found
+  in the {{{../architecture/orbits.html}orbits section}}
+  of the library architecture documentation.
+
++---------------------
+Frame inertialFrame = Frame.getEME2000();
+TimeScale utc = UTCScale.getInstance();
+AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, utc);
+double mu =  3.986004415e+14;
+Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
+Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
+PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
+Orbit initialOrbit = new CartesianOrbit(pvCoordinates, inertialFrame, initialDate, mu);
++---------------------
+
+  As a propagator, we consider a simple <KeplerianPropagator>.
+
++---------------------
+Propagator kepler = new KeplerianPropagator(initialOrbit);
++---------------------
+
+  So, the LOF is all defined, assuming its type to be QSW.
+
++---------------------
+LocalOrbitalFrame lof = new LocalOrbitalFrame(inertialFrame, LOFType.QSW, kepler, "LOF");
++---------------------
+
+  On the other hand, let's define the ground station by its coordinates as a <GeodeticPoint> 
+  in its own <TopocentricFrame> related to a <BodyShape> in some terrestrial frame.
+
++---------------------
+double longitude = Math.toRadians(45.);
+double latitude  = Math.toRadians(25.);
+double altitude  = 0.;
+GeodeticPoint station = new GeodeticPoint(latitude, longitude, altitude);
+double ae =  6378137.0;                // equatorial radius in meter
+double f  =  1.0 / 298.257223563;      // flattening
+Frame ITRF2005 = Frame.getITRF2005();  // terrestrial frame at an arbitrary date
+BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
+TopocentricFrame staF = new TopocentricFrame(earth, station, "station");
++---------------------
+
+  More precisions on <BodyShape> and <GeodeticPoint> can be found
+  in the {{{../architecture/bodies.html}bodies section}}
+  of the library architecture documentation.\
+  More precisions on <TopocentricFrame> can be found
+  in the {{{../architecture/frames.html}frames section}}
+  of the library architecture documentation.
+
+  Now, we can simply get the position and velocity of the station,
+  which are zero with respect to its frame, in LOF frame at any time
+  in one single instruction:
+
++---------------------
+PVCoordinates pv = staF.getTransformTo(lof, anyTime).transformPVCoordinates(PVCoordinates.ZERO);
++---------------------
+
+  All the details of the intermediate frames composite motions are hidden to the user.
+
+  Finally, we can get the doppler measurement:
+
++---------------------
+double doppler = Vector3D.dotProduct(pv.getPosition(), pv.getVelocity()) / pv.getPosition().getNorm();
++---------------------
+
+  With some computation loop, we got the following results:
+
++---------------------
+          time           doppler (m/s)
+2008-10-01T00:00:00.000  -2925.160
+2008-10-01T00:10:00.000  -3069.026
+2008-10-01T00:20:00.000  -1331.701
+2008-10-01T00:30:00.000  1664.808
+2008-10-01T00:40:00.000  3143.595
+2008-10-01T00:50:00.000  2832.856
+2008-10-01T01:00:00.000  1556.562
+2008-10-01T01:10:00.000  -141.012
+2008-10-01T01:20:00.000  -1860.765
+2008-10-01T01:30:00.000  -3195.838
+2008-10-01T01:40:00.000  -3538.102
++---------------------
+
 ** Source code
 
   The complete code for this example can be found in the source tree of the library,
   in file <<<src/tutorials/fr/cs/examples/frames/Frame1.java>>>.
 
-* Advanded use
+* Advanced use
 
 ** The problem to be solved
 
@@ -36,22 +133,23 @@ Frames
   
   It can be summarized by the following scheme.
 
-[../images/frames1-tutorial.png]
+[../images/frames2-tutorial.png]
 
-  For a given satellite, GPS measurements for position and velocity, expressed in the ITRF2005 frame,
-  are available at any moment.\
+  For a given satellite, GPS measurements for position and velocity,
+  expressed in the ITRF2005 frame, are available at any moment.\
   The GPS antenna is fixed with some offset with respect to the satellite reference frame.\
-  The attitude of the satellite reference frame with respect to the LOF is known at any moment.\
-  We want to compute for some instant the position and velocity of the satellite center of gravity
+  The attitude of the satellite reference frame with respect to some moving frame related
+  to the satellite center of gravity (CoG) is known at any moment.\
+  We want to compute for some instant the position and velocity of the CoG
   in the EME2000 inertial frame.
 
-** A simple solution
+** A smart solution
 
   The solution provided by OREKIT is detailed above.
 
-  The Center of Gravity frame has its origin at the satellite center of gravity and is
-  aligned with EME2000. It is linked to its parent EME2000 frame by an a priori unknown transform
-  which depends on the current position and velocity. This transform is what we want to compute.
+  The CoG frame has its origin at the satellite center of gravity and is aligned with EME2000.
+  It is linked to its parent EME2000 frame by an a priori unknown transform which depends
+  on the current position and velocity. This transform is what we want to compute.
 
   We first build the frame. We use the identity transform as a simple dummy value, the
   real value which is time-dependent will be recomputed when time is reset:

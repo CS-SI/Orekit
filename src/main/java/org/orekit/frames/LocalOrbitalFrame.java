@@ -60,7 +60,7 @@ public class LocalOrbitalFrame extends Frame {
 
     /** Build a new instance.
      * @param parent parent frame (must be non-null)
-     * @param frame type
+     * @param type frame type
      * @param propagator propagator used to compute frame motion
      * @param name name of the frame
      * @exception IllegalArgumentException if the parent frame is null

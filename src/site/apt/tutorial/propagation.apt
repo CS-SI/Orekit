@@ -141,6 +141,8 @@ step 11
  equinoctial parameters: {a: 2.4396159E7; ex: 0.11393312156755062; ey: 0.719345418868777; hx: -0.009567941763699867; hy: -0.06040960680288257; lv: 488.7324362945905;}
 +---------------------
 
+*** Source code
+
   The complete code for this example can be found in the source tree of the library,
   in file <<<src/tutorials/fr/cs/examples/propagation/SlaveMode.java>>>.
 
@@ -227,7 +229,7 @@ propagator.addForceModel(cunningham);
 
   The propagator operating mode is set to master mode with fixed step and a
   <TutorialStepHandler> which implements the interface <OrekitFixedStepHandler>
-  in order to fulfill the <handleStep> method to be called within the loop.\
+  in order to fulfill the <handleStep> method to be called within the loop.
   For the purpose of this tutorial, the <handleStep> method will just print
   the current state at the moment.
 
@@ -284,6 +286,8 @@ SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initialDate, 
  Final date  : 2004-01-01T23:40:30.000
  Final state : equinoctial parameters: {a: 2.4360331842829864E7; ex: 0.11284425291236964; ey: 0.7190415678613115; hx: -0.009581276101643383; hy: -0.06037851608173257; lv: 490.68230357067466;}
 +---------------------
+
+*** Source code
 
   The complete code for this example can be found in the source tree of the library,
   in file <<<src/tutorials/fr/cs/examples/propagation/MasterMode.java>>>.
@@ -400,6 +404,8 @@ SpacecraftState interState = ephemeris.propagate(interDate);
 out of range date for ephemerides: 2004-01-01T23:13:20.000
 +---------------------
 
+*** Source code
+
   The complete code for this example can be found in the source tree of the library,
   in file <<<src/tutorials/fr/cs/examples/propagation/EphemerisMode.java>>>.
 
@@ -508,6 +514,8 @@ Visibility on station1 begins at 2004-01-01T23:31:52.097
 Visibility on station1 ends at 2004-01-01T23:42:48.850
 Final state : 2004-01-01T23:42:48.850
 +---------------------
+
+** Source code
 
   The complete code for this example can be found in the source tree of the library,
   in file <<<src/tutorials/fr/cs/examples/propagation/VisibilityCheck.java>>>.
