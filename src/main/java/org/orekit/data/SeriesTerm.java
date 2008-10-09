@@ -25,6 +25,9 @@ import java.io.Serializable;
  */
 public abstract class SeriesTerm implements Serializable {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 7536446008538764006L;
+
     /** Coefficient for the sine of the argument. */
     private final double sinCoeff;
 
