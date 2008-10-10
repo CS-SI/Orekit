@@ -25,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataDirectoryCrawler;
-import org.orekit.data.DataFileCrawler;
+import org.orekit.data.DataFileLoader;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.TimeStamped;
 
@@ -40,10 +40,13 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-class BulletinBFilesLoader extends DataFileCrawler {
+class BulletinBFilesLoader implements DataFileLoader {
 
     /** Conversion factor. */
     private static final double ARC_SECONDS_TO_RADIANS = 2 * Math.PI / 1296000;
+
+    /** Supported files name pattern. */
+    private Pattern namePattern;
 
     /** Section header pattern. */
     private final Pattern sectionHeaderPattern;
@@ -69,7 +72,7 @@ class BulletinBFilesLoader extends DataFileCrawler {
      */
     public BulletinBFilesLoader(final SortedSet<TimeStamped> eop) {
 
-        super("^bulletinb_IAU2000-(\\d\\d\\d)\\.txt(?:\\.gz)?$");
+        namePattern = Pattern.compile("^bulletinb_IAU2000-(\\d\\d\\d)\\.txt$");
         this.eop = eop;
 
         // the section headers lines in the bulletin B monthly data files have
@@ -128,7 +131,7 @@ class BulletinBFilesLoader extends DataFileCrawler {
     }
 
     /** {@inheritDoc} */
-    protected void visit(final InputStream input)
+    public void loadData(final InputStream input, final String name)
         throws OrekitException, IOException {
 
         // set up a reader for line-oriented bulletin B files
@@ -189,6 +192,11 @@ class BulletinBFilesLoader extends DataFileCrawler {
             }
         }
 
+    }
+
+    /** {@inheritDoc} */
+    public boolean fileIsSupported(String fileName) {
+        return namePattern.matcher(fileName).matches();
     }
 
 }

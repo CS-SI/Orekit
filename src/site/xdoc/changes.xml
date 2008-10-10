@@ -59,11 +59,13 @@
         renamed getGM.
       </action>
       <action dev="luc" type="update">
-        Improved external data configuration. Now two different properties can be
-        used to define both a filesystem-located and a classpath-located data
-        directories trees. This allows easy roll-out of system-wide configuration
-        data that individual users can override, and also allows embedding data for
-        autonomous configuration.
+        Improved external data configuration. The java property is now called
+        orekit.data.path and is a column or semicolumn separated path containing
+        directories or zip archives, themselves containing embedded directories
+        or zip archives and data files. This allows easy roll-out of system-wide
+        configuration data that individual users can override by prepending their
+        own data trees in front of the path. This also allows simple configuration
+        since many data files can be stored in easy to handle zip archives.
       </action>
       <action dev="luc" type="update">
         Renamed the iers package into data, as it is not IERS specific anymore. Some

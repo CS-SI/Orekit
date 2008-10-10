@@ -99,8 +99,8 @@ public class ITRF2005FrameAlternateConfigurationTest extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_FS, "");
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "testitrf-data");
+        String root = getClass().getClassLoader().getResource("testitrf-data").getPath();
+        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, root);
     }
 
     private void checkPV(PVCoordinates reference, PVCoordinates result,

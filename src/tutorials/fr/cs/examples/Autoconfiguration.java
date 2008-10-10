@@ -50,19 +50,19 @@ public class Autoconfiguration {
     public static void configureOrekit() {
         final File home    = new File(System.getProperty("user.home"));
         final File current = new File(System.getProperty("user.dir"));
-        if (tryFilesystem(new File(home, ".orekit-data"))) {
+        if (tryRoot(new File(home, ".orekit-data"))) {
             return;
         }
-        if (tryFilesystem(new File(current, ".orekit-data"))) {
+        if (tryRoot(new File(current, ".orekit-data"))) {
             return;
         }
-        if (tryFilesystem(new File(home, "orekit-data"))) {
+        if (tryRoot(new File(home, "orekit-data"))) {
             return;
         }
-        if (tryFilesystem(new File(current, "orekit-data"))) {
+        if (tryRoot(new File(current, "orekit-data"))) {
             return;
         }
-        if (tryClasspath("/orekit-data")) {
+        if (tryClasspath("orekit-data")) {
             return;
         }
         if (tryClasspath("regular-data")) {
@@ -75,10 +75,9 @@ public class Autoconfiguration {
      * @param directory directory to try
      * @return true if directory was found (and configured)
      */
-    private static boolean tryFilesystem(final File directory) {
+    private static boolean tryRoot(final File directory) {
         if (directory.exists() && directory.isDirectory()) {
-            System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_FS, directory.getAbsolutePath());
-            System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "");
+            System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, directory.getAbsolutePath());
             return true;
         }
         return false;
@@ -91,8 +90,7 @@ public class Autoconfiguration {
     private static boolean tryClasspath(final String directory) {
         final URL url = Autoconfiguration.class.getClassLoader().getResource(directory);
         if (url != null) {
-            System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_FS, "");
-            System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, directory);
+            System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, directory);
             return true;
         }
         return false;

@@ -20,9 +20,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import org.orekit.data.DataDirectoryCrawler;
-import org.orekit.data.DataFileCrawler;
+import org.orekit.data.DataFileLoader;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
@@ -38,7 +39,7 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-class JPLEphemeridesLoader extends DataFileCrawler {
+class JPLEphemeridesLoader implements DataFileLoader {
 
     /** Error message for header read error. */
     private static final String HEADER_READ_ERROR =
@@ -51,6 +52,9 @@ class JPLEphemeridesLoader extends DataFileCrawler {
     /** Error message for unsupported file. */
     private static final String OUT_OF_RANGE_DATE =
         "out of range date for ephemerides: {0}";
+
+    /** Supported files name pattern. */
+    private Pattern namePattern;
 
     /** List of supported ephemerides types. */
     public enum EphemerisType {
@@ -138,12 +142,12 @@ class JPLEphemeridesLoader extends DataFileCrawler {
      * (all data within a +/-50 days range around this date will be loaded)
      */
     public JPLEphemeridesLoader(final EphemerisType type, final AbsoluteDate centralDate) {
-        super("^unx[mp](\\d\\d\\d\\d)\\.(?:(?:405)|(?:406))(?:\\.gz)?$");
+        namePattern = Pattern.compile("^unx[mp](\\d\\d\\d\\d)\\.(?:(?:405)|(?:406))$");
         this.type          = type;
         this.centralDate   = centralDate;
         astronomicalUnit   = Double.NaN;
         earthMoonMassRatio = Double.NaN;
-        maxChunksDuration     = Double.NaN;
+        maxChunksDuration  = Double.NaN;
     }
 
     /** Load ephemerides.
@@ -182,15 +186,15 @@ class JPLEphemeridesLoader extends DataFileCrawler {
     }
 
     /** {@inheritDoc} */
-    protected void visit(final InputStream input)
+    public void loadData(final InputStream input, final String name)
         throws OrekitException, IOException {
 
         // read first part of record, up to the ephemeris type
         record = new byte[2844];
-        if (input.read(record) != record.length) {
+        if (!readInRecord(input, 0)) {
             throw new OrekitException(HEADER_READ_ERROR,
                                       new Object[] {
-                                          getFile().getAbsolutePath()
+                                          name
                                       });
         }
 
@@ -206,24 +210,25 @@ class JPLEphemeridesLoader extends DataFileCrawler {
         default :
             throw new OrekitException(NOT_JPL_EPHEMERIS,
                                       new Object[] {
-                                          getFile().getAbsolutePath()
+                                          name
                                       });
         }
 
         // build a record with the proper size and finish read of the first complete record
+        final int start = record.length;
         final byte[] newRecord = new byte[recordSize];
-        final int remaining = newRecord.length - record.length;
         System.arraycopy(record, 0, newRecord, 0, record.length);
-        if (input.read(newRecord, record.length, remaining) != remaining) {
+        record = newRecord;
+        if (!readInRecord(input, start)) {
             throw new OrekitException(HEADER_READ_ERROR,
                                       new Object[] {
-                                          getFile().getAbsolutePath()
+                                          name
                                       });
         }
         record = newRecord;
 
         // parse completed header record
-        parseHeaderRecord();
+        parseHeaderRecord(name);
 
         if (tooFarRange(startEpoch, finalEpoch)) {
             // this file does not cover a range we are interested in,
@@ -233,18 +238,37 @@ class JPLEphemeridesLoader extends DataFileCrawler {
 
         // the second record contains the values of the constants used for least-square filtering
         // we ignore all of them so don't do anything here
-        if (input.read(record) != record.length) {
+        if (!readInRecord(input, 0)) {
             throw new OrekitException(HEADER_READ_ERROR,
                                       new Object[] {
-                                          getFile().getAbsolutePath()
+                                          name
                                       });
         }
 
         // read ephemerides data
-        while (input.read(record) == record.length) {
+        while (readInRecord(input, 0)) {
             parseDataRecord();
         }
 
+    }
+
+    /** Read bytes into the current record array.
+     * @param input input stream
+     * @param start start index where to put bytes
+     * @return true if record has been filled up
+     * @exception IOException if a read error occurs
+     */
+    private boolean readInRecord(final InputStream input, final int start)
+        throws IOException {
+        int index = start;
+        while (index != record.length) {
+            int n = input.read(record, index, record.length - index);
+            if (n < 0) {
+                return false;
+            }
+            index += n;
+        }
+        return true;
     }
 
     /** Check if a range is too far from the central date.
@@ -267,9 +291,10 @@ class JPLEphemeridesLoader extends DataFileCrawler {
     }
 
     /** Parse the header record.
+     * @param name name of the file (or zip entry)
      * @exception OrekitException if the header is not a JPL ephemerides binary file header
      */
-    private void parseHeaderRecord() throws OrekitException {
+    private void parseHeaderRecord(final String name) throws OrekitException {
 
         // extract covered date range
         startEpoch = extractDate(2652);
@@ -342,7 +367,7 @@ class JPLEphemeridesLoader extends DataFileCrawler {
         if (!ok) {
             throw new OrekitException(NOT_JPL_EPHEMERIS,
                                       new Object[] {
-                                          getFile().getAbsolutePath()
+                                          name
                                       });
         }
 
@@ -443,6 +468,11 @@ class JPLEphemeridesLoader extends DataFileCrawler {
         final int l2 = ((int) record[offset + 2]) & 0xff;
         final int l1 = ((int) record[offset + 3]) & 0xff;
         return (l4 << 24) | (l3 << 16) | (l2 <<  8) | l1;
+    }
+
+    /** {@inheritDoc} */
+    public boolean fileIsSupported(String fileName) {
+        return namePattern.matcher(fileName).matches();
     }
 
 }

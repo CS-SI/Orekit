@@ -160,8 +160,8 @@ public class YawSteeringTest extends TestCase {
     
     public void setUp() {
         try {
-            System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_FS, "");
-            System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "regular-data");
+            String root = getClass().getClassLoader().getResource("regular-data").getPath();
+            System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, root);
 
             // Computation date
             date = new AbsoluteDate(new DateComponents(1970, 04, 07),

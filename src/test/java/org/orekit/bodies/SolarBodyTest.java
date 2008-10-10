@@ -87,7 +87,7 @@ public class SolarBodyTest extends TestCase {
 
         PVCoordinates error = new PVCoordinates(1.0, pv, -1.0, reference);
         assertEquals(0, error.getPosition().getNorm(), 2.0e-3);
-        assertEquals(0, error.getVelocity().getNorm(), 2.0e-10);
+        assertEquals(0, error.getVelocity().getNorm(), 5.0e-10);
 
     }
 
@@ -130,8 +130,8 @@ public class SolarBodyTest extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_FS, "");
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "regular-data");
+        String root = getClass().getClassLoader().getResource("regular-data").getPath();
+        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, root);
     }
 
     public static Test suite() {

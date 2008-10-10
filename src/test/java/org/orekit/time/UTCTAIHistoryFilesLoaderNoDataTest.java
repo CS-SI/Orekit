@@ -33,8 +33,8 @@ public class UTCTAIHistoryFilesLoaderNoDataTest extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_FS, "");
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "no-data");
+        String root = getClass().getClassLoader().getResource("no-data").getPath();
+        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, root);
     }
 
     public static Test suite() {

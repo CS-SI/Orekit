@@ -260,8 +260,8 @@ public class CunninghamAttractionModelTest extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_FS, "");
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "regular-data");
+        String root = getClass().getClassLoader().getResource("regular-data").getPath();
+        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, root);
         try {
             // Eigen c1 model truncated to degree 6
             mu =  3.986004415e+14;

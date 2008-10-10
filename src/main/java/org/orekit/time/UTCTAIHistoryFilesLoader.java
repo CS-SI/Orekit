@@ -29,7 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataDirectoryCrawler;
-import org.orekit.data.DataFileCrawler;
+import org.orekit.data.DataFileLoader;
 import org.orekit.errors.OrekitException;
 
 
@@ -44,7 +44,10 @@ import org.orekit.errors.OrekitException;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-class UTCTAIHistoryFilesLoader extends DataFileCrawler {
+class UTCTAIHistoryFilesLoader implements DataFileLoader {
+
+    /** Supported files name pattern. */
+    private Pattern namePattern;
 
     /** Regular data lines pattern. */
     private Pattern regularPattern;
@@ -61,7 +64,7 @@ class UTCTAIHistoryFilesLoader extends DataFileCrawler {
     /** Build a loader for UTC-TAI history file. */
     public UTCTAIHistoryFilesLoader() {
 
-        super("^UTC-TAI\\.history(?:\\.gz)?$");
+        this.namePattern = Pattern.compile("^UTC-TAI\\.history$");
 
         // the data lines in the UTC time steps data files have the following form:
         // 1966  Jan.  1 - 1968  Feb.  1     4.313 170 0s + (MJD - 39 126) x 0.002 592s
@@ -112,7 +115,7 @@ class UTCTAIHistoryFilesLoader extends DataFileCrawler {
     }
 
     /** {@inheritDoc} */
-    protected void visit(final InputStream input)
+    public void loadData(final InputStream input, final String name)
         throws OrekitException, IOException, ParseException {
 
         // set up a reader for line-oriented bulletin B files
@@ -134,9 +137,7 @@ class UTCTAIHistoryFilesLoader extends DataFileCrawler {
                 if (lastLine > 0) {
                     throw new OrekitException("unexpected data after line {0} in file {1}: {2}",
                                               new Object[] {
-                                                  Integer.valueOf(lastLine),
-                                                  getFile().getAbsolutePath(),
-                                                  line
+                                                  Integer.valueOf(lastLine), name, line
                                               });
                 }
             } else {
@@ -174,8 +175,7 @@ class UTCTAIHistoryFilesLoader extends DataFileCrawler {
                     if ((lastDate != null) && leapDay.compareTo(lastDate) <= 0) {
                         throw new OrekitException("non-chronological dates in file {0}, line {1}",
                                                   new Object[] {
-                                                      getFile().getAbsolutePath(),
-                                                      Integer.valueOf(lineNumber)
+                                                      name, Integer.valueOf(lineNumber)
                                                   });
                     }
                     lastDate = leapDay;
@@ -185,8 +185,7 @@ class UTCTAIHistoryFilesLoader extends DataFileCrawler {
                 } catch (NumberFormatException nfe) {
                     throw new OrekitException("unable to parse line {0} in IERS UTC-TAI history file {1}",
                                               new Object[] {
-                                                  Integer.valueOf(lineNumber),
-                                                  getFile().getAbsolutePath()
+                                                  Integer.valueOf(lineNumber), name
                                               });
                 }
             }
@@ -195,10 +194,15 @@ class UTCTAIHistoryFilesLoader extends DataFileCrawler {
         if (!foundEntries) {
             throw new OrekitException("no entries found in IERS UTC-TAI history file {0}",
                                       new Object[] {
-                                          getFile().getAbsolutePath()
+                                          name
                                       });
         }
 
+    }
+
+    /** {@inheritDoc} */
+    public boolean fileIsSupported(String fileName) {
+        return namePattern.matcher(fileName).matches();
     }
 
 }

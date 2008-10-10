@@ -17,7 +17,18 @@
 package org.orekit.data;
 
 import java.io.File;
-import java.net.URL;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipInputStream;
 
 import org.orekit.errors.OrekitException;
 
@@ -26,18 +37,20 @@ import org.orekit.errors.OrekitException;
 
  * <p>
  * This class handles data files recursively starting from root trees
- * specified by the java properties <code>orekit.data.directory.filesystem</code>
- * for data stored in filesystem and <code>orekit.data.directory.classpath</code>
- * for data stored in classpath.
- * If the properties are not set or are null, no data will be available to the
- * library (for example no pole correction will be applied and only predefined
+ * (or zip archives) specified by the java property <code>orekit.data.path</code>.
+ * If the property is not set or is null, no data will be available to the
+ * library (for example no pole corrections will be applied and only predefined
  * UTC steps will be taken into account). No errors will be triggered.
- * If either property is set, it must correspond to an existing root tree otherwise
- * an error will be triggered.
+ * If the property is set, it must contains a colon or semicolon separated list
+ * of existing directories or zip archives, which themselves contain the data files
+ * (or other zip files).
  * </p>
  * <p>
- * The organization of files in the tree is free. Files are found by matching
- * name patterns while crawling into all sub-directories.
+ * The organization of files in the directories is free. Files are found by matching
+ * name patterns while crawling into all sub-directories. If the date searched for
+ * is found in one path component, the following path components will be ignored,
+ * thus allowing users to overwrite system-wide data by prepending their own
+ * components before system-wide ones.
  * </p>
  * <p>Gzip-compressed files are supported.</p>
  *
@@ -51,83 +64,59 @@ import org.orekit.errors.OrekitException;
  */
 public class DataDirectoryCrawler {
 
-    /** Name of the property defining the data root directory in filesystem. */
-    public static final String DATA_ROOT_DIRECTORY_FS = "orekit.data.directory.filesystem";
+    /** Name of the property defining the root directories or zip files path. */
+    public static final String OREKIT_DATA_PATH = "orekit.data.path";
 
-    /** Name of the property defining the data root directory in classpath. */
-    public static final String DATA_ROOT_DIRECTORY_CP = "orekit.data.directory.classpath";
+    /** Pattern for gzip files. */
+    private static final Pattern GZIP_FILE_PATTERN = Pattern.compile("(.*)\\.gz$");
 
-    /** IERS root hierarchy root in filesystem. */
-    private final File rootInFileSystem;
+    /** Pattern for zip archives. */
+    private static final Pattern ZIP_ARCHIVE_PATTERN = Pattern.compile("(.*)(?:(?:\\.zip)|(?:\\.jar))$");
 
-    /** IERS root hierarchy root in classpath. */
-    private final File rootInClasspath;
+    /** Error message for unknown path entries. */
+    private static final String NEITHER_DIRECTORY_NOR_ZIP_ARCHIVE =
+        "{0} is neither a directory nor a zip archive file";
 
-    /** Build an IERS files crawler.
-     * @exception OrekitException if some data is missing or can't be read
+    /** Path components. */
+    private final List<File> pathComponents;
+
+    /** Build an data files crawler.
+     * @exception OrekitException if path contains inexistent components
      */
     public DataDirectoryCrawler() throws OrekitException {
 
-        File fsRoot = null;
-        File cpRoot = null;
+        List<File> components = new ArrayList<File>();
 
         try {
 
-            // set up the root tree in filesystem
-            final String directoryNameFileSystem = System.getProperty(DATA_ROOT_DIRECTORY_FS);
-            if ((directoryNameFileSystem != null) && !"".equals(directoryNameFileSystem)) {
+            // get the path containing all components
+            final String path = System.getProperty(OREKIT_DATA_PATH);
 
-                // find the root directory
-                fsRoot = new File(directoryNameFileSystem);
+            if ((path != null) && !"".equals(path)) {
 
-                // safety checks
-                checkRoot(fsRoot, directoryNameFileSystem);
+                // extract the various components
+                for (final String name : path.split("[:;]")) {
+                    if (!"".equals(name)) {
 
-            }
+                        final File component = new File(name);
 
-            // set up the root tree in classpath
-            final String directoryNameClasspath = System.getProperty(DATA_ROOT_DIRECTORY_CP);
-            if ((directoryNameClasspath != null) && !"".equals(directoryNameClasspath)) {
+                        // check component
+                        if (!component.exists()) {
+                            throw new OrekitException("data root directory {0} does not exist",
+                                                      new Object[] {
+                                                          name
+                                                      });
+                        }
 
-                // find the root directory
-                final URL url =
-                    DataDirectoryCrawler.class.getClassLoader().getResource(directoryNameClasspath);
-                if (url != null) {
-                    cpRoot = new File(url.getPath());
+                        components.add(component);
+
+                    }
                 }
-
-                // safety checks
-                checkRoot(cpRoot, directoryNameClasspath);
-
             }
-
         } finally {
-            rootInFileSystem = fsRoot;
-            rootInClasspath  = cpRoot;
+            pathComponents = components;
         }
 
-    }
-
-    /** Check root directory.
-     * @param root root directory to check (may be null)
-     * @param name root directory name
-     * @exception OrekitException if the root does not exist
-     * or is not a directory
-     */
-    private void checkRoot(final File root, final String name)
-        throws OrekitException {
-        if ((root == null) || !root.exists()) {
-            throw new OrekitException("data root directory {0} does not exist",
-                                      new Object[] {
-                                          name
-                                      });
-        }
-        if (!root.isDirectory()) {
-            throw new OrekitException("{0} is not a directory",
-                                      new Object[] {
-                                          name
-                                      });
-        }
     }
 
     /** Crawl the data root hierarchy.
@@ -135,54 +124,160 @@ public class DataDirectoryCrawler {
      * @exception OrekitException if some data is missing, duplicated
      * or can't be read
      */
-    public void crawl(final DataFileCrawler visitor) throws OrekitException {
+    public void crawl(final DataFileLoader visitor) throws OrekitException {
 
-        // first try in filesystem
-        // (if a data root directory has been defined in filesystem)
-        if (rootInFileSystem != null) {
+        OrekitException delayedException = null;
+
+        for (File component : pathComponents) {
             try {
-                crawl(visitor, rootInFileSystem);
-                return;
-            } catch (OrekitException oe) {
-                if (rootInClasspath == null) {
-                    throw oe;
+
+                // try to find data in one path component
+                if (component.isDirectory()) {
+                    crawl(visitor, component);
+                } else if (!ZIP_ARCHIVE_PATTERN.matcher(component.getName()).matches()) {
+                    throw new OrekitException(NEITHER_DIRECTORY_NOR_ZIP_ARCHIVE,
+                                              new Object[] {
+                                                  component.getAbsolutePath()
+                                              });
+                } else {
+                    ZipInputStream zip = new ZipInputStream(new FileInputStream(component));
+                    crawl(visitor, zip);
+                    zip.close();
                 }
+
+                // if we got here, we have found the data we wanted,
+                // we explicitly ignore the following path components
+                return;
+
+            } catch (ZipException ze) {
+                // this is an important configuration error, we report it immediately
+                throw new OrekitException(NEITHER_DIRECTORY_NOR_ZIP_ARCHIVE,
+                                          new Object[] {
+                                              component.getAbsolutePath()
+                                          });
+            } catch (IOException ioe) {
+                // maybe the next path component will be able to provide data
+                // wait until all components have been tried
+                delayedException = new OrekitException(ioe.getMessage(), ioe);
+            } catch (ParseException pe) {
+                // maybe the next path component will be able to provide data
+                // wait until all components have been tried
+                delayedException = new OrekitException(pe.getMessage(), pe);
+            } catch (OrekitException oe) {
+                // maybe the next path component will be able to provide data
+                // wait until all components have been tried
+                delayedException = oe;
             }
         }
 
-        // then try in classpath
-        // (if a data root directory has been defined in classpath and filesystem attempt failed)
-        if (rootInClasspath != null) {
-            crawl(visitor, rootInClasspath);
+        if (delayedException != null) {
+            throw delayedException;
         }
 
     }
 
     /** Crawl a directory hierarchy.
      * @param visitor data file visitor to use
-     * @param directory hierarchy root directory
+     * @param directory current directory
      * @exception OrekitException if some data is missing, duplicated
      * or can't be read
+     * @exception IOException if data cannot be read
+     * @exception ParseException if data cannot be read
      */
-    private void crawl(final DataFileCrawler visitor, final File directory)
-        throws OrekitException {
+    private void crawl(final DataFileLoader visitor, final File directory)
+        throws OrekitException, IOException, ParseException {
 
         // search in current directory
         final File[] list = directory.listFiles();
+
         for (int i = 0; i < list.length; ++i) {
             if (list[i].isDirectory()) {
 
                 // recurse in the sub-directory
                 crawl(visitor, list[i]);
 
-            } else  if (visitor.fileIsSupported(list[i].getName())) {
+            } else if (ZIP_ARCHIVE_PATTERN.matcher(list[i].getName()).matches()) {
 
-                // visit the current file
-                visitor.visit(list[i]);
+                // crawl inside the zip file
+                crawl(visitor, new ZipInputStream(new FileInputStream(list[i])));
+
+            } else {
+
+                // remove suffix from gzip files
+                final Matcher gzipMatcher = GZIP_FILE_PATTERN.matcher(list[i].getName());
+                final String baseName =
+                    gzipMatcher.matches() ? gzipMatcher.group(1) : list[i].getName();
+
+                if (visitor.fileIsSupported(baseName)) {
+
+                    // visit the current file
+                    InputStream input = new FileInputStream(list[i]);
+                    if (gzipMatcher.matches()) {
+                        input = new GZIPInputStream(input);
+                    }
+                    visitor.loadData(input, list[i].getName());
+
+                }
 
             }
         }
 
+    }
+
+    /** Crawl the files in a zip.
+     * @param visitor data file visitor to use
+     * @param zip zip input stream
+     * @exception OrekitException if some data is missing, duplicated
+     * or can't be read
+     * @exception IOException if data cannot be read
+     * @exception ParseException if data cannot be read
+     */
+    private void crawl(final DataFileLoader visitor, final ZipInputStream zip)
+        throws OrekitException, IOException, ParseException {
+
+        // loop over all zip entries
+        ZipEntry entry = zip.getNextEntry();
+        while (entry != null) {
+
+            if (!entry.isDirectory()) {
+
+                if (ZIP_ARCHIVE_PATTERN.matcher(entry.getName()).matches()) {
+
+                    // recurse inside the zip file
+                    crawl(visitor, new ZipInputStream(zip));
+
+                } else {
+                    // remove leading directories
+                    String name = entry.getName();
+                    final int lastSlash = name.lastIndexOf('/');
+                    if (lastSlash >= 0) {
+                        name = name.substring(lastSlash + 1);
+                    }
+
+                    // remove suffix from gzip files
+                    final Matcher gzipMatcher = GZIP_FILE_PATTERN.matcher(name);
+                    final String baseName = gzipMatcher.matches() ? gzipMatcher.group(1) : name;
+
+                    if (visitor.fileIsSupported(baseName)) {
+
+                        // visit the current file
+                        if (gzipMatcher.matches()) {
+                            visitor.loadData(new GZIPInputStream(zip), name);
+                        } else {
+                            visitor.loadData(zip, name);
+                        }
+
+                    }
+
+                }
+
+            }
+
+            // prepare next entry processing
+            zip.closeEntry();
+            entry = zip.getNextEntry();
+
+        }
     }
 
 }

@@ -24,7 +24,7 @@ import java.util.SortedSet;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataDirectoryCrawler;
-import org.orekit.data.DataFileCrawler;
+import org.orekit.data.DataFileLoader;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeStamped;
@@ -51,7 +51,7 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-class EOP05C04FilesLoader extends DataFileCrawler {
+class EOP05C04FilesLoader implements DataFileLoader {
 
     /** Conversion factor. */
     private static final double ARC_SECONDS_TO_RADIANS = 2 * Math.PI / 1296000;
@@ -77,6 +77,9 @@ class EOP05C04FilesLoader extends DataFileCrawler {
     /** UT1-UTC field. */
     private static final int UT1_UTC_FIELD = 6;
 
+    /** Supported files name pattern. */
+    private Pattern namePattern;
+
     /** Pattern for data lines.
      * <p>
      * The data lines in the EOP 05 C04 yearly data files have the following fixed form:
@@ -101,24 +104,22 @@ class EOP05C04FilesLoader extends DataFileCrawler {
      * (pre-existing data is preserved)
      */
     public EOP05C04FilesLoader(final SortedSet<TimeStamped> eop) {
-
-        super("^eopc04_IAU2000\\.(\\d\\d)(?:\\.gz)?$");
+        namePattern = Pattern.compile("^eopc04_IAU2000\\.(\\d\\d)$");
         this.eop = eop;
-
     }
 
     /** Load Earth Orientation Parameters.
-     * <p>The data is concatenated from all EOP 05 C04 data files
+     * <p>The data is concatenated from all bulletin B data files
      * which can be found in the configured IERS directory.</p>
-     * @exception OrekitException if some data can't be read, some
-     * file content is corrupted or a file with the old EOP C04
+     * @exception OrekitException if some data can't be read or some
+     * file content is corrupted
      */
     public void loadEOP() throws OrekitException {
         new DataDirectoryCrawler().crawl(this);
     }
 
     /** {@inheritDoc} */
-    protected void visit(final InputStream input)
+    public void loadData(final InputStream input, final String name)
         throws IOException, OrekitException {
 
         // set up a reader for line-oriented bulletin B files
@@ -151,8 +152,7 @@ class EOP05C04FilesLoader extends DataFileCrawler {
             if (!(inHeader || parsed)) {
                 throw new OrekitException("unable to parse line {0} in IERS data file {1}",
                                           new Object[] {
-                                              Integer.valueOf(lineNumber),
-                                              getFile().getAbsolutePath()
+                                              Integer.valueOf(lineNumber), name
                                           });
             }
         }
@@ -161,10 +161,15 @@ class EOP05C04FilesLoader extends DataFileCrawler {
         if (inHeader) {
             throw new OrekitException("file {0} is not a supported IERS data file",
                                       new Object[] {
-                                          getFile().getAbsolutePath()
+                                          name
                                       });
         }
 
+    }
+
+    /** {@inheritDoc} */
+    public boolean fileIsSupported(String fileName) {
+        return namePattern.matcher(fileName).matches();
     }
 
 }

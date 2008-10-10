@@ -188,8 +188,8 @@ public class ITRF2005FrameTest extends TestCase {
     }
 
     public void setUp() {
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_FS, "");
-        System.setProperty(DataDirectoryCrawler.DATA_ROOT_DIRECTORY_CP, "compressed-data");
+        String root = getClass().getClassLoader().getResource("compressed-data").getPath();
+        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, root);
     }
 
     public static Test suite() {
