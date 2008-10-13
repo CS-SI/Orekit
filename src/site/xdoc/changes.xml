@@ -24,7 +24,8 @@
              description="major upgrade with new features (GCRF and ITRF2005 frames, DE 405
              and DE 406 ephemerides support, improved and greatly simplified date/time support,
              vastly improved data configuration with zip files support, new tutorials, improved
-             performances, more tests and all identified bugs fixed.">
+             performances, more tests and all identified bugs fixed, new translation files for
+             italian, spanish and norse.">
       <action dev="pascal" type="fix">
         The ephemeris produced by numerical propagator now checks date validity in
         propagate method.
