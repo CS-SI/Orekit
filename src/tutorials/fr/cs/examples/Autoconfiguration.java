@@ -33,16 +33,16 @@ public class Autoconfiguration {
     }
 
     /** Configure the library.
-     * <p>Several configuration attempts are used here. They have been
-     * chosen in order to simplify running the tutorials in several
-     * environments: in the development environment, or in a user home
-     * environment, or in a system-wide configured environment.
+     * <p>Several configuration components are used here. They have been
+     * chosen in order to simplify running the tutorials in either a
+     * user home or local environment or in the development environment.
      *   <ul>
-     *     <li>use a ".orekit-data" directory in user home directory</li>
-     *     <li>use a ".orekit-data" directory in current directory</li>
-     *     <li>use a "orekit-data" directory in user home directory</li>
+     *     <li>use a "orekit-data.zip" directory in current directory</li>
      *     <li>use a "orekit-data" directory in current directory</li>
-     *     <li>use "orekit-data.jar" if it is in the classpath</li>
+     *     <li>use a ".orekit-data" directory in current directory</li>
+     *     <li>use a "orekit-data.zip" directory in user home directory</li>
+     *     <li>use a "orekit-data" directory in user home directory</li>
+     *     <li>use a ".orekit-data" directory in user home directory</li>
      *     <li>use the "regular-data" directory from the test resources</li>
      *   </ul>
      * </p>
@@ -50,50 +50,42 @@ public class Autoconfiguration {
     public static void configureOrekit() {
         final File home    = new File(System.getProperty("user.home"));
         final File current = new File(System.getProperty("user.dir"));
-        if (tryRoot(new File(home, ".orekit-data"))) {
-            return;
-        }
-        if (tryRoot(new File(current, ".orekit-data"))) {
-            return;
-        }
-        if (tryRoot(new File(home, "orekit-data"))) {
-            return;
-        }
-        if (tryRoot(new File(current, "orekit-data"))) {
-            return;
-        }
-        if (tryClasspath("orekit-data")) {
-            return;
-        }
-        if (tryClasspath("regular-data")) {
-            return;
-        }
-        throw new RuntimeException("Orekit autoconfiguration failed.");
+        StringBuffer pathBuffer = new StringBuffer();
+        appendIfExists(pathBuffer, new File(current, "orekit-data.zip"));
+        appendIfExists(pathBuffer, new File(current, "orekit-data"));
+        appendIfExists(pathBuffer, new File(current, ".orekit-data"));
+        appendIfExists(pathBuffer, new File(home,    "orekit-data.zip"));
+        appendIfExists(pathBuffer, new File(home,    "orekit-data"));
+        appendIfExists(pathBuffer, new File(home,    ".orekit-data"));
+        appendIfExists(pathBuffer, "regular-data");
+        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, pathBuffer.toString());
     }
 
-    /** Try to use a directory from filesystem.
-     * @param directory directory to try
-     * @return true if directory was found (and configured)
+    /** Append a directory/zip archive to the path if it exists.
+     * @param path placeholder where to put the directory/zip archive
+     * @param file file to try
      */
-    private static boolean tryRoot(final File directory) {
-        if (directory.exists() && directory.isDirectory()) {
-            System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, directory.getAbsolutePath());
-            return true;
+    private static void appendIfExists(final StringBuffer path, final File file) {
+        if (file.exists() && (file.isDirectory() || file.getName().endsWith(".zip"))) {
+            if (path.length() > 0) {
+                path.append(':');
+            }
+            path.append(file.getAbsolutePath());
         }
-        return false;
     }
 
-    /** Try to use a directory from classpath.
+    /** Append a classpath-related directory to the path if the directory exists.
+     * @param path placeholder where to put the directory
      * @param directory directory to try
-     * @return true if directory was found (and configured)
      */
-    private static boolean tryClasspath(final String directory) {
+    private static void appendIfExists(final StringBuffer path, final String directory) {
         final URL url = Autoconfiguration.class.getClassLoader().getResource(directory);
         if (url != null) {
-            System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, directory);
-            return true;
+            if (path.length() > 0) {
+                path.append(':');
+            }
+            path.append(url.getFile());
         }
-        return false;
     }
 
 }
