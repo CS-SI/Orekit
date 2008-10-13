@@ -77,9 +77,6 @@ class EOP05C04FilesLoader implements DataFileLoader {
     /** UT1-UTC field. */
     private static final int UT1_UTC_FIELD = 6;
 
-    /** Supported files name pattern. */
-    private Pattern namePattern;
-
     /** Pattern for data lines.
      * <p>
      * The data lines in the EOP 05 C04 yearly data files have the following fixed form:
@@ -95,6 +92,9 @@ class EOP05C04FilesLoader implements DataFileLoader {
      */
     private static final Pattern LINE_PATTERN =
         Pattern.compile("^\\d+ +\\d+ +\\d+ +\\d+(?: +-?\\d+\\.\\d+){12}$");
+
+    /** Supported files name pattern. */
+    private Pattern namePattern;
 
     /** Earth Orientation Parameters entries. */
     private SortedSet<TimeStamped> eop;
@@ -168,7 +168,7 @@ class EOP05C04FilesLoader implements DataFileLoader {
     }
 
     /** {@inheritDoc} */
-    public boolean fileIsSupported(String fileName) {
+    public boolean fileIsSupported(final String fileName) {
         return namePattern.matcher(fileName).matches();
     }
 

@@ -53,6 +53,12 @@ class JPLEphemeridesLoader implements DataFileLoader {
     private static final String OUT_OF_RANGE_DATE =
         "out of range date for ephemerides: {0}";
 
+    /** Binary record size in bytes for DE 405. */
+    private static final int DE405_RECORD_SIZE = 1018 * 8;
+
+    /** Binary record size in bytes for DE 406. */
+    private static final int DE406_RECORD_SIZE =  728 * 8;
+
     /** Supported files name pattern. */
     private Pattern namePattern;
 
@@ -93,12 +99,6 @@ class JPLEphemeridesLoader implements DataFileLoader {
         SUN
 
     }
-
-    /** Binary record size in bytes for DE 405. */
-    private static final int DE405_RECORD_SIZE = 1018 * 8;
-
-    /** Binary record size in bytes for DE 406. */
-    private static final int DE406_RECORD_SIZE =  728 * 8;
 
     /** Ephemeris type to load. */
     private final EphemerisType type;
@@ -262,7 +262,7 @@ class JPLEphemeridesLoader implements DataFileLoader {
         throws IOException {
         int index = start;
         while (index != record.length) {
-            int n = input.read(record, index, record.length - index);
+            final int n = input.read(record, index, record.length - index);
             if (n < 0) {
                 return false;
             }
@@ -471,7 +471,7 @@ class JPLEphemeridesLoader implements DataFileLoader {
     }
 
     /** {@inheritDoc} */
-    public boolean fileIsSupported(String fileName) {
+    public boolean fileIsSupported(final String fileName) {
         return namePattern.matcher(fileName).matches();
     }
 

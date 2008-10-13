@@ -85,7 +85,7 @@ public class DataDirectoryCrawler {
      */
     public DataDirectoryCrawler() throws OrekitException {
 
-        List<File> components = new ArrayList<File>();
+        final List<File> components = new ArrayList<File>();
 
         try {
 
@@ -140,7 +140,7 @@ public class DataDirectoryCrawler {
                                                   component.getAbsolutePath()
                                               });
                 } else {
-                    ZipInputStream zip = new ZipInputStream(new FileInputStream(component));
+                    final ZipInputStream zip = new ZipInputStream(new FileInputStream(component));
                     crawl(visitor, zip);
                     zip.close();
                 }

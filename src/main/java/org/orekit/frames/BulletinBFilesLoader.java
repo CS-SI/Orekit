@@ -195,7 +195,7 @@ class BulletinBFilesLoader implements DataFileLoader {
     }
 
     /** {@inheritDoc} */
-    public boolean fileIsSupported(String fileName) {
+    public boolean fileIsSupported(final String fileName) {
         return namePattern.matcher(fileName).matches();
     }
 
