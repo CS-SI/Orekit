@@ -44,12 +44,14 @@ Frames
 +---------------------
 Frame inertialFrame = Frame.getEME2000();
 TimeScale utc = UTCScale.getInstance();
-AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, utc);
+AbsoluteDate initialDate =
+    new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, utc);
 double mu =  3.986004415e+14;
 Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
 Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
 PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
-Orbit initialOrbit = new CartesianOrbit(pvCoordinates, inertialFrame, initialDate, mu);
+Orbit initialOrbit =
+    new CartesianOrbit(pvCoordinates, inertialFrame, initialDate, mu);
 +---------------------
 
   As a propagator, we consider a simple <KeplerianPropagator>.
@@ -61,7 +63,8 @@ Propagator kepler = new KeplerianPropagator(initialOrbit);
   So, the LOF is all defined, assuming its type to be QSW.
 
 +---------------------
-LocalOrbitalFrame lof = new LocalOrbitalFrame(inertialFrame, LOFType.QSW, kepler, "LOF");
+LocalOrbitalFrame lof =
+    new LocalOrbitalFrame(inertialFrame, LOFType.QSW, kepler, "LOF");
 +---------------------
 
   On the other hand, let's define the ground station by its coordinates as a <GeodeticPoint> 
@@ -74,7 +77,7 @@ double altitude  = 0.;
 GeodeticPoint station = new GeodeticPoint(latitude, longitude, altitude);
 double ae =  6378137.0;                // equatorial radius in meter
 double f  =  1.0 / 298.257223563;      // flattening
-Frame ITRF2005 = Frame.getITRF2005();  // terrestrial frame at an arbitrary date
+Frame ITRF2005 = Frame.getITRF2005();  // terrestrial frame
 BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
 TopocentricFrame staF = new TopocentricFrame(earth, station, "station");
 +---------------------
@@ -91,7 +94,8 @@ TopocentricFrame staF = new TopocentricFrame(earth, station, "station");
   in one single instruction:
 
 +---------------------
-PVCoordinates pv = staF.getTransformTo(lof, anyTime).transformPVCoordinates(PVCoordinates.ZERO);
+PVCoordinates pv =
+    staF.getTransformTo(lof, anyTime).transformPVCoordinates(PVCoordinates.ZERO);
 +---------------------
 
   All the details of the intermediate frames composite motions are hidden to the user.
@@ -99,7 +103,8 @@ PVCoordinates pv = staF.getTransformTo(lof, anyTime).transformPVCoordinates(PVCo
   Finally, we can get the doppler measurement:
 
 +---------------------
-double doppler = Vector3D.dotProduct(pv.getPosition(), pv.getVelocity()) / pv.getPosition().getNorm();
+double doppler =
+    Vector3D.dotProduct(pv.getPosition(), pv.getVelocity()) / pv.getPosition().getNorm();
 +---------------------
 
   With some computation loop, we got the following results:
@@ -171,8 +176,11 @@ Frame satFrame = new Frame(cogFrame, cogToSat, "sat");
 
 +---------------------
 Transform translateGPS = new Transform(new Vector3D(0, 0, 1));
-Transform rotateGPS    = new Transform(new Rotation(new Vector3D(0, 1, 3), Math.toRadians(10)));
-Frame gpsFrame         = new Frame(satFrame, new Transform(translateGPS, rotateGPS), "GPS");
+Transform rotateGPS    = new Transform(new Rotation(new Vector3D(0, 1, 3),
+                                                    Math.toRadians(10)));
+Frame gpsFrame         = new Frame(satFrame,
+                                   new Transform(translateGPS, rotateGPS),
+                                   "GPS");
 +---------------------
 
   Let's consider some measurement date in UTC time scale:
@@ -200,10 +208,13 @@ Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
   
 +---------------------
 Transform measuredTranslation = new Transform(position, velocity);
-Transform formerTransform     = gpsFrame.getTransformTo(Frame.getITRF2005(), date);
-Transform preservedRotation   = new Transform(formerTransform.getRotation(),
-                                              formerTransform.getRotationRate());
-Transform gpsToItrf           = new Transform(preservedRotation, measuredTranslation);
+Transform formerTransform =
+    gpsFrame.getTransformTo(Frame.getITRF2005(), date);
+Transform preservedRotation =
+    new Transform(formerTransform.getRotation(),
+                  formerTransform.getRotationRate());
+Transform gpsToItrf =
+    new Transform(preservedRotation, measuredTranslation);
 +---------------------
 
   So we can now update the transform from EME2000 to CoG frame.
@@ -220,13 +231,14 @@ cogFrame.updateTransform(gpsFrame, Frame.getITRF2005(), gpsToItrf, date);
   pairs we want:
   
 +---------------------
+PVCoordinates origin  = PVCoordinates.ZERO;
 Transform cogToItrf   = cogFrame.getTransformTo(Frame.getITRF2005(), date);
-PVCoordinates satItrf = cogToItrf.transformPVCoordinates(PVCoordinates.ZERO);
+PVCoordinates satItrf = cogToItrf.transformPVCoordinates(origin);
 +---------------------
 
 +---------------------
 Transform cogToEme2000   = cogFrame.getTransformTo(Frame.getEME2000(), date);
-PVCoordinates satEME2000 = cogToEme2000.transformPVCoordinates(PVCoordinates.ZERO);
+PVCoordinates satEME2000 = cogToEme2000.transformPVCoordinates(origin);
 +---------------------
 
   As a result, we can compare the GPS measurements to the computed values:
