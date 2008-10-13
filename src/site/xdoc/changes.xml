@@ -20,8 +20,12 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="4.0" date="TBD"
-             description="TBD">
+    <release version="4.0" date="2008-10-13"
+             description="major upgrade with new features (GCRF and ITRF2005 frames, DE 405
+             and DE 406 ephemerides support, improved and greatly simplified date/time support,
+             new GPS time scale, better handling of leap secondes within the leaps themselves,
+             vastly improved data configuration with zip files support, new turorials and
+             bugs fixes.">
       <action dev="pascal" type="fix">
         The ephemeris produced by numerical propagator now checks date validity in
         propagate method.
@@ -60,7 +64,7 @@
       </action>
       <action dev="luc" type="update">
         Improved external data configuration. The java property is now called
-        orekit.data.path and is a column or semicolumn separated path containing
+        orekit.data.path and is a colon or semicolon separated path containing
         directories or zip archives, themselves containing embedded directories
         or zip archives and data files. This allows easy roll-out of system-wide
         configuration data that individual users can override by prepending their
