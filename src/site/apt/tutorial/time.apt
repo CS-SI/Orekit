@@ -15,9 +15,9 @@ Time
 
   This tutorial shows how to handle time in Orekit.
 
-* Basic usage
+* Basic use
 
-  The first example will be devoted to basic usage: creating dates,
+  The first example will be devoted to basic use: creating dates,
   comparing dates and printing dates. We will build a small program
   that loops between a start and an end date with a small step and
   print it in two different time scales: UTC and TAI. The loop will

@@ -291,7 +291,21 @@ SpacecraftState finalState =
   the care of handling regular outputs through a variable step integration loop.
 
   The only need is to derived some class from the interface <OrekitFixedStepHandler>
-  to realize a <handleStep> method.
+  to realize a <handleStep> method, as follows:
+
++---------------------
+private static class TutorialStepHandler implements OrekitFixedStepHandler {
+
+    public void handleStep(SpacecraftState currentState, boolean isLast) {
+        System.out.println(" time : " + currentState.getDate());
+        System.out.println(" " + currentState.getOrbit());
+        if (isLast) {
+            System.out.println(" this was the last step ");
+        }
+    }
+
+}
++---------------------
   
   For the same result, with the slave mode, it would have required much more programming.
 
@@ -452,10 +466,12 @@ SpacecraftState finalState =
   
 +---------------------
 BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+System.out.println(" Ephemeris defined from " + ephemeris.getMinDate() + " to " + ephemeris.getMaxDate());
 +---------------------
 
   The ephemeris is defined as a <BoundedPropagator>, which means that it is valid
-  only between the propagation initial and final dates:
+  only between the propagation initial and final dates. The code above give the
+  following result:
 
 +---------------------
  Ephemeris defined from 2004-01-01T23:30:00.000 to 2004-01-02T01:10:00.000
@@ -465,10 +481,11 @@ BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
   the orbital state towards any intermediate date just with one instruction:
   
 +---------------------
-SpacecraftState interState = ephemeris.propagate(interDate);
+SpacecraftState intermediateState = ephemeris.propagate(intermediateDate);
 +---------------------
 
-  Some such results are printed below::
+  Here are results obtained with intermediate dates set to 3000 second after
+  start date and to exactly the final date:
 
 +---------------------
  Ephemeris propagation :
@@ -484,7 +501,9 @@ SpacecraftState interState = ephemeris.propagate(interDate);
                            lv: 583.1250344407331;}
 +---------------------
 
-  If the target date is out of range, an exception will occur like the following:
+  The following shows the error message we get when we try to use a date outside
+  of the ephemeris range (in this case, the intermediate date was set to 1000 seconds
+  before ephemeris start:
 
 +---------------------
 out of range date for ephemerides: 2004-01-01T23:13:20.000
@@ -499,7 +518,8 @@ out of range date for ephemerides: 2004-01-01T23:13:20.000
 
   This tutorial aims to show the power and simplicity of the event handling mechanism.
   
-  One needs to check the visibility gap between a satellite and a ground station on some duration.
+  One needs to check the visibility between a satellite and a ground station during some
+  time range.
   
   We will use, and extend, the predefined <ElevationDetector> to perform the task.
   
@@ -595,7 +615,7 @@ SpacecraftState finalState =
   check, both the raising and the setting time, and to stop the propagation just after
   the setting detection.
 
-  The printed result is shown bellow.
+  The printed result is shown below.
   We can see that the propagation stopped just after detecting the raising:
 
 +---------------------

@@ -66,15 +66,16 @@ Propagation
   Kepler or Eckstein-Heschler.
 
   Stopping propagation is useful when some specific state is desired but its real occurrence
-  time is unknown in advance. a typical example would be to find the next ascending node
+  time is unknown in advance. A typical example would be to find the next ascending node
   or the next apogee. In this case, we can register a <NodeDetector> or an <ApsideDetector>
   object and launch a propagation with a target time far away in the future. When the
-  event is triggered, it ask the propagator to stop and the returned value is the state
+  event is triggered, it asks the propagator to stop and the returned value is the state
   exactly at the event time.
 
-  Two other available events detectors are a simple <DateDetector> which is simply tirggered
-  at a predefined date and an <ElevationDetector> which is triggered at raising or setting
-  time of a satellite with respect to a ground point. The latter can be used to compute
+  Three other available events detectors are a simple <DateDetector> which is simply triggered
+  at a predefined date, an <ElevationDetector> which is triggered at raising or setting
+  time of a satellite with respect to a ground point and an <AltitudeDetector> which is triggered
+  when satellite crosses a predefined altitude limit. The latter can be used to compute
   easily operational forecasts.
 
 

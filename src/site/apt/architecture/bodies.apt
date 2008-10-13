@@ -28,7 +28,7 @@ Bodies
   the Moon, the eight planets and the Pluto dwarf planet are the supported bodies. In
   addition to these real bodies, two points are supported for convenience as if they
   were real bodies: the solar system barycenter and the Earth-Moon barycenter. The
-  <SolarSystemBody> factory relies on the JPL DE 405 binary ephemerides files to
+  <SolarSystemBody> factory relies on the JPL DE 405 or DE 406 binary ephemerides files to
   compute all positions and velocities. Note that the binary files are used, not the
   ASCII ones, regardless of the processor endianness.
 

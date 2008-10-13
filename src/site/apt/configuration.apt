@@ -53,8 +53,8 @@ Configuration
   archives on their local disk.
 
   Directories trees or zip archives may be used interchangeably. They both basically represent
-  container for files or other directories trees or zip archives. Orekit open zip archives on
-  the fly and crawl into them as if they were regular directories, without writing anything to
+  container for files or other directories trees or zip archives. Orekit opens zip archives on
+  the fly and crawls into them as if they were regular directories, without writing anything to
   disk. Data files may also be compressed using gzip to save some disk space. Compressed files
   are also uncompressed directly in memory. Compressing text-based files like bulletinB or EOPC04
   saves a lot of disk space, but compressing the JPL binary files does almost not save anything.
