@@ -29,7 +29,7 @@ Downloads
 *----------*--------------------------------------------------------*
 |  javadoc | {{{./downloads/orekit-4.0-doc.jar}orekit-4.0-doc.jar}} |
 *----------*--------------------------------------------------------*
-version 4.0 downloads (release date: 2008-xx-xx)
+version 4.0 downloads (release date: 2008-10-13)
 
 *----------*--------------------------------------------------------*
 |  package |                          link                          |
@@ -44,11 +44,10 @@ version 3.1 downloads (release date: 2008-07-16)
 
 * Data
 
-  For convenience, a jar file containing some configuration data is
-  available for download. Putting this jar file on your classpath and setting the
-  <orekit.data.directory.classpath> property to the value <<</orekit-data>>> (which
-  is a directory with the jar file) is all that is needed to use it. Similar files
-  can be custom made by users with updated data.
+  For convenience, a zip archive containing some configuration data is
+  available for download. Putting this zip archive in your disk and putting its
+  location in the <orekit.data.path> property to the value is all that is needed
+  to use it. Similar files can be custom made by users with updated data.
 
   This file contents is:
 
@@ -57,10 +56,10 @@ version 3.1 downloads (release date: 2008-07-16)
 
     ** Earth Orientation Parameters up to mid-2008
 
-    ** planetary ephemerides from 1950 to 2050
+    ** DE 406 planetary ephemerides from 1962 to 2029
   
   There is no guarantee that this file will be available indefinitely or that its
   content will be updated. It should be considered as a simple configuration example.
   Users are encouraged to set up their own configuration data.
 
-  The file is available by following this link: {{{./downloads/orekit-data.jar}orekit-data.jar}}.
+  The file is available by following this link: {{{./downloads/orekit-data.zip}orekit-data.zip}}.
