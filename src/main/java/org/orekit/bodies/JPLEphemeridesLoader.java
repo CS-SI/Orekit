@@ -376,7 +376,7 @@ class JPLEphemeridesLoader implements DataFileLoader {
     /** Parse regular ephemeris record.
      * @exception OrekitException if the header is not a JPL ephemerides binary file header
      */
-    private void parseDataRecord() throws OrekitException {
+    private synchronized void parseDataRecord() throws OrekitException {
 
         // extract time range covered by the record
         final AbsoluteDate rangeStart = extractDate(0);
