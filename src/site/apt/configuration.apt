@@ -23,9 +23,9 @@ Configuration
 
 * Data sets
 
-  For user convenience, data that is a few tens of kilobytes and can be assumed to never
-  change like precession-nutation models or atmospheric models are already embedded in
-  the core library. Small and simple data sets are defined by setting constants in the
+  For user convenience, data that is only a few tens of kilobytes and can be assumed to
+  never change like precession-nutation models or atmospheric models are already embedded
+  in the core library. Small and simple data sets are defined by setting constants in the
   code itself. This is the case for offset between Terrestrial Time and International
   Atomic Time scales for example. Large or complex data sets are embedded by copying the
   corresponding resource files inside the compiled jar, under the META-INF directory as
@@ -33,26 +33,37 @@ Configuration
   model tables for example. There is nothing to configure for these data sets as they are
   embedded within the library.
 
-  Some useful data is huge or can change over time. Such data sets cannot be realistically
-  embedded within a specific version of the library on the long run. A typical example
-  for such data set is Earth Orientation Parameters which are mandatory for accurate frames
-  conversion or planetary ephemerides. IERS regularly publishes new Earth Orientation Parameter
-  files covering new time ranges whereas planetary ephemerides represent megabytes-sized files.
-  Orekit knows how to find and read these data sets which should be provided by user at run
-  time, provided it is properly configured.
+  Other types of data sets correspond to huge or changing data sets. These ones cannot
+  realistically be embedded within a specific version of the library on the long run. A
+  typical example for such data set is Earth Orientation Parameters which are mandatory for
+  accurate frames conversion, another example is planetary ephemerides. IERS regularly
+  publishes new Earth Orientation Parameter files covering new time ranges whereas planetary
+  ephemerides represent megabytes-sized files. These data sets must be provided by users and
+  Orekit must be configured to find and read them at run time.
 
 * Data directories trees
 
-  Data sets stored externally to the library must be stored as simple files directories trees
-  (or zip archives) with read access permission.
+  User provided data sets must be stored as files using one of the supported formats within
+  either directories trees or zip archives with read access permission.
 
-  Any number of directories trees or zip archives may be specified. This allows for example
-  to set up a general zip archive in a network shared disk for system-wide use in an office
-  department by system administrators while still letting individual users provide in addition
-  to this set their own data in one or several local directories.
+  Any number of directories trees or zip archives may be used. This allows for example system
+  administrators to set up a zip archive in a network shared disk for system-wide use in an
+  office department and individual users to provide their own data sets in addition to (or in
+  replacement of some of) the system-wide data by setting up local directories trees or zip
+  archives on their local disk.
 
-  Zip archives or directories trees may also contain other zip archives, Orekit will open them
-  on the fly and crawl into them as if they were regular directories.
+  Directories trees or zip archives may be used interchangeably. They both basically represent
+  container for files or other directories trees or zip archives. Orekit open zip archives on
+  the fly and crawl into them as if they were regular directories, without writing anything to
+  disk. Data files may also be compressed using gzip to save some disk space. Compressed files
+  are also uncompressed directly in memory. Compressing text-based files like bulletinB or EOPC04
+  saves a lot of disk space, but compressing the JPL binary files does almost not save anything.
+  Using compressed files inside a zip archive is also irrelevant as zip files are themselves
+  compressed and stacking compression algorithm only slows down reading speed without any disk
+  space gain.
+
+  Since nothing is written to disk (there are no temporary files), user provided data sets may
+  be stored on non-writable media like disk partitions with restricted access or CD/DVD.
 
 [./images/directories-tree.png]
 
@@ -62,35 +73,37 @@ Configuration
   silently ignored. This allows the user to share the data directories trees with other tools
   which need a specific layout or additional files. A drawback of this behavior is that if the
   users sets up a deep data directory tree containing a huge number of files, Orekit may need
-  some time to explore it, even if it really reads only a small subset of the total number
-  of files.
+  some time to explore it (but it will only open the files it knows about). The layout presented
+  in the figure above is a simple example.
 
 * Configuration parameter
 
-  There are only one configuration parameter for Orekit, a java property named <orekit.data.path>.
+  There is only one configuration parameter for Orekit, a java property named <orekit.data.path>.
+  This property should be set to a colon or semicolon separated list of directories trees and zip
+  archives containing the data files Orekit can use.
 
-  The value of the property should be set to a colon or semicolon separated list of directories
-  trees and zip archives containing the data files Orekit can use. When some data type is searched for
-  (for example Earth Orientation Parameters from IERS), the path components are used in the order
-  they are given. If the search succeeds with one component, then the remaining components of the
-  path will be ignored for this search and the result will be immediately returned. This feature
-  allows users to overwrite system-wide data for one type (EOP data in our example) if they want,
-  without being obliged to overwrite other types, like JPL ephemerides.
+  When some data type is searched for (say for example Earth Orientation Parameters from IERS),
+  the path components are used sequentially in the order they are given. If the search succeeds
+  while one component is explored, the data found will be returned without exploring the remaining
+  components of the path, they will be ignored for this search. This feature allows users to
+  provide their own version of some system-wide data (EOP data in our example) if they want, without
+  being obliged to overwrite other types (like JPL ephemerides for example).
 
   As any other java property, <orekit.data.path> can be initialized at application launch time by
   the user (for example using the -D flag of the virtual machine) or from within the application
   by calling the <System.setProperty> method. In the latter case, rather than the literal string
   constants <orekit.data.path>, the <OREKIT_DATA_PATH> static field from the <DataDirectoryCrawler>
   class can be used. If the property is set up by the application, it must be done before any Orekit
-  feature is called, since some data are initialized very early (mainly frame and time related data).
+  feature is called, since some data are initialized very early (mainly frame and time related data
+  like leap seconds for UTC).
 
 * Quick setup using default data
 
   For convenience, a zip file containing some default data is available for download on
   orekit site: {{http://www.orekit.org/downloads/orekit-data.zip}}. Setting the
   <orekit.data.path> property to the location of this file on a local computer is enough to
-  use Orekit efficiently. This archive contains Earth OrientationParameters from 1962 to 2008,
-  the JPL DE 406 ephemerides from 1962 to 2029 and the UTC TAI history from 1970 to 2008.
+  use Orekit efficiently. This zip archive contains Earth OrientationParameters from 1962 to 2008,
+  JPL DE 406 ephemerides from 1962 to 2029 and UTC TAI history from 1970 to 2008.
 
 * Supported data files
 
@@ -98,12 +111,6 @@ Configuration
   character represents any digit and <(m/p)> represents either the m character or the p
   character. The <[.gz]> part at the end of all naming patterns means that a <.gz> suffix
   can be appended, in which case the files are considered to be compressed with gzip.
-  Compressed files are uncompressed in memory upon reading (the compressed files are
-  preserved on disk). Compressing text-based files like bulletinB or EOPC04 saves a lot
-  of disk space, but compressing the JPL binary files does almost not save anything.
-  Using compressed files for a classpath tree stored within a jar file is also irrelevant
-  as jar files are themselves compressed and stacking compression algorithm only slows
-  down reading speed without any disk space gain.
 
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
 |       file naming pattern       |      format     |               data type              |                            source                          |
@@ -120,19 +127,23 @@ Configuration
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
 supported data files
 
-  There should generally be only one leap seconds introduction history file. However, since
-  Orekit always explores all the data directories tree, a safety measure has been added in case
-  older files remain around: all files are combined together and duplicates are removed, so the
-  complete data set correspond to the file with the largest number of entries, regardless of its
-  location within the tree. The entries read are then combined with a predefined set of entries that
-  is already embedded within Orekit, hence the file is optional if a sufficiently recent version
-  of the library is used. As of 2008, the predefined set contains all leap seconds history from
-  1972-01-01 to 2009-01-01.
+* Using Orekit without data
 
-  All Earth Orientation Parameters files are combined together and should constitute a continuous
-  time-line without holes. If data for a given date is not available, no errors are triggered
-  and default values are used. The default values are zero angular offsets for pole motion and
-  zero time offset for dTU1.
+  It is possible to use Orekit in some restricted way without configuring any data sets.
+
+  Since time is use throughout the library, the known history of leap seconds introduction at time
+  of publication is already embedded in the library, thus allowing to work without the UTC-TAI.history
+  for a short period of time (up to next leap second introduction after library publication). As of
+  version 4.0, the embedded history includes all leap seconds introduced from 1972-01-01 to 2009-01-01.
+
+  The Earth Orientation Parameters are used only for conversions involving ITRF2005. If this frame is
+  not used at all, then the bulletin B and EOP 05 C04 files are not needed. If the ITRF2005 frame is
+  used but the files are not available (which is always the case when using dates a few months in
+  the future), no error is triggered and the pole correction is simply set to 0. This induces an
+  angular error in position. The order of magnitude of this error is about 15 meters at Earth surface.
+
+  The JPL ephemerides are used whenever Sun, Moon or solar system planets are used. As of version 4.0
+  of the library, there is no way to use these celestial bodies without the corresponding ephemerides.
 
 * Authors
 
