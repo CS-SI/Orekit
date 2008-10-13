@@ -23,9 +23,8 @@
     <release version="4.0" date="2008-10-13"
              description="major upgrade with new features (GCRF and ITRF2005 frames, DE 405
              and DE 406 ephemerides support, improved and greatly simplified date/time support,
-             new GPS time scale, better handling of leap secondes within the leaps themselves,
-             vastly improved data configuration with zip files support, new turorials and
-             bugs fixes.">
+             vastly improved data configuration with zip files support, new tutorials, improved
+             performances, more tests and all identified bugs fixed.">
       <action dev="pascal" type="fix">
         The ephemeris produced by numerical propagator now checks date validity in
         propagate method.
