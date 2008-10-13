@@ -94,13 +94,14 @@ public class Frames2 {
             cogFrame.updateTransform(gpsFrame, Frame.getITRF2005(), gpsToItrf, date);
 
             // And we can get the position and velocity of satellite CoG in EME2000 frame
+            PVCoordinates origin  = PVCoordinates.ZERO;
             Transform cogToItrf   = cogFrame.getTransformTo(Frame.getITRF2005(), date);
-            PVCoordinates satItrf = cogToItrf.transformPVCoordinates(PVCoordinates.ZERO);
+            PVCoordinates satItrf = cogToItrf.transformPVCoordinates(origin);
             System.out.println("Satellite position in ITRF2005: " + v3.format(satItrf.getPosition()));
             System.out.println("Satellite velocity in ITRF2005: " + v7.format(satItrf.getVelocity()));
 
             Transform cogToEme2000   = cogFrame.getTransformTo(Frame.getEME2000(), date);
-            PVCoordinates satEME2000 = cogToEme2000.transformPVCoordinates(PVCoordinates.ZERO);
+            PVCoordinates satEME2000 = cogToEme2000.transformPVCoordinates(origin);
             System.out.println("Satellite position in EME2000: " +
                                v3.format(satEME2000.getPosition()));
             System.out.println("Satellite velocity in EME2000: " +
