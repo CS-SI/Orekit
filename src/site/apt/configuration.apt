@@ -99,11 +99,13 @@ Configuration
 
 * Quick setup using default data
 
-  For convenience, a zip file containing some default data is available for download on
+  For convenience, a 2.5 megabytes zip file containing some default data is available for download on
   orekit site: {{http://www.orekit.org/downloads/orekit-data.zip}}. Setting the
   <orekit.data.path> property to the location of this file on a local computer is enough to
   use Orekit efficiently. This zip archive contains Earth OrientationParameters from 1962 to 2008,
-  JPL DE 406 ephemerides from 1962 to 2029 and UTC TAI history from 1970 to 2008.
+  JPL DE 406 ephemerides from 1962 to 2029 and UTC TAI history from 1972-01-01 to
+  2006-01-01. As explained below, Orekit also has some embedded data, so despite the leap second
+  that will be introduced at the end of 2008 is not in the file, it is already known to Orekit.
 
 * Supported data files
 
