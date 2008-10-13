@@ -406,7 +406,7 @@ class JPLEphemeridesLoader implements DataFileLoader {
         final int nbCoeffs    = coeffs;
         final int first       = firstIndex;
         final double duration = maxChunksDuration;
-        synchronized(this) {
+        synchronized (this) {
             for (int i = 0; i < nbChunks; ++i) {
 
                 // set up chunk validity range
