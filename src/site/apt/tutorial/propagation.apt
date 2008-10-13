@@ -466,7 +466,8 @@ SpacecraftState finalState =
   
 +---------------------
 BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
-System.out.println(" Ephemeris defined from " + ephemeris.getMinDate() + " to " + ephemeris.getMaxDate());
+System.out.println(" Ephemeris defined from " + ephemeris.getMinDate() +
+                   " to " + ephemeris.getMaxDate());
 +---------------------
 
   The ephemeris is defined as a <BoundedPropagator>, which means that it is valid
