@@ -67,8 +67,8 @@ public class MasterMode {
             double i = Math.toRadians(7); // inclination
             double omega = Math.toRadians(180); // perigee argument
             double raan = Math.toRadians(261); // right ascention of ascending node
-            double lv = 0; // mean anomaly
-            Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lv,
+            double lM = 0; // mean anomaly
+            Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM,
                                                     KeplerianOrbit.MEAN_ANOMALY, 
                                                     inertialFrame, initialDate, mu);
 

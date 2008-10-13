@@ -54,7 +54,7 @@ public class EphemerisMode {
             double i = Math.toRadians(7); // inclination
             double omega = Math.toRadians(180); // perigee argument
             double raan = Math.toRadians(261); // right ascension of ascending node
-            double lv = 0; // mean anomaly
+            double lM = 0; // mean anomaly
 
             // Inertial frame
             Frame inertialFrame = Frame.getEME2000();
@@ -67,7 +67,7 @@ public class EphemerisMode {
             double mu =  3.986004415e+14;
 
             // Orbit construction as Keplerian
-            Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lv,
+            Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM,
                                                     KeplerianOrbit.MEAN_ANOMALY,
                                                     inertialFrame, initialDate, mu);
             

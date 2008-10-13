@@ -57,7 +57,7 @@ double e = 0.72831215;               // eccentricity
 double i = Math.toRadians(7);        // inclination
 double omega = Math.toRadians(180);  // perigee argument
 double raan = Math.toRadians(261);   // right ascension of ascending node
-double lv = 0;                       // mean anomaly
+double lM = 0;                       // mean anomaly
 +---------------------
 
   The initial orbit is defined as a <KeplerianOrbit>.\
@@ -66,7 +66,7 @@ double lv = 0;                       // mean anomaly
   of the library architecture documentation.
 
 +---------------------
-Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lv,
+Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM,
                                         KeplerianOrbit.MEAN_ANOMALY,
                                         inertialFrame, initialDate, mu);
 +---------------------
@@ -177,8 +177,8 @@ double e = 0.72831215;              // eccentricity
 double i = Math.toRadians(7);       // inclination
 double omega = Math.toRadians(180); // perigee argument
 double raan = Math.toRadians(261);  // right ascention of ascending node
-double lv = 0;                      // mean anomaly
-Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lv,
+double lM = 0;                      // mean anomaly
+Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM,
                                         KeplerianOrbit.MEAN_ANOMALY, 
                                         inertialFrame, initialDate, mu);
 // Initial state definition
@@ -323,8 +323,8 @@ double e = 0.72831215;              // eccentricity
 double i = Math.toRadians(7);       // inclination
 double omega = Math.toRadians(180); // perigee argument
 double raan = Math.toRadians(261);  // right ascention of ascending node
-double lv = 0;                      // mean anomaly
-Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lv,
+double lM = 0;                      // mean anomaly
+Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM,
                                         KeplerianOrbit.MEAN_ANOMALY, 
                                         inertialFrame, initialDate, mu);
 // Initial state definition
