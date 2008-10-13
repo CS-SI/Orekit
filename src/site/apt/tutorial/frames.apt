@@ -94,8 +94,9 @@ TopocentricFrame staF = new TopocentricFrame(earth, station, "station");
   in one single instruction:
 
 +---------------------
+PVCoordinates origin = PVCoordinates.ZERO;
 PVCoordinates pv =
-    staF.getTransformTo(lof, anyTime).transformPVCoordinates(PVCoordinates.ZERO);
+    staF.getTransformTo(lof, anyTime).transformPVCoordinates(origin);
 +---------------------
 
   All the details of the intermediate frames composite motions are hidden to the user.
@@ -104,7 +105,8 @@ PVCoordinates pv =
 
 +---------------------
 double doppler =
-    Vector3D.dotProduct(pv.getPosition(), pv.getVelocity()) / pv.getPosition().getNorm();
+    Vector3D.dotProduct(pv.getPosition(), pv.getVelocity()) /
+    pv.getPosition().getNorm();
 +---------------------
 
   With some computation loop, we got the following results:
