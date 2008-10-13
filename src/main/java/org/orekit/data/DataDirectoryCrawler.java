@@ -80,7 +80,7 @@ public class DataDirectoryCrawler {
     /** Path components. */
     private final List<File> pathComponents;
 
-    /** Build an data files crawler.
+    /** Build a data files crawler.
      * @exception OrekitException if path contains inexistent components
      */
     public DataDirectoryCrawler() throws OrekitException {
