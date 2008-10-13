@@ -376,7 +376,7 @@ class JPLEphemeridesLoader implements DataFileLoader {
     /** Parse regular ephemeris record.
      * @exception OrekitException if the header is not a JPL ephemerides binary file header
      */
-    private synchronized void parseDataRecord() throws OrekitException {
+    private void parseDataRecord() throws OrekitException {
 
         // extract time range covered by the record
         final AbsoluteDate rangeStart = extractDate(0);
@@ -402,29 +402,35 @@ class JPLEphemeridesLoader implements DataFileLoader {
 
         // loop over chunks inside the time range
         AbsoluteDate chunkEnd = rangeStart;
-        for (int i = 0; i < chunks; ++i) {
+        final int nbChunks    = chunks;
+        final int nbCoeffs    = coeffs;
+        final int first       = firstIndex;
+        final double duration = maxChunksDuration;
+        synchronized(this) {
+            for (int i = 0; i < nbChunks; ++i) {
 
-            // set up chunk validity range
-            final AbsoluteDate chunkStart = chunkEnd;
-            chunkEnd = (i == chunks - 1) ?
-                       rangeEnd : new AbsoluteDate(rangeStart, (i + 1) * maxChunksDuration);
+                // set up chunk validity range
+                final AbsoluteDate chunkStart = chunkEnd;
+                chunkEnd = (i == nbChunks - 1) ?
+                        rangeEnd : new AbsoluteDate(rangeStart, (i + 1) * duration);
 
-            // extract Chebyshev coefficients for the selected body
-            // and convert them from kilometers to meters
-            final double[] xCoeffs = new double[coeffs];
-            final double[] yCoeffs = new double[coeffs];
-            final double[] zCoeffs = new double[coeffs];
-            for (int k = 0; k < coeffs; ++k) {
-                final int index = firstIndex + 3 * i * coeffs + k - 1;
-                xCoeffs[k] = 1000.0 * extractDouble(8 * index);
-                yCoeffs[k] = 1000.0 * extractDouble(8 * (index +  coeffs));
-                zCoeffs[k] = 1000.0 * extractDouble(8 * (index + 2 * coeffs));
+                // extract Chebyshev coefficients for the selected body
+                // and convert them from kilometers to meters
+                final double[] xCoeffs = new double[nbCoeffs];
+                final double[] yCoeffs = new double[nbCoeffs];
+                final double[] zCoeffs = new double[nbCoeffs];
+                for (int k = 0; k < nbCoeffs; ++k) {
+                    final int index = first + 3 * i * nbCoeffs + k - 1;
+                    xCoeffs[k] = 1000.0 * extractDouble(8 * index);
+                    yCoeffs[k] = 1000.0 * extractDouble(8 * (index +  nbCoeffs));
+                    zCoeffs[k] = 1000.0 * extractDouble(8 * (index + 2 * nbCoeffs));
+                }
+
+                // build the position-velocity model for current chunk
+                ephemerides.add(new PosVelChebyshev(chunkStart, duration,
+                                                    xCoeffs, yCoeffs, zCoeffs));
+
             }
-
-            // build the position-velocity model for current chunk
-            ephemerides.add(new PosVelChebyshev(chunkStart, maxChunksDuration,
-                                                xCoeffs, yCoeffs, zCoeffs));
-
         }
 
     }
