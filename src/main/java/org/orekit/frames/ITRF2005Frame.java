@@ -81,7 +81,7 @@ class ITRF2005Frame extends Frame {
                 EarthOrientationHistory.getInstance().getPoleCorrection(date);
 
             // compute the additional terms not included in IERS data
-            final PoleCorrection tCorr = tidalCorrection(date);
+            final PoleCorrection tCorr = TidalCorrection.getInstance().getPoleCorrection(date);
             final PoleCorrection nCorr = nutationCorrection(date);
 
             // elementary rotations due to pole motion in terrestrial frame
