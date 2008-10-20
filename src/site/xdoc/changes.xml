@@ -20,6 +20,12 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="4.1" date="TBD"
+             description="TBD">
+      <action dev="pascal" type="add">
+        Added tidal correction to ITRF frame.
+      </action>
+    </release>
     <release version="4.0" date="2008-10-13"
              description="major upgrade with new features (GCRF and ITRF2005 frames, DE 405
              and DE 406 ephemerides support, improved and greatly simplified date/time support,
