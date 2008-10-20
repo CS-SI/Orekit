@@ -23,7 +23,7 @@ import org.orekit.time.AbsoluteDate;
 
 /** Compute tidal correction to the pole motion.
  * <p>This class computes the diurnal and semidiurnal variations in the
- * earth orientation. It is a java translation of the fortran subroutine
+ * Earth orientation. It is a java translation of the fortran subroutine
  * found at ftp://tai.bipm.org/iers/conv2003/chapter8/ortho_eop.f.</p>
  * <p>This is a singleton class, so there is no public constructor.</p>
  * @author Pascal Parraud
@@ -42,12 +42,6 @@ public class TidalCorrection implements Serializable {
 
     /** Time units conversion factor. */
     private static final double MICRO_SECONDS_TO_SECONDS = 1.e-6;
-
-    /** Number of components for the orthoweights. */
-    private static final int NCOMP = 12;
-
-    /** Number of cells in the parameter arrays. */
-    private static final int NLINE = 71;
 
     /** MJ parameter. */
     private static final int[] MJ = {
@@ -127,40 +121,61 @@ public class TidalCorrection implements Serializable {
 
     /** Orthotide weight factors. */
     private static final double[][] SP = {
-        {0.0298, 0.0200},
-        {0.1408, 0.0905},
-        {0.0805, 0.0638},
-        {0.6002, 0.3476},
-        {0.3025, 0.1645},
-        {0.1517, 0.0923}
+        { 0.0298, 0.0200 },
+        { 0.1408, 0.0905 },
+        { 0.0805, 0.0638 },
+        { 0.6002, 0.3476 },
+        { 0.3025, 0.1645 },
+        { 0.1517, 0.0923 }
     };
 
     /** Orthoweights for X polar motion. */
-    private static double[] ORTHOWX = {
-        -6.77832,-14.86323,  0.47884, -1.45303,  0.16406,  0.42030,
-         0.09398, 25.73054, -4.77974,  0.28080,  1.94539, -0.73089
+    private static final double[] ORTHOWX = {
+         -6.77832 * MICRO_ARC_SECONDS_TO_RADIANS,
+        -14.86323 * MICRO_ARC_SECONDS_TO_RADIANS,
+          0.47884 * MICRO_ARC_SECONDS_TO_RADIANS,
+         -1.45303 * MICRO_ARC_SECONDS_TO_RADIANS,
+          0.16406 * MICRO_ARC_SECONDS_TO_RADIANS,
+          0.42030 * MICRO_ARC_SECONDS_TO_RADIANS,
+          0.09398 * MICRO_ARC_SECONDS_TO_RADIANS,
+         25.73054 * MICRO_ARC_SECONDS_TO_RADIANS,
+         -4.77974 * MICRO_ARC_SECONDS_TO_RADIANS,
+          0.28080 * MICRO_ARC_SECONDS_TO_RADIANS,
+          1.94539 * MICRO_ARC_SECONDS_TO_RADIANS,
+         -0.73089 * MICRO_ARC_SECONDS_TO_RADIANS
     };
 
     /** Orthoweights for Y polar motion. */
-    private static double[] ORTHOWY = {
-        14.86283, -6.77846,  1.45234,  0.47888, -0.42056,  0.16469,
-        15.30276, -4.30615,  0.07564,  2.28321, -0.45717, -1.62010
+    private static final double[] ORTHOWY = {
+        14.86283 * MICRO_ARC_SECONDS_TO_RADIANS,
+        -6.77846 * MICRO_ARC_SECONDS_TO_RADIANS,
+         1.45234 * MICRO_ARC_SECONDS_TO_RADIANS,
+         0.47888 * MICRO_ARC_SECONDS_TO_RADIANS,
+        -0.42056 * MICRO_ARC_SECONDS_TO_RADIANS,
+         0.16469 * MICRO_ARC_SECONDS_TO_RADIANS,
+        15.30276 * MICRO_ARC_SECONDS_TO_RADIANS,
+        -4.30615 * MICRO_ARC_SECONDS_TO_RADIANS,
+         0.07564 * MICRO_ARC_SECONDS_TO_RADIANS,
+         2.28321 * MICRO_ARC_SECONDS_TO_RADIANS,
+        -0.45717 * MICRO_ARC_SECONDS_TO_RADIANS,
+        -1.62010 * MICRO_ARC_SECONDS_TO_RADIANS
     };
 
     /** Orthoweights for UT1. */
     private static double[] ORTHOWT = {
-        -1.76335,  1.03364, -0.27553,  0.34569, -0.12343, -0.10146,
-        -0.47119,  1.28997, -0.19336,  0.02724,  0.08955,  0.04726
+        -1.76335 *  MICRO_SECONDS_TO_SECONDS,
+         1.03364 *  MICRO_SECONDS_TO_SECONDS,
+        -0.27553 *  MICRO_SECONDS_TO_SECONDS,
+         0.34569 *  MICRO_SECONDS_TO_SECONDS,
+        -0.12343 *  MICRO_SECONDS_TO_SECONDS,
+        -0.10146 *  MICRO_SECONDS_TO_SECONDS,
+        -0.47119 *  MICRO_SECONDS_TO_SECONDS,
+         1.28997 *  MICRO_SECONDS_TO_SECONDS,
+        -0.19336 *  MICRO_SECONDS_TO_SECONDS,
+         0.02724 *  MICRO_SECONDS_TO_SECONDS,
+         0.08955 *  MICRO_SECONDS_TO_SECONDS,
+         0.04726 *  MICRO_SECONDS_TO_SECONDS
     };
-    
-    /** Orthoweights unit conversion. */
-    static {
-        for (int i = 0; i < NCOMP; i++) {
-            ORTHOWX[i] *=  MICRO_ARC_SECONDS_TO_RADIANS;
-            ORTHOWY[i] *=  MICRO_ARC_SECONDS_TO_RADIANS;
-            ORTHOWT[i] *=  MICRO_SECONDS_TO_SECONDS;
-        }
-    }
     
     /** Private constructor for the singleton.
      */
@@ -184,8 +199,8 @@ public class TidalCorrection implements Serializable {
 
         // compute the time dependent potential matrix
         for (int k = 0; k < 3; k++) {
-            dt60 -= (k-1) * 2.;
-            for (int j = 0; j < NLINE; j++) {
+            dt60 -= (k - 1) * 2.;
+            for (int j = 0; j < MJ.length; j++) {
                 int m  = MJ[j] - 1;
                 int mm = MJ[j] % 2;
                 double pinm = mm * TWO_PI / 4.;
@@ -249,7 +264,7 @@ public class TidalCorrection implements Serializable {
         double[] h = CNMTX(date);
 
         // compute UT1 change
-        for (int j = 0; j < NCOMP; j++) {
+        for (int j = 0; j < ORTHOWT.length; j++) {
             dUT1 += h[j] * ORTHOWT[j];
         }
 
@@ -272,7 +287,7 @@ public class TidalCorrection implements Serializable {
         double[] h = CNMTX(date);
 
         // compute X and Y change in pole motion
-        for (int j = 0; j < NCOMP; j++) {
+        for (int j = 0; j < ORTHOWX.length; j++) {
             dX += h[j] * ORTHOWX[j];
             dY += h[j] * ORTHOWY[j];
         }
