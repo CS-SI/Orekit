@@ -102,15 +102,6 @@ class ITRF2005Frame extends Frame {
         }
     }
 
-    /** Compute tidal correction to the pole motion.
-     * @param date current date
-     * @return tidal correction
-     */
-    private PoleCorrection tidalCorrection(final AbsoluteDate date) {
-        // TODO compute tidal correction to pole motion
-        return PoleCorrection.NULL_CORRECTION;
-    }
-
     /** Compute nutation correction due to tidal gravity.
      * @param date current date
      * @return nutation correction
