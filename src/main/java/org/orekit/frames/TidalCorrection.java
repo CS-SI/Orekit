@@ -32,7 +32,7 @@ import org.orekit.time.AbsoluteDate;
 public class TidalCorrection implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -5006388224733240851L;
+    private static final long serialVersionUID = -8006605442311656729L;
 
     /** 2&pi;. */
     private static final double TWO_PI = 2.0 * Math.PI;
@@ -64,184 +64,197 @@ public class TidalCorrection implements Serializable {
 
     /** HS parameter. */
     private static final double[] HS = {
-        -1.94,  -1.25,  -6.64,  -1.51,  -8.02,
-        -9.47, -50.20,  -1.80,  -9.54,   1.52,
-       -49.45,-262.21,   1.70,   3.43,   1.94,
-         1.37,   7.41,  20.62,   4.14,   3.94,
-        -7.14,   1.37,-122.03,   1.02,   2.89,
-        -7.30, 368.78,  50.01,  -1.08,   2.93,
-         5.25,   3.95,  20.62,   4.09,   3.42,
-         1.69,  11.29,   7.23,   1.51,   2.16,
-         1.38,   1.80,   4.67,  16.01,  19.32,
-         1.30,  -1.02,  -4.51, 120.99,   1.13,
-        22.98,   1.06,  -1.90,  -2.18, -23.58,
-        31.92,   1.92,  -4.66, -17.86,   4.47,
-         1.97,  17.20, 294.00,  -2.46,  -1.02,
-        79.96,  23.83,   2.59,   4.47,   1.95,
-         1.17
+        -001.94, -001.25, -006.64, -001.51, -008.02,
+        -009.47, -050.20, -001.80, -009.54, +001.52,
+        -049.45, -262.21, +001.70, +003.43, +001.94,
+        +001.37, +007.41, +020.62, +004.14, +003.94,
+        -007.14, +001.37, -122.03, +001.02, +002.89,
+        -007.30, +368.78, +050.01, -001.08, +002.93,
+        +005.25, +003.95, +020.62, +004.09, +003.42,
+        +001.69, +011.29, +007.23, +001.51, +002.16,
+        +001.38, +001.80, +004.67, +016.01, +019.32,
+        +001.30, -001.02, -004.51, +120.99, +001.13,
+        +022.98, +001.06, -001.90, -002.18, -023.58,
+        +631.92, +001.92, -004.66, -017.86, +004.47,
+        +001.97, +017.20, +294.00, -002.46, -001.02,
+        +079.96, +023.83, +002.59, +004.47, +001.95,
+        +001.17
     };
 
     /** PHASE parameter. */
     private static final double[] PHASE = {
-        9.0899831, 8.8234208, 12.1189598, 1.4425700, 4.7381090,
-        4.4715466, 7.7670857, -2.9093042, 0.3862349,-3.1758666,
-        0.1196725, 3.4152116, 12.8946194, 5.5137686, 6.4441883,
-       -4.2322016,-0.9366625,  8.5427453,11.8382843, 1.1618945,
-        5.9693878,-1.2032249,  2.0923141,-1.7847596, 8.0679449,
-        0.8953321, 4.1908712,  7.4864102,10.7819493, 0.3137975,
-        6.2894282, 7.2198478, -0.1610030, 3.1345361, 2.8679737,
-       -4.5128771, 4.9665307,  8.2620698,11.5576089, 0.6146566,
-        3.9101957,20.6617051, 13.2808543,16.3098310, 8.9289802,
-        5.0519065,15.8350306,  8.6624178,11.9579569, 8.0808832,
-        4.5771061, 0.7000324, 14.9869335,11.4831564, 4.3105437,
-        7.6060827, 3.7290090, 10.6350594, 3.2542086,12.7336164,
-       16.0291555,10.1602590,  6.2831853, 2.4061116, 5.0862033,
-        8.3817423,11.6772814, 14.9728205, 4.0298682, 7.3254073,
-        9.1574019
+        +09.0899831, +08.8234208, +12.1189598, +01.4425700, +04.7381090,
+        +04.4715466, +07.7670857, -02.9093042, +00.3862349, -03.1758666,
+        +00.1196725, +03.4152116, +12.8946194, +05.5137686, +06.4441883,
+        -04.2322016, -00.9366625, +08.5427453, +11.8382843, +01.1618945,
+        +05.9693878, -01.2032249, +02.0923141, -01.7847596, +08.0679449,
+        +00.8953321, +04.1908712, +07.4864102, +10.7819493, +00.3137975,
+        +06.2894282, +07.2198478, -00.1610030, +03.1345361, +02.8679737,
+        -04.5128771, +04.9665307, +08.2620698, +11.5576089, +00.6146566,
+        +03.9101957, +20.6617051, +13.2808543, +16.3098310, +08.9289802,
+        +05.0519065, +15.8350306, +08.6624178, +11.9579569, +08.0808832,
+        +04.5771061, +00.7000324, +14.9869335, +11.4831564, +04.3105437,
+        +07.6060827, +03.7290090, +10.6350594, +03.2542086, +12.7336164,
+        +16.0291555, +10.1602590, +06.2831853, +02.4061116, +05.0862033,
+        +08.3817423, +11.6772814, +14.9728205, +04.0298682, +07.3254073,
+        +09.1574019
     };
 
     /** FREQUENCY parameter. */
     private static final double[] FREQUENCY = {
-        5.18688050,  5.38346657,  5.38439079,  5.41398343,  5.41490765,
-        5.61149372,  5.61241794,  5.64201057,  5.64293479,  5.83859664,
-        5.83952086,  5.84044508,  5.84433381,  5.87485066,  6.03795537,
-        6.06754801,  6.06847223,  6.07236095,  6.07328517,  6.10287781,
-        6.24878055,  6.26505830,  6.26598252,  6.28318449,  6.28318613,
-        6.29946388,  6.30038810,  6.30131232,  6.30223654,  6.31759007,
-        6.33479368,  6.49789839,  6.52841524,  6.52933946,  6.72592553,
-        6.75644239,  6.76033111,  6.76125533,  6.76217955,  6.98835826,
-        6.98928248, 11.45675174, 11.48726860, 11.68477889, 11.71529575,
-       11.73249771, 11.89560406, 11.91188181, 11.91280603, 11.93000800,
-       11.94332289, 11.96052486, 12.11031632, 12.12363121, 12.13990896,
-       12.14083318, 12.15803515, 12.33834347, 12.36886033, 12.37274905,
-       12.37367327, 12.54916865, 12.56637061, 12.58357258, 12.59985198,
-       12.60077620, 12.60170041, 12.60262463, 12.82880334, 12.82972756,
-       13.06071921
+        05.18688050, 05.38346657, 05.38439079, 05.41398343, 05.41490765,
+        05.61149372, 05.61241794, 05.64201057, 05.64293479, 05.83859664,
+        05.83952086, 05.84044508, 05.84433381, 05.87485066, 06.03795537,
+        06.06754801, 06.06847223, 06.07236095, 06.07328517, 06.10287781,
+        06.24878055, 06.26505830, 06.26598252, 06.28318449, 06.28318613,
+        06.29946388, 06.30038810, 06.30131232, 06.30223654, 06.31759007,
+        06.33479368, 06.49789839, 06.52841524, 06.52933946, 06.72592553,
+        06.75644239, 06.76033111, 06.76125533, 06.76217955, 06.98835826,
+        06.98928248, 11.45675174, 11.48726860, 11.68477889, 11.71529575,
+        11.73249771, 11.89560406, 11.91188181, 11.91280603, 11.93000800,
+        11.94332289, 11.96052486, 12.11031632, 12.12363121, 12.13990896,
+        12.14083318, 12.15803515, 12.33834347, 12.36886033, 12.37274905,
+        12.37367327, 12.54916865, 12.56637061, 12.58357258, 12.59985198,
+        12.60077620, 12.60170041, 12.60262463, 12.82880334, 12.82972756,
+        13.06071921
     };
 
     /** Orthotide weight factors. */
-    private static final double[][] SP = {
-        { 0.0298, 0.0200 },
-        { 0.1408, 0.0905 },
-        { 0.0805, 0.0638 },
-        { 0.6002, 0.3476 },
-        { 0.3025, 0.1645 },
-        { 0.1517, 0.0923 }
+    private static final double[] SP = {
+        0.0298,
+        0.1408,
+        0.0805,
+        0.6002,
+        0.3025,
+        0.1517,
+        0.0200,
+        0.0905,
+        0.0638,
+        0.3476,
+        0.1645,
+        0.0923
     };
 
     /** Orthoweights for X polar motion. */
     private static final double[] ORTHOWX = {
-         -6.77832 * MICRO_ARC_SECONDS_TO_RADIANS,
+        -06.77832 * MICRO_ARC_SECONDS_TO_RADIANS,
         -14.86323 * MICRO_ARC_SECONDS_TO_RADIANS,
-          0.47884 * MICRO_ARC_SECONDS_TO_RADIANS,
-         -1.45303 * MICRO_ARC_SECONDS_TO_RADIANS,
-          0.16406 * MICRO_ARC_SECONDS_TO_RADIANS,
-          0.42030 * MICRO_ARC_SECONDS_TO_RADIANS,
-          0.09398 * MICRO_ARC_SECONDS_TO_RADIANS,
-         25.73054 * MICRO_ARC_SECONDS_TO_RADIANS,
-         -4.77974 * MICRO_ARC_SECONDS_TO_RADIANS,
-          0.28080 * MICRO_ARC_SECONDS_TO_RADIANS,
-          1.94539 * MICRO_ARC_SECONDS_TO_RADIANS,
-         -0.73089 * MICRO_ARC_SECONDS_TO_RADIANS
+        +00.47884 * MICRO_ARC_SECONDS_TO_RADIANS,
+        -01.45303 * MICRO_ARC_SECONDS_TO_RADIANS,
+        +00.16406 * MICRO_ARC_SECONDS_TO_RADIANS,
+        +00.42030 * MICRO_ARC_SECONDS_TO_RADIANS,
+        +00.09398 * MICRO_ARC_SECONDS_TO_RADIANS,
+        +25.73054 * MICRO_ARC_SECONDS_TO_RADIANS,
+        -04.77974 * MICRO_ARC_SECONDS_TO_RADIANS,
+        +00.28080 * MICRO_ARC_SECONDS_TO_RADIANS,
+        +01.94539 * MICRO_ARC_SECONDS_TO_RADIANS,
+        -00.73089 * MICRO_ARC_SECONDS_TO_RADIANS
     };
 
     /** Orthoweights for Y polar motion. */
     private static final double[] ORTHOWY = {
-        14.86283 * MICRO_ARC_SECONDS_TO_RADIANS,
-        -6.77846 * MICRO_ARC_SECONDS_TO_RADIANS,
-         1.45234 * MICRO_ARC_SECONDS_TO_RADIANS,
-         0.47888 * MICRO_ARC_SECONDS_TO_RADIANS,
-        -0.42056 * MICRO_ARC_SECONDS_TO_RADIANS,
-         0.16469 * MICRO_ARC_SECONDS_TO_RADIANS,
-        15.30276 * MICRO_ARC_SECONDS_TO_RADIANS,
-        -4.30615 * MICRO_ARC_SECONDS_TO_RADIANS,
-         0.07564 * MICRO_ARC_SECONDS_TO_RADIANS,
-         2.28321 * MICRO_ARC_SECONDS_TO_RADIANS,
-        -0.45717 * MICRO_ARC_SECONDS_TO_RADIANS,
-        -1.62010 * MICRO_ARC_SECONDS_TO_RADIANS
+        +14.86283 * MICRO_ARC_SECONDS_TO_RADIANS,
+        -06.77846 * MICRO_ARC_SECONDS_TO_RADIANS,
+        +01.45234 * MICRO_ARC_SECONDS_TO_RADIANS,
+        +00.47888 * MICRO_ARC_SECONDS_TO_RADIANS,
+        -00.42056 * MICRO_ARC_SECONDS_TO_RADIANS,
+        +00.16469 * MICRO_ARC_SECONDS_TO_RADIANS,
+        +15.30276 * MICRO_ARC_SECONDS_TO_RADIANS,
+        -04.30615 * MICRO_ARC_SECONDS_TO_RADIANS,
+        +00.07564 * MICRO_ARC_SECONDS_TO_RADIANS,
+        +02.28321 * MICRO_ARC_SECONDS_TO_RADIANS,
+        -00.45717 * MICRO_ARC_SECONDS_TO_RADIANS,
+        -01.62010 * MICRO_ARC_SECONDS_TO_RADIANS
     };
 
     /** Orthoweights for UT1. */
     private static double[] ORTHOWT = {
         -1.76335 *  MICRO_SECONDS_TO_SECONDS,
-         1.03364 *  MICRO_SECONDS_TO_SECONDS,
+        +1.03364 *  MICRO_SECONDS_TO_SECONDS,
         -0.27553 *  MICRO_SECONDS_TO_SECONDS,
-         0.34569 *  MICRO_SECONDS_TO_SECONDS,
+        +0.34569 *  MICRO_SECONDS_TO_SECONDS,
         -0.12343 *  MICRO_SECONDS_TO_SECONDS,
         -0.10146 *  MICRO_SECONDS_TO_SECONDS,
         -0.47119 *  MICRO_SECONDS_TO_SECONDS,
-         1.28997 *  MICRO_SECONDS_TO_SECONDS,
+        +1.28997 *  MICRO_SECONDS_TO_SECONDS,
         -0.19336 *  MICRO_SECONDS_TO_SECONDS,
-         0.02724 *  MICRO_SECONDS_TO_SECONDS,
-         0.08955 *  MICRO_SECONDS_TO_SECONDS,
-         0.04726 *  MICRO_SECONDS_TO_SECONDS
+        +0.02724 *  MICRO_SECONDS_TO_SECONDS,
+        +0.08955 *  MICRO_SECONDS_TO_SECONDS,
+        +0.04726 *  MICRO_SECONDS_TO_SECONDS
     };
-    
+
+    /** Vector of length 12 with partials of the tidal
+     * variation with respect to the orthoweights. */
+    private double[] partials;
+
+    /** Cached date to avoid useless computation. */
+    private AbsoluteDate cachedDate;
+
     /** Private constructor for the singleton.
      */
     private TidalCorrection() {
+        partials = new double[12];
     }
 
     /** Compute the partials of the tidal variations to the orthoweights.
-     * @param date date at which the correction is desired
-     * @return partials of the tidal variations
+     * @param date date at which the partials are desired
      */
-    private double[] CNMTX(final AbsoluteDate date) {
+    private void cnmtx(final AbsoluteDate date) {
 
-        double[]   h   = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
-        double[][] anm = {{0.,0.,0.}, {0.,0.,0.}};
-        double[][] bnm = {{0.,0.,0.}, {0.,0.,0.}};
-        double[][] p   = {{0.,0.}, {0.,0.}, {0.,0.}};
-        double[][] q   = {{0.,0.}, {0.,0.}, {0.,0.}};
-        
-        double dt60 = date.durationFrom(new AbsoluteDate(AbsoluteDate.MODIFIED_JULIAN_EPOCH, 37076.5 * 86400));
-        dt60 /= 86400.;
+        final double[][] anm = new double[2][3];
+        final double[][] bnm = new double[2][3];
+
+        final double dt60 =
+            date.durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH) / 86400.0 - 37076.5;
 
         // compute the time dependent potential matrix
         for (int k = 0; k < 3; k++) {
-            dt60 -= (k - 1) * 2.;
+            final double d60 = dt60 - (k - 1) * 2.;
             for (int j = 0; j < MJ.length; j++) {
-                int m  = MJ[j] - 1;
-                int mm = MJ[j] % 2;
-                double pinm = mm * TWO_PI / 4.;
-                double alpha = PHASE[j] + FREQUENCY[j] * dt60 - pinm;
-                alpha %= TWO_PI;
+                final int m  = MJ[j] - 1;
+                final int mm = MJ[j] % 2;
+                final double pinm = mm * TWO_PI / 4.;
+                final double alpha = PHASE[j] + FREQUENCY[j] * d60 - pinm;
                 anm[m][k] += HS[j] * Math.cos(alpha);
                 bnm[m][k] -= HS[j] * Math.sin(alpha);
             }
         }
 
-        // orthogonalize the response terms
-        for (int m = 0; m < 2; m++) {
-            double ap = anm[m][2] + anm[m][0];
-            double am = anm[m][2] - anm[m][0];
-            double bp = bnm[m][2] + bnm[m][0];
-            double bm = bnm[m][2] - bnm[m][0];
-            p[0][m]   = SP[0][m] * anm[m][1];
-            p[1][m]   = SP[1][m] * anm[m][1] - SP[2][m] * ap;
-            p[2][m]   = SP[3][m] * anm[m][1] - SP[4][m] * ap + SP[5][m] * bm;
-            q[0][m]   = SP[0][m] * bnm[m][1];
-            q[1][m]   = SP[1][m] * bnm[m][1] - SP[2][m] * bp;
-            q[2][m]   = SP[3][m] * bnm[m][1] - SP[4][m] * bp - SP[5][m] * am;
-            anm[m][0] = p[0][m];
-            anm[m][1] = p[1][m];
-            anm[m][2] = p[2][m];
-            bnm[m][0] = q[0][m];
-            bnm[m][1] = q[1][m];
-            bnm[m][2] = q[2][m];
-        }
+        // orthogonalize the response terms ...
+        final double anm00 = anm[0][0];
+        final double anm01 = anm[0][1];
+        final double anm02 = anm[0][2];
+        final double anm10 = anm[1][0];
+        final double anm11 = anm[1][1];
+        final double anm12 = anm[1][2];
+        final double bnm00 = bnm[0][0];
+        final double bnm01 = bnm[0][1];
+        final double bnm02 = bnm[0][2];
+        final double bnm10 = bnm[1][0];
+        final double bnm11 = bnm[1][1];
+        final double bnm12 = bnm[1][2];
+        final double ap0 = anm02 + anm00;
+        final double am0 = anm02 - anm00;
+        final double bp0 = bnm02 + bnm00;
+        final double bm0 = bnm02 - bnm00;
+        final double ap1 = anm12 + anm10;
+        final double am1 = anm12 - anm10;
+        final double bp1 = bnm12 + bnm10;
+        final double bm1 = bnm12 - bnm10;
 
-        // fill partials vector
-        int j = 0;
-        for (int m = 0; m < 2; m++) {
-            for (int k = 0; k < 3; k++) {
-                h[j]   = anm[m][k];
-                h[j+1] = bnm[m][k];
-                j += 2;
-            }
-        }
-
-        return h;
+        // ... and fill partials vector
+        partials[0]  = SP[0] * anm01;
+        partials[1]  = SP[0] * bnm01;
+        partials[2]  = SP[1] * anm01 - SP[2] * ap0;
+        partials[3]  = SP[1] * bnm01 - SP[2] * bp0;
+        partials[4]  = SP[3] * anm01 - SP[4] * ap0 + SP[5] * bm0;
+        partials[5]  = SP[3] * bnm01 - SP[4] * bp0 - SP[5] * am0;
+        partials[6]  = SP[6] * anm11;
+        partials[7]  = SP[6] * bnm11;
+        partials[8]  = SP[7] * anm11 - SP[8] * ap1;
+        partials[9]  = SP[7] * bnm11 - SP[8] * bp1;
+        partials[10] = SP[9] * anm11 - SP[10] * ap1 + SP[11] * bm1;
+        partials[11] = SP[9] * bnm11 - SP[10] * bp1 - SP[11] * am1;
 
     }
 
@@ -259,16 +272,19 @@ public class TidalCorrection implements Serializable {
     protected double getDUT1(final AbsoluteDate date) {
 
         double dUT1 = 0;
-        
-        // compute the partials of the tidal variations to the orthoweights
-        double[] h = CNMTX(date);
+
+        if ((cachedDate == null) || !(cachedDate == date)) {
+
+            // compute the partials of the tidal variations to the orthoweights
+            cnmtx(date);
+
+            cachedDate = date;
+        }
 
         // compute UT1 change
         for (int j = 0; j < ORTHOWT.length; j++) {
-            dUT1 += h[j] * ORTHOWT[j];
+            dUT1 += partials[j] * ORTHOWT[j];
         }
-
-//      System.out.println("dUT1 = " + (dUT1 / MICRO_SECONDS_TO_SECONDS) + " microsecondes");
 
         return dUT1;
 
@@ -282,19 +298,21 @@ public class TidalCorrection implements Serializable {
 
         double dX = 0;
         double dY = 0;
-        
-        // compute the partials of the tidal variations to the orthoweights
-        double[] h = CNMTX(date);
+
+        if ((cachedDate == null) || !(cachedDate == date)) {
+
+            // compute the partials of the tidal variations to the orthoweights
+            cnmtx(date);
+
+            cachedDate = date;
+        }
 
         // compute X and Y change in pole motion
         for (int j = 0; j < ORTHOWX.length; j++) {
-            dX += h[j] * ORTHOWX[j];
-            dY += h[j] * ORTHOWY[j];
+            dX += partials[j] * ORTHOWX[j];
+            dY += partials[j] * ORTHOWY[j];
         }
 
-//      System.out.println("dX = " + (dX / MICRO_ARC_SECONDS_TO_RADIANS) + " microarcsec ; " +
-//      		             "dY = " + (dY / MICRO_ARC_SECONDS_TO_RADIANS) + " microarcsec");
-        
         return new PoleCorrection(dX, dY);
 
     }
