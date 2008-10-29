@@ -32,7 +32,7 @@ import org.orekit.time.AbsoluteDate;
 public class TidalCorrection implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -8006605442311656729L;
+    private static final long serialVersionUID = 9143236723147294697L;
 
     /** 2&pi;. */
     private static final double TWO_PI = 2.0 * Math.PI;
@@ -183,33 +183,168 @@ public class TidalCorrection implements Serializable {
         +0.04726 *  MICRO_SECONDS_TO_SECONDS
     };
 
-    /** Vector of length 12 with partials of the tidal
-     * variation with respect to the orthoweights. */
-    private double[] partials;
+    /** "Left-central" date of the interpolation array. */
+    private double tCenter;
 
-    /** Cached date to avoid useless computation. */
-    private AbsoluteDate cachedDate;
+    /** Step size of the interpolation array. */
+    private final double h;
+
+    /** Current dx pole correction. */
+    private double dxCurrent;
+
+    /** Current dy pole correction. */
+    private double dyCurrent;
+
+    /** current dtu1 correction. */
+    private double dtCurrent;
+
+    /** dx pole corrections. */
+    private final double[] dxRef;
+
+    /** dy pole corrections. */
+    private final double[] dyRef;
+
+    /** dtu1 corrections. */
+    private final double[] dtRef;
+
+    /** Neville interpolation array for dx correction. */
+    private final double[] dxNeville;
+
+    /** Neville interpolation array for dy correction. */
+    private final double[] dyNeville;
+
+    /** Neville interpolation array for dtu1 correction. */
+    private final double[] dtNeville;
 
     /** Private constructor for the singleton.
      */
     private TidalCorrection() {
-        partials = new double[12];
+
+        // interpolation arrays
+        final int n = 8;
+        h         = 3.0 / 32.0;
+        tCenter   = Double.NaN;
+        dxRef     = new double[n];
+        dyRef     = new double[n];
+        dtRef     = new double[n];
+        dxNeville = new double[n];
+        dyNeville = new double[n];
+        dtNeville = new double[n];
+
+    }
+
+    /** Get the unique instance of this class.
+     * @return the unique instance
+     */
+    public static TidalCorrection getInstance() {
+        return LazyHolder.INSTANCE;
+    }
+
+    /** Get the dUT1 value.
+     * @param date date at which the value is desired
+     * @return dUT1 in seconds
+     */
+    public double getDUT1(final AbsoluteDate date) {
+        setInterpolatedCorrections(date);
+        return dtCurrent;
+    }
+
+    /** Get the pole IERS Reference Pole correction.
+     * @param date date at which the correction is desired
+     * @return pole correction
+     */
+    public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
+        setInterpolatedCorrections(date);
+        return new PoleCorrection(dxCurrent, dyCurrent);
+    }
+
+    /** Set the interpolated corrections.
+     * @param date current date
+     */
+    private void setInterpolatedCorrections(final AbsoluteDate date) {
+
+        final double t =
+            date.durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH) / 86400.0 - 37076.5;
+
+        final int n    = dtRef.length;
+        final int nM12 = (n - 1) / 2;
+        if (Double.isNaN(tCenter) || (t < tCenter) || (t > tCenter + h)) {
+            // recompute interpolation array
+            setReferencePoints(t);
+        }
+
+        // interpolate corrections using Neville's algorithm
+        System.arraycopy(dxRef, 0, dxNeville, 0, n);
+        System.arraycopy(dyRef, 0, dyNeville, 0, n);
+        System.arraycopy(dtRef, 0, dtNeville, 0, n);
+        final double theta = (t - tCenter) / h;
+        for (int j = 1; j < n; ++j) {
+            for (int i = n - 1; i >= j; --i) {
+                final double c1 = (theta + nM12 - i + j) / j;
+                final double c2 = (theta + nM12 - i) / j;
+                dxNeville[i] = c1 * dxNeville[i] - c2 * dxNeville[i - 1];
+                dyNeville[i] = c1 * dyNeville[i] - c2 * dyNeville[i - 1];
+                dtNeville[i] = c1 * dtNeville[i] - c2 * dtNeville[i - 1];
+            }
+        }
+
+        dxCurrent = dxNeville[n - 1];
+        dyCurrent = dyNeville[n - 1];
+        dtCurrent = dtNeville[n - 1];
+
+    }
+
+    /** Set the reference points array.
+     * @param t offset from reference epoch in days
+     */
+    private void setReferencePoints(final double t) {
+
+        final int n    = dxRef.length;
+        final int nM12 = (n - 1) / 2;
+
+        // evaluate new location of center interval
+        final double newTCenter = h * Math.floor(t / h);
+
+        // shift reusable reference points
+        int iMin = 0;
+        int iMax = n;
+        final int shift = (int) Math.rint((newTCenter - tCenter) / h);
+        if (!Double.isNaN(tCenter) && (Math.abs(shift) < n)) {
+            if (shift >= 0) {
+                System.arraycopy(dxRef, shift, dxRef, 0, n - shift);
+                System.arraycopy(dyRef, shift, dyRef, 0, n - shift);
+                System.arraycopy(dtRef, shift, dtRef, 0, n - shift);
+                iMin = n - shift;
+            } else {
+                System.arraycopy(dxRef, 0, dxRef, -shift, n + shift);
+                System.arraycopy(dyRef, 0, dyRef, -shift, n + shift);
+                System.arraycopy(dtRef, 0, dtRef, -shift, n + shift);
+                iMax = -shift;
+            }
+        }
+
+        // compute new reference points
+        tCenter = newTCenter;
+        for (int i = iMin; i < iMax; ++i) {
+            computeCorrections(tCenter + (i - nM12) * h);
+            dxRef[i] = dxCurrent;
+            dyRef[i] = dyCurrent;
+            dtRef[i] = dtCurrent;
+        }
+
     }
 
     /** Compute the partials of the tidal variations to the orthoweights.
-     * @param date date at which the partials are desired
+     * @param t offset from reference epoch in days
      */
-    private void cnmtx(final AbsoluteDate date) {
+    private void computeCorrections(final double t) {
 
         final double[][] anm = new double[2][3];
         final double[][] bnm = new double[2][3];
 
-        final double dt60 =
-            date.durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH) / 86400.0 - 37076.5;
-
         // compute the time dependent potential matrix
         for (int k = 0; k < 3; k++) {
-            final double d60 = dt60 - (k - 1) * 2.;
+            final double d60 = t - (k - 1) * 2.;
             for (int j = 0; j < MJ.length; j++) {
                 final int m  = MJ[j] - 1;
                 final int mm = MJ[j] % 2;
@@ -243,77 +378,32 @@ public class TidalCorrection implements Serializable {
         final double bm1 = bnm12 - bnm10;
 
         // ... and fill partials vector
-        partials[0]  = SP[0] * anm01;
-        partials[1]  = SP[0] * bnm01;
-        partials[2]  = SP[1] * anm01 - SP[2] * ap0;
-        partials[3]  = SP[1] * bnm01 - SP[2] * bp0;
-        partials[4]  = SP[3] * anm01 - SP[4] * ap0 + SP[5] * bm0;
-        partials[5]  = SP[3] * bnm01 - SP[4] * bp0 - SP[5] * am0;
-        partials[6]  = SP[6] * anm11;
-        partials[7]  = SP[6] * bnm11;
-        partials[8]  = SP[7] * anm11 - SP[8] * ap1;
-        partials[9]  = SP[7] * bnm11 - SP[8] * bp1;
-        partials[10] = SP[9] * anm11 - SP[10] * ap1 + SP[11] * bm1;
-        partials[11] = SP[9] * bnm11 - SP[10] * bp1 - SP[11] * am1;
+        final double partials0  = SP[0] * anm01;
+        final double partials1  = SP[0] * bnm01;
+        final double partials2  = SP[1] * anm01 - SP[2] * ap0;
+        final double partials3  = SP[1] * bnm01 - SP[2] * bp0;
+        final double partials4  = SP[3] * anm01 - SP[4] * ap0 + SP[5] * bm0;
+        final double partials5  = SP[3] * bnm01 - SP[4] * bp0 - SP[5] * am0;
+        final double partials6  = SP[6] * anm11;
+        final double partials7  = SP[6] * bnm11;
+        final double partials8  = SP[7] * anm11 - SP[8] * ap1;
+        final double partials9  = SP[7] * bnm11 - SP[8] * bp1;
+        final double partials10 = SP[9] * anm11 - SP[10] * ap1 + SP[11] * bm1;
+        final double partials11 = SP[9] * bnm11 - SP[10] * bp1 - SP[11] * am1;
 
-    }
-
-    /** Get the unique instance of this class.
-     * @return the unique instance
-     */
-    public static TidalCorrection getInstance() {
-        return LazyHolder.INSTANCE;
-    }
-
-    /** Get the dUT1 value.
-     * @param date date at which the value is desired
-     * @return dUT1 in seconds
-     */
-    protected double getDUT1(final AbsoluteDate date) {
-
-        double dUT1 = 0;
-
-        if ((cachedDate == null) || !(cachedDate == date)) {
-
-            // compute the partials of the tidal variations to the orthoweights
-            cnmtx(date);
-
-            cachedDate = date;
-        }
-
-        // compute UT1 change
-        for (int j = 0; j < ORTHOWT.length; j++) {
-            dUT1 += partials[j] * ORTHOWT[j];
-        }
-
-        return dUT1;
-
-    }
-
-    /** Get the pole IERS Reference Pole correction.
-     * @param date date at which the correction is desired
-     * @return pole correction
-     */
-    protected PoleCorrection getPoleCorrection(final AbsoluteDate date) {
-
-        double dX = 0;
-        double dY = 0;
-
-        if ((cachedDate == null) || !(cachedDate == date)) {
-
-            // compute the partials of the tidal variations to the orthoweights
-            cnmtx(date);
-
-            cachedDate = date;
-        }
-
-        // compute X and Y change in pole motion
-        for (int j = 0; j < ORTHOWX.length; j++) {
-            dX += partials[j] * ORTHOWX[j];
-            dY += partials[j] * ORTHOWY[j];
-        }
-
-        return new PoleCorrection(dX, dY);
+        // combine partials to set up corrections
+        dxCurrent = partials0 * ORTHOWX[0] + partials1  * ORTHOWX[1]  + partials2  * ORTHOWX[2] +
+                    partials3 * ORTHOWX[3] + partials4  * ORTHOWX[4]  + partials5  * ORTHOWX[5] +
+                    partials6 * ORTHOWX[6] + partials7  * ORTHOWX[7]  + partials8  * ORTHOWX[8] +
+                    partials9 * ORTHOWX[9] + partials10 * ORTHOWX[10] + partials11 * ORTHOWX[11];
+        dyCurrent = partials0 * ORTHOWY[0] + partials1  * ORTHOWY[1]  + partials2  * ORTHOWY[2] +
+                    partials3 * ORTHOWY[3] + partials4  * ORTHOWY[4]  + partials5  * ORTHOWY[5] +
+                    partials6 * ORTHOWY[6] + partials7  * ORTHOWY[7]  + partials8  * ORTHOWY[8] +
+                    partials9 * ORTHOWY[9] + partials10 * ORTHOWY[10] + partials11 * ORTHOWY[11];
+        dtCurrent = partials0 * ORTHOWT[0] + partials1  * ORTHOWT[1]  + partials2  * ORTHOWT[2] +
+                    partials3 * ORTHOWT[3] + partials4  * ORTHOWT[4]  + partials5  * ORTHOWT[5] +
+                    partials6 * ORTHOWT[6] + partials7  * ORTHOWT[7]  + partials8  * ORTHOWT[8] +
+                    partials9 * ORTHOWT[9] + partials10 * ORTHOWT[10] + partials11 * ORTHOWT[11];
 
     }
 

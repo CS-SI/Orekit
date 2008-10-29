@@ -91,10 +91,11 @@ Frames
   Parameters (EOP) data published online by IERS. This single transform links the GCRF to a
   Celestial Intermediate Reference Frame (CIRF). The X axis of this frame is the Celestial
   Intermediate Origin (CIO) and its Z axis is the Celestial Intermediate Pole (CIP). The CIO is
-  <<<not linked to equinox any more>>>. From CIRF, the Earth Rotation Angle is applied
-  to define a Terrestrial Intermediate Reference Frame (TIRF) which is a pseudo Earth fixed
-  frame. A last transform adds the pole motion with respect to Earth crust to reach the real
-  Earth fixed frame: the International Terrestrial Reference Frame.
+  <<<not linked to equinox any more>>>. From CIRF, the Earth Rotation Angle (including tidal
+  effects) is applied to define a Terrestrial Intermediate Reference Frame (TIRF) which is a
+  pseudo Earth fixed frame. A last transform adds the pole motion (both observed and published
+  in IERS frames and modeled effects) with respect to Earth crust to reach the real Earth fixed
+  frame: the International Terrestrial Reference Frame.
 
   In summary, four frames are involved along this path: GCRF, CIRF, TIRF and ITRF.
 
@@ -151,9 +152,15 @@ Frames
   luni-solar and planetary terms per simulation day, and one interpolation per simulation step,
   regardless of the step size. This represent huge savings for steps shorter than one half day,
   which is the rule in most application (step sizes are mostly of the range of a few tens of
-  seconds).</p>
+  seconds).
 
 [../images/cirf2000-interpolation-error.png]
+
+  Tidal effects are also taken into account on Earth Rotation angle and on pole motion. The 71
+  terms model from IERS is used. Since this model is also computing intensive, a caching/interpolation
+  algorithm is also used to avoid a massive effect on performances. The trade-off selected for
+  Orekit implementation is to use 8 points separated by 3/32 day (135 minutes) each. The resulting
+  maximal interpolation error is about 3 microarcseconds.
 
   For most purposes, the recommended frames to use are ITRF 2005 for terrestrial frame and
   GCRF for celestial frame. EME2000 could also be used for compatibility with other systems.
