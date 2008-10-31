@@ -70,9 +70,11 @@ Frames
 
   Several predefined reference frames are implemented in Orekit. The user can retrieve them
   using various static methods: <<<getGCRF()>>>, <<<getEME2000()>>>, <<<getITRF2005()>>>,
-  <<<getCIRF2000()>>>, <<<getTIRF2000()>>> and <<<getVeis1950()>>>. One of these reference
+  <<<getITRF2005IgnoringTidalEffects()>>>, <<<getCIRF2000()>>>, <<<getTIRF2000()>>>,
+  <<<getTIRF2000IgnoringTidalEffects()>>> and <<<getVeis1950()>>>. One of these reference
   frames has been arbitrarily chosen as the root of the frames tree: the <Geocentric Celestial
-  Reference Frame> (GCRF) which is an inertial reference defined by IERS.
+  Reference Frame> (GCRF) which is an inertial reference defined by IERS. There are also a number
+  of planetary frames associated with the predefined celestial bodies.
 
 ** IERS 2003 Conventions
 
