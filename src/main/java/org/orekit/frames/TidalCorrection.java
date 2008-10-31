@@ -34,33 +34,14 @@ public class TidalCorrection implements Serializable {
     /** Serializable UID. */
     private static final long serialVersionUID = 9143236723147294697L;
 
-    /** 2&pi;. */
-    private static final double TWO_PI = 2.0 * Math.PI;
+    /** pi;/2. */
+    private static final double HALF_PI = Math.PI / 2.0;
 
     /** Angular units conversion factor. */
-    private static final double MICRO_ARC_SECONDS_TO_RADIANS = TWO_PI / 1296000.e+6;
+    private static final double MICRO_ARC_SECONDS_TO_RADIANS = Math.PI / 648000000000.0;
 
     /** Time units conversion factor. */
-    private static final double MICRO_SECONDS_TO_SECONDS = 1.e-6;
-
-    /** MJ parameter. */
-    private static final int[] MJ = {
-        1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1,
-        1, 2, 2, 2, 2,
-        2, 2, 2, 2, 2,
-        2, 2, 2, 2, 2,
-        2, 2, 2, 2, 2,
-        2, 2, 2, 2, 2,
-        2, 2, 2, 2, 2,
-        2
-    };
+    private static final double MICRO_SECONDS_TO_SECONDS = 1.0e-6;
 
     /** HS parameter. */
     private static final double[] HS = {
@@ -83,21 +64,26 @@ public class TidalCorrection implements Serializable {
 
     /** PHASE parameter. */
     private static final double[] PHASE = {
-        +09.0899831, +08.8234208, +12.1189598, +01.4425700, +04.7381090,
-        +04.4715466, +07.7670857, -02.9093042, +00.3862349, -03.1758666,
-        +00.1196725, +03.4152116, +12.8946194, +05.5137686, +06.4441883,
-        -04.2322016, -00.9366625, +08.5427453, +11.8382843, +01.1618945,
-        +05.9693878, -01.2032249, +02.0923141, -01.7847596, +08.0679449,
-        +00.8953321, +04.1908712, +07.4864102, +10.7819493, +00.3137975,
-        +06.2894282, +07.2198478, -00.1610030, +03.1345361, +02.8679737,
-        -04.5128771, +04.9665307, +08.2620698, +11.5576089, +00.6146566,
-        +03.9101957, +20.6617051, +13.2808543, +16.3098310, +08.9289802,
-        +05.0519065, +15.8350306, +08.6624178, +11.9579569, +08.0808832,
-        +04.5771061, +00.7000324, +14.9869335, +11.4831564, +04.3105437,
-        +07.6060827, +03.7290090, +10.6350594, +03.2542086, +12.7336164,
-        +16.0291555, +10.1602590, +06.2831853, +02.4061116, +05.0862033,
-        +08.3817423, +11.6772814, +14.9728205, +04.0298682, +07.3254073,
-        +09.1574019
+        +09.0899831 - HALF_PI, +08.8234208 - HALF_PI, +12.1189598 - HALF_PI,
+        +01.4425700 - HALF_PI, +04.7381090 - HALF_PI, +04.4715466 - HALF_PI,
+        +07.7670857 - HALF_PI, -02.9093042 - HALF_PI, +00.3862349 - HALF_PI,
+        -03.1758666 - HALF_PI, +00.1196725 - HALF_PI, +03.4152116 - HALF_PI,
+        +12.8946194 - HALF_PI, +05.5137686 - HALF_PI, +06.4441883 - HALF_PI,
+        -04.2322016 - HALF_PI, -00.9366625 - HALF_PI, +08.5427453 - HALF_PI,
+        +11.8382843 - HALF_PI, +01.1618945 - HALF_PI, +05.9693878 - HALF_PI,
+        -01.2032249 - HALF_PI, +02.0923141 - HALF_PI, -01.7847596 - HALF_PI,
+        +08.0679449 - HALF_PI, +00.8953321 - HALF_PI, +04.1908712 - HALF_PI,
+        +07.4864102 - HALF_PI, +10.7819493 - HALF_PI, +00.3137975 - HALF_PI,
+        +06.2894282 - HALF_PI, +07.2198478 - HALF_PI, -00.1610030 - HALF_PI,
+        +03.1345361 - HALF_PI, +02.8679737 - HALF_PI, -04.5128771 - HALF_PI,
+        +04.9665307 - HALF_PI, +08.2620698 - HALF_PI, +11.5576089 - HALF_PI,
+        +00.6146566 - HALF_PI, +03.9101957 - HALF_PI,
+        +20.6617051, +13.2808543, +16.3098310, +08.9289802, +05.0519065,
+        +15.8350306, +08.6624178, +11.9579569, +08.0808832, +04.5771061,
+        +00.7000324, +14.9869335, +11.4831564, +04.3105437, +07.6060827,
+        +03.7290090, +10.6350594, +03.2542086, +12.7336164, +16.0291555,
+        +10.1602590, +06.2831853, +02.4061116, +05.0862033, +08.3817423,
+        +11.6772814, +14.9728205, +04.0298682, +07.3254073, +09.1574019
     };
 
     /** FREQUENCY parameter. */
@@ -339,35 +325,64 @@ public class TidalCorrection implements Serializable {
      */
     private void computeCorrections(final double t) {
 
-        final double[][] anm = new double[2][3];
-        final double[][] bnm = new double[2][3];
-
         // compute the time dependent potential matrix
-        for (int k = 0; k < 3; k++) {
-            final double d60 = t - (k - 1) * 2.;
-            for (int j = 0; j < MJ.length; j++) {
-                final int m  = MJ[j] - 1;
-                final int mm = MJ[j] % 2;
-                final double pinm = mm * TWO_PI / 4.;
-                final double alpha = PHASE[j] + FREQUENCY[j] * d60 - pinm;
-                anm[m][k] += HS[j] * Math.cos(alpha);
-                bnm[m][k] -= HS[j] * Math.sin(alpha);
-            }
+        final double d60A = t + 2;
+        final double d60B = t;
+        final double d60C = t - 2;
+
+        double anm00 = 0;
+        double anm01 = 0;
+        double anm02 = 0;
+        double bnm00 = 0;
+        double bnm01 = 0;
+        double bnm02 = 0;
+        for (int j = 0; j < 41; j++) {
+
+            final double hsj = HS[j];
+            final double pj  = PHASE[j];
+            final double fj  = FREQUENCY[j];
+
+            final double alphaA = pj + fj * d60A;
+            anm00 += hsj * Math.cos(alphaA);
+            bnm00 -= hsj * Math.sin(alphaA);
+
+            final double alphaB = pj + fj * d60B;
+            anm01 += hsj * Math.cos(alphaB);
+            bnm01 -= hsj * Math.sin(alphaB);
+
+            final double alphaC = pj + fj * d60C;
+            anm02 += hsj * Math.cos(alphaC);
+            bnm02 -= hsj * Math.sin(alphaC);
+
+        }
+
+        double anm10 = 0;
+        double anm11 = 0;
+        double anm12 = 0;
+        double bnm10 = 0;
+        double bnm11 = 0;
+        double bnm12 = 0;
+        for (int j = 41; j < HS.length; j++) {
+
+            final double hsj = HS[j];
+            final double pj  = PHASE[j];
+            final double fj  = FREQUENCY[j];
+
+            final double alphaA = pj + fj * d60A;
+            anm10 += hsj * Math.cos(alphaA);
+            bnm10 -= hsj * Math.sin(alphaA);
+
+            final double alphaB = pj + fj * d60B;
+            anm11 += hsj * Math.cos(alphaB);
+            bnm11 -= hsj * Math.sin(alphaB);
+
+            final double alphaC = pj + fj * d60C;
+            anm12 += hsj * Math.cos(alphaC);
+            bnm12 -= hsj * Math.sin(alphaC);
+
         }
 
         // orthogonalize the response terms ...
-        final double anm00 = anm[0][0];
-        final double anm01 = anm[0][1];
-        final double anm02 = anm[0][2];
-        final double anm10 = anm[1][0];
-        final double anm11 = anm[1][1];
-        final double anm12 = anm[1][2];
-        final double bnm00 = bnm[0][0];
-        final double bnm01 = bnm[0][1];
-        final double bnm02 = bnm[0][2];
-        final double bnm10 = bnm[1][0];
-        final double bnm11 = bnm[1][1];
-        final double bnm12 = bnm[1][2];
         final double ap0 = anm02 + anm00;
         final double am0 = anm02 - anm00;
         final double bp0 = bnm02 + bnm00;

@@ -94,8 +94,8 @@ Frames
   <<<not linked to equinox any more>>>. From CIRF, the Earth Rotation Angle (including tidal
   effects) is applied to define a Terrestrial Intermediate Reference Frame (TIRF) which is a
   pseudo Earth fixed frame. A last transform adds the pole motion (both observed and published
-  in IERS frames and modeled effects) with respect to Earth crust to reach the real Earth fixed
-  frame: the International Terrestrial Reference Frame.
+  in IERS frames and modeled effects including tidal effects) with respect to Earth crust to
+  reach the real Earth fixed frame: the International Terrestrial Reference Frame.
 
   In summary, four frames are involved along this path: GCRF, CIRF, TIRF and ITRF.
 
@@ -130,8 +130,9 @@ Frames
 
 *** Orekit implementation of IERS 2003 convention
 
-  In summary, Orekit implements 5 frames from IERS 2003 convention: GCRF, EME2000,
-  CIRF 2000, TIRF 2000, ITRF 2005.
+  In summary, Orekit implements 7 frames from IERS 2003 convention: GCRF, EME2000,
+  CIRF 2000, TIRF 2000 with tidal effects, TIRF 2000 without tidal effects, ITRF 2005 with
+  tidal effects and ITRF 2005 without tidal effects.
 
   Here is a schematic representation of the partial tree containing the supported IERS frames.
     
@@ -160,7 +161,8 @@ Frames
   terms model from IERS is used. Since this model is also computing intensive, a caching/interpolation
   algorithm is also used to avoid a massive effect on performances. The trade-off selected for
   Orekit implementation is to use 8 points separated by 3/32 day (135 minutes) each. The resulting
-  maximal interpolation error is about 3 microarcseconds.
+  maximal interpolation error is about 3 microarcseconds. The penalty to use tidal effects is therefore
+  limited to slightly more than 20%, to be compared with the 550% penalty without this mechanism.
 
   For most purposes, the recommended frames to use are ITRF 2005 for terrestrial frame and
   GCRF for celestial frame. EME2000 could also be used for compatibility with other systems.

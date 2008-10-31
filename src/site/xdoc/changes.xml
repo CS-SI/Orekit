@@ -23,7 +23,14 @@
     <release version="4.1" date="TBD"
              description="TBD">
       <action dev="pascal" type="add">
-        Added tidal correction to ITRF frame.
+        Tidal corrections are now available for ITRF and TIRF frames. Both frames are
+        provided in two versions, the standard one with tidal corrections and a stripped
+        down one without tidal corrections. A cache/interpolation mechanism is used to
+        keep the computation cost of tidal correction to a minimum. With this mechanism,
+        the penalty to use tidal correction is slightly above 20% in run time for a
+        transformation between GCRF and ITRF. A raw implementation without this mechanism
+        would lead to a 550% penalty, or even a 1100% penalty if TIRF and ITRF parts were
+        computed independently.
       </action>
     </release>
     <release version="4.0" date="2008-10-13"

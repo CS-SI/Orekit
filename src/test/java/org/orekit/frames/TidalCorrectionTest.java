@@ -34,8 +34,8 @@ public class TidalCorrectionTest extends TestCase {
         // compute the pole motion component for tidal correction
         final PoleCorrection tidalCorr = TidalCorrection.getInstance().getPoleCorrection(date);
 
-        assertEquals(-9.98e-10, tidalCorr.getXp(), 0.1e-10);
-        assertEquals(-7.75e-10, tidalCorr.getYp(), 0.1e-10);
+        assertEquals(Math.toRadians(-204.09237446540885e-6 / 3600), tidalCorr.getXp(), 2.0e-14);
+        assertEquals(Math.toRadians(-161.48436351246889e-6 / 3600), tidalCorr.getYp(), 0.7e-14);
 
     }
 
@@ -44,8 +44,7 @@ public class TidalCorrectionTest extends TestCase {
         // compute the dut1 component for tidal correction
         final double tidalCorr = TidalCorrection.getInstance().getDUT1(date);
 
-        assertEquals(13.55e-6, tidalCorr, 0.1e-6);
-
+        assertEquals(13.611556854809763e-6, tidalCorr, 1.5e-10);
     }
 
     public void testCachePole() {

@@ -33,7 +33,7 @@ import org.orekit.time.UTCScale;
 class TIRF2000Frame extends Frame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 2172066829881904209L;
+    private static final long serialVersionUID = -1980349559678388058L;
 
     /** 2&pi;. */
     private static final double TWO_PI = 2.0 * Math.PI;
@@ -59,16 +59,25 @@ class TIRF2000Frame extends Frame {
     /** Earth Rotation Angle, in radians. */
     private double era;
 
+    /** Flag for tidal effects. */
+    private final boolean ignoreTidalEffects;
+
     /** Simple constructor.
+     * @param ignoreTidalEffects if true, tidal effects are ignored
      * @param date the current date
      * @param name the string representation
      * @exception OrekitException if nutation cannot be computed
      */
-    protected TIRF2000Frame(final AbsoluteDate date, final String name)
+    protected TIRF2000Frame(final boolean ignoreTidalEffects,
+                            final AbsoluteDate date, final String name)
         throws OrekitException {
+
         super(getCIRF2000(), null, name);
+        this.ignoreTidalEffects = ignoreTidalEffects;
+
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
+
     }
 
     /** Update the frame to the given date.
@@ -82,7 +91,8 @@ class TIRF2000Frame extends Frame {
         if ((cachedDate == null) || !cachedDate.equals(date)) {
 
             // compute Earth Rotation Angle using Nicole Capitaine model (2000)
-            final double tidalCorrection = TidalCorrection.getInstance().getDUT1(date);
+            final double tidalCorrection =
+                ignoreTidalEffects ? 0 : TidalCorrection.getInstance().getDUT1(date);
             final double dtu1            = EarthOrientationHistory.getInstance().getUT1MinusUTC(date);
             final double utcMinusTai     = UTCScale.getInstance().offsetFromTAI(date);
             final double tu =

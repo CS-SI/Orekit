@@ -50,16 +50,26 @@ class ITRF2005Frame extends Frame {
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
+    /** Flag for tidal effects. */
+    private final boolean ignoreTidalEffects;
+
     /** Simple constructor.
+     * @param ignoreTidalEffects if true, tidal effects are ignored
      * @param date the current date
      * @param name the string representation
      * @exception OrekitException if nutation cannot be computed
      */
-    protected ITRF2005Frame(final AbsoluteDate date, final String name)
+    protected ITRF2005Frame(final boolean ignoreTidalEffects,
+                            final AbsoluteDate date, final String name)
         throws OrekitException {
-        super(getTIRF2000(), null, name);
+
+        super(ignoreTidalEffects ? getTIRF2000IgnoringTidalEffects() : getTIRF2000(),
+              null, name);
+        this.ignoreTidalEffects = ignoreTidalEffects;
+
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
+
     }
 
     /** Update the frame to the given date.
@@ -81,7 +91,9 @@ class ITRF2005Frame extends Frame {
                 EarthOrientationHistory.getInstance().getPoleCorrection(date);
 
             // compute the additional terms not included in IERS data
-            final PoleCorrection tCorr = TidalCorrection.getInstance().getPoleCorrection(date);
+            final PoleCorrection tCorr = ignoreTidalEffects ?
+                                         PoleCorrection.NULL_CORRECTION :
+                                         TidalCorrection.getInstance().getPoleCorrection(date);
             final PoleCorrection nCorr = nutationCorrection(date);
 
             // elementary rotations due to pole motion in terrestrial frame

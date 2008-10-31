@@ -48,10 +48,11 @@ import org.orekit.time.AbsoluteDate;
  *
  * <h5> Reference Frames </h5>
  * <p>
- *  Several Reference frames are implemented in OREKIT. The user can
- *  retrieve them using various static methods({@link #getGCRF()}, {@link #getEME2000()},
- *  {@link #getITRF2005()}, {@link #getCIRF2000()}, {@link #getTIRF2000()} and
- *  {@link #getVeis1950()}).
+ *  Several Reference frames are implemented in OREKIT. The user can retrieve
+ *  them using various static methods({@link #getGCRF()}, {@link #getEME2000()}, {@link
+ *  #getITRF2005()} (or {@link #getITRF2005IgnoringTidalEffects()}), {@link
+ *  #getCIRF2000()}, {@link #getTIRF2000()} (or {@link #getTIRF2000IgnoringTidalEffects()})
+ *  and {@link #getVeis1950()}).
  * <p>
  *
  * <h5> International Terrestrial Reference Frame 2005 </h5>
@@ -73,26 +74,29 @@ import org.orekit.time.AbsoluteDate;
  * </p>
  * <pre>
  *
- *      GCRF
- *        |      (frame bias)
- *        |-----------------------
- *        |                      |
- *        |                   EME2000
- *        |
- *        |  Bias, Precession and Nutation effects
- *        |
- *    CIRF2000   (Celestial Intermediate Reference Frame)
- *        |
- *        |  Earth natural rotation
- *        |
- *    TIRF2000   (Terrestrial Intermediate Reference Frame: Pseudo Earth Fixed Frame)
- *        |
- *        |  Pole motion
- *        |
- *    ITRF2005   (International Terrestrial Reference Frame)
+ *                                                   GCRF
+ *                                   (frame bias)      |
+ *                              -----------------------|
+ *                              |                      |
+ *                          EME2000                    |
+ *                                                     |
+ *             Bias, Precession and Nutation effects   |
+ *                                                     |
+ *                                                     |
+ *    (Celestial Intermediate Reference Frame)     CIRF2000
+ *                                                     |
+ *                              Earth natural rotation |
+ *                                                     |
+ *                                                     |---------------------
+ *                                                     |                    |
+ *   (Terrestrial Intermediate Reference Frame)     TIRF2000     TIRF2000 without tidal effects
+ *                                                     |                    |
+ *                                        Pole motion  |                    |
+ *                                                     |                    |
+ *     (International Terrestrial Reference Frame)  ITRF2005     ITRF2005 without tidal effects
  *
  * </pre>
- * <p> This implementation follows the new non-rotating origin paradigm
+ * <p>This implementation follows the new non-rotating origin paradigm
  * mandated by IAU 2000 resolution B1.8. It is therefore based on
  * Celestial Ephemeris Origin (CEO-based) and Earth Rotating Angle.
  * </p>
@@ -111,7 +115,7 @@ public class Frame implements Serializable {
     /** Serialiazable UID. */
     private static final long serialVersionUID = -6981146543760234087L;
 
-    /**  parent frame (only GCRF doesn't have a parent). */
+    /** Parent frame (only GCRF doesn't have a parent). */
     private final Frame parent;
 
     /** Transform from parent frame to instance. */
@@ -443,7 +447,20 @@ public class Frame implements Serializable {
         return LazyITRF2005Holder.INSTANCE;
     }
 
-    /** Get the TIRF2000 reference frame.
+    /** Get the ITRF2005 without tidal effects reference frame.
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if the precession-nutation model data embedded in the
+     * library cannot be read.
+     */
+    public static Frame getITRF2005IgnoringTidalEffects()
+        throws OrekitException {
+        if (LazyITRF2005IgnoredTidalEffectHolder.INSTANCE == null) {
+            throw LazyITRF2005IgnoredTidalEffectHolder.OREKIT_EXCEPTION;
+        }
+        return LazyITRF2005IgnoredTidalEffectHolder.INSTANCE;
+    }
+
+    /** Get the TIRF2000 with tidal effects reference frame.
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
@@ -454,6 +471,19 @@ public class Frame implements Serializable {
             throw LazyTIRF2000Holder.OREKIT_EXCEPTION;
         }
         return LazyTIRF2000Holder.INSTANCE;
+    }
+
+    /** Get the TIRF2000 without tidal effects reference frame.
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if the precession-nutation model data embedded in the
+     * library cannot be read.
+     */
+    public static Frame getTIRF2000IgnoringTidalEffects()
+        throws OrekitException {
+        if (LazyTIRF2000IgnoredTidalEffectsHolder.INSTANCE == null) {
+            throw LazyTIRF2000IgnoredTidalEffectsHolder.OREKIT_EXCEPTION;
+        }
+        return LazyTIRF2000IgnoredTidalEffectsHolder.INSTANCE;
     }
 
     /** Get the CIRF2000 reference frame.
@@ -512,7 +542,7 @@ public class Frame implements Serializable {
 
     }
 
-    /** Holder for the ITRF 2005 frame singleton. */
+    /** Holder for the ITRF 2005 frame with tidal effects singleton. */
     private static class LazyITRF2005Holder {
 
         /** Unique instance. */
@@ -528,7 +558,7 @@ public class Frame implements Serializable {
                 if (LazyTIRF2000Holder.INSTANCE == null) {
                     tmpException = LazyTIRF2000Holder.OREKIT_EXCEPTION;
                 } else {
-                    tmpFrame = new ITRF2005Frame(AbsoluteDate.J2000_EPOCH, "ITRF2005");
+                    tmpFrame = new ITRF2005Frame(false, AbsoluteDate.J2000_EPOCH, "ITRF2005");
                 }
             } catch (OrekitException oe) {
                 tmpException = oe;
@@ -547,7 +577,42 @@ public class Frame implements Serializable {
 
     }
 
-    /** Holder for the TIRF 2000 frame singleton. */
+    /** Holder for the ITRF 2005 frame without tidal effects singleton. */
+    private static class LazyITRF2005IgnoredTidalEffectHolder {
+
+        /** Unique instance. */
+        private static final Frame INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
+
+        static {
+            Frame tmpFrame = null;
+            OrekitException tmpException = null;
+            try {
+                if (LazyTIRF2000IgnoredTidalEffectsHolder.INSTANCE == null) {
+                    tmpException = LazyTIRF2000IgnoredTidalEffectsHolder.OREKIT_EXCEPTION;
+                } else {
+                    tmpFrame = new ITRF2005Frame(true, AbsoluteDate.J2000_EPOCH, "ITRF2005");
+                }
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            INSTANCE = tmpFrame;
+            OREKIT_EXCEPTION = tmpException;
+        }
+
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private LazyITRF2005IgnoredTidalEffectHolder() {
+        }
+
+    }
+
+    /** Holder for the TIRF 2000 frame with tidal effects singleton. */
     private static class LazyTIRF2000Holder {
 
         /** Unique instance. */
@@ -563,7 +628,7 @@ public class Frame implements Serializable {
                 if (LazyCIRF2000Holder.INSTANCE == null) {
                     tmpException = LazyCIRF2000Holder.OREKIT_EXCEPTION;
                 } else {
-                    tmpFrame = new TIRF2000Frame(AbsoluteDate.J2000_EPOCH, "TIRF2000");
+                    tmpFrame = new TIRF2000Frame(false, AbsoluteDate.J2000_EPOCH, "TIRF2000");
                 }
             } catch (OrekitException oe) {
                 tmpException = oe;
@@ -578,6 +643,41 @@ public class Frame implements Serializable {
          * the compiler from generating one automatically.</p>
          */
         private LazyTIRF2000Holder() {
+        }
+
+    }
+
+    /** Holder for the TIRF 2000 frame without tidal effects singleton. */
+    private static class LazyTIRF2000IgnoredTidalEffectsHolder {
+
+        /** Unique instance. */
+        private static final Frame INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
+
+        static {
+            Frame tmpFrame = null;
+            OrekitException tmpException = null;
+            try {
+                if (LazyCIRF2000Holder.INSTANCE == null) {
+                    tmpException = LazyCIRF2000Holder.OREKIT_EXCEPTION;
+                } else {
+                    tmpFrame = new TIRF2000Frame(true, AbsoluteDate.J2000_EPOCH, "TIRF2000");
+                }
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            INSTANCE = tmpFrame;
+            OREKIT_EXCEPTION = tmpException;
+        }
+
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private LazyTIRF2000IgnoredTidalEffectsHolder() {
         }
 
     }
