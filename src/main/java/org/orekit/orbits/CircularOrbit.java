@@ -27,7 +27,8 @@ import org.orekit.utils.PVCoordinates;
  * This class handles circular orbital parameters.
 
  * <p>
- * The parameters used internally are the circular elements defined as follows:
+ * The parameters used internally are the circular elements which can be
+ * related to keplerian elements as follows:
  *   <ul>
  *     <li>a</li>
  *     <li>e<sub>x</sub> = e cos(&omega;)</li>
@@ -40,9 +41,22 @@ import org.orekit.utils.PVCoordinates;
  * &alpha;<sub>v</sub> stands for the true longitude argument
  * </p>
  * <p>
+ * The conversion equations from and to keplerian elements given above hold only
+ * when both sides are unambiguously defined, i.e. when orbit is neither equatorial
+ * nor circular. When orbit is circular (but not equatorial), the circular
+ * parameters are still unambiguously defined whereas some keplerian elements
+ * (more precisely &omega; and &Omega;) become ambiguous. When orbit is equatorial,
+ * neither the keplerian nor the circular parameters can be defined unambiguously.
+ * {@link EquinoctialOrbit equinoctial orbits} is the recommended way to represent
+ * orbits.
+ * </p>
+ * <p>
  * The instance <code>CircularOrbit</code> is guaranteed to be immutable.
  * </p>
- * @see     Orbit
+ * @see    Orbit
+ * @see    KeplerianOrbit
+ * @see    CartesianOrbit
+ * @see    EquinoctialOrbit
  * @author Luc Maisonobe
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
@@ -95,8 +109,8 @@ public class CircularOrbit
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if the longitude argument type is not
-     * one of {@link #MEAN_LONGITUDE_ARGUMENT}, @link #ECCENTRIC_LONGITUDE_ARGUMENT}
-     * or  {@link #TRUE_LONGITUDE_ARGUMENT}
+     * one of {@link #MEAN_LONGITUDE_ARGUMENT}, {@link #ECCENTRIC_LONGITUDE_ARGUMENT}
+     * or {@link #TRUE_LONGITUDE_ARGUMENT}
      * @see #MEAN_LONGITUDE_ARGUMENT
      * @see #ECCENTRIC_LONGITUDE_ARGUMENT
      * @see #TRUE_LONGITUDE_ARGUMENT

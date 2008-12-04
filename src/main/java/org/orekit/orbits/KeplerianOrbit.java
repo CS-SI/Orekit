@@ -24,7 +24,7 @@ import org.orekit.utils.PVCoordinates;
 
 
 /**
- * This class handles keplerian orbital parameters.
+ * This class handles traditional keplerian orbital parameters.
 
  * <p>
  * The parameters used internally are the classical keplerian elements:
@@ -40,9 +40,19 @@ import org.orekit.utils.PVCoordinates;
  * Right Ascension of the Ascending Node and v stands for the true anomaly.
  * </p>
  * <p>
+ * When orbit is either equatorial or circular, some keplerian elements
+ * (more precisely &omega; and &Omega;) become ambiguous so this class should not
+ * be used for such orbits. For this reason, {@link EquinoctialOrbit equinoctial
+ * orbits} is the recommended way to represent orbits.
+ * </p>
+
+ * <p>
  * The instance <code>KeplerianOrbit</code> is guaranteed to be immutable.
  * </p>
  * @see     Orbit
+ * @see    CircularOrbit
+ * @see    CartesianOrbit
+ * @see    EquinoctialOrbit
  * @author Luc Maisonobe
  * @author Guylaine Prat
  * @author Fabien Maussion
@@ -99,8 +109,8 @@ public class KeplerianOrbit extends Orbit {
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if the longitude argument type is not
-     * one of {@link #MEAN_ANOMALY}, @link {@link #ECCENTRIC_ANOMALY}}
-     * or  {@link #TRUE_ANOMALY}
+     * one of {@link #MEAN_ANOMALY}, {@link #ECCENTRIC_ANOMALY}
+     * or {@link #TRUE_ANOMALY}
      * @see #MEAN_ANOMALY
      * @see #ECCENTRIC_ANOMALY
      * @see #TRUE_ANOMALY

@@ -44,7 +44,7 @@ import java.io.Serializable;
  * </p>
  * <p>
  * The parameters are defined in a frame specified by the user. It is important
- * to make sure this frame is consistent : it probably is inertial and centered
+ * to make sure this frame is consistent: it probably is inertial and centered
  * on the central body. This information is used for example by some
  * force models.
  * </p>

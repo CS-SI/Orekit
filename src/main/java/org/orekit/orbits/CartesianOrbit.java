@@ -47,7 +47,10 @@ import org.orekit.utils.PVCoordinates;
  * <p>
  * The instance <code>CartesianOrbit</code> is guaranteed to be immutable.
  * </p>
- * @see     Orbit
+ * @see    Orbit
+ * @see    KeplerianOrbit
+ * @see    CircularOrbit
+ * @see    EquinoctialOrbit
  * @author Luc Maisonobe
  * @author Guylaine Prat
  * @author Fabien Maussion

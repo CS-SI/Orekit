@@ -24,10 +24,11 @@ import org.orekit.utils.PVCoordinates;
 
 
 /**
- * This class handles equinoctial orbital parameters.
-
+ * This class handles equinoctial orbital parameters, which can support both
+ * circular and equatorial orbits.
  * <p>
- * The parameters used internally are the equinoctial elements defined as follows:
+ * The parameters used internally are the equinoctial elements which can be
+ * related to keplerian elements as follows:
  *   <pre>
  *     a
  *     ex = e cos(&omega; + &Omega;)
@@ -40,9 +41,20 @@ import org.orekit.utils.PVCoordinates;
  * Right Ascension of the Ascending Node.
  * </p>
  * <p>
+ * The conversion equations from and to keplerian elements given above hold only
+ * when both sides are unambiguously defined, i.e. when orbit is neither equatorial
+ * nor circular. When orbit is either equatorial or circular, the equinoctial
+ * parameters are still unambiguously defined whereas some keplerian elements
+ * (more precisely &omega; and &Omega;) become ambiguous. For this reason, equinoctial
+ * parameters are the recommended way to represent orbits.
+ * </p>
+ * <p>
  * The instance <code>EquinoctialOrbit</code> is guaranteed to be immutable.
  * </p>
- * @see     Orbit
+ * @see    Orbit
+ * @see    KeplerianOrbit
+ * @see    CircularOrbit
+ * @see    CartesianOrbit
  * @author Mathieu Rom&eacute;ro
  * @author Luc Maisonobe
  * @author Guylaine Prat
@@ -88,15 +100,15 @@ public class EquinoctialOrbit extends Orbit {
      * @param ey e sin(&omega; + &Omega;), second component of eccentricity vector
      * @param hx tan(i/2) cos(&Omega;), first component of inclination vector
      * @param hy tan(i/2) sin(&Omega;), second component of inclination vector
-     * @param l  an + &omega; + &Omega;, mean, eccentric or true latitude argument (rad)
+     * @param l  (M or E or v) + &omega; + &Omega;, mean, eccentric or true latitude argument (rad)
      * @param type type of latitude argument, must be one of {@link #MEAN_LATITUDE_ARGUMENT},
      * {@link #ECCENTRIC_LATITUDE_ARGUMENT} or  {@link #TRUE_LATITUDE_ARGUMENT}
      * @param frame the frame in which the parameters are defined
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if the longitude argument type is not
-     * one of {@link #MEAN_LATITUDE_ARGUMENT}, @link #ECCENTRIC_LATITUDE_ARGUMENT}
-     * or  {@link #TRUE_LATITUDE_ARGUMENT}
+     * one of {@link #MEAN_LATITUDE_ARGUMENT}, {@link #ECCENTRIC_LATITUDE_ARGUMENT}
+     * or {@link #TRUE_LATITUDE_ARGUMENT}
      * @see #MEAN_LATITUDE_ARGUMENT
      * @see #ECCENTRIC_LATITUDE_ARGUMENT
      * @see #TRUE_LATITUDE_ARGUMENT
