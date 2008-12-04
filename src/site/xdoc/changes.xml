@@ -22,6 +22,9 @@
   <body>
     <release version="4.1" date="TBD"
              description="TBD">
+      <action dev="luc" type="fix" due-to="Guylaine Prat">
+        Improved javadoc comments in orbit classes.
+      </action>
       <action dev="pascal" type="add">
         Tidal corrections are now available for ITRF and TIRF frames. Both frames are
         provided in two versions, the standard one with tidal corrections and a stripped
