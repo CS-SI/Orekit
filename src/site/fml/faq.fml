@@ -105,12 +105,12 @@
         <p>
           Orekit depends on features of commons-math which have not been released as of mid 2008.
           You will have to retrieve the development version from Apache subversion repository,
-          located in the MATH_2_0 branch and compile it yourself. This is done by the following
+          located in the commons-math trunk and compile it yourself. This is done by the following
           three commands on a Unix or GNU/Linux system:
         </p>
         <pre>
 svn checkout \
-    http://svn.apache.org/repos/asf/commons/proper/math/branches/MATH_2_0 \
+    http://svn.apache.org/repos/asf/commons/proper/math/trunk \
     commons-math
 cd commons-math
 mvn install
