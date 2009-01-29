@@ -20,9 +20,9 @@ import java.io.Serializable;
 
 import org.apache.commons.math.ConvergenceException;
 import org.apache.commons.math.FunctionEvaluationException;
-import org.apache.commons.math.analysis.BrentSolver;
 import org.apache.commons.math.analysis.UnivariateRealFunction;
-import org.apache.commons.math.analysis.UnivariateRealSolver;
+import org.apache.commons.math.analysis.solvers.BrentSolver;
+import org.apache.commons.math.analysis.solvers.UnivariateRealSolver;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -154,7 +154,10 @@ class EventState implements Serializable {
                     // variation direction, with respect to the integration direction
                     increasing = gb >= ga;
 
-                    final UnivariateRealSolver solver = new BrentSolver(new UnivariateRealFunction() {
+                    final UnivariateRealSolver solver = new BrentSolver();
+                    solver.setAbsoluteAccuracy(detector.getThreshold());
+                    solver.setMaximalIterationCount(detector.getMaxIterationCount());
+                    final AbsoluteDate root = new AbsoluteDate(t0, solver.solve(new UnivariateRealFunction() {
                         public double value(final double t) throws FunctionEvaluationException {
                             try {
                                 final AbsoluteDate date = new AbsoluteDate(t0, t);
@@ -164,10 +167,7 @@ class EventState implements Serializable {
                                 throw new FunctionEvaluationException(t, e);
                             }
                         }
-                    });
-                    solver.setAbsoluteAccuracy(detector.getThreshold());
-                    solver.setMaximalIterationCount(detector.getMaxIterationCount());
-                    final AbsoluteDate root = new AbsoluteDate(t0, solver.solve(ta.durationFrom(t0), tb.durationFrom(t0)));
+                    }, ta.durationFrom(t0), tb.durationFrom(t0)));
                     if ((previousEventTime == null) ||
                         (Math.abs(previousEventTime.durationFrom(root)) > detector.getThreshold())) {
                         pendingEventTime = root;
