@@ -25,6 +25,9 @@
       <action dev="luc" type="update">
         Updated to latest version of commons-math.
       </action>
+      <action dev="luc" type="add" due-to="Silvia Ríos Bergantiños">
+        Added galician localization for error messages.
+      </action>
       <action dev="luc" type="fix" due-to="Guylaine Prat">
         Improved javadoc comments in orbit classes.
       </action>
