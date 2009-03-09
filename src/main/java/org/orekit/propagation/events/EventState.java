@@ -164,7 +164,7 @@ class EventState implements Serializable {
                                 interpolator.setInterpolatedDate(date);
                                 return detector.g(interpolator.getInterpolatedState());
                             } catch (OrekitException e) {
-                                throw new FunctionEvaluationException(t, e);
+                                throw new FunctionEvaluationException(e, t);
                             }
                         }
                     }, ta.durationFrom(t0), tb.durationFrom(t0)));

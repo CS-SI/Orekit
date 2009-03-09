@@ -476,7 +476,7 @@ public class NumericalPropagator implements Propagator {
                 ++calls;
 
             } catch (OrekitException oe) {
-                throw new DerivativeException(oe.getMessage(), new String[0]);
+                throw new DerivativeException(oe.getMessage());
             }
 
         }
