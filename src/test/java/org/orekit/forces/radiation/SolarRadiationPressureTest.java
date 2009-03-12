@@ -30,7 +30,7 @@ import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.bodies.SolarSystemBody;
-import org.orekit.data.DataDirectoryCrawler;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.frames.Frame;
@@ -166,7 +166,7 @@ public class SolarRadiationPressureTest extends TestCase {
 
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
-        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, root);
+        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
     }
 
     public static Test suite() {

@@ -24,8 +24,8 @@ import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.data.DataFileLoader;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.TimeStamped;
 
@@ -127,7 +127,7 @@ class BulletinBFilesLoader implements DataFileLoader {
      * file content is corrupted
      */
     public void loadEOP() throws OrekitException {
-        new DataDirectoryCrawler().crawl(this);
+        DataProvidersManager.getInstance().feed(this);
     }
 
     /** {@inheritDoc} */

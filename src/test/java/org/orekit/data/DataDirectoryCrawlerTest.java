@@ -34,41 +34,28 @@ public class DataDirectoryCrawlerTest extends TestCase {
     public void testNoDirectory() {
         File existing = new File(getClass().getClassLoader().getResource("regular-data").getPath());
         File inexistent = new File(existing.getParent(), "inexistant-directory");
-        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, inexistent.getAbsolutePath());
-        checkFailure();
+        checkFailure(inexistent);
     }
 
     public void testNotADirectory() {
         URL url =
             DataDirectoryCrawlerTest.class.getClassLoader().getResource("regular-data/UTC-TAI.history");
-        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, url.getPath());
-        checkFailure();
+        checkFailure(new File(url.getPath()));
     }
 
     public void testNominal() throws OrekitException {
         URL url =
             DataDirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
-        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, url.getPath());
         CountingLoader crawler = new CountingLoader(".*");
-        new DataDirectoryCrawler().crawl(crawler);
+        new DataDirectoryCrawler(new File(url.getPath())).feed(crawler);
         assertTrue(crawler.getCount() > 0);
-    }
-
-    public void testMultiZip() throws OrekitException {
-        URL url =
-            DataDirectoryCrawlerTest.class.getClassLoader().getResource("multizip.zip");
-        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, url.getPath());
-        CountingLoader crawler = new CountingLoader(".*\\.txt$");
-        new DataDirectoryCrawler().crawl(crawler);
-        assertEquals(6, crawler.getCount());
     }
 
     public void testIOException() throws OrekitException {
         URL url =
             DataDirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
-        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, url.getPath());
         try {
-            new DataDirectoryCrawler().crawl(new IOExceptionLoader(".*"));
+            new DataDirectoryCrawler(new File(url.getPath())).feed(new IOExceptionLoader(".*"));
             fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behavior
@@ -83,9 +70,8 @@ public class DataDirectoryCrawlerTest extends TestCase {
     public void testParseException() throws OrekitException {
         URL url =
             DataDirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
-        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, url.getPath());
         try {
-            new DataDirectoryCrawler().crawl(new ParseExceptionLoader(".*"));
+            new DataDirectoryCrawler(new File(url.getPath())).feed(new ParseExceptionLoader(".*"));
             fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behavior
@@ -98,9 +84,9 @@ public class DataDirectoryCrawlerTest extends TestCase {
         }
     }
 
-    private void checkFailure() {
+    private void checkFailure(File root) {
         try {
-            new DataDirectoryCrawler().crawl(new CountingLoader(".*"));
+            new DataDirectoryCrawler(root).feed(new CountingLoader(".*"));
             fail("an exception should have been thrown");
         } catch (OrekitException e) {
             // expected behavior

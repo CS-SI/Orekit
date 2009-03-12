@@ -18,21 +18,12 @@ package org.orekit.time;
 
 import java.util.Date;
 
-import org.orekit.data.DataDirectoryCrawler;
-import org.orekit.errors.OrekitException;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
-import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TAIScale;
-import org.orekit.time.TCGScale;
-import org.orekit.time.TTScale;
-import org.orekit.time.TimeScale;
-import org.orekit.time.UTCScale;
-
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import org.orekit.data.DataProvidersManager;
+import org.orekit.errors.OrekitException;
 
 public class AbsoluteDateTest
 extends TestCase {
@@ -273,7 +264,7 @@ extends TestCase {
 
     public void setUp() throws OrekitException {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
-        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, root);
+        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
         utc = UTCScale.getInstance();
     }
 

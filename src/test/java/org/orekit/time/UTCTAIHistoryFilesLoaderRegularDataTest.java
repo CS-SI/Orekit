@@ -20,10 +20,8 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.orekit.data.DataDirectoryCrawler;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.UTCScale;
 
 public class UTCTAIHistoryFilesLoaderRegularDataTest extends TestCase {
 
@@ -45,7 +43,7 @@ public class UTCTAIHistoryFilesLoaderRegularDataTest extends TestCase {
 
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
-        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, root);
+        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
     }
 
     public static Test suite() {

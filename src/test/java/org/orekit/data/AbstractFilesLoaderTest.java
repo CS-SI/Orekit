@@ -31,7 +31,8 @@ public abstract class AbstractFilesLoaderTest extends TestCase {
 
     protected void setRoot(String directoryName) throws OrekitException {
         String root = getClass().getClassLoader().getResource(directoryName).getPath();
-        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, root);
+        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+        DataProvidersManager.getInstance().removeProvider(DataDirectoryCrawler.class);
         set = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
     }
 

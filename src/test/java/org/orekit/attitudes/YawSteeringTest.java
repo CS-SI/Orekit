@@ -26,7 +26,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.bodies.SolarSystemBody;
-import org.orekit.data.DataDirectoryCrawler;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CircularOrbit;
@@ -161,7 +161,7 @@ public class YawSteeringTest extends TestCase {
     public void setUp() {
         try {
             String root = getClass().getClassLoader().getResource("regular-data").getPath();
-            System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, root);
+            System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
 
             // Computation date
             date = new AbsoluteDate(new DateComponents(1970, 04, 07),

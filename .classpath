@@ -7,6 +7,6 @@
 	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="M2_REPO/junit/junit/4.4/junit-4.4.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/commons/commons-math/2.0-SNAPSHOT/commons-math-2.0-SNAPSHOT.jar" sourcepath="/M2_REPO/org/apache/commons/commons-math/2.0-SNAPSHOT/commons-math-2.0-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/commons/commons-math/2.0-SNAPSHOT/commons-math-2.0-SNAPSHOT.jar" sourcepath="/M2_REPO/org/apache/commons/commons-math/2.0-SNAPSHOT/commons-math-2.0-SNAPSHOT-src.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

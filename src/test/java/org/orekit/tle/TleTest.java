@@ -27,15 +27,12 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Vector3D;
-import org.orekit.data.DataDirectoryCrawler;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
-import org.orekit.tle.TLE;
-import org.orekit.tle.TLEPropagator;
-import org.orekit.tle.TLESeries;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -252,7 +249,7 @@ public class TleTest extends TestCase {
 
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
-        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, root);
+        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
     }
 
     public static Test suite() {

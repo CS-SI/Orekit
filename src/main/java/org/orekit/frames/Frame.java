@@ -558,7 +558,7 @@ public class Frame implements Serializable {
                 if (LazyTIRF2000Holder.INSTANCE == null) {
                     tmpException = LazyTIRF2000Holder.OREKIT_EXCEPTION;
                 } else {
-                    tmpFrame = new ITRF2005Frame(false, AbsoluteDate.J2000_EPOCH, "ITRF2005");
+                    tmpFrame = new ITRF2005Frame(false, AbsoluteDate.J2000_EPOCH, "ITRF2005 w/o tides");
                 }
             } catch (OrekitException oe) {
                 tmpException = oe;

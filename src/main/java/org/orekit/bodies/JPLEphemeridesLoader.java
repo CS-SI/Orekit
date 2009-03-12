@@ -22,8 +22,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.data.DataFileLoader;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
@@ -160,7 +160,7 @@ class JPLEphemeridesLoader implements DataFileLoader {
      */
     public synchronized SortedSet<TimeStamped> loadEphemerides() throws OrekitException {
         ephemerides = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
-        new DataDirectoryCrawler().crawl(this);
+        DataProvidersManager.getInstance().feed(this);
         return ephemerides;
     }
 

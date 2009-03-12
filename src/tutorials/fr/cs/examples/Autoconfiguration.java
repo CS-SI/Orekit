@@ -19,7 +19,7 @@ package fr.cs.examples;
 import java.io.File;
 import java.net.URL;
 
-import org.orekit.data.DataDirectoryCrawler;
+import org.orekit.data.DataProvidersManager;
 
 /** Utility class for configuring the library for tutorials runs.
  * @author Luc Maisonobe
@@ -58,7 +58,7 @@ public class Autoconfiguration {
         appendIfExists(pathBuffer, new File(home,    "orekit-data"));
         appendIfExists(pathBuffer, new File(home,    ".orekit-data"));
         appendIfExists(pathBuffer, "regular-data");
-        System.setProperty(DataDirectoryCrawler.OREKIT_DATA_PATH, pathBuffer.toString());
+        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, pathBuffer.toString());
     }
 
     /** Append a directory/zip archive to the path if it exists.

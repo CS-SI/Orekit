@@ -28,8 +28,8 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.orekit.data.DataDirectoryCrawler;
 import org.orekit.data.DataFileLoader;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 
 
@@ -110,7 +110,7 @@ class UTCTAIHistoryFilesLoader implements DataFileLoader {
      */
     public SortedMap<DateComponents, Integer> loadTimeSteps() throws OrekitException {
         entries = new TreeMap<DateComponents, Integer>();
-        new DataDirectoryCrawler().crawl(this);
+        DataProvidersManager.getInstance().feed(this);
         return entries;
     }
 
