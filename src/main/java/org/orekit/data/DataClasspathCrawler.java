@@ -74,7 +74,8 @@ public class DataClasspathCrawler implements DataProvider {
      * @param list list of data file names within the classpath
      * @exception OrekitException if a list elements is not an existing resource
      */
-    public DataClasspathCrawler(String... list) throws OrekitException {
+    public DataClasspathCrawler(final String... list)
+        throws OrekitException {
 
         listElements = new ArrayList<String>();
 
@@ -86,7 +87,10 @@ public class DataClasspathCrawler implements DataProvider {
                 final InputStream stream =
                     DataClasspathCrawler.class.getClassLoader().getResourceAsStream(convertedName);
                 if (stream == null) {
-                    throw new OrekitException("{0} does not exist in classpath", new Object[] { name });
+                    throw new OrekitException("{0} does not exist in classpath",
+                                              new Object[] {
+                                                  name
+                                              });
                 }
 
                 listElements.add(convertedName);
@@ -101,7 +105,7 @@ public class DataClasspathCrawler implements DataProvider {
     }
 
     /** {@inheritDoc} */
-    public void feed(final DataFileLoader visitor) throws OrekitException {
+    public boolean feed(final DataFileLoader visitor) throws OrekitException {
 
         try {
             OrekitException delayedException = null;
@@ -147,13 +151,11 @@ public class DataClasspathCrawler implements DataProvider {
                 }
             }
 
-            if (!loaded) {
-                if (delayedException == null) {
-                    throw new OrekitException("no data has been loaded", new Object[0]);
-                } else {
-                    throw delayedException;
-                }
+            if (!loaded && delayedException != null) {
+                throw delayedException;
             }
+
+            return loaded;
 
         } catch (IOException ioe) {
             throw new OrekitException(ioe.getMessage(), ioe);

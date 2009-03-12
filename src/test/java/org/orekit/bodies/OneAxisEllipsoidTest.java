@@ -22,6 +22,7 @@ import org.apache.commons.math.util.MathUtils;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CircularOrbit;
@@ -320,6 +321,11 @@ public class OneAxisEllipsoidTest extends TestCase {
         assertEquals(altitude,  gp.getAltitude(),  1.0e-10 * Math.abs(altitude));
         Vector3D rebuiltNadir = Vector3D.crossProduct(gp.getSouth(), gp.getWest());
         assertEquals(0, rebuiltNadir.subtract(gp.getNadir()).getNorm(), 1.0e-15);
+    }
+
+    public void setUp() {
+        String root = getClass().getClassLoader().getResource("regular-data").getPath();
+        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
     }
 
     public static Test suite() {

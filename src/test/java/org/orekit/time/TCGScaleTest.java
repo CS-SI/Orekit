@@ -16,6 +16,7 @@
  */
 package org.orekit.time;
 
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 
 import junit.framework.*;
@@ -59,6 +60,11 @@ extends TestCase {
         assertEquals(0, ttRef.durationFrom(tcgRef), 1.0e-15);
         assertEquals(0, ttRef.durationFrom(taiRef), 1.0e-15);
         assertEquals(0, ttRef.durationFrom(utcRef), 1.0e-15);
+    }
+
+    public void setUp() {
+        String root = getClass().getClassLoader().getResource("regular-data").getPath();
+        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
     }
 
     public static Test suite() {

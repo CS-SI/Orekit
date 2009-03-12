@@ -51,6 +51,23 @@ public class DataDirectoryCrawlerTest extends TestCase {
         assertTrue(crawler.getCount() > 0);
     }
 
+    public void testCompressed() throws OrekitException {
+        URL url =
+            DataDirectoryCrawlerTest.class.getClassLoader().getResource("compressed-data");
+        CountingLoader crawler = new CountingLoader(".*");
+        new DataDirectoryCrawler(new File(url.getPath())).feed(crawler);
+        assertTrue(crawler.getCount() > 0);
+    }
+
+    public void testMultiZipClasspath() throws OrekitException {
+        URL url =
+            DataDirectoryCrawlerTest.class.getClassLoader().getResource("multizip.zip");
+        File parent = new File(url.getPath()).getParentFile();
+        CountingLoader crawler = new CountingLoader(".*\\.txt$");
+        new DataDirectoryCrawler(parent).feed(crawler);
+        assertEquals(23, crawler.getCount());
+    }
+
     public void testIOException() throws OrekitException {
         URL url =
             DataDirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");

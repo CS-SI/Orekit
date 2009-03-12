@@ -65,7 +65,7 @@ import org.orekit.time.AbsoluteDate;
  * frame which is the reference frame for GPS satellites.
  * <p>This frame is used to define position on solid Earth. It rotates with
  * the Earth and includes the pole motion with respect to Earth crust as
- * provided by {@link org.orekit.data.DataDirectoryCrawler IERS data}.
+ * provided by {@link org.orekit.data.DataProvidersManager IERS data}.
  * Its pole axis is the IERS Reference Pole (IRP).
  * </p>
  * <p>
@@ -663,7 +663,7 @@ public class Frame implements Serializable {
                 if (LazyCIRF2000Holder.INSTANCE == null) {
                     tmpException = LazyCIRF2000Holder.OREKIT_EXCEPTION;
                 } else {
-                    tmpFrame = new TIRF2000Frame(true, AbsoluteDate.J2000_EPOCH, "TIRF2000");
+                    tmpFrame = new TIRF2000Frame(true, AbsoluteDate.J2000_EPOCH, "TIRF2000 w/o tides");
                 }
             } catch (OrekitException oe) {
                 tmpException = oe;

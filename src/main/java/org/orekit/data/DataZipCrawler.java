@@ -92,7 +92,7 @@ public class DataZipCrawler implements DataProvider {
     }
 
     /** {@inheritDoc} */
-    public void feed(final DataFileLoader visitor)
+    public boolean feed(final DataFileLoader visitor)
         throws OrekitException {
 
         try {
@@ -109,9 +109,8 @@ public class DataZipCrawler implements DataProvider {
             final ZipInputStream zip = new ZipInputStream(rawStream);
             final boolean loaded = feed(visitor, zip);
             zip.close();
-            if (!loaded) {
-                throw new OrekitException("no data has been loaded", new Object[0]);
-            }
+
+            return loaded;
 
         } catch (IOException ioe) {
             throw new OrekitException(ioe.getMessage(), ioe);
@@ -152,22 +151,22 @@ public class DataZipCrawler implements DataProvider {
                     } else {
 
                         // remove leading directories
-                        String name = entry.getName();
-                        final int lastSlash = name.lastIndexOf('/');
+                        String entryName = entry.getName();
+                        final int lastSlash = entryName.lastIndexOf('/');
                         if (lastSlash >= 0) {
-                            name = name.substring(lastSlash + 1);
+                            entryName = entryName.substring(lastSlash + 1);
                         }
 
                         // remove suffix from gzip entries
-                        final Matcher gzipMatcher = GZIP_FILE_PATTERN.matcher(name);
-                        final String baseName = gzipMatcher.matches() ? gzipMatcher.group(1) : name;
+                        final Matcher gzipMatcher = GZIP_FILE_PATTERN.matcher(entryName);
+                        final String baseName = gzipMatcher.matches() ? gzipMatcher.group(1) : entryName;
 
                         if (visitor.fileIsSupported(baseName)) {
 
                             // visit the current entry
                             final InputStream stream =
                                 gzipMatcher.matches() ? new GZIPInputStream(zip) : zip;
-                            visitor.loadData(stream, name);
+                            visitor.loadData(stream, entryName);
                             loaded = true;
 
                         }

@@ -160,7 +160,9 @@ class JPLEphemeridesLoader implements DataFileLoader {
      */
     public synchronized SortedSet<TimeStamped> loadEphemerides() throws OrekitException {
         ephemerides = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
-        DataProvidersManager.getInstance().feed(this);
+        if (!DataProvidersManager.getInstance().feed(this)) {
+            throw new OrekitException("no JPL ephemerides binary files found", new Object[0]);
+        }
         return ephemerides;
     }
 

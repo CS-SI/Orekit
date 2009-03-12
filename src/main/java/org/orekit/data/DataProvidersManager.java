@@ -42,15 +42,15 @@ import org.orekit.errors.OrekitException;
  * </p>
  *
  * <p>
- * If an attempt to {@link #feed(DataFileLoader) crawl} the data collection with
- * an empty list of providers is done, the {@link #addDefaultProviders()} method
- * is called automatically to set up a default configuration. This default
- * configuration contains one {@link DataProvider data provider} for each component
- * of the path-like list specified by the java property <code>orekit.data.path</code>.
- * See the method documentation for further details.The default providers configuration
- * is <em>not</em> set up if the list is not empty. If users want to have both the
- * default providers and additional providers, they must call explicitly the {@link
- * #addDefaultProviders()} method.
+ * If the list of providers is empty when attempting to {@link #feed(DataFileLoader)
+ * feed} a file loader, the {@link #addDefaultProviders()} method is called
+ * automatically to set up a default configuration. This default configuration
+ * contains one {@link DataProvider data provider} for each component of the
+ * path-like list specified by the java property <code>orekit.data.path</code>.
+ * See the {@link #feed(DataFileLoader) feed} method documentation for further
+ * details. The default providers configuration is <em>not</em> set up if the list
+ * is not empty. If users want to have both the default providers and additional
+ * providers, they must call explicitly the {@link #addDefaultProviders()} method.
  * </p>
  *
  * @author Luc Maisonobe
@@ -106,12 +106,12 @@ public class DataProvidersManager {
      * directory and one {@link DataZipCrawler} instance (configured to look for the
      * archive in the filesystem) will be set up for each zip/jar archive. The list
      * elements in the java property are separated using the standard path separator for
-     * the operating system as returned by {@link System.getProperty(String)
+     * the operating system as returned by {@link System#getProperty(String)
      * System.getProperty("path.separator")}. This standard path separator is ":" on
      * Linux and Unix type systems and ";" on Windows types systems.
      * </p>
-     * @exception if an element of the list does not exist or exists but is neither a
-     * directory nor a zip/jar archive
+     * @exception OrekitException if an element of the list does not exist or exists but
+     * is neither a directory nor a zip/jar archive
      */
     public void addDefaultProviders() throws OrekitException {
 
@@ -143,7 +143,7 @@ public class DataProvidersManager {
                     if (file.isDirectory()) {
                         addProvider(new DataDirectoryCrawler(file));
                     } else if (ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
-                        addProvider(new DataZipCrawler(name, DataZipCrawler.Location.FILE_SYSTEM));
+                        addProvider(new DataZipCrawler(file.getAbsolutePath(), DataZipCrawler.Location.FILE_SYSTEM));
                     } else {
                         throw new OrekitException(NEITHER_DIRECTORY_NOR_ZIP_ARCHIVE,
                                                   new Object[] {
@@ -252,10 +252,12 @@ public class DataProvidersManager {
      * triggered is thrown.
      * </p>
      * @param visitor data file visitor to use
-     * @exception OrekitException if the data loader cannot be fed (missing data, read error ...)
+     * @return true if some data has been loaded
+     * @exception OrekitException if the data loader cannot be fed (read error ...)
      * or if the default configuration cannot be set up
      */
-    public void feed(final DataFileLoader visitor) throws OrekitException {
+    public boolean feed(final DataFileLoader visitor)
+        throws OrekitException {
 
         // set up a default configuration if no providers have been set
         if (providers.isEmpty()) {
@@ -268,10 +270,9 @@ public class DataProvidersManager {
             try {
 
                 // try to feed the visitor using the current provider
-                provider.feed(visitor);
-
-                // if we get this far, this means the provider was able to feed the visitor
-                return;
+                if (provider.feed(visitor)) {
+                    return true;
+                }
 
             } catch (OrekitException oe) {
                 // remember the last error encountered
@@ -282,6 +283,8 @@ public class DataProvidersManager {
         if (delayedException != null) {
             throw delayedException;
         }
+
+        return false;
 
     }
 

@@ -104,13 +104,15 @@ class UTCTAIHistoryFilesLoader implements DataFileLoader {
      * they are chronologically sorted and only one entry remains for a given date.
      * If different files contain inconsistent data for the same date, the selected
      * entry will depend on file analysis order, which is undefined.</p>
-     * @return sorted UTC-TAI offsets entries
+     * @return sorted UTC-TAI offsets entries (may be empty if no data file is available)
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
      */
     public SortedMap<DateComponents, Integer> loadTimeSteps() throws OrekitException {
         entries = new TreeMap<DateComponents, Integer>();
-        DataProvidersManager.getInstance().feed(this);
+        if (!DataProvidersManager.getInstance().feed(this)) {
+            throw new OrekitException("no IERS UTC-TAI history data loaded", new Object[0]);
+        }
         return entries;
     }
 

@@ -24,6 +24,7 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.InertialLaw;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
@@ -72,12 +73,15 @@ public class InertialAttitudeTest extends TestCase {
 
     public void setUp() {
         try {
-        t0 = new AbsoluteDate(new DateComponents(2008, 06, 03), TimeComponents.H12,
-                              UTCScale.getInstance());
-        orbit0 =
-            new KeplerianOrbit(12345678.9, 0.001, 2.3, 0.1, 3.04, 2.4,
-                               KeplerianOrbit.TRUE_ANOMALY, Frame.getEME2000(),
-                               t0, 3.986004415e14);
+            String root = getClass().getClassLoader().getResource("regular-data").getPath();
+            System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+
+            t0 = new AbsoluteDate(new DateComponents(2008, 06, 03), TimeComponents.H12,
+                                  UTCScale.getInstance());
+            orbit0 =
+                new KeplerianOrbit(12345678.9, 0.001, 2.3, 0.1, 3.04, 2.4,
+                                   KeplerianOrbit.TRUE_ANOMALY, Frame.getEME2000(),
+                                   t0, 3.986004415e14);
         } catch (OrekitException oe) {
             fail(oe.getMessage());
         }

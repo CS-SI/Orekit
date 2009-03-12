@@ -18,7 +18,6 @@ package org.orekit.time;
 
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.TreeMap;
 
 import org.orekit.errors.OrekitException;
 
@@ -32,7 +31,7 @@ import org.orekit.errors.OrekitException;
  * at the end of 2005, the UTC time sequence was 2005-12-31T23:59:59 UTC,
  * followed by 2005-12-31T23:59:60 UTC, followed by 2006-01-01T00:00:00 UTC.</p>
  * <p>The OREKIT library retrieves time steps data thanks to the {@link
- * org.orekit.data.DataDirectoryCrawler DataDirectoryCrawler} class.</p>
+ * org.orekit.data.DataProvidersManager DataProvidersManager} class.</p>
  * <p>This is a singleton class, so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
@@ -41,7 +40,7 @@ import org.orekit.errors.OrekitException;
 public class UTCScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -920132549431081663L;
+    private static final long serialVersionUID = -7628960462088933918L;
 
     /** Reference TAI date. */
     private static final AbsoluteDate TAI_REFERENCE =
@@ -58,15 +57,14 @@ public class UTCScale implements TimeScale {
     private UTCScale() {
     }
 
-    /** Set the time steps from the predefined entries and the history
-     * files in IERS folders.
+    /** Set the time steps from the history files in IERS folders.
      * @exception OrekitException if the time steps cannot be read
      */
     private synchronized void setTimeSteps() throws OrekitException {
 
-        // gather all entries, both predefined and user supplied
-        final SortedMap<DateComponents, Integer> entries = createPredefinedEntries();
-        entries.putAll(new UTCTAIHistoryFilesLoader().loadTimeSteps());
+        // read user supplied entries
+        final SortedMap<DateComponents, Integer> entries =
+            new UTCTAIHistoryFilesLoader().loadTimeSteps();
         offsets = new UTCTAIOffset[entries.size() + 1];
         current = 0;
 
@@ -88,43 +86,6 @@ public class UTCScale implements TimeScale {
         // set the current index on the last known leap
         --current;
 
-    }
-
-    /** Create predefined entries for UTC-TAI history.
-     * <p>The predefined entries guarantee that at least already known values are
-     * supported even if user as not set up a proper configuration.</p>
-     * @return predefined entries
-     * (contains at least all leaps between 1972-01-01 and 2009-01-01)
-     */
-    private SortedMap<DateComponents, Integer> createPredefinedEntries() {
-        final SortedMap<DateComponents, Integer> entries =
-            new TreeMap<DateComponents, Integer>();
-        entries.put(new DateComponents(1972, 1, 1), 10);
-        entries.put(new DateComponents(1972, 7, 1), 11);
-        entries.put(new DateComponents(1973, 1, 1), 12);
-        entries.put(new DateComponents(1974, 1, 1), 13);
-        entries.put(new DateComponents(1975, 1, 1), 14);
-        entries.put(new DateComponents(1976, 1, 1), 15);
-        entries.put(new DateComponents(1977, 1, 1), 16);
-        entries.put(new DateComponents(1978, 1, 1), 17);
-        entries.put(new DateComponents(1979, 1, 1), 18);
-        entries.put(new DateComponents(1980, 1, 1), 19);
-        entries.put(new DateComponents(1981, 7, 1), 20);
-        entries.put(new DateComponents(1982, 7, 1), 21);
-        entries.put(new DateComponents(1983, 7, 1), 22);
-        entries.put(new DateComponents(1985, 7, 1), 23);
-        entries.put(new DateComponents(1988, 1, 1), 24);
-        entries.put(new DateComponents(1990, 1, 1), 25);
-        entries.put(new DateComponents(1991, 1, 1), 26);
-        entries.put(new DateComponents(1992, 7, 1), 27);
-        entries.put(new DateComponents(1993, 7, 1), 28);
-        entries.put(new DateComponents(1994, 7, 1), 29);
-        entries.put(new DateComponents(1996, 1, 1), 30);
-        entries.put(new DateComponents(1997, 7, 1), 31);
-        entries.put(new DateComponents(1999, 1, 1), 32);
-        entries.put(new DateComponents(2006, 1, 1), 33);
-        entries.put(new DateComponents(2009, 1, 1), 34);
-        return entries;
     }
 
     /** Get the unique instance of this class.
@@ -250,6 +211,7 @@ public class UTCScale implements TimeScale {
                 tmpInstance = new UTCScale();
                 tmpInstance.setTimeSteps();
             } catch (OrekitException oe) {
+                tmpInstance  = null;
                 tmpException = oe;
             }
             INSTANCE         = tmpInstance;

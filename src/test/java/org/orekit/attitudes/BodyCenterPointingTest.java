@@ -24,6 +24,7 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -109,6 +110,10 @@ public class BodyCenterPointingTest extends TestCase {
 
     public void setUp() {
         try {
+
+            String root = getClass().getClassLoader().getResource("regular-data").getPath();
+            System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+
             // Computation date
             date = new AbsoluteDate(new DateComponents(2008, 04, 07),
                                     TimeComponents.H00,

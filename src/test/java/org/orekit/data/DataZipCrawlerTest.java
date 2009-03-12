@@ -36,7 +36,7 @@ public class DataZipCrawlerTest extends TestCase {
 
     public void testMultiZip() throws OrekitException {
         URL url =
-            DataDirectoryCrawlerTest.class.getClassLoader().getResource("multizip.zip");
+            DataZipCrawlerTest.class.getClassLoader().getResource("multizip.zip");
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
         new DataZipCrawler(url.getPath(), DataZipCrawler.Location.FILE_SYSTEM).feed(crawler);
         assertEquals(6, crawler.getCount());

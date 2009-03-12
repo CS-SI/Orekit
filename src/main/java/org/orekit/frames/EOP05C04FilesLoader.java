@@ -111,11 +111,12 @@ class EOP05C04FilesLoader implements DataFileLoader {
     /** Load Earth Orientation Parameters.
      * <p>The data is concatenated from all bulletin B data files
      * which can be found in the configured IERS directory.</p>
+     * @return true if some data has been loaded
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
      */
-    public void loadEOP() throws OrekitException {
-        DataProvidersManager.getInstance().feed(this);
+    public boolean loadEOP() throws OrekitException {
+        return DataProvidersManager.getInstance().feed(this);
     }
 
     /** {@inheritDoc} */

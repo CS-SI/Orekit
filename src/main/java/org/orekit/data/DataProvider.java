@@ -62,9 +62,10 @@ public interface DataProvider extends Serializable {
      * {@link DataFileLoader file loader}.
      * </p>
      * @param visitor data file visitor to use
+     * @return true if some data has been loaded
      * @exception OrekitException if the data loader cannot be fed
-     * (missing data, read error ...)
+     * (read error ...)
      */
-    void feed(final DataFileLoader visitor) throws OrekitException;
+    boolean feed(final DataFileLoader visitor) throws OrekitException;
 
 }

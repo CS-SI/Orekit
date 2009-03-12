@@ -79,11 +79,9 @@ public class DataDirectoryCrawler implements DataProvider {
     }
 
     /** {@inheritDoc} */
-    public void feed(final DataFileLoader visitor) throws OrekitException {
+    public boolean feed(final DataFileLoader visitor) throws OrekitException {
         try {
-            if (!feed(visitor, root)) {
-                throw new OrekitException("no data has been loaded", new Object[0]);
-            }
+            return feed(visitor, root);
         } catch (IOException ioe) {
             throw new OrekitException(ioe.getMessage(), ioe);
         } catch (ParseException pe) {
@@ -118,8 +116,8 @@ public class DataDirectoryCrawler implements DataProvider {
                 } else if (ZIP_ARCHIVE_PATTERN.matcher(list[i].getName()).matches()) {
 
                     // browse inside the zip/jar file
-                    DataProvider zipProvider =
-                        new DataZipCrawler(list[i].getName(), DataZipCrawler.Location.FILE_SYSTEM);
+                    final DataProvider zipProvider =
+                        new DataZipCrawler(list[i].getAbsolutePath(), DataZipCrawler.Location.FILE_SYSTEM);
                     zipProvider.feed(visitor);
                     loaded = true;
 
@@ -130,18 +128,18 @@ public class DataDirectoryCrawler implements DataProvider {
                     final String baseName =
                         gzipMatcher.matches() ? gzipMatcher.group(1) : list[i].getName();
 
-                        if (visitor.fileIsSupported(baseName)) {
+                    if (visitor.fileIsSupported(baseName)) {
 
-                            // visit the current file
-                            InputStream input = new FileInputStream(list[i]);
-                            if (gzipMatcher.matches()) {
-                                input = new GZIPInputStream(input);
-                            }
-                            visitor.loadData(input, list[i].getName());
-                            input.close();
-                            loaded = true;
-
+                        // visit the current file
+                        InputStream input = new FileInputStream(list[i]);
+                        if (gzipMatcher.matches()) {
+                            input = new GZIPInputStream(input);
                         }
+                        visitor.loadData(input, list[i].getName());
+                        input.close();
+                        loaded = true;
+
+                    }
 
                 }
             } catch (OrekitException oe) {

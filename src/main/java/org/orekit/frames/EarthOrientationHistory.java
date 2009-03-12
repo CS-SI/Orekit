@@ -58,11 +58,15 @@ public class EarthOrientationHistory implements Serializable {
         eop = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
 
         // consider first the more accurate EOP 05 C04 entries
-        new EOP05C04FilesLoader(eop).loadEOP();
+        final boolean eop05c04Loaded = new EOP05C04FilesLoader(eop).loadEOP();
 
         // add the final values from bulletin B entries for new dates
         // (if duplicated dates occur, the existing data will be preserved)
-        new BulletinBFilesLoader(eop).loadEOP();
+        final boolean bulletinBLoaded = new BulletinBFilesLoader(eop).loadEOP();
+
+        if (!(eop05c04Loaded || bulletinBLoaded)) {
+            throw new OrekitException("no Earth Orientation Parameters loaded", new Object[0]);
+        }
 
         // check the continuity of the loaded data
         checkEOPContinuity(5 * 86400.0);

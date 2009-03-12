@@ -26,6 +26,7 @@ import org.orekit.Utils;
 import org.orekit.attitudes.NadirPointing;
 import org.orekit.attitudes.YawCompensation;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CircularOrbit;
@@ -218,6 +219,9 @@ public class YawCompensationTest extends TestCase {
     
     public void setUp() {
         try {
+            String root = getClass().getClassLoader().getResource("regular-data").getPath();
+            System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+
             // Computation date
             date = new AbsoluteDate(new DateComponents(2008, 04, 07),
                                     TimeComponents.H00,

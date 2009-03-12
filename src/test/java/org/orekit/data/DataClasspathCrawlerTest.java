@@ -44,6 +44,14 @@ public class DataClasspathCrawlerTest extends TestCase {
         assertEquals(6, crawler.getCount());
     }
 
+    public void testCompressed() throws OrekitException {
+        CountingLoader crawler = new CountingLoader(".*/eopc04.*");
+        new DataClasspathCrawler("compressed-data/UTC-TAI.history.gz",
+                                 "compressed-data/eopc04_IAU2000.00.gz",
+                                 "compressed-data/eopc04_IAU2000.02.gz").feed(crawler);
+        assertEquals(2, crawler.getCount());
+    }
+
     public void testMultiZip() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
         new DataClasspathCrawler("multizip.zip").feed(crawler);

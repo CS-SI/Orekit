@@ -26,8 +26,14 @@ import org.orekit.errors.OrekitException;
 public class UTCTAIHistoryFilesLoaderNoDataTest extends TestCase {
 
     public void testNoData() throws OrekitException {
-        // despite there is no data files, some leap seconds are predefined in the library
-        assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 1.0e-8);
+        try {
+            UTCScale.getInstance().offsetFromTAI(AbsoluteDate.J2000_EPOCH);
+            fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            // expected
+        } catch (Exception e) {
+            fail("wrong exception caught");
+        }
     }
 
     public void setUp() {

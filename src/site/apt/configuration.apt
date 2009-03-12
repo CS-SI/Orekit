@@ -92,7 +92,7 @@ Configuration
   As any other java property, <orekit.data.path> can be initialized at application launch time by
   the user (for example using the -D flag of the virtual machine) or from within the application
   by calling the <System.setProperty> method. In the latter case, rather than the literal string
-  constants <orekit.data.path>, the <OREKIT_DATA_PATH> static field from the <DataDirectoryCrawler>
+  constants <orekit.data.path>, the <OREKIT_DATA_PATH> static field from the <DataProvidersManager>
   class can be used. If the property is set up by the application, it must be done before any Orekit
   feature is called, since some data are initialized very early (mainly frame and time related data
   like leap seconds for UTC).
