@@ -22,6 +22,9 @@
   <body>
     <release version="4.1" date="TBD"
              description="TBD">
+      <action dev="luc" type="add" due-to="quinput and Kai Ruhl">
+        Re-activated a way to put configuration data in the classpath.
+      </action>
       <action dev="luc" type="add">
         Added a small plugin-like mechanism to delegate configuration data
         loading to a user-provided mechanism, thus enabling smooth integration
