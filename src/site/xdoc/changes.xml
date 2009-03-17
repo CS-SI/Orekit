@@ -31,7 +31,12 @@
         since data configuration has been vastly improved
       </action>
       <action dev="luc" type="add" due-to="quinput and Kai Ruhl">
-        Re-activated a way to put configuration data in the classpath.
+        Re-activated a way to put configuration data in the classpath using a
+        data provider plugin.
+      </action>
+      <action dev="luc" type="add">
+        Added a way to load configuration data directly from network (either
+        locally or through a proxy server) using a data provider plugin.
       </action>
       <action dev="luc" type="add">
         Added a small plugin-like mechanism to delegate configuration data

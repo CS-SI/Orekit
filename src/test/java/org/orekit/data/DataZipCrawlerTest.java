@@ -16,6 +16,7 @@
  */
 package org.orekit.data;
 
+import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.regex.Pattern;
@@ -30,7 +31,7 @@ public class DataZipCrawlerTest extends TestCase {
 
     public void testMultiZipClasspath() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
-        new DataZipCrawler("multizip.zip", DataZipCrawler.Location.CLASSPATH).feed(crawler);
+        new DataZipCrawler("multizip.zip").feed(crawler);
         assertEquals(6, crawler.getCount());
     }
 
@@ -38,7 +39,7 @@ public class DataZipCrawlerTest extends TestCase {
         URL url =
             DataZipCrawlerTest.class.getClassLoader().getResource("multizip.zip");
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
-        new DataZipCrawler(url.getPath(), DataZipCrawler.Location.FILE_SYSTEM).feed(crawler);
+        new DataZipCrawler(new File(url.getPath())).feed(crawler);
         assertEquals(6, crawler.getCount());
     }
 

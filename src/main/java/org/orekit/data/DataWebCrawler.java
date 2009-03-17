@@ -18,6 +18,8 @@ package org.orekit.data;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,19 +30,32 @@ import java.util.zip.GZIPInputStream;
 import org.orekit.errors.OrekitException;
 
 
-/** Provider for data files stored as resources in the classpath.
+/** Provider for data files directly fetched from network.
 
  * <p>
- * This class handles a list of data files or zip/jar archives located in the
- * classpath. Since the classpath is not a tree structure the list elements
- * cannot be whole directories recursively browsed as in {@link
+ * This class handles a list of URLs pointing to data files or zip/jar on
+ * the net. Since the net is not a tree structure the list elements
+ * cannot be top elements recursively browsed as in {@link
  * DataDirectoryCrawler}, they must be data files or zip/jar archives.
  * </p>
  * <p>
- * A typical use case is to put all data files in a single zip or jar archive
- * and to build an instance of this class with the single name of this zip/jar
- * archive. Two different instances may be used one for user or project specific
- * data and another one for system-wide or general data.
+ * The files fetched from network can be locally cached on disk. This prevents
+ * too frequent network access if the URLs are remote ones (for example
+ * original internet URLs).
+ * </p>
+ * <p>
+ * If the URL points to a remote server (typically on the web) on the other side
+ * of a proxy server, you need to configure the networking layer of your
+ * application to use the proxy. For a typical authenticating proxy as used in
+ * many corporate environments, this can be done as follows using for example
+ * the AuthenticatorDialog graphical authenticator class that can be found
+ * in the tests directories:
+ * <pre>
+ *   System.setProperty("http.proxyHost",     "proxy.your.domain.com");
+ *   System.setProperty("http.proxyPort",     "8080");
+ *   System.setProperty("http.nonProxyHosts", "localhost|*.your.domain.com");
+ *   Authenticator.setDefault(new AuthenticatorDialog());
+ * </pre>
  * </p>
  * <p>
  * Gzip-compressed files are supported.
@@ -56,7 +71,7 @@ import org.orekit.errors.OrekitException;
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-public class DataClasspathCrawler implements DataProvider {
+public class DataWebCrawler implements DataProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -6827421110984075462L;
@@ -67,41 +82,33 @@ public class DataClasspathCrawler implements DataProvider {
     /** Pattern for zip archives. */
     private static final Pattern ZIP_ARCHIVE_PATTERN = Pattern.compile("(.*)(?:(?:\\.zip)|(?:\\.jar))$");
 
-    /** List elements. */
-    private final List<String> listElements;
+    /** URLs list. */
+    private final List<URL> urls;
+
+    /** Connection timeout (milliseconds). */
+    private int timeout;
 
     /** Build a data classpath crawler.
-     * @param list list of data file names within the classpath
-     * @exception OrekitException if a list elements is not an existing resource
+     * <p>The default timeout is set to 10 seconds.</p>
+     * @param urls list of data file URLs
      */
-    public DataClasspathCrawler(final String... list)
+    public DataWebCrawler(final URL... urls)
         throws OrekitException {
 
-        listElements = new ArrayList<String>();
-
-        // check the resources
-        for (final String name : list) {
-            if (!"".equals(name)) {
-
-                final String convertedName = name.replace('\\', '/');
-                final InputStream stream =
-                    DataClasspathCrawler.class.getClassLoader().getResourceAsStream(convertedName);
-                if (stream == null) {
-                    throw new OrekitException("{0} does not exist in classpath",
-                                              new Object[] {
-                                                  name
-                                              });
-                }
-
-                listElements.add(convertedName);
-                try {
-                    stream.close();
-                } catch (IOException exc) {
-                    // ignore this error
-                }
-            }
+        this.urls = new ArrayList<URL>();
+        for (final URL url : urls) {
+            this.urls.add(url);
         }
 
+        timeout = 10000;
+
+    }
+
+    /** Set the timeout for connection.
+     * @param timeout connection timeout in milliseconds
+     */
+    public void setTimeout(final int timeout) {
+        this.timeout = timeout;
     }
 
     /** {@inheritDoc} */
@@ -110,13 +117,14 @@ public class DataClasspathCrawler implements DataProvider {
         try {
             OrekitException delayedException = null;
             boolean loaded = false;
-            for (String name : listElements) {
+            for (URL url : urls) {
                 try {
 
+                    final String name = url.getPath();
                     if (ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
 
                         // browse inside the zip/jar file
-                        new DataZipCrawler(name).feed(visitor);
+                        new DataZipCrawler(url).feed(visitor);
                         loaded = true;
 
                     } else {
@@ -127,8 +135,7 @@ public class DataClasspathCrawler implements DataProvider {
 
                         if (visitor.fileIsSupported(baseName)) {
 
-                            final InputStream stream =
-                                DataClasspathCrawler.class.getClassLoader().getResourceAsStream(name);
+                            final InputStream stream = getStream(url);
 
                             // visit the current file
                             if (gzipMatcher.matches()) {
@@ -163,6 +170,17 @@ public class DataClasspathCrawler implements DataProvider {
             throw new OrekitException(pe.getMessage(), pe);
         }
 
+    }
+
+    /** Get the stream to read from the remote URL.
+     * @param url url to read from
+     * @return stream to read the content of the URL
+     * @throws IOException if the URL cannot be opened for reading
+     */
+    private InputStream getStream(final URL url) throws IOException {
+        final URLConnection connection = url.openConnection();
+        connection.setConnectTimeout(timeout);
+        return connection.getInputStream();
     }
 
 }

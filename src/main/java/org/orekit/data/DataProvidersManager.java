@@ -143,7 +143,7 @@ public class DataProvidersManager {
                     if (file.isDirectory()) {
                         addProvider(new DataDirectoryCrawler(file));
                     } else if (ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
-                        addProvider(new DataZipCrawler(file.getAbsolutePath(), DataZipCrawler.Location.FILE_SYSTEM));
+                        addProvider(new DataZipCrawler(file));
                     } else {
                         throw new OrekitException(NEITHER_DIRECTORY_NOR_ZIP_ARCHIVE,
                                                   new Object[] {

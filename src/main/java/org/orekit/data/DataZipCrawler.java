@@ -16,9 +16,11 @@
  */
 package org.orekit.data;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,37 +60,46 @@ public class DataZipCrawler implements DataProvider {
     /** Serializable UID. */
     private static final long serialVersionUID = 2707860822289475526L;
 
-    /** Location of archive. */
-    public static enum Location {
-
-        /** Archive is a file located on filesystem. */
-        FILE_SYSTEM,
-
-        /** Archive is a resource located in classpath. */
-        CLASSPATH
-
-    }
-
     /** Pattern for gzip files. */
     private static final Pattern GZIP_FILE_PATTERN = Pattern.compile("(.*)\\.gz$");
 
     /** Pattern for zip/jar archives. */
     private static final Pattern ZIP_ARCHIVE_PATTERN = Pattern.compile("(.*)(?:(?:\\.zip)|(?:\\.jar))$");
 
-    /** Zip archive name. */
-    private final String name;
+    /** Zip archive on the filesystem. */
+    private final File file;
 
-    /** Location of the archive. */
-    private final Location location;
+    /** Zip archive in the classpath. */
+    private final String resource;
 
-    /** Build a zip crawler for an archive file on filesystem or in classpath.
-     * @param name name of the zip file to browse
-     * @param location of the archive (either {@link Location#FILE_SYSTEM} or
-     * {@link Location#CLASSPATH})
+    /** Zip archive on network. */
+    private final URL url;
+
+    /** Build a zip crawler for an archive file on filesystem.
+     * @param file zip file to browse
      */
-    public DataZipCrawler(final String name, final Location location) {
-        this.name     = name;
-        this.location = location;
+    public DataZipCrawler(final File file) {
+        this.file     = file;
+        this.resource = null;
+        this.url      = null;
+    }
+
+    /** Build a zip crawler for an archive file in classpath.
+     * @param resource name of the zip file to browse
+     */
+    public DataZipCrawler(final String resource) {
+        this.file     = null;
+        this.resource = resource;
+        this.url      = null;
+    }
+
+    /** Build a zip crawler for an archive file on network.
+     * @param url URL of the zip file on network
+     */
+    public DataZipCrawler(final URL url) {
+        this.file     = null;
+        this.resource = null;
+        this.url      = url;
     }
 
     /** {@inheritDoc} */
@@ -99,10 +110,12 @@ public class DataZipCrawler implements DataProvider {
 
             // open the raw data stream
             final InputStream rawStream;
-            if (location == Location.FILE_SYSTEM) {
-                rawStream = new FileInputStream(name);
+            if (file != null) {
+                rawStream = new FileInputStream(file);
+            } else if (resource != null) {
+                rawStream = DataZipCrawler.class.getClassLoader().getResourceAsStream(resource);
             } else {
-                rawStream = DataZipCrawler.class.getClassLoader().getResourceAsStream(name);
+                rawStream = url.openConnection().getInputStream();
             }
 
             // add the zip format analysis layer and browse the archive

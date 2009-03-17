@@ -116,8 +116,7 @@ public class DataDirectoryCrawler implements DataProvider {
                 } else if (ZIP_ARCHIVE_PATTERN.matcher(list[i].getName()).matches()) {
 
                     // browse inside the zip/jar file
-                    final DataProvider zipProvider =
-                        new DataZipCrawler(list[i].getAbsolutePath(), DataZipCrawler.Location.FILE_SYSTEM);
+                    final DataProvider zipProvider = new DataZipCrawler(list[i]);
                     zipProvider.feed(visitor);
                     loaded = true;
 
