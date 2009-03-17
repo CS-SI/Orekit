@@ -24,14 +24,14 @@ package org.orekit.errors;
 public class FrameAncestorException extends OrekitException {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -4364398908632938172L;
+    private static final long serialVersionUID = -3832819553370782380L;
 
     /** Simple constructor.
      * Build an exception with a translated and formatted message
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
      */
-    public FrameAncestorException(final String specifier, final Object[] parts) {
+    public FrameAncestorException(final String specifier, final Object ... parts) {
         super(specifier, parts);
     }
 

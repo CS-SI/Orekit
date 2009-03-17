@@ -70,10 +70,7 @@ public class DataDirectoryCrawler implements DataProvider {
      */
     public DataDirectoryCrawler(final File root) throws OrekitException {
         if (!root.isDirectory()) {
-            throw new OrekitException("{0} is not a directory",
-                                      new Object[] {
-                                          root.getAbsolutePath()
-                                      });
+            throw new OrekitException("{0} is not a directory", root.getAbsolutePath());
         }
         this.root = root;
     }

@@ -107,12 +107,10 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
     public void read() throws OrekitException, IOException {
 
         if (input == null) {
-            throw new OrekitException("the reader has not been tested ",
-                                      new Object[0]);
+            throw new OrekitException("the reader has not been tested");
         }
         if (!fileIsOK) {
-            throw new OrekitException("the reader is not adapted to the format ",
-                                      new Object[0]);
+            throw new OrekitException("the reader is not adapted to the format");
         }
 
         final BufferedReader r = new BufferedReader(new InputStreamReader(input));

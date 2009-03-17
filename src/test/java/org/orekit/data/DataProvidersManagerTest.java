@@ -131,7 +131,7 @@ public class DataProvidersManagerTest extends TestCase {
         assertNull(manager.removeProvider(new DataProvider() {
             private static final long serialVersionUID = 6368246625696570910L;
             public boolean feed(DataFileLoader visitor) throws OrekitException {
-                throw new OrekitException("oops!", new Object[0]);
+                throw new OrekitException("oops!");
             }
         }.getClass()));
         assertEquals(1, manager.getProviders().size());
@@ -163,7 +163,7 @@ public class DataProvidersManagerTest extends TestCase {
     }
 
     public void testMultiZip() throws OrekitException {
-        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("multizip.zip"));
+        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("zipped-data/multizip.zip"));
         CountingLoader crawler = new CountingLoader(".*\\.txt$", false);
         DataProvidersManager.getInstance().clearProviders();
         assertTrue(DataProvidersManager.getInstance().feed(crawler));
@@ -183,7 +183,7 @@ public class DataProvidersManagerTest extends TestCase {
             throws OrekitException {
             ++count;
             if (shouldFail) {
-                throw new OrekitException("intentional failure", new Object[0]);
+                throw new OrekitException("intentional failure");
             }
         }
         public int getCount() {

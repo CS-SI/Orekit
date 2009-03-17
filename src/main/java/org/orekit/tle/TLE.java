@@ -599,19 +599,15 @@ public class TLE implements TimeStamped, Serializable {
         final int checksum1 = checksum(line1);
         if (Integer.parseInt(line1.substring(68)) != (checksum1 % 10)) {
             throw new OrekitException(CHECKSUM_MESSAGE,
-                                      new Object[] {
-                                          Integer.valueOf(1), line1.substring(68) ,
-                                          Integer.valueOf(checksum1 % 10), line1
-                                      });
+                                      1, line1.substring(68) ,
+                                      checksum1 % 10, line1);
         }
 
         final int checksum2 = checksum(line2);
         if (Integer.parseInt(line2.substring(68)) != (checksum2 % 10)) {
             throw new OrekitException(CHECKSUM_MESSAGE,
-                                      new Object[] {
-                                          Integer.valueOf(2), line2.substring(68) ,
-                                          Integer.valueOf(checksum2 % 10), line2
-                                      });
+                                      2, line2.substring(68) ,
+                                          checksum2 % 10, line2);
         }
 
         return true;

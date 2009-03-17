@@ -105,13 +105,13 @@ public class TLESeries implements Serializable {
                 // add second line
                 final String line2 = r.readLine();
                 if (line2 == null) {
-                    throw new OrekitException("Missing second line in TLE", new Object[0]);
+                    throw new OrekitException("Missing second line in TLE");
                 }
 
                 // safety checks
                 if (!TLE.isFormatOK(line1, line2)) {
                     r.close();
-                    throw new OrekitException("Non-TLE line in TLE data file", new Object[0]);
+                    throw new OrekitException("Non-TLE line in TLE data file");
                 }
 
                 final int satNum = Integer.parseInt(line1.substring(2, 7).replace(' ', '0'));
@@ -121,8 +121,7 @@ public class TLESeries implements Serializable {
                     internationalDesignator = iD;
                 } else {
                     if ((satNum != satelliteNumber) || !iD.equals(internationalDesignator)) {
-                        throw new OrekitException("The TLE's are not representing the same object.",
-                                                  new Object[0]);
+                        throw new OrekitException("The TLE's are not representing the same object.");
                     }
                 }
 

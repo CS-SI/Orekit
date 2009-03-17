@@ -67,10 +67,7 @@ public class PoissonSeries implements Serializable {
         throws OrekitException {
 
         if (stream == null) {
-            throw new OrekitException("unable to find file {0}",
-                                      new Object[] {
-                                          name
-                                      });
+            throw new OrekitException("unable to find file {0}", name);
         }
 
         try {
@@ -112,10 +109,7 @@ public class PoissonSeries implements Serializable {
                 }
             }
             if (coefficients == null) {
-                throw new OrekitException(NOT_IERS_FILE,
-                                          new Object[] {
-                                              name
-                                          });
+                throw new OrekitException(NOT_IERS_FILE, name);
             }
 
             line = reader.readLine();
@@ -156,10 +150,7 @@ public class PoissonSeries implements Serializable {
             }
 
             if (array.isEmpty()) {
-                throw new OrekitException(NOT_IERS_FILE,
-                                          new Object[] {
-                                              name
-                                          });
+                throw new OrekitException(NOT_IERS_FILE, name);
             }
 
             // store the non-polynomial part series
@@ -223,11 +214,7 @@ public class PoissonSeries implements Serializable {
         // sanity check
         if (Integer.parseInt(headerMatcher.group(1)) != expected) {
             throw new OrekitException("missing serie j = {0} in file {1} (line {2})",
-                                      new Object[] {
-                                          Integer.valueOf(expected),
-                                          name,
-                                          Integer.valueOf(lineNumber)
-                                      });
+                                      expected, name, lineNumber);
         }
 
         return Integer.parseInt(headerMatcher.group(2));
@@ -249,9 +236,7 @@ public class PoissonSeries implements Serializable {
         // sanity check
         if (line == null) {
             throw new OrekitException("unexpected end of file {0} (after line {1})",
-                                      new Object[] {
-                                          name, Integer.valueOf(lineNumber - 1)
-                                      });
+                                      name, lineNumber - 1);
         }
 
         // parse the Poisson series term
@@ -270,9 +255,7 @@ public class PoissonSeries implements Serializable {
         }
 
         throw new OrekitException("unable to parse line {0} of file {1}:\n{2}",
-                                  new Object[] {
-                                      Integer.toString(lineNumber), name, line
-                                  });
+                                  lineNumber, name, line);
 
     }
 

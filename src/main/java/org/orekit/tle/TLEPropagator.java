@@ -325,16 +325,12 @@ public abstract class TLEPropagator implements Serializable {
         if (e > (1 - 1e-6)) {
             throw new OrekitException("eccentricity becomes too large for TLE propagation " +
                                       "(e: {0}, satellite number: {1})",
-                                      new Object[] {
-                                          new Double(e), Integer.valueOf(tle.getSatelliteNumber())
-                                      });
+                                      e, tle.getSatelliteNumber());
         }
         if ((a * (1.0 - e) < 1.0) || (a * (1.0 + e) < 1.0)) {
             throw new OrekitException("too small perigee radius for TLE propagation " +
                                       "(r: {0}, satellite number: {1})",
-                                      new Object[] {
-                                          new Double(a * (1. - e)), Integer.valueOf(tle.getSatelliteNumber())
-                                      });
+                                      a * (1. - e), tle.getSatelliteNumber());
         }
 
         // Solve Kepler's' Equation.

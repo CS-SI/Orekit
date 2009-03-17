@@ -321,7 +321,7 @@ public class KeplerianPropagatorTest extends TestCase {
                 private static final long serialVersionUID = 5918362126173997016L;
                 public Attitude getState(AbsoluteDate date, PVCoordinates pv,
                                          Frame frame) throws OrekitException {
-                    throw new OrekitException("gasp", new Object[0], new RuntimeException());
+                    throw new OrekitException(new RuntimeException(), "gasp");
                 }
             };
             KeplerianPropagator propagator = new KeplerianPropagator(orbit, wrongLaw);

@@ -111,7 +111,7 @@ class UTCTAIHistoryFilesLoader implements DataFileLoader {
     public SortedMap<DateComponents, Integer> loadTimeSteps() throws OrekitException {
         entries = new TreeMap<DateComponents, Integer>();
         if (!DataProvidersManager.getInstance().feed(this)) {
-            throw new OrekitException("no IERS UTC-TAI history data loaded", new Object[0]);
+            throw new OrekitException("no IERS UTC-TAI history data loaded");
         }
         return entries;
     }
@@ -138,9 +138,7 @@ class UTCTAIHistoryFilesLoader implements DataFileLoader {
             if (matcher.matches()) {
                 if (lastLine > 0) {
                     throw new OrekitException("unexpected data after line {0} in file {1}: {2}",
-                                              new Object[] {
-                                                  Integer.valueOf(lastLine), name, line
-                                              });
+                                              lastLine, name, line);
                 }
             } else {
                 matcher = lastPattern.matcher(line);
@@ -176,9 +174,7 @@ class UTCTAIHistoryFilesLoader implements DataFileLoader {
                     final Integer offset = Integer.valueOf(matcher.group(matcher.groupCount()));
                     if ((lastDate != null) && leapDay.compareTo(lastDate) <= 0) {
                         throw new OrekitException("non-chronological dates in file {0}, line {1}",
-                                                  new Object[] {
-                                                      name, Integer.valueOf(lineNumber)
-                                                  });
+                                                  name, lineNumber);
                     }
                     lastDate = leapDay;
                     foundEntries = true;
@@ -186,18 +182,14 @@ class UTCTAIHistoryFilesLoader implements DataFileLoader {
 
                 } catch (NumberFormatException nfe) {
                     throw new OrekitException("unable to parse line {0} in IERS UTC-TAI history file {1}",
-                                              new Object[] {
-                                                  Integer.valueOf(lineNumber), name
-                                              });
+                                              lineNumber, name);
                 }
             }
         }
 
         if (!foundEntries) {
             throw new OrekitException("no entries found in IERS UTC-TAI history file {0}",
-                                      new Object[] {
-                                          name
-                                      });
+                                      name);
         }
 
     }

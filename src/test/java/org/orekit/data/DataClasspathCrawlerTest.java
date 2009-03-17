@@ -54,7 +54,7 @@ public class DataClasspathCrawlerTest extends TestCase {
 
     public void testMultiZip() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
-        new DataClasspathCrawler("multizip.zip").feed(crawler);
+        new DataClasspathCrawler("zipped-data/multizip.zip").feed(crawler);
         assertEquals(6, crawler.getCount());
     }
 

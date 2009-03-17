@@ -25,14 +25,14 @@ package org.orekit.errors;
 public class PropagationException extends OrekitException {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 3644973045303340556L;
+    private static final long serialVersionUID = -4194655473851375314L;
 
     /** Simple constructor.
      * Build an exception with a translated and formatted message
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
      */
-    public PropagationException(final String specifier, final Object[] parts) {
+    public PropagationException(final String specifier, final Object ... parts) {
         super(specifier, parts);
     }
 

@@ -125,9 +125,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         // (just to avoid ArrayOutOfboundException in MonthDayFactory later)
         if ((month < 1) || (month > 12)) {
             throw OrekitException.createIllegalArgumentException("non-existent month {0}",
-                                                                 new Object[] {
-                                                                     Integer.valueOf(month)
-                                                                 });
+                                                                 month);
         }
 
         // start by trusting the parameters
@@ -142,11 +140,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         // (i.e. invalid date components, like 29 february on non-leap years)
         if ((year != check.year) || (month != check.month) || (day != check.day)) {
             throw OrekitException.createIllegalArgumentException("non-existent date {0}-{1}-{2}",
-                                                                 new Object[] {
-                                                                     Integer.valueOf(year),
-                                                                     Integer.valueOf(month),
-                                                                     Integer.valueOf(day)
-                                                                 });
+                                                                 year, month, day);
         }
 
     }
@@ -162,10 +156,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         this(J2000_EPOCH, new DateComponents(year - 1, 12, 31).getJ2000Day() + dayNumber);
         if (dayNumber != getDayOfYear()) {
             throw OrekitException.createIllegalArgumentException("no day number {0} in year {1}",
-                                                                 new Object[] {
-                                                                     Integer.valueOf(dayNumber),
-                                                                     Integer.valueOf(year)
-                                                                 });
+                                                                 dayNumber, year);
         }
     }
 

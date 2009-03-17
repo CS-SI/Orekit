@@ -127,8 +127,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
 
             lineAp = rAp.readLine();
             if (lineAp == null) {
-                throw new OrekitException("inconsistent JB2006 and geomagnetic indices files",
-                                          new Object[0]);
+                throw new OrekitException("inconsistent JB2006 and geomagnetic indices files");
             }
             ap = lineAp.trim().split("\\s+");
 
@@ -137,13 +136,11 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
             int apYear  = Integer.parseInt(ap[11]);
 
             if (fluxDay != Integer.parseInt(ap[0])) {
-                throw new OrekitException("inconsistent JB2006 and geomagnetic indices files",
-                                          new Object[0]);
+                throw new OrekitException("inconsistent JB2006 and geomagnetic indices files");
             }
             if (((fluxYear <  2000) && ((fluxYear - 1900) != apYear)) ||
                 ((fluxYear >= 2000) && ((fluxYear - 2000) != apYear))) {
-                throw new OrekitException("inconsistent JB2006 and geomagnetic indices files",
-                                          new Object[0]);
+                throw new OrekitException("inconsistent JB2006 and geomagnetic indices files");
             }
 
             cal.set(Calendar.YEAR, fluxYear);
@@ -183,7 +180,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
     private void findClosestLine(AbsoluteDate date) throws OrekitException {
 
         if ((date.durationFrom(firstDate) < 0) || (date.durationFrom(lastDate) > 86400)) {
-            throw new OrekitException("out of range" , new Object[0]);
+            throw new OrekitException("out of range" );
         }
 
         // don't search if the cached selection is fine
@@ -203,7 +200,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
             }
         } else {
             throw new OrekitException("unable to find data for date {0}",
-                                      new Object[] { date });
+                                      date);
         }
     }
 

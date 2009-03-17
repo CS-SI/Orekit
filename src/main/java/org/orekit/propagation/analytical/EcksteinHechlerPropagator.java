@@ -275,9 +275,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
         // sanity check
         if (osculating.getA() < referenceRadius) {
             throw new PropagationException("trajectory inside the Brillouin sphere (r = {0})",
-                                           new Object[] {
-                                               new Double(osculating.getA())
-                                           });
+                                           osculating.getA());
         }
 
         // rough initialization of the mean parameters
@@ -347,25 +345,18 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
                 final double e = mean.getE();
                 if (e > 0.1) {
                     // if 0.005 < e < 0.1 no error is triggered, but accuracy is poor
-                    throw new PropagationException("too eccentric orbit (e = {0})",
-                                                   new Object[] {
-                                                       new Double(e)
-                                                   });
+                    throw new PropagationException("too eccentric orbit (e = {0})", e);
                 }
 
                 final double meanI = mean.getI();
                 if ((meanI < 0.) || (meanI > Math.PI) || (Math.abs(Math.sin(meanI)) < 1.0e-10)) {
                     throw new PropagationException("almost equatorial orbit (i = {0} degrees)",
-                                                   new Object[] {
-                                                       new Double(Math.toDegrees(meanI))
-                                                   });
+                                                   Math.toDegrees(meanI));
                 }
 
                 if ((Math.abs(meanI - 1.1071487) < 1.0e-3) || (Math.abs(meanI - 2.0344439) < 1.0e-3)) {
                     throw new PropagationException("almost critically inclined orbit (i = {0} degrees)",
-                                                   new Object[] {
-                                                       new Double(Math.toDegrees(meanI))
-                                                   });
+                                                   Math.toDegrees(meanI));
                 }
 
                 return;
@@ -376,9 +367,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
 
         throw new PropagationException("unable to compute Eckstein-Hechler mean" +
                                        " parameters after {0} iterations",
-                                       new Object[] {
-                                           Integer.valueOf(i)
-                                       });
+                                       i);
 
     }
 

@@ -89,12 +89,7 @@ public class CunninghamAttractionModel implements ForceModel {
         if ((C.length != S.length) ||
             (C[C.length - 1].length != S[S.length - 1].length)) {
             throw OrekitException.createIllegalArgumentException("potential arrays sizes mismatch (C: {0}x{1}, S: {2}x{3})",
-                                                                 new Object[] {
-                                                                     Integer.valueOf(C.length),
-                                                                     Integer.valueOf(C[degree].length),
-                                                                     Integer.valueOf(S.length),
-                                                                     Integer.valueOf(S[degree].length)
-                                                                 });
+                                                                 C.length, C[degree].length, S.length, S[degree].length);
         }
 
         if (C.length < 1) {
@@ -138,10 +133,7 @@ public class CunninghamAttractionModel implements ForceModel {
         final double r2 = x2 + y2 + z2;
         final double r = Math.sqrt(r2);
         if (r <= equatorialRadius) {
-            throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})",
-                                      new Object[] {
-                                          new Double(r)
-                                      });
+            throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})", r);
         }
 
         // define some intermediate variables

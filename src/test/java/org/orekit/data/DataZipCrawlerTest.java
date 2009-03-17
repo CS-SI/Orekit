@@ -31,13 +31,13 @@ public class DataZipCrawlerTest extends TestCase {
 
     public void testMultiZipClasspath() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
-        new DataZipCrawler("multizip.zip").feed(crawler);
+        new DataZipCrawler("zipped-data/multizip.zip").feed(crawler);
         assertEquals(6, crawler.getCount());
     }
 
     public void testMultiZip() throws OrekitException {
         URL url =
-            DataZipCrawlerTest.class.getClassLoader().getResource("multizip.zip");
+            DataZipCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
         new DataZipCrawler(new File(url.getPath())).feed(crawler);
         assertEquals(6, crawler.getCount());

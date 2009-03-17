@@ -87,7 +87,7 @@ public class DataWebCrawlerTest extends TestCase {
 
     public void testMultiZip() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
-        new DataWebCrawler(url("multizip.zip")).feed(crawler);
+        new DataWebCrawler(url("zipped-data/multizip.zip")).feed(crawler);
         assertEquals(6, crawler.getCount());
     }
 

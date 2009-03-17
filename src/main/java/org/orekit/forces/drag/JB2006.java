@@ -736,11 +736,9 @@ public class JB2006 implements Atmosphere {
             final TimeScale utcScale = UTCScale.getInstance();
             throw new OrekitException("no solar activity available at {0}, " +
                                       "data available only in range [{1}, {2}]",
-                                      new Object[] {
-                                          date.toString(utcScale),
-                                          inputParams.getMinDate().toString(utcScale),
-                                          inputParams.getMaxDate().toString(utcScale)
-                                      });
+                                      date.toString(utcScale),
+                                      inputParams.getMinDate().toString(utcScale),
+                                      inputParams.getMaxDate().toString(utcScale));
         }
 
         // compute modified julian days date

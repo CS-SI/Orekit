@@ -128,15 +128,9 @@ public class DataProvidersManager {
                     // check component
                     if (!file.exists()) {
                         if (ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
-                            throw new OrekitException("{0} does not exist in filesystem",
-                                                      new Object[] {
-                                                          name
-                                                      });
+                            throw new OrekitException("{0} does not exist in filesystem", name);
                         } else {
-                            throw new OrekitException("data root directory {0} does not exist",
-                                                      new Object[] {
-                                                          name
-                                                      });
+                            throw new OrekitException("data root directory {0} does not exist", name);
                         }
                     }
 
@@ -145,10 +139,7 @@ public class DataProvidersManager {
                     } else if (ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
                         addProvider(new DataZipCrawler(file));
                     } else {
-                        throw new OrekitException(NEITHER_DIRECTORY_NOR_ZIP_ARCHIVE,
-                                                  new Object[] {
-                                                      name
-                                                  });
+                        throw new OrekitException(NEITHER_DIRECTORY_NOR_ZIP_ARCHIVE, name);
                     }
 
                 }

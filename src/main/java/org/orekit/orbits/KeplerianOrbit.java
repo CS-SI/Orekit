@@ -139,13 +139,9 @@ public class KeplerianOrbit extends Orbit {
             break;
         default :
             this.v = Double.NaN;
-            throw OrekitException.createIllegalArgumentException("angle type not supported, supported angles:" +
-                                                                 " {0}, {1} and {2}",
-                                                                 new Object[] {
-                                                                     "MEAN_ANOMALY",
-                                                                     "ECCENTRIC_ANOMALY",
-                                                                     "TRUE_ANOMALY"
-                                                                 });
+            throw OrekitException.createIllegalArgumentException(
+                  "angle type not supported, supported angles: {0}, {1} and {2}",
+                  "MEAN_ANOMALY", "ECCENTRIC_ANOMALY", "TRUE_ANOMALY");
 
         }
     }

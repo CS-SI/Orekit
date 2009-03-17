@@ -190,10 +190,9 @@ public class TimeDerivativesEquations implements Serializable {
         final double e2  = ex2 + ey2;
         final double e   = Math.sqrt(e2);
         if (e >= 1) {
-            throw new PropagationException("orbit becomes hyperbolic, unable to propagate it further (e: {0})",
-                                           new Object[] {
-                                               new Double(e)
-                                           });
+            throw new PropagationException(
+                  "orbit becomes hyperbolic, unable to propagate it further (e: {0})",
+                  e);
         }
 
         // intermediate variables
@@ -330,10 +329,8 @@ public class TimeDerivativesEquations implements Serializable {
      */
     public void addMassDerivative(final double q) {
         if (q > 0) {
-            throw OrekitException.createIllegalArgumentException("positive flow rate (q: {0})",
-                                                                 new Object[] {
-                                                                     new Double(q)
-                                                                 });
+            throw OrekitException.createIllegalArgumentException(
+                  "positive flow rate (q: {0})", q);
         }
         storedYDot[6] += q;
     }

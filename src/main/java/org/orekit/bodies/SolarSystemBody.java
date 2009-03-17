@@ -192,9 +192,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
         // no way, this means we don't have available data for this date
         throw new OrekitException("out of range date for {0} ephemerides: {1}",
-                                  new Object[] {
-                                      type, date
-                                  });
+                                  type, date);
 
     }
 

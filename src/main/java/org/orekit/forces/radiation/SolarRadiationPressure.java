@@ -139,10 +139,7 @@ public class SolarRadiationPressure implements ForceModel {
         // Earth apparent radius
         final double r = position.getNorm();
         if (r <= equatorialRadius) {
-            throw new OrekitException(LOW_TRAJECTORY_MESSAGE,
-                                      new Object[] {
-                                          new Double(r)
-                                      });
+            throw new OrekitException(LOW_TRAJECTORY_MESSAGE, r);
         }
 
         final double alphaEarth = Math.atan(equatorialRadius / r);
@@ -237,10 +234,7 @@ public class SolarRadiationPressure implements ForceModel {
             final double sunEarthAngle = Math.PI - Vector3D.angle(getSatSunVector(s), satPos);
             final double r = satPos.getNorm();
             if (r <= equatorialRadius) {
-                throw new OrekitException(LOW_TRAJECTORY_MESSAGE,
-                                          new Object[] {
-                                              new Double(r)
-                                          });
+                throw new OrekitException(LOW_TRAJECTORY_MESSAGE, r);
             }
             final double alphaEarth = equatorialRadius / r;
             return sunEarthAngle - alphaEarth;
@@ -278,10 +272,7 @@ public class SolarRadiationPressure implements ForceModel {
             final double sunEarthAngle  = Math.PI - Vector3D.angle(satSunVector, satPos);
             final double r = satPos.getNorm();
             if (r <= equatorialRadius) {
-                throw new OrekitException(LOW_TRAJECTORY_MESSAGE,
-                                          new Object[] {
-                                              new Double(r)
-                                          });
+                throw new OrekitException(LOW_TRAJECTORY_MESSAGE, r);
             }
             final double alphaEarth = equatorialRadius / r;
             final double alphaSun   = SUN_RADIUS / satSunVector.getNorm();

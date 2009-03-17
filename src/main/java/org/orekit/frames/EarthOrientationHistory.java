@@ -65,7 +65,7 @@ public class EarthOrientationHistory implements Serializable {
         final boolean bulletinBLoaded = new BulletinBFilesLoader(eop).loadEOP();
 
         if (!(eop05c04Loaded || bulletinBLoaded)) {
-            throw new OrekitException("no Earth Orientation Parameters loaded", new Object[0]);
+            throw new OrekitException("no Earth Orientation Parameters loaded");
         }
 
         // check the continuity of the loaded data
@@ -95,9 +95,7 @@ public class EarthOrientationHistory implements Serializable {
             // compare the dates of preceding and current entries
             if ((preceding != null) && ((current.getDate().durationFrom(preceding.getDate())) > maxGap)) {
                 throw new OrekitException("missing Earth Orientation Parameters between {0} and {1}",
-                                          new Object[] {
-                                              preceding, current
-                                          });
+                                          preceding, current);
 
             }
 

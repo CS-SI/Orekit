@@ -161,7 +161,7 @@ class JPLEphemeridesLoader implements DataFileLoader {
     public synchronized SortedSet<TimeStamped> loadEphemerides() throws OrekitException {
         ephemerides = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
         if (!DataProvidersManager.getInstance().feed(this)) {
-            throw new OrekitException("no JPL ephemerides binary files found", new Object[0]);
+            throw new OrekitException("no JPL ephemerides binary files found");
         }
         return ephemerides;
     }
@@ -194,10 +194,7 @@ class JPLEphemeridesLoader implements DataFileLoader {
         // read first part of record, up to the ephemeris type
         record = new byte[2844];
         if (!readInRecord(input, 0)) {
-            throw new OrekitException(HEADER_READ_ERROR,
-                                      new Object[] {
-                                          name
-                                      });
+            throw new OrekitException(HEADER_READ_ERROR, name);
         }
 
         // get the ephemeris type, deduce the record size
@@ -210,10 +207,7 @@ class JPLEphemeridesLoader implements DataFileLoader {
             recordSize = DE406_RECORD_SIZE;
             break;
         default :
-            throw new OrekitException(NOT_JPL_EPHEMERIS,
-                                      new Object[] {
-                                          name
-                                      });
+            throw new OrekitException(NOT_JPL_EPHEMERIS, name);
         }
 
         // build a record with the proper size and finish read of the first complete record
@@ -222,10 +216,7 @@ class JPLEphemeridesLoader implements DataFileLoader {
         System.arraycopy(record, 0, newRecord, 0, record.length);
         record = newRecord;
         if (!readInRecord(input, start)) {
-            throw new OrekitException(HEADER_READ_ERROR,
-                                      new Object[] {
-                                          name
-                                      });
+            throw new OrekitException(HEADER_READ_ERROR, name);
         }
         record = newRecord;
 
@@ -241,10 +232,7 @@ class JPLEphemeridesLoader implements DataFileLoader {
         // the second record contains the values of the constants used for least-square filtering
         // we ignore all of them so don't do anything here
         if (!readInRecord(input, 0)) {
-            throw new OrekitException(HEADER_READ_ERROR,
-                                      new Object[] {
-                                          name
-                                      });
+            throw new OrekitException(HEADER_READ_ERROR, name);
         }
 
         // read ephemerides data
@@ -311,10 +299,7 @@ class JPLEphemeridesLoader implements DataFileLoader {
         } else {
             if (Math.abs(astronomicalUnit - au) >= 0.001) {
                 throw new OrekitException("inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})",
-                                          new Object[] {
-                                              Double.valueOf(astronomicalUnit),
-                                              Double.valueOf(au)
-                                          });
+                                          astronomicalUnit, au);
             }
         }
 
@@ -325,10 +310,7 @@ class JPLEphemeridesLoader implements DataFileLoader {
         } else {
             if (Math.abs(earthMoonMassRatio - emRat) >= 1.0e-8) {
                 throw new OrekitException("inconsistent values of Earth/Moon mass ratio in JPL ephemerides files: ({0} and {1})",
-                                          new Object[] {
-                                              Double.valueOf(earthMoonMassRatio),
-                                              Double.valueOf(emRat)
-                                          });
+                                          earthMoonMassRatio, emRat);
             }
         }
 
@@ -367,10 +349,7 @@ class JPLEphemeridesLoader implements DataFileLoader {
 
         // sanity checks
         if (!ok) {
-            throw new OrekitException(NOT_JPL_EPHEMERIS,
-                                      new Object[] {
-                                          name
-                                      });
+            throw new OrekitException(NOT_JPL_EPHEMERIS, name);
         }
 
     }
@@ -383,18 +362,12 @@ class JPLEphemeridesLoader implements DataFileLoader {
         // extract time range covered by the record
         final AbsoluteDate rangeStart = extractDate(0);
         if (rangeStart.compareTo(startEpoch) < 0) {
-            throw new OrekitException(OUT_OF_RANGE_DATE,
-                                      new Object[] {
-                                          rangeStart
-                                      });
+            throw new OrekitException(OUT_OF_RANGE_DATE, rangeStart);
         }
 
         final AbsoluteDate rangeEnd   = extractDate(8);
         if (rangeEnd.compareTo(finalEpoch) > 0) {
-            throw new OrekitException(OUT_OF_RANGE_DATE,
-                                      new Object[] {
-                                          rangeEnd
-                                      });
+            throw new OrekitException(OUT_OF_RANGE_DATE, rangeEnd);
         }
 
         if (tooFarRange(rangeStart, rangeEnd)) {

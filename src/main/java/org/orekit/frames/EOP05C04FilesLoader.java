@@ -152,18 +152,13 @@ class EOP05C04FilesLoader implements DataFileLoader {
             }
             if (!(inHeader || parsed)) {
                 throw new OrekitException("unable to parse line {0} in IERS data file {1}",
-                                          new Object[] {
-                                              Integer.valueOf(lineNumber), name
-                                          });
+                                          lineNumber, name);
             }
         }
 
         // check if we have read something
         if (inHeader) {
-            throw new OrekitException("file {0} is not a supported IERS data file",
-                                      new Object[] {
-                                          name
-                                      });
+            throw new OrekitException("file {0} is not a supported IERS data file", name);
         }
 
     }

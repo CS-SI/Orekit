@@ -155,9 +155,7 @@ public class Frame implements Serializable {
 
         if (parent == null) {
             throw OrekitException.createIllegalArgumentException("null parent for frame {0}",
-                                                                 new Object[] {
-                                                                     name
-                                                                 });
+                                                                 name);
         }
         this.name      = name;
         this.parent    = parent;
@@ -305,9 +303,7 @@ public class Frame implements Serializable {
 
             if (fB.isChildOf(this) || (fB == this)) {
                 throw new FrameAncestorException("both frames {0} and {1} are child of {2}",
-                                                 new Object[] {
-                                                     fA.getName(), fB.getName(), getName()
-                                                 });
+                                                 fA.getName(), fB.getName(), getName());
             }
 
             // swap f1 and f2 to make sure the child is f2
@@ -318,9 +314,7 @@ public class Frame implements Serializable {
 
         } else  if (!(fB.isChildOf(this) || (fB == this))) {
             throw new FrameAncestorException("neither frames {0} nor {1} have {2} as ancestor",
-                                             new Object[] {
-                                                 fA.getName(), fB.getName(), getName()
-                                             });
+                                             fA.getName(), fB.getName(), getName());
         }
 
         // rebuild the transform by traveling from parent to self

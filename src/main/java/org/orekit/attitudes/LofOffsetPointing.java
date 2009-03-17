@@ -115,7 +115,7 @@ public class LofOffsetPointing extends GroundPointing {
         // Check there is an intersection and it is not in the reverse pointing direction
         if ((vIntersection == null) ||
             (Vector3D.dotProduct(vIntersection.subtract(pBodyFrame), pointingBodyFrame) < 0)) {
-            throw new OrekitException("attitude pointing law misses ground", new Object[0]);
+            throw new OrekitException("attitude pointing law misses ground");
         }
 
         return new PVCoordinates(vIntersection, Vector3D.ZERO);

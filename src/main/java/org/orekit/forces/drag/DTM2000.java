@@ -334,9 +334,7 @@ public class DTM2000 implements Atmosphere {
         throws OrekitException {
         if (alti < 120000) {
             throw new OrekitException(" Altitude is below the minimal range of 120000 m : {0}" ,
-                                      new Object[] {
-                                          new Double(alti)
-                                      });
+                                      alti);
         }
         this.cachedDay  = day;
         this.cachedAlti = alti / 1000;
@@ -756,9 +754,7 @@ public class DTM2000 implements Atmosphere {
             DTM2000.class.getResourceAsStream(DTM2000);
         if (in == null) {
             throw new OrekitException("unable to find dtm 2000 model data file {0}",
-                                      new Object[] {
-                                          DTM2000
-                                      });
+                                      DTM2000);
         }
 
         BufferedReader r = null;
@@ -862,11 +858,9 @@ public class DTM2000 implements Atmosphere {
             final TimeScale utcScale = UTCScale.getInstance();
             throw new OrekitException("no solar activity available at {0}, " +
                                       "data available only in range [{1}, {2}]",
-                                      new Object[] {
-                                          date.toString(utcScale),
-                                          inputParams.getMinDate().toString(utcScale),
-                                          inputParams.getMaxDate().toString(utcScale)
-                                      });
+                                      date.toString(utcScale),
+                                      inputParams.getMinDate().toString(utcScale),
+                                      inputParams.getMaxDate().toString(utcScale));
         }
 
         // compute day number in current year

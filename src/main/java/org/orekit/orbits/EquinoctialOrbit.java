@@ -137,13 +137,10 @@ public class EquinoctialOrbit extends Orbit {
             break;
         default :
             this.lv = Double.NaN;
-            throw OrekitException.createIllegalArgumentException("angle type not supported, supported angles:" +
-                                                                 " {0}, {1} and {2}",
-                                                                 new Object[] {
-                                                                     "MEAN_LATITUDE_ARGUMENT",
-                                                                     "ECCENTRIC_LATITUDE_ARGUMENT",
-                                                                     "TRUE_LATITUDE_ARGUMENT"
-                                                                 });
+            throw OrekitException.createIllegalArgumentException(
+                  "angle type not supported, supported angles: {0}, {1} and {2}",
+                  "MEAN_LATITUDE_ARGUMENT", "ECCENTRIC_LATITUDE_ARGUMENT",
+                  "TRUE_LATITUDE_ARGUMENT");
         }
 
     }

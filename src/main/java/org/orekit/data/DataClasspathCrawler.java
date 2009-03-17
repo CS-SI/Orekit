@@ -87,10 +87,7 @@ public class DataClasspathCrawler implements DataProvider {
                 final InputStream stream =
                     DataClasspathCrawler.class.getClassLoader().getResourceAsStream(convertedName);
                 if (stream == null) {
-                    throw new OrekitException("{0} does not exist in classpath",
-                                              new Object[] {
-                                                  name
-                                              });
+                    throw new OrekitException("{0} does not exist in classpath", name);
                 }
 
                 listElements.add(convertedName);

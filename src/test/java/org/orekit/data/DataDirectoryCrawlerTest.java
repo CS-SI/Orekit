@@ -61,11 +61,11 @@ public class DataDirectoryCrawlerTest extends TestCase {
 
     public void testMultiZipClasspath() throws OrekitException {
         URL url =
-            DataDirectoryCrawlerTest.class.getClassLoader().getResource("multizip.zip");
+            DataDirectoryCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
         File parent = new File(url.getPath()).getParentFile();
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
         new DataDirectoryCrawler(parent).feed(crawler);
-        assertEquals(23, crawler.getCount());
+        assertEquals(6, crawler.getCount());
     }
 
     public void testIOException() throws OrekitException {

@@ -286,8 +286,7 @@ public class NumericalPropagator implements Propagator {
     public BoundedPropagator getGeneratedEphemeris()
         throws IllegalStateException {
         if (mode != EPHEMERIS_GENERATION_MODE) {
-            throw OrekitException.createIllegalStateException("propagator is not in batch mode",
-                                                              new Object[0]);
+            throw OrekitException.createIllegalStateException("propagator is not in batch mode");
         }
         return (IntegratedEphemeris) modeHandler;
     }
@@ -309,8 +308,7 @@ public class NumericalPropagator implements Propagator {
         try {
 
             if (initialState == null) {
-                throw new PropagationException("initial state not specified for orbit propagation",
-                                               new Object[0]);
+                throw new PropagationException("initial state not specified for orbit propagation");
             }
             if (initialState.getDate().equals(finalDate)) {
                 // don't extrapolate
@@ -457,9 +455,7 @@ public class NumericalPropagator implements Propagator {
                 // compute cartesian coordinates
                 if (currentState.getMass() <= 0.0) {
                     throw OrekitException.createIllegalArgumentException("spacecraft mass becomes negative (m: {0})",
-                                                                         new Object[] {
-                                                                             Double.valueOf(currentState.getMass())
-                                                                         });
+                                                                         currentState.getMass());
                 }
                 // initialize derivatives
                 adder.initDerivatives(yDot, (EquinoctialOrbit) currentState.getOrbit());

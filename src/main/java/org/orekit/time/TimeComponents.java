@@ -77,11 +77,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
                 (minute < 0) || (minute >  59) ||
                 (second < 0) || (second >= 61.0)) {
             throw OrekitException.createIllegalArgumentException("non-existent hour {0}:{1}:{2}",
-                                                                 new Object[] {
-                                                                     Integer.valueOf(hour),
-                                                                     Integer.valueOf(minute),
-                                                                     new Double(second)
-                                                                 });
+                                                                 hour, minute, second);
         }
 
         this.hour = hour;
@@ -98,9 +94,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         // range check
         if ((secondInDay < 0) || (secondInDay >= 86400.0)) {
             throw OrekitException.createIllegalArgumentException("out of range seconds number: {0}",
-                                                                 new Object[] {
-                                                                     new Double(secondInDay)
-                                                                 });
+                                                                 secondInDay);
         }
 
         // extract the time components

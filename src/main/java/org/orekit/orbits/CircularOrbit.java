@@ -139,13 +139,10 @@ public class CircularOrbit
             break;
         default :
             this.alphaV = Double.NaN;
-            throw OrekitException.createIllegalArgumentException("angle type not supported, supported angles:" +
-                                                                 " {0}, {1} and {2}",
-                                                                 new Object[] {
-                                                                     "MEAN_LONGITUDE_ARGUMENT",
-                                                                     "ECCENTRIC_LONGITUDE_ARGUMENT",
-                                                                     "TRUE_LONGITUDE_ARGUMENT"
-                                                                 });
+            throw OrekitException.createIllegalArgumentException(
+                  "angle type not supported, supported angles: {0}, {1} and {2}",
+                  "MEAN_LONGITUDE_ARGUMENT", "ECCENTRIC_LONGITUDE_ARGUMENT",
+                  "TRUE_LONGITUDE_ARGUMENT");
         }
 
     }

@@ -41,7 +41,7 @@ import java.util.ResourceBundle;
 public class OrekitException extends Exception {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 445319503291578390L;
+    private static final long serialVersionUID = -6565493623428869182L;
 
     /** Resources bundle. */
     private static final ResourceBundle RESOURCES;
@@ -55,7 +55,7 @@ public class OrekitException extends Exception {
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
      */
-    public OrekitException(final String specifier, final Object[] parts) {
+    public OrekitException(final String specifier, final Object ... parts) {
         super(translate(specifier, parts));
     }
 
@@ -70,12 +70,12 @@ public class OrekitException extends Exception {
 
     /** Simple constructor.
      * Build an exception from a cause and with a translated and formatted message
+     * @param cause underlying cause
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
-     * @param cause underlying cause
      */
-    public OrekitException(final String specifier, final Object[] parts,
-                           final Throwable cause) {
+    public OrekitException(final Throwable cause, final String specifier,
+                           final Object ... parts) {
         super(translate(specifier, parts), cause);
     }
 
@@ -84,7 +84,7 @@ public class OrekitException extends Exception {
      * @param parts parts to insert in the format (no translation)
      * @return translated and formatted message
      */
-    public static String translate(final String specifier, final Object[] parts) {
+    public static String translate(final String specifier, final Object ... parts) {
         String translated;
         try {
             translated = RESOURCES.getString(specifier);
@@ -100,7 +100,7 @@ public class OrekitException extends Exception {
      * @return an {@link java.lang.IllegalArgumentException} with localized message
      */
     public static IllegalArgumentException createIllegalArgumentException(final String specifier,
-                                                                          final Object[] parts) {
+                                                                          final Object ... parts) {
         return new IllegalArgumentException(translate(specifier, parts));
     }
 
@@ -110,7 +110,7 @@ public class OrekitException extends Exception {
      * @return an {@link java.lang.IllegalStateException} with localized message
      */
     public static IllegalStateException createIllegalStateException(final String specifier,
-                                                                          final Object[] parts) {
+                                                                          final Object ... parts) {
         return new IllegalStateException(translate(specifier, parts));
     }
 

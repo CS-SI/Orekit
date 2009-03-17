@@ -106,11 +106,7 @@ public abstract class PotentialCoefficientsReader {
     public double[] getJ(final boolean normalized, final int n)
         throws OrekitException {
         if (n >= normalizedC.length) {
-            throw new OrekitException(TOO_LARGE_DEGREE,
-                                      new Object[] {
-                                          Integer.valueOf(n),
-                                          Integer.valueOf(normalizedC.length - 1)
-                                      });
+            throw new OrekitException(TOO_LARGE_DEGREE, n, normalizedC.length - 1);
         }
 
         final double[] completeJ = normalized ? getNormalizedJ() : getUnNormalizedJ();
@@ -162,16 +158,10 @@ public abstract class PotentialCoefficientsReader {
 
         // safety checks
         if (n >= complete.length) {
-            throw new OrekitException(TOO_LARGE_DEGREE,
-                                      new Object[] {
-                                          Integer.valueOf(n), Integer.valueOf(complete.length - 1)
-                                      });
+            throw new OrekitException(TOO_LARGE_DEGREE, n, complete.length - 1);
         }
         if (m >= complete[complete.length - 1].length) {
-            throw new OrekitException(TOO_LARGE_ORDER,
-                                      new Object[] {
-                                          Integer.valueOf(m), Integer.valueOf(complete[complete.length - 1].length - 1)
-                                      });
+            throw new OrekitException(TOO_LARGE_ORDER, m, complete[complete.length - 1].length - 1);
         }
 
         // truncate each array row in turn
