@@ -85,8 +85,7 @@ public class NetworkCrawler implements DataProvider {
      * <p>The default timeout is set to 10 seconds.</p>
      * @param urls list of data file URLs
      */
-    public NetworkCrawler(final URL... urls)
-        throws OrekitException {
+    public NetworkCrawler(final URL... urls) {
 
         this.urls = new ArrayList<URL>();
         for (final URL url : urls) {

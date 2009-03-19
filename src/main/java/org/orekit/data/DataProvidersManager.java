@@ -60,11 +60,11 @@ import org.orekit.errors.OrekitException;
  */
 public class DataProvidersManager implements Serializable {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -6462388122735180273L;
-
     /** Name of the property defining the root directories or zip/jar files path for default configuration. */
     public static final String OREKIT_DATA_PATH = "orekit.data.path";
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = -6462388122735180273L;
 
     /** Error message for unknown path entries. */
     private static final String NEITHER_DIRECTORY_NOR_ZIP_ARCHIVE =
