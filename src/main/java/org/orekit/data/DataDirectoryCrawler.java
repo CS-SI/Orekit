@@ -76,7 +76,7 @@ public class DataDirectoryCrawler implements DataProvider {
     }
 
     /** {@inheritDoc} */
-    public boolean feed(final DataFileLoader visitor) throws OrekitException {
+    public boolean feed(final DataLoader visitor) throws OrekitException {
         try {
             return feed(visitor, root);
         } catch (IOException ioe) {
@@ -95,7 +95,7 @@ public class DataDirectoryCrawler implements DataProvider {
      * @exception IOException if data cannot be read
      * @exception ParseException if data cannot be read
      */
-    private boolean feed(final DataFileLoader visitor, final File directory)
+    private boolean feed(final DataLoader visitor, final File directory)
         throws OrekitException, IOException, ParseException {
 
         // search in current directory

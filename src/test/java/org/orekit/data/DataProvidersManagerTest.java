@@ -118,7 +118,7 @@ public class DataProvidersManagerTest extends TestCase {
         assertEquals(0, manager.getProviders().size());
         DataProvider provider = new DataProvider() {
             private static final long serialVersionUID = -5312255682914297696L;
-            public boolean feed(DataFileLoader visitor) throws OrekitException {
+            public boolean feed(DataLoader visitor) throws OrekitException {
                 return true;
             }
         };
@@ -130,7 +130,7 @@ public class DataProvidersManagerTest extends TestCase {
         assertEquals(1, manager.getProviders().size());
         assertNull(manager.removeProvider(new DataProvider() {
             private static final long serialVersionUID = 6368246625696570910L;
-            public boolean feed(DataFileLoader visitor) throws OrekitException {
+            public boolean feed(DataLoader visitor) throws OrekitException {
                 throw new OrekitException("oops!");
             }
         }.getClass()));
@@ -170,7 +170,7 @@ public class DataProvidersManagerTest extends TestCase {
         assertEquals(6, crawler.getCount());
     }
 
-    private static class CountingLoader implements DataFileLoader {
+    private static class CountingLoader implements DataLoader {
         private Pattern pattern;
         private boolean shouldFail;
         private int count;

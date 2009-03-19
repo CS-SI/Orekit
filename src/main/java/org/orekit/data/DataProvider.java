@@ -20,7 +20,7 @@ import java.io.Serializable;
 
 import org.orekit.errors.OrekitException;
 
-/** Interface for providing data files to {@link DataFileLoader file loaders}.
+/** Interface for providing data files to {@link DataLoader file loaders}.
  * <p>
  * This interface defines a generic way to explore some collection holding
  * data files and load some of them. The collection may be a list of resources
@@ -36,7 +36,7 @@ import org.orekit.errors.OrekitException;
  * to customize Orekit data loading mechanism and get a tighter intergation of
  * the library within their application.
  * </p>
- * @see DataFileLoader
+ * @see DataLoader
  * @see DataProvidersManager
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
@@ -59,13 +59,13 @@ public interface DataProvider extends Serializable {
      * If the method completes abruptly with an exception, then the top level
      * {@link DataProvidersManager data providers manager} will try to use
      * the next configured providers, in case another one can feed the
-     * {@link DataFileLoader file loader}.
+     * {@link DataLoader data loader}.
      * </p>
      * @param visitor data file visitor to use
      * @return true if some data has been loaded
      * @exception OrekitException if the data loader cannot be fed
      * (read error ...)
      */
-    boolean feed(final DataFileLoader visitor) throws OrekitException;
+    boolean feed(final DataLoader visitor) throws OrekitException;
 
 }

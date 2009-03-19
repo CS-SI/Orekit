@@ -43,7 +43,7 @@ public class DataZipCrawlerTest extends TestCase {
         assertEquals(6, crawler.getCount());
     }
 
-    private static class CountingLoader implements DataFileLoader {
+    private static class CountingLoader implements DataLoader {
         private Pattern namePattern;
         private int count;
         public CountingLoader(String pattern) {

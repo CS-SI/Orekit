@@ -112,7 +112,7 @@ public class DataWebCrawler implements DataProvider {
     }
 
     /** {@inheritDoc} */
-    public boolean feed(final DataFileLoader visitor) throws OrekitException {
+    public boolean feed(final DataLoader visitor) throws OrekitException {
 
         try {
             OrekitException delayedException = null;

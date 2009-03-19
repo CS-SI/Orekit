@@ -28,7 +28,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.orekit.data.DataFileLoader;
+import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 
@@ -44,7 +44,7 @@ import org.orekit.errors.OrekitException;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-class UTCTAIHistoryFilesLoader implements DataFileLoader {
+class UTCTAIHistoryFilesLoader implements DataLoader {
 
     /** Supported files name pattern. */
     private Pattern namePattern;

@@ -103,7 +103,7 @@ public class DataZipCrawler implements DataProvider {
     }
 
     /** {@inheritDoc} */
-    public boolean feed(final DataFileLoader visitor)
+    public boolean feed(final DataLoader visitor)
         throws OrekitException {
 
         try {
@@ -142,7 +142,7 @@ public class DataZipCrawler implements DataProvider {
      * @exception IOException if data cannot be read
      * @exception ParseException if data cannot be read
      */
-    private boolean feed(final DataFileLoader visitor, final ZipInputStream zip)
+    private boolean feed(final DataLoader visitor, final ZipInputStream zip)
         throws OrekitException, IOException, ParseException {
 
         OrekitException delayedException = null;

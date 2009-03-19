@@ -22,7 +22,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import org.orekit.data.DataFileLoader;
+import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
@@ -39,7 +39,7 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-class JPLEphemeridesLoader implements DataFileLoader {
+class JPLEphemeridesLoader implements DataLoader {
 
     /** Error message for header read error. */
     private static final String HEADER_READ_ERROR =

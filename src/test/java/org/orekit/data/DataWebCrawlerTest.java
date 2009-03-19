@@ -120,7 +120,7 @@ public class DataWebCrawlerTest extends TestCase {
         }
     }
 
-    private static class CountingLoader implements DataFileLoader {
+    private static class CountingLoader implements DataLoader {
         private Pattern namePattern;
         private int count;
         public CountingLoader(String pattern) {
@@ -138,7 +138,7 @@ public class DataWebCrawlerTest extends TestCase {
         }
     }
 
-    private static class IOExceptionLoader implements DataFileLoader {
+    private static class IOExceptionLoader implements DataLoader {
         private Pattern namePattern;
         public IOExceptionLoader(String pattern) {
             namePattern = Pattern.compile(pattern);
@@ -153,7 +153,7 @@ public class DataWebCrawlerTest extends TestCase {
         }
     }
 
-    private static class ParseExceptionLoader implements DataFileLoader {
+    private static class ParseExceptionLoader implements DataLoader {
         private Pattern namePattern;
         public ParseExceptionLoader(String pattern) {
             namePattern = Pattern.compile(pattern);
