@@ -1,4 +1,4 @@
-/* Copyright 2002-2009 CS Communication & Systèmes
+/* Copyright 2002-2008 CS Communication & Systèmes
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,10 @@
  */
 package org.orekit.data;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.regex.Pattern;
 
@@ -27,40 +29,50 @@ import junit.framework.TestSuite;
 
 import org.orekit.errors.OrekitException;
 
-public class DataClasspathCrawlerTest extends TestCase {
+public class DirectoryCrawlerTest extends TestCase {
 
-    public void testNoElement() {
-        checkFailure("inexistant-element");
+    public void testNoDirectory() {
+        File existing = new File(getClass().getClassLoader().getResource("regular-data").getPath());
+        File inexistent = new File(existing.getParent(), "inexistant-directory");
+        checkFailure(inexistent);
+    }
+
+    public void testNotADirectory() {
+        URL url =
+            DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data/UTC-TAI.history");
+        checkFailure(new File(url.getPath()));
     }
 
     public void testNominal() throws OrekitException {
+        URL url =
+            DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         CountingLoader crawler = new CountingLoader(".*");
-        new DataClasspathCrawler("regular-data/UTC-TAI.history",
-                                 "regular-data/de405-ephemerides/unxp0000.405",
-                                 "regular-data/de405-ephemerides/unxp0001.405",
-                                 "regular-data/de406-ephemerides/unxp0000.406",
-                                 "regular-data/Earth-orientation-parameters/monthly/bulletinb_IAU2000-216.txt",
-                                 "no-data").feed(crawler);
-        assertEquals(6, crawler.getCount());
+        new DirectoryCrawler(new File(url.getPath())).feed(crawler);
+        assertTrue(crawler.getCount() > 0);
     }
 
     public void testCompressed() throws OrekitException {
-        CountingLoader crawler = new CountingLoader(".*/eopc04.*");
-        new DataClasspathCrawler("compressed-data/UTC-TAI.history.gz",
-                                 "compressed-data/eopc04_IAU2000.00.gz",
-                                 "compressed-data/eopc04_IAU2000.02.gz").feed(crawler);
-        assertEquals(2, crawler.getCount());
+        URL url =
+            DirectoryCrawlerTest.class.getClassLoader().getResource("compressed-data");
+        CountingLoader crawler = new CountingLoader(".*");
+        new DirectoryCrawler(new File(url.getPath())).feed(crawler);
+        assertTrue(crawler.getCount() > 0);
     }
 
-    public void testMultiZip() throws OrekitException {
+    public void testMultiZipClasspath() throws OrekitException {
+        URL url =
+            DirectoryCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
+        File parent = new File(url.getPath()).getParentFile();
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
-        new DataClasspathCrawler("zipped-data/multizip.zip").feed(crawler);
+        new DirectoryCrawler(parent).feed(crawler);
         assertEquals(6, crawler.getCount());
     }
 
     public void testIOException() throws OrekitException {
+        URL url =
+            DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         try {
-            new DataClasspathCrawler("regular-data/UTC-TAI.history").feed(new IOExceptionLoader(".*"));
+            new DirectoryCrawler(new File(url.getPath())).feed(new IOExceptionLoader(".*"));
             fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behavior
@@ -73,8 +85,10 @@ public class DataClasspathCrawlerTest extends TestCase {
     }
 
     public void testParseException() throws OrekitException {
+        URL url =
+            DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         try {
-            new DataClasspathCrawler("regular-data/UTC-TAI.history").feed(new ParseExceptionLoader(".*"));
+            new DirectoryCrawler(new File(url.getPath())).feed(new ParseExceptionLoader(".*"));
             fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behavior
@@ -87,9 +101,9 @@ public class DataClasspathCrawlerTest extends TestCase {
         }
     }
 
-    private void checkFailure(String ...list) {
+    private void checkFailure(File root) {
         try {
-            new DataClasspathCrawler(list).feed(new CountingLoader(".*"));
+            new DirectoryCrawler(root).feed(new CountingLoader(".*"));
             fail("an exception should have been thrown");
         } catch (OrekitException e) {
             // expected behavior
@@ -123,7 +137,7 @@ public class DataClasspathCrawlerTest extends TestCase {
             namePattern = Pattern.compile(pattern);
         }
         public void loadData(InputStream input, String name) throws IOException {
-            if (name.endsWith("UTC-TAI.history")) {
+            if (name.equals("UTC-TAI.history")) {
                 throw new IOException("dummy error");
             }
         }
@@ -138,7 +152,7 @@ public class DataClasspathCrawlerTest extends TestCase {
             namePattern = Pattern.compile(pattern);
         }
         public void loadData(InputStream input, String name) throws ParseException {
-            if (name.endsWith("UTC-TAI.history")) {
+            if (name.equals("UTC-TAI.history")) {
                 throw new ParseException("dummy error", 0);
             }
         }
@@ -148,7 +162,7 @@ public class DataClasspathCrawlerTest extends TestCase {
     }
 
     public static Test suite() {
-        return new TestSuite(DataClasspathCrawlerTest.class);
+        return new TestSuite(DirectoryCrawlerTest.class);
     }
 
 }

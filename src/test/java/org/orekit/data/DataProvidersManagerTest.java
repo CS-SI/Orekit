@@ -33,7 +33,7 @@ public class DataProvidersManagerTest extends TestCase {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("regular-data"));
         CountingLoader crawler = new CountingLoader(".*", false);
         DataProvidersManager.getInstance().clearProviders();
-        assertFalse(DataProvidersManager.getInstance().isSupported(DataDirectoryCrawler.class));
+        assertFalse(DataProvidersManager.getInstance().isSupported(DirectoryCrawler.class));
         assertTrue(DataProvidersManager.getInstance().feed(crawler));
         assertEquals(14, crawler.getCount());
     }
@@ -108,13 +108,13 @@ public class DataProvidersManagerTest extends TestCase {
         CountingLoader crawler = new CountingLoader(".*", false);
         DataProvidersManager manager = DataProvidersManager.getInstance();
         manager.clearProviders();
-        assertFalse(manager.isSupported(DataDirectoryCrawler.class));
+        assertFalse(manager.isSupported(DirectoryCrawler.class));
         assertTrue(manager.feed(crawler));
         assertTrue(crawler.getCount() > 0);
-        assertTrue(manager.isSupported(DataDirectoryCrawler.class));
-        assertFalse(manager.isSupported(DataClasspathCrawler.class));
+        assertTrue(manager.isSupported(DirectoryCrawler.class));
+        assertFalse(manager.isSupported(ClasspathCrawler.class));
         assertEquals(1, manager.getProviders().size());
-        assertNotNull(manager.removeProvider(DataDirectoryCrawler.class));
+        assertNotNull(manager.removeProvider(DirectoryCrawler.class));
         assertEquals(0, manager.getProviders().size());
         DataProvider provider = new DataProvider() {
             private static final long serialVersionUID = -5312255682914297696L;
@@ -195,7 +195,7 @@ public class DataProvidersManagerTest extends TestCase {
     }
 
     private String getPath(String resourceName) {
-        ClassLoader loader = DataDirectoryCrawlerTest.class.getClassLoader();
+        ClassLoader loader = DirectoryCrawlerTest.class.getClassLoader();
         URL url = loader.getResource(resourceName);
         return url.getPath();
     }

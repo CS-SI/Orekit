@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -55,16 +54,10 @@ import org.orekit.errors.OrekitException;
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-public class DataZipCrawler implements DataProvider {
+public class ZipJarCrawler implements DataProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 2707860822289475526L;
-
-    /** Pattern for gzip files. */
-    private static final Pattern GZIP_FILE_PATTERN = Pattern.compile("(.*)\\.gz$");
-
-    /** Pattern for zip/jar archives. */
-    private static final Pattern ZIP_ARCHIVE_PATTERN = Pattern.compile("(.*)(?:(?:\\.zip)|(?:\\.jar))$");
 
     /** Zip archive on the filesystem. */
     private final File file;
@@ -78,7 +71,7 @@ public class DataZipCrawler implements DataProvider {
     /** Build a zip crawler for an archive file on filesystem.
      * @param file zip file to browse
      */
-    public DataZipCrawler(final File file) {
+    public ZipJarCrawler(final File file) {
         this.file     = file;
         this.resource = null;
         this.url      = null;
@@ -87,7 +80,7 @@ public class DataZipCrawler implements DataProvider {
     /** Build a zip crawler for an archive file in classpath.
      * @param resource name of the zip file to browse
      */
-    public DataZipCrawler(final String resource) {
+    public ZipJarCrawler(final String resource) {
         this.file     = null;
         this.resource = resource;
         this.url      = null;
@@ -96,7 +89,7 @@ public class DataZipCrawler implements DataProvider {
     /** Build a zip crawler for an archive file on network.
      * @param url URL of the zip file on network
      */
-    public DataZipCrawler(final URL url) {
+    public ZipJarCrawler(final URL url) {
         this.file     = null;
         this.resource = null;
         this.url      = url;
@@ -113,7 +106,7 @@ public class DataZipCrawler implements DataProvider {
             if (file != null) {
                 rawStream = new FileInputStream(file);
             } else if (resource != null) {
-                rawStream = DataZipCrawler.class.getClassLoader().getResourceAsStream(resource);
+                rawStream = ZipJarCrawler.class.getClassLoader().getResourceAsStream(resource);
             } else {
                 rawStream = url.openConnection().getInputStream();
             }

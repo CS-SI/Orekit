@@ -22,7 +22,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.orekit.errors.OrekitException;
@@ -34,7 +33,7 @@ import org.orekit.errors.OrekitException;
  * This class handles a list of data files or zip/jar archives located in the
  * classpath. Since the classpath is not a tree structure the list elements
  * cannot be whole directories recursively browsed as in {@link
- * DataDirectoryCrawler}, they must be data files or zip/jar archives.
+ * DirectoryCrawler}, they must be data files or zip/jar archives.
  * </p>
  * <p>
  * A typical use case is to put all data files in a single zip or jar archive
@@ -56,16 +55,10 @@ import org.orekit.errors.OrekitException;
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-public class DataClasspathCrawler implements DataProvider {
+public class ClasspathCrawler implements DataProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -6827421110984075462L;
-
-    /** Pattern for gzip files. */
-    private static final Pattern GZIP_FILE_PATTERN = Pattern.compile("(.*)\\.gz$");
-
-    /** Pattern for zip archives. */
-    private static final Pattern ZIP_ARCHIVE_PATTERN = Pattern.compile("(.*)(?:(?:\\.zip)|(?:\\.jar))$");
+    private static final long serialVersionUID = 1168697463694338913L;
 
     /** List elements. */
     private final List<String> listElements;
@@ -74,7 +67,7 @@ public class DataClasspathCrawler implements DataProvider {
      * @param list list of data file names within the classpath
      * @exception OrekitException if a list elements is not an existing resource
      */
-    public DataClasspathCrawler(final String... list)
+    public ClasspathCrawler(final String... list)
         throws OrekitException {
 
         listElements = new ArrayList<String>();
@@ -85,7 +78,7 @@ public class DataClasspathCrawler implements DataProvider {
 
                 final String convertedName = name.replace('\\', '/');
                 final InputStream stream =
-                    DataClasspathCrawler.class.getClassLoader().getResourceAsStream(convertedName);
+                    ClasspathCrawler.class.getClassLoader().getResourceAsStream(convertedName);
                 if (stream == null) {
                     throw new OrekitException("{0} does not exist in classpath", name);
                 }
@@ -113,7 +106,7 @@ public class DataClasspathCrawler implements DataProvider {
                     if (ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
 
                         // browse inside the zip/jar file
-                        new DataZipCrawler(name).feed(visitor);
+                        new ZipJarCrawler(name).feed(visitor);
                         loaded = true;
 
                     } else {
@@ -125,7 +118,7 @@ public class DataClasspathCrawler implements DataProvider {
                         if (visitor.fileIsSupported(baseName)) {
 
                             final InputStream stream =
-                                DataClasspathCrawler.class.getClassLoader().getResourceAsStream(name);
+                                ClasspathCrawler.class.getClassLoader().getResourceAsStream(name);
 
                             // visit the current file
                             if (gzipMatcher.matches()) {

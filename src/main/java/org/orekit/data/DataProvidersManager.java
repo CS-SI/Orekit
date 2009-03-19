@@ -17,11 +17,11 @@
 package org.orekit.data;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 
@@ -55,16 +55,16 @@ import org.orekit.errors.OrekitException;
  *
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
- * @see DataDirectoryCrawler
- * @see DataClasspathCrawler
+ * @see DirectoryCrawler
+ * @see ClasspathCrawler
  */
-public class DataProvidersManager {
+public class DataProvidersManager implements Serializable {
 
-    /** Name of the property defining the root directories or zip/jar files path. */
+    /** Serializable UID. */
+    private static final long serialVersionUID = -6462388122735180273L;
+
+    /** Name of the property defining the root directories or zip/jar files path for default configuration. */
     public static final String OREKIT_DATA_PATH = "orekit.data.path";
-
-    /** Pattern for zip/jar archives. */
-    private static final Pattern ZIP_ARCHIVE_PATTERN = Pattern.compile("(.*)(?:(?:\\.zip)|(?:\\.jar))$");
 
     /** Error message for unknown path entries. */
     private static final String NEITHER_DIRECTORY_NOR_ZIP_ARCHIVE =
@@ -102,8 +102,8 @@ public class DataProvidersManager {
      * </p>
      * <p>
      * If the property is set, it must contains a list of existing directories or zip/jar
-     * archives. One {@link DataDirectoryCrawler} instance will be set up for each
-     * directory and one {@link DataZipCrawler} instance (configured to look for the
+     * archives. One {@link DirectoryCrawler} instance will be set up for each
+     * directory and one {@link ZipJarCrawler} instance (configured to look for the
      * archive in the filesystem) will be set up for each zip/jar archive. The list
      * elements in the java property are separated using the standard path separator for
      * the operating system as returned by {@link System#getProperty(String)
@@ -127,7 +127,7 @@ public class DataProvidersManager {
 
                     // check component
                     if (!file.exists()) {
-                        if (ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
+                        if (DataProvider.ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
                             throw new OrekitException("{0} does not exist in filesystem", name);
                         } else {
                             throw new OrekitException("data root directory {0} does not exist", name);
@@ -135,9 +135,9 @@ public class DataProvidersManager {
                     }
 
                     if (file.isDirectory()) {
-                        addProvider(new DataDirectoryCrawler(file));
-                    } else if (ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
-                        addProvider(new DataZipCrawler(file));
+                        addProvider(new DirectoryCrawler(file));
+                    } else if (DataProvider.ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
+                        addProvider(new ZipJarCrawler(file));
                     } else {
                         throw new OrekitException(NEITHER_DIRECTORY_NOR_ZIP_ARCHIVE, name);
                     }
@@ -230,7 +230,7 @@ public class DataProvidersManager {
      * <p>
      * If this method is called with an empty list of providers, a default
      * providers configuration is set up. This default configuration contains
-     * only one {@link DataProvider data provider}: a {@link DataDirectoryCrawler}
+     * only one {@link DataProvider data provider}: a {@link DirectoryCrawler}
      * instance that loads data from files located somewhere in a directory hierarchy.
      * This default provider is <em>not</em> added if the list is not empty. If users
      * want to have both the default provider and other providers, they must add it

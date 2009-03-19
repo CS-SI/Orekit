@@ -1,4 +1,4 @@
-/* Copyright 2002-2008 CS Communication & Systèmes
+/* Copyright 2002-2009 CS Communication & Systèmes
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,50 +29,71 @@ import junit.framework.TestSuite;
 
 import org.orekit.errors.OrekitException;
 
-public class DataDirectoryCrawlerTest extends TestCase {
+public class NetworkCrawlerTest extends TestCase {
 
-    public void testNoDirectory() {
-        File existing = new File(getClass().getClassLoader().getResource("regular-data").getPath());
+    public void testNoElement() {
+        File existing   = new File(url("regular-data").getPath());
         File inexistent = new File(existing.getParent(), "inexistant-directory");
-        checkFailure(inexistent);
+        try {
+            new NetworkCrawler(inexistent.toURI().toURL()).feed(new CountingLoader(".*"));
+            fail("an exception should have been thrown");
+        } catch (OrekitException e) {
+            // expected behavior
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("wrong exception caught");
+        }
     }
 
-    public void testNotADirectory() {
-        URL url =
-            DataDirectoryCrawlerTest.class.getClassLoader().getResource("regular-data/UTC-TAI.history");
-        checkFailure(new File(url.getPath()));
-    }
+    // WARNING!
+    // the following test is commented out by default, as it does connect to the web
+    // if you want to enable it, you will have uncomment it and to either set the proxy
+    // settings according to your local network or remove the proxy authentication
+    // settings if you have a transparent connection to internet
+//    public void testRemote() throws java.net.MalformedURLException, OrekitException {
+//
+//        System.setProperty("http.proxyHost",     "proxy.your.domain.com");
+//        System.setProperty("http.proxyPort",     "8080");
+//        System.setProperty("http.nonProxyHosts", "localhost|*.your.domain.com");
+//        java.net.Authenticator.setDefault(new AuthenticatorDialog());
+//
+//        CountingLoader loader = new CountingLoader(".*\\.history");
+//        DataWebCrawler crawler =
+//            new DataWebCrawler(new URL("http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history"));
+//        crawler.setTimeout(1000);
+//        crawler.feed(loader);
+//        assertEquals(1, loader.getCount());
+//
+//    }
 
-    public void testNominal() throws OrekitException {
-        URL url =
-            DataDirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
+    public void testLocal() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*");
-        new DataDirectoryCrawler(new File(url.getPath())).feed(crawler);
-        assertTrue(crawler.getCount() > 0);
+        new NetworkCrawler(url("regular-data/UTC-TAI.history"),
+                           url("regular-data/de405-ephemerides/unxp0000.405"),
+                           url("regular-data/de405-ephemerides/unxp0001.405"),
+                           url("regular-data/de406-ephemerides/unxp0000.406"),
+                           url("regular-data/Earth-orientation-parameters/monthly/bulletinb_IAU2000-216.txt"),
+                           url("no-data")).feed(crawler);
+        assertEquals(6, crawler.getCount());
     }
 
     public void testCompressed() throws OrekitException {
-        URL url =
-            DataDirectoryCrawlerTest.class.getClassLoader().getResource("compressed-data");
-        CountingLoader crawler = new CountingLoader(".*");
-        new DataDirectoryCrawler(new File(url.getPath())).feed(crawler);
-        assertTrue(crawler.getCount() > 0);
+        CountingLoader crawler = new CountingLoader(".*/eopc04.*");
+        new NetworkCrawler(url("compressed-data/UTC-TAI.history.gz"),
+                           url("compressed-data/eopc04_IAU2000.00.gz"),
+                           url("compressed-data/eopc04_IAU2000.02.gz")).feed(crawler);
+        assertEquals(2, crawler.getCount());
     }
 
-    public void testMultiZipClasspath() throws OrekitException {
-        URL url =
-            DataDirectoryCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
-        File parent = new File(url.getPath()).getParentFile();
+    public void testMultiZip() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
-        new DataDirectoryCrawler(parent).feed(crawler);
+        new NetworkCrawler(url("zipped-data/multizip.zip")).feed(crawler);
         assertEquals(6, crawler.getCount());
     }
 
     public void testIOException() throws OrekitException {
-        URL url =
-            DataDirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         try {
-            new DataDirectoryCrawler(new File(url.getPath())).feed(new IOExceptionLoader(".*"));
+            new NetworkCrawler(url("regular-data/UTC-TAI.history")).feed(new IOExceptionLoader(".*"));
             fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behavior
@@ -85,10 +106,8 @@ public class DataDirectoryCrawlerTest extends TestCase {
     }
 
     public void testParseException() throws OrekitException {
-        URL url =
-            DataDirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         try {
-            new DataDirectoryCrawler(new File(url.getPath())).feed(new ParseExceptionLoader(".*"));
+            new NetworkCrawler(url("regular-data/UTC-TAI.history")).feed(new ParseExceptionLoader(".*"));
             fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behavior
@@ -97,18 +116,6 @@ public class DataDirectoryCrawlerTest extends TestCase {
             assertEquals("dummy error", oe.getMessage());
         } catch (Exception e) {
             e.printStackTrace(System.err);
-            fail("wrong exception caught");
-        }
-    }
-
-    private void checkFailure(File root) {
-        try {
-            new DataDirectoryCrawler(root).feed(new CountingLoader(".*"));
-            fail("an exception should have been thrown");
-        } catch (OrekitException e) {
-            // expected behavior
-        } catch (Exception e) {
-            e.printStackTrace();
             fail("wrong exception caught");
         }
     }
@@ -137,7 +144,7 @@ public class DataDirectoryCrawlerTest extends TestCase {
             namePattern = Pattern.compile(pattern);
         }
         public void loadData(InputStream input, String name) throws IOException {
-            if (name.equals("UTC-TAI.history")) {
+            if (name.endsWith("UTC-TAI.history")) {
                 throw new IOException("dummy error");
             }
         }
@@ -152,7 +159,7 @@ public class DataDirectoryCrawlerTest extends TestCase {
             namePattern = Pattern.compile(pattern);
         }
         public void loadData(InputStream input, String name) throws ParseException {
-            if (name.equals("UTC-TAI.history")) {
+            if (name.endsWith("UTC-TAI.history")) {
                 throw new ParseException("dummy error", 0);
             }
         }
@@ -161,8 +168,12 @@ public class DataDirectoryCrawlerTest extends TestCase {
         }
     }
 
+    private URL url(String resource) {
+        return DirectoryCrawlerTest.class.getClassLoader().getResource(resource);
+    }
+
     public static Test suite() {
-        return new TestSuite(DataDirectoryCrawlerTest.class);
+        return new TestSuite(NetworkCrawlerTest.class);
     }
 
 }

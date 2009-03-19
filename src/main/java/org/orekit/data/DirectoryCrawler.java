@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.orekit.errors.OrekitException;
@@ -50,16 +49,10 @@ import org.orekit.errors.OrekitException;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class DataDirectoryCrawler implements DataProvider {
+public class DirectoryCrawler implements DataProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 3859661885859657700L;
-
-    /** Pattern for gzip files. */
-    private static final Pattern GZIP_FILE_PATTERN = Pattern.compile("(.*)\\.gz$");
-
-    /** Pattern for zip/jar archives. */
-    private static final Pattern ZIP_ARCHIVE_PATTERN = Pattern.compile("(.*)(?:(?:\\.zip)|(?:\\.jar))$");
+    private static final long serialVersionUID = 2070309080843098057L;
 
     /** Root directory. */
     private final File root;
@@ -68,7 +61,7 @@ public class DataDirectoryCrawler implements DataProvider {
      * @param root root of the directories tree (must be a directory)
      * @exception OrekitException if root is not a directory
      */
-    public DataDirectoryCrawler(final File root) throws OrekitException {
+    public DirectoryCrawler(final File root) throws OrekitException {
         if (!root.isDirectory()) {
             throw new OrekitException("{0} is not a directory", root.getAbsolutePath());
         }
@@ -113,7 +106,7 @@ public class DataDirectoryCrawler implements DataProvider {
                 } else if (ZIP_ARCHIVE_PATTERN.matcher(list[i].getName()).matches()) {
 
                     // browse inside the zip/jar file
-                    final DataProvider zipProvider = new DataZipCrawler(list[i]);
+                    final DataProvider zipProvider = new ZipJarCrawler(list[i]);
                     zipProvider.feed(visitor);
                     loaded = true;
 

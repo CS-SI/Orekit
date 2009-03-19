@@ -27,19 +27,19 @@ import junit.framework.TestSuite;
 
 import org.orekit.errors.OrekitException;
 
-public class DataZipCrawlerTest extends TestCase {
+public class ZipJarCrawlerTest extends TestCase {
 
     public void testMultiZipClasspath() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
-        new DataZipCrawler("zipped-data/multizip.zip").feed(crawler);
+        new ZipJarCrawler("zipped-data/multizip.zip").feed(crawler);
         assertEquals(6, crawler.getCount());
     }
 
     public void testMultiZip() throws OrekitException {
         URL url =
-            DataZipCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
+            ZipJarCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
-        new DataZipCrawler(new File(url.getPath())).feed(crawler);
+        new ZipJarCrawler(new File(url.getPath())).feed(crawler);
         assertEquals(6, crawler.getCount());
     }
 
@@ -62,7 +62,7 @@ public class DataZipCrawlerTest extends TestCase {
     }
 
     public static Test suite() {
-        return new TestSuite(DataZipCrawlerTest.class);
+        return new TestSuite(ZipJarCrawlerTest.class);
     }
 
 }

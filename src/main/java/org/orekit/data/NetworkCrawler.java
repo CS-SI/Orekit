@@ -24,7 +24,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.orekit.errors.OrekitException;
@@ -36,7 +35,7 @@ import org.orekit.errors.OrekitException;
  * This class handles a list of URLs pointing to data files or zip/jar on
  * the net. Since the net is not a tree structure the list elements
  * cannot be top elements recursively browsed as in {@link
- * DataDirectoryCrawler}, they must be data files or zip/jar archives.
+ * DirectoryCrawler}, they must be data files or zip/jar archives.
  * </p>
  * <p>
  * The files fetched from network can be locally cached on disk. This prevents
@@ -71,16 +70,10 @@ import org.orekit.errors.OrekitException;
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-public class DataWebCrawler implements DataProvider {
+public class NetworkCrawler implements DataProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -6827421110984075462L;
-
-    /** Pattern for gzip files. */
-    private static final Pattern GZIP_FILE_PATTERN = Pattern.compile("(.*)\\.gz$");
-
-    /** Pattern for zip archives. */
-    private static final Pattern ZIP_ARCHIVE_PATTERN = Pattern.compile("(.*)(?:(?:\\.zip)|(?:\\.jar))$");
+    private static final long serialVersionUID = -1459695244848796417L;
 
     /** URLs list. */
     private final List<URL> urls;
@@ -92,7 +85,7 @@ public class DataWebCrawler implements DataProvider {
      * <p>The default timeout is set to 10 seconds.</p>
      * @param urls list of data file URLs
      */
-    public DataWebCrawler(final URL... urls)
+    public NetworkCrawler(final URL... urls)
         throws OrekitException {
 
         this.urls = new ArrayList<URL>();
@@ -124,7 +117,7 @@ public class DataWebCrawler implements DataProvider {
                     if (ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
 
                         // browse inside the zip/jar file
-                        new DataZipCrawler(url).feed(visitor);
+                        new ZipJarCrawler(url).feed(visitor);
                         loaded = true;
 
                     } else {
