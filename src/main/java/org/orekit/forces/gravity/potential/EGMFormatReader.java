@@ -46,13 +46,13 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
     private InputStream input;
 
     /** Simple constructor (the first method to call after construction is
-     * {@link #isFileOK(InputStream)}. It is done automaticaly by the factory).
+     * {@link #isFileOK(InputStream)}. It is done automatically by the factory).
      */
     protected EGMFormatReader() {
         input = null;
         fileIsOK = false;
         ae = 6378136.3;
-        mu = 398600.4415e8;
+        mu = 398600.4415e9;
     }
 
     /** Check the file to determine if its format is understood by the reader or not.
