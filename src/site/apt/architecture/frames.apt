@@ -1,4 +1,4 @@
-~~ Copyright 2002-2008 CS Communication & Systèmes
+~~ Copyright 2002-2009 CS Communication & Systèmes
 ~~ Licensed under the Apache License, Version 2.0 (the "License");
 ~~ you may not use this file except in compliance with the License.
 ~~ You may obtain a copy of the License at
@@ -144,7 +144,7 @@ Frames
   implemented is the complete model with thousands of luni-solar and planetary terms (1600
   terms for the x components, 1275 components for the y component and 66 components for the s
   correction). Recomputing all these terms each time the CIRF frame is used would be really
-  slow. Orekit therefore implements a caching/interpolation to improve efficiency. The shortest
+  slow. Orekit therefore implements a caching/interpolation feature to improve efficiency. The shortest
   period for all the terms is about 5.5 days (it is related to one fifth of the moon revolution
   period). The pole motion is therefore quite smooth at the day or week scale. This implies that
   this motion can be computed accurately using a few reference points per day or week and
