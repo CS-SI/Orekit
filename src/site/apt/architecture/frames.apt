@@ -82,7 +82,7 @@ Frames
   {{{http://www.iers.org/documents/publications/tn/tn32/tn32.pdf}IERS conventions (2003)}}. 
   This set defines the GCRF reference frame on the celestial (i.e. inertial) side,
   the ITRF (International Terrestrial Reference Frame) on the terrestrial side and several
-  intermediate frames between them. Several version of ITRF have been defined. Orekit
+  intermediate frames between them. Several versions of ITRF have been defined. Orekit
   supports the last available version at time of writing (2008), which is ITRF 2005.
 
 *** New paradigm: CIO-based transformations
