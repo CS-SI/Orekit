@@ -158,6 +158,7 @@ class EventState implements Serializable {
                     solver.setAbsoluteAccuracy(detector.getThreshold());
                     solver.setMaximalIterationCount(detector.getMaxIterationCount());
                     final AbsoluteDate root = new AbsoluteDate(t0, solver.solve(new UnivariateRealFunction() {
+                        private static final long serialVersionUID = 642356050167522213L;
                         public double value(final double t) throws FunctionEvaluationException {
                             try {
                                 final AbsoluteDate date = new AbsoluteDate(t0, t);
