@@ -248,9 +248,9 @@ Configuration
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
 |       UTC-TAI.history[.gz]      |   IERS history  |   leap seconds introduction history  |  {{http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history}} |
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
-|  bulletinb_IAU2000-###.txt[.gz] | IERS bulletin B | monthly Earth Orientation Parameters | {{http://www.iers.org/MainDisp.csl?pid=36-25788&prodid=18}}|
+|  bulletinb_IAU2000-###.txt[.gz] | IERS bulletin B | monthly Earth Orientation Parameters |    {{http://hpiers.obspm.fr/eoppc/bul/bulb/}}              |
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
-|      eopc04_IAU2000.##[.gz]     | IERS EOP 05 C04 | yearly Earth Orientation Parameters  |{{http://www.iers.org/MainDisp.csl?pid=36-25788&prodid=179}}|
+|      eopc04_IAU2000.##[.gz]     | IERS EOP 05 C04 | yearly Earth Orientation Parameters  |    {{http://hpiers.obspm.fr/eoppc/eop/eopc04_05/}}         |
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
 |       unx(m/p)####.405[.gz]     |  DE 405 binary  |    JPL DE 405 planets ephemerides    |    {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/unix/de405}}   |
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
