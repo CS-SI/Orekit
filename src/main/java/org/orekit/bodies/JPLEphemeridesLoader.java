@@ -124,6 +124,9 @@ class JPLEphemeridesLoader implements DataLoader {
     /** Chunks duration (in seconds). */
     private double maxChunksDuration;
 
+    /** Current file chunks duration (in seconds). */
+    private double chunksDuration;
+
     /** Index of the first data for selected body. */
     private int firstIndex;
 
@@ -340,11 +343,11 @@ class JPLEphemeridesLoader implements DataLoader {
         // compute chunks duration
         final double timeSpan = extractDouble(2668);
         ok = ok && (timeSpan > 0) && (timeSpan < 100);
-        final double cd = 86400.0 * (timeSpan / chunks);
+        chunksDuration = 86400.0 * (timeSpan / chunks);
         if (Double.isNaN(maxChunksDuration)) {
-            maxChunksDuration = cd;
+            maxChunksDuration = chunksDuration;
         } else {
-            maxChunksDuration = Math.max(maxChunksDuration, cd);
+            maxChunksDuration = Math.max(maxChunksDuration, chunksDuration);
         }
 
         // sanity checks
@@ -380,7 +383,7 @@ class JPLEphemeridesLoader implements DataLoader {
         final int nbChunks    = chunks;
         final int nbCoeffs    = coeffs;
         final int first       = firstIndex;
-        final double duration = maxChunksDuration;
+        final double duration = chunksDuration;
         synchronized (this) {
             for (int i = 0; i < nbChunks; ++i) {
 

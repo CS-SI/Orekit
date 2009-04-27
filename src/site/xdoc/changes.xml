@@ -22,6 +22,9 @@
   <body>
     <release version="4.1" date="TBD"
              description="TBD">
+      <action dev="luc" type="fix" due-to="Christophe Pipo">
+        fixed an error occurring when DE406 JPL ephemerides were loaded before DE405 ones
+      </action>
       <action dev="luc" type="fix" due-to="Sébastien Herbinière">
         fixed an error in EGM potential file loader
       </action>
