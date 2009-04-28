@@ -119,7 +119,7 @@ public class ConstantThrustManeuver implements ForceModel {
     private class FiringStartDetector extends DateDetector {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 2934194165854130641L;
+        private static final long serialVersionUID = -6518235379334993498L;
 
         /** Build an instance. */
         public FiringStartDetector() {
@@ -127,7 +127,7 @@ public class ConstantThrustManeuver implements ForceModel {
         }
 
         /** {@inheritDoc} */
-        public int eventOccurred(final SpacecraftState s) {
+        public int eventOccurred(final SpacecraftState s, final boolean increasing) {
             // start the maneuver
             firing = true;
             return RESET_DERIVATIVES;
@@ -139,7 +139,7 @@ public class ConstantThrustManeuver implements ForceModel {
     private class FiringStopDetector extends DateDetector {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 1909257179592824650L;
+        private static final long serialVersionUID = -8037677613943782679L;
 
         /** Build an instance. */
         public FiringStopDetector() {
@@ -147,7 +147,7 @@ public class ConstantThrustManeuver implements ForceModel {
         }
 
         /** {@inheritDoc} */
-        public int eventOccurred(final SpacecraftState s) {
+        public int eventOccurred(final SpacecraftState s, final boolean increasing) {
             // stop the maneuver
             firing = false;
             return RESET_DERIVATIVES;

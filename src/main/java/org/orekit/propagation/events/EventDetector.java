@@ -35,7 +35,7 @@ import org.orekit.propagation.SpacecraftState;
  * boundaries.</p>
  *
  * <p>When step ends exactly at a switching function sign change, the corresponding
- * event is triggered, by calling the {@link #eventOccurred(SpacecraftState)}
+ * event is triggered, by calling the {@link #eventOccurred(SpacecraftState, boolean)}
  * method. The method can do whatever it needs with the event (logging it, performing
  * some processing, ignore it ...). The return value of the method will be used by
  * the propagator to stop or resume propagation, possibly changing the state vector.<p>
@@ -88,11 +88,14 @@ public interface EventDetector extends Serializable {
 
     /** Handle an event and choose what to do next.
      * @param s the current state information : date, kinematics, attitude
+     * @param increasing if true, the value of the switching function increases
+     * when times increases around event (note that increase is measured with respect
+     * to physical time, not with respect to propagation which may go backward in time)
      * @return one of {@link #STOP}, {@link #RESET_STATE}, {@link #RESET_DERIVATIVES}
      * or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
-    int eventOccurred(SpacecraftState s) throws OrekitException;
+    int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException;
 
     /** Reset the state prior to continue propagation.
      * <p>This method is called after the step handler has returned and

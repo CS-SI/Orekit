@@ -78,10 +78,10 @@ public class AdaptedEventDetector implements EventHandler {
     }
 
     /** {@inheritDoc} */
-    public int eventOccurred(final double t, final double[] y)
+    public int eventOccurred(final double t, final double[] y, final boolean increasing)
         throws EventException {
         try {
-            final int whatNext = detector.eventOccurred(mapState(t, y));
+            final int whatNext = detector.eventOccurred(mapState(t, y), increasing);
             switch (whatNext) {
             case EventDetector.STOP :
                 return STOP;

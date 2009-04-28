@@ -138,7 +138,7 @@ public class NumericalPropagatorTest extends TestCase {
         final AbsoluteDate stopDate = new AbsoluteDate(initDate, 1000);
         propagator.addEventDetector(new DateDetector(stopDate) {
             private static final long serialVersionUID = -5024861864672841095L;
-            public int eventOccurred(SpacecraftState s) throws OrekitException {
+            public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
                 setGotHere(true);
                 return STOP;
             }
@@ -156,7 +156,7 @@ public class NumericalPropagatorTest extends TestCase {
         final AbsoluteDate resetDate = new AbsoluteDate(initDate, 1000);
         propagator.addEventDetector(new DateDetector(resetDate) {
             private static final long serialVersionUID = 6453983658076746705L;
-            public int eventOccurred(SpacecraftState s) throws OrekitException {
+            public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
                 setGotHere(true);
                 return RESET_STATE;
             }
@@ -174,7 +174,7 @@ public class NumericalPropagatorTest extends TestCase {
         final AbsoluteDate resetDate = new AbsoluteDate(initDate, 1000);
         propagator.addEventDetector(new DateDetector(resetDate) {
             private static final long serialVersionUID = 4217482936692909475L;
-            public int eventOccurred(SpacecraftState s) throws OrekitException {
+            public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
                 setGotHere(true);
                 return RESET_DERIVATIVES;
             }
@@ -197,7 +197,7 @@ public class NumericalPropagatorTest extends TestCase {
         final AbsoluteDate resetDate = new AbsoluteDate(initDate, 1000);
         propagator.addEventDetector(new DateDetector(resetDate) {
             private static final long serialVersionUID = 5959523015368708867L;
-            public int eventOccurred(SpacecraftState s) throws OrekitException {
+            public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
                 setGotHere(true);
                 return CONTINUE;
             }

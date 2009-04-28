@@ -102,15 +102,15 @@ public class VisibilityCheck {
     private static class VisibilityDetector extends ElevationDetector {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -8909135870522456842L;
+        private static final long serialVersionUID = 1181779674621070074L;
 
         public VisibilityDetector(double maxCheck, double elevation, TopocentricFrame topo) {
             super(maxCheck, elevation, topo);
         }
 
-        public int eventOccurred(final SpacecraftState s) throws OrekitException {
-            final double zVelocity = s.getPVCoordinates(getTopocentricFrame()).getVelocity().getZ();
-            if (zVelocity > 0) {
+        public int eventOccurred(final SpacecraftState s, final boolean increasing)
+            throws OrekitException {
+            if (increasing) {
                 System.out.println(" Visibility on " + getTopocentricFrame().getName()
                                                      + " begins at " + s.getDate());
                 return CONTINUE;

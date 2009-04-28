@@ -22,6 +22,15 @@
   <body>
     <release version="4.1" date="TBD"
              description="TBD">
+      <action dev="luc" type="update" >
+        the eventOccurred method in EventDetector interface and its various implementations
+        has an additional parameter specifying if the switching function increases or
+        decreases at event time. This allows simpler events identification has many switching
+        functions have two switches (start/end, raising/setting, entry/exit ...). Note that
+        this changes breaks compatibility for users that did implement their own events, but
+        it is simple to deal with (simply add one parameter in the signature and ignore it)
+        so its was considered acceptable.
+      </action>
       <action dev="luc" type="fix" due-to="Christophe Pipo">
         fixed an error occurring when DE406 JPL ephemerides were loaded before DE405 ones
       </action>

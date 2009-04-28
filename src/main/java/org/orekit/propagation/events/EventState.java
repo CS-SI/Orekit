@@ -71,6 +71,9 @@ class EventState implements Serializable {
     /** Occurrence time of the previous event. */
     private AbsoluteDate previousEventTime;
 
+    /** Integration direction. */
+    private boolean forward;
+
     /** Variation direction around pending event.
      *  (this is considered with respect to the integration direction)
      */
@@ -130,6 +133,7 @@ class EventState implements Serializable {
 
         try {
 
+            forward = interpolator.isForward();
             final AbsoluteDate t1 = interpolator.getCurrentDate();
             final double dt = t1.durationFrom(t0);
             final int    n  = Math.max(1, (int) Math.ceil(Math.abs(dt) / detector.getMaxCheckInterval()));
@@ -232,7 +236,7 @@ class EventState implements Serializable {
             // force the sign to its value "just after the event"
             previousEventTime = state.getDate();
             g0Positive        = increasing;
-            nextAction        = detector.eventOccurred(state);
+            nextAction        = detector.eventOccurred(state, !(increasing ^ forward));
         } else {
             g0Positive = g0 >= 0;
             nextAction = EventDetector.CONTINUE;

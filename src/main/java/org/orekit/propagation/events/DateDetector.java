@@ -24,7 +24,7 @@ import org.orekit.time.AbsoluteDate;
  * <p>This class finds date events (i.e. occurrence of a predefined date).</p>
  * <p>The default implementation behavior is to {@link EventDetector#STOP
  * stop} propagation at date occurrence. This can be changed by overriding the
- * {@link #eventOccurred(SpacecraftState) eventOccurred} method in a
+ * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
  * derived class.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
@@ -33,7 +33,7 @@ import org.orekit.time.AbsoluteDate;
 public class DateDetector extends AbstractDetector {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 5196489377752038944L;
+    private static final long serialVersionUID = -3885142394082532325L;
 
     /** Target date. */
     private AbsoluteDate target;
@@ -50,13 +50,17 @@ public class DateDetector extends AbstractDetector {
      * <p>The default implementation behavior is to {@link
      * EventDetector#STOP stop} propagation at date occurrence.
      * This can be changed by overriding the {@link
-     * #eventOccurred(SpacecraftState) eventOccurred} method in a derived class.</p>
+     * #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a derived class.</p>
      * @param s the current state information : date, kinematics, attitude
+     * @param increasing if true, the value of the switching function increases
+     * when times increases around event (note that increase is measured with respect
+     * to physical time, not with respect to propagation which may go backward in time)
      * @return one of {@link #STOP}, {@link #RESET_STATE}, {@link #RESET_DERIVATIVES}
      * or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
-    public int eventOccurred(final SpacecraftState s) throws OrekitException {
+    public int eventOccurred(final SpacecraftState s, final boolean increasing)
+        throws OrekitException {
         return STOP;
     }
 

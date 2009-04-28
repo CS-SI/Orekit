@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -31,7 +30,7 @@ import org.orekit.utils.PVCoordinates;
  * EventDetector#CONTINUE continue} propagation when ascending and to
  * {@link EventDetector#STOP stop} propagation
  * when descending. This can be changed by overriding the
- * {@link #eventOccurred(SpacecraftState) eventOccurred} method in a
+ * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
  * derived class.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
@@ -40,7 +39,7 @@ import org.orekit.utils.PVCoordinates;
 public class AltitudeDetector extends AbstractDetector {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 5811148350768568016L;
+    private static final long serialVersionUID = -1552109617025755015L;
 
     /** Threshold altitude value. */
     private final double altitude;
@@ -81,21 +80,19 @@ public class AltitudeDetector extends AbstractDetector {
      * EventDetector#CONTINUE continue} propagation when ascending and to
      * {@link EventDetector#STOP stop} propagation
      * when descending. This can be changed by overriding the
-     * {@link #eventOccurred(SpacecraftState) eventOccurred} method in a
+     * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
      * derived class.</p>
      * @param s the current state information : date, kinematics, attitude
+     * @param increasing if true, the value of the switching function increases
+     * when times increases around event (note that increase is measured with respect
+     * to physical time, not with respect to propagation which may go backward in time)
      * @return one of {@link #STOP}, {@link #RESET_STATE}, {@link #RESET_DERIVATIVES}
      * or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
-    public int eventOccurred(final SpacecraftState s) throws OrekitException {
-        final Frame bodyFrame      = bodyShape.getBodyFrame();
-        final PVCoordinates pvBody = s.getPVCoordinates(bodyFrame);
-        final GeodeticPoint point  = bodyShape.transform(pvBody.getPosition(),
-                                                         bodyFrame, s.getDate());
-        final double zVelocity     = Vector3D.dotProduct(pvBody.getVelocity(),
-                                                         point.getZenith());
-        return (zVelocity > 0) ? CONTINUE : STOP;
+    public int eventOccurred(final SpacecraftState s, final boolean increasing)
+        throws OrekitException {
+        return increasing ? CONTINUE : STOP;
     }
 
     /** {@inheritDoc} */

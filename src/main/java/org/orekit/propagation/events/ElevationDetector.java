@@ -27,7 +27,7 @@ import org.orekit.propagation.SpacecraftState;
  * EventDetector#CONTINUE continue} propagation at raising and to
  * {@link EventDetector#STOP stop} propagation
  * at setting. This can be changed by overriding the
- * {@link #eventOccurred(SpacecraftState) eventOccurred} method in a
+ * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
  * derived class.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
@@ -36,7 +36,7 @@ import org.orekit.propagation.SpacecraftState;
 public class ElevationDetector extends AbstractDetector {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -4635085773191000935L;
+    private static final long serialVersionUID = 4571340030201230951L;
 
     /** Threshold elevation value. */
     private final double elevation;
@@ -77,16 +77,19 @@ public class ElevationDetector extends AbstractDetector {
      * <p>The default implementation behavior is to {@link
      * EventDetector#CONTINUE continue} propagation at raising and to
      * {@link EventDetector#STOP stop} propagation at setting. This can
-     * be changed by overriding the {@link #eventOccurred(SpacecraftState)
+     * be changed by overriding the {@link #eventOccurred(SpacecraftState, boolean)
      * eventOccurred} method in a derived class.</p>
      * @param s the current state information : date, kinematics, attitude
+     * @param increasing if true, the value of the switching function increases
+     * when times increases around event (note that increase is measured with respect
+     * to physical time, not with respect to propagation which may go backward in time)
      * @return one of {@link #STOP}, {@link #RESET_STATE}, {@link #RESET_DERIVATIVES}
      * or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
-    public int eventOccurred(final SpacecraftState s) throws OrekitException {
-        final double zVelocity = s.getPVCoordinates(topo).getVelocity().getZ();
-        return (zVelocity > 0) ? CONTINUE : STOP;
+    public int eventOccurred(final SpacecraftState s, final boolean increasing)
+        throws OrekitException {
+        return increasing ? CONTINUE : STOP;
     }
 
     /** {@inheritDoc} */

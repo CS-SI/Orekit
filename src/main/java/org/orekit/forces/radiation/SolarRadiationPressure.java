@@ -217,7 +217,7 @@ public class SolarRadiationPressure implements ForceModel {
         }
 
         /** {@inheritDoc} */
-        public int eventOccurred(final SpacecraftState s) {
+        public int eventOccurred(final SpacecraftState s, final boolean increasing) {
             return RESET_DERIVATIVES;
         }
 
@@ -254,7 +254,7 @@ public class SolarRadiationPressure implements ForceModel {
         }
 
         /** {@inheritDoc} */
-        public int eventOccurred(final SpacecraftState s) {
+        public int eventOccurred(final SpacecraftState s, final boolean increasing) {
             return RESET_DERIVATIVES;
         }
 

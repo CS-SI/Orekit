@@ -28,7 +28,7 @@ import org.orekit.utils.PVCoordinates;
  * EventDetector#CONTINUE continue} propagation at apogee crossing
  * and to {@link EventDetector#STOP stop} propagation
  * at perigee crossing. This can be changed by overriding the
- * {@link #eventOccurred(SpacecraftState) eventOccurred} method in a
+ * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
  * derived class.</p>
  * <p>Beware that apside detection will fail for almost circular orbits. If
  * for example an apside detector is used to trigger an {@link
@@ -42,7 +42,7 @@ import org.orekit.utils.PVCoordinates;
 public class ApsideDetector extends AbstractDetector {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 106899523973703627L;
+    private static final long serialVersionUID = -7542434866922384844L;
 
     /** Build a new instance.
      * <p>The orbit is used only to set an upper bound for the
@@ -60,16 +60,19 @@ public class ApsideDetector extends AbstractDetector {
      * EventDetector#CONTINUE continue} propagation at apogee
      * crossing and to {@link EventDetector#STOP stop} propagation
      * at perigee crossing. This can be changed by overriding the
-     * {@link #eventOccurred(SpacecraftState) eventOccurred} method in a
+     * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
      * derived class.</p>
      * @param s the current state information : date, kinematics, attitude
+     * @param increasing if true, the value of the switching function increases
+     * when times increases around event (note that increase is measured with respect
+     * to physical time, not with respect to propagation which may go backward in time)
      * @return one of {@link #STOP}, {@link #RESET_STATE}, {@link #RESET_DERIVATIVES}
      * or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
-    public int eventOccurred(final SpacecraftState s) throws OrekitException {
-        final double r = s.getPVCoordinates().getPosition().getNorm();
-        return (r > s.getA()) ? CONTINUE : STOP;
+    public int eventOccurred(final SpacecraftState s, final boolean increasing)
+        throws OrekitException {
+        return increasing ? STOP : CONTINUE;
     }
 
     /** {@inheritDoc} */
