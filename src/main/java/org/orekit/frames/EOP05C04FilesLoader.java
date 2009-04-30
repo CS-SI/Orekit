@@ -28,14 +28,15 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.TimeStampedEntry;
 
 /** Loader for EOP 05 C04 files.
- * <p>EOP 05 C04 files contain {@link EarthOrientationParameters
+ * <p>EOP 05 C04 files contain {@link TimeStampedEntry
  * Earth Orientation Parameters} consistent with ITRF2005 for one year periods.</p>
- * <p>The EOP 05 C04 files are recognized thanks to their base names,
- * which must match the pattern <code>eopc04_IAU2000.##</code>
- * (or <code>eopc04_IAU2000.##.gz</code> for gzip-compressed files)
- * where # stands for a digit character.</p>
+ * <p>The EOP 05 C04 files are recognized thanks to their base names, which
+ * must match one of the the patterns <code>eopc04_IAU2000.##</code> or
+ * <code>eopc04.##</code> (or the same ending with <code>.gz</code> for
+ * gzip-compressed files) where # stands for a digit character.</p>
  * <p>Between 2002 and 2007, another series of Earth Orientation Parameters was
  * in use: EOPC04 (without the 05). These parameters were consistent with the
  * previous ITRS realization: ITRF2000. These files are no longer provided by IERS
@@ -46,8 +47,7 @@ import org.orekit.time.TimeStamped;
  * such files to avoid being lured in believing they do have EOP data.</p>
  * <p>Files containing old data (back to 1962) have been regenerated in the new file
  * format and are available at IERS web site: <a
- * href="http://www.iers.org/MainDisp.csl?pid=36-25788&prodid=179">EOP 05 C04 (IAU2000)
- * yearly files - all available version</a>.</p>
+ * href="http://hpiers.obspm.fr/iers/eop/eopc04_05/">Index of /iers/eop/eopc04_05</a>.</p>
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
@@ -77,6 +77,15 @@ class EOP05C04FilesLoader implements DataLoader {
     /** UT1-UTC field. */
     private static final int UT1_UTC_FIELD = 6;
 
+    /** LoD field. */
+    private static final int LOD_FIELD = 7;
+
+    /** Correction for nutation in obliquity field. */
+    private static final int DDEPS_FIELD = 8;
+
+    /** Correction for nutation in longitude field. */
+    private static final int DDPSI_FIELD = 9;
+
     /** Pattern for data lines.
      * <p>
      * The data lines in the EOP 05 C04 yearly data files have the following fixed form:
@@ -100,12 +109,16 @@ class EOP05C04FilesLoader implements DataLoader {
     private SortedSet<TimeStamped> eop;
 
     /** Build a loader for IERS EOP 05 C04 files.
+     * @param ficname name of the file to load
      * @param eop set where to <em>add</em> EOP data
      * (pre-existing data is preserved)
      */
-    public EOP05C04FilesLoader(final SortedSet<TimeStamped> eop) {
-        namePattern = Pattern.compile("^eopc04_IAU2000\\.(\\d\\d)$");
+    public EOP05C04FilesLoader(final String ficname,
+                               final SortedSet<TimeStamped> eop) {
+
+        namePattern = Pattern.compile(ficname);
         this.eop = eop;
+
     }
 
     /** Load Earth Orientation Parameters.
@@ -142,11 +155,14 @@ class EOP05C04FilesLoader implements DataLoader {
                 final int    day   = Integer.parseInt(fields[DAY_FIELD]);
                 final int    mjd   = Integer.parseInt(fields[MJD_FIELD]);
                 if (new DateComponents(year, month, day).getMJD() == mjd) {
-                    // the first four fields are consistent with the expected format
-                    final double x     = Double.parseDouble(fields[POLE_X_FIELD]) * ARC_SECONDS_TO_RADIANS;
-                    final double y     = Double.parseDouble(fields[POLE_Y_FIELD]) * ARC_SECONDS_TO_RADIANS;
-                    final double dtu1  = Double.parseDouble(fields[UT1_UTC_FIELD]);
-                    eop.add(new EarthOrientationParameters(mjd, dtu1, new PoleCorrection(x, y)));
+                    // the first six fields are consistent with the expected format
+                    final double x    = Double.parseDouble(fields[POLE_X_FIELD]) * ARC_SECONDS_TO_RADIANS;
+                    final double y    = Double.parseDouble(fields[POLE_Y_FIELD]) * ARC_SECONDS_TO_RADIANS;
+                    final double dtu1 = Double.parseDouble(fields[UT1_UTC_FIELD]);
+                    final double lod  = Double.parseDouble(fields[LOD_FIELD]);
+                    final double dpsi = Double.parseDouble(fields[DDPSI_FIELD]) * ARC_SECONDS_TO_RADIANS;
+                    final double deps = Double.parseDouble(fields[DDEPS_FIELD]) * ARC_SECONDS_TO_RADIANS;
+                    eop.add(new TimeStampedEntry(mjd, x, y, dtu1, lod, dpsi, deps));
                     parsed = true;
                 }
             }

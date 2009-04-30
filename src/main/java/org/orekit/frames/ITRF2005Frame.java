@@ -87,8 +87,7 @@ class ITRF2005Frame extends Frame {
             final double ttc =  tts * JULIAN_CENTURY_PER_SECOND;
 
             // get the current IERS pole correction parameters
-            final PoleCorrection iCorr =
-                EarthOrientationHistory.getInstance().getPoleCorrection(date);
+            final PoleCorrection iCorr = EOP2000History.getInstance().getPoleCorrection(date);
 
             // compute the additional terms not included in IERS data
             final PoleCorrection tCorr = ignoreTidalEffects ?

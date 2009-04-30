@@ -158,7 +158,7 @@ public class DataProvidersManagerTest extends TestCase {
 
         crawler = new CountingLoader("bulletinb_.*\\.txt$", false);
         assertTrue(DataProvidersManager.getInstance().feed(crawler));
-        assertEquals(3, crawler.getCount());
+        assertEquals(2, crawler.getCount());
 
     }
 

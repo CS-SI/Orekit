@@ -21,33 +21,35 @@ import java.text.ParseException;
 import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.BulletinBFilesLoader;
-import org.orekit.frames.EarthOrientationParameters;
+import org.orekit.utils.TimeStampedEntry;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
 public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
 
+    /** Regular name for the BulletinB files (IAU2000 compatibles). */
+    private static final String BULLETFILENAME = "^bulletinb_IAU2000((\\.\\d\\d\\d)|(-\\d\\d\\d\\.txt))$";
+
     public void testMissingMonths() throws OrekitException {
         setRoot("missing-months");
-        new BulletinBFilesLoader(set).loadEOP();
+        new BulletinBFilesLoader(BULLETFILENAME, set).loadEOP();
         assertTrue(getMaxGap() > 5);
     }
 
     public void testStartDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        new BulletinBFilesLoader(set).loadEOP();
+        new BulletinBFilesLoader(BULLETFILENAME, set).loadEOP();
         assertTrue(getMaxGap() < 5);
-        assertEquals(53709, ((EarthOrientationParameters) set.first()).getMjd());
+        assertEquals(53709, ((TimeStampedEntry) set.first()).getMjd());
     }
 
     public void testEndDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        new BulletinBFilesLoader(set).loadEOP();
+        new BulletinBFilesLoader(BULLETFILENAME, set).loadEOP();
         assertTrue(getMaxGap() < 5);
-        assertEquals(53799, ((EarthOrientationParameters) set.last()).getMjd());
+        assertEquals(53799, ((TimeStampedEntry) set.last()).getMjd());
     }
-
 
     public static Test suite() {
         return new TestSuite(BulletinBFilesLoaderTest.class);

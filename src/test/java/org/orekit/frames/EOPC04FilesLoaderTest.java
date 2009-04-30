@@ -21,29 +21,32 @@ import java.text.ParseException;
 import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.EOP05C04FilesLoader;
-import org.orekit.frames.EarthOrientationParameters;
+import org.orekit.utils.TimeStampedEntry;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
 public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
 
+    /** Regular name for the EOPC04 files (IAU2000 compatibles). */
+    private static final String EOPC04FILENAME = "^eopc04_IAU2000\\.(\\d\\d)$";
+
     public void testMissingMonths() throws OrekitException {
         setRoot("missing-months");
-        new EOP05C04FilesLoader(set).loadEOP();
+        new EOP05C04FilesLoader(EOPC04FILENAME, set).loadEOP();
         assertTrue(getMaxGap() > 5);
     }
 
     public void testStartDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        new EOP05C04FilesLoader(set).loadEOP();
-        assertEquals(52640, ((EarthOrientationParameters) set.first()).getMjd());
+        new EOP05C04FilesLoader(EOPC04FILENAME, set).loadEOP();
+        assertEquals(52640, ((TimeStampedEntry) set.first()).getMjd());
     }
 
     public void testEndDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        new EOP05C04FilesLoader(set).loadEOP();
-        assertEquals(53735, ((EarthOrientationParameters) set.last()).getMjd());
+        new EOP05C04FilesLoader(EOPC04FILENAME, set).loadEOP();
+        assertEquals(53735, ((TimeStampedEntry) set.last()).getMjd());
     }
 
     public static Test suite() {

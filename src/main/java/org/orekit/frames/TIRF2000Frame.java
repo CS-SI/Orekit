@@ -93,7 +93,7 @@ class TIRF2000Frame extends Frame {
             // compute Earth Rotation Angle using Nicole Capitaine model (2000)
             final double tidalCorrection =
                 ignoreTidalEffects ? 0 : TidalCorrection.getInstance().getDUT1(date);
-            final double dtu1            = EarthOrientationHistory.getInstance().getUT1MinusUTC(date);
+            final double dtu1            = EOP2000History.getInstance().getUT1MinusUTC(date);
             final double utcMinusTai     = UTCScale.getInstance().offsetFromTAI(date);
             final double tu =
                 (date.durationFrom(ERA_REFERENCE) + utcMinusTai + dtu1 + tidalCorrection) / 86400.0;

@@ -28,15 +28,16 @@ import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.TimeStamped;
-
+import org.orekit.utils.TimeStampedEntry;
 
 /** Loader for bulletin B files.
- * <p>Bulletin B files contain {@link EarthOrientationParameters
+ * <p>Bulletin B files contain {@link TimeStampedEntry
  * Earth Orientation Parameters} for a few months periods.</p>
  * <p>The bulletin B files are recognized thanks to their base names,
- * which must match the pattern <code>bulletinb_IAU2000-###.txt</code>
- * (or <code>bulletinb_IAU2000-###.txt.gz</code> for gzip-compressed files)
- * where # stands for a digit character.</p>
+ * which must match one of the the patterns <code>bulletinb_IAU2000-###.txt</code>,
+ * <code>bulletinb_IAU2000.###</code>, <code>bulletinb-###.txt</code> or
+ * <code>bulletinb.###</code> (or the same ending with <code>.gz</code>
+ * for gzip-compressed files) where # stands for a digit character.</p>
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
@@ -44,6 +45,12 @@ class BulletinBFilesLoader implements DataLoader {
 
     /** Conversion factor. */
     private static final double ARC_SECONDS_TO_RADIANS = 2 * Math.PI / 1296000;
+
+    /** Conversion factor. */
+    private static final double MILLI_ARC_SECONDS_TO_RADIANS = 2 * Math.PI / 1296000000;
+
+    /** Conversion factor. */
+    private static final double MILLI_SECONDS_TO_SECONDS = 1.e-3;
 
     /** Supported files name pattern. */
     private Pattern namePattern;
@@ -67,12 +74,14 @@ class BulletinBFilesLoader implements DataLoader {
     private SortedSet<TimeStamped> eop;
 
     /** Create a loader for IERS bulletin B files.
+     * @param ficname name of the file to load
      * @param eop set where to <em>add</em> EOP data
      * (pre-existing data is preserved)
      */
-    public BulletinBFilesLoader(final SortedSet<TimeStamped> eop) {
+    public BulletinBFilesLoader(final String ficname,
+                                final SortedSet<TimeStamped> eop) {
 
-        namePattern = Pattern.compile("^bulletinb_IAU2000-(\\d\\d\\d)\\.txt$");
+        namePattern = Pattern.compile(ficname);
         this.eop = eop;
 
         // the section headers lines in the bulletin B monthly data files have
@@ -114,8 +123,8 @@ class BulletinBFilesLoader implements DataLoader {
                                               finalBlanks);
         section2DataPattern = Pattern.compile(monthField + dayField + mjdField +
                                               storedRealField  + storedRealField  + storedRealField +
-                                              ignoredRealField + ignoredRealField +
-                                              ignoredRealField + ignoredRealField +
+                                              ignoredRealField +
+                                              storedRealField + storedRealField + storedRealField +
                                               finalBlanks);
 
     }
@@ -178,12 +187,15 @@ class BulletinBFilesLoader implements DataLoader {
                 matcher = section2DataPattern.matcher(line);
                 if (matcher.matches()) {
                     // this is a data line, build an entry from the extracted fields
-                    final int    date = Integer.parseInt(matcher.group(1));
-                    final double x    = Double.parseDouble(matcher.group(2)) * ARC_SECONDS_TO_RADIANS;
-                    final double y    = Double.parseDouble(matcher.group(3)) * ARC_SECONDS_TO_RADIANS;
-                    final double dtu1 = Double.parseDouble(matcher.group(4));
+                    final int    date  = Integer.parseInt(matcher.group(1));
+                    final double x     = Double.parseDouble(matcher.group(2)) * ARC_SECONDS_TO_RADIANS;
+                    final double y     = Double.parseDouble(matcher.group(3)) * ARC_SECONDS_TO_RADIANS;
+                    final double dtu1  = Double.parseDouble(matcher.group(4));
+                    final double lod   = Double.parseDouble(matcher.group(5)) * MILLI_SECONDS_TO_SECONDS;
+                    final double dpsi  = Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                    final double deps  = Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS;
                     if (date >= mjdMin) {
-                        eop.add(new EarthOrientationParameters(date, dtu1, new PoleCorrection(x, y)));
+                        eop.add(new TimeStampedEntry(date, x, y, dtu1, lod, dpsi, deps));
                         if (date >= mjdMax) {
                             // don't bother reading the rest of the file
                             return;
