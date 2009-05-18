@@ -81,6 +81,9 @@ public class TLE implements TimeStamped, Serializable {
     private static final String CHECKSUM_MESSAGE =
         "wrong cheksum of TLE line {0}, expected {1} but got {2} ({3})";
 
+    private static final DecimalFormatSymbols SYMBOLS =
+        new DecimalFormatSymbols(Locale.US);
+
     /** Serializable UID. */
     private static final long serialVersionUID = -1596648022319057689L;
 
@@ -281,10 +284,8 @@ public class TLE implements TimeStamped, Serializable {
         throws OrekitException {
 
         final StringBuffer buffer = new StringBuffer();
-        final DecimalFormatSymbols symbols =
-            DecimalFormatSymbols.getInstance(Locale.US);
-        final DecimalFormat f38  = new DecimalFormat("##0.00000000", symbols);
-        final DecimalFormat fExp = new DecimalFormat(".00000E0", symbols);
+        final DecimalFormat f38  = new DecimalFormat("##0.00000000", SYMBOLS);
+        final DecimalFormat fExp = new DecimalFormat(".00000E0", SYMBOLS);
 
         buffer.append('1');
 
@@ -306,7 +307,7 @@ public class TLE implements TimeStamped, Serializable {
 
         buffer.append(' ');
         final double n1 = meanMotionFirstDerivative * 1.86624e9 / Math.PI;
-        final String sn1 = addPadding(new DecimalFormat(".00000000", symbols).format(n1), ' ', 10, true);
+        final String sn1 = addPadding(new DecimalFormat(".00000000", SYMBOLS).format(n1), ' ', 10, true);
         buffer.append(sn1);
 
         buffer.append(' ');
@@ -336,10 +337,8 @@ public class TLE implements TimeStamped, Serializable {
     private void buildLine2() {
 
         final StringBuffer buffer = new StringBuffer();
-        final DecimalFormatSymbols symbols =
-            DecimalFormatSymbols.getInstance(Locale.US);
-        final DecimalFormat f34   = new DecimalFormat("##0.0000", symbols);
-        final DecimalFormat f211  = new DecimalFormat("#0.00000000", symbols);
+        final DecimalFormat f34   = new DecimalFormat("##0.0000", SYMBOLS);
+        final DecimalFormat f211  = new DecimalFormat("#0.00000000", SYMBOLS);
 
         buffer.append('2');
 

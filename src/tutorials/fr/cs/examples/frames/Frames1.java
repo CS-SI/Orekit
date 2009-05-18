@@ -53,7 +53,7 @@ public class Frames1 {
 
             // configure Orekit
             Autoconfiguration.configureOrekit();
-            DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.US);
+            DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
             DecimalFormat d3 = new DecimalFormat("0.000", symbols);
 
             //  Initial state definition : date, orbit

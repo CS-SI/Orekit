@@ -46,7 +46,7 @@ public class Frames2 {
 
             // configure Orekit
             Autoconfiguration.configureOrekit();
-            DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.US);
+            DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
             Vector3DFormat v3 = new Vector3DFormat(new DecimalFormat("0.000",     symbols));
             Vector3DFormat v7 = new Vector3DFormat(new DecimalFormat("0.0000000", symbols));
 
