@@ -29,40 +29,49 @@ import org.orekit.time.AbsoluteDate;
  */
 class MEMEFrame extends Frame {
 
-    private static final long serialVersionUID = -8323553604542318764L;
+    /** Serializable UID. */
+    private static final long serialVersionUID = -8158197605959616055L;
 
     /** Radians per arcsecond. */
-    private static final double RADIANS_PER_ARC_SECOND = Math.PI / 648000;
+    private static final double RADIANS_PER_ARC_SECOND = Math.PI / (180.0 * 3600.0);
 
     /** Julian century per second. */
     private static final double JULIAN_CENTURY_PER_SECOND = 1.0 / (36525.0 * 86400.0);
 
-    /** Coefficients for ZETA precession angle. */
+    /** 1st coefficient for ZETA precession angle. */
     private static final double ZETA_1 = 2306.2181   * RADIANS_PER_ARC_SECOND;
+    /** 2nd coefficient for ZETA precession angle. */
     private static final double ZETA_2 =    0.30188  * RADIANS_PER_ARC_SECOND;
+    /** 3rd coefficient for ZETA precession angle. */
     private static final double ZETA_3 =    0.017998 * RADIANS_PER_ARC_SECOND;
 
-    /** Coefficients for THETA precession angle. */
+    /** 1st coefficient for THETA precession angle. */
     private static final double THETA_1 = 2004.3109   * RADIANS_PER_ARC_SECOND;
+    /** 2nd coefficient for THETA precession angle. */
     private static final double THETA_2 =   -0.42665  * RADIANS_PER_ARC_SECOND;
+    /** 3rd coefficient for THETA precession angle. */
     private static final double THETA_3 =   -0.041833 * RADIANS_PER_ARC_SECOND;
 
-    /** Coefficients for Z precession angle. */
+    /** 1st coefficient for Z precession angle. */
     private static final double Z_1 = 2306.2181   * RADIANS_PER_ARC_SECOND;
+    /** 2nd coefficient for Z precession angle. */
     private static final double Z_2 =    1.09468  * RADIANS_PER_ARC_SECOND;
+    /** 3rd coefficient for Z precession angle. */
     private static final double Z_3 =    0.018203 * RADIANS_PER_ARC_SECOND;
 
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
     /** Simple constructor.
+     * @param applyEOPCorr if true, nutation correction is applied
      * @param date the date.
      * @param name name of the frame
      * @see Frame
      */
-    protected MEMEFrame(final AbsoluteDate date, final String name) {
+    protected MEMEFrame(final boolean applyEOPCorr,
+                        final AbsoluteDate date, final String name) {
 
-        super(getGCRF(), null , name);
+        super(applyEOPCorr ? getGCRF() : getEME2000(), null , name);
 
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
@@ -100,7 +109,7 @@ class MEMEFrame extends Frame {
 
             // set up the transform from parent GCRF
             setTransform(new Transform(precession));
-            
+
             cachedDate = date;
         }
 

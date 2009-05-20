@@ -25,12 +25,12 @@ import java.io.Serializable;
  */
 public class NutationCorrection implements Serializable {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -2075750534145826411L;
-
     /** Null correction (ddeps = 0, ddpsi = 0). */
     public static final NutationCorrection NULL_CORRECTION =
         new NutationCorrection(0, 0);
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = -2075750534145826411L;
 
     /** &delta;&Delta;&epsilon;<sub>1980</sub> parameter (radians). */
     private final double ddeps;

@@ -32,17 +32,20 @@ class EME2000Frame extends Frame {
     /** Serializable UID. */
     private static final long serialVersionUID = -1045789793339869819L;
 
+    /** Radians per arcsecond. */
+    private static final double RADIANS_PER_ARC_SECOND = Math.PI / (180.0 * 3600.0);
+
     /** Obliquity of the ecliptic. */
-    private static final double EPSILON_0 = 84381.44 * Math.PI / (180.0 * 3600.0);
+    private static final double EPSILON_0 = 84381.44 * RADIANS_PER_ARC_SECOND;
 
     /** Bias in longitude. */
-    private static final double D_PSI_B = -0.041775 * Math.PI / (180.0 * 3600.0);
+    private static final double D_PSI_B = -0.041775 * RADIANS_PER_ARC_SECOND;
 
     /** Bias in obliquity. */
-    private static final double D_EPSILON_B = -0.0068192 * Math.PI / (180.0 * 3600.0);
+    private static final double D_EPSILON_B = -0.0068192 * RADIANS_PER_ARC_SECOND;
 
     /** Right Ascension of the 2000 equinox in ICRS frame. */
-    private static final double ALPHA_0 = -0.0146 * Math.PI / (180.0 * 3600.0);
+    private static final double ALPHA_0 = -0.0146 * RADIANS_PER_ARC_SECOND;
 
     /** Simple constructor.
      * @param name name of the frame

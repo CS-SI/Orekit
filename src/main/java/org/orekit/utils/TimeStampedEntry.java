@@ -83,7 +83,7 @@ public class TimeStampedEntry implements TimeStamped, Serializable {
      * @param id index of the field to get
      * @return the desired field
      */
-    public double getField(int id) {
+    public double getField(final int id) {
         return fields[id];
     }
 

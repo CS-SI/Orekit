@@ -30,7 +30,7 @@ import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
 
-public class MEMEFrameTest extends TestCase {
+public class PEFFrameTest extends TestCase {
 
     public void testAASReferenceLEO() throws OrekitException {
 
@@ -42,27 +42,26 @@ public class MEMEFrameTest extends TestCase {
                                            new TimeComponents(07, 51, 28.386009),
                                            UTCScale.getInstance());
 
-        Transform tt = Frame.getGCRF().getTransformTo(Frame.getMEME(true), t0);
-        //GCRF iau76 w corr
-        PVCoordinates pvGCRFiau76 =
-            new PVCoordinates(new Vector3D(5102508.9579, 6123011.4038, 6378136.9252),
-                              new Vector3D(-4743.220156, 790.536497, 5533.755728));
-        //MOD iau76 w corr
-        PVCoordinates pvMODiau76Wcorr =
-            new PVCoordinates(new Vector3D(5094028.3745, 6127870.8164, 6380248.5164),
-                              new Vector3D(-4746.263052, 786.014045, 5531.790562));
-        checkPV(pvMODiau76Wcorr, tt.transformPVCoordinates(pvGCRFiau76), 4.4e-3, 1.6e-6);
+// PEF iau76
+        PVCoordinates pvPEF =
+           new PVCoordinates(new Vector3D(-1033475.0313, 7901305.5856, 6380344.5328),
+                             new Vector3D(-3225.632747, -2872.442511, 5531.931288));
+// TOD iau76
+        PVCoordinates pvTEME =
+            new PVCoordinates(new Vector3D(5094514.7804, 6127366.4612, 6380344.5328),
+                              new Vector3D(-4746.088567, 786.077222, 5531.931288));
+        
+        TEMEFrame TEMEframe = new TEMEFrame(true, AbsoluteDate.J2000_EPOCH, "TEME w corr");
+        PEFFrame  PEFframe  = new PEFFrame(true, AbsoluteDate.J2000_EPOCH, "PEF w corr");
 
-        Transform tf = Frame.getEME2000().getTransformTo(Frame.getMEME(false), t0);
-        //J2000 iau76   
-        PVCoordinates pvJ2000iau76 =
-            new PVCoordinates(new Vector3D(5102509.6000, 6123011.5200, 6378136.3000),
-                              new Vector3D(-4743.219600, 790.536600, 5533.756190));
-        //MOD iau76
-        PVCoordinates pvMODiau76 =
-            new PVCoordinates(new Vector3D(5094029.0167, 6127870.9363, 6380247.8885),
-                              new Vector3D(-4746.262495, 786.014149, 5531.791025));
-        checkPV(pvMODiau76, tf.transformPVCoordinates(pvJ2000iau76), 4.3e-5, 2.7e-7);
+        Transform tt = TEMEframe.getTransformTo(PEFframe, t0);
+        checkPV(pvPEF, tt.transformPVCoordinates(pvTEME), 2.2, 1.2e-3);
+        
+        TEMEFrame TEMEFrame = new TEMEFrame(false, AbsoluteDate.J2000_EPOCH, "TEME wo corr");
+        PEFFrame  PEFFrame  = new PEFFrame(false, AbsoluteDate.J2000_EPOCH, "PEF wo corr");
+        
+        Transform tf = TEMEFrame.getTransformTo(PEFFrame, t0);
+        checkPV(pvPEF, tf.transformPVCoordinates(pvTEME), 0.3, 1.6e-4);
 
     }
 
@@ -76,27 +75,22 @@ public class MEMEFrameTest extends TestCase {
                                            TimeComponents.H00,
                                            UTCScale.getInstance());
 
-        Transform tt = Frame.getGCRF().getTransformTo(Frame.getMEME(true), t0);
-        //GCRF iau76 w corr
-        PVCoordinates pvGCRFiau76 =
-            new PVCoordinates(new Vector3D(-40588150.3649, -11462167.0282, 27143.2028),
-                              new Vector3D(834.787457, -2958.305691, -1.172994));
-        //MOD iau76 w corr
-        PVCoordinates pvMODiau76Wcorr =
-            new PVCoordinates(new Vector3D(-40576822.6395, -11502231.5015, 9733.7842),
-                              new Vector3D(837.708020, -2957.480117, -0.814253));
-        checkPV(pvMODiau76Wcorr, tt.transformPVCoordinates(pvGCRFiau76), 2.5e-5, 6.9e-7);
+        Transform tt = Frame.getTEME(true).getTransformTo(Frame.getPEF(true), t0);
+        Transform tf = Frame.getTEME(false).getTransformTo(Frame.getPEF(false), t0);
 
-        Transform tf = Frame.getEME2000().getTransformTo(Frame.getMEME(false), t0);
-        //J2000 iau76
-        PVCoordinates pvJ2000iau76 =
-            new PVCoordinates(new Vector3D(-40588150.3620, -11462167.0280, 27147.6490),
-                              new Vector3D(834.787457, -2958.305691, -1.173016));
-        //MOD iau76
-        PVCoordinates pvMODiau76 =
-            new PVCoordinates(new Vector3D(-40576822.6385, -11502231.5013, 9738.2304),
-                              new Vector3D(837.708020, -2957.480118, -0.814275));
-        checkPV(pvMODiau76, tf.transformPVCoordinates(pvJ2000iau76), 3.3e-5, 6.81e-7);
+// TOD iau76
+        PVCoordinates pvTEME =
+            new PVCoordinates(new Vector3D(-40577427.7501, -11500096.1306, 10293.2583),
+                              new Vector3D(837.552338, -2957.524176, -0.928772));
+
+//PEF iau76
+        PVCoordinates pvPEF =
+            new PVCoordinates(new Vector3D(24796919.2956, -34115870.9001, 10293.2583),
+                              new Vector3D(-0.979178, -1.476540, -0.928772));
+
+        checkPV(pvPEF, tt.transformPVCoordinates(pvTEME), 10.3, 1.5e-5);
+
+        checkPV(pvPEF, tf.transformPVCoordinates(pvTEME), 0.2, 1.5e-5);
 
     }
 
@@ -106,8 +100,7 @@ public class MEMEFrameTest extends TestCase {
     }
 
     private void checkPV(PVCoordinates reference,
-                         PVCoordinates result,
-                         double positionThreshold,
+                         PVCoordinates result, double positionThreshold,
                          double velocityThreshold) {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
@@ -117,7 +110,7 @@ public class MEMEFrameTest extends TestCase {
     }
 
     public static Test suite() {
-        return new TestSuite(MEMEFrameTest.class);
+        return new TestSuite(PEFFrameTest.class);
     }
 
 }
