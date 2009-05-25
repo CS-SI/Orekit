@@ -665,7 +665,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
             SolarSystemBody tmpBody      = null;
             OrekitException tmpException = null;
             try {
-                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                tmpBody = new SolarSystemBody(SolarSystemBody.getEarth().getFrame(),
                                               JPLEphemeridesLoader.EphemerisType.MOON,
                                               "Moon centered EME2000");
             } catch (OrekitException oe) {
