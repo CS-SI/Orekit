@@ -89,7 +89,7 @@ public class VisibilityCheck {
             // Propagate from the initial date to the first raising or for the fixed duration
             SpacecraftState finalState = kepler.propagate(new AbsoluteDate(initialDate, 1500.));
 
-            System.out.println(" Final state : " + finalState.getDate());
+            System.out.println(" Final state : " + finalState.getDate().durationFrom(initialDate));
 
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());
@@ -117,7 +117,7 @@ public class VisibilityCheck {
             } else {
                 System.out.println(" Visibility on " + getTopocentricFrame().getName()
                                                      + " ends at " + s.getDate());
-                return STOP;
+                return CONTINUE;//STOP;
             }
         }
 

@@ -22,6 +22,9 @@
   <body>
     <release version="4.1" date="TBD"
              description="TBD">
+      <action dev="luc" type="fix" >
+        the gravity coefficients for solar system bodies are now extracted from JPL files headers
+      </action>
       <action dev="luc" type="update" >
         the eventOccurred method in EventDetector interface and its various implementations
         has an additional parameter specifying if the switching function increases or

@@ -32,13 +32,45 @@ import org.orekit.time.TimeStamped;
 
 public class JPLEphemeridesLoaderTest extends TestCase {
 
-    public void testConstants() throws OrekitException, ParseException {
-         AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TTScale.getInstance());
-        JPLEphemeridesLoader loader =
-            new JPLEphemeridesLoader(JPLEphemeridesLoader.EphemerisType.MOON, date);
-        loader.loadEphemerides();
-        assertEquals(149597870691.0, loader.getAstronomicalUnit(), 0.1);
-        assertEquals(81.30056, loader.getEarthMoonMassRatio(), 1.0e-8);
+    public void testConstants() throws OrekitException {
+        assertEquals(149597870691.0, JPLEphemeridesLoader.getAstronomicalUnit(), 0.1);
+        assertEquals(81.30056, JPLEphemeridesLoader.getEarthMoonMassRatio(), 1.0e-8);
+    }
+
+    public void testGM() throws OrekitException {
+        assertEquals(22032.080e9,
+                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MERCURY),
+                     1.0e6);
+        assertEquals(324858.599e9,
+                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.VENUS),
+                     1.0e6);
+        assertEquals(42828.314e9,
+                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MARS),
+                     1.0e6);
+        assertEquals(126712767.863e9,
+                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.JUPITER),
+                     6.0e7);
+        assertEquals(37940626.063e9,
+                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.SATURN),
+                     2.0e6);
+        assertEquals(5794549.007e9,
+                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.URANUS),
+                     1.0e6);
+        assertEquals(6836534.064e9,
+                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.NEPTUNE),
+                     1.0e6);
+        assertEquals(981.601e9,
+                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.PLUTO),
+                     1.0e6);
+        assertEquals(132712440017.987e9,
+                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.SUN),
+                     1.0e6);
+        assertEquals(4902.801e9,
+                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MOON),
+                     1.0e6);
+        assertEquals(403503.233e9,
+                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.EARTH_MOON),
+                     1.0e6);
     }
 
     public void testDerivative405() throws OrekitException, ParseException {

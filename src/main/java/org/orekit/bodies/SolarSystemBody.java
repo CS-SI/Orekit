@@ -46,10 +46,7 @@ import org.orekit.utils.PVCoordinates;
  * without any rotation. The frame axes are therefore always parallel to
  * {@link Frame#getEME2000() EME2000} frame axes.</p>
  * <p>The position of the bodies provided by this class are interpolated using
- * the JPL DE 405 ephemerides. The various constants in this file come from E. M.
- * Standish 1998-08-26 memorandum: <a
- * href="ftp://ssd.jpl.nasa.gov/pub/eph/export/DE405/de405iom.ps">JPL Planetary
- * and Lunar Ephemerides, DE405/LE405</a>.</p>
+ * the JPL DE 405/DE 406 ephemerides.</p>
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
@@ -57,39 +54,6 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -4929971459387288203L;
-
-    /** Sun attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-    private static final double SUN_GM = 1.32712440017987e20;
-
-    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-    private static final double MERCURY_GM = SUN_GM / 6023600.0;
-
-    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-    private static final double VENUS_GM = SUN_GM / 408523.71;
-
-    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-    private static final double EARTH_GM = SUN_GM / 332946.050895;
-
-    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-    private static final double MOON_GM = SUN_GM / 27068700.387534;
-
-    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-    private static final double MARS_GM = SUN_GM / 3098708;
-
-    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-    private static final double JUPITER_GM = SUN_GM / 1047.3486;
-
-    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-    private static final double SATURN_GM = SUN_GM / 3497.898;
-
-    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-    private static final double URANUS_GM = SUN_GM / 22902.98;
-
-    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-    private static final double NEPTUNE_GM = SUN_GM / 19412;
-
-    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-    private static final double PLUTO_GM = SUN_GM / 135200000;
 
     /** Body ephemeris. */
     private final SortedSet<TimeStamped> ephemeris;
@@ -120,6 +84,19 @@ public class SolarSystemBody extends AbstractCelestialBody {
         this.model         = null;
         this.type          = type;
         this.definingFrame = definingFrame;
+    }
+
+    /** Private constructor for the singletons.
+     * @param definingFrame frame in which ephemeris are defined
+     * @param type DE 405 ephemeris type
+     * @param frameName name to use for the body-centered frame
+     * @exception OrekitException if the header constants cannot be read
+     */
+    private SolarSystemBody(final Frame definingFrame,
+                            final JPLEphemeridesLoader.EphemerisType type,
+                            final String frameName)
+        throws OrekitException {
+        this(JPLEphemeridesLoader.getGravitationalCoefficient(type), definingFrame, type, frameName);
     }
 
     /** {@inheritDoc} */
@@ -178,7 +155,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
         // load a new part of ephemeris, centered around specified date
         final JPLEphemeridesLoader loader = new JPLEphemeridesLoader(type, date);
         ephemeris.addAll(loader.loadEphemerides());
-        earthMoonMassRatio = loader.getEarthMoonMassRatio();
+        earthMoonMassRatio = JPLEphemeridesLoader.getEarthMoonMassRatio();
         final AbsoluteDate before = new AbsoluteDate(date, -loader.getMaxChunksDuration());
 
         // second try, searching newly loaded part designed to bracket date
@@ -200,8 +177,13 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * <p>The axes of the body-centered frame linked to this instance
      * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return solar system barycenter aggregated body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    public static CelestialBody getSolarSystemBarycenter() {
+    public static CelestialBody getSolarSystemBarycenter()
+        throws OrekitException {
+        if (SolarSystemBarycenterLazyHolder.OREKIT_EXCEPTION != null) {
+            throw SolarSystemBarycenterLazyHolder.OREKIT_EXCEPTION;
+        }
         return SolarSystemBarycenterLazyHolder.INSTANCE;
     }
 
@@ -209,8 +191,13 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * <p>The axes of the body-centered frame linked to this instance
      * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Sun body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    public static CelestialBody getSun() {
+    public static CelestialBody getSun()
+        throws OrekitException {
+        if (SunLazyHolder.OREKIT_EXCEPTION != null) {
+            throw SunLazyHolder.OREKIT_EXCEPTION;
+        }
         return SunLazyHolder.INSTANCE;
     }
 
@@ -218,8 +205,13 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * <p>The axes of the body-centered frame linked to this instance
      * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Sun body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    public static CelestialBody getMercury() {
+    public static CelestialBody getMercury()
+        throws OrekitException {
+        if (MercuryLazyHolder.OREKIT_EXCEPTION != null) {
+            throw MercuryLazyHolder.OREKIT_EXCEPTION;
+        }
         return MercuryLazyHolder.INSTANCE;
     }
 
@@ -227,8 +219,13 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * <p>The axes of the body-centered frame linked to this instance
      * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Venus body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    public static CelestialBody getVenus() {
+    public static CelestialBody getVenus()
+        throws OrekitException {
+        if (VenusLazyHolder.OREKIT_EXCEPTION != null) {
+            throw VenusLazyHolder.OREKIT_EXCEPTION;
+        }
         return VenusLazyHolder.INSTANCE;
     }
 
@@ -236,8 +233,13 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * <p>The axes of the body-centered frame linked to this instance
      * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Earth-Moon barycenter bodies pair
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    public static CelestialBody getEarthMoonBarycenter() {
+    public static CelestialBody getEarthMoonBarycenter()
+        throws OrekitException {
+        if (EarthMoonBarycenterLazyHolder.OREKIT_EXCEPTION != null) {
+            throw EarthMoonBarycenterLazyHolder.OREKIT_EXCEPTION;
+        }
         return EarthMoonBarycenterLazyHolder.INSTANCE;
     }
 
@@ -245,8 +247,13 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * <p>The body-centered frame linked to this instance
      * <em>is</em> the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Earth body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    public static CelestialBody getEarth() {
+    public static CelestialBody getEarth()
+        throws OrekitException {
+        if (EarthLazyHolder.OREKIT_EXCEPTION != null) {
+            throw EarthLazyHolder.OREKIT_EXCEPTION;
+        }
         return EarthLazyHolder.INSTANCE;
     }
 
@@ -254,8 +261,13 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * <p>The axes of the body-centered frame linked to this instance
      * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Moon body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    public static CelestialBody getMoon() {
+    public static CelestialBody getMoon()
+        throws OrekitException {
+        if (MoonLazyHolder.OREKIT_EXCEPTION != null) {
+            throw MoonLazyHolder.OREKIT_EXCEPTION;
+        }
         return MoonLazyHolder.INSTANCE;
     }
 
@@ -263,8 +275,13 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * <p>The axes of the body-centered frame linked to this instance
      * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Mars body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    public static CelestialBody getMars() {
+    public static CelestialBody getMars()
+        throws OrekitException {
+        if (MarsLazyHolder.OREKIT_EXCEPTION != null) {
+            throw MarsLazyHolder.OREKIT_EXCEPTION;
+        }
         return MarsLazyHolder.INSTANCE;
     }
 
@@ -272,8 +289,13 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * <p>The axes of the body-centered frame linked to this instance
      * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Jupiter body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    public static CelestialBody getJupiter() {
+    public static CelestialBody getJupiter()
+        throws OrekitException {
+        if (JupiterLazyHolder.OREKIT_EXCEPTION != null) {
+            throw JupiterLazyHolder.OREKIT_EXCEPTION;
+        }
         return JupiterLazyHolder.INSTANCE;
     }
 
@@ -281,8 +303,13 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * <p>The axes of the body-centered frame linked to this instance
      * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Saturn body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    public static CelestialBody getSaturn() {
+    public static CelestialBody getSaturn()
+        throws OrekitException {
+        if (SaturnLazyHolder.OREKIT_EXCEPTION != null) {
+            throw SaturnLazyHolder.OREKIT_EXCEPTION;
+        }
         return SaturnLazyHolder.INSTANCE;
     }
 
@@ -290,8 +317,13 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * <p>The axes of the body-centered frame linked to this instance
      * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Uranus body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    public static CelestialBody getUranus() {
+    public static CelestialBody getUranus()
+        throws OrekitException {
+        if (UranusLazyHolder.OREKIT_EXCEPTION != null) {
+            throw UranusLazyHolder.OREKIT_EXCEPTION;
+        }
         return UranusLazyHolder.INSTANCE;
     }
 
@@ -299,8 +331,13 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * <p>The axes of the body-centered frame linked to this instance
      * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Neptune body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    public static CelestialBody getNeptune() {
+    public static CelestialBody getNeptune()
+        throws OrekitException {
+        if (NeptuneLazyHolder.OREKIT_EXCEPTION != null) {
+            throw NeptuneLazyHolder.OREKIT_EXCEPTION;
+        }
         return NeptuneLazyHolder.INSTANCE;
     }
 
@@ -308,8 +345,13 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * <p>The axes of the body-centered frame linked to this instance
      * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return Pluto body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    public static CelestialBody getPluto() {
+    public static CelestialBody getPluto()
+        throws OrekitException {
+        if (PlutoLazyHolder.OREKIT_EXCEPTION != null) {
+            throw PlutoLazyHolder.OREKIT_EXCEPTION;
+        }
         return PlutoLazyHolder.INSTANCE;
     }
 
@@ -321,26 +363,50 @@ public class SolarSystemBody extends AbstractCelestialBody {
     private static class SolarSystemBarycenterLazyHolder {
 
         /** Unique instance. */
-        public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(SUN_GM + MERCURY_GM + VENUS_GM + EARTH_GM + MOON_GM + MARS_GM +
-                                JUPITER_GM + SATURN_GM + URANUS_GM + NEPTUNE_GM + PLUTO_GM,
-                                SolarSystemBody.getEarthMoonBarycenter().getFrame(),
-                                JPLEphemeridesLoader.EphemerisType.EARTH_MOON,
-                                "solar system centered EME2000") {
+        public static final SolarSystemBody INSTANCE;
 
-                /** Serializable UID. */
-                private static final long serialVersionUID = 7350102501303428347L;
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
 
-                /** {@inheritDoc} */
-                public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+        static {
+            SolarSystemBody tmpBody      = null;
+            OrekitException tmpException = null;
+            try {
+                final double gmSum =
+                    JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.SUN)        +
+                    JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MERCURY)    +
+                    JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.VENUS)      +
+                    JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.EARTH_MOON) +
+                    JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MARS)       +
+                    JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.JUPITER)    +
+                    JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.SATURN)     +
+                    JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.URANUS)     +
+                    JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.NEPTUNE)    +
+                    JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.PLUTO);
+                tmpBody = new SolarSystemBody(gmSum,
+                                              SolarSystemBody.getEarthMoonBarycenter().getFrame(),
+                                              JPLEphemeridesLoader.EphemerisType.EARTH_MOON,
+                                              "solar system centered EME2000") {
+
+                    /** Serializable UID. */
+                    private static final long serialVersionUID = 7350102501303428347L;
+
+                    /** {@inheritDoc} */
+                    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
                     throws OrekitException {
-                    // we define solar system barycenter with respect to Earth-Moon barycenter
-                    // so we need to revert the vectors provided by the JPL DE 405 ephemerides
-                    final PVCoordinates emPV = super.getPVCoordinates(date, frame);
-                    return new PVCoordinates(emPV.getPosition().negate(), emPV.getVelocity().negate());
-                }
+                        // we define solar system barycenter with respect to Earth-Moon barycenter
+                        // so we need to revert the vectors provided by the JPL DE 405 ephemerides
+                        final PVCoordinates emPV = super.getPVCoordinates(date, frame);
+                        return new PVCoordinates(emPV.getPosition().negate(), emPV.getVelocity().negate());
+                    }
 
-            };
+                };
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            INSTANCE = tmpBody;
+            OREKIT_EXCEPTION = tmpException;
+        }
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -360,11 +426,24 @@ public class SolarSystemBody extends AbstractCelestialBody {
     private static class SunLazyHolder {
 
         /** Unique instance. */
-        public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(SUN_GM,
-                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                JPLEphemeridesLoader.EphemerisType.SUN,
-                                "Sun centered EME2000");
+        private static final SolarSystemBody INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
+
+        static {
+            SolarSystemBody tmpBody      = null;
+            OrekitException tmpException = null;
+            try {
+                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                              JPLEphemeridesLoader.EphemerisType.SUN,
+                                              "Sun centered EME2000");
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            INSTANCE = tmpBody;
+            OREKIT_EXCEPTION = tmpException;
+        }
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -384,11 +463,24 @@ public class SolarSystemBody extends AbstractCelestialBody {
     private static class MercuryLazyHolder {
 
         /** Unique instance. */
-        public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(MERCURY_GM,
-                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                JPLEphemeridesLoader.EphemerisType.MERCURY,
-                                "Mercury centered EME2000");
+        private static final SolarSystemBody INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
+
+        static {
+            SolarSystemBody tmpBody      = null;
+            OrekitException tmpException = null;
+            try {
+                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                              JPLEphemeridesLoader.EphemerisType.MERCURY,
+                                              "Mercury centered EME2000");
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            INSTANCE = tmpBody;
+            OREKIT_EXCEPTION = tmpException;
+        }
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -408,11 +500,24 @@ public class SolarSystemBody extends AbstractCelestialBody {
     private static class VenusLazyHolder {
 
         /** Unique instance. */
-        public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(VENUS_GM,
-                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                JPLEphemeridesLoader.EphemerisType.VENUS,
-                                "Venus centered EME2000");
+        private static final SolarSystemBody INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
+
+        static {
+            SolarSystemBody tmpBody      = null;
+            OrekitException tmpException = null;
+            try {
+                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                              JPLEphemeridesLoader.EphemerisType.VENUS,
+                                              "Venus centered EME2000");
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            INSTANCE = tmpBody;
+            OREKIT_EXCEPTION = tmpException;
+        }
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -432,29 +537,47 @@ public class SolarSystemBody extends AbstractCelestialBody {
     private static class EarthMoonBarycenterLazyHolder {
 
         /** Unique instance. */
-        public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(EARTH_GM + MOON_GM, Frame.getEME2000(),
-                                JPLEphemeridesLoader.EphemerisType.MOON,
-                                "Earth-Moon centered EME2000") {
+        private static final SolarSystemBody INSTANCE;
 
-                /** Serializable UID. */
-                private static final long serialVersionUID = -6860799524750318529L;
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
 
-                /** {@inheritDoc} */
-                public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                    throws OrekitException {
-                    // we define Earth-Moon barycenter with respect to Earth center so we need
-                    // to apply a scale factor to the Moon vectors provided by the JPL DE 405 ephemerides
-                    final PVCoordinates moonPV = super.getPVCoordinates(date, frame);
+        static {
+            SolarSystemBody tmpBody      = null;
+            OrekitException tmpException = null;
+            try {
+                final double moonGM  =
+                    JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MOON);
+                final double earthGM =
+                    JPLEphemeridesLoader.getEarthMoonMassRatio() * moonGM;
+                tmpBody = new SolarSystemBody(earthGM + moonGM, Frame.getEME2000(),
+                                              JPLEphemeridesLoader.EphemerisType.MOON,
+                                              "Earth-Moon centered EME2000") {
 
-                    // since we have computed moonPV, we know the ephemeris has been read
-                    // so now we know the Earth-Moon ratio is available
-                    final double scale = 1.0 / (1.0 + getEarthMoonMassRatio());
+                    /** Serializable UID. */
+                    private static final long serialVersionUID = -6860799524750318529L;
 
-                    return new PVCoordinates(scale, moonPV);
-                }
+                    /** {@inheritDoc} */
+                    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+                        throws OrekitException {
+                        // we define Earth-Moon barycenter with respect to Earth center so we need
+                        // to apply a scale factor to the Moon vectors provided by the JPL DE 405 ephemerides
+                        final PVCoordinates moonPV = super.getPVCoordinates(date, frame);
 
-            };
+                        // since we have computed moonPV, we know the ephemeris has been read
+                        // so now we know the Earth-Moon ratio is available
+                        final double scale = 1.0 / (1.0 + getEarthMoonMassRatio());
+
+                        return new PVCoordinates(scale, moonPV);
+                    }
+
+                };
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            INSTANCE = tmpBody;
+            OREKIT_EXCEPTION = tmpException;
+        }
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -474,27 +597,46 @@ public class SolarSystemBody extends AbstractCelestialBody {
     private static class EarthLazyHolder {
 
         /** Unique instance. */
-        public static final CelestialBody INSTANCE =
-            new AbstractCelestialBody(EARTH_GM, Frame.getEME2000()) {
+        private static final CelestialBody INSTANCE;
 
-                /** Serializable UID. */
-                private static final long serialVersionUID = -2542177517458975694L;
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
 
-                /** {@inheritDoc} */
-                public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+        static {
+            CelestialBody tmpBody        = null;
+            OrekitException tmpException = null;
+            try {
+                final double moonGM  =
+                    JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MOON);
+                final double earthGM =
+                    JPLEphemeridesLoader.getEarthMoonMassRatio() * moonGM;
+                tmpBody = new AbstractCelestialBody(earthGM, Frame.getEME2000()) {
+
+                    /** Serializable UID. */
+                    private static final long serialVersionUID = -2542177517458975694L;
+
+                    /** {@inheritDoc} */
+                    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
                     throws OrekitException {
 
-                    // specific implementation for Earth:
-                    // the Earth is always exactly at the origin of its own EME2000 frame
-                    PVCoordinates pv = PVCoordinates.ZERO;
-                    if (frame != getFrame()) {
-                        pv = getFrame().getTransformTo(frame, date).transformPVCoordinates(pv);
+                        // specific implementation for Earth:
+                        // the Earth is always exactly at the origin of its own EME2000 frame
+                        PVCoordinates pv = PVCoordinates.ZERO;
+                        if (frame != getFrame()) {
+                            pv = getFrame().getTransformTo(frame, date).transformPVCoordinates(pv);
+                        }
+                        return pv;
+
                     }
-                    return pv;
 
-                }
+                };
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            INSTANCE = tmpBody;
+            OREKIT_EXCEPTION = tmpException;
 
-            };
+        }
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -514,11 +656,24 @@ public class SolarSystemBody extends AbstractCelestialBody {
     private static class MoonLazyHolder {
 
         /** Unique instance. */
-        public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(MOON_GM,
-                                SolarSystemBody.getEarth().getFrame(),
-                                JPLEphemeridesLoader.EphemerisType.MOON,
-                                "Moon centered EME2000");
+        private static final SolarSystemBody INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
+
+        static {
+            SolarSystemBody tmpBody      = null;
+            OrekitException tmpException = null;
+            try {
+                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                              JPLEphemeridesLoader.EphemerisType.MOON,
+                                              "Moon centered EME2000");
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            INSTANCE = tmpBody;
+            OREKIT_EXCEPTION = tmpException;
+        }
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -538,11 +693,24 @@ public class SolarSystemBody extends AbstractCelestialBody {
     private static class MarsLazyHolder {
 
         /** Unique instance. */
-        public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(MARS_GM,
-                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                JPLEphemeridesLoader.EphemerisType.MARS,
-                                "Mars centered EME2000");
+        private static final SolarSystemBody INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
+
+        static {
+            SolarSystemBody tmpBody      = null;
+            OrekitException tmpException = null;
+            try {
+                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                              JPLEphemeridesLoader.EphemerisType.MARS,
+                                              "Mars centered EME2000");
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            INSTANCE = tmpBody;
+            OREKIT_EXCEPTION = tmpException;
+        }
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -562,11 +730,24 @@ public class SolarSystemBody extends AbstractCelestialBody {
     private static class JupiterLazyHolder {
 
         /** Unique instance. */
-        public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(JUPITER_GM,
-                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                JPLEphemeridesLoader.EphemerisType.JUPITER,
-                                "Jupiter centered EME2000");
+        private static final SolarSystemBody INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
+
+        static {
+            SolarSystemBody tmpBody      = null;
+            OrekitException tmpException = null;
+            try {
+                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                              JPLEphemeridesLoader.EphemerisType.JUPITER,
+                                              "Jupiter centered EME2000");
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            INSTANCE = tmpBody;
+            OREKIT_EXCEPTION = tmpException;
+        }
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -586,11 +767,24 @@ public class SolarSystemBody extends AbstractCelestialBody {
     private static class SaturnLazyHolder {
 
         /** Unique instance. */
-        public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(SATURN_GM,
-                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                JPLEphemeridesLoader.EphemerisType.SATURN,
-                                "Saturn centered EME2000");
+        private static final SolarSystemBody INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
+
+        static {
+            SolarSystemBody tmpBody      = null;
+            OrekitException tmpException = null;
+            try {
+                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                              JPLEphemeridesLoader.EphemerisType.SATURN,
+                                              "Saturn centered EME2000");
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            INSTANCE = tmpBody;
+            OREKIT_EXCEPTION = tmpException;
+        }
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -610,11 +804,24 @@ public class SolarSystemBody extends AbstractCelestialBody {
     private static class UranusLazyHolder {
 
         /** Unique instance. */
-        public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(URANUS_GM,
-                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                JPLEphemeridesLoader.EphemerisType.URANUS,
-                                "Uranus centered EME2000");
+        private static final SolarSystemBody INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
+
+        static {
+            SolarSystemBody tmpBody      = null;
+            OrekitException tmpException = null;
+            try {
+                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                              JPLEphemeridesLoader.EphemerisType.URANUS,
+                                              "Uranus centered EME2000");
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            INSTANCE = tmpBody;
+            OREKIT_EXCEPTION = tmpException;
+        }
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -634,11 +841,25 @@ public class SolarSystemBody extends AbstractCelestialBody {
     private static class NeptuneLazyHolder {
 
         /** Unique instance. */
-        public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(NEPTUNE_GM,
-                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                JPLEphemeridesLoader.EphemerisType.NEPTUNE,
-                                "Neptune centered EME2000");
+        /** Unique instance. */
+        private static final SolarSystemBody INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
+
+        static {
+            SolarSystemBody tmpBody      = null;
+            OrekitException tmpException = null;
+            try {
+                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                              JPLEphemeridesLoader.EphemerisType.NEPTUNE,
+                                              "Neptune centered EME2000");
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            INSTANCE = tmpBody;
+            OREKIT_EXCEPTION = tmpException;
+        }
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -658,11 +879,24 @@ public class SolarSystemBody extends AbstractCelestialBody {
     private static class PlutoLazyHolder {
 
         /** Unique instance. */
-        public static final SolarSystemBody INSTANCE =
-            new SolarSystemBody(PLUTO_GM,
-                                SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                JPLEphemeridesLoader.EphemerisType.PLUTO,
-                                "Pluto centered EME2000");
+        private static final SolarSystemBody INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
+
+        static {
+            SolarSystemBody tmpBody      = null;
+            OrekitException tmpException = null;
+            try {
+                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                              JPLEphemeridesLoader.EphemerisType.PLUTO,
+                                              "Pluto centered EME2000");
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            INSTANCE = tmpBody;
+            OREKIT_EXCEPTION = tmpException;
+        }
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public

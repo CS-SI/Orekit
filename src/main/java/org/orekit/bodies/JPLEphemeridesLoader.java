@@ -18,6 +18,10 @@ package org.orekit.bodies;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -41,6 +45,10 @@ import org.orekit.time.TimeStamped;
  */
 class JPLEphemeridesLoader implements DataLoader {
 
+    /** Error message for no JPL files. */
+    private static final String NO_JPL_FILES_FOUND =
+        "no JPL ephemerides binary files found";
+
     /** Error message for header read error. */
     private static final String HEADER_READ_ERROR =
         "unable to read header record from JPL ephemerides binary file {0}";
@@ -60,7 +68,8 @@ class JPLEphemeridesLoader implements DataLoader {
     private static final int DE406_RECORD_SIZE =  728 * 8;
 
     /** Supported files name pattern. */
-    private Pattern namePattern;
+    private static final Pattern NAME_PATTERN =
+        Pattern.compile("^unx[mp](\\d\\d\\d\\d)\\.(?:(?:405)|(?:406))$");
 
     /** List of supported ephemerides types. */
     public enum EphemerisType {
@@ -96,9 +105,12 @@ class JPLEphemeridesLoader implements DataLoader {
         MOON,
 
         /** Constant for the Sun. */
-        SUN
+        SUN;
 
     }
+
+    /** Constants defined in the file. */
+    private static final Map<String, Double> constants = new HashMap<String, Double>();
 
     /** Ephemeris type to load. */
     private final EphemerisType type;
@@ -115,12 +127,6 @@ class JPLEphemeridesLoader implements DataLoader {
     /** Current file final epoch. */
     private AbsoluteDate finalEpoch;
 
-    /** Astronomical unit (in meters). */
-    private double astronomicalUnit;
-
-    /** Earth to Moon mass ratio. */
-    private double earthMoonMassRatio;
-
     /** Chunks duration (in seconds). */
     private double maxChunksDuration;
 
@@ -136,21 +142,23 @@ class JPLEphemeridesLoader implements DataLoader {
     /** Number of chunks for the selected body. */
     private int chunks;
 
-    /** Current record. */
-    private byte[] record;
-
     /** Create a loader for JPL ephemerides binary files.
      * @param type ephemeris type to load
      * @param centralDate desired central date
      * (all data within a +/-50 days range around this date will be loaded)
+     * @exception OrekitException if the header constants cannot be read
      */
-    public JPLEphemeridesLoader(final EphemerisType type, final AbsoluteDate centralDate) {
-        namePattern = Pattern.compile("^unx[mp](\\d\\d\\d\\d)\\.(?:(?:405)|(?:406))$");
+    public JPLEphemeridesLoader(final EphemerisType type, final AbsoluteDate centralDate)
+        throws OrekitException {
+
+        if (constants.isEmpty()) {
+            loadConstants();
+        }
+
         this.type          = type;
         this.centralDate   = centralDate;
-        astronomicalUnit   = Double.NaN;
-        earthMoonMassRatio = Double.NaN;
         maxChunksDuration  = Double.NaN;
+        chunksDuration     = Double.NaN;
     }
 
     /** Load ephemerides.
@@ -164,23 +172,123 @@ class JPLEphemeridesLoader implements DataLoader {
     public synchronized SortedSet<TimeStamped> loadEphemerides() throws OrekitException {
         ephemerides = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
         if (!DataProvidersManager.getInstance().feed(this)) {
-            throw new OrekitException("no JPL ephemerides binary files found");
+            throw new OrekitException(NO_JPL_FILES_FOUND);
         }
         return ephemerides;
     }
 
     /** Get astronomical unit.
      * @return astronomical unit in meters
+     * @exception OrekitException if constants cannot be loaded
      */
-    public double getAstronomicalUnit() {
-        return astronomicalUnit;
+    public static double getAstronomicalUnit() throws OrekitException {
+
+        if (constants.isEmpty()) {
+            loadConstants();
+        }
+
+        return 1000.0 * getConstant("AU");
+
     }
 
-    /** Get Earth/Moon mass ration.
+    /** Get Earth/Moon mass ratio.
      * @return Earth/Moon mass ratio
+     * @exception OrekitException if constants cannot be loaded
      */
-    public double getEarthMoonMassRatio() {
-        return earthMoonMassRatio;
+    public static double getEarthMoonMassRatio() throws OrekitException {
+
+        if (constants.isEmpty()) {
+            loadConstants();
+        }
+
+        return getConstant("EMRAT");
+
+    }
+
+    /** Get the gravitational coefficient of a body.
+     * @param body body for which the gravitational coefficient is requested
+     * @return gravitational coefficient in m<sup>3</sup>/s<sup>2</sup>
+     * @exception OrekitException if constants cannot be loaded
+     */
+    public static double getGravitationalCoefficient(final EphemerisType body)
+        throws OrekitException {
+
+        if (constants.isEmpty()) {
+            loadConstants();
+        }
+
+        // coefficient in au<sup>3</sup>/day<sup>2</sup>
+        final double rawGM;
+        switch (body) {
+        case MERCURY :
+            rawGM = getConstant("GM1");
+            break;
+        case VENUS :
+            rawGM = getConstant("GM2");
+            break;
+        case EARTH_MOON :
+            rawGM = getConstant("GMB");
+            break;
+        case MARS :
+            rawGM = getConstant("GM4");
+            break;
+        case JUPITER :
+            rawGM = getConstant("GM5");
+            break;
+        case SATURN :
+            rawGM = getConstant("GM6");
+            break;
+        case URANUS :
+            rawGM = getConstant("GM7");
+            break;
+        case NEPTUNE :
+            rawGM = getConstant("GM8");
+            break;
+        case PLUTO :
+            rawGM = getConstant("GM9");
+            break;
+        case MOON :
+            rawGM = getConstant("GMB") / (1.0 + getEarthMoonMassRatio());
+            break;
+        case SUN :
+            rawGM = getConstant("GMS");
+            break;
+        default :
+            throw OrekitException.createInternalError(null);
+        }
+
+        final double au    = getAstronomicalUnit();
+        return rawGM * au * au * au / (86400.0 * 86400.0);
+
+    }
+
+    /** Get a constant defined in the ephemerides headers.
+     * <p>Note that since constants are defined in the JPL headers
+     * files, they are available as soon as one file is available, even
+     * if it doesn't match the desired central date. This is because the
+     * header must be parsed before the dates can be checked.</p>
+     * @param name name of the constant
+     * @return value of the constant of NaN if the constant is not defined
+     * @exception OrekitException if constants cannot be loaded
+     */
+    public static double getConstant(final String name) throws OrekitException {
+
+        if (constants.isEmpty()) {
+            loadConstants();
+        }
+
+        Double value = constants.get(name);
+        return (value == null) ? Double.NaN : value.doubleValue();
+
+    }
+
+    /** Load the header constants.
+     * @exception OrekitException if constants cannot be loaded
+     */
+    private static void loadConstants() throws OrekitException {
+        if (!DataProvidersManager.getInstance().feed(new HeaderConstantsLoader())) {
+            throw new OrekitException(NO_JPL_FILES_FOUND);
+        }
     }
 
     /** Get the maximal chunks duration.
@@ -194,37 +302,11 @@ class JPLEphemeridesLoader implements DataLoader {
     public void loadData(final InputStream input, final String name)
         throws OrekitException, IOException {
 
-        // read first part of record, up to the ephemeris type
-        record = new byte[2844];
-        if (!readInRecord(input, 0)) {
-            throw new OrekitException(HEADER_READ_ERROR, name);
-        }
+        // read first header record
+        byte[] record = readFirstRecord(input, name);
 
-        // get the ephemeris type, deduce the record size
-        int recordSize = 0;
-        switch (extractInt(2840)) {
-        case 405 :
-            recordSize = DE405_RECORD_SIZE;
-            break;
-        case 406 :
-            recordSize = DE406_RECORD_SIZE;
-            break;
-        default :
-            throw new OrekitException(NOT_JPL_EPHEMERIS, name);
-        }
-
-        // build a record with the proper size and finish read of the first complete record
-        final int start = record.length;
-        final byte[] newRecord = new byte[recordSize];
-        System.arraycopy(record, 0, newRecord, 0, record.length);
-        record = newRecord;
-        if (!readInRecord(input, start)) {
-            throw new OrekitException(HEADER_READ_ERROR, name);
-        }
-        record = newRecord;
-
-        // parse completed header record
-        parseHeaderRecord(name);
+        // parse first header record
+        parseFirstHeaderRecord(record, name);
 
         if (tooFarRange(startEpoch, finalEpoch)) {
             // this file does not cover a range we are interested in,
@@ -233,35 +315,16 @@ class JPLEphemeridesLoader implements DataLoader {
         }
 
         // the second record contains the values of the constants used for least-square filtering
-        // we ignore all of them so don't do anything here
-        if (!readInRecord(input, 0)) {
+        // we ignore them here (they have been read once for all while setting up the constants map)
+        if (!readInRecord(input, record, 0)) {
             throw new OrekitException(HEADER_READ_ERROR, name);
         }
 
         // read ephemerides data
-        while (readInRecord(input, 0)) {
-            parseDataRecord();
+        while (readInRecord(input, record, 0)) {
+            parseDataRecord(record);
         }
 
-    }
-
-    /** Read bytes into the current record array.
-     * @param input input stream
-     * @param start start index where to put bytes
-     * @return true if record has been filled up
-     * @exception IOException if a read error occurs
-     */
-    private boolean readInRecord(final InputStream input, final int start)
-        throws IOException {
-        int index = start;
-        while (index != record.length) {
-            final int n = input.read(record, index, record.length - index);
-            if (n < 0) {
-                return false;
-            }
-            index += n;
-        }
-        return true;
     }
 
     /** Check if a range is too far from the central date.
@@ -283,45 +346,39 @@ class JPLEphemeridesLoader implements DataLoader {
 
     }
 
-    /** Parse the header record.
+    /** Parse the first header record.
+     * @param record first header record
      * @param name name of the file (or zip entry)
      * @exception OrekitException if the header is not a JPL ephemerides binary file header
      */
-    private void parseHeaderRecord(final String name) throws OrekitException {
+    private void parseFirstHeaderRecord(final byte[] record, final String name)
+        throws OrekitException {
 
         // extract covered date range
-        startEpoch = extractDate(2652);
-        finalEpoch = extractDate(2660);
+        startEpoch = extractDate(record, 2652);
+        finalEpoch = extractDate(record, 2660);
         boolean ok = finalEpoch.compareTo(startEpoch) > 0;
 
         // check astronomical unit consistency
-        final double au = 1000 * extractDouble(2680);
+        final double au = 1000 * extractDouble(record, 2680);
         ok = ok && (au > 1.4e11) && (au < 1.6e11);
-        if (Double.isNaN(astronomicalUnit)) {
-            astronomicalUnit = au;
-        } else {
-            if (Math.abs(astronomicalUnit - au) >= 0.001) {
-                throw new OrekitException("inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})",
-                                          astronomicalUnit, au);
-            }
+        if (Math.abs(getAstronomicalUnit() - au) >= 0.001) {
+            throw new OrekitException("inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})",
+                                      getAstronomicalUnit(), au);
         }
 
-        final double emRat = extractDouble(2688);
+        final double emRat = extractDouble(record, 2688);
         ok = ok && (emRat > 80) && (emRat < 82);
-        if (Double.isNaN(earthMoonMassRatio)) {
-            earthMoonMassRatio = emRat;
-        } else {
-            if (Math.abs(earthMoonMassRatio - emRat) >= 1.0e-8) {
-                throw new OrekitException("inconsistent values of Earth/Moon mass ratio in JPL ephemerides files: ({0} and {1})",
-                                          earthMoonMassRatio, emRat);
-            }
+        if (Math.abs(getEarthMoonMassRatio() - emRat) >= 1.0e-8) {
+            throw new OrekitException("inconsistent values of Earth/Moon mass ratio in JPL ephemerides files: ({0} and {1})",
+                                      getEarthMoonMassRatio(), emRat);
         }
 
         // indices of the Chebyshev coefficients for each ephemeris
         for (int i = 0; i < 12; ++i) {
-            final int row1 = extractInt(2696 + 12 * i);
-            final int row2 = extractInt(2700 + 12 * i);
-            final int row3 = extractInt(2704 + 12 * i);
+            final int row1 = extractInt(record, 2696 + 12 * i);
+            final int row2 = extractInt(record, 2700 + 12 * i);
+            final int row3 = extractInt(record, 2704 + 12 * i);
             ok = ok && (row1 > 0) && (row2 >= 0) && (row3 >= 0);
             if (((i ==  0) && (type == EphemerisType.MERCURY))    ||
                 ((i ==  1) && (type == EphemerisType.VENUS))      ||
@@ -341,7 +398,7 @@ class JPLEphemeridesLoader implements DataLoader {
         }
 
         // compute chunks duration
-        final double timeSpan = extractDouble(2668);
+        final double timeSpan = extractDouble(record, 2668);
         ok = ok && (timeSpan > 0) && (timeSpan < 100);
         chunksDuration = 86400.0 * (timeSpan / chunks);
         if (Double.isNaN(maxChunksDuration)) {
@@ -358,17 +415,18 @@ class JPLEphemeridesLoader implements DataLoader {
     }
 
     /** Parse regular ephemeris record.
+     * @param record record to parse
      * @exception OrekitException if the header is not a JPL ephemerides binary file header
      */
-    private void parseDataRecord() throws OrekitException {
+    private void parseDataRecord(final byte[] record) throws OrekitException {
 
         // extract time range covered by the record
-        final AbsoluteDate rangeStart = extractDate(0);
+        final AbsoluteDate rangeStart = extractDate(record, 0);
         if (rangeStart.compareTo(startEpoch) < 0) {
             throw new OrekitException(OUT_OF_RANGE_DATE, rangeStart);
         }
 
-        final AbsoluteDate rangeEnd   = extractDate(8);
+        final AbsoluteDate rangeEnd   = extractDate(record, 8);
         if (rangeEnd.compareTo(finalEpoch) > 0) {
             throw new OrekitException(OUT_OF_RANGE_DATE, rangeEnd);
         }
@@ -399,9 +457,9 @@ class JPLEphemeridesLoader implements DataLoader {
                 final double[] zCoeffs = new double[nbCoeffs];
                 for (int k = 0; k < nbCoeffs; ++k) {
                     final int index = first + 3 * i * nbCoeffs + k - 1;
-                    xCoeffs[k] = 1000.0 * extractDouble(8 * index);
-                    yCoeffs[k] = 1000.0 * extractDouble(8 * (index +  nbCoeffs));
-                    zCoeffs[k] = 1000.0 * extractDouble(8 * (index + 2 * nbCoeffs));
+                    xCoeffs[k] = 1000.0 * extractDouble(record, 8 * index);
+                    yCoeffs[k] = 1000.0 * extractDouble(record, 8 * (index +  nbCoeffs));
+                    zCoeffs[k] = 1000.0 * extractDouble(record, 8 * (index + 2 * nbCoeffs));
                 }
 
                 // build the position-velocity model for current chunk
@@ -413,22 +471,86 @@ class JPLEphemeridesLoader implements DataLoader {
 
     }
 
+    /** Read first header record.
+     * @param input input stream
+     * @param name name of the file (or zip entry)
+     * @return record record where to put bytes
+     * @exception OrekitException if the stream does not contain a JPL ephemeris
+     * @exception IOException if a read error occurs
+     */
+    private static byte[] readFirstRecord(final InputStream input, final String name)
+        throws OrekitException, IOException {
+
+        // read first part of record, up to the ephemeris type
+        byte[] firstPart = new byte[2844];
+        if (!readInRecord(input, firstPart, 0)) {
+            throw new OrekitException(HEADER_READ_ERROR, name);
+        }
+
+        // get the ephemeris type, deduce the record size
+        int recordSize = 0;
+        switch (extractInt(firstPart, 2840)) {
+        case 405 :
+            recordSize = DE405_RECORD_SIZE;
+            break;
+        case 406 :
+            recordSize = DE406_RECORD_SIZE;
+            break;
+        default :
+            throw new OrekitException(NOT_JPL_EPHEMERIS, name);
+        }
+
+        // build a record with the proper size and finish read of the first complete record
+        final int start = firstPart.length;
+        final byte[] record = new byte[recordSize];
+        System.arraycopy(firstPart, 0, record, 0, firstPart.length);
+        if (!readInRecord(input, record, start)) {
+            throw new OrekitException(HEADER_READ_ERROR, name);
+        }
+
+        return record;
+
+    }
+
+    /** Read bytes into the current record array.
+     * @param input input stream
+     * @param record record where to put bytes
+     * @param start start index where to put bytes
+     * @return true if record has been filled up
+     * @exception IOException if a read error occurs
+     */
+    private static boolean readInRecord(final InputStream input,
+                                        final byte[] record, final int start)
+        throws IOException {
+        int index = start;
+        while (index != record.length) {
+            final int n = input.read(record, index, record.length - index);
+            if (n < 0) {
+                return false;
+            }
+            index += n;
+        }
+        return true;
+    }
+
     /** Extract a date from a record.
+     * @param record record to parse
      * @param offset offset of the double within the record
      * @return extracted date
      */
-    private AbsoluteDate extractDate(final int offset) {
-        final double dt = extractDouble(offset) * 86400;
+    private static AbsoluteDate extractDate(final byte[] record, final int offset) {
+        final double dt = extractDouble(record, offset) * 86400;
         return new AbsoluteDate(AbsoluteDate.JULIAN_EPOCH, dt, TTScale.getInstance());
     }
 
     /** Extract a double from a record.
      * <p>Double numbers are stored according to IEEE 754 standard, with
      * most significant byte first.</p>
+     * @param record record to parse
      * @param offset offset of the double within the record
      * @return extracted double
      */
-    private double extractDouble(final int offset) {
+    private static double extractDouble(final byte[] record, final int offset) {
         final long l8 = ((long) record[offset + 0]) & 0xffl;
         final long l7 = ((long) record[offset + 1]) & 0xffl;
         final long l6 = ((long) record[offset + 2]) & 0xffl;
@@ -443,10 +565,11 @@ class JPLEphemeridesLoader implements DataLoader {
     }
 
     /** Extract an int from a record.
+     * @param record record to parse
      * @param offset offset of the double within the record
      * @return extracted int
      */
-    private int extractInt(final int offset) {
+    private static int extractInt(final byte[] record, final int offset) {
         final int l4 = ((int) record[offset + 0]) & 0xff;
         final int l3 = ((int) record[offset + 1]) & 0xff;
         final int l2 = ((int) record[offset + 2]) & 0xff;
@@ -454,9 +577,60 @@ class JPLEphemeridesLoader implements DataLoader {
         return (l4 << 24) | (l3 << 16) | (l2 <<  8) | l1;
     }
 
+    /** Extract a String from a record.
+     * @param record record to parse
+     * @param offset offset of the string within the record
+     * @param length maximal length of the string
+     * @return extracted string, with whitespace characters stripped
+     */
+    private static String extractString(final byte[] record, final int offset, final int length) {
+        try {
+            return new String(record, offset, length, "US-ASCII").trim();
+        } catch (UnsupportedEncodingException uee) {
+            throw OrekitException.createInternalError(uee);
+        }
+    }
+
     /** {@inheritDoc} */
     public boolean fileIsSupported(final String fileName) {
-        return namePattern.matcher(fileName).matches();
+        return NAME_PATTERN.matcher(fileName).matches();
     }
+
+    /** Specialized loader for extracting constants from the headers. */
+    private static class HeaderConstantsLoader implements DataLoader {
+
+        /** {@inheritDoc} */
+        public boolean fileIsSupported(String fileName) {
+            // we try to load files only until the constants map has been set up
+            if (constants.isEmpty()) {
+                return NAME_PATTERN.matcher(fileName).matches();
+            }
+            return false;
+        }
+
+        /** {@inheritDoc} */
+        public void loadData(InputStream input, String name)
+                throws IOException, ParseException, OrekitException {
+
+            // read header records
+            byte[] first  = readFirstRecord(input, name);
+            byte[] second = new byte[first.length];
+            if (!readInRecord(input, second, 0)) {
+                throw new OrekitException(HEADER_READ_ERROR, name);
+            }
+
+            // constants defined in the file
+            for (int i = 0; i < 400; ++i) {
+                final String constantName = extractString(first, 252 + i * 6, 6);
+                if (constantName.length() == 0) {
+                    // no more constants to read
+                    return;
+                }
+                final double constantValue = extractDouble(second, 8 * i);
+                constants.put(constantName, constantValue);
+            }
+
+        }
+    };
 
 }

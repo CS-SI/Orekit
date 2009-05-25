@@ -110,8 +110,18 @@ public class OrekitException extends Exception {
      * @return an {@link java.lang.IllegalStateException} with localized message
      */
     public static IllegalStateException createIllegalStateException(final String specifier,
-                                                                          final Object ... parts) {
+                                                                    final Object ... parts) {
         return new IllegalStateException(translate(specifier, parts));
+    }
+
+    /** Create an {@link java.lang.RuntimeException} for an internal error.
+     * @param cause underlying cause
+     * @return an {@link java.lang.RuntimeException} for an internal error
+     */
+    public static RuntimeException createInternalError(final Throwable cause) {
+        return new RuntimeException(translate("internal error, contact maintenance at {0}",
+                                              "orekit@c-s.fr"),
+                                    cause);
     }
 
 }

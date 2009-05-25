@@ -99,7 +99,7 @@ public class CunninghamAttractionModelTest extends TestCase {
         /** Serializable UID. */
         private static final long serialVersionUID = 6818305166004802991L;
 
-        public SpotStepHandler(AbsoluteDate date, double mu) {
+        public SpotStepHandler(AbsoluteDate date, double mu) throws OrekitException {
             sun       = SolarSystemBody.getSun();
             previous  = Double.NaN;
         }

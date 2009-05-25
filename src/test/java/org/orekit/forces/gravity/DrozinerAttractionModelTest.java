@@ -99,7 +99,7 @@ public class DrozinerAttractionModelTest extends TestCase {
         /** Serializable UID. */
         private static final long serialVersionUID = -3917769828973243346L;
 
-        public SpotStepHandler() {
+        public SpotStepHandler() throws OrekitException {
             sun       = SolarSystemBody.getSun();
             previous  = Double.NaN;
         }
