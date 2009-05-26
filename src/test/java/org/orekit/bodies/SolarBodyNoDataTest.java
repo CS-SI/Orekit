@@ -23,57 +23,57 @@ import org.orekit.errors.OrekitException;
 
 public class SolarBodyNoDataTest {
 
-    @Test(expected=OrekitException.class)
+    @Test(expected = OrekitException.class)
     public void noMercury() throws OrekitException {
         SolarSystemBody.getMercury();
     }
 
-    @Test(expected=OrekitException.class)
+    @Test(expected = OrekitException.class)
     public void noVenus() throws OrekitException {
         SolarSystemBody.getVenus();
     }
 
-    @Test(expected=OrekitException.class)
+    @Test(expected = OrekitException.class)
     public void noEarthMoonBarycenter() throws OrekitException {
         SolarSystemBody.getEarthMoonBarycenter();
     }
 
-    @Test(expected=OrekitException.class)
+    @Test(expected = OrekitException.class)
     public void noMars() throws OrekitException {
         SolarSystemBody.getMars();
     }
 
-    @Test(expected=OrekitException.class)
+    @Test(expected = OrekitException.class)
     public void noJupiter() throws OrekitException {
         SolarSystemBody.getJupiter();
     }
 
-    @Test(expected=OrekitException.class)
+    @Test(expected = OrekitException.class)
     public void noSaturn() throws OrekitException {
         SolarSystemBody.getSaturn();
     }
 
-    @Test(expected=OrekitException.class)
+    @Test(expected = OrekitException.class)
     public void noUranus() throws OrekitException {
         SolarSystemBody.getUranus();
     }
 
-    @Test(expected=OrekitException.class)
+    @Test(expected = OrekitException.class)
     public void noNeptune() throws OrekitException {
         SolarSystemBody.getNeptune();
     }
 
-    @Test(expected=OrekitException.class)
+    @Test(expected = OrekitException.class)
     public void noPluto() throws OrekitException {
         SolarSystemBody.getPluto();
     }
 
-    @Test(expected=OrekitException.class)
+    @Test(expected = OrekitException.class)
     public void noMoon() throws OrekitException {
         SolarSystemBody.getMoon();
     }
 
-    @Test(expected=OrekitException.class)
+    @Test(expected = OrekitException.class)
     public void noSun() throws OrekitException {
         SolarSystemBody.getSun();
     }
