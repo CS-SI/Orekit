@@ -16,12 +16,14 @@
  */
 package org.orekit.propagation.analytical;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeLaw;
@@ -50,16 +52,13 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 
-public class KeplerianPropagatorTest extends TestCase {
+public class KeplerianPropagatorTest {
 
     // Body mu
     private double mu;
-    
-    public KeplerianPropagatorTest(String name) {
-        super(name);
-    }
 
-    public void testSameDateCartesian() throws OrekitException {
+    @Test
+    public void sameDateCartesian() throws OrekitException {
 
         // Definition of initial conditions with position and velocity
         //------------------------------------------------------------
@@ -96,7 +95,8 @@ public class KeplerianPropagatorTest extends TestCase {
 
     }
 
-    public void testSameDateKeplerian() throws OrekitException {
+    @Test
+    public void sameDateKeplerian() throws OrekitException {
         // Definition of initial conditions with keplerian parameters
         //-----------------------------------------------------------
         AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
@@ -130,8 +130,8 @@ public class KeplerianPropagatorTest extends TestCase {
 
     }
 
-
-    public void testPropagatedCartesian() throws OrekitException {
+    @Test
+    public void propagatedCartesian() throws OrekitException {
 
         // Definition of initial conditions with position and velocity
         //------------------------------------------------------------
@@ -223,7 +223,8 @@ public class KeplerianPropagatorTest extends TestCase {
 
     }
 
-    public void testPropagatedKeplerian() throws OrekitException {
+    @Test
+    public void propagatedKeplerian() throws OrekitException {
 
         // Definition of initial conditions with keplerian parameters
         //-----------------------------------------------------------
@@ -312,43 +313,33 @@ public class KeplerianPropagatorTest extends TestCase {
 
     }
 
-    public void testWrongAttitude() {
-        try {
-            KeplerianOrbit orbit =
-                new KeplerianOrbit(1.0e10, 1.0e-4, 1.0e-2, 0, 0, 0, KeplerianOrbit.TRUE_ANOMALY,
-                                   Frame.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
-            AttitudeLaw wrongLaw = new AttitudeLaw() {
-                private static final long serialVersionUID = 5918362126173997016L;
-                public Attitude getState(AbsoluteDate date, PVCoordinates pv,
-                                         Frame frame) throws OrekitException {
-                    throw new OrekitException(new RuntimeException(), "gasp");
-                }
-            };
-            KeplerianPropagator propagator = new KeplerianPropagator(orbit, wrongLaw);
-            propagator.propagate(new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10.0));
-            fail("an exception should have been thrown");
-        } catch (PropagationException pe) {
-            // expected behavior
-        } catch (Exception e) {
-            fail("wrong exception caught");
-        }
+    @Test(expected = PropagationException.class)
+    public void wrongAttitude() throws PropagationException {
+        KeplerianOrbit orbit =
+            new KeplerianOrbit(1.0e10, 1.0e-4, 1.0e-2, 0, 0, 0, KeplerianOrbit.TRUE_ANOMALY,
+                               Frame.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+        AttitudeLaw wrongLaw = new AttitudeLaw() {
+            private static final long serialVersionUID = 5918362126173997016L;
+            public Attitude getState(AbsoluteDate date, PVCoordinates pv,
+                                     Frame frame) throws OrekitException {
+                throw new OrekitException(new RuntimeException(), "gasp");
+            }
+        };
+        KeplerianPropagator propagator = new KeplerianPropagator(orbit, wrongLaw);
+        propagator.propagate(new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10.0));
     }
 
-    public void testException() throws OrekitException {
+    @Test(expected = PropagationException.class)
+    public void testException() throws PropagationException {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
                                Frame.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         propagator.setMasterMode(new OrekitStepHandler() {
-            private static final long serialVersionUID = 8810565433766884660L;
-            private int countDown = 10;
-            private AbsoluteDate previousCall = null;
+            private static final long serialVersionUID = 8183822352839222377L;
             public void handleStep(OrekitStepInterpolator interpolator,
                                    boolean isLast) throws PropagationException {
-                if (previousCall != null) {
-                    assertTrue(interpolator.getInterpolatedDate().compareTo(previousCall) < 0);
-                }
-                if (--countDown == 0) {
+                if (isLast) {
                     throw new PropagationException("dummy error", (Throwable) null);
                 }
             }
@@ -358,17 +349,13 @@ public class KeplerianPropagatorTest extends TestCase {
             public void reset() {
             }
         });
-        try {
-            propagator.propagate(new AbsoluteDate(orbit.getDate(), -3600));
-        } catch (PropagationException pe) {
-            // expected behavior
-            assertEquals("dummy error", pe.getMessage());
-        } catch (Exception e) {
-            fail("wrong exception caught");
-        }
+
+        propagator.propagate(new AbsoluteDate(orbit.getDate(), -3600));
+
     }
 
-    public void testAscendingNode() throws OrekitException {
+    @Test
+    public void ascendingNode() throws OrekitException {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
                                Frame.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -383,7 +370,25 @@ public class KeplerianPropagatorTest extends TestCase {
         assertTrue(pv.getVelocity().getZ() > 0);
     }
 
-    public void testPerigee() throws OrekitException {
+    @Test
+    public void stopAtTargetDate() throws OrekitException {
+        final KeplerianOrbit orbit =
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+                               Frame.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+        KeplerianPropagator propagator = new KeplerianPropagator(orbit);
+        propagator.addEventDetector(new NodeDetector(orbit, Frame.getITRF2005()) {
+            private static final long serialVersionUID = -1486037976198573520L;
+            public int eventOccurred(final SpacecraftState s, final boolean increasing) {
+                return CONTINUE;
+            }
+        });
+        AbsoluteDate farTarget = new AbsoluteDate(orbit.getDate(), 10000.0);
+        SpacecraftState propagated = propagator.propagate(farTarget);
+        assertEquals(0.0, Math.abs(farTarget.durationFrom(propagated.getDate())), 1.0e-3);
+    }
+
+    @Test
+    public void perigee() throws OrekitException {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
                                Frame.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -397,7 +402,8 @@ public class KeplerianPropagatorTest extends TestCase {
         assertEquals(orbit.getA() * (1.0 - orbit.getE()), pv.getPosition().getNorm(), 1.0e-6);
     }
 
-    public void testAltitude() throws OrekitException {
+    @Test
+    public void altitude() throws OrekitException {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
                                Frame.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -418,7 +424,8 @@ public class KeplerianPropagatorTest extends TestCase {
         assertEquals(1500000, gp.getAltitude(), 0.1);
     }
 
-    public void testDate() throws OrekitException {
+    @Test
+    public void date() throws OrekitException {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
                                Frame.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -430,7 +437,8 @@ public class KeplerianPropagatorTest extends TestCase {
         assertEquals(0, stopDate.durationFrom(propagated.getDate()), 1.0e-10);
     }
 
-    public void testSetting() throws OrekitException {
+    @Test
+    public void setting() throws OrekitException {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
                                Frame.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -452,7 +460,8 @@ public class KeplerianPropagatorTest extends TestCase {
         assertTrue(zVelocity < 0);
     }
 
-    public void testFixedStep() throws OrekitException {
+    @Test
+    public void fixedStep() throws OrekitException {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
                                Frame.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -473,7 +482,8 @@ public class KeplerianPropagatorTest extends TestCase {
         propagator.propagate(farTarget);
     }
 
-    public void testVariableStep() throws OrekitException {
+    @Test
+    public void variableStep() throws OrekitException {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
                                Frame.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -484,7 +494,7 @@ public class KeplerianPropagatorTest extends TestCase {
             private AbsoluteDate previous;
             public void handleStep(OrekitStepInterpolator interpolator,
                                    boolean isLast) throws PropagationException {
-                if (previous != null) {
+                if ((previous != null) && !isLast) {
                     assertEquals(step, interpolator.getCurrentDate().durationFrom(previous), 1.0e-10);
                 }
                 previous = interpolator.getCurrentDate();
@@ -499,7 +509,8 @@ public class KeplerianPropagatorTest extends TestCase {
         propagator.propagate(farTarget);
     }
 
-    public void testEphemeris() throws OrekitException {
+    @Test
+    public void ephemeris() throws OrekitException {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
                                Frame.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -519,19 +530,17 @@ public class KeplerianPropagatorTest extends TestCase {
         (1 + ex*Math.cos(Lv) + ey*Math.sin(Lv) + Math.sqrt(1 - ex*ex - ey*ey));
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
         mu  = 3.9860047e14;
     }
 
+    @After
     public void tearDown() {
         mu   = Double.NaN;
     }
     
-    public static Test suite() {
-        return new TestSuite(KeplerianPropagatorTest.class);
-    }
-
 }
 

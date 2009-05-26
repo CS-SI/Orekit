@@ -21,6 +21,7 @@ import java.util.Collection;
 import org.apache.commons.math.ConvergenceException;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
+import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.CombinedEventsDetectorsManager;
 import org.orekit.propagation.sampling.BasicStepInterpolator;
@@ -145,6 +146,8 @@ public abstract class AbstractPropagator implements Propagator {
             } else {
                 stepSize = target.durationFrom(interpolator.getCurrentDate());
             }
+            CombinedEventsDetectorsManager manager =
+                addEndDateChecker(getInitialDate(), target, eventsDetectorsManager);
 
             // iterate over the propagation range
             AbsoluteDate stepEnd =
@@ -162,9 +165,9 @@ public abstract class AbstractPropagator implements Propagator {
                     interpolator.storeDate(stepEnd);
 
                     // check discrete events
-                    if (eventsDetectorsManager.evaluateStep(interpolator)) {
+                    if (manager.evaluateStep(interpolator)) {
                         needUpdate = true;
-                        stepEnd = eventsDetectorsManager.getEventTime();
+                        stepEnd = manager.getEventTime();
                     } else {
                         loop = false;
                     }
@@ -173,8 +176,8 @@ public abstract class AbstractPropagator implements Propagator {
 
                 // handle the accepted step
                 state = interpolator.getInterpolatedState();
-                eventsDetectorsManager.stepAccepted(state);
-                if (eventsDetectorsManager.stop()) {
+                manager.stepAccepted(state);
+                if (manager.stop()) {
                     lastStep = true;
                 } else {
                     lastStep = stepEnd.compareTo(target) >= 0;
@@ -184,7 +187,7 @@ public abstract class AbstractPropagator implements Propagator {
                 }
 
                 // let the events detectors reset the state if needed
-                final SpacecraftState newState = eventsDetectorsManager.reset(state);
+                final SpacecraftState newState = manager.reset(state);
                 if (newState != state) {
                     resetInitialState(newState);
                     state = newState;
@@ -265,6 +268,64 @@ public abstract class AbstractPropagator implements Propagator {
             return basicPropagate(target);
         }
 
+    }
+
+    /** Add an event handler for end date checking.
+     * <p>This method can be used to simplify handling of integration end date.
+     * It leverages the nominal stop condition with the exceptional stop
+     * conditions.</p>
+     * @param startDate propagation start date
+     * @param endDate desired end date
+     * @param manager manager containing the user-defined handlers
+     * @return a new manager containing all the user-defined handlers plus a
+     * dedicated manager triggering a stop event at entDate
+     */
+    protected CombinedEventsDetectorsManager addEndDateChecker(final AbsoluteDate startDate,
+                                                               final AbsoluteDate endDate,
+                                                               final CombinedEventsDetectorsManager manager) {
+        CombinedEventsDetectorsManager newManager = new CombinedEventsDetectorsManager();
+        for (final EventDetector detector : manager.getEventsDetectors()) {
+            newManager.addEventDetector(detector);
+        }
+        double dt = endDate.durationFrom(startDate);
+        newManager.addEventDetector(new EndDateDetector(endDate, Double.POSITIVE_INFINITY, Math.ulp(dt)));
+        return newManager;
+    }
+
+    /** Specialized event handler to stop integration. */
+    private static class EndDateDetector extends AbstractDetector {
+
+        /** Serializable version identifier. */
+        private static final long serialVersionUID = -7950598937797923427L;
+
+        /** Desired end date. */
+        private final AbsoluteDate endDate;
+
+        /** Build an instance.
+         * @param endTime desired time
+         * @param maxCheck maximal check interval
+         * @param threshold convergence threshold
+         */
+        public EndDateDetector(final AbsoluteDate endDate,
+                               final double maxCheck, final double threshold) {
+            super(maxCheck, threshold);
+            this.endDate = endDate;
+        }
+
+        /** {@inheritDoc} */
+        public int eventOccurred(final SpacecraftState s, final boolean increasing) {
+            return STOP;
+        }
+
+        /** {@inheritDoc} */
+        public double g(final SpacecraftState s) {
+            return s.getDate().durationFrom(endDate);
+        }
+
+        /** {@inheritDoc} */
+        public void resetState(double t, double[] y) {
+        }
+        
     }
 
 }

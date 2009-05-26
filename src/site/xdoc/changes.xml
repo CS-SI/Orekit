@@ -23,6 +23,11 @@
     <release version="4.1" date="TBD"
              description="TBD">
       <action dev="luc" type="fix" >
+        fixed stop date of analytical propagators (Keplerian and Eckstein-Heschler). They used to
+        stop at the first event after target date when an event detector was set up, instead of
+        stopping at the target date
+      </action>
+      <action dev="luc" type="fix" >
         the gravity coefficients for solar system bodies are now extracted from JPL files headers
       </action>
       <action dev="luc" type="update" >
