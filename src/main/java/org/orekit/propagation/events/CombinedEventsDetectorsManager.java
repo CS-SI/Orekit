@@ -200,7 +200,7 @@ public class CombinedEventsDetectorsManager implements Serializable {
         throws OrekitException {
         SpacecraftState newSpacecraftState = oldSpacecraftState;
         for (final EventState eventState : states) {
-            newSpacecraftState = eventState.reset(oldSpacecraftState);
+            newSpacecraftState = eventState.reset(newSpacecraftState);
         }
         return newSpacecraftState;
     }
