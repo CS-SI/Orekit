@@ -16,6 +16,10 @@
  */
 package org.orekit.data;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,15 +27,13 @@ import java.net.URL;
 import java.text.ParseException;
 import java.util.regex.Pattern;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
+import org.junit.Test;
 import org.orekit.errors.OrekitException;
 
-public class NetworkCrawlerTest extends TestCase {
+public class NetworkCrawlerTest {
 
-    public void testNoElement() {
+    @Test
+    public void noElement() {
         File existing   = new File(url("regular-data").getPath());
         File inexistent = new File(existing.getParent(), "inexistant-directory");
         try {
@@ -50,7 +52,8 @@ public class NetworkCrawlerTest extends TestCase {
     // if you want to enable it, you will have uncomment it and to either set the proxy
     // settings according to your local network or remove the proxy authentication
     // settings if you have a transparent connection to internet
-//    public void testRemote() throws java.net.MalformedURLException, OrekitException {
+//    @Test
+//    public void remote() throws java.net.MalformedURLException, OrekitException {
 //
 //        System.setProperty("http.proxyHost",     "proxy.your.domain.com");
 //        System.setProperty("http.proxyPort",     "8080");
@@ -58,15 +61,16 @@ public class NetworkCrawlerTest extends TestCase {
 //        java.net.Authenticator.setDefault(new AuthenticatorDialog());
 //
 //        CountingLoader loader = new CountingLoader(".*\\.history");
-//        DataWebCrawler crawler =
-//            new DataWebCrawler(new URL("http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history"));
+//        NetworkCrawler crawler =
+//            new NetworkCrawler(new URL("http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history"));
 //        crawler.setTimeout(1000);
 //        crawler.feed(loader);
 //        assertEquals(1, loader.getCount());
 //
 //    }
 
-    public void testLocal() throws OrekitException {
+    @Test
+    public void local() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*");
         new NetworkCrawler(url("regular-data/UTC-TAI.history"),
                            url("regular-data/de405-ephemerides/unxp0000.405"),
@@ -77,7 +81,8 @@ public class NetworkCrawlerTest extends TestCase {
         assertEquals(6, crawler.getCount());
     }
 
-    public void testCompressed() throws OrekitException {
+    @Test
+    public void compressed() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*/eopc04.*");
         new NetworkCrawler(url("compressed-data/UTC-TAI.history.gz"),
                            url("compressed-data/eopc04_IAU2000.00.gz"),
@@ -85,13 +90,15 @@ public class NetworkCrawlerTest extends TestCase {
         assertEquals(2, crawler.getCount());
     }
 
-    public void testMultiZip() throws OrekitException {
+    @Test
+    public void multiZip() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
         new NetworkCrawler(url("zipped-data/multizip.zip")).feed(crawler);
         assertEquals(6, crawler.getCount());
     }
 
-    public void testIOException() throws OrekitException {
+    @Test
+    public void ioException() throws OrekitException {
         try {
             new NetworkCrawler(url("regular-data/UTC-TAI.history")).feed(new IOExceptionLoader(".*"));
             fail("an exception should have been thrown");
@@ -105,7 +112,8 @@ public class NetworkCrawlerTest extends TestCase {
         }
     }
 
-    public void testParseException() throws OrekitException {
+    @Test
+    public void parseException() throws OrekitException {
         try {
             new NetworkCrawler(url("regular-data/UTC-TAI.history")).feed(new ParseExceptionLoader(".*"));
             fail("an exception should have been thrown");
@@ -170,10 +178,6 @@ public class NetworkCrawlerTest extends TestCase {
 
     private URL url(String resource) {
         return DirectoryCrawlerTest.class.getClassLoader().getResource(resource);
-    }
-
-    public static Test suite() {
-        return new TestSuite(NetworkCrawlerTest.class);
     }
 
 }
