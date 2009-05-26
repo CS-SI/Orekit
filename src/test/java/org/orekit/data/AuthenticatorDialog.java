@@ -16,6 +16,7 @@
  */
 package org.orekit.data;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.Authenticator;
@@ -26,6 +27,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.Spring;
 import javax.swing.SpringLayout;
 
 /** Simple swing-based dialog window to ask username/password.
@@ -57,64 +59,75 @@ public class AuthenticatorDialog extends Authenticator {
     /** {@inheritDoc} */
     protected PasswordAuthentication getPasswordAuthentication() {
 
-        final JDialog dialog =
-            new JDialog((JDialog) null, "enter password", true);
+        synchronized (AuthenticatorDialog.class) {
+        final JDialog dialog = new JDialog();
+        dialog.setTitle("enter password");
+        dialog.setModal(true);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        final Component cp = dialog.getContentPane();
         final SpringLayout layout = new SpringLayout();
         dialog.setLayout(layout);
 
         final JLabel messageLabel = new JLabel(getRequestingPrompt());
-        layout.putConstraint(SpringLayout.NORTH,             messageLabel, 5,
-                             SpringLayout.NORTH,             dialog.getContentPane());
-        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, messageLabel, 0,
-                             SpringLayout.HORIZONTAL_CENTER, dialog.getContentPane());
         dialog.add(messageLabel);
+        layout.putConstraint(SpringLayout.NORTH, messageLabel, 5,
+                             SpringLayout.NORTH, cp);
+        // SpringLayout.HORIZONTAL_CENTER is not available in Java 5, we do it the hard way
+        SpringLayout.Constraints c = layout.getConstraints(messageLabel);
+        c.setX(Spring.scale(Spring.sum(Spring.width(cp),
+                                       Spring.minus(Spring.width(messageLabel))),
+                            0.5f));
 
         final JLabel userNameLabel = new JLabel("username");
+        dialog.add(userNameLabel);
         layout.putConstraint(SpringLayout.NORTH, userNameLabel, 5,
                              SpringLayout.SOUTH, messageLabel);
         layout.putConstraint(SpringLayout.WEST,  userNameLabel, 10,
-                             SpringLayout.WEST,  dialog.getContentPane());
-        dialog.add(userNameLabel);
+                             SpringLayout.WEST,  cp);
+
         final JTextField userNameField = new JTextField(10);
-        layout.putConstraint(SpringLayout.BASELINE, userNameField, 0,
-                             SpringLayout.BASELINE, userNameLabel);
-        layout.putConstraint(SpringLayout.WEST,     userNameField, 20,
-                             SpringLayout.EAST,     userNameLabel);
         dialog.add(userNameField);
+        layout.putConstraint(SpringLayout.SOUTH, userNameField, 0,
+                             SpringLayout.SOUTH, userNameLabel);
+        layout.putConstraint(SpringLayout.WEST,  userNameField, 20,
+                             SpringLayout.EAST,  userNameLabel);
 
         final JLabel passwordLabel = new JLabel("password");
-        layout.putConstraint(SpringLayout.NORTH,    passwordLabel, 5,
-                             SpringLayout.SOUTH,    userNameLabel);
-        layout.putConstraint(SpringLayout.WEST,     passwordLabel, 0,
-                             SpringLayout.WEST,     userNameLabel);
         dialog.add(passwordLabel);
+        layout.putConstraint(SpringLayout.NORTH, passwordLabel, 5,
+                             SpringLayout.SOUTH, userNameLabel);
+        layout.putConstraint(SpringLayout.WEST,  passwordLabel, 0,
+                             SpringLayout.WEST,  userNameLabel);
+
         final JPasswordField passwordField = new JPasswordField(10);
-        layout.putConstraint(SpringLayout.BASELINE, passwordField, 0,
-                             SpringLayout.BASELINE, passwordLabel);
-        layout.putConstraint(SpringLayout.WEST,     passwordField, 0,
-                             SpringLayout.WEST,     userNameField);
-        layout.putConstraint(SpringLayout.EAST,     passwordField, 0,
-                             SpringLayout.EAST,     userNameField);
         dialog.add(passwordField);
+        layout.putConstraint(SpringLayout.SOUTH, passwordField, 0,
+                             SpringLayout.SOUTH, passwordLabel);
+        layout.putConstraint(SpringLayout.WEST,  passwordField, 0,
+                             SpringLayout.WEST,  userNameField);
+        layout.putConstraint(SpringLayout.EAST,  passwordField, 0,
+                             SpringLayout.EAST,  userNameField);
 
         final JButton okButton = new JButton("OK");
-        layout.putConstraint(SpringLayout.NORTH,             okButton, 15,
-                             SpringLayout.SOUTH,             passwordLabel);
-        layout.putConstraint(SpringLayout.EAST,              okButton, -15,
-                             SpringLayout.HORIZONTAL_CENTER, dialog.getContentPane());
         dialog.add(okButton);
+        layout.putConstraint(SpringLayout.NORTH, okButton, 15,
+                             SpringLayout.SOUTH, passwordLabel);
+        // SpringLayout.HORIZONTAL_CENTER is not available in Java 5, we do it the hard way
+        c = layout.getConstraints(okButton);
+        c.setX(Spring.sum(Spring.sum(Spring.scale(Spring.width(cp), 0.5f), Spring.constant(-15)),
+                          Spring.minus(Spring.width(okButton))));
 
         final JButton cancelButton = new JButton("Cancel");
-        layout.putConstraint(SpringLayout.BASELINE,          cancelButton, 0,
-                             SpringLayout.BASELINE,          okButton);
-        layout.putConstraint(SpringLayout.WEST,              cancelButton, 15,
-                             SpringLayout.HORIZONTAL_CENTER, dialog.getContentPane());
         dialog.add(cancelButton);
+        layout.putConstraint(SpringLayout.SOUTH, cancelButton, 0,
+                             SpringLayout.SOUTH, okButton);
+        // SpringLayout.HORIZONTAL_CENTER is not available in Java 5, we do it the hard way
+        c = layout.getConstraints(cancelButton);
+        c.setX(Spring.sum(Spring.scale(Spring.width(cp), 0.5f), Spring.constant(15)));
 
-        layout.putConstraint(SpringLayout.SOUTH, dialog.getContentPane(), 0,
+        layout.putConstraint(SpringLayout.SOUTH, cp, 0,
                              SpringLayout.SOUTH, cancelButton);
-        layout.putConstraint(SpringLayout.EAST,  dialog.getContentPane(), 10,
+        layout.putConstraint(SpringLayout.EAST,  cp, 10,
                              SpringLayout.EAST,  passwordField);
         dialog.pack();
 
@@ -146,6 +159,7 @@ public class AuthenticatorDialog extends Authenticator {
         password = new char[0];
 
         return authentication;
+        }
 
     }
 
