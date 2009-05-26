@@ -73,12 +73,12 @@ public class TabulatedEphemerisTest extends TestCase {
 
         Ephemeris te = new Ephemeris(tab);
 
-        assertEquals(te.getMaxDate(), finalDate);
-        assertEquals(te.getMinDate(), initDate);
+        assertEquals(0.0, te.getMaxDate().durationFrom(finalDate), 1.0e-9);
+        assertEquals(0.0, te.getMinDate().durationFrom(initDate), 1.0e-9);
 
-        checkEphemerides(eck, te, new AbsoluteDate(initDate, 3600),  0, true);
+        checkEphemerides(eck, te, new AbsoluteDate(initDate, 3600),  1.0e-9, true);
         checkEphemerides(eck, te, new AbsoluteDate(initDate, 3660), 30, false);
-        checkEphemerides(eck, te, new AbsoluteDate(initDate, 3720),  0, true);
+        checkEphemerides(eck, te, new AbsoluteDate(initDate, 3720),  1.0e-9, true);
 
     }
 
