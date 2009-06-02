@@ -16,21 +16,23 @@
  */
 package org.orekit.frames;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.UTCScale;
 
-public class ITRF2005FrameTest extends TestCase {
+public class ITRF2005FrameTest {
 
+    @Test
     public void testTidalEffects() throws OrekitException {
 
-        final Frame itrfWith    = Frame.getITRF2005();
-        final Frame itrfWithout = Frame.getITRF2005IgnoringTidalEffects();
+        final Frame itrfWith    = FrameFactory.getITRF2005(false);
+        final Frame itrfWithout = FrameFactory.getITRF2005(true);
         final AbsoluteDate date0 = new AbsoluteDate(2007, 10, 20, UTCScale.getInstance());
 
         double minCorrection = Double.POSITIVE_INFINITY;
@@ -49,13 +51,10 @@ public class ITRF2005FrameTest extends TestCase {
 
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("compressed-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
-    }
-
-    public static Test suite() {
-        return new TestSuite(ITRF2005FrameTest.class);
     }
 
 }

@@ -42,7 +42,7 @@ Frames
   of the library architecture documentation.
 
 +---------------------
-Frame inertialFrame = Frame.getEME2000();
+Frame inertialFrame = FrameFactory.getEME2000();
 TimeScale utc = UTCScale.getInstance();
 AbsoluteDate initialDate =
     new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, utc);
@@ -77,7 +77,7 @@ double altitude  = 0.;
 GeodeticPoint station = new GeodeticPoint(latitude, longitude, altitude);
 double ae =  6378137.0;                // equatorial radius in meter
 double f  =  1.0 / 298.257223563;      // flattening
-Frame ITRF2005 = Frame.getITRF2005();  // terrestrial frame
+Frame ITRF2005 = FrameFactory.getITRF2005();  // terrestrial frame
 BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
 TopocentricFrame staF = new TopocentricFrame(earth, station, "station");
 +---------------------
@@ -162,7 +162,7 @@ double doppler =
   real value which is time-dependent will be recomputed when time is reset:
   
 +---------------------
-Frame cogFrame = new Frame(Frame.getEME2000(), Transform.IDENTITY, "LOF");
+Frame cogFrame = new Frame(FrameFactory.getEME2000(), Transform.IDENTITY, "LOF");
 +---------------------
 
   The satellite frame, with origin also at the CoG, depends on attitude. For the sake of this
@@ -211,7 +211,7 @@ Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
 +---------------------
 Transform measuredTranslation = new Transform(position, velocity);
 Transform formerTransform =
-    gpsFrame.getTransformTo(Frame.getITRF2005(), date);
+    gpsFrame.getTransformTo(FrameFactory.getITRF2005(), date);
 Transform preservedRotation =
     new Transform(formerTransform.getRotation(),
                   formerTransform.getRotationRate());
@@ -226,7 +226,7 @@ Transform gpsToItrf =
   transform between CoG itself and its parent EME2000 frame.
 
 +---------------------
-cogFrame.updateTransform(gpsFrame, Frame.getITRF2005(), gpsToItrf, date);
+cogFrame.updateTransform(gpsFrame, FrameFactory.getITRF2005(), gpsToItrf, date);
 +---------------------
 
   The frame tree is now in sync. We can compute all position and velocity
@@ -234,12 +234,12 @@ cogFrame.updateTransform(gpsFrame, Frame.getITRF2005(), gpsToItrf, date);
   
 +---------------------
 PVCoordinates origin  = PVCoordinates.ZERO;
-Transform cogToItrf   = cogFrame.getTransformTo(Frame.getITRF2005(), date);
+Transform cogToItrf   = cogFrame.getTransformTo(FrameFactory.getITRF2005(), date);
 PVCoordinates satItrf = cogToItrf.transformPVCoordinates(origin);
 +---------------------
 
 +---------------------
-Transform cogToEme2000   = cogFrame.getTransformTo(Frame.getEME2000(), date);
+Transform cogToEme2000   = cogFrame.getTransformTo(FrameFactory.getEME2000(), date);
 PVCoordinates satEME2000 = cogToEme2000.transformPVCoordinates(origin);
 +---------------------
 

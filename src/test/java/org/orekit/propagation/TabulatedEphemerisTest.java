@@ -18,27 +18,29 @@ package org.orekit.propagation;
 
 import java.text.ParseException;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
-import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.Ephemeris;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
+public class TabulatedEphemerisTest {
 
-public class TabulatedEphemerisTest extends TestCase {
-
+    @Test
     public void testInterpolation() throws ParseException, OrekitException {
 
         double mass = 2500;
@@ -59,7 +61,7 @@ public class TabulatedEphemerisTest extends TestCase {
 
         Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA,
                                             lv, KeplerianOrbit.TRUE_ANOMALY, 
-                                            Frame.getEME2000(), initDate, mu);
+                                            FrameFactory.getEME2000(), initDate, mu);
 
         int nbIntervals = 720;
         EcksteinHechlerPropagator eck =
@@ -100,6 +102,7 @@ public class TabulatedEphemerisTest extends TestCase {
         }
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
@@ -112,6 +115,7 @@ public class TabulatedEphemerisTest extends TestCase {
         c60 = -5.5e-7;
     }
 
+    @After
     public void tearDown() {
         mu  = Double.NaN;
         ae  = Double.NaN;
@@ -129,9 +133,5 @@ public class TabulatedEphemerisTest extends TestCase {
     private double c40;
     private double c50;
     private double c60;
-
-    public static Test suite() {
-        return new TestSuite(TabulatedEphemerisTest.class);
-    }
 
 }

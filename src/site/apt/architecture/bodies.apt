@@ -39,9 +39,9 @@ Bodies
 CelestialBody sun  = SolarSystemBody.getSun();
 CelestialBody moon = SolarSystemBody.getMoon();
 Vector3D sunInEME2000 =
-    sun.getPVCoordinates(date, Frame.getEME2000()).getPosition();
+    sun.getPVCoordinates(date, FrameFactory.getEME2000()).getPosition();
 Vector3D moonInEME2000 =
-    moon.getPVCoordinates(date, Frame.getEME2000()).getPosition();
+    moon.getPVCoordinates(date, FrameFactory.getEME2000()).getPosition();
 +---------------------
 
   Since the supported bodies implement the <CelestialBody> interface, they all provide

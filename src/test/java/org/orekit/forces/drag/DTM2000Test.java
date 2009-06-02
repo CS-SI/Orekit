@@ -18,9 +18,10 @@ package org.orekit.forces.drag;
 
 import java.text.ParseException;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 import org.orekit.SolarInputs97to05;
 import org.orekit.bodies.CelestialBody;
@@ -29,12 +30,14 @@ import org.orekit.bodies.SolarSystemBody;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 
-public class DTM2000Test extends TestCase {
+public class DTM2000Test {
 
+    @Test
     public void testWithOriginalTestsCases() throws OrekitException, ParseException {
 
-        Frame itrf = Frame.getITRF2005();
+        Frame itrf = FrameFactory.getITRF2005(true);
         CelestialBody sun = SolarSystemBody.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
@@ -134,12 +137,10 @@ public class DTM2000Test extends TestCase {
 
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
     }
 
-    public static Test suite() {
-        return new TestSuite(DTM2000Test.class);
-    }
 }

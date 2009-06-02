@@ -19,6 +19,7 @@ package fr.cs.examples.propagation;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -49,7 +50,7 @@ public class SlaveMode {
             double lM = 0; // mean anomaly
 
             // Inertial frame
-            Frame inertialFrame = Frame.getEME2000();
+            Frame inertialFrame = FrameFactory.getEME2000();
 
             // Initial date in UTC time scale
             TimeScale utc = UTCScale.getInstance();

@@ -23,6 +23,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -55,7 +56,7 @@ public class MasterMode {
             double mu =  3.986004415e+14;
 
             // inertial frame
-            Frame inertialFrame = Frame.getEME2000();
+            Frame inertialFrame = FrameFactory.getEME2000();
 
             // Initial date
             AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000,
@@ -92,7 +93,7 @@ public class MasterMode {
             NumericalPropagator propagator = new NumericalPropagator(integrator);
 
             // Force Model (reduced to perturbing gravity field)
-            Frame ITRF2005 = Frame.getITRF2005(); // terrestrial frame at an arbitrary date
+            Frame ITRF2005 = FrameFactory.getITRF2005(); // terrestrial frame at an arbitrary date
             double ae  =  6378137.; // equatorial radius in meter
             double c20 = -1.08262631303e-3; // J2 potential coefficient
             double[][] c = new double[3][1];

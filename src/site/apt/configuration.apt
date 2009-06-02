@@ -46,7 +46,7 @@ Configuration
   In order to simplify data updates for users and to avoid transformations errors, Orekit
   uses each supported data set in the native format in which it is publicly available. So
   if a user wants to take into account the Earth Orientation Parameters for a given year,
-  he will simply download the corresponding file for IERS server at
+  for example, he will simply download the corresponding file for IERS server at
   {{http://hpiers.obspm.fr/eoppc/eop/eopc04_05/}} and drop it in the data storage system
   Orekit is configured to use, without any change to the data file itself.
 
@@ -242,22 +242,37 @@ Configuration
   character represents any digit and <(m/p)> represents either the m character or the p
   character. The <[.gz]> part at the end of all naming patterns means that a <.gz> suffix
   can be appended, in which case the data are considered to be compressed with gzip.
+  
+  Please note, the 2 different naming patterns for bulletin B are supported the same.
 
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
 |          naming pattern         |      format     |               data type              |                            source                          |
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
 |       UTC-TAI.history[.gz]      |   IERS history  |   leap seconds introduction history  |  {{http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history}} |
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
-|  bulletinb_IAU2000-###.txt[.gz] | IERS bulletin B | monthly Earth Orientation Parameters |    {{http://hpiers.obspm.fr/eoppc/bul/bulb/}}              |
+|    bulletinb_IAU2000.###[.gz]   | IERS bulletin B | monthly Earth Orientation Parameters |    {{http://hpiers.obspm.fr/eoppc/bul/bulb/}}              |
+|              or                 |                 |            model IAU 2000            |                                                            |
+|  bulletinb_IAU2000-###.txt[.gz] |                 |                                      | {{http://www.iers.org/MainDisp.csl?pid=36-25788&prodid=18&PRODUCTVERSIONPAGE=1&all=1}} |
+*---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
+|        bulletinb.###[.gz]       | IERS bulletin B | monthly Earth Orientation Parameters |    {{http://hpiers.obspm.fr/eoppc/bul/bulb/}}              |
+|              or                 |                 |            model IAU 1980            |                                                            |
+|      bulletinb-###.txt[.gz]     |                 |                                      | {{http://www.iers.org/MainDisp.csl?pid=36-25788&prodid=15&PRODUCTVERSIONPAGE=1&all=1}} |
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
 |      eopc04_IAU2000.##[.gz]     | IERS EOP 05 C04 | yearly Earth Orientation Parameters  |    {{http://hpiers.obspm.fr/eoppc/eop/eopc04_05/}}         |
+|                                 |                 |            model IAU 2000            |                                                            |
+*---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
+|          eopc04.##[.gz]         | IERS EOP 05 C04 | yearly Earth Orientation Parameters  |    {{http://hpiers.obspm.fr/eoppc/eop/eopc04_05/}}         |
+|                                 |                 |            model IAU 1980            |                                                            |
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
 |       unx(m/p)####.405[.gz]     |  DE 405 binary  |    JPL DE 405 planets ephemerides    |    {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/unix/de405}}   |
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
 |       unx(m/p)####.406[.gz]     |  DE 406 binary  |    JPL DE 406 planets ephemerides    |    {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/unix/de406}}   |
 *---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
-supported data types
+Supported data types
 
 * Authors
 
-  ** Luc Maisonobe  
+  ** Luc Maisonobe
+  
+  ** Pascal Parraud
+  

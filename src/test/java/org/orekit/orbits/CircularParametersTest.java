@@ -16,14 +16,18 @@
  */
 package org.orekit.orbits;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.orekit.Utils;
-import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -31,7 +35,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 
-public class CircularParametersTest extends TestCase {
+public class CircularParametersTest {
 
     // Computation date 
     private AbsoluteDate date;
@@ -39,10 +43,7 @@ public class CircularParametersTest extends TestCase {
     // Body mu 
     private double mu;
 
-    public CircularParametersTest(String name) {
-        super(name);
-    }
-
+    @Test
     public void testCircularToEquinoctialEll() {
 
         double ix = 1.200e-04;
@@ -54,13 +55,13 @@ public class CircularParametersTest extends TestCase {
         CircularOrbit circ =
             new CircularOrbit(42166.712, 0.5, -0.5, i, raan,
                                    5.300 - raan, CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   Frame.getEME2000(), date, mu);
+                                   FrameFactory.getEME2000(), date, mu);
         Vector3D pos = circ.getPVCoordinates().getPosition();
         Vector3D vit = circ.getPVCoordinates().getVelocity();
 
         PVCoordinates pvCoordinates = new PVCoordinates( pos, vit);
 
-        EquinoctialOrbit param = new EquinoctialOrbit(pvCoordinates, Frame.getEME2000(), date, mu);
+        EquinoctialOrbit param = new EquinoctialOrbit(pvCoordinates, FrameFactory.getEME2000(), date, mu);
         assertEquals(param.getA(),  circ.getA(), Utils.epsilonTest * circ.getA());
         assertEquals(param.getEquinoctialEx(), circ.getEquinoctialEx(), Utils.epsilonE * Math.abs(circ.getE()));
         assertEquals(param.getEquinoctialEy(), circ.getEquinoctialEy(), Utils.epsilonE * Math.abs(circ.getE()));
@@ -70,6 +71,7 @@ public class CircularParametersTest extends TestCase {
 
     }
 
+    @Test
     public void testCircularToEquinoctialCirc() {
 
         double ix = 1.200e-04;
@@ -81,13 +83,13 @@ public class CircularParametersTest extends TestCase {
         EquinoctialOrbit circCir =
             new EquinoctialOrbit(42166.712, 0.1e-10, -0.1e-10, i, raan,
                                       5.300 - raan, CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                      Frame.getEME2000(), date, mu);
+                                      FrameFactory.getEME2000(), date, mu);
         Vector3D posCir = circCir.getPVCoordinates().getPosition();
         Vector3D vitCir = circCir.getPVCoordinates().getVelocity();
 
         PVCoordinates pvCoordinates = new PVCoordinates( posCir, vitCir);
 
-        EquinoctialOrbit paramCir = new EquinoctialOrbit(pvCoordinates, Frame.getEME2000(), date, mu);
+        EquinoctialOrbit paramCir = new EquinoctialOrbit(pvCoordinates, FrameFactory.getEME2000(), date, mu);
         assertEquals(paramCir.getA(), circCir.getA(), Utils.epsilonTest * circCir.getA());
         assertEquals(paramCir.getEquinoctialEx(), circCir.getEquinoctialEx(), Utils.epsilonEcir * Math.abs(circCir.getE()));
         assertEquals(paramCir.getEquinoctialEy(), circCir.getEquinoctialEy(), Utils.epsilonEcir * Math.abs(circCir.getE()));
@@ -97,6 +99,7 @@ public class CircularParametersTest extends TestCase {
 
     }
 
+    @Test
     public void testCircularToCartesian() {
 
         double ix = 1.200e-04;
@@ -113,7 +116,7 @@ public class CircularParametersTest extends TestCase {
         CircularOrbit circ=
             new CircularOrbit(42166.712, ex, ey, i, raan,
                                    5.300 - raan, CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   Frame.getEME2000(), date, mu);
+                                   FrameFactory.getEME2000(), date, mu);
         Vector3D pos = circ.getPVCoordinates().getPosition();
         Vector3D vel = circ.getPVCoordinates().getVelocity();
 
@@ -132,6 +135,7 @@ public class CircularParametersTest extends TestCase {
 
     }
 
+    @Test
     public void testCircularToKeplerian() {
 
         double ix   =  1.20e-4;
@@ -148,7 +152,7 @@ public class CircularParametersTest extends TestCase {
         CircularOrbit circ=
             new CircularOrbit(42166.712, ex, ey, i, raan,
                                    5.300 - raan, CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   Frame.getEME2000(), date, mu);
+                                   FrameFactory.getEME2000(), date, mu);
         KeplerianOrbit kep = new KeplerianOrbit(circ);
 
         assertEquals(42166.71200, circ.getA(), Utils.epsilonTest * kep.getA());
@@ -167,6 +171,7 @@ public class CircularParametersTest extends TestCase {
 
     }
 
+    @Test
     public void testAnomalyEll() {
 
         // elliptic orbit
@@ -175,7 +180,7 @@ public class CircularParametersTest extends TestCase {
 
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
 
-        CircularOrbit  p   = new CircularOrbit(pvCoordinates, Frame.getEME2000(), date, mu);
+        CircularOrbit  p   = new CircularOrbit(pvCoordinates, FrameFactory.getEME2000(), date, mu);
         KeplerianOrbit kep = new KeplerianOrbit(p);
 
         double e       = p.getE();
@@ -223,12 +228,13 @@ public class CircularParametersTest extends TestCase {
 
     }
 
+    @Test
     public void testAnomalyCirc() {
 
         Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
         Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
-        CircularOrbit  p = new CircularOrbit(pvCoordinates, Frame.getEME2000(), date, mu);
+        CircularOrbit  p = new CircularOrbit(pvCoordinates, FrameFactory.getEME2000(), date, mu);
         double raan = p.getRightAscensionOfAscendingNode();
 
         // circular orbit
@@ -277,6 +283,7 @@ public class CircularParametersTest extends TestCase {
 
     }
 
+    @Test
     public void testPositionVelocityNormsEll() {
 
         // elliptic and non equatorial (i retrograde) orbit
@@ -287,7 +294,7 @@ public class CircularParametersTest extends TestCase {
         CircularOrbit p =
             new CircularOrbit(42166.712, 0.5, -0.5, i, raan,
                                    0.67 - raan, CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
-                                   Frame.getEME2000(), date, mu);
+                                   FrameFactory.getEME2000(), date, mu);
 
         double ex = p.getEquinoctialEx();
         double ey = p.getEquinoctialEy();
@@ -308,6 +315,7 @@ public class CircularParametersTest extends TestCase {
 
     }
 
+    @Test
     public void testPositionVelocityNormsCirc() {
 
         // elliptic and non equatorial (i retrograde) orbit
@@ -318,7 +326,7 @@ public class CircularParametersTest extends TestCase {
         CircularOrbit pCirEqua =
             new CircularOrbit(42166.712, 0.1e-8, 0.1e-8, i, raan,
                                    0.67 - raan, CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
-                                   Frame.getEME2000(), date, mu);
+                                   FrameFactory.getEME2000(), date, mu);
 
         double ex = pCirEqua.getEquinoctialEx();
         double ey = pCirEqua.getEquinoctialEy();
@@ -338,6 +346,7 @@ public class CircularParametersTest extends TestCase {
                      Utils.epsilonTest * Math.abs(pCirEqua.getPVCoordinates().getVelocity().getNorm()));
     }
 
+    @Test
     public void testGeometryEll() {
 
         // elliptic and non equatorial (i retrograde) orbit
@@ -348,7 +357,7 @@ public class CircularParametersTest extends TestCase {
         CircularOrbit p =
             new CircularOrbit(42166.712, 0.5, -0.5, i, raan,
                                    0.67 - raan, CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
-                                   Frame.getEME2000(), date, mu);
+                                   FrameFactory.getEME2000(), date, mu);
 
         Vector3D position = p.getPVCoordinates().getPosition();
         Vector3D velocity = p.getPVCoordinates().getVelocity();
@@ -383,6 +392,7 @@ public class CircularParametersTest extends TestCase {
 
     }
 
+    @Test
     public void testGeometryCirc() {
 
         //  circular and equatorial orbit
@@ -393,7 +403,7 @@ public class CircularParametersTest extends TestCase {
         CircularOrbit pCirEqua =
             new CircularOrbit(42166.712, 0.1e-8, 0.1e-8, i, raan,
                                    0.67 - raan, CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
-                                   Frame.getEME2000(), date, mu);
+                                   FrameFactory.getEME2000(), date, mu);
 
         Vector3D position = pCirEqua.getPVCoordinates().getPosition();
         Vector3D velocity = pCirEqua.getPVCoordinates().getVelocity();
@@ -429,7 +439,7 @@ public class CircularParametersTest extends TestCase {
         }
     }
 
-
+    @Test
     public void testSymmetryEll() {
 
         // elliptic and non equatorail orbit
@@ -437,7 +447,7 @@ public class CircularParametersTest extends TestCase {
         Vector3D velocity = new Vector3D(134664.6, 90066.8, 72047.6);
         PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
 
-        CircularOrbit p = new CircularOrbit(pvCoordinates, Frame.getEME2000(), date, mu);
+        CircularOrbit p = new CircularOrbit(pvCoordinates, FrameFactory.getEME2000(), date, mu);
 
         Vector3D positionOffset = p.getPVCoordinates().getPosition();
         Vector3D velocityOffset = p.getPVCoordinates().getVelocity();
@@ -450,13 +460,14 @@ public class CircularParametersTest extends TestCase {
 
     }
 
+    @Test
     public void testSymmetryCir() {
         // circular and equatorial orbit
         Vector3D position = new Vector3D(33051.2, 26184.9, -1.3E-5);
         Vector3D velocity = new Vector3D(-60376.2, 76208., 2.7E-4);
         PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
 
-        CircularOrbit p = new CircularOrbit(pvCoordinates, Frame.getEME2000(), date, mu);
+        CircularOrbit p = new CircularOrbit(pvCoordinates, FrameFactory.getEME2000(), date, mu);
 
         Vector3D positionOffset = p.getPVCoordinates().getPosition().subtract(position);
         Vector3D velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
@@ -466,6 +477,7 @@ public class CircularParametersTest extends TestCase {
 
     }
 
+    @Before
     public void setUp() {
 
         // Computation date
@@ -475,12 +487,9 @@ public class CircularParametersTest extends TestCase {
         mu = 3.9860047e14;
     }
 
+    @After
     public void tearDown() {
         date = null;
-    }
-    
-    public static Test suite() {
-        return new TestSuite(CircularParametersTest.class);
     }
 
 }

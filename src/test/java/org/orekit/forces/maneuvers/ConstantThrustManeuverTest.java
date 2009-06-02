@@ -16,20 +16,23 @@
  */
 package org.orekit.forces.maneuvers;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math.util.MathUtils;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.attitudes.InertialLaw;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -42,18 +45,17 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
-
-
-public class ConstantThrustManeuverTest extends TestCase {
+public class ConstantThrustManeuverTest {
 
     // Body mu
     private double mu;
 
     private CircularOrbit dummyOrbit(AbsoluteDate date) {
         return new CircularOrbit(new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_J),
-                                 Frame.getEME2000(), date, mu);
+                                 FrameFactory.getEME2000(), date, mu);
     }
 
+    @Test
     public void testPositiveDuration() throws OrekitException {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                              new TimeComponents(23, 30, 00.000),
@@ -71,7 +73,8 @@ public class ConstantThrustManeuverTest extends TestCase {
         Orbit o4 = dummyOrbit(new AbsoluteDate(date,  11.0));
         assertTrue(switches[1].g(new SpacecraftState(o4)) > 0);
     }
-    
+
+    @Test
     public void testNegativeDuration() throws OrekitException {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                              new TimeComponents(23, 30, 00.000),
@@ -90,6 +93,7 @@ public class ConstantThrustManeuverTest extends TestCase {
         assertTrue(switches[1].g(new SpacecraftState(o4)) > 0);
     }
 
+    @Test
     public void testRoughBehaviour() throws OrekitException {
         final double isp = 318;
         final double mass = 2500;
@@ -111,7 +115,7 @@ public class ConstantThrustManeuverTest extends TestCase {
                                                        UTCScale.getInstance());
         final Orbit orbit =
             new KeplerianOrbit(a, e, i, omega, OMEGA, lv, KeplerianOrbit.TRUE_ANOMALY,
-                               Frame.getEME2000(), initDate, mu);
+                               FrameFactory.getEME2000(), initDate, mu);
         final SpacecraftState initialState =
             new SpacecraftState(orbit, law.getState(initDate, orbit.getPVCoordinates(), orbit.getFrame()), mass);
 
@@ -142,6 +146,7 @@ public class ConstantThrustManeuverTest extends TestCase {
 
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
@@ -149,10 +154,6 @@ public class ConstantThrustManeuverTest extends TestCase {
         // Body mu
         mu = 3.9860047e14;
         
-    }
-
-    public static Test suite() {
-        return new TestSuite(ConstantThrustManeuverTest.class);
     }
 
 }

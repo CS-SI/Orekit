@@ -16,15 +16,17 @@
  */
 package org.orekit.forces.maneuvers;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.geometry.Vector3D;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
 import org.orekit.attitudes.LofOffset;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -35,13 +37,14 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 
-public class ImpulseManeuverTest extends TestCase {
+public class ImpulseManeuverTest {
 
+    @Test
     public void testInclinationManeuver() throws OrekitException {
         final Orbit initialOrbit =
             new KeplerianOrbit(24532000.0, 0.72, 0.3, Math.PI, 0.4, 2.0,
                                KeplerianOrbit.MEAN_ANOMALY,
-                               Frame.getEME2000(),
+                               FrameFactory.getEME2000(),
                                new AbsoluteDate(new DateComponents(2008, 06, 23),
                                                 new TimeComponents(14, 18, 37),
                                                 UTCScale.getInstance()),
@@ -53,19 +56,16 @@ public class ImpulseManeuverTest extends TestCase {
         final double vApo = Math.sqrt(mu * (1 - e) / (a * (1 + e)));
         double dv = 0.99 * Math.tan(i) * vApo;
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, LofOffset.LOF_ALIGNED);
-        propagator.addEventDetector(new ImpulseManeuver(new NodeDetector(initialOrbit, Frame.getEME2000()),
+        propagator.addEventDetector(new ImpulseManeuver(new NodeDetector(initialOrbit, FrameFactory.getEME2000()),
                                                         new Vector3D(dv, Vector3D.PLUS_J), 400.0));
         SpacecraftState propagated = propagator.propagate(new AbsoluteDate(initialOrbit.getDate(), 8000));
         assertEquals(0.0028257, propagated.getI(), 1.0e-6);
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
-    }
-
-    public static Test suite() {
-        return new TestSuite(ImpulseManeuverTest.class);
     }
 
 }

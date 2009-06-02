@@ -16,12 +16,16 @@
  */
 package org.orekit.attitudes;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.attitudes.NadirPointing;
@@ -30,6 +34,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
@@ -39,7 +44,7 @@ import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
 
-public class NadirPointingTest extends TestCase {
+public class NadirPointingTest {
 
     // Computation date 
     private AbsoluteDate date;
@@ -49,16 +54,11 @@ public class NadirPointingTest extends TestCase {
 
     // Reference frame = ITRF 2005C 
     private Frame frameITRF2005;
-    
-    /** Test class for body center pointing attitude law.
-     */
-    public NadirPointingTest(String name) {
-        super(name);
-    }
 
     /** Test in the case of a spheric earth : nadir pointing shall be 
      * the same as earth center pointing
      */
+    @Test
     public void testSphericEarth() throws OrekitException {
 
         // Spheric earth shape 
@@ -74,16 +74,16 @@ public class NadirPointingTest extends TestCase {
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
                                    Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   Frame.getEME2000(), date, mu);
+                                   FrameFactory.getEME2000(), date, mu);
         
         // Transform satellite position to position/velocity parameters in EME2000 frame 
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
         
         // Get nadir attitude
-        Rotation rotNadir = nadirAttitudeLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
+        Rotation rotNadir = nadirAttitudeLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
         
         // Get earth center attitude
-        Rotation rotCenter = earthCenterAttitudeLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
+        Rotation rotCenter = earthCenterAttitudeLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
         
         // For a spheric earth, earth center pointing attitude and nadir pointing attitude
         // shall be the same, i.e the composition of inverse earth pointing rotation
@@ -98,6 +98,7 @@ public class NadirPointingTest extends TestCase {
      *   - the same as earth center pointing in case of equatorial or polar position
      *   - different from earth center pointing in any other case
      */
+    @Test
     public void testNonSphericEarth() throws OrekitException {
 
         // Elliptic earth shape 
@@ -113,16 +114,16 @@ public class NadirPointingTest extends TestCase {
         // ********************************** 
         KeplerianOrbit kep =
             new KeplerianOrbit(7178000.0, 1.e-8, Math.toRadians(50.), 0., 0.,
-                                    0., KeplerianOrbit.TRUE_ANOMALY, Frame.getEME2000(), date, mu);
+                                    0., KeplerianOrbit.TRUE_ANOMALY, FrameFactory.getEME2000(), date, mu);
  
         // Transform satellite position to position/velocity parameters in EME2000 frame 
         PVCoordinates pvSatEME2000 = kep.getPVCoordinates();
         
         // Get nadir attitude 
-        Rotation rotNadir = nadirAttitudeLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
+        Rotation rotNadir = nadirAttitudeLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
         
         // Get earth center attitude 
-        Rotation rotCenter = earthCenterAttitudeLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
+        Rotation rotCenter = earthCenterAttitudeLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
         
         // For a satellite at equatorial position, earth center pointing attitude and nadir pointing 
         // attitude shall be the same, i.e the composition of inverse earth pointing rotation
@@ -136,16 +137,16 @@ public class NadirPointingTest extends TestCase {
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 1.e-5, 0., Math.toRadians(90.), 0.,
                                    Math.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
-                                   Frame.getEME2000(), date, mu);
+                                   FrameFactory.getEME2000(), date, mu);
  
         // Transform satellite position to position/velocity parameters in EME2000 frame */
         pvSatEME2000 = circ.getPVCoordinates();
                 
         // Get nadir attitude 
-        rotNadir = nadirAttitudeLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
+        rotNadir = nadirAttitudeLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
         
         // Get earth center attitude 
-        rotCenter = earthCenterAttitudeLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
+        rotCenter = earthCenterAttitudeLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
         
         // For a satellite at polar position, earth center pointing attitude and nadir pointing 
         // attitude shall be the same, i.e the composition of inverse earth pointing rotation 
@@ -159,16 +160,16 @@ public class NadirPointingTest extends TestCase {
         circ =
             new CircularOrbit(7178000.0, 1.e-5, 0., Math.toRadians(50.), 0.,
                                    Math.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
-                                   Frame.getEME2000(), date, mu);
+                                   FrameFactory.getEME2000(), date, mu);
  
         // Transform satellite position to position/velocity parameters in EME2000 frame 
         pvSatEME2000 = circ.getPVCoordinates();
         
         // Get nadir attitude 
-        rotNadir = nadirAttitudeLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
+        rotNadir = nadirAttitudeLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
         
         // Get earth center attitude
-        rotCenter = earthCenterAttitudeLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
+        rotCenter = earthCenterAttitudeLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
         
         // For a satellite at any position, earth center pointing attitude and nadir pointing 
         // and nadir pointing attitude shall not be the same, i.e the composition of inverse earth 
@@ -177,8 +178,6 @@ public class NadirPointingTest extends TestCase {
         angle = rotCompo.getAngle();
         assertEquals(angle, Math.toRadians(0.16797386586252272), Utils.epsilonAngle);
     }
-    
-    
        
     /** Vertical test : check that Z satellite axis is colinear to local vertical axis,
         which direction is : (cos(lon)*cos(lat), sin(lon)*cos(lat), sin(lat)), 
@@ -186,6 +185,7 @@ public class NadirPointingTest extends TestCase {
         (i.e satellite ones, since they are the same by construction,
         but that's what is to test.
      */
+    @Test
     public void testVertical() throws OrekitException {
 
         // Elliptic earth shape
@@ -198,7 +198,7 @@ public class NadirPointingTest extends TestCase {
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 1.e-5, 0., Math.toRadians(50.), 0.,
                                    Math.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
-                                   Frame.getEME2000(), date, mu);
+                                   FrameFactory.getEME2000(), date, mu);
  
         // Transform satellite position to position/velocity parameters in EME2000 frame */
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
@@ -219,19 +219,19 @@ public class NadirPointingTest extends TestCase {
         Vector3D targetVertical = new Vector3D(xVert, yVert, zVert);
         
         // Get attitude rotation state
-        Rotation rotSatEME2000 = nadirAttitudeLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
+        Rotation rotSatEME2000 = nadirAttitudeLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
                 
         // Get satellite Z axis in EME2000 frame
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);
-        Vector3D zSatItrf = Frame.getEME2000().getTransformTo(frameITRF2005, date).transformVector(zSatEME2000);
+        Vector3D zSatItrf = FrameFactory.getEME2000().getTransformTo(frameITRF2005, date).transformVector(zSatEME2000);
         
         // Check that satellite Z axis is colinear to local vertical axis
         double angle= Vector3D.angle(zSatItrf, targetVertical);        
         assertEquals(Math.sin(angle), 0.0, Utils.epsilonTest);
         
     }
-    
-    
+
+    @Before
     public void setUp() {
         try {
 
@@ -247,7 +247,7 @@ public class NadirPointingTest extends TestCase {
             mu = 3.9860047e14;
             
             // Reference frame = ITRF 2005
-            frameITRF2005 = Frame.getITRF2005();
+            frameITRF2005 = FrameFactory.getITRF2005(true);
 
         } catch (OrekitException oe) {
             fail(oe.getMessage());
@@ -255,13 +255,11 @@ public class NadirPointingTest extends TestCase {
 
     }
 
+    @After
     public void tearDown() {
         date = null;
         frameITRF2005 = null;
     }
 
-    public static Test suite() {
-        return new TestSuite(NadirPointingTest.class);
-    }
 }
 

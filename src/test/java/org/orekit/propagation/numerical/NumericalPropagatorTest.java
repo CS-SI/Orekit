@@ -16,17 +16,23 @@
  */
 package org.orekit.propagation.numerical;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
-import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -37,20 +43,16 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 
-public class NumericalPropagatorTest extends TestCase {
+public class NumericalPropagatorTest {
 
     private double               mu;
     private AbsoluteDate         initDate;
     private SpacecraftState      initialState;
     private NumericalPropagator  propagator;
     private boolean              gotHere;
-    
-    public NumericalPropagatorTest(String name) {
-        super(name);
-    }
 
+    @Test
     public void testNoExtrapolation() throws OrekitException {
-
 
         // Propagate of the initial at the initial date
         final SpacecraftState finalState = propagator.propagate(initDate);
@@ -73,6 +75,7 @@ public class NumericalPropagatorTest extends TestCase {
 
     }
 
+    @Test
     public void testNotInitialised() {
         try {
             final NumericalPropagator notInitialised =
@@ -86,6 +89,7 @@ public class NumericalPropagatorTest extends TestCase {
         }
     }
 
+    @Test
     public void testKepler() throws OrekitException {
 
         // Propagation of the initial at t + dt
@@ -104,6 +108,7 @@ public class NumericalPropagatorTest extends TestCase {
 
     }
 
+    @Test
     public void testException() throws OrekitException {
         propagator.setMasterMode(new OrekitStepHandler() {
             private static final long serialVersionUID = -6857910416285189873L;
@@ -134,6 +139,7 @@ public class NumericalPropagatorTest extends TestCase {
         }
     }
 
+    @Test
     public void testStopEvent() throws OrekitException {
         final AbsoluteDate stopDate = new AbsoluteDate(initDate, 1000);
         propagator.addEventDetector(new DateDetector(stopDate) {
@@ -152,6 +158,7 @@ public class NumericalPropagatorTest extends TestCase {
         assertEquals(0, finalState.getDate().durationFrom(stopDate), 1.0e-10);
     }
 
+    @Test
     public void testResetStateEvent() throws OrekitException {
         final AbsoluteDate resetDate = new AbsoluteDate(initDate, 1000);
         propagator.addEventDetector(new DateDetector(resetDate) {
@@ -170,6 +177,7 @@ public class NumericalPropagatorTest extends TestCase {
         assertEquals(initialState.getMass() - 200, finalState.getMass(), 1.0e-10);
     }
 
+    @Test
     public void testResetDerivativesEvent() throws OrekitException {
         final AbsoluteDate resetDate = new AbsoluteDate(initDate, 1000);
         propagator.addEventDetector(new DateDetector(resetDate) {
@@ -193,6 +201,7 @@ public class NumericalPropagatorTest extends TestCase {
         assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 6.0e-10);
     }
 
+    @Test
     public void testContinueEvent() throws OrekitException {
         final AbsoluteDate resetDate = new AbsoluteDate(initDate, 1000);
         propagator.addEventDetector(new DateDetector(resetDate) {
@@ -220,13 +229,14 @@ public class NumericalPropagatorTest extends TestCase {
         this.gotHere = gotHere;
     }
 
+    @Before
     public void setUp() {
         mu  = 3.9860047e14;
         final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
         final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
         initDate = AbsoluteDate.J2000_EPOCH;
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
-                                                 Frame.getEME2000(), initDate, mu);
+                                                 FrameFactory.getEME2000(), initDate, mu);
         initialState = new SpacecraftState(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
@@ -242,15 +252,12 @@ public class NumericalPropagatorTest extends TestCase {
         gotHere = false;
     }
 
+    @After
     public void tearDown() {
         initDate = null;
         initialState = null;
         propagator = null;
         gotHere = false;
-    }
-    
-    public static Test suite() {
-        return new TestSuite(NumericalPropagatorTest.class);
     }
 
 }

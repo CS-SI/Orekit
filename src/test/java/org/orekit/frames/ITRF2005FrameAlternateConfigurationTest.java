@@ -16,9 +16,10 @@
  */
 package org.orekit.frames;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import org.junit.Before;
+
+import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.data.DataProvidersManager;
@@ -30,8 +31,9 @@ import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
 
-public class ITRF2005FrameAlternateConfigurationTest extends TestCase {
+public class ITRF2005FrameAlternateConfigurationTest {
 
+    @Test
     public void testAASReferenceLEO() throws OrekitException {
 
         // this reference test has been extracted from the following paper:
@@ -43,7 +45,7 @@ public class ITRF2005FrameAlternateConfigurationTest extends TestCase {
                                            UTCScale.getInstance());
 
         // Positions LEO
-        Frame itrfA = Frame.getITRF2005();
+        Frame itrfA = FrameFactory.getITRF2005(true);
         PVCoordinates pvITRF =
             new PVCoordinates(new Vector3D(-1033479.3830, 7901295.2754, 6380356.5958),
                               new Vector3D(-3225.636520, -2872.451450, 5531.924446));
@@ -53,14 +55,14 @@ public class ITRF2005FrameAlternateConfigurationTest extends TestCase {
             new PVCoordinates(new Vector3D(5102508.9579, 6123011.4038, 6378136.9252),
                               new Vector3D(-4743.220156, 790.536497, 5533.755728));
         checkPV(pvGcrfIau2000A,
-                itrfA.getTransformTo(Frame.getGCRF(), t0).transformPVCoordinates(pvITRF),
+                itrfA.getTransformTo(FrameFactory.getGCRF(), t0).transformPVCoordinates(pvITRF),
                 0.03, 2.9e-5);
 
         PVCoordinates pvEME2000EqA =
             new PVCoordinates(new Vector3D(5102509.0383, 6123011.9758, 6378136.3118),
                               new Vector3D(-4743.219766, 790.536344, 5533.756084));
         checkPV(pvEME2000EqA,
-                itrfA.getTransformTo(Frame.getEME2000(), t0).transformPVCoordinates(pvITRF),
+                itrfA.getTransformTo(FrameFactory.getEME2000(), t0).transformPVCoordinates(pvITRF),
                 0.03, 2.9e-5);
 
     }
@@ -76,7 +78,7 @@ public class ITRF2005FrameAlternateConfigurationTest extends TestCase {
                                            UTCScale.getInstance());
 
         //  Positions GEO
-        Frame itrfA = Frame.getITRF2005();
+        Frame itrfA = FrameFactory.getITRF2005(true);
         PVCoordinates pvITRF =
             new PVCoordinates(new Vector3D(24796919.2915, -34115870.9234, 10226.0621),
                               new Vector3D(-0.979178, -1.476538, -0.928776));
@@ -86,18 +88,19 @@ public class ITRF2005FrameAlternateConfigurationTest extends TestCase {
             new PVCoordinates(new Vector3D(-40588150.3617, -11462167.0397, 27143.1974),
                               new Vector3D(834.787458, -2958.305691, -1.172993));
         checkPV(pvGCRFiau2000A,
-                itrfA.getTransformTo(Frame.getGCRF(), t0).transformPVCoordinates(pvITRF),
+                itrfA.getTransformTo(FrameFactory.getGCRF(), t0).transformPVCoordinates(pvITRF),
                 0.27, 1.9e-5);
 
         PVCoordinates pvEME2000EqA =
             new PVCoordinates(new Vector3D(-40588149.5482, -11462169.9118, 27146.8462),
                               new Vector3D(834.787667, -2958.305632, -1.172963));
         checkPV(pvEME2000EqA,
-                itrfA.getTransformTo(Frame.getEME2000(), t0).transformPVCoordinates(pvITRF),
+                itrfA.getTransformTo(FrameFactory.getEME2000(), t0).transformPVCoordinates(pvITRF),
                 0.27, 1.9e-5);
 
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("testitrf-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
@@ -110,10 +113,6 @@ public class ITRF2005FrameAlternateConfigurationTest extends TestCase {
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
         assertEquals(0, dP.getNorm(), positionThreshold);
         assertEquals(0, dV.getNorm(), velocityThreshold);
-    }
-
-    public static Test suite() {
-        return new TestSuite(ITRF2005FrameAlternateConfigurationTest.class);
     }
 
 }

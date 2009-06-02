@@ -16,15 +16,17 @@
  */
 package org.orekit.forces.gravity;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
 import org.orekit.bodies.SolarSystemBody;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -35,10 +37,11 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 
-public class ThirdBodyAttractionTest extends TestCase {
+public class ThirdBodyAttractionTest {
 
     private double mu;
 
+    @Test(expected= OrekitException.class)
     public void xxtestSunContrib() throws OrekitException {
 
         // initialization
@@ -48,7 +51,7 @@ public class ThirdBodyAttractionTest extends TestCase {
         Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
                                            Math.tan(0.001745329) * Math.cos(2 * Math.PI / 3),
                                            Math.tan(0.001745329) * Math.sin(2 * Math.PI / 3),
-                                           0.1, 2, Frame.getEME2000(), date, mu);
+                                           0.1, 2, FrameFactory.getEME2000(), date, mu);
         double period = 2 * Math.PI * orbit.getA() * Math.sqrt(orbit.getA() / orbit.getMu());
 
         // set up propagator
@@ -74,6 +77,7 @@ public class ThirdBodyAttractionTest extends TestCase {
 
     }
 
+    @Test
     public void testMoonContrib() throws OrekitException {
 
         // initialization
@@ -84,7 +88,7 @@ public class ThirdBodyAttractionTest extends TestCase {
             new EquinoctialOrbit(42164000,10e-3,10e-3,
                                       Math.tan(0.001745329) * Math.cos(2 * Math.PI / 3),
                                       Math.tan(0.001745329) * Math.sin(2 * Math.PI / 3),
-                                      0.1, 2, Frame.getEME2000(), date, mu);
+                                      0.1, 2, FrameFactory.getEME2000(), date, mu);
         double period = 2 * Math.PI * orbit.getA() * Math.sqrt(orbit.getA() / orbit.getMu());
 
         // set up propagator
@@ -133,13 +137,11 @@ public class ThirdBodyAttractionTest extends TestCase {
 
     }
 
+    @Before
     public void setUp() {
         mu = 3.986e14;
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
     }
 
-    public static Test suite() {
-        return new TestSuite(ThirdBodyAttractionTest.class);
-    }
 }

@@ -54,11 +54,11 @@ public abstract class AbstractCelestialBody implements CelestialBody {
 
     /** Build an instance and the underlying frame.
      * <p>The underlying body-centered frame built is a direct child of {@link
-     * Frame#getEME2000() EME2000}. Its defining transform is a simple linear
+     * org.orekit.frames.FrameFactory#getEME2000() EME2000}. Its defining transform is a simple linear
      * {@link Transform#Transform(org.apache.commons.math.geometry.Vector3D,
      * org.apache.commons.math.geometry.Vector3D) translation/velocity} transform
      * without any rotation. The frame axes are therefore always parallel to
-     * {@link Frame#getEME2000() EME2000} frame axes.</p>
+     * {@link org.orekit.frames.FrameFactory#getEME2000() EME2000} frame axes.</p>
      * @param gm attraction coefficient (in m<sup>3</sup>/s<sup>2</sup>)
      * @param frameName frame name to use
      * @param definingFrame frame in which celestial body coordinates are defined

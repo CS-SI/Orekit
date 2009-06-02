@@ -18,15 +18,17 @@ package org.orekit.propagation.numerical;
 
 import java.io.FileNotFoundException;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
@@ -36,8 +38,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 
-public class IntegratedEphemerisTest extends TestCase {
+public class IntegratedEphemerisTest {
 
+    @Test
     public void testNormalKeplerIntegration() throws OrekitException, FileNotFoundException {
 
         // Definition of initial conditions with position and velocity
@@ -48,7 +51,7 @@ public class IntegratedEphemerisTest extends TestCase {
         AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         Orbit initialOrbit =
             new EquinoctialOrbit(new PVCoordinates(position, velocity),
-                                 Frame.getEME2000(), initDate, mu);
+                                 FrameFactory.getEME2000(), initDate, mu);
 
         // Keplerian propagator definition
         KeplerianPropagator keplerEx = new KeplerianPropagator(initialOrbit);
@@ -100,7 +103,4 @@ public class IntegratedEphemerisTest extends TestCase {
 
     }
 
-    public static Test suite() {
-        return new TestSuite(IntegratedEphemerisTest.class);
-    }
 }

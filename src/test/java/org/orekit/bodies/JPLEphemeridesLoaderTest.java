@@ -16,27 +16,29 @@
  */
 package org.orekit.bodies;
 
+import static org.junit.Assert.assertEquals;
+
 import java.text.ParseException;
 import java.util.SortedSet;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TTScale;
 import org.orekit.time.TimeStamped;
 
-public class JPLEphemeridesLoaderTest extends TestCase {
+public class JPLEphemeridesLoaderTest {
 
+    @Test
     public void testConstants() throws OrekitException {
         assertEquals(149597870691.0, JPLEphemeridesLoader.getAstronomicalUnit(), 0.1);
         assertEquals(81.30056, JPLEphemeridesLoader.getEarthMoonMassRatio(), 1.0e-8);
     }
 
+    @Test
     public void testGM() throws OrekitException {
         assertEquals(22032.080e9,
                      JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MERCURY),
@@ -73,10 +75,12 @@ public class JPLEphemeridesLoaderTest extends TestCase {
                      1.0e6);
     }
 
+    @Test
     public void testDerivative405() throws OrekitException, ParseException {
         checkDerivative(new AbsoluteDate(1969, 6, 28, TTScale.getInstance()));
     }
 
+    @Test
     public void testDerivative406() throws OrekitException, ParseException {
         checkDerivative(new AbsoluteDate(2964, 9, 26, TTScale.getInstance()));
     }
@@ -109,13 +113,10 @@ public class JPLEphemeridesLoaderTest extends TestCase {
         return pv.getPositionVelocity(date).getVelocity();        
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
-    }
-
-    public static Test suite() {
-        return new TestSuite(JPLEphemeridesLoaderTest.class);
     }
 
 }

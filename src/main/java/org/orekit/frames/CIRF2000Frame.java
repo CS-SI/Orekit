@@ -183,7 +183,7 @@ class CIRF2000Frame extends Frame {
     protected CIRF2000Frame(final AbsoluteDate date, final String name)
         throws OrekitException {
 
-        super(getGCRF(), null , name);
+        super(FrameFactory.getGCRF(), null , name);
 
         // set up an interpolation model on 12 points with a 1/2 day step
         // this leads to an interpolation error of about 1.1e-10 arcseconds

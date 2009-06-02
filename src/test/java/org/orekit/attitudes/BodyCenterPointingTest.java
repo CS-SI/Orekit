@@ -16,17 +16,22 @@
  */
 package org.orekit.attitudes;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.time.AbsoluteDate;
@@ -37,7 +42,7 @@ import org.orekit.utils.Line;
 import org.orekit.utils.PVCoordinates;
 
 
-public class BodyCenterPointingTest extends TestCase {
+public class BodyCenterPointingTest {
 
     // Computation date 
     private AbsoluteDate date;
@@ -54,21 +59,16 @@ public class BodyCenterPointingTest extends TestCase {
     // Earth center pointing attitude law 
     private BodyCenterPointing earthCenterAttitudeLaw;
 
-    /** Test class for body center pointing attitude law.
-     */
-    public BodyCenterPointingTest(String name) {
-        super(name);
-    }
-
     /** Test if target is body center
      */
+    @Test
     public void testTarget() throws OrekitException {
         
         // Transform satellite position to position/velocity parameters in EME2000 frame 
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
         
         // Call get target method 
-        PVCoordinates target = earthCenterAttitudeLaw.getTargetInBodyFrame(date, pvSatEME2000, Frame.getEME2000());
+        PVCoordinates target = earthCenterAttitudeLaw.getTargetInBodyFrame(date, pvSatEME2000, FrameFactory.getEME2000());
 
         // Check that target is body center
         double normPos = target.getPosition().getNorm();
@@ -77,9 +77,9 @@ public class BodyCenterPointingTest extends TestCase {
 
     }
 
-
     /** Test if body center belongs to the direction pointed by the satellite
      */
+    @Test
     public void testBodyCenterInPointingDirection() throws OrekitException {
         
         // Transform satellite position to position/velocity parameters in EME2000 frame
@@ -88,7 +88,7 @@ public class BodyCenterPointingTest extends TestCase {
         //  Pointing direction
         // ******************** 
         // Get satellite attitude rotation, i.e rotation from EME2000 frame to satellite frame
-        Rotation rotSatEME2000 = earthCenterAttitudeLaw.getState(date, pvSatEME2000, Frame.getEME2000()).getRotation();
+        Rotation rotSatEME2000 = earthCenterAttitudeLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
         
         // Transform Z axis from satellite frame to EME2000 
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);
@@ -108,6 +108,7 @@ public class BodyCenterPointingTest extends TestCase {
         assertTrue(distance < 1.e-8);
     }
 
+    @Before
     public void setUp() {
         try {
 
@@ -125,14 +126,14 @@ public class BodyCenterPointingTest extends TestCase {
             circ =
                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(raan),
                                        Math.toRadians(5.300 - raan), CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
-                                       Frame.getEME2000(), date, mu);
+                                       FrameFactory.getEME2000(), date, mu);
             
             
             // Reference frame = ITRF 2005
-            itrf = Frame.getITRF2005();
+            itrf = FrameFactory.getITRF2005(true);
 
             // Transform from EME2000 to ITRF2005
-            eme2000ToItrf = Frame.getEME2000().getTransformTo(itrf, date);
+            eme2000ToItrf = FrameFactory.getEME2000().getTransformTo(itrf, date);
 
             // Create earth center pointing attitude law */
             earthCenterAttitudeLaw = new BodyCenterPointing(itrf);
@@ -143,16 +144,13 @@ public class BodyCenterPointingTest extends TestCase {
 
     }
 
+    @After
     public void tearDown() {
         date = null;
         itrf = null;
         eme2000ToItrf = null;
         earthCenterAttitudeLaw = null;
         circ = null;
-    }
-
-    public static Test suite() {
-        return new TestSuite(BodyCenterPointingTest.class);
     }
 
 }

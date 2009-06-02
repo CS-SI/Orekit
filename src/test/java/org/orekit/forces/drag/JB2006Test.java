@@ -19,11 +19,13 @@ package org.orekit.forces.drag;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.geometry.Vector3D;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
 import org.orekit.SolarInputs97to05;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
@@ -32,16 +34,18 @@ import org.orekit.bodies.SolarSystemBody;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 
-public class JB2006Test extends TestCase {
+public class JB2006Test {
 
+    @Test
     public void testWithOriginalTestsCases() throws OrekitException, ParseException {
 
-        Frame itrf = Frame.getITRF2005();
+        Frame itrf = FrameFactory.getITRF2005(true);
         CelestialBody sun = SolarSystemBody.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
 
@@ -181,7 +185,7 @@ public class JB2006Test extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 01, 01),
                                              TimeComponents.H00,
                                              UTCScale.getInstance());
-        Frame itrf = Frame.getITRF2005();
+        Frame itrf = FrameFactory.getITRF2005();
         CelestialBody sun = SolarSystemBody.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
 
@@ -198,8 +202,8 @@ public class JB2006Test extends TestCase {
         // COMPUTE DENSITY KG/M3 RHO
 
         // alt = 400
-        double roJb = jb.getDensity(date, pos, Frame.getEME2000());
-        double roDtm = dtm.getDensity(date, pos, Frame.getEME2000());
+        double roJb = jb.getDensity(date, pos, FrameFactory.getEME2000());
+        double roDtm = dtm.getDensity(date, pos, FrameFactory.getEME2000());
 
         pos = new Vector3D(3011109.360780633,
                            -5889822.669411588,
@@ -208,8 +212,8 @@ public class JB2006Test extends TestCase {
         // COMPUTE DENSITY KG/M3 RHO
 
         // alt = 400
-        roJb = jb.getDensity(date, pos, Frame.getEME2000());
-        roDtm = dtm.getDensity(date, pos, Frame.getEME2000());
+        roJb = jb.getDensity(date, pos, FrameFactory.getEME2000());
+        roDtm = dtm.getDensity(date, pos, FrameFactory.getEME2000());
 
         pos =new Vector3D(-1033.4793830*1000,
                           7901.2952754*1000,
@@ -218,16 +222,16 @@ public class JB2006Test extends TestCase {
         // COMPUTE DENSITY KG/M3 RHO
 
         // alt = 400
-        roJb = jb.getDensity(date, pos, Frame.getEME2000());
-        roDtm = dtm.getDensity(date, pos, Frame.getEME2000());
+        roJb = jb.getDensity(date, pos, FrameFactory.getEME2000());
+        roDtm = dtm.getDensity(date, pos, FrameFactory.getEME2000());
 
         GeodeticPoint point;
         for (int i = 0; i<367; i++) {
             date = new AbsoluteDate(date, 86400);
             point = new GeodeticPoint(Math.toRadians(40), 0, 300*1000);
             pos = earth.transform(point);
-            roJb = jb.getDensity(date, pos, Frame.getEME2000());
-            roDtm = dtm.getDensity(date, pos, Frame.getEME2000());
+            roJb = jb.getDensity(date, pos, FrameFactory.getEME2000());
+            roDtm = dtm.getDensity(date, pos, FrameFactory.getEME2000());
             double dif = Math.abs((roJb - roDtm) / roJb );
             if (dif>=1) {
                 System.out.println(date);
@@ -275,12 +279,10 @@ public class JB2006Test extends TestCase {
         assertEquals(3 , in.getAp(date),0);
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
     }
 
-    public static Test suite() {
-        return new TestSuite(JB2006Test.class);
-    }
 }

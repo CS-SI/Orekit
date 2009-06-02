@@ -23,6 +23,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
@@ -54,7 +55,7 @@ public class SpacecraftState implements TimeStamped, Serializable {
 
     /** Default attitude law. */
     private static final Attitude DEFAULT_ATTITUDE =
-        new Attitude(Frame.getEME2000(), Rotation.IDENTITY, Vector3D.ZERO);
+        new Attitude(FrameFactory.getEME2000(), Rotation.IDENTITY, Vector3D.ZERO);
 
     /** Orbital state. */
     private final Orbit orbit;

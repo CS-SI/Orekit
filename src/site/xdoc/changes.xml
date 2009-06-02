@@ -22,6 +22,24 @@
   <body>
     <release version="4.1" date="TBD"
              description="TBD">
+      <action dev="pascal" type="update" >
+        Orekit supports the two different naming patterns for bulletins B provided by IERS 
+        on http://www.iers.org/ and http://hpiers.obspm.fr/eop-pc/.
+      </action>
+      <action dev="pascal" type="update" >
+        the Frame class was split into a FrameFactory class, dealing with the predefined
+        reference frames, and a Frame class for the creation of new frames and the navigation
+        through any frames tree. The Frame.getXXX() methods for the predefined reference
+        frames are still available, but have been deprecated and will be removed in the future,
+        let's use FrameFactory.getXXX() instead.
+      </action>
+      <action dev="pascal" type="add" >
+        3 new predefined reference frames have been added in Orekit : MEME, TEME and PEF. They
+        implement the classical paradigm of equinox-based transformations including the IAU-76
+        precession model, the IAU-80 nutation model and the IAU-82 sidereal time model, with
+        the capability to apply the nutation corrections provided by IERS through the EOP data
+        files for better agreement with the IAU 2000 precession-nutation model.
+      </action>
       <action dev="luc" type="fix" >
         fixed a state reset error: orbital state changed by event detectors like
         ImpulseManeuver were overwritten by other event detectors

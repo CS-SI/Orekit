@@ -16,40 +16,40 @@
  */
 package org.orekit.attitudes;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.geometry.Vector3D;
+
+import org.junit.Test;
+import org.junit.Before;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.SolarSystemBody;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
-public class CelestialBodyPointingTest extends TestCase {
+public class CelestialBodyPointingTest {
 
-    public CelestialBodyPointingTest(String name) {
-        super(name);
-    }
-
+    @Test
     public void testSunPointing() throws OrekitException {
         CelestialBody sun = SolarSystemBody.getSun();
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
                                              UTCScale.getInstance());
         AttitudeLaw sunPointing =
-            new CelestialBodyPointed(Frame.getEME2000(), sun, Vector3D.PLUS_K,
+            new CelestialBodyPointed(FrameFactory.getEME2000(), sun, Vector3D.PLUS_K,
                                      Vector3D.PLUS_I, Vector3D.PLUS_K);
         PVCoordinates pv =
             new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                               new Vector3D(0, 0, 3680.853673522056));
-        Attitude attitude = sunPointing.getState(date, pv, Frame.getEME2000());
+        Attitude attitude = sunPointing.getState(date, pv, FrameFactory.getEME2000());
         Vector3D xDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Vector3D zDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_K);
         assertEquals(0,
@@ -62,18 +62,15 @@ public class CelestialBodyPointingTest extends TestCase {
         // Sun-Earth-Sat are in quadrature, with distance (Earth, Sat) == distance(Sun, Earth) / 5000
         assertEquals(Math.atan(1.0 / 5000.0),
                      Vector3D.angle(xDirection,
-                                    sun.getPVCoordinates(date, Frame.getEME2000()).getPosition()),
+                                    sun.getPVCoordinates(date, FrameFactory.getEME2000()).getPosition()),
                      1.0e-15);
 
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
-    }
-
-    public static Test suite() {
-        return new TestSuite(CelestialBodyPointingTest.class);
     }
 
 }

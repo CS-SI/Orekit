@@ -16,15 +16,24 @@
  */
 package org.orekit.bodies;
 
-
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -33,16 +42,10 @@ import org.orekit.time.UTCScale;
 import org.orekit.utils.Line;
 import org.orekit.utils.PVCoordinates;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
-public class OneAxisEllipsoidTest extends TestCase {
+public class OneAxisEllipsoidTest {
 
-    public OneAxisEllipsoidTest(String name) {
-        super(name);
-    }
-
+    @Test
     public void testOrigin() throws OrekitException {
         double ae = 6378137.0;
         checkCartesianToEllipsoidic(ae, 1.0 / 298.257222101,
@@ -50,58 +53,67 @@ public class OneAxisEllipsoidTest extends TestCase {
                                     0, 0, 0);
     }
 
+    @Test
     public void testStandard() throws OrekitException {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
                                     4637885.347, 121344.608, 4362452.869,
                                     0.026157811533131, 0.757987116290729, 260.455572965555);
     }
 
+    @Test
     public void testLongitudeZero() throws OrekitException {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
                                     6378400.0, 0, 6379000.0,
                                     0.0, 0.787815771252351, 2653416.77864152);
     }
 
+    @Test
     public void testLongitudePi() throws OrekitException {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
                                     -6379999.0, 0, 6379000.0,
                                     3.14159265358979, 0.787690146758403, 2654544.7767725);
     }
 
+    @Test
     public void testNorthPole() throws OrekitException {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
                                     0.0, 0.0, 7000000.0,
                                     0.0, 1.57079632679490, 643247.685859644);
     }
 
+    @Test
     public void testEquator() throws OrekitException {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
                                     6379888.0, 6377000.0, 0.0,
                                     0.785171775899913, 0.0, 2642345.24279301);
     }
 
+    @Test
     public void testInside3Roots() throws OrekitException {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257,
                                     9219.0, -5322.0, 6056743.0,
                                     5.75963470503781, 1.56905114598949, -300000.009586231);
     }
 
+    @Test
     public void testInsideLessThan3Roots() throws OrekitException {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257,
                                     1366863.0, -789159.0, -5848.988,
                                     -0.523598928689, -0.00380885831963, -4799808.27951);
     }
 
+    @Test
     public void testOutside() throws OrekitException {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257,
                                     5722966.0, -3304156.0, -24621187.0,
                                     5.75958652642615, -1.3089969725151, 19134410.3342696);
     }
 
+    @Test
     public void testGeoCar() throws OrekitException {
         OneAxisEllipsoid model =
             new OneAxisEllipsoid(6378137.0, 1.0 / 298.257222101,
-                                 Frame.getITRF2005());
+                                 FrameFactory.getITRF2005());
         GeodeticPoint nsp =
             new GeodeticPoint(0.852479154923577, 0.0423149994747243, 111.6);
         Vector3D p = model.transform(nsp);
@@ -110,9 +122,10 @@ public class OneAxisEllipsoidTest extends TestCase {
         assertEquals(4779203.64408617, p.getZ(), 1.0e-6);
     }
 
+    @Test
     public void testLineIntersection() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Frame frame = Frame.getITRF2005();    
+        Frame frame = FrameFactory.getITRF2005();    
         
         OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 0.9, frame);
         Vector3D point         = new Vector3D(0.0, 93.7139699, 3.5930796);
@@ -158,9 +171,10 @@ public class OneAxisEllipsoidTest extends TestCase {
 
     }
 
+    @Test
     public void testNoLineIntersection() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Frame frame = Frame.getITRF2005();    
+        Frame frame = FrameFactory.getITRF2005(true);    
         OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 0.9, frame);
         Vector3D point     = new Vector3D(0.0, 93.7139699, 3.5930796);
         Vector3D direction = new Vector3D(0.0, 9.0, -2.0);
@@ -168,12 +182,13 @@ public class OneAxisEllipsoidTest extends TestCase {
         assertNull(model.getIntersectionPoint(line, point, frame, date));
     }
 
+    @Test
     public void testIntersectionFromPoints() throws OrekitException {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 03, 21),
                                              TimeComponents.H12,
                                              UTCScale.getInstance());
         
-        Frame frame = Frame.getITRF2005();
+        Frame frame = FrameFactory.getITRF2005();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frame);
         
         // Satellite on polar position
@@ -182,11 +197,11 @@ public class OneAxisEllipsoidTest extends TestCase {
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., Math.toRadians(90.), Math.toRadians(60.),
                                    Math.toRadians(90.), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   Frame.getEME2000(), date, mu);
+                                   FrameFactory.getEME2000(), date, mu);
       
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
-        PVCoordinates pvSatItrf  = frame.getTransformTo(Frame.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
+        PVCoordinates pvSatItrf  = frame.getTransformTo(FrameFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
         Vector3D pSatItrf  = pvSatItrf.getPosition();
         
         // Test first visible surface points
@@ -224,11 +239,11 @@ public class OneAxisEllipsoidTest extends TestCase {
         circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., Math.toRadians(1.e-4), Math.toRadians(0.),
                                    Math.toRadians(0.), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   Frame.getEME2000(), date, mu);
+                                   FrameFactory.getEME2000(), date, mu);
       
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
         pvSatEME2000 = circ.getPVCoordinates();
-        pvSatItrf  = frame.getTransformTo(Frame.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
+        pvSatItrf  = frame.getTransformTo(FrameFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
         pSatItrf  = pvSatItrf.getPosition();
         
         // Test first visible surface points
@@ -270,11 +285,11 @@ public class OneAxisEllipsoidTest extends TestCase {
         circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., Math.toRadians(50.), Math.toRadians(0.),
                                    Math.toRadians(90.), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   Frame.getEME2000(), date, mu);
+                                   FrameFactory.getEME2000(), date, mu);
         
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
         pvSatEME2000 = circ.getPVCoordinates();
-        pvSatItrf  = frame.getTransformTo(Frame.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
+        pvSatItrf  = frame.getTransformTo(FrameFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
         pSatItrf  = pvSatItrf.getPosition();
         
         // Test first visible surface points
@@ -313,7 +328,7 @@ public class OneAxisEllipsoidTest extends TestCase {
         throws OrekitException {
 
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Frame frame = Frame.getITRF2005();    
+        Frame frame = FrameFactory.getITRF2005(true);    
         OneAxisEllipsoid model = new OneAxisEllipsoid(ae, f, frame);
         GeodeticPoint gp = model.transform(new Vector3D(x, y, z), frame, date);
         assertEquals(longitude, MathUtils.normalizeAngle(gp.getLongitude(), longitude), 1.0e-10);
@@ -323,13 +338,10 @@ public class OneAxisEllipsoidTest extends TestCase {
         assertEquals(0, rebuiltNadir.subtract(gp.getNadir()).getNorm(), 1.0e-15);
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
-    }
-
-    public static Test suite() {
-        return new TestSuite(OneAxisEllipsoidTest.class);
     }
 
 }

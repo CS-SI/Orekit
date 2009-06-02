@@ -18,14 +18,18 @@ package org.orekit.bodies;
 
 import java.text.ParseException;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.geometry.Vector3D;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -33,17 +37,19 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TTScale;
 import org.orekit.utils.PVCoordinates;
 
-public class SolarBodyTest extends TestCase {
+public class SolarBodyTest {
 
+    @Test
     public void testGeocentricPV() throws OrekitException, ParseException {
         AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TTScale.getInstance());
-        Frame geocentricFrame = Frame.getEME2000();
+        Frame geocentricFrame = FrameFactory.getEME2000();
         checkPV(SolarSystemBody.getMoon(), date, geocentricFrame,
                 new Vector3D(-0.0008081773279115, -0.0019946300016204, -0.0010872626608381),
                 new Vector3D( 0.0006010848166591, -0.0001674454606152, -0.0000855621449740));
         checkPV(SolarSystemBody.getEarth(), date, geocentricFrame, Vector3D.ZERO, Vector3D.ZERO);
     }
 
+    @Test
     public void testHeliocentricPV() throws OrekitException, ParseException {
         AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TTScale.getInstance());
         Frame heliocentricFrame = SolarSystemBody.getSun().getFrame();
@@ -129,13 +135,10 @@ public class SolarBodyTest extends TestCase {
         assertTrue(max < epsilon * a);
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
-    }
-
-    public static Test suite() {
-        return new TestSuite(SolarBodyTest.class);
     }
 
 }

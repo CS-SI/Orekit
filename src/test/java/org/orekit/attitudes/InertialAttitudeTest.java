@@ -16,17 +16,21 @@
  */
 package org.orekit.attitudes;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.InertialLaw;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -36,15 +40,12 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 
 
-public class InertialAttitudeTest extends TestCase {
+public class InertialAttitudeTest {
 
     private AbsoluteDate t0;
     private Orbit        orbit0;
 
-    public InertialAttitudeTest(String name) {
-        super(name);
-    }
-
+    @Test
     public void testIsInertial() throws OrekitException {
         InertialLaw law = new InertialLaw(new Rotation(new Vector3D(0.6, 0.48, 0.64), 0.9));
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
@@ -54,7 +55,7 @@ public class InertialAttitudeTest extends TestCase {
                 propagator.propagate(new AbsoluteDate(t0, t)).getAttitude();
             Rotation evolution = attitude.getRotation().applyTo(initial.getRotation().revert());
             assertEquals(0, evolution.getAngle(), 1.0e-10);
-            assertEquals(Frame.getEME2000(), attitude.getReferenceFrame());
+            assertEquals(FrameFactory.getEME2000(), attitude.getReferenceFrame());
         }
     }
 
@@ -67,10 +68,11 @@ public class InertialAttitudeTest extends TestCase {
                 propagator.propagate(new AbsoluteDate(t0, t)).getAttitude();
             Rotation evolution = attitude.getRotation().applyTo(initial.getRotation().revert());
             assertEquals(0, evolution.getAngle(), 1.0e-10);
-            assertEquals(Frame.getEME2000(), attitude.getReferenceFrame());
+            assertEquals(FrameFactory.getEME2000(), attitude.getReferenceFrame());
         }
     }
 
+    @Before
     public void setUp() {
         try {
             String root = getClass().getClassLoader().getResource("regular-data").getPath();
@@ -80,20 +82,17 @@ public class InertialAttitudeTest extends TestCase {
                                   UTCScale.getInstance());
             orbit0 =
                 new KeplerianOrbit(12345678.9, 0.001, 2.3, 0.1, 3.04, 2.4,
-                                   KeplerianOrbit.TRUE_ANOMALY, Frame.getEME2000(),
+                                   KeplerianOrbit.TRUE_ANOMALY, FrameFactory.getEME2000(),
                                    t0, 3.986004415e14);
         } catch (OrekitException oe) {
             fail(oe.getMessage());
         }
     }
 
+    @After
     public void tearDown() {
         t0     = null;
         orbit0 = null;
-    }
-
-    public static Test suite() {
-        return new TestSuite(InertialAttitudeTest.class);
     }
 
 }

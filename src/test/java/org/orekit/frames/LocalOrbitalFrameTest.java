@@ -16,11 +16,13 @@
  */
 package org.orekit.frames;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.geometry.Vector3D;
+
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -29,27 +31,28 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
-public class LocalOrbitalFrameTest extends TestCase {
+public class LocalOrbitalFrameTest {
 
+    @Test
     public void testTNW() throws OrekitException {
         
         AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
                                                 6.2, KeplerianOrbit.TRUE_ANOMALY, 
-                                                Frame.getGCRF(), initDate,
+                                                FrameFactory.getGCRF(), initDate,
                                                 3.986004415e14);
         Propagator propagator = new KeplerianPropagator(initialOrbit);
         LocalOrbitalFrame tnw =
-            new LocalOrbitalFrame(Frame.getGCRF(), LocalOrbitalFrame.LOFType.TNW,
+            new LocalOrbitalFrame(FrameFactory.getGCRF(), LocalOrbitalFrame.LOFType.TNW,
                                   propagator, "TNW");
 
         AbsoluteDate date = new AbsoluteDate(initDate, 400);
-        Transform t = tnw.getTransformTo(Frame.getGCRF(), date);
+        Transform t = tnw.getTransformTo(FrameFactory.getGCRF(), date);
         PVCoordinates pv1 = t.transformPVCoordinates(PVCoordinates.ZERO);
         Vector3D p1 = pv1.getPosition();
         Vector3D v1 = pv1.getVelocity();
         PVCoordinates pv2 =
-            propagator.propagate(date).getPVCoordinates(Frame.getGCRF());
+            propagator.propagate(date).getPVCoordinates(FrameFactory.getGCRF());
         Vector3D p2 = pv2.getPosition();
         Vector3D v2 = pv2.getVelocity();
         Vector3D momentum = Vector3D.crossProduct(p2, v2);
@@ -67,25 +70,26 @@ public class LocalOrbitalFrameTest extends TestCase {
 
     }    
 
+    @Test
     public void testQSW() throws OrekitException {
         
         AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
                                                 6.2, KeplerianOrbit.TRUE_ANOMALY, 
-                                                Frame.getGCRF(), initDate,
+                                                FrameFactory.getGCRF(), initDate,
                                                 3.986004415e14);
         Propagator propagator = new KeplerianPropagator(initialOrbit);
         LocalOrbitalFrame tnw =
-            new LocalOrbitalFrame(Frame.getGCRF(), LocalOrbitalFrame.LOFType.QSW,
+            new LocalOrbitalFrame(FrameFactory.getGCRF(), LocalOrbitalFrame.LOFType.QSW,
                                   propagator, "QSW");
 
         AbsoluteDate date = new AbsoluteDate(initDate, 400);
-        Transform t = tnw.getTransformTo(Frame.getGCRF(), date);
+        Transform t = tnw.getTransformTo(FrameFactory.getGCRF(), date);
         PVCoordinates pv1 = t.transformPVCoordinates(PVCoordinates.ZERO);
         Vector3D p1 = pv1.getPosition();
         Vector3D v1 = pv1.getVelocity();
         PVCoordinates pv2 =
-            propagator.propagate(date).getPVCoordinates(Frame.getGCRF());
+            propagator.propagate(date).getPVCoordinates(FrameFactory.getGCRF());
         Vector3D p2 = pv2.getPosition();
         Vector3D v2 = pv2.getVelocity();
         Vector3D momentum = Vector3D.crossProduct(p2, v2);
@@ -102,9 +106,5 @@ public class LocalOrbitalFrameTest extends TestCase {
         assertEquals(initialOrbit.getKeplerianMeanMotion(), t.getRotationRate().getNorm(), 1.0e-7);
 
     }    
-
-    public static Test suite() {
-        return new TestSuite(LocalOrbitalFrameTest.class);
-    }
 
 }

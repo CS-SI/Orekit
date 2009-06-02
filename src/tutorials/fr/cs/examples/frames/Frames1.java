@@ -27,6 +27,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.LocalOrbitalFrame.LOFType;
@@ -60,7 +61,7 @@ public class Frames1 {
             TimeScale utc = UTCScale.getInstance();
             AbsoluteDate initialDate = new AbsoluteDate(2008, 10, 01, 0, 0, 00.000, utc);
             double mu =  3.986004415e+14; // gravitation coefficient
-            Frame inertialFrame = Frame.getEME2000(); // inertial frame for orbit definition
+            Frame inertialFrame = FrameFactory.getEME2000(); // inertial frame for orbit definition
             Vector3D posisat = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
             Vector3D velosat = new Vector3D(505.8479685, 942.7809215, 7435.922231);
             PVCoordinates pvsat = new PVCoordinates(posisat, velosat);
@@ -75,7 +76,7 @@ public class Frames1 {
             // Earth and frame  
             double ae =  6378137.0; // equatorial radius in meter
             double f  =  1.0 / 298.257223563; // flattening
-            Frame ITRF2005 = Frame.getITRF2005(); // terrestrial frame at an arbitrary date
+            Frame ITRF2005 = FrameFactory.getITRF2005(true); // terrestrial frame at an arbitrary date
             BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
 
             // Station

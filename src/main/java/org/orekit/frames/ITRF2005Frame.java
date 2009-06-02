@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
@@ -53,6 +54,18 @@ class ITRF2005Frame extends Frame {
     /** Flag for tidal effects. */
     private final boolean ignoreTidalEffects;
 
+    /** Simple constructor, ignoring tidal effects.
+     * @param date the current date
+     * @param name the string representation
+     * @exception OrekitException if nutation cannot be computed
+     */
+    protected ITRF2005Frame(final AbsoluteDate date, final String name)
+        throws OrekitException {
+
+        this(true, date, name);
+
+    }
+
     /** Simple constructor.
      * @param ignoreTidalEffects if true, tidal effects are ignored
      * @param date the current date
@@ -63,8 +76,7 @@ class ITRF2005Frame extends Frame {
                             final AbsoluteDate date, final String name)
         throws OrekitException {
 
-        super(ignoreTidalEffects ? getTIRF2000IgnoringTidalEffects() : getTIRF2000(),
-              null, name);
+        super(FrameFactory.getTIRF2000(ignoreTidalEffects), null, name);
         this.ignoreTidalEffects = ignoreTidalEffects;
 
         // everything is in place, we can now synchronize the frame

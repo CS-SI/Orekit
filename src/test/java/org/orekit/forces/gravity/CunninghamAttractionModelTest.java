@@ -19,10 +19,6 @@ package org.orekit.forces.gravity;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.DerivativeException;
@@ -30,12 +26,22 @@ import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.SolarSystemBody;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -51,15 +57,10 @@ import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
 
-public class CunninghamAttractionModelTest extends TestCase {
-
-    public CunninghamAttractionModelTest(String name) {
-        super(name);
-        ITRF2005   = null;
-        propagator = null;
-    }
+public class CunninghamAttractionModelTest {
 
     // rough test to determine if J2 alone creates heliosynchronism
+    @Test
     public void testHelioSynchronous()
     throws ParseException, FileNotFoundException,
     OrekitException, DerivativeException, IntegratorException {
@@ -68,9 +69,9 @@ public class CunninghamAttractionModelTest extends TestCase {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
                                              new TimeComponents(13, 59, 27.816),
                                              UTCScale.getInstance());
-        Transform itrfToEME2000 = ITRF2005.getTransformTo(Frame.getEME2000(), date);
+        Transform itrfToEME2000 = ITRF2005.getTransformTo(FrameFactory.getEME2000(), date);
         Vector3D pole           = itrfToEME2000.transformVector(Vector3D.PLUS_K);
-        Frame poleAligned       = new Frame(Frame.getEME2000(),
+        Frame poleAligned       = new Frame(FrameFactory.getEME2000(),
                                             new Transform(new Rotation(pole, Vector3D.PLUS_K)),
                                             "pole aligned");
 
@@ -114,7 +115,7 @@ public class CunninghamAttractionModelTest extends TestCase {
             AbsoluteDate current = currentState.getDate();
             Vector3D sunPos;
             try {
-                sunPos = sun.getPVCoordinates(current , Frame.getEME2000()).getPosition();
+                sunPos = sun.getPVCoordinates(current , FrameFactory.getEME2000()).getPosition();
             } catch (OrekitException e) {
                 sunPos = Vector3D.ZERO;
                 System.out.println("exception during sun.getPosition");
@@ -131,6 +132,7 @@ public class CunninghamAttractionModelTest extends TestCase {
     }
 
     // test the difference with the analytical extrapolator Eckstein Hechler
+    @Test
     public void testEcksteinHechlerReference()
         throws ParseException, FileNotFoundException,
                OrekitException, DerivativeException, IntegratorException {
@@ -140,9 +142,9 @@ public class CunninghamAttractionModelTest extends TestCase {
         Vector3D position = new Vector3D(3220103., 69623., 6449822.);
         Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
 
-        Transform itrfToEME2000 = ITRF2005.getTransformTo(Frame.getEME2000(), date);
+        Transform itrfToEME2000 = ITRF2005.getTransformTo(FrameFactory.getEME2000(), date);
         Vector3D pole           = itrfToEME2000.transformVector(Vector3D.PLUS_K);
-        Frame poleAligned       = new Frame(Frame.getEME2000(),
+        Frame poleAligned       = new Frame(FrameFactory.getEME2000(),
                                             new Transform(new Rotation(pole, Vector3D.PLUS_K)),
                                             "pole aligned");
 
@@ -212,6 +214,7 @@ public class CunninghamAttractionModelTest extends TestCase {
     }
 
     // test the difference with the Cunningham model
+    @Test
     public void testZonalWithDrozinerReference()
     throws OrekitException, DerivativeException, IntegratorException, ParseException {
         // initialization
@@ -223,7 +226,7 @@ public class CunninghamAttractionModelTest extends TestCase {
         double OMEGA = Math.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                                        0, KeplerianOrbit.MEAN_ANOMALY,
-                                                       Frame.getEME2000(), date, mu);
+                                                       FrameFactory.getEME2000(), date, mu);
         
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(1000));
         propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, ae, mu,
@@ -259,7 +262,10 @@ public class CunninghamAttractionModelTest extends TestCase {
         assertTrue(propagator.getCalls() < 400);
     }
 
+    @Before
     public void setUp() {
+        ITRF2005   = null;
+        propagator = null;
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
         try {
@@ -272,7 +278,7 @@ public class CunninghamAttractionModelTest extends TestCase {
             c50 =  2.27888264414e-7;
             c60 = -5.40618601332e-7;
 
-            ITRF2005 = Frame.getITRF2005();
+            ITRF2005 = FrameFactory.getITRF2005();
             double[] absTolerance = {
                 0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
             };
@@ -288,13 +294,10 @@ public class CunninghamAttractionModelTest extends TestCase {
         }
     }
 
+    @After
     public void tearDown() {
         ITRF2005   = null;
         propagator = null;
-    }
-
-    public static Test suite() {
-        return new TestSuite(CunninghamAttractionModelTest.class);
     }
 
     private double c20;

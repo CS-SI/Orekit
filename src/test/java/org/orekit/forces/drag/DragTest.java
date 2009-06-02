@@ -16,49 +16,46 @@
  */
 package org.orekit.forces.drag;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.geometry.Vector3D;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 
 
-public class DragTest extends TestCase {
+public class DragTest {
 
-    public DragTest(String name) {
-        super(name);
-    }
-
+    @Test
     public void testExpAtmosphere() throws OrekitException {
         Vector3D posInEME2000 = new Vector3D(10000,Vector3D.PLUS_I);
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Frame itrf = Frame.getITRF2005();
+        Frame itrf = FrameFactory.getITRF2005();
         SimpleExponentialAtmosphere atm =
             new SimpleExponentialAtmosphere(new OneAxisEllipsoid(Utils.ae, 1.0 / 298.257222101, itrf),
                                             itrf, 0.0004, 42000.0, 7500.0);
-        Vector3D vel = atm.getVelocity(date, posInEME2000, Frame.getEME2000());
+        Vector3D vel = atm.getVelocity(date, posInEME2000, FrameFactory.getEME2000());
 
-        Transform toBody = Frame.getEME2000().getTransformTo(itrf, date);
+        Transform toBody = FrameFactory.getEME2000().getTransformTo(itrf, date);
         Vector3D test = Vector3D.crossProduct(toBody.getRotationRate(),posInEME2000);
         test = test.subtract(vel);
         assertEquals(0, test.getNorm(), 2.9e-5);
 
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
-    }
-
-    public static Test suite() {
-        return new TestSuite(DragTest.class);
     }
 
 }

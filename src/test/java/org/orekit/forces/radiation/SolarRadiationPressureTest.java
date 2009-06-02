@@ -16,24 +16,25 @@
  */
 package org.orekit.forces.radiation;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.FileNotFoundException;
 import java.text.ParseException;
-
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.bodies.SolarSystemBody;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.SphericalSpacecraft;
-import org.orekit.frames.Frame;
+import org.orekit.frames.FrameFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -46,8 +47,9 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.UTCScale;
 
 
-public class SolarRadiationPressureTest extends TestCase {
+public class SolarRadiationPressureTest {
 
+    @Test
     public void testLightning() throws OrekitException, ParseException, DerivativeException, IntegratorException{
         // Initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
@@ -55,11 +57,11 @@ public class SolarRadiationPressureTest extends TestCase {
                                              UTCScale.getInstance());
         Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
                                            Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
-                                           0.1, 2, Frame.getEME2000(), date, mu);
+                                           0.1, 2, FrameFactory.getEME2000(), date, mu);
         CelestialBody sun = SolarSystemBody.getSun();
         OneAxisEllipsoid earth =
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
-                                 Frame.getITRF2005());
+                                 FrameFactory.getITRF2005());
         SolarRadiationPressure SRP = 
             new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
                                        (RadiationSensitive) new SphericalSpacecraft(50.0, 0.5, 0.5, 0.5));
@@ -80,7 +82,7 @@ public class SolarRadiationPressureTest extends TestCase {
             try {
 
                 double ratio = SRP.getLightningRatio(k.propagate(currentDate).getPVCoordinates().getPosition(),
-                                                     Frame.getEME2000(), currentDate);
+                                                     FrameFactory.getEME2000(), currentDate);
 
                 if(Math.floor(ratio)!=changed) {
                     changed = Math.floor(ratio);
@@ -95,6 +97,7 @@ public class SolarRadiationPressureTest extends TestCase {
         assertTrue(3==count);
     }
 
+    @Test
     public void testRoughOrbitalModifs() throws ParseException, OrekitException, DerivativeException, IntegratorException, FileNotFoundException {
 
         // initialization
@@ -104,7 +107,7 @@ public class SolarRadiationPressureTest extends TestCase {
         Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
                                            Math.tan(0.001745329)*Math.cos(2*Math.PI/3),
                                            Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
-                                           0.1, 2, Frame.getEME2000(), date, mu);
+                                           0.1, 2, FrameFactory.getEME2000(), date, mu);
         final double period = orbit.getKeplerianPeriod();
         assertEquals(86164, period, 1);
         CelestialBody sun = SolarSystemBody.getSun();
@@ -112,7 +115,7 @@ public class SolarRadiationPressureTest extends TestCase {
         // creation of the force model
         OneAxisEllipsoid earth =
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
-                                 Frame.getITRF2005());
+                                 FrameFactory.getITRF2005());
         SolarRadiationPressure SRP =
             new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
                                        (RadiationSensitive) new SphericalSpacecraft(500.0, 0.7, 0.7, 0.7));
@@ -164,13 +167,10 @@ public class SolarRadiationPressureTest extends TestCase {
 
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
-    }
-
-    public static Test suite() {
-        return new TestSuite(SolarRadiationPressureTest.class);
     }
 
 }

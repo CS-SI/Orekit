@@ -62,6 +62,18 @@ class TIRF2000Frame extends Frame {
     /** Flag for tidal effects. */
     private final boolean ignoreTidalEffects;
 
+    /** Simple constructor, ignoring tidal effects.
+     * @param date the current date
+     * @param name the string representation
+     * @exception OrekitException if nutation cannot be computed
+     */
+    protected TIRF2000Frame(final AbsoluteDate date, final String name)
+        throws OrekitException {
+
+        this(true, date, name);
+
+    }
+
     /** Simple constructor.
      * @param ignoreTidalEffects if true, tidal effects are ignored
      * @param date the current date
@@ -72,7 +84,7 @@ class TIRF2000Frame extends Frame {
                             final AbsoluteDate date, final String name)
         throws OrekitException {
 
-        super(getCIRF2000(), null, name);
+        super(FrameFactory.getCIRF2000(), null, name);
         this.ignoreTidalEffects = ignoreTidalEffects;
 
         // everything is in place, we can now synchronize the frame

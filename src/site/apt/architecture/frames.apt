@@ -68,13 +68,18 @@ Frames
  
 * Predefined Frames
 
-  Several predefined reference frames are implemented in Orekit. The user can retrieve them
-  using various static methods: <<<getGCRF()>>>, <<<getEME2000()>>>, <<<getITRF2005()>>>,
-  <<<getITRF2005IgnoringTidalEffects()>>>, <<<getCIRF2000()>>>, <<<getTIRF2000()>>>,
-  <<<getTIRF2000IgnoringTidalEffects()>>> and <<<getVeis1950()>>>. One of these reference
-  frames has been arbitrarily chosen as the root of the frames tree: the <Geocentric Celestial
-  Reference Frame> (GCRF) which is an inertial reference defined by IERS. There are also a number
-  of planetary frames associated with the predefined celestial bodies.
+  The <<<FrameFactory>>> class implements several predefined reference frames.
+
+  The user can retrieve them using various static methods: <<<getGCRF()>>>, <<<getEME2000()>>>,
+  <<<getCIRF2000()>>>, <<<getTIRF2000()>>>, <<<getITRF2005()>>>, <<<getMEME()>>>,
+  <<<getTEME()>>>, <<<getPEF()>>> and <<<getVeis1950()>>>. One of these reference frames
+  has been arbitrarily chosen as the root of the frames tree: the <Geocentric Celestial
+  Reference Frame> (GCRF) which is an inertial reference defined by IERS.
+
+  There are also a number of planetary frames associated with the predefined celestial bodies.
+
+  For most purposes, the recommended frames to use are ITRF 2005 for terrestrial frame and
+  GCRF for celestial frame. EME2000 could also be used for compatibility with other systems.
 
 ** IERS 2003 Conventions
 
@@ -83,7 +88,7 @@ Frames
   This set defines the GCRF reference frame on the celestial (i.e. inertial) side,
   the ITRF (International Terrestrial Reference Frame) on the terrestrial side and several
   intermediate frames between them. Several versions of ITRF have been defined. Orekit
-  supports the last available version at time of writing (2008), which is ITRF 2005.
+  supports the last available version at time of writing (2009), which is ITRF 2005.
 
 *** New paradigm: CIO-based transformations
 
@@ -104,22 +109,24 @@ Frames
 *** Classical paradigm: equinox-based transformations
 
   The classical paradigm used prior to IERS conventions 2003 is equinox based and uses
-  more intermediate frames. Only one of these frames is supported in Orekit.
+  more intermediate frames.
 
-  Starting from GCRF, the first transform is a bias to convert to EME2OOO, which was the
+  Starting from GCRF, the first transform is a bias to convert to EME2000, which was the
   former reference. The EME2000 frame (which is also known as J2000) is defined using
   the mean equinox at epoch J2000.0, i.e. 2000-01-01T12:00:00 in Terrestrial Time (not
   UTC!). From this frame, applying precession evolution between J2000.0 and current date
   defines a Mean Of Date frame for current date and applying nutation defines a True Of
-  Data frame. This frame is similar in spirit to the CIRF in the new paradigm, but is not
-  identical. From this, the Greenwhich Apparent Sidereal Time is applied to reach the same
-  Terrestrial Intermediate Reference Frame as with the new paradigm. The last transform
-  (pole motion) is the same one already defined in the new paradigm.
+  Data frame, similar in spirit to the CIRF in the new paradigm. From this, the Greenwhich
+  Apparent Sidereal Time is applied to reach a Pseudo Earth Fixed frame, similar to the TIRF
+  in the new paradigm. And a last transform involving pole motion leads to the ITRF.
 
-  In summary, six frames are involved along this path: GCRF, EME2000, MoD, ToD, TIRF
+  In summary, six frames are involved along this path: GCRF, EME2000, MoD, ToD, PEF
   and ITRF.
-
-  This paradigm is deprecated by IERS. It also involves additional complexity, first because
+  
+  The EME2000 frame, which can be computed by a single bias from GCRF, is an historically
+  very important frame and lots of systems rely on it. It is supported in Orekit.
+  
+  But this paradigm is deprecated by IERS. It also involves additional complexity, first because
   of the larger number of frames and second because these frames are computed by mixed models
   with IAU-76 precession, correction terms to match IAU-2000, and a need to convert Earth
   Earth Orientation data from the published form to a form suitable for this model. Another
@@ -127,14 +134,13 @@ Frames
   with the same names used prior to IERS conventions 2003 since a correction is added to the
   IAU-76 precession model and the IAU-80 nutation model is completely replaced by the nutation
   part extracted from IAU-2000 model. For these reasons, this paradigm is not completely
-  supported in Orekit. Only the EME2000 frame, which can be computed by a single bias from GCRF
-  is supported. This is an historically very important frame and lots of systems rely on it.
+  supported in Orekit and the path stops at the PEF frame and doesn't reach the ITRF.
 
 *** Orekit implementation of IERS 2003 convention
 
-  In summary, Orekit implements 7 frames from IERS 2003 convention: GCRF, EME2000,
-  CIRF 2000, TIRF 2000 with tidal effects, TIRF 2000 without tidal effects, ITRF 2005 with
-  tidal effects and ITRF 2005 without tidal effects.
+  In summary, Orekit implements 6 frames from IERS 2003 convention: GCRF, CIRF 2000,
+  TIRF 2000 with tidal effects, TIRF 2000 without tidal effects, ITRF 2005 with tidal
+  effects and ITRF 2005 without tidal effects.
 
   Here is a schematic representation of the partial tree containing the supported IERS frames.
     
@@ -166,8 +172,15 @@ Frames
   maximal interpolation error is about 3 microarcseconds. The penalty to use tidal effects is therefore
   limited to slightly more than 20%, to be compared with the 550% penalty without this mechanism.
 
-  For most purposes, the recommended frames to use are ITRF 2005 for terrestrial frame and
-  GCRF for celestial frame. EME2000 could also be used for compatibility with other systems.
+*** Orekit implementation of equinox-based transformations
+
+  Orekit implements 7 frames from the classical paradigm: EME2000,
+  MEME, MEME with nutation corrections, TEME, TEME with nutation corrections, PEF and PEF
+  with nutation corrections.
+
+  Here is a schematic representation of the partial tree containing the supported frames.
+    
+[../images/pre-iers-tree.png]
 
 ** Topocentric Frame
   
@@ -213,7 +226,7 @@ Frames
 
 * User defined frames
 
-  The frames tree is can be extended by user which can add as many frames as he
+  The frames tree can be extended by user who can add as many frames as he
   wants for specific needs. This is done by adding frames one at a time, attaching
   each frame to an already built one by specifying the transform from parent to child.
 
@@ -256,3 +269,6 @@ Frames
    ** Fabien Maussion
   
    ** V\u00e9ronique Pommier-Maurussane
+  
+   ** Pascal Parraud
+   
