@@ -19,7 +19,7 @@ package org.orekit.frames;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
-import org.apache.commons.math.geometry.Rotation;
+
 import org.orekit.errors.FrameAncestorException;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
@@ -27,11 +27,11 @@ import org.orekit.time.AbsoluteDate;
 
 /** Tridimensional references frames class.
  *
- * <p><h5> Frame Presentation </h5>
- * This class is the base class for all frames in OREKIT. The frames are
- * linked together in a tree with the <i>Geocentric Celestial Reference Frame</i>
- * (GCRF) frame as the root of the tree. Each frame is defined by {@link Transform transforms}
- * combining any number of translations and rotations from a reference frame which is its
+ * <h5> Frame Presentation </h5>
+ * <p>This class is the base class for all frames in OREKIT. The frames are
+ * linked together in a tree with some specific frame chosen as the root of the tree.
+ * Each frame is defined by {@link Transform transforms} combining any number
+ * of translations and rotations from a reference frame which is its
  * parent frame in the tree structure.</p>
  * <p>When we say a {@link Transform transform} t is <em>from frame<sub>A</sub>
  * to frame<sub>B</sub></em>, we mean that if the coordinates of some absolute
@@ -46,66 +46,6 @@ import org.orekit.time.AbsoluteDate;
  * methods that will compute the transform and call internally
  * the {@link #setTransform(Transform)} method.</p>
  *
- * <h5> Reference Frames </h5>
- * <p>
- *  Several Reference frames are implemented in OREKIT. The user can retrieve
- *  them using various static methods({@link #getGCRF()}, {@link #getCIRF2000()},
- *  {@link #getTIRF2000()}, {@link #getITRF2005()}, {@link #getEME2000()},
- *  {@link #getMEME(boolean)}, {@link #getTEME(boolean)}, {@link #getPEF(boolean)} and
- *  {@link #getVeis1950()}).
- * <p>
- *
- * <h5> International Terrestrial Reference Frame 2005 </h5>
- * <p>
- * This frame is the current (as of 2008) reference realization of
- * the International Terrestrial Reference System produced by IERS.
- * It is described in <a
- * href="http://www.iers.org/documents/publications/tn/tn32/tn32.pdf">
- * IERS conventions (2003)</a>. It replaces the Earth Centered Earth Fixed
- * frame which is the reference frame for GPS satellites.
- * <p>This frame is used to define position on solid Earth. It rotates with
- * the Earth and includes the pole motion with respect to Earth crust as
- * provided by {@link org.orekit.data.DataProvidersManager IERS data}.
- * Its pole axis is the IERS Reference Pole (IRP).
- * </p>
- * <p>
- * OREKIT proposes all the intermediate frames used to build this specific frame.
- * Here is a schematic representation of the ITRF frame tree :
- * </p>
- * <pre>
- *
- *                                                GCRF
- *                                                 |
- *                                                 |---------------------------------------------
- *                                                 |                       |     Frame bias     |
- *                                                 |                       |                 EME2000
- *                                                 |                       |                    |
- *                                                 |                       | Precession effects |
- *                                                 |                       |                    |
- *           Bias, Precession and Nutation effects |                     MEME                 MEME  (Mean Equator of Date)
- *                                                 |                       |             w/o EOP corrections
- *                                                 |                       |  Nutation effects  |
- *    (Celestial Intermediate Reference Frame) CIRF2000                    |                    |
- *                                                 |                     TEME                 TEME  (True Equator of Date)
- *                          Earth natural rotation |                       |             w/o EOP corrections
- *                                                 |-------------          |    Sidereal Time   |
- *                                                 |            |          |                    |
- *  (Terrestrial Intermediate Reference Frame) TIRF2000     TIRF2000      PEF                  PEF  (Pseudo Earth Fixed)
- *                                                 |    w/o tidal effects                w/o EOP corrections
- *                                     Pole motion |            |
- *                                                 |            |
- * (International Terrestrial Reference Frame) ITRF2005     ITRF2005
- *                                                      w/o tidal effects
- *
- * </pre>
- * <p>This implementation follows the new non-rotating origin paradigm
- * mandated by IAU 2000 resolution B1.8. It is therefore based on
- * Celestial Ephemeris Origin (CEO-based) and Earth Rotating Angle.
- * </p>
- * <p>An other, and older, implementation is also proposed using the classical
- * equinox-based paradigm and a specifically tuned Greenwich Sidereal Time.</p>
- * </p>
- *
  * @author Guylaine Prat
  * @author Luc Maisonobe
  * @author Pascal Parraud
@@ -116,7 +56,7 @@ public class Frame implements Serializable {
     /** Serialiazable UID. */
     private static final long serialVersionUID = -6981146543760234087L;
 
-    /** Parent frame (only GCRF doesn't have a parent). */
+    /** Parent frame (only the root frame doesn't have a parent). */
     private final Frame parent;
 
     /** Transform from parent frame to instance. */
@@ -128,7 +68,7 @@ public class Frame implements Serializable {
     /** Instance name. */
     private final String name;
 
-    /** Private constructor used only for the GCRF root frame.
+    /** Private constructor used only for the root frame.
      * @param name name of the frame
      */
     private Frame(final String name) {
@@ -143,8 +83,8 @@ public class Frame implements Serializable {
      * frame to instance. This means that the two following frames
      * are similar:</p>
      * <pre>
-     * Frame frame1 = new Frame(Frame.getGCRF(), new Transform(t1, t2));
-     * Frame frame2 = new Frame(new Frame(Frame.getGCRF(), t1), t2);
+     * Frame frame1 = new Frame(FrameFactory.getGCRF(), new Transform(t1, t2));
+     * Frame frame2 = new Frame(new Frame(FrameFactory.getGCRF(), t1), t2);
      * </pre>
      * @param parent parent frame (must be non-null)
      * @param transform transform from parent frame to instance
@@ -252,8 +192,8 @@ public class Frame implements Serializable {
      * control handles. Consider the following simplified frames tree as an
      * example:</p>
      * <pre>
-     *               GCRF
-     *                 |
+     *              GCRF
+     *                |
      *  --------------------------------
      *  |             |                |
      * Sun        satellite          Earth
@@ -402,165 +342,87 @@ public class Frame implements Serializable {
         return path;
     }
 
-    /** Get the unique GCRF frame.
-     * @return the unique instance of the GCRF frame
+    /** Get the unique root frame.
+     * @return the unique instance of the root frame
      */
-    public static Frame getGCRF() {
-        return LazyGCRFHolder.INSTANCE;
+    protected static Frame getRoot() {
+        return LazyRootHolder.INSTANCE;
     }
 
     /** Get the unique J2000 frame.
      * <p>The J2000 frame is also called the EME2000 frame.
      * The later denomination is preferred in Orekit.</p>
      * @return the unique instance of the J2000 frame
-     * @deprecated as of 4.0, replaced by {@link #getEME2000()}
-     * @see #getEME2000()
+     * @deprecated as of 4.0, replaced by {@link FrameFactory#getEME2000()}
+     * @see FrameFactory#getEME2000()
      */
+    @Deprecated
     public static Frame getJ2000() {
-        return LazyEME2000Holder.INSTANCE;
+        return FrameFactory.getEME2000();
     }
 
     /** Get the unique EME2000 frame.
      * <p>The EME2000 frame is also called the J2000 frame.
      * The former denomination is preferred in Orekit.</p>
      * @return the unique instance of the EME2000 frame
+     * @deprecated as of 4.1, replaced by {@link FrameFactory#getEME2000()}
      */
+    @Deprecated
     public static Frame getEME2000() {
-        return LazyEME2000Holder.INSTANCE;
+        return FrameFactory.getEME2000();
     }
 
     /** Get the ITRF2005 reference frame.
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
+     * @deprecated as of 4.1, replaced by {@link FrameFactory#getITRF2005()}
      */
+    @Deprecated
     public static Frame getITRF2005()
         throws OrekitException {
-        if (LazyITRF2005Holder.INSTANCE == null) {
-            throw LazyITRF2005Holder.OREKIT_EXCEPTION;
-        }
-        return LazyITRF2005Holder.INSTANCE;
+        return FrameFactory.getITRF2005();
     }
 
-    /** Get the ITRF2005 without tidal effects reference frame.
+    /** Get the TIRF2000 reference frame.
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
+     * @deprecated as of 4.1, replaced by {@link FrameFactory#getTIRF2000()}
      */
-    public static Frame getITRF2005IgnoringTidalEffects()
-        throws OrekitException {
-        if (LazyITRF2005IgnoredTidalEffectHolder.INSTANCE == null) {
-            throw LazyITRF2005IgnoredTidalEffectHolder.OREKIT_EXCEPTION;
-        }
-        return LazyITRF2005IgnoredTidalEffectHolder.INSTANCE;
-    }
-
-    /** Get the TIRF2000 with tidal effects reference frame.
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     */
+    @Deprecated
     public static Frame getTIRF2000()
         throws OrekitException {
-        if (LazyTIRF2000Holder.INSTANCE == null) {
-            throw LazyTIRF2000Holder.OREKIT_EXCEPTION;
-        }
-        return LazyTIRF2000Holder.INSTANCE;
-    }
-
-    /** Get the TIRF2000 without tidal effects reference frame.
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     */
-    public static Frame getTIRF2000IgnoringTidalEffects()
-        throws OrekitException {
-        if (LazyTIRF2000IgnoredTidalEffectsHolder.INSTANCE == null) {
-            throw LazyTIRF2000IgnoredTidalEffectsHolder.OREKIT_EXCEPTION;
-        }
-        return LazyTIRF2000IgnoredTidalEffectsHolder.INSTANCE;
+        return FrameFactory.getTIRF2000();
     }
 
     /** Get the CIRF2000 reference frame.
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
+     * @deprecated as of 4.1, replaced by {@link FrameFactory#getCIRF2000()}
      */
+    @Deprecated
     public static Frame getCIRF2000()
         throws OrekitException {
-        if (LazyCIRF2000Holder.INSTANCE == null) {
-            throw LazyCIRF2000Holder.OREKIT_EXCEPTION;
-        }
-        return LazyCIRF2000Holder.INSTANCE;
+        return FrameFactory.getCIRF2000();
     }
 
     /** Get the VEIS 1950 reference frame.
      * @return the selected reference frame singleton.
+     * @deprecated as of 4.1, replaced by {@link FrameFactory#getVeis1950()}
      */
+    @Deprecated
     public static Frame getVeis1950() {
-        return LazyVeis1950Holder.INSTANCE;
-    }
-
-    /** Get the PEF reference frame.
-     * @param applyEOPCorr if true, nutation correction is applied
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the nutation model data embedded in the
-     * library cannot be read.
-     */
-    public static Frame getPEF(final boolean applyEOPCorr)
-        throws OrekitException {
-        if (applyEOPCorr) {
-            if (LazyPEFwithEOPHolder.INSTANCE == null) {
-                throw LazyPEFwithEOPHolder.OREKIT_EXCEPTION;
-            }
-            return LazyPEFwithEOPHolder.INSTANCE;
-        } else {
-            if (LazyPEFwoutEOPHolder.INSTANCE == null) {
-                throw LazyPEFwoutEOPHolder.OREKIT_EXCEPTION;
-            }
-            return LazyPEFwoutEOPHolder.INSTANCE;
-        }
-    }
-
-    /** Get the TEME reference frame.
-     * @param applyEOPCorr if true, nutation correction is applied
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the nutation model data embedded in the
-     * library cannot be read.
-     */
-    public static Frame getTEME(final boolean applyEOPCorr)
-        throws OrekitException {
-        if (applyEOPCorr) {
-            if (LazyTEMEwithEOPHolder.INSTANCE == null) {
-                throw LazyTEMEwithEOPHolder.OREKIT_EXCEPTION;
-            }
-            return LazyTEMEwithEOPHolder.INSTANCE;
-        } else {
-            if (LazyTEMEwoutEOPHolder.INSTANCE == null) {
-                throw LazyTEMEwoutEOPHolder.OREKIT_EXCEPTION;
-            }
-            return LazyTEMEwoutEOPHolder.INSTANCE;
-        }
-    }
-
-    /** Get the MEME reference frame.
-     * @param applyEOPCorr if true, nutation correction is applied
-     * @return the selected reference frame singleton.
-     */
-    public static Frame getMEME(final boolean applyEOPCorr) {
-        if (applyEOPCorr) {
-            return LazyMEMEwithEOPHolder.INSTANCE;
-        } else {
-            return LazyMEMEwoutEOPHolder.INSTANCE;
-        }
+        return FrameFactory.getVeis1950();
     }
 
     // We use the Initialization on demand holder idiom to store
     // the singletons, as it is both thread-safe, efficient (no
     // synchronization) and works with all versions of java.
 
-    /** Holder for the GCRF frame singleton. */
-    private static class LazyGCRFHolder {
+    /** Holder for the root frame singleton. */
+    private static class LazyRootHolder {
 
         /** Unique instance. */
         private static final Frame INSTANCE = new Frame("GCRF");
@@ -570,388 +432,7 @@ public class Frame implements Serializable {
          * nor a default constructor. This private constructor prevents
          * the compiler from generating one automatically.</p>
          */
-        private LazyGCRFHolder() {
-        }
-
-    }
-
-    /** Holder for the EME2000 frame singleton. */
-    private static class LazyEME2000Holder {
-
-        /** Unique instance. */
-        private static final Frame INSTANCE = new EME2000Frame("EME2000");
-
-        /** Private constructor.
-         * <p>This class is a utility class, it should neither have a public
-         * nor a default constructor. This private constructor prevents
-         * the compiler from generating one automatically.</p>
-         */
-        private LazyEME2000Holder() {
-        }
-
-    }
-
-    /** Holder for the ITRF 2005 frame with tidal effects singleton. */
-    private static class LazyITRF2005Holder {
-
-        /** Unique instance. */
-        private static final Frame INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            Frame tmpFrame = null;
-            OrekitException tmpException = null;
-            try {
-                if (LazyTIRF2000Holder.INSTANCE == null) {
-                    tmpException = LazyTIRF2000Holder.OREKIT_EXCEPTION;
-                } else {
-                    tmpFrame = new ITRF2005Frame(false, AbsoluteDate.J2000_EPOCH,
-                                                 "ITRF2005");
-                }
-            } catch (OrekitException oe) {
-                tmpException = oe;
-            }
-            INSTANCE = tmpFrame;
-            OREKIT_EXCEPTION = tmpException;
-        }
-
-        /** Private constructor.
-         * <p>This class is a utility class, it should neither have a public
-         * nor a default constructor. This private constructor prevents
-         * the compiler from generating one automatically.</p>
-         */
-        private LazyITRF2005Holder() {
-        }
-
-    }
-
-    /** Holder for the ITRF 2005 frame without tidal effects singleton. */
-    private static class LazyITRF2005IgnoredTidalEffectHolder {
-
-        /** Unique instance. */
-        private static final Frame INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            Frame tmpFrame = null;
-            OrekitException tmpException = null;
-            try {
-                if (LazyTIRF2000IgnoredTidalEffectsHolder.INSTANCE == null) {
-                    tmpException = LazyTIRF2000IgnoredTidalEffectsHolder.OREKIT_EXCEPTION;
-                } else {
-                    tmpFrame = new ITRF2005Frame(true, AbsoluteDate.J2000_EPOCH,
-                                                 "ITRF2005 w/o tides");
-                }
-            } catch (OrekitException oe) {
-                tmpException = oe;
-            }
-            INSTANCE = tmpFrame;
-            OREKIT_EXCEPTION = tmpException;
-        }
-
-        /** Private constructor.
-         * <p>This class is a utility class, it should neither have a public
-         * nor a default constructor. This private constructor prevents
-         * the compiler from generating one automatically.</p>
-         */
-        private LazyITRF2005IgnoredTidalEffectHolder() {
-        }
-
-    }
-
-    /** Holder for the TIRF 2000 frame with tidal effects singleton. */
-    private static class LazyTIRF2000Holder {
-
-        /** Unique instance. */
-        private static final Frame INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            Frame tmpFrame = null;
-            OrekitException tmpException = null;
-            try {
-                if (LazyCIRF2000Holder.INSTANCE == null) {
-                    tmpException = LazyCIRF2000Holder.OREKIT_EXCEPTION;
-                } else {
-                    tmpFrame = new TIRF2000Frame(false, AbsoluteDate.J2000_EPOCH,
-                                                 "TIRF2000");
-                }
-            } catch (OrekitException oe) {
-                tmpException = oe;
-            }
-            INSTANCE = tmpFrame;
-            OREKIT_EXCEPTION = tmpException;
-        }
-
-        /** Private constructor.
-         * <p>This class is a utility class, it should neither have a public
-         * nor a default constructor. This private constructor prevents
-         * the compiler from generating one automatically.</p>
-         */
-        private LazyTIRF2000Holder() {
-        }
-
-    }
-
-    /** Holder for the TIRF 2000 frame without tidal effects singleton. */
-    private static class LazyTIRF2000IgnoredTidalEffectsHolder {
-
-        /** Unique instance. */
-        private static final Frame INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            Frame tmpFrame = null;
-            OrekitException tmpException = null;
-            try {
-                if (LazyCIRF2000Holder.INSTANCE == null) {
-                    tmpException = LazyCIRF2000Holder.OREKIT_EXCEPTION;
-                } else {
-                    tmpFrame = new TIRF2000Frame(true, AbsoluteDate.J2000_EPOCH,
-                                                 "TIRF2000 w/o tides");
-                }
-            } catch (OrekitException oe) {
-                tmpException = oe;
-            }
-            INSTANCE = tmpFrame;
-            OREKIT_EXCEPTION = tmpException;
-        }
-
-        /** Private constructor.
-         * <p>This class is a utility class, it should neither have a public
-         * nor a default constructor. This private constructor prevents
-         * the compiler from generating one automatically.</p>
-         */
-        private LazyTIRF2000IgnoredTidalEffectsHolder() {
-        }
-
-    }
-
-    /** Holder for the CIRF 2000 frame singleton. */
-    private static class LazyCIRF2000Holder {
-
-        /** Unique instance. */
-        private static final Frame INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            Frame tmpFrame = null;
-            OrekitException tmpException = null;
-            try {
-                tmpFrame = new CIRF2000Frame(AbsoluteDate.J2000_EPOCH, "CIRF2000");
-            } catch (OrekitException oe) {
-                tmpException = oe;
-            }
-            INSTANCE = tmpFrame;
-            OREKIT_EXCEPTION = tmpException;
-        }
-
-        /** Private constructor.
-         * <p>This class is a utility class, it should neither have a public
-         * nor a default constructor. This private constructor prevents
-         * the compiler from generating one automatically.</p>
-         */
-        private LazyCIRF2000Holder() {
-        }
-
-    }
-
-    /** Holder for the Veis 1950 frame singleton. */
-    private static class LazyVeis1950Holder {
-
-        /** Unique instance. */
-        private static final Frame INSTANCE =
-            new Frame(getEME2000(),
-                      new Transform(new Rotation(0.99998141186121629647,
-                                                 -2.01425201682020570e-5,
-                                                 -2.43283773387856897e-3,
-                                                 5.59078052583013584e-3,
-                                                 true)),
-                      "VEIS1950");
-
-
-        /** Private constructor.
-         * <p>This class is a utility class, it should neither have a public
-         * nor a default constructor. This private constructor prevents
-         * the compiler from generating one automatically.</p>
-         */
-        private LazyVeis1950Holder() {
-        }
-
-    }
-
-    /** Holder for the PEF with nutation correction frame singleton. */
-    private static class LazyPEFwithEOPHolder {
-
-        /** Unique instance. */
-        private static final Frame INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            Frame tmpFrame = null;
-            OrekitException tmpException = null;
-            try {
-                if (LazyTEMEwithEOPHolder.INSTANCE == null) {
-                    tmpException = LazyTEMEwithEOPHolder.OREKIT_EXCEPTION;
-                } else {
-                    tmpFrame = new PEFFrame(true, AbsoluteDate.J2000_EPOCH, "PEF with EOP");
-                }
-            } catch (OrekitException oe) {
-                tmpException = oe;
-            }
-            INSTANCE = tmpFrame;
-            OREKIT_EXCEPTION = tmpException;
-        }
-
-        /** Private constructor.
-         * <p>This class is a utility class, it should neither have a public
-         * nor a default constructor. This private constructor prevents
-         * the compiler from generating one automatically.</p>
-         */
-        private LazyPEFwithEOPHolder() {
-        }
-
-    }
-
-    /** Holder for the PEF without nutation correction frame singleton. */
-    private static class LazyPEFwoutEOPHolder {
-
-        /** Unique instance. */
-        private static final Frame INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            Frame tmpFrame = null;
-            OrekitException tmpException = null;
-            try {
-                if (LazyTEMEwoutEOPHolder.INSTANCE == null) {
-                    tmpException = LazyTEMEwoutEOPHolder.OREKIT_EXCEPTION;
-                } else {
-                    tmpFrame = new PEFFrame(false, AbsoluteDate.J2000_EPOCH, "PEF without EOP");
-                }
-            } catch (OrekitException oe) {
-                tmpException = oe;
-            }
-            INSTANCE = tmpFrame;
-            OREKIT_EXCEPTION = tmpException;
-        }
-
-        /** Private constructor.
-         * <p>This class is a utility class, it should neither have a public
-         * nor a default constructor. This private constructor prevents
-         * the compiler from generating one automatically.</p>
-         */
-        private LazyPEFwoutEOPHolder() {
-        }
-
-    }
-
-    /** Holder for the TEME with nutation correction frame singleton. */
-    private static class LazyTEMEwithEOPHolder {
-
-        /** Unique instance. */
-        private static final Frame INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            Frame tmpFrame = null;
-            OrekitException tmpException = null;
-            try {
-                tmpFrame = new TEMEFrame(true, AbsoluteDate.J2000_EPOCH, "TEME with EOP");
-            } catch (OrekitException oe) {
-                tmpException = oe;
-            }
-            INSTANCE = tmpFrame;
-            OREKIT_EXCEPTION = tmpException;
-        }
-
-        /** Private constructor.
-         * <p>This class is a utility class, it should neither have a public
-         * nor a default constructor. This private constructor prevents
-         * the compiler from generating one automatically.</p>
-         */
-        private LazyTEMEwithEOPHolder() {
-        }
-
-    }
-
-    /** Holder for the TEME without nutation correction frame singleton. */
-    private static class LazyTEMEwoutEOPHolder {
-
-        /** Unique instance. */
-        private static final Frame INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            Frame tmpFrame = null;
-            OrekitException tmpException = null;
-            try {
-                tmpFrame = new TEMEFrame(false, AbsoluteDate.J2000_EPOCH, "TEME without EOP");
-            } catch (OrekitException oe) {
-                tmpException = oe;
-            }
-            INSTANCE = tmpFrame;
-            OREKIT_EXCEPTION = tmpException;
-        }
-
-        /** Private constructor.
-         * <p>This class is a utility class, it should neither have a public
-         * nor a default constructor. This private constructor prevents
-         * the compiler from generating one automatically.</p>
-         */
-        private LazyTEMEwoutEOPHolder() {
-        }
-
-    }
-
-    /** Holder for the MEME  with nutation correction frame singleton. */
-    private static class LazyMEMEwithEOPHolder {
-
-        /** Unique instance. */
-        private static final Frame INSTANCE =
-            new MEMEFrame(true, AbsoluteDate.J2000_EPOCH, "MEME with EOP");
-
-        /** Private constructor.
-         * <p>This class is a utility class, it should neither have a public
-         * nor a default constructor. This private constructor prevents
-         * the compiler from generating one automatically.</p>
-         */
-        private LazyMEMEwithEOPHolder() {
-        }
-
-    }
-
-    /** Holder for the MEME without nutation correction frame singleton. */
-    private static class LazyMEMEwoutEOPHolder {
-
-        /** Unique instance. */
-        private static final Frame INSTANCE =
-            new MEMEFrame(false, AbsoluteDate.J2000_EPOCH, "MEME without EOP");
-
-        /** Private constructor.
-         * <p>This class is a utility class, it should neither have a public
-         * nor a default constructor. This private constructor prevents
-         * the compiler from generating one automatically.</p>
-         */
-        private LazyMEMEwoutEOPHolder() {
+        private LazyRootHolder() {
         }
 
     }
