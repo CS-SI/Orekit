@@ -16,9 +16,10 @@
  */
 package org.orekit.frames;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import org.junit.Before;
+
+import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.data.DataProvidersManager;
@@ -30,8 +31,9 @@ import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
 
-public class MEMEFrameTest extends TestCase {
+public class MEMEFrameTest {
 
+    @Test
     public void testAASReferenceLEO() throws OrekitException {
 
         // this reference test has been extracted from the following paper:
@@ -42,7 +44,7 @@ public class MEMEFrameTest extends TestCase {
                                            new TimeComponents(07, 51, 28.386009),
                                            UTCScale.getInstance());
 
-        Transform tt = Frame.getGCRF().getTransformTo(Frame.getMEME(true), t0);
+        Transform tt = FrameFactory.getGCRF().getTransformTo(FrameFactory.getMEME(true), t0);
         //GCRF iau76 w corr
         PVCoordinates pvGCRFiau76 =
             new PVCoordinates(new Vector3D(5102508.9579, 6123011.4038, 6378136.9252),
@@ -53,7 +55,7 @@ public class MEMEFrameTest extends TestCase {
                               new Vector3D(-4746.263052, 786.014045, 5531.790562));
         checkPV(pvMODiau76Wcorr, tt.transformPVCoordinates(pvGCRFiau76), 4.4e-3, 1.6e-6);
 
-        Transform tf = Frame.getEME2000().getTransformTo(Frame.getMEME(false), t0);
+        Transform tf = FrameFactory.getEME2000().getTransformTo(FrameFactory.getMEME(false), t0);
         //J2000 iau76   
         PVCoordinates pvJ2000iau76 =
             new PVCoordinates(new Vector3D(5102509.6000, 6123011.5200, 6378136.3000),
@@ -66,6 +68,7 @@ public class MEMEFrameTest extends TestCase {
 
     }
 
+    @Test
     public void testAASReferenceGEO() throws OrekitException {
 
         // this reference test has been extracted from the following paper:
@@ -76,7 +79,7 @@ public class MEMEFrameTest extends TestCase {
                                            TimeComponents.H00,
                                            UTCScale.getInstance());
 
-        Transform tt = Frame.getGCRF().getTransformTo(Frame.getMEME(true), t0);
+        Transform tt = FrameFactory.getGCRF().getTransformTo(FrameFactory.getMEME(true), t0);
         //GCRF iau76 w corr
         PVCoordinates pvGCRFiau76 =
             new PVCoordinates(new Vector3D(-40588150.3649, -11462167.0282, 27143.2028),
@@ -87,7 +90,7 @@ public class MEMEFrameTest extends TestCase {
                               new Vector3D(837.708020, -2957.480117, -0.814253));
         checkPV(pvMODiau76Wcorr, tt.transformPVCoordinates(pvGCRFiau76), 2.5e-5, 6.9e-7);
 
-        Transform tf = Frame.getEME2000().getTransformTo(Frame.getMEME(false), t0);
+        Transform tf = FrameFactory.getEME2000().getTransformTo(FrameFactory.getMEME(false), t0);
         //J2000 iau76
         PVCoordinates pvJ2000iau76 =
             new PVCoordinates(new Vector3D(-40588150.3620, -11462167.0280, 27147.6490),
@@ -100,6 +103,7 @@ public class MEMEFrameTest extends TestCase {
 
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("compressed-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
@@ -114,10 +118,6 @@ public class MEMEFrameTest extends TestCase {
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
         assertEquals(0, dP.getNorm(), positionThreshold);
         assertEquals(0, dV.getNorm(), velocityThreshold);
-    }
-
-    public static Test suite() {
-        return new TestSuite(MEMEFrameTest.class);
     }
 
 }

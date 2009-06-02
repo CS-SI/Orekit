@@ -16,11 +16,13 @@
  */
 package org.orekit.frames;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.geometry.Vector3D;
+
+import org.junit.Test;
+import org.junit.Before;
+
+import static org.junit.Assert.assertEquals;
+
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
@@ -30,8 +32,9 @@ import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
 
-public class PEFFrameTest extends TestCase {
+public class PEFFrameTest {
 
+    @Test
     public void testAASReferenceLEO() throws OrekitException {
 
         // this reference test has been extracted from the following paper:
@@ -65,6 +68,7 @@ public class PEFFrameTest extends TestCase {
 
     }
 
+    @Test
     public void testAASReferenceGEO() throws OrekitException {
 
         // this reference test has been extracted from the following paper:
@@ -75,8 +79,8 @@ public class PEFFrameTest extends TestCase {
                                            TimeComponents.H00,
                                            UTCScale.getInstance());
 
-        Transform tt = Frame.getTEME(true).getTransformTo(Frame.getPEF(true), t0);
-        Transform tf = Frame.getTEME(false).getTransformTo(Frame.getPEF(false), t0);
+        Transform tt = FrameFactory.getTEME(true).getTransformTo(FrameFactory.getPEF(true), t0);
+        Transform tf = FrameFactory.getTEME(false).getTransformTo(FrameFactory.getPEF(false), t0);
 
 // TOD iau76
         PVCoordinates pvTEME =
@@ -94,6 +98,7 @@ public class PEFFrameTest extends TestCase {
 
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("compressed-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
@@ -107,10 +112,6 @@ public class PEFFrameTest extends TestCase {
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
         assertEquals(0, dP.getNorm(), positionThreshold);
         assertEquals(0, dV.getNorm(), velocityThreshold);
-    }
-
-    public static Test suite() {
-        return new TestSuite(PEFFrameTest.class);
     }
 
 }

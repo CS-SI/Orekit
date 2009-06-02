@@ -18,9 +18,11 @@ package org.orekit.frames;
 
 import java.io.FileNotFoundException;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import org.junit.Before;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.data.DataProvidersManager;
@@ -33,8 +35,9 @@ import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
 
-public class TEMEFrameTest extends TestCase {
+public class TEMEFrameTest {
 
+    @Test
     public void testAASReferenceLEO() throws OrekitException {
 
         // this reference test has been extracted from the following paper:
@@ -45,8 +48,8 @@ public class TEMEFrameTest extends TestCase {
                                            new TimeComponents(07, 51, 28.386009),
                                            UTCScale.getInstance());
 
-        Transform tt = Frame.getMEME(true).getTransformTo(Frame.getTEME(true), t0);
-        Transform tf = Frame.getMEME(false).getTransformTo(Frame.getTEME(false), t0);
+        Transform tt = FrameFactory.getMEME(true).getTransformTo(FrameFactory.getTEME(true), t0);
+        Transform tf = FrameFactory.getMEME(false).getTransformTo(FrameFactory.getTEME(false), t0);
 
 //TOD iau76
         PVCoordinates pvTODiau76 =
@@ -73,6 +76,7 @@ public class TEMEFrameTest extends TestCase {
 
     }
 
+    @Test
     public void testAASReferenceGEO() throws OrekitException {
 
 //        J2000 = 2451545.5
@@ -101,8 +105,8 @@ public class TEMEFrameTest extends TestCase {
                                            TimeComponents.H00,
                                            UTCScale.getInstance());
 
-        Transform tt = Frame.getMEME(true).getTransformTo(Frame.getTEME(true), t0);
-        Transform tf = Frame.getMEME(false).getTransformTo(Frame.getTEME(false), t0);
+        Transform tt = FrameFactory.getMEME(true).getTransformTo(FrameFactory.getTEME(true), t0);
+        Transform tf = FrameFactory.getMEME(false).getTransformTo(FrameFactory.getTEME(false), t0);
 
 //TOD iau76
         PVCoordinates pvTODiau76 =
@@ -125,6 +129,7 @@ public class TEMEFrameTest extends TestCase {
 
     }
 
+    @Test
     public void testInterpolationAccuracy() throws OrekitException, FileNotFoundException {
 
         final boolean withNutationCorrection = true;
@@ -154,6 +159,12 @@ public class TEMEFrameTest extends TestCase {
 
     }
 
+    @Before
+    public void setUp() {
+        String root = getClass().getClassLoader().getResource("compressed-data").getPath();
+        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+    }
+
     private class NonInterpolatingTEMEFrame extends TEMEFrame {
         private static final long serialVersionUID = -7116622345154042273L;
         public NonInterpolatingTEMEFrame(final boolean ignoreNutationCorrection,
@@ -166,11 +177,6 @@ public class TEMEFrameTest extends TestCase {
         }
     }
 
-    public void setUp() {
-        String root = getClass().getClassLoader().getResource("compressed-data").getPath();
-        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
-    }
-
     private void checkPV(PVCoordinates reference,
                          PVCoordinates result, double positionThreshold,
                          double velocityThreshold) {
@@ -179,10 +185,6 @@ public class TEMEFrameTest extends TestCase {
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
         assertEquals(0, dP.getNorm(), positionThreshold);
         assertEquals(0, dV.getNorm(), velocityThreshold);
-    }
-
-    public static Test suite() {
-        return new TestSuite(TEMEFrameTest.class);
     }
 
 }

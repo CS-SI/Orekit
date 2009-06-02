@@ -10,16 +10,20 @@ handle kinematics.
 
 <p> 
 Each {@link org.orekit.frames.Frame} is defined by a transform linking it to 
-another one, called its parent frame. The only exception is the predefined GCRF inertial
-frame which has no parent. This implies that all frames are naturally organized as a tree
-with a single root: the GCRF frame.
+another one, called its parent frame. The only exception is the root frame which has
+no parent. This implies that all frames are naturally organized as a tree with a single
+root. The predefined GCRF inertial frame was arbitrary chosen as the root for every tree.
 </p>
 
 <p>
-Several other frames are predefined. One set correspond to the frames from the IERS 2003
-conventions (ITRF2005 and others). Two other frames not belonging to the previous set are
-the EME2000 frame that was used prior to GCRF which is linked to GCRF by a simple bias
-rotation and the Veis 1950 frame which is considered here as a simple rotation from EME2000.
+The {@link org.orekit.frames.FrameFactory} class implements several predefined reference
+frames. One set correspond to the frames from the IERS 2003 conventions (ITRF2005 and others).
+Other frames not belonging to the previous set are the EME2000 frame that was used prior
+to GCRF and which is linked to GCRF by a simple bias rotation, the Veis 1950 frame which is
+considered here as a simple rotation from EME2000, the MEME (mean of date) frame which involves
+the IAU 1976 precession model, the TEME (true of date) frame which involves the IAU 1980
+nutation model and the PEF (pseudo earth fixed) which involves the IAU 1982 Greenwich sidereal
+time model.
 </p>
 
 <p>
@@ -42,6 +46,7 @@ for non time dependent frames.
 @author Luc Maisonobe
 @author Fabien Maussion
 @author Véronique Pommier-Maurussane
+@author Pascal Parraud
 
 </body>
 </html>

@@ -68,17 +68,31 @@ class PEFFrame extends Frame {
     /** Cached date to avoid useless calculus. */
     private AbsoluteDate cachedDate;
 
+    /** Simple constructor, applying nutation correction.
+     * @param date the date.
+     * @param name name of the frame
+     * @exception OrekitException if the nutation model data embedded
+     * in the library cannot be read.
+     */
+    protected PEFFrame(final AbsoluteDate date, final String name)
+        throws OrekitException {
+
+        this(true, date, name);
+
+    }
+
     /** Simple constructor.
      * @param applyEOPCorr if true, nutation correction is applied
      * @param date the current date
      * @param name the string representation
-     * @exception OrekitException if nutation cannot be computed
+     * @exception OrekitException if the nutation model data embedded
+     * in the library cannot be read.
      */
     protected PEFFrame(final boolean applyEOPCorr,
                        final AbsoluteDate date, final String name)
         throws OrekitException {
 
-        super(getTEME(applyEOPCorr), null, name);
+        super(FrameFactory.getTEME(applyEOPCorr), null, name);
 
         // everything is in place, we can now synchronize the frame
         updateFrame(date);

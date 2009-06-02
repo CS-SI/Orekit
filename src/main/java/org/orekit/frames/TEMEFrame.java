@@ -271,6 +271,19 @@ class TEMEFrame extends Frame {
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
+    /** Simple constructor, applying nutation correction.
+     * @param date the date.
+     * @param name name of the frame
+     * @exception OrekitException if the nutation model data embedded
+     * in the library cannot be read.
+     */
+    protected TEMEFrame(final AbsoluteDate date, final String name)
+        throws OrekitException {
+
+        this(true, date, name);
+
+    }
+
     /** Simple constructor.
      * @param applyEOPCorr if true, nutation correction is applied
      * @param date the date.
@@ -283,7 +296,7 @@ class TEMEFrame extends Frame {
                         final AbsoluteDate date, final String name)
         throws OrekitException {
 
-        super(getMEME(applyEOPCorr), null , name);
+        super(FrameFactory.getMEME(applyEOPCorr), null , name);
         this.applyEOPCorr = applyEOPCorr;
 
         // set up an interpolation model on 12 points with a 1/2 day step

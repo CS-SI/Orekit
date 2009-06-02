@@ -62,6 +62,14 @@ class MEMEFrame extends Frame {
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
+    /** Simple constructor, applying nutation correction.
+     * @param date the date.
+     * @param name name of the frame
+     */
+    protected MEMEFrame(final AbsoluteDate date, final String name) {
+        this(true, date, name);
+    }
+
     /** Simple constructor.
      * @param applyEOPCorr if true, nutation correction is applied
      * @param date the date.
@@ -71,7 +79,7 @@ class MEMEFrame extends Frame {
     protected MEMEFrame(final boolean applyEOPCorr,
                         final AbsoluteDate date, final String name) {
 
-        super(applyEOPCorr ? getGCRF() : getEME2000(), null , name);
+        super(applyEOPCorr ? FrameFactory.getGCRF() : FrameFactory.getEME2000(), null , name);
 
         // everything is in place, we can now synchronize the frame
         updateFrame(date);

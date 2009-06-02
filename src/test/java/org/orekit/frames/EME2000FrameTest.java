@@ -16,11 +16,13 @@
  */
 package org.orekit.frames;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.math.geometry.Vector3D;
+
+import org.junit.Test;
+import org.junit.Before;
+
+import static org.junit.Assert.assertEquals;
+
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
@@ -30,8 +32,9 @@ import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
 
-public class EME2000FrameTest extends TestCase {
+public class EME2000FrameTest {
 
+    @Test
     public void testAASReferenceLEO() throws OrekitException {
 
         // this reference test has been extracted from the following paper:
@@ -42,7 +45,7 @@ public class EME2000FrameTest extends TestCase {
                                            new TimeComponents(07, 51, 28.386009),
                                            UTCScale.getInstance());
 
-        Transform t = Frame.getGCRF().getTransformTo(Frame.getEME2000(), t0);
+        Transform t = FrameFactory.getGCRF().getTransformTo(FrameFactory.getEME2000(), t0);
 
         PVCoordinates pvGcrfIau2000A =
             new PVCoordinates(new Vector3D(5102508.9579, 6123011.4038, 6378136.9252),
@@ -62,6 +65,7 @@ public class EME2000FrameTest extends TestCase {
 
     }
 
+    @Test
     public void testAASReferenceGEO() throws OrekitException {
 
         // this reference test has been extracted from the following paper:
@@ -72,7 +76,7 @@ public class EME2000FrameTest extends TestCase {
                                            TimeComponents.H00,
                                            UTCScale.getInstance());
 
-        Transform t = Frame.getGCRF().getTransformTo(Frame.getEME2000(), t0);
+        Transform t = FrameFactory.getGCRF().getTransformTo(FrameFactory.getEME2000(), t0);
 
         PVCoordinates pvGCRFiau2000A =
             new PVCoordinates(new Vector3D(-40588150.3617, -11462167.0397, 27143.1974),
@@ -92,6 +96,7 @@ public class EME2000FrameTest extends TestCase {
 
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("compressed-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
@@ -105,10 +110,6 @@ public class EME2000FrameTest extends TestCase {
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
         assertEquals(0, dP.getNorm(), positionThreshold);
         assertEquals(0, dV.getNorm(), velocityThreshold);
-    }
-
-    public static Test suite() {
-        return new TestSuite(EME2000FrameTest.class);
     }
 
 }
