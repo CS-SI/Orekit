@@ -100,14 +100,14 @@ public class SolarRadiationPressure implements ForceModel {
         throws OrekitException {
 
         // raw radiation pressure
-        final Vector3D satSunVector = getSatSunVector(s);
-        final double dRatio = dRef / satSunVector.getNorm();
+        final Vector3D sunSatVector = getSatSunVector(s).negate();
+        final double dRatio = dRef / sunSatVector.getNorm();
         final double rawP   = pRef * dRatio * dRatio *
                               getLightningRatio(s.getPVCoordinates().getPosition(),
                                                 s.getFrame(), s.getDate());
 
         // spacecraft characteristics effects
-        final Vector3D u = satSunVector.normalize();
+        final Vector3D u = sunSatVector.normalize();
         final Vector3D inSpacecraft = s.getAttitude().getRotation().applyTo(u);
         final double kd = (1.0 - spacecraft.getAbsorptionCoef(inSpacecraft).getNorm()) *
             (1.0 - spacecraft.getReflectionCoef(inSpacecraft).getNorm());

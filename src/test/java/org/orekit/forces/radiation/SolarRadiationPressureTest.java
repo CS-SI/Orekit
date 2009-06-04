@@ -134,8 +134,8 @@ public class SolarRadiationPressureTest {
         calc.addForceModel(SRP);
 
         // Step Handler
-        calc.setMasterMode(Math.floor(15 * period), new SolarStepHandler());
-        AbsoluteDate finalDate = new AbsoluteDate(date, 20 * period);
+        calc.setMasterMode(Math.floor(period), new SolarStepHandler());
+        AbsoluteDate finalDate = new AbsoluteDate(date, 10 * period);
         calc.setInitialState(new SpacecraftState(orbit, 1500.0));
         calc.propagate(finalDate);
         assertTrue(calc.getCalls() < 7100);
@@ -160,9 +160,12 @@ public class SolarRadiationPressureTest {
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {
-            final double dex = currentState.getEquinoctialEx() - 0.00940313;
-            final double dey = currentState.getEquinoctialEy() - 0.013679;
-            checkRadius(Math.sqrt(dex * dex + dey * dey), 0.00351, 0.00394);
+            final double dex = currentState.getEquinoctialEx() - 0.01071166;
+            final double dey = currentState.getEquinoctialEy() - 0.00654848;
+            final double alpha = Math.toDegrees(Math.atan2(dey, dex));
+            assertTrue(alpha > 100.0);
+            assertTrue(alpha < 112.0);
+            checkRadius(Math.sqrt(dex * dex + dey * dey), 0.003524, 0.003541);
         }
 
     }
