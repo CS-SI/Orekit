@@ -124,11 +124,11 @@ class PEFFrame extends Frame {
             // UT1 is supplied as a Julian date beginning at noon.
             final double sd = (tut1 + SECONDS_PER_DAY / 2.) % SECONDS_PER_DAY;
 
-            // compute Greenwhich mean sidereal time, in radians
+            // compute Greenwich mean sidereal time, in radians
             final double gmst = (((GMST_3 * tt + GMST_2) * tt + GMST_1) * tt + GMST_0 + sd) *
                                 RADIANS_PER_SECOND;
 
-            // compute Greenwhich apparent sidereal time, in radians
+            // compute Greenwich apparent sidereal time, in radians
             final double gast = gmst + eqe;
 
             // compute true angular rotation of Earth, in rad/s
