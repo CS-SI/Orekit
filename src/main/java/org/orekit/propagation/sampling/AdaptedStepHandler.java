@@ -127,18 +127,11 @@ public class AdaptedStepHandler
      * <p>It is possible to set the interpolation date outside of the current
      * step range, but accuracy will decrease as date is farther.</p>
      * @param date interpolated date to set
-     * @exception PropagationException if underlying rawInterpolator cannot handle
-     * the date
      * @see #getInterpolatedDate()
      * @see #getInterpolatedState()
      */
-    public void setInterpolatedDate(final AbsoluteDate date)
-        throws PropagationException {
-        try {
+    public void setInterpolatedDate(final AbsoluteDate date) {
             rawInterpolator.setInterpolatedTime(date.durationFrom(initializedReference));
-        } catch (DerivativeException de) {
-            throw new PropagationException(de.getMessage(), de);
-        }
     }
 
     /** Get the interpolated state.
@@ -148,18 +141,22 @@ public class AdaptedStepHandler
      * @see #setInterpolatedDate(AbsoluteDate)
      */
     public SpacecraftState getInterpolatedState() throws OrekitException {
-        final double[] y = rawInterpolator.getInterpolatedState();
-        final AbsoluteDate interpolatedDate =
-            new AbsoluteDate(initializedReference, rawInterpolator.getInterpolatedTime());
-        final Orbit orbit =
-            new EquinoctialOrbit(y[0], y[1], y[2], y[3], y[4], y[5],
-                                      EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
-                                      initializedFrame, interpolatedDate, initializedMu);
-        return new SpacecraftState(orbit,
-                                   initializedAttitudeLaw.getState(interpolatedDate,
-                                                                   orbit.getPVCoordinates(),
-                                                                   initializedFrame),
-                                   y[6]);
+        try {
+            final double[] y = rawInterpolator.getInterpolatedState();
+            final AbsoluteDate interpolatedDate =
+                new AbsoluteDate(initializedReference, rawInterpolator.getInterpolatedTime());
+            final Orbit orbit =
+                new EquinoctialOrbit(y[0], y[1], y[2], y[3], y[4], y[5],
+                                     EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
+                                     initializedFrame, interpolatedDate, initializedMu);
+            return new SpacecraftState(orbit,
+                                       initializedAttitudeLaw.getState(interpolatedDate,
+                                                                       orbit.getPVCoordinates(),
+                                                                       initializedFrame),
+                                                                       y[6]);
+        } catch (DerivativeException de) {
+            throw new PropagationException(de.getMessage(), de);
+        }
     }
 
     /** Check is integration direction is forward in date.

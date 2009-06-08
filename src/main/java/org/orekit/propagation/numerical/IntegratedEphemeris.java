@@ -118,23 +118,25 @@ class IntegratedEphemeris implements BoundedPropagator, ModeHandler, StepHandler
     /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate date)
         throws PropagationException {
-        if ((date.compareTo(minDate) < 0) || (date.compareTo(maxDate) > 0)) {
-            throw new PropagationException("out of range date for ephemerides: {0}", date);
-        }
-        model.setInterpolatedTime(date.durationFrom(startDate));
-        final double[] state = model.getInterpolatedState();
-
-        final EquinoctialOrbit eq =
-            new EquinoctialOrbit(state[0], state[1], state[2],
-                                 state[3], state[4], state[5], 2, initializedFrame, date, initializedMu);
-        final double mass = state[6];
-
         try {
+            if ((date.compareTo(minDate) < 0) || (date.compareTo(maxDate) > 0)) {
+                throw new PropagationException("out of range date for ephemerides: {0}", date);
+            }
+            model.setInterpolatedTime(date.durationFrom(startDate));
+            final double[] state = model.getInterpolatedState();
+
+            final EquinoctialOrbit eq =
+                new EquinoctialOrbit(state[0], state[1], state[2],
+                                     state[3], state[4], state[5], 2, initializedFrame, date, initializedMu);
+            final double mass = state[6];
+
             return new SpacecraftState(eq,
                                        initializedAttitudeLaw.getState(date, eq.getPVCoordinates(), initializedFrame),
                                        mass);
         } catch (OrekitException oe) {
             throw new PropagationException(oe.getMessage(), oe);
+        } catch (DerivativeException de) {
+            throw new PropagationException(de.getMessage(), de);
         }
     }
 
