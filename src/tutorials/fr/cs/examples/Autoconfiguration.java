@@ -84,7 +84,7 @@ public class Autoconfiguration {
             if (path.length() > 0) {
                 path.append(':');
             }
-            path.append(url.getFile());
+            path.append(url.getFile().replaceAll("%20", " "));
         }
     }
 
