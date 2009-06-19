@@ -49,8 +49,7 @@ import org.orekit.utils.PVCoordinates;
  * Since the pointed body moves as the date changes, this should be ensured
  * regardless of the date. A simple way to do this for Sun, Moon or any planet
  * pointing is to choose a phasing reference far from the ecliptic plane. Using
- * {@link org.apache.commons.math.geometry.Vector3D.PLUS_K Vector3D.PLUS_K},
- * the equatorial pole, is perfect in these cases.
+ * <code>Vector3D.PLUS_K</code>, the equatorial pole, is perfect in these cases.
  * </p>
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Luc Maisonobe
