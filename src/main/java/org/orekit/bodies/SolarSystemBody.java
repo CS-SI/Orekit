@@ -394,7 +394,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
                     /** {@inheritDoc} */
                     public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                    throws OrekitException {
+                        throws OrekitException {
                         // we define solar system barycenter with respect to Earth-Moon barycenter
                         // so we need to revert the vectors provided by the JPL DE 405 ephemerides
                         final PVCoordinates emPV = super.getPVCoordinates(date, frame);
@@ -618,7 +618,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
                     /** {@inheritDoc} */
                     public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                    throws OrekitException {
+                        throws OrekitException {
 
                         // specific implementation for Earth:
                         // the Earth is always exactly at the origin of its own EME2000 frame
