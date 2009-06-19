@@ -149,17 +149,16 @@ business-friendly Apache Software License version 2.0.
 OREKIT is based on two commons-math packages:
 </p>
 <ul>
- <li>{@link org.apache.commons.math.geometry}, which provides very useful objects as vectors
+ <li>geometry, which provides very useful objects as vectors
    and rotations (internally represented by quaternions)</li>
- <li>{@link org.apache.commons.math.ode}, which provides numerical solutions to solve 
+ <li>ode, which provides numerical solutions to solve 
    Ordinary Differential Equations (ODE).</li>
 </ul>
 <p>
 The use of commons-math is hidden in OREKIT as much as possible so users don't 
 need to fully master this library. If they wish, they can limit themselves to understanding
-the simple classes {@link org.apache.commons.math.geometry.Vector3D} and
-{@link org.apache.commons.math.geometry.Rotation}, and the interface
-{@link org.apache.commons.math.ode.FirstOrderIntegrator}. 
+the simple classes Vector3D and Rotation from the geometry package, and the interface
+FirstOrderIntegrator from the ode package. 
 </p>
 
 @author Luc Maisonobe
