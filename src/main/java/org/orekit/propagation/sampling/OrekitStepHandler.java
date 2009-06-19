@@ -40,12 +40,10 @@ public interface OrekitStepHandler extends Serializable {
 
     /** Determines whether this handler needs dense output.
      * @return true if the handler needs dense output
-     * @see org.apache.commons.math.ode.StepHandler#requiresDenseOutput()
      */
     boolean requiresDenseOutput();
 
     /** Reset the step handler.
-     * @see org.apache.commons.math.ode.StepHandler#reset()
      */
     void reset();
 
