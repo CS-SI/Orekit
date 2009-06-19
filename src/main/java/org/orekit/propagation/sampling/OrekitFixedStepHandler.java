@@ -23,9 +23,9 @@ import org.orekit.propagation.SpacecraftState;
 
 /** This interface is a space-dynamics aware fixed size step handler.
  *
- * <p>It mirrors the {@link org.apache.commons.math.ode.FixedStepHandler
- * FixedStepHandler} interface from <a href="http://commons.apache.org/math/">
- * commons-math</a> but provides a space-dynamics interface to the methods.</p>
+ * <p>It mirrors the <code>FixedStepHandler</code> interface from <a
+ * href="http://commons.apache.org/math/">commons-math</a> but provides
+ * a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
