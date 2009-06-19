@@ -146,7 +146,7 @@ public abstract class AbstractPropagator implements Propagator {
             } else {
                 stepSize = target.durationFrom(interpolator.getCurrentDate());
             }
-            CombinedEventsDetectorsManager manager =
+            final CombinedEventsDetectorsManager manager =
                 addEndDateChecker(getInitialDate(), target, eventsDetectorsManager);
 
             // iterate over the propagation range
@@ -283,11 +283,11 @@ public abstract class AbstractPropagator implements Propagator {
     protected CombinedEventsDetectorsManager addEndDateChecker(final AbsoluteDate startDate,
                                                                final AbsoluteDate endDate,
                                                                final CombinedEventsDetectorsManager manager) {
-        CombinedEventsDetectorsManager newManager = new CombinedEventsDetectorsManager();
+        final CombinedEventsDetectorsManager newManager = new CombinedEventsDetectorsManager();
         for (final EventDetector detector : manager.getEventsDetectors()) {
             newManager.addEventDetector(detector);
         }
-        double dt = endDate.durationFrom(startDate);
+        final double dt = endDate.durationFrom(startDate);
         newManager.addEventDetector(new EndDateDetector(endDate, Double.POSITIVE_INFINITY, Math.ulp(dt)));
         return newManager;
     }
@@ -302,7 +302,7 @@ public abstract class AbstractPropagator implements Propagator {
         private final AbsoluteDate endDate;
 
         /** Build an instance.
-         * @param endTime desired time
+         * @param endDate desired end date
          * @param maxCheck maximal check interval
          * @param threshold convergence threshold
          */
@@ -323,9 +323,9 @@ public abstract class AbstractPropagator implements Propagator {
         }
 
         /** {@inheritDoc} */
-        public void resetState(double t, double[] y) {
+        public void resetState(final double t, final double[] y) {
         }
-        
+
     }
 
 }
