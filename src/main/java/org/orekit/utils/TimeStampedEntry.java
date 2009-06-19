@@ -55,7 +55,7 @@ public class TimeStampedEntry implements TimeStamped, Serializable {
         throws OrekitException {
 
         this.mjd    = mjd;
-        this.fields = fields;
+        this.fields = fields.clone();
 
         // convert mjd date at 00h00 UTC to absolute date
         final long javaTime = (mjd - 40587) * 86400000l;
