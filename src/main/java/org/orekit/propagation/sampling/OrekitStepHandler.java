@@ -22,9 +22,9 @@ import org.orekit.errors.PropagationException;
 
 /** This interface is a space-dynamics aware step handler.
  *
- * <p>It mirrors the {@link org.apache.commons.math.ode.StepHandler
- * StepHandler} interface from <a href="http://commons.apache.org/math/">
- * commons-math</a> but provides a space-dynamics interface to the methods.</p>
+ * <p>It mirrors the <code>StepHandler</code> interface from <a
+ * href="http://commons.apache.org/math/"> commons-math</a> but
+ * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
