@@ -28,6 +28,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.UTCScale;
 
+import fr.cs.examples.Autoconfiguration;
+
 /** Orekit tutorial for slave mode propagation.
  * <p>This tutorial shows a basic usage of the slave mode in which the user drives all propagation steps.<p>
  * @author Pascal Parraud
@@ -40,6 +42,9 @@ public class SlaveMode {
      */
     public static void main(String[] args) {
         try {
+
+            // configure Orekit
+            Autoconfiguration.configureOrekit();
 
             // Initial orbit parameters
             double a = 24396159; // semi major axis in meters
