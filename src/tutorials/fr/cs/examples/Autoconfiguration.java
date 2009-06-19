@@ -68,7 +68,7 @@ public class Autoconfiguration {
     private static void appendIfExists(final StringBuffer path, final File file) {
         if (file.exists() && (file.isDirectory() || file.getName().endsWith(".zip"))) {
             if (path.length() > 0) {
-                path.append(':');
+                path.append(System.getProperty("path.separator"));
             }
             path.append(file.getAbsolutePath());
         }
@@ -82,7 +82,7 @@ public class Autoconfiguration {
         final URL url = Autoconfiguration.class.getClassLoader().getResource(directory);
         if (url != null) {
             if (path.length() > 0) {
-                path.append(':');
+                path.append(System.getProperty("path.separator"));
             }
             path.append(url.getFile().replaceAll("%20", " "));
         }
