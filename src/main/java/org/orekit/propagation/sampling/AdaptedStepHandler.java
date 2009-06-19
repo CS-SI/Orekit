@@ -131,7 +131,7 @@ public class AdaptedStepHandler
      * @see #getInterpolatedState()
      */
     public void setInterpolatedDate(final AbsoluteDate date) {
-            rawInterpolator.setInterpolatedTime(date.durationFrom(initializedReference));
+        rawInterpolator.setInterpolatedTime(date.durationFrom(initializedReference));
     }
 
     /** Get the interpolated state.
