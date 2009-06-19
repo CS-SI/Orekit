@@ -110,7 +110,7 @@ class JPLEphemeridesLoader implements DataLoader {
     }
 
     /** Constants defined in the file. */
-    private static final Map<String, Double> constants = new HashMap<String, Double>();
+    private static final Map<String, Double> CONSTANTS = new HashMap<String, Double>();
 
     /** Ephemeris type to load. */
     private final EphemerisType type;
@@ -151,7 +151,7 @@ class JPLEphemeridesLoader implements DataLoader {
     public JPLEphemeridesLoader(final EphemerisType type, final AbsoluteDate centralDate)
         throws OrekitException {
 
-        if (constants.isEmpty()) {
+        if (CONSTANTS.isEmpty()) {
             loadConstants();
         }
 
@@ -183,7 +183,7 @@ class JPLEphemeridesLoader implements DataLoader {
      */
     public static double getAstronomicalUnit() throws OrekitException {
 
-        if (constants.isEmpty()) {
+        if (CONSTANTS.isEmpty()) {
             loadConstants();
         }
 
@@ -197,7 +197,7 @@ class JPLEphemeridesLoader implements DataLoader {
      */
     public static double getEarthMoonMassRatio() throws OrekitException {
 
-        if (constants.isEmpty()) {
+        if (CONSTANTS.isEmpty()) {
             loadConstants();
         }
 
@@ -213,7 +213,7 @@ class JPLEphemeridesLoader implements DataLoader {
     public static double getGravitationalCoefficient(final EphemerisType body)
         throws OrekitException {
 
-        if (constants.isEmpty()) {
+        if (CONSTANTS.isEmpty()) {
             loadConstants();
         }
 
@@ -248,8 +248,8 @@ class JPLEphemeridesLoader implements DataLoader {
             rawGM = getConstant("GM9");
             break;
         case MOON :
-            rawGM = getConstant("GMB") / (1.0 + getEarthMoonMassRatio());
-            break;
+            return getGravitationalCoefficient(EphemerisType.EARTH_MOON) /
+                   (1.0 + getEarthMoonMassRatio());
         case SUN :
             rawGM = getConstant("GMS");
             break;
@@ -273,11 +273,11 @@ class JPLEphemeridesLoader implements DataLoader {
      */
     public static double getConstant(final String name) throws OrekitException {
 
-        if (constants.isEmpty()) {
+        if (CONSTANTS.isEmpty()) {
             loadConstants();
         }
 
-        Double value = constants.get(name);
+        final Double value = CONSTANTS.get(name);
         return (value == null) ? Double.NaN : value.doubleValue();
 
     }
@@ -303,7 +303,7 @@ class JPLEphemeridesLoader implements DataLoader {
         throws OrekitException, IOException {
 
         // read first header record
-        byte[] record = readFirstRecord(input, name);
+        final byte[] record = readFirstRecord(input, name);
 
         // parse first header record
         parseFirstHeaderRecord(record, name);
@@ -482,7 +482,7 @@ class JPLEphemeridesLoader implements DataLoader {
         throws OrekitException, IOException {
 
         // read first part of record, up to the ephemeris type
-        byte[] firstPart = new byte[2844];
+        final byte[] firstPart = new byte[2844];
         if (!readInRecord(input, firstPart, 0)) {
             throw new OrekitException(HEADER_READ_ERROR, name);
         }
@@ -600,21 +600,21 @@ class JPLEphemeridesLoader implements DataLoader {
     private static class HeaderConstantsLoader implements DataLoader {
 
         /** {@inheritDoc} */
-        public boolean fileIsSupported(String fileName) {
+        public boolean fileIsSupported(final String fileName) {
             // we try to load files only until the constants map has been set up
-            if (constants.isEmpty()) {
+            if (CONSTANTS.isEmpty()) {
                 return NAME_PATTERN.matcher(fileName).matches();
             }
             return false;
         }
 
         /** {@inheritDoc} */
-        public void loadData(InputStream input, String name)
-                throws IOException, ParseException, OrekitException {
+        public void loadData(final InputStream input, final String name)
+            throws IOException, ParseException, OrekitException {
 
             // read header records
-            byte[] first  = readFirstRecord(input, name);
-            byte[] second = new byte[first.length];
+            final byte[] first  = readFirstRecord(input, name);
+            final byte[] second = new byte[first.length];
             if (!readInRecord(input, second, 0)) {
                 throw new OrekitException(HEADER_READ_ERROR, name);
             }
@@ -627,7 +627,7 @@ class JPLEphemeridesLoader implements DataLoader {
                     return;
                 }
                 final double constantValue = extractDouble(second, 8 * i);
-                constants.put(constantName, constantValue);
+                CONSTANTS.put(constantName, constantValue);
             }
 
         }
