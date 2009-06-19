@@ -25,9 +25,9 @@ import org.orekit.time.AbsoluteDate;
  * This class wraps an object implementing {@link OrekitFixedStepHandler}
  * into a {@link OrekitStepHandler}.
 
- * <p>It mirrors the {@link org.apache.commons.math.ode.StepNormalizer
- * StepNormalizer} interface from <a href="http://commons.apache.org/math/">
- * commons-math</a> but provides a space-dynamics interface to the methods.</p>
+ * <p>It mirrors the <code>StepNormalizer</code> interface from <a
+ * href="http://commons.apache.org/math/">commons-math</a> but
+ * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
