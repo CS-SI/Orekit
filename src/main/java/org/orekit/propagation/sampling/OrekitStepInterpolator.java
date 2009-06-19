@@ -25,9 +25,9 @@ import org.orekit.time.AbsoluteDate;
 
 /** This interface is a space-dynamics aware step interpolator.
  *
- * <p>It mirrors the {@link org.apache.commons.math.ode.StepInterpolator
- * StepInterpolator} interface from <a href="http://commons.apache.org/math/">
- * commons-math</a> but provides a space-dynamics interface to the methods.</p>
+ * <p>It mirrors the <code>StepInterpolator</code> interface from <a
+ * href="http://commons.apache.org/math/"> commons-math</a> but
+ * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
