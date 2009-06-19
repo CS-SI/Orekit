@@ -45,10 +45,10 @@ import org.orekit.errors.OrekitException;
 public interface DataProvider extends Serializable {
 
     /** Pattern for name of gzip files. */
-    final Pattern GZIP_FILE_PATTERN = Pattern.compile("(.*)\\.gz$");
+    Pattern GZIP_FILE_PATTERN = Pattern.compile("(.*)\\.gz$");
 
     /** Pattern for name of zip/jar archives. */
-    final Pattern ZIP_ARCHIVE_PATTERN = Pattern.compile("(.*)(?:(?:\\.zip)|(?:\\.jar))$");
+    Pattern ZIP_ARCHIVE_PATTERN = Pattern.compile("(.*)(?:(?:\\.zip)|(?:\\.jar))$");
 
     /** Feed a data file loader by browsing the data collection.
      * <p>
