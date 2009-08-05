@@ -79,7 +79,8 @@ Frames
   There are also a number of planetary frames associated with the predefined celestial bodies.
 
   For most purposes, the recommended frames to use are ITRF 2005 for terrestrial frame and
-  GCRF for celestial frame. EME2000 could also be used for compatibility with other systems.
+  GCRF for celestial frame. EME2000, MEME, TEME and PEF could also be used for compatibility
+  with legacy systems.
 
 ** IERS 2003 Conventions
 
@@ -115,34 +116,43 @@ Frames
   former reference. The EME2000 frame (which is also known as J2000) is defined using
   the mean equinox at epoch J2000.0, i.e. 2000-01-01T12:00:00 in Terrestrial Time (not
   UTC!). From this frame, applying precession evolution between J2000.0 and current date
-  defines a Mean Of Date frame for current date and applying nutation defines a True Of
-  Data frame, similar in spirit to the CIRF in the new paradigm. From this, the Greenwhich
-  Apparent Sidereal Time is applied to reach a Pseudo Earth Fixed frame, similar to the TIRF
-  in the new paradigm. And a last transform involving pole motion leads to the ITRF.
+  defines a Mean Equator Mean Equinox frame for current date and applying nutation defines
+  a True Equator Mean Equinox frame, similar in spirit to the CIRF in the new paradigm.
+  From this, the Greenwhich Apparent Sidereal Time is applied to reach a Pseudo Earth Fixed
+  frame, similar to the TIRF in the new paradigm. A final transform involving pole motion
+  leads to the ITRF.
 
-  In summary, six frames are involved along this path: GCRF, EME2000, MoD, ToD, PEF
+  In summary, six frames are involved along this path: GCRF, EME2000, MEME, TEME, PEF
   and ITRF.
   
-  The EME2000 frame, which can be computed by a single bias from GCRF, is an historically
-  very important frame and lots of systems rely on it. It is supported in Orekit.
-  
-  But this paradigm is deprecated by IERS. It also involves additional complexity, first because
+  This paradigm is deprecated by IERS. It involves additional complexity, first because
   of the larger number of frames and second because these frames are computed by mixed models
   with IAU-76 precession, correction terms to match IAU-2000, and a need to convert Earth
   Earth Orientation data from the published form to a form suitable for this model. Another
   drawback of this method is that the intermediate frames do not match the similar frames
   with the same names used prior to IERS conventions 2003 since a correction is added to the
   IAU-76 precession model and the IAU-80 nutation model is completely replaced by the nutation
-  part extracted from IAU-2000 model. For these reasons, this paradigm is not completely
-  supported in Orekit and the path stops at the PEF frame and doesn't reach the ITRF.
+  part extracted from IAU-2000 model.
+
+  Despite this deprecation, these frames are very important ones and lots of legacy systems
+  rely on them. They are therefore supported in Orekit for interoperability purposes (but not
+  recommended for new systems). Since some legacy systems also don't really handle the EOP
+  parameters that apply to these frames, it is possible to ignore these parameters. Ignoring
+  these parameters should however be used only when compatibility with limited systems is
+  mandatory since it leads to very large errors (200m errors in LEO and 1500m errors in GEO
+  are typical for PEF when ignoring the dut1 and lod values for example).
 
 *** Orekit implementation of IERS 2003 convention
 
-  In summary, Orekit implements 6 frames from IERS 2003 convention: GCRF, CIRF 2000,
-  TIRF 2000 with tidal effects, TIRF 2000 without tidal effects, ITRF 2005 with tidal
-  effects and ITRF 2005 without tidal effects.
+  In summary, Orekit implements 12 frames from IERS 2003 convention: GCRF, CIRF 2000,
+  TIRF 2000 with and without tidal effects, ITRF 2005 with and without tidal effects,
+  MEME with and without EOP correction, TEME with and without EOP correction, PEF with
+  and without EOP correction.
 
-  Here is a schematic representation of the partial tree containing the supported IERS frames.
+**** CIO-based transformations
+
+  Here is a schematic representation of the partial tree containing the supported IERS frames
+  based on CIO
     
 [../images/iers-tree.png]
 
@@ -172,15 +182,15 @@ Frames
   maximal interpolation error is about 3 microarcseconds. The penalty to use tidal effects is therefore
   limited to slightly more than 20%, to be compared with the 550% penalty without this mechanism.
 
-*** Orekit implementation of equinox-based transformations
+**** Equinox-based transformations
 
-  Orekit implements 7 frames from the classical paradigm: EME2000,
-  MEME, MEME with nutation corrections, TEME, TEME with nutation corrections, PEF and PEF
-  with nutation corrections.
-
-  Here is a schematic representation of the partial tree containing the supported frames.
+  Here is a schematic representation of the partial tree containing the supported IERS frames
+  based on equinox
     
 [../images/pre-iers-tree.png]
+
+  The same kind of optimization used for the IAU-2000 precession-nutation model are also applied for
+  the older IAU-1980 precession-nutation model, despite it is much simpler.
 
 ** Topocentric Frame
   
@@ -271,4 +281,3 @@ Frames
    ** V\u00e9ronique Pommier-Maurussane
   
    ** Pascal Parraud
-   
