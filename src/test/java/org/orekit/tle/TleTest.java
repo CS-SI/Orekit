@@ -135,7 +135,6 @@ public class TleTest extends TestCase {
 
     public void testSatCodeCompliance() throws IOException, OrekitException, ParseException {
 
-        boolean printResults = false;
         BufferedReader rEntry = null;
         BufferedReader rResults = null;
 
@@ -177,16 +176,6 @@ public class TleTest extends TestCase {
                         assertTrue(satNum==tle.getSatelliteNumber());
                         TLEPropagator ex = TLEPropagator.selectExtrapolator(tle);
 
-                        if(printResults) {
-                            System.out.println();
-                            for(int i = 0; i<4; i++) {
-                                if(header[i]!=null) {
-                                    System.out.println(header[i]);
-                                }
-                            }
-                            System.out.println(" Satellite number : " + satNum);
-                        }
-
                         for (rline = rResults.readLine(); (rline!=null)&&(rline.charAt(0)!='r'); rline = rResults.readLine()) {
 
                             String[] data = rline.split(" ");
@@ -218,9 +207,6 @@ public class TleTest extends TestCase {
                                 double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
 
                                 cumulated += normDifPos;
-                                if(printResults) {
-                                    System.out.println(minFromStart + "    " + normDifPos);
-                                }
                                 assertEquals( 0, normDifPos, 2e-3);;
                                 assertEquals( 0, normDifVel, 1e-5);
 
@@ -228,10 +214,6 @@ public class TleTest extends TestCase {
 
                         }
                     }
-                }
-                if (printResults) {
-                    System.out.println();
-                    System.out.println(" cumul :  " + cumulated);
                 }
                 assertEquals(0, cumulated, 0.024);
             } finally {
