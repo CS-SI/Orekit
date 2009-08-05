@@ -62,7 +62,7 @@ class MEMEFrame extends Frame {
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
-    /** Simple constructor, applying nutation correction.
+    /** Simple constructor, applying EOP corrections (here, EME2000/GCRF bias compensation).
      * @param date the date.
      * @param name name of the frame
      */
@@ -71,7 +71,7 @@ class MEMEFrame extends Frame {
     }
 
     /** Simple constructor.
-     * @param applyEOPCorr if true, nutation correction is applied
+     * @param applyEOPCorr if true, EOP correction are applied (here, EME2000/GCRF bias compensation)
      * @param date the date.
      * @param name name of the frame
      * @see Frame
