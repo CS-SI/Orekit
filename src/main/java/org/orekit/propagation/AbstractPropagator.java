@@ -322,10 +322,6 @@ public abstract class AbstractPropagator implements Propagator {
             return s.getDate().durationFrom(endDate);
         }
 
-        /** {@inheritDoc} */
-        public void resetState(final double t, final double[] y) {
-        }
-
     }
 
 }
