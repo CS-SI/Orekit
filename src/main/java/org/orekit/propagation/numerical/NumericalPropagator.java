@@ -150,7 +150,7 @@ public class NumericalPropagator implements Propagator {
     private SpacecraftState currentState;
 
     /** Integrator selected by the user for the orbital extrapolation process. */
-    private final FirstOrderIntegrator integrator;
+    private transient FirstOrderIntegrator integrator;
 
     /** Counter for differential equations calls. */
     private int calls;
@@ -173,16 +173,23 @@ public class NumericalPropagator implements Propagator {
      * @param integrator numerical integrator to use for propagation.
      */
     public NumericalPropagator(final FirstOrderIntegrator integrator) {
-        this.mu                 = Double.NaN;
-        this.forceModels        = new ArrayList<ForceModel>();
-        this.detectors = new ArrayList<EventDetector>();
-        this.integrator         = integrator;
-        this.startDate          = new AbsoluteDate();
-        this.currentState       = null;
-        this.adder              = null;
-        this.attitudeLaw        = InertialLaw.EME2000_ALIGNED;
-        this.state              = new double[7];
+        this.mu           = Double.NaN;
+        this.forceModels  = new ArrayList<ForceModel>();
+        this.detectors    = new ArrayList<EventDetector>();
+        this.startDate    = new AbsoluteDate();
+        this.currentState = null;
+        this.adder        = null;
+        this.attitudeLaw  = InertialLaw.EME2000_ALIGNED;
+        this.state        = new double[7];
+        setIntegrator(integrator);
         setSlaveMode();
+    }
+
+    /** Set the integrator.
+     * @param integrator numerical integrator to use for propagation.
+     */
+    public void setIntegrator(final FirstOrderIntegrator integrator) {
+        this.integrator = integrator;
     }
 
     /** Set the central attraction coefficient &mu;.
@@ -313,6 +320,9 @@ public class NumericalPropagator implements Propagator {
             if (initialState.getDate().equals(finalDate)) {
                 // don't extrapolate
                 return initialState;
+            }
+            if (integrator == null) {
+                throw new PropagationException("ODE integrator not set for orbit propagation");
             }
 
             // space dynamics view
