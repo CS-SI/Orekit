@@ -103,21 +103,15 @@
       </question>
       <answer>
         <p>
-          Orekit depends on features of commons-math which have not been released as of mid 2008.
-          You will have to retrieve the development version from Apache subversion repository,
-          located in the commons-math trunk and compile it yourself. This is done by the following
-          three commands on a Unix or GNU/Linux system:
+          Up to version 4.0, Orekit depended on features of commons-math which were not released
+          as of mid 2008, so the dependency was set to 2.0-SNAPSHOT development version.
+          This development version was available from Apache subversion repository.
         </p>
-        <pre>
-svn checkout \
-    http://svn.apache.org/repos/asf/commons/proper/math/trunk \
-    commons-math
-cd commons-math
-mvn install
-        </pre>
         <p>
-          You will have to adjust these commands for other systems or if you use a graphical
-          interface to subversion.
+          Starting with version 4.1, Orekit depends only on released versions of commons-math
+          (commons-math 2.0 released in August 2009) which is available in maven standard
+          repositories. You should upgrade to at least Orekit 4.1 to use the officially
+          supported 2.0 release of commons math.
         </p>
       </answer>
     </faq>
