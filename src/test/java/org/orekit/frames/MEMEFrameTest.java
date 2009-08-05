@@ -47,13 +47,14 @@ public class MEMEFrameTest {
         Transform tt = FrameFactory.getGCRF().getTransformTo(FrameFactory.getMEME(true), t0);
         //GCRF iau76 w corr
         PVCoordinates pvGCRFiau76 =
-            new PVCoordinates(new Vector3D(5102508.9579, 6123011.4038, 6378136.9252),
-                              new Vector3D(-4743.220156, 790.536497, 5533.755728));
+            new PVCoordinates(new Vector3D(5102508.9579, 6123011.4007, 6378136.9282),
+                              new Vector3D(-4743.220157, 790.536497, 5533.755727));
         //MOD iau76 w corr
         PVCoordinates pvMODiau76Wcorr =
             new PVCoordinates(new Vector3D(5094028.3745, 6127870.8164, 6380248.5164),
                               new Vector3D(-4746.263052, 786.014045, 5531.790562));
-        checkPV(pvMODiau76Wcorr, tt.transformPVCoordinates(pvGCRFiau76), 4.4e-3, 1.6e-6);
+        
+        checkPV(pvMODiau76Wcorr, tt.transformPVCoordinates(pvGCRFiau76), 2.6e-5, 7.2e-7);
 
         Transform tf = FrameFactory.getEME2000().getTransformTo(FrameFactory.getMEME(false), t0);
         //J2000 iau76   
