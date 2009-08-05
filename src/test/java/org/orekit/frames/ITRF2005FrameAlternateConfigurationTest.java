@@ -40,6 +40,7 @@ public class ITRF2005FrameAlternateConfigurationTest {
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
         // David A. Vallado, John H. Seago, P. Kenneth Seidelmann
         // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
+        // Reference position & velocity from : "Fundamentals of Astrodynamics and Applications", Third edition, David A. Vallado 
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 04, 06),
                                            new TimeComponents(07, 51, 28.386009),
                                            UTCScale.getInstance());
@@ -56,17 +57,18 @@ public class ITRF2005FrameAlternateConfigurationTest {
                               new Vector3D(-4743.220156, 790.536497, 5533.755728));
         checkPV(pvGcrfIau2000A,
                 itrfA.getTransformTo(FrameFactory.getGCRF(), t0).transformPVCoordinates(pvITRF),
-                0.03, 2.9e-5);
-
+                0.01, 2.e-5);
+        
         PVCoordinates pvEME2000EqA =
             new PVCoordinates(new Vector3D(5102509.0383, 6123011.9758, 6378136.3118),
                               new Vector3D(-4743.219766, 790.536344, 5533.756084));
         checkPV(pvEME2000EqA,
                 itrfA.getTransformTo(FrameFactory.getEME2000(), t0).transformPVCoordinates(pvITRF),
-                0.03, 2.9e-5);
-
+                0.01, 2.e-5);
+        
     }
 
+    @Test
     public void testAASReferenceGEO() throws OrekitException {
 
         // this reference test has been extracted from the following paper:
@@ -89,14 +91,14 @@ public class ITRF2005FrameAlternateConfigurationTest {
                               new Vector3D(834.787458, -2958.305691, -1.172993));
         checkPV(pvGCRFiau2000A,
                 itrfA.getTransformTo(FrameFactory.getGCRF(), t0).transformPVCoordinates(pvITRF),
-                0.27, 1.9e-5);
+                0.065, 4.7e-6);
 
         PVCoordinates pvEME2000EqA =
             new PVCoordinates(new Vector3D(-40588149.5482, -11462169.9118, 27146.8462),
                               new Vector3D(834.787667, -2958.305632, -1.172963));
         checkPV(pvEME2000EqA,
                 itrfA.getTransformTo(FrameFactory.getEME2000(), t0).transformPVCoordinates(pvITRF),
-                0.27, 1.9e-5);
+                0.065, 4.5e-6);
 
     }
 
