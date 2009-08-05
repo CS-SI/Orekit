@@ -125,14 +125,14 @@ public class UTCScale implements TimeScale {
     /** Get the date of the first known leap second.
      * @return date of the first known leap second
      */
-    public AbsoluteDate getFirstKnownLeapSecond() {
+    public synchronized AbsoluteDate getFirstKnownLeapSecond() {
         return offsets[0].getValidityEnd();
     }
 
     /** Get the date of the last known leap second.
      * @return date of the last known leap second
      */
-    public AbsoluteDate getLastKnownLeapSecond() {
+    public synchronized AbsoluteDate getLastKnownLeapSecond() {
         return offsets[offsets.length - 1].getDate();
     }
 
