@@ -63,4 +63,11 @@
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
 
+  <!-- The following equality test is intentional and needed for semantic purposes -->
+  <Match>
+    <Class name="org.orekit.time.TimeComponents" />
+    <Method name="equals" params="java.lang.Object" returns="boolean" />
+    <Bug pattern="FE_FLOATING_POINT_EQUALITY" />
+  </Match>
+
 </FindBugsFilter>
