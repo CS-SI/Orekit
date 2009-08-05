@@ -107,7 +107,8 @@ public class DrozinerAttractionModelTest {
 
         private CelestialBody sun;
         private double previous;
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
+        public void handleStep(SpacecraftState currentState, boolean isLast)
+            throws PropagationException {
 
             Vector3D pos = currentState.getPVCoordinates().getPosition();
             Vector3D vel = currentState.getPVCoordinates().getVelocity();
@@ -116,9 +117,7 @@ public class DrozinerAttractionModelTest {
             try {
                 sunPos = sun.getPVCoordinates(current , FrameFactory.getEME2000()).getPosition();
             } catch (OrekitException e) {
-                sunPos = Vector3D.ZERO;
-                System.out.println("exception during sun.getPosition");
-                e.printStackTrace();
+                throw new PropagationException(e.getLocalizedMessage(), e);
             }
             Vector3D normal = Vector3D.crossProduct(pos,vel);
             double angle = Vector3D.angle(sunPos , normal);
@@ -182,9 +181,6 @@ public class DrozinerAttractionModelTest {
                                               ae, mu, c20, c30, c40, c50, c60);
         }
 
-        public void handleStep(double t, double[] y, boolean isLastStep) {
-
-        }
         private EcksteinHechlerPropagator referencePropagator;
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {

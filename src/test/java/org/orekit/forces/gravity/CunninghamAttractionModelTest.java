@@ -107,7 +107,8 @@ public class CunninghamAttractionModelTest {
 
         private CelestialBody sun;
         private double previous;
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
+        public void handleStep(SpacecraftState currentState, boolean isLast)
+            throws PropagationException {
 
 
             Vector3D pos = currentState.getPVCoordinates().getPosition();
@@ -117,9 +118,7 @@ public class CunninghamAttractionModelTest {
             try {
                 sunPos = sun.getPVCoordinates(current , FrameFactory.getEME2000()).getPosition();
             } catch (OrekitException e) {
-                sunPos = Vector3D.ZERO;
-                System.out.println("exception during sun.getPosition");
-                e.printStackTrace();
+                throw new PropagationException(e.getLocalizedMessage(), e);
             }
             Vector3D normal = Vector3D.crossProduct(pos,vel);
             double angle = Vector3D.angle(sunPos , normal);
