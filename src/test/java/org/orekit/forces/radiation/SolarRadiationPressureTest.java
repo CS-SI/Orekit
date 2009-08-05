@@ -156,9 +156,6 @@ public class SolarRadiationPressureTest {
         private SolarStepHandler() {
         }
 
-        public void handleStep(double t, double[]y, boolean isLastStep) {
-        }
-
         public void handleStep(SpacecraftState currentState, boolean isLast) {
             final double dex = currentState.getEquinoctialEx() - 0.01071166;
             final double dey = currentState.getEquinoctialEy() - 0.00654848;
