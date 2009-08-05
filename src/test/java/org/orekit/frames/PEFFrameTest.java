@@ -16,13 +16,11 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math.geometry.Vector3D;
-
-import org.junit.Test;
-import org.junit.Before;
-
 import static org.junit.Assert.assertEquals;
 
+import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
@@ -45,26 +43,30 @@ public class PEFFrameTest {
                                            new TimeComponents(07, 51, 28.386009),
                                            UTCScale.getInstance());
 
-// PEF iau76
+        // PEF iau76
         PVCoordinates pvPEF =
            new PVCoordinates(new Vector3D(-1033475.0313, 7901305.5856, 6380344.5328),
                              new Vector3D(-3225.632747, -2872.442511, 5531.931288));
-// TOD iau76
+
+        // TOD iau76
         PVCoordinates pvTEME =
             new PVCoordinates(new Vector3D(5094514.7804, 6127366.4612, 6380344.5328),
                               new Vector3D(-4746.088567, 786.077222, 5531.931288));
         
-        TEMEFrame TEMEframe = new TEMEFrame(true, AbsoluteDate.J2000_EPOCH, "TEME w corr");
-        PEFFrame  PEFframe  = new PEFFrame(true, AbsoluteDate.J2000_EPOCH, "PEF w corr");
+        Transform t = FrameFactory.getTEME(true).getTransformTo(FrameFactory.getPEF(true), t0);
 
-        Transform tt = TEMEframe.getTransformTo(PEFframe, t0);
-        checkPV(pvPEF, tt.transformPVCoordinates(pvTEME), 2.2, 1.2e-3);
-        
-        TEMEFrame TEMEFrame = new TEMEFrame(false, AbsoluteDate.J2000_EPOCH, "TEME wo corr");
-        PEFFrame  PEFFrame  = new PEFFrame(false, AbsoluteDate.J2000_EPOCH, "PEF wo corr");
-        
-        Transform tf = TEMEFrame.getTransformTo(PEFFrame, t0);
-        checkPV(pvPEF, tf.transformPVCoordinates(pvTEME), 0.3, 1.6e-4);
+        // this test gives worst result than PEFFrameAlternateConfigurationTest because
+        // at 2004-04-06 there is a 0.471ms difference in dut1 and a 0.077ms difference
+        // in lod with the data used by Vallado to set up this test case
+        PVCoordinates delta = new PVCoordinates(1.0, pvPEF, -1.0, t.transformPVCoordinates(pvTEME));
+        assertEquals(0.283011, delta.getPosition().getNorm(), 1.0e-8);
+        assertEquals(1.533846e-4, delta.getVelocity().getNorm(), 3.0e-11);
+
+        // if dut1 and lod corrections are ignored, results must be really bad
+        t = FrameFactory.getTEME(false).getTransformTo(FrameFactory.getPEF(false), t0);
+        delta = new PVCoordinates(1.0, pvPEF, -1.0, t.transformPVCoordinates(pvTEME));
+        assertEquals(255.644, delta.getPosition().getNorm(), 4.0e-6);
+        assertEquals(0.13856, delta.getVelocity().getNorm(), 9.0e-7);
 
     }
 
@@ -79,22 +81,30 @@ public class PEFFrameTest {
                                            TimeComponents.H00,
                                            UTCScale.getInstance());
 
-        Transform tt = FrameFactory.getTEME(true).getTransformTo(FrameFactory.getPEF(true), t0);
-        Transform tf = FrameFactory.getTEME(false).getTransformTo(FrameFactory.getPEF(false), t0);
+        Transform t = FrameFactory.getTEME(true).getTransformTo(FrameFactory.getPEF(true), t0);
 
-// TOD iau76
+        // TOD iau76
         PVCoordinates pvTEME =
             new PVCoordinates(new Vector3D(-40577427.7501, -11500096.1306, 10293.2583),
                               new Vector3D(837.552338, -2957.524176, -0.928772));
 
-//PEF iau76
+        //PEF iau76
         PVCoordinates pvPEF =
             new PVCoordinates(new Vector3D(24796919.2956, -34115870.9001, 10293.2583),
                               new Vector3D(-0.979178, -1.476540, -0.928772));
 
-        checkPV(pvPEF, tt.transformPVCoordinates(pvTEME), 10.3, 1.5e-5);
+        // this test gives worst result than PEFFrameAlternateConfigurationTest because
+        // at 2004-06-01 there is a 0.047ms difference in dut1 and a 0.416ms difference
+        // in lod with the data used by Vallado to set up this test case
+        PVCoordinates delta = new PVCoordinates(1.0, pvPEF, -1.0, t.transformPVCoordinates(pvTEME));
+        assertEquals(0.193876, delta.getPosition().getNorm(), 2.0e-7);
+        assertEquals(1.427464e-5, delta.getVelocity().getNorm(), 9.0e-12);
 
-        checkPV(pvPEF, tf.transformPVCoordinates(pvTEME), 0.2, 1.5e-5);
+        // if dut1 and lod corrections are ignored, results must be really bad
+        t = FrameFactory.getTEME(false).getTransformTo(FrameFactory.getPEF(false), t0);
+        delta = new PVCoordinates(1.0, pvPEF, -1.0, t.transformPVCoordinates(pvTEME));
+        assertEquals(1448.217, delta.getPosition().getNorm(), 4.0e-4);
+        assertEquals(6.1e-5, delta.getVelocity().getNorm(), 2.0e-8);
 
     }
 
@@ -102,16 +112,6 @@ public class PEFFrameTest {
     public void setUp() {
         String root = getClass().getClassLoader().getResource("compressed-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
-    }
-
-    private void checkPV(PVCoordinates reference,
-                         PVCoordinates result, double positionThreshold,
-                         double velocityThreshold) {
-
-        Vector3D dP = result.getPosition().subtract(reference.getPosition());
-        Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        assertEquals(0, dP.getNorm(), positionThreshold);
-        assertEquals(0, dV.getNorm(), velocityThreshold);
     }
 
 }
