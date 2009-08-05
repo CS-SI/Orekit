@@ -63,10 +63,11 @@ import org.orekit.time.AbsoluteDate;
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1698 $ $Date:2008-06-18 16:01:17 +0200 (mer., 18 juin 2008) $
  */
-class IntegratedEphemeris implements BoundedPropagator, ModeHandler, StepHandler {
+class IntegratedEphemeris
+    implements BoundedPropagator, ModeHandler, StepHandler {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 3312011510740592660L;
+    private static final long serialVersionUID = 3997196481383054719L;
 
     /** Reference date. */
     private AbsoluteDate initializedReference;
