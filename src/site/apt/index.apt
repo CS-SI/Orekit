@@ -36,13 +36,14 @@ Overview
       (or telemetry-dependent) frames
 
     * predefined frames (EME2000/J2000, GCRF, ITRF2005 and intermediate frames,
-      Veis, topocentric, tnw and qsw local orbital frames, Moon, Sun, planets,
-      solar system barycenter, Earth-Moon barycenter)
+      TEME, MEME and PEF frames, Veis, topocentric, tnw and qsw local orbital frames,
+      Moon, Sun, planets, solar system barycenter, Earth-Moon barycenter)
 
     * user extensible (used operationally in real time with a set of about 60 frames on
       several spacecrafts)
 
-    * transparent handling of IERS Earth Orientation Parameters
+    * transparent handling of IERS Earth Orientation Parameters (for both new
+      CIO-based frames and old equinox-based frames)
 
     * transparent handling of JPL DE 405 and DE 406 ephemerides
 
