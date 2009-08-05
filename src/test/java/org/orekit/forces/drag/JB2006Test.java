@@ -232,10 +232,7 @@ public class JB2006Test {
             pos = earth.transform(point);
             roJb = jb.getDensity(date, pos, FrameFactory.getEME2000());
             roDtm = dtm.getDensity(date, pos, FrameFactory.getEME2000());
-            double dif = Math.abs((roJb - roDtm) / roJb );
-            if (dif>=1) {
-                System.out.println(date);
-            }
+            assertEquals(roDtm, roJb, roJb);
 
         }
 
