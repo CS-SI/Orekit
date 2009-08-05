@@ -20,7 +20,6 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TTScale;
 
 /** True Equator, Mean Equinox of Date Frame.
  * <p>This frame handles nutation effects according to the IAU-80 theory.</p>
@@ -60,10 +59,6 @@ class TEMEFrame extends Frame {
     private static final double MOE_1 =   -46.8150   * RADIANS_PER_ARC_SECOND;
     private static final double MOE_2 =    -0.00059  * RADIANS_PER_ARC_SECOND;
     private static final double MOE_3 =     0.001813 * RADIANS_PER_ARC_SECOND;
-
-    // Coefficients for the Equation of the Equinoxes.
-    private static final double EQE_1 =     0.00264  * RADIANS_PER_ARC_SECOND;
-    private static final double EQE_2 =     0.000063 * RADIANS_PER_ARC_SECOND;
 
     // lunisolar nutation elements
     // Coefficients for l (Mean Anomaly of the Moon).
@@ -265,13 +260,13 @@ class TEMEFrame extends Frame {
     /** Neville interpolation array for deps. */
     private final double[] depsNeville;
 
-    /** Flag for applying nutation correction. */
+    /** Flag for applying EOP corrections (here nutation). */
     private final boolean applyEOPCorr;
 
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
-    /** Simple constructor, applying nutation correction.
+    /** Simple constructor, applying EOP corrections (here, nutation).
      * @param date the date.
      * @param name name of the frame
      * @exception OrekitException if the nutation model data embedded
@@ -279,13 +274,17 @@ class TEMEFrame extends Frame {
      */
     protected TEMEFrame(final AbsoluteDate date, final String name)
         throws OrekitException {
-
         this(true, date, name);
-
     }
 
     /** Simple constructor.
-     * @param applyEOPCorr if true, nutation correction is applied
+     * <p>
+     * The applyEOPCorr parameter is available mainly for testing purposes or for
+     * consistency with legacy software that don't handle EOP parameters. Beware
+     * that setting this parameter to {@code false} leads to very crude accuracy
+     * (order of magnitudes are about 1m in LEO and 10m in GEO).
+     * </p>
+     * @param applyEOPCorr if true, EOP corrections are applied (here, nutation)
      * @param date the date.
      * @param name name of the frame
      * @exception OrekitException if the nutation model data embedded
@@ -326,8 +325,8 @@ class TEMEFrame extends Frame {
         if ((cachedDate == null) || !cachedDate.equals(date)) {
 
             // offset from J2000.0 epoch
-            // final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
-            final double tts = date.durationFrom(new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, TTScale.getInstance()));
+            final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+
             // evaluate the nutation elements
             setInterpolatedNutationElements(tts);
 
@@ -475,36 +474,6 @@ class TEMEFrame extends Frame {
         dpsiCurrent = dpsi * RADIANS_PER_ARC_SECOND * 1.e-4;
         depsCurrent = deps * RADIANS_PER_ARC_SECOND * 1.e-4;
 
-    }
-
-    /** Get the Equation of the Equinoxes at the current date.
-     * @param  date the date
-     * @return Equation of the Equinoxes at the current date in radians
-     * @exception OrekitException if nutation model cannot be computed
-     */
-    public double getEquationOfEquinoxes(final AbsoluteDate date) throws OrekitException {
-
-        updateFrame(date);
-
-        // get the IAU1980 corrections for the nutation parameters
-        final NutationCorrection nutCorr = applyEOPCorr ?
-              EOP1980History.getInstance().getNutationCorrection(date) : NutationCorrection.NULL_CORRECTION;
-
-        final double dpsi = dpsiCurrent + nutCorr.getDdpsi();
-
-        // offset from J2000.0 epoch
-        final double ts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
-
-        // offset from J2000 epoch in julian centuries
-        final double tc = ts * JULIAN_CENTURY_PER_SECOND;
-
-        // Mean longitude of the ascending node of the Moon
-        final double om = ((F53 * tc + F52) * tc + F510) * tc + F50 + ((F511 * tc) % 1.0) * TWO_PI;
-
-        // Equation of the Equinoxes
-        final double eqe = dpsi * Math.cos(moe) + EQE_1 * Math.sin(om) + EQE_2 * Math.sin(om + om);
-
-        return eqe;
     }
 
 }
