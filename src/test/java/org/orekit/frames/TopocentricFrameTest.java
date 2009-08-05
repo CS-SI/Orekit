@@ -160,18 +160,13 @@ public class TopocentricFrameTest extends TestCase {
         
         // Point at 800 km over zenith
         final GeodeticPoint satPoint = new GeodeticPoint(Math.toRadians(45.), Math.toRadians(30.), 800000.); 
-        //System.out.println(  "sat lon = " + Math.toDegrees(satPoint.getLongitude()) 
-        //                   + " sat lat (deg) = " + Math.toDegrees(satPoint.getLatitude())
-        //                   + " sat alt = " + satPoint.getAltitude()) ;
         
         // Zenith point elevation = 90 deg
         final double site = topoFrame.getElevation(earthSpheric.transform(satPoint), earthSpheric.getBodyFrame(), date);
-        //System.out.println("Sat site (deg) = " + Math.toDegrees(site));
         assertEquals(Math.PI/2., site, Utils.epsilonAngle);
 
         // Zenith point range = defined altitude
         final double range = topoFrame.getRange(earthSpheric.transform(satPoint), earthSpheric.getBodyFrame(), date);
-        //System.out.println("Sat range (km) = " + range/1000.);
         assertEquals(800000., range, 1e-8);
   }
     
@@ -189,12 +184,10 @@ public class TopocentricFrameTest extends TestCase {
         
         // Azimuth = pi/2
         double azi = topoFrame.getAzimuth(earthSpheric.transform(infPoint), earthSpheric.getBodyFrame(), date);
-        //System.out.println("Sat azimuth (deg) = " + Math.toDegrees(azi));
         assertEquals(Math.PI/2., azi, Utils.epsilonAngle);
 
         // Site = pi/2 - longitude difference
         double site = topoFrame.getElevation(earthSpheric.transform(infPoint), earthSpheric.getBodyFrame(), date);
-        //System.out.println("Sat site (deg) = " + Math.toDegrees(site));
         assertEquals(Math.PI/2. - Math.abs(point.getLongitude() - infPoint.getLongitude()), site, 1.e-2);
 
         // Point at infinite, separated by -20 deg in longitude
@@ -203,12 +196,10 @@ public class TopocentricFrameTest extends TestCase {
         
         // Azimuth = pi/2
         azi = topoFrame.getAzimuth(earthSpheric.transform(infPoint), earthSpheric.getBodyFrame(), date);
-        //System.out.println("Sat azimuth (deg) = " + Math.toDegrees(azi));
-        // assertEquals(3*Math.PI/2., azi, Utils.epsilonAngle);
+        assertEquals(3*Math.PI/2., azi, Utils.epsilonAngle);
 
         // Site = pi/2 - longitude difference
         site = topoFrame.getElevation(earthSpheric.transform(infPoint), earthSpheric.getBodyFrame(), date);
-        //System.out.println("Sat site (deg) = " + Math.toDegrees(site));
         assertEquals(Math.PI/2. - Math.abs(point.getLongitude() - infPoint.getLongitude()), site, 1.e-2);
 
     }    
@@ -227,7 +218,6 @@ public class TopocentricFrameTest extends TestCase {
         
         // Azimuth = 
         double azi = topoFrame.getAzimuth(earthSpheric.transform(satPoint), earthSpheric.getBodyFrame(), date);
-        //System.out.println("Sat azimuth (deg) = " + Math.toDegrees(azi));
         assertEquals(Math.PI - satPoint.getLongitude(), azi, 1.e-5);
  
         // Point at -30 deg longitude
@@ -236,7 +226,6 @@ public class TopocentricFrameTest extends TestCase {
         
         // Azimuth = 
         azi = topoFrame.getAzimuth(earthSpheric.transform(satPoint), earthSpheric.getBodyFrame(), date);
-        //System.out.println("Sat azimuth (deg) = " + Math.toDegrees(azi));
         assertEquals(Math.PI - satPoint.getLongitude(), azi, 1.e-5);
  
     }    
