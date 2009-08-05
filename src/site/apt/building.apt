@@ -103,25 +103,19 @@ ant
   For systems not providing eclipse as a package, it can be downloaded from its
   site at the Eclipse Foundation: {{http://www.eclipse.org/downloads/}}.
 
-  The Orekit distribution already contains a .project and a .classpath files
-  that can be used by Eclipse. So the simplest way to use Orekit with Eclipse
-  is to unpack the distribution inside your Eclipse workspace and to create a
-  new project from existing sources.
+  The simplest way to use Orekit with Eclipse is to follow these steps:
 
-  There are chances that Eclipse will try to compile the project immediately after
-  project creation and fail because of missing dependencies. This is due to the
-  Java build path configuration already present in the .classpath file that
-  probably won't match your local settings. It can be fixed by editing the
-  Java build path configuration (select Build Path/Configure Build Path in the
-  package explorer menu, and select the Libraries tab). You will see that
-  the configuration uses a M2_REPO variable to point directly from Eclipse
-  to the local maven 2 repository, this variable is used for both the junit test
-  library and the commons-math mathematical library.
-  
-  If you also want to use both maven2 and eclipse, it is sufficient to set the
-  M2_REPO variable to your own local repository (typically
-  /home/your-username/.m2/repository on Unix, GNU/Linux and Mac OS X,
-  and C:\Documents and Settings\username\.m2 on Windows). If you want to use
-  Eclipse only, put the dependencies wherever you want and configure Eclipse
-  accordingly, with or without a user variable.
-  
+    * unpack the distribution inside your Eclipse workspace
+
+    * create a new java project from existing sources and direct Eclipse to the
+       directory where you unpacked Orekit
+
+    * set the source folders to orekit/src/main/java, orekit/src/main/resources,
+      orekit/src/test/java, orekit/src/test/resources in the source tab
+      of the Configure Build Path dialog
+
+    * set the external libraries to JRE system library (provided by Eclipse),
+      Junit 4.x (provided by Eclipse) and commons-math 2.0 (available at
+      Apache Software Foundation commons-math
+      {{{http://commons.apache.org/downloads/download_math.cgi}downloads page}})
+      in the libraries tab of the Configure Build Path dialog
