@@ -36,9 +36,8 @@ import org.orekit.time.AbsoluteDate;
  * The user can retrieve those reference frames using various static methods
  * ({@link #getGCRF()}, {@link #getCIRF2000()}, {@link #getTIRF2000(boolean)},
  * {@link #getTIRF2000()}, {@link #getITRF2005(boolean)}, {@link #getITRF2005()},
- * {@link #getEME2000()}, {@link #getMEME(boolean)}, {@link #getMEME()},
- * {@link #getTEME(boolean)}, {@link #getTEME()}, {@link #getPEF(boolean)},
- * {@link #getPEF()} and {@link #getVeis1950()}).
+ * {@link #getEME2000()}, {@link #getMEME(boolean)}, {@link #getTEME(boolean)},
+ * {@link #getPEF(boolean)} and {@link #getVeis1950()}).
  * </p>
  * <h5> International Terrestrial Reference Frame 2005 </h5>
  * <p>
@@ -213,18 +212,14 @@ public class FrameFactory implements Serializable {
         return LazyVeis1950Holder.INSTANCE;
     }
 
-    /** Get the PEF reference frame without nutation correction.
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the nutation model data embedded in the
-     * library cannot be read.
-     */
-    public static Frame getPEF()
-        throws OrekitException {
-        return getPEF(false);
-    }
-
     /** Get the PEF reference frame.
-     * @param applyEOPCorr if true, nutation correction is applied
+     * <p>
+     * The applyEOPCorr parameter is available mainly for testing purposes or for
+     * consistency with legacy software that don't handle EOP parameters. Beware
+     * that setting this parameter to {@code false} leads to very crude accuracy
+     * (order of magnitudes for errors are above 100m in LEO and above 1000m in GEO).
+     * </p>
+     * @param applyEOPCorr if true, EOP corrections are applied (here dut1 and lod)
      * @return the selected reference frame singleton.
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
@@ -237,25 +232,21 @@ public class FrameFactory implements Serializable {
             }
             return LazyPEFWithEOPHolder.INSTANCE;
         } else {
-            if (LazyPEFWoutEOPHolder.INSTANCE == null) {
-                throw LazyPEFWoutEOPHolder.OREKIT_EXCEPTION;
+            if (LazyPEFWithoutEOPHolder.INSTANCE == null) {
+                throw LazyPEFWithoutEOPHolder.OREKIT_EXCEPTION;
             }
-            return LazyPEFWoutEOPHolder.INSTANCE;
+            return LazyPEFWithoutEOPHolder.INSTANCE;
         }
     }
 
-    /** Get the TEME reference frame without nutation correction.
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the nutation model data embedded in the
-     * library cannot be read.
-     */
-    public static Frame getTEME()
-        throws OrekitException {
-        return getTEME(false);
-    }
-
     /** Get the TEME reference frame.
-     * @param applyEOPCorr if true, nutation correction is applied
+     * <p>
+     * The applyEOPCorr parameter is available mainly for testing purposes or for
+     * consistency with legacy software that don't handle EOP parameters. Beware
+     * that setting this parameter to {@code false} leads to very crude accuracy
+     * (order of magnitudes for errors are about 1m in LEO and 10m in GEO).
+     * </p>
+     * @param applyEOPCorr if true, EOP corrections are applied (here, nutation)
      * @return the selected reference frame singleton.
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
@@ -268,29 +259,28 @@ public class FrameFactory implements Serializable {
             }
             return LazyTEMEWithEOPHolder.INSTANCE;
         } else {
-            if (LazyTEMEWoutEOPHolder.INSTANCE == null) {
-                throw LazyTEMEWoutEOPHolder.OREKIT_EXCEPTION;
+            if (LazyTEMEWithoutEOPHolder.INSTANCE == null) {
+                throw LazyTEMEWithoutEOPHolder.OREKIT_EXCEPTION;
             }
-            return LazyTEMEWoutEOPHolder.INSTANCE;
+            return LazyTEMEWithoutEOPHolder.INSTANCE;
         }
     }
 
-    /** Get the MEME reference frame without nutation correction.
-     * @return the selected reference frame singleton.
-     */
-    public static Frame getMEME() {
-        return getMEME(false);
-    }
-
     /** Get the MEME reference frame.
-     * @param applyEOPCorr if true, nutation correction is applied
+     * <p>
+     * The applyEOPCorr parameter is available mainly for testing purposes or for
+     * consistency with legacy software that don't handle EOP parameters. Beware
+     * that setting this parameter to {@code false} leads to very crude accuracy
+     * (order of magnitudes for errors are about 1m in LEO and 10m in GEO).
+     * </p>
+     * @param applyEOPCorr if true, EOP corrections are applied (EME2000/GCRF bias compensation)
      * @return the selected reference frame singleton.
      */
     public static Frame getMEME(final boolean applyEOPCorr) {
         if (applyEOPCorr) {
             return LazyMEMEWithEOPHolder.INSTANCE;
         } else {
-            return LazyMEMEWoutEOPHolder.INSTANCE;
+            return LazyMEMEWithoutEOPHolder.INSTANCE;
         }
     }
 
@@ -549,7 +539,7 @@ public class FrameFactory implements Serializable {
     }
 
     /** Holder for the PEF frame without nutation correction singleton. */
-    private static class LazyPEFWoutEOPHolder {
+    private static class LazyPEFWithoutEOPHolder {
 
         /** Unique instance. */
         private static final Frame INSTANCE;
@@ -561,8 +551,8 @@ public class FrameFactory implements Serializable {
             Frame tmpFrame = null;
             OrekitException tmpException = null;
             try {
-                if (LazyTEMEWoutEOPHolder.INSTANCE == null) {
-                    tmpException = LazyTEMEWoutEOPHolder.OREKIT_EXCEPTION;
+                if (LazyTEMEWithoutEOPHolder.INSTANCE == null) {
+                    tmpException = LazyTEMEWithoutEOPHolder.OREKIT_EXCEPTION;
                 } else {
                     tmpFrame = new PEFFrame(false, AbsoluteDate.J2000_EPOCH, "PEF without EOP");
                 }
@@ -578,7 +568,7 @@ public class FrameFactory implements Serializable {
          * nor a default constructor. This private constructor prevents
          * the compiler from generating one automatically.</p>
          */
-        private LazyPEFWoutEOPHolder() {
+        private LazyPEFWithoutEOPHolder() {
         }
 
     }
@@ -615,7 +605,7 @@ public class FrameFactory implements Serializable {
     }
 
     /** Holder for the TEME without nutation correction frame singleton. */
-    private static class LazyTEMEWoutEOPHolder {
+    private static class LazyTEMEWithoutEOPHolder {
 
         /** Unique instance. */
         private static final Frame INSTANCE;
@@ -640,7 +630,7 @@ public class FrameFactory implements Serializable {
          * nor a default constructor. This private constructor prevents
          * the compiler from generating one automatically.</p>
          */
-        private LazyTEMEWoutEOPHolder() {
+        private LazyTEMEWithoutEOPHolder() {
         }
 
     }
@@ -663,7 +653,7 @@ public class FrameFactory implements Serializable {
     }
 
     /** Holder for the MEME frame without nutation correction singleton. */
-    private static class LazyMEMEWoutEOPHolder {
+    private static class LazyMEMEWithoutEOPHolder {
 
         /** Unique instance. */
         private static final Frame INSTANCE =
@@ -674,7 +664,7 @@ public class FrameFactory implements Serializable {
          * nor a default constructor. This private constructor prevents
          * the compiler from generating one automatically.</p>
          */
-        private LazyMEMEWoutEOPHolder() {
+        private LazyMEMEWithoutEOPHolder() {
         }
 
     }
