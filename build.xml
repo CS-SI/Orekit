@@ -94,7 +94,7 @@
 
   <target name="jar" depends="compile,test" description="create the jar file">
     <jar jarfile="${build.dir}/${ant.project.name}-${project.version}.jar"
-         compress="true" index="true" basedir="${main.classes.dir}"/>
+         basedir="${main.classes.dir}"/>
   </target>
 
   <target name="javadoc" description="create javadoc">
