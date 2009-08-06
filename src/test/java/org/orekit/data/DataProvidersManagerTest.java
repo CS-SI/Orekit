@@ -16,19 +16,25 @@
  */
 package org.orekit.data;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
+import org.junit.Test;
 import org.orekit.errors.OrekitException;
 
-public class DataProvidersManagerTest extends TestCase {
+public class DataProvidersManagerTest {
 
+    @Test
     public void testDefaultConfiguration() throws OrekitException {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("regular-data"));
         CountingLoader crawler = new CountingLoader(".*", false);
@@ -38,6 +44,7 @@ public class DataProvidersManagerTest extends TestCase {
         assertEquals(14, crawler.getCount());
     }
 
+    @Test
     public void testLoadFailure() {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("regular-data"));
         DataProvidersManager.getInstance().clearProviders();
@@ -51,6 +58,7 @@ public class DataProvidersManagerTest extends TestCase {
         assertEquals(14, crawler.getCount());
     }
 
+    @Test
     public void testEmptyProperty() throws OrekitException {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, "");
         CountingLoader crawler = new CountingLoader(".*", false);
@@ -59,6 +67,7 @@ public class DataProvidersManagerTest extends TestCase {
         assertEquals(0, crawler.getCount());
     }
 
+    @Test
     public void testInexistentDirectory() throws OrekitException {
         File inexistent = new File(getPath("regular-data"), "inexistent");
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, inexistent.getAbsolutePath());
@@ -74,6 +83,7 @@ public class DataProvidersManagerTest extends TestCase {
         }
     }
 
+    @Test
     public void testInexistentZipArchive() throws OrekitException {
         File inexistent = new File(getPath("regular-data"), "inexistent.zip");
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, inexistent.getAbsolutePath());
@@ -89,6 +99,7 @@ public class DataProvidersManagerTest extends TestCase {
         }
     }
 
+    @Test
     public void testNeitherDirectoryNorZip() throws OrekitException {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("regular-data/UTC-TAI.history"));
         CountingLoader crawler = new CountingLoader(".*", false);
@@ -103,6 +114,7 @@ public class DataProvidersManagerTest extends TestCase {
         }
     }
 
+    @Test
     public void testListModification() throws OrekitException {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("regular-data"));
         CountingLoader crawler = new CountingLoader(".*", false);
@@ -139,6 +151,7 @@ public class DataProvidersManagerTest extends TestCase {
         assertEquals(0, manager.getProviders().size());
     }
 
+    @Test
     public void testComplexPropertySetting() throws OrekitException {
         String sep = System.getProperty("path.separator");
         File top = new File(getPath("regular-data"));
@@ -162,6 +175,7 @@ public class DataProvidersManagerTest extends TestCase {
 
     }
 
+    @Test
     public void testMultiZip() throws OrekitException {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("zipped-data/multizip.zip"));
         CountingLoader crawler = new CountingLoader(".*\\.txt$", false);
@@ -198,10 +212,6 @@ public class DataProvidersManagerTest extends TestCase {
         ClassLoader loader = DirectoryCrawlerTest.class.getClassLoader();
         URL url = loader.getResource(resourceName);
         return url.getPath();
-    }
-
-    public static Test suite() {
-        return new TestSuite(DataProvidersManagerTest.class);
     }
 
 }

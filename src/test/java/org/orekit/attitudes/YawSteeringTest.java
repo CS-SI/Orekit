@@ -16,12 +16,16 @@
  */
 package org.orekit.attitudes;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -38,13 +42,7 @@ import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
 
-public class YawSteeringTest extends TestCase {
-
-    /** Test class for yaw steering attitude law.
-     */
-    public YawSteeringTest(String name) {
-        super(name);
-    }
+public class YawSteeringTest {
 
     // Computation date 
     private AbsoluteDate date;
@@ -59,9 +57,7 @@ public class YawSteeringTest extends TestCase {
     // Earth shape
     OneAxisEllipsoid earthShape;
     
-    /** Test that pointed target and observed ground point remain the same 
-     * with or without yaw compensation
-     */
+    @Test
     public void testTarget() throws OrekitException {
 
         //  Attitude laws
@@ -104,8 +100,7 @@ public class YawSteeringTest extends TestCase {
         assertTrue((normObservedDiffPos < Utils.epsilonTest)&&(normObservedDiffVel < Utils.epsilonTest));
    }
 
-    /** Test that compensation rotation axis put sun in the (Xsat,Zsat) plane
-     */
+    @Test
     public void testSunAligned() throws OrekitException {
 
         PVCoordinates pvSatEME2000 = circOrbit.getPVCoordinates();
@@ -129,8 +124,7 @@ public class YawSteeringTest extends TestCase {
 
     }
     
-    /** Test that compensation rotation axis is Zsat, yaw axis
-     */
+    @Test
     public void testCompensAxis() throws OrekitException {
 
         PVCoordinates pvSatEME2000 = circOrbit.getPVCoordinates();
@@ -158,7 +152,8 @@ public class YawSteeringTest extends TestCase {
         assertEquals(1., yawAxis.getZ(), Utils.epsilonTest);
 
     }
-    
+
+    @Before
     public void setUp() {
         try {
             String root = getClass().getClassLoader().getResource("regular-data").getPath();
@@ -193,6 +188,7 @@ public class YawSteeringTest extends TestCase {
 
     }
 
+    @After
     public void tearDown() {
         date = null;
         frameITRF2005 = null;
@@ -201,8 +197,5 @@ public class YawSteeringTest extends TestCase {
         earthShape = null;
     }
 
-    public static Test suite() {
-        return new TestSuite(YawSteeringTest.class);
-    }
 }
 

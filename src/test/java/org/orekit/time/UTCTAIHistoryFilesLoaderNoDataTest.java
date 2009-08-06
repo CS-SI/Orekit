@@ -16,33 +16,23 @@
  */
 package org.orekit.time;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 
-public class UTCTAIHistoryFilesLoaderNoDataTest extends TestCase {
+public class UTCTAIHistoryFilesLoaderNoDataTest {
 
+    @Test(expected=OrekitException.class)
     public void testNoData() throws OrekitException {
-        try {
-            UTCScale.getInstance().offsetFromTAI(AbsoluteDate.J2000_EPOCH);
-            fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            // expected
-        } catch (Exception e) {
-            fail("wrong exception caught");
-        }
+        UTCScale.getInstance().offsetFromTAI(AbsoluteDate.J2000_EPOCH);
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("no-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
-    }
-
-    public static Test suite() {
-        return new TestSuite(UTCTAIHistoryFilesLoaderNoDataTest.class);
     }
 
 }

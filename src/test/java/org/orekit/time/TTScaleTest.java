@@ -16,15 +16,14 @@
  */
 package org.orekit.time;
 
-import junit.framework.*;
+import static org.junit.Assert.assertEquals;
 
-public class TTScaleTest
-extends TestCase {
+import org.junit.Test;
 
-    public TTScaleTest(String name) {
-        super(name);
-    }
 
+public class TTScaleTest {
+
+    @Test
     public void testConstant() {
         TimeScale scale = TTScale.getInstance();
         double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH);
@@ -34,6 +33,7 @@ extends TestCase {
         }
     }
 
+    @Test
     public void testSymmetry() {
         TimeScale scale = TTScale.getInstance();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
@@ -43,10 +43,6 @@ extends TestCase {
             double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
             assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
-    }
-
-    public static Test suite() {
-        return new TestSuite(TTScaleTest.class);
     }
 
 }

@@ -16,19 +16,21 @@
  */
 package org.orekit.frames;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.FileNotFoundException;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TAIScale;
 
-public class CIRF2000FrameTest extends TestCase {
+public class CIRF2000FrameTest {
 
+    @Test
     public void testInterpolationAccuracy() throws OrekitException, FileNotFoundException {
 
         CIRF2000Frame interpolatingFrame =
@@ -64,13 +66,10 @@ public class CIRF2000FrameTest extends TestCase {
         }
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("compressed-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
-    }
-
-    public static Test suite() {
-        return new TestSuite(CIRF2000FrameTest.class);
     }
 
 }

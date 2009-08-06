@@ -16,17 +16,18 @@
  */
 package org.orekit.time;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
 import org.orekit.time.TimeComponents;
 
-import junit.framework.*;
 
-public class TimeComponentsTest
-extends TestCase {
+public class TimeComponentsTest {
 
-    public TimeComponentsTest(String name) {
-        super(name);
-    }
-
+    @Test
     public void testOutOfRange() {
         checkConstructorCompletion(-1, 10, 10, false);
         checkConstructorCompletion(24, 10, 10, false);
@@ -38,6 +39,7 @@ extends TestCase {
         checkConstructorCompletion(86401.0, false);
     }
 
+    @Test
     public void testInRange() {
         checkConstructorCompletion(10, 10, 10, true);
         checkConstructorCompletion(0.0, true);
@@ -46,6 +48,7 @@ extends TestCase {
         checkConstructorCompletion(86399.999, true);
     }
 
+    @Test
     public void testValues() {
         assertEquals(    0.0, new TimeComponents( 0, 0, 0).getSecondsInDay(), 1.0e-10);
         assertEquals(21600.0, new TimeComponents( 6, 0, 0).getSecondsInDay(), 1.0e-10);
@@ -62,6 +65,7 @@ extends TestCase {
         assertEquals("23:59:59.900", new TimeComponents(86399.9).toString());
     }
 
+    @Test
     public void testComparisons() {
         TimeComponents[] times = {
                  new TimeComponents( 0,  0,  0.0),
@@ -123,10 +127,6 @@ extends TestCase {
         } catch (Exception e) {
             fail("wrong exception caught");
         }
-    }
-
-    public static Test suite() {
-        return new TestSuite(TimeComponentsTest.class);
     }
 
 }

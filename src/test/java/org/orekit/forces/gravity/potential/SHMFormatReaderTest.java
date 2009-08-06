@@ -16,22 +16,21 @@
  */
 package org.orekit.forces.gravity.potential;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.PotentialCoefficientsReader;
 import org.orekit.forces.gravity.potential.PotentialReaderFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
 
+public class SHMFormatReaderTest {
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
-public class SHMFormatReaderTest extends TestCase {
-
+    @Test
     public void testRead() throws OrekitException, IOException {
 
         InputStream in =
@@ -65,6 +64,7 @@ public class SHMFormatReaderTest extends TestCase {
 
     }
 
+    @Test
     public void testReadCompressed() throws OrekitException, IOException {
         InputStream in =
             SHMFormatReaderTest.class.getResourceAsStream("/potential/shm-format-compressed/eigen-cg01c_coef.gz");
@@ -97,6 +97,7 @@ public class SHMFormatReaderTest extends TestCase {
 
     }
 
+    @Test
     public void testException() throws FileNotFoundException, IOException {
 
         PotentialCoefficientsReader reader;
@@ -139,7 +140,4 @@ public class SHMFormatReaderTest extends TestCase {
 
     }
 
-    public static Test suite() {
-        return new TestSuite(SHMFormatReaderTest.class);
-    }
 }

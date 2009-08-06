@@ -16,17 +16,18 @@
  */
 package org.orekit.time;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
 import org.orekit.time.DateComponents;
 
-import junit.framework.*;
 
-public class DateComponentsTest
-extends TestCase {
+public class DateComponentsTest {
 
-    public DateComponentsTest(String name) {
-        super(name);
-    }
-
+    @Test
     public void testReferenceDates() {
 
         int[][] reference = {
@@ -54,6 +55,7 @@ extends TestCase {
 
     }
 
+    @Test
     public void testDayOfWeek() {
         assertEquals(7, new DateComponents(-4713, 12, 31).getDayOfWeek());
         assertEquals(1, new DateComponents(-4712, 01, 01).getDayOfWeek());
@@ -63,6 +65,7 @@ extends TestCase {
         assertEquals(6, new DateComponents( 2000, 01, 01).getDayOfWeek());
     }
 
+    @Test
     public void testDayOfYear() {
         assertEquals(  1, new DateComponents(2003,  1,  1).getDayOfYear());
         assertEquals(365, new DateComponents(2003, 12, 31).getDayOfYear());
@@ -75,6 +78,7 @@ extends TestCase {
         assertEquals(269, new DateComponents(2003,  9, 26).getDayOfYear());
     }
 
+    @Test
     public void testComparisons() {
         DateComponents[][] dates = {
                 { new DateComponents(2003,  1,  1), new DateComponents(2003,   1) },
@@ -113,6 +117,7 @@ extends TestCase {
         assertFalse(dates[0][0].equals(this));
     }
 
+    @Test
     public void testSymmetry() {
         checkSymmetry(-2460000,  20000);
         checkSymmetry( -740000,  20000);
@@ -128,11 +133,13 @@ extends TestCase {
         }        
     }
 
+    @Test
     public void testString() {
         assertEquals("2000-01-01", new DateComponents(DateComponents.J2000_EPOCH, 0).toString());
         assertEquals("-4713-12-31", new DateComponents(DateComponents.J2000_EPOCH, -2451546).toString());
     }
 
+    @Test
     public void testConstructorDoY() {
         checkConstructorDoY(2003, 0,   true);
         checkConstructorDoY(2003, 1,   false);
@@ -216,14 +223,11 @@ extends TestCase {
 
     }
 
+    @Test
     public void testMJD() {
         assertEquals(0, DateComponents.MODIFIED_JULIAN_EPOCH.getMJD());
         assertEquals(37665, new DateComponents(1962, 1,  1).getMJD());
         assertEquals(54600, new DateComponents(2008, 5, 14).getMJD());
-    }
-
-    public static Test suite() {
-        return new TestSuite(DateComponentsTest.class);
     }
 
 }

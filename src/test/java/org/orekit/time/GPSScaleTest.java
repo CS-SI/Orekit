@@ -16,26 +16,24 @@
  */
 package org.orekit.time;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 
-public class GPSScaleTest
-extends TestCase {
+public class GPSScaleTest {
 
-    public GPSScaleTest(String name) {
-        super(name);
-    }
-
+    @Test
     public void testT0() {
         AbsoluteDate t0 =
             new AbsoluteDate(new DateComponents(1980, 1, 6), TimeComponents.H00, GPSScale.getInstance());
         assertEquals(AbsoluteDate.GPS_EPOCH, t0);
     }
 
+    @Test
     public void testArbitrary() throws OrekitException {
         AbsoluteDate tGPS =
             new AbsoluteDate(new DateComponents(1999, 3, 4), TimeComponents.H00, GPSScale.getInstance());
@@ -45,6 +43,7 @@ extends TestCase {
         assertEquals(tUTC, tGPS);
     }
 
+    @Test
     public void testConstant() {
         TimeScale scale = GPSScale.getInstance();
         double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH);
@@ -54,6 +53,7 @@ extends TestCase {
         }
     }
 
+    @Test
     public void testSymmetry() {
         TimeScale scale = GPSScale.getInstance();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
@@ -65,13 +65,10 @@ extends TestCase {
         }
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
-    }
-
-    public static Test suite() {
-        return new TestSuite(GPSScaleTest.class);
     }
 
 }

@@ -16,19 +16,24 @@
  */
 package org.orekit.frames;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TAIScale;
 
 
-public class TidalCorrectionTest extends TestCase {
+public class TidalCorrectionTest {
 
     // Computation date 
     private AbsoluteDate date;
 
+    @Test
     public void testPoleCorrection() {
 
         // compute the pole motion component for tidal correction
@@ -39,6 +44,7 @@ public class TidalCorrectionTest extends TestCase {
 
     }
 
+    @Test
     public void testDUT1() {
 
         // compute the dut1 component for tidal correction
@@ -47,6 +53,7 @@ public class TidalCorrectionTest extends TestCase {
         assertEquals(13.611556854809763e-6, tidalCorr, 1.5e-10);
     }
 
+    @Test
     public void testCachePole() {
 
         // compute the pole motion component for tidal correction, testing cache mechanism
@@ -68,6 +75,7 @@ public class TidalCorrectionTest extends TestCase {
 
     }
 
+    @Test
     public void testCacheDUT1() {
 
         // compute the dut1 component for tidal correction
@@ -87,16 +95,14 @@ public class TidalCorrectionTest extends TestCase {
 
     }
 
+    @Before
     public void setUp() {
         date = new AbsoluteDate(2000, 1, 1, TAIScale.getInstance());
     }
 
+    @After
     public void tearDown() {
         date = null;
-    }
-
-    public static Test suite() {
-        return new TestSuite(TidalCorrectionTest.class);
     }
 
 }

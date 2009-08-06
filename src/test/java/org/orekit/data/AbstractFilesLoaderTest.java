@@ -18,13 +18,13 @@ package org.orekit.data;
 
 import java.util.TreeSet;
 
-import junit.framework.TestCase;
 
+import org.junit.After;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;
 
-public abstract class AbstractFilesLoaderTest extends TestCase {
+public abstract class AbstractFilesLoaderTest {
 
     protected TreeSet<TimeStamped> set;
 
@@ -47,6 +47,7 @@ public abstract class AbstractFilesLoaderTest extends TestCase {
         return (int) Math.round(maxGap / 86400.0);
     }
 
+    @After
     public void tearDown() {
         set = null;
     }

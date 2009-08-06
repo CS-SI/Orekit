@@ -16,25 +16,27 @@
  */
 package org.orekit.data;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
+import org.junit.Test;
 import org.orekit.errors.OrekitException;
 
-public class ZipJarCrawlerTest extends TestCase {
+public class ZipJarCrawlerTest {
 
+    @Test
     public void testMultiZipClasspath() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
         new ZipJarCrawler("zipped-data/multizip.zip").feed(crawler);
         assertEquals(6, crawler.getCount());
     }
 
+    @Test
     public void testMultiZip() throws OrekitException {
         URL url =
             ZipJarCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
@@ -59,10 +61,6 @@ public class ZipJarCrawlerTest extends TestCase {
         public boolean fileIsSupported(String fileName) {
             return namePattern.matcher(fileName).matches();
         }
-    }
-
-    public static Test suite() {
-        return new TestSuite(ZipJarCrawlerTest.class);
     }
 
 }

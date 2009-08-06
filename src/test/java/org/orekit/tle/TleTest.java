@@ -16,17 +16,21 @@
  */
 package org.orekit.tle;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
@@ -36,8 +40,9 @@ import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
 
-public class TleTest extends TestCase {
+public class TleTest {
 
+    @Test
     public void testTLEFormat() throws OrekitException {
 
         String line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
@@ -98,6 +103,7 @@ public class TleTest extends TestCase {
         assertEquals(line2, tle.getLine2());
     }
 
+    @Test
     public void testTLESeriesFormat() throws IOException, OrekitException {
 
         InputStream in =
@@ -133,6 +139,7 @@ public class TleTest extends TestCase {
 
     }
 
+    @Test
     public void testSatCodeCompliance() throws IOException, OrekitException, ParseException {
 
         BufferedReader rEntry = null;
@@ -228,15 +235,10 @@ public class TleTest extends TestCase {
         }
     }
 
-
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
     }
-
-    public static Test suite() {
-        return new TestSuite(TleTest.class);
-    }
-
 
 }

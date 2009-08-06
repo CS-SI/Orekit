@@ -16,11 +16,14 @@
  */
 package org.orekit.frames;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -39,7 +42,7 @@ import org.orekit.time.UTCScale;
 import org.orekit.utils.PVCoordinates;
 
 
-public class TopocentricFrameTest extends TestCase {
+public class TopocentricFrameTest {
 
     // Computation date 
     private AbsoluteDate date;
@@ -54,7 +57,7 @@ public class TopocentricFrameTest extends TestCase {
     private double mu;
 
  
-    /** Test topocentric frame at origin (longitude 0, latitude 0, altitude 0) */
+    @Test
     public void testZero() {
         
         final GeodeticPoint point = new GeodeticPoint(0., 0., 0.);
@@ -69,7 +72,7 @@ public class TopocentricFrameTest extends TestCase {
         assertEquals(1., zDiff, Utils.epsilonTest);
    }
 
-    /** Test topocentric frame at pole (longitude 0, latitude 90, altitude 0) */
+    @Test
     public void testPole() {
         
         final GeodeticPoint point = new GeodeticPoint(Math.PI/2., 0., 0.);
@@ -84,7 +87,7 @@ public class TopocentricFrameTest extends TestCase {
         assertEquals(1., zDiff, Utils.epsilonTest);
    }
 
-    /** Test topocentric frame at two points separated by 90 deg in latitude */
+    @Test
     public void testNormalLatitudes() {
         
         // First point at latitude 45°
@@ -105,7 +108,7 @@ public class TopocentricFrameTest extends TestCase {
         assertEquals(0., zDiff, Utils.epsilonTest);
   }
 
-    /** Test topocentric frame at two points separated by 180 deg in longitude */
+    @Test
     public void testOppositeLongitudes() {
         
         // First point at latitude 45°
@@ -127,7 +130,7 @@ public class TopocentricFrameTest extends TestCase {
         assertEquals(0., zDiff, Utils.epsilonTest);
   }
 
-    /** Test with a point at zenith position over the surface point */
+    @Test
     public void testAntipodes() 
         throws OrekitException {
         
@@ -150,7 +153,7 @@ public class TopocentricFrameTest extends TestCase {
         assertEquals(-1., zDiff, Utils.epsilonTest);
     }
         
-        /** Test with a point at zenith position over the surface point */
+    @Test
     public void testSiteAtZenith() 
         throws OrekitException {
         
@@ -170,7 +173,7 @@ public class TopocentricFrameTest extends TestCase {
         assertEquals(800000., range, 1e-8);
   }
     
-    /** Test in equatorial plane with a point at infinite */
+    @Test
     public void testAzimuthEquatorial() 
         throws OrekitException {
         
@@ -204,7 +207,7 @@ public class TopocentricFrameTest extends TestCase {
 
     }    
 
-    /** Test with a polar surface point */
+    @Test
     public void testAzimuthPole() 
         throws OrekitException {
         
@@ -230,7 +233,7 @@ public class TopocentricFrameTest extends TestCase {
  
     }    
     
-    /** Test range rate computation */
+    @Test
     public void testDoppler() 
         throws OrekitException {
         
@@ -278,9 +281,8 @@ public class TopocentricFrameTest extends TestCase {
         
     }
 
-    /** Test for elliptic earth */
-    public void testEllipticEarth() 
-        throws OrekitException {
+    @Test
+    public void testEllipticEarth()  throws OrekitException {
         
         // Elliptic earth shape
         final OneAxisEllipsoid earthElliptic =
@@ -383,6 +385,7 @@ public class TopocentricFrameTest extends TestCase {
         
     }
 
+    @Before
     public void setUp() {
         try {
 
@@ -407,16 +410,13 @@ public class TopocentricFrameTest extends TestCase {
             fail(oe.getMessage());
         }
     }
-    
+
+    @After
     public void tearDown() {
         date = null;
         frameITRF2005 = null;
         earthSpheric = null;
     }
 
-
-    public static Test suite() {
-        return new TestSuite(TopocentricFrameTest.class);
-    }
 
 }

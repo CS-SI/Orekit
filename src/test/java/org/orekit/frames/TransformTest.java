@@ -16,29 +16,32 @@
  */
 package org.orekit.frames;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Random;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Test;
 import org.orekit.frames.Transform;
 import org.orekit.utils.PVCoordinates;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
-public class TransformTest extends TestCase {
+public class TransformTest {
 
+    @Test
     public void testIdentityTranslation() {
         checkNoTransform(new Transform(new Vector3D(0, 0, 0)),
                          new Random(0xfd118eac6b5ec136l));
     }
 
+    @Test
     public void testIdentityRotation() {
         checkNoTransform(new Transform(new Rotation(1, 0, 0, 0, false)),
                          new Random(0xfd118eac6b5ec136l));
     }
 
+    @Test
     public void testSimpleComposition() {
         Transform transform =
             new Transform(new Transform(new Rotation(Vector3D.PLUS_K, 0.5 * Math.PI)),
@@ -48,6 +51,7 @@ public class TransformTest extends TestCase {
         assertEquals(0, u.subtract(v).getNorm(), 1.0e-15);
     }
 
+    @Test
     public void testRandomComposition() {
 
         Random random = new Random(0x171c79e323a1123l);
@@ -86,6 +90,7 @@ public class TransformTest extends TestCase {
 
     }
 
+    @Test
     public void testReverse() {
         Random random = new Random(0x9f82ba2b2c98dac5l);
         for (int i = 0; i < 20; ++i) {
@@ -104,6 +109,7 @@ public class TransformTest extends TestCase {
 
     }
 
+    @Test
     public void testTranslation() {
         Random rnd = new Random(0x7e9d737ba4147787l);
         for (int i = 0; i < 10; ++i) {
@@ -121,6 +127,7 @@ public class TransformTest extends TestCase {
         }
     }
 
+    @Test
     public void testRoughTransPV() {
 
         PVCoordinates pointP1 = new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_I);
@@ -199,6 +206,7 @@ public class TransformTest extends TestCase {
 
     }
 
+    @Test
     public void testRotPV() {
 
         Random rnd = new Random(0x73d5554d99427af0l);
@@ -239,6 +247,7 @@ public class TransformTest extends TestCase {
 
     }
 
+    @Test
     public void testTransPV() {
 
         Random rnd = new Random(0x73d5554d99427af0l);
@@ -281,6 +290,7 @@ public class TransformTest extends TestCase {
 
     }
 
+    @Test
     public void testRotation() {
         Random rnd = new Random(0x73d5554d99427af0l);
         for (int i = 0; i < 10; ++i) {
@@ -353,10 +363,6 @@ public class TransformTest extends TestCase {
             assertEquals(0, pv.getVelocity().subtract(tPv.getVelocity()).getNorm(),
                          1.0e-9 * pv.getVelocity().getNorm());
         }
-    }
-
-    public static Test suite() {
-        return new TestSuite(TransformTest.class);
     }
 
 }

@@ -16,21 +16,18 @@
  */
 package org.orekit.time;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 
-public class UTCScaleTest
-extends TestCase {
+public class UTCScaleTest {
 
-    public UTCScaleTest(String name) {
-        super(name);
-        utc = null;
-    }
-
+    @Test
     public void testNoLeap() {
         AbsoluteDate d1 = new AbsoluteDate(new DateComponents(1999, 12, 31),
                                            new TimeComponents(23, 59, 59),
@@ -41,6 +38,7 @@ extends TestCase {
         assertEquals(2.0, d2.durationFrom(d1), 1.0e-10);
     }
 
+    @Test
     public void testLeap2006() {
         AbsoluteDate leapDate =
             new AbsoluteDate(new DateComponents(2006, 01, 01), TimeComponents.H00, utc);
@@ -57,6 +55,7 @@ extends TestCase {
         assertEquals(3.0, d4.durationFrom(d3), 1.0e-10);
     }
 
+    @Test
     public void testDuringLeap() {
         AbsoluteDate d = new AbsoluteDate(new DateComponents(1983, 06, 30),
                                           new TimeComponents(23, 59, 59),
@@ -80,6 +79,7 @@ extends TestCase {
         assertEquals("1983-07-01T00:00:00.008", d.toString(utc));
     }
 
+    @Test
     public void testSymmetry() {
         TimeScale scale = GPSScale.getInstance();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
@@ -91,6 +91,7 @@ extends TestCase {
         }
     }
 
+    @Test
     public void testOffsets() {
         checkOffset(1970, 01, 01,   0);
         checkOffset(1972, 03, 05, -10);
@@ -105,14 +106,16 @@ extends TestCase {
         assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
     }
 
+    @Before
     public void setUp() throws OrekitException {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
         utc = UTCScale.getInstance();
     }
 
-    public static Test suite() {
-        return new TestSuite(UTCScaleTest.class);
+    @After
+    public void tearDown() {
+        utc = null;
     }
 
     private TimeScale utc;

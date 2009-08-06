@@ -16,23 +16,27 @@
  */
 package org.orekit.data;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.util.regex.Pattern;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
+import org.junit.Test;
 import org.orekit.errors.OrekitException;
 
-public class ClasspathCrawlerTest extends TestCase {
+public class ClasspathCrawlerTest {
 
+    @Test
     public void testNoElement() {
         checkFailure("inexistant-element");
     }
 
+    @Test
     public void testNominal() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*");
         new ClasspathCrawler("regular-data/UTC-TAI.history",
@@ -44,6 +48,7 @@ public class ClasspathCrawlerTest extends TestCase {
         assertEquals(6, crawler.getCount());
     }
 
+    @Test
     public void testCompressed() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*/eopc04.*");
         new ClasspathCrawler("compressed-data/UTC-TAI.history.gz",
@@ -52,38 +57,36 @@ public class ClasspathCrawlerTest extends TestCase {
         assertEquals(2, crawler.getCount());
     }
 
+    @Test
     public void testMultiZip() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
         new ClasspathCrawler("zipped-data/multizip.zip").feed(crawler);
         assertEquals(6, crawler.getCount());
     }
 
+    @Test(expected=OrekitException.class)
     public void testIOException() throws OrekitException {
         try {
             new ClasspathCrawler("regular-data/UTC-TAI.history").feed(new IOExceptionLoader(".*"));
-            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behavior
             assertNotNull(oe.getCause());
             assertEquals(IOException.class, oe.getCause().getClass());
             assertEquals("dummy error", oe.getMessage());
-        } catch (Exception e) {
-            fail("wrong exception caught");
+            throw oe;
         }
     }
 
+    @Test(expected=OrekitException.class)
     public void testParseException() throws OrekitException {
         try {
             new ClasspathCrawler("regular-data/UTC-TAI.history").feed(new ParseExceptionLoader(".*"));
-            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behavior
             assertNotNull(oe.getCause());
             assertEquals(ParseException.class, oe.getCause().getClass());
             assertEquals("dummy error", oe.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-            fail("wrong exception caught");
+            throw oe;
         }
     }
 
@@ -145,10 +148,6 @@ public class ClasspathCrawlerTest extends TestCase {
         public boolean fileIsSupported(String fileName) {
             return namePattern.matcher(fileName).matches();
         }
-    }
-
-    public static Test suite() {
-        return new TestSuite(ClasspathCrawlerTest.class);
     }
 
 }

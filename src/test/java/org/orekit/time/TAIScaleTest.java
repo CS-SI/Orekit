@@ -16,15 +16,14 @@
  */
 package org.orekit.time;
 
-import junit.framework.*;
+import static org.junit.Assert.assertEquals;
 
-public class TAIScaleTest
-extends TestCase {
+import org.junit.Test;
 
-    public TAIScaleTest(String name) {
-        super(name);
-    }
 
+public class TAIScaleTest {
+
+    @Test
     public void testZero() {
         TimeScale scale = TAIScale.getInstance();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
@@ -33,10 +32,6 @@ extends TestCase {
             DateTimeComponents components = date.getComponents(scale);
             assertEquals(0, scale.offsetToTAI(components.getDate(), components.getTime()), 0);
         }
-    }
-
-    public static Test suite() {
-        return new TestSuite(TAIScaleTest.class);
     }
 
 }

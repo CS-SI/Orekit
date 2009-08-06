@@ -16,24 +16,21 @@
  */
 package org.orekit.utils;
 
+import static org.junit.Assert.assertEquals;
+
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Test;
 import org.orekit.utils.PVCoordinates;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
-public class PVCoordinatesTest
-extends TestCase {
+public class PVCoordinatesTest {
 
-    public PVCoordinatesTest(String name) {
-        super(name);
-    }
-
+    @Test
     public void testDefaultConstructor() {
         assertEquals("{P(0.0, 0.0, 0.0), V(0.0, 0.0, 0.0)}", new PVCoordinates().toString());
     }
 
+    @Test
     public void testLinearConstructors() {
         PVCoordinates pv1 = new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                               new Vector3D(-1, -0.1, -10));
@@ -50,6 +47,7 @@ extends TestCase {
         checkPV(new PVCoordinates(5, pv4), new PVCoordinates(4, pv1, 3, pv2, 2, pv3, 1, pv4), 1.0e-15);
     }
 
+    @Test
     public void testToString() {
         PVCoordinates pv =
             new PVCoordinates(new Vector3D( 1,  0.1,  10), new Vector3D(-1, -0.1, -10));
@@ -63,10 +61,6 @@ extends TestCase {
         assertEquals(expected.getVelocity().getX(), real.getVelocity().getX(), epsilon);
         assertEquals(expected.getVelocity().getY(), real.getVelocity().getY(), epsilon);
         assertEquals(expected.getVelocity().getZ(), real.getVelocity().getZ(), epsilon);
-    }
-
-    public static Test suite() {
-        return new TestSuite(PVCoordinatesTest.class);
     }
 
 }

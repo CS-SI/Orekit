@@ -16,17 +16,19 @@
  */
 package org.orekit.data;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import org.junit.Test;
 import org.orekit.errors.OrekitException;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
-public class PoissonSeriesTest extends TestCase {
+public class PoissonSeriesTest {
 
+    @Test
     public void testBadData() {
         checkBadData("");
         checkBadData("this is NOT an IERS nutation model file\n");
@@ -35,33 +37,26 @@ public class PoissonSeriesTest extends TestCase {
                      + "j = 0  Nb of terms = 1\n");
     }
 
-    public void testNoFile() {
-        try {
-            InputStream stream =
-                PoissonSeriesTest.class.getResourceAsStream("/org/orekit/resources/missing");
-            new PoissonSeries(stream, 1.0, "missing");
-            fail("exception expected");
-        } catch (OrekitException oe) {
-            // expected behaviour
-        }
+    @Test(expected=OrekitException.class)
+    public void testNoFile() throws OrekitException {
+        InputStream stream =
+            PoissonSeriesTest.class.getResourceAsStream("/org/orekit/resources/missing");
+        new PoissonSeries(stream, 1.0, "missing");
     }
 
-    public void testSmall() {
-        try {
-            String data =
-                "  0.0 + 0.0 t - 0.0 t^2 - 0.0 t^3 - 0.0 t^4 + 0.0 t^5\n"
-                + "j = 0  Nb of terms = 1\n"
-                + "1 0.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
-            PoissonSeries nd =
-                new PoissonSeries(new ByteArrayInputStream(data.getBytes()), 1.0, "");
-            assertNotNull(nd);
-        } catch (OrekitException oe) {
-            fail(oe.getMessage());
-        }
+    @Test
+    public void testSmall() throws OrekitException {
+        String data =
+            "  0.0 + 0.0 t - 0.0 t^2 - 0.0 t^3 - 0.0 t^4 + 0.0 t^5\n"
+            + "j = 0  Nb of terms = 1\n"
+            + "1 0.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
+        PoissonSeries nd =
+            new PoissonSeries(new ByteArrayInputStream(data.getBytes()), 1.0, "");
+        assertNotNull(nd);
     }
 
-    public void testSecondsMarkers() {
-        try {
+    @Test
+    public void testSecondsMarkers() throws OrekitException {
             String data =
                 "  0''.0 + 0''.0 t - 0''.0 t^2 - 0''.0 t^3 - 0''.0 t^4 + 0''.0 t^5\n"
                 + "j = 0  Nb of terms = 1\n"
@@ -69,13 +64,10 @@ public class PoissonSeriesTest extends TestCase {
             PoissonSeries nd =
                 new PoissonSeries(new ByteArrayInputStream(data.getBytes()), 1.0, "");
             assertNotNull(nd);
-        } catch (OrekitException oe) {
-            fail(oe.getMessage());
-        }
     }
 
-    public void testExtract()
-    throws OrekitException {
+    @Test
+    public void testExtract() throws OrekitException {
         String data =
             "Expression for the X coordinate of the CIP in the GCRS based on the IAU2000A\n"
             + "precession-nutation model\n"
@@ -138,8 +130,8 @@ public class PoissonSeriesTest extends TestCase {
                                       1.0, "dummy"));
     }
 
-    public void testTrueFiles()
-    throws OrekitException {
+    @Test
+    public void testTrueFiles() throws OrekitException {
         String directory = "/META-INF/IERS-conventions-2003/";
         InputStream xStream =
             getClass().getResourceAsStream(directory + "tab5.2a.txt");
@@ -165,10 +157,6 @@ public class PoissonSeriesTest extends TestCase {
         } catch (Exception e) {
             fail("wrong exception type caught");
         }
-    }
-
-    public static Test suite() {
-        return new TestSuite(PoissonSeriesTest.class);
     }
 
 }

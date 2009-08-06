@@ -16,6 +16,11 @@
  */
 package org.orekit.data;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,26 +28,27 @@ import java.net.URL;
 import java.text.ParseException;
 import java.util.regex.Pattern;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
+import org.junit.Test;
 import org.orekit.errors.OrekitException;
 
-public class DirectoryCrawlerTest extends TestCase {
+public class DirectoryCrawlerTest {
 
+    @Test
     public void testNoDirectory() {
         File existing = new File(getClass().getClassLoader().getResource("regular-data").getPath());
         File inexistent = new File(existing.getParent(), "inexistant-directory");
         checkFailure(inexistent);
     }
 
+    @Test
     public void testNotADirectory() {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data/UTC-TAI.history");
         checkFailure(new File(url.getPath()));
     }
 
+    @Test
     public void testNominal() throws OrekitException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
@@ -51,6 +57,7 @@ public class DirectoryCrawlerTest extends TestCase {
         assertTrue(crawler.getCount() > 0);
     }
 
+    @Test
     public void testCompressed() throws OrekitException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("compressed-data");
@@ -59,6 +66,7 @@ public class DirectoryCrawlerTest extends TestCase {
         assertTrue(crawler.getCount() > 0);
     }
 
+    @Test
     public void testMultiZipClasspath() throws OrekitException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
@@ -68,6 +76,7 @@ public class DirectoryCrawlerTest extends TestCase {
         assertEquals(6, crawler.getCount());
     }
 
+    @Test
     public void testIOException() throws OrekitException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
@@ -84,6 +93,7 @@ public class DirectoryCrawlerTest extends TestCase {
         }
     }
 
+    @Test
     public void testParseException() throws OrekitException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
@@ -159,10 +169,6 @@ public class DirectoryCrawlerTest extends TestCase {
         public boolean fileIsSupported(String fileName) {
             return namePattern.matcher(fileName).matches();
         }
-    }
-
-    public static Test suite() {
-        return new TestSuite(DirectoryCrawlerTest.class);
     }
 
 }

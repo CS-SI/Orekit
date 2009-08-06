@@ -16,20 +16,15 @@
  */
 package org.orekit.forces;
 
+import static org.junit.Assert.assertEquals;
+
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Test;
 import org.orekit.forces.SphericalSpacecraft;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+public class SphericalSpacecraftTest {
 
-public class SphericalSpacecraftTest
-extends TestCase {
-
-    public SphericalSpacecraftTest(String name) {
-        super(name);
-    }
-
+    @Test
     public void testConstructor() {
         SphericalSpacecraft s = new SphericalSpacecraft(1.0, 2.0, 3.0, 4.0);
         Vector3D[] directions = { Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.PLUS_K };
@@ -50,6 +45,7 @@ extends TestCase {
         }
     }
 
+    @Test
     public void testSettersGetters() {
         SphericalSpacecraft s = new SphericalSpacecraft(0, 0, 0, 0);
         s.setCrossSection(1.0);
@@ -72,10 +68,6 @@ extends TestCase {
                                       4.0, directions[i]).getNorm(),
                          1.0e-15);
         }
-    }
-
-    public static Test suite() {
-        return new TestSuite(SphericalSpacecraftTest.class);
     }
 
 }

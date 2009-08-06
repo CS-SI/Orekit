@@ -16,17 +16,16 @@
  */
 package org.orekit.time;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
+import org.junit.Test;
 import org.orekit.time.DateComponents;
 
-import junit.framework.*;
 
-public class DateTimeComponentsTest
-extends TestCase {
+public class DateTimeComponentsTest {
 
-    public DateTimeComponentsTest(String name) {
-        super(name);
-    }
-
+    @Test
     public void testComparisons() {
         DateTimeComponents[] dates = {
                 new DateTimeComponents(2003,  1,  1, 7, 15, 33),
@@ -51,12 +50,14 @@ extends TestCase {
         assertFalse(dates[0].equals(dates[0].getTime()));
     }
 
+    @Test
     public void testOffset() {
         DateTimeComponents reference = new DateTimeComponents(2005, 12, 31, 23, 59, 59);
         DateTimeComponents expected  = new DateTimeComponents(2006,  1,  1,  0,  0,  0);
         assertEquals(expected, new DateTimeComponents(reference, 1));
     }
 
+    @Test
     public void testSymmetry() {
         DateTimeComponents reference1 = new DateTimeComponents(2005, 12, 31, 12, 0, 0);
         DateTimeComponents reference2 = new DateTimeComponents(2006,  1,  1,  1, 2, 3);
@@ -66,14 +67,11 @@ extends TestCase {
         }
     }
 
+    @Test
     public void testString() {
         final DateTimeComponents date =
             new DateTimeComponents(DateComponents.J2000_EPOCH, TimeComponents.H12);
         assertEquals("2000-01-01T12:00:00.000", date.toString());
-    }
-
-    public static Test suite() {
-        return new TestSuite(DateTimeComponentsTest.class);
     }
 
 }

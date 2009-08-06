@@ -16,18 +16,17 @@
  */
 package org.orekit.time;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 
-import junit.framework.*;
 
-public class TCGScaleTest
-extends TestCase {
+public class TCGScaleTest {
 
-    public TCGScaleTest(String name) {
-        super(name);
-    }
-
+    @Test
     public void testRatio() {
         TimeScale scale = TCGScale.getInstance();
         final double dtTT = 1e6;
@@ -37,6 +36,7 @@ extends TestCase {
         assertEquals(1 - 6.969290134e-10, dtTT / dtTCG, 1.0e-15);
     }
 
+    @Test
     public void testSymmetry() {
         TimeScale scale = TCGScale.getInstance();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
@@ -48,6 +48,7 @@ extends TestCase {
         }
     }
 
+    @Test
     public void testReference() throws OrekitException {
         DateComponents  referenceDate = new DateComponents(1977, 01, 01);
         TimeComponents  thirtyTwo     = new TimeComponents(0, 0, 32.184);
@@ -62,13 +63,10 @@ extends TestCase {
         assertEquals(0, ttRef.durationFrom(utcRef), 1.0e-15);
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
-    }
-
-    public static Test suite() {
-        return new TestSuite(TCGScaleTest.class);
     }
 
 }

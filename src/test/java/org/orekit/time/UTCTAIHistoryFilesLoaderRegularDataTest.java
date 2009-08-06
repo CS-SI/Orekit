@@ -16,24 +16,28 @@
  */
 package org.orekit.time;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 
-public class UTCTAIHistoryFilesLoaderRegularDataTest extends TestCase {
+public class UTCTAIHistoryFilesLoaderRegularDataTest {
 
+    @Test
     public void testRegular() throws OrekitException {
         assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 10e-8);
     }
 
+    @Test
     public void testFirstLeap() throws OrekitException {
         UTCScale utc = (UTCScale) UTCScale.getInstance();
         assertEquals("1971-12-31T23:59:60.000", utc.getFirstKnownLeapSecond().toString(utc));
     }
 
+    @Test
     public void testLaststLeap() throws OrekitException {
         // the data files ends at 2006-01-01,
         // but predefined data also contain the leap second from 2009-01-01
@@ -41,13 +45,10 @@ public class UTCTAIHistoryFilesLoaderRegularDataTest extends TestCase {
         assertEquals("2008-12-31T23:59:60.000", utc.getLastKnownLeapSecond().toString(utc));
     }
 
+    @Before
     public void setUp() {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
-    }
-
-    public static Test suite() {
-        return new TestSuite(UTCTAIHistoryFilesLoaderRegularDataTest.class);
     }
 
 }

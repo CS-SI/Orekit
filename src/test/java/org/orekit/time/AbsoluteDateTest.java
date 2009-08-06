@@ -16,22 +16,22 @@
  */
 package org.orekit.time;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Date;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 
-public class AbsoluteDateTest
-extends TestCase {
+public class AbsoluteDateTest {
 
-    public AbsoluteDateTest(String name) {
-        super(name);
-    }
-
+    @Test
     public void testStandardEpoch() {
         TimeScale tai = TAIScale.getInstance();
         TimeScale tt  = TTScale.getInstance();
@@ -42,6 +42,7 @@ extends TestCase {
         assertEquals(946728000000l,     AbsoluteDate.J2000_EPOCH.toDate(tt).getTime());
     }
 
+    @Test
     public void testStandardEpochStrings() throws OrekitException {
         assertEquals("-4712-01-01T12:00:00.000",
                      AbsoluteDate.JULIAN_EPOCH.toString(TTScale.getInstance()));
@@ -57,6 +58,7 @@ extends TestCase {
                      AbsoluteDate.JAVA_EPOCH.toString(TTScale.getInstance()));
     }
 
+    @Test
     public void testOutput() {
         TimeScale tt = TTScale.getInstance();
         assertEquals("1950-01-01T01:01:01.000",
@@ -65,6 +67,7 @@ extends TestCase {
                      new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 3661.0).toString(tt));
     }
 
+    @Test
     public void testJ2000() {
         assertEquals("2000-01-01T12:00:00.000",
                      AbsoluteDate.J2000_EPOCH.toString(TTScale.getInstance()));
@@ -74,6 +77,7 @@ extends TestCase {
                      AbsoluteDate.J2000_EPOCH.toString(utc));
     }
 
+    @Test
     public void testFraction() {
         AbsoluteDate d =
             new AbsoluteDate(new DateComponents(2000, 01, 01), new TimeComponents(11, 59, 27.816),
@@ -81,6 +85,7 @@ extends TestCase {
         assertEquals(0, d.durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
     }
 
+    @Test
     public void testScalesOffset() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2006, 02, 24),
                                              new TimeComponents(15, 38, 00),
@@ -90,6 +95,7 @@ extends TestCase {
                      1.0e-10);
     }
 
+    @Test
     public void testUTC() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2002, 01, 01),
                                              new TimeComponents(00, 00, 01),
@@ -97,11 +103,13 @@ extends TestCase {
         assertEquals("2002-01-01T00:00:01.000", date.toString());
     }
 
+    @Test
     public void test1970() {
         AbsoluteDate date = new AbsoluteDate(new Date(0l), utc);
         assertEquals("1970-01-01T00:00:00.000", date.toString());
     }
 
+    @Test
     public void testUtcGpsOffset() {
         AbsoluteDate date1   = new AbsoluteDate(new DateComponents(2005, 8, 9),
                                                 new TimeComponents(16, 31, 17),
@@ -125,6 +133,7 @@ extends TestCase {
 
     }
 
+    @Test
     public void testGpsDate() {
         AbsoluteDate date = AbsoluteDate.createGPSDate(1387, 318677000.0);
         AbsoluteDate ref  = new AbsoluteDate(new DateComponents(2006, 8, 9),
@@ -133,6 +142,7 @@ extends TestCase {
         assertEquals(0, date.durationFrom(ref), 1.0e-12);
     }
 
+    @Test
     public void testOffsets() {
         final TimeScale tai = TAIScale.getInstance();
         AbsoluteDate leapStartUTC = new AbsoluteDate(1976, 12, 31, 23, 59, 59, utc);
@@ -149,6 +159,7 @@ extends TestCase {
         assertEquals(2, leapEndTAI.durationFrom(leapStartTAI),    1.0e-10);
     }
 
+    @Test
     public void testBeforeAndAfterLeap() {
         final TimeScale tai = TAIScale.getInstance();
         AbsoluteDate leapStart = new AbsoluteDate(1977,  1,  1,  0,  0, 14, tai);
@@ -171,6 +182,7 @@ extends TestCase {
         }
     }
 
+    @Test
     public void testSymmetry() {
         final TimeScale tai = TAIScale.getInstance();
         AbsoluteDate leapStart = new AbsoluteDate(1977,  1,  1,  0,  0, 14, tai);
@@ -182,6 +194,7 @@ extends TestCase {
         }
     }
 
+    @Test
     public void testEquals() {
         AbsoluteDate d1 =
             new AbsoluteDate(new DateComponents(2006, 2, 25),
@@ -196,6 +209,7 @@ extends TestCase {
         assertFalse(d1.equals(this));
     }
 
+    @Test
     public void testComponents() throws OrekitException {
         // this is NOT J2000.0,
         // it is either a few seconds before or after depending on time scale
@@ -220,6 +234,7 @@ extends TestCase {
         }
     }
 
+    @Test(expected=IllegalArgumentException.class)
     public void testExpandedConstructors() throws OrekitException {
         assertEquals(new AbsoluteDate(new DateComponents(2002, 05, 28),
                                       new TimeComponents(15, 30, 0),
@@ -228,15 +243,10 @@ extends TestCase {
         assertEquals(new AbsoluteDate(new DateComponents(2002, 05, 28), TimeComponents.H00,
                                       UTCScale.getInstance()),
                      new AbsoluteDate(2002, 05, 28, UTCScale.getInstance()));
-        try {
-            new AbsoluteDate(2002, 05, 28, 25, 30, 0, UTCScale.getInstance());
-        } catch (IllegalArgumentException iae) {
-            // expected behavior
-        } catch (Exception e) {
-            fail("wrong exception caught");
-        }
+        new AbsoluteDate(2002, 05, 28, 25, 30, 0, UTCScale.getInstance());
     }
 
+    @Test
     public void testHashcode() {
         AbsoluteDate d1 =
             new AbsoluteDate(new DateComponents(2006, 2, 25),
@@ -251,6 +261,7 @@ extends TestCase {
         assertTrue(d1.hashCode() != new AbsoluteDate(d1, 1.0e-3).hashCode());
     }
 
+    @Test
     public void testInfinity() {
         assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.JULIAN_EPOCH) < 0);
         assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.J2000_EPOCH) < 0);
@@ -262,14 +273,11 @@ extends TestCase {
         assertTrue(Double.isInfinite(AbsoluteDate.PAST_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
     }
 
+    @Before
     public void setUp() throws OrekitException {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
         utc = UTCScale.getInstance();
-    }
-
-    public static Test suite() {
-        return new TestSuite(AbsoluteDateTest.class);
     }
 
     private TimeScale utc;
