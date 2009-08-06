@@ -10,11 +10,11 @@
   <property name="test.src.dir"            value="${src.dir}/test/java"      />
   <property name="test.resources.dir"      value="${src.dir}/test/resources" />
 
-  <property name="bin.dir"                 location="bin"                    />
-  <property name="main.classes.dir"        value="${bin.dir}/classes"        />
-  <property name="test.classes.dir"        value="${bin.dir}/test-classes"   />
-  <property name="javadoc.dir"             value="${bin.dir}/javadoc"        />
-  <property name="tests.reports"           value="${bin.dir}/test-reports"   />
+  <property name="build.dir"               location="build"                  />
+  <property name="main.classes.dir"        value="${build.dir}/classes"      />
+  <property name="test.classes.dir"        value="${build.dir}/test-classes" />
+  <property name="javadoc.dir"             value="${build.dir}/javadoc"      />
+  <property name="tests.reports"           value="${build.dir}/test-reports" />
 
   <property name="lib.dir"                 location="lib"                    />
 
@@ -26,19 +26,18 @@
   <property name="copyright"               value="2002-2009 CS Communication &amp; Syst&#232;mes" />
 
   <available classname="org.junit.Test"            property="junit4.present" />
-  <available classname="org.apache.tools.ant.taskdefs.optional.junit.BaseTest" property="ant-junit.present" />
   <available file="${lib.dir}/${commons-math.jar}" property="apache-commons-math.present" />
 
-  <target name="clean" description="Clean the bin directory">
-    <delete dir="${bin.dir}"/>
+  <target name="clean" description="Clean the build directory">
+    <delete dir="${build.dir}"/>
   </target>
 
   <target name="clean-lib" description="Clean the lib directory">
-    <delete dir="${bin.dir}"/>
+    <delete dir="${lib.dir}"/>
   </target>
 
   <target name="clean-all" depends="clean,clean-lib"
-          description="Clean the bin and lib directories">
+          description="Clean the build and lib directories">
   </target>
 
   <target name="get-apache-commons-math" description="Get Apache commons-math"
@@ -94,7 +93,7 @@
   </target>
 
   <target name="jar" depends="compile,test" description="create the jar file">
-    <jar jarfile="${bin.dir}/${ant.project.name}-${project.version}.jar"
+    <jar jarfile="${build.dir}/${ant.project.name}-${project.version}.jar"
          compress="true" index="true" basedir="${main.classes.dir}"/>
   </target>
 
