@@ -23,6 +23,9 @@
     <release version="4.1" date="TBD"
              description="TBD">
       <action dev="luc" type="update">
+        set up a custom ant build independent from the maven 2 build
+      </action>
+      <action dev="luc" type="update">
         changed all tests from Junit 3 to Junit 4
       </action>
       <action dev="thierry" type="fix">
