@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- copy this file as .project.xml to use as a starter template for an Eclipse project -->
-<!-- this file relies on the Eclipse Integration of Apache Maven (IAM) plugin -->
 <projectDescription>
 	<name>orekit</name>
 	<comment></comment>
@@ -12,14 +11,8 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
-		<buildCommand>
-			<name>org.eclipse.iam.jdt.core.mavenIncrementalBuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
-		<nature>org.eclipse.iam.jdt.core.mavenNature</nature>
 	</natures>
 </projectDescription>
