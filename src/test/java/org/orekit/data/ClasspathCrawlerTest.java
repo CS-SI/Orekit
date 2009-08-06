@@ -40,11 +40,11 @@ public class ClasspathCrawlerTest {
     public void testNominal() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*");
         new ClasspathCrawler("regular-data/UTC-TAI.history",
-                                 "regular-data/de405-ephemerides/unxp0000.405",
-                                 "regular-data/de405-ephemerides/unxp0001.405",
-                                 "regular-data/de406-ephemerides/unxp0000.406",
-                                 "regular-data/Earth-orientation-parameters/monthly/bulletinb_IAU2000-216.txt",
-                                 "no-data").feed(crawler);
+                             "regular-data/de405-ephemerides/unxp0000.405",
+                             "regular-data/de405-ephemerides/unxp0001.405",
+                             "regular-data/de406-ephemerides/unxp0000.406",
+                             "regular-data/Earth-orientation-parameters/monthly/bulletinb_IAU2000-216.txt",
+                             "no-data/dummy.txt").feed(crawler);
         assertEquals(6, crawler.getCount());
     }
 
@@ -52,8 +52,8 @@ public class ClasspathCrawlerTest {
     public void testCompressed() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*/eopc04.*");
         new ClasspathCrawler("compressed-data/UTC-TAI.history.gz",
-                                 "compressed-data/eopc04_IAU2000.00.gz",
-                                 "compressed-data/eopc04_IAU2000.02.gz").feed(crawler);
+                             "compressed-data/eopc04_IAU2000.00.gz",
+                             "compressed-data/eopc04_IAU2000.02.gz").feed(crawler);
         assertEquals(2, crawler.getCount());
     }
 
