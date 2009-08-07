@@ -109,7 +109,7 @@
         </p>
         <p>
           Starting with version 4.1, Orekit depends only on released versions of commons-math
-          (commons-math 2.0 released in August 2009) which is available in maven standard
+          (commons-math 2.0 released in early August 2009) which is now available in maven standard
           repositories. You should upgrade to at least Orekit 4.1 to use the officially
           supported 2.0 release of commons math.
         </p>
