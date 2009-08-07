@@ -42,10 +42,12 @@ discrete events. Here is a short list of the features offered by the library:</p
   <li>Geometry
     <ul>
       <li>frames hierarchy supporting fixed and time-dependent (or telemetry-dependent) frames</li>
-      <li>predefined frames (EME2000/J2000, GCRF, ITRF2005 and intermediate frames, Veis, topocentric,
-      tnw and qsw local orbital frames, Moon, Sun, planets, solar system barycenter, Earth-Moon barycenter)</li>
+      <li>predefined frames (EME2000/J2000, GCRF, ITRF2005 and intermediate frames, TEME, MEME and PEF frames,
+          Veis, topocentric, tnw and qsw local orbital frames, Moon, Sun, planets, solar system barycenter,
+          Earth-Moon barycenter)</li>
       <li>user extensible (used operationally in real time with a set of about 60 frames on several spacecrafts)</li>
-      <li>transparent handling of IERS Earth Orientation Parameters</li>
+      <li>transparent handling of IERS Earth Orientation Parameters (for both new CIO-based frames and
+          old equinox-based frames)</li>
       <li>transparent handling of JPL DE 405 and DE 406 ephemerides</li>
       <li>transforms including kinematic combination effects</li>
       <li>composite transforms reduction and caching for efficiency</li>
@@ -80,10 +82,11 @@ discrete events. Here is a short list of the features offered by the library:</p
           </li>
           <li>state of the art ODE integrators (adaptive stepsize with error control,
               continuous output, switching functions, G-stop, step normalization ...)</li>
-          <li>can be used in master mode (program drives integration), slave mode (integrator
-              drives program) or unattended mode (all intermediate results solved and
-              navigation feature enabled, to use the model as if it was an analytical model,
-              ideal for search and iterative algorithms)</li>
+          <li>can be used in master mode (propagator drives application callback functions),
+              slave mode (propagator is driven by calling application) or ephemeris generation
+              mode (all intermediate results solved and navigation feature enabled, to use the
+              generated ephemeris later as if it was an analytical model, ideal for search and
+              iterative algorithms)</li>
           <li>serialization mechanism to store complete results on persistent storage for later use</li>
         </ul>
       </li>
@@ -136,6 +139,16 @@ discrete events. Here is a short list of the features offered by the library:</p
       </li>
     </ul>
   </li>
+  <li>Customizable data loading
+    <ul>
+      <li>loading from local disk</li>
+      <li>loading from classpath</li>
+      <li>loading from network (even through internet proxies)</li>
+      <li>support for zip archives</li>
+      <li>support from gzip compressed files</li>
+      <li>plugin mechanism to delegate loading to user defined database or data access library</li>
+    </ul>
+  </li>
 </ul>
 
 <h2>3. Dependency</h2>
@@ -162,7 +175,9 @@ FirstOrderIntegrator from the ode package.
 </p>
 
 @author Luc Maisonobe
+@author Thierry Ceolin
 @author Fabien Maussion
+@author Pascal Parraud
 @author V&eacute;ronique Pommier-Maurussane
 @author Guylaine Prat
 
