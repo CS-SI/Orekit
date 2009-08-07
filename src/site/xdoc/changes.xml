@@ -22,6 +22,9 @@
   <body>
     <release version="4.1" date="TBD"
              description="TBD">
+      <action dev="luc" type="add" due-to="James Housden">
+        added german localization for error messages
+      </action>
       <action dev="luc" type="update">
         set up a custom ant build independent from the maven 2 build
       </action>
@@ -91,29 +94,29 @@
         since data configuration has been vastly improved
       </action>
       <action dev="luc" type="add" due-to="quinput and Kai Ruhl">
-        Re-activated a way to put configuration data in the classpath using a
+        re-activated a way to put configuration data in the classpath using a
         data provider plugin.
       </action>
       <action dev="luc" type="add">
-        Added a way to load configuration data directly from network (either
+        added a way to load configuration data directly from network (either
         locally or through a proxy server) using a data provider plugin.
       </action>
       <action dev="luc" type="add">
-        Added a small plugin-like mechanism to delegate configuration data
+        added a small plugin-like mechanism to delegate configuration data
         loading to a user-provided mechanism, thus enabling smooth integration
         in existing systems.
       </action>
       <action dev="luc" type="update">
-        Updated to latest version of commons-math.
+        updated to latest version of commons-math.
       </action>
       <action dev="luc" type="add" due-to="Silvia Ríos Bergantiños">
-        Added galician localization for error messages.
+        added galician localization for error messages.
       </action>
       <action dev="luc" type="fix" due-to="Guylaine Prat">
-        Improved javadoc comments in orbit classes.
+        improved javadoc comments in orbit classes.
       </action>
       <action dev="pascal" type="add">
-        Tidal corrections are now available for ITRF and TIRF frames. Both frames are
+        tidal corrections are now available for ITRF and TIRF frames. Both frames are
         provided in two versions, the standard one with tidal corrections and a stripped
         down one without tidal corrections. A cache/interpolation mechanism is used to
         keep the computation cost of tidal correction to a minimum. With this mechanism,
