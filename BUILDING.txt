@@ -9,21 +9,20 @@ Building with Maven 2:
    to configure maven to use it. This is explained
    in the maven documentation here:
    http://maven.apache.org/guides/mini/guide-proxies.html
- - running "mvn package" automatically downloads all
+ - run "mvn package" to automatically download all
    the required dependencies listed in the pom.xml file
-   and creates a file named target/orekit-x.y.jar where
+   and create a file named target/orekit-x.y.jar where
    x.y is the version number
 
 Building with Ant:
  - Ant can be downloaded here:
        http://ant.apache.org/bindownload.cgi
- - edit the automatically generated build.xml file to
-   handle dependencies as they are available in your
-   system (the generated file tries to mimic maven
-   behaviour and download them, which may not be what
-   you want)
- - running "ant jar" creates a file named
-   target/orekit-x.y.jar where x.y is the version number
+ - either put the commons-math jar in a lib directory
+   just below the top-level orekit directory or edit
+   the ant build.xml file to edit the get-apache-commons-math
+   target that can automatically download commons-math
+ - run "ant jar" to create a file named
+   build/orekit-x.y.jar where x.y is the version number
 
 Building with Eclipse:
  - Eclipse can be downloaded here:
