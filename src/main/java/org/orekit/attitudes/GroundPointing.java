@@ -121,7 +121,7 @@ public abstract class GroundPointing implements AttitudeLaw {
 
         // New orekit exception if null position.
         if (pos.equals(Vector3D.ZERO)) {
-            throw new OrekitException("satellite smashed on its target");
+            throw new OrekitException("satellite collided with target");
         }
 
         // Attitude rotation in given frame :

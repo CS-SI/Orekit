@@ -345,7 +345,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
                 final double e = mean.getE();
                 if (e > 0.1) {
                     // if 0.005 < e < 0.1 no error is triggered, but accuracy is poor
-                    throw new PropagationException("too eccentric orbit (e = {0})", e);
+                    throw new PropagationException("orbit with excessive eccentricity (e = {0})", e);
                 }
 
                 final double meanI = mean.getI();

@@ -79,7 +79,7 @@ public class TLE implements TimeStamped, Serializable {
 
     /** Checksum error message. */
     private static final String CHECKSUM_MESSAGE =
-        "wrong cheksum of TLE line {0}, expected {1} but got {2} ({3})";
+        "wrong checksum of TLE line {0}, expected {1} but got {2} ({3})";
 
     /** International symbols for parsing. */
     private static final DecimalFormatSymbols SYMBOLS =
