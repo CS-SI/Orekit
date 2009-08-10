@@ -20,11 +20,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 /** This class holds Earth Orientation Parameters (IAU2000) data throughout a large time range.
- * It is a singleton since it handles voluminous data.
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
-public class EOP2000History extends AbstractEOPHistory {
+class EOP2000History extends AbstractEOPHistory {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 9141543606409905199L;
@@ -47,24 +46,11 @@ public class EOP2000History extends AbstractEOPHistory {
     /** Regular name for the BulletinB files (IAU2000 compatibles). */
     private static final String BULLETFILENAME = "^bulletinb_IAU2000((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
 
-   /** Private constructor for the singleton.
+   /** Simple constructor.
      * @exception OrekitException if there is a problem while reading IERS data
      */
-    private EOP2000History() throws OrekitException {
-
+    public EOP2000History() throws OrekitException {
         super(EOPC04FILENAME, BULLETFILENAME);
-
-    }
-
-    /** Get the singleton instance.
-     * @return the unique dated eop reader instance.
-     * @exception OrekitException when there is a problem while reading IERS data
-     */
-    public static EOP2000History getInstance() throws OrekitException {
-        if (LazyHolder.INSTANCE == null) {
-            throw LazyHolder.OREKIT_EXCEPTION;
-        }
-        return LazyHolder.INSTANCE;
     }
 
     /** Get the UT1-UTC value.
@@ -72,7 +58,7 @@ public class EOP2000History extends AbstractEOPHistory {
      * @param date date at which the value is desired
      * @return UT1-UTC in seconds (0 if date is outside covered range)
      */
-    protected double getUT1MinusUTC(final AbsoluteDate date) {
+    public double getUT1MinusUTC(final AbsoluteDate date) {
 
         // interpolate UT1 - UTC
         return getInterpolatedField(date, UT1_UTC_FIELD);
@@ -84,7 +70,7 @@ public class EOP2000History extends AbstractEOPHistory {
      * @param date date at which the value is desired
      * @return LoD in seconds (0 if date is outside covered range)
      */
-    protected double getLOD(final AbsoluteDate date) {
+    public double getLOD(final AbsoluteDate date) {
 
         // interpolate LOD
         return getInterpolatedField(date, LOD_FIELD);
@@ -97,54 +83,12 @@ public class EOP2000History extends AbstractEOPHistory {
      * @return pole correction ({@link PoleCorrection#NULL_CORRECTION
      * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
      */
-    protected PoleCorrection getPoleCorrection(final AbsoluteDate date) {
+    public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
 
         // interpolate XP and Yp
         return new PoleCorrection(getInterpolatedField(date, POLE_X_FIELD),
                                   getInterpolatedField(date, POLE_Y_FIELD));
 
     }
-
-    // The following marker comment is used to prevent checkstyle from complaining
-    // about utility classes missing an hidden (private) constructor
-    // These classes should have such constructors, that are obviously never called.
-    // Unfortunately, since cobertura currently cannot mark untestable code, these
-    // constructors on such small classes lead to artificially low code coverage.
-    // So to make sure both checkstyle and cobertura are happy, we locally inhibit
-    // checkstyle verification for the special case of small classes implementing
-    // the initialization on demand holder idiom used for singletons. This choice is
-    // safe as the classes are themselves private and completely under control. In fact,
-    // even if someone could instantiate them, this would be harmless since they only
-    // have static fields and no methods at all.
-    // CHECKSTYLE: stop HideUtilityClassConstructor
-
-    /** Holder for the singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
-     */
-    private static class LazyHolder {
-
-        /** Unique instance. */
-        private static final EOP2000History INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            EOP2000History tmpInstance = null;
-            OrekitException tmpException = null;
-            try {
-                tmpInstance = new EOP2000History();
-            } catch (OrekitException oe) {
-                tmpException = oe;
-            }
-            INSTANCE        = tmpInstance;
-            OREKIT_EXCEPTION = tmpException;
-        }
-
-    }
-
-    // CHECKSTYLE: resume HideUtilityClassConstructor
 
 }

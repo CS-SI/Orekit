@@ -62,6 +62,9 @@ class TIRF2000Frame extends Frame {
     /** Tidal correction (null if tidal effects are ignored). */
     private final TidalCorrection tidalCorrection;
 
+    /** EOP history. */
+    private final EOP2000History eopHistory;
+
     /** Simple constructor, ignoring tidal effects.
      * @param date the current date
      * @param name the string representation
@@ -84,6 +87,7 @@ class TIRF2000Frame extends Frame {
 
         super(FrameFactory.getCIRF2000(), null, name);
         tidalCorrection = ignoreTidalEffects ? null : new TidalCorrection();
+        eopHistory = new EOP2000History();
 
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
@@ -92,12 +96,18 @@ class TIRF2000Frame extends Frame {
 
     /** Get the pole correction.
      * @param date date at which the correction is desired
-     * @return pole correction (may be {@link PoleCorrection#NULL_CORRECTION}
-     * if tidal correction is ignored)
+     * @return pole correction including both EOP values and tidal correction
+     * if they have been configured
      */
     public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
-        return (tidalCorrection == null) ?
-               PoleCorrection.NULL_CORRECTION : tidalCorrection.getPoleCorrection(date);
+        final PoleCorrection eop = eopHistory.getPoleCorrection(date);
+        if (tidalCorrection == null) {
+            return eop;
+        } else {
+            final PoleCorrection tidal = tidalCorrection.getPoleCorrection(date);
+            return new PoleCorrection(eop.getXp() + tidal.getXp(),
+                                      eop.getYp() + tidal.getYp());
+        }
     }
 
     /** Update the frame to the given date.
@@ -112,7 +122,7 @@ class TIRF2000Frame extends Frame {
 
             // compute Earth Rotation Angle using Nicole Capitaine model (2000)
             final double tidalDtu1   = (tidalCorrection == null) ? 0 : tidalCorrection.getDUT1(date);
-            final double dtu1        = EOP2000History.getInstance().getUT1MinusUTC(date);
+            final double dtu1        = eopHistory.getUT1MinusUTC(date);
             final double utcMinusTai = UTCScale.getInstance().offsetFromTAI(date);
             final double tu =
                 (date.durationFrom(ERA_REFERENCE) + utcMinusTai + dtu1 + tidalDtu1) / 86400.0;

@@ -92,16 +92,13 @@ class ITRF2005Frame extends Frame {
             final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
             final double ttc =  tts * JULIAN_CENTURY_PER_SECOND;
 
-            // get the current IERS pole correction parameters
-            final PoleCorrection iCorr = EOP2000History.getInstance().getPoleCorrection(date);
-
-            // compute the additional terms not included in IERS data
-            final PoleCorrection tCorr = ((TIRF2000Frame) getParent()).getPoleCorrection(date);
+            // pole correction parameters
+            final PoleCorrection pCorr = ((TIRF2000Frame) getParent()).getPoleCorrection(date);
             final PoleCorrection nCorr = nutationCorrection(date);
 
             // elementary rotations due to pole motion in terrestrial frame
-            final Rotation r1 = new Rotation(Vector3D.PLUS_I, -(iCorr.getYp() + tCorr.getYp() + nCorr.getYp()));
-            final Rotation r2 = new Rotation(Vector3D.PLUS_J, -(iCorr.getXp() + tCorr.getXp() + nCorr.getXp()));
+            final Rotation r1 = new Rotation(Vector3D.PLUS_I, -(pCorr.getYp() + nCorr.getYp()));
+            final Rotation r2 = new Rotation(Vector3D.PLUS_J, -(pCorr.getXp() + nCorr.getXp()));
             final Rotation r3 = new Rotation(Vector3D.PLUS_K, S_PRIME_RATE * ttc);
 
             // complete pole motion in terrestrial frame
