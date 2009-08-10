@@ -17,6 +17,7 @@
 package org.orekit.forces.drag;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.propagation.SpacecraftState;
 
 /** Interface for spacecraft that are sensitive to atmospheric drag forces.
  *
@@ -29,16 +30,18 @@ public interface DragSensitive {
 
     /** Get the visible surface from a specific direction.
      * See {@link org.orekit.forces.drag.DragForce} for more explanations.
+     * @param state current state information: date, kinematics, attitude
      * @param direction direction of the flux in the spacecraft frame
      * @return surface (m<sup>2</sup>)
      */
-    double getDragCrossSection(Vector3D direction);
+    double getDragCrossSection(SpacecraftState state, Vector3D direction);
 
     /** Get the drag coefficients vector.
      * See {@link org.orekit.forces.drag.DragForce} for more explanations.
+     * @param state current state information: date, kinematics, attitude
      * @param direction direction of the flux in the spacecraft frame
      * @return drag coefficients vector (defined in the spacecraft frame)
      */
-    Vector3D getDragCoef(Vector3D direction);
+    Vector3D getDragCoef(SpacecraftState state, Vector3D direction);
 
 }

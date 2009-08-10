@@ -19,6 +19,7 @@ package org.orekit.forces.radiation;
 import java.io.Serializable;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.propagation.SpacecraftState;
 
 /** Interface for spacecraft that are sensitive to radiation pressure forces.
  *
@@ -29,21 +30,24 @@ import org.apache.commons.math.geometry.Vector3D;
 public interface RadiationSensitive extends Serializable {
 
     /** Get the cross section sensitive to radiation pressure.
+     * @param state current state information: date, kinematics, attitude
      * @param direction direction of the light flux in the spacecraft frame
      * @return surface (m<sup>2</sup>)
      */
-    double getRadiationCrossSection(Vector3D direction);
+    double getRadiationCrossSection(SpacecraftState state, Vector3D direction);
 
     /** Get the absorption coefficients vector.
+     * @param state current state information: date, kinematics, attitude
      * @param direction direction of the light flux in the spacecraft frame
      * @return absorption coefficients vector in the spacecraft frame
      */
-    Vector3D getAbsorptionCoef(Vector3D direction);
+    Vector3D getAbsorptionCoef(SpacecraftState state, Vector3D direction);
 
     /** Get the specular reflection coefficients vector.
+     * @param state current state information: date, kinematics, attitude
      * @param direction direction of the light flux in the spacecraft frame
      * @return specular reflection coefficients vector in the spacecraft frame
      */
-    Vector3D getReflectionCoef(Vector3D direction);
+    Vector3D getReflectionCoef(SpacecraftState state, Vector3D direction);
 
 }

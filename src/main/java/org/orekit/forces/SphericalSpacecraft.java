@@ -19,6 +19,7 @@ package org.orekit.forces;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.radiation.RadiationSensitive;
+import org.orekit.propagation.SpacecraftState;
 
 /** This class represents the features of a simplified spacecraft.
  * <p>The model of this spacecraft is a simple spherical model, this
@@ -63,27 +64,27 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
     }
 
     /** {@inheritDoc} */
-    public double getDragCrossSection(final Vector3D direction) {
+    public double getDragCrossSection(final SpacecraftState state, final Vector3D direction) {
         return crossSection;
     }
 
     /** {@inheritDoc} */
-    public Vector3D getDragCoef(final Vector3D direction) {
+    public Vector3D getDragCoef(final SpacecraftState state, final Vector3D direction) {
         return new Vector3D(dragCoeff, direction);
     }
 
     /** {@inheritDoc} */
-    public Vector3D getAbsorptionCoef(final Vector3D direction) {
+    public Vector3D getAbsorptionCoef(final SpacecraftState state, final Vector3D direction) {
         return new Vector3D(absorptionCoeff, direction);
     }
 
     /** {@inheritDoc} */
-    public double getRadiationCrossSection(final Vector3D direction) {
+    public double getRadiationCrossSection(final SpacecraftState state, final Vector3D direction) {
         return crossSection;
     }
 
     /** {@inheritDoc} */
-    public Vector3D getReflectionCoef(final Vector3D direction) {
+    public Vector3D getReflectionCoef(final SpacecraftState state, final Vector3D direction) {
         return new Vector3D(reflectionCoeff, direction);
     }
 

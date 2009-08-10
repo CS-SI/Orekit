@@ -78,8 +78,8 @@ public class DragForce implements ForceModel {
 
         final Vector3D inSpacecraft =
             s.getAttitude().getRotation().applyTo(incidence.normalize());
-        final double k = rho * v2 * spacecraft.getDragCrossSection(inSpacecraft) / (2 * s.getMass());
-        final Vector3D cD = spacecraft.getDragCoef(inSpacecraft);
+        final double k = rho * v2 * spacecraft.getDragCrossSection(s, inSpacecraft) / (2 * s.getMass());
+        final Vector3D cD = spacecraft.getDragCoef(s, inSpacecraft);
 
         // Addition of calculated acceleration to adder
         adder.addXYZAcceleration(k * cD.getX(), k * cD.getY(), k * cD.getZ());

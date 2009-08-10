@@ -22,6 +22,15 @@
   <body>
     <release version="4.1" date="TBD"
              description="TBD">
+      <action dev="luc" type="update" >
+        the RadiationSensitive and DragForce interfaces now have an
+        additional SpacecraftState parameter in all their get methods.
+        This allows to implement models that take into account solar
+        arrays rotation. Note that this changes breaks compatibility
+        for users that did add their own implementations, but it is
+        simple to deal with (simply add one parameter in the signature
+        and ignore it) so its was considered acceptable.
+       </action>
       <action dev="luc" type="add" due-to="James Housden">
         added german localization for error messages
       </action>
