@@ -275,11 +275,19 @@ public class FrameFactory implements Serializable {
      * </p>
      * @param applyEOPCorr if true, EOP corrections are applied (EME2000/GCRF bias compensation)
      * @return the selected reference frame singleton.
+     * @exception OrekitException if EOP parameters are desired but cannot be read
      */
-    public static Frame getMEME(final boolean applyEOPCorr) {
+    public static Frame getMEME(final boolean applyEOPCorr)
+        throws OrekitException {
         if (applyEOPCorr) {
+            if (LazyMEMEWithEOPHolder.INSTANCE == null) {
+                throw LazyMEMEWithEOPHolder.OREKIT_EXCEPTION;
+            }
             return LazyMEMEWithEOPHolder.INSTANCE;
         } else {
+            if (LazyMEMEWithoutEOPHolder.INSTANCE == null) {
+                throw LazyMEMEWithoutEOPHolder.OREKIT_EXCEPTION;
+            }
             return LazyMEMEWithoutEOPHolder.INSTANCE;
         }
     }
@@ -564,8 +572,22 @@ public class FrameFactory implements Serializable {
     private static class LazyMEMEWithEOPHolder {
 
         /** Unique instance. */
-        private static final Frame INSTANCE =
-            new MEMEFrame(true, AbsoluteDate.J2000_EPOCH, "MEME with EOP");
+        private static final Frame INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
+
+        static {
+            Frame tmpFrame = null;
+            OrekitException tmpException = null;
+            try {
+                tmpFrame = new MEMEFrame(true, AbsoluteDate.J2000_EPOCH, "MEME with EOP");
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            INSTANCE = tmpFrame;
+            OREKIT_EXCEPTION = tmpException;
+        }
 
     }
 
@@ -573,8 +595,22 @@ public class FrameFactory implements Serializable {
     private static class LazyMEMEWithoutEOPHolder {
 
         /** Unique instance. */
-        private static final Frame INSTANCE =
-            new MEMEFrame(false, AbsoluteDate.J2000_EPOCH, "MEME without EOP");
+        private static final Frame INSTANCE;
+
+        /** Reason why the unique instance may be missing (i.e. null). */
+        private static final OrekitException OREKIT_EXCEPTION;
+
+        static {
+            Frame tmpFrame = null;
+            OrekitException tmpException = null;
+            try {
+                tmpFrame = new MEMEFrame(false, AbsoluteDate.J2000_EPOCH, "MEME without EOP");
+            } catch (OrekitException oe) {
+                tmpException = oe;
+            }
+            INSTANCE = tmpFrame;
+            OREKIT_EXCEPTION = tmpException;
+        }
 
     }
 

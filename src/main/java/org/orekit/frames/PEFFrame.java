@@ -285,17 +285,13 @@ class PEFFrame extends Frame {
     /** Mean obliquity of the ecliptic. */
     private double moe;
 
-    /** Flag for applying EOP corrections (here dut1 and lod). */
-    private final boolean applyEOPCorr;
-
     /** Cached date to avoid useless calculus. */
     private AbsoluteDate cachedDate;
 
     /** Simple constructor, applying EOP corrections (here, dut1 and lod).
      * @param date the date.
      * @param name name of the frame
-     * @exception OrekitException if the nutation model data embedded
-     * in the library cannot be read.
+     * @exception OrekitException if EOP parameters cannot be read
      */
     protected PEFFrame(final AbsoluteDate date, final String name)
         throws OrekitException {
@@ -306,8 +302,7 @@ class PEFFrame extends Frame {
      * @param applyEOPCorr if true, EOP corrections are applied (here, dut1 and lod)
      * @param date the current date
      * @param name the string representation
-     * @exception OrekitException if the nutation model data embedded
-     * in the library cannot be read.
+     * @exception OrekitException if EOP parameters are desired but cannot be read
      */
     protected PEFFrame(final boolean applyEOPCorr,
                        final AbsoluteDate date, final String name)
@@ -325,8 +320,6 @@ class PEFFrame extends Frame {
         depsRef     = new double[n];
         dpsiNeville = new double[n];
         depsNeville = new double[n];
-
-        this.applyEOPCorr = applyEOPCorr;
 
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
@@ -358,9 +351,10 @@ class PEFFrame extends Frame {
             final double eqe = getNewEquationOfEquinoxes(date, ttc);
 
             // offset in julian centuries from J2000 epoch (UT1 scale)
+            final MEMEFrame meme = (MEMEFrame) getParent().getParent();
             final double dtai = date.durationFrom(GMST_REFERENCE);
             final double dutc = UTCScale.getInstance().offsetFromTAI(date);
-            final double dut1 = applyEOPCorr ? EOP1980History.getInstance().getUT1MinusUTC(date) : 0.0;
+            final double dut1 = meme.getUT1MinusUTC(date);
 
             final double tut1 = dtai + dutc + dut1;
             final double tt   = tut1 * JULIAN_CENTURY_PER_SECOND;
@@ -377,7 +371,7 @@ class PEFFrame extends Frame {
             final double gast = gmst + eqe;
 
             // compute true angular rotation of Earth, in rad/s
-            final double lod = applyEOPCorr ? EOP1980History.getInstance().getLOD(date) : 0.0;
+            final double lod = meme.getLOD(date);
             final double omp = AVE * (1 - lod / SECONDS_PER_DAY);
             final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
 

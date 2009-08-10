@@ -47,24 +47,11 @@ public class EOP1980History extends AbstractEOPHistory {
     /** Regular name for the BulletinB files (IAU1980 compatibles). */
     private static final String BULLETFILENAME = "^bulletinb((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
 
-   /** Private constructor for the singleton.
+   /** Simple constructor.
      * @exception OrekitException if there is a problem while reading IERS data
      */
-    private EOP1980History() throws OrekitException {
-
+    public EOP1980History() throws OrekitException {
         super(EOPC04FILENAME, BULLETFILENAME);
-
-    }
-
-    /** Get the singleton instance.
-     * @return the unique dated eop reader instance.
-     * @exception OrekitException when there is a problem while reading IERS data
-     */
-    public static EOP1980History getInstance() throws OrekitException {
-        if (LazyHolder.INSTANCE == null) {
-            throw LazyHolder.OREKIT_EXCEPTION;
-        }
-        return LazyHolder.INSTANCE;
     }
 
     /** Get the UT1-UTC value.
@@ -104,47 +91,5 @@ public class EOP1980History extends AbstractEOPHistory {
                                       getInterpolatedField(date, DDPSI_FIELD));
 
     }
-
-    // The following marker comment is used to prevent checkstyle from complaining
-    // about utility classes missing an hidden (private) constructor
-    // These classes should have such constructors, that are obviously never called.
-    // Unfortunately, since cobertura currently cannot mark untestable code, these
-    // constructors on such small classes lead to artificially low code coverage.
-    // So to make sure both checkstyle and cobertura are happy, we locally inhibit
-    // checkstyle verification for the special case of small classes implementing
-    // the initialization on demand holder idiom used for singletons. This choice is
-    // safe as the classes are themselves private and completely under control. In fact,
-    // even if someone could instantiate them, this would be harmless since they only
-    // have static fields and no methods at all.
-    // CHECKSTYLE: stop HideUtilityClassConstructor
-
-    /** Holder for the singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
-     */
-    private static class LazyHolder {
-
-        /** Unique instance. */
-        private static final EOP1980History INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            EOP1980History tmpInstance = null;
-            OrekitException tmpException = null;
-            try {
-                tmpInstance = new EOP1980History();
-            } catch (OrekitException oe) {
-                tmpException = oe;
-            }
-            INSTANCE         = tmpInstance;
-            OREKIT_EXCEPTION = tmpException;
-        }
-
-    }
-
-    // CHECKSTYLE: resume HideUtilityClassConstructor
 
 }

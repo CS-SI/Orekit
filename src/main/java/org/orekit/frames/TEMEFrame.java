@@ -260,17 +260,13 @@ class TEMEFrame extends Frame {
     /** Neville interpolation array for deps. */
     private final double[] depsNeville;
 
-    /** Flag for applying EOP corrections (here nutation). */
-    private final boolean applyEOPCorr;
-
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
     /** Simple constructor, applying EOP corrections (here, nutation).
      * @param date the date.
      * @param name name of the frame
-     * @exception OrekitException if the nutation model data embedded
-     * in the library cannot be read.
+     * @exception OrekitException if EOP parameters cannot be read
      */
     protected TEMEFrame(final AbsoluteDate date, final String name)
         throws OrekitException {
@@ -287,16 +283,13 @@ class TEMEFrame extends Frame {
      * @param applyEOPCorr if true, EOP corrections are applied (here, nutation)
      * @param date the date.
      * @param name name of the frame
-     * @exception OrekitException if the nutation model data embedded
-     * in the library cannot be read.
-     * @see Frame
+     * @exception OrekitException if EOP parameters are desired but cannot be read
      */
     protected TEMEFrame(final boolean applyEOPCorr,
                         final AbsoluteDate date, final String name)
         throws OrekitException {
 
         super(FrameFactory.getMEME(applyEOPCorr), null , name);
-        this.applyEOPCorr = applyEOPCorr;
 
         // set up an interpolation model on 12 points with a 1/2 day step
         // this leads to an interpolation error of about 1.7e-10 arcseconds
@@ -337,8 +330,8 @@ class TEMEFrame extends Frame {
             moe = ((MOE_3 * ttc + MOE_2) * ttc + MOE_1) * ttc + MOE_0;
 
             // get the IAU1980 corrections for the nutation parameters
-            final NutationCorrection nutCorr = applyEOPCorr ?
-                  EOP1980History.getInstance().getNutationCorrection(date) : NutationCorrection.NULL_CORRECTION;
+            final NutationCorrection nutCorr =
+                ((MEMEFrame) getParent()).getNutationCorrection(date);
 
             final double deps = depsCurrent + nutCorr.getDdeps();
             final double dpsi = dpsiCurrent + nutCorr.getDdpsi();

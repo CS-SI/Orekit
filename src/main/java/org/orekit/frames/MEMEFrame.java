@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 /** Mean Equator, Mean Equinox Frame.
@@ -62,11 +63,16 @@ class MEMEFrame extends Frame {
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
+    /** EOP history (null if EOP are ignored). */
+    private final EOP1980History eopHistory;
+
     /** Simple constructor, applying EOP corrections (here, EME2000/GCRF bias compensation).
      * @param date the date.
      * @param name name of the frame
+     * @exception OrekitException if EOP parameters cannot be read
      */
-    protected MEMEFrame(final AbsoluteDate date, final String name) {
+    protected MEMEFrame(final AbsoluteDate date, final String name)
+        throws OrekitException {
         this(true, date, name);
     }
 
@@ -74,16 +80,48 @@ class MEMEFrame extends Frame {
      * @param applyEOPCorr if true, EOP correction are applied (here, EME2000/GCRF bias compensation)
      * @param date the date.
      * @param name name of the frame
-     * @see Frame
+     * @exception OrekitException if EOP parameters are desired but cannot be read
      */
     protected MEMEFrame(final boolean applyEOPCorr,
-                        final AbsoluteDate date, final String name) {
+                        final AbsoluteDate date, final String name)
+        throws OrekitException {
 
         super(applyEOPCorr ? FrameFactory.getGCRF() : FrameFactory.getEME2000(), null , name);
+
+        eopHistory = applyEOPCorr ? new EOP1980History() : null;
 
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
 
+    }
+
+    /** Get the UT1-UTC value.
+     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
+     * @param date date at which the value is desired
+     * @return UT1-UTC in seconds (0 if date is outside covered range)
+     */
+    double getUT1MinusUTC(final AbsoluteDate date) {
+        return (eopHistory == null) ? 0.0 : eopHistory.getUT1MinusUTC(date);
+    }
+
+    /** Get the LoD (Length of Day) value.
+     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
+     * @param date date at which the value is desired
+     * @return LoD in seconds (0 if date is outside covered range)
+     */
+    double getLOD(final AbsoluteDate date) {
+        return (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
+    }
+
+    /** Get the correction to the nutation parameters.
+     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
+     * @param date date at which the correction is desired
+     * @return nutation correction ({@link NutationCorrection#NULL_CORRECTION
+     * NutationCorrection.NULL_CORRECTION} if date is outside covered range)
+     */
+    NutationCorrection getNutationCorrection(final AbsoluteDate date) {
+        return (eopHistory == null) ?
+               NutationCorrection.NULL_CORRECTION : eopHistory.getNutationCorrection(date);
     }
 
     /** Update the frame to the given date.
