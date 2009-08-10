@@ -37,7 +37,7 @@ public class TidalCorrectionTest {
     public void testPoleCorrection() {
 
         // compute the pole motion component for tidal correction
-        final PoleCorrection tidalCorr = TidalCorrection.getInstance().getPoleCorrection(date);
+        final PoleCorrection tidalCorr = new TidalCorrection().getPoleCorrection(date);
 
         assertEquals(Math.toRadians(-204.09237446540885e-6 / 3600), tidalCorr.getXp(), 2.0e-14);
         assertEquals(Math.toRadians(-161.48436351246889e-6 / 3600), tidalCorr.getYp(), 0.7e-14);
@@ -48,7 +48,7 @@ public class TidalCorrectionTest {
     public void testDUT1() {
 
         // compute the dut1 component for tidal correction
-        final double tidalCorr = TidalCorrection.getInstance().getDUT1(date);
+        final double tidalCorr = new TidalCorrection().getDUT1(date);
 
         assertEquals(13.611556854809763e-6, tidalCorr, 1.5e-10);
     }
@@ -56,19 +56,21 @@ public class TidalCorrectionTest {
     @Test
     public void testCachePole() {
 
+        TidalCorrection tc = new TidalCorrection();
+
         // compute the pole motion component for tidal correction, testing cache mechanism
-        final PoleCorrection poleCorr = TidalCorrection.getInstance().getPoleCorrection(date);
+        final PoleCorrection poleCorr = tc.getPoleCorrection(date);
 
         final AbsoluteDate date2 = new AbsoluteDate(2008, 10, 21, TAIScale.getInstance());
 
         // compute the pole motion component for tidal correction, testing cache mechanism
-        final PoleCorrection poleCorr2 = TidalCorrection.getInstance().getPoleCorrection(date2);
+        final PoleCorrection poleCorr2 = tc.getPoleCorrection(date2);
 
         assertFalse(poleCorr.getXp() == poleCorr2.getXp());
         assertFalse(poleCorr.getYp() == poleCorr2.getYp());
 
         // compute the pole motion component for tidal correction, testing cache mechanism
-        final PoleCorrection poleCorr3 = TidalCorrection.getInstance().getPoleCorrection(date2);
+        final PoleCorrection poleCorr3 = tc.getPoleCorrection(date2);
 
         assertTrue(poleCorr2.getXp() == poleCorr3.getXp());
         assertTrue(poleCorr2.getYp() == poleCorr3.getYp());
@@ -78,18 +80,20 @@ public class TidalCorrectionTest {
     @Test
     public void testCacheDUT1() {
 
+        TidalCorrection tc = new TidalCorrection();
+
         // compute the dut1 component for tidal correction
-        final double dut1Corr = TidalCorrection.getInstance().getDUT1(date);
+        final double dut1Corr = tc.getDUT1(date);
 
         final AbsoluteDate date2 = new AbsoluteDate(2008, 10, 21, TAIScale.getInstance());
 
         // compute the dut1 component for tidal correction, testing cache mechanism
-        final double dut1Corr2 = TidalCorrection.getInstance().getDUT1(date2);
+        final double dut1Corr2 = tc.getDUT1(date2);
 
         assertFalse(dut1Corr == dut1Corr2);
 
         // compute the dut1 component for tidal correction, testing cache mechanism
-        final double dut1Corr3 = TidalCorrection.getInstance().getDUT1(date2);
+        final double dut1Corr3 = tc.getDUT1(date2);
 
         assertTrue(dut1Corr2 == dut1Corr3);
 

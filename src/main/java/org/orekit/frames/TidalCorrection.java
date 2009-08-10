@@ -25,7 +25,6 @@ import org.orekit.time.AbsoluteDate;
  * <p>This class computes the diurnal and semidiurnal variations in the
  * Earth orientation. It is a java translation of the fortran subroutine
  * found at ftp://tai.bipm.org/iers/conv2003/chapter8/ortho_eop.f.</p>
- * <p>This is a singleton class, so there is no public constructor.</p>
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
@@ -202,9 +201,9 @@ public class TidalCorrection implements Serializable {
     /** Neville interpolation array for dtu1 correction. */
     private final double[] dtNeville;
 
-    /** Private constructor for the singleton.
+    /** Simple constructor.
      */
-    private TidalCorrection() {
+    public TidalCorrection() {
 
         // interpolation arrays
         final int n = 8;
@@ -217,13 +216,6 @@ public class TidalCorrection implements Serializable {
         dyNeville = new double[n];
         dtNeville = new double[n];
 
-    }
-
-    /** Get the unique instance of this class.
-     * @return the unique instance
-     */
-    public static TidalCorrection getInstance() {
-        return LazyHolder.INSTANCE;
     }
 
     /** Get the dUT1 value.
@@ -421,32 +413,5 @@ public class TidalCorrection implements Serializable {
                     partials9 * ORTHOWT[9] + partials10 * ORTHOWT[10] + partials11 * ORTHOWT[11];
 
     }
-
-    // The following marker comment is used to prevent checkstyle from complaining
-    // about utility classes missing an hidden (private) constructor
-    // These classes should have such constructors, that are obviously never called.
-    // Unfortunately, since cobertura currently cannot mark untestable code, these
-    // constructors on such small classes lead to artificially low code coverage.
-    // So to make sure both checkstyle and cobertura are happy, we locally inhibit
-    // checkstyle verification for the special case of small classes implementing
-    // the initialization on demand holder idiom used for singletons. This choice is
-    // safe as the classes are themselves private and completely under control. In fact,
-    // even if someone could instantiate them, this would be harmless since they only
-    // have static fields and no methods at all.
-    // CHECKSTYLE: stop HideUtilityClassConstructor
-
-    /** Holder for the singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
-     */
-    private static class LazyHolder {
-
-        /** Unique instance. */
-        private static final TidalCorrection INSTANCE = new TidalCorrection();
-
-    }
-
-    // CHECKSTYLE: resume HideUtilityClassConstructor
 
 }

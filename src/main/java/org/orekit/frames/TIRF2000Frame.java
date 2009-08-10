@@ -59,8 +59,8 @@ class TIRF2000Frame extends Frame {
     /** Earth Rotation Angle, in radians. */
     private double era;
 
-    /** Flag for tidal effects. */
-    private final boolean ignoreTidalEffects;
+    /** Tidal correction (null if tidal effects are ignored). */
+    private final TidalCorrection tidalCorrection;
 
     /** Simple constructor, ignoring tidal effects.
      * @param date the current date
@@ -69,9 +69,7 @@ class TIRF2000Frame extends Frame {
      */
     protected TIRF2000Frame(final AbsoluteDate date, final String name)
         throws OrekitException {
-
         this(true, date, name);
-
     }
 
     /** Simple constructor.
@@ -85,11 +83,18 @@ class TIRF2000Frame extends Frame {
         throws OrekitException {
 
         super(FrameFactory.getCIRF2000(), null, name);
-        this.ignoreTidalEffects = ignoreTidalEffects;
+        tidalCorrection = ignoreTidalEffects ? null : new TidalCorrection();
 
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
 
+    }
+
+    /** Get the tidal correction.
+     * @return tidal correction
+     */
+    TidalCorrection getTidalcorrection() {
+        return tidalCorrection;
     }
 
     /** Update the frame to the given date.
@@ -103,12 +108,11 @@ class TIRF2000Frame extends Frame {
         if ((cachedDate == null) || !cachedDate.equals(date)) {
 
             // compute Earth Rotation Angle using Nicole Capitaine model (2000)
-            final double tidalCorrection =
-                ignoreTidalEffects ? 0 : TidalCorrection.getInstance().getDUT1(date);
-            final double dtu1            = EOP2000History.getInstance().getUT1MinusUTC(date);
-            final double utcMinusTai     = UTCScale.getInstance().offsetFromTAI(date);
+            final double tidalDtu1   = (tidalCorrection == null) ? 0 : tidalCorrection.getDUT1(date);
+            final double dtu1        = EOP2000History.getInstance().getUT1MinusUTC(date);
+            final double utcMinusTai = UTCScale.getInstance().offsetFromTAI(date);
             final double tu =
-                (date.durationFrom(ERA_REFERENCE) + utcMinusTai + dtu1 + tidalCorrection) / 86400.0;
+                (date.durationFrom(ERA_REFERENCE) + utcMinusTai + dtu1 + tidalDtu1) / 86400.0;
             era  = ERA_0 + ERA_1A * tu + ERA_1B * tu;
             era -= TWO_PI * Math.floor((era + Math.PI) / TWO_PI);
 

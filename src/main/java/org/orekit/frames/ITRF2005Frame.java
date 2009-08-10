@@ -32,7 +32,7 @@ import org.orekit.time.AbsoluteDate;
 class ITRF2005Frame extends Frame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 8677025885319745348L;
+    private static final long serialVersionUID = 3691591368789020041L;
 
     /** 2&pi;. */
     private static final double TWO_PI = 2.0 * Math.PI;
@@ -51,8 +51,8 @@ class ITRF2005Frame extends Frame {
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
-    /** Flag for tidal effects. */
-    private final boolean ignoreTidalEffects;
+    /** Tidal correction (null if tidal effects are ignored). */
+    private final TidalCorrection tidalCorrection;
 
     /** Simple constructor, ignoring tidal effects.
      * @param date the current date
@@ -61,9 +61,7 @@ class ITRF2005Frame extends Frame {
      */
     protected ITRF2005Frame(final AbsoluteDate date, final String name)
         throws OrekitException {
-
         this(true, date, name);
-
     }
 
     /** Simple constructor.
@@ -77,7 +75,7 @@ class ITRF2005Frame extends Frame {
         throws OrekitException {
 
         super(FrameFactory.getTIRF2000(ignoreTidalEffects), null, name);
-        this.ignoreTidalEffects = ignoreTidalEffects;
+        tidalCorrection = ((TIRF2000Frame) getParent()).getTidalcorrection();
 
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
@@ -102,9 +100,8 @@ class ITRF2005Frame extends Frame {
             final PoleCorrection iCorr = EOP2000History.getInstance().getPoleCorrection(date);
 
             // compute the additional terms not included in IERS data
-            final PoleCorrection tCorr = ignoreTidalEffects ?
-                                         PoleCorrection.NULL_CORRECTION :
-                                         TidalCorrection.getInstance().getPoleCorrection(date);
+            final PoleCorrection tCorr =
+                (tidalCorrection == null) ? PoleCorrection.NULL_CORRECTION : tidalCorrection.getPoleCorrection(date);
             final PoleCorrection nCorr = nutationCorrection(date);
 
             // elementary rotations due to pole motion in terrestrial frame
