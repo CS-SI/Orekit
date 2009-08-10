@@ -90,11 +90,14 @@ class TIRF2000Frame extends Frame {
 
     }
 
-    /** Get the tidal correction.
-     * @return tidal correction
+    /** Get the pole correction.
+     * @param date date at which the correction is desired
+     * @return pole correction (may be {@link PoleCorrection#NULL_CORRECTION}
+     * if tidal correction is ignored)
      */
-    TidalCorrection getTidalcorrection() {
-        return tidalCorrection;
+    public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
+        return (tidalCorrection == null) ?
+               PoleCorrection.NULL_CORRECTION : tidalCorrection.getPoleCorrection(date);
     }
 
     /** Update the frame to the given date.
