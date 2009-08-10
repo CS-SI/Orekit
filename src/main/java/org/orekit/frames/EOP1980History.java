@@ -20,14 +20,13 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 /** This class holds Earth Orientation Parameters (IAU1980) data throughout a large time range.
- * It is a singleton since it handles voluminous data.
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
 public class EOP1980History extends AbstractEOPHistory {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 9141543606409905199L;
+    private static final long serialVersionUID = -4645479420083885164L;
 
     /** Id for UT1-UTC field. */
     private static final int UT1_UTC_FIELD = 2;
