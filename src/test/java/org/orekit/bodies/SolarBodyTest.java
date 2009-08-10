@@ -16,16 +16,17 @@
  */
 package org.orekit.bodies;
 
-import java.text.ParseException;
-
-import org.apache.commons.math.geometry.Vector3D;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.text.ParseException;
+import java.util.Map;
+
+import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Assert;
+import org.junit.Test;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -40,7 +41,8 @@ import org.orekit.utils.PVCoordinates;
 public class SolarBodyTest {
 
     @Test
-    public void testGeocentricPV() throws OrekitException, ParseException {
+    public void geocentricPV() throws OrekitException, ParseException {
+        setRegularData();
         AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TTScale.getInstance());
         Frame geocentricFrame = FrameFactory.getEME2000();
         checkPV(SolarSystemBody.getMoon(), date, geocentricFrame,
@@ -50,7 +52,8 @@ public class SolarBodyTest {
     }
 
     @Test
-    public void testHeliocentricPV() throws OrekitException, ParseException {
+    public void heliocentricPV() throws OrekitException, ParseException {
+        setRegularData();
         AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TTScale.getInstance());
         Frame heliocentricFrame = SolarSystemBody.getSun().getFrame();
         checkPV(SolarSystemBody.getSun(), date, heliocentricFrame, Vector3D.ZERO, Vector3D.ZERO);
@@ -78,6 +81,72 @@ public class SolarBodyTest {
         checkPV(SolarSystemBody.getPluto(), date, heliocentricFrame,
                 new Vector3D(-30.4878221121555448,  -0.8732454301967293,  8.9112969841847551),
                 new Vector3D(  0.0003225621959332,  -0.0031487479275516, -0.0010801779315937));
+    }
+
+    @Test(expected = OrekitException.class)
+    public void noMercury() throws OrekitException {
+        setNoData();
+        SolarSystemBody.getMercury();
+    }
+
+    @Test(expected = OrekitException.class)
+    public void noVenus() throws OrekitException {
+        setNoData();
+        SolarSystemBody.getVenus();
+    }
+
+    @Test(expected = OrekitException.class)
+    public void noEarthMoonBarycenter() throws OrekitException {
+        setNoData();
+        SolarSystemBody.getEarthMoonBarycenter();
+    }
+
+    @Test(expected = OrekitException.class)
+    public void noMars() throws OrekitException {
+        setNoData();
+        SolarSystemBody.getMars();
+    }
+
+    @Test(expected = OrekitException.class)
+    public void noJupiter() throws OrekitException {
+        setNoData();
+        SolarSystemBody.getJupiter();
+    }
+
+    @Test(expected = OrekitException.class)
+    public void noSaturn() throws OrekitException {
+        setNoData();
+        SolarSystemBody.getSaturn();
+    }
+
+    @Test(expected = OrekitException.class)
+    public void noUranus() throws OrekitException {
+        setNoData();
+        SolarSystemBody.getUranus();
+    }
+
+    @Test(expected = OrekitException.class)
+    public void noNeptune() throws OrekitException {
+        setNoData();
+        SolarSystemBody.getNeptune();
+    }
+
+    @Test(expected = OrekitException.class)
+    public void noPluto() throws OrekitException {
+        setNoData();
+        SolarSystemBody.getPluto();
+    }
+
+    @Test(expected = OrekitException.class)
+    public void noMoon() throws OrekitException {
+        setNoData();
+        SolarSystemBody.getMoon();
+    }
+
+    @Test(expected = OrekitException.class)
+    public void noSun() throws OrekitException {
+        setNoData();
+        SolarSystemBody.getSun();
     }
 
     private void checkPV(CelestialBody body, AbsoluteDate date, Frame frame,
@@ -135,10 +204,48 @@ public class SolarBodyTest {
         assertTrue(max < epsilon * a);
     }
 
-    @Before
-    public void setUp() {
+    private void setNoData() {
+        clearSolarSystemBodies();
+        clearJPLEphemeridesConstants();
+        DataProvidersManager.getInstance().clearProviders();
+        String root = getClass().getClassLoader().getResource("no-data").getPath();
+        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+    }
+
+    private void setRegularData() {
+        clearSolarSystemBodies();
+        clearJPLEphemeridesConstants();
+        DataProvidersManager.getInstance().clearProviders();
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+    }
+
+    private void clearSolarSystemBodies() {
+        try {
+            for (Field field : SolarSystemBody.class.getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers()) &&
+                        CelestialBody.class.isAssignableFrom(field.getType())) {
+                    field.setAccessible(true);
+                    field.set(null, null);
+                }
+            }
+        } catch (IllegalAccessException iae) {
+            Assert.fail(iae.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void clearJPLEphemeridesConstants() {
+        try {
+            for (Field field : JPLEphemeridesLoader.class.getDeclaredFields()) {
+                if (field.getName().equals("CONSTANTS")) {
+                    field.setAccessible(true);
+                    ((Map<String, Double>) field.get(null)).clear();
+                }
+            }
+        } catch (IllegalAccessException iae) {
+            Assert.fail(iae.getMessage());
+        }
     }
 
 }

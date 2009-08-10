@@ -56,6 +56,45 @@ public class SolarSystemBody extends AbstractCelestialBody {
     /** Serializable UID. */
     private static final long serialVersionUID = -4929971459387288203L;
 
+    /** Solar system barycenter. */
+    private static CelestialBody solarSystemBarycenter = null;
+
+    /** Sun. */
+    private static CelestialBody sun;
+
+    /** Mercury. */
+    private static CelestialBody mercury;
+
+    /** Venus. */
+    private static CelestialBody venus;
+
+    /** Earth-Moon barycenter. */
+    private static CelestialBody earthMoonBarycenter;
+
+    /** Earth. */
+    private static CelestialBody earth;
+
+    /** Moon. */
+    private static CelestialBody moon;
+
+    /** Mars. */
+    private static CelestialBody mars;
+
+    /** Jupiter. */
+    private static CelestialBody jupiter;
+
+    /** Saturn. */
+    private static CelestialBody saturn;
+
+    /** Uranus. */
+    private static CelestialBody uranus;
+
+    /** Neptune. */
+    private static CelestialBody neptune;
+
+    /** Pluto. */
+    private static CelestialBody pluto;
+
     /** Body ephemeris. */
     private final SortedSet<TimeStamped> ephemeris;
 
@@ -174,218 +213,16 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
     }
 
-    /** Get the solar system barycenter singleton aggregated body.
+    /** Get the solar system barycenter aggregated body.
      * <p>The axes of the body-centered frame linked to this instance
      * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
      * @return solar system barycenter aggregated body
      * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    public static CelestialBody getSolarSystemBarycenter()
-        throws OrekitException {
-        if (SolarSystemBarycenterLazyHolder.OREKIT_EXCEPTION != null) {
-            throw SolarSystemBarycenterLazyHolder.OREKIT_EXCEPTION;
-        }
-        return SolarSystemBarycenterLazyHolder.INSTANCE;
-    }
+    public static CelestialBody getSolarSystemBarycenter() throws OrekitException {
+        synchronized(CelestialBody.class) {
+            if (solarSystemBarycenter == null) {
 
-    /** Get the Sun singleton body.
-     * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
-     * @return Sun body
-     * @exception OrekitException if the JPL ephemerides cannot be read
-     */
-    public static CelestialBody getSun()
-        throws OrekitException {
-        if (SunLazyHolder.OREKIT_EXCEPTION != null) {
-            throw SunLazyHolder.OREKIT_EXCEPTION;
-        }
-        return SunLazyHolder.INSTANCE;
-    }
-
-    /** Get the Mercury singleton body.
-     * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
-     * @return Sun body
-     * @exception OrekitException if the JPL ephemerides cannot be read
-     */
-    public static CelestialBody getMercury()
-        throws OrekitException {
-        if (MercuryLazyHolder.OREKIT_EXCEPTION != null) {
-            throw MercuryLazyHolder.OREKIT_EXCEPTION;
-        }
-        return MercuryLazyHolder.INSTANCE;
-    }
-
-    /** Get the Venus singleton body.
-     * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
-     * @return Venus body
-     * @exception OrekitException if the JPL ephemerides cannot be read
-     */
-    public static CelestialBody getVenus()
-        throws OrekitException {
-        if (VenusLazyHolder.OREKIT_EXCEPTION != null) {
-            throw VenusLazyHolder.OREKIT_EXCEPTION;
-        }
-        return VenusLazyHolder.INSTANCE;
-    }
-
-    /** Get the Earth-Moon barycenter singleton bodies pair.
-     * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
-     * @return Earth-Moon barycenter bodies pair
-     * @exception OrekitException if the JPL ephemerides cannot be read
-     */
-    public static CelestialBody getEarthMoonBarycenter()
-        throws OrekitException {
-        if (EarthMoonBarycenterLazyHolder.OREKIT_EXCEPTION != null) {
-            throw EarthMoonBarycenterLazyHolder.OREKIT_EXCEPTION;
-        }
-        return EarthMoonBarycenterLazyHolder.INSTANCE;
-    }
-
-    /** Get the Earth singleton body.
-     * <p>The body-centered frame linked to this instance
-     * <em>is</em> the {@link Frame#getEME2000() EME2000} frame.</p>
-     * @return Earth body
-     * @exception OrekitException if the JPL ephemerides cannot be read
-     */
-    public static CelestialBody getEarth()
-        throws OrekitException {
-        if (EarthLazyHolder.OREKIT_EXCEPTION != null) {
-            throw EarthLazyHolder.OREKIT_EXCEPTION;
-        }
-        return EarthLazyHolder.INSTANCE;
-    }
-
-    /** Get the Moon singleton body.
-     * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
-     * @return Moon body
-     * @exception OrekitException if the JPL ephemerides cannot be read
-     */
-    public static CelestialBody getMoon()
-        throws OrekitException {
-        if (MoonLazyHolder.OREKIT_EXCEPTION != null) {
-            throw MoonLazyHolder.OREKIT_EXCEPTION;
-        }
-        return MoonLazyHolder.INSTANCE;
-    }
-
-    /** Get the Mars singleton body.
-     * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
-     * @return Mars body
-     * @exception OrekitException if the JPL ephemerides cannot be read
-     */
-    public static CelestialBody getMars()
-        throws OrekitException {
-        if (MarsLazyHolder.OREKIT_EXCEPTION != null) {
-            throw MarsLazyHolder.OREKIT_EXCEPTION;
-        }
-        return MarsLazyHolder.INSTANCE;
-    }
-
-    /** Get the Jupiter singleton body.
-     * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
-     * @return Jupiter body
-     * @exception OrekitException if the JPL ephemerides cannot be read
-     */
-    public static CelestialBody getJupiter()
-        throws OrekitException {
-        if (JupiterLazyHolder.OREKIT_EXCEPTION != null) {
-            throw JupiterLazyHolder.OREKIT_EXCEPTION;
-        }
-        return JupiterLazyHolder.INSTANCE;
-    }
-
-    /** Get the Saturn singleton body.
-     * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
-     * @return Saturn body
-     * @exception OrekitException if the JPL ephemerides cannot be read
-     */
-    public static CelestialBody getSaturn()
-        throws OrekitException {
-        if (SaturnLazyHolder.OREKIT_EXCEPTION != null) {
-            throw SaturnLazyHolder.OREKIT_EXCEPTION;
-        }
-        return SaturnLazyHolder.INSTANCE;
-    }
-
-    /** Get the Uranus singleton body.
-     * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
-     * @return Uranus body
-     * @exception OrekitException if the JPL ephemerides cannot be read
-     */
-    public static CelestialBody getUranus()
-        throws OrekitException {
-        if (UranusLazyHolder.OREKIT_EXCEPTION != null) {
-            throw UranusLazyHolder.OREKIT_EXCEPTION;
-        }
-        return UranusLazyHolder.INSTANCE;
-    }
-
-    /** Get the Neptune singleton body.
-     * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
-     * @return Neptune body
-     * @exception OrekitException if the JPL ephemerides cannot be read
-     */
-    public static CelestialBody getNeptune()
-        throws OrekitException {
-        if (NeptuneLazyHolder.OREKIT_EXCEPTION != null) {
-            throw NeptuneLazyHolder.OREKIT_EXCEPTION;
-        }
-        return NeptuneLazyHolder.INSTANCE;
-    }
-
-    /** Get the Pluto singleton body.
-     * <p>The axes of the body-centered frame linked to this instance
-     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
-     * @return Pluto body
-     * @exception OrekitException if the JPL ephemerides cannot be read
-     */
-    public static CelestialBody getPluto()
-        throws OrekitException {
-        if (PlutoLazyHolder.OREKIT_EXCEPTION != null) {
-            throw PlutoLazyHolder.OREKIT_EXCEPTION;
-        }
-        return PlutoLazyHolder.INSTANCE;
-    }
-
-    // The following marker comment is used to prevent checkstyle from complaining
-    // about utility classes missing an hidden (private) constructor
-    // These classes should have such constructors, that are obviously never called.
-    // Unfortunately, since cobertura currently cannot mark untestable code, these
-    // constructors on such small classes lead to artificially low code coverage.
-    // So to make sure both checkstyle and cobertura are happy, we locally inhibit
-    // checkstyle verification for the special case of small classes implementing
-    // the initialization on demand holder idiom used for singletons. This choice is
-    // safe as the classes are themselves private and completely under control. In fact,
-    // even if someone could instantiate them, this would be harmless since they only
-    // have static fields and no methods at all.
-    // CHECKSTYLE: stop HideUtilityClassConstructor
-
-    /** Holder for the solar system barycenter singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
-     */
-    private static class SolarSystemBarycenterLazyHolder {
-
-        /** Unique instance. */
-        public static final SolarSystemBody INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            SolarSystemBody tmpBody      = null;
-            OrekitException tmpException = null;
-            try {
                 final double gmSum =
                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.SUN)        +
                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MERCURY)    +
@@ -397,17 +234,17 @@ public class SolarSystemBody extends AbstractCelestialBody {
                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.URANUS)     +
                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.NEPTUNE)    +
                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.PLUTO);
-                tmpBody = new SolarSystemBody(gmSum,
-                                              SolarSystemBody.getEarthMoonBarycenter().getFrame(),
-                                              JPLEphemeridesLoader.EphemerisType.EARTH_MOON,
-                                              "solar system centered EME2000") {
+                solarSystemBarycenter = new SolarSystemBody(gmSum,
+                                                            SolarSystemBody.getEarthMoonBarycenter().getFrame(),
+                                                            JPLEphemeridesLoader.EphemerisType.EARTH_MOON,
+                                                            "solar system centered EME2000") {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = 7350102501303428347L;
 
                     /** {@inheritDoc} */
                     public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                        throws OrekitException {
+                    throws OrekitException {
                         // we define solar system barycenter with respect to Earth-Moon barycenter
                         // so we need to revert the vectors provided by the JPL DE 405 ephemerides
                         final PVCoordinates emPV = super.getPVCoordinates(date, frame);
@@ -415,133 +252,96 @@ public class SolarSystemBody extends AbstractCelestialBody {
                     }
 
                 };
-            } catch (OrekitException oe) {
-                tmpException = oe;
             }
-            INSTANCE = tmpBody;
-            OREKIT_EXCEPTION = tmpException;
-        }
 
+            return solarSystemBarycenter;
+
+        }
     }
 
-    /** Holder for the Sun singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
+    /** Get the Sun singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
+     * @return Sun body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    private static class SunLazyHolder {
+    public static CelestialBody getSun() throws OrekitException {
+        synchronized(CelestialBody.class) {
 
-        /** Unique instance. */
-        private static final SolarSystemBody INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            SolarSystemBody tmpBody      = null;
-            OrekitException tmpException = null;
-            try {
-                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                              JPLEphemeridesLoader.EphemerisType.SUN,
-                                              "Sun centered EME2000");
-            } catch (OrekitException oe) {
-                tmpException = oe;
+            if (sun == null) {
+                sun = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                          JPLEphemeridesLoader.EphemerisType.SUN,
+                                          "Sun centered EME2000");
             }
-            INSTANCE = tmpBody;
-            OREKIT_EXCEPTION = tmpException;
-        }
 
+            return sun;
+
+        }
     }
 
-    /** Holder for the Mercury singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
+    /** Get the Mercury singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
+     * @return Sun body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    private static class MercuryLazyHolder {
+    public static CelestialBody getMercury() throws OrekitException {
+        synchronized(CelestialBody.class) {
 
-        /** Unique instance. */
-        private static final SolarSystemBody INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            SolarSystemBody tmpBody      = null;
-            OrekitException tmpException = null;
-            try {
-                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+            if (mercury == null) {
+                mercury = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
                                               JPLEphemeridesLoader.EphemerisType.MERCURY,
                                               "Mercury centered EME2000");
-            } catch (OrekitException oe) {
-                tmpException = oe;
             }
-            INSTANCE = tmpBody;
-            OREKIT_EXCEPTION = tmpException;
-        }
 
+            return mercury;
+
+        }
     }
 
-    /** Holder for the Venus singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
+    /** Get the Venus singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
+     * @return Venus body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    private static class VenusLazyHolder {
+    public static CelestialBody getVenus() throws OrekitException {
+        synchronized(CelestialBody.class) {
 
-        /** Unique instance. */
-        private static final SolarSystemBody INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            SolarSystemBody tmpBody      = null;
-            OrekitException tmpException = null;
-            try {
-                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                              JPLEphemeridesLoader.EphemerisType.VENUS,
-                                              "Venus centered EME2000");
-            } catch (OrekitException oe) {
-                tmpException = oe;
+            if (venus == null) {
+                venus = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                            JPLEphemeridesLoader.EphemerisType.VENUS,
+                                            "Venus centered EME2000");
             }
-            INSTANCE = tmpBody;
-            OREKIT_EXCEPTION = tmpException;
-        }
 
+            return venus;
+
+        }
     }
 
-    /** Holder for the Earth-Moon barycenter singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
+    /** Get the Earth-Moon barycenter singleton bodies pair.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
+     * @return Earth-Moon barycenter bodies pair
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    private static class EarthMoonBarycenterLazyHolder {
-
-        /** Unique instance. */
-        private static final SolarSystemBody INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            SolarSystemBody tmpBody      = null;
-            OrekitException tmpException = null;
-            try {
+    public static CelestialBody getEarthMoonBarycenter() throws OrekitException {
+        synchronized(CelestialBody.class) {
+            if (earthMoonBarycenter == null) {
                 final double moonGM  =
                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MOON);
                 final double earthGM =
                     JPLEphemeridesLoader.getEarthMoonMassRatio() * moonGM;
-                tmpBody = new SolarSystemBody(earthGM + moonGM, FrameFactory.getEME2000(),
-                                              JPLEphemeridesLoader.EphemerisType.MOON,
-                                              "Earth-Moon centered EME2000") {
+                earthMoonBarycenter = new SolarSystemBody(earthGM + moonGM, FrameFactory.getEME2000(),
+                                                          JPLEphemeridesLoader.EphemerisType.MOON,
+                                                          "Earth-Moon centered EME2000") {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = -6860799524750318529L;
 
                     /** {@inheritDoc} */
                     public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                        throws OrekitException {
+                    throws OrekitException {
                         // we define Earth-Moon barycenter with respect to Earth center so we need
                         // to apply a scale factor to the Moon vectors provided by the JPL DE 405 ephemerides
                         final PVCoordinates moonPV = super.getPVCoordinates(date, frame);
@@ -554,44 +354,36 @@ public class SolarSystemBody extends AbstractCelestialBody {
                     }
 
                 };
-            } catch (OrekitException oe) {
-                tmpException = oe;
             }
-            INSTANCE = tmpBody;
-            OREKIT_EXCEPTION = tmpException;
+            
+            return earthMoonBarycenter;
+
         }
 
     }
 
-    /** Holder for the Earth singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
+    /** Get the Earth singleton body.
+     * <p>The body-centered frame linked to this instance
+     * <em>is</em> the {@link Frame#getEME2000() EME2000} frame.</p>
+     * @return Earth body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    private static class EarthLazyHolder {
+    public static CelestialBody getEarth() throws OrekitException {
+        synchronized(CelestialBody.class) {
 
-        /** Unique instance. */
-        private static final CelestialBody INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            CelestialBody tmpBody        = null;
-            OrekitException tmpException = null;
-            try {
+            if (earth == null) {
                 final double moonGM  =
                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MOON);
                 final double earthGM =
                     JPLEphemeridesLoader.getEarthMoonMassRatio() * moonGM;
-                tmpBody = new AbstractCelestialBody(earthGM, FrameFactory.getEME2000()) {
+                earth = new AbstractCelestialBody(earthGM, FrameFactory.getEME2000()) {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = -2542177517458975694L;
 
                     /** {@inheritDoc} */
                     public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                        throws OrekitException {
+                    throws OrekitException {
 
                         // specific implementation for Earth:
                         // the Earth is always exactly at the origin of its own EME2000 frame
@@ -604,220 +396,150 @@ public class SolarSystemBody extends AbstractCelestialBody {
                     }
 
                 };
-            } catch (OrekitException oe) {
-                tmpException = oe;
             }
-            INSTANCE = tmpBody;
-            OREKIT_EXCEPTION = tmpException;
+
+            return earth;
+
+        }
+    }
+
+    /** Get the Moon singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
+     * @return Moon body
+     * @exception OrekitException if the JPL ephemerides cannot be read
+     */
+    public static CelestialBody getMoon() throws OrekitException {
+        synchronized(CelestialBody.class) {
+
+            if (moon == null) {
+                moon = new SolarSystemBody(SolarSystemBody.getEarth().getFrame(),
+                                           JPLEphemeridesLoader.EphemerisType.MOON,
+                                           "Moon centered EME2000");
+            }
+
+            return moon;
 
         }
 
     }
 
-    /** Holder for the Moon singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
+    /** Get the Mars singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
+     * @return Mars body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    private static class MoonLazyHolder {
+    public static CelestialBody getMars() throws OrekitException {
+        synchronized(CelestialBody.class) {
 
-        /** Unique instance. */
-        private static final SolarSystemBody INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            SolarSystemBody tmpBody      = null;
-            OrekitException tmpException = null;
-            try {
-                tmpBody = new SolarSystemBody(SolarSystemBody.getEarth().getFrame(),
-                                              JPLEphemeridesLoader.EphemerisType.MOON,
-                                              "Moon centered EME2000");
-            } catch (OrekitException oe) {
-                tmpException = oe;
+            if (mars == null) {
+                mars = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                           JPLEphemeridesLoader.EphemerisType.MARS,
+                                           "Mars centered EME2000");
             }
-            INSTANCE = tmpBody;
-            OREKIT_EXCEPTION = tmpException;
-        }
 
+            return mars;
+
+        }
     }
 
-    /** Holder for the Mars singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
+    /** Get the Jupiter singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
+     * @return Jupiter body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    private static class MarsLazyHolder {
+    public static CelestialBody getJupiter() throws OrekitException {
+        synchronized(CelestialBody.class) {
 
-        /** Unique instance. */
-        private static final SolarSystemBody INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            SolarSystemBody tmpBody      = null;
-            OrekitException tmpException = null;
-            try {
-                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                              JPLEphemeridesLoader.EphemerisType.MARS,
-                                              "Mars centered EME2000");
-            } catch (OrekitException oe) {
-                tmpException = oe;
-            }
-            INSTANCE = tmpBody;
-            OREKIT_EXCEPTION = tmpException;
-        }
-
-    }
-
-    /** Holder for the Jupiter singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
-     */
-    private static class JupiterLazyHolder {
-
-        /** Unique instance. */
-        private static final SolarSystemBody INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            SolarSystemBody tmpBody      = null;
-            OrekitException tmpException = null;
-            try {
-                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+            if (jupiter == null) {
+                jupiter = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
                                               JPLEphemeridesLoader.EphemerisType.JUPITER,
                                               "Jupiter centered EME2000");
-            } catch (OrekitException oe) {
-                tmpException = oe;
             }
-            INSTANCE = tmpBody;
-            OREKIT_EXCEPTION = tmpException;
-        }
 
+            return jupiter;
+
+        }
     }
 
-    /** Holder for the Saturn singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
+    /** Get the Saturn singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
+     * @return Saturn body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    private static class SaturnLazyHolder {
+    public static CelestialBody getSaturn() throws OrekitException {
+        synchronized(CelestialBody.class) {
 
-        /** Unique instance. */
-        private static final SolarSystemBody INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            SolarSystemBody tmpBody      = null;
-            OrekitException tmpException = null;
-            try {
-                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                              JPLEphemeridesLoader.EphemerisType.SATURN,
-                                              "Saturn centered EME2000");
-            } catch (OrekitException oe) {
-                tmpException = oe;
+            if (saturn == null) {
+                saturn = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                             JPLEphemeridesLoader.EphemerisType.SATURN,
+                                             "Saturn centered EME2000");
             }
-            INSTANCE = tmpBody;
-            OREKIT_EXCEPTION = tmpException;
+            return saturn;
         }
-
     }
 
-    /** Holder for the Uranus singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
+    /** Get the Uranus singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
+     * @return Uranus body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    private static class UranusLazyHolder {
+    public static CelestialBody getUranus() throws OrekitException {
+        synchronized(CelestialBody.class) {
 
-        /** Unique instance. */
-        private static final SolarSystemBody INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            SolarSystemBody tmpBody      = null;
-            OrekitException tmpException = null;
-            try {
-                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                              JPLEphemeridesLoader.EphemerisType.URANUS,
-                                              "Uranus centered EME2000");
-            } catch (OrekitException oe) {
-                tmpException = oe;
+            if (uranus == null) {
+                uranus = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                             JPLEphemeridesLoader.EphemerisType.URANUS,
+                                             "Uranus centered EME2000");
             }
-            INSTANCE = tmpBody;
-            OREKIT_EXCEPTION = tmpException;
-        }
 
+            return uranus;
+
+        }
     }
 
-    /** Holder for the Neptune singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
+    /** Get the Neptune singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
+     * @return Neptune body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    private static class NeptuneLazyHolder {
+    public static CelestialBody getNeptune() throws OrekitException {
+        synchronized(CelestialBody.class) {
 
-        /** Unique instance. */
-        /** Unique instance. */
-        private static final SolarSystemBody INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            SolarSystemBody tmpBody      = null;
-            OrekitException tmpException = null;
-            try {
-                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+            if (neptune == null) {
+                neptune = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
                                               JPLEphemeridesLoader.EphemerisType.NEPTUNE,
                                               "Neptune centered EME2000");
-            } catch (OrekitException oe) {
-                tmpException = oe;
             }
-            INSTANCE = tmpBody;
-            OREKIT_EXCEPTION = tmpException;
-        }
 
+            return neptune;
+
+        }
     }
 
-    /** Holder for the Pluto singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
+    /** Get the Pluto singleton body.
+     * <p>The axes of the body-centered frame linked to this instance
+     * are parallel to the {@link Frame#getEME2000() EME2000} frame.</p>
+     * @return Pluto body
+     * @exception OrekitException if the JPL ephemerides cannot be read
      */
-    private static class PlutoLazyHolder {
+    public static CelestialBody getPluto() throws OrekitException {
+        synchronized(CelestialBody.class) {
 
-        /** Unique instance. */
-        private static final SolarSystemBody INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            SolarSystemBody tmpBody      = null;
-            OrekitException tmpException = null;
-            try {
-                tmpBody = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
-                                              JPLEphemeridesLoader.EphemerisType.PLUTO,
-                                              "Pluto centered EME2000");
-            } catch (OrekitException oe) {
-                tmpException = oe;
+            if (pluto == null) {
+                pluto = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
+                                            JPLEphemeridesLoader.EphemerisType.PLUTO,
+                                            "Pluto centered EME2000");
             }
-            INSTANCE = tmpBody;
-            OREKIT_EXCEPTION = tmpException;
+
+            return pluto;
+
         }
-
     }
-
-    // CHECKSTYLE: resume HideUtilityClassConstructor
 
 }
