@@ -23,7 +23,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
-public class EOP1980History extends AbstractEOPHistory {
+class EOP1980History extends AbstractEOPHistory {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -4645479420083885164L;
@@ -58,7 +58,7 @@ public class EOP1980History extends AbstractEOPHistory {
      * @param date date at which the value is desired
      * @return UT1-UTC in seconds (0 if date is outside covered range)
      */
-    protected double getUT1MinusUTC(final AbsoluteDate date) {
+    public double getUT1MinusUTC(final AbsoluteDate date) {
 
         // interpolate UT1 - UTC
         return getInterpolatedField(date, UT1_UTC_FIELD);
@@ -70,7 +70,7 @@ public class EOP1980History extends AbstractEOPHistory {
      * @param date date at which the value is desired
      * @return LoD in seconds (0 if date is outside covered range)
      */
-    protected double getLOD(final AbsoluteDate date) {
+    public double getLOD(final AbsoluteDate date) {
 
         // interpolate LOD
         return getInterpolatedField(date, LOD_FIELD);
@@ -83,7 +83,7 @@ public class EOP1980History extends AbstractEOPHistory {
      * @return nutation correction ({@link NutationCorrection#NULL_CORRECTION
      * NutationCorrection.NULL_CORRECTION} if date is outside covered range)
      */
-    protected NutationCorrection getNutationCorrection(final AbsoluteDate date) {
+    public NutationCorrection getNutationCorrection(final AbsoluteDate date) {
 
         // interpolate dDeps and dDpsi
         return new NutationCorrection(getInterpolatedField(date, DDEPS_FIELD),
