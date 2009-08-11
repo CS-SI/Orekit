@@ -76,9 +76,10 @@ mvn install
   The installation procedure is explained in the
   {{{http://ant.apache.org/manual/index.html}on-line manual}}.
 
-  The build file for ant is in fact automatically generated when we create
-  a release for Orekit. It uses a configuration that is based on the maven
-  configuration and mimics maven behaviour.
+  If you need to configure a proxy server for dependencies retrieval, see
+  the
+  {{{http://ant.apache.org/manual/index.html}Proxy configuration}}
+  page at the ant site.
 
   Compiling is done by running the command:
 
@@ -88,12 +89,8 @@ ant
 
   Just as maven does, this command also retrieve the dependencies from
   public repositories, compiles the sources and creates a file named
-  target/orekit-x.y.jar where x.y is the version number.
+  build/orekit-x.y.jar where x.y is the version number.
 
-
-  If you need to configure a proxy server for dependencies retrieval, see
-  the {{{http://ant.apache.org/manual/proxy.html}Proxy Configuration}} page
-  in the ant manual.
 
 * Building with Eclipse
 
@@ -111,8 +108,8 @@ ant
        directory where you unpacked Orekit
 
     * set the source folders to orekit/src/main/java, orekit/src/main/resources,
-      orekit/src/test/java, orekit/src/test/resources in the source tab
-      of the Configure Build Path dialog
+      orekit/src/test/java, orekit/src/test/resources, orekit/src/tutorials in
+      the source tab of the Configure Build Path dialog
 
     * set the external libraries to JRE system library (provided by Eclipse),
       Junit 4.x (provided by Eclipse) and commons-math 2.0 (available at

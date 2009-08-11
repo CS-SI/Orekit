@@ -1,5 +1,5 @@
 Orekit can be built from source either using maven 2,
-ant or eclipse (with the m2eclipse plugin).
+ant or eclipse.
 
 Building with Maven 2:
  - Maven 2 can be downloaded here:
@@ -17,9 +17,14 @@ Building with Maven 2:
 Building with Ant:
  - Ant can be downloaded here:
        http://ant.apache.org/bindownload.cgi
- - either put the commons-math jar in a lib directory
-   just below the top-level orekit directory or edit
-   the ant build.xml file to edit the get-apache-commons-math
+ - If you are behind a proxy (which is a traditional
+   setting in a corporate environment), then you need
+   to configure ant to use it. This is explained
+   in the ant documentation here:
+   http://ant.apache.org/manual/proxy.html
+ - either download the commons-math jar from apache and
+   put it in a lib directory just below the top-level orekit
+   directory or edit the ant build.xml file to edit the get-apache-commons-math
    target that can automatically download commons-math
  - run "ant jar" to create a file named
    build/orekit-x.y.jar where x.y is the version number
@@ -27,10 +32,15 @@ Building with Ant:
 Building with Eclipse:
  - Eclipse can be downloaded here:
        http://www.eclipse.org/downloads/
- - open orekit as a java project (the eclipse .project
-   is already provided with the orekit source distribution)
- - configure the dependencies in the build path as they
-   are available in your system (the .classpath file
-   is configured to use a maven 2 repository, which may
-   not be what you want)
- - build the project as usual using eclipse features
+ - extract the orekit source jar in your eclipse workspace
+ - create a new java project from existing sources and direct
+   Eclipse to the directory where you unpacked Orekit
+ - set the source folders to orekit/src/main/java,
+   orekit/src/main/resources, orekit/src/test/java,
+   orekit/src/test/resources, orekit/src/tutorials in
+   the source tab of the Configure Build Path dialog
+ - set the external libraries to JRE system library (provided by Eclipse),
+   Junit 4.x (provided by Eclipse) and commons-math 2.0 (available at
+   Apache Software Foundation commons-math
+   http://commons.apache.org/downloads/download_math.cgi
+   in the libraries tab of the Configure Build Path dialog
