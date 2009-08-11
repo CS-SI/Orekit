@@ -23,7 +23,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 
-/** Predefined reference frames class.
+/** Factory for predefined reference frames.
  *
  * <h5> FramesFactory Presentation </h5>
  * <p>
