@@ -51,7 +51,7 @@ public class UTCScale implements TimeScale {
     private UTCTAIOffset[] offsets;
 
     /** Current position. */
-    private transient int current;
+    private int current;
 
     /** Package private constructor for the factory.
      * @exception OrekitException if the time steps cannot be read
