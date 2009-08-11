@@ -61,7 +61,7 @@ public class Ephemeris implements BoundedPropagator {
             throw new IllegalArgumentException("There should be at least 2 entries.");
         }
 
-        data = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
+        data = new TreeSet<TimeStamped>(new ChronologicalComparator());
         for (int i = 0; i < tabulatedStates.length; ++i) {
             data.add(tabulatedStates[i]);
         }

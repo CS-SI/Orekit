@@ -24,7 +24,7 @@ package org.orekit.time;
  * Orbit} instances is given here:</p>
  * <pre>
  *     SortedSet&lt;Orbit> sortedOrbits =
- *         new TreeSet&lt;Orbit>(ChronologicalComparator.getInstance());
+ *         new TreeSet&lt;Orbit>(new ChronologicalComparator());
  *     sortedOrbits.add(orbit1);
  *     sortedOrbits.add(orbit2);
  *     ...

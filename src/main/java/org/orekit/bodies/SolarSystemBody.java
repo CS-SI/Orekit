@@ -120,7 +120,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
                             final JPLEphemeridesLoader.EphemerisType type,
                             final String frameName) {
         super(gm, frameName, definingFrame);
-        this.ephemeris     = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
+        this.ephemeris     = new TreeSet<TimeStamped>(new ChronologicalComparator());
         this.model         = null;
         this.type          = type;
         this.definingFrame = definingFrame;

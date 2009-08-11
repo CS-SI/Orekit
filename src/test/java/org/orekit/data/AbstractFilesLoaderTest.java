@@ -32,7 +32,7 @@ public abstract class AbstractFilesLoaderTest {
         String root = getClass().getClassLoader().getResource(directoryName).getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
         DataProvidersManager.getInstance().clearProviders();
-        set = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
+        set = new TreeSet<TimeStamped>(new ChronologicalComparator());
     }
 
     protected int getMaxGap() {

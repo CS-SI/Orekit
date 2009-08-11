@@ -170,7 +170,7 @@ class JPLEphemeridesLoader implements DataLoader {
      * file content is corrupted
      */
     public synchronized SortedSet<TimeStamped> loadEphemerides() throws OrekitException {
-        ephemerides = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
+        ephemerides = new TreeSet<TimeStamped>(new ChronologicalComparator());
         if (!DataProvidersManager.getInstance().feed(this)) {
             throw new OrekitException(NO_JPL_FILES_FOUND);
         }

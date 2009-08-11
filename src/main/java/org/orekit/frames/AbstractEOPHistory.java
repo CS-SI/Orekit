@@ -58,7 +58,7 @@ public abstract class AbstractEOPHistory implements Serializable {
         // TimeStampedEntry or AbsoluteDate instances
         // (beware to use AbsoluteDate ONLY as arguments to
         // headSet or tailSet and NOT to add them in the set)
-        eop = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
+        eop = new TreeSet<TimeStamped>(new ChronologicalComparator());
 
         // consider first the more accurate EOP 05 C04 entries
         final boolean eop05c04Loaded = new EOP05C04FilesLoader(ficEOP05C04, eop).loadEOP();

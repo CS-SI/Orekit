@@ -73,6 +73,9 @@
         the capability to apply the nutation corrections provided by IERS through the EOP data
         files for better agreement with the IAU 2000 precession-nutation model.
       </action>
+      <action dev="luc" type="update" >
+        the ChronologicalComparator class is not a singleton anymore, this didn't really make sense
+      </action>
       <action dev="luc" type="fix" >
         fixed a state reset error: orbital state changed by event detectors like
         ImpulseManeuver were overwritten by other event detectors

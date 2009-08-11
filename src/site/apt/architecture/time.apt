@@ -155,7 +155,7 @@ public class Ephemeris {
   private TreeSet<TimeStamped> ephemeris;
 
   public Ephemeris(MyClass[] array) {
-    ephemeris = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
+    ephemeris = new TreeSet<TimeStamped>(new ChronologicalComparator());
     for (int i = 0; i < n; ++i) {
         ephemeris.add(new MyClass(...));
     }

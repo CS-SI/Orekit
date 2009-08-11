@@ -80,7 +80,7 @@ public class TLESeries implements Serializable {
      */
     public TLESeries(final InputStream in)
         throws IOException, OrekitException {
-        tles = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
+        tles = new TreeSet<TimeStamped>(new ChronologicalComparator());
         internationalDesignator = null;
         satelliteNumber = 0;
         previous = null;

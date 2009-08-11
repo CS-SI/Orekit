@@ -77,7 +77,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
      */
     private SolarInputs97to05() throws OrekitException {
 
-        data = new TreeSet<TimeStamped>(ChronologicalComparator.getInstance());
+        data = new TreeSet<TimeStamped>(new ChronologicalComparator());
         InputStream in = SolarInputs97to05.class.getResourceAsStream("/atmosphere/JB_All_97-05.txt");
         BufferedReader rFlux = new BufferedReader(new InputStreamReader(in));
 
