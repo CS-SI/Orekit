@@ -30,7 +30,7 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.InertialLaw;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -55,7 +55,7 @@ public class InertialAttitudeTest {
                 propagator.propagate(new AbsoluteDate(t0, t)).getAttitude();
             Rotation evolution = attitude.getRotation().applyTo(initial.getRotation().revert());
             assertEquals(0, evolution.getAngle(), 1.0e-10);
-            assertEquals(FrameFactory.getEME2000(), attitude.getReferenceFrame());
+            assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
         }
     }
 
@@ -68,7 +68,7 @@ public class InertialAttitudeTest {
                 propagator.propagate(new AbsoluteDate(t0, t)).getAttitude();
             Rotation evolution = attitude.getRotation().applyTo(initial.getRotation().revert());
             assertEquals(0, evolution.getAngle(), 1.0e-10);
-            assertEquals(FrameFactory.getEME2000(), attitude.getReferenceFrame());
+            assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
         }
     }
 
@@ -82,7 +82,7 @@ public class InertialAttitudeTest {
                                   UTCScale.getInstance());
             orbit0 =
                 new KeplerianOrbit(12345678.9, 0.001, 2.3, 0.1, 3.04, 2.4,
-                                   KeplerianOrbit.TRUE_ANOMALY, FrameFactory.getEME2000(),
+                                   KeplerianOrbit.TRUE_ANOMALY, FramesFactory.getEME2000(),
                                    t0, 3.986004415e14);
         } catch (OrekitException oe) {
             fail(oe.getMessage());

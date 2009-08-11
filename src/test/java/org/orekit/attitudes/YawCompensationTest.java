@@ -33,7 +33,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -139,10 +139,10 @@ public class YawCompensationTest {
             PVCoordinates extrapPvSatEME2000 = extrapOrbit.getPVCoordinates();
             
             // Satellite latitude at date
-            double extrapLat = earthShape.transform(extrapPvSatEME2000.getPosition(), FrameFactory.getEME2000(), extrapDate).getLatitude();
+            double extrapLat = earthShape.transform(extrapPvSatEME2000.getPosition(), FramesFactory.getEME2000(), extrapDate).getLatitude();
             
             // Compute yaw compensation angle -- rotations composition
-            double yawAngle = yawCompensLaw.getYawAngle(extrapDate, extrapPvSatEME2000, FrameFactory.getEME2000());
+            double yawAngle = yawCompensLaw.getYawAngle(extrapDate, extrapPvSatEME2000, FramesFactory.getEME2000());
                         
             // Update minimum yaw compensation angle
             if (Math.abs(yawAngle) <= yawMin) {
@@ -205,8 +205,8 @@ public class YawCompensationTest {
         YawCompensation yawCompensLaw = new YawCompensation(nadirLaw);
 
         // Get attitude rotations from non yaw compensated / yaw compensated laws
-        Rotation rotNoYaw = nadirLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
-        Rotation rotYaw = yawCompensLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        Rotation rotNoYaw = nadirLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
+        Rotation rotYaw = yawCompensLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
             
         // Compose rotations composition
         Rotation compoRot = rotYaw.applyTo(rotNoYaw.revert());
@@ -234,13 +234,13 @@ public class YawCompensationTest {
             final double mu = 3.9860047e14;
             
             // Reference frame = ITRF 2005
-            frameITRF2005 = FrameFactory.getITRF2005(true);
+            frameITRF2005 = FramesFactory.getITRF2005(true);
 
             //  Satellite position
             circOrbit =
                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
                                        Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                       FrameFactory.getEME2000(), date, mu);
+                                       FramesFactory.getEME2000(), date, mu);
             
             pvSatITRF2005C = circOrbit.getPVCoordinates(frameITRF2005);
             

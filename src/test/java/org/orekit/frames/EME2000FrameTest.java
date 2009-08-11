@@ -45,7 +45,7 @@ public class EME2000FrameTest {
                                            new TimeComponents(07, 51, 28.386009),
                                            UTCScale.getInstance());
 
-        Transform t = FrameFactory.getGCRF().getTransformTo(FrameFactory.getEME2000(), t0);
+        Transform t = FramesFactory.getGCRF().getTransformTo(FramesFactory.getEME2000(), t0);
 
         PVCoordinates pvGcrfIau2000A =
             new PVCoordinates(new Vector3D(5102508.9579, 6123011.4038, 6378136.9252),
@@ -76,7 +76,7 @@ public class EME2000FrameTest {
                                            TimeComponents.H00,
                                            UTCScale.getInstance());
 
-        Transform t = FrameFactory.getGCRF().getTransformTo(FrameFactory.getEME2000(), t0);
+        Transform t = FramesFactory.getGCRF().getTransformTo(FramesFactory.getEME2000(), t0);
 
         PVCoordinates pvGCRFiau2000A =
             new PVCoordinates(new Vector3D(-40588150.3617, -11462167.0397, 27143.1974),

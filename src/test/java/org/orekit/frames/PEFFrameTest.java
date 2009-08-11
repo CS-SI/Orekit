@@ -53,7 +53,7 @@ public class PEFFrameTest {
             new PVCoordinates(new Vector3D(5094514.7804, 6127366.4612, 6380344.5328),
                               new Vector3D(-4746.088567, 786.077222, 5531.931288));
         
-        Transform t = FrameFactory.getTEME(true).getTransformTo(FrameFactory.getPEF(true), t0);
+        Transform t = FramesFactory.getTEME(true).getTransformTo(FramesFactory.getPEF(true), t0);
 
         // this test gives worst result than PEFFrameAlternateConfigurationTest because
         // at 2004-04-06 there is a 0.471ms difference in dut1 and a 0.077ms difference
@@ -63,7 +63,7 @@ public class PEFFrameTest {
         assertEquals(1.533846e-4, delta.getVelocity().getNorm(), 3.0e-11);
 
         // if dut1 and lod corrections are ignored, results must be really bad
-        t = FrameFactory.getTEME(false).getTransformTo(FrameFactory.getPEF(false), t0);
+        t = FramesFactory.getTEME(false).getTransformTo(FramesFactory.getPEF(false), t0);
         delta = new PVCoordinates(1.0, pvPEF, -1.0, t.transformPVCoordinates(pvTEME));
         assertEquals(255.644, delta.getPosition().getNorm(), 4.0e-6);
         assertEquals(0.13856, delta.getVelocity().getNorm(), 9.0e-7);
@@ -81,7 +81,7 @@ public class PEFFrameTest {
                                            TimeComponents.H00,
                                            UTCScale.getInstance());
 
-        Transform t = FrameFactory.getTEME(true).getTransformTo(FrameFactory.getPEF(true), t0);
+        Transform t = FramesFactory.getTEME(true).getTransformTo(FramesFactory.getPEF(true), t0);
 
         // TOD iau76
         PVCoordinates pvTEME =
@@ -101,7 +101,7 @@ public class PEFFrameTest {
         assertEquals(1.427464e-5, delta.getVelocity().getNorm(), 9.0e-12);
 
         // if dut1 and lod corrections are ignored, results must be really bad
-        t = FrameFactory.getTEME(false).getTransformTo(FrameFactory.getPEF(false), t0);
+        t = FramesFactory.getTEME(false).getTransformTo(FramesFactory.getPEF(false), t0);
         delta = new PVCoordinates(1.0, pvPEF, -1.0, t.transformPVCoordinates(pvTEME));
         assertEquals(1448.217, delta.getPosition().getNorm(), 4.0e-4);
         assertEquals(6.1e-5, delta.getVelocity().getNorm(), 2.0e-8);

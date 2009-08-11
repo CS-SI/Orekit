@@ -48,8 +48,8 @@ public class TEMEFrameAlternateConfigurationTest {
                                            new TimeComponents(07, 51, 28.386009),
                                            UTCScale.getInstance());
 
-        Transform tt = FrameFactory.getMEME(true).getTransformTo(FrameFactory.getTEME(true), t0);
-        Transform tf = FrameFactory.getMEME(false).getTransformTo(FrameFactory.getTEME(false), t0);
+        Transform tt = FramesFactory.getMEME(true).getTransformTo(FramesFactory.getTEME(true), t0);
+        Transform tf = FramesFactory.getMEME(false).getTransformTo(FramesFactory.getTEME(false), t0);
 
         //TOD iau76
         PVCoordinates pvTODiau76 =
@@ -83,8 +83,8 @@ public class TEMEFrameAlternateConfigurationTest {
                                            TimeComponents.H00,
                                            UTCScale.getInstance());
 
-        Transform tt = FrameFactory.getMEME(true).getTransformTo(FrameFactory.getTEME(true), t0);
-        Transform tf = FrameFactory.getMEME(false).getTransformTo(FrameFactory.getTEME(false), t0);
+        Transform tt = FramesFactory.getMEME(true).getTransformTo(FramesFactory.getTEME(true), t0);
+        Transform tf = FramesFactory.getMEME(false).getTransformTo(FramesFactory.getTEME(false), t0);
 
         //TOD iau76
         PVCoordinates pvTODiau76 =

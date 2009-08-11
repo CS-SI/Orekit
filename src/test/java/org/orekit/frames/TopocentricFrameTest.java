@@ -246,10 +246,10 @@ public class TopocentricFrameTest {
         final CircularOrbit orbit =
             new CircularOrbit(7178000.0, 0.5e-8, -0.5e-8, Math.toRadians(50.), Math.toRadians(120.),
                                    Math.toRadians(90.), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   FrameFactory.getEME2000(), date, mu);
+                                   FramesFactory.getEME2000(), date, mu);
 
         // Transform satellite position to position/velocity parameters in body frame
-        final Transform eme2000ToItrf = FrameFactory.getEME2000().getTransformTo(earthSpheric.getBodyFrame(), date);
+        final Transform eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(earthSpheric.getBodyFrame(), date);
         final PVCoordinates pvSatItrf = eme2000ToItrf.transformPVCoordinates(orbit.getPVCoordinates());
         
         // Compute range rate directly
@@ -263,13 +263,13 @@ public class TopocentricFrameTest {
         
         // Extrapolate satellite position a short while after reference date
         AbsoluteDate dateP = new AbsoluteDate(date, dt);
-        Transform j2000ToItrfP = FrameFactory.getEME2000().getTransformTo(earthSpheric.getBodyFrame(), dateP);
+        Transform j2000ToItrfP = FramesFactory.getEME2000().getTransformTo(earthSpheric.getBodyFrame(), dateP);
         SpacecraftState orbitP = extrapolator.propagate(dateP);
         Vector3D satPointGeoP = j2000ToItrfP.transformPVCoordinates(orbitP.getPVCoordinates()).getPosition();
         
         // Retropolate satellite position a short while before reference date
         AbsoluteDate dateM = new AbsoluteDate(date, -dt);
-        Transform j2000ToItrfM = FrameFactory.getEME2000().getTransformTo(earthSpheric.getBodyFrame(), dateM);
+        Transform j2000ToItrfM = FramesFactory.getEME2000().getTransformTo(earthSpheric.getBodyFrame(), dateM);
         SpacecraftState orbitM = extrapolator.propagate(dateM);
         Vector3D satPointGeoM = j2000ToItrfM.transformPVCoordinates(orbitM.getPVCoordinates()).getPosition();
         
@@ -393,7 +393,7 @@ public class TopocentricFrameTest {
             System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
 
             // Reference frame = ITRF 2005
-            frameITRF2005 = FrameFactory.getITRF2005(true);
+            frameITRF2005 = FramesFactory.getITRF2005(true);
 
             // Elliptic earth shape
             earthSpheric = new OneAxisEllipsoid(6378136.460, 0., frameITRF2005);

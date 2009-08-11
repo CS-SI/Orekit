@@ -53,11 +53,11 @@ public class PEFFrameAlternateConfigurationTest {
             new PVCoordinates(new Vector3D(5094514.7804, 6127366.4612, 6380344.5328),
                               new Vector3D(-4746.088567, 786.077222, 5531.931288));
         
-        Transform t = FrameFactory.getTEME(true).getTransformTo(FrameFactory.getPEF(true), t0);
+        Transform t = FramesFactory.getTEME(true).getTransformTo(FramesFactory.getPEF(true), t0);
         checkPV(pvPEF, t.transformPVCoordinates(pvTEME), 0.0091, 4.7e-6);
 
         // if dut1 and lod corrections are ignored, results must be really bad
-        t = FrameFactory.getTEME(false).getTransformTo(FrameFactory.getPEF(false), t0);
+        t = FramesFactory.getTEME(false).getTransformTo(FramesFactory.getPEF(false), t0);
         PVCoordinates delta = new PVCoordinates(1.0, pvPEF, -1.0, t.transformPVCoordinates(pvTEME));
         assertEquals(255.644, delta.getPosition().getNorm(), 4.0e-6);
         assertEquals(0.13856, delta.getVelocity().getNorm(), 9.0e-7);
@@ -75,7 +75,7 @@ public class PEFFrameAlternateConfigurationTest {
                                            TimeComponents.H00,
                                            UTCScale.getInstance());
 
-        Transform t = FrameFactory.getTEME(true).getTransformTo(FrameFactory.getPEF(true), t0);
+        Transform t = FramesFactory.getTEME(true).getTransformTo(FramesFactory.getPEF(true), t0);
 
         // TOD iau76
         PVCoordinates pvTEME =
@@ -90,7 +90,7 @@ public class PEFFrameAlternateConfigurationTest {
         checkPV(pvPEF, t.transformPVCoordinates(pvTEME), 0.049, 5.2e-7);
 
         // if dut1 and lod corrections are ignored, results must be really bad
-        t = FrameFactory.getTEME(false).getTransformTo(FrameFactory.getPEF(false), t0);
+        t = FramesFactory.getTEME(false).getTransformTo(FramesFactory.getPEF(false), t0);
         PVCoordinates delta = new PVCoordinates(1.0, pvPEF, -1.0, t.transformPVCoordinates(pvTEME));
         assertEquals(1448.217, delta.getPosition().getNorm(), 4.0e-4);
         assertEquals(6.1e-5, delta.getVelocity().getNorm(), 2.0e-8);

@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -61,7 +61,7 @@ public class TabulatedEphemerisTest {
 
         Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA,
                                             lv, KeplerianOrbit.TRUE_ANOMALY, 
-                                            FrameFactory.getEME2000(), initDate, mu);
+                                            FramesFactory.getEME2000(), initDate, mu);
 
         int nbIntervals = 720;
         EcksteinHechlerPropagator eck =

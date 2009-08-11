@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -44,7 +44,7 @@ public class SolarBodyTest {
     public void geocentricPV() throws OrekitException, ParseException {
         setRegularData();
         AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TTScale.getInstance());
-        Frame geocentricFrame = FrameFactory.getEME2000();
+        Frame geocentricFrame = FramesFactory.getEME2000();
         checkPV(SolarSystemBody.getMoon(), date, geocentricFrame,
                 new Vector3D(-0.0008081773279115, -0.0019946300016204, -0.0010872626608381),
                 new Vector3D( 0.0006010848166591, -0.0001674454606152, -0.0000855621449740));

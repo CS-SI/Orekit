@@ -31,7 +31,7 @@ import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.time.AbsoluteDate;
@@ -68,7 +68,7 @@ public class BodyCenterPointingTest {
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
         
         // Call get target method 
-        PVCoordinates target = earthCenterAttitudeLaw.getTargetInBodyFrame(date, pvSatEME2000, FrameFactory.getEME2000());
+        PVCoordinates target = earthCenterAttitudeLaw.getTargetInBodyFrame(date, pvSatEME2000, FramesFactory.getEME2000());
 
         // Check that target is body center
         double normPos = target.getPosition().getNorm();
@@ -88,7 +88,7 @@ public class BodyCenterPointingTest {
         //  Pointing direction
         // ******************** 
         // Get satellite attitude rotation, i.e rotation from EME2000 frame to satellite frame
-        Rotation rotSatEME2000 = earthCenterAttitudeLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        Rotation rotSatEME2000 = earthCenterAttitudeLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
         
         // Transform Z axis from satellite frame to EME2000 
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);
@@ -126,14 +126,14 @@ public class BodyCenterPointingTest {
             circ =
                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(raan),
                                        Math.toRadians(5.300 - raan), CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
-                                       FrameFactory.getEME2000(), date, mu);
+                                       FramesFactory.getEME2000(), date, mu);
             
             
             // Reference frame = ITRF 2005
-            itrf = FrameFactory.getITRF2005(true);
+            itrf = FramesFactory.getITRF2005(true);
 
             // Transform from EME2000 to ITRF2005
-            eme2000ToItrf = FrameFactory.getEME2000().getTransformTo(itrf, date);
+            eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(itrf, date);
 
             // Create earth center pointing attitude law */
             earthCenterAttitudeLaw = new BodyCenterPointing(itrf);

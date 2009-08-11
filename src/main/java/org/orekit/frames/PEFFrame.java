@@ -308,7 +308,7 @@ class PEFFrame extends Frame {
                        final AbsoluteDate date, final String name)
         throws OrekitException {
 
-        super(FrameFactory.getTEME(applyEOPCorr), null, name);
+        super(FramesFactory.getTEME(applyEOPCorr), null, name);
 
         // set up an interpolation model on 12 points with a 1/2 day step
         // this leads to an interpolation error of about 1.7e-10 arcseconds

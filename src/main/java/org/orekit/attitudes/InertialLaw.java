@@ -19,7 +19,7 @@ package org.orekit.attitudes;
 import org.apache.commons.math.geometry.Rotation;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -48,7 +48,7 @@ public class InertialLaw implements AttitudeLaw {
      * @param rotation rotation from EME2000 to the desired satellite frame
      */
     public InertialLaw(final Rotation rotation) {
-        satelliteFrame = new Frame(FrameFactory.getEME2000(), new Transform(rotation), null);
+        satelliteFrame = new Frame(FramesFactory.getEME2000(), new Transform(rotation), null);
     }
 
     /** {@inheritDoc} */

@@ -44,7 +44,7 @@ public class MEMEFrameTest {
                                            new TimeComponents(07, 51, 28.386009),
                                            UTCScale.getInstance());
 
-        Transform tt = FrameFactory.getGCRF().getTransformTo(FrameFactory.getMEME(true), t0);
+        Transform tt = FramesFactory.getGCRF().getTransformTo(FramesFactory.getMEME(true), t0);
         //GCRF iau76 w corr
         PVCoordinates pvGCRFiau76 =
             new PVCoordinates(new Vector3D(5102508.9579, 6123011.4007, 6378136.9282),
@@ -56,7 +56,7 @@ public class MEMEFrameTest {
         
         checkPV(pvMODiau76Wcorr, tt.transformPVCoordinates(pvGCRFiau76), 2.6e-5, 7.2e-7);
 
-        Transform tf = FrameFactory.getEME2000().getTransformTo(FrameFactory.getMEME(false), t0);
+        Transform tf = FramesFactory.getEME2000().getTransformTo(FramesFactory.getMEME(false), t0);
         //J2000 iau76   
         PVCoordinates pvJ2000iau76 =
             new PVCoordinates(new Vector3D(5102509.6000, 6123011.5200, 6378136.3000),
@@ -80,7 +80,7 @@ public class MEMEFrameTest {
                                            TimeComponents.H00,
                                            UTCScale.getInstance());
 
-        Transform tt = FrameFactory.getGCRF().getTransformTo(FrameFactory.getMEME(true), t0);
+        Transform tt = FramesFactory.getGCRF().getTransformTo(FramesFactory.getMEME(true), t0);
         //GCRF iau76 w corr
         PVCoordinates pvGCRFiau76 =
             new PVCoordinates(new Vector3D(-40588150.3649, -11462167.0282, 27143.2028),
@@ -91,7 +91,7 @@ public class MEMEFrameTest {
                               new Vector3D(837.708020, -2957.480117, -0.814253));
         checkPV(pvMODiau76Wcorr, tt.transformPVCoordinates(pvGCRFiau76), 2.5e-5, 6.9e-7);
 
-        Transform tf = FrameFactory.getEME2000().getTransformTo(FrameFactory.getMEME(false), t0);
+        Transform tf = FramesFactory.getEME2000().getTransformTo(FramesFactory.getMEME(false), t0);
         //J2000 iau76
         PVCoordinates pvJ2000iau76 =
             new PVCoordinates(new Vector3D(-40588150.3620, -11462167.0280, 27147.6490),

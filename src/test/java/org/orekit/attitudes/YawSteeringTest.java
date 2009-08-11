@@ -33,7 +33,7 @@ import org.orekit.bodies.SolarSystemBody;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -115,8 +115,8 @@ public class YawSteeringTest {
         YawSteering yawCompensLaw = new YawSteering(nadirLaw, sun, Vector3D.MINUS_I);
 
         // Get sun direction in satellite frame
-        Rotation rotYaw = yawCompensLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
-        Vector3D sunEME2000 = sun.getPVCoordinates(date, FrameFactory.getEME2000()).getPosition();
+        Rotation rotYaw = yawCompensLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
+        Vector3D sunEME2000 = sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition();
         Vector3D sunSat = rotYaw.applyTo(sunEME2000);
             
         // Check sun is in (X,Z) plane
@@ -139,8 +139,8 @@ public class YawSteeringTest {
             new YawSteering(nadirLaw, SolarSystemBody.getSun(), Vector3D.MINUS_I);
 
         // Get attitude rotations from non yaw compensated / yaw compensated laws
-        Rotation rotNoYaw = nadirLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
-        Rotation rotYaw = yawCompensLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        Rotation rotNoYaw = nadirLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
+        Rotation rotYaw = yawCompensLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
             
         // Compose rotations composition
         Rotation compoRot = rotYaw.applyTo(rotNoYaw.revert());
@@ -168,13 +168,13 @@ public class YawSteeringTest {
             final double mu = 3.9860047e14;
             
             // Reference frame = ITRF 2005
-            frameITRF2005 = FrameFactory.getITRF2005(true);
+            frameITRF2005 = FramesFactory.getITRF2005(true);
 
             //  Satellite position
             circOrbit =
                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
                                        Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                       FrameFactory.getEME2000(), date, mu);
+                                       FramesFactory.getEME2000(), date, mu);
             
             pvSatITRF2005C = circOrbit.getPVCoordinates(frameITRF2005);
             

@@ -23,7 +23,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -57,7 +57,7 @@ public class VisibilityCheck {
             //  Initial state definition : date, orbit
             AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, UTCScale.getInstance());
             double mu =  3.986004415e+14; // gravitation coefficient
-            Frame inertialFrame = FrameFactory.getEME2000(); // inertial frame for orbit definition
+            Frame inertialFrame = FramesFactory.getEME2000(); // inertial frame for orbit definition
             Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
             Vector3D velocity  = new Vector3D(505.8479685, 942.7809215, 7435.922231);
             PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
@@ -69,7 +69,7 @@ public class VisibilityCheck {
             // Earth and frame  
             double ae =  6378137.0; // equatorial radius in meter
             double f  =  1.0 / 298.257223563; // flattening
-            Frame ITRF2005 = FrameFactory.getITRF2005(); // terrestrial frame at an arbitrary date
+            Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
             BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
 
             // Station

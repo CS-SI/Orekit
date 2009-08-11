@@ -21,7 +21,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -114,7 +114,7 @@ public class ImpulseManeuver implements EventDetector {
     public SpacecraftState resetState(final SpacecraftState oldState)
         throws OrekitException {
 
-        final Frame eme2000     = FrameFactory.getEME2000();
+        final Frame eme2000     = FramesFactory.getEME2000();
         final AbsoluteDate date = oldState.getDate();
         final Attitude attitude = oldState.getAttitude();
 

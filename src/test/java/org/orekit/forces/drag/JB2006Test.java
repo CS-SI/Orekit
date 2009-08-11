@@ -34,7 +34,7 @@ import org.orekit.bodies.SolarSystemBody;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -45,7 +45,7 @@ public class JB2006Test {
     @Test
     public void testWithOriginalTestsCases() throws OrekitException, ParseException {
 
-        Frame itrf = FrameFactory.getITRF2005(true);
+        Frame itrf = FramesFactory.getITRF2005(true);
         CelestialBody sun = SolarSystemBody.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
 
@@ -185,7 +185,7 @@ public class JB2006Test {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 01, 01),
                                              TimeComponents.H00,
                                              UTCScale.getInstance());
-        Frame itrf = FrameFactory.getITRF2005();
+        Frame itrf = FramesFactory.getITRF2005();
         CelestialBody sun = SolarSystemBody.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
 
@@ -202,8 +202,8 @@ public class JB2006Test {
         // COMPUTE DENSITY KG/M3 RHO
 
         // alt = 400
-        double roJb = jb.getDensity(date, pos, FrameFactory.getEME2000());
-        double roDtm = dtm.getDensity(date, pos, FrameFactory.getEME2000());
+        double roJb = jb.getDensity(date, pos, FramesFactory.getEME2000());
+        double roDtm = dtm.getDensity(date, pos, FramesFactory.getEME2000());
 
         pos = new Vector3D(3011109.360780633,
                            -5889822.669411588,
@@ -212,8 +212,8 @@ public class JB2006Test {
         // COMPUTE DENSITY KG/M3 RHO
 
         // alt = 400
-        roJb = jb.getDensity(date, pos, FrameFactory.getEME2000());
-        roDtm = dtm.getDensity(date, pos, FrameFactory.getEME2000());
+        roJb = jb.getDensity(date, pos, FramesFactory.getEME2000());
+        roDtm = dtm.getDensity(date, pos, FramesFactory.getEME2000());
 
         pos =new Vector3D(-1033.4793830*1000,
                           7901.2952754*1000,
@@ -222,16 +222,16 @@ public class JB2006Test {
         // COMPUTE DENSITY KG/M3 RHO
 
         // alt = 400
-        roJb = jb.getDensity(date, pos, FrameFactory.getEME2000());
-        roDtm = dtm.getDensity(date, pos, FrameFactory.getEME2000());
+        roJb = jb.getDensity(date, pos, FramesFactory.getEME2000());
+        roDtm = dtm.getDensity(date, pos, FramesFactory.getEME2000());
 
         GeodeticPoint point;
         for (int i = 0; i<367; i++) {
             date = new AbsoluteDate(date, 86400);
             point = new GeodeticPoint(Math.toRadians(40), 0, 300*1000);
             pos = earth.transform(point);
-            roJb = jb.getDensity(date, pos, FrameFactory.getEME2000());
-            roDtm = dtm.getDensity(date, pos, FrameFactory.getEME2000());
+            roJb = jb.getDensity(date, pos, FramesFactory.getEME2000());
+            roDtm = dtm.getDensity(date, pos, FramesFactory.getEME2000());
             assertEquals(roDtm, roJb, roJb);
 
         }

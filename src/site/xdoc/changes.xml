@@ -54,11 +54,11 @@
         on http://www.iers.org/ and http://hpiers.obspm.fr/eop-pc/.
       </action>
       <action dev="pascal" type="update" >
-        the Frame class was split into a FrameFactory class, dealing with the predefined
+        the Frame class was split into a FramesFactory class, dealing with the predefined
         reference frames, and a Frame class for the creation of new frames and the navigation
         through any frames tree. The Frame.getXXX() methods for the predefined reference
         frames are still available, but have been deprecated and will be removed in the future,
-        let's use FrameFactory.getXXX() instead.
+        let's use FramesFactory.getXXX() instead.
       </action>
       <action dev="pascal" type="add" >
         3 new predefined reference frames have been added in Orekit : MEME, TEME and PEF. They

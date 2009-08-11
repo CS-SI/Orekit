@@ -43,12 +43,12 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
         AbsoluteDate date1 = new AbsoluteDate(new DateComponents(2006, 02, 24),
                                               new TimeComponents(15, 38, 00),
                                               UTCScale.getInstance());
-        Frame ITRF2005 = FrameFactory.getITRF2005();
-        Transform t0 = ITRF2005.getTransformTo(FrameFactory.getEME2000(), date1);
+        Frame ITRF2005 = FramesFactory.getITRF2005();
+        Transform t0 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date1);
 
         double dt = 10.0;
         AbsoluteDate date2 = new AbsoluteDate(date1, dt);
-        Transform t1 = ITRF2005.getTransformTo(FrameFactory.getEME2000(), date2);
+        Transform t1 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date2);
         Transform evolution = new Transform(t0.getInverse(), t1);
 
         Vector3D p = new Vector3D(6000,6000,0);
@@ -64,21 +64,21 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
     public void testRoughOrientation() throws OrekitException {
 
         AbsoluteDate date = new AbsoluteDate(2001, 03, 21, 0, 4, 0, UTCScale.getInstance());
-        Frame ITRF2005 = FrameFactory.getITRF2005();
+        Frame ITRF2005 = FramesFactory.getITRF2005();
 
-        Vector3D u = ITRF2005.getTransformTo(FrameFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
+        Vector3D u = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
         assertTrue(Vector3D.angle(u, Vector3D.MINUS_I) < Math.toRadians(0.5));
 
         date = new AbsoluteDate(date, 6 * 3600);
-        u = ITRF2005.getTransformTo(FrameFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
+        u = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
         assertTrue(Vector3D.angle(u, Vector3D.MINUS_J) < Math.toRadians(0.5));
 
         date = new AbsoluteDate(date, 6 * 3600);
-        u = ITRF2005.getTransformTo(FrameFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
+        u = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
         assertTrue(Vector3D.angle(u, Vector3D.PLUS_I) < Math.toRadians(0.5));
 
         date = new AbsoluteDate(date, 6 * 3600);
-        u = ITRF2005.getTransformTo(FrameFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
+        u = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
         assertTrue(Vector3D.angle(u, Vector3D.PLUS_J) < Math.toRadians(0.5));
 
     }
@@ -87,7 +87,7 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
     public void testRoughERA() throws OrekitException {
 
         AbsoluteDate date = new AbsoluteDate(2001, 03, 21, 0, 4, 0, UTCScale.getInstance());
-        TIRF2000Frame TIRF2000 = (TIRF2000Frame) FrameFactory.getTIRF2000();
+        TIRF2000Frame TIRF2000 = (TIRF2000Frame) FramesFactory.getTIRF2000();
 
         assertEquals(180, Math.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
 
@@ -108,7 +108,7 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 10, 14),
                                              new TimeComponents(02, 00, 00),
                                              UTCScale.getInstance());
-        Transform trans = FrameFactory.getEME2000().getTransformTo(FrameFactory.getTIRF2000(), date);
+        Transform trans = FramesFactory.getEME2000().getTransformTo(FramesFactory.getTIRF2000(), date);
 
         // Positions
         Vector3D posTIRF =
@@ -125,8 +125,8 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2003, 10, 14),
                                            new TimeComponents(02, 00, 00),
                                            UTCScale.getInstance());
-        Frame itrf = FrameFactory.getITRF2005();
-        Transform trans = FrameFactory.getEME2000().getTransformTo(itrf, t0);
+        Frame itrf = FramesFactory.getITRF2005();
+        Transform trans = FramesFactory.getEME2000().getTransformTo(itrf, t0);
 
         // Coordinates in EME2000
         PVCoordinates pvEME2000 =
@@ -146,19 +146,19 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
         double h = 0.1;
         Rotation r0 = trans.getRotation();
         AbsoluteDate date = new AbsoluteDate(t0, -2 * h);
-        Rotation evoM2h = FrameFactory.getEME2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
+        Rotation evoM2h = FramesFactory.getEME2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
         double alphaM2h = -evoM2h.getAngle();
         Vector3D axisM2h = evoM2h.getAxis();
         date = new AbsoluteDate(t0, -h);
-        Rotation evoM1h = FrameFactory.getEME2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
+        Rotation evoM1h = FramesFactory.getEME2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
         double alphaM1h = -evoM1h.getAngle();
         Vector3D axisM1h = evoM1h.getAxis();
         date = new AbsoluteDate(t0,  h);
-        Rotation evoP1h = FrameFactory.getEME2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
+        Rotation evoP1h = FramesFactory.getEME2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
         double alphaP1h =  evoP1h.getAngle();
         Vector3D axisP1h = evoP1h.getAxis().negate();
         date = new AbsoluteDate(t0, 2 * h);
-        Rotation evoP2h = FrameFactory.getEME2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
+        Rotation evoP2h = FramesFactory.getEME2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
         double alphaP2h =  evoP2h.getAngle();
         Vector3D axisP2h = evoP2h.getAxis().negate();
         double w = (8 * (alphaP1h - alphaM1h) - (alphaP2h - alphaM2h)) / (12 * h);
@@ -173,7 +173,7 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
     public void testMontenbruck() throws OrekitException {
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(1999, 3, 4), TimeComponents.H00,
                                            GPSScale.getInstance());
-        Transform trans = FrameFactory.getITRF2005().getTransformTo(FrameFactory.getGCRF(), t0);
+        Transform trans = FramesFactory.getITRF2005().getTransformTo(FramesFactory.getGCRF(), t0);
         PVCoordinates pvWGS =
             new PVCoordinates(new Vector3D(19440953.805,16881609.273,-6777115.092),
                               new Vector3D(-811.1827456,-257.3799137,-3068.9508125));

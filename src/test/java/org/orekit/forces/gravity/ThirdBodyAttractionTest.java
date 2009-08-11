@@ -26,7 +26,7 @@ import static org.junit.Assert.assertEquals;
 import org.orekit.bodies.SolarSystemBody;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -51,7 +51,7 @@ public class ThirdBodyAttractionTest {
         Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
                                            Math.tan(0.001745329) * Math.cos(2 * Math.PI / 3),
                                            Math.tan(0.001745329) * Math.sin(2 * Math.PI / 3),
-                                           0.1, 2, FrameFactory.getEME2000(), date, mu);
+                                           0.1, 2, FramesFactory.getEME2000(), date, mu);
         double period = 2 * Math.PI * orbit.getA() * Math.sqrt(orbit.getA() / orbit.getMu());
 
         // set up propagator
@@ -88,7 +88,7 @@ public class ThirdBodyAttractionTest {
             new EquinoctialOrbit(42164000,10e-3,10e-3,
                                       Math.tan(0.001745329) * Math.cos(2 * Math.PI / 3),
                                       Math.tan(0.001745329) * Math.sin(2 * Math.PI / 3),
-                                      0.1, 2, FrameFactory.getEME2000(), date, mu);
+                                      0.1, 2, FramesFactory.getEME2000(), date, mu);
         double period = 2 * Math.PI * orbit.getA() * Math.sqrt(orbit.getA() / orbit.getMu());
 
         // set up propagator

@@ -86,7 +86,7 @@ class MEMEFrame extends Frame {
                         final AbsoluteDate date, final String name)
         throws OrekitException {
 
-        super(applyEOPCorr ? FrameFactory.getGCRF() : FrameFactory.getEME2000(), null , name);
+        super(applyEOPCorr ? FramesFactory.getGCRF() : FramesFactory.getEME2000(), null , name);
 
         eopHistory = applyEOPCorr ? new EOP1980History() : null;
 

@@ -32,7 +32,7 @@ import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.attitudes.InertialLaw;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -52,7 +52,7 @@ public class ConstantThrustManeuverTest {
 
     private CircularOrbit dummyOrbit(AbsoluteDate date) {
         return new CircularOrbit(new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_J),
-                                 FrameFactory.getEME2000(), date, mu);
+                                 FramesFactory.getEME2000(), date, mu);
     }
 
     @Test
@@ -115,7 +115,7 @@ public class ConstantThrustManeuverTest {
                                                        UTCScale.getInstance());
         final Orbit orbit =
             new KeplerianOrbit(a, e, i, omega, OMEGA, lv, KeplerianOrbit.TRUE_ANOMALY,
-                               FrameFactory.getEME2000(), initDate, mu);
+                               FramesFactory.getEME2000(), initDate, mu);
         final SpacecraftState initialState =
             new SpacecraftState(orbit, law.getState(initDate, orbit.getPVCoordinates(), orbit.getFrame()), mass);
 

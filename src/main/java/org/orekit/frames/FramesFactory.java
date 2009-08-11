@@ -25,7 +25,7 @@ import org.orekit.time.AbsoluteDate;
 
 /** Predefined reference frames class.
  *
- * <h5> FrameFactory Presentation </h5>
+ * <h5> FramesFactory Presentation </h5>
  * <p>
  * Several predefined reference frames are implemented in OREKIT.
  * They are linked together in a tree with the <i>Geocentric
@@ -99,7 +99,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
-public class FrameFactory implements Serializable {
+public class FramesFactory implements Serializable {
 
     /** Serialiazable UID. */
     private static final long serialVersionUID = 1720647682459923909L;
@@ -149,7 +149,7 @@ public class FrameFactory implements Serializable {
      * nor a default constructor. This private constructor prevents
      * the compiler from generating one automatically.</p>
      */
-    private FrameFactory() {
+    private FramesFactory() {
     }
 
     /** Get the unique GCRF frame.
@@ -166,7 +166,7 @@ public class FrameFactory implements Serializable {
      * @return the unique instance of the EME2000 frame
      */
     public static Frame getEME2000() {
-        synchronized(FrameFactory.class) {
+        synchronized(FramesFactory.class) {
 
             if (eme2000 == null) {
                 eme2000 = new EME2000Frame("EME2000");
@@ -193,7 +193,7 @@ public class FrameFactory implements Serializable {
      * library cannot be read.
      */
     public static Frame getITRF2005(final boolean ignoreTidalEffects) throws OrekitException {
-        synchronized(FrameFactory.class) {
+        synchronized(FramesFactory.class) {
 
             if (ignoreTidalEffects) {
                 if (itrf2005WithoutTidalEffects == null) {
@@ -228,7 +228,7 @@ public class FrameFactory implements Serializable {
      * library cannot be read.
      */
     public static Frame getTIRF2000(final boolean ignoreTidalEffects) throws OrekitException {
-        synchronized(FrameFactory.class) {
+        synchronized(FramesFactory.class) {
 
             if (ignoreTidalEffects) {
                 if (tirf2000WithoutTidalEffects == null) {
@@ -253,7 +253,7 @@ public class FrameFactory implements Serializable {
      * library cannot be read.
      */
     public static Frame getCIRF2000() throws OrekitException {
-        synchronized(FrameFactory.class) {
+        synchronized(FramesFactory.class) {
 
             if (cirf == null) {
                 cirf = new CIRF2000Frame(AbsoluteDate.J2000_EPOCH, "CIRF2000");
@@ -268,7 +268,7 @@ public class FrameFactory implements Serializable {
      * @return the selected reference frame singleton.
      */
     public static Frame getVeis1950() {
-        synchronized(FrameFactory.class) {
+        synchronized(FramesFactory.class) {
 
             if (veis1950 == null) {
                 veis1950 = new Frame(getEME2000(),
@@ -298,7 +298,7 @@ public class FrameFactory implements Serializable {
      * library cannot be read.
      */
     public static Frame getPEF(final boolean applyEOPCorr) throws OrekitException {
-        synchronized(FrameFactory.class) {
+        synchronized(FramesFactory.class) {
 
             if (applyEOPCorr) {
                 if (pefWithEopCorrections == null) {
@@ -330,7 +330,7 @@ public class FrameFactory implements Serializable {
      * library cannot be read.
      */
     public static Frame getTEME(final boolean applyEOPCorr) throws OrekitException {
-        synchronized(FrameFactory.class) {
+        synchronized(FramesFactory.class) {
 
             if (applyEOPCorr) {
                 if (temeWithEopCorrections == null) {
@@ -361,7 +361,7 @@ public class FrameFactory implements Serializable {
      * @exception OrekitException if EOP parameters are desired but cannot be read
      */
     public static Frame getMEME(final boolean applyEOPCorr) throws OrekitException {
-        synchronized(FrameFactory.class) {
+        synchronized(FramesFactory.class) {
 
             if (applyEOPCorr) {
                 if (memeWithEopCorrections == null) {

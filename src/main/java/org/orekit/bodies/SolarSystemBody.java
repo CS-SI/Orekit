@@ -22,7 +22,7 @@ import java.util.TreeSet;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
@@ -332,7 +332,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MOON);
                 final double earthGM =
                     JPLEphemeridesLoader.getEarthMoonMassRatio() * moonGM;
-                earthMoonBarycenter = new SolarSystemBody(earthGM + moonGM, FrameFactory.getEME2000(),
+                earthMoonBarycenter = new SolarSystemBody(earthGM + moonGM, FramesFactory.getEME2000(),
                                                           JPLEphemeridesLoader.EphemerisType.MOON,
                                                           "Earth-Moon centered EME2000") {
 
@@ -376,7 +376,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MOON);
                 final double earthGM =
                     JPLEphemeridesLoader.getEarthMoonMassRatio() * moonGM;
-                earth = new AbstractCelestialBody(earthGM, FrameFactory.getEME2000()) {
+                earth = new AbstractCelestialBody(earthGM, FramesFactory.getEME2000()) {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = -2542177517458975694L;

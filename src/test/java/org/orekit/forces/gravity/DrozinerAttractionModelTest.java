@@ -42,7 +42,7 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -70,9 +70,9 @@ public class DrozinerAttractionModelTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
                                              new TimeComponents(13, 59, 27.816),
                                              UTCScale.getInstance());
-        Transform itrfToEME2000 = ITRF2005.getTransformTo(FrameFactory.getEME2000(), date);
+        Transform itrfToEME2000 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date);
         Vector3D pole           = itrfToEME2000.transformVector(Vector3D.PLUS_K);
-        Frame poleAligned       = new Frame(FrameFactory.getEME2000(),
+        Frame poleAligned       = new Frame(FramesFactory.getEME2000(),
                                             new Transform(new Rotation(pole, Vector3D.PLUS_K)),
                                             "pole aligned");
 
@@ -115,7 +115,7 @@ public class DrozinerAttractionModelTest {
             AbsoluteDate current = currentState.getDate();
             Vector3D sunPos;
             try {
-                sunPos = sun.getPVCoordinates(current , FrameFactory.getEME2000()).getPosition();
+                sunPos = sun.getPVCoordinates(current , FramesFactory.getEME2000()).getPosition();
             } catch (OrekitException e) {
                 throw new PropagationException(e.getLocalizedMessage(), e);
             }
@@ -140,9 +140,9 @@ public class DrozinerAttractionModelTest {
         Vector3D position = new Vector3D(3220103., 69623., 6449822.);
         Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
 
-        Transform itrfToEME2000 = ITRF2005.getTransformTo(FrameFactory.getEME2000(), date);
+        Transform itrfToEME2000 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date);
         Vector3D pole           = itrfToEME2000.transformVector(Vector3D.PLUS_K);
-        Frame poleAligned       = new Frame(FrameFactory.getEME2000(),
+        Frame poleAligned       = new Frame(FramesFactory.getEME2000(),
                                             new Transform(new Rotation(pole, Vector3D.PLUS_K)),
                                             "pole aligned");
 
@@ -222,7 +222,7 @@ public class DrozinerAttractionModelTest {
         double OMEGA = Math.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                                        0, KeplerianOrbit.MEAN_ANOMALY,
-                                                       FrameFactory.getEME2000(), date, mu);
+                                                       FramesFactory.getEME2000(), date, mu);
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(100));
         propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, ae, mu, C, S));
         propagator.setInitialState(new SpacecraftState(orbit));
@@ -254,7 +254,7 @@ public class DrozinerAttractionModelTest {
             c40 =  1.61994537014e-6;
             c50 =  2.27888264414e-7;
             c60 = -5.40618601332e-7;
-            ITRF2005 = FrameFactory.getITRF2005();
+            ITRF2005 = FramesFactory.getITRF2005();
             double[] absTolerance = {
                 0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
             };

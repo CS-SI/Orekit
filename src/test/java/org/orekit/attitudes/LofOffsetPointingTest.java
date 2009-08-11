@@ -36,7 +36,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -68,26 +68,26 @@ public class LofOffsetPointingTest {
         final CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(0.), Math.toRadians(270.),
                                    Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   FrameFactory.getEME2000(), date, mu);
+                                   FramesFactory.getEME2000(), date, mu);
         final PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
 
         // Create lof aligned law
         //************************
         final LofOffset lofLaw = LofOffset.LOF_ALIGNED;
         final LofOffsetPointing lofPointing = new LofOffsetPointing(earthSpheric, lofLaw, Vector3D.PLUS_K);
-        final Rotation lofRot = lofPointing.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        final Rotation lofRot = lofPointing.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
  
         // Compare to body center pointing law
         //*************************************
         final BodyCenterPointing centerLaw = new BodyCenterPointing(earthSpheric.getBodyFrame());
-        final Rotation centerRot = centerLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        final Rotation centerRot = centerLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
         final double angleBodyCenter = centerRot.applyInverseTo(lofRot).getAngle();
         assertEquals(0., angleBodyCenter, Utils.epsilonAngle);
 
         // Compare to nadir pointing law
         //*******************************
         final NadirPointing nadirLaw = new NadirPointing(earthSpheric);
-        final Rotation nadirRot = nadirLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        final Rotation nadirRot = nadirLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
         final double angleNadir = nadirRot.applyInverseTo(lofRot).getAngle();
         assertEquals(0., angleNadir, Utils.epsilonAngle);
 
@@ -98,7 +98,7 @@ public class LofOffsetPointingTest {
         final CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(0.), Math.toRadians(270.),
                                    Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   FrameFactory.getEME2000(), date, mu);
+                                   FramesFactory.getEME2000(), date, mu);
         final LofOffset upsideDown = new LofOffset(RotationOrder.XYX, Math.PI, 0, 0);
         try {
             final LofOffsetPointing pointing = new LofOffsetPointing(earthSpheric, upsideDown, Vector3D.PLUS_K);
@@ -127,7 +127,7 @@ public class LofOffsetPointingTest {
             mu = 3.9860047e14;
             
             // Reference frame = ITRF 2005
-            frameItrf2005 = FrameFactory.getITRF2005(true);
+            frameItrf2005 = FramesFactory.getITRF2005(true);
 
             // Elliptic earth shape
             earthSpheric =

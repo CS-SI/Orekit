@@ -30,14 +30,14 @@ import org.orekit.bodies.SolarSystemBody;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 
 public class DTM2000Test {
 
     @Test
     public void testWithOriginalTestsCases() throws OrekitException, ParseException {
 
-        Frame itrf = FrameFactory.getITRF2005(true);
+        Frame itrf = FramesFactory.getITRF2005(true);
         CelestialBody sun = SolarSystemBody.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
         SolarInputs97to05 in = SolarInputs97to05.getInstance();

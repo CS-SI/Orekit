@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.junit.Test;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -43,7 +43,7 @@ public class SphericalSpacecraftTest {
         Orbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(raan),
                                    Math.toRadians(5.300 - raan), CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
-                                   FrameFactory.getEME2000(), date, mu);
+                                   FramesFactory.getEME2000(), date, mu);
         SpacecraftState state = new SpacecraftState(circ);
         SphericalSpacecraft s = new SphericalSpacecraft(1.0, 2.0, 3.0, 4.0);
         Vector3D[] directions = { Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.PLUS_K };
@@ -76,7 +76,7 @@ public class SphericalSpacecraftTest {
                      Orbit circ =
                          new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(raan),
                                                 Math.toRadians(5.300 - raan), CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
-                                                FrameFactory.getEME2000(), date, mu);
+                                                FramesFactory.getEME2000(), date, mu);
                      SpacecraftState state = new SpacecraftState(circ);
         SphericalSpacecraft s = new SphericalSpacecraft(0, 0, 0, 0);
         s.setCrossSection(1.0);

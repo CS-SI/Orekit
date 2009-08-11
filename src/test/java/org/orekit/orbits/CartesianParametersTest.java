@@ -27,7 +27,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.orekit.Utils;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -51,7 +51,7 @@ public class CartesianParametersTest {
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
         double mu = 3.9860047e14;
 
-        CartesianOrbit p = new CartesianOrbit(pvCoordinates, FrameFactory.getEME2000(), date, mu);
+        CartesianOrbit p = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
         assertEquals(p.getPVCoordinates().getPosition().getX(), pvCoordinates.getPosition().getX(), Utils.epsilonTest * Math.abs(pvCoordinates.getPosition().getX()));
         assertEquals(p.getPVCoordinates().getPosition().getY(), pvCoordinates.getPosition().getY(), Utils.epsilonTest * Math.abs(pvCoordinates.getPosition().getY()));
@@ -68,7 +68,7 @@ public class CartesianParametersTest {
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
 
-        CartesianOrbit p = new CartesianOrbit(pvCoordinates, FrameFactory.getEME2000(), date, mu);
+        CartesianOrbit p = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
         assertEquals(42255170.0028257,  p.getA(), Utils.epsilonTest * p.getA());
         assertEquals(0.592732497856475e-03,  p.getEquinoctialEx(), Utils.epsilonE * Math.abs(p.getE()));
@@ -86,7 +86,7 @@ public class CartesianParametersTest {
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
         double mu = 3.9860047e14;
 
-        CartesianOrbit p = new CartesianOrbit(pvCoordinates, FrameFactory.getEME2000(), date, mu);
+        CartesianOrbit p = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
         KeplerianOrbit kep = new KeplerianOrbit(p);
 
         assertEquals(22979265.3030773,  p.getA(), Utils.epsilonTest  * p.getA());
@@ -110,7 +110,7 @@ public class CartesianParametersTest {
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
 
-        CartesianOrbit p = new CartesianOrbit(pvCoordinates, FrameFactory.getEME2000(), date, mu);
+        CartesianOrbit p = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
         double e       = p.getE();
         double v       = new KeplerianOrbit(p).getTrueAnomaly();
@@ -142,7 +142,7 @@ public class CartesianParametersTest {
 
         Vector3D momentum = Vector3D.crossProduct(position, velocity).normalize();
 
-        EquinoctialOrbit p = new EquinoctialOrbit(pvCoordinates, FrameFactory.getEME2000(), date, mu);
+        EquinoctialOrbit p = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
         double apogeeRadius  = p.getA() * (1 + p.getE());
         double perigeeRadius = p.getA() * (1 - p.getE());

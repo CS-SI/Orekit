@@ -68,7 +68,7 @@ Frames
  
 * Predefined Frames
 
-  The <<<FrameFactory>>> class implements several predefined reference frames.
+  The <<<FramesFactory>>> class provides several predefined reference frames.
 
   The user can retrieve them using various static methods: <<<getGCRF()>>>, <<<getEME2000()>>>,
   <<<getCIRF2000()>>>, <<<getTIRF2000()>>>, <<<getITRF2005()>>>, <<<getMEME()>>>,

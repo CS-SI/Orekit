@@ -29,7 +29,7 @@ import static org.junit.Assert.fail;
 import org.orekit.errors.FrameAncestorException;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 
@@ -38,7 +38,7 @@ public class FrameTest {
     @Test
     public void testSameFrameRoot() throws OrekitException {
         Random random = new Random(0x29448c7d58b95565l);
-        Frame  frame  = FrameFactory.getEME2000();
+        Frame  frame  = FramesFactory.getEME2000();
         checkNoTransform(frame.getTransformTo(frame, new AbsoluteDate()), random);
     }
 
@@ -46,7 +46,7 @@ public class FrameTest {
     public void testSameFrameNoRoot() throws OrekitException {
         Random random = new Random(0xc6e88d0f53e29116l);
         Transform t   = randomTransform(random);
-        Frame frame   = new Frame(FrameFactory.getEME2000(), t, null);
+        Frame frame   = new Frame(FramesFactory.getEME2000(), t, null);
         checkNoTransform(frame.getTransformTo(frame, new AbsoluteDate()), random);
     }
 
@@ -54,8 +54,8 @@ public class FrameTest {
     public void testSimilarFrames() throws OrekitException {
         Random random = new Random(0x1b868f67a83666e5l);
         Transform t   = randomTransform(random);
-        Frame frame1  = new Frame(FrameFactory.getEME2000(), t, null);
-        Frame frame2  = new Frame(FrameFactory.getEME2000(), t, null);
+        Frame frame1  = new Frame(FramesFactory.getEME2000(), t, null);
+        Frame frame2  = new Frame(FramesFactory.getEME2000(), t, null);
         checkNoTransform(frame1.getTransformTo(frame2, new AbsoluteDate()), random);
     }
 
@@ -63,8 +63,8 @@ public class FrameTest {
     public void testFromParent() throws OrekitException {
         Random random = new Random(0xb92fba1183fe11b8l);
         Transform fromEME2000  = randomTransform(random);
-        Frame frame = new Frame(FrameFactory.getEME2000(), fromEME2000, null);
-        Transform toEME2000 = frame.getTransformTo(FrameFactory.getEME2000(), new AbsoluteDate());
+        Frame frame = new Frame(FramesFactory.getEME2000(), fromEME2000, null);
+        Transform toEME2000 = frame.getTransformTo(FramesFactory.getEME2000(), new AbsoluteDate());
         checkNoTransform(new Transform(fromEME2000, toEME2000), random);
     }
 
@@ -75,9 +75,9 @@ public class FrameTest {
         Transform t2  = randomTransform(random);
         Transform t3  = randomTransform(random);
         Frame frame1 =
-            new Frame(FrameFactory.getEME2000(), new Transform(new Transform(t1, t2), t3), null);
+            new Frame(FramesFactory.getEME2000(), new Transform(new Transform(t1, t2), t3), null);
         Frame frame2 =
-            new Frame(new Frame(new Frame(FrameFactory.getEME2000(), t1, null), t2, null), t3, null);
+            new Frame(new Frame(new Frame(FramesFactory.getEME2000(), t1, null), t2, null), t3, null);
         checkNoTransform(frame1.getTransformTo(frame2, new AbsoluteDate()), random);
     }
 
@@ -89,7 +89,7 @@ public class FrameTest {
         Transform t2  = randomTransform(random);
         Transform t3  = randomTransform(random);
 
-        Frame R1 = new Frame(FrameFactory.getEME2000(),t1,"R1");
+        Frame R1 = new Frame(FramesFactory.getEME2000(),t1,"R1");
         Frame R2 = new Frame(R1,t2,"R2");
         Frame R3 = new Frame(R2,t3,"R3");
 
@@ -103,7 +103,7 @@ public class FrameTest {
 
     @Test
     public void testVeis1950() throws OrekitException {
-        Transform t = FrameFactory.getVeis1950().getTransformTo(FrameFactory.getEME2000(), new AbsoluteDate());
+        Transform t = FramesFactory.getVeis1950().getTransformTo(FramesFactory.getEME2000(), new AbsoluteDate());
         Vector3D i50    = t.transformVector(Vector3D.PLUS_I);
         Vector3D j50    = t.transformVector(Vector3D.PLUS_J);
         Vector3D k50    = t.transformVector(Vector3D.PLUS_K);
@@ -124,7 +124,7 @@ public class FrameTest {
     @Test
     public void testIsChildOf() throws OrekitException{
         Random random = new Random(0xb7d1a155e726da78l);
-        Frame eme2000 = FrameFactory.getEME2000();
+        Frame eme2000 = FramesFactory.getEME2000();
 
         Frame f1 = new Frame(eme2000, randomTransform(random), "f1");
         Frame f2 = new Frame(f1     , randomTransform(random), "f2");
@@ -160,7 +160,7 @@ public class FrameTest {
     @Test
     public void testUpdateTransform() throws OrekitException {
         Random random     = new Random(0x2f6769c23e53e96el);
-        Frame eme2000     = FrameFactory.getEME2000();
+        Frame eme2000     = FramesFactory.getEME2000();
         AbsoluteDate date = new AbsoluteDate();
 
         Frame f1 = new Frame(eme2000, randomTransform(random), "f1");

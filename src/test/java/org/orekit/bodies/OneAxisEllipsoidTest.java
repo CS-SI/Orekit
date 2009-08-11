@@ -33,7 +33,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -113,7 +113,7 @@ public class OneAxisEllipsoidTest {
     public void testGeoCar() throws OrekitException {
         OneAxisEllipsoid model =
             new OneAxisEllipsoid(6378137.0, 1.0 / 298.257222101,
-                                 FrameFactory.getITRF2005());
+                                 FramesFactory.getITRF2005());
         GeodeticPoint nsp =
             new GeodeticPoint(0.852479154923577, 0.0423149994747243, 111.6);
         Vector3D p = model.transform(nsp);
@@ -125,7 +125,7 @@ public class OneAxisEllipsoidTest {
     @Test
     public void testLineIntersection() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Frame frame = FrameFactory.getITRF2005();    
+        Frame frame = FramesFactory.getITRF2005();    
         
         OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 0.9, frame);
         Vector3D point         = new Vector3D(0.0, 93.7139699, 3.5930796);
@@ -174,7 +174,7 @@ public class OneAxisEllipsoidTest {
     @Test
     public void testNoLineIntersection() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Frame frame = FrameFactory.getITRF2005(true);    
+        Frame frame = FramesFactory.getITRF2005(true);    
         OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 0.9, frame);
         Vector3D point     = new Vector3D(0.0, 93.7139699, 3.5930796);
         Vector3D direction = new Vector3D(0.0, 9.0, -2.0);
@@ -188,7 +188,7 @@ public class OneAxisEllipsoidTest {
                                              TimeComponents.H12,
                                              UTCScale.getInstance());
         
-        Frame frame = FrameFactory.getITRF2005();
+        Frame frame = FramesFactory.getITRF2005();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frame);
         
         // Satellite on polar position
@@ -197,11 +197,11 @@ public class OneAxisEllipsoidTest {
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., Math.toRadians(90.), Math.toRadians(60.),
                                    Math.toRadians(90.), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   FrameFactory.getEME2000(), date, mu);
+                                   FramesFactory.getEME2000(), date, mu);
       
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
-        PVCoordinates pvSatItrf  = frame.getTransformTo(FrameFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
+        PVCoordinates pvSatItrf  = frame.getTransformTo(FramesFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
         Vector3D pSatItrf  = pvSatItrf.getPosition();
         
         // Test first visible surface points
@@ -239,11 +239,11 @@ public class OneAxisEllipsoidTest {
         circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., Math.toRadians(1.e-4), Math.toRadians(0.),
                                    Math.toRadians(0.), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   FrameFactory.getEME2000(), date, mu);
+                                   FramesFactory.getEME2000(), date, mu);
       
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
         pvSatEME2000 = circ.getPVCoordinates();
-        pvSatItrf  = frame.getTransformTo(FrameFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
+        pvSatItrf  = frame.getTransformTo(FramesFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
         pSatItrf  = pvSatItrf.getPosition();
         
         // Test first visible surface points
@@ -285,11 +285,11 @@ public class OneAxisEllipsoidTest {
         circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., Math.toRadians(50.), Math.toRadians(0.),
                                    Math.toRadians(90.), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   FrameFactory.getEME2000(), date, mu);
+                                   FramesFactory.getEME2000(), date, mu);
         
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
         pvSatEME2000 = circ.getPVCoordinates();
-        pvSatItrf  = frame.getTransformTo(FrameFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
+        pvSatItrf  = frame.getTransformTo(FramesFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
         pSatItrf  = pvSatItrf.getPosition();
         
         // Test first visible surface points
@@ -328,7 +328,7 @@ public class OneAxisEllipsoidTest {
         throws OrekitException {
 
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Frame frame = FrameFactory.getITRF2005(true);    
+        Frame frame = FramesFactory.getITRF2005(true);    
         OneAxisEllipsoid model = new OneAxisEllipsoid(ae, f, frame);
         GeodeticPoint gp = model.transform(new Vector3D(x, y, z), frame, date);
         assertEquals(longitude, MathUtils.normalizeAngle(gp.getLongitude(), longitude), 1.0e-10);

@@ -31,8 +31,8 @@ public class ITRF2005FrameTest {
     @Test
     public void testTidalEffects() throws OrekitException {
 
-        final Frame itrfWith    = FrameFactory.getITRF2005(false);
-        final Frame itrfWithout = FrameFactory.getITRF2005(true);
+        final Frame itrfWith    = FramesFactory.getITRF2005(false);
+        final Frame itrfWithout = FramesFactory.getITRF2005(true);
         final AbsoluteDate date0 = new AbsoluteDate(2007, 10, 20, UTCScale.getInstance());
 
         double minCorrection = Double.POSITIVE_INFINITY;

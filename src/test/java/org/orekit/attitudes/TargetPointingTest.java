@@ -34,7 +34,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.propagation.SpacecraftState;
@@ -71,7 +71,7 @@ public class TargetPointingTest {
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
                                    Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   FrameFactory.getEME2000(), date, mu);
+                                   FramesFactory.getEME2000(), date, mu);
         
         // Transform satellite position to position/velocity parameters in EME2000 frame
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
@@ -93,10 +93,10 @@ public class TargetPointingTest {
         
         // Check that both attitude are the same 
         // Get satellite rotation for target pointing law 
-        Rotation rotPv = pvTargetAttitudeLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        Rotation rotPv = pvTargetAttitudeLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
 
         // Get satellite rotation for nadir pointing law
-        Rotation rotGeo = geoTargetAttitudeLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        Rotation rotGeo = geoTargetAttitudeLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
 
         // Rotations composition
         Rotation rotCompo = rotGeo.applyInverseTo(rotPv);
@@ -115,7 +115,7 @@ public class TargetPointingTest {
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
                                    Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   FrameFactory.getEME2000(), date, mu);
+                                   FramesFactory.getEME2000(), date, mu);
         
         // Transform satellite position to position/velocity parameters in EME2000 frame 
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
@@ -133,8 +133,8 @@ public class TargetPointingTest {
         TargetPointing geoTargetAttitudeLaw = new TargetPointing(geoTargetITRF2005, earthShape);
         
         // Check that observed ground point is the same as defined target 
-        PVCoordinates pvObservedEME2000 = geoTargetAttitudeLaw.getObservedGroundPoint(date, pvSatEME2000, FrameFactory.getEME2000());
-        GeodeticPoint geoObserved = earthShape.transform(pvObservedEME2000.getPosition(), FrameFactory.getEME2000(), date);
+        PVCoordinates pvObservedEME2000 = geoTargetAttitudeLaw.getObservedGroundPoint(date, pvSatEME2000, FramesFactory.getEME2000());
+        GeodeticPoint geoObserved = earthShape.transform(pvObservedEME2000.getPosition(), FramesFactory.getEME2000(), date);
 
         assertEquals(geoObserved.getLongitude(), geoTargetITRF2005.getLongitude(), Utils.epsilonAngle);
         assertEquals(geoObserved.getLatitude(), geoTargetITRF2005.getLatitude(), Utils.epsilonAngle);
@@ -155,7 +155,7 @@ public class TargetPointingTest {
         CircularOrbit circOrbit =
             new CircularOrbit(7178000.0, 1.e-5, 0., Math.toRadians(50.), 0.,
                                    Math.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
-                                   FrameFactory.getEME2000(), date, mu);
+                                   FramesFactory.getEME2000(), date, mu);
 
         // Transform satellite position to position/velocity parameters in EME2000 frame
         PVCoordinates pvSatEME2000 = circOrbit.getPVCoordinates();
@@ -181,10 +181,10 @@ public class TargetPointingTest {
         // with nadir pointing rotation shall be identity. 
         
         // Get satellite rotation from target pointing law at date
-        Rotation rotTarget = targetAttitudeLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        Rotation rotTarget = targetAttitudeLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
 
         // Get satellite rotation from nadir pointing law at date
-        Rotation rotNadir = nadirAttitudeLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        Rotation rotNadir = nadirAttitudeLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
 
         // Compose attitude rotations
         Rotation rotCompo = rotTarget.applyInverseTo(rotNadir);
@@ -203,10 +203,10 @@ public class TargetPointingTest {
         PVCoordinates extrapPvSatEME2000 = extrapOrbit.getPVCoordinates();
         
         // Get satellite rotation from target pointing law at date + 1min
-        Rotation extrapRotTarget = targetAttitudeLaw.getState(extrapDate, extrapPvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        Rotation extrapRotTarget = targetAttitudeLaw.getState(extrapDate, extrapPvSatEME2000, FramesFactory.getEME2000()).getRotation();
         
         // Get satellite rotation from nadir pointing law at date
-        Rotation extrapRotNadir = nadirAttitudeLaw.getState(extrapDate, extrapPvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        Rotation extrapRotNadir = nadirAttitudeLaw.getState(extrapDate, extrapPvSatEME2000, FramesFactory.getEME2000()).getRotation();
 
         // Compose attitude rotations
         Rotation extrapRotCompo = extrapRotTarget.applyInverseTo(extrapRotNadir);
@@ -226,7 +226,7 @@ public class TargetPointingTest {
                                              UTCScale.getInstance());
         
         // Reference frame = ITRF 2005
-        Frame frameITRF2005 = FrameFactory.getITRF2005(true);
+        Frame frameITRF2005 = FramesFactory.getITRF2005(true);
 
         // Elliptic earth shape 
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
@@ -241,7 +241,7 @@ public class TargetPointingTest {
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
                                    Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   FrameFactory.getEME2000(), date, mu);
+                                   FramesFactory.getEME2000(), date, mu);
         
         // Transform satellite position to position/velocity parameters in EME2000 frame
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
@@ -249,7 +249,7 @@ public class TargetPointingTest {
         //  Pointing direction
         // ********************
         // Get satellite attitude rotation, i.e rotation from EME2000 frame to satellite frame
-        Rotation rotSatEME2000 = targetAttitudeLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        Rotation rotSatEME2000 = targetAttitudeLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
         
         // Transform Z axis from satellite frame to EME2000 
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);
@@ -277,7 +277,7 @@ public class TargetPointingTest {
         CircularOrbit circ =
             new CircularOrbit(42164000.0, 0.5e-8, -0.5e-8, 0., 0.,
                                    Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   FrameFactory.getEME2000(), date, mu);
+                                   FramesFactory.getEME2000(), date, mu);
         
         // Transform satellite position to position/velocity parameters in EME2000 frame
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
@@ -287,7 +287,7 @@ public class TargetPointingTest {
         NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
         
         // Get observed ground point from nadir pointing law
-        PVCoordinates pvNadirObservedEME2000 = nadirAttitudeLaw.getObservedGroundPoint(date, pvSatEME2000, FrameFactory.getEME2000());
+        PVCoordinates pvNadirObservedEME2000 = nadirAttitudeLaw.getObservedGroundPoint(date, pvSatEME2000, FramesFactory.getEME2000());
         PVCoordinates pvNadirObservedITRF2005 = eme2000ToItrf.transformPVCoordinates(pvNadirObservedEME2000);
         
         GeodeticPoint geoNadirObserved = earthShape.transform(pvNadirObservedITRF2005.getPosition(), frameITRF2005, date);
@@ -297,7 +297,7 @@ public class TargetPointingTest {
         TargetPointing targetLawRef = new TargetPointing(frameITRF2005, pvNadirObservedITRF2005);
         
         // Get attitude rotation in EME2000
-        Rotation rotSatRefEME2000 = targetLawRef.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        Rotation rotSatRefEME2000 = targetLawRef.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
       
         // Create target pointing attitude law with target 5° from nadir target 
         // ******************************************************************** 
@@ -307,7 +307,7 @@ public class TargetPointingTest {
         TargetPointing targetLaw = new TargetPointing(frameITRF2005, pvTargetITRF2005C);
         
         // Get attitude rotation 
-        Rotation rotSatEME2000 = targetLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        Rotation rotSatEME2000 = targetLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
         
         // Compute difference between both attitude laws 
         // *********************************************
@@ -339,10 +339,10 @@ public class TargetPointingTest {
             mu = 3.9860047e14;
             
             // Reference frame = ITRF 2005
-            frameITRF2005 = FrameFactory.getITRF2005(true);
+            frameITRF2005 = FramesFactory.getITRF2005(true);
 
             // Transform from EME2000 to ITRF2005
-            eme2000ToItrf = FrameFactory.getEME2000().getTransformTo(frameITRF2005, date);
+            eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(frameITRF2005, date);
 
         } catch (OrekitException oe) {
             fail(oe.getMessage());

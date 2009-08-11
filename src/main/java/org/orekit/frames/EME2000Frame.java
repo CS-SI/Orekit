@@ -52,7 +52,7 @@ class EME2000Frame extends Frame {
      */
     protected EME2000Frame(final String name) {
 
-        super(FrameFactory.getGCRF(), null, name);
+        super(FramesFactory.getGCRF(), null, name);
 
         // build the bias transform
         final Rotation r1 = new Rotation(Vector3D.PLUS_I, D_EPSILON_B);

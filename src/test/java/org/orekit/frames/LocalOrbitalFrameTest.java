@@ -39,20 +39,20 @@ public class LocalOrbitalFrameTest {
         AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
                                                 6.2, KeplerianOrbit.TRUE_ANOMALY, 
-                                                FrameFactory.getGCRF(), initDate,
+                                                FramesFactory.getGCRF(), initDate,
                                                 3.986004415e14);
         Propagator propagator = new KeplerianPropagator(initialOrbit);
         LocalOrbitalFrame tnw =
-            new LocalOrbitalFrame(FrameFactory.getGCRF(), LocalOrbitalFrame.LOFType.TNW,
+            new LocalOrbitalFrame(FramesFactory.getGCRF(), LocalOrbitalFrame.LOFType.TNW,
                                   propagator, "TNW");
 
         AbsoluteDate date = new AbsoluteDate(initDate, 400);
-        Transform t = tnw.getTransformTo(FrameFactory.getGCRF(), date);
+        Transform t = tnw.getTransformTo(FramesFactory.getGCRF(), date);
         PVCoordinates pv1 = t.transformPVCoordinates(PVCoordinates.ZERO);
         Vector3D p1 = pv1.getPosition();
         Vector3D v1 = pv1.getVelocity();
         PVCoordinates pv2 =
-            propagator.propagate(date).getPVCoordinates(FrameFactory.getGCRF());
+            propagator.propagate(date).getPVCoordinates(FramesFactory.getGCRF());
         Vector3D p2 = pv2.getPosition();
         Vector3D v2 = pv2.getVelocity();
         Vector3D momentum = Vector3D.crossProduct(p2, v2);
@@ -76,20 +76,20 @@ public class LocalOrbitalFrameTest {
         AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
                                                 6.2, KeplerianOrbit.TRUE_ANOMALY, 
-                                                FrameFactory.getGCRF(), initDate,
+                                                FramesFactory.getGCRF(), initDate,
                                                 3.986004415e14);
         Propagator propagator = new KeplerianPropagator(initialOrbit);
         LocalOrbitalFrame tnw =
-            new LocalOrbitalFrame(FrameFactory.getGCRF(), LocalOrbitalFrame.LOFType.QSW,
+            new LocalOrbitalFrame(FramesFactory.getGCRF(), LocalOrbitalFrame.LOFType.QSW,
                                   propagator, "QSW");
 
         AbsoluteDate date = new AbsoluteDate(initDate, 400);
-        Transform t = tnw.getTransformTo(FrameFactory.getGCRF(), date);
+        Transform t = tnw.getTransformTo(FramesFactory.getGCRF(), date);
         PVCoordinates pv1 = t.transformPVCoordinates(PVCoordinates.ZERO);
         Vector3D p1 = pv1.getPosition();
         Vector3D v1 = pv1.getVelocity();
         PVCoordinates pv2 =
-            propagator.propagate(date).getPVCoordinates(FrameFactory.getGCRF());
+            propagator.propagate(date).getPVCoordinates(FramesFactory.getGCRF());
         Vector3D p2 = pv2.getPosition();
         Vector3D v2 = pv2.getVelocity();
         Vector3D momentum = Vector3D.crossProduct(p2, v2);

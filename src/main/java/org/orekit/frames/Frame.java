@@ -83,8 +83,8 @@ public class Frame implements Serializable {
      * frame to instance. This means that the two following frames
      * are similar:</p>
      * <pre>
-     * Frame frame1 = new Frame(FrameFactory.getGCRF(), new Transform(t1, t2));
-     * Frame frame2 = new Frame(new Frame(FrameFactory.getGCRF(), t1), t2);
+     * Frame frame1 = new Frame(FramesFactory.getGCRF(), new Transform(t1, t2));
+     * Frame frame2 = new Frame(new Frame(FramesFactory.getGCRF(), t1), t2);
      * </pre>
      * @param parent parent frame (must be non-null)
      * @param transform transform from parent frame to instance
@@ -353,68 +353,68 @@ public class Frame implements Serializable {
      * <p>The J2000 frame is also called the EME2000 frame.
      * The later denomination is preferred in Orekit.</p>
      * @return the unique instance of the J2000 frame
-     * @deprecated as of 4.0, replaced by {@link FrameFactory#getEME2000()}
-     * @see FrameFactory#getEME2000()
+     * @deprecated as of 4.0, replaced by {@link FramesFactory#getEME2000()}
+     * @see FramesFactory#getEME2000()
      */
     @Deprecated
     public static Frame getJ2000() {
-        return FrameFactory.getEME2000();
+        return FramesFactory.getEME2000();
     }
 
     /** Get the unique EME2000 frame.
      * <p>The EME2000 frame is also called the J2000 frame.
      * The former denomination is preferred in Orekit.</p>
      * @return the unique instance of the EME2000 frame
-     * @deprecated as of 4.1, replaced by {@link FrameFactory#getEME2000()}
+     * @deprecated as of 4.1, replaced by {@link FramesFactory#getEME2000()}
      */
     @Deprecated
     public static Frame getEME2000() {
-        return FrameFactory.getEME2000();
+        return FramesFactory.getEME2000();
     }
 
     /** Get the ITRF2005 reference frame.
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
-     * @deprecated as of 4.1, replaced by {@link FrameFactory#getITRF2005()}
+     * @deprecated as of 4.1, replaced by {@link FramesFactory#getITRF2005()}
      */
     @Deprecated
     public static Frame getITRF2005()
         throws OrekitException {
-        return FrameFactory.getITRF2005();
+        return FramesFactory.getITRF2005();
     }
 
     /** Get the TIRF2000 reference frame.
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
-     * @deprecated as of 4.1, replaced by {@link FrameFactory#getTIRF2000()}
+     * @deprecated as of 4.1, replaced by {@link FramesFactory#getTIRF2000()}
      */
     @Deprecated
     public static Frame getTIRF2000()
         throws OrekitException {
-        return FrameFactory.getTIRF2000();
+        return FramesFactory.getTIRF2000();
     }
 
     /** Get the CIRF2000 reference frame.
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
-     * @deprecated as of 4.1, replaced by {@link FrameFactory#getCIRF2000()}
+     * @deprecated as of 4.1, replaced by {@link FramesFactory#getCIRF2000()}
      */
     @Deprecated
     public static Frame getCIRF2000()
         throws OrekitException {
-        return FrameFactory.getCIRF2000();
+        return FramesFactory.getCIRF2000();
     }
 
     /** Get the VEIS 1950 reference frame.
      * @return the selected reference frame singleton.
-     * @deprecated as of 4.1, replaced by {@link FrameFactory#getVeis1950()}
+     * @deprecated as of 4.1, replaced by {@link FramesFactory#getVeis1950()}
      */
     @Deprecated
     public static Frame getVeis1950() {
-        return FrameFactory.getVeis1950();
+        return FramesFactory.getVeis1950();
     }
 
     // The following marker comment is used to prevent checkstyle from complaining

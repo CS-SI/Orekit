@@ -28,7 +28,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
@@ -51,7 +51,7 @@ public class IntegratedEphemerisTest {
         AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
         Orbit initialOrbit =
             new EquinoctialOrbit(new PVCoordinates(position, velocity),
-                                 FrameFactory.getEME2000(), initDate, mu);
+                                 FramesFactory.getEME2000(), initDate, mu);
 
         // Keplerian propagator definition
         KeplerianPropagator keplerEx = new KeplerianPropagator(initialOrbit);

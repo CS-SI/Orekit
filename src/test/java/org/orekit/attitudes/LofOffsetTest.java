@@ -38,7 +38,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -74,7 +74,7 @@ public class LofOffsetTest {
 
         // Lof aligned attitude law
         final LofOffset lofAlignedLaw = LofOffset.LOF_ALIGNED;
-        final Rotation lofOffsetRot = lofAlignedLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        final Rotation lofOffsetRot = lofAlignedLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
         
         // Check that 
         final Vector3D p = pvSatEME2000.getPosition();
@@ -94,7 +94,7 @@ public class LofOffsetTest {
         final CircularOrbit circ =
            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(0.), Math.toRadians(270.),
                                    Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                   FrameFactory.getEME2000(), date, mu);
+                                   FramesFactory.getEME2000(), date, mu);
         final PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
 
         // Create target pointing attitude law
@@ -105,12 +105,12 @@ public class LofOffsetTest {
             
         // Attitude law definition from geodetic point target 
         final TargetPointing targetLaw = new TargetPointing(geoTargetITRF2005, earthShape);
-        final Rotation targetRot = targetLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();       
+        final Rotation targetRot = targetLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();       
         
         // Create lof aligned attitude law
         // *******************************  
         final LofOffset lofAlignedLaw = LofOffset.LOF_ALIGNED;
-        final Rotation lofAlignedRot = lofAlignedLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        final Rotation lofAlignedRot = lofAlignedLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
 
         // Get rotation from LOF to target pointing attitude
         Rotation rollPitchYaw = targetRot.applyTo(lofAlignedRot.revert());
@@ -122,7 +122,7 @@ public class LofOffsetTest {
         // Create lof offset attitude law with computed roll, pitch, yaw
         // **************************************************************  
         final LofOffset lofOffsetLaw = new LofOffset(RotationOrder.ZYX, yaw, pitch, roll);
-        final Rotation lofOffsetRot = lofOffsetLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
+        final Rotation lofOffsetRot = lofOffsetLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
 
         // Compose rotations : target pointing attitudes
         final double angleCompo = targetRot.applyInverseTo(lofOffsetRot).getAngle();
@@ -142,8 +142,8 @@ public class LofOffsetTest {
        
         // Get roll, pitch, yaw angles corresponding to this pointing law
         final LofOffset lofAlignedLaw = LofOffset.LOF_ALIGNED;
-        final Rotation lofAlignedRot = lofAlignedLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000()).getRotation();
-        final Attitude targetAttitude = targetLaw.getState(date, pvSatEME2000, FrameFactory.getEME2000());
+        final Rotation lofAlignedRot = lofAlignedLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
+        final Attitude targetAttitude = targetLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000());
         final Rotation rollPitchYaw = targetAttitude.getRotation().applyTo(lofAlignedRot.revert());
         final double[] angles = rollPitchYaw.getAngles(RotationOrder.ZYX);
         final double yaw = angles[0];
@@ -155,7 +155,7 @@ public class LofOffsetTest {
         final LofOffsetPointing lofOffsetPtLaw = new LofOffsetPointing(earthSpheric, lofOffsetLaw, Vector3D.PLUS_K);
 
         // Check target pointed by this law : shall be the same as defined
-        final PVCoordinates pvTargetRes = lofOffsetPtLaw.getTargetInBodyFrame(date, pvSatEME2000, FrameFactory.getEME2000());
+        final PVCoordinates pvTargetRes = lofOffsetPtLaw.getTargetInBodyFrame(date, pvSatEME2000, FramesFactory.getEME2000());
         final GeodeticPoint targetRes = earthSpheric.transform(pvTargetRes.getPosition(), earthSpheric.getBodyFrame(), date);
         
         assertEquals(targetDef.getLongitude(), targetRes.getLongitude(), Utils.epsilonAngle);
@@ -179,7 +179,7 @@ public class LofOffsetTest {
             mu = 3.9860047e14;
             
             // Reference frame = ITRF 2005
-            frameITRF2005 = FrameFactory.getITRF2005(true);
+            frameITRF2005 = FramesFactory.getITRF2005(true);
 
             // Elliptic earth shape
             earthSpheric =
@@ -189,7 +189,7 @@ public class LofOffsetTest {
             orbit =
                 new CircularOrbit(7178000.0, 0.5e-8, -0.5e-8, Math.toRadians(50.), Math.toRadians(150.),
                                        Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
-                                       FrameFactory.getEME2000(), date, mu);
+                                       FramesFactory.getEME2000(), date, mu);
             pvSatEME2000 = orbit.getPVCoordinates();
 
             

@@ -26,7 +26,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.geometry.Vector3DFormat;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FrameFactory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -55,7 +55,7 @@ public class Frames2 {
             // and its axes parallel to EME2000. It is derived from EME2000 frame at any moment
             // by an unknown transform which depends on the current position and the velocity.
             // Let's initialize this transform by the identity transform.
-            Frame cogFrame = new Frame(FrameFactory.getEME2000(), Transform.IDENTITY, "LOF");
+            Frame cogFrame = new Frame(FramesFactory.getEME2000(), Transform.IDENTITY, "LOF");
 
             // The satellite frame, with origin also at the CoG, depends on attitude.
             // For the sake of this tutorial, we consider a simple inertial attitude here
@@ -86,22 +86,22 @@ public class Frames2 {
             // applying the rotation first because the position/velocity vector are given in
             // ITRF frame not in GPS antenna frame:
             Transform measuredTranslation = new Transform(position, velocity);
-            Transform formerTransform     = gpsFrame.getTransformTo(FrameFactory.getITRF2005(true), date);
+            Transform formerTransform     = gpsFrame.getTransformTo(FramesFactory.getITRF2005(true), date);
             Transform preservedRotation   = new Transform(formerTransform.getRotation(),
                                                           formerTransform.getRotationRate());
             Transform gpsToItrf           = new Transform(preservedRotation, measuredTranslation);
 
             // So we can update the transform from EME2000 to CoG frame
-            cogFrame.updateTransform(gpsFrame, FrameFactory.getITRF2005(true), gpsToItrf, date);
+            cogFrame.updateTransform(gpsFrame, FramesFactory.getITRF2005(true), gpsToItrf, date);
 
             // And we can get the position and velocity of satellite CoG in EME2000 frame
             PVCoordinates origin  = PVCoordinates.ZERO;
-            Transform cogToItrf   = cogFrame.getTransformTo(FrameFactory.getITRF2005(true), date);
+            Transform cogToItrf   = cogFrame.getTransformTo(FramesFactory.getITRF2005(true), date);
             PVCoordinates satItrf = cogToItrf.transformPVCoordinates(origin);
             System.out.println("Satellite position in ITRF2005: " + v3.format(satItrf.getPosition()));
             System.out.println("Satellite velocity in ITRF2005: " + v7.format(satItrf.getVelocity()));
 
-            Transform cogToEme2000   = cogFrame.getTransformTo(FrameFactory.getEME2000(), date);
+            Transform cogToEme2000   = cogFrame.getTransformTo(FramesFactory.getEME2000(), date);
             PVCoordinates satEME2000 = cogToEme2000.transformPVCoordinates(origin);
             System.out.println("Satellite position in EME2000: " +
                                v3.format(satEME2000.getPosition()));
