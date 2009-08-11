@@ -220,7 +220,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * @exception OrekitException if the JPL ephemerides cannot be read
      */
     public static CelestialBody getSolarSystemBarycenter() throws OrekitException {
-        synchronized(CelestialBody.class) {
+        synchronized (CelestialBody.class) {
             if (solarSystemBarycenter == null) {
 
                 final double gmSum =
@@ -244,7 +244,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
                     /** {@inheritDoc} */
                     public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                    throws OrekitException {
+                        throws OrekitException {
                         // we define solar system barycenter with respect to Earth-Moon barycenter
                         // so we need to revert the vectors provided by the JPL DE 405 ephemerides
                         final PVCoordinates emPV = super.getPVCoordinates(date, frame);
@@ -266,7 +266,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * @exception OrekitException if the JPL ephemerides cannot be read
      */
     public static CelestialBody getSun() throws OrekitException {
-        synchronized(CelestialBody.class) {
+        synchronized (CelestialBody.class) {
 
             if (sun == null) {
                 sun = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
@@ -286,7 +286,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * @exception OrekitException if the JPL ephemerides cannot be read
      */
     public static CelestialBody getMercury() throws OrekitException {
-        synchronized(CelestialBody.class) {
+        synchronized (CelestialBody.class) {
 
             if (mercury == null) {
                 mercury = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
@@ -306,7 +306,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * @exception OrekitException if the JPL ephemerides cannot be read
      */
     public static CelestialBody getVenus() throws OrekitException {
-        synchronized(CelestialBody.class) {
+        synchronized (CelestialBody.class) {
 
             if (venus == null) {
                 venus = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
@@ -326,7 +326,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * @exception OrekitException if the JPL ephemerides cannot be read
      */
     public static CelestialBody getEarthMoonBarycenter() throws OrekitException {
-        synchronized(CelestialBody.class) {
+        synchronized (CelestialBody.class) {
             if (earthMoonBarycenter == null) {
                 final double moonGM  =
                     JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MOON);
@@ -341,7 +341,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
                     /** {@inheritDoc} */
                     public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                    throws OrekitException {
+                        throws OrekitException {
                         // we define Earth-Moon barycenter with respect to Earth center so we need
                         // to apply a scale factor to the Moon vectors provided by the JPL DE 405 ephemerides
                         final PVCoordinates moonPV = super.getPVCoordinates(date, frame);
@@ -355,7 +355,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
                 };
             }
-            
+
             return earthMoonBarycenter;
 
         }
@@ -369,7 +369,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * @exception OrekitException if the JPL ephemerides cannot be read
      */
     public static CelestialBody getEarth() throws OrekitException {
-        synchronized(CelestialBody.class) {
+        synchronized (CelestialBody.class) {
 
             if (earth == null) {
                 final double moonGM  =
@@ -383,7 +383,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
 
                     /** {@inheritDoc} */
                     public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                    throws OrekitException {
+                        throws OrekitException {
 
                         // specific implementation for Earth:
                         // the Earth is always exactly at the origin of its own EME2000 frame
@@ -410,7 +410,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * @exception OrekitException if the JPL ephemerides cannot be read
      */
     public static CelestialBody getMoon() throws OrekitException {
-        synchronized(CelestialBody.class) {
+        synchronized (CelestialBody.class) {
 
             if (moon == null) {
                 moon = new SolarSystemBody(SolarSystemBody.getEarth().getFrame(),
@@ -431,7 +431,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * @exception OrekitException if the JPL ephemerides cannot be read
      */
     public static CelestialBody getMars() throws OrekitException {
-        synchronized(CelestialBody.class) {
+        synchronized (CelestialBody.class) {
 
             if (mars == null) {
                 mars = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
@@ -451,7 +451,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * @exception OrekitException if the JPL ephemerides cannot be read
      */
     public static CelestialBody getJupiter() throws OrekitException {
-        synchronized(CelestialBody.class) {
+        synchronized (CelestialBody.class) {
 
             if (jupiter == null) {
                 jupiter = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
@@ -471,7 +471,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * @exception OrekitException if the JPL ephemerides cannot be read
      */
     public static CelestialBody getSaturn() throws OrekitException {
-        synchronized(CelestialBody.class) {
+        synchronized (CelestialBody.class) {
 
             if (saturn == null) {
                 saturn = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
@@ -489,7 +489,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * @exception OrekitException if the JPL ephemerides cannot be read
      */
     public static CelestialBody getUranus() throws OrekitException {
-        synchronized(CelestialBody.class) {
+        synchronized (CelestialBody.class) {
 
             if (uranus == null) {
                 uranus = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
@@ -509,7 +509,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * @exception OrekitException if the JPL ephemerides cannot be read
      */
     public static CelestialBody getNeptune() throws OrekitException {
-        synchronized(CelestialBody.class) {
+        synchronized (CelestialBody.class) {
 
             if (neptune == null) {
                 neptune = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),
@@ -529,7 +529,7 @@ public class SolarSystemBody extends AbstractCelestialBody {
      * @exception OrekitException if the JPL ephemerides cannot be read
      */
     public static CelestialBody getPluto() throws OrekitException {
-        synchronized(CelestialBody.class) {
+        synchronized (CelestialBody.class) {
 
             if (pluto == null) {
                 pluto = new SolarSystemBody(SolarSystemBody.getSolarSystemBarycenter().getFrame(),

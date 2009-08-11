@@ -55,9 +55,11 @@ public class TimeScalesFactory implements Serializable {
     private TimeScalesFactory() {
     }
 
-    /** Get the International Atomic Time scale. */
+    /** Get the International Atomic Time scale.
+     * @return International Atomic Time scale
+     */
     public static TAIScale getTAI() {
-        synchronized(TimeScalesFactory.class) {
+        synchronized (TimeScalesFactory.class) {
 
             if (tai == null) {
                 tai = new TAIScale();
@@ -69,10 +71,11 @@ public class TimeScalesFactory implements Serializable {
     }
 
     /** Get the Universal Time Coordinate scale.
+     * @return Universal Time Coordinate scale
      * @exception OrekitException if the leap seconds cannot be read
      */
     public static UTCScale getUTC() throws OrekitException {
-        synchronized(TimeScalesFactory.class) {
+        synchronized (TimeScalesFactory.class) {
 
             if (utc == null) {
                 utc = new UTCScale();
@@ -83,9 +86,11 @@ public class TimeScalesFactory implements Serializable {
         }
     }
 
-    /** Get the Terrestrial Time scale. */
+    /** Get the Terrestrial Time scale.
+     * @return Terrestrial Time scale
+     */
     public static TTScale getTT() {
-        synchronized(TimeScalesFactory.class) {
+        synchronized (TimeScalesFactory.class) {
 
             if (tt == null) {
                 tt = new TTScale();
@@ -96,9 +101,11 @@ public class TimeScalesFactory implements Serializable {
         }
     }
 
-    /** Get the Global Positioning System scale. */
+    /** Get the Global Positioning System scale.
+     * @return Global Positioning System scale
+     */
     public static GPSScale getGPS() {
-        synchronized(TimeScalesFactory.class) {
+        synchronized (TimeScalesFactory.class) {
 
             if (gps == null) {
                 gps = new GPSScale();
@@ -109,9 +116,11 @@ public class TimeScalesFactory implements Serializable {
         }
     }
 
-    /** Get the Geocentric Coordinate Time scale. */
+    /** Get the Geocentric Coordinate Time scale.
+     * @return Geocentric Coordinate Time scale
+     */
     public static TCGScale getTCG() {
-        synchronized(TimeScalesFactory.class) {
+        synchronized (TimeScalesFactory.class) {
 
             if (tcg == null) {
                 tcg = new TCGScale();
