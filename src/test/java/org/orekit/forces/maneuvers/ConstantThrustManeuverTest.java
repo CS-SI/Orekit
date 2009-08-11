@@ -16,18 +16,16 @@
  */
 package org.orekit.forces.maneuvers;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math.util.MathUtils;
-
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.attitudes.InertialLaw;
 import org.orekit.data.DataProvidersManager;
@@ -42,7 +40,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 public class ConstantThrustManeuverTest {
@@ -59,7 +57,7 @@ public class ConstantThrustManeuverTest {
     public void testPositiveDuration() throws OrekitException {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                              new TimeComponents(23, 30, 00.000),
-                                             UTCScale.getInstance());
+                                             TimeScalesFactory.getUTC());
         ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(date, 10.0, 400.0, 300.0, Vector3D.PLUS_K);
         EventDetector[] switches = maneuver.getEventsDetectors();
@@ -78,7 +76,7 @@ public class ConstantThrustManeuverTest {
     public void testNegativeDuration() throws OrekitException {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                              new TimeComponents(23, 30, 00.000),
-                                             UTCScale.getInstance());
+                                             TimeScalesFactory.getUTC());
         ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(date, -10.0, 400.0, 300.0, Vector3D.PLUS_K);
         EventDetector[] switches = maneuver.getEventsDetectors();
@@ -112,7 +110,7 @@ public class ConstantThrustManeuverTest {
 
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
-                                                       UTCScale.getInstance());
+                                                       TimeScalesFactory.getUTC());
         final Orbit orbit =
             new KeplerianOrbit(a, e, i, omega, OMEGA, lv, KeplerianOrbit.TRUE_ANOMALY,
                                FramesFactory.getEME2000(), initDate, mu);
@@ -121,7 +119,7 @@ public class ConstantThrustManeuverTest {
 
         final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
                                                        new TimeComponents(04, 15, 34.080),
-                                                       UTCScale.getInstance());
+                                                       TimeScalesFactory.getUTC());
         final ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(fireDate, duration, f, isp, Vector3D.PLUS_I);
 

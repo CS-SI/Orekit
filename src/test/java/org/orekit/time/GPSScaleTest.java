@@ -29,23 +29,23 @@ public class GPSScaleTest {
     @Test
     public void testT0() {
         AbsoluteDate t0 =
-            new AbsoluteDate(new DateComponents(1980, 1, 6), TimeComponents.H00, GPSScale.getInstance());
+            new AbsoluteDate(new DateComponents(1980, 1, 6), TimeComponents.H00, TimeScalesFactory.getGPS());
         assertEquals(AbsoluteDate.GPS_EPOCH, t0);
     }
 
     @Test
     public void testArbitrary() throws OrekitException {
         AbsoluteDate tGPS =
-            new AbsoluteDate(new DateComponents(1999, 3, 4), TimeComponents.H00, GPSScale.getInstance());
+            new AbsoluteDate(new DateComponents(1999, 3, 4), TimeComponents.H00, TimeScalesFactory.getGPS());
         AbsoluteDate tUTC =
             new AbsoluteDate(new DateComponents(1999, 3, 3), new TimeComponents(23, 59, 47),
-                             UTCScale.getInstance());
+                             TimeScalesFactory.getUTC());
         assertEquals(tUTC, tGPS);
     }
 
     @Test
     public void testConstant() {
-        TimeScale scale = GPSScale.getInstance();
+        TimeScale scale = TimeScalesFactory.getGPS();
         double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH);
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
@@ -55,7 +55,7 @@ public class GPSScaleTest {
 
     @Test
     public void testSymmetry() {
-        TimeScale scale = GPSScale.getInstance();
+        TimeScale scale = TimeScalesFactory.getGPS();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
             double dt1 = scale.offsetFromTAI(date);

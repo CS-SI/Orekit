@@ -44,7 +44,7 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 
 
 public class SolarRadiationPressureTest {
@@ -54,7 +54,7 @@ public class SolarRadiationPressureTest {
         // Initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
                                              new TimeComponents(13, 59, 27.816),
-                                             UTCScale.getInstance());
+                                             TimeScalesFactory.getUTC());
         Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
                                            Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
                                            0.1, 2, FramesFactory.getEME2000(), date, mu);
@@ -103,7 +103,7 @@ public class SolarRadiationPressureTest {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 7, 1),
                                              new TimeComponents(13, 59, 27.816),
-                                             UTCScale.getInstance());
+                                             TimeScalesFactory.getUTC());
         Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
                                            Math.tan(0.001745329)*Math.cos(2*Math.PI/3),
                                            Math.tan(0.001745329)*Math.sin(2*Math.PI/3),

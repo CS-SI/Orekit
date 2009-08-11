@@ -21,9 +21,8 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
-import org.orekit.time.TAIScale;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 
 /** Pseudo Earth Fixed Frame.
  * <p> This frame handles the sidereal time according to IAU-82 model.</p>
@@ -58,7 +57,7 @@ class PEFFrame extends Frame {
 
     /** Reference date for IAU 1982 GMST-UT1 model. */
     private static final AbsoluteDate GMST_REFERENCE =
-        new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TAIScale.getInstance());
+        new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTAI());
 
     /** First coefficient of IAU 1982 GMST-UT1 model. */
     private static final double GMST_0 = 24110.54841;
@@ -353,7 +352,7 @@ class PEFFrame extends Frame {
             // offset in julian centuries from J2000 epoch (UT1 scale)
             final MEMEFrame meme = (MEMEFrame) getParent().getParent();
             final double dtai = date.durationFrom(GMST_REFERENCE);
-            final double dutc = UTCScale.getInstance().offsetFromTAI(date);
+            final double dutc = TimeScalesFactory.getUTC().offsetFromTAI(date);
             final double dut1 = meme.getUT1MinusUTC(date);
 
             final double tut1 = dtai + dutc + dut1;

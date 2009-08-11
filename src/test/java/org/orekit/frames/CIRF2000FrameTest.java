@@ -20,13 +20,12 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.FileNotFoundException;
 
-
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TAIScale;
+import org.orekit.time.TimeScalesFactory;
 
 public class CIRF2000FrameTest {
 
@@ -39,8 +38,8 @@ public class CIRF2000FrameTest {
             new NonInterpolatingCIRF2000Frame(AbsoluteDate.J2000_EPOCH, "");
 
         // the following time range is located around the maximal observed error
-        AbsoluteDate start = new AbsoluteDate(2002, 10,  3, TAIScale.getInstance());
-        AbsoluteDate end   = new AbsoluteDate(2002, 10,  7, TAIScale.getInstance());
+        AbsoluteDate start = new AbsoluteDate(2002, 10,  3, TimeScalesFactory.getTAI());
+        AbsoluteDate end   = new AbsoluteDate(2002, 10,  7, TimeScalesFactory.getTAI());
         double maxError = 0.0;
         for (AbsoluteDate date = start;
              date.compareTo(end) < 0;

@@ -34,8 +34,8 @@ Time
   as follows:
 
 +---------------------
-TimeScale utc = UTCScale.getInstance();
-TimeScale tai = TAIScale.getInstance();
+TimeScale utc = TimeScalesFactory.getUTC();
+TimeScale tai = TimeScalesFactory.getTAI();
 +---------------------
 
   Once we have the UTC time scale available, we can create the start date from

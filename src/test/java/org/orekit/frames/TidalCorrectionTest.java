@@ -25,7 +25,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TAIScale;
+import org.orekit.time.TimeScalesFactory;
 
 
 public class TidalCorrectionTest {
@@ -61,7 +61,7 @@ public class TidalCorrectionTest {
         // compute the pole motion component for tidal correction, testing cache mechanism
         final PoleCorrection poleCorr = tc.getPoleCorrection(date);
 
-        final AbsoluteDate date2 = new AbsoluteDate(2008, 10, 21, TAIScale.getInstance());
+        final AbsoluteDate date2 = new AbsoluteDate(2008, 10, 21, TimeScalesFactory.getTAI());
 
         // compute the pole motion component for tidal correction, testing cache mechanism
         final PoleCorrection poleCorr2 = tc.getPoleCorrection(date2);
@@ -85,7 +85,7 @@ public class TidalCorrectionTest {
         // compute the dut1 component for tidal correction
         final double dut1Corr = tc.getDUT1(date);
 
-        final AbsoluteDate date2 = new AbsoluteDate(2008, 10, 21, TAIScale.getInstance());
+        final AbsoluteDate date2 = new AbsoluteDate(2008, 10, 21, TimeScalesFactory.getTAI());
 
         // compute the dut1 component for tidal correction, testing cache mechanism
         final double dut1Corr2 = tc.getDUT1(date2);
@@ -101,7 +101,7 @@ public class TidalCorrectionTest {
 
     @Before
     public void setUp() {
-        date = new AbsoluteDate(2000, 1, 1, TAIScale.getInstance());
+        date = new AbsoluteDate(2000, 1, 1, TimeScalesFactory.getTAI());
     }
 
     @After

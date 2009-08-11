@@ -26,7 +26,7 @@ public class UTCTAIHistoryFilesLoaderNoDataTest {
 
     @Test(expected=OrekitException.class)
     public void testNoData() throws OrekitException {
-        UTCScale.getInstance().offsetFromTAI(AbsoluteDate.J2000_EPOCH);
+        TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH);
     }
 
     @Before

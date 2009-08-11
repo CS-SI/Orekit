@@ -30,7 +30,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 import fr.cs.examples.Autoconfiguration;
@@ -69,7 +69,7 @@ public class Frames2 {
             Frame gpsFrame         = new Frame(satFrame, new Transform(translateGPS, rotateGPS), "GPS");
 
             // Considering the following Computing/Measurement date in UTC time scale
-            TimeScale utc = UTCScale.getInstance();
+            TimeScale utc = TimeScalesFactory.getUTC();
             AbsoluteDate date = new AbsoluteDate(2008, 10, 01, 12, 00, 00.000, utc);
             
             // Let's get the satellite position and velocity in ITRF2005 as measured by GPS antenna at this moment:

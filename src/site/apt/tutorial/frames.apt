@@ -43,7 +43,7 @@ Frames
 
 +---------------------
 Frame inertialFrame = FramesFactory.getEME2000();
-TimeScale utc = UTCScale.getInstance();
+TimeScale utc = TimeScalesFactory.getUTC();
 AbsoluteDate initialDate =
     new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, utc);
 double mu =  3.986004415e+14;
@@ -188,7 +188,7 @@ Frame gpsFrame         = new Frame(satFrame,
   Let's consider some measurement date in UTC time scale:
   
 +---------------------
-TimeScale utc = UTCScale.getInstance();
+TimeScale utc = TimeScalesFactory.getUTC();
 AbsoluteDate date = new AbsoluteDate(2008, 10, 01, 12, 00, 00.000, utc);
 +---------------------
             

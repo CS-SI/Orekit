@@ -26,7 +26,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 
 import fr.cs.examples.Autoconfiguration;
 
@@ -58,7 +58,7 @@ public class SlaveMode {
             Frame inertialFrame = FramesFactory.getEME2000();
 
             // Initial date in UTC time scale
-            TimeScale utc = UTCScale.getInstance();
+            TimeScale utc = TimeScalesFactory.getUTC();
             AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, utc);
 
             // gravitation coefficient

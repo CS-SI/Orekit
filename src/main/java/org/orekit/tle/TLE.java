@@ -27,8 +27,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
-import org.orekit.time.UTCScale;
 
 /** This class is a container for a single set of TLE data.
  *
@@ -170,7 +170,7 @@ public class TLE implements TimeStamped, Serializable {
         final DateComponents date = new DateComponents(parseYear(line1, 18), 1, 1);
         final double dayNb = parseDouble(line1, 20, 12);
         epoch = new AbsoluteDate(new AbsoluteDate(date, TimeComponents.H00,
-                                                  UTCScale.getInstance()),
+                                                  TimeScalesFactory.getUTC()),
                                  (dayNb - 1) * 86400); //-1 is due to TLE date definition
 
         // mean motion development
@@ -300,7 +300,7 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append(addPadding(launchPiece, ' ', 3, false));
 
         buffer.append(' ');
-        final TimeScale utc = UTCScale.getInstance();
+        final TimeScale utc = TimeScalesFactory.getUTC();
         final int year = epoch.getComponents(utc).getDate().getYear();
         buffer.append(addPadding(year % 100, '0', 2, true));
         final double day = 1.0 + epoch.durationFrom(new AbsoluteDate(year, 1, 1, utc)) / 86400;

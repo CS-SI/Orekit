@@ -19,8 +19,7 @@ package org.orekit.tle;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TTScale;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 
 
 /** This class contains the methods that compute deep space perturbation terms.
@@ -193,7 +192,7 @@ class DeepSDP4 extends SDP4 {
         // Compute julian days since 1900
         final double daysSince1900 =
             (tle.getDate().durationFrom(AbsoluteDate.JULIAN_EPOCH) +
-             tle.getDate().timeScalesOffset(UTCScale.getInstance(), TTScale.getInstance())) / 86400.0 - 2415020;
+             tle.getDate().timeScalesOffset(TimeScalesFactory.getUTC(), TimeScalesFactory.getTT())) / 86400.0 - 2415020;
 
 
         double cc = C1SS;

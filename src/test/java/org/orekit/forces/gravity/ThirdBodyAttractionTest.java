@@ -16,13 +16,11 @@
  */
 package org.orekit.forces.gravity;
 
-import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 
+import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.bodies.SolarSystemBody;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -35,7 +33,7 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 
 public class ThirdBodyAttractionTest {
 
@@ -47,7 +45,7 @@ public class ThirdBodyAttractionTest {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
                                              new TimeComponents(13, 59, 27.816),
-                                             UTCScale.getInstance());
+                                             TimeScalesFactory.getUTC());
         Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
                                            Math.tan(0.001745329) * Math.cos(2 * Math.PI / 3),
                                            Math.tan(0.001745329) * Math.sin(2 * Math.PI / 3),
@@ -83,7 +81,7 @@ public class ThirdBodyAttractionTest {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
                                              new TimeComponents(13, 59, 27.816),
-                                             UTCScale.getInstance());
+                                             TimeScalesFactory.getUTC());
         Orbit orbit =
             new EquinoctialOrbit(42164000,10e-3,10e-3,
                                       Math.tan(0.001745329) * Math.cos(2 * Math.PI / 3),

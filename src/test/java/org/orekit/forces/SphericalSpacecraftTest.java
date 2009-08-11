@@ -26,8 +26,8 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
-import org.orekit.time.TAIScale;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScalesFactory;
 
 public class SphericalSpacecraftTest {
 
@@ -35,7 +35,7 @@ public class SphericalSpacecraftTest {
     public void testConstructor() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 04, 07),
                                 TimeComponents.H00,
-                                TAIScale.getInstance());
+                                TimeScalesFactory.getTAI());
 
         // Satellite position as circular parameters
         final double mu = 3.9860047e14;
@@ -68,7 +68,7 @@ public class SphericalSpacecraftTest {
     public void testSettersGetters() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 04, 07),
                                              TimeComponents.H00,
-                                             TAIScale.getInstance());
+                                             TimeScalesFactory.getTAI());
 
                      // Satellite position as circular parameters
                      final double mu = 3.9860047e14;

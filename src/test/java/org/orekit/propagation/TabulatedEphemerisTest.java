@@ -16,15 +16,14 @@
  */
 package org.orekit.propagation;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.text.ParseException;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
@@ -35,7 +34,7 @@ import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 
 
 public class TabulatedEphemerisTest {
@@ -53,10 +52,10 @@ public class TabulatedEphemerisTest {
 
         AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                  TimeComponents.H00,
-                                                 UTCScale.getInstance());
+                                                 TimeScalesFactory.getUTC());
         AbsoluteDate finalDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
                                                   TimeComponents.H00,
-                                                  UTCScale.getInstance());
+                                                  TimeScalesFactory.getUTC());
         double deltaT = finalDate.durationFrom(initDate);
 
         Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA,

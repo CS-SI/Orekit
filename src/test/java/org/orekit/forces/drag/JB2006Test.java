@@ -16,16 +16,14 @@
  */
 package org.orekit.forces.drag;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 
 import org.apache.commons.math.geometry.Vector3D;
-
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-
 import org.orekit.SolarInputs97to05;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
@@ -38,7 +36,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 
 public class JB2006Test {
 
@@ -184,7 +182,7 @@ public class JB2006Test {
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 01, 01),
                                              TimeComponents.H00,
-                                             UTCScale.getInstance());
+                                             TimeScalesFactory.getUTC());
         Frame itrf = FramesFactory.getITRF2005();
         CelestialBody sun = SolarSystemBody.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
@@ -242,7 +240,7 @@ public class JB2006Test {
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2001, 01, 14),
                                              TimeComponents.H00,
-                                             UTCScale.getInstance());
+                                             TimeScalesFactory.getUTC());
 
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
 
@@ -262,7 +260,7 @@ public class JB2006Test {
 
         date = new AbsoluteDate(new DateComponents(1998, 02, 02),
                                 new TimeComponents(18, 00, 00),
-                                UTCScale.getInstance());
+                                TimeScalesFactory.getUTC());
 //      1998  33   2450847.0  89.1  95.1  95.8  97.9  81.3  92.0  1
 //      33  89  95   4   5   4   4   2   0   0   3                          98
         assertEquals(89.1, in.getF10(date),0);

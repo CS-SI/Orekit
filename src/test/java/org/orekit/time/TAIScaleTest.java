@@ -25,7 +25,7 @@ public class TAIScaleTest {
 
     @Test
     public void testZero() {
-        TimeScale scale = TAIScale.getInstance();
+        TimeScale scale = TimeScalesFactory.getTAI();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
             assertEquals(0, scale.offsetFromTAI(date), 0);

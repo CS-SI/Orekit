@@ -32,7 +32,8 @@ import org.orekit.errors.OrekitException;
  * followed by 2005-12-31T23:59:60 UTC, followed by 2006-01-01T00:00:00 UTC.</p>
  * <p>The OREKIT library retrieves time steps data thanks to the {@link
  * org.orekit.data.DataProvidersManager DataProvidersManager} class.</p>
- * <p>This is a singleton class, so there is no public constructor.</p>
+ * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
@@ -40,11 +41,11 @@ import org.orekit.errors.OrekitException;
 public class UTCScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -7628960462088933918L;
+    private static final long serialVersionUID = 1096634108833538374L;
 
     /** Reference TAI date. */
     private static final AbsoluteDate TAI_REFERENCE =
-        new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TAIScale.getInstance());
+        new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTAI());
 
     /** Time steps. */
     private UTCTAIOffset[] offsets;
@@ -52,15 +53,10 @@ public class UTCScale implements TimeScale {
     /** Current position. */
     private transient int current;
 
-    /** Private constructor for the singleton.
-     */
-    private UTCScale() {
-    }
-
-    /** Set the time steps from the history files in IERS folders.
+    /** Package private constructor for the factory.
      * @exception OrekitException if the time steps cannot be read
      */
-    private synchronized void setTimeSteps() throws OrekitException {
+    UTCScale() throws OrekitException {
 
         // read user supplied entries
         final SortedMap<DateComponents, Integer> entries =
@@ -76,7 +72,7 @@ public class UTCScale implements TimeScale {
         for (Map.Entry<DateComponents, Integer> entry : entries.entrySet()) {
             final double offset            = entry.getValue().doubleValue();
             final double leap              = offset - last.getOffset();
-            final AbsoluteDate taiDayStart = new AbsoluteDate(entry.getKey(), TAIScale.getInstance());
+            final AbsoluteDate taiDayStart = new AbsoluteDate(entry.getKey(), TimeScalesFactory.getTAI());
             final AbsoluteDate leapDate    = new AbsoluteDate(taiDayStart, last.getOffset());
             last.setValidityEnd(leapDate);
             last = new UTCTAIOffset(leapDate, leap, offset);
@@ -90,13 +86,12 @@ public class UTCScale implements TimeScale {
 
     /** Get the unique instance of this class.
      * @return the unique instance
-     * @exception OrekitException if the time steps cannot be read
+     * @exception OrekitException if the leap seconds cannot be read
+     * @deprecated since 4.1 replaced by {@link TimeScalesFactory#getUTC()}
      */
+    @Deprecated
     public static UTCScale getInstance() throws OrekitException {
-        if (LazyHolder.INSTANCE == null) {
-            throw LazyHolder.OREKIT_EXCEPTION;
-        }
-        return LazyHolder.INSTANCE;
+        return TimeScalesFactory.getUTC();
     }
 
     /** {@inheritDoc} */
@@ -180,61 +175,5 @@ public class UTCScale implements TimeScale {
             ++current;
         }
     }
-
-    /** Change object upon deserialization.
-     * <p>Since {@link TimeScale} classes are serializable, they can
-     * be deserialized. This class being a singleton, we always replace the
-     * read object by the singleton instance at deserialization time.</p>
-     * @return the singleton instance
-     */
-    private Object readResolve() {
-        return LazyHolder.INSTANCE;
-    }
-
-    // The following marker comment is used to prevent checkstyle from complaining
-    // about utility classes missing an hidden (private) constructor
-    // These classes should have such constructors, that are obviously never called.
-    // Unfortunately, since cobertura currently cannot mark untestable code, these
-    // constructors on such small classes lead to artificially low code coverage.
-    // So to make sure both checkstyle and cobertura are happy, we locally inhibit
-    // checkstyle verification for the special case of small classes implementing
-    // the initialization on demand holder idiom used for singletons. This choice is
-    // safe as the classes are themselves private and completely under control. In fact,
-    // even if someone could instantiate them, this would be harmless since they only
-    // have static fields and no methods at all.
-    // CHECKSTYLE: stop HideUtilityClassConstructor
-
-    /** Holder for the singleton.
-     * <p>
-     * We use the Initialization on demand holder idiom to store
-     * the singletons, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.
-     * </p>
-     */
-    private static class LazyHolder {
-
-        /** Unique instance. */
-        private static final UTCScale INSTANCE;
-
-        /** Reason why the unique instance may be missing (i.e. null). */
-        private static final OrekitException OREKIT_EXCEPTION;
-
-        static {
-            UTCScale tmpInstance = null;
-            OrekitException tmpException = null;
-            try {
-                tmpInstance = new UTCScale();
-                tmpInstance.setTimeSteps();
-            } catch (OrekitException oe) {
-                tmpInstance  = null;
-                tmpException = oe;
-            }
-            INSTANCE         = tmpInstance;
-            OREKIT_EXCEPTION = tmpException;
-        }
-
-    }
-
-    // CHECKSTYLE: resume HideUtilityClassConstructor
 
 }

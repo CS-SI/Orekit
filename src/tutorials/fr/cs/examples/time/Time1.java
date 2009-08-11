@@ -18,9 +18,8 @@ package fr.cs.examples.time;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TAIScale;
 import org.orekit.time.TimeScale;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 
 import fr.cs.examples.Autoconfiguration;
 
@@ -41,8 +40,8 @@ public class Time1 {
             Autoconfiguration.configureOrekit();
 
             // get the UTC and TAI time scales
-            TimeScale utc = UTCScale.getInstance();
-            TimeScale tai = TAIScale.getInstance();
+            TimeScale utc = TimeScalesFactory.getUTC();
+            TimeScale tai = TimeScalesFactory.getTAI();
 
             // create a start date from its calendar components in UTC time scale
             AbsoluteDate start = new AbsoluteDate(2005, 12, 31, 23, 59, 50, utc);

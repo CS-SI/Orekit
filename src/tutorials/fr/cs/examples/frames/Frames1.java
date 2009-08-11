@@ -37,7 +37,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 import fr.cs.examples.Autoconfiguration;
@@ -58,7 +58,7 @@ public class Frames1 {
             DecimalFormat d3 = new DecimalFormat("0.000", symbols);
 
             //  Initial state definition : date, orbit
-            TimeScale utc = UTCScale.getInstance();
+            TimeScale utc = TimeScalesFactory.getUTC();
             AbsoluteDate initialDate = new AbsoluteDate(2008, 10, 01, 0, 0, 00.000, utc);
             double mu =  3.986004415e+14; // gravitation coefficient
             Frame inertialFrame = FramesFactory.getEME2000(); // inertial frame for orbit definition

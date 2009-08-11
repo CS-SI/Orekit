@@ -16,23 +16,17 @@
  */
 package org.orekit.attitudes;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import org.apache.commons.math.geometry.CardanEulerSingularityException;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
-
 import org.junit.After;
-import org.junit.Test;
 import org.junit.Before;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
+import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.attitudes.Attitude;
-import org.orekit.attitudes.LofOffset;
-import org.orekit.attitudes.LofOffsetPointing;
-import org.orekit.attitudes.TargetPointing;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
@@ -43,7 +37,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -173,7 +167,7 @@ public class LofOffsetTest {
             // Computation date
             date = new AbsoluteDate(new DateComponents(2008, 04, 07),
                                     TimeComponents.H00,
-                                    UTCScale.getInstance());
+                                    TimeScalesFactory.getUTC());
 
             // Body mu
             mu = 3.9860047e14;

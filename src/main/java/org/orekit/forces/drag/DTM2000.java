@@ -33,7 +33,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 /** This atmosphere model is the realization of the DTM-2000 model.
@@ -855,7 +855,7 @@ public class DTM2000 implements Atmosphere {
         // check if data are available :
         if ((date.compareTo(inputParams.getMaxDate()) > 0) ||
             (date.compareTo(inputParams.getMinDate()) < 0)) {
-            final TimeScale utcScale = UTCScale.getInstance();
+            final TimeScale utcScale = TimeScalesFactory.getUTC();
             throw new OrekitException("no solar activity available at {0}, " +
                                       "data available only in range [{1}, {2}]",
                                       date.toString(utcScale),
@@ -865,7 +865,7 @@ public class DTM2000 implements Atmosphere {
 
         // compute day number in current year
         final Calendar cal = new GregorianCalendar();
-        cal.setTime(date.toDate(UTCScale.getInstance()));
+        cal.setTime(date.toDate(TimeScalesFactory.getUTC()));
         final int day = cal.get(Calendar.DAY_OF_YEAR);
         // compute geodetic position
         final GeodeticPoint inBody = earth.transform(position, frame, date);

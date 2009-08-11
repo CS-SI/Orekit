@@ -30,7 +30,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 
 import fr.cs.examples.Autoconfiguration;
 
@@ -60,7 +60,7 @@ public class MasterMode {
 
             // Initial date
             AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000,
-                                                        UTCScale.getInstance());
+                                                        TimeScalesFactory.getUTC());
 
             // Initial orbit
             double a = 24396159; // semi major axis in meters

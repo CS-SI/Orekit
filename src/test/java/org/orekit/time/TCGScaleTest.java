@@ -28,7 +28,7 @@ public class TCGScaleTest {
 
     @Test
     public void testRatio() {
-        TimeScale scale = TCGScale.getInstance();
+        TimeScale scale = TimeScalesFactory.getTCG();
         final double dtTT = 1e6;
         final AbsoluteDate t1 = AbsoluteDate.J2000_EPOCH;
         final AbsoluteDate t2 = new AbsoluteDate(t1, dtTT);
@@ -38,7 +38,7 @@ public class TCGScaleTest {
 
     @Test
     public void testSymmetry() {
-        TimeScale scale = TCGScale.getInstance();
+        TimeScale scale = TimeScalesFactory.getTCG();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
             double dt1 = scale.offsetFromTAI(date);
@@ -52,12 +52,12 @@ public class TCGScaleTest {
     public void testReference() throws OrekitException {
         DateComponents  referenceDate = new DateComponents(1977, 01, 01);
         TimeComponents  thirtyTwo     = new TimeComponents(0, 0, 32.184);
-        AbsoluteDate ttRef         = new AbsoluteDate(referenceDate, thirtyTwo, TTScale.getInstance());
-        AbsoluteDate tcgRef        = new AbsoluteDate(referenceDate, thirtyTwo, TCGScale.getInstance());
-        AbsoluteDate taiRef        = new AbsoluteDate(referenceDate, TimeComponents.H00, TAIScale.getInstance());
+        AbsoluteDate ttRef         = new AbsoluteDate(referenceDate, thirtyTwo, TimeScalesFactory.getTT());
+        AbsoluteDate tcgRef        = new AbsoluteDate(referenceDate, thirtyTwo, TimeScalesFactory.getTCG());
+        AbsoluteDate taiRef        = new AbsoluteDate(referenceDate, TimeComponents.H00, TimeScalesFactory.getTAI());
         AbsoluteDate utcRef        = new AbsoluteDate(new DateComponents(1976, 12, 31),
                                                       new TimeComponents(23, 59, 45),
-                                                      UTCScale.getInstance());
+                                                      TimeScalesFactory.getUTC());
         assertEquals(0, ttRef.durationFrom(tcgRef), 1.0e-15);
         assertEquals(0, ttRef.durationFrom(taiRef), 1.0e-15);
         assertEquals(0, ttRef.durationFrom(utcRef), 1.0e-15);

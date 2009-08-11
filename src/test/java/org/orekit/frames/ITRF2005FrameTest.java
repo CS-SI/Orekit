@@ -16,15 +16,14 @@
  */
 package org.orekit.frames;
 
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 
 public class ITRF2005FrameTest {
 
@@ -33,7 +32,7 @@ public class ITRF2005FrameTest {
 
         final Frame itrfWith    = FramesFactory.getITRF2005(false);
         final Frame itrfWithout = FramesFactory.getITRF2005(true);
-        final AbsoluteDate date0 = new AbsoluteDate(2007, 10, 20, UTCScale.getInstance());
+        final AbsoluteDate date0 = new AbsoluteDate(2007, 10, 20, TimeScalesFactory.getUTC());
 
         double minCorrection = Double.POSITIVE_INFINITY;
         double maxCorrection = Double.NEGATIVE_INFINITY;

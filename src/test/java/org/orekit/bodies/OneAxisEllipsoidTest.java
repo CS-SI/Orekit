@@ -16,20 +16,16 @@
  */
 package org.orekit.bodies;
 
-import org.apache.commons.math.geometry.Vector3D;
-import org.apache.commons.math.util.MathUtils;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.MathUtils;
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.bodies.GeodeticPoint;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -38,7 +34,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Line;
 import org.orekit.utils.PVCoordinates;
 
@@ -186,7 +182,7 @@ public class OneAxisEllipsoidTest {
     public void testIntersectionFromPoints() throws OrekitException {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 03, 21),
                                              TimeComponents.H12,
-                                             UTCScale.getInstance());
+                                             TimeScalesFactory.getUTC());
         
         Frame frame = FramesFactory.getITRF2005();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frame);

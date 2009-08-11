@@ -33,8 +33,8 @@ public class AbsoluteDateTest {
 
     @Test
     public void testStandardEpoch() {
-        TimeScale tai = TAIScale.getInstance();
-        TimeScale tt  = TTScale.getInstance();
+        TimeScale tai = TimeScalesFactory.getTAI();
+        TimeScale tt  = TimeScalesFactory.getTT();
         assertEquals(-210866760000000l, AbsoluteDate.JULIAN_EPOCH.toDate(tt).getTime());
         assertEquals(-3506716800000l,   AbsoluteDate.MODIFIED_JULIAN_EPOCH.toDate(tt).getTime());
         assertEquals(-631152000000l,    AbsoluteDate.FIFTIES_EPOCH.toDate(tt).getTime());
@@ -45,22 +45,22 @@ public class AbsoluteDateTest {
     @Test
     public void testStandardEpochStrings() throws OrekitException {
         assertEquals("-4712-01-01T12:00:00.000",
-                     AbsoluteDate.JULIAN_EPOCH.toString(TTScale.getInstance()));
+                     AbsoluteDate.JULIAN_EPOCH.toString(TimeScalesFactory.getTT()));
         assertEquals("1858-11-17T00:00:00.000",
-                     AbsoluteDate.MODIFIED_JULIAN_EPOCH.toString(TTScale.getInstance()));
+                     AbsoluteDate.MODIFIED_JULIAN_EPOCH.toString(TimeScalesFactory.getTT()));
         assertEquals("1950-01-01T00:00:00.000",
-                     AbsoluteDate.FIFTIES_EPOCH.toString(TTScale.getInstance()));
+                     AbsoluteDate.FIFTIES_EPOCH.toString(TimeScalesFactory.getTT()));
         assertEquals("1980-01-06T00:00:00.000",
-                     AbsoluteDate.GPS_EPOCH.toString(UTCScale.getInstance()));
+                     AbsoluteDate.GPS_EPOCH.toString(TimeScalesFactory.getUTC()));
         assertEquals("2000-01-01T12:00:00.000",
-                     AbsoluteDate.J2000_EPOCH.toString(TTScale.getInstance()));
+                     AbsoluteDate.J2000_EPOCH.toString(TimeScalesFactory.getTT()));
         assertEquals("1970-01-01T00:00:00.000",
-                     AbsoluteDate.JAVA_EPOCH.toString(TTScale.getInstance()));
+                     AbsoluteDate.JAVA_EPOCH.toString(TimeScalesFactory.getTT()));
     }
 
     @Test
     public void testOutput() {
-        TimeScale tt = TTScale.getInstance();
+        TimeScale tt = TimeScalesFactory.getTT();
         assertEquals("1950-01-01T01:01:01.000",
                      new AbsoluteDate(AbsoluteDate.FIFTIES_EPOCH, 3661.0).toString(tt));
         assertEquals("2000-01-01T13:01:01.000",
@@ -70,9 +70,9 @@ public class AbsoluteDateTest {
     @Test
     public void testJ2000() {
         assertEquals("2000-01-01T12:00:00.000",
-                     AbsoluteDate.J2000_EPOCH.toString(TTScale.getInstance()));
+                     AbsoluteDate.J2000_EPOCH.toString(TimeScalesFactory.getTT()));
         assertEquals("2000-01-01T11:59:27.816",
-                     AbsoluteDate.J2000_EPOCH.toString(TAIScale.getInstance()));
+                     AbsoluteDate.J2000_EPOCH.toString(TimeScalesFactory.getTAI()));
         assertEquals("2000-01-01T11:58:55.816",
                      AbsoluteDate.J2000_EPOCH.toString(utc));
     }
@@ -81,7 +81,7 @@ public class AbsoluteDateTest {
     public void testFraction() {
         AbsoluteDate d =
             new AbsoluteDate(new DateComponents(2000, 01, 01), new TimeComponents(11, 59, 27.816),
-                             TAIScale.getInstance());
+                             TimeScalesFactory.getTAI());
         assertEquals(0, d.durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
     }
 
@@ -91,7 +91,7 @@ public class AbsoluteDateTest {
                                              new TimeComponents(15, 38, 00),
                                              utc);
         assertEquals(33,
-                     date.timeScalesOffset(TAIScale.getInstance(), utc),
+                     date.timeScalesOffset(TimeScalesFactory.getTAI(), utc),
                      1.0e-10);
     }
 
@@ -144,7 +144,7 @@ public class AbsoluteDateTest {
 
     @Test
     public void testOffsets() {
-        final TimeScale tai = TAIScale.getInstance();
+        final TimeScale tai = TimeScalesFactory.getTAI();
         AbsoluteDate leapStartUTC = new AbsoluteDate(1976, 12, 31, 23, 59, 59, utc);
         AbsoluteDate leapEndUTC   = new AbsoluteDate(1977,  1,  1,  0,  0,  0, utc);
         AbsoluteDate leapStartTAI = new AbsoluteDate(1977,  1,  1,  0,  0, 14, tai);
@@ -161,7 +161,7 @@ public class AbsoluteDateTest {
 
     @Test
     public void testBeforeAndAfterLeap() {
-        final TimeScale tai = TAIScale.getInstance();
+        final TimeScale tai = TimeScalesFactory.getTAI();
         AbsoluteDate leapStart = new AbsoluteDate(1977,  1,  1,  0,  0, 14, tai);
         AbsoluteDate leapEnd   = new AbsoluteDate(1977,  1,  1,  0,  0, 16, tai);
         for (int i = -10; i < 10; ++i) {
@@ -184,7 +184,7 @@ public class AbsoluteDateTest {
 
     @Test
     public void testSymmetry() {
-        final TimeScale tai = TAIScale.getInstance();
+        final TimeScale tai = TimeScalesFactory.getTAI();
         AbsoluteDate leapStart = new AbsoluteDate(1977,  1,  1,  0,  0, 14, tai);
         for (int i = -10; i < 10; ++i) {
             final double dt = 1.1 * (2 * i - 1);
@@ -216,8 +216,8 @@ public class AbsoluteDateTest {
         DateComponents date = new DateComponents(2000, 01,01);
         TimeComponents time = new TimeComponents(11, 59, 10);
         TimeScale[] scales = {
-            TAIScale.getInstance(), UTCScale.getInstance(),
-            TTScale.getInstance(), TCGScale.getInstance()      
+            TimeScalesFactory.getTAI(), TimeScalesFactory.getUTC(),
+            TimeScalesFactory.getTT(), TimeScalesFactory.getTCG()      
         };
         for (int i = 0; i < scales.length; ++i) {
             AbsoluteDate in = new AbsoluteDate(date, time, scales[i]);
@@ -238,12 +238,12 @@ public class AbsoluteDateTest {
     public void testExpandedConstructors() throws OrekitException {
         assertEquals(new AbsoluteDate(new DateComponents(2002, 05, 28),
                                       new TimeComponents(15, 30, 0),
-                                      UTCScale.getInstance()),
-                     new AbsoluteDate(2002, 05, 28, 15, 30, 0, UTCScale.getInstance()));
+                                      TimeScalesFactory.getUTC()),
+                     new AbsoluteDate(2002, 05, 28, 15, 30, 0, TimeScalesFactory.getUTC()));
         assertEquals(new AbsoluteDate(new DateComponents(2002, 05, 28), TimeComponents.H00,
-                                      UTCScale.getInstance()),
-                     new AbsoluteDate(2002, 05, 28, UTCScale.getInstance()));
-        new AbsoluteDate(2002, 05, 28, 25, 30, 0, UTCScale.getInstance());
+                                      TimeScalesFactory.getUTC()),
+                     new AbsoluteDate(2002, 05, 28, TimeScalesFactory.getUTC()));
+        new AbsoluteDate(2002, 05, 28, 25, 30, 0, TimeScalesFactory.getUTC());
     }
 
     @Test
@@ -277,7 +277,7 @@ public class AbsoluteDateTest {
     public void setUp() throws OrekitException {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
-        utc = UTCScale.getInstance();
+        utc = TimeScalesFactory.getUTC();
     }
 
     private TimeScale utc;

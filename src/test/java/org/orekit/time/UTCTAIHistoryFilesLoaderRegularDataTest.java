@@ -28,12 +28,12 @@ public class UTCTAIHistoryFilesLoaderRegularDataTest {
 
     @Test
     public void testRegular() throws OrekitException {
-        assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 10e-8);
+        assertEquals(-32.0, TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 10e-8);
     }
 
     @Test
     public void testFirstLeap() throws OrekitException {
-        UTCScale utc = (UTCScale) UTCScale.getInstance();
+        UTCScale utc = (UTCScale) TimeScalesFactory.getUTC();
         assertEquals("1971-12-31T23:59:60.000", utc.getFirstKnownLeapSecond().toString(utc));
     }
 
@@ -41,7 +41,7 @@ public class UTCTAIHistoryFilesLoaderRegularDataTest {
     public void testLaststLeap() throws OrekitException {
         // the data files ends at 2006-01-01,
         // but predefined data also contain the leap second from 2009-01-01
-        UTCScale utc = (UTCScale) UTCScale.getInstance();
+        UTCScale utc = (UTCScale) TimeScalesFactory.getUTC();
         assertEquals("2008-12-31T23:59:60.000", utc.getLastKnownLeapSecond().toString(utc));
     }
 

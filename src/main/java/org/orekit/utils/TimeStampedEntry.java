@@ -21,8 +21,8 @@ import java.util.Date;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
-import org.orekit.time.UTCScale;
 
 
 /** Container class for Earth Orientation Parameters provided by IERS.
@@ -59,7 +59,7 @@ public class TimeStampedEntry implements TimeStamped, Serializable {
 
         // convert mjd date at 00h00 UTC to absolute date
         final long javaTime = (mjd - 40587) * 86400000l;
-        date = new AbsoluteDate(new Date(javaTime), UTCScale.getInstance());
+        date = new AbsoluteDate(new Date(javaTime), TimeScalesFactory.getUTC());
 
     }
 

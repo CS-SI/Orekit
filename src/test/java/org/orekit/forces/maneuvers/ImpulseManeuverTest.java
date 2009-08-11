@@ -16,13 +16,11 @@
  */
 package org.orekit.forces.maneuvers;
 
-import org.apache.commons.math.geometry.Vector3D;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 
+import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -35,7 +33,7 @@ import org.orekit.propagation.events.NodeDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 
 public class ImpulseManeuverTest {
 
@@ -47,7 +45,7 @@ public class ImpulseManeuverTest {
                                FramesFactory.getEME2000(),
                                new AbsoluteDate(new DateComponents(2008, 06, 23),
                                                 new TimeComponents(14, 18, 37),
-                                                UTCScale.getInstance()),
+                                                TimeScalesFactory.getUTC()),
                                3.986004415e14);
         final double a  = initialOrbit.getA();
         final double e  = initialOrbit.getE();

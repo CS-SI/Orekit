@@ -31,7 +31,7 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
-import org.orekit.time.TTScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
 
 /** Loader for JPL ephemerides binary files (DE 405, DE 406).
@@ -540,7 +540,7 @@ class JPLEphemeridesLoader implements DataLoader {
      */
     private static AbsoluteDate extractDate(final byte[] record, final int offset) {
         final double dt = extractDouble(record, offset) * 86400;
-        return new AbsoluteDate(AbsoluteDate.JULIAN_EPOCH, dt, TTScale.getInstance());
+        return new AbsoluteDate(AbsoluteDate.JULIAN_EPOCH, dt, TimeScalesFactory.getTT());
     }
 
     /** Extract a double from a record.

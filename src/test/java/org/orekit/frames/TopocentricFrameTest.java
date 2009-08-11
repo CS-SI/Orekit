@@ -29,16 +29,13 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
-import org.orekit.frames.TopocentricFrame;
-import org.orekit.frames.Transform;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -401,7 +398,7 @@ public class TopocentricFrameTest {
             // Reference date
             date = new AbsoluteDate(new DateComponents(2008, 04, 07),
                                     TimeComponents.H00,
-                                    UTCScale.getInstance());
+                                    TimeScalesFactory.getUTC());
 
             // Body mu
             mu = 3.9860047e14;

@@ -35,7 +35,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TTScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 public class SolarBodyTest {
@@ -43,7 +43,7 @@ public class SolarBodyTest {
     @Test
     public void geocentricPV() throws OrekitException, ParseException {
         setRegularData();
-        AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TTScale.getInstance());
+        AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TimeScalesFactory.getTT());
         Frame geocentricFrame = FramesFactory.getEME2000();
         checkPV(SolarSystemBody.getMoon(), date, geocentricFrame,
                 new Vector3D(-0.0008081773279115, -0.0019946300016204, -0.0010872626608381),
@@ -54,7 +54,7 @@ public class SolarBodyTest {
     @Test
     public void heliocentricPV() throws OrekitException, ParseException {
         setRegularData();
-        AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TTScale.getInstance());
+        AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TimeScalesFactory.getTT());
         Frame heliocentricFrame = SolarSystemBody.getSun().getFrame();
         checkPV(SolarSystemBody.getSun(), date, heliocentricFrame, Vector3D.ZERO, Vector3D.ZERO);
         checkPV(SolarSystemBody.getMercury(), date, heliocentricFrame,
@@ -167,7 +167,7 @@ public class SolarBodyTest {
     }
 
     public void testKepler() throws OrekitException {
-        AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TTScale.getInstance());
+        AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TimeScalesFactory.getTT());
         final double au = 149597870691.0;
         checkKepler(SolarSystemBody.getMoon(),    SolarSystemBody.getEarth(), date, 3.844e8, 0.012);
         checkKepler(SolarSystemBody.getMercury(), SolarSystemBody.getSun(),   date,  0.387 * au, 4.0e-9);

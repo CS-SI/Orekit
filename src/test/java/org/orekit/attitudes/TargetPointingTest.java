@@ -16,19 +16,16 @@
  */
 package org.orekit.attitudes;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.attitudes.NadirPointing;
-import org.orekit.attitudes.TargetPointing;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
@@ -42,7 +39,7 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Line;
 import org.orekit.utils.PVCoordinates;
 
@@ -223,7 +220,7 @@ public class TargetPointingTest {
         // Create computation date 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 04, 07),
                                              TimeComponents.H00,
-                                             UTCScale.getInstance());
+                                             TimeScalesFactory.getUTC());
         
         // Reference frame = ITRF 2005
         Frame frameITRF2005 = FramesFactory.getITRF2005(true);
@@ -333,7 +330,7 @@ public class TargetPointingTest {
             // Computation date
             date = new AbsoluteDate(new DateComponents(2008, 04, 07),
                                     TimeComponents.H00,
-                                    UTCScale.getInstance());
+                                    TimeScalesFactory.getUTC());
 
             // Body mu
             mu = 3.9860047e14;

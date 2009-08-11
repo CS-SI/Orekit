@@ -22,8 +22,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.TAIScale;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 
 /** Terrestrial Intermediate Reference Frame 2000.
  * <p> The pole motion is not considered : Pseudo Earth Fixed Frame. It handles
@@ -40,7 +39,7 @@ class TIRF2000Frame extends Frame {
 
     /** Reference date of Capitaine's Earth Rotation Angle model. */
     private static final AbsoluteDate ERA_REFERENCE =
-        new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TAIScale.getInstance());
+        new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTAI());
 
     /** Constant term of Capitaine's Earth Rotation Angle model. */
     private static final double ERA_0 = TWO_PI * 0.7790572732640;
@@ -123,7 +122,7 @@ class TIRF2000Frame extends Frame {
             // compute Earth Rotation Angle using Nicole Capitaine model (2000)
             final double tidalDtu1   = (tidalCorrection == null) ? 0 : tidalCorrection.getDUT1(date);
             final double dtu1        = eopHistory.getUT1MinusUTC(date);
-            final double utcMinusTai = UTCScale.getInstance().offsetFromTAI(date);
+            final double utcMinusTai = TimeScalesFactory.getUTC().offsetFromTAI(date);
             final double tu =
                 (date.durationFrom(ERA_REFERENCE) + utcMinusTai + dtu1 + tidalDtu1) / 86400.0;
             era  = ERA_0 + ERA_1A * tu + ERA_1B * tu;

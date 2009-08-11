@@ -81,7 +81,7 @@ public class UTCScaleTest {
 
     @Test
     public void testSymmetry() {
-        TimeScale scale = GPSScale.getInstance();
+        TimeScale scale = TimeScalesFactory.getGPS();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
             double dt1 = scale.offsetFromTAI(date);
@@ -110,7 +110,7 @@ public class UTCScaleTest {
     public void setUp() throws OrekitException {
         String root = getClass().getClassLoader().getResource("regular-data").getPath();
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
-        utc = UTCScale.getInstance();
+        utc = TimeScalesFactory.getUTC();
     }
 
     @After

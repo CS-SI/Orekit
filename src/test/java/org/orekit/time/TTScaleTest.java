@@ -25,7 +25,7 @@ public class TTScaleTest {
 
     @Test
     public void testConstant() {
-        TimeScale scale = TTScale.getInstance();
+        TimeScale scale = TimeScalesFactory.getTT();
         double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH);
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
@@ -35,7 +35,7 @@ public class TTScaleTest {
 
     @Test
     public void testSymmetry() {
-        TimeScale scale = TTScale.getInstance();
+        TimeScale scale = TimeScalesFactory.getTT();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
             double dt1 = scale.offsetFromTAI(date);

@@ -41,8 +41,8 @@ import org.orekit.errors.OrekitException;
  * in UTC and write it in another file in TAI. This can be done as follows:</p>
  * <pre>
  *   DateTimeComponents utcComponents = readNextDate();
- *   AbsoluteDate date = new AbsoluteDate(utcComponents, UTCScale.getInstance());
- *   writeNextDate(date.getComponents(TAIScale.getInstance()));
+ *   AbsoluteDate date = new AbsoluteDate(utcComponents, TimeScalesFactory.getUTC());
+ *   writeNextDate(date.getComponents(TimeScalesFactory.getTAI()));
  * </pre>
  *
  * <p>Two complementary views are available:</p>
@@ -94,27 +94,27 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      * a different convention (for example the <code>convcal</code> utility).</p>
      */
     public static final AbsoluteDate JULIAN_EPOCH =
-        new AbsoluteDate(DateComponents.JULIAN_EPOCH, TimeComponents.H12, TTScale.getInstance());
+        new AbsoluteDate(DateComponents.JULIAN_EPOCH, TimeComponents.H12, TimeScalesFactory.getTT());
 
     /** Reference epoch for modified julian dates: 1858-11-17T00:00:00. */
     public static final AbsoluteDate MODIFIED_JULIAN_EPOCH =
-        new AbsoluteDate(DateComponents.MODIFIED_JULIAN_EPOCH, TimeComponents.H00, TTScale.getInstance());
+        new AbsoluteDate(DateComponents.MODIFIED_JULIAN_EPOCH, TimeComponents.H00, TimeScalesFactory.getTT());
 
     /** Reference epoch for 1950 dates: 1950-01-01T00:00:00. */
     public static final AbsoluteDate FIFTIES_EPOCH =
-        new AbsoluteDate(DateComponents.FIFTIES_EPOCH, TimeComponents.H00, TTScale.getInstance());
+        new AbsoluteDate(DateComponents.FIFTIES_EPOCH, TimeComponents.H00, TimeScalesFactory.getTT());
 
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 GPS time. */
     public static final AbsoluteDate GPS_EPOCH =
-        new AbsoluteDate(DateComponents.GPS_EPOCH, TimeComponents.H00, GPSScale.getInstance());
+        new AbsoluteDate(DateComponents.GPS_EPOCH, TimeComponents.H00, TimeScalesFactory.getGPS());
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC). */
     public static final AbsoluteDate J2000_EPOCH =
-        new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TTScale.getInstance());
+        new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTT());
 
     /** Java Reference epoch: 1970-01-01T00:00:00 TT. */
     public static final AbsoluteDate JAVA_EPOCH =
-        new AbsoluteDate(DateComponents.JAVA_EPOCH, TimeComponents.H00, TTScale.getInstance());
+        new AbsoluteDate(DateComponents.JAVA_EPOCH, TimeComponents.H00, TimeScalesFactory.getTT());
 
     /** Dummy date at infinity in the past direction. */
     public static final AbsoluteDate PAST_INFINITY =
@@ -426,7 +426,7 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      */
     public String toString() {
         try {
-            return toString(UTCScale.getInstance());
+            return toString(TimeScalesFactory.getUTC());
         } catch (OrekitException oe) {
             throw new RuntimeException(oe);
         }

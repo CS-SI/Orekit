@@ -16,6 +16,10 @@
  */
 package org.orekit.forces.gravity;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
@@ -27,15 +31,9 @@ import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.SolarSystemBody;
 import org.orekit.data.DataProvidersManager;
@@ -54,7 +52,7 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -69,7 +67,7 @@ public class DrozinerAttractionModelTest {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
                                              new TimeComponents(13, 59, 27.816),
-                                             UTCScale.getInstance());
+                                             TimeScalesFactory.getUTC());
         Transform itrfToEME2000 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date);
         Vector3D pole           = itrfToEME2000.transformVector(Vector3D.PLUS_K);
         Frame poleAligned       = new Frame(FramesFactory.getEME2000(),
@@ -216,7 +214,7 @@ public class DrozinerAttractionModelTest {
         //  initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
                                              new TimeComponents(13, 59, 27.816),
-                                             UTCScale.getInstance());
+                                             TimeScalesFactory.getUTC());
         double i     = Math.toRadians(98.7);
         double omega = Math.toRadians(93.0);
         double OMEGA = Math.toRadians(15.0 * 22.5);

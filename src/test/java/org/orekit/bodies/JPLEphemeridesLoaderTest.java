@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TTScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
 
 public class JPLEphemeridesLoaderTest {
@@ -77,12 +77,12 @@ public class JPLEphemeridesLoaderTest {
 
     @Test
     public void testDerivative405() throws OrekitException, ParseException {
-        checkDerivative(new AbsoluteDate(1969, 6, 28, TTScale.getInstance()));
+        checkDerivative(new AbsoluteDate(1969, 6, 28, TimeScalesFactory.getTT()));
     }
 
     @Test
     public void testDerivative406() throws OrekitException, ParseException {
-        checkDerivative(new AbsoluteDate(2964, 9, 26, TTScale.getInstance()));
+        checkDerivative(new AbsoluteDate(2964, 9, 26, TimeScalesFactory.getTT()));
     }
 
     private void checkDerivative(AbsoluteDate date) throws OrekitException, ParseException {

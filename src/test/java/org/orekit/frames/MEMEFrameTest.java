@@ -16,18 +16,17 @@
  */
 package org.orekit.frames;
 
-import org.junit.Test;
-import org.junit.Before;
-
 import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Before;
+import org.junit.Test;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -42,7 +41,7 @@ public class MEMEFrameTest {
         // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 04, 06),
                                            new TimeComponents(07, 51, 28.386009),
-                                           UTCScale.getInstance());
+                                           TimeScalesFactory.getUTC());
 
         Transform tt = FramesFactory.getGCRF().getTransformTo(FramesFactory.getMEME(true), t0);
         //GCRF iau76 w corr
@@ -78,7 +77,7 @@ public class MEMEFrameTest {
         // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 06, 01),
                                            TimeComponents.H00,
-                                           UTCScale.getInstance());
+                                           TimeScalesFactory.getUTC());
 
         Transform tt = FramesFactory.getGCRF().getTransformTo(FramesFactory.getMEME(true), t0);
         //GCRF iau76 w corr

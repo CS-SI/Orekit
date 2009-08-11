@@ -33,7 +33,7 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 import fr.cs.examples.Autoconfiguration;
@@ -55,7 +55,7 @@ public class VisibilityCheck {
             Autoconfiguration.configureOrekit();
 
             //  Initial state definition : date, orbit
-            AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, UTCScale.getInstance());
+            AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, TimeScalesFactory.getUTC());
             double mu =  3.986004415e+14; // gravitation coefficient
             Frame inertialFrame = FramesFactory.getEME2000(); // inertial frame for orbit definition
             Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);

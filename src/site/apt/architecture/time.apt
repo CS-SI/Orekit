@@ -34,8 +34,8 @@ Time
   Dates are commonly defined by specifying a location in a specific <time scale>.
   For example, the J2000.0 epoch is defined from its calendar components as
   2000-01-01T12:00:00 in Terrestrial Time. It is of prime importance to understand 
-  the various available time scales definitions to avoid mistakes. Orekit provides 
-  5 of the most important ones:
+  the various available time scales definitions to avoid mistakes. The
+  <<<TimeScalesFactory>>> class provides several predefined time scales:
 
     ** <<International Atomic Time>>,
     this is the most accurate and regular time scale that can be used for now at
@@ -60,7 +60,6 @@ Time
     was equal to UTC at start of the GPS Epoch when UTC was 19 seconds behind TAI,
     and stayed parallel to TAI since then (i.e. UTC is now offset from GPS due to
     leap seconds). TGPS = TAI - 19 s.
-
 
 ** Date Definition
 
@@ -90,7 +89,7 @@ Time
   1 second while the second method would return 2 seconds:
  
 +---------------------
-TimeScale    utc   = UTCScale.getInstance();
+TimeScale    utc   = TimeScalesFactory.getUTC();
 AbsoluteDate start = new AbsoluteDate(2005, 12, 31, 23, 59, 59, utc);
 AbsoluteDate stop  = new AbsoluteDate(2006,  1,  1,  0,  0,  0, utc);
 System.out.println(stop.offsetFrom(start, utc));  // prints 1.0
@@ -105,7 +104,7 @@ System.out.println(stop.durationFrom(start));     // prints 2.0
   code shows both approaches:
 
 +---------------------
-TimeScale utc = UTCScale.getInstance();
+TimeScale utc = TimeScalesFactory.getUTC();
 AbsoluteDate referenceDate = new AbsoluteDate(2005, 12, 31, 23, 59, 59, utc);
 AbsoluteDate date1         = new AbsoluteDate(referenceDate, 1.0, utc);
 AbsoluteDate date2         = new AbsoluteDate(referenceDate, 2.0);

@@ -25,7 +25,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 /** This is the realization of the Jacchia-Bowman 2006 atmospheric model.
@@ -733,7 +733,7 @@ public class JB2006 implements Atmosphere {
         // check if data are available :
         if (date.compareTo(inputParams.getMaxDate()) > 0 ||
             date.compareTo(inputParams.getMinDate()) < 0) {
-            final TimeScale utcScale = UTCScale.getInstance();
+            final TimeScale utcScale = TimeScalesFactory.getUTC();
             throw new OrekitException("no solar activity available at {0}, " +
                                       "data available only in range [{1}, {2}]",
                                       date.toString(utcScale),

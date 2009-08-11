@@ -47,7 +47,7 @@ Frame inertialFrame = FramesFactory.getEME2000();
   []
 
 +---------------------
-TimeScale utc = UTCScale.getInstance();
+TimeScale utc = TimeScalesFactory.getUTC();
 AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, utc);
 
 double mu =  3.986004415e+14;
@@ -201,7 +201,7 @@ step 11
 // Inertial frame
 Frame inertialFrame = FramesFactory.getEME2000();
 // Initial date
-TimeScale utc = UTCScale.getInstance();
+TimeScale utc = TimeScalesFactory.getUTC();
 AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000,utc);
 // Central attraction coefficient
 double mu =  3.986004415e+14;
@@ -403,7 +403,7 @@ private static class TutorialStepHandler implements OrekitFixedStepHandler {
 // Inertial frame
 Frame inertialFrame = FramesFactory.getEME2000();
 // Initial date
-TimeScale utc = UTCScale.getInstance();
+TimeScale utc = TimeScalesFactory.getUTC();
 AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000,utc);
 // Central attraction coefficient
 double mu =  3.986004415e+14;
@@ -532,7 +532,7 @@ Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
 Vector3D velocity  = new Vector3D(505.8479685, 942.7809215, 7435.922231);
 PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
 AbsoluteDate initialDate =
-    new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, UTCScale.getInstance());
+    new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, TimeScalesFactory.getUTC());
 Frame inertialFrame = FramesFactory.getEME2000();
 +---------------------
 

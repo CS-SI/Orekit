@@ -32,8 +32,8 @@ import org.orekit.forces.drag.DTM2000InputParameters;
 import org.orekit.forces.drag.JB2006InputParameters;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
-import org.orekit.time.UTCScale;
 
 
 /** This class reads and provides solar activity data needed by the
@@ -146,7 +146,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
             cal.set(Calendar.YEAR, fluxYear);
             cal.set(Calendar.DAY_OF_YEAR, fluxDay);
 
-            date = new AbsoluteDate(cal.getTime(), UTCScale.getInstance());
+            date = new AbsoluteDate(cal.getTime(), TimeScalesFactory.getUTC());
 
             if (first) {
                 first = false;
@@ -249,7 +249,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
             findClosestLine(date);
             Calendar cal = new GregorianCalendar();
             cal.setTimeZone(TimeZone.getTimeZone("UTC"));
-            cal.setTime(date.toDate(UTCScale.getInstance()));
+            cal.setTime(date.toDate(TimeScalesFactory.getUTC()));
             int hour = cal.get(Calendar.HOUR_OF_DAY);
             for(int i= 0; i<8; i++) {
                 if ((hour >= (i * 3)) && (hour < ((i + 1) * 3))) {

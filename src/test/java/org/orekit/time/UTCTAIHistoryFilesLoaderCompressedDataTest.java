@@ -28,7 +28,7 @@ public class UTCTAIHistoryFilesLoaderCompressedDataTest {
 
     @Test
     public void testCompressed() throws OrekitException {
-        assertEquals(-32.0, UTCScale.getInstance().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 1.0e-8);
+        assertEquals(-32.0, TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 1.0e-8);
     }
 
     @Before

@@ -29,7 +29,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.UTCScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 public class SpinStabilizedTest {
@@ -39,7 +39,7 @@ public class SpinStabilizedTest {
         CelestialBody sun = SolarSystemBody.getSun();
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
-                                             UTCScale.getInstance());
+                                             TimeScalesFactory.getUTC());
         double rate = 2.0 * Math.PI / (12 * 60);
         AttitudeLaw bbq =
             new SpinStabilized(new CelestialBodyPointed(FramesFactory.getEME2000(), sun, Vector3D.PLUS_K,

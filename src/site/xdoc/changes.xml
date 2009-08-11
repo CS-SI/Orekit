@@ -53,12 +53,18 @@
         Orekit supports the two different naming patterns for bulletins B provided by IERS 
         on http://www.iers.org/ and http://hpiers.obspm.fr/eop-pc/.
       </action>
+      <action dev="luc" type="update" >
+        the predefined times scales (TAI, UTC ...) are now built using a factory. The various
+        XXXScale.getInstance() methods defined in each predefined time scales classes
+        are still available, but have been deprecated and will be removed in the future,
+        they are replaced by TimeScalesFactory.getXXX().
+      </action>
       <action dev="pascal" type="update" >
         the Frame class was split into a FramesFactory class, dealing with the predefined
         reference frames, and a Frame class for the creation of new frames and the navigation
         through any frames tree. The Frame.getXXX() methods for the predefined reference
         frames are still available, but have been deprecated and will be removed in the future,
-        let's use FramesFactory.getXXX() instead.
+        they are replaced by FramesFactory.getXXX().
       </action>
       <action dev="pascal" type="add" >
         3 new predefined reference frames have been added in Orekit : MEME, TEME and PEF. They
