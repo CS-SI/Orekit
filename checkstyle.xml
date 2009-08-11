@@ -85,9 +85,4 @@
         <property name="onCommentFormat"  value="CHECKSTYLE\: resume VisibilityModifierCheck"/>
         <property name="checkFormat"      value="VisibilityModifierCheck"/>
     </module>
-    <module name="SuppressionCommentFilter">
-        <property name="offCommentFormat" value="CHECKSTYLE\: stop HideUtilityClassConstructor"/>
-        <property name="onCommentFormat"  value="CHECKSTYLE\: resume HideUtilityClassConstructor"/>
-        <property name="checkFormat"      value="HideUtilityClassConstructor"/>
-    </module>
 </module>

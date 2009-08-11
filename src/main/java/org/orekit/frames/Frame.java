@@ -417,31 +417,24 @@ public class Frame implements Serializable {
         return FramesFactory.getVeis1950();
     }
 
-    // The following marker comment is used to prevent checkstyle from complaining
-    // about utility classes missing an hidden (private) constructor
-    // These classes should have such constructors, that are obviously never called.
-    // Unfortunately, since cobertura currently cannot mark untestable code, these
-    // constructors on such small classes lead to artificially low code coverage.
-    // So to make sure both checkstyle and cobertura are happy, we locally inhibit
-    // checkstyle verification for the special case of small classes implementing
-    // the initialization on demand holder idiom used for singletons. This choice is
-    // safe as the classes are themselves private and completely under control. In fact,
-    // even if someone could instantiate them, this would be harmless since they only
-    // have static fields and no methods at all.
-    // CHECKSTYLE: stop HideUtilityClassConstructor
+    // We use the Initialization on demand holder idiom to store
+    // the singletons, as it is both thread-safe, efficient (no
+    // synchronization) and works with all versions of java.
 
-    /** Holder for the singleton.
-     * <p>We use the Initialization on demand holder idiom to store
-     * the singleton, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.</p>
-     */
+    /** Holder for the root frame singleton. */
     private static class LazyRootHolder {
 
         /** Unique instance. */
         private static final Frame INSTANCE = new Frame("GCRF");
 
-    }
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private LazyRootHolder() {
+        }
 
-    // CHECKSTYLE: resume HideUtilityClassConstructor
+    }
 
 }
