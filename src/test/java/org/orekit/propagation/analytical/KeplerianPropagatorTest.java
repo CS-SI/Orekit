@@ -30,7 +30,6 @@ import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
@@ -533,8 +532,7 @@ public class KeplerianPropagatorTest {
 
     @Before
     public void setUp() {
-        String root = getClass().getClassLoader().getResource("regular-data").getPath();
-        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+        Utils.setDataRoot("regular-data");
         mu  = 3.9860047e14;
     }
 

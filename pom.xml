@@ -189,13 +189,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.4.3</version>
-        <configuration>
-           <!-- Some tests play tricks with singletons configuration, using various
-                IERS data folders. These tests cannot share the singletons, so they
-                must be run in separated JVMs. This slows down tests but is needed
-                for tests coverage. So we use a per test mode. -->
-           <forkMode>pertest</forkMode>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

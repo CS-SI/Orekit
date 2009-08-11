@@ -43,7 +43,7 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-class JPLEphemeridesLoader implements DataLoader {
+public class JPLEphemeridesLoader implements DataLoader {
 
     /** Error message for no JPL files. */
     private static final String NO_JPL_FILES_FOUND =

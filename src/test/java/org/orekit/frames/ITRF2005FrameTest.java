@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -52,8 +52,7 @@ public class ITRF2005FrameTest {
 
     @Before
     public void setUp() {
-        String root = getClass().getClassLoader().getResource("compressed-data").getPath();
-        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+        Utils.setDataRoot("compressed-data");
     }
 
 }

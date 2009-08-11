@@ -16,23 +16,16 @@
  */
 package org.orekit.time;
 
-
-import org.junit.Before;
 import org.junit.Test;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 
 public class UTCTAIHistoryFilesLoaderNoDataTest {
 
     @Test(expected=OrekitException.class)
     public void testNoData() throws OrekitException {
+        Utils.setDataRoot("no-data");
         TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH);
-    }
-
-    @Before
-    public void setUp() {
-        String root = getClass().getClassLoader().getResource("no-data").getPath();
-        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
     }
 
 }

@@ -18,8 +18,8 @@ package org.orekit.data;
 
 import java.util.TreeSet;
 
-
 import org.junit.After;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;
@@ -29,8 +29,7 @@ public abstract class AbstractFilesLoaderTest {
     protected TreeSet<TimeStamped> set;
 
     protected void setRoot(String directoryName) throws OrekitException {
-        String root = getClass().getClassLoader().getResource(directoryName).getPath();
-        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+        Utils.setDataRoot(directoryName);
         DataProvidersManager.getInstance().clearProviders();
         set = new TreeSet<TimeStamped>(new ChronologicalComparator());
     }

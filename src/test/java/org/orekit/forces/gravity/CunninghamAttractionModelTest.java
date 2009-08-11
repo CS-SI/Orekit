@@ -33,9 +33,9 @@ import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.SolarSystemBody;
-import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
@@ -263,8 +263,7 @@ public class CunninghamAttractionModelTest {
     public void setUp() {
         ITRF2005   = null;
         propagator = null;
-        String root = getClass().getClassLoader().getResource("regular-data").getPath();
-        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+        Utils.setDataRoot("regular-data");
         try {
             // Eigen c1 model truncated to degree 6
             mu =  3.986004415e+14;

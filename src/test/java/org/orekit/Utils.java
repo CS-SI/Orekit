@@ -16,6 +16,20 @@
  */
 package org.orekit;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Map;
+
+import org.junit.Assert;
+import org.orekit.bodies.CelestialBody;
+import org.orekit.bodies.JPLEphemeridesLoader;
+import org.orekit.bodies.SolarSystemBody;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
+
 public class Utils {
 
     // epsilon for tests
@@ -32,6 +46,44 @@ public class Utils {
 
     public static final double ae =  6378136.460;
     public static final double mu =  3.986004415e+14;
+
+    public static void setDataRoot(String root) {
+        Utils.clearFactory(SolarSystemBody.class, CelestialBody.class);
+        Utils.clearFactory(FramesFactory.class, Frame.class);
+        Utils.clearFactory(TimeScalesFactory.class, TimeScale.class);
+        Utils.clearJPLEphemeridesConstants();
+        DataProvidersManager.getInstance().clearProviders();
+        String rootPath = Utils.class.getClassLoader().getResource(root).getPath();
+        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, rootPath);
+    }
+
+    private static void clearFactory(Class<?> factoryClass, Class<?> cachedFieldsClass) {
+        try {
+            for (Field field : factoryClass.getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers()) &&
+                    cachedFieldsClass.isAssignableFrom(field.getType())) {
+                    field.setAccessible(true);
+                    field.set(null, null);
+                }
+            }
+        } catch (IllegalAccessException iae) {
+            Assert.fail(iae.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void clearJPLEphemeridesConstants() {
+        try {
+            for (Field field : JPLEphemeridesLoader.class.getDeclaredFields()) {
+                if (field.getName().equals("CONSTANTS")) {
+                    field.setAccessible(true);
+                    ((Map<String, Double>) field.get(null)).clear();
+                }
+            }
+        } catch (IllegalAccessException iae) {
+            Assert.fail(iae.getMessage());
+        }
+    }
 
 
 }

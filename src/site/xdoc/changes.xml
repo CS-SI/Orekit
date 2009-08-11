@@ -35,6 +35,13 @@
         added german localization for error messages
       </action>
       <action dev="luc" type="update">
+        added a feature allowing all tests to clear the already built reference
+        objects (frames, time scales, solar system bodies ...) between each tests,
+        thus removing the need to launch tests in separate JVMS. This allows to
+        launch all tests directly from eclipse, and this speed ups maven tests by
+        a factor 4 at least
+      </action>
+      <action dev="luc" type="update">
         set up a custom ant build independent from the maven 2 build
       </action>
       <action dev="luc" type="update">

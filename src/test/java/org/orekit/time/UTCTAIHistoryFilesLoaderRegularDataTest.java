@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 
 public class UTCTAIHistoryFilesLoaderRegularDataTest {
@@ -47,8 +47,7 @@ public class UTCTAIHistoryFilesLoaderRegularDataTest {
 
     @Before
     public void setUp() {
-        String root = getClass().getClassLoader().getResource("regular-data").getPath();
-        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+        Utils.setDataRoot("regular-data");
     }
 
 }

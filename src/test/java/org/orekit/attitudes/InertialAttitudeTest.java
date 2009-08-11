@@ -24,7 +24,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -71,8 +71,7 @@ public class InertialAttitudeTest {
     @Before
     public void setUp() {
         try {
-            String root = getClass().getClassLoader().getResource("regular-data").getPath();
-            System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+            Utils.setDataRoot("regular-data");
 
             t0 = new AbsoluteDate(new DateComponents(2008, 06, 03), TimeComponents.H12,
                                   TimeScalesFactory.getUTC());

@@ -23,7 +23,7 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -191,8 +191,7 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
 
     @Before
     public void setUp() {
-        String root = getClass().getClassLoader().getResource("compressed-data").getPath();
-        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+        Utils.setDataRoot("compressed-data");
     }
 
 }

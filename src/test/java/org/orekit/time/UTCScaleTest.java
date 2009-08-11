@@ -22,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 
 public class UTCScaleTest {
@@ -108,8 +108,7 @@ public class UTCScaleTest {
 
     @Before
     public void setUp() throws OrekitException {
-        String root = getClass().getClassLoader().getResource("regular-data").getPath();
-        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+        Utils.setDataRoot("regular-data");
         utc = TimeScalesFactory.getUTC();
     }
 

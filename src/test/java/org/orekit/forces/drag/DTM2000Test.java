@@ -16,18 +16,17 @@
  */
 package org.orekit.forces.drag;
 
+import static org.junit.Assert.assertEquals;
+
 import java.text.ParseException;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-
 import org.orekit.SolarInputs97to05;
+import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.bodies.SolarSystemBody;
-import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -139,8 +138,7 @@ public class DTM2000Test {
 
     @Before
     public void setUp() {
-        String root = getClass().getClassLoader().getResource("regular-data").getPath();
-        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+        Utils.setDataRoot("regular-data");
     }
 
 }

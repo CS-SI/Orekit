@@ -24,7 +24,7 @@ import java.text.ParseException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
@@ -103,8 +103,7 @@ public class TabulatedEphemerisTest {
 
     @Before
     public void setUp() {
-        String root = getClass().getClassLoader().getResource("regular-data").getPath();
-        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+        Utils.setDataRoot("regular-data");
         mu  = 3.9860047e14;
         ae  = 6.378137e6;
         c20 = -1.08263e-3;

@@ -23,10 +23,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 
-
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 
 public class AbsoluteDateTest {
@@ -275,8 +274,7 @@ public class AbsoluteDateTest {
 
     @Before
     public void setUp() throws OrekitException {
-        String root = getClass().getClassLoader().getResource("regular-data").getPath();
-        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+        Utils.setDataRoot("regular-data");
         utc = TimeScalesFactory.getUTC();
     }
 

@@ -28,10 +28,10 @@ import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.bodies.SolarSystemBody;
-import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.frames.FramesFactory;
@@ -169,8 +169,7 @@ public class SolarRadiationPressureTest {
 
     @Before
     public void setUp() {
-        String root = getClass().getClassLoader().getResource("regular-data").getPath();
-        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
+        Utils.setDataRoot("regular-data");
     }
 
 }

@@ -19,22 +19,16 @@ package org.orekit.time;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 
 public class UTCTAIHistoryFilesLoaderCompressedDataTest {
 
     @Test
     public void testCompressed() throws OrekitException {
+        Utils.setDataRoot("compressed-data");
         assertEquals(-32.0, TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 1.0e-8);
-    }
-
-    @Before
-    public void setUp() {
-        String root = getClass().getClassLoader().getResource("compressed-data").getPath();
-        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, root);
     }
 
 }
