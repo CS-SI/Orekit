@@ -5,14 +5,9 @@
         <include>BUILDING.txt</include>
         <include>pom.xml</include>
         <include>build.xml</include>
-        <include>maven-build.xml</include>
-        <include>maven-build.properties</include>
         <include>checkstyle.xml</include>
-        <include>checkstyle-exclude-filter.xml</include>
         <include>findbugs-exclude-filter.xml</include>
         <include>license-header.txt</include>
-        <include>.classpath</include>
-        <include>.project</include>
       </includes>
       <useDefaultExcludes>true</useDefaultExcludes>
     </fileSet>
