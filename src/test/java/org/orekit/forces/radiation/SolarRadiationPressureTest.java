@@ -16,8 +16,6 @@
  */
 package org.orekit.forces.radiation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
@@ -26,6 +24,7 @@ import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -67,7 +66,7 @@ public class SolarRadiationPressureTest {
                                        (RadiationSensitive) new SphericalSpacecraft(50.0, 0.5, 0.5, 0.5));
 
         double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
-        assertEquals(86164, period,1);
+        Assert.assertEquals(86164, period,1);
 
         // creation of the propagator
         KeplerianPropagator k = new KeplerianPropagator(orbit);
@@ -94,7 +93,7 @@ public class SolarRadiationPressureTest {
                 e.printStackTrace();
             }
         }
-        assertTrue(3==count);
+        Assert.assertTrue(3==count);
     }
 
     @Test
@@ -109,7 +108,7 @@ public class SolarRadiationPressureTest {
                                            Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
                                            0.1, 2, FramesFactory.getEME2000(), date, mu);
         final double period = orbit.getKeplerianPeriod();
-        assertEquals(86164, period, 1);
+        Assert.assertEquals(86164, period, 1);
         CelestialBody sun = SolarSystemBody.getSun();
 
         // creation of the force model
@@ -138,12 +137,12 @@ public class SolarRadiationPressureTest {
         AbsoluteDate finalDate = new AbsoluteDate(date, 10 * period);
         calc.setInitialState(new SpacecraftState(orbit, 1500.0));
         calc.propagate(finalDate);
-        assertTrue(calc.getCalls() < 7100);
+        Assert.assertTrue(calc.getCalls() < 7100);
     }
 
     public static void checkRadius(double radius , double min , double max) {
-        assertTrue(radius >= min);
-        assertTrue(radius <= max);
+        Assert.assertTrue(radius >= min);
+        Assert.assertTrue(radius <= max);
     }
 
     private double mu = 3.98600E14;
@@ -160,8 +159,8 @@ public class SolarRadiationPressureTest {
             final double dex = currentState.getEquinoctialEx() - 0.01071166;
             final double dey = currentState.getEquinoctialEy() - 0.00654848;
             final double alpha = Math.toDegrees(Math.atan2(dey, dex));
-            assertTrue(alpha > 100.0);
-            assertTrue(alpha < 112.0);
+            Assert.assertTrue(alpha > 100.0);
+            Assert.assertTrue(alpha < 112.0);
             checkRadius(Math.sqrt(dex * dex + dey * dey), 0.003524, 0.003541);
         }
 

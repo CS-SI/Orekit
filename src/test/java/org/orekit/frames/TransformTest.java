@@ -16,14 +16,13 @@
  */
 package org.orekit.frames;
 
-import static org.junit.Assert.assertEquals;
 
 import java.util.Random;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.frames.Transform;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -48,7 +47,7 @@ public class TransformTest {
                           new Transform(Vector3D.PLUS_I));
         Vector3D u = transform.transformPosition(new Vector3D(1.0, 1.0, 1.0));
         Vector3D v = new Vector3D(0.0, 1.0, 1.0);
-        assertEquals(0, u.subtract(v).getNorm(), 1.0e-15);
+        Assert.assertEquals(0, u.subtract(v).getNorm(), 1.0e-15);
     }
 
     @Test
@@ -82,8 +81,8 @@ public class TransformTest {
 
                 Vector3D bCombined = combined.transformVector(a);
                 Vector3D cCombined = combined.transformPosition(a);
-                assertEquals(0, bCombined.subtract(bRef).getNorm(), 1.0e-11);
-                assertEquals(0, cCombined.subtract(cRef).getNorm(), 1.0e-10);
+                Assert.assertEquals(0, bCombined.subtract(bRef).getNorm(), 1.0e-11);
+                Assert.assertEquals(0, cCombined.subtract(cRef).getNorm(), 1.0e-10);
 
             }
         }
@@ -118,9 +117,9 @@ public class TransformTest {
             for (int j = 0; j < 10; ++j) {
                 Vector3D a = new Vector3D(rnd.nextDouble(), rnd.nextDouble(), rnd.nextDouble());
                 Vector3D b = transform.transformVector(a);
-                assertEquals(0, b.subtract(a).getNorm(), 1.0e-10);
+                Assert.assertEquals(0, b.subtract(a).getNorm(), 1.0e-10);
                 Vector3D c = transform.transformPosition(a);
-                assertEquals(0,
+                Assert.assertEquals(0,
                              c.subtract(a).subtract(delta).getNorm(),
                              1.0e-13);
             }
@@ -303,12 +302,12 @@ public class TransformTest {
             for (int j = 0; j < 10; ++j) {
                 Vector3D a = new Vector3D(rnd.nextDouble(), rnd.nextDouble(), rnd.nextDouble());
                 Vector3D b = transform.transformVector(a);
-                assertEquals(Vector3D.angle(axis, a), Vector3D.angle(axis, b), 1.0e-13);
+                Assert.assertEquals(Vector3D.angle(axis, a), Vector3D.angle(axis, b), 1.0e-13);
                 Vector3D aOrtho = Vector3D.crossProduct(axis, a);
                 Vector3D bOrtho = Vector3D.crossProduct(axis, b);
-                assertEquals(angle, Vector3D.angle(aOrtho, bOrtho), 1.0e-13);
+                Assert.assertEquals(angle, Vector3D.angle(aOrtho, bOrtho), 1.0e-13);
                 Vector3D c = transform.transformPosition(a);
-                assertEquals(0, c.subtract(b).getNorm(), 1.0e-13);
+                Assert.assertEquals(0, c.subtract(b).getNorm(), 1.0e-13);
             }
 
         }
@@ -318,15 +317,15 @@ public class TransformTest {
 
         Vector3D d = v1.subtract(v2);
 
-        assertEquals(0,d.getX(),1.0e-8);
-        assertEquals(0,d.getY(),1.0e-8);
-        assertEquals(0,d.getZ(),1.0e-8);
+        Assert.assertEquals(0,d.getX(),1.0e-8);
+        Assert.assertEquals(0,d.getY(),1.0e-8);
+        Assert.assertEquals(0,d.getZ(),1.0e-8);
 
-        assertEquals(0,d.getNorm(),1.0e-8);
+        Assert.assertEquals(0,d.getNorm(),1.0e-8);
 
         if ((v1.getNorm() > 1.0e-10) && (v2.getNorm() > 1.0e-10)) {
             Rotation r = new Rotation(v1, v2);
-            assertEquals(0,r.getAngle(),1.0e-8);
+            Assert.assertEquals(0,r.getAngle(),1.0e-8);
 
 
         }
@@ -352,15 +351,15 @@ public class TransformTest {
         for (int i = 0; i < 100; ++i) {
             Vector3D a = randomVector(random);
             Vector3D tA = transform.transformVector(a);
-            assertEquals(0, a.subtract(tA).getNorm(), 1.0e-10 * a.getNorm());
+            Assert.assertEquals(0, a.subtract(tA).getNorm(), 1.0e-10 * a.getNorm());
             Vector3D b = randomVector(random);
             Vector3D tB = transform.transformPosition(b);
-            assertEquals(0, b.subtract(tB).getNorm(), 1.0e-10 * a.getNorm());
+            Assert.assertEquals(0, b.subtract(tB).getNorm(), 1.0e-10 * a.getNorm());
             PVCoordinates pv  = new PVCoordinates(randomVector(random), randomVector(random));
             PVCoordinates tPv = transform.transformPVCoordinates(pv);
-            assertEquals(0, pv.getPosition().subtract(tPv.getPosition()).getNorm(),
+            Assert.assertEquals(0, pv.getPosition().subtract(tPv.getPosition()).getNorm(),
                          1.0e-10 * pv.getPosition().getNorm());
-            assertEquals(0, pv.getVelocity().subtract(tPv.getVelocity()).getNorm(),
+            Assert.assertEquals(0, pv.getVelocity().subtract(tPv.getVelocity()).getNorm(),
                          1.0e-9 * pv.getVelocity().getNorm());
         }
     }

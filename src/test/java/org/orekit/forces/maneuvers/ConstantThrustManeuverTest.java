@@ -16,14 +16,13 @@
  */
 package org.orekit.forces.maneuvers;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math.util.MathUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -63,13 +62,13 @@ public class ConstantThrustManeuverTest {
         EventDetector[] switches = maneuver.getEventsDetectors();
 
         Orbit o1 = dummyOrbit(new AbsoluteDate(date, - 1.0));
-        assertTrue(switches[0].g(new SpacecraftState(o1)) < 0);
+        Assert.assertTrue(switches[0].g(new SpacecraftState(o1)) < 0);
         Orbit o2 = dummyOrbit(new AbsoluteDate(date,   1.0));
-        assertTrue(switches[0].g(new SpacecraftState(o2)) > 0);
+        Assert.assertTrue(switches[0].g(new SpacecraftState(o2)) > 0);
         Orbit o3 = dummyOrbit(new AbsoluteDate(date,   9.0));
-        assertTrue(switches[1].g(new SpacecraftState(o3)) < 0);
+        Assert.assertTrue(switches[1].g(new SpacecraftState(o3)) < 0);
         Orbit o4 = dummyOrbit(new AbsoluteDate(date,  11.0));
-        assertTrue(switches[1].g(new SpacecraftState(o4)) > 0);
+        Assert.assertTrue(switches[1].g(new SpacecraftState(o4)) > 0);
     }
 
     @Test
@@ -82,13 +81,13 @@ public class ConstantThrustManeuverTest {
         EventDetector[] switches = maneuver.getEventsDetectors();
 
         Orbit o1 = dummyOrbit(new AbsoluteDate(date, -11.0));
-        assertTrue(switches[0].g(new SpacecraftState(o1)) < 0);
+        Assert.assertTrue(switches[0].g(new SpacecraftState(o1)) < 0);
         Orbit o2 = dummyOrbit(new AbsoluteDate(date,  -9.0));
-        assertTrue(switches[0].g(new SpacecraftState(o2)) > 0);
+        Assert.assertTrue(switches[0].g(new SpacecraftState(o2)) > 0);
         Orbit o3 = dummyOrbit(new AbsoluteDate(date,  -1.0));
-        assertTrue(switches[1].g(new SpacecraftState(o3)) < 0);
+        Assert.assertTrue(switches[1].g(new SpacecraftState(o3)) < 0);
         Orbit o4 = dummyOrbit(new AbsoluteDate(date,   1.0));
-        assertTrue(switches[1].g(new SpacecraftState(o4)) > 0);
+        Assert.assertTrue(switches[1].g(new SpacecraftState(o4)) > 0);
     }
 
     @Test
@@ -138,9 +137,9 @@ public class ConstantThrustManeuverTest {
         propagator.addForceModel(maneuver);
         final SpacecraftState finalorb = propagator.propagate(new AbsoluteDate(fireDate, 3800));
 
-        assertEquals(2007.88245442614, finalorb.getMass(), 1e-10);
-        assertEquals(2.6872, Math.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), Math.PI)), 1e-4);
-        assertEquals(28970, finalorb.getA()/1000, 1);
+        Assert.assertEquals(2007.88245442614, finalorb.getMass(), 1e-10);
+        Assert.assertEquals(2.6872, Math.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), Math.PI)), 1e-4);
+        Assert.assertEquals(28970, finalorb.getA()/1000, 1);
 
     }
 

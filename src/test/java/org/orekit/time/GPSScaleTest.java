@@ -17,8 +17,8 @@
 package org.orekit.time;
 
 
-import static org.junit.Assert.assertEquals;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -30,7 +30,7 @@ public class GPSScaleTest {
     public void testT0() {
         AbsoluteDate t0 =
             new AbsoluteDate(new DateComponents(1980, 1, 6), TimeComponents.H00, TimeScalesFactory.getGPS());
-        assertEquals(AbsoluteDate.GPS_EPOCH, t0);
+        Assert.assertEquals(AbsoluteDate.GPS_EPOCH, t0);
     }
 
     @Test
@@ -40,7 +40,7 @@ public class GPSScaleTest {
         AbsoluteDate tUTC =
             new AbsoluteDate(new DateComponents(1999, 3, 3), new TimeComponents(23, 59, 47),
                              TimeScalesFactory.getUTC());
-        assertEquals(tUTC, tGPS);
+        Assert.assertEquals(tUTC, tGPS);
     }
 
     @Test
@@ -49,7 +49,7 @@ public class GPSScaleTest {
         double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH);
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
-            assertEquals(reference, scale.offsetFromTAI(date), 1.0e-15);
+            Assert.assertEquals(reference, scale.offsetFromTAI(date), 1.0e-15);
         }
     }
 
@@ -61,7 +61,7 @@ public class GPSScaleTest {
             double dt1 = scale.offsetFromTAI(date);
             DateTimeComponents components = date.getComponents(scale);
             double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
-            assertEquals( 0.0, dt1 + dt2, 1.0e-10);
+            Assert.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }
 

@@ -20,17 +20,10 @@ import java.util.Random;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
-
+import org.junit.Assert;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import org.orekit.errors.FrameAncestorException;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 
 public class FrameTest {
@@ -116,9 +109,9 @@ public class FrameTest {
         Vector3D k50Ref = new Vector3D(-4.865810248725263e-3,
                                        1.3081367862337385e-5,
                                        0.9999881617896792);
-        assertEquals(0, i50.subtract(i50Ref).getNorm(), 1.0e-15);
-        assertEquals(0, j50.subtract(j50Ref).getNorm(), 1.0e-15);
-        assertEquals(0, k50.subtract(k50Ref).getNorm(), 1.0e-15);
+        Assert.assertEquals(0, i50.subtract(i50Ref).getNorm(), 1.0e-15);
+        Assert.assertEquals(0, j50.subtract(j50Ref).getNorm(), 1.0e-15);
+        Assert.assertEquals(0, k50.subtract(k50Ref).getNorm(), 1.0e-15);
     }
 
     @Test
@@ -136,24 +129,24 @@ public class FrameTest {
         Frame f9 = new Frame(f7     , randomTransform(random), "f9");
 
         // check if the root frame can be an ancestor of another frame
-        assertEquals(false, eme2000.isChildOf(f5));
+        Assert.assertEquals(false, eme2000.isChildOf(f5));
 
         // check if a frame which belongs to the same branch than the 2nd frame is a branch of it
-        assertEquals(true, f5.isChildOf(f1));
+        Assert.assertEquals(true, f5.isChildOf(f1));
 
         // check if a random frame is the child of the root frame 
-        assertEquals(true, f9.isChildOf(eme2000));
+        Assert.assertEquals(true, f9.isChildOf(eme2000));
 
         // check that a frame is not its own child
-        assertEquals(false, f4.isChildOf(f4));
+        Assert.assertEquals(false, f4.isChildOf(f4));
 
         // check if a frame which belong to a different branch than the 2nd frame can be a child for it
-        assertEquals(false, f9.isChildOf(f5));
+        Assert.assertEquals(false, f9.isChildOf(f5));
 
         // check if the root frame is not a child of itself
-        assertEquals(false, eme2000.isChildOf(eme2000));
+        Assert.assertEquals(false, eme2000.isChildOf(eme2000));
 
-        assertEquals(false, f9.isChildOf(f8));
+        Assert.assertEquals(false, f9.isChildOf(f8));
 
     }
 
@@ -196,11 +189,11 @@ public class FrameTest {
                                                Transform transform, AbsoluteDate date) {
         try {
             f0.updateTransform(f1, f2, transform, date);
-            fail("Should raise a FrameAncestorException");
+            Assert.fail("Should raise a FrameAncestorException");
         } catch(FrameAncestorException expected){
             // expected behavior
         } catch (Exception e) {
-            fail("wrong exception caught");
+            Assert.fail("wrong exception caught");
         }
     }
 
@@ -248,9 +241,9 @@ public class FrameTest {
                                       random.nextDouble(),
                                       random.nextDouble());
             Vector3D b = transform.transformVector(a);
-            assertEquals(0, a.subtract(b).getNorm(), 1.0e-10);
+            Assert.assertEquals(0, a.subtract(b).getNorm(), 1.0e-10);
             Vector3D c = transform.transformPosition(a);
-            assertEquals(0, a.subtract(c).getNorm(), 1.0e-10);
+            Assert.assertEquals(0, a.subtract(c).getNorm(), 1.0e-10);
         }
     }
 

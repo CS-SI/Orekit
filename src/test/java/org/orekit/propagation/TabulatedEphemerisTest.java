@@ -16,12 +16,11 @@
  */
 package org.orekit.propagation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.text.ParseException;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -74,8 +73,8 @@ public class TabulatedEphemerisTest {
 
         Ephemeris te = new Ephemeris(tab);
 
-        assertEquals(0.0, te.getMaxDate().durationFrom(finalDate), 1.0e-9);
-        assertEquals(0.0, te.getMinDate().durationFrom(initDate), 1.0e-9);
+        Assert.assertEquals(0.0, te.getMaxDate().durationFrom(finalDate), 1.0e-9);
+        Assert.assertEquals(0.0, te.getMinDate().durationFrom(initDate), 1.0e-9);
 
         checkEphemerides(eck, te, new AbsoluteDate(initDate, 3600),  1.0e-9, true);
         checkEphemerides(eck, te, new AbsoluteDate(initDate, 3660), 30, false);
@@ -95,9 +94,9 @@ public class TabulatedEphemerisTest {
         maxError = Math.max(maxError, Math.abs(state1.getHy() - state2.getHy()));
         maxError = Math.max(maxError, Math.abs(state1.getLv() - state2.getLv()));
         if (expectedBelow) {
-            assertTrue(maxError <= threshold);
+            Assert.assertTrue(maxError <= threshold);
         } else {
-            assertTrue(maxError >= threshold);
+            Assert.assertTrue(maxError >= threshold);
         }
     }
 

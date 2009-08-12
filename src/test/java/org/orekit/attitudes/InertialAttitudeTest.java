@@ -16,12 +16,11 @@
  */
 package org.orekit.attitudes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -50,8 +49,8 @@ public class InertialAttitudeTest {
             Attitude attitude =
                 propagator.propagate(new AbsoluteDate(t0, t)).getAttitude();
             Rotation evolution = attitude.getRotation().applyTo(initial.getRotation().revert());
-            assertEquals(0, evolution.getAngle(), 1.0e-10);
-            assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
+            Assert.assertEquals(0, evolution.getAngle(), 1.0e-10);
+            Assert.assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
         }
     }
 
@@ -63,8 +62,8 @@ public class InertialAttitudeTest {
             Attitude attitude =
                 propagator.propagate(new AbsoluteDate(t0, t)).getAttitude();
             Rotation evolution = attitude.getRotation().applyTo(initial.getRotation().revert());
-            assertEquals(0, evolution.getAngle(), 1.0e-10);
-            assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
+            Assert.assertEquals(0, evolution.getAngle(), 1.0e-10);
+            Assert.assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
         }
     }
 
@@ -80,7 +79,7 @@ public class InertialAttitudeTest {
                                    KeplerianOrbit.TRUE_ANOMALY, FramesFactory.getEME2000(),
                                    t0, 3.986004415e14);
         } catch (OrekitException oe) {
-            fail(oe.getMessage());
+            Assert.fail(oe.getMessage());
         }
     }
 

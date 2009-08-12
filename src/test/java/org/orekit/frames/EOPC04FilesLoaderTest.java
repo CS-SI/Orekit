@@ -16,15 +16,13 @@
  */
 package org.orekit.frames;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.text.ParseException;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.EOP05C04FilesLoader;
 import org.orekit.utils.TimeStampedEntry;
 
 
@@ -37,21 +35,21 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
     public void testMissingMonths() throws OrekitException {
         setRoot("missing-months");
         new EOP05C04FilesLoader(EOPC04FILENAME, set).loadEOP();
-        assertTrue(getMaxGap() > 5);
+        Assert.assertTrue(getMaxGap() > 5);
     }
 
     @Test
     public void testStartDate() throws OrekitException, ParseException {
         setRoot("regular-data");
         new EOP05C04FilesLoader(EOPC04FILENAME, set).loadEOP();
-        assertEquals(52640, ((TimeStampedEntry) set.first()).getMjd());
+        Assert.assertEquals(52640, ((TimeStampedEntry) set.first()).getMjd());
     }
 
     @Test
     public void testEndDate() throws OrekitException, ParseException {
         setRoot("regular-data");
         new EOP05C04FilesLoader(EOPC04FILENAME, set).loadEOP();
-        assertEquals(53735, ((TimeStampedEntry) set.last()).getMjd());
+        Assert.assertEquals(53735, ((TimeStampedEntry) set.last()).getMjd());
     }
 
 }

@@ -16,9 +16,6 @@
  */
 package org.orekit.forces.gravity;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
@@ -31,6 +28,7 @@ import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -89,7 +87,7 @@ public class CunninghamAttractionModelTest {
         propagator.setMasterMode(86400, new SpotStepHandler(date, mu));
         propagator.setInitialState(new SpacecraftState(orbit));
         propagator.propagate(new AbsoluteDate(date, 7 * 86400));
-        assertTrue(propagator.getCalls() < 9200);
+        Assert.assertTrue(propagator.getCalls() < 9200);
 
     }
 
@@ -121,7 +119,7 @@ public class CunninghamAttractionModelTest {
             Vector3D normal = Vector3D.crossProduct(pos,vel);
             double angle = Vector3D.angle(sunPos , normal);
             if (! Double.isNaN(previous)) {
-                assertEquals(previous, angle, 0.0013);
+                Assert.assertEquals(previous, angle, 0.0013);
             }
             previous = angle;
         }
@@ -162,7 +160,7 @@ public class CunninghamAttractionModelTest {
         propagator.setInitialState(new SpacecraftState(initialOrbit));
         propagator.setMasterMode(20, new EckStepHandler(initialOrbit, ae, c20, c30, c40, c50, c60));
         propagator.propagate(new AbsoluteDate(date , 50000));
-        assertTrue(propagator.getCalls() < 1300);
+        Assert.assertTrue(propagator.getCalls() < 1300);
 
     }
 
@@ -197,10 +195,10 @@ public class CunninghamAttractionModelTest {
                 Vector3D W = Vector3D.crossProduct(posEHP, velEHP).normalize();
                 Vector3D N = Vector3D.crossProduct(W, T);
 
-                assertTrue(dif.getNorm() < 111);
-                assertTrue(Math.abs(Vector3D.dotProduct(dif, T)) < 111);
-                assertTrue(Math.abs(Vector3D.dotProduct(dif, N)) <  54);
-                assertTrue(Math.abs(Vector3D.dotProduct(dif, W)) <  12);
+                Assert.assertTrue(dif.getNorm() < 111);
+                Assert.assertTrue(Math.abs(Vector3D.dotProduct(dif, T)) < 111);
+                Assert.assertTrue(Math.abs(Vector3D.dotProduct(dif, N)) <  54);
+                Assert.assertTrue(Math.abs(Vector3D.dotProduct(dif, W)) <  12);
 
             } catch (PropagationException e) {
                 e.printStackTrace();
@@ -255,8 +253,8 @@ public class CunninghamAttractionModelTest {
         SpacecraftState drozOrb = propagator.propagate(new AbsoluteDate(date, 86400));
 
         Vector3D dif = cunnOrb.getPVCoordinates().getPosition().subtract(drozOrb.getPVCoordinates().getPosition());
-        assertEquals(0, dif.getNorm(), 3.1e-7);
-        assertTrue(propagator.getCalls() < 400);
+        Assert.assertEquals(0, dif.getNorm(), 3.1e-7);
+        Assert.assertTrue(propagator.getCalls() < 400);
     }
 
     @Before
@@ -286,7 +284,7 @@ public class CunninghamAttractionModelTest {
             integrator.setInitialStepSize(60);
             propagator = new NumericalPropagator(integrator);
         } catch (OrekitException oe) {
-            fail(oe.getMessage());
+            Assert.fail(oe.getMessage());
         }
     }
 

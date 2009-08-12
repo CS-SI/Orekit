@@ -16,8 +16,8 @@
  */
 package org.orekit.time;
 
-import static org.junit.Assert.assertEquals;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -33,7 +33,7 @@ public class TCGScaleTest {
         final AbsoluteDate t1 = AbsoluteDate.J2000_EPOCH;
         final AbsoluteDate t2 = new AbsoluteDate(t1, dtTT);
         final double dtTCG = dtTT + scale.offsetFromTAI(t2) - scale.offsetFromTAI(t1);
-        assertEquals(1 - 6.969290134e-10, dtTT / dtTCG, 1.0e-15);
+        Assert.assertEquals(1 - 6.969290134e-10, dtTT / dtTCG, 1.0e-15);
     }
 
     @Test
@@ -44,7 +44,7 @@ public class TCGScaleTest {
             double dt1 = scale.offsetFromTAI(date);
             DateTimeComponents components = date.getComponents(scale);
             double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
-            assertEquals( 0.0, dt1 + dt2, 1.0e-10);
+            Assert.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }
 
@@ -58,9 +58,9 @@ public class TCGScaleTest {
         AbsoluteDate utcRef        = new AbsoluteDate(new DateComponents(1976, 12, 31),
                                                       new TimeComponents(23, 59, 45),
                                                       TimeScalesFactory.getUTC());
-        assertEquals(0, ttRef.durationFrom(tcgRef), 1.0e-15);
-        assertEquals(0, ttRef.durationFrom(taiRef), 1.0e-15);
-        assertEquals(0, ttRef.durationFrom(utcRef), 1.0e-15);
+        Assert.assertEquals(0, ttRef.durationFrom(tcgRef), 1.0e-15);
+        Assert.assertEquals(0, ttRef.durationFrom(taiRef), 1.0e-15);
+        Assert.assertEquals(0, ttRef.durationFrom(utcRef), 1.0e-15);
     }
 
     @Before

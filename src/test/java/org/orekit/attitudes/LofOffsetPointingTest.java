@@ -16,13 +16,12 @@
  */
 package org.orekit.attitudes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -75,14 +74,14 @@ public class LofOffsetPointingTest {
         final BodyCenterPointing centerLaw = new BodyCenterPointing(earthSpheric.getBodyFrame());
         final Rotation centerRot = centerLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
         final double angleBodyCenter = centerRot.applyInverseTo(lofRot).getAngle();
-        assertEquals(0., angleBodyCenter, Utils.epsilonAngle);
+        Assert.assertEquals(0., angleBodyCenter, Utils.epsilonAngle);
 
         // Compare to nadir pointing law
         //*******************************
         final NadirPointing nadirLaw = new NadirPointing(earthSpheric);
         final Rotation nadirRot = nadirLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
         final double angleNadir = nadirRot.applyInverseTo(lofRot).getAngle();
-        assertEquals(0., angleNadir, Utils.epsilonAngle);
+        Assert.assertEquals(0., angleNadir, Utils.epsilonAngle);
 
     } 
 
@@ -96,11 +95,11 @@ public class LofOffsetPointingTest {
         try {
             final LofOffsetPointing pointing = new LofOffsetPointing(earthSpheric, upsideDown, Vector3D.PLUS_K);
             pointing.getObservedGroundPoint(circ.getDate(), circ.getPVCoordinates(), circ.getFrame());
-            fail("an exception should have been thrown");
+            Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behavior
         } catch (Exception e) {
-            fail("wrong exception caught");
+            Assert.fail("wrong exception caught");
         }
     }
 
@@ -126,7 +125,7 @@ public class LofOffsetPointingTest {
                 new OneAxisEllipsoid(6378136.460, 0., frameItrf2005);
             
         } catch (OrekitException oe) {
-            fail(oe.getMessage());
+            Assert.fail(oe.getMessage());
         }
 
     }

@@ -16,9 +16,9 @@
  */
 package org.orekit.forces.drag;
 
-import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -45,7 +45,7 @@ public class DragTest {
         Transform toBody = FramesFactory.getEME2000().getTransformTo(itrf, date);
         Vector3D test = Vector3D.crossProduct(toBody.getRotationRate(),posInEME2000);
         test = test.subtract(vel);
-        assertEquals(0, test.getNorm(), 2.9e-5);
+        Assert.assertEquals(0, test.getNorm(), 2.9e-5);
 
     }
 

@@ -16,9 +16,9 @@
  */
 package org.orekit.forces.gravity;
 
-import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -125,8 +125,8 @@ public class ThirdBodyAttractionTest {
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {
             double t = currentState.getDate().durationFrom(reference);
-            assertEquals(hXRef(t), currentState.getHx(), 1e-4);
-            assertEquals(hYRef(t), currentState.getHy(), 1e-4);
+            Assert.assertEquals(hXRef(t), currentState.getHx(), 1e-4);
+            Assert.assertEquals(hYRef(t), currentState.getHy(), 1e-4);
         }
 
         protected abstract double hXRef(double t);

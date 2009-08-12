@@ -16,14 +16,13 @@
  */
 package org.orekit.data;
 
-import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 
@@ -33,7 +32,7 @@ public class ZipJarCrawlerTest {
     public void testMultiZipClasspath() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
         new ZipJarCrawler("zipped-data/multizip.zip").feed(crawler);
-        assertEquals(6, crawler.getCount());
+        Assert.assertEquals(6, crawler.getCount());
     }
 
     @Test
@@ -42,7 +41,7 @@ public class ZipJarCrawlerTest {
             ZipJarCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
         new ZipJarCrawler(new File(url.getPath())).feed(crawler);
-        assertEquals(6, crawler.getCount());
+        Assert.assertEquals(6, crawler.getCount());
     }
 
     private static class CountingLoader implements DataLoader {

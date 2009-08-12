@@ -17,12 +17,8 @@
 package org.orekit.frames;
 
 import org.apache.commons.math.geometry.Vector3D;
-
+import org.junit.Assert;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -56,17 +52,17 @@ public class LocalOrbitalFrameTest {
         Vector3D p2 = pv2.getPosition();
         Vector3D v2 = pv2.getVelocity();
         Vector3D momentum = Vector3D.crossProduct(p2, v2);
-        assertEquals(0, p1.subtract(p2).getNorm(), 1.0e-14 * p1.getNorm());
-        assertEquals(0, v1.subtract(v2).getNorm(), 1.0e-14 * v1.getNorm());
+        Assert.assertEquals(0, p1.subtract(p2).getNorm(), 1.0e-14 * p1.getNorm());
+        Assert.assertEquals(0, v1.subtract(v2).getNorm(), 1.0e-14 * v1.getNorm());
 
         Vector3D xDirection = t.transformVector(Vector3D.PLUS_I);
         Vector3D yDirection = t.transformVector(Vector3D.PLUS_J);
         Vector3D zDirection = t.transformVector(Vector3D.PLUS_K);
-        assertEquals(0, Vector3D.angle(v2, xDirection), 1.0e-15);
-        assertEquals(0, Vector3D.angle(momentum, zDirection), 1.0e-15);
-        assertTrue(Vector3D.dotProduct(yDirection, p2) < 0);
+        Assert.assertEquals(0, Vector3D.angle(v2, xDirection), 1.0e-15);
+        Assert.assertEquals(0, Vector3D.angle(momentum, zDirection), 1.0e-15);
+        Assert.assertTrue(Vector3D.dotProduct(yDirection, p2) < 0);
 
-        assertEquals(initialOrbit.getKeplerianMeanMotion(), t.getRotationRate().getNorm(), 1.0e-7);
+        Assert.assertEquals(initialOrbit.getKeplerianMeanMotion(), t.getRotationRate().getNorm(), 1.0e-7);
 
     }    
 
@@ -93,17 +89,17 @@ public class LocalOrbitalFrameTest {
         Vector3D p2 = pv2.getPosition();
         Vector3D v2 = pv2.getVelocity();
         Vector3D momentum = Vector3D.crossProduct(p2, v2);
-        assertEquals(0, p1.subtract(p2).getNorm(), 1.0e-14 * p1.getNorm());
-        assertEquals(0, v1.subtract(v2).getNorm(), 1.0e-14 * v1.getNorm());
+        Assert.assertEquals(0, p1.subtract(p2).getNorm(), 1.0e-14 * p1.getNorm());
+        Assert.assertEquals(0, v1.subtract(v2).getNorm(), 1.0e-14 * v1.getNorm());
 
         Vector3D xDirection = t.transformVector(Vector3D.PLUS_I);
         Vector3D yDirection = t.transformVector(Vector3D.PLUS_J);
         Vector3D zDirection = t.transformVector(Vector3D.PLUS_K);
-        assertEquals(0, Vector3D.angle(p2, xDirection), 1.0e-15);
-        assertEquals(0, Vector3D.angle(momentum, zDirection), 1.0e-15);
-        assertTrue(Vector3D.dotProduct(yDirection, v2) > 0);
+        Assert.assertEquals(0, Vector3D.angle(p2, xDirection), 1.0e-15);
+        Assert.assertEquals(0, Vector3D.angle(momentum, zDirection), 1.0e-15);
+        Assert.assertTrue(Vector3D.dotProduct(yDirection, v2) > 0);
 
-        assertEquals(initialOrbit.getKeplerianMeanMotion(), t.getRotationRate().getNorm(), 1.0e-7);
+        Assert.assertEquals(initialOrbit.getKeplerianMeanMotion(), t.getRotationRate().getNorm(), 1.0e-7);
 
     }    
 

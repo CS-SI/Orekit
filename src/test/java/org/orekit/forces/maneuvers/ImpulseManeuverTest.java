@@ -16,9 +16,9 @@
  */
 package org.orekit.forces.maneuvers;
 
-import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -57,7 +57,7 @@ public class ImpulseManeuverTest {
         propagator.addEventDetector(new ImpulseManeuver(new NodeDetector(initialOrbit, FramesFactory.getEME2000()),
                                                         new Vector3D(dv, Vector3D.PLUS_J), 400.0));
         SpacecraftState propagated = propagator.propagate(new AbsoluteDate(initialOrbit.getDate(), 8000));
-        assertEquals(0.0028257, propagated.getI(), 1.0e-6);
+        Assert.assertEquals(0.0028257, propagated.getI(), 1.0e-6);
     }
 
     @Before

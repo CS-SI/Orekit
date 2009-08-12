@@ -16,10 +16,10 @@
  */
 package org.orekit.frames;
 
-import static org.junit.Assert.assertTrue;
 
 import java.io.FileNotFoundException;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -50,7 +50,7 @@ public class CIRF2000FrameTest {
             maxError = Math.max(maxError, error);
         }
 
-        assertTrue(maxError < 1.3e-10);
+        Assert.assertTrue(maxError < 1.3e-10);
 
     }
 

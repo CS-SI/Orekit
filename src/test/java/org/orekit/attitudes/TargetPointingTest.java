@@ -16,13 +16,11 @@
  */
 package org.orekit.attitudes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -97,7 +95,7 @@ public class TargetPointingTest {
         // Rotations composition
         Rotation rotCompo = rotGeo.applyInverseTo(rotPv);
         double angle = rotCompo.getAngle();
-        assertEquals(angle, 0.0, Utils.epsilonAngle);
+        Assert.assertEquals(angle, 0.0, Utils.epsilonAngle);
 
     }
 
@@ -132,9 +130,9 @@ public class TargetPointingTest {
         PVCoordinates pvObservedEME2000 = geoTargetAttitudeLaw.getObservedGroundPoint(date, pvSatEME2000, FramesFactory.getEME2000());
         GeodeticPoint geoObserved = earthShape.transform(pvObservedEME2000.getPosition(), FramesFactory.getEME2000(), date);
 
-        assertEquals(geoObserved.getLongitude(), geoTargetITRF2005.getLongitude(), Utils.epsilonAngle);
-        assertEquals(geoObserved.getLatitude(), geoTargetITRF2005.getLatitude(), Utils.epsilonAngle);
-        assertEquals(geoObserved.getAltitude(), geoTargetITRF2005.getAltitude(), 1.e-8);
+        Assert.assertEquals(geoObserved.getLongitude(), geoTargetITRF2005.getLongitude(), Utils.epsilonAngle);
+        Assert.assertEquals(geoObserved.getLatitude(), geoTargetITRF2005.getLatitude(), Utils.epsilonAngle);
+        Assert.assertEquals(geoObserved.getAltitude(), geoTargetITRF2005.getAltitude(), 1.e-8);
 
     }
 
@@ -185,7 +183,7 @@ public class TargetPointingTest {
         // Compose attitude rotations
         Rotation rotCompo = rotTarget.applyInverseTo(rotNadir);
         double angle = rotCompo.getAngle();
-        assertEquals(angle, 0.0, Utils.epsilonAngle);
+        Assert.assertEquals(angle, 0.0, Utils.epsilonAngle);
 
         
         //  2/ Test that attitudes are different at a different date
@@ -207,7 +205,7 @@ public class TargetPointingTest {
         // Compose attitude rotations
         Rotation extrapRotCompo = extrapRotTarget.applyInverseTo(extrapRotNadir);
         double extrapAngle = extrapRotCompo.getAngle();
-        assertEquals(extrapAngle, Math.toRadians(24.684793905118823), Utils.epsilonAngle);
+        Assert.assertEquals(extrapAngle, Math.toRadians(24.684793905118823), Utils.epsilonAngle);
         
     }
        
@@ -256,7 +254,7 @@ public class TargetPointingTest {
         // Check that the line contains earth center
         double distance = pointingLine.distance(earthShape.transform(geoTarget));
         
-        assertTrue(distance < 1.e-7);
+        Assert.assertTrue(distance < 1.e-7);
     }
 
     /** Test the difference between pointing over two longitudes separated by 5°
@@ -315,7 +313,7 @@ public class TargetPointingTest {
         //  real
         double deltaReal = rotSatEME2000.applyInverseTo(rotSatRefEME2000).getAngle();
         
-        assertEquals(deltaReal, deltaExpected, 1.e-4);
+        Assert.assertEquals(deltaReal, deltaExpected, 1.e-4);
         
     } 
 
@@ -340,7 +338,7 @@ public class TargetPointingTest {
             eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(frameITRF2005, date);
 
         } catch (OrekitException oe) {
-            fail(oe.getMessage());
+            Assert.fail(oe.getMessage());
         }
 
     }

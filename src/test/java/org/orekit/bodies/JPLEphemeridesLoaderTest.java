@@ -16,12 +16,12 @@
  */
 package org.orekit.bodies;
 
-import static org.junit.Assert.assertEquals;
 
 import java.text.ParseException;
 import java.util.SortedSet;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -34,43 +34,43 @@ public class JPLEphemeridesLoaderTest {
 
     @Test
     public void testConstants() throws OrekitException {
-        assertEquals(149597870691.0, JPLEphemeridesLoader.getAstronomicalUnit(), 0.1);
-        assertEquals(81.30056, JPLEphemeridesLoader.getEarthMoonMassRatio(), 1.0e-8);
+        Assert.assertEquals(149597870691.0, JPLEphemeridesLoader.getAstronomicalUnit(), 0.1);
+        Assert.assertEquals(81.30056, JPLEphemeridesLoader.getEarthMoonMassRatio(), 1.0e-8);
     }
 
     @Test
     public void testGM() throws OrekitException {
-        assertEquals(22032.080e9,
+        Assert.assertEquals(22032.080e9,
                      JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MERCURY),
                      1.0e6);
-        assertEquals(324858.599e9,
+        Assert.assertEquals(324858.599e9,
                      JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.VENUS),
                      1.0e6);
-        assertEquals(42828.314e9,
+        Assert.assertEquals(42828.314e9,
                      JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MARS),
                      1.0e6);
-        assertEquals(126712767.863e9,
+        Assert.assertEquals(126712767.863e9,
                      JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.JUPITER),
                      6.0e7);
-        assertEquals(37940626.063e9,
+        Assert.assertEquals(37940626.063e9,
                      JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.SATURN),
                      2.0e6);
-        assertEquals(5794549.007e9,
+        Assert.assertEquals(5794549.007e9,
                      JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.URANUS),
                      1.0e6);
-        assertEquals(6836534.064e9,
+        Assert.assertEquals(6836534.064e9,
                      JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.NEPTUNE),
                      1.0e6);
-        assertEquals(981.601e9,
+        Assert.assertEquals(981.601e9,
                      JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.PLUTO),
                      1.0e6);
-        assertEquals(132712440017.987e9,
+        Assert.assertEquals(132712440017.987e9,
                      JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.SUN),
                      1.0e6);
-        assertEquals(4902.801e9,
+        Assert.assertEquals(4902.801e9,
                      JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MOON),
                      1.0e6);
-        assertEquals(403503.233e9,
+        Assert.assertEquals(403503.233e9,
                      JPLEphemeridesLoader.getGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.EARTH_MOON),
                      1.0e6);
     }
@@ -99,7 +99,7 @@ public class JPLEphemeridesLoaderTest {
         double c = 1.0 / (12 * h);
         Vector3D estimatedV = new Vector3D(c, pm2h, -8 * c, pm1h, 8 * c, pp1h, -c, pp2h);
 
-        assertEquals(0, getVelocity(set, date).subtract(estimatedV).getNorm(), 1.0e-5);
+        Assert.assertEquals(0, getVelocity(set, date).subtract(estimatedV).getNorm(), 1.0e-5);
 
     }
 

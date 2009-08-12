@@ -16,9 +16,9 @@
  */
 package org.orekit.frames;
 
-import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -59,8 +59,8 @@ public class PEFFrameAlternateConfigurationTest {
         // if dut1 and lod corrections are ignored, results must be really bad
         t = FramesFactory.getTEME(false).getTransformTo(FramesFactory.getPEF(false), t0);
         PVCoordinates delta = new PVCoordinates(1.0, pvPEF, -1.0, t.transformPVCoordinates(pvTEME));
-        assertEquals(255.644, delta.getPosition().getNorm(), 4.0e-6);
-        assertEquals(0.13856, delta.getVelocity().getNorm(), 9.0e-7);
+        Assert.assertEquals(255.644, delta.getPosition().getNorm(), 4.0e-6);
+        Assert.assertEquals(0.13856, delta.getVelocity().getNorm(), 9.0e-7);
 
     }
 
@@ -92,8 +92,8 @@ public class PEFFrameAlternateConfigurationTest {
         // if dut1 and lod corrections are ignored, results must be really bad
         t = FramesFactory.getTEME(false).getTransformTo(FramesFactory.getPEF(false), t0);
         PVCoordinates delta = new PVCoordinates(1.0, pvPEF, -1.0, t.transformPVCoordinates(pvTEME));
-        assertEquals(1448.217, delta.getPosition().getNorm(), 4.0e-4);
-        assertEquals(6.1e-5, delta.getVelocity().getNorm(), 2.0e-8);
+        Assert.assertEquals(1448.217, delta.getPosition().getNorm(), 4.0e-4);
+        Assert.assertEquals(6.1e-5, delta.getVelocity().getNorm(), 2.0e-8);
 
     }
 
@@ -108,8 +108,8 @@ public class PEFFrameAlternateConfigurationTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        assertEquals(0, dP.getNorm(), positionThreshold);
-        assertEquals(0, dV.getNorm(), velocityThreshold);
+        Assert.assertEquals(0, dP.getNorm(), positionThreshold);
+        Assert.assertEquals(0, dV.getNorm(), velocityThreshold);
     }
 
 }

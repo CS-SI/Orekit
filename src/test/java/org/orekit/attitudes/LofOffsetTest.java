@@ -16,14 +16,13 @@
  */
 package org.orekit.attitudes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import org.apache.commons.math.geometry.CardanEulerSingularityException;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -75,7 +74,7 @@ public class LofOffsetTest {
         final Vector3D momentumEME2000 = Vector3D.crossProduct(p, v);
         final Vector3D momentumLof = lofOffsetRot.applyTo(momentumEME2000);
         final double cosinus = Math.cos(Vector3D.dotProduct(momentumLof, Vector3D.PLUS_K));
-        assertEquals(1., cosinus, Utils.epsilonAngle);
+        Assert.assertEquals(1., cosinus, Utils.epsilonAngle);
         
     }
     /** Test if the lof offset is the one expected
@@ -119,7 +118,7 @@ public class LofOffsetTest {
 
         // Compose rotations : target pointing attitudes
         final double angleCompo = targetRot.applyInverseTo(lofOffsetRot).getAngle();
-        assertEquals(0., angleCompo, Utils.epsilonAngle);
+        Assert.assertEquals(0., angleCompo, Utils.epsilonAngle);
 
     } 
     
@@ -151,8 +150,8 @@ public class LofOffsetTest {
         final PVCoordinates pvTargetRes = lofOffsetPtLaw.getTargetInBodyFrame(date, pvSatEME2000, FramesFactory.getEME2000());
         final GeodeticPoint targetRes = earthSpheric.transform(pvTargetRes.getPosition(), earthSpheric.getBodyFrame(), date);
         
-        assertEquals(targetDef.getLongitude(), targetRes.getLongitude(), Utils.epsilonAngle);
-        assertEquals(targetDef.getLongitude(), targetRes.getLongitude(), Utils.epsilonAngle);
+        Assert.assertEquals(targetDef.getLongitude(), targetRes.getLongitude(), Utils.epsilonAngle);
+        Assert.assertEquals(targetDef.getLongitude(), targetRes.getLongitude(), Utils.epsilonAngle);
         
     }
 
@@ -186,7 +185,7 @@ public class LofOffsetTest {
 
             
         } catch (OrekitException oe) {
-            fail(oe.getMessage());
+            Assert.fail(oe.getMessage());
         }
 
     }

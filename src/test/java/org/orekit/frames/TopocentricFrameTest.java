@@ -17,11 +17,10 @@
 package org.orekit.frames;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -63,9 +62,9 @@ public class TopocentricFrameTest {
         final double xDiff = Vector3D.dotProduct(topoFrame.getEast(), Vector3D.PLUS_J);
         final double yDiff = Vector3D.dotProduct(topoFrame.getNorth(), Vector3D.PLUS_K);
         final double zDiff = Vector3D.dotProduct(topoFrame.getZenith(), Vector3D.PLUS_I);
-        assertEquals(1., xDiff, Utils.epsilonTest);
-        assertEquals(1., yDiff, Utils.epsilonTest);
-        assertEquals(1., zDiff, Utils.epsilonTest);
+        Assert.assertEquals(1., xDiff, Utils.epsilonTest);
+        Assert.assertEquals(1., yDiff, Utils.epsilonTest);
+        Assert.assertEquals(1., zDiff, Utils.epsilonTest);
    }
 
     @Test
@@ -78,9 +77,9 @@ public class TopocentricFrameTest {
         final double xDiff = Vector3D.dotProduct(topoFrame.getEast(), Vector3D.PLUS_J);
         final double yDiff = Vector3D.dotProduct(topoFrame.getNorth(), Vector3D.PLUS_I.negate());
         final double zDiff = Vector3D.dotProduct(topoFrame.getZenith(), Vector3D.PLUS_K);
-        assertEquals(1., xDiff, Utils.epsilonTest);
-        assertEquals(1., yDiff, Utils.epsilonTest);
-        assertEquals(1., zDiff, Utils.epsilonTest);
+        Assert.assertEquals(1., xDiff, Utils.epsilonTest);
+        Assert.assertEquals(1., yDiff, Utils.epsilonTest);
+        Assert.assertEquals(1., zDiff, Utils.epsilonTest);
    }
 
     @Test
@@ -99,9 +98,9 @@ public class TopocentricFrameTest {
         final double yDiff = Vector3D.dotProduct(topoFrame1.getNorth(), topoFrame2.getNorth());
         final double zDiff = Vector3D.dotProduct(topoFrame1.getZenith(), topoFrame2.getZenith());
         
-        assertEquals(1., xDiff, Utils.epsilonTest);
-        assertEquals(0., yDiff, Utils.epsilonTest);
-        assertEquals(0., zDiff, Utils.epsilonTest);
+        Assert.assertEquals(1., xDiff, Utils.epsilonTest);
+        Assert.assertEquals(0., yDiff, Utils.epsilonTest);
+        Assert.assertEquals(0., zDiff, Utils.epsilonTest);
   }
 
     @Test
@@ -121,9 +120,9 @@ public class TopocentricFrameTest {
         final double yDiff = Vector3D.dotProduct(topoFrame1.getNorth(), topoFrame2.getNorth());
         final double zDiff = Vector3D.dotProduct(topoFrame1.getZenith(), topoFrame2.getZenith());
         
-        assertEquals(1., xDiff, Utils.epsilonTest);
-        assertEquals(0., yDiff, Utils.epsilonTest);
-        assertEquals(0., zDiff, Utils.epsilonTest);
+        Assert.assertEquals(1., xDiff, Utils.epsilonTest);
+        Assert.assertEquals(0., yDiff, Utils.epsilonTest);
+        Assert.assertEquals(0., zDiff, Utils.epsilonTest);
   }
 
     @Test
@@ -144,9 +143,9 @@ public class TopocentricFrameTest {
         final double yDiff = Vector3D.dotProduct(topoFrame1.getNorth(), topoFrame2.getNorth());
         final double zDiff = Vector3D.dotProduct(topoFrame1.getZenith(), topoFrame2.getZenith());
         
-        assertEquals(1., xDiff, Utils.epsilonTest);
-        assertEquals(1., yDiff, Utils.epsilonTest);
-        assertEquals(-1., zDiff, Utils.epsilonTest);
+        Assert.assertEquals(1., xDiff, Utils.epsilonTest);
+        Assert.assertEquals(1., yDiff, Utils.epsilonTest);
+        Assert.assertEquals(-1., zDiff, Utils.epsilonTest);
     }
         
     @Test
@@ -162,11 +161,11 @@ public class TopocentricFrameTest {
         
         // Zenith point elevation = 90 deg
         final double site = topoFrame.getElevation(earthSpheric.transform(satPoint), earthSpheric.getBodyFrame(), date);
-        assertEquals(Math.PI/2., site, Utils.epsilonAngle);
+        Assert.assertEquals(Math.PI/2., site, Utils.epsilonAngle);
 
         // Zenith point range = defined altitude
         final double range = topoFrame.getRange(earthSpheric.transform(satPoint), earthSpheric.getBodyFrame(), date);
-        assertEquals(800000., range, 1e-8);
+        Assert.assertEquals(800000., range, 1e-8);
   }
     
     @Test
@@ -183,11 +182,11 @@ public class TopocentricFrameTest {
         
         // Azimuth = pi/2
         double azi = topoFrame.getAzimuth(earthSpheric.transform(infPoint), earthSpheric.getBodyFrame(), date);
-        assertEquals(Math.PI/2., azi, Utils.epsilonAngle);
+        Assert.assertEquals(Math.PI/2., azi, Utils.epsilonAngle);
 
         // Site = pi/2 - longitude difference
         double site = topoFrame.getElevation(earthSpheric.transform(infPoint), earthSpheric.getBodyFrame(), date);
-        assertEquals(Math.PI/2. - Math.abs(point.getLongitude() - infPoint.getLongitude()), site, 1.e-2);
+        Assert.assertEquals(Math.PI/2. - Math.abs(point.getLongitude() - infPoint.getLongitude()), site, 1.e-2);
 
         // Point at infinite, separated by -20 deg in longitude
         // *****************************************************
@@ -195,11 +194,11 @@ public class TopocentricFrameTest {
         
         // Azimuth = pi/2
         azi = topoFrame.getAzimuth(earthSpheric.transform(infPoint), earthSpheric.getBodyFrame(), date);
-        assertEquals(3*Math.PI/2., azi, Utils.epsilonAngle);
+        Assert.assertEquals(3*Math.PI/2., azi, Utils.epsilonAngle);
 
         // Site = pi/2 - longitude difference
         site = topoFrame.getElevation(earthSpheric.transform(infPoint), earthSpheric.getBodyFrame(), date);
-        assertEquals(Math.PI/2. - Math.abs(point.getLongitude() - infPoint.getLongitude()), site, 1.e-2);
+        Assert.assertEquals(Math.PI/2. - Math.abs(point.getLongitude() - infPoint.getLongitude()), site, 1.e-2);
 
     }    
 
@@ -217,7 +216,7 @@ public class TopocentricFrameTest {
         
         // Azimuth = 
         double azi = topoFrame.getAzimuth(earthSpheric.transform(satPoint), earthSpheric.getBodyFrame(), date);
-        assertEquals(Math.PI - satPoint.getLongitude(), azi, 1.e-5);
+        Assert.assertEquals(Math.PI - satPoint.getLongitude(), azi, 1.e-5);
  
         // Point at -30 deg longitude
         // ***************************
@@ -225,7 +224,7 @@ public class TopocentricFrameTest {
         
         // Azimuth = 
         azi = topoFrame.getAzimuth(earthSpheric.transform(satPoint), earthSpheric.getBodyFrame(), date);
-        assertEquals(Math.PI - satPoint.getLongitude(), azi, 1.e-5);
+        Assert.assertEquals(Math.PI - satPoint.getLongitude(), azi, 1.e-5);
  
     }    
     
@@ -273,7 +272,7 @@ public class TopocentricFrameTest {
         double rangeP = topoFrame.getRange(satPointGeoP, earthSpheric.getBodyFrame(), dateP);
         double rangeM = topoFrame.getRange(satPointGeoM, earthSpheric.getBodyFrame(), dateM);
         final double dopRef2 = (rangeP - rangeM) / (2. * dt);
-        assertEquals(dopRef2, dop, 1.e-3);
+        Assert.assertEquals(dopRef2, dop, 1.e-3);
         
     }
 
@@ -300,15 +299,15 @@ public class TopocentricFrameTest {
         // ***************************************************
         double aziElli = topoElliptic.getAzimuth(satPoint, earthElliptic.getBodyFrame(), date);
         double aziSphe = topoSpheric.getAzimuth(satPoint, earthSpheric.getBodyFrame(), date);
-        assertEquals(aziElli, aziSphe, Utils.epsilonAngle);
+        Assert.assertEquals(aziElli, aziSphe, Utils.epsilonAngle);
         
         double eleElli = topoElliptic.getElevation(satPoint, earthElliptic.getBodyFrame(), date);
         double eleSphe = topoSpheric.getElevation(satPoint, earthSpheric.getBodyFrame(), date);
-        assertEquals(eleElli, eleSphe, Utils.epsilonAngle);
+        Assert.assertEquals(eleElli, eleSphe, Utils.epsilonAngle);
         
         double disElli = topoElliptic.getRange(satPoint, earthElliptic.getBodyFrame(), date);
         double disSphe = topoSpheric.getRange(satPoint, earthSpheric.getBodyFrame(), date);
-        assertEquals(disElli, disSphe, Utils.epsilonTest);
+        Assert.assertEquals(disElli, disSphe, Utils.epsilonTest);
         
         // Infinite point separated by -20 deg in longitude
         // *************************************************
@@ -317,11 +316,11 @@ public class TopocentricFrameTest {
         
         // Azimuth = pi/2
         aziElli = topoElliptic.getAzimuth(infPoint, earthElliptic.getBodyFrame(), date);
-        assertEquals(3*Math.PI/2., aziElli, Utils.epsilonAngle);
+        Assert.assertEquals(3*Math.PI/2., aziElli, Utils.epsilonAngle);
 
         // Site = pi/2 - longitude difference
         eleElli = topoElliptic.getElevation(infPoint, earthElliptic.getBodyFrame(), date);
-        assertEquals(Math.PI/2. - Math.abs(point.getLongitude() - infPointGeo.getLongitude()), eleElli, 1.e-2);
+        Assert.assertEquals(Math.PI/2. - Math.abs(point.getLongitude() - infPointGeo.getLongitude()), eleElli, 1.e-2);
 
         // Infinite point separated by +20 deg in longitude
         // *************************************************
@@ -330,11 +329,11 @@ public class TopocentricFrameTest {
         
         // Azimuth = pi/2
         aziElli = topoElliptic.getAzimuth(infPoint, earthElliptic.getBodyFrame(), date);
-        assertEquals(Math.PI/2., aziElli, Utils.epsilonAngle);
+        Assert.assertEquals(Math.PI/2., aziElli, Utils.epsilonAngle);
 
         // Site = pi/2 - longitude difference
         eleElli = topoElliptic.getElevation(infPoint, earthElliptic.getBodyFrame(), date);
-        assertEquals(Math.PI/2. - Math.abs(point.getLongitude() - infPointGeo.getLongitude()), eleElli, 1.e-2);
+        Assert.assertEquals(Math.PI/2. - Math.abs(point.getLongitude() - infPointGeo.getLongitude()), eleElli, 1.e-2);
 
         // ************************
         // Test at polar position
@@ -347,15 +346,15 @@ public class TopocentricFrameTest {
         // ***************************************************
         aziElli = topoElliptic.getAzimuth(satPoint, earthElliptic.getBodyFrame(), date);
         aziSphe = topoSpheric.getAzimuth(satPoint, earthSpheric.getBodyFrame(), date);
-        assertEquals(aziElli, aziSphe, 1.e-7);
+        Assert.assertEquals(aziElli, aziSphe, 1.e-7);
         
         eleElli = topoElliptic.getElevation(satPoint, earthElliptic.getBodyFrame(), date);
         eleSphe = topoSpheric.getElevation(satPoint, earthSpheric.getBodyFrame(), date);
-        assertEquals(eleElli, eleSphe, 1.e-2);
+        Assert.assertEquals(eleElli, eleSphe, 1.e-2);
         
         disElli = topoElliptic.getRange(satPoint, earthElliptic.getBodyFrame(), date);
         disSphe = topoSpheric.getRange(satPoint, earthSpheric.getBodyFrame(), date);
-        assertEquals(disElli, disSphe, 20.e+3);
+        Assert.assertEquals(disElli, disSphe, 20.e+3);
         
         
         // *********************
@@ -369,15 +368,15 @@ public class TopocentricFrameTest {
         // ***************************************************       
         aziElli = topoElliptic.getAzimuth(satPoint, earthElliptic.getBodyFrame(), date);
         aziSphe = topoSpheric.getAzimuth(satPoint, earthSpheric.getBodyFrame(), date);
-        assertEquals(aziElli, aziSphe, 1.e-2);
+        Assert.assertEquals(aziElli, aziSphe, 1.e-2);
         
         eleElli = topoElliptic.getElevation(satPoint, earthElliptic.getBodyFrame(), date);
         eleSphe = topoSpheric.getElevation(satPoint, earthSpheric.getBodyFrame(), date);
-        assertEquals(eleElli, eleSphe, 1.e-2);
+        Assert.assertEquals(eleElli, eleSphe, 1.e-2);
         
         disElli = topoElliptic.getRange(satPoint, earthElliptic.getBodyFrame(), date);
         disSphe = topoSpheric.getRange(satPoint, earthSpheric.getBodyFrame(), date);
-        assertEquals(disElli, disSphe, 20.e+3);
+        Assert.assertEquals(disElli, disSphe, 20.e+3);
         
     }
 
@@ -402,7 +401,7 @@ public class TopocentricFrameTest {
             mu = 3.9860047e14;
             
         } catch (OrekitException oe) {
-            fail(oe.getMessage());
+            Assert.fail(oe.getMessage());
         }
     }
 

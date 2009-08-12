@@ -16,13 +16,9 @@
  */
 package org.orekit.time;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
+import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.time.DateComponents;
 
 
 public class DateComponentsTest {
@@ -48,34 +44,34 @@ public class DateComponentsTest {
         for (int i = 0; i < reference.length; ++i) {
             int day  = reference[i][3];
             DateComponents date = new DateComponents(DateComponents.J2000_EPOCH, day);
-            assertEquals(reference[i][0], date.getYear());
-            assertEquals(reference[i][1], date.getMonth());
-            assertEquals(reference[i][2], date.getDay());
+            Assert.assertEquals(reference[i][0], date.getYear());
+            Assert.assertEquals(reference[i][1], date.getMonth());
+            Assert.assertEquals(reference[i][2], date.getDay());
         }
 
     }
 
     @Test
     public void testDayOfWeek() {
-        assertEquals(7, new DateComponents(-4713, 12, 31).getDayOfWeek());
-        assertEquals(1, new DateComponents(-4712, 01, 01).getDayOfWeek());
-        assertEquals(4, new DateComponents( 1582, 10, 04).getDayOfWeek());
-        assertEquals(5, new DateComponents( 1582, 10, 15).getDayOfWeek());
-        assertEquals(5, new DateComponents( 1999, 12, 31).getDayOfWeek());
-        assertEquals(6, new DateComponents( 2000, 01, 01).getDayOfWeek());
+        Assert.assertEquals(7, new DateComponents(-4713, 12, 31).getDayOfWeek());
+        Assert.assertEquals(1, new DateComponents(-4712, 01, 01).getDayOfWeek());
+        Assert.assertEquals(4, new DateComponents( 1582, 10, 04).getDayOfWeek());
+        Assert.assertEquals(5, new DateComponents( 1582, 10, 15).getDayOfWeek());
+        Assert.assertEquals(5, new DateComponents( 1999, 12, 31).getDayOfWeek());
+        Assert.assertEquals(6, new DateComponents( 2000, 01, 01).getDayOfWeek());
     }
 
     @Test
     public void testDayOfYear() {
-        assertEquals(  1, new DateComponents(2003,  1,  1).getDayOfYear());
-        assertEquals(365, new DateComponents(2003, 12, 31).getDayOfYear());
-        assertEquals(366, new DateComponents(2004, 12, 31).getDayOfYear());
-        assertEquals( 59, new DateComponents(2003,  2, 28).getDayOfYear());
-        assertEquals( 60, new DateComponents(2003,  3,  1).getDayOfYear());
-        assertEquals( 59, new DateComponents(2004,  2, 28).getDayOfYear());
-        assertEquals( 60, new DateComponents(2004,  2, 29).getDayOfYear());
-        assertEquals( 61, new DateComponents(2004,  3,  1).getDayOfYear());
-        assertEquals(269, new DateComponents(2003,  9, 26).getDayOfYear());
+        Assert.assertEquals(  1, new DateComponents(2003,  1,  1).getDayOfYear());
+        Assert.assertEquals(365, new DateComponents(2003, 12, 31).getDayOfYear());
+        Assert.assertEquals(366, new DateComponents(2004, 12, 31).getDayOfYear());
+        Assert.assertEquals( 59, new DateComponents(2003,  2, 28).getDayOfYear());
+        Assert.assertEquals( 60, new DateComponents(2003,  3,  1).getDayOfYear());
+        Assert.assertEquals( 59, new DateComponents(2004,  2, 28).getDayOfYear());
+        Assert.assertEquals( 60, new DateComponents(2004,  2, 29).getDayOfYear());
+        Assert.assertEquals( 61, new DateComponents(2004,  3,  1).getDayOfYear());
+        Assert.assertEquals(269, new DateComponents(2003,  9, 26).getDayOfYear());
     }
 
     @Test
@@ -94,27 +90,27 @@ public class DateComponentsTest {
         for (int i = 0; i < dates.length; ++i) {
             for (int j = 0; j < dates.length; ++j) {
                 if (dates[i][0].compareTo(dates[j][1]) < 0) {
-                    assertTrue(dates[j][1].compareTo(dates[i][0]) > 0);
-                    assertFalse(dates[i][0].equals(dates[j][1]));
-                    assertFalse(dates[j][1].equals(dates[i][0]));
-                    assertTrue(dates[i][0].hashCode() != dates[j][1].hashCode());
-                    assertTrue(i < j);
+                    Assert.assertTrue(dates[j][1].compareTo(dates[i][0]) > 0);
+                    Assert.assertFalse(dates[i][0].equals(dates[j][1]));
+                    Assert.assertFalse(dates[j][1].equals(dates[i][0]));
+                    Assert.assertTrue(dates[i][0].hashCode() != dates[j][1].hashCode());
+                    Assert.assertTrue(i < j);
                 } else if (dates[i][0].compareTo(dates[j][1]) > 0) {
-                    assertTrue(dates[j][1].compareTo(dates[i][0]) < 0);
-                    assertFalse(dates[i][0].equals(dates[j][1]));
-                    assertFalse(dates[j][1].equals(dates[i][0]));
-                    assertTrue(dates[i][0].hashCode() != dates[j][1].hashCode());
-                    assertTrue(i > j);
+                    Assert.assertTrue(dates[j][1].compareTo(dates[i][0]) < 0);
+                    Assert.assertFalse(dates[i][0].equals(dates[j][1]));
+                    Assert.assertFalse(dates[j][1].equals(dates[i][0]));
+                    Assert.assertTrue(dates[i][0].hashCode() != dates[j][1].hashCode());
+                    Assert.assertTrue(i > j);
                 } else {
-                    assertTrue(dates[j][1].compareTo(dates[i][0]) == 0);
-                    assertTrue(dates[i][0].equals(dates[j][1]));
-                    assertTrue(dates[j][1].equals(dates[i][0]));
-                    assertTrue(dates[i][0].hashCode() == dates[j][1].hashCode());
-                    assertTrue(i == j);
+                    Assert.assertTrue(dates[j][1].compareTo(dates[i][0]) == 0);
+                    Assert.assertTrue(dates[i][0].equals(dates[j][1]));
+                    Assert.assertTrue(dates[j][1].equals(dates[i][0]));
+                    Assert.assertTrue(dates[i][0].hashCode() == dates[j][1].hashCode());
+                    Assert.assertTrue(i == j);
                 }
             }
         }
-        assertFalse(dates[0][0].equals(this));
+        Assert.assertFalse(dates[0][0].equals(this));
     }
 
     @Test
@@ -127,16 +123,16 @@ public class DateComponentsTest {
     private void checkSymmetry(int start, int n) {
         for (int i = start; i < start + n; ++i) {
             DateComponents date1 = new DateComponents(DateComponents.J2000_EPOCH, i);
-            assertEquals(i, date1.getJ2000Day());
+            Assert.assertEquals(i, date1.getJ2000Day());
             DateComponents date2 = new DateComponents(date1.getYear(), date1.getMonth(), date1.getDay());
-            assertEquals(i, date2.getJ2000Day());
+            Assert.assertEquals(i, date2.getJ2000Day());
         }        
     }
 
     @Test
     public void testString() {
-        assertEquals("2000-01-01", new DateComponents(DateComponents.J2000_EPOCH, 0).toString());
-        assertEquals("-4713-12-31", new DateComponents(DateComponents.J2000_EPOCH, -2451546).toString());
+        Assert.assertEquals("2000-01-01", new DateComponents(DateComponents.J2000_EPOCH, 0).toString());
+        Assert.assertEquals("-4713-12-31", new DateComponents(DateComponents.J2000_EPOCH, -2451546).toString());
     }
 
     @Test
@@ -155,14 +151,14 @@ public class DateComponentsTest {
         try {
             new DateComponents(year, day);
             if (shouldFail) {
-                fail("an exception should have been thrown");
+                Assert.fail("an exception should have been thrown");
             }
         } catch (IllegalArgumentException iae) {
             if (! shouldFail) {
-                fail(iae.getMessage());
+                Assert.fail(iae.getMessage());
             }
         } catch (Exception e) {
-            fail("wrong exception caught");
+            Assert.fail("wrong exception caught");
         }
     }
 
@@ -210,24 +206,24 @@ public class DateComponentsTest {
                     try {
                         // well-formed dates should have sequential J2000 days
                         DateComponents date = new DateComponents(year, month, day);
-                        assertEquals(k++, date.getJ2000Day());
-                        assertTrue(!expectedIllFormed);
+                        Assert.assertEquals(k++, date.getJ2000Day());
+                        Assert.assertTrue(!expectedIllFormed);
                     } catch (IllegalArgumentException iae) {
-                        assertTrue(expectedIllFormed);
+                        Assert.assertTrue(expectedIllFormed);
                     }
                 }
             }
         }
 
-        assertEquals(endJ2000, --k);
+        Assert.assertEquals(endJ2000, --k);
 
     }
 
     @Test
     public void testMJD() {
-        assertEquals(0, DateComponents.MODIFIED_JULIAN_EPOCH.getMJD());
-        assertEquals(37665, new DateComponents(1962, 1,  1).getMJD());
-        assertEquals(54600, new DateComponents(2008, 5, 14).getMJD());
+        Assert.assertEquals(0, DateComponents.MODIFIED_JULIAN_EPOCH.getMJD());
+        Assert.assertEquals(37665, new DateComponents(1962, 1,  1).getMJD());
+        Assert.assertEquals(54600, new DateComponents(2008, 5, 14).getMJD());
     }
 
 }

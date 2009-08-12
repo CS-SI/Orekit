@@ -18,19 +18,12 @@ package org.orekit.orbits;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
-
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -53,12 +46,12 @@ public class CartesianParametersTest {
 
         CartesianOrbit p = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
-        assertEquals(p.getPVCoordinates().getPosition().getX(), pvCoordinates.getPosition().getX(), Utils.epsilonTest * Math.abs(pvCoordinates.getPosition().getX()));
-        assertEquals(p.getPVCoordinates().getPosition().getY(), pvCoordinates.getPosition().getY(), Utils.epsilonTest * Math.abs(pvCoordinates.getPosition().getY()));
-        assertEquals(p.getPVCoordinates().getPosition().getZ(), pvCoordinates.getPosition().getZ(), Utils.epsilonTest * Math.abs(pvCoordinates.getPosition().getZ()));
-        assertEquals(p.getPVCoordinates().getVelocity().getX(), pvCoordinates.getVelocity().getX(), Utils.epsilonTest * Math.abs(pvCoordinates.getVelocity().getX()));
-        assertEquals(p.getPVCoordinates().getVelocity().getY(), pvCoordinates.getVelocity().getY(), Utils.epsilonTest * Math.abs(pvCoordinates.getVelocity().getY()));
-        assertEquals(p.getPVCoordinates().getVelocity().getZ(), pvCoordinates.getVelocity().getZ(), Utils.epsilonTest * Math.abs(pvCoordinates.getVelocity().getZ()));
+        Assert.assertEquals(p.getPVCoordinates().getPosition().getX(), pvCoordinates.getPosition().getX(), Utils.epsilonTest * Math.abs(pvCoordinates.getPosition().getX()));
+        Assert.assertEquals(p.getPVCoordinates().getPosition().getY(), pvCoordinates.getPosition().getY(), Utils.epsilonTest * Math.abs(pvCoordinates.getPosition().getY()));
+        Assert.assertEquals(p.getPVCoordinates().getPosition().getZ(), pvCoordinates.getPosition().getZ(), Utils.epsilonTest * Math.abs(pvCoordinates.getPosition().getZ()));
+        Assert.assertEquals(p.getPVCoordinates().getVelocity().getX(), pvCoordinates.getVelocity().getX(), Utils.epsilonTest * Math.abs(pvCoordinates.getVelocity().getX()));
+        Assert.assertEquals(p.getPVCoordinates().getVelocity().getY(), pvCoordinates.getVelocity().getY(), Utils.epsilonTest * Math.abs(pvCoordinates.getVelocity().getY()));
+        Assert.assertEquals(p.getPVCoordinates().getVelocity().getZ(), pvCoordinates.getVelocity().getZ(), Utils.epsilonTest * Math.abs(pvCoordinates.getVelocity().getZ()));
     }
 
     @Test
@@ -70,12 +63,12 @@ public class CartesianParametersTest {
 
         CartesianOrbit p = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
-        assertEquals(42255170.0028257,  p.getA(), Utils.epsilonTest * p.getA());
-        assertEquals(0.592732497856475e-03,  p.getEquinoctialEx(), Utils.epsilonE * Math.abs(p.getE()));
-        assertEquals(-0.206274396964359e-02, p.getEquinoctialEy(), Utils.epsilonE * Math.abs(p.getE()));
-        assertEquals(Math.sqrt(Math.pow(0.592732497856475e-03,2)+Math.pow(-0.206274396964359e-02,2)), p.getE(), Utils.epsilonAngle * Math.abs(p.getE()));
-        assertEquals(MathUtils.normalizeAngle(2*Math.asin(Math.sqrt((Math.pow(0.128021863908325e-03,2)+Math.pow(-0.352136186881817e-02,2))/4.)),p.getI()), p.getI(), Utils.epsilonAngle * Math.abs(p.getI()));
-        assertEquals(MathUtils.normalizeAngle(0.234498139679291e+01,p.getLM()), p.getLM(), Utils.epsilonAngle * Math.abs(p.getLM()));
+        Assert.assertEquals(42255170.0028257,  p.getA(), Utils.epsilonTest * p.getA());
+        Assert.assertEquals(0.592732497856475e-03,  p.getEquinoctialEx(), Utils.epsilonE * Math.abs(p.getE()));
+        Assert.assertEquals(-0.206274396964359e-02, p.getEquinoctialEy(), Utils.epsilonE * Math.abs(p.getE()));
+        Assert.assertEquals(Math.sqrt(Math.pow(0.592732497856475e-03,2)+Math.pow(-0.206274396964359e-02,2)), p.getE(), Utils.epsilonAngle * Math.abs(p.getE()));
+        Assert.assertEquals(MathUtils.normalizeAngle(2*Math.asin(Math.sqrt((Math.pow(0.128021863908325e-03,2)+Math.pow(-0.352136186881817e-02,2))/4.)),p.getI()), p.getI(), Utils.epsilonAngle * Math.abs(p.getI()));
+        Assert.assertEquals(MathUtils.normalizeAngle(0.234498139679291e+01,p.getLM()), p.getLM(), Utils.epsilonAngle * Math.abs(p.getLM()));
     }
 
     @Test
@@ -89,17 +82,17 @@ public class CartesianParametersTest {
         CartesianOrbit p = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
         KeplerianOrbit kep = new KeplerianOrbit(p);
 
-        assertEquals(22979265.3030773,  p.getA(), Utils.epsilonTest  * p.getA());
-        assertEquals(0.743502611664700, p.getE(), Utils.epsilonE     * Math.abs(p.getE()));
-        assertEquals(0.122182096220906, p.getI(), Utils.epsilonAngle * Math.abs(p.getI()));
+        Assert.assertEquals(22979265.3030773,  p.getA(), Utils.epsilonTest  * p.getA());
+        Assert.assertEquals(0.743502611664700, p.getE(), Utils.epsilonE     * Math.abs(p.getE()));
+        Assert.assertEquals(0.122182096220906, p.getI(), Utils.epsilonAngle * Math.abs(p.getI()));
         double pa = kep.getPerigeeArgument();
-        assertEquals(MathUtils.normalizeAngle(3.09909041016672, pa), pa,
+        Assert.assertEquals(MathUtils.normalizeAngle(3.09909041016672, pa), pa,
                      Utils.epsilonAngle * Math.abs(pa));
         double raan = kep.getRightAscensionOfAscendingNode();
-        assertEquals(MathUtils.normalizeAngle(2.32231010979999, raan), raan,
+        Assert.assertEquals(MathUtils.normalizeAngle(2.32231010979999, raan), raan,
                      Utils.epsilonAngle * Math.abs(raan));
         double m = kep.getMeanAnomaly();
-        assertEquals(MathUtils.normalizeAngle(3.22888977629034, m), m,
+        Assert.assertEquals(MathUtils.normalizeAngle(3.22888977629034, m), m,
                      Utils.epsilonAngle * Math.abs(Math.abs(m)));
     }
 
@@ -122,12 +115,12 @@ public class CartesianParametersTest {
         double na = Math.sqrt(mu / a);
 
         // validation of: r = a .(1 - e2) / (1 + e.cos(v))
-        assertEquals(a * epsilon * epsilon / ksi,
+        Assert.assertEquals(a * epsilon * epsilon / ksi,
                      p.getPVCoordinates().getPosition().getNorm(),
                      Utils.epsilonTest * Math.abs(p.getPVCoordinates().getPosition().getNorm()));
 
         // validation of: V = sqrt(mu.(1+2e.cos(v)+e2)/a.(1-e2) )
-        assertEquals(na * Math.sqrt(ksi * ksi + nu * nu) / epsilon,
+        Assert.assertEquals(na * Math.sqrt(ksi * ksi + nu * nu) / epsilon,
                      p.getPVCoordinates().getVelocity().getNorm(),
                      Utils.epsilonTest * Math.abs(p.getPVCoordinates().getVelocity().getNorm()));
 
@@ -154,10 +147,10 @@ public class CartesianParametersTest {
 
             // test if the norm of the position is in the range [perigee radius, apogee radius]
             // Warning: these tests are without absolute value by choice
-            assertTrue((position.getNorm() - apogeeRadius)  <= (  apogeeRadius * Utils.epsilonTest));
-            assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
-            // assertTrue(position.getNorm() <= apogeeRadius);
-            // assertTrue(position.getNorm() >= perigeeRadius);
+            Assert.assertTrue((position.getNorm() - apogeeRadius)  <= (  apogeeRadius * Utils.epsilonTest));
+            Assert.assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
+            // Assert.assertTrue(position.getNorm() <= apogeeRadius);
+            // Assert.assertTrue(position.getNorm() >= perigeeRadius);
 
             position= position.normalize();
             velocity = p.getPVCoordinates().getVelocity().normalize();
@@ -165,9 +158,9 @@ public class CartesianParametersTest {
             // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
 
             // test of orthogonality between position and momentum
-            assertTrue(Math.abs(Vector3D.dotProduct(position, momentum)) < Utils.epsilonTest);
+            Assert.assertTrue(Math.abs(Vector3D.dotProduct(position, momentum)) < Utils.epsilonTest);
             // test of orthogonality between velocity and momentum
-            assertTrue(Math.abs(Vector3D.dotProduct(velocity, momentum)) < Utils.epsilonTest);
+            Assert.assertTrue(Math.abs(Vector3D.dotProduct(velocity, momentum)) < Utils.epsilonTest);
         }
     }
 

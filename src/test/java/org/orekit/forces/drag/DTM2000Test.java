@@ -16,10 +16,10 @@
  */
 package org.orekit.forces.drag;
 
-import static org.junit.Assert.assertEquals;
 
 import java.text.ParseException;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.SolarInputs97to05;
@@ -69,9 +69,9 @@ public class DTM2000Test {
 
         // Computation and results
         myRo = atm.getDensity(185, 800*1000, 0, Math.toRadians(40), 16*Math.PI/12, 150, 150, 0, 0);
-        assertEquals(0, (roTestCase -myRo)/roTestCase, 1e-14);
-        assertEquals(0, (tzTestCase-atm.getT())/tzTestCase, 1e-13);
-        assertEquals(0, (tinfTestCase-atm.getTinf())/tinfTestCase, 1e-13);
+        Assert.assertEquals(0, (roTestCase -myRo)/roTestCase, 1e-14);
+        Assert.assertEquals(0, (tzTestCase-atm.getT())/tzTestCase, 1e-13);
+        Assert.assertEquals(0, (tinfTestCase-atm.getTinf())/tinfTestCase, 1e-13);
 
 //      IDEM., day=275
 
@@ -80,9 +80,9 @@ public class DTM2000Test {
         tinfTestCase=    1157.1933514185;
 
         myRo = atm.getDensity(275, 800*1000, 0, Math.toRadians(40), 16*Math.PI/12, 150, 150, 0, 0);
-        assertEquals(0, (roTestCase -myRo)/roTestCase, 1e-14);
-        assertEquals(0, (tzTestCase-atm.getT())/tzTestCase, 1e-13);
-        assertEquals(0, (tinfTestCase-atm.getTinf())/tinfTestCase, 1e-13);
+        Assert.assertEquals(0, (roTestCase -myRo)/roTestCase, 1e-14);
+        Assert.assertEquals(0, (tzTestCase-atm.getT())/tzTestCase, 1e-13);
+        Assert.assertEquals(0, (tinfTestCase-atm.getTinf())/tinfTestCase, 1e-13);
 
 //      IDEM., day=355
 
@@ -91,9 +91,9 @@ public class DTM2000Test {
         tinfTestCase=    1033.0282703200;
 
         myRo = atm.getDensity(355, 800*1000, 0, Math.toRadians(40), 16*Math.PI/12, 150, 150, 0, 0);
-        assertEquals(0, (roTestCase -myRo)/roTestCase, 2e-14);
-        assertEquals(0, (tzTestCase-atm.getT())/tzTestCase, 1e-13);
-        assertEquals(0, (tinfTestCase-atm.getTinf())/tinfTestCase, 1e-13);
+        Assert.assertEquals(0, (roTestCase -myRo)/roTestCase, 2e-14);
+        Assert.assertEquals(0, (tzTestCase-atm.getT())/tzTestCase, 1e-13);
+        Assert.assertEquals(0, (tinfTestCase-atm.getTinf())/tinfTestCase, 1e-13);
 //      IDEM., day=85
 
         roTestCase=    2.9983740796297e-17* 1000;
@@ -101,9 +101,9 @@ public class DTM2000Test {
         tinfTestCase=    1169.5485768345;
 
         myRo = atm.getDensity(85, 800*1000, 0, Math.toRadians(40), 16*Math.PI/12, 150, 150, 0, 0);
-        assertEquals(0, (roTestCase -myRo)/roTestCase, 1e-14);
-        assertEquals(0, (tzTestCase-atm.getT())/tzTestCase, 1e-13);
-        assertEquals(0, (tinfTestCase-atm.getTinf())/tinfTestCase, 1e-13);
+        Assert.assertEquals(0, (roTestCase -myRo)/roTestCase, 1e-14);
+        Assert.assertEquals(0, (tzTestCase-atm.getT())/tzTestCase, 1e-13);
+        Assert.assertEquals(0, (tinfTestCase-atm.getTinf())/tinfTestCase, 1e-13);
 
 
 //      alt=500.

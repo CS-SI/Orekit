@@ -16,18 +16,17 @@
  */
 package org.orekit.utils;
 
-import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.utils.PVCoordinates;
 
 
 public class PVCoordinatesTest {
 
     @Test
     public void testDefaultConstructor() {
-        assertEquals("{P(0.0, 0.0, 0.0), V(0.0, 0.0, 0.0)}", new PVCoordinates().toString());
+        Assert.assertEquals("{P(0.0, 0.0, 0.0), V(0.0, 0.0, 0.0)}", new PVCoordinates().toString());
     }
 
     @Test
@@ -51,16 +50,16 @@ public class PVCoordinatesTest {
     public void testToString() {
         PVCoordinates pv =
             new PVCoordinates(new Vector3D( 1,  0.1,  10), new Vector3D(-1, -0.1, -10));
-        assertEquals("{P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0)}", pv.toString());
+        Assert.assertEquals("{P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0)}", pv.toString());
     }
 
     private void checkPV(PVCoordinates expected, PVCoordinates real, double epsilon) {
-        assertEquals(expected.getPosition().getX(), real.getPosition().getX(), epsilon);
-        assertEquals(expected.getPosition().getY(), real.getPosition().getY(), epsilon);
-        assertEquals(expected.getPosition().getZ(), real.getPosition().getZ(), epsilon);
-        assertEquals(expected.getVelocity().getX(), real.getVelocity().getX(), epsilon);
-        assertEquals(expected.getVelocity().getY(), real.getVelocity().getY(), epsilon);
-        assertEquals(expected.getVelocity().getZ(), real.getVelocity().getZ(), epsilon);
+        Assert.assertEquals(expected.getPosition().getX(), real.getPosition().getX(), epsilon);
+        Assert.assertEquals(expected.getPosition().getY(), real.getPosition().getY(), epsilon);
+        Assert.assertEquals(expected.getPosition().getZ(), real.getPosition().getZ(), epsilon);
+        Assert.assertEquals(expected.getVelocity().getX(), real.getVelocity().getX(), epsilon);
+        Assert.assertEquals(expected.getVelocity().getY(), real.getVelocity().getY(), epsilon);
+        Assert.assertEquals(expected.getVelocity().getZ(), real.getVelocity().getZ(), epsilon);
     }
 
 }

@@ -21,12 +21,8 @@ import java.io.FileNotFoundException;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
-
+import org.junit.Assert;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -75,7 +71,7 @@ public class IntegratedEphemerisTest {
         numericEx.setEphemerisMode();
         numericEx.setInitialState(new SpacecraftState(initialOrbit));
         numericEx.propagate(finalDate);
-        assertTrue(numericEx.getCalls() < 3200);
+        Assert.assertTrue(numericEx.getCalls() < 3200);
         BoundedPropagator ephemeris = numericEx.getGeneratedEphemeris();
 
         // tests
@@ -85,7 +81,7 @@ public class IntegratedEphemerisTest {
             SpacecraftState numericIntermediateOrbit = ephemeris.propagate(intermediateDate);
             Vector3D kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
             Vector3D numPosition = numericIntermediateOrbit.getPVCoordinates().getPosition();
-            assertEquals(0, kepPosition.subtract(numPosition).getNorm(), 0.06);
+            Assert.assertEquals(0, kepPosition.subtract(numPosition).getNorm(), 0.06);
         }
 
         // test inv
@@ -99,7 +95,7 @@ public class IntegratedEphemerisTest {
         SpacecraftState numericIntermediateOrbit = invEphemeris.propagate(intermediateDate);
         Vector3D kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
         Vector3D numPosition = numericIntermediateOrbit.getPVCoordinates().getPosition();
-        assertEquals(0, kepPosition.subtract(numPosition).getNorm(), 10e-2);
+        Assert.assertEquals(0, kepPosition.subtract(numPosition).getNorm(), 10e-2);
 
     }
 

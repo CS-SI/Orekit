@@ -16,19 +16,13 @@
  */
 package org.orekit.data;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 
@@ -39,9 +33,9 @@ public class DataProvidersManagerTest {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("regular-data"));
         CountingLoader crawler = new CountingLoader(".*", false);
         DataProvidersManager.getInstance().clearProviders();
-        assertFalse(DataProvidersManager.getInstance().isSupported(DirectoryCrawler.class));
-        assertTrue(DataProvidersManager.getInstance().feed(crawler));
-        assertEquals(14, crawler.getCount());
+        Assert.assertFalse(DataProvidersManager.getInstance().isSupported(DirectoryCrawler.class));
+        Assert.assertTrue(DataProvidersManager.getInstance().feed(crawler));
+        Assert.assertEquals(14, crawler.getCount());
     }
 
     @Test
@@ -51,11 +45,11 @@ public class DataProvidersManagerTest {
         CountingLoader crawler = new CountingLoader(".*", true);
         try {
             DataProvidersManager.getInstance().feed(crawler);
-            fail("an exception should have been thrown");
+            Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected
         }
-        assertEquals(14, crawler.getCount());
+        Assert.assertEquals(14, crawler.getCount());
     }
 
     @Test
@@ -64,54 +58,33 @@ public class DataProvidersManagerTest {
         CountingLoader crawler = new CountingLoader(".*", false);
         DataProvidersManager.getInstance().clearProviders();
         DataProvidersManager.getInstance().feed(crawler);
-        assertEquals(0, crawler.getCount());
+        Assert.assertEquals(0, crawler.getCount());
     }
 
-    @Test
+    @Test(expected=OrekitException.class)
     public void testInexistentDirectory() throws OrekitException {
         File inexistent = new File(getPath("regular-data"), "inexistent");
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, inexistent.getAbsolutePath());
         CountingLoader crawler = new CountingLoader(".*", false);
         DataProvidersManager.getInstance().clearProviders();
-        try {
-            DataProvidersManager.getInstance().feed(crawler);
-            fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            // expected behavior
-        } catch (Exception e) {
-            fail("wrong exception caught");
-        }
+        DataProvidersManager.getInstance().feed(crawler);
     }
 
-    @Test
+    @Test(expected=OrekitException.class)
     public void testInexistentZipArchive() throws OrekitException {
         File inexistent = new File(getPath("regular-data"), "inexistent.zip");
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, inexistent.getAbsolutePath());
         CountingLoader crawler = new CountingLoader(".*", false);
         DataProvidersManager.getInstance().clearProviders();
-        try {
-            DataProvidersManager.getInstance().feed(crawler);
-            fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            // expected behavior
-        } catch (Exception e) {
-            fail("wrong exception caught");
-        }
+        DataProvidersManager.getInstance().feed(crawler);
     }
 
-    @Test
+    @Test(expected=OrekitException.class)
     public void testNeitherDirectoryNorZip() throws OrekitException {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("regular-data/UTC-TAI.history"));
         CountingLoader crawler = new CountingLoader(".*", false);
         DataProvidersManager.getInstance().clearProviders();
-        try {
-            DataProvidersManager.getInstance().feed(crawler);
-            fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            // expected behavior
-        } catch (Exception e) {
-            fail("wrong exception caught");
-        }
+        DataProvidersManager.getInstance().feed(crawler);
     }
 
     @Test
@@ -120,14 +93,14 @@ public class DataProvidersManagerTest {
         CountingLoader crawler = new CountingLoader(".*", false);
         DataProvidersManager manager = DataProvidersManager.getInstance();
         manager.clearProviders();
-        assertFalse(manager.isSupported(DirectoryCrawler.class));
-        assertTrue(manager.feed(crawler));
-        assertTrue(crawler.getCount() > 0);
-        assertTrue(manager.isSupported(DirectoryCrawler.class));
-        assertFalse(manager.isSupported(ClasspathCrawler.class));
-        assertEquals(1, manager.getProviders().size());
-        assertNotNull(manager.removeProvider(DirectoryCrawler.class));
-        assertEquals(0, manager.getProviders().size());
+        Assert.assertFalse(manager.isSupported(DirectoryCrawler.class));
+        Assert.assertTrue(manager.feed(crawler));
+        Assert.assertTrue(crawler.getCount() > 0);
+        Assert.assertTrue(manager.isSupported(DirectoryCrawler.class));
+        Assert.assertFalse(manager.isSupported(ClasspathCrawler.class));
+        Assert.assertEquals(1, manager.getProviders().size());
+        Assert.assertNotNull(manager.removeProvider(DirectoryCrawler.class));
+        Assert.assertEquals(0, manager.getProviders().size());
         DataProvider provider = new DataProvider() {
             private static final long serialVersionUID = -5312255682914297696L;
             public boolean feed(DataLoader visitor) throws OrekitException {
@@ -135,20 +108,20 @@ public class DataProvidersManagerTest {
             }
         };
         manager.addProvider(provider);
-        assertEquals(1, manager.getProviders().size());
+        Assert.assertEquals(1, manager.getProviders().size());
         manager.addProvider(provider);
-        assertEquals(2, manager.getProviders().size());
-        assertNotNull(manager.removeProvider(provider.getClass()));
-        assertEquals(1, manager.getProviders().size());
-        assertNull(manager.removeProvider(new DataProvider() {
+        Assert.assertEquals(2, manager.getProviders().size());
+        Assert.assertNotNull(manager.removeProvider(provider.getClass()));
+        Assert.assertEquals(1, manager.getProviders().size());
+        Assert.assertNull(manager.removeProvider(new DataProvider() {
             private static final long serialVersionUID = 6368246625696570910L;
             public boolean feed(DataLoader visitor) throws OrekitException {
                 throw new OrekitException("oops!");
             }
         }.getClass()));
-        assertEquals(1, manager.getProviders().size());
-        assertNotNull(manager.removeProvider(provider.getClass()));
-        assertEquals(0, manager.getProviders().size());
+        Assert.assertEquals(1, manager.getProviders().size());
+        Assert.assertNotNull(manager.removeProvider(provider.getClass()));
+        Assert.assertEquals(0, manager.getProviders().size());
     }
 
     @Test
@@ -162,16 +135,16 @@ public class DataProvidersManagerTest {
         DataProvidersManager.getInstance().clearProviders();
 
         CountingLoader crawler = new CountingLoader(".*\\.405$", false);
-        assertTrue(DataProvidersManager.getInstance().feed(crawler));
-        assertEquals(4, crawler.getCount());
+        Assert.assertTrue(DataProvidersManager.getInstance().feed(crawler));
+        Assert.assertEquals(4, crawler.getCount());
 
         crawler = new CountingLoader(".*\\.txt$", false);
-        assertTrue(DataProvidersManager.getInstance().feed(crawler));
-        assertEquals(1, crawler.getCount());
+        Assert.assertTrue(DataProvidersManager.getInstance().feed(crawler));
+        Assert.assertEquals(1, crawler.getCount());
 
         crawler = new CountingLoader("bulletinb_.*\\.txt$", false);
-        assertTrue(DataProvidersManager.getInstance().feed(crawler));
-        assertEquals(2, crawler.getCount());
+        Assert.assertTrue(DataProvidersManager.getInstance().feed(crawler));
+        Assert.assertEquals(2, crawler.getCount());
 
     }
 
@@ -180,8 +153,8 @@ public class DataProvidersManagerTest {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("zipped-data/multizip.zip"));
         CountingLoader crawler = new CountingLoader(".*\\.txt$", false);
         DataProvidersManager.getInstance().clearProviders();
-        assertTrue(DataProvidersManager.getInstance().feed(crawler));
-        assertEquals(6, crawler.getCount());
+        Assert.assertTrue(DataProvidersManager.getInstance().feed(crawler));
+        Assert.assertEquals(6, crawler.getCount());
     }
 
     private static class CountingLoader implements DataLoader {

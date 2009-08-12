@@ -16,9 +16,9 @@
  */
 package org.orekit.forces;
 
-import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
@@ -48,16 +48,16 @@ public class SphericalSpacecraftTest {
         SphericalSpacecraft s = new SphericalSpacecraft(1.0, 2.0, 3.0, 4.0);
         Vector3D[] directions = { Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.PLUS_K };
         for (int i = 0; i < directions.length; ++i) {
-            assertEquals(1.0, s.getDragCrossSection(state, directions[i]), 1.0e-15);
-            assertEquals(0.0,
+            Assert.assertEquals(1.0, s.getDragCrossSection(state, directions[i]), 1.0e-15);
+            Assert.assertEquals(0.0,
                          new Vector3D(-1, s.getDragCoef(state, directions[i]),
                                       2.0, directions[i]).getNorm(),
                          1.0e-15);
-            assertEquals(0.0,
+            Assert.assertEquals(0.0,
                          new Vector3D(-1, s.getAbsorptionCoef(state, directions[i]),
                                       3.0, directions[i]).getNorm(),
                          1.0e-15);
-            assertEquals(0.0,
+            Assert.assertEquals(0.0,
                          new Vector3D(-1, s.getReflectionCoef(state, directions[i]),
                                       4.0, directions[i]).getNorm(),
                          1.0e-15);
@@ -85,16 +85,16 @@ public class SphericalSpacecraftTest {
         s.setReflectionCoeff(4.0);
         Vector3D[] directions = { Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.PLUS_K };
         for (int i = 0; i < directions.length; ++i) {
-            assertEquals(1.0, s.getDragCrossSection(state, directions[i]), 1.0e-15);
-            assertEquals(0.0,
+            Assert.assertEquals(1.0, s.getDragCrossSection(state, directions[i]), 1.0e-15);
+            Assert.assertEquals(0.0,
                          new Vector3D(-1, s.getDragCoef(state, directions[i]),
                                       2.0, directions[i]).getNorm(),
                          1.0e-15);
-            assertEquals(0.0,
+            Assert.assertEquals(0.0,
                          new Vector3D(-1, s.getAbsorptionCoef(state, directions[i]),
                                       3.0, directions[i]).getNorm(),
                          1.0e-15);
-            assertEquals(0.0,
+            Assert.assertEquals(0.0,
                          new Vector3D(-1, s.getReflectionCoef(state, directions[i]),
                                       4.0, directions[i]).getNorm(),
                          1.0e-15);

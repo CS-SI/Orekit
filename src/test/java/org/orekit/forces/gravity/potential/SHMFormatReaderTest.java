@@ -16,17 +16,14 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import static org.junit.Assert.assertEquals;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.gravity.potential.PotentialCoefficientsReader;
-import org.orekit.forces.gravity.potential.PotentialReaderFactory;
-import org.orekit.forces.gravity.potential.SHMFormatReader;
 
 public class SHMFormatReaderTest {
 
@@ -41,12 +38,12 @@ public class SHMFormatReaderTest {
         double[][] C = reader.getC(5, 5, true);
         double[][] S = reader.getS(5, 5, true);
 
-        assertEquals(0.957187536534E-06,C[3][0],  0);
-        assertEquals(0.174787189024E-06,C[5][5],  0);
-        assertEquals(0, S[4][0],  0);
-        assertEquals(0.308834848269E-06 ,S[4][4],  0);
-        assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
-        assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
+        Assert.assertEquals(0.957187536534E-06,C[3][0],  0);
+        Assert.assertEquals(0.174787189024E-06,C[5][5],  0);
+        Assert.assertEquals(0, S[4][0],  0);
+        Assert.assertEquals(0.308834848269E-06 ,S[4][4],  0);
+        Assert.assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
+        Assert.assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
 
         in =
             SHMFormatReaderTest.class.getResourceAsStream("/potential/shm-format/eigen_cg03c_coef");
@@ -55,12 +52,12 @@ public class SHMFormatReaderTest {
         C = reader.getC(5, 5, true);;
         S = reader.getS(5, 5, true);
 
-        assertEquals(0.957201462136E-06,C[3][0],  0);
-        assertEquals(0.174786174485E-06,C[5][5],  0);
-        assertEquals(0, S[4][0],  0);
-        assertEquals(0.308834784975E-06 ,S[4][4],  0);
-        assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
-        assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
+        Assert.assertEquals(0.957201462136E-06,C[3][0],  0);
+        Assert.assertEquals(0.174786174485E-06,C[5][5],  0);
+        Assert.assertEquals(0, S[4][0],  0);
+        Assert.assertEquals(0.308834784975E-06 ,S[4][4],  0);
+        Assert.assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
+        Assert.assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
 
     }
 
@@ -74,12 +71,12 @@ public class SHMFormatReaderTest {
         double[][] C = reader.getC(5, 5, true);;
         double[][] S = reader.getS(5, 5, true);;
 
-        assertEquals(0.957187536534E-06,C[3][0],  0);
-        assertEquals(0.174787189024E-06,C[5][5],  0);
-        assertEquals(0, S[4][0],  0);
-        assertEquals(0.308834848269E-06 ,S[4][4],  0);
-        assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
-        assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
+        Assert.assertEquals(0.957187536534E-06,C[3][0],  0);
+        Assert.assertEquals(0.174787189024E-06,C[5][5],  0);
+        Assert.assertEquals(0, S[4][0],  0);
+        Assert.assertEquals(0.308834848269E-06 ,S[4][4],  0);
+        Assert.assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
+        Assert.assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
 
         in =
             SHMFormatReaderTest.class.getResourceAsStream("/potential/shm-format-compressed/eigen_cg03c_coef.gz");
@@ -88,12 +85,12 @@ public class SHMFormatReaderTest {
         C = reader.getC(5, 5, true);;
         S = reader.getS(5, 5, true);;
 
-        assertEquals(0.957201462136E-06,C[3][0],  0);
-        assertEquals(0.174786174485E-06,C[5][5],  0);
-        assertEquals(0, S[4][0],  0);
-        assertEquals(0.308834784975E-06 ,S[4][4],  0);
-        assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
-        assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
+        Assert.assertEquals(0.957201462136E-06,C[3][0],  0);
+        Assert.assertEquals(0.174786174485E-06,C[5][5],  0);
+        Assert.assertEquals(0, S[4][0],  0);
+        Assert.assertEquals(0.308834784975E-06 ,S[4][4],  0);
+        Assert.assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
+        Assert.assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
 
     }
 
@@ -136,7 +133,7 @@ public class SHMFormatReaderTest {
             // expected behaviour
         }
 
-        assertEquals(4 , c);
+        Assert.assertEquals(4 , c);
 
     }
 

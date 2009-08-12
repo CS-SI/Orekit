@@ -16,9 +16,9 @@
  */
 package org.orekit.attitudes;
 
-import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -50,10 +50,10 @@ public class SpinStabilizedTest {
                               new Vector3D(0, 0, 3680.853673522056));
         Attitude attitude = bbq.getState(date, pv, FramesFactory.getEME2000());
         Vector3D xDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
-        assertEquals(Math.atan(1.0 / 5000.0),
+        Assert.assertEquals(Math.atan(1.0 / 5000.0),
                      Vector3D.angle(xDirection, sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition()),
                      1.0e-15);
-        assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-6);
+        Assert.assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-6);
 
     }
 

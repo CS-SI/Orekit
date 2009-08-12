@@ -20,16 +20,10 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
-
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
@@ -66,12 +60,12 @@ public class NumericalPropagatorTest {
         final Vector3D finalVelocity   = finalState.getPVCoordinates().getVelocity();
 
         // Check results
-        assertEquals(initialPosition.getX(), finalPosition.getX(), 1.0e-10);
-        assertEquals(initialPosition.getY(), finalPosition.getY(), 1.0e-10);
-        assertEquals(initialPosition.getZ(), finalPosition.getZ(), 1.0e-10);
-        assertEquals(initialVelocity.getX(), finalVelocity.getX(), 1.0e-10);
-        assertEquals(initialVelocity.getY(), finalVelocity.getY(), 1.0e-10);
-        assertEquals(initialVelocity.getZ(), finalVelocity.getZ(), 1.0e-10);
+        Assert.assertEquals(initialPosition.getX(), finalPosition.getX(), 1.0e-10);
+        Assert.assertEquals(initialPosition.getY(), finalPosition.getY(), 1.0e-10);
+        Assert.assertEquals(initialPosition.getZ(), finalPosition.getZ(), 1.0e-10);
+        Assert.assertEquals(initialVelocity.getX(), finalVelocity.getX(), 1.0e-10);
+        Assert.assertEquals(initialVelocity.getY(), finalVelocity.getY(), 1.0e-10);
+        Assert.assertEquals(initialVelocity.getZ(), finalVelocity.getZ(), 1.0e-10);
 
     }
 
@@ -81,11 +75,11 @@ public class NumericalPropagatorTest {
             final NumericalPropagator notInitialised =
                 new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.0));
             notInitialised.propagate(AbsoluteDate.J2000_EPOCH);
-            fail("an exception should have been thrown");
+            Assert.fail("an exception should have been thrown");
         } catch (PropagationException pe) {
             // expected behavior
         } catch (Exception e) {
-            fail("wrong exception caught");
+            Assert.fail("wrong exception caught");
         }
     }
 
@@ -99,12 +93,12 @@ public class NumericalPropagatorTest {
 
         // Check results
         final double n = Math.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
-        assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
-        assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
-        assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
-        assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
-        assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
-        assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 2.0e-9);
+        Assert.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
+        Assert.assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
+        Assert.assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
+        Assert.assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
+        Assert.assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
+        Assert.assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 2.0e-9);
 
     }
 
@@ -117,7 +111,7 @@ public class NumericalPropagatorTest {
             public void handleStep(OrekitStepInterpolator interpolator,
                                    boolean isLast) throws PropagationException {
                 if (previousCall != null) {
-                    assertTrue(interpolator.getInterpolatedDate().compareTo(previousCall) < 0);
+                    Assert.assertTrue(interpolator.getInterpolatedDate().compareTo(previousCall) < 0);
                 }
                 if (--countDown == 0) {
                     throw new PropagationException("dummy error", (Throwable) null);
@@ -133,9 +127,9 @@ public class NumericalPropagatorTest {
             propagator.propagate(new AbsoluteDate(initDate, -3600));
         } catch (PropagationException pe) {
             // expected behavior
-            assertEquals("dummy error", pe.getMessage());
+            Assert.assertEquals("dummy error", pe.getMessage());
         } catch (Exception e) {
-            fail("wrong exception caught");
+            Assert.fail("wrong exception caught");
         }
     }
 
@@ -152,10 +146,10 @@ public class NumericalPropagatorTest {
                 return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass() - 200.0);
             }
         });
-        assertFalse(gotHere);
+        Assert.assertFalse(gotHere);
         final SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initDate, 3200));
-        assertTrue(gotHere);
-        assertEquals(0, finalState.getDate().durationFrom(stopDate), 1.0e-10);
+        Assert.assertTrue(gotHere);
+        Assert.assertEquals(0, finalState.getDate().durationFrom(stopDate), 1.0e-10);
     }
 
     @Test
@@ -171,10 +165,10 @@ public class NumericalPropagatorTest {
                 return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass() - 200.0);
             }
         });
-        assertFalse(gotHere);
+        Assert.assertFalse(gotHere);
         final SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initDate, 3200));
-        assertTrue(gotHere);
-        assertEquals(initialState.getMass() - 200, finalState.getMass(), 1.0e-10);
+        Assert.assertTrue(gotHere);
+        Assert.assertEquals(initialState.getMass() - 200, finalState.getMass(), 1.0e-10);
     }
 
     @Test
@@ -188,17 +182,17 @@ public class NumericalPropagatorTest {
             }
         });
         final double dt = 3200;
-        assertFalse(gotHere);
+        Assert.assertFalse(gotHere);
         final SpacecraftState finalState = 
             propagator.propagate(new AbsoluteDate(initDate, dt));
-        assertTrue(gotHere);
+        Assert.assertTrue(gotHere);
         final double n = Math.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
-        assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
-        assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
-        assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
-        assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
-        assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
-        assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 6.0e-10);
+        Assert.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
+        Assert.assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
+        Assert.assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
+        Assert.assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
+        Assert.assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
+        Assert.assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 6.0e-10);
     }
 
     @Test
@@ -212,17 +206,17 @@ public class NumericalPropagatorTest {
             }
         });
         final double dt = 3200;
-        assertFalse(gotHere);
+        Assert.assertFalse(gotHere);
         final SpacecraftState finalState = 
             propagator.propagate(new AbsoluteDate(initDate, dt));
-        assertTrue(gotHere);
+        Assert.assertTrue(gotHere);
         final double n = Math.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
-        assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
-        assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
-        assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
-        assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
-        assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
-        assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 6.0e-10);
+        Assert.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
+        Assert.assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
+        Assert.assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
+        Assert.assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
+        Assert.assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
+        Assert.assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 6.0e-10);
     }
 
     private void setGotHere(boolean gotHere) {

@@ -16,12 +16,11 @@
  */
 package org.orekit.data;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 
@@ -52,18 +51,18 @@ public class PoissonSeriesTest {
             + "1 0.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
         PoissonSeries nd =
             new PoissonSeries(new ByteArrayInputStream(data.getBytes()), 1.0, "");
-        assertNotNull(nd);
+        Assert.assertNotNull(nd);
     }
 
     @Test
     public void testSecondsMarkers() throws OrekitException {
-            String data =
-                "  0''.0 + 0''.0 t - 0''.0 t^2 - 0''.0 t^3 - 0''.0 t^4 + 0''.0 t^5\n"
-                + "j = 0  Nb of terms = 1\n"
-                + "1 0.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
-            PoissonSeries nd =
-                new PoissonSeries(new ByteArrayInputStream(data.getBytes()), 1.0, "");
-            assertNotNull(nd);
+        String data =
+            "  0''.0 + 0''.0 t - 0''.0 t^2 - 0''.0 t^3 - 0''.0 t^4 + 0''.0 t^5\n"
+            + "j = 0  Nb of terms = 1\n"
+            + "1 0.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
+        PoissonSeries nd =
+            new PoissonSeries(new ByteArrayInputStream(data.getBytes()), 1.0, "");
+        Assert.assertNotNull(nd);
     }
 
     @Test
@@ -126,8 +125,8 @@ public class PoissonSeriesTest {
             + " j = 4  Nb of terms = 1\n"
             + "       \n"
             + "  1600          -0.10          -0.02    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n";
-        assertNotNull(new PoissonSeries(new ByteArrayInputStream(data.getBytes()),
-                                      1.0, "dummy"));
+        Assert.assertNotNull(new PoissonSeries(new ByteArrayInputStream(data.getBytes()),
+                                               1.0, "dummy"));
     }
 
     @Test
@@ -135,27 +134,27 @@ public class PoissonSeriesTest {
         String directory = "/META-INF/IERS-conventions-2003/";
         InputStream xStream =
             getClass().getResourceAsStream(directory + "tab5.2a.txt");
-        assertNotNull(new PoissonSeries(xStream, 1.0, "tab5.2a.txt"));
+        Assert.assertNotNull(new PoissonSeries(xStream, 1.0, "tab5.2a.txt"));
         InputStream yStream =
             getClass().getResourceAsStream(directory + "tab5.2b.txt");
-        assertNotNull(new PoissonSeries(yStream, 1.0, "tab5.2b.txt"));
+        Assert.assertNotNull(new PoissonSeries(yStream, 1.0, "tab5.2b.txt"));
         InputStream zStream =
             getClass().getResourceAsStream(directory + "tab5.2c.txt");
-        assertNotNull(new PoissonSeries(zStream, 1.0, "tab5.2c.txt"));
+        Assert.assertNotNull(new PoissonSeries(zStream, 1.0, "tab5.2c.txt"));
         InputStream gstStream =
             getClass().getResourceAsStream(directory + "tab5.4.txt");
-        assertNotNull(new PoissonSeries(gstStream, 1.0, "tab5.4.txt"));
+        Assert.assertNotNull(new PoissonSeries(gstStream, 1.0, "tab5.4.txt"));
     }
 
     private void checkBadData(String data) {
         try {
             new PoissonSeries(new ByteArrayInputStream(data.getBytes()),
                             1.0, "<file-content>" + data + "</file-content>");
-            fail("an exception should have been thrown");
+            Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behaviour
         } catch (Exception e) {
-            fail("wrong exception type caught");
+            Assert.fail("wrong exception type caught");
         }
     }
 

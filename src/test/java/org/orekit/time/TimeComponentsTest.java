@@ -16,13 +16,9 @@
  */
 package org.orekit.time;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
+import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.time.TimeComponents;
 
 
 public class TimeComponentsTest {
@@ -50,19 +46,19 @@ public class TimeComponentsTest {
 
     @Test
     public void testValues() {
-        assertEquals(    0.0, new TimeComponents( 0, 0, 0).getSecondsInDay(), 1.0e-10);
-        assertEquals(21600.0, new TimeComponents( 6, 0, 0).getSecondsInDay(), 1.0e-10);
-        assertEquals(43200.0, new TimeComponents(12, 0, 0).getSecondsInDay(), 1.0e-10);
-        assertEquals(64800.0, new TimeComponents(18, 0, 0).getSecondsInDay(), 1.0e-10);
-        assertEquals(86399.9, new TimeComponents(23, 59, 59.9).getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(    0.0, new TimeComponents( 0, 0, 0).getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(21600.0, new TimeComponents( 6, 0, 0).getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(43200.0, new TimeComponents(12, 0, 0).getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(64800.0, new TimeComponents(18, 0, 0).getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, new TimeComponents(23, 59, 59.9).getSecondsInDay(), 1.0e-10);
     }
 
     public void testString() {
-        assertEquals("00:00:00.000", new TimeComponents(0).toString());
-        assertEquals("06:00:00.000", new TimeComponents(21600).toString());
-        assertEquals("12:00:00.000", new TimeComponents(43200).toString());
-        assertEquals("18:00:00.000", new TimeComponents(64800).toString());
-        assertEquals("23:59:59.900", new TimeComponents(86399.9).toString());
+        Assert.assertEquals("00:00:00.000", new TimeComponents(0).toString());
+        Assert.assertEquals("06:00:00.000", new TimeComponents(21600).toString());
+        Assert.assertEquals("12:00:00.000", new TimeComponents(43200).toString());
+        Assert.assertEquals("18:00:00.000", new TimeComponents(64800).toString());
+        Assert.assertEquals("23:59:59.900", new TimeComponents(86399.9).toString());
     }
 
     @Test
@@ -78,41 +74,41 @@ public class TimeComponentsTest {
         for (int i = 0; i < times.length; ++i) {
             for (int j = 0; j < times.length; ++j) {
                 if (times[i].compareTo(times[j]) < 0) {
-                    assertTrue(times[j].compareTo(times[i]) > 0);
-                    assertFalse(times[i].equals(times[j]));
-                    assertFalse(times[j].equals(times[i]));
-                    assertTrue(times[i].hashCode() != times[j].hashCode());
-                    assertTrue(i < j);
+                    Assert.assertTrue(times[j].compareTo(times[i]) > 0);
+                    Assert.assertFalse(times[i].equals(times[j]));
+                    Assert.assertFalse(times[j].equals(times[i]));
+                    Assert.assertTrue(times[i].hashCode() != times[j].hashCode());
+                    Assert.assertTrue(i < j);
                 } else if (times[i].compareTo(times[j]) > 0) {
-                    assertTrue(times[j].compareTo(times[i]) < 0);
-                    assertFalse(times[i].equals(times[j]));
-                    assertFalse(times[j].equals(times[i]));
-                    assertTrue(times[i].hashCode() != times[j].hashCode());
-                    assertTrue(i > j);
+                    Assert.assertTrue(times[j].compareTo(times[i]) < 0);
+                    Assert.assertFalse(times[i].equals(times[j]));
+                    Assert.assertFalse(times[j].equals(times[i]));
+                    Assert.assertTrue(times[i].hashCode() != times[j].hashCode());
+                    Assert.assertTrue(i > j);
                 } else {
-                    assertTrue(times[j].compareTo(times[i]) == 0);
-                    assertTrue(times[i].equals(times[j]));
-                    assertTrue(times[j].equals(times[i]));
-                    assertTrue(times[i].hashCode() == times[j].hashCode());
-                    assertTrue(i == j);
+                    Assert.assertTrue(times[j].compareTo(times[i]) == 0);
+                    Assert.assertTrue(times[i].equals(times[j]));
+                    Assert.assertTrue(times[j].equals(times[i]));
+                    Assert.assertTrue(times[i].hashCode() == times[j].hashCode());
+                    Assert.assertTrue(i == j);
                 }
             }
         }
-        assertFalse(times[0].equals(this));
+        Assert.assertFalse(times[0].equals(this));
     }
 
     private void checkConstructorCompletion(int hour, int minute, double second,
                                             boolean expectedCompletion) {
         try {
             TimeComponents time = new TimeComponents(hour, minute, second);
-            assertEquals(hour,   time.getHour());
-            assertEquals(minute, time.getMinute());
-            assertEquals(second, time.getSecond(), 1.0e-10);
-            assertTrue(expectedCompletion);
+            Assert.assertEquals(hour,   time.getHour());
+            Assert.assertEquals(minute, time.getMinute());
+            Assert.assertEquals(second, time.getSecond(), 1.0e-10);
+            Assert.assertTrue(expectedCompletion);
         } catch (IllegalArgumentException iae) {
-            assertTrue(! expectedCompletion);
+            Assert.assertTrue(! expectedCompletion);
         } catch (Exception e) {
-            fail("wrong exception caught");
+            Assert.fail("wrong exception caught");
         }
     }
 
@@ -120,12 +116,12 @@ public class TimeComponentsTest {
                                             boolean expectedCompletion) {
         try {
             TimeComponents time = new TimeComponents(seconds);
-            assertEquals(seconds, time.getSecondsInDay(), 1.0e-10);
-            assertTrue(expectedCompletion);
+            Assert.assertEquals(seconds, time.getSecondsInDay(), 1.0e-10);
+            Assert.assertTrue(expectedCompletion);
         } catch (IllegalArgumentException iae) {
-            assertTrue(! expectedCompletion);
+            Assert.assertTrue(! expectedCompletion);
         } catch (Exception e) {
-            fail("wrong exception caught");
+            Assert.fail("wrong exception caught");
         }
     }
 

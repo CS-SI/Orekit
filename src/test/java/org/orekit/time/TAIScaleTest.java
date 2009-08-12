@@ -16,8 +16,8 @@
  */
 package org.orekit.time;
 
-import static org.junit.Assert.assertEquals;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 
@@ -28,9 +28,9 @@ public class TAIScaleTest {
         TimeScale scale = TimeScalesFactory.getTAI();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
-            assertEquals(0, scale.offsetFromTAI(date), 0);
+            Assert.assertEquals(0, scale.offsetFromTAI(date), 0);
             DateTimeComponents components = date.getComponents(scale);
-            assertEquals(0, scale.offsetToTAI(components.getDate(), components.getTime()), 0);
+            Assert.assertEquals(0, scale.offsetToTAI(components.getDate(), components.getTime()), 0);
         }
     }
 

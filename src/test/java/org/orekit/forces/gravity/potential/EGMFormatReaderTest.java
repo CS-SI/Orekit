@@ -16,17 +16,14 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import static org.junit.Assert.assertEquals;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.gravity.potential.PotentialCoefficientsReader;
-import org.orekit.forces.gravity.potential.PotentialReaderFactory;
-import org.orekit.forces.gravity.potential.SHMFormatReader;
 
 
 public class EGMFormatReaderTest {
@@ -43,10 +40,10 @@ public class EGMFormatReaderTest {
         reader.read();
         double[][] C = reader.getC(5, 5, true);
         double[][] S = reader.getS(5, 5, true);
-        assertEquals(0.957254173792E-06 ,C[3][0],  0);
-        assertEquals(0.174971983203E-06,C[5][5],  0);
-        assertEquals(0, S[4][0],  0);
-        assertEquals(0.308853169333E-06,S[4][4],  0);
+        Assert.assertEquals(0.957254173792E-06 ,C[3][0],  0);
+        Assert.assertEquals(0.174971983203E-06,C[5][5],  0);
+        Assert.assertEquals(0, S[4][0],  0);
+        Assert.assertEquals(0.308853169333E-06,S[4][4],  0);
 
         double[][] UC = reader.getC(5, 5, false);
         double a = (-0.295301647654E-06);
@@ -54,15 +51,15 @@ public class EGMFormatReaderTest {
         double c = 2*11/b;
         double result = a*Math.sqrt(c);
 
-        assertEquals(result,UC[5][4],  0);
+        Assert.assertEquals(result,UC[5][4],  0);
 
         a = -0.188560802735E-06;
         b = 8*7*6*5*4*3*2;
         c=2*9/b;
         result = a*Math.sqrt(c);
-        assertEquals(result,UC[4][4],  0);
+        Assert.assertEquals(result,UC[4][4],  0);
 
-        assertEquals(1.0826266835531513e-3, reader.getJ(false, 2)[2],0);
+        Assert.assertEquals(1.0826266835531513e-3, reader.getJ(false, 2)[2],0);
 
     }
 
@@ -96,7 +93,7 @@ public class EGMFormatReaderTest {
             // expected behaviour
         }
 
-        assertEquals(3 , c);
+        Assert.assertEquals(3 , c);
 
     }
 

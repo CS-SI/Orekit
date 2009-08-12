@@ -18,14 +18,10 @@ package org.orekit.orbits;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
-
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -60,16 +56,16 @@ public class EquinoctialParametersTest {
         PVCoordinates pvCoordinates = new PVCoordinates(pos,vit);
 
         EquinoctialOrbit param = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
-        assertEquals(param.getA(), equi.getA(), Utils.epsilonTest * equi.getA());
-        assertEquals(param.getEquinoctialEx(), equi.getEquinoctialEx(),
+        Assert.assertEquals(param.getA(), equi.getA(), Utils.epsilonTest * equi.getA());
+        Assert.assertEquals(param.getEquinoctialEx(), equi.getEquinoctialEx(),
                      Utils.epsilonE * Math.abs(equi.getE()));
-        assertEquals(param.getEquinoctialEy(), equi.getEquinoctialEy(),
+        Assert.assertEquals(param.getEquinoctialEy(), equi.getEquinoctialEy(),
                      Utils.epsilonE * Math.abs(equi.getE()));
-        assertEquals(param.getHx(), equi.getHx(), Utils.epsilonAngle
+        Assert.assertEquals(param.getHx(), equi.getHx(), Utils.epsilonAngle
                      * Math.abs(equi.getI()));
-        assertEquals(param.getHy(), equi.getHy(), Utils.epsilonAngle
+        Assert.assertEquals(param.getHy(), equi.getHy(), Utils.epsilonAngle
                      * Math.abs(equi.getI()));
-        assertEquals(MathUtils.normalizeAngle(param.getLv(), equi.getLv()), equi.getLv(),
+        Assert.assertEquals(MathUtils.normalizeAngle(param.getLv(), equi.getLv()), equi.getLv(),
                      Utils.epsilonAngle * Math.abs(equi.getLv()));
 
     }
@@ -95,17 +91,17 @@ public class EquinoctialParametersTest {
 
         EquinoctialOrbit paramCir = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(),
                                                          date, mu);
-        assertEquals(paramCir.getA(), equiCir.getA(), Utils.epsilonTest
+        Assert.assertEquals(paramCir.getA(), equiCir.getA(), Utils.epsilonTest
                      * equiCir.getA());
-        assertEquals(paramCir.getEquinoctialEx(), equiCir.getEquinoctialEx(),
+        Assert.assertEquals(paramCir.getEquinoctialEx(), equiCir.getEquinoctialEx(),
                      Utils.epsilonEcir * Math.abs(equiCir.getE()));
-        assertEquals(paramCir.getEquinoctialEy(), equiCir.getEquinoctialEy(),
+        Assert.assertEquals(paramCir.getEquinoctialEy(), equiCir.getEquinoctialEy(),
                      Utils.epsilonEcir * Math.abs(equiCir.getE()));
-        assertEquals(paramCir.getHx(), equiCir.getHx(), Utils.epsilonAngle
+        Assert.assertEquals(paramCir.getHx(), equiCir.getHx(), Utils.epsilonAngle
                      * Math.abs(equiCir.getI()));
-        assertEquals(paramCir.getHy(), equiCir.getHy(), Utils.epsilonAngle
+        Assert.assertEquals(paramCir.getHy(), equiCir.getHy(), Utils.epsilonAngle
                      * Math.abs(equiCir.getI()));
-        assertEquals(MathUtils.normalizeAngle(paramCir.getLv(), equiCir.getLv()), equiCir
+        Assert.assertEquals(MathUtils.normalizeAngle(paramCir.getLv(), equiCir.getLv()), equiCir
                      .getLv(), Utils.epsilonAngle * Math.abs(equiCir.getLv()));
 
     }
@@ -128,20 +124,20 @@ public class EquinoctialParametersTest {
 
         // verif of 1/a = 2/X - V2/mu
         double oneovera = (2. / pos.getNorm()) - vit.getNorm() * vit.getNorm() / mu;
-        assertEquals(oneovera, 1. / equi.getA(), 1.0e-7);
+        Assert.assertEquals(oneovera, 1. / equi.getA(), 1.0e-7);
 
-        assertEquals(0.233745668678733e+05, pos.getX(), Utils.epsilonTest
+        Assert.assertEquals(0.233745668678733e+05, pos.getX(), Utils.epsilonTest
                      * Math.abs(pos.getX()));
-        assertEquals(-0.350998914352669e+05, pos.getY(), Utils.epsilonTest
+        Assert.assertEquals(-0.350998914352669e+05, pos.getY(), Utils.epsilonTest
                      * Math.abs(pos.getY()));
-        assertEquals(-0.150053723123334e+01, pos.getZ(), Utils.epsilonTest
+        Assert.assertEquals(-0.150053723123334e+01, pos.getZ(), Utils.epsilonTest
                      * Math.abs(pos.getZ()));
 
-        assertEquals(0.809135038364960e+05, vit.getX(), Utils.epsilonTest
+        Assert.assertEquals(0.809135038364960e+05, vit.getX(), Utils.epsilonTest
                      * Math.abs(vit.getX()));
-        assertEquals(0.538902268252598e+05, vit.getY(), Utils.epsilonTest
+        Assert.assertEquals(0.538902268252598e+05, vit.getY(), Utils.epsilonTest
                      * Math.abs(vit.getY()));
-        assertEquals(0.158527938296630e+02, vit.getZ(), Utils.epsilonTest
+        Assert.assertEquals(0.158527938296630e+02, vit.getZ(), Utils.epsilonTest
                      * Math.abs(vit.getZ()));
 
     }
@@ -161,19 +157,19 @@ public class EquinoctialParametersTest {
                                       FramesFactory.getEME2000(), date, mu);
         KeplerianOrbit kep = new KeplerianOrbit(equi);
 
-        assertEquals(42166.71200, equi.getA(), Utils.epsilonTest * kep.getA());
-        assertEquals(0.110283316961361e-03, kep.getE(), Utils.epsilonE
+        Assert.assertEquals(42166.71200, equi.getA(), Utils.epsilonTest * kep.getA());
+        Assert.assertEquals(0.110283316961361e-03, kep.getE(), Utils.epsilonE
                      * Math.abs(kep.getE()));
-        assertEquals(0.166901168553917e-03, kep.getI(), Utils.epsilonAngle
+        Assert.assertEquals(0.166901168553917e-03, kep.getI(), Utils.epsilonAngle
                      * Math.abs(kep.getI()));
-        assertEquals(MathUtils.normalizeAngle(-3.87224326008837, kep.getPerigeeArgument()),
+        Assert.assertEquals(MathUtils.normalizeAngle(-3.87224326008837, kep.getPerigeeArgument()),
                      kep.getPerigeeArgument(), Utils.epsilonTest
                      * Math.abs(kep.getPerigeeArgument()));
-        assertEquals(MathUtils.normalizeAngle(5.51473467358854, kep
+        Assert.assertEquals(MathUtils.normalizeAngle(5.51473467358854, kep
                                      .getRightAscensionOfAscendingNode()), kep
                                      .getRightAscensionOfAscendingNode(), Utils.epsilonTest
                                      * Math.abs(kep.getRightAscensionOfAscendingNode()));
-        assertEquals(MathUtils.normalizeAngle(3.65750858649982, kep.getMeanAnomaly()), kep
+        Assert.assertEquals(MathUtils.normalizeAngle(3.65750858649982, kep.getMeanAnomaly()), kep
                      .getMeanAnomaly(), Utils.epsilonTest * Math.abs(kep.getMeanAnomaly()));
 
     }
@@ -202,9 +198,9 @@ public class EquinoctialParametersTest {
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
                                       p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , 2, 
                                       p.getFrame(), p.getDate(), p.getMu());
-        assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
-        assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
-        assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
+        Assert.assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
+        Assert.assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
+        Assert.assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
 //      p.setLv(0);
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
                                       p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , 2, 
@@ -214,9 +210,9 @@ public class EquinoctialParametersTest {
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
                                       p.getEquinoctialEy() , p.getHx(), p.getHy() , lE , 1, 
                                       p.getFrame(), p.getDate(), p.getMu());
-        assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
-        assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
-        assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
+        Assert.assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
+        Assert.assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
+        Assert.assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
 //      p.setLv(0);
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
                                       p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , 2, 
@@ -226,9 +222,9 @@ public class EquinoctialParametersTest {
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
                                       p.getEquinoctialEy() , p.getHx(), p.getHy() , lM , 0, 
                                       p.getFrame(), p.getDate(), p.getMu());
-        assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
-        assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
-        assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
+        Assert.assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
+        Assert.assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
+        Assert.assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
 
         // circular orbit
         p = new EquinoctialOrbit(p.getA() ,0 ,
@@ -242,9 +238,9 @@ public class EquinoctialParametersTest {
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
                                       p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , 2, 
                                       p.getFrame(), p.getDate(), p.getMu());
-        assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
-        assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
-        assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
+        Assert.assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
+        Assert.assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
+        Assert.assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
 //      p.setLv(0);
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
                                       p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , 2, 
@@ -254,9 +250,9 @@ public class EquinoctialParametersTest {
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
                                       p.getEquinoctialEy() , p.getHx(), p.getHy() , lE , 1, 
                                       p.getFrame(), p.getDate(), p.getMu());
-        assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
-        assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
-        assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
+        Assert.assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
+        Assert.assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
+        Assert.assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
 //      p.setLv(0);
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
                                       p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , 2, 
@@ -265,9 +261,9 @@ public class EquinoctialParametersTest {
 //      p.setLM(lM);
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
                                       p.getEquinoctialEy() , p.getHx(), p.getHy() , lM , 0, p.getFrame(), p.getDate(), p.getMu());
-        assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
-        assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
-        assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
+        Assert.assertEquals(p.getLv(), lv, Utils.epsilonAngle * Math.abs(lv));
+        Assert.assertEquals(p.getLE(), lE, Utils.epsilonAngle * Math.abs(lE));
+        Assert.assertEquals(p.getLM(), lM, Utils.epsilonAngle * Math.abs(lM));
     }
 
     @Test
@@ -289,9 +285,9 @@ public class EquinoctialParametersTest {
         double a = p.getA();
         double na = Math.sqrt(p.getMu() / a);
 
-        assertEquals(a * epsilon * epsilon / ksi, p.getPVCoordinates().getPosition().getNorm(),
+        Assert.assertEquals(a * epsilon * epsilon / ksi, p.getPVCoordinates().getPosition().getNorm(),
                      Utils.epsilonTest * Math.abs(p.getPVCoordinates().getPosition().getNorm()));
-        assertEquals(na * Math.sqrt(ksi * ksi + nu * nu) / epsilon, p
+        Assert.assertEquals(na * Math.sqrt(ksi * ksi + nu * nu) / epsilon, p
                      .getPVCoordinates().getVelocity().getNorm(), Utils.epsilonTest
                      * Math.abs(p.getPVCoordinates().getVelocity().getNorm()));
 
@@ -311,10 +307,10 @@ public class EquinoctialParametersTest {
         a = pCirEqua.getA();
         na = Math.sqrt(pCirEqua.getMu() / a);
 
-        assertEquals(a * epsilon * epsilon / ksi, pCirEqua.getPVCoordinates().getPosition()
+        Assert.assertEquals(a * epsilon * epsilon / ksi, pCirEqua.getPVCoordinates().getPosition()
                      .getNorm(), Utils.epsilonTest
                      * Math.abs(pCirEqua.getPVCoordinates().getPosition().getNorm()));
-        assertEquals(na * Math.sqrt(ksi * ksi + nu * nu) / epsilon, pCirEqua
+        Assert.assertEquals(na * Math.sqrt(ksi * ksi + nu * nu) / epsilon, pCirEqua
                      .getPVCoordinates().getVelocity().getNorm(), Utils.epsilonTest
                      * Math.abs(pCirEqua.getPVCoordinates().getVelocity().getNorm()));
     }
@@ -346,8 +342,8 @@ public class EquinoctialParametersTest {
             // test if the norm of the position is in the range [perigee radius,
             // apogee radius]
             // Warning: these tests are without absolute value by choice
-            assertTrue((position.getNorm() - apogeeRadius) <= (apogeeRadius * Utils.epsilonTest));
-            assertTrue((position.getNorm() - perigeeRadius) >= (-perigeeRadius * Utils.epsilonTest));
+            Assert.assertTrue((position.getNorm() - apogeeRadius) <= (apogeeRadius * Utils.epsilonTest));
+            Assert.assertTrue((position.getNorm() - perigeeRadius) >= (-perigeeRadius * Utils.epsilonTest));
 
             position = position.normalize();
             velocity = p.getPVCoordinates().getVelocity();
@@ -357,9 +353,9 @@ public class EquinoctialParametersTest {
             // momemtum) are normalized here
 
             // test of orthogonality between position and momentum
-            assertTrue(Math.abs(Vector3D.dotProduct(position, momentum)) < Utils.epsilonTest);
+            Assert.assertTrue(Math.abs(Vector3D.dotProduct(position, momentum)) < Utils.epsilonTest);
             // test of orthogonality between velocity and momentum
-            assertTrue(Math.abs(Vector3D.dotProduct(velocity, momentum)) < Utils.epsilonTest);
+            Assert.assertTrue(Math.abs(Vector3D.dotProduct(velocity, momentum)) < Utils.epsilonTest);
         }
 
         // circular and equatorial orbit
@@ -376,7 +372,7 @@ public class EquinoctialParametersTest {
         apogeeRadius = pCirEqua.getA() * (1 + pCirEqua.getE());
         perigeeRadius = pCirEqua.getA() * (1 - pCirEqua.getE());
         // test if apogee equals perigee
-        assertEquals(perigeeRadius, apogeeRadius, 1.e+4 * Utils.epsilonTest
+        Assert.assertEquals(perigeeRadius, apogeeRadius, 1.e+4 * Utils.epsilonTest
                      * apogeeRadius);
 
         for (double lv = 0; lv <= 2 * Math.PI; lv += 2 * Math.PI / 100.) {
@@ -388,8 +384,8 @@ public class EquinoctialParametersTest {
 
             // test if the norm pf the position is in the range [perigee radius,
             // apogee radius]
-            assertTrue((position.getNorm() - apogeeRadius) <= (apogeeRadius * Utils.epsilonTest));
-            assertTrue((position.getNorm() - perigeeRadius) >= (-perigeeRadius * Utils.epsilonTest));
+            Assert.assertTrue((position.getNorm() - apogeeRadius) <= (apogeeRadius * Utils.epsilonTest));
+            Assert.assertTrue((position.getNorm() - perigeeRadius) >= (-perigeeRadius * Utils.epsilonTest));
 
             position = position.normalize();
             velocity = pCirEqua.getPVCoordinates().getVelocity();
@@ -399,9 +395,9 @@ public class EquinoctialParametersTest {
             // momemtum) are normalized here
 
             // test of orthogonality between position and momentum
-            assertTrue(Math.abs(Vector3D.dotProduct(position, momentum)) < Utils.epsilonTest);
+            Assert.assertTrue(Math.abs(Vector3D.dotProduct(position, momentum)) < Utils.epsilonTest);
             // test of orthogonality between velocity and momentum
-            assertTrue(Math.abs(Vector3D.dotProduct(velocity, momentum)) < Utils.epsilonTest);
+            Assert.assertTrue(Math.abs(Vector3D.dotProduct(velocity, momentum)) < Utils.epsilonTest);
         }
     }
 
@@ -418,8 +414,8 @@ public class EquinoctialParametersTest {
         Vector3D positionOffset = p.getPVCoordinates().getPosition().subtract(position);
         Vector3D velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
-        assertTrue(positionOffset.getNorm() < Utils.epsilonTest);
-        assertTrue(velocityOffset.getNorm() < Utils.epsilonTest);
+        Assert.assertTrue(positionOffset.getNorm() < Utils.epsilonTest);
+        Assert.assertTrue(velocityOffset.getNorm() < Utils.epsilonTest);
 
         // circular and equatorial orbit
         position = new Vector3D(33051.2, 26184.9, -1.3E-5);
@@ -431,8 +427,8 @@ public class EquinoctialParametersTest {
         positionOffset = p.getPVCoordinates().getPosition().subtract(position);
         velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
-        assertTrue(positionOffset.getNorm() < Utils.epsilonTest);
-        assertTrue(velocityOffset.getNorm() < Utils.epsilonTest);
+        Assert.assertTrue(positionOffset.getNorm() < Utils.epsilonTest);
+        Assert.assertTrue(velocityOffset.getNorm() < Utils.epsilonTest);
     }
 
     @Before

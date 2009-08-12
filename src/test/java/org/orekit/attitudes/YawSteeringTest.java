@@ -17,13 +17,11 @@
 package org.orekit.attitudes;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -81,7 +79,7 @@ public class YawSteeringTest {
         double normTargetDiffPos = targetDiff.getPosition().getNorm();
         double normTargetDiffVel = targetDiff.getVelocity().getNorm();
        
-        assertTrue((normTargetDiffPos < Utils.epsilonTest)&&(normTargetDiffVel < Utils.epsilonTest));
+        Assert.assertTrue((normTargetDiffPos < Utils.epsilonTest)&&(normTargetDiffVel < Utils.epsilonTest));
 
         //  Check observed ground point
         // *****************************
@@ -96,7 +94,7 @@ public class YawSteeringTest {
         double normObservedDiffPos = observedDiff.getPosition().getNorm();
         double normObservedDiffVel = observedDiff.getVelocity().getNorm();
        
-        assertTrue((normObservedDiffPos < Utils.epsilonTest)&&(normObservedDiffVel < Utils.epsilonTest));
+        Assert.assertTrue((normObservedDiffPos < Utils.epsilonTest)&&(normObservedDiffVel < Utils.epsilonTest));
    }
 
     @Test
@@ -119,7 +117,7 @@ public class YawSteeringTest {
         Vector3D sunSat = rotYaw.applyTo(sunEME2000);
             
         // Check sun is in (X,Z) plane
-        assertEquals(0.0, Math.sin(sunSat.getAlpha()), 1.0e-7);
+        Assert.assertEquals(0.0, Math.sin(sunSat.getAlpha()), 1.0e-7);
 
     }
     
@@ -146,9 +144,9 @@ public class YawSteeringTest {
         Vector3D yawAxis = compoRot.getAxis();
 
         // Check axis
-        assertEquals(0., yawAxis.getX(), Utils.epsilonTest);
-        assertEquals(0., yawAxis.getY(), Utils.epsilonTest);
-        assertEquals(1., yawAxis.getZ(), Utils.epsilonTest);
+        Assert.assertEquals(0., yawAxis.getX(), Utils.epsilonTest);
+        Assert.assertEquals(0., yawAxis.getY(), Utils.epsilonTest);
+        Assert.assertEquals(1., yawAxis.getZ(), Utils.epsilonTest);
 
     }
 
@@ -181,7 +179,7 @@ public class YawSteeringTest {
                 new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
             
         } catch (OrekitException oe) {
-            fail(oe.getMessage());
+            Assert.fail(oe.getMessage());
         }
 
     }

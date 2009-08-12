@@ -16,10 +16,6 @@
  */
 package org.orekit.data;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +24,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.util.regex.Pattern;
 
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 
@@ -54,7 +50,7 @@ public class DirectoryCrawlerTest {
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         CountingLoader crawler = new CountingLoader(".*");
         new DirectoryCrawler(new File(url.getPath())).feed(crawler);
-        assertTrue(crawler.getCount() > 0);
+        Assert.assertTrue(crawler.getCount() > 0);
     }
 
     @Test
@@ -63,7 +59,7 @@ public class DirectoryCrawlerTest {
             DirectoryCrawlerTest.class.getClassLoader().getResource("compressed-data");
         CountingLoader crawler = new CountingLoader(".*");
         new DirectoryCrawler(new File(url.getPath())).feed(crawler);
-        assertTrue(crawler.getCount() > 0);
+        Assert.assertTrue(crawler.getCount() > 0);
     }
 
     @Test
@@ -73,7 +69,7 @@ public class DirectoryCrawlerTest {
         File parent = new File(url.getPath()).getParentFile();
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
         new DirectoryCrawler(parent).feed(crawler);
-        assertEquals(6, crawler.getCount());
+        Assert.assertEquals(6, crawler.getCount());
     }
 
     @Test
@@ -82,14 +78,14 @@ public class DirectoryCrawlerTest {
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         try {
             new DirectoryCrawler(new File(url.getPath())).feed(new IOExceptionLoader(".*"));
-            fail("an exception should have been thrown");
+            Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behavior
-            assertNotNull(oe.getCause());
-            assertEquals(IOException.class, oe.getCause().getClass());
-            assertEquals("dummy error", oe.getMessage());
+            Assert.assertNotNull(oe.getCause());
+            Assert.assertEquals(IOException.class, oe.getCause().getClass());
+            Assert.assertEquals("dummy error", oe.getMessage());
         } catch (Exception e) {
-            fail("wrong exception caught");
+            Assert.fail("wrong exception caught");
         }
     }
 
@@ -99,27 +95,27 @@ public class DirectoryCrawlerTest {
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         try {
             new DirectoryCrawler(new File(url.getPath())).feed(new ParseExceptionLoader(".*"));
-            fail("an exception should have been thrown");
+            Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behavior
-            assertNotNull(oe.getCause());
-            assertEquals(ParseException.class, oe.getCause().getClass());
-            assertEquals("dummy error", oe.getMessage());
+            Assert.assertNotNull(oe.getCause());
+            Assert.assertEquals(ParseException.class, oe.getCause().getClass());
+            Assert.assertEquals("dummy error", oe.getMessage());
         } catch (Exception e) {
             e.printStackTrace(System.err);
-            fail("wrong exception caught");
+            Assert.fail("wrong exception caught");
         }
     }
 
     private void checkFailure(File root) {
         try {
             new DirectoryCrawler(root).feed(new CountingLoader(".*"));
-            fail("an exception should have been thrown");
+            Assert.fail("an exception should have been thrown");
         } catch (OrekitException e) {
             // expected behavior
         } catch (Exception e) {
             e.printStackTrace();
-            fail("wrong exception caught");
+            Assert.fail("wrong exception caught");
         }
     }
 

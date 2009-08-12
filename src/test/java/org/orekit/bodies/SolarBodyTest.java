@@ -16,12 +16,11 @@
  */
 package org.orekit.bodies;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.text.ParseException;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -157,8 +156,8 @@ public class SolarBodyTest {
             new PVCoordinates(new Vector3D(posScale, position), new Vector3D(velScale, velocity));
 
         PVCoordinates error = new PVCoordinates(1.0, pv, -1.0, reference);
-        assertEquals(0, error.getPosition().getNorm(), 2.0e-3);
-        assertEquals(0, error.getVelocity().getNorm(), 5.0e-10);
+        Assert.assertEquals(0, error.getPosition().getNorm(), 2.0e-3);
+        Assert.assertEquals(0, error.getVelocity().getNorm(), 5.0e-10);
 
     }
 
@@ -185,7 +184,7 @@ public class SolarBodyTest {
         Orbit orbit = new KeplerianOrbit(orbiting.getPVCoordinates(start, central.getFrame()),
                                          central.getFrame(),start, central.getGM());
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
-        assertEquals(a, orbit.getA(), 0.02 * a);
+        Assert.assertEquals(a, orbit.getA(), 0.02 * a);
         double duration = Math.min(50 * 86400, 0.01 * orbit.getKeplerianPeriod());
 
         double max = 0;
@@ -197,7 +196,7 @@ public class SolarBodyTest {
             Vector3D error = keplerPV.getPosition().subtract(ephemPV.getPosition());
             max = Math.max(max, error.getNorm());
         }
-        assertTrue(max < epsilon * a);
+        Assert.assertTrue(max < epsilon * a);
     }
 
 }

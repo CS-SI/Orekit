@@ -18,19 +18,12 @@ package org.orekit.orbits;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
-
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.CircularOrbit;
-import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -62,12 +55,12 @@ public class CircularParametersTest {
         PVCoordinates pvCoordinates = new PVCoordinates( pos, vit);
 
         EquinoctialOrbit param = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
-        assertEquals(param.getA(),  circ.getA(), Utils.epsilonTest * circ.getA());
-        assertEquals(param.getEquinoctialEx(), circ.getEquinoctialEx(), Utils.epsilonE * Math.abs(circ.getE()));
-        assertEquals(param.getEquinoctialEy(), circ.getEquinoctialEy(), Utils.epsilonE * Math.abs(circ.getE()));
-        assertEquals(param.getHx(), circ.getHx(), Utils.epsilonAngle * Math.abs(circ.getI()));
-        assertEquals(param.getHy(), circ.getHy(), Utils.epsilonAngle * Math.abs(circ.getI()));
-        assertEquals(MathUtils.normalizeAngle(param.getLv(),circ.getLv()), circ.getLv(), Utils.epsilonAngle * Math.abs(circ.getLv()));
+        Assert.assertEquals(param.getA(),  circ.getA(), Utils.epsilonTest * circ.getA());
+        Assert.assertEquals(param.getEquinoctialEx(), circ.getEquinoctialEx(), Utils.epsilonE * Math.abs(circ.getE()));
+        Assert.assertEquals(param.getEquinoctialEy(), circ.getEquinoctialEy(), Utils.epsilonE * Math.abs(circ.getE()));
+        Assert.assertEquals(param.getHx(), circ.getHx(), Utils.epsilonAngle * Math.abs(circ.getI()));
+        Assert.assertEquals(param.getHy(), circ.getHy(), Utils.epsilonAngle * Math.abs(circ.getI()));
+        Assert.assertEquals(MathUtils.normalizeAngle(param.getLv(),circ.getLv()), circ.getLv(), Utils.epsilonAngle * Math.abs(circ.getLv()));
 
     }
 
@@ -90,12 +83,12 @@ public class CircularParametersTest {
         PVCoordinates pvCoordinates = new PVCoordinates( posCir, vitCir);
 
         EquinoctialOrbit paramCir = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
-        assertEquals(paramCir.getA(), circCir.getA(), Utils.epsilonTest * circCir.getA());
-        assertEquals(paramCir.getEquinoctialEx(), circCir.getEquinoctialEx(), Utils.epsilonEcir * Math.abs(circCir.getE()));
-        assertEquals(paramCir.getEquinoctialEy(), circCir.getEquinoctialEy(), Utils.epsilonEcir * Math.abs(circCir.getE()));
-        assertEquals(paramCir.getHx(), circCir.getHx(), Utils.epsilonAngle * Math.abs(circCir.getI()));
-        assertEquals(paramCir.getHy(), circCir.getHy(), Utils.epsilonAngle * Math.abs(circCir.getI()));
-        assertEquals(MathUtils.normalizeAngle(paramCir.getLv(),circCir.getLv()), circCir.getLv(), Utils.epsilonAngle * Math.abs(circCir.getLv()));
+        Assert.assertEquals(paramCir.getA(), circCir.getA(), Utils.epsilonTest * circCir.getA());
+        Assert.assertEquals(paramCir.getEquinoctialEx(), circCir.getEquinoctialEx(), Utils.epsilonEcir * Math.abs(circCir.getE()));
+        Assert.assertEquals(paramCir.getEquinoctialEy(), circCir.getEquinoctialEy(), Utils.epsilonEcir * Math.abs(circCir.getE()));
+        Assert.assertEquals(paramCir.getHx(), circCir.getHx(), Utils.epsilonAngle * Math.abs(circCir.getI()));
+        Assert.assertEquals(paramCir.getHy(), circCir.getHy(), Utils.epsilonAngle * Math.abs(circCir.getI()));
+        Assert.assertEquals(MathUtils.normalizeAngle(paramCir.getLv(),circCir.getLv()), circCir.getLv(), Utils.epsilonAngle * Math.abs(circCir.getLv()));
 
     }
 
@@ -123,15 +116,15 @@ public class CircularParametersTest {
         // check 1/a = 2/r  - V2/mu
         double r = pos.getNorm();
         double v = vel.getNorm();
-        assertEquals(2 / r - v * v / mu, 1 / circ.getA(), 1.0e-7);
+        Assert.assertEquals(2 / r - v * v / mu, 1 / circ.getA(), 1.0e-7);
 
-        assertEquals( 0.233745668678733e+05, pos.getX(), Utils.epsilonTest * r);
-        assertEquals(-0.350998914352669e+05, pos.getY(), Utils.epsilonTest * r);
-        assertEquals(-0.150053723123334e+01, pos.getZ(), Utils.epsilonTest * r);
+        Assert.assertEquals( 0.233745668678733e+05, pos.getX(), Utils.epsilonTest * r);
+        Assert.assertEquals(-0.350998914352669e+05, pos.getY(), Utils.epsilonTest * r);
+        Assert.assertEquals(-0.150053723123334e+01, pos.getZ(), Utils.epsilonTest * r);
 
-        assertEquals(0.809135038364960e+05, vel.getX(), Utils.epsilonTest * v);
-        assertEquals(0.538902268252598e+05, vel.getY(), Utils.epsilonTest * v);
-        assertEquals(0.158527938296630e+02, vel.getZ(), Utils.epsilonTest * v);
+        Assert.assertEquals(0.809135038364960e+05, vel.getX(), Utils.epsilonTest * v);
+        Assert.assertEquals(0.538902268252598e+05, vel.getY(), Utils.epsilonTest * v);
+        Assert.assertEquals(0.158527938296630e+02, vel.getZ(), Utils.epsilonTest * v);
 
     }
 
@@ -155,17 +148,17 @@ public class CircularParametersTest {
                                    FramesFactory.getEME2000(), date, mu);
         KeplerianOrbit kep = new KeplerianOrbit(circ);
 
-        assertEquals(42166.71200, circ.getA(), Utils.epsilonTest * kep.getA());
-        assertEquals(0.110283316961361e-03, kep.getE(), Utils.epsilonE * Math.abs(kep.getE()));
-        assertEquals(0.166901168553917e-03, kep.getI(),
+        Assert.assertEquals(42166.71200, circ.getA(), Utils.epsilonTest * kep.getA());
+        Assert.assertEquals(0.110283316961361e-03, kep.getE(), Utils.epsilonE * Math.abs(kep.getE()));
+        Assert.assertEquals(0.166901168553917e-03, kep.getI(),
                      Utils.epsilonAngle * Math.abs(kep.getI()));
-        assertEquals(MathUtils.normalizeAngle(-3.87224326008837, kep.getPerigeeArgument()),
+        Assert.assertEquals(MathUtils.normalizeAngle(-3.87224326008837, kep.getPerigeeArgument()),
                      kep.getPerigeeArgument(),
                      Utils.epsilonTest * Math.abs(kep.getPerigeeArgument()));
-        assertEquals(MathUtils.normalizeAngle(5.51473467358854, kep.getRightAscensionOfAscendingNode()),
+        Assert.assertEquals(MathUtils.normalizeAngle(5.51473467358854, kep.getRightAscensionOfAscendingNode()),
                      kep.getRightAscensionOfAscendingNode(),
                      Utils.epsilonTest * Math.abs(kep.getRightAscensionOfAscendingNode()));
-        assertEquals(MathUtils.normalizeAngle(3.65750858649982, kep.getMeanAnomaly()),
+        Assert.assertEquals(MathUtils.normalizeAngle(3.65750858649982, kep.getMeanAnomaly()),
                      kep.getMeanAnomaly(),
                      Utils.epsilonTest * Math.abs(kep.getMeanAnomaly()));
 
@@ -197,9 +190,9 @@ public class CircularParametersTest {
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
                                    p.getAlphaV(), lv - raan, 2, p.getFrame(), date, mu);
-        assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
-        assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
-        assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
+        Assert.assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
+        Assert.assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
+        Assert.assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
 //      p.setAlphaV(0);
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
@@ -210,9 +203,9 @@ public class CircularParametersTest {
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
                                    p.getAlphaV(), lE - raan, 1, p.getFrame(), date, mu);
-        assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
-        assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
-        assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
+        Assert.assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
+        Assert.assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
+        Assert.assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
 //      p.setAlphaV(0);
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
@@ -222,9 +215,9 @@ public class CircularParametersTest {
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
                                    p.getAlphaV(), lM - raan, 0, p.getFrame(), date, mu);
-        assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
-        assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
-        assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
+        Assert.assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
+        Assert.assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
+        Assert.assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
 
     }
 
@@ -252,9 +245,9 @@ public class CircularParametersTest {
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
                                    p.getAlphaV(), lv - raan, 2, p.getFrame(), date, mu);
-        assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
-        assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
-        assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
+        Assert.assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
+        Assert.assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
+        Assert.assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
 //      p.setAlphaV(0);
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
@@ -265,9 +258,9 @@ public class CircularParametersTest {
                                    p.getRightAscensionOfAscendingNode(),
                                    p.getAlphaV(), lE - raan, 1, p.getFrame(), date, mu);
 
-        assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
-        assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
-        assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
+        Assert.assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
+        Assert.assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
+        Assert.assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
 //      p.setAlphaV(0);
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
@@ -277,9 +270,9 @@ public class CircularParametersTest {
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
                                    p.getAlphaV(), lM - raan, 0, p.getFrame(), date, mu);
-        assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
-        assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
-        assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
+        Assert.assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * Math.abs(lv));
+        Assert.assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * Math.abs(lE));
+        Assert.assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * Math.abs(lM));
 
     }
 
@@ -306,10 +299,10 @@ public class CircularParametersTest {
         double a  = p.getA();
         double na = Math.sqrt(mu / a);
 
-        assertEquals(a * epsilon * epsilon / ksi,
+        Assert.assertEquals(a * epsilon * epsilon / ksi,
                      p.getPVCoordinates().getPosition().getNorm(),
                      Utils.epsilonTest * Math.abs(p.getPVCoordinates().getPosition().getNorm()));
-        assertEquals(na * Math.sqrt(ksi * ksi + nu * nu) / epsilon,
+        Assert.assertEquals(na * Math.sqrt(ksi * ksi + nu * nu) / epsilon,
                      p.getPVCoordinates().getVelocity().getNorm(),
                      Utils.epsilonTest * Math.abs(p.getPVCoordinates().getVelocity().getNorm()));
 
@@ -338,10 +331,10 @@ public class CircularParametersTest {
         double a  = pCirEqua.getA();
         double na = Math.sqrt(mu / a);
 
-        assertEquals(a * epsilon * epsilon / ksi,
+        Assert.assertEquals(a * epsilon * epsilon / ksi,
                      pCirEqua.getPVCoordinates().getPosition().getNorm(),
                      Utils.epsilonTest * Math.abs(pCirEqua.getPVCoordinates().getPosition().getNorm()));
-        assertEquals(na * Math.sqrt(ksi * ksi + nu * nu) / epsilon,
+        Assert.assertEquals(na * Math.sqrt(ksi * ksi + nu * nu) / epsilon,
                      pCirEqua.getPVCoordinates().getVelocity().getNorm(),
                      Utils.epsilonTest * Math.abs(pCirEqua.getPVCoordinates().getVelocity().getNorm()));
     }
@@ -375,8 +368,8 @@ public class CircularParametersTest {
             position = p.getPVCoordinates().getPosition();
             // test if the norm of the position is in the range [perigee radius, apogee radius]
             // Warning: these tests are without absolute value by choice
-            assertTrue((position.getNorm() - apogeeRadius)  <= (  apogeeRadius * Utils.epsilonTest));
-            assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
+            Assert.assertTrue((position.getNorm() - apogeeRadius)  <= (  apogeeRadius * Utils.epsilonTest));
+            Assert.assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
 
             position= position.normalize();
             velocity = p.getPVCoordinates().getVelocity();
@@ -385,9 +378,9 @@ public class CircularParametersTest {
             // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
 
             // test of orthogonality between position and momentum
-            assertTrue(Math.abs(Vector3D.dotProduct(position, momentum)) < Utils.epsilonTest);
+            Assert.assertTrue(Math.abs(Vector3D.dotProduct(position, momentum)) < Utils.epsilonTest);
             // test of orthogonality between velocity and momentum
-            assertTrue(Math.abs(Vector3D.dotProduct(velocity, momentum)) < Utils.epsilonTest);
+            Assert.assertTrue(Math.abs(Vector3D.dotProduct(velocity, momentum)) < Utils.epsilonTest);
         }
 
     }
@@ -413,7 +406,7 @@ public class CircularParametersTest {
         double apogeeRadius  = pCirEqua.getA() * (1 + pCirEqua.getE());
         double perigeeRadius = pCirEqua.getA() * (1 - pCirEqua.getE());
         // test if apogee equals perigee
-        assertEquals(perigeeRadius, apogeeRadius, 1.e+4 * Utils.epsilonTest * apogeeRadius);
+        Assert.assertEquals(perigeeRadius, apogeeRadius, 1.e+4 * Utils.epsilonTest * apogeeRadius);
 
         for (double alphaV = 0; alphaV <= 2 * Math.PI; alphaV += 2 * Math.PI/100.) {
 //          pCirEqua.setAlphaV(alphaV);
@@ -423,8 +416,8 @@ public class CircularParametersTest {
             position = pCirEqua.getPVCoordinates().getPosition();
 
             // test if the norm pf the position is in the range [perigee radius, apogee radius]
-            assertTrue((position.getNorm() - apogeeRadius)  <= (  apogeeRadius * Utils.epsilonTest));
-            assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
+            Assert.assertTrue((position.getNorm() - apogeeRadius)  <= (  apogeeRadius * Utils.epsilonTest));
+            Assert.assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
 
             position= position.normalize();
             velocity = pCirEqua.getPVCoordinates().getVelocity();
@@ -433,9 +426,9 @@ public class CircularParametersTest {
             // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
 
             // test of orthogonality between position and momentum
-            assertTrue(Math.abs(Vector3D.dotProduct(position, momentum)) < Utils.epsilonTest);
+            Assert.assertTrue(Math.abs(Vector3D.dotProduct(position, momentum)) < Utils.epsilonTest);
             // test of orthogonality between velocity and momentum
-            assertTrue(Math.abs(Vector3D.dotProduct(velocity, momentum)) < Utils.epsilonTest);
+            Assert.assertTrue(Math.abs(Vector3D.dotProduct(velocity, momentum)) < Utils.epsilonTest);
         }
     }
 
@@ -455,8 +448,8 @@ public class CircularParametersTest {
         positionOffset = positionOffset.subtract(position);
         velocityOffset = velocityOffset.subtract(velocity);
 
-        assertEquals(0.0, positionOffset.getNorm(), position.getNorm() * Utils.epsilonTest);
-        assertEquals(0.0, velocityOffset.getNorm(), velocity.getNorm() * Utils.epsilonTest);
+        Assert.assertEquals(0.0, positionOffset.getNorm(), position.getNorm() * Utils.epsilonTest);
+        Assert.assertEquals(0.0, velocityOffset.getNorm(), velocity.getNorm() * Utils.epsilonTest);
 
     }
 
@@ -472,8 +465,8 @@ public class CircularParametersTest {
         Vector3D positionOffset = p.getPVCoordinates().getPosition().subtract(position);
         Vector3D velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
-        assertEquals(0.0, positionOffset.getNorm(), position.getNorm() * Utils.epsilonTest);
-        assertEquals(0.0, velocityOffset.getNorm(), velocity.getNorm() * Utils.epsilonTest);
+        Assert.assertEquals(0.0, positionOffset.getNorm(), position.getNorm() * Utils.epsilonTest);
+        Assert.assertEquals(0.0, velocityOffset.getNorm(), velocity.getNorm() * Utils.epsilonTest);
 
     }
 

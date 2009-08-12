@@ -16,12 +16,12 @@
  */
 package org.orekit.forces.drag;
 
-import static org.junit.Assert.assertEquals;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.SolarInputs97to05;
@@ -80,90 +80,90 @@ public class JB2006Test {
         double roTestCase = 0.4066e-11;
         double tzTestCase=1137.7;
         double tinfTestCase=1145.8;
-        assertEquals(roTestCase*1e12, Math.round(myRo*1e15)/1e3,0);
-        assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e12, Math.round(myRo*1e15)/1e3,0);
+        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
 
         // alt = 90
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*90,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase = 0.3285e-05;
         tzTestCase=183.0;
         tinfTestCase=1142.8;
-        assertEquals(roTestCase*1e05, Math.round(myRo*1e09)/1e4,0);
-        assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e05, Math.round(myRo*1e09)/1e4,0);
+        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
 
         // alt = 110
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*110,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase = 0.7587e-07;
         tzTestCase=257.4;
         tinfTestCase=1142.8;
-        assertEquals(roTestCase*1e07, Math.round(myRo*1e11)/1e4,0);
-        assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e07, Math.round(myRo*1e11)/1e4,0);
+        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
 
         // alt = 180
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*180,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase = 0.5439; // *1e-9
         tzTestCase=915.0;
         tinfTestCase=1130.9;
-        assertEquals(roTestCase, Math.round(myRo*1e13)/1e4,0);
-        assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase, Math.round(myRo*1e13)/1e4,0);
+        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
 
         // alt = 230
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*230,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase =0.1250e-09;
         tzTestCase=1047.5;
         tinfTestCase=1137.4;
-        assertEquals(roTestCase*1e09, Math.round(myRo*1e13)/1e4,0);
-        assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e09, Math.round(myRo*1e13)/1e4,0);
+        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
 
         // alt = 270
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*270,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase =0.4818e-10;
         tzTestCase=1095.6;
         tinfTestCase=1142.5;
-        assertEquals(roTestCase*1e10, Math.round(myRo*1e14)/1e4,0);
-        assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e10, Math.round(myRo*1e14)/1e4,0);
+        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
 
         // alt = 660
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*660,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase =0.9451e-13;
         tzTestCase=1149.0;
         tinfTestCase=1149.9 ;
-        assertEquals(roTestCase*1e13, Math.round(myRo*1e17)/1e4,0);
-        assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e13, Math.round(myRo*1e17)/1e4,0);
+        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
 
         //  alt = 890
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*890,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase =0.8305e-14;
         tzTestCase=1142.5;
         tinfTestCase=1142.8 ;
-        assertEquals(roTestCase*1e14, Math.round(myRo*1e18)/1e4,0);
-        assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e14, Math.round(myRo*1e18)/1e4,0);
+        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
 
         //  alt = 1320
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*1320,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase =0.2004e-14;
         tzTestCase=1142.7;
         tinfTestCase=1142.8 ;
-        assertEquals(roTestCase*1e14, Math.round(myRo*1e18)/1e4,0);
-        assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e14, Math.round(myRo*1e18)/1e4,0);
+        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
 
         //  alt = 1600
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*1600,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase = 0.1159e-14;
         tzTestCase=1142.8;
         tinfTestCase=1142.8 ;
-        assertEquals(roTestCase*1e14, Math.round(myRo*1e18)/1e4,0);
-        assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e14, Math.round(myRo*1e18)/1e4,0);
+        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
 
 
         //  OTHER entries
@@ -172,9 +172,9 @@ public class JB2006Test {
         roTestCase = 0.4838e-11;
         tzTestCase=1137.4 ;
         tinfTestCase= 1145.4 ;
-        assertEquals(roTestCase*1e11, Math.round(myRo*1e15)/1e4,0);
-        assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e11, Math.round(myRo*1e15)/1e4,0);
+        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
 
     }
 
@@ -230,7 +230,7 @@ public class JB2006Test {
             pos = earth.transform(point);
             roJb = jb.getDensity(date, pos, FramesFactory.getEME2000());
             roDtm = dtm.getDensity(date, pos, FramesFactory.getEME2000());
-            assertEquals(roDtm, roJb, roJb);
+            Assert.assertEquals(roDtm, roJb, roJb);
 
         }
 
@@ -246,32 +246,32 @@ public class JB2006Test {
 
 //      2001  14   2451924.0 176.3 164.4 180.0 180.4 163.4 169.2
 //      14 176 164   9  12   9   6   4   4   9   7
-        assertEquals(176.3, in.getF10(date),0);
-        assertEquals(164.4, in.getF10B(date),0);
-        assertEquals(180.0, in.getS10(date),0);
-        assertEquals(180.4, in.getS10B(date),0);
-        assertEquals(163.4, in.getXM10(date),0);
-        assertEquals(169.2, in.getXM10B(date),0);
-        assertEquals(9 , in.getAp(date),0);
+        Assert.assertEquals(176.3, in.getF10(date),0);
+        Assert.assertEquals(164.4, in.getF10B(date),0);
+        Assert.assertEquals(180.0, in.getS10(date),0);
+        Assert.assertEquals(180.4, in.getS10B(date),0);
+        Assert.assertEquals(163.4, in.getXM10(date),0);
+        Assert.assertEquals(169.2, in.getXM10B(date),0);
+        Assert.assertEquals(9 , in.getAp(date),0);
 
 
         date = new AbsoluteDate(date, 11*3600);
-        assertEquals(6 , in.getAp(date),0);
+        Assert.assertEquals(6 , in.getAp(date),0);
 
         date = new AbsoluteDate(new DateComponents(1998, 02, 02),
                                 new TimeComponents(18, 00, 00),
                                 TimeScalesFactory.getUTC());
 //      1998  33   2450847.0  89.1  95.1  95.8  97.9  81.3  92.0  1
 //      33  89  95   4   5   4   4   2   0   0   3                          98
-        assertEquals(89.1, in.getF10(date),0);
-        assertEquals(95.1, in.getF10B(date),0);
-        assertEquals(95.8, in.getS10(date),0);
-        assertEquals(97.9, in.getS10B(date),0);
-        assertEquals(81.3, in.getXM10(date),0);
-        assertEquals(92.0, in.getXM10B(date),0);
-        assertEquals(0 , in.getAp(date),0);
+        Assert.assertEquals(89.1, in.getF10(date),0);
+        Assert.assertEquals(95.1, in.getF10B(date),0);
+        Assert.assertEquals(95.8, in.getS10(date),0);
+        Assert.assertEquals(97.9, in.getS10B(date),0);
+        Assert.assertEquals(81.3, in.getXM10(date),0);
+        Assert.assertEquals(92.0, in.getXM10B(date),0);
+        Assert.assertEquals(0 , in.getAp(date),0);
         date = new AbsoluteDate(date, 6*3600-1);
-        assertEquals(3 , in.getAp(date),0);
+        Assert.assertEquals(3 , in.getAp(date),0);
     }
 
     @Before

@@ -16,10 +16,9 @@
  */
 package org.orekit.attitudes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -50,15 +49,15 @@ public class CelestialBodyPointingTest {
         Attitude attitude = sunPointing.getState(date, pv, FramesFactory.getEME2000());
         Vector3D xDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Vector3D zDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_K);
-        assertEquals(0,
+        Assert.assertEquals(0,
                      Vector3D.dotProduct(zDirection, Vector3D.crossProduct(xDirection, Vector3D.PLUS_K)),
                      1.0e-15);
         double period = 2 * Math.PI / (attitude.getSpin().getNorm() * 86400);
-        assertTrue((period > 350) && (period < 370));
+        Assert.assertTrue((period > 350) && (period < 370));
 
         // the following statement checks we take parallax into account
         // Sun-Earth-Sat are in quadrature, with distance (Earth, Sat) == distance(Sun, Earth) / 5000
-        assertEquals(Math.atan(1.0 / 5000.0),
+        Assert.assertEquals(Math.atan(1.0 / 5000.0),
                      Vector3D.angle(xDirection,
                                     sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition()),
                      1.0e-15);

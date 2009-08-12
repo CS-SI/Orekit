@@ -17,9 +17,9 @@
 package org.orekit.time;
 
 
-import static org.junit.Assert.assertEquals;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -35,7 +35,7 @@ public class UTCScaleTest {
         AbsoluteDate d2 = new AbsoluteDate(new DateComponents(2000, 01, 01),
                                            new TimeComponents(00, 00, 01),
                                            utc);
-        assertEquals(2.0, d2.durationFrom(d1), 1.0e-10);
+        Assert.assertEquals(2.0, d2.durationFrom(d1), 1.0e-10);
     }
 
     @Test
@@ -44,7 +44,7 @@ public class UTCScaleTest {
             new AbsoluteDate(new DateComponents(2006, 01, 01), TimeComponents.H00, utc);
         AbsoluteDate d1 = new AbsoluteDate(leapDate, -1);
         AbsoluteDate d2 = new AbsoluteDate(leapDate, +1);
-        assertEquals(2.0, d2.durationFrom(d1), 1.0e-10);
+        Assert.assertEquals(2.0, d2.durationFrom(d1), 1.0e-10);
 
         AbsoluteDate d3 = new AbsoluteDate(new DateComponents(2005, 12, 31),
                                            new TimeComponents(23, 59, 59),
@@ -52,7 +52,7 @@ public class UTCScaleTest {
         AbsoluteDate d4 = new AbsoluteDate(new DateComponents(2006, 01, 01),
                                            new TimeComponents(00, 00, 01),
                                            utc);
-        assertEquals(3.0, d4.durationFrom(d3), 1.0e-10);
+        Assert.assertEquals(3.0, d4.durationFrom(d3), 1.0e-10);
     }
 
     @Test
@@ -60,23 +60,23 @@ public class UTCScaleTest {
         AbsoluteDate d = new AbsoluteDate(new DateComponents(1983, 06, 30),
                                           new TimeComponents(23, 59, 59),
                                           utc);
-        assertEquals("1983-06-30T23:59:59.000", d.toString(utc));
+        Assert.assertEquals("1983-06-30T23:59:59.000", d.toString(utc));
         d = new AbsoluteDate(d, 0.251);
-        assertEquals("1983-06-30T23:59:59.251", d.toString(utc));
+        Assert.assertEquals("1983-06-30T23:59:59.251", d.toString(utc));
         d = new AbsoluteDate(d, 0.251);
-        assertEquals("1983-06-30T23:59:59.502", d.toString(utc));
+        Assert.assertEquals("1983-06-30T23:59:59.502", d.toString(utc));
         d = new AbsoluteDate(d, 0.251);
-        assertEquals("1983-06-30T23:59:59.753", d.toString(utc));
+        Assert.assertEquals("1983-06-30T23:59:59.753", d.toString(utc));
         d = new AbsoluteDate(d, 0.251);
-        assertEquals("1983-06-30T23:59:60.004", d.toString(utc));
+        Assert.assertEquals("1983-06-30T23:59:60.004", d.toString(utc));
         d = new AbsoluteDate(d, 0.251);
-        assertEquals("1983-06-30T23:59:60.255", d.toString(utc));
+        Assert.assertEquals("1983-06-30T23:59:60.255", d.toString(utc));
         d = new AbsoluteDate(d, 0.251);
-        assertEquals("1983-06-30T23:59:60.506", d.toString(utc));
+        Assert.assertEquals("1983-06-30T23:59:60.506", d.toString(utc));
         d = new AbsoluteDate(d, 0.251);
-        assertEquals("1983-06-30T23:59:60.757", d.toString(utc));
+        Assert.assertEquals("1983-06-30T23:59:60.757", d.toString(utc));
         d = new AbsoluteDate(d, 0.251);
-        assertEquals("1983-07-01T00:00:00.008", d.toString(utc));
+        Assert.assertEquals("1983-07-01T00:00:00.008", d.toString(utc));
     }
 
     @Test
@@ -87,7 +87,7 @@ public class UTCScaleTest {
             double dt1 = scale.offsetFromTAI(date);
             DateTimeComponents components = date.getComponents(scale);
             double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
-            assertEquals( 0.0, dt1 + dt2, 1.0e-10);
+            Assert.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }
 
@@ -103,7 +103,7 @@ public class UTCScaleTest {
 
     private void checkOffset(int year, int month, int day, double offset) {
         AbsoluteDate date = new AbsoluteDate(year, month, day, utc);
-        assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
+        Assert.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
     }
 
     @Before

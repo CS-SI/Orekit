@@ -16,9 +16,9 @@
  */
 package org.orekit.frames;
 
-import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -105,8 +105,8 @@ public class EME2000FrameTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        assertEquals(0, dP.getNorm(), positionThreshold);
-        assertEquals(0, dV.getNorm(), velocityThreshold);
+        Assert.assertEquals(0, dP.getNorm(), positionThreshold);
+        Assert.assertEquals(0, dV.getNorm(), velocityThreshold);
     }
 
 }

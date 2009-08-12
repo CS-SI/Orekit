@@ -16,13 +16,10 @@
  */
 package org.orekit.time;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -34,45 +31,45 @@ public class AbsoluteDateTest {
     public void testStandardEpoch() {
         TimeScale tai = TimeScalesFactory.getTAI();
         TimeScale tt  = TimeScalesFactory.getTT();
-        assertEquals(-210866760000000l, AbsoluteDate.JULIAN_EPOCH.toDate(tt).getTime());
-        assertEquals(-3506716800000l,   AbsoluteDate.MODIFIED_JULIAN_EPOCH.toDate(tt).getTime());
-        assertEquals(-631152000000l,    AbsoluteDate.FIFTIES_EPOCH.toDate(tt).getTime());
-        assertEquals(315964819000l,     AbsoluteDate.GPS_EPOCH.toDate(tai).getTime());
-        assertEquals(946728000000l,     AbsoluteDate.J2000_EPOCH.toDate(tt).getTime());
+        Assert.assertEquals(-210866760000000l, AbsoluteDate.JULIAN_EPOCH.toDate(tt).getTime());
+        Assert.assertEquals(-3506716800000l,   AbsoluteDate.MODIFIED_JULIAN_EPOCH.toDate(tt).getTime());
+        Assert.assertEquals(-631152000000l,    AbsoluteDate.FIFTIES_EPOCH.toDate(tt).getTime());
+        Assert.assertEquals(315964819000l,     AbsoluteDate.GPS_EPOCH.toDate(tai).getTime());
+        Assert.assertEquals(946728000000l,     AbsoluteDate.J2000_EPOCH.toDate(tt).getTime());
     }
 
     @Test
     public void testStandardEpochStrings() throws OrekitException {
-        assertEquals("-4712-01-01T12:00:00.000",
+        Assert.assertEquals("-4712-01-01T12:00:00.000",
                      AbsoluteDate.JULIAN_EPOCH.toString(TimeScalesFactory.getTT()));
-        assertEquals("1858-11-17T00:00:00.000",
+        Assert.assertEquals("1858-11-17T00:00:00.000",
                      AbsoluteDate.MODIFIED_JULIAN_EPOCH.toString(TimeScalesFactory.getTT()));
-        assertEquals("1950-01-01T00:00:00.000",
+        Assert.assertEquals("1950-01-01T00:00:00.000",
                      AbsoluteDate.FIFTIES_EPOCH.toString(TimeScalesFactory.getTT()));
-        assertEquals("1980-01-06T00:00:00.000",
+        Assert.assertEquals("1980-01-06T00:00:00.000",
                      AbsoluteDate.GPS_EPOCH.toString(TimeScalesFactory.getUTC()));
-        assertEquals("2000-01-01T12:00:00.000",
+        Assert.assertEquals("2000-01-01T12:00:00.000",
                      AbsoluteDate.J2000_EPOCH.toString(TimeScalesFactory.getTT()));
-        assertEquals("1970-01-01T00:00:00.000",
+        Assert.assertEquals("1970-01-01T00:00:00.000",
                      AbsoluteDate.JAVA_EPOCH.toString(TimeScalesFactory.getTT()));
     }
 
     @Test
     public void testOutput() {
         TimeScale tt = TimeScalesFactory.getTT();
-        assertEquals("1950-01-01T01:01:01.000",
+        Assert.assertEquals("1950-01-01T01:01:01.000",
                      new AbsoluteDate(AbsoluteDate.FIFTIES_EPOCH, 3661.0).toString(tt));
-        assertEquals("2000-01-01T13:01:01.000",
+        Assert.assertEquals("2000-01-01T13:01:01.000",
                      new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 3661.0).toString(tt));
     }
 
     @Test
     public void testJ2000() {
-        assertEquals("2000-01-01T12:00:00.000",
+        Assert.assertEquals("2000-01-01T12:00:00.000",
                      AbsoluteDate.J2000_EPOCH.toString(TimeScalesFactory.getTT()));
-        assertEquals("2000-01-01T11:59:27.816",
+        Assert.assertEquals("2000-01-01T11:59:27.816",
                      AbsoluteDate.J2000_EPOCH.toString(TimeScalesFactory.getTAI()));
-        assertEquals("2000-01-01T11:58:55.816",
+        Assert.assertEquals("2000-01-01T11:58:55.816",
                      AbsoluteDate.J2000_EPOCH.toString(utc));
     }
 
@@ -81,7 +78,7 @@ public class AbsoluteDateTest {
         AbsoluteDate d =
             new AbsoluteDate(new DateComponents(2000, 01, 01), new TimeComponents(11, 59, 27.816),
                              TimeScalesFactory.getTAI());
-        assertEquals(0, d.durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
+        Assert.assertEquals(0, d.durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
     }
 
     @Test
@@ -89,7 +86,7 @@ public class AbsoluteDateTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2006, 02, 24),
                                              new TimeComponents(15, 38, 00),
                                              utc);
-        assertEquals(33,
+        Assert.assertEquals(33,
                      date.timeScalesOffset(TimeScalesFactory.getTAI(), utc),
                      1.0e-10);
     }
@@ -99,13 +96,13 @@ public class AbsoluteDateTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2002, 01, 01),
                                              new TimeComponents(00, 00, 01),
                                              utc);
-        assertEquals("2002-01-01T00:00:01.000", date.toString());
+        Assert.assertEquals("2002-01-01T00:00:01.000", date.toString());
     }
 
     @Test
     public void test1970() {
         AbsoluteDate date = new AbsoluteDate(new Date(0l), utc);
-        assertEquals("1970-01-01T00:00:00.000", date.toString());
+        Assert.assertEquals("1970-01-01T00:00:00.000", date.toString());
     }
 
     @Test
@@ -123,12 +120,12 @@ public class AbsoluteDateTest {
         // 13 seconds offset between GPS time and UTC in 2005
         long noLeapGap = ((9347 * 24 + 16) * 60 + 31) * 60 + 17;
         long realGap   = (long) date1.durationFrom(dateRef);
-        assertEquals(13, realGap - noLeapGap);
+        Assert.assertEquals(13, realGap - noLeapGap);
 
         // 14 seconds offset between GPS time and UTC in 2006
         noLeapGap = ((9712 * 24 + 16) * 60 + 31) * 60 + 17;
         realGap   = (long) date2.durationFrom(dateRef);
-        assertEquals(14, realGap - noLeapGap);
+        Assert.assertEquals(14, realGap - noLeapGap);
 
     }
 
@@ -138,7 +135,7 @@ public class AbsoluteDateTest {
         AbsoluteDate ref  = new AbsoluteDate(new DateComponents(2006, 8, 9),
                                              new TimeComponents(16, 31, 03),
                                              utc);
-        assertEquals(0, date.durationFrom(ref), 1.0e-12);
+        Assert.assertEquals(0, date.durationFrom(ref), 1.0e-12);
     }
 
     @Test
@@ -148,14 +145,14 @@ public class AbsoluteDateTest {
         AbsoluteDate leapEndUTC   = new AbsoluteDate(1977,  1,  1,  0,  0,  0, utc);
         AbsoluteDate leapStartTAI = new AbsoluteDate(1977,  1,  1,  0,  0, 14, tai);
         AbsoluteDate leapEndTAI   = new AbsoluteDate(1977,  1,  1,  0,  0, 16, tai);
-        assertEquals(leapStartUTC, leapStartTAI);
-        assertEquals(leapEndUTC, leapEndTAI);
-        assertEquals(1, leapEndUTC.offsetFrom(leapStartUTC, utc), 1.0e-10);
-        assertEquals(1, leapEndTAI.offsetFrom(leapStartTAI, utc), 1.0e-10);
-        assertEquals(2, leapEndUTC.offsetFrom(leapStartUTC, tai), 1.0e-10);
-        assertEquals(2, leapEndTAI.offsetFrom(leapStartTAI, tai), 1.0e-10);
-        assertEquals(2, leapEndUTC.durationFrom(leapStartUTC),    1.0e-10);
-        assertEquals(2, leapEndTAI.durationFrom(leapStartTAI),    1.0e-10);
+        Assert.assertEquals(leapStartUTC, leapStartTAI);
+        Assert.assertEquals(leapEndUTC, leapEndTAI);
+        Assert.assertEquals(1, leapEndUTC.offsetFrom(leapStartUTC, utc), 1.0e-10);
+        Assert.assertEquals(1, leapEndTAI.offsetFrom(leapStartTAI, utc), 1.0e-10);
+        Assert.assertEquals(2, leapEndUTC.offsetFrom(leapStartUTC, tai), 1.0e-10);
+        Assert.assertEquals(2, leapEndTAI.offsetFrom(leapStartTAI, tai), 1.0e-10);
+        Assert.assertEquals(2, leapEndUTC.durationFrom(leapStartUTC),    1.0e-10);
+        Assert.assertEquals(2, leapEndTAI.durationFrom(leapStartTAI),    1.0e-10);
     }
 
     @Test
@@ -170,13 +167,13 @@ public class AbsoluteDateTest {
             AbsoluteDate d3 = new AbsoluteDate(leapStart, dt, utc);
             AbsoluteDate d4 = new AbsoluteDate(leapEnd,   dt, tai);
             AbsoluteDate d5 = new AbsoluteDate(leapEnd,   dt, utc);
-            assertTrue(Math.abs(d1.durationFrom(d2)) < 1.0e-10);
+            Assert.assertTrue(Math.abs(d1.durationFrom(d2)) < 1.0e-10);
             if (dt < 0) {
-                assertTrue(Math.abs(d2.durationFrom(d3)) < 1.0e-10);
-                assertTrue(d4.durationFrom(d5) > (1.0 - 1.0e-10));
+                Assert.assertTrue(Math.abs(d2.durationFrom(d3)) < 1.0e-10);
+                Assert.assertTrue(d4.durationFrom(d5) > (1.0 - 1.0e-10));
             } else {
-                assertTrue(d2.durationFrom(d3) < (-1.0 + 1.0e-10));
-                assertTrue(Math.abs(d4.durationFrom(d5)) < 1.0e-10);
+                Assert.assertTrue(d2.durationFrom(d3) < (-1.0 + 1.0e-10));
+                Assert.assertTrue(Math.abs(d4.durationFrom(d5)) < 1.0e-10);
             }
         }
     }
@@ -187,9 +184,9 @@ public class AbsoluteDateTest {
         AbsoluteDate leapStart = new AbsoluteDate(1977,  1,  1,  0,  0, 14, tai);
         for (int i = -10; i < 10; ++i) {
             final double dt = 1.1 * (2 * i - 1);
-            assertEquals(dt, new AbsoluteDate(leapStart, dt, utc).offsetFrom(leapStart, utc), 1.0e-10);
-            assertEquals(dt, new AbsoluteDate(leapStart, dt, tai).offsetFrom(leapStart, tai), 1.0e-10);
-            assertEquals(dt, new AbsoluteDate(leapStart, dt).durationFrom(leapStart), 1.0e-10);
+            Assert.assertEquals(dt, new AbsoluteDate(leapStart, dt, utc).offsetFrom(leapStart, utc), 1.0e-10);
+            Assert.assertEquals(dt, new AbsoluteDate(leapStart, dt, tai).offsetFrom(leapStart, tai), 1.0e-10);
+            Assert.assertEquals(dt, new AbsoluteDate(leapStart, dt).durationFrom(leapStart), 1.0e-10);
         }
     }
 
@@ -204,8 +201,8 @@ public class AbsoluteDateTest {
                                               new TimeComponents(17, 10, 0),
                                               utc),
                              34);
-        assertTrue(d1.equals(d2));
-        assertFalse(d1.equals(this));
+        Assert.assertTrue(d1.equals(d2));
+        Assert.assertFalse(d1.equals(this));
     }
 
     @Test
@@ -223,11 +220,11 @@ public class AbsoluteDateTest {
             for (int j = 0; j < scales.length; ++j) {
                 DateTimeComponents pair = in.getComponents(scales[j]);
                 if (i == j) {
-                    assertEquals(date, pair.getDate());
-                    assertEquals(time, pair.getTime());
+                    Assert.assertEquals(date, pair.getDate());
+                    Assert.assertEquals(time, pair.getTime());
                 } else {
-                    assertNotSame(date, pair.getDate());
-                    assertNotSame(time, pair.getTime());
+                    Assert.assertNotSame(date, pair.getDate());
+                    Assert.assertNotSame(time, pair.getTime());
                 }
             }
         }
@@ -235,11 +232,11 @@ public class AbsoluteDateTest {
 
     @Test(expected=IllegalArgumentException.class)
     public void testExpandedConstructors() throws OrekitException {
-        assertEquals(new AbsoluteDate(new DateComponents(2002, 05, 28),
+        Assert.assertEquals(new AbsoluteDate(new DateComponents(2002, 05, 28),
                                       new TimeComponents(15, 30, 0),
                                       TimeScalesFactory.getUTC()),
                      new AbsoluteDate(2002, 05, 28, 15, 30, 0, TimeScalesFactory.getUTC()));
-        assertEquals(new AbsoluteDate(new DateComponents(2002, 05, 28), TimeComponents.H00,
+        Assert.assertEquals(new AbsoluteDate(new DateComponents(2002, 05, 28), TimeComponents.H00,
                                       TimeScalesFactory.getUTC()),
                      new AbsoluteDate(2002, 05, 28, TimeScalesFactory.getUTC()));
         new AbsoluteDate(2002, 05, 28, 25, 30, 0, TimeScalesFactory.getUTC());
@@ -256,20 +253,20 @@ public class AbsoluteDateTest {
                                               new TimeComponents(17, 10, 0),
                                               utc),
                              34);
-        assertEquals(d1.hashCode(), d2.hashCode());
-        assertTrue(d1.hashCode() != new AbsoluteDate(d1, 1.0e-3).hashCode());
+        Assert.assertEquals(d1.hashCode(), d2.hashCode());
+        Assert.assertTrue(d1.hashCode() != new AbsoluteDate(d1, 1.0e-3).hashCode());
     }
 
     @Test
     public void testInfinity() {
-        assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.JULIAN_EPOCH) < 0);
-        assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.J2000_EPOCH) < 0);
-        assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
-        assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.JULIAN_EPOCH) > 0);
-        assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.J2000_EPOCH) > 0);
-        assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
-        assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.PAST_INFINITY)));
-        assertTrue(Double.isInfinite(AbsoluteDate.PAST_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
+        Assert.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.JULIAN_EPOCH) < 0);
+        Assert.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.J2000_EPOCH) < 0);
+        Assert.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
+        Assert.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.JULIAN_EPOCH) > 0);
+        Assert.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.J2000_EPOCH) > 0);
+        Assert.assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
+        Assert.assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.PAST_INFINITY)));
+        Assert.assertTrue(Double.isInfinite(AbsoluteDate.PAST_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
     }
 
     @Before

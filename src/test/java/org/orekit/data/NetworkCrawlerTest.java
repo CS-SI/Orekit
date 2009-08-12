@@ -16,9 +16,6 @@
  */
 package org.orekit.data;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +24,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.util.regex.Pattern;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 
@@ -38,12 +36,12 @@ public class NetworkCrawlerTest {
         File inexistent = new File(existing.getParent(), "inexistant-directory");
         try {
             new NetworkCrawler(inexistent.toURI().toURL()).feed(new CountingLoader(".*"));
-            fail("an exception should have been thrown");
+            Assert.fail("an exception should have been thrown");
         } catch (OrekitException e) {
             // expected behavior
         } catch (Exception e) {
             e.printStackTrace();
-            fail("wrong exception caught");
+            Assert.fail("wrong exception caught");
         }
     }
 
@@ -65,7 +63,7 @@ public class NetworkCrawlerTest {
 //            new NetworkCrawler(new URL("http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history"));
 //        crawler.setTimeout(1000);
 //        crawler.feed(loader);
-//        assertEquals(1, loader.getCount());
+//        Assert.assertEquals(1, loader.getCount());
 //
 //    }
 
@@ -78,7 +76,7 @@ public class NetworkCrawlerTest {
                            url("regular-data/de406-ephemerides/unxp0000.406"),
                            url("regular-data/Earth-orientation-parameters/monthly/bulletinb_IAU2000-216.txt"),
                            url("no-data")).feed(crawler);
-        assertEquals(6, crawler.getCount());
+        Assert.assertEquals(6, crawler.getCount());
     }
 
     @Test
@@ -87,28 +85,28 @@ public class NetworkCrawlerTest {
         new NetworkCrawler(url("compressed-data/UTC-TAI.history.gz"),
                            url("compressed-data/eopc04_IAU2000.00.gz"),
                            url("compressed-data/eopc04_IAU2000.02.gz")).feed(crawler);
-        assertEquals(2, crawler.getCount());
+        Assert.assertEquals(2, crawler.getCount());
     }
 
     @Test
     public void multiZip() throws OrekitException {
         CountingLoader crawler = new CountingLoader(".*\\.txt$");
         new NetworkCrawler(url("zipped-data/multizip.zip")).feed(crawler);
-        assertEquals(6, crawler.getCount());
+        Assert.assertEquals(6, crawler.getCount());
     }
 
     @Test
     public void ioException() throws OrekitException {
         try {
             new NetworkCrawler(url("regular-data/UTC-TAI.history")).feed(new IOExceptionLoader(".*"));
-            fail("an exception should have been thrown");
+            Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behavior
-            assertNotNull(oe.getCause());
-            assertEquals(IOException.class, oe.getCause().getClass());
-            assertEquals("dummy error", oe.getMessage());
+            Assert.assertNotNull(oe.getCause());
+            Assert.assertEquals(IOException.class, oe.getCause().getClass());
+            Assert.assertEquals("dummy error", oe.getMessage());
         } catch (Exception e) {
-            fail("wrong exception caught");
+            Assert.fail("wrong exception caught");
         }
     }
 
@@ -116,15 +114,15 @@ public class NetworkCrawlerTest {
     public void parseException() throws OrekitException {
         try {
             new NetworkCrawler(url("regular-data/UTC-TAI.history")).feed(new ParseExceptionLoader(".*"));
-            fail("an exception should have been thrown");
+            Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behavior
-            assertNotNull(oe.getCause());
-            assertEquals(ParseException.class, oe.getCause().getClass());
-            assertEquals("dummy error", oe.getMessage());
+            Assert.assertNotNull(oe.getCause());
+            Assert.assertEquals(ParseException.class, oe.getCause().getClass());
+            Assert.assertEquals("dummy error", oe.getMessage());
         } catch (Exception e) {
             e.printStackTrace(System.err);
-            fail("wrong exception caught");
+            Assert.fail("wrong exception caught");
         }
     }
 

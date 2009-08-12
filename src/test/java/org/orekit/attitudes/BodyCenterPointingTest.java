@@ -16,12 +16,11 @@
  */
 package org.orekit.attitudes;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -69,7 +68,7 @@ public class BodyCenterPointingTest {
         // Check that target is body center
         double normPos = target.getPosition().getNorm();
         double normVel = target.getVelocity().getNorm();
-        assertTrue((normPos < Utils.epsilonTest) && (normVel < Utils.epsilonTest));
+        Assert.assertTrue((normPos < Utils.epsilonTest) && (normVel < Utils.epsilonTest));
 
     }
 
@@ -101,7 +100,7 @@ public class BodyCenterPointingTest {
         // Check that the line contains earth center (distance from line to point less than 1.e-8 m)
         double distance = pointingLine.distance(Vector3D.ZERO);
         
-        assertTrue(distance < 1.e-8);
+        Assert.assertTrue(distance < 1.e-8);
     }
 
     @Before
@@ -134,7 +133,7 @@ public class BodyCenterPointingTest {
             earthCenterAttitudeLaw = new BodyCenterPointing(itrf);
             
         } catch (OrekitException oe) {
-            fail(oe.getMessage());
+            Assert.fail(oe.getMessage());
         }
 
     }

@@ -16,13 +16,11 @@
  */
 package org.orekit.attitudes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -82,7 +80,7 @@ public class YawCompensationTest {
         double normTargetDiffPos = targetDiff.getPosition().getNorm();
         double normTargetDiffVel = targetDiff.getVelocity().getNorm();
        
-        assertTrue((normTargetDiffPos < Utils.epsilonTest)&&(normTargetDiffVel < Utils.epsilonTest));
+        Assert.assertTrue((normTargetDiffPos < Utils.epsilonTest)&&(normTargetDiffVel < Utils.epsilonTest));
 
         //  Check observed ground point
         // *****************************
@@ -97,7 +95,7 @@ public class YawCompensationTest {
         double normObservedDiffPos = observedDiff.getPosition().getNorm();
         double normObservedDiffVel = observedDiff.getVelocity().getNorm();
        
-        assertTrue((normObservedDiffPos < Utils.epsilonTest)&&(normObservedDiffVel < Utils.epsilonTest));
+        Assert.assertTrue((normObservedDiffPos < Utils.epsilonTest)&&(normObservedDiffVel < Utils.epsilonTest));
    }
 
     /** Test that maximum yaw compensation is at ascending/descending node, 
@@ -152,13 +150,13 @@ public class YawCompensationTest {
             // 1/ Check yaw values around ascending node (max yaw)
             if ((Math.abs(extrapLat) < Math.toRadians(2.)) &&
                 (extrapPvSatEME2000.getVelocity().getZ() >= 0. )) {
-                assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.8488)) 
+                Assert.assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.8488)) 
                         && (Math.abs(yawAngle) <= Math.toRadians(2.8532)));
             }
             
             // 2/ Check yaw values around maximum positive latitude (min yaw)
             if ( extrapLat > Math.toRadians(50.) ) {
-                assertTrue((Math.abs(yawAngle) <= Math.toRadians(0.2628)) 
+                Assert.assertTrue((Math.abs(yawAngle) <= Math.toRadians(0.2628)) 
                         && (Math.abs(yawAngle) >= Math.toRadians(0.0032)));
             }
             
@@ -166,22 +164,22 @@ public class YawCompensationTest {
             if ( (Math.abs(extrapLat) < Math.toRadians(2.))
                     && (extrapPvSatEME2000.getVelocity().getZ() <= 0. ) )
             {
-                assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.8485)) 
+                Assert.assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.8485)) 
                              && (Math.abs(yawAngle) <= Math.toRadians(2.8536)));
             }
          
             // 4/ Check yaw values around maximum negative latitude (min yaw)
             if ( extrapLat < Math.toRadians(-50.) )
             {
-                assertTrue((Math.abs(yawAngle) <= Math.toRadians(0.2359)) 
+                Assert.assertTrue((Math.abs(yawAngle) <= Math.toRadians(0.2359)) 
                              && (Math.abs(yawAngle) >= Math.toRadians(0.0141)));
             }
 
         }
         
         // 5/ Check that minimum yaw compensation value is around maximum latitude
-        assertEquals(Math.toRadians( 0.003229), yawMin, Utils.epsilonAngle);
-        assertEquals(Math.toRadians(50.214853), latMin, Utils.epsilonAngle);
+        Assert.assertEquals(Math.toRadians( 0.003229), yawMin, Utils.epsilonAngle);
+        Assert.assertEquals(Math.toRadians(50.214853), latMin, Utils.epsilonAngle);
 
     }
 
@@ -209,9 +207,9 @@ public class YawCompensationTest {
         Vector3D yawAxis = compoRot.getAxis();
 
         // Check axis
-        assertEquals(0., yawAxis.getX(), Utils.epsilonTest);
-        assertEquals(0., yawAxis.getY(), Utils.epsilonTest);
-        assertEquals(1., yawAxis.getZ(), Utils.epsilonTest);
+        Assert.assertEquals(0., yawAxis.getX(), Utils.epsilonTest);
+        Assert.assertEquals(0., yawAxis.getY(), Utils.epsilonTest);
+        Assert.assertEquals(1., yawAxis.getZ(), Utils.epsilonTest);
 
     }
 
@@ -244,7 +242,7 @@ public class YawCompensationTest {
                 new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
             
         } catch (OrekitException oe) {
-            fail(oe.getMessage());
+            Assert.fail(oe.getMessage());
         }
 
     }

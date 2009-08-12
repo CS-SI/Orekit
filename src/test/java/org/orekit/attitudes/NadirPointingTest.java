@@ -16,12 +16,11 @@
  */
 package org.orekit.attitudes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -85,7 +84,7 @@ public class NadirPointingTest {
         // with nadir pointing rotation shall be identity. 
         Rotation rotCompo = rotCenter.applyInverseTo(rotNadir);
         double angle = rotCompo.getAngle();
-        assertEquals(angle, 0.0, Utils.epsilonAngle);
+        Assert.assertEquals(angle, 0.0, Utils.epsilonAngle);
 
 }
     
@@ -125,7 +124,7 @@ public class NadirPointingTest {
         // with nadir pointing rotation shall be identity. 
         Rotation rotCompo = rotCenter.applyInverseTo(rotNadir);
         double angle = rotCompo.getAngle();
-        assertEquals(angle, 0.0, 5.e-6);
+        Assert.assertEquals(angle, 0.0, 5.e-6);
        
         //  Satellite on polar position
         // ***************************** 
@@ -148,7 +147,7 @@ public class NadirPointingTest {
         // with nadir pointing rotation shall be identity.
         rotCompo = rotCenter.applyInverseTo(rotNadir);
         angle = rotCompo.getAngle();
-        assertEquals(angle, 0.0, 5.e-6);
+        Assert.assertEquals(angle, 0.0, 5.e-6);
        
         //  Satellite on any position
         // *************************** 
@@ -171,7 +170,7 @@ public class NadirPointingTest {
         // pointing rotation with nadir pointing rotation shall be different from identity.
         rotCompo = rotCenter.applyInverseTo(rotNadir);
         angle = rotCompo.getAngle();
-        assertEquals(angle, Math.toRadians(0.16797386586252272), Utils.epsilonAngle);
+        Assert.assertEquals(angle, Math.toRadians(0.16797386586252272), Utils.epsilonAngle);
     }
        
     /** Vertical test : check that Z satellite axis is colinear to local vertical axis,
@@ -222,7 +221,7 @@ public class NadirPointingTest {
         
         // Check that satellite Z axis is colinear to local vertical axis
         double angle= Vector3D.angle(zSatItrf, targetVertical);        
-        assertEquals(Math.sin(angle), 0.0, Utils.epsilonTest);
+        Assert.assertEquals(Math.sin(angle), 0.0, Utils.epsilonTest);
         
     }
 
@@ -244,7 +243,7 @@ public class NadirPointingTest {
             frameITRF2005 = FramesFactory.getITRF2005(true);
 
         } catch (OrekitException oe) {
-            fail(oe.getMessage());
+            Assert.fail(oe.getMessage());
         }
 
     }

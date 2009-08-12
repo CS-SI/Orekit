@@ -16,15 +16,13 @@
  */
 package org.orekit.frames;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.text.ParseException;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.BulletinBFilesLoader;
 import org.orekit.utils.TimeStampedEntry;
 
 
@@ -37,23 +35,23 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     public void testMissingMonths() throws OrekitException {
         setRoot("missing-months");
         new BulletinBFilesLoader(BULLETFILENAME, set).loadEOP();
-        assertTrue(getMaxGap() > 5);
+        Assert.assertTrue(getMaxGap() > 5);
     }
 
     @Test
     public void testStartDate() throws OrekitException, ParseException {
         setRoot("regular-data");
         new BulletinBFilesLoader(BULLETFILENAME, set).loadEOP();
-        assertTrue(getMaxGap() < 5);
-        assertEquals(53709, ((TimeStampedEntry) set.first()).getMjd());
+        Assert.assertTrue(getMaxGap() < 5);
+        Assert.assertEquals(53709, ((TimeStampedEntry) set.first()).getMjd());
     }
 
     @Test
     public void testEndDate() throws OrekitException, ParseException {
         setRoot("regular-data");
         new BulletinBFilesLoader(BULLETFILENAME, set).loadEOP();
-        assertTrue(getMaxGap() < 5);
-        assertEquals(53799, ((TimeStampedEntry) set.last()).getMjd());
+        Assert.assertTrue(getMaxGap() < 5);
+        Assert.assertEquals(53799, ((TimeStampedEntry) set.last()).getMjd());
     }
 
 }

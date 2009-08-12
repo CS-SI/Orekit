@@ -16,11 +16,9 @@
  */
 package org.orekit.time;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
+import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.time.DateComponents;
 
 
 public class DateTimeComponentsTest {
@@ -38,23 +36,23 @@ public class DateTimeComponentsTest {
         };
         for (int i = 0; i < dates.length; ++i) {
             for (int j = 0; j < dates.length; ++j) {
-                assertEquals(i  < j, dates[i].compareTo(dates[j])  < 0);
-                assertEquals(i  > j, dates[j].compareTo(dates[i])  < 0);
-                assertEquals(i == j, dates[i].compareTo(dates[j]) == 0);
-                assertEquals(i  > j, dates[i].compareTo(dates[j])  > 0);
-                assertEquals(i  < j, dates[j].compareTo(dates[i])  > 0);
+                Assert.assertEquals(i  < j, dates[i].compareTo(dates[j])  < 0);
+                Assert.assertEquals(i  > j, dates[j].compareTo(dates[i])  < 0);
+                Assert.assertEquals(i == j, dates[i].compareTo(dates[j]) == 0);
+                Assert.assertEquals(i  > j, dates[i].compareTo(dates[j])  > 0);
+                Assert.assertEquals(i  < j, dates[j].compareTo(dates[i])  > 0);
             }
         }
-        assertFalse(dates[0].equals(this));
-        assertFalse(dates[0].equals(dates[0].getDate()));
-        assertFalse(dates[0].equals(dates[0].getTime()));
+        Assert.assertFalse(dates[0].equals(this));
+        Assert.assertFalse(dates[0].equals(dates[0].getDate()));
+        Assert.assertFalse(dates[0].equals(dates[0].getTime()));
     }
 
     @Test
     public void testOffset() {
         DateTimeComponents reference = new DateTimeComponents(2005, 12, 31, 23, 59, 59);
         DateTimeComponents expected  = new DateTimeComponents(2006,  1,  1,  0,  0,  0);
-        assertEquals(expected, new DateTimeComponents(reference, 1));
+        Assert.assertEquals(expected, new DateTimeComponents(reference, 1));
     }
 
     @Test
@@ -62,8 +60,8 @@ public class DateTimeComponentsTest {
         DateTimeComponents reference1 = new DateTimeComponents(2005, 12, 31, 12, 0, 0);
         DateTimeComponents reference2 = new DateTimeComponents(2006,  1,  1,  1, 2, 3);
         for (double dt = -100000; dt < 100000; dt += 100) {
-            assertEquals(dt, new DateTimeComponents(reference1, dt).offsetFrom(reference1), 1.0e-15);
-            assertEquals(dt, new DateTimeComponents(reference2, dt).offsetFrom(reference2), 1.0e-15);
+            Assert.assertEquals(dt, new DateTimeComponents(reference1, dt).offsetFrom(reference1), 1.0e-15);
+            Assert.assertEquals(dt, new DateTimeComponents(reference2, dt).offsetFrom(reference2), 1.0e-15);
         }
     }
 
@@ -71,7 +69,7 @@ public class DateTimeComponentsTest {
     public void testString() {
         final DateTimeComponents date =
             new DateTimeComponents(DateComponents.J2000_EPOCH, TimeComponents.H12);
-        assertEquals("2000-01-01T12:00:00.000", date.toString());
+        Assert.assertEquals("2000-01-01T12:00:00.000", date.toString());
     }
 
 }

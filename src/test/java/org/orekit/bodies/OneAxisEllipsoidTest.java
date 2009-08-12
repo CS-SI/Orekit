@@ -16,13 +16,10 @@
  */
 package org.orekit.bodies;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -112,9 +109,9 @@ public class OneAxisEllipsoidTest {
         GeodeticPoint nsp =
             new GeodeticPoint(0.852479154923577, 0.0423149994747243, 111.6);
         Vector3D p = model.transform(nsp);
-        assertEquals(4201866.69291890, p.getX(), 1.0e-6);
-        assertEquals(177908.184625686, p.getY(), 1.0e-6);
-        assertEquals(4779203.64408617, p.getZ(), 1.0e-6);
+        Assert.assertEquals(4201866.69291890, p.getX(), 1.0e-6);
+        Assert.assertEquals(177908.184625686, p.getY(), 1.0e-6);
+        Assert.assertEquals(4779203.64408617, p.getZ(), 1.0e-6);
     }
 
     @Test
@@ -127,42 +124,42 @@ public class OneAxisEllipsoidTest {
         Vector3D direction     = new Vector3D(0.0, 1.0, 1.0);
         Line line = new Line(point, direction);
         GeodeticPoint gp = model.getIntersectionPoint(line, point, frame, date);
-        assertEquals(gp.getAltitude(), 0.0, 1.0e-12);
-        assertTrue(line.contains(model.transform(gp)));
+        Assert.assertEquals(gp.getAltitude(), 0.0, 1.0e-12);
+        Assert.assertTrue(line.contains(model.transform(gp)));
 
         model = new OneAxisEllipsoid(100.0, 0.9, frame);
         point = new Vector3D(0.0, -93.7139699, -3.5930796);
         direction = new Vector3D(0.0, -1.0, -1.0);
         line = Line.revert(new Line(point, direction));
         gp = model.getIntersectionPoint(line, point, frame, date);
-        assertTrue(line.contains(model.transform(gp)));
+        Assert.assertTrue(line.contains(model.transform(gp)));
 
         model = new OneAxisEllipsoid(100.0, 0.9, frame);
         point = new Vector3D(0.0, -93.7139699, 3.5930796);
         direction = new Vector3D(0.0, -1.0, 1.0);
         line = new Line(point, direction);
         gp = model.getIntersectionPoint(line, point, frame, date);
-        assertTrue(line.contains(model.transform(gp)));
+        Assert.assertTrue(line.contains(model.transform(gp)));
 
         model = new OneAxisEllipsoid(100.0, 0.9, frame);
         point = new Vector3D(-93.7139699, 0.0, 3.5930796);
         direction = new Vector3D(-1.0, 0.0, 1.0);
         line = new Line(point, direction);
         gp = model.getIntersectionPoint(line, point, frame, date);
-        assertTrue(line.contains(model.transform(gp)));
-        assertFalse(line.contains(new Vector3D(0, 0, 7000000)));
+        Assert.assertTrue(line.contains(model.transform(gp)));
+        Assert.assertFalse(line.contains(new Vector3D(0, 0, 7000000)));
 
         point = new Vector3D(0.0, 0.0, 110);
         direction = new Vector3D(0.0, 0.0, 1.0);
         line = new Line(point, direction);
         gp = model.getIntersectionPoint(line, point, frame, date);
-        assertEquals(gp.getLatitude(), Math.PI/2, 1.0e-12);
+        Assert.assertEquals(gp.getLatitude(), Math.PI/2, 1.0e-12);
         
         point = new Vector3D(0.0, 110, 0);
         direction = new Vector3D(0.0, 1.0, 0.0);
         line = new Line(point, direction);
         gp = model.getIntersectionPoint(line, point, frame, date);
-        assertEquals(gp.getLatitude(),0, 1.0e-12);
+        Assert.assertEquals(gp.getLatitude(),0, 1.0e-12);
 
     }
 
@@ -174,7 +171,7 @@ public class OneAxisEllipsoidTest {
         Vector3D point     = new Vector3D(0.0, 93.7139699, 3.5930796);
         Vector3D direction = new Vector3D(0.0, 9.0, -2.0);
         Line line = new Line(point, direction);
-        assertNull(model.getIntersectionPoint(line, point, frame, date));
+        Assert.assertNull(model.getIntersectionPoint(line, point, frame, date));
     }
 
     @Test
@@ -205,8 +202,8 @@ public class OneAxisEllipsoidTest {
         Vector3D direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         Line line = new Line(pSatItrf, direction);
         GeodeticPoint geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
-        assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
+        Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // Test second visible surface points
         geoPoint = new GeodeticPoint(Math.toRadians(65.), Math.toRadians(-120.), 0.);
@@ -214,8 +211,8 @@ public class OneAxisEllipsoidTest {
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
-        assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
+        Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // Test non visible surface points
         geoPoint = new GeodeticPoint(Math.toRadians(30.), Math.toRadians(60.), 0.);
@@ -226,8 +223,8 @@ public class OneAxisEllipsoidTest {
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
         
         // For polar satellite position, intersection point is at the same longitude but different latitude
-        assertEquals(1.04437199, geoInter.getLongitude(), Utils.epsilonAngle);
-        assertEquals(1.36198012, geoInter.getLatitude(),  Utils.epsilonAngle);
+        Assert.assertEquals(1.04437199, geoInter.getLongitude(), Utils.epsilonAngle);
+        Assert.assertEquals(1.36198012, geoInter.getLatitude(),  Utils.epsilonAngle);
         
         // Satellite on equatorial position
         // ********************************
@@ -246,15 +243,15 @@ public class OneAxisEllipsoidTest {
         pointItrf     = earth.transform(geoPoint);
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
-        assertTrue(line.getAbscissa(pSatItrf) > 0);
+        Assert.assertTrue(line.getAbscissa(pSatItrf) > 0);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
-        assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
+        Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // With the point opposite to satellite point along the line
         GeodeticPoint geoInter2 = earth.getIntersectionPoint(line, line.pointAt(-line.getAbscissa(pSatItrf)), frame, date);
-        assertTrue(Math.abs(geoInter.getLongitude() - geoInter2.getLongitude()) > Math.toRadians(0.1));
-        assertTrue(Math.abs(geoInter.getLatitude() - geoInter2.getLatitude()) > Math.toRadians(0.1));
+        Assert.assertTrue(Math.abs(geoInter.getLongitude() - geoInter2.getLongitude()) > Math.toRadians(0.1));
+        Assert.assertTrue(Math.abs(geoInter.getLatitude() - geoInter2.getLatitude()) > Math.toRadians(0.1));
         
         // Test second visible surface points
         geoPoint = new GeodeticPoint(Math.toRadians(-5.), Math.toRadians(0.), 0.);
@@ -262,8 +259,8 @@ public class OneAxisEllipsoidTest {
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
-        assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
+        Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // Test non visible surface points
         geoPoint = new GeodeticPoint(Math.toRadians(40.), Math.toRadians(0.), 0.);
@@ -271,8 +268,8 @@ public class OneAxisEllipsoidTest {
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        assertEquals(-0.00768481, geoInter.getLongitude(), Utils.epsilonAngle);
-        assertEquals( 0.32180410, geoInter.getLatitude(),  Utils.epsilonAngle);
+        Assert.assertEquals(-0.00768481, geoInter.getLongitude(), Utils.epsilonAngle);
+        Assert.assertEquals( 0.32180410, geoInter.getLatitude(),  Utils.epsilonAngle);
 
 
         // Satellite on any position
@@ -293,8 +290,8 @@ public class OneAxisEllipsoidTest {
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
-        assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
+        Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // Test second visible surface points
         geoPoint = new GeodeticPoint(Math.toRadians(60.), Math.toRadians(90.), 0.);
@@ -302,8 +299,8 @@ public class OneAxisEllipsoidTest {
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
-        assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
+        Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // Test non visible surface points
         geoPoint = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(90.), 0.);
@@ -311,8 +308,8 @@ public class OneAxisEllipsoidTest {
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        assertEquals(Math.toRadians(89.5364061088196), geoInter.getLongitude(), Utils.epsilonAngle);
-        assertEquals(Math.toRadians(35.555543683351125), geoInter.getLatitude(), Utils.epsilonAngle);
+        Assert.assertEquals(Math.toRadians(89.5364061088196), geoInter.getLongitude(), Utils.epsilonAngle);
+        Assert.assertEquals(Math.toRadians(35.555543683351125), geoInter.getLatitude(), Utils.epsilonAngle);
 
     }
 
@@ -326,11 +323,11 @@ public class OneAxisEllipsoidTest {
         Frame frame = FramesFactory.getITRF2005(true);    
         OneAxisEllipsoid model = new OneAxisEllipsoid(ae, f, frame);
         GeodeticPoint gp = model.transform(new Vector3D(x, y, z), frame, date);
-        assertEquals(longitude, MathUtils.normalizeAngle(gp.getLongitude(), longitude), 1.0e-10);
-        assertEquals(latitude,  gp.getLatitude(),  1.0e-10);
-        assertEquals(altitude,  gp.getAltitude(),  1.0e-10 * Math.abs(altitude));
+        Assert.assertEquals(longitude, MathUtils.normalizeAngle(gp.getLongitude(), longitude), 1.0e-10);
+        Assert.assertEquals(latitude,  gp.getLatitude(),  1.0e-10);
+        Assert.assertEquals(altitude,  gp.getAltitude(),  1.0e-10 * Math.abs(altitude));
         Vector3D rebuiltNadir = Vector3D.crossProduct(gp.getSouth(), gp.getWest());
-        assertEquals(0, rebuiltNadir.subtract(gp.getNadir()).getNorm(), 1.0e-15);
+        Assert.assertEquals(0, rebuiltNadir.subtract(gp.getNadir()).getNorm(), 1.0e-15);
     }
 
     @Before
