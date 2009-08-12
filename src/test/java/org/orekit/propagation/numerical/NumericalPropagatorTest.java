@@ -69,18 +69,11 @@ public class NumericalPropagatorTest {
 
     }
 
-    @Test
-    public void testNotInitialised() {
-        try {
-            final NumericalPropagator notInitialised =
-                new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.0));
-            notInitialised.propagate(AbsoluteDate.J2000_EPOCH);
-            Assert.fail("an exception should have been thrown");
-        } catch (PropagationException pe) {
-            // expected behavior
-        } catch (Exception e) {
-            Assert.fail("wrong exception caught");
-        }
+    @Test(expected=OrekitException.class)
+    public void testNotInitialised() throws OrekitException {
+        final NumericalPropagator notInitialised =
+            new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.0));
+        notInitialised.propagate(AbsoluteDate.J2000_EPOCH);
     }
 
     @Test
@@ -102,11 +95,11 @@ public class NumericalPropagatorTest {
 
     }
 
-    @Test
+    @Test(expected=OrekitException.class)
     public void testException() throws OrekitException {
         propagator.setMasterMode(new OrekitStepHandler() {
             private static final long serialVersionUID = -6857910416285189873L;
-            private int countDown = 10;
+            private int countDown = 3;
             private AbsoluteDate previousCall = null;
             public void handleStep(OrekitStepInterpolator interpolator,
                                    boolean isLast) throws PropagationException {
@@ -123,14 +116,7 @@ public class NumericalPropagatorTest {
             public void reset() {
             }
         });
-        try {
-            propagator.propagate(new AbsoluteDate(initDate, -3600));
-        } catch (PropagationException pe) {
-            // expected behavior
-            Assert.assertEquals("dummy error", pe.getMessage());
-        } catch (Exception e) {
-            Assert.fail("wrong exception caught");
-        }
+        propagator.propagate(new AbsoluteDate(initDate, -3600));
     }
 
     @Test

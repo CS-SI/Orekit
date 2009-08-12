@@ -23,25 +23,58 @@ import org.junit.Test;
 
 public class TimeComponentsTest {
 
-    @Test
-    public void testOutOfRange() {
-        checkConstructorCompletion(-1, 10, 10, false);
-        checkConstructorCompletion(24, 10, 10, false);
-        checkConstructorCompletion(10, -1, 10, false);
-        checkConstructorCompletion(10, 60, 10, false);
-        checkConstructorCompletion(10, 10, -1, false);
-        checkConstructorCompletion(10, 10, 61, false);
-        checkConstructorCompletion(-1.0, false);
-        checkConstructorCompletion(86401.0, false);
+    @Test(expected=IllegalArgumentException.class)
+    public void testOutOfRangeA() throws IllegalArgumentException {
+        new TimeComponents(-1, 10, 10);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testOutOfRangeB() throws IllegalArgumentException {
+        new TimeComponents(24, 10, 10);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testOutOfRangeC() throws IllegalArgumentException {
+        new TimeComponents(10, -1, 10);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testOutOfRangeD() throws IllegalArgumentException {
+        new TimeComponents(10, 60, 10);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testOutOfRangeE() throws IllegalArgumentException {
+        new TimeComponents(10, 10, -1);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testOutOfRangeF() throws IllegalArgumentException {
+        new TimeComponents(10, 10, 61);
     }
 
     @Test
     public void testInRange() {
-        checkConstructorCompletion(10, 10, 10, true);
-        checkConstructorCompletion(0.0, true);
-        checkConstructorCompletion(10, 10, 60.999, true);
-        checkConstructorCompletion(43200.0, true);
-        checkConstructorCompletion(86399.999, true);
+
+        TimeComponents time = new TimeComponents(10, 10, 10);
+        Assert.assertEquals(10,   time.getHour());
+        Assert.assertEquals(10,   time.getMinute());
+        Assert.assertEquals(10.0, time.getSecond(), 1.0e-10);
+
+        time = new TimeComponents(0.0);
+        Assert.assertEquals(0.0, time.getSecondsInDay(), 1.0e-10);
+
+        time = new TimeComponents(10, 10, 60.999);
+        Assert.assertEquals(10,   time.getHour());
+        Assert.assertEquals(10,   time.getMinute());
+        Assert.assertEquals(60.999, time.getSecond(), 1.0e-10);
+
+        time = new TimeComponents(43200.0);
+        Assert.assertEquals(43200.0, time.getSecondsInDay(), 1.0e-10);
+
+        time = new TimeComponents(86399.999);
+        Assert.assertEquals(86399.999, time.getSecondsInDay(), 1.0e-10);
+
     }
 
     @Test
@@ -95,34 +128,6 @@ public class TimeComponentsTest {
             }
         }
         Assert.assertFalse(times[0].equals(this));
-    }
-
-    private void checkConstructorCompletion(int hour, int minute, double second,
-                                            boolean expectedCompletion) {
-        try {
-            TimeComponents time = new TimeComponents(hour, minute, second);
-            Assert.assertEquals(hour,   time.getHour());
-            Assert.assertEquals(minute, time.getMinute());
-            Assert.assertEquals(second, time.getSecond(), 1.0e-10);
-            Assert.assertTrue(expectedCompletion);
-        } catch (IllegalArgumentException iae) {
-            Assert.assertTrue(! expectedCompletion);
-        } catch (Exception e) {
-            Assert.fail("wrong exception caught");
-        }
-    }
-
-    private void checkConstructorCompletion(double seconds,
-                                            boolean expectedCompletion) {
-        try {
-            TimeComponents time = new TimeComponents(seconds);
-            Assert.assertEquals(seconds, time.getSecondsInDay(), 1.0e-10);
-            Assert.assertTrue(expectedCompletion);
-        } catch (IllegalArgumentException iae) {
-            Assert.assertTrue(! expectedCompletion);
-        } catch (Exception e) {
-            Assert.fail("wrong exception caught");
-        }
     }
 
 }

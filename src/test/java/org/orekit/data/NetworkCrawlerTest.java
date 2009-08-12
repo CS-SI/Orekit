@@ -20,6 +20,7 @@ package org.orekit.data;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.regex.Pattern;
@@ -30,19 +31,11 @@ import org.orekit.errors.OrekitException;
 
 public class NetworkCrawlerTest {
 
-    @Test
-    public void noElement() {
+    @Test(expected=OrekitException.class)
+    public void noElement() throws OrekitException, MalformedURLException {
         File existing   = new File(url("regular-data").getPath());
         File inexistent = new File(existing.getParent(), "inexistant-directory");
-        try {
-            new NetworkCrawler(inexistent.toURI().toURL()).feed(new CountingLoader(".*"));
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException e) {
-            // expected behavior
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail("wrong exception caught");
-        }
+        new NetworkCrawler(inexistent.toURI().toURL()).feed(new CountingLoader(".*"));
     }
 
     // WARNING!
@@ -95,34 +88,29 @@ public class NetworkCrawlerTest {
         Assert.assertEquals(6, crawler.getCount());
     }
 
-    @Test
+    @Test(expected=OrekitException.class)
     public void ioException() throws OrekitException {
         try {
             new NetworkCrawler(url("regular-data/UTC-TAI.history")).feed(new IOExceptionLoader(".*"));
-            Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behavior
             Assert.assertNotNull(oe.getCause());
             Assert.assertEquals(IOException.class, oe.getCause().getClass());
             Assert.assertEquals("dummy error", oe.getMessage());
-        } catch (Exception e) {
-            Assert.fail("wrong exception caught");
+            throw oe;
         }
     }
 
-    @Test
+    @Test(expected=OrekitException.class)
     public void parseException() throws OrekitException {
         try {
             new NetworkCrawler(url("regular-data/UTC-TAI.history")).feed(new ParseExceptionLoader(".*"));
-            Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behavior
             Assert.assertNotNull(oe.getCause());
             Assert.assertEquals(ParseException.class, oe.getCause().getClass());
             Assert.assertEquals("dummy error", oe.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-            Assert.fail("wrong exception caught");
+            throw oe;
         }
     }
 

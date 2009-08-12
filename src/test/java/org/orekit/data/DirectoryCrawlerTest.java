@@ -30,18 +30,18 @@ import org.orekit.errors.OrekitException;
 
 public class DirectoryCrawlerTest {
 
-    @Test
-    public void testNoDirectory() {
+    @Test(expected=OrekitException.class)
+    public void testNoDirectory() throws OrekitException {
         File existing = new File(getClass().getClassLoader().getResource("regular-data").getPath());
         File inexistent = new File(existing.getParent(), "inexistant-directory");
-        checkFailure(inexistent);
-    }
+        new DirectoryCrawler(inexistent).feed(new CountingLoader(".*"));
+   }
 
-    @Test
-    public void testNotADirectory() {
+    @Test(expected=OrekitException.class)
+    public void testNotADirectory() throws OrekitException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data/UTC-TAI.history");
-        checkFailure(new File(url.getPath()));
+        new DirectoryCrawler(new File(url.getPath())).feed(new CountingLoader(".*"));
     }
 
     @Test
@@ -72,50 +72,33 @@ public class DirectoryCrawlerTest {
         Assert.assertEquals(6, crawler.getCount());
     }
 
-    @Test
+    @Test(expected=OrekitException.class)
     public void testIOException() throws OrekitException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         try {
             new DirectoryCrawler(new File(url.getPath())).feed(new IOExceptionLoader(".*"));
-            Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behavior
             Assert.assertNotNull(oe.getCause());
             Assert.assertEquals(IOException.class, oe.getCause().getClass());
             Assert.assertEquals("dummy error", oe.getMessage());
-        } catch (Exception e) {
-            Assert.fail("wrong exception caught");
+            throw oe;
         }
     }
 
-    @Test
+    @Test(expected=OrekitException.class)
     public void testParseException() throws OrekitException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         try {
             new DirectoryCrawler(new File(url.getPath())).feed(new ParseExceptionLoader(".*"));
-            Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected behavior
             Assert.assertNotNull(oe.getCause());
             Assert.assertEquals(ParseException.class, oe.getCause().getClass());
             Assert.assertEquals("dummy error", oe.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-            Assert.fail("wrong exception caught");
-        }
-    }
-
-    private void checkFailure(File root) {
-        try {
-            new DirectoryCrawler(root).feed(new CountingLoader(".*"));
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException e) {
-            // expected behavior
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail("wrong exception caught");
+            throw oe;
         }
     }
 

@@ -136,30 +136,31 @@ public class DateComponentsTest {
     }
 
     @Test
-    public void testConstructorDoY() {
-        checkConstructorDoY(2003, 0,   true);
-        checkConstructorDoY(2003, 1,   false);
-        checkConstructorDoY(2003, 365, false);
-        checkConstructorDoY(2003, 366, true);
-        checkConstructorDoY(2004, 0,   true);
-        checkConstructorDoY(2004, 1,   false);
-        checkConstructorDoY(2004, 366, false);
-        checkConstructorDoY(2004, 367, true);
+    public void testConstructorDoYYearBoundaries() {
+        Assert.assertNotNull(new DateComponents(2003, 1));
+        Assert.assertNotNull(new DateComponents(2003, 365));
+        Assert.assertNotNull(new DateComponents(2004, 1));
+        Assert.assertNotNull(new DateComponents(2004, 366));
     }
 
-    private void checkConstructorDoY(int year, int day, boolean shouldFail) {
-        try {
-            new DateComponents(year, day);
-            if (shouldFail) {
-                Assert.fail("an exception should have been thrown");
-            }
-        } catch (IllegalArgumentException iae) {
-            if (! shouldFail) {
-                Assert.fail(iae.getMessage());
-            }
-        } catch (Exception e) {
-            Assert.fail("wrong exception caught");
-        }
+    @Test(expected=IllegalArgumentException.class)
+    public void testConstructorBadDayA() {
+        new DateComponents(2003, 0);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testConstructorBadDayB() {
+        new DateComponents(2003, 366);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testConstructorBadDayC() {
+        new DateComponents(2004, 0);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testConstructorBadDayE() {
+        new DateComponents(2004, 367);
     }
 
     public void testWellFormed() {

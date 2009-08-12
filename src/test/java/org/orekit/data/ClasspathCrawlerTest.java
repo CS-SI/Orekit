@@ -28,9 +28,9 @@ import org.orekit.errors.OrekitException;
 
 public class ClasspathCrawlerTest {
 
-    @Test
-    public void testNoElement() {
-        checkFailure("inexistant-element");
+    @Test(expected=OrekitException.class)
+    public void testNoElement() throws OrekitException {
+        new ClasspathCrawler("inexistant-element").feed(new CountingLoader(".*"));
     }
 
     @Test
@@ -84,18 +84,6 @@ public class ClasspathCrawlerTest {
             Assert.assertEquals(ParseException.class, oe.getCause().getClass());
             Assert.assertEquals("dummy error", oe.getMessage());
             throw oe;
-        }
-    }
-
-    private void checkFailure(String ...list) {
-        try {
-            new ClasspathCrawler(list).feed(new CountingLoader(".*"));
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException e) {
-            // expected behavior
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail("wrong exception caught");
         }
     }
 

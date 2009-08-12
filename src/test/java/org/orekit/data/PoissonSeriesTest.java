@@ -27,13 +27,30 @@ import org.orekit.errors.OrekitException;
 
 public class PoissonSeriesTest {
 
-    @Test
-    public void testBadData() {
-        checkBadData("");
-        checkBadData("this is NOT an IERS nutation model file\n");
-        checkBadData("  0.0 + 0.0 t - 0.0 t^2 - 0.0 t^3 - 0.0 t^4 + 0.0 t^5\n");
-        checkBadData("  0.0 + 0.0 t - 0.0 t^2 - 0.0 t^3 - 0.0 t^4 + 0.0 t^5\n"
-                     + "j = 0  Nb of terms = 1\n");
+    @Test(expected=OrekitException.class)
+    public void testEmptyData() throws OrekitException {
+        buildData("");
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testNoCoeffData() throws OrekitException {
+        buildData("this is NOT an IERS nutation model file\n");
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testEmptyArrayData() throws OrekitException {
+        buildData("  0.0 + 0.0 t - 0.0 t^2 - 0.0 t^3 - 0.0 t^4 + 0.0 t^5\n");
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testMissingTermData() throws OrekitException {
+        buildData("  0.0 + 0.0 t - 0.0 t^2 - 0.0 t^3 - 0.0 t^4 + 0.0 t^5\n"
+                  + "j = 0  Nb of terms = 1\n");
+    }
+
+    private PoissonSeries buildData(String data) throws OrekitException {
+        return new PoissonSeries(new ByteArrayInputStream(data.getBytes()),
+                                 1.0, "<file-content>" + data + "</file-content>");
     }
 
     @Test(expected=OrekitException.class)
@@ -144,18 +161,6 @@ public class PoissonSeriesTest {
         InputStream gstStream =
             getClass().getResourceAsStream(directory + "tab5.4.txt");
         Assert.assertNotNull(new PoissonSeries(gstStream, 1.0, "tab5.4.txt"));
-    }
-
-    private void checkBadData(String data) {
-        try {
-            new PoissonSeries(new ByteArrayInputStream(data.getBytes()),
-                            1.0, "<file-content>" + data + "</file-content>");
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            // expected behaviour
-        } catch (Exception e) {
-            Assert.fail("wrong exception type caught");
-        }
     }
 
 }

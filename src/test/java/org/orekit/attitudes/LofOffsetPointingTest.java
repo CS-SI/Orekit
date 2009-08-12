@@ -85,22 +85,15 @@ public class LofOffsetPointingTest {
 
     } 
 
-    @Test
-    public void testMiss() {
+    @Test(expected=OrekitException.class)
+    public void testMiss() throws OrekitException {
         final CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(0.), Math.toRadians(270.),
                                    Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
                                    FramesFactory.getEME2000(), date, mu);
         final LofOffset upsideDown = new LofOffset(RotationOrder.XYX, Math.PI, 0, 0);
-        try {
-            final LofOffsetPointing pointing = new LofOffsetPointing(earthSpheric, upsideDown, Vector3D.PLUS_K);
-            pointing.getObservedGroundPoint(circ.getDate(), circ.getPVCoordinates(), circ.getFrame());
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            // expected behavior
-        } catch (Exception e) {
-            Assert.fail("wrong exception caught");
-        }
+        final LofOffsetPointing pointing = new LofOffsetPointing(earthSpheric, upsideDown, Vector3D.PLUS_K);
+        pointing.getObservedGroundPoint(circ.getDate(), circ.getPVCoordinates(), circ.getFrame());
     }
 
     @Before
