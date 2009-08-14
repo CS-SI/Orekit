@@ -20,8 +20,21 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="4.1" date="TBD"
-             description="TBD">
+    <release version="4.1" date="2009-08-17"
+             description="version 4.1 is an upgrade bringing some new features and fixing a
+             few bugs. The equinox-based frames family with IAU1980 precession-nutation
+             models that are still used by many legacy systems are now supported. This
+             simplifies interoperability with legacy systems and helps migrating from this
+             old frames family to the new CIO-based ones that is supported by orekit since its
+             first versions. The data loading mechanism used to retrieve IERS data (Earth
+             Orientation Parameters, UTC-TAI history) and JPL ephemerides is now also used
+             to retrieve gravity potential files. This mechanism has also been vastly improved
+             to support new use cases (loading from disk, from classpath, from network delegating
+             loading to an external library ...)">
+      <action dev="luc" type="update" >
+        the gravity potential files are now read using the same mechanism as the Earth
+        Orientation Parameters, the UTC-TAI history and the JPL ephemerides files
+      </action>
       <action dev="luc" type="update" >
         the RadiationSensitive and DragForce interfaces now have an
         additional SpacecraftState parameter in all their get methods.

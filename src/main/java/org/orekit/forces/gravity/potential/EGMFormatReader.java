@@ -20,10 +20,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 
@@ -39,88 +38,32 @@ import org.orekit.errors.OrekitException;
  */
 public class EGMFormatReader extends PotentialCoefficientsReader {
 
-    /** Format compatibility flag. */
-    private boolean fileIsOK;
-
-    /** The input to check and read. */
-    private InputStream input;
-
-    /** Simple constructor (the first method to call after construction is
-     * {@link #isFileOK(InputStream)}. It is done automatically by the factory).
+    /** Simple constructor.
+     * @param ficName supported files names pattern (regular expression)
      */
-    protected EGMFormatReader() {
-        input = null;
-        fileIsOK = false;
+    public EGMFormatReader(final String ficName) {
+        super(ficName);
         ae = 6378136.3;
         mu = 398600.4415e9;
     }
 
-    /** Check the file to determine if its format is understood by the reader or not.
-     * @param in the input to check
-     * @return true if it is readable, false if not.
-     * @exception IOException when the {@link InputStream} cannot be buffered.
-     */
-    public boolean isFileOK(final InputStream in) throws IOException {
-
-        this.input = in;
-        final BufferedReader r = new BufferedReader(new InputStreamReader(in));
-
-        // tests variables
-        boolean iKnow = false;
-        int lineIndex = 0;
-        int c = 1;
-
-        // set up the regular expressions
-        final String integerField = " +[0-9]+";
-        final String realField = " +[-+0-9.e.E]+";
-        final Pattern regularPattern =
-            Pattern.compile("^" + integerField + integerField +
-                            realField + realField + realField + realField + " *$");
-
-        // read the first lines to detect the format
-        for (String line = r.readLine(); !iKnow; line = r.readLine()) {
-            if (line == null) {
-                iKnow = true;
-            } else {
-                final Matcher matcher = regularPattern.matcher(line);
-                if (matcher.matches()) {
-                    lineIndex++;
-                }
-                if ((lineIndex == c) && (c > 2)) {
-                    iKnow = true;
-                    fileIsOK = true;
-                }
-                if ((lineIndex != c) && (c > 2)) {
-                    iKnow = true;
-                    fileIsOK = false;
-                }
-                c++;
-            }
-        }
-        return fileIsOK;
-    }
-
-    /** Computes the coefficients by reading the selected (and tested) file.
-     * @exception OrekitException when the file has not been initialized or checked.
-     * @exception IOException when the file is corrupted.
-     */
-    public void read() throws OrekitException, IOException {
-
-        if (input == null) {
-            throw new OrekitException("the reader has not been tested");
-        }
-        if (!fileIsOK) {
-            throw new OrekitException("the reader is not adapted to the format");
-        }
+    /** {@inheritDoc} */
+    public void loadData(InputStream input, String name)
+        throws IOException, ParseException, OrekitException {
 
         final BufferedReader r = new BufferedReader(new InputStreamReader(input));
         final List<double[]> cl = new ArrayList<double[]>();
         final List<double[]> sl = new ArrayList<double[]>();
-        for (String line = r.readLine(); line != null; line = r.readLine()) {
+        boolean okFields = true;
+        for (String line = r.readLine(); okFields && line != null; line = r.readLine()) {
             if (line.length() >= 15) {
 
                 // get the fields defining the current the potential terms
                 final String[] tab = line.trim().split("\\s+");
+                if (tab.length != 6) {
+                    okFields = false;
+                }
+
                 final int i = Integer.parseInt(tab[0]);
                 final int j = Integer.parseInt(tab[1]);
                 final double c = Double.parseDouble(tab[2]);
@@ -147,9 +90,15 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
             }
         }
 
+        if ((!okFields) || cl.size() < 1) {
+            throw new OrekitException("the reader is not adapted to the format ({0})",
+                                      name);
+        }
+
         // convert to simple triangular arrays
         normalizedC = cl.toArray(new double[cl.size()][]);
         normalizedS = sl.toArray(new double[sl.size()][]);
+        readCompleted = true;
 
     }
 

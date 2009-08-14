@@ -17,35 +17,29 @@
 package org.orekit.forces.gravity.potential;
 
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.text.ParseException;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-
 
 public class EGMFormatReaderTest {
 
     @Test
-    public void testRead() throws OrekitException, IOException {
-
-        InputStream in =
-            EGMFormatReaderTest.class.getResourceAsStream("/potential/egm-format/egm96_to5.ascii.gz");
-
-        PotentialReaderFactory factory = new PotentialReaderFactory();
-        PotentialCoefficientsReader reader = factory.getPotentialReader(in);
-
-        reader.read();
-        double[][] C = reader.getC(5, 5, true);
-        double[][] S = reader.getS(5, 5, true);
+    public void testRead() throws IOException, ParseException, OrekitException {
+        Utils.setDataRoot("potential/egm-format");
+        PotentialReaderFactory factory = new PotentialReaderFactory(null, "egm96_to5.ascii");
+        PotentialCoefficientsProvider provider = factory.getPotentialProvider();
+        double[][] C = provider.getC(5, 5, true);
+        double[][] S = provider.getS(5, 5, true);
         Assert.assertEquals(0.957254173792E-06 ,C[3][0],  0);
         Assert.assertEquals(0.174971983203E-06,C[5][5],  0);
         Assert.assertEquals(0, S[4][0],  0);
         Assert.assertEquals(0.308853169333E-06,S[4][4],  0);
 
-        double[][] UC = reader.getC(5, 5, false);
+        double[][] UC = provider.getC(5, 5, false);
         double a = (-0.295301647654E-06);
         double b = 9*8*7*6*5*4*3*2;
         double c = 2*11/b;
@@ -59,42 +53,22 @@ public class EGMFormatReaderTest {
         result = a*Math.sqrt(c);
         Assert.assertEquals(result,UC[4][4],  0);
 
-        Assert.assertEquals(1.0826266835531513e-3, reader.getJ(false, 2)[2],0);
+        Assert.assertEquals(1.0826266835531513e-3, provider.getJ(false, 2)[2],0);
 
     }
 
-    @Test
-    public void testException() throws FileNotFoundException, IOException {
+    @Test(expected=OrekitException.class)
+    public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
+        Utils.setDataRoot("potential/egm-format-corrupted");
+        PotentialReaderFactory factory = new PotentialReaderFactory(null, "fakegm1");
+        factory.getPotentialProvider();
+    }
 
-        PotentialReaderFactory factory = new PotentialReaderFactory();
-        int c = 0;
-        try {
-            InputStream in =
-                EGMFormatReaderTest.class.getResourceAsStream("/potential/egm-format-corrupted/fakegm1");
-            factory.getPotentialReader(in);
-        } catch (OrekitException e) {
-            c++;
-            // expected behaviour
-        }
-        try {
-            InputStream in =
-                EGMFormatReaderTest.class.getResourceAsStream("/potential/egm-format-corrupted/fakegm2");
-            factory.getPotentialReader(in);
-        } catch (OrekitException e) {
-            c++;
-            // expected behaviour
-        }
-
-        try {
-            PotentialCoefficientsReader reader = new SHMFormatReader();
-            reader.read();
-        } catch (OrekitException e) {
-            c++;
-            // expected behaviour
-        }
-
-        Assert.assertEquals(3 , c);
-
+    @Test(expected=OrekitException.class)
+    public void testCorruptedFile2() throws IOException, ParseException, OrekitException {
+        Utils.setDataRoot("potential/egm-format-corrupted");
+        PotentialReaderFactory factory = new PotentialReaderFactory(null, "fakegm2");
+        factory.getPotentialProvider();
     }
 
 }

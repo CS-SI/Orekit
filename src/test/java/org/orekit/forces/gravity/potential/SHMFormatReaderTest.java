@@ -17,124 +17,102 @@
 package org.orekit.forces.gravity.potential;
 
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.text.ParseException;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 
 public class SHMFormatReaderTest {
 
     @Test
-    public void testRead() throws OrekitException, IOException {
-
-        InputStream in =
-            SHMFormatReaderTest.class.getResourceAsStream("/potential/shm-format/g003_eigen-cg01c_coef");
-        PotentialReaderFactory factory = new PotentialReaderFactory();
-        PotentialCoefficientsReader reader = factory.getPotentialReader(in);
-        reader.read();
-        double[][] C = reader.getC(5, 5, true);
-        double[][] S = reader.getS(5, 5, true);
+    public void testRegular01c() throws IOException, ParseException, OrekitException {
+        Utils.setDataRoot("potential/shm-format");
+        PotentialReaderFactory factory = new PotentialReaderFactory("g003_eigen-cg01c_coef", null);
+        PotentialCoefficientsProvider provider = factory.getPotentialProvider();
+        double[][] C = provider.getC(5, 5, true);
+        double[][] S = provider.getS(5, 5, true);
 
         Assert.assertEquals(0.957187536534E-06,C[3][0],  0);
         Assert.assertEquals(0.174787189024E-06,C[5][5],  0);
         Assert.assertEquals(0, S[4][0],  0);
         Assert.assertEquals(0.308834848269E-06 ,S[4][4],  0);
-        Assert.assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
-        Assert.assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
+        Assert.assertEquals(0.3986004415E+15 ,provider.getMu(),  0);
+        Assert.assertEquals(0.6378136460E+07 ,provider.getAe(),  0);
 
-        in =
-            SHMFormatReaderTest.class.getResourceAsStream("/potential/shm-format/eigen_cg03c_coef");
-        reader = factory.getPotentialReader(in);
-        reader.read();
-        C = reader.getC(5, 5, true);;
-        S = reader.getS(5, 5, true);
+    }
+
+    @Test
+    public void testRegular03c() throws IOException, ParseException, OrekitException {
+        Utils.setDataRoot("potential/shm-format");
+        PotentialReaderFactory factory = new PotentialReaderFactory("eigen_cg03c_coef", null);
+        PotentialCoefficientsProvider provider = factory.getPotentialProvider();
+        double[][] C = provider.getC(5, 5, true);;
+        double[][] S = provider.getS(5, 5, true);
 
         Assert.assertEquals(0.957201462136E-06,C[3][0],  0);
         Assert.assertEquals(0.174786174485E-06,C[5][5],  0);
         Assert.assertEquals(0, S[4][0],  0);
         Assert.assertEquals(0.308834784975E-06 ,S[4][4],  0);
-        Assert.assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
-        Assert.assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
+        Assert.assertEquals(0.3986004415E+15 ,provider.getMu(),  0);
+        Assert.assertEquals(0.6378136460E+07 ,provider.getAe(),  0);
 
     }
 
     @Test
-    public void testReadCompressed() throws OrekitException, IOException {
-        InputStream in =
-            SHMFormatReaderTest.class.getResourceAsStream("/potential/shm-format-compressed/eigen-cg01c_coef.gz");
-        PotentialReaderFactory factory = new PotentialReaderFactory();
-        PotentialCoefficientsReader reader = factory.getPotentialReader(in);
-        reader.read();
-        double[][] C = reader.getC(5, 5, true);;
-        double[][] S = reader.getS(5, 5, true);;
+    public void testReadCompressed01c() throws IOException, ParseException, OrekitException {
+        Utils.setDataRoot("potential/shm-format-compressed");
+        PotentialReaderFactory factory = new PotentialReaderFactory("eigen-cg01c_coef", null);
+        PotentialCoefficientsProvider provider = factory.getPotentialProvider();
+        double[][] C = provider.getC(5, 5, true);;
+        double[][] S = provider.getS(5, 5, true);;
 
         Assert.assertEquals(0.957187536534E-06,C[3][0],  0);
         Assert.assertEquals(0.174787189024E-06,C[5][5],  0);
         Assert.assertEquals(0, S[4][0],  0);
         Assert.assertEquals(0.308834848269E-06 ,S[4][4],  0);
-        Assert.assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
-        Assert.assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
+        Assert.assertEquals(0.3986004415E+15 ,provider.getMu(),  0);
+        Assert.assertEquals(0.6378136460E+07 ,provider.getAe(),  0);
+    }
 
-        in =
-            SHMFormatReaderTest.class.getResourceAsStream("/potential/shm-format-compressed/eigen_cg03c_coef.gz");
-        reader = factory.getPotentialReader(in);
-        reader.read();
-        C = reader.getC(5, 5, true);;
-        S = reader.getS(5, 5, true);;
+    @Test
+    public void testReadCompressed03c() throws IOException, ParseException, OrekitException {
+        Utils.setDataRoot("potential/shm-format-compressed");
+        PotentialReaderFactory factory = new PotentialReaderFactory("eigen_cg03c_coef", null);
+        PotentialCoefficientsProvider provider = factory.getPotentialProvider();
+        double[][] C = provider.getC(5, 5, true);;
+        double[][] S = provider.getS(5, 5, true);;
 
         Assert.assertEquals(0.957201462136E-06,C[3][0],  0);
         Assert.assertEquals(0.174786174485E-06,C[5][5],  0);
         Assert.assertEquals(0, S[4][0],  0);
         Assert.assertEquals(0.308834784975E-06 ,S[4][4],  0);
-        Assert.assertEquals(0.3986004415E+15 ,reader.getMu(),  0);
-        Assert.assertEquals(0.6378136460E+07 ,reader.getAe(),  0);
+        Assert.assertEquals(0.3986004415E+15 ,provider.getMu(),  0);
+        Assert.assertEquals(0.6378136460E+07 ,provider.getAe(),  0);
 
     }
 
-    @Test
-    public void testException() throws FileNotFoundException, IOException {
+    @Test(expected=OrekitException.class)
+    public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
+        Utils.setDataRoot("potential/shm-format-corrupted");
+        PotentialReaderFactory factory = new PotentialReaderFactory("fakeeigen1", null);
+        factory.getPotentialProvider();
+    }
 
-        PotentialCoefficientsReader reader;
-        int c = 0;
-        PotentialReaderFactory factory = new PotentialReaderFactory();
-        try {
-            InputStream in =
-                SHMFormatReaderTest.class.getResourceAsStream("/potential/shm-format-corrupted/fakeeigen1");
-            reader = factory.getPotentialReader(in);
-        } catch (OrekitException e) {
-            c++;
-            // expected behaviour
-        }
-        try {
-            InputStream in =
-                SHMFormatReaderTest.class.getResourceAsStream("/potential/shm-format-corrupted/fakeeigen2");
-            reader = factory.getPotentialReader(in);
-        } catch (OrekitException e) {
-            c++;
-            // expected behaviour
-        }
-        try {
-            InputStream in =
-                SHMFormatReaderTest.class.getResourceAsStream("/potential/shm-format-corrupted/fakeeigen3");
-            reader = factory.getPotentialReader(in);
-        } catch (OrekitException e) {
-            c++;
-            // expected behaviour
-        }
+    @Test(expected=OrekitException.class)
+    public void testCorruptedFile2() throws IOException, ParseException, OrekitException {
+        Utils.setDataRoot("potential/shm-format-corrupted");
+        PotentialReaderFactory factory = new PotentialReaderFactory("fakeeigen2", null);
+        factory.getPotentialProvider();
+    }
 
-        try {
-            reader = new SHMFormatReader();
-            reader.read();
-        } catch (OrekitException e) {
-            c++;
-            // expected behaviour
-        }
-
-        Assert.assertEquals(4 , c);
-
+    @Test(expected=OrekitException.class)
+    public void testCorruptedFile3() throws IOException, ParseException, OrekitException {
+        Utils.setDataRoot("potential/shm-format-corrupted");
+        PotentialReaderFactory factory = new PotentialReaderFactory("fakeeigen3", null);
+        factory.getPotentialProvider();
     }
 
 }

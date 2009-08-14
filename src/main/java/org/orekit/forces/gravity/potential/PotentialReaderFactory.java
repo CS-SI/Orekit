@@ -16,34 +16,53 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 
-/** This pattern determines which reader to use with the selected file.
+/** Factory used to read gravity potential files in several supported formats.
  * @author Fabien Maussion
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class PotentialReaderFactory {
 
     /** Potential readers. */
-    private List<PotentialCoefficientsReader> readers;
+    private final List<PotentialCoefficientsReader> readers;
 
     /** Simple constructor.
+     * <p>
+     * This constructor uses default values for gravity potential file names
+     * regular expressions: ".*eigen.*" for SHM files and ".*egm.*" for EGM files
+     * </p>
      */
     public PotentialReaderFactory() {
         readers = new ArrayList<PotentialCoefficientsReader>();
-        readers.add(new SHMFormatReader());
-        readers.add(new EGMFormatReader());
+        readers.add(new SHMFormatReader(".*eigen.*"));
+        readers.add(new EGMFormatReader(".*egm.*"));
+    }
+
+    /** Simple constructor.
+     * @param shmficNames regular expression for SHM (Eigen) gravity potential files,
+     * if null, SHM files reader will not be set up
+     * @param egmficNames regular expression for EGM gravity potential files,
+     * if null, EGM files reader will not be set up
+     */
+    public PotentialReaderFactory(final String shmficNames, final String egmficNames) {
+        readers = new ArrayList<PotentialCoefficientsReader>();
+        if (shmficNames != null) {
+            readers.add(new SHMFormatReader(shmficNames));
+        }
+        if (egmficNames != null) {
+            readers.add(new EGMFormatReader(egmficNames));
+        }
     }
 
     /** Adds a {@link PotentialCoefficientsReader} to the test list.
-     * By construction, the list contains allready the {@link SHMFormatReader}
+     * By construction, the default list already contains the {@link SHMFormatReader}
      * and the {@link EGMFormatReader}.
      * @param reader the reader to add
      */
@@ -51,46 +70,25 @@ public class PotentialReaderFactory {
         readers.add(reader);
     }
 
-    /** Determines the proper reader to use wich the selected file.
-     * It tests all the readers it contains to see if they match the input format.
-     * @param in the file to check (it can be compressed)
-     * @return the proper reader
-     * @exception OrekitException when no known reader can read the file
-     * @exception IOException when the {@link InputStream} is not valid.
+    /** Get the gravity potential coefficients provider from the first supported file.
+     * @return a gravity potential coefficients provider containing already loaded data
+     * @exception IOException if data can't be read
+     * @exception ParseException if data can't be parsed
+     * @exception OrekitException if some data is missing
+     * or if some loader specific error occurs
      */
-    public PotentialCoefficientsReader getPotentialReader(final InputStream in)
-        throws OrekitException, IOException {
-
-        BufferedInputStream filter = new BufferedInputStream(in);
-        filter.mark(1024 * 1024);
-
-        boolean isCompressed = false;
-        try {
-            isCompressed = new GZIPInputStream(filter).read() != -1;
-        } catch (IOException e) {
-            isCompressed = false;
-        }
-        filter.reset();
-
-        if (isCompressed) {
-            filter = new BufferedInputStream(new GZIPInputStream(filter));
-        }
-        filter.mark(1024 * 1024);
-        PotentialCoefficientsReader result = null;
+    public PotentialCoefficientsProvider getPotentialProvider()
+        throws IOException, ParseException, OrekitException {
 
         // test the available readers
-        for (final PotentialCoefficientsReader test : readers) {
-            if (test.isFileOK(filter)) {
-                result = test;
+        for (final PotentialCoefficientsReader reader : readers) {
+            DataProvidersManager.getInstance().feed(reader);
+            if (reader.isReadCompleted()) {
+                return reader;
             }
-            filter.reset();
         }
 
-        if (result == null) {
-            throw new OrekitException("Unknown file format ");
-        }
-
-        return result;
+        throw new OrekitException("no gravity potential data loaded");
 
     }
 

@@ -18,7 +18,10 @@ package org.orekit.forces.gravity.potential;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
+import java.util.regex.Pattern;
 
+import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
 
 /**This abstract class represents a Gravitational Potential Coefficients file reader.
@@ -33,7 +36,8 @@ import org.orekit.errors.OrekitException;
  * @author Fabien Maussion
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public abstract class PotentialCoefficientsReader {
+public abstract class PotentialCoefficientsReader
+    implements DataLoader, PotentialCoefficientsProvider {
 
     /** Error message for too large degree. */
     private static final String TOO_LARGE_DEGREE =
@@ -43,7 +47,13 @@ public abstract class PotentialCoefficientsReader {
     private static final String TOO_LARGE_ORDER =
         "too large order (m = {0}, potential maximal order is {1})";
 
+    /** Supported files name pattern. */
+    private final Pattern namePattern;
+
     // CHECKSTYLE: stop VisibilityModifierCheck
+
+    /** Indicator for completed read. */
+    protected boolean readCompleted;
 
     /** Central body reference radius. */
     protected double ae;
@@ -73,8 +83,13 @@ public abstract class PotentialCoefficientsReader {
 
     /** Simple constructor.
      * <p>Build an uninitialized reader.</p>
+     * @param ficName supported files names pattern (regular expression)
      */
-    protected PotentialCoefficientsReader() {
+    protected PotentialCoefficientsReader(final String ficName) {
+        namePattern = Pattern.compile(ficName);
+        readCompleted = false;
+        ae = Double.NaN;
+        mu = Double.NaN;
         normalizedJ = null;
         normalizedC = null;
         normalizedS = null;
@@ -83,26 +98,30 @@ public abstract class PotentialCoefficientsReader {
         unNormalizedS = null;
     }
 
-    /** Check the file to determine if its format is understood by the reader or not.
-     * @param in the input to check
-     * @return true if it is readable, false if not.
-     * @exception IOException when the {@link InputStream} cannot be buffered.
+    /** Check if at least one read has completed.
+     * @return true if at least one read has completed
      */
-    public abstract boolean isFileOK(InputStream in) throws IOException;
+    public boolean isReadCompleted() {
+        return readCompleted;
+    }
 
-    /** Computes the coefficients by reading the selected (and tested) file.
-     * @exception OrekitException when the file has not been initialized or checked.
-     * @exception IOException when the file is corrupted.
+    /** {@inheritDoc}
+     * <p>
+     * Once a first potential file has been read, this function will always
+     * return false to avoid searching and loading other files. This implies
+     * that the potential coefficients used will come from the first encountered
+     * file.
+     * </p>
      */
-    public abstract void read() throws OrekitException, IOException;
+    public boolean fileIsSupported(String name) {
+        return (! readCompleted) && namePattern.matcher(name).matches();
+    }
 
-    /** Get the zonal coefficients.
-     * @param normalized (true) or un-normalized (false)
-     * @param n the maximal degree requested
-     * @return J the zonal coefficients array.
-     * @exception OrekitException if the requested maximal degree exceeds the
-     * available degree
-     */
+    /** {@inheritDoc} */
+    public abstract void loadData(InputStream input, String name)
+        throws IOException, ParseException, OrekitException;
+
+    /** {@inheritDoc} */
     public double[] getJ(final boolean normalized, final int n)
         throws OrekitException {
         if (n >= normalizedC.length) {
@@ -119,30 +138,26 @@ public abstract class PotentialCoefficientsReader {
 
     }
 
-    /** Get the tesseral-sectorial and zonal coefficients.
-     * @param n the degree
-     * @param m the order
-     * @param normalized (true) or un-normalized (false)
-     * @return the cosines coefficients matrix
-     * @exception OrekitException if the requested maximal degree or order exceeds the
-     * available degree or order
-     */
+    /** {@inheritDoc} */
     public double[][] getC(final int n, final int m, final boolean normalized)
         throws OrekitException {
         return truncateArray(n, m, normalized ? getNormalizedC() : getUnNormalizedC());
     }
 
-    /** Get tesseral-sectorial coefficients.
-     * @param n the degree
-     * @param m the order
-     * @param normalized (true) or un-normalized (false)
-     * @return the sines coefficients matrix
-     * @exception OrekitException if the requested maximal degree or order exceeds the
-     * available degree or order
-     */
+    /** {@inheritDoc} */
     public double[][] getS(final int n, final int m, final boolean normalized)
         throws OrekitException {
         return truncateArray(n, m, normalized ? getNormalizedS() : getUnNormalizedS());
+    }
+
+    /** {@inheritDoc} */
+    public double getMu() {
+        return mu;
+    }
+
+    /** {@inheritDoc} */
+    public double getAe() {
+        return ae;
     }
 
     /** Get the tesseral-sectorial and zonal coefficients.
@@ -176,9 +191,7 @@ public abstract class PotentialCoefficientsReader {
 
     }
 
-    /** Get the fully normalized zonal coefficients.
-     * @return J the zonal coefficients array.
-     */
+    /** {@inheritDoc} */
     private double[] getNormalizedJ() {
         if (normalizedJ == null) {
             normalizedJ = new double[normalizedC.length];
@@ -275,20 +288,6 @@ public abstract class PotentialCoefficientsReader {
 
         return unNormalized;
 
-    }
-
-    /** Get the central body attraction coefficient.
-     * @return mu (m<sup>3</sup>/s<sup>2</sup>)
-     */
-    public double getMu() {
-        return mu;
-    }
-
-    /** Get the value of the central body reference radius.
-     * @return ae (m)
-     */
-    public double getAe() {
-        return ae;
     }
 
 }

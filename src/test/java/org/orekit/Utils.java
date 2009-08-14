@@ -53,8 +53,15 @@ public class Utils {
         Utils.clearFactory(TimeScalesFactory.class, TimeScale.class);
         Utils.clearJPLEphemeridesConstants();
         DataProvidersManager.getInstance().clearProviders();
-        String rootPath = Utils.class.getClassLoader().getResource(root).getPath();
-        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, rootPath);
+        StringBuffer buffer = new StringBuffer();
+        for (String component : root.split(":")) {
+            String componentPath = Utils.class.getClassLoader().getResource(component).getPath();
+            if (buffer.length() > 0) {
+                buffer.append(System.getProperty("path.separator"));
+            }
+            buffer.append(componentPath);
+        }
+        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, buffer.toString());
     }
 
     private static void clearFactory(Class<?> factoryClass, Class<?> cachedFieldsClass) {
