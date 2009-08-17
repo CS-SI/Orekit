@@ -43,12 +43,12 @@ import org.orekit.errors.OrekitException;
  * </p>
  *
  * <p>
- * If the list of providers is empty when attempting to {@link #feed(DataLoader)
+ * If the list of providers is empty when attempting to {@link #feed(String, DataLoader)
  * feed} a file loader, the {@link #addDefaultProviders()} method is called
  * automatically to set up a default configuration. This default configuration
  * contains one {@link DataProvider data provider} for each component of the
  * path-like list specified by the java property <code>orekit.data.path</code>.
- * See the {@link #feed(DataLoader) feed} method documentation for further
+ * See the {@link #feed(String, DataLoader) feed} method documentation for further
  * details. The default providers configuration is <em>not</em> set up if the list
  * is not empty. If users want to have both the default providers and additional
  * providers, they must call explicitly the {@link #addDefaultProviders()} method.
