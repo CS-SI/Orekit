@@ -20,7 +20,7 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="4.1" date="2009-08-17"
+    <release version="4.1" date="2009-08-18"
              description="version 4.1 is an upgrade bringing some new features and fixing a
              few bugs. The equinox-based frames family with IAU1980 precession-nutation
              models that are still used by many legacy systems are now supported. This
@@ -30,7 +30,9 @@
              Orientation Parameters, UTC-TAI history) and JPL ephemerides is now also used
              to retrieve gravity potential files. This mechanism has also been vastly improved
              to support new use cases (loading from disk, from classpath, from network delegating
-             loading to an external library ...)">
+             loading to an external library ...). Another change is the addition of the TDB
+             time scale. Some minor incompatibilities have been introduced but they are easy
+             to solve for users, the explanations are provided in detailed changes report.">
       <action dev="aude" type="add" >
         added TDB time scale
       </action>
