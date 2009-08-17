@@ -33,9 +33,6 @@ public class TCGScale implements TimeScale {
     /** LG rate. */
     private static double LG_RATE = 6.969290134e-10;
 
-    /** Inverse rate. */
-    private static double INVERSE_RATE = 1.0 / (1.0 + LG_RATE);
-
     /** Reference date for TCG.
      * <p>The reference date is such that the three following instants are equal:</p>
      * <ul>
@@ -72,8 +69,12 @@ public class TCGScale implements TimeScale {
 
     /** {@inheritDoc} */
     public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        final double dt = (date.getJ2000Day() + 8400) * 86400.0 + time.getSecondsInDay();
-        return -TT_OFFSET - LG_RATE * INVERSE_RATE * (dt - TT_OFFSET);
+    	final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
+    	double offset = 0;
+        for (int i = 0; i < 3; i++){
+            offset = -offsetFromTAI(new AbsoluteDate(reference, offset));
+        }
+        return offset;
     }
 
     /** {@inheritDoc} */
