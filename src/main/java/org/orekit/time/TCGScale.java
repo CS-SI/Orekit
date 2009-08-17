@@ -69,9 +69,9 @@ public class TCGScale implements TimeScale {
 
     /** {@inheritDoc} */
     public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-    	final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
-    	double offset = 0;
-        for (int i = 0; i < 3; i++){
+        final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
+        double offset = 0;
+        for (int i = 0; i < 3; i++) {
             offset = -offsetFromTAI(new AbsoluteDate(reference, offset));
         }
         return offset;

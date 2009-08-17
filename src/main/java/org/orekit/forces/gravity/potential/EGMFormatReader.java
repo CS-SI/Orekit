@@ -48,7 +48,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
     }
 
     /** {@inheritDoc} */
-    public void loadData(InputStream input, String name)
+    public void loadData(final InputStream input, final String name)
         throws IOException, ParseException, OrekitException {
 
         final BufferedReader r = new BufferedReader(new InputStreamReader(input));

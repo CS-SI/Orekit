@@ -46,7 +46,7 @@ public class TimeScalesFactory implements Serializable {
 
     /** Geocentric Coordinate Time scale. */
     private static TCGScale tcg = null;
-    
+
     /** Barycentric Dynamic Coordinate Time scale. */
     private static TDBScale tdb = null;
 

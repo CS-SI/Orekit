@@ -1,5 +1,5 @@
 /* Copyright 2002-2008 CS Communication & SystÃ¨mes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+ * Licensed to CS Communication & Systï¿½mes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,9 +20,9 @@ package org.orekit.time;
  * <p>Time used to take account of time dilation when calculating orbits of planets,
  * asteroids, comets and interplanetary spacecraft in the Solar system. It was based
  * on a Dynamical time scale but was not well defined and not rigorously correct as
- * a relativistic time scale. It was subsequently deprecated in favour of 
- * Barycentric Coordinate Time (TCB), but at the 2006 General Assembly of the 
- * International Astronomical Union TDB was rehabilitated by making it a specific 
+ * a relativistic time scale. It was subsequently deprecated in favour of
+ * Barycentric Coordinate Time (TCB), but at the 2006 General Assembly of the
+ * International Astronomical Union TDB was rehabilitated by making it a specific
  * fixed linear transformation of TCB.</p>
  * <p>By convention, TDB = TT + 0.001658 sin(g) + 0.000014 sin(2g)seconds
  * where g = 357.53 + 0.9856003 (JD - 2451545) degrees.</p>
@@ -32,28 +32,27 @@ package org.orekit.time;
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class TDBScale implements TimeScale {
+
     /** Serializable UID. */
-    private static final long serialVersionUID = -1586357980576711360L;
-    
+    private static final long serialVersionUID = -4138483908215161856L;
 
     /** Package private constructor for the factory.
      */
     TDBScale() {
     }
 
-
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate date) {
-    	final double dtDays = date.durationFrom(AbsoluteDate.J2000_EPOCH) / 86400;
-        final double g = Math.toRadians(357.53 + 0.9856003 * dtDays);
-        return TimeScalesFactory.getTT().offsetFromTAI(date) + (0.001658 * Math.sin(g) + 0.000014 * Math.sin(2 * g));
+        final double dtDays = date.durationFrom(AbsoluteDate.J2000_EPOCH) / 86400;
+    	final double g = Math.toRadians(357.53 + 0.9856003 * dtDays);
+    	return TimeScalesFactory.getTT().offsetFromTAI(date) + (0.001658 * Math.sin(g) + 0.000014 * Math.sin(2 * g));
     }
 
     /** {@inheritDoc} */
     public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-    	final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
-    	double offset = 0;
-        for (int i = 0; i < 3; i++){
+        final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
+        double offset = 0;
+        for (int i = 0; i < 3; i++) {
             offset = -offsetFromTAI(new AbsoluteDate(reference, offset));
         }
         return offset;

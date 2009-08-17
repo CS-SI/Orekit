@@ -121,18 +121,18 @@ public class DirectoryCrawler implements DataProvider {
                         final String baseName =
                             gzipMatcher.matches() ? gzipMatcher.group(1) : list[i].getName();
 
-                            if (supported.matcher(baseName).matches()) {
+                        if (supported.matcher(baseName).matches()) {
 
-                                // visit the current file
-                                InputStream input = new FileInputStream(list[i]);
-                                if (gzipMatcher.matches()) {
-                                    input = new GZIPInputStream(input);
-                                }
-                                visitor.loadData(input, list[i].getName());
-                                input.close();
-                                loaded = true;
-
+                            // visit the current file
+                            InputStream input = new FileInputStream(list[i]);
+                            if (gzipMatcher.matches()) {
+                                input = new GZIPInputStream(input);
                             }
+                            visitor.loadData(input, list[i].getName());
+                            input.close();
+                            loaded = true;
+
+                        }
 
                     }
                 }

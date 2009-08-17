@@ -57,7 +57,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
     }
 
     /** {@inheritDoc} */
-    public void loadData(InputStream input, String name)
+    public void loadData(final InputStream input, final String name)
         throws IOException, ParseException, OrekitException {
 
         final BufferedReader r = new BufferedReader(new InputStreamReader(input));
@@ -65,8 +65,8 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
         boolean okSHM    = false;
         boolean okCoeffs = false;
         String line = r.readLine();
-        if (("FIRST ".equals(line.substring(0, 6)) &&
-                "SHM    ".equals(line.substring(49, 56)))) {
+        if ("FIRST ".equals(line.substring(0, 6)) &&
+            "SHM    ".equals(line.substring(49, 56))) {
             for (line = r.readLine(); line != null; line = r.readLine()) {
                 if (line.length() >= 6) {
                     final String[] tab = line.split("\\s+");

@@ -75,6 +75,6 @@ public interface DataProvider extends Serializable {
      * (read error ...)
      */
     boolean feed(final Pattern supported, final DataLoader visitor)
-       throws OrekitException;
+        throws OrekitException;
 
 }

@@ -51,6 +51,15 @@ public abstract class PotentialCoefficientsReader
 
     // CHECKSTYLE: stop VisibilityModifierCheck
 
+    /** un-normalized zonal coefficients array. */
+    private double[] unNormalizedJ;
+
+    /** un-normalized tesseral-sectorial coefficients matrix. */
+    private double[][] unNormalizedC;
+
+    /** un-normalized tesseral-sectorial coefficients matrix. */
+    private double[][] unNormalizedS;
+
     /** Indicator for completed read. */
     protected boolean readCompleted;
 
@@ -68,15 +77,6 @@ public abstract class PotentialCoefficientsReader
 
     /** fully normalized tesseral-sectorial coefficients matrix. */
     protected double[][] normalizedS;
-
-    /** un-normalized zonal coefficients array. */
-    private double[] unNormalizedJ;
-
-    /** un-normalized tesseral-sectorial coefficients matrix. */
-    private double[][] unNormalizedC;
-
-    /** un-normalized tesseral-sectorial coefficients matrix. */
-    private double[][] unNormalizedS;
 
     // CHECKSTYLE: resume VisibilityModifierCheck
 
@@ -183,7 +183,9 @@ public abstract class PotentialCoefficientsReader
 
     }
 
-    /** {@inheritDoc} */
+    /** Get the fully normalized zonal coefficients.
+     * @return J the coefficients matrix
+     */
     private double[] getNormalizedJ() {
         if (normalizedJ == null) {
             normalizedJ = new double[normalizedC.length];
