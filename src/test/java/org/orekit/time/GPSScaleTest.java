@@ -28,8 +28,10 @@ public class GPSScaleTest {
 
     @Test
     public void testT0() {
+        TimeScale scale = TimeScalesFactory.getGPS();
+        Assert.assertEquals("GPS", scale.toString());
         AbsoluteDate t0 =
-            new AbsoluteDate(new DateComponents(1980, 1, 6), TimeComponents.H00, TimeScalesFactory.getGPS());
+            new AbsoluteDate(new DateComponents(1980, 1, 6), TimeComponents.H00, scale);
         Assert.assertEquals(AbsoluteDate.GPS_EPOCH, t0);
     }
 
