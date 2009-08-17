@@ -22,6 +22,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.orekit.errors.OrekitException;
@@ -58,7 +59,7 @@ import org.orekit.errors.OrekitException;
 public class ClasspathCrawler implements DataProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 1168697463694338913L;
+    private static final long serialVersionUID = -3939904780908615752L;
 
     /** List elements. */
     private final List<String> listElements;
@@ -95,7 +96,8 @@ public class ClasspathCrawler implements DataProvider {
     }
 
     /** {@inheritDoc} */
-    public boolean feed(final DataLoader visitor) throws OrekitException {
+    public boolean feed(final Pattern supported, final DataLoader visitor)
+        throws OrekitException {
 
         try {
             OrekitException delayedException = null;
@@ -103,35 +105,37 @@ public class ClasspathCrawler implements DataProvider {
             for (String name : listElements) {
                 try {
 
-                    if (ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
+                    if (visitor.stillAcceptsData()) {
+                        if (ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
 
-                        // browse inside the zip/jar file
-                        new ZipJarCrawler(name).feed(visitor);
-                        loaded = true;
-
-                    } else {
-
-                        // remove suffix from gzip files
-                        final Matcher gzipMatcher = GZIP_FILE_PATTERN.matcher(name);
-                        final String baseName = gzipMatcher.matches() ? gzipMatcher.group(1) : name;
-
-                        if (visitor.fileIsSupported(baseName)) {
-
-                            final InputStream stream =
-                                ClasspathCrawler.class.getClassLoader().getResourceAsStream(name);
-
-                            // visit the current file
-                            if (gzipMatcher.matches()) {
-                                visitor.loadData(new GZIPInputStream(stream), name);
-                            } else {
-                                visitor.loadData(stream, name);
-                            }
-
-                            stream.close();
+                            // browse inside the zip/jar file
+                            new ZipJarCrawler(name).feed(supported, visitor);
                             loaded = true;
 
-                        }
+                        } else {
 
+                            // remove suffix from gzip files
+                            final Matcher gzipMatcher = GZIP_FILE_PATTERN.matcher(name);
+                            final String baseName = gzipMatcher.matches() ? gzipMatcher.group(1) : name;
+
+                            if (supported.matcher(baseName).matches()) {
+
+                                final InputStream stream =
+                                    ClasspathCrawler.class.getClassLoader().getResourceAsStream(name);
+
+                                // visit the current file
+                                if (gzipMatcher.matches()) {
+                                    visitor.loadData(new GZIPInputStream(stream), name);
+                                } else {
+                                    visitor.loadData(stream, name);
+                                }
+
+                                stream.close();
+                                loaded = true;
+
+                            }
+
+                        }
                     }
 
                 } catch (OrekitException oe) {

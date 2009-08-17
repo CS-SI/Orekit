@@ -82,8 +82,8 @@ public class PotentialReaderFactory {
 
         // test the available readers
         for (final PotentialCoefficientsReader reader : readers) {
-            DataProvidersManager.getInstance().feed(reader);
-            if (reader.isReadCompleted()) {
+            DataProvidersManager.getInstance().feed(reader.getSupportedNames(), reader);
+            if (!reader.stillAcceptsData()) {
                 return reader;
             }
         }

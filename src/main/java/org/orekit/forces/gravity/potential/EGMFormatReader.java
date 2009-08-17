@@ -39,10 +39,10 @@ import org.orekit.errors.OrekitException;
 public class EGMFormatReader extends PotentialCoefficientsReader {
 
     /** Simple constructor.
-     * @param ficName supported files names pattern (regular expression)
+     * @param supportedNames regular expression for supported files names
      */
-    public EGMFormatReader(final String ficName) {
-        super(ficName);
+    public EGMFormatReader(final String supportedNames) {
+        super(supportedNames);
         ae = 6378136.3;
         mu = 398600.4415e9;
     }

@@ -29,11 +29,18 @@ import org.orekit.errors.OrekitException;
  */
 public interface DataLoader {
 
-    /** Check if a file is supported.
-     * @param fileName file to check
-     * @return true if file name correspond to a supported file
+    /** Check if the loader still accepts new data.
+     * <p>
+     * This method is used to speed up data loading by interrupting crawling
+     * the data sets as soon as a loader has found the data it was waiting for.
+     * For loaders that can merge data from any number of sources (for example
+     * JPL ephemerides or Earth Orientation Parameters that are split among
+     * several files), this method should always return true to make sure no
+     * data is left over.
+     * </p>
+     * @return true while the loader still accepts new data
      */
-    boolean fileIsSupported(final String fileName);
+    boolean stillAcceptsData();
 
     /** Load data from a stream.
      * @param input data input stream

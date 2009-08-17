@@ -31,10 +31,10 @@ public class DataProvidersManagerTest {
     @Test
     public void testDefaultConfiguration() throws OrekitException {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("regular-data"));
-        CountingLoader crawler = new CountingLoader(".*", false);
+        CountingLoader crawler = new CountingLoader(false);
         DataProvidersManager.getInstance().clearProviders();
         Assert.assertFalse(DataProvidersManager.getInstance().isSupported(DirectoryCrawler.class));
-        Assert.assertTrue(DataProvidersManager.getInstance().feed(crawler));
+        Assert.assertTrue(DataProvidersManager.getInstance().feed(".*", crawler));
         Assert.assertEquals(14, crawler.getCount());
     }
 
@@ -42,9 +42,9 @@ public class DataProvidersManagerTest {
     public void testLoadFailure() {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("regular-data"));
         DataProvidersManager.getInstance().clearProviders();
-        CountingLoader crawler = new CountingLoader(".*", true);
+        CountingLoader crawler = new CountingLoader(true);
         try {
-            DataProvidersManager.getInstance().feed(crawler);
+            DataProvidersManager.getInstance().feed(".*", crawler);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected
@@ -55,9 +55,9 @@ public class DataProvidersManagerTest {
     @Test
     public void testEmptyProperty() throws OrekitException {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, "");
-        CountingLoader crawler = new CountingLoader(".*", false);
+        CountingLoader crawler = new CountingLoader(false);
         DataProvidersManager.getInstance().clearProviders();
-        DataProvidersManager.getInstance().feed(crawler);
+        DataProvidersManager.getInstance().feed(".*", crawler);
         Assert.assertEquals(0, crawler.getCount());
     }
 
@@ -65,36 +65,36 @@ public class DataProvidersManagerTest {
     public void testInexistentDirectory() throws OrekitException {
         File inexistent = new File(getPath("regular-data"), "inexistent");
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, inexistent.getAbsolutePath());
-        CountingLoader crawler = new CountingLoader(".*", false);
+        CountingLoader crawler = new CountingLoader(false);
         DataProvidersManager.getInstance().clearProviders();
-        DataProvidersManager.getInstance().feed(crawler);
+        DataProvidersManager.getInstance().feed(".*", crawler);
     }
 
     @Test(expected=OrekitException.class)
     public void testInexistentZipArchive() throws OrekitException {
         File inexistent = new File(getPath("regular-data"), "inexistent.zip");
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, inexistent.getAbsolutePath());
-        CountingLoader crawler = new CountingLoader(".*", false);
+        CountingLoader crawler = new CountingLoader(false);
         DataProvidersManager.getInstance().clearProviders();
-        DataProvidersManager.getInstance().feed(crawler);
+        DataProvidersManager.getInstance().feed(".*", crawler);
     }
 
     @Test(expected=OrekitException.class)
     public void testNeitherDirectoryNorZip() throws OrekitException {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("regular-data/UTC-TAI.history"));
-        CountingLoader crawler = new CountingLoader(".*", false);
+        CountingLoader crawler = new CountingLoader(false);
         DataProvidersManager.getInstance().clearProviders();
-        DataProvidersManager.getInstance().feed(crawler);
+        DataProvidersManager.getInstance().feed(".*", crawler);
     }
 
     @Test
     public void testListModification() throws OrekitException {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("regular-data"));
-        CountingLoader crawler = new CountingLoader(".*", false);
+        CountingLoader crawler = new CountingLoader(false);
         DataProvidersManager manager = DataProvidersManager.getInstance();
         manager.clearProviders();
         Assert.assertFalse(manager.isSupported(DirectoryCrawler.class));
-        Assert.assertTrue(manager.feed(crawler));
+        Assert.assertTrue(manager.feed(".*", crawler));
         Assert.assertTrue(crawler.getCount() > 0);
         Assert.assertTrue(manager.isSupported(DirectoryCrawler.class));
         Assert.assertFalse(manager.isSupported(ClasspathCrawler.class));
@@ -103,7 +103,7 @@ public class DataProvidersManagerTest {
         Assert.assertEquals(0, manager.getProviders().size());
         DataProvider provider = new DataProvider() {
             private static final long serialVersionUID = -5312255682914297696L;
-            public boolean feed(DataLoader visitor) throws OrekitException {
+            public boolean feed(Pattern supported, DataLoader visitor) throws OrekitException {
                 return true;
             }
         };
@@ -115,7 +115,7 @@ public class DataProvidersManagerTest {
         Assert.assertEquals(1, manager.getProviders().size());
         Assert.assertNull(manager.removeProvider(new DataProvider() {
             private static final long serialVersionUID = 6368246625696570910L;
-            public boolean feed(DataLoader visitor) throws OrekitException {
+            public boolean feed(Pattern supported, DataLoader visitor) throws OrekitException {
                 throw new OrekitException("oops!");
             }
         }.getClass()));
@@ -134,16 +134,16 @@ public class DataProvidersManagerTest {
                            dir1 + sep + sep + sep + sep + dir2);
         DataProvidersManager.getInstance().clearProviders();
 
-        CountingLoader crawler = new CountingLoader(".*\\.405$", false);
-        Assert.assertTrue(DataProvidersManager.getInstance().feed(crawler));
+        CountingLoader crawler = new CountingLoader(false);
+        Assert.assertTrue(DataProvidersManager.getInstance().feed(".*\\.405$", crawler));
         Assert.assertEquals(4, crawler.getCount());
 
-        crawler = new CountingLoader(".*\\.txt$", false);
-        Assert.assertTrue(DataProvidersManager.getInstance().feed(crawler));
+        crawler = new CountingLoader(false);
+        Assert.assertTrue(DataProvidersManager.getInstance().feed(".*\\.txt$", crawler));
         Assert.assertEquals(1, crawler.getCount());
 
-        crawler = new CountingLoader("bulletinb_.*\\.txt$", false);
-        Assert.assertTrue(DataProvidersManager.getInstance().feed(crawler));
+        crawler = new CountingLoader(false);
+        Assert.assertTrue(DataProvidersManager.getInstance().feed("bulletinb_.*\\.txt$", crawler));
         Assert.assertEquals(2, crawler.getCount());
 
     }
@@ -151,20 +151,21 @@ public class DataProvidersManagerTest {
     @Test
     public void testMultiZip() throws OrekitException {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("zipped-data/multizip.zip"));
-        CountingLoader crawler = new CountingLoader(".*\\.txt$", false);
+        CountingLoader crawler = new CountingLoader(false);
         DataProvidersManager.getInstance().clearProviders();
-        Assert.assertTrue(DataProvidersManager.getInstance().feed(crawler));
+        Assert.assertTrue(DataProvidersManager.getInstance().feed(".*\\.txt$", crawler));
         Assert.assertEquals(6, crawler.getCount());
     }
 
     private static class CountingLoader implements DataLoader {
-        private Pattern pattern;
         private boolean shouldFail;
         private int count;
-        public CountingLoader(String pattern, boolean shouldFail) {
-            this.pattern = Pattern.compile(pattern);
+        public CountingLoader(boolean shouldFail) {
             this.shouldFail = shouldFail;
             count = 0;
+        }
+        public boolean stillAcceptsData() {
+            return true;
         }
         public void loadData(InputStream input, String name)
             throws OrekitException {
@@ -175,9 +176,6 @@ public class DataProvidersManagerTest {
         }
         public int getCount() {
             return count;
-        }
-        public boolean fileIsSupported(String fileName) {
-            return pattern.matcher(fileName).matches();
         }
     }
 

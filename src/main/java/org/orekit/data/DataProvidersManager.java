@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 
@@ -242,13 +243,16 @@ public class DataProvidersManager implements Serializable {
      * stopped. If no provider is able to feed the data loader, then the last error
      * triggered is thrown.
      * </p>
-     * @param visitor data file visitor to use
+     * @param supportedNames regular expression for file names supported by the visitor
+     * @param loader data loader to use
      * @return true if some data has been loaded
      * @exception OrekitException if the data loader cannot be fed (read error ...)
      * or if the default configuration cannot be set up
      */
-    public boolean feed(final DataLoader visitor)
+    public boolean feed(final String supportedNames, final DataLoader loader)
         throws OrekitException {
+
+        final Pattern supported = Pattern.compile(supportedNames);
 
         // set up a default configuration if no providers have been set
         if (providers.isEmpty()) {
@@ -261,7 +265,7 @@ public class DataProvidersManager implements Serializable {
             try {
 
                 // try to feed the visitor using the current provider
-                if (provider.feed(visitor)) {
+                if (provider.feed(supported, loader)) {
                     return true;
                 }
 

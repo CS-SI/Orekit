@@ -30,8 +30,8 @@ public class ZipJarCrawlerTest {
 
     @Test
     public void testMultiZipClasspath() throws OrekitException {
-        CountingLoader crawler = new CountingLoader(".*\\.txt$");
-        new ZipJarCrawler("zipped-data/multizip.zip").feed(crawler);
+        CountingLoader crawler = new CountingLoader();
+        new ZipJarCrawler("zipped-data/multizip.zip").feed(Pattern.compile(".*\\.txt$"), crawler);
         Assert.assertEquals(6, crawler.getCount());
     }
 
@@ -39,26 +39,21 @@ public class ZipJarCrawlerTest {
     public void testMultiZip() throws OrekitException {
         URL url =
             ZipJarCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
-        CountingLoader crawler = new CountingLoader(".*\\.txt$");
-        new ZipJarCrawler(new File(url.getPath())).feed(crawler);
+        CountingLoader crawler = new CountingLoader();
+        new ZipJarCrawler(new File(url.getPath())).feed(Pattern.compile(".*\\.txt$"), crawler);
         Assert.assertEquals(6, crawler.getCount());
     }
 
     private static class CountingLoader implements DataLoader {
-        private Pattern namePattern;
-        private int count;
-        public CountingLoader(String pattern) {
-            namePattern = Pattern.compile(pattern);
-            count = 0;
+        private int count = 0;
+        public boolean stillAcceptsData() {
+            return true;
         }
         public void loadData(InputStream input, String name) {
             ++count;
         }
         public int getCount() {
             return count;
-        }
-        public boolean fileIsSupported(String fileName) {
-            return namePattern.matcher(fileName).matches();
         }
     }
 

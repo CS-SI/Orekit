@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -57,7 +58,7 @@ import org.orekit.errors.OrekitException;
 public class ZipJarCrawler implements DataProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 2707860822289475526L;
+    private static final long serialVersionUID = -6907774815393561820L;
 
     /** Zip archive on the filesystem. */
     private final File file;
@@ -96,7 +97,7 @@ public class ZipJarCrawler implements DataProvider {
     }
 
     /** {@inheritDoc} */
-    public boolean feed(final DataLoader visitor)
+    public boolean feed(final Pattern supported, final DataLoader visitor)
         throws OrekitException {
 
         try {
@@ -113,7 +114,7 @@ public class ZipJarCrawler implements DataProvider {
 
             // add the zip format analysis layer and browse the archive
             final ZipInputStream zip = new ZipInputStream(rawStream);
-            final boolean loaded = feed(visitor, zip);
+            final boolean loaded = feed(supported, visitor, zip);
             zip.close();
 
             return loaded;
@@ -127,6 +128,7 @@ public class ZipJarCrawler implements DataProvider {
     }
 
     /** Feed a data file loader by browsing the entries in a zip/jar.
+     * @param supported pattern for file names supported by the visitor
      * @param visitor data file visitor to use
      * @param zip zip/jar input stream
      * @exception OrekitException if some data is missing, duplicated
@@ -135,7 +137,7 @@ public class ZipJarCrawler implements DataProvider {
      * @exception IOException if data cannot be read
      * @exception ParseException if data cannot be read
      */
-    private boolean feed(final DataLoader visitor, final ZipInputStream zip)
+    private boolean feed(final Pattern supported, final DataLoader visitor, final ZipInputStream zip)
         throws OrekitException, IOException, ParseException {
 
         OrekitException delayedException = null;
@@ -147,12 +149,12 @@ public class ZipJarCrawler implements DataProvider {
 
             try {
 
-                if (!entry.isDirectory()) {
+                if (visitor.stillAcceptsData() && !entry.isDirectory()) {
 
                     if (ZIP_ARCHIVE_PATTERN.matcher(entry.getName()).matches()) {
 
                         // recurse inside the archive entry
-                        loaded = feed(visitor, new ZipInputStream(zip)) || loaded;
+                        loaded = feed(supported, visitor, new ZipInputStream(zip)) || loaded;
 
                     } else {
 
@@ -167,7 +169,7 @@ public class ZipJarCrawler implements DataProvider {
                         final Matcher gzipMatcher = GZIP_FILE_PATTERN.matcher(entryName);
                         final String baseName = gzipMatcher.matches() ? gzipMatcher.group(1) : entryName;
 
-                        if (visitor.fileIsSupported(baseName)) {
+                        if (supported.matcher(baseName).matches()) {
 
                             // visit the current entry
                             final InputStream stream =

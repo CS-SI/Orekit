@@ -102,23 +102,21 @@ class EOP05C04FilesLoader implements DataLoader {
     private static final Pattern LINE_PATTERN =
         Pattern.compile("^\\d+ +\\d+ +\\d+ +\\d+(?: +-?\\d+\\.\\d+){12}$");
 
-    /** Supported files name pattern. */
-    private Pattern namePattern;
+    /** Regular expression for supported files names. */
+    private final String supportedNames;
 
     /** Earth Orientation Parameters entries. */
     private SortedSet<TimeStamped> eop;
 
     /** Build a loader for IERS EOP 05 C04 files.
-     * @param ficname name of the file to load
+     * @param supportedNames regular expression for supported files names
      * @param eop set where to <em>add</em> EOP data
      * (pre-existing data is preserved)
      */
-    public EOP05C04FilesLoader(final String ficname,
+    public EOP05C04FilesLoader(final String supportedNames,
                                final SortedSet<TimeStamped> eop) {
-
-        namePattern = Pattern.compile(ficname);
+        this.supportedNames = supportedNames;
         this.eop = eop;
-
     }
 
     /** Load Earth Orientation Parameters.
@@ -129,7 +127,12 @@ class EOP05C04FilesLoader implements DataLoader {
      * file content is corrupted
      */
     public boolean loadEOP() throws OrekitException {
-        return DataProvidersManager.getInstance().feed(this);
+        return DataProvidersManager.getInstance().feed(supportedNames, this);
+    }
+
+    /** {@inheritDoc} */
+    public boolean stillAcceptsData() {
+        return true;
     }
 
     /** {@inheritDoc} */
@@ -177,11 +180,6 @@ class EOP05C04FilesLoader implements DataLoader {
             throw new OrekitException("file {0} is not a supported IERS data file", name);
         }
 
-    }
-
-    /** {@inheritDoc} */
-    public boolean fileIsSupported(final String fileName) {
-        return namePattern.matcher(fileName).matches();
     }
 
 }

@@ -19,7 +19,6 @@ package org.orekit.forces.gravity.potential;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
-import java.util.regex.Pattern;
 
 import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
@@ -47,8 +46,8 @@ public abstract class PotentialCoefficientsReader
     private static final String TOO_LARGE_ORDER =
         "too large order (m = {0}, potential maximal order is {1})";
 
-    /** Supported files name pattern. */
-    private final Pattern namePattern;
+    /** Regular expression for supported files names. */
+    private final String supportedNames;
 
     // CHECKSTYLE: stop VisibilityModifierCheck
 
@@ -83,10 +82,10 @@ public abstract class PotentialCoefficientsReader
 
     /** Simple constructor.
      * <p>Build an uninitialized reader.</p>
-     * @param ficName supported files names pattern (regular expression)
+     * @param supportedNames regular expression for supported files names
      */
-    protected PotentialCoefficientsReader(final String ficName) {
-        namePattern = Pattern.compile(ficName);
+    protected PotentialCoefficientsReader(final String supportedNames) {
+        this.supportedNames = supportedNames;
         readCompleted = false;
         ae = Double.NaN;
         mu = Double.NaN;
@@ -98,23 +97,16 @@ public abstract class PotentialCoefficientsReader
         unNormalizedS = null;
     }
 
-    /** Check if at least one read has completed.
-     * @return true if at least one read has completed
+    /** Get the regular expression for supported files names.
+     * @return regular expression for supported files names
      */
-    public boolean isReadCompleted() {
-        return readCompleted;
+    public String getSupportedNames() {
+        return supportedNames;
     }
 
-    /** {@inheritDoc}
-     * <p>
-     * Once a first potential file has been read, this function will always
-     * return false to avoid searching and loading other files. This implies
-     * that the potential coefficients used will come from the first encountered
-     * file.
-     * </p>
-     */
-    public boolean fileIsSupported(String name) {
-        return (! readCompleted) && namePattern.matcher(name).matches();
+    /** {@inheritDoc} */
+    public boolean stillAcceptsData() {
+        return !readCompleted;
     }
 
     /** {@inheritDoc} */

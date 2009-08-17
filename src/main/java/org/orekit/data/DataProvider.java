@@ -68,11 +68,13 @@ public interface DataProvider extends Serializable {
      * the next configured providers, in case another one can feed the
      * {@link DataLoader data loader}.
      * </p>
+     * @param supported pattern for file names supported by the visitor
      * @param visitor data file visitor to use
      * @return true if some data has been loaded
      * @exception OrekitException if the data loader cannot be fed
      * (read error ...)
      */
-    boolean feed(final DataLoader visitor) throws OrekitException;
+    boolean feed(final Pattern supported, final DataLoader visitor)
+       throws OrekitException;
 
 }

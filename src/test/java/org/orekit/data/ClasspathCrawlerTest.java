@@ -30,41 +30,44 @@ public class ClasspathCrawlerTest {
 
     @Test(expected=OrekitException.class)
     public void testNoElement() throws OrekitException {
-        new ClasspathCrawler("inexistant-element").feed(new CountingLoader(".*"));
+        new ClasspathCrawler("inexistant-element").feed(Pattern.compile(".*"),
+                                                        new CountingLoader());
     }
 
     @Test
     public void testNominal() throws OrekitException {
-        CountingLoader crawler = new CountingLoader(".*");
+        CountingLoader crawler = new CountingLoader();
         new ClasspathCrawler("regular-data/UTC-TAI.history",
                              "regular-data/de405-ephemerides/unxp0000.405",
                              "regular-data/de405-ephemerides/unxp0001.405",
                              "regular-data/de406-ephemerides/unxp0000.406",
                              "regular-data/Earth-orientation-parameters/monthly/bulletinb_IAU2000-216.txt",
-                             "no-data/dummy.txt").feed(crawler);
+                             "no-data/dummy.txt").feed(Pattern.compile(".*"), crawler);
         Assert.assertEquals(6, crawler.getCount());
     }
 
     @Test
     public void testCompressed() throws OrekitException {
-        CountingLoader crawler = new CountingLoader(".*/eopc04.*");
+        CountingLoader crawler = new CountingLoader();
         new ClasspathCrawler("compressed-data/UTC-TAI.history.gz",
                              "compressed-data/eopc04_IAU2000.00.gz",
-                             "compressed-data/eopc04_IAU2000.02.gz").feed(crawler);
+                             "compressed-data/eopc04_IAU2000.02.gz").feed(Pattern.compile(".*/eopc04.*"),
+                                                                          crawler);
         Assert.assertEquals(2, crawler.getCount());
     }
 
     @Test
     public void testMultiZip() throws OrekitException {
-        CountingLoader crawler = new CountingLoader(".*\\.txt$");
-        new ClasspathCrawler("zipped-data/multizip.zip").feed(crawler);
+        CountingLoader crawler = new CountingLoader();
+        new ClasspathCrawler("zipped-data/multizip.zip").feed(Pattern.compile(".*\\.txt$"),
+                                                              crawler);
         Assert.assertEquals(6, crawler.getCount());
     }
 
     @Test(expected=OrekitException.class)
     public void testIOException() throws OrekitException {
         try {
-            new ClasspathCrawler("regular-data/UTC-TAI.history").feed(new IOExceptionLoader(".*"));
+            new ClasspathCrawler("regular-data/UTC-TAI.history").feed(Pattern.compile(".*"), new IOExceptionLoader());
         } catch (OrekitException oe) {
             // expected behavior
             Assert.assertNotNull(oe.getCause());
@@ -77,7 +80,7 @@ public class ClasspathCrawlerTest {
     @Test(expected=OrekitException.class)
     public void testParseException() throws OrekitException {
         try {
-            new ClasspathCrawler("regular-data/UTC-TAI.history").feed(new ParseExceptionLoader(".*"));
+            new ClasspathCrawler("regular-data/UTC-TAI.history").feed(Pattern.compile(".*"), new ParseExceptionLoader());
         } catch (OrekitException oe) {
             // expected behavior
             Assert.assertNotNull(oe.getCause());
@@ -88,11 +91,9 @@ public class ClasspathCrawlerTest {
     }
 
     private static class CountingLoader implements DataLoader {
-        private Pattern namePattern;
-        private int count;
-        public CountingLoader(String pattern) {
-            namePattern = Pattern.compile(pattern);
-            count = 0;
+        private int count = 0;
+        public boolean stillAcceptsData() {
+            return true;
         }
         public void loadData(InputStream input, String name) {
             ++count;
@@ -100,38 +101,27 @@ public class ClasspathCrawlerTest {
         public int getCount() {
             return count;
         }
-        public boolean fileIsSupported(String fileName) {
-            return namePattern.matcher(fileName).matches();
-        }
     }
 
     private static class IOExceptionLoader implements DataLoader {
-        private Pattern namePattern;
-        public IOExceptionLoader(String pattern) {
-            namePattern = Pattern.compile(pattern);
+        public boolean stillAcceptsData() {
+            return true;
         }
         public void loadData(InputStream input, String name) throws IOException {
             if (name.endsWith("UTC-TAI.history")) {
                 throw new IOException("dummy error");
             }
         }
-        public boolean fileIsSupported(String fileName) {
-            return namePattern.matcher(fileName).matches();
-        }
     }
 
     private static class ParseExceptionLoader implements DataLoader {
-        private Pattern namePattern;
-        public ParseExceptionLoader(String pattern) {
-            namePattern = Pattern.compile(pattern);
+        public boolean stillAcceptsData() {
+            return true;
         }
         public void loadData(InputStream input, String name) throws ParseException {
             if (name.endsWith("UTC-TAI.history")) {
                 throw new ParseException("dummy error", 0);
             }
-        }
-        public boolean fileIsSupported(String fileName) {
-            return namePattern.matcher(fileName).matches();
         }
     }
 

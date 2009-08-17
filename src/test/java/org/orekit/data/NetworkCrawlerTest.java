@@ -35,7 +35,7 @@ public class NetworkCrawlerTest {
     public void noElement() throws OrekitException, MalformedURLException {
         File existing   = new File(url("regular-data").getPath());
         File inexistent = new File(existing.getParent(), "inexistant-directory");
-        new NetworkCrawler(inexistent.toURI().toURL()).feed(new CountingLoader(".*"));
+        new NetworkCrawler(inexistent.toURI().toURL()).feed(Pattern.compile(".*"), new CountingLoader());
     }
 
     // WARNING!
@@ -51,47 +51,47 @@ public class NetworkCrawlerTest {
 //        System.setProperty("http.nonProxyHosts", "localhost|*.your.domain.com");
 //        java.net.Authenticator.setDefault(new AuthenticatorDialog());
 //
-//        CountingLoader loader = new CountingLoader(".*\\.history");
+//        CountingLoader loader = new CountingLoader();
 //        NetworkCrawler crawler =
 //            new NetworkCrawler(new URL("http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history"));
 //        crawler.setTimeout(1000);
-//        crawler.feed(loader);
+//        crawler.feed(Pattern.compile(".*\\.history"), loader);
 //        Assert.assertEquals(1, loader.getCount());
 //
 //    }
 
     @Test
     public void local() throws OrekitException {
-        CountingLoader crawler = new CountingLoader(".*");
+        CountingLoader crawler = new CountingLoader();
         new NetworkCrawler(url("regular-data/UTC-TAI.history"),
                            url("regular-data/de405-ephemerides/unxp0000.405"),
                            url("regular-data/de405-ephemerides/unxp0001.405"),
                            url("regular-data/de406-ephemerides/unxp0000.406"),
                            url("regular-data/Earth-orientation-parameters/monthly/bulletinb_IAU2000-216.txt"),
-                           url("no-data")).feed(crawler);
+                           url("no-data")).feed(Pattern.compile(".*"), crawler);
         Assert.assertEquals(6, crawler.getCount());
     }
 
     @Test
     public void compressed() throws OrekitException {
-        CountingLoader crawler = new CountingLoader(".*/eopc04.*");
+        CountingLoader crawler = new CountingLoader();
         new NetworkCrawler(url("compressed-data/UTC-TAI.history.gz"),
                            url("compressed-data/eopc04_IAU2000.00.gz"),
-                           url("compressed-data/eopc04_IAU2000.02.gz")).feed(crawler);
+                           url("compressed-data/eopc04_IAU2000.02.gz")).feed(Pattern.compile(".*/eopc04.*"), crawler);
         Assert.assertEquals(2, crawler.getCount());
     }
 
     @Test
     public void multiZip() throws OrekitException {
-        CountingLoader crawler = new CountingLoader(".*\\.txt$");
-        new NetworkCrawler(url("zipped-data/multizip.zip")).feed(crawler);
+        CountingLoader crawler = new CountingLoader();
+        new NetworkCrawler(url("zipped-data/multizip.zip")).feed(Pattern.compile(".*\\.txt$"), crawler);
         Assert.assertEquals(6, crawler.getCount());
     }
 
     @Test(expected=OrekitException.class)
     public void ioException() throws OrekitException {
         try {
-            new NetworkCrawler(url("regular-data/UTC-TAI.history")).feed(new IOExceptionLoader(".*"));
+            new NetworkCrawler(url("regular-data/UTC-TAI.history")).feed(Pattern.compile(".*"), new IOExceptionLoader());
         } catch (OrekitException oe) {
             // expected behavior
             Assert.assertNotNull(oe.getCause());
@@ -104,7 +104,7 @@ public class NetworkCrawlerTest {
     @Test(expected=OrekitException.class)
     public void parseException() throws OrekitException {
         try {
-            new NetworkCrawler(url("regular-data/UTC-TAI.history")).feed(new ParseExceptionLoader(".*"));
+            new NetworkCrawler(url("regular-data/UTC-TAI.history")).feed(Pattern.compile(".*"), new ParseExceptionLoader());
         } catch (OrekitException oe) {
             // expected behavior
             Assert.assertNotNull(oe.getCause());
@@ -115,11 +115,9 @@ public class NetworkCrawlerTest {
     }
 
     private static class CountingLoader implements DataLoader {
-        private Pattern namePattern;
-        private int count;
-        public CountingLoader(String pattern) {
-            namePattern = Pattern.compile(pattern);
-            count = 0;
+        private int count = 0;
+        public boolean stillAcceptsData() {
+            return true;
         }
         public void loadData(InputStream input, String name) {
             ++count;
@@ -127,38 +125,27 @@ public class NetworkCrawlerTest {
         public int getCount() {
             return count;
         }
-        public boolean fileIsSupported(String fileName) {
-            return namePattern.matcher(fileName).matches();
-        }
     }
 
     private static class IOExceptionLoader implements DataLoader {
-        private Pattern namePattern;
-        public IOExceptionLoader(String pattern) {
-            namePattern = Pattern.compile(pattern);
+        public boolean stillAcceptsData() {
+            return true;
         }
         public void loadData(InputStream input, String name) throws IOException {
             if (name.endsWith("UTC-TAI.history")) {
                 throw new IOException("dummy error");
             }
         }
-        public boolean fileIsSupported(String fileName) {
-            return namePattern.matcher(fileName).matches();
-        }
     }
 
     private static class ParseExceptionLoader implements DataLoader {
-        private Pattern namePattern;
-        public ParseExceptionLoader(String pattern) {
-            namePattern = Pattern.compile(pattern);
+        public boolean stillAcceptsData() {
+            return true;
         }
         public void loadData(InputStream input, String name) throws ParseException {
             if (name.endsWith("UTC-TAI.history")) {
                 throw new ParseException("dummy error", 0);
             }
-        }
-        public boolean fileIsSupported(String fileName) {
-            return namePattern.matcher(fileName).matches();
         }
     }
 

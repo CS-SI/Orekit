@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.regex.Pattern;
 
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
@@ -68,8 +67,7 @@ public class JPLEphemeridesLoader implements DataLoader {
     private static final int DE406_RECORD_SIZE =  728 * 8;
 
     /** Supported files name pattern. */
-    private static final Pattern NAME_PATTERN =
-        Pattern.compile("^unx[mp](\\d\\d\\d\\d)\\.(?:(?:405)|(?:406))$");
+    private static final String SUPPORTED_FILES = "^unx[mp](\\d\\d\\d\\d)\\.(?:(?:405)|(?:406))$";
 
     /** List of supported ephemerides types. */
     public enum EphemerisType {
@@ -171,7 +169,7 @@ public class JPLEphemeridesLoader implements DataLoader {
      */
     public synchronized SortedSet<TimeStamped> loadEphemerides() throws OrekitException {
         ephemerides = new TreeSet<TimeStamped>(new ChronologicalComparator());
-        if (!DataProvidersManager.getInstance().feed(this)) {
+        if (!DataProvidersManager.getInstance().feed(SUPPORTED_FILES, this)) {
             throw new OrekitException(NO_JPL_FILES_FOUND);
         }
         return ephemerides;
@@ -286,7 +284,7 @@ public class JPLEphemeridesLoader implements DataLoader {
      * @exception OrekitException if constants cannot be loaded
      */
     private static void loadConstants() throws OrekitException {
-        if (!DataProvidersManager.getInstance().feed(new HeaderConstantsLoader())) {
+        if (!DataProvidersManager.getInstance().feed(SUPPORTED_FILES, new HeaderConstantsLoader())) {
             throw new OrekitException(NO_JPL_FILES_FOUND);
         }
     }
@@ -296,6 +294,11 @@ public class JPLEphemeridesLoader implements DataLoader {
      */
     public double getMaxChunksDuration() {
         return maxChunksDuration;
+    }
+
+    /** {@inheritDoc} */
+    public boolean stillAcceptsData() {
+        return true;
     }
 
     /** {@inheritDoc} */
@@ -591,21 +594,13 @@ public class JPLEphemeridesLoader implements DataLoader {
         }
     }
 
-    /** {@inheritDoc} */
-    public boolean fileIsSupported(final String fileName) {
-        return NAME_PATTERN.matcher(fileName).matches();
-    }
-
     /** Specialized loader for extracting constants from the headers. */
     private static class HeaderConstantsLoader implements DataLoader {
 
         /** {@inheritDoc} */
-        public boolean fileIsSupported(final String fileName) {
+        public boolean stillAcceptsData() {
             // we try to load files only until the constants map has been set up
-            if (CONSTANTS.isEmpty()) {
-                return NAME_PATTERN.matcher(fileName).matches();
-            }
-            return false;
+            return CONSTANTS.isEmpty();
         }
 
         /** {@inheritDoc} */

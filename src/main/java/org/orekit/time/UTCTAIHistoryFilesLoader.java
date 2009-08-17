@@ -47,7 +47,7 @@ import org.orekit.errors.OrekitException;
 class UTCTAIHistoryFilesLoader implements DataLoader {
 
     /** Supported files name pattern. */
-    private Pattern namePattern;
+    private static final String SUPPORTED_NAMES = "^UTC-TAI\\.history$";
 
     /** Regular data lines pattern. */
     private Pattern regularPattern;
@@ -63,8 +63,6 @@ class UTCTAIHistoryFilesLoader implements DataLoader {
 
     /** Build a loader for UTC-TAI history file. */
     public UTCTAIHistoryFilesLoader() {
-
-        this.namePattern = Pattern.compile("^UTC-TAI\\.history$");
 
         // the data lines in the UTC time steps data files have the following form:
         // 1966  Jan.  1 - 1968  Feb.  1     4.313 170 0s + (MJD - 39 126) x 0.002 592s
@@ -110,10 +108,15 @@ class UTCTAIHistoryFilesLoader implements DataLoader {
      */
     public SortedMap<DateComponents, Integer> loadTimeSteps() throws OrekitException {
         entries = new TreeMap<DateComponents, Integer>();
-        if (!DataProvidersManager.getInstance().feed(this)) {
+        if (!DataProvidersManager.getInstance().feed(SUPPORTED_NAMES, this)) {
             throw new OrekitException("no IERS UTC-TAI history data loaded");
         }
         return entries;
+    }
+
+    /** {@inheritDoc} */
+    public boolean stillAcceptsData() {
+        return (entries == null) || entries.isEmpty();
     }
 
     /** {@inheritDoc} */
@@ -192,11 +195,6 @@ class UTCTAIHistoryFilesLoader implements DataLoader {
                                       name);
         }
 
-    }
-
-    /** {@inheritDoc} */
-    public boolean fileIsSupported(final String fileName) {
-        return namePattern.matcher(fileName).matches();
     }
 
 }

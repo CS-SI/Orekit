@@ -52,8 +52,8 @@ class BulletinBFilesLoader implements DataLoader {
     /** Conversion factor. */
     private static final double MILLI_SECONDS_TO_SECONDS = 1.e-3;
 
-    /** Supported files name pattern. */
-    private Pattern namePattern;
+    /** Regular expression for supported files names. */
+    private final String supportedNames;
 
     /** Section header pattern. */
     private final Pattern sectionHeaderPattern;
@@ -74,14 +74,14 @@ class BulletinBFilesLoader implements DataLoader {
     private SortedSet<TimeStamped> eop;
 
     /** Create a loader for IERS bulletin B files.
-     * @param ficname name of the file to load
+     * @param supportedNames regular expression for supported files names
      * @param eop set where to <em>add</em> EOP data
      * (pre-existing data is preserved)
      */
-    public BulletinBFilesLoader(final String ficname,
+    public BulletinBFilesLoader(final String supportedNames,
                                 final SortedSet<TimeStamped> eop) {
 
-        namePattern = Pattern.compile(ficname);
+        this.supportedNames = supportedNames;
         this.eop = eop;
 
         // the section headers lines in the bulletin B monthly data files have
@@ -137,7 +137,12 @@ class BulletinBFilesLoader implements DataLoader {
      * file content is corrupted
      */
     public boolean loadEOP() throws OrekitException {
-        return DataProvidersManager.getInstance().feed(this);
+        return DataProvidersManager.getInstance().feed(supportedNames, this);
+    }
+
+    /** {@inheritDoc} */
+    public boolean stillAcceptsData() {
+        return true;
     }
 
     /** {@inheritDoc} */
@@ -205,11 +210,6 @@ class BulletinBFilesLoader implements DataLoader {
             }
         }
 
-    }
-
-    /** {@inheritDoc} */
-    public boolean fileIsSupported(final String fileName) {
-        return namePattern.matcher(fileName).matches();
     }
 
 }

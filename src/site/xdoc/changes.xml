@@ -32,10 +32,6 @@
              to support new use cases (loading from disk, from classpath, from network delegating
              loading to an external library ...)">
       <action dev="luc" type="update" >
-        the gravity potential files are now read using the same mechanism as the Earth
-        Orientation Parameters, the UTC-TAI history and the JPL ephemerides files
-      </action>
-      <action dev="luc" type="update" >
         the RadiationSensitive and DragForce interfaces now have an
         additional SpacecraftState parameter in all their get methods.
         This allows to implement models that take into account solar
@@ -131,18 +127,22 @@
         parts of the library do need configuration data (solar system bodies) and
         since data configuration has been vastly improved
       </action>
+      <action dev="luc" type="update" >
+        load gravity potential data using the same mechanism already used for Earth
+        Orientation Parameters, UTC-TAI history and JPL ephemerides files
+      </action>
       <action dev="luc" type="add" due-to="quinput and Kai Ruhl">
-        re-activated a way to put configuration data in the classpath using a
+        re-activated a way to load data from the classpath using a
         data provider plugin.
       </action>
       <action dev="luc" type="add">
-        added a way to load configuration data directly from network (either
+        added a way to load data directly from network (either
         locally or through a proxy server) using a data provider plugin.
       </action>
       <action dev="luc" type="add">
-        added a small plugin-like mechanism to delegate configuration data
-        loading to a user-provided mechanism, thus enabling smooth integration
-        in existing systems.
+        added a small plugin-like mechanism to delegate data loading to a
+        user-provided mechanism, thus enabling smooth integration in existing
+        systems.
       </action>
       <action dev="luc" type="update">
         updated to latest version of commons-math.

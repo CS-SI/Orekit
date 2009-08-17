@@ -50,10 +50,10 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
     private static final String GRCOF2 = "GRCOF2";
 
     /** Simple constructor.
-     * @param ficName supported files names pattern (regular expression)
+     * @param supportedNames regular expression for supported files names
      */
-    public SHMFormatReader(final String ficName) {
-        super(ficName);
+    public SHMFormatReader(final String supportedNames) {
+        super(supportedNames);
     }
 
     /** {@inheritDoc} */
