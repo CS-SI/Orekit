@@ -26,7 +26,7 @@ Overview
 
     * high accuracy absolute dates
 
-    * time scales (TAI, UTC, GPS, TCG, TT, ...)
+    * time scales (TAI, UTC, GPS, TCG, TT, TDB ...)
 
     * transparent handling of leap seconds
 

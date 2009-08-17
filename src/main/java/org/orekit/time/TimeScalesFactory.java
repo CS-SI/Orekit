@@ -46,6 +46,9 @@ public class TimeScalesFactory implements Serializable {
 
     /** Geocentric Coordinate Time scale. */
     private static TCGScale tcg = null;
+    
+    /** Barycentric Dynamic Coordinate Time scale. */
+    private static TDBScale tdb = null;
 
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
@@ -127,6 +130,21 @@ public class TimeScalesFactory implements Serializable {
             }
 
             return tcg;
+
+        }
+    }
+
+    /** Get the Barycentric Dynamic Time scale.
+     * @return Barycentric Dynamic Time scale
+     */
+    public static TDBScale getTDB() {
+        synchronized (TimeScalesFactory.class) {
+
+            if (tdb == null) {
+                tdb = new TDBScale();
+            }
+
+            return tdb;
 
         }
     }
