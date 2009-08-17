@@ -24,8 +24,8 @@ Training
   having a space flight dynamics background rather than information
   technology background. These programs differ from classical object oriented
   training sessions due to this strong orientation towards numerical computation
-  and its focus on practical problems encountered in this field like numerical
-  robustness and performances.
+  and its focus on practical problems encountered in this field like reliability,
+  numerical robustness and performances.
 
 * Training programs
 
@@ -33,7 +33,7 @@ Training
 
 ** Object oriented technology for numerical computing
 
-   This session is oriented towards trainees that are not computer science
+   This session is oriented towards trainees who are not computer science
    experts. The following concepts are taught:
 
    * programming languages evolution history
@@ -62,7 +62,22 @@ session 1
 ** Object oriented concepts and the Java language
 
   This session is a classical training session for the Java programming language. It is not
-  directly oriented towards numerical computation. 
+  directly oriented towards numerical computation.  The following concepts
+  are taught:
+
+   * Java language principles
+
+   * Java language syntax
+
+   * Main standard packages and classes
+
+   * Eclipse integrated development environment
+
+   * Maven build tool
+
+   * Testing tools (Junit, Cobertura)
+
+   * Auditing tools (Checkstyle, Findbugs, PMD ...)
 
 *--------------------*-----------------------------------------*-----------*
 |        type        |              prerequisites              |  duration |
@@ -72,19 +87,19 @@ session 1
 *--------------------*-----------------------------------------*-----------*
 session 2
 
-  At the end of this session, trainees will have know the syntax of the Java language and a
-  first development experience with it sufficient to read and understand existing Java source
+  At the end of this session, trainees will know the syntax of the Java language and have a
+  first development experience which is sufficient to read and understand existing Java source
   and to develop small standalone Java applications.
 
 ** Developing numerical applications in the Java language - using Apache commons-math and Orekit
 
-  This session is also oriented towards trainees that are not computer science
+  This session is also oriented towards trainees who are not computer science
   experts but rather space flight dynamics engineers and numerical analysts. It adds the
   necessary do's and don'ts that apply to high performance and robust numerical applications
   development, especially in mathematics and space flight dynamics fields. The following concepts
   are taught:
 
-   * Setting up Eclipse integrated development environmant
+   * Setting up Eclipse integrated development environment
 
    * Setting up the free software libraries Apache commons-math and Orekit
 
@@ -92,30 +107,54 @@ session 2
 
    * Design patterns for development of robust and high performance numerical computation applications
 
-   * Development of a complete standalone space flight dynamcis application using existing Orekit
-     library objects and extending existing objects
+   * Development of a complete standalone space flight dynamics application using existing Orekit
+     library objects
 
-*--------------------*--------------------------------------------------------*-----------*
-|        type        |                      prerequisites                     |  duration |
-*--------------------*--------------------------------------------------------*-----------*
-|  lecture           | space flight dynamics or numerical analysis background |   2 days  |
-|  hands-on practice | basic knowledge of the Java language syntax            |           |
-*--------------------*--------------------------------------------------------*-----------*
+   * Extending existing Orekit library objects to meet mission-specific needs
+
+*--------------------*-------------------------------------------------------------------*-----------*
+|        type        |                      prerequisites                                |  duration |
+*--------------------*-------------------------------------------------------------------*-----------*
+|                    | space flight dynamics or numerical analysis background            |           |
+|  lecture           | knowledge of object-oriented principles as presented in session 1 |   2 days  |
+|  hands-on practice | basic knowledge of the Java language syntax                       |           |
+*--------------------*-------------------------------------------------------------------*-----------*
 session 3
 
-  At the end of this session, traineed have a pragmatic knowledge of the benefits of object
-  oriented paradigm for the development of scientific algorithms. The understand some common
-  pitfalls and how to avoid them and develop robust and high performance code.. They know the
-  available concepts and algorithms in the Apache commons-math and Orekit libraries. They have
-  a first development experience of space flight dynamics applications in an integrated
+  At the end of this session, trainees have a pragmatic knowledge of the benefits of object
+  oriented paradigm for the development of scientific algorithms. They understand some common
+  pitfalls and know how to avoid them and develop robust and high performance code.. They know
+  the available concepts and algorithms in the Apache commons-math and Orekit libraries. They
+  have a first development experience of space flight dynamics applications in an integrated
   development environment with these libraries.
 
 * Training sessions organization
 
   The training sessions can be organized both at your premises anywhere in the world or
-  at CS premises in Toulouse (France). For information about scheduled sessions and
-  prices, please use the general orekit email address: {{{mailto:orekit@c-s.fr}orekit@c-s.fr}}
-  or CS space flight dynamics department at the following address:
+  at CS premises in Toulouse (France). Prices for the training sessions at CS premises are
+  shown in the following table:
+
+*---------------------------------------------------------*----------------------*-----------------------*------------*
+|                       session                           |       industry       |      agencies         |  students  |
+|                                                         | commercial companies | research laboratories |            |
+*---------------------------------------------------------*----------------------*-----------------------*------------*
+|  Object oriented technology for numerical computing     |      550 \u20ac      |      300 \u20ac       | 150 \u20ac |
+|  (session 1)                                            |                      |                       |            |
+*--------------------*------------------------------------*----------------------*-----------------------*------------*
+|  Object oriented concepts and the Java language         |     2200 \u20ac      |     1000 \u20ac       | 500 \u20ac |
+|  (session 2)                                            |                      |                       |            |
+*--------------------*------------------------------------*----------------------*-----------------------*------------*
+|  Developing numerical applications in the Java language |     1100 \u20ac      |      600 \u20ac       | 300 \u20ac |
+| using Apache commons-math and Orekit (session 3)        |                      |                       |            |
+*--------------------*------------------------------------*----------------------*-----------------------*------------*
+prices for training sessions at CS premises
+
+  The prices above include training fees, an USB stick containing lecture material and exercises,
+  and lunches. They do neither include travel nor hotel fees.
+
+  For information about scheduled sessions or if you want to set up a session at your premises,
+  please use the general orekit email address: {{{mailto:orekit@c-s.fr}orekit@c-s.fr}} or ask
+  CS space flight dynamics department at the following address:
 
 *----------------------------------*
   CS Communication & Syst\u00e8mes
