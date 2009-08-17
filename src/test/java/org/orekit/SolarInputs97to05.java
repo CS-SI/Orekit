@@ -38,7 +38,7 @@ import org.orekit.time.TimeStamped;
 
 /** This class reads and provides solar activity data needed by the
  * two atmospheric models. The data are furnished at the <a
- * href="http://terra1.spacenvironment.net/~JB2006/indices.html">
+ * href="http://sol.spacenvironment.net/~JB2006/">
  * official JB2006 website.</a>
  *
  * @author Fabien Maussion
