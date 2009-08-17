@@ -29,6 +29,7 @@ public class TCGScaleTest {
     @Test
     public void testRatio() {
         TimeScale scale = TimeScalesFactory.getTCG();
+        Assert.assertEquals("TCG", scale.toString());
         final double dtTT = 1e6;
         final AbsoluteDate t1 = AbsoluteDate.J2000_EPOCH;
         final AbsoluteDate t2 = new AbsoluteDate(t1, dtTT);

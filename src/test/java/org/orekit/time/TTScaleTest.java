@@ -26,6 +26,7 @@ public class TTScaleTest {
     @Test
     public void testConstant() {
         TimeScale scale = TimeScalesFactory.getTT();
+        Assert.assertEquals("TT", scale.toString());
         double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH);
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);

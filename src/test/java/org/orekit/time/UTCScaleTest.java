@@ -29,6 +29,7 @@ public class UTCScaleTest {
 
     @Test
     public void testNoLeap() {
+        Assert.assertEquals("UTC", utc.toString());
         AbsoluteDate d1 = new AbsoluteDate(new DateComponents(1999, 12, 31),
                                            new TimeComponents(23, 59, 59),
                                            utc);
