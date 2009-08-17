@@ -1,4 +1,4 @@
-~~ Copyright 2002-2008 CS Communication & Systèmes
+~~ Copyright 2002-2009 CS Communication & Systèmes
 ~~ Licensed under the Apache License, Version 2.0 (the "License");
 ~~ you may not use this file except in compliance with the License.
 ~~ You may obtain a copy of the License at
@@ -19,6 +19,17 @@ Downloads
   the one that better suits your needs. Source packages are the most complete
   ones since the other packages (binary jars, javadoc jars and even the bulk
   of this site) are created from these sources.
+
+*----------*--------------------------------------------------------*
+|  package |                          link                          |
+*----------*--------------------------------------------------------*
+|  source  | {{{./downloads/orekit-4.1-src.zip}orekit-4.1-src.zip}} |
+*----------*--------------------------------------------------------*
+|  binary  |     {{{./downloads/orekit-4.1.jar}orekit-4.1.jar}}     |
+*----------*--------------------------------------------------------*
+|  javadoc | {{{./downloads/orekit-4.1-doc.jar}orekit-4.1-doc.jar}} |
+*----------*--------------------------------------------------------*
+version 4.1 downloads (release date: 2009-08-17)
 
 *----------*--------------------------------------------------------*
 |  package |                          link                          |
