@@ -46,19 +46,7 @@ public abstract class PotentialCoefficientsReader
     private static final String TOO_LARGE_ORDER =
         "too large order (m = {0}, potential maximal order is {1})";
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
     // CHECKSTYLE: stop VisibilityModifierCheck
-
-    /** un-normalized zonal coefficients array. */
-    private double[] unNormalizedJ;
-
-    /** un-normalized tesseral-sectorial coefficients matrix. */
-    private double[][] unNormalizedC;
-
-    /** un-normalized tesseral-sectorial coefficients matrix. */
-    private double[][] unNormalizedS;
 
     /** Indicator for completed read. */
     protected boolean readCompleted;
@@ -79,6 +67,18 @@ public abstract class PotentialCoefficientsReader
     protected double[][] normalizedS;
 
     // CHECKSTYLE: resume VisibilityModifierCheck
+
+    /** un-normalized zonal coefficients array. */
+    private double[] unNormalizedJ;
+
+    /** un-normalized tesseral-sectorial coefficients matrix. */
+    private double[][] unNormalizedC;
+
+    /** un-normalized tesseral-sectorial coefficients matrix. */
+    private double[][] unNormalizedS;
+
+    /** Regular expression for supported files names. */
+    private final String supportedNames;
 
     /** Simple constructor.
      * <p>Build an uninitialized reader.</p>
