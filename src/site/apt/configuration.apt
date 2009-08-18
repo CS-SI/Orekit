@@ -229,45 +229,54 @@ Configuration
 
 * Quick setup using default data
 
-  For convenience, a 2.5 megabytes zip file containing some default data is available for download on
-  orekit site: {{http://www.orekit.org/downloads/orekit-data.zip}}. Setting the
+  For convenience, a 2.5 megabytes zip file containing some default data is available for
+  download on orekit site: {{http://www.orekit.org/downloads/orekit-data.zip}}. Setting the
   <orekit.data.path> property to the location of this file on a local computer is enough to
-  use Orekit efficiently. This zip archive contains Earth OrientationParameters from 1962 to 2008,
-  JPL DE 406 ephemerides from 1962 to 2029 and UTC TAI history from 1972-01-01 to
-  2009-01-01.
+  use Orekit efficiently. This zip archive contains Earth OrientationParameters from 1962
+  to 2008 (both IAU-1980 and IAU-2000), JPL DE 406 ephemerides from 1962 to 2029 and UTC
+  TAI history from 1972-01-01 to 2009-12-31.
 
 * Supported data types
 
   The data types supported by Orekit are described in the following table, where the <#>
-  character represents any digit and <(m/p)> represents either the m character or the p
-  character. The <[.gz]> part at the end of all naming patterns means that a <.gz> suffix
-  can be appended, in which case the data are considered to be compressed with gzip.
+  character represents any digit,<(m/p)> represents either the m character or the p
+  character and <*> represents any character sequence. The <[.gz]> part at the end of all
+  naming patterns means that a <.gz> suffix can be appended, in which case the data are
+  considered to be compressed with gzip.
   
-  Please note, the 2 different naming patterns for bulletin B are supported the same.
+  The 2 different naming patterns for bulletin B are both supported.
 
-*---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
-|          naming pattern         |      format     |               data type              |                            source                          |
-*---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
-|       UTC-TAI.history[.gz]      |   IERS history  |   leap seconds introduction history  |  {{http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history}} |
-*---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
-|    bulletinb_IAU2000.###[.gz]   | IERS bulletin B | monthly Earth Orientation Parameters |    {{http://hpiers.obspm.fr/eoppc/bul/bulb/}}              |
-|              or                 |                 |            model IAU 2000            |                                                            |
+*---------------------------------*-----------------*--------------------------------------*----------------------------------------------------------------------*
+|          naming pattern         |      format     |               data type              |                                 source                               |
+*---------------------------------*-----------------*--------------------------------------*----------------------------------------------------------------------*
+|       UTC-TAI.history[.gz]      |   IERS history  |   leap seconds introduction history  |       {{http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history}}      |
+*---------------------------------*-----------------*--------------------------------------*----------------------------------------------------------------------*
+|    bulletinb_IAU2000.###[.gz]   | IERS bulletin B | monthly Earth Orientation Parameters |         {{http://hpiers.obspm.fr/eoppc/bul/bulb/}}                   |
+|              or                 |                 |            model IAU 2000            |                                                                      |
 |  bulletinb_IAU2000-###.txt[.gz] |                 |                                      | {{http://www.iers.org/MainDisp.csl?pid=36-25788&prodid=18&PRODUCTVERSIONPAGE=1&all=1}} |
-*---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
-|        bulletinb.###[.gz]       | IERS bulletin B | monthly Earth Orientation Parameters |    {{http://hpiers.obspm.fr/eoppc/bul/bulb/}}              |
-|              or                 |                 |            model IAU 1980            |                                                            |
+*---------------------------------*-----------------*--------------------------------------*----------------------------------------------------------------------*
+|        bulletinb.###[.gz]       | IERS bulletin B | monthly Earth Orientation Parameters |         {{http://hpiers.obspm.fr/eoppc/bul/bulb/}}                   |
+|              or                 |                 |            model IAU 1980            |                                                                      |
 |      bulletinb-###.txt[.gz]     |                 |                                      | {{http://www.iers.org/MainDisp.csl?pid=36-25788&prodid=15&PRODUCTVERSIONPAGE=1&all=1}} |
-*---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
-|      eopc04_IAU2000.##[.gz]     | IERS EOP 05 C04 | yearly Earth Orientation Parameters  |    {{http://hpiers.obspm.fr/eoppc/eop/eopc04_05/}}         |
-|                                 |                 |            model IAU 2000            |                                                            |
-*---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
-|          eopc04.##[.gz]         | IERS EOP 05 C04 | yearly Earth Orientation Parameters  |    {{http://hpiers.obspm.fr/eoppc/eop/eopc04_05/}}         |
-|                                 |                 |            model IAU 1980            |                                                            |
-*---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
-|       unx(m/p)####.405[.gz]     |  DE 405 binary  |    JPL DE 405 planets ephemerides    |    {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/unix/de405}}   |
-*---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
-|       unx(m/p)####.406[.gz]     |  DE 406 binary  |    JPL DE 406 planets ephemerides    |    {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/unix/de406}}   |
-*---------------------------------*-----------------*--------------------------------------*------------------------------------------------------------*
+*---------------------------------*-----------------*--------------------------------------*----------------------------------------------------------------------*
+|      eopc04_IAU2000.##[.gz]     | IERS EOP 05 C04 | yearly Earth Orientation Parameters  |         {{http://hpiers.obspm.fr/eoppc/eop/eopc04_05/}}              |
+|                                 |                 |            model IAU 2000            |                                                                      |
+*---------------------------------*-----------------*--------------------------------------*----------------------------------------------------------------------*
+|          eopc04.##[.gz]         | IERS EOP 05 C04 | yearly Earth Orientation Parameters  |         {{http://hpiers.obspm.fr/eoppc/eop/eopc04_05/}}              |
+|                                 |                 |            model IAU 1980            |                                                                      |
+*---------------------------------*-----------------*--------------------------------------*----------------------------------------------------------------------*
+|       unx(m/p)####.405[.gz]     |  DE 405 binary  |    JPL DE 405 planets ephemerides    |         {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/unix/de405}}        |
+*---------------------------------*-----------------*--------------------------------------*----------------------------------------------------------------------*
+|       unx(m/p)####.406[.gz]     |  DE 406 binary  |    JPL DE 406 planets ephemerides    |         {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/unix/de406}}        |
+*---------------------------------*-----------------*--------------------------------------*----------------------------------------------------------------------*
+|         g###_eigen_*_coef       |  ICGEM format   |    Eigen Earth gravity potential     | {{http://op.gfz-potsdam.de/grace/results/main_RESULTS.html#gravity}} |
+*---------------------------------*-----------------*--------------------------------------*----------------------------------------------------------------------*
+|            eigen_*_coef         |                 |                                      |                                                                      |
+|                 or              |    SHM format   |    Eigen Earth gravity potential     | {{http://op.gfz-potsdam.de/grace/results/main_RESULTS.html#gravity}} |
+|            eigen-*_coef         |                 |                                      |                                                                      |
+*---------------------------------*-----------------*--------------------------------------*----------------------------------------------------------------------*
+|            egm##_to#*           |    EGM format   |    EGM Earth gravity potential       |         {{ftp://cddis.gsfc.nasa.gov/pub/egm96/general_info}}         |
+*---------------------------------*-----------------*--------------------------------------*----------------------------------------------------------------------*
 Supported data types
 
 * Authors

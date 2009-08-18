@@ -81,8 +81,8 @@ Overview
         * central attraction
 
         * gravity models
-          (automatic reading of SHM (for Eigen models) and EGM formats potential files,
-          even compressed)
+          (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models) and
+          EGM formats potential files, even compressed)
 
         * atmospheric drag (DTM2000, Jacchia-Bowman 2006 and simple exponential models)
 

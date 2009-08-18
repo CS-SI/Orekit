@@ -36,23 +36,32 @@ public class PotentialReaderFactory {
     /** Simple constructor.
      * <p>
      * This constructor uses default values for gravity potential file names
-     * regular expressions: "^eigen[-_](\\w)+_coef$" for SHM files and "^egm\\d\\d_to\\d.*$" for EGM files
+     * regular expressions: "^g(\\d)+_eigen_(\\w)+_coef$" for ICGEM files,
+     * "^eigen[-_](\\w)+_coef$" for SHM files and "^egm\\d\\d_to\\d.*$" for
+     * EGM files.
      * </p>
      */
     public PotentialReaderFactory() {
         readers = new ArrayList<PotentialCoefficientsReader>();
+        readers.add(new ICGEMFormatReader("^g(\\d)+_eigen_(\\w)+_coef$"));
         readers.add(new SHMFormatReader("^eigen[-_](\\w)+_coef$"));
         readers.add(new EGMFormatReader("^egm\\d\\d_to\\d.*$"));
     }
 
     /** Simple constructor.
+     * @param icgemficNames regular expression for ICGEM (Eigen) gravity potential files,
+     * if null, ICGEM files reader will not be set up
      * @param shmficNames regular expression for SHM (Eigen) gravity potential files,
      * if null, SHM files reader will not be set up
      * @param egmficNames regular expression for EGM gravity potential files,
      * if null, EGM files reader will not be set up
      */
-    public PotentialReaderFactory(final String shmficNames, final String egmficNames) {
+    public PotentialReaderFactory(final String icgemficNames, final String shmficNames,
+                                  final String egmficNames) {
         readers = new ArrayList<PotentialCoefficientsReader>();
+        if (icgemficNames != null) {
+            readers.add(new ICGEMFormatReader(icgemficNames));
+        }
         if (shmficNames != null) {
             readers.add(new SHMFormatReader(shmficNames));
         }

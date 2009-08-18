@@ -30,7 +30,7 @@ public class SHMFormatReaderTest {
     @Test
     public void testRegular03c() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        PotentialReaderFactory factory = new PotentialReaderFactory("eigen_cg03c_coef", null);
+        PotentialReaderFactory factory = new PotentialReaderFactory(null, "eigen_cg03c_coef", null);
         PotentialCoefficientsProvider provider = factory.getPotentialProvider();
         double[][] C = provider.getC(5, 5, true);;
         double[][] S = provider.getS(5, 5, true);
@@ -47,7 +47,7 @@ public class SHMFormatReaderTest {
     @Test
     public void testReadCompressed01c() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        PotentialReaderFactory factory = new PotentialReaderFactory("eigen-cg01c_coef", null);
+        PotentialReaderFactory factory = new PotentialReaderFactory(null, "eigen-cg01c_coef", null);
         PotentialCoefficientsProvider provider = factory.getPotentialProvider();
         double[][] C = provider.getC(5, 5, true);;
         double[][] S = provider.getS(5, 5, true);;
@@ -63,21 +63,21 @@ public class SHMFormatReaderTest {
     @Test(expected=OrekitException.class)
     public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        PotentialReaderFactory factory = new PotentialReaderFactory("eigen_corrupted1_coef", null);
+        PotentialReaderFactory factory = new PotentialReaderFactory(null, "eigen_corrupted1_coef", null);
         factory.getPotentialProvider();
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile2() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        PotentialReaderFactory factory = new PotentialReaderFactory("eigen_corrupted2_coef", null);
+        PotentialReaderFactory factory = new PotentialReaderFactory(null, "eigen_corrupted2_coef", null);
         factory.getPotentialProvider();
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile3() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        PotentialReaderFactory factory = new PotentialReaderFactory("eigen_corrupted3_coef", null);
+        PotentialReaderFactory factory = new PotentialReaderFactory(null, "eigen_corrupted3_coef", null);
         factory.getPotentialProvider();
     }
 

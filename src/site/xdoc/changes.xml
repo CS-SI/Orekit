@@ -132,6 +132,9 @@
         parts of the library do need configuration data (solar system bodies) and
         since data configuration has been vastly improved
       </action>
+      <action dev="luc" type="add" >
+        added support for the ICGEM format for gravity fields
+      </action>
       <action dev="luc" type="update" >
         load gravity potential data using the same mechanism already used for Earth
         Orientation Parameters, UTC-TAI history and JPL ephemerides files

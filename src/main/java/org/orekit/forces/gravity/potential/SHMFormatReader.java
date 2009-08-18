@@ -27,10 +27,11 @@ import org.orekit.errors.OrekitException;
 
 /** Reader for the SHM gravity potential format.
  *
- * <p> This format is used to describe the gravity field of EIGEN models,
- * published by the GFZ Potsdam.
- * It is described in <a href="http://www.gfz-potsdam.de/grace/results/">
- * Potsdam university website </a>
+ * <p> This format was used to describe the gravity field of EIGEN models
+ * published by the GFZ Potsdam up to 2003. It was then replaced by
+ * {@link ICGEMFormatReader ICGEM format}. The SHM format is described in
+ * <a href="http://www.gfz-potsdam.de/grace/results/"> Potsdam university
+ * website</a>.
  *
  * <p> The proper way to use this class is to call the
  *  {@link PotentialReaderFactory}

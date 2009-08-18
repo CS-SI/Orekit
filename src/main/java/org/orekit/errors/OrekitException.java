@@ -17,6 +17,7 @@
 package org.orekit.errors;
 
 import java.text.MessageFormat;
+import java.text.ParseException;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -112,6 +113,16 @@ public class OrekitException extends Exception {
     public static IllegalStateException createIllegalStateException(final String specifier,
                                                                     final Object ... parts) {
         return new IllegalStateException(translate(specifier, parts));
+    }
+
+    /** Create an {@link java.text.ParseException} with localized message.
+     * @param specifier format specifier (to be translated)
+     * @param parts parts to insert in the format (no translation)
+     * @return an {@link java.text.ParseException} with localized message
+     */
+    public static ParseException createParseException(final String specifier,
+                                                      final Object ... parts) {
+        return new ParseException(translate(specifier, parts), 0);
     }
 
     /** Create an {@link java.lang.RuntimeException} for an internal error.
