@@ -234,7 +234,7 @@ Configuration
   <orekit.data.path> property to the location of this file on a local computer is enough to
   use Orekit efficiently. This zip archive contains Earth OrientationParameters from 1962
   to 2008 (both IAU-1980 and IAU-2000), JPL DE 406 ephemerides from 1962 to 2029 and UTC
-  TAI history from 1972-01-01 to 2009-12-31.
+  TAI history from 1972-01-01 to 2009-12-31 and the Eigen 05C gravity field.
 
 * Supported data types
 
