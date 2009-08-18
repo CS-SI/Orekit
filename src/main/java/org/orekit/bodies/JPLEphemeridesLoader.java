@@ -58,7 +58,7 @@ public class JPLEphemeridesLoader implements DataLoader {
 
     /** Error message for unsupported file. */
     private static final String OUT_OF_RANGE_DATE =
-        "out of range date for ephemerides: {0}";
+        "out of range date for ephemerides: {0}, [{1}, {2}]";
 
     /** Binary record size in bytes for DE 405. */
     private static final int DE405_RECORD_SIZE = 1018 * 8;
@@ -426,12 +426,12 @@ public class JPLEphemeridesLoader implements DataLoader {
         // extract time range covered by the record
         final AbsoluteDate rangeStart = extractDate(record, 0);
         if (rangeStart.compareTo(startEpoch) < 0) {
-            throw new OrekitException(OUT_OF_RANGE_DATE, rangeStart);
+            throw new OrekitException(OUT_OF_RANGE_DATE, rangeStart, startEpoch, finalEpoch);
         }
 
         final AbsoluteDate rangeEnd   = extractDate(record, 8);
         if (rangeEnd.compareTo(finalEpoch) > 0) {
-            throw new OrekitException(OUT_OF_RANGE_DATE, rangeEnd);
+            throw new OrekitException(OUT_OF_RANGE_DATE, rangeEnd, startEpoch, finalEpoch);
         }
 
         if (tooFarRange(rangeStart, rangeEnd)) {

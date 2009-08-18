@@ -121,7 +121,8 @@ class IntegratedEphemeris
         throws PropagationException {
         try {
             if ((date.compareTo(minDate) < 0) || (date.compareTo(maxDate) > 0)) {
-                throw new PropagationException("out of range date for ephemerides: {0}", date);
+                throw new PropagationException("out of range date for ephemerides: {0}, [{1}, {2}]",
+                                               date, minDate, maxDate);
             }
             model.setInterpolatedTime(date.durationFrom(startDate));
             final double[] state = model.getInterpolatedState();
