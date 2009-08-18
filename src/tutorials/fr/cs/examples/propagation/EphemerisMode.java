@@ -111,12 +111,20 @@ public class EphemerisMode {
             System.out.println("  " + intermediateState.getOrbit());
             
             intermediateDate = new AbsoluteDate(initialDate, -1000);
+            System.out.println();
+            System.out.println("Attempting to propagate to date " + intermediateDate +
+                               " which is OUT OF RANGE");
+            System.out.println("This propagation attempt should fail, " +
+                               "so an error message shoud appear below, " +
+                               "this is expected and shows that errors are handled correctly");
             intermediateState = ephemeris.propagate(intermediateDate);
+
+            // these two print should never happen as en exception should have been triggered
             System.out.println("  date :  " + intermediateState.getDate());
             System.out.println("  " + intermediateState.getOrbit());
 
         } catch (OrekitException oe) {
-            System.err.println(oe.getMessage());
+            System.out.println(oe.getMessage());
         }
     }
 }
