@@ -36,13 +36,13 @@ public class PotentialReaderFactory {
     /** Simple constructor.
      * <p>
      * This constructor uses default values for gravity potential file names
-     * regular expressions: ".*eigen.*" for SHM files and ".*egm.*" for EGM files
+     * regular expressions: "^eigen[-_](\\w)+_coef$" for SHM files and "^egm\\d\\d_to\\d.*$" for EGM files
      * </p>
      */
     public PotentialReaderFactory() {
         readers = new ArrayList<PotentialCoefficientsReader>();
-        readers.add(new SHMFormatReader(".*eigen.*"));
-        readers.add(new EGMFormatReader(".*egm.*"));
+        readers.add(new SHMFormatReader("^eigen[-_](\\w)+_coef$"));
+        readers.add(new EGMFormatReader("^egm\\d\\d_to\\d.*$"));
     }
 
     /** Simple constructor.
