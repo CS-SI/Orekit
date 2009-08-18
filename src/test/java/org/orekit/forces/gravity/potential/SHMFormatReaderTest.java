@@ -28,25 +28,8 @@ import org.orekit.errors.OrekitException;
 public class SHMFormatReaderTest {
 
     @Test
-    public void testRegular01c() throws IOException, ParseException, OrekitException {
-        Utils.setDataRoot("potential/shm-format");
-        PotentialReaderFactory factory = new PotentialReaderFactory("g003_eigen-cg01c_coef", null);
-        PotentialCoefficientsProvider provider = factory.getPotentialProvider();
-        double[][] C = provider.getC(5, 5, true);
-        double[][] S = provider.getS(5, 5, true);
-
-        Assert.assertEquals(0.957187536534E-06,C[3][0],  0);
-        Assert.assertEquals(0.174787189024E-06,C[5][5],  0);
-        Assert.assertEquals(0, S[4][0],  0);
-        Assert.assertEquals(0.308834848269E-06 ,S[4][4],  0);
-        Assert.assertEquals(0.3986004415E+15 ,provider.getMu(),  0);
-        Assert.assertEquals(0.6378136460E+07 ,provider.getAe(),  0);
-
-    }
-
-    @Test
     public void testRegular03c() throws IOException, ParseException, OrekitException {
-        Utils.setDataRoot("potential/shm-format");
+        Utils.setDataRoot("potential");
         PotentialReaderFactory factory = new PotentialReaderFactory("eigen_cg03c_coef", null);
         PotentialCoefficientsProvider provider = factory.getPotentialProvider();
         double[][] C = provider.getC(5, 5, true);;
@@ -63,7 +46,7 @@ public class SHMFormatReaderTest {
 
     @Test
     public void testReadCompressed01c() throws IOException, ParseException, OrekitException {
-        Utils.setDataRoot("potential/shm-format-compressed");
+        Utils.setDataRoot("potential");
         PotentialReaderFactory factory = new PotentialReaderFactory("eigen-cg01c_coef", null);
         PotentialCoefficientsProvider provider = factory.getPotentialProvider();
         double[][] C = provider.getC(5, 5, true);;
@@ -77,41 +60,24 @@ public class SHMFormatReaderTest {
         Assert.assertEquals(0.6378136460E+07 ,provider.getAe(),  0);
     }
 
-    @Test
-    public void testReadCompressed03c() throws IOException, ParseException, OrekitException {
-        Utils.setDataRoot("potential/shm-format-compressed");
-        PotentialReaderFactory factory = new PotentialReaderFactory("eigen_cg03c_coef", null);
-        PotentialCoefficientsProvider provider = factory.getPotentialProvider();
-        double[][] C = provider.getC(5, 5, true);;
-        double[][] S = provider.getS(5, 5, true);;
-
-        Assert.assertEquals(0.957201462136E-06,C[3][0],  0);
-        Assert.assertEquals(0.174786174485E-06,C[5][5],  0);
-        Assert.assertEquals(0, S[4][0],  0);
-        Assert.assertEquals(0.308834784975E-06 ,S[4][4],  0);
-        Assert.assertEquals(0.3986004415E+15 ,provider.getMu(),  0);
-        Assert.assertEquals(0.6378136460E+07 ,provider.getAe(),  0);
-
-    }
-
     @Test(expected=OrekitException.class)
     public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
-        Utils.setDataRoot("potential/shm-format-corrupted");
-        PotentialReaderFactory factory = new PotentialReaderFactory("fakeeigen1", null);
+        Utils.setDataRoot("potential");
+        PotentialReaderFactory factory = new PotentialReaderFactory("eigen_corrupted1_coef", null);
         factory.getPotentialProvider();
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile2() throws IOException, ParseException, OrekitException {
-        Utils.setDataRoot("potential/shm-format-corrupted");
-        PotentialReaderFactory factory = new PotentialReaderFactory("fakeeigen2", null);
+        Utils.setDataRoot("potential");
+        PotentialReaderFactory factory = new PotentialReaderFactory("eigen_corrupted2_coef", null);
         factory.getPotentialProvider();
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile3() throws IOException, ParseException, OrekitException {
-        Utils.setDataRoot("potential/shm-format-corrupted");
-        PotentialReaderFactory factory = new PotentialReaderFactory("fakeeigen3", null);
+        Utils.setDataRoot("potential");
+        PotentialReaderFactory factory = new PotentialReaderFactory("eigen_corrupted3_coef", null);
         factory.getPotentialProvider();
     }
 

@@ -29,7 +29,7 @@ public class EGMFormatReaderTest {
 
     @Test
     public void testRead() throws IOException, ParseException, OrekitException {
-        Utils.setDataRoot("potential/egm-format");
+        Utils.setDataRoot("potential");
         PotentialReaderFactory factory = new PotentialReaderFactory(null, "egm96_to5.ascii");
         PotentialCoefficientsProvider provider = factory.getPotentialProvider();
         double[][] C = provider.getC(5, 5, true);
@@ -59,15 +59,15 @@ public class EGMFormatReaderTest {
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
-        Utils.setDataRoot("potential/egm-format-corrupted");
-        PotentialReaderFactory factory = new PotentialReaderFactory(null, "fakegm1");
+        Utils.setDataRoot("potential");
+        PotentialReaderFactory factory = new PotentialReaderFactory(null, "egm96_to5.corrupted-1");
         factory.getPotentialProvider();
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile2() throws IOException, ParseException, OrekitException {
-        Utils.setDataRoot("potential/egm-format-corrupted");
-        PotentialReaderFactory factory = new PotentialReaderFactory(null, "fakegm2");
+        Utils.setDataRoot("potential");
+        PotentialReaderFactory factory = new PotentialReaderFactory(null, "egm96_to5.corrupted-2");
         factory.getPotentialProvider();
     }
 
