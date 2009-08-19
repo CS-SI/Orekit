@@ -41,6 +41,7 @@ public interface DragSensitive {
      * @param state current state information: date, kinematics, attitude
      * @param direction direction of the flux in the spacecraft frame (unit vector)
      * @return drag coefficients vector (defined in the spacecraft frame)
+     * the norm of the vector should be equal to the desired drag coefficient
      */
     Vector3D getDragCoef(SpacecraftState state, Vector3D direction);
 

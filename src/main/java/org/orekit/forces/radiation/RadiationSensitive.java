@@ -40,6 +40,7 @@ public interface RadiationSensitive extends Serializable {
      * @param state current state information: date, kinematics, attitude
      * @param direction direction of the light flux in the spacecraft frame (unit vector)
      * @return absorption coefficients vector in the spacecraft frame
+     * the norm of the vector should be equal to the desired absorption coefficient
      */
     Vector3D getAbsorptionCoef(SpacecraftState state, Vector3D direction);
 
@@ -47,6 +48,7 @@ public interface RadiationSensitive extends Serializable {
      * @param state current state information: date, kinematics, attitude
      * @param direction direction of the light flux in the spacecraft frame (unit vector)
      * @return specular reflection coefficients vector in the spacecraft frame
+     * the norm of the vector should be equal to the desired reflection coefficient
      */
     Vector3D getReflectionCoef(SpacecraftState state, Vector3D direction);
 
