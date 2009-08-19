@@ -31,7 +31,7 @@ public interface DragSensitive {
     /** Get the visible surface from a specific direction.
      * See {@link org.orekit.forces.drag.DragForce} for more explanations.
      * @param state current state information: date, kinematics, attitude
-     * @param direction direction of the flux in the spacecraft frame
+     * @param direction direction of the flux in the spacecraft frame (unit vector)
      * @return surface (m<sup>2</sup>)
      */
     double getDragCrossSection(SpacecraftState state, Vector3D direction);
@@ -39,7 +39,7 @@ public interface DragSensitive {
     /** Get the drag coefficients vector.
      * See {@link org.orekit.forces.drag.DragForce} for more explanations.
      * @param state current state information: date, kinematics, attitude
-     * @param direction direction of the flux in the spacecraft frame
+     * @param direction direction of the flux in the spacecraft frame (unit vector)
      * @return drag coefficients vector (defined in the spacecraft frame)
      */
     Vector3D getDragCoef(SpacecraftState state, Vector3D direction);

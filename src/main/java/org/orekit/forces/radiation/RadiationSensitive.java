@@ -31,21 +31,21 @@ public interface RadiationSensitive extends Serializable {
 
     /** Get the cross section sensitive to radiation pressure.
      * @param state current state information: date, kinematics, attitude
-     * @param direction direction of the light flux in the spacecraft frame
+     * @param direction direction of the light flux in the spacecraft frame (unit vector)
      * @return surface (m<sup>2</sup>)
      */
     double getRadiationCrossSection(SpacecraftState state, Vector3D direction);
 
     /** Get the absorption coefficients vector.
      * @param state current state information: date, kinematics, attitude
-     * @param direction direction of the light flux in the spacecraft frame
+     * @param direction direction of the light flux in the spacecraft frame (unit vector)
      * @return absorption coefficients vector in the spacecraft frame
      */
     Vector3D getAbsorptionCoef(SpacecraftState state, Vector3D direction);
 
     /** Get the specular reflection coefficients vector.
      * @param state current state information: date, kinematics, attitude
-     * @param direction direction of the light flux in the spacecraft frame
+     * @param direction direction of the light flux in the spacecraft frame (unit vector)
      * @return specular reflection coefficients vector in the spacecraft frame
      */
     Vector3D getReflectionCoef(SpacecraftState state, Vector3D direction);
