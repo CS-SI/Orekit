@@ -25,7 +25,7 @@ import java.util.Arrays;
 
 import org.orekit.errors.OrekitException;
 
-/** Reader for the ICGEM gravity potential format.
+/** Reader for the ICGEM gravity field format.
  *
  * <p> This format is used to describe the gravity field of EIGEN models
  * published by the GFZ Potsdam since 2004. It is described in Franz

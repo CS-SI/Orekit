@@ -24,7 +24,7 @@ import java.util.List;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 
-/** Factory used to read gravity potential files in several supported formats.
+/** Factory used to read gravity field files in several supported formats.
  * @author Fabien Maussion
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
@@ -35,7 +35,7 @@ public class PotentialReaderFactory {
 
     /** Simple constructor.
      * <p>
-     * This constructor uses default values for gravity potential file names
+     * This constructor uses default values for gravity field file names
      * regular expressions: "^g(\\d)+_eigen_(\\w)+_coef$" for ICGEM files,
      * "^eigen[-_](\\w)+_coef$" for SHM files and "^egm\\d\\d_to\\d.*$" for
      * EGM files.
@@ -49,11 +49,11 @@ public class PotentialReaderFactory {
     }
 
     /** Simple constructor.
-     * @param icgemficNames regular expression for ICGEM (Eigen) gravity potential files,
+     * @param icgemficNames regular expression for ICGEM (Eigen) gravity field files,
      * if null, ICGEM files reader will not be set up
-     * @param shmficNames regular expression for SHM (Eigen) gravity potential files,
+     * @param shmficNames regular expression for SHM (Eigen) gravity field files,
      * if null, SHM files reader will not be set up
-     * @param egmficNames regular expression for EGM gravity potential files,
+     * @param egmficNames regular expression for EGM gravity field files,
      * if null, EGM files reader will not be set up
      */
     public PotentialReaderFactory(final String icgemficNames, final String shmficNames,
@@ -79,8 +79,8 @@ public class PotentialReaderFactory {
         readers.add(reader);
     }
 
-    /** Get the gravity potential coefficients provider from the first supported file.
-     * @return a gravity potential coefficients provider containing already loaded data
+    /** Get the gravity field coefficients provider from the first supported file.
+     * @return a gravity field coefficients provider containing already loaded data
      * @exception IOException if data can't be read
      * @exception ParseException if data can't be parsed
      * @exception OrekitException if some data is missing
@@ -97,7 +97,7 @@ public class PotentialReaderFactory {
             }
         }
 
-        throw new OrekitException("no gravity potential data loaded");
+        throw new OrekitException("no gravity field data loaded");
 
     }
 
