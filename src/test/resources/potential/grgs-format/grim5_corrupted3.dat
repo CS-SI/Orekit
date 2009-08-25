@@ -1,0 +1,9 @@
+FIELD - GRIM5, VERSION : C1, november 1999                                     
+         AE                  1/F                 GM                 OMEGA       
+0.63781364600000E+070.29825765000000E+030.39860044150000E+150.72921150000000E-04
+REFERENCE DATE : 1997.00                                                        
+MAXIMAL DEGREE : 120     Sigmas calibration factor : .5000E+01 (applied)        
+ L  M DOT         CBAR                SBAR             SIGMA C      SIGMA S     
+  2  0DOT 0.13637590952454E-10 0.00000000000000E+00  .143968E-11  .000000E+00   
+  3  0DOT 0.28175700027753E-11 0.00000000000000E+00  .496704E-12  .000000E+00   
+  4  0DOT 0.12249148508277E-10 0.00000000000000E+00  .129977E-11  .000000E+00   

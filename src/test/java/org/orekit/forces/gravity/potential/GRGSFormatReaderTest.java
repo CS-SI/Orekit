@@ -25,49 +25,43 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 
-public class EGMFormatReaderTest {
+public class GRGSFormatReaderTest {
 
     @Test
-    public void testRead() throws IOException, ParseException, OrekitException {
+    public void testRegular05c() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        PotentialReaderFactory factory = new PotentialReaderFactory(null, null, "egm96_to5.ascii", null);
+        PotentialReaderFactory factory = new PotentialReaderFactory(null, null, null, "grim5_C1.dat");
         PotentialCoefficientsProvider provider = factory.getPotentialProvider();
         double[][] C = provider.getC(5, 5, true);
         double[][] S = provider.getS(5, 5, true);
-        Assert.assertEquals(0.957254173792E-06 ,C[3][0],  0);
-        Assert.assertEquals(0.174971983203E-06,C[5][5],  0);
+
+        Assert.assertEquals(0.95857491635129E-06,C[3][0],  0);
+        Assert.assertEquals(0.17481512311600E-06,C[5][5],  0);
         Assert.assertEquals(0, S[4][0],  0);
-        Assert.assertEquals(0.308853169333E-06,S[4][4],  0);
-
-        double[][] UC = provider.getC(5, 5, false);
-        double a = (-0.295301647654E-06);
-        double b = 9*8*7*6*5*4*3*2;
-        double c = 2*11/b;
-        double result = a*Math.sqrt(c);
-
-        Assert.assertEquals(result,UC[5][4],  0);
-
-        a = -0.188560802735E-06;
-        b = 8*7*6*5*4*3*2;
-        c=2*9/b;
-        result = a*Math.sqrt(c);
-        Assert.assertEquals(result,UC[4][4],  0);
-
-        Assert.assertEquals(1.0826266835531513e-3, provider.getJ(false, 2)[2],0);
+        Assert.assertEquals(0.30882755318300E-06 ,S[4][4],  0);
+        Assert.assertEquals(0.3986004415E+15 ,provider.getMu(),  0);
+        Assert.assertEquals(0.6378136460E+07 ,provider.getAe(),  0);
 
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        PotentialReaderFactory factory = new PotentialReaderFactory(null, null, "egm96_to5.corrupted-1", null);
+        PotentialReaderFactory factory = new PotentialReaderFactory(null, null, null, "grim5_corrupted1.dat");
         factory.getPotentialProvider();
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile2() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        PotentialReaderFactory factory = new PotentialReaderFactory(null, null, "egm96_to5.corrupted-2", null);
+        PotentialReaderFactory factory = new PotentialReaderFactory(null, null, null, "grim5_corrupted2.dat");
+        factory.getPotentialProvider();
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testCorruptedFile3() throws IOException, ParseException, OrekitException {
+        Utils.setDataRoot("potential");
+        PotentialReaderFactory factory = new PotentialReaderFactory(null, null, null, "grim5_corrupted3.dat");
         factory.getPotentialProvider();
     }
 

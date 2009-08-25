@@ -20,6 +20,12 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="4.2" date="TBD"
+             description="TBD">
+      <action dev="luc" type="add" >
+        added support for the GRGS gravity field files formats.
+      </action>
+    </release>
     <release version="4.1" date="2009-08-18"
              description="version 4.1 is an upgrade bringing some new features and fixing a
              few bugs. The equinox-based frames family with IAU1980 precession-nutation

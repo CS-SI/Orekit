@@ -26,7 +26,8 @@ import org.orekit.errors.OrekitException;
 
 /** Factory used to read gravity field files in several supported formats.
  * @author Fabien Maussion
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
+ * @author Luc Maisonobe
+ * @version $Revision$ $Date$
  */
 public class PotentialReaderFactory {
 
@@ -37,8 +38,8 @@ public class PotentialReaderFactory {
      * <p>
      * This constructor uses default values for gravity field file names
      * regular expressions: "^g(\\d)+_eigen_(\\w)+_coef$" for ICGEM files,
-     * "^eigen[-_](\\w)+_coef$" for SHM files and "^egm\\d\\d_to\\d.*$" for
-     * EGM files.
+     * "^eigen[-_](\\w)+_coef$" for SHM files, "^egm\\d\\d_to\\d.*$" for
+     * EGM files and "^grim\\d_.*$" for GRGS files.
      * </p>
      */
     public PotentialReaderFactory() {
@@ -46,33 +47,39 @@ public class PotentialReaderFactory {
         readers.add(new ICGEMFormatReader("^g(\\d)+_eigen_(\\w)+_coef$"));
         readers.add(new SHMFormatReader("^eigen[-_](\\w)+_coef$"));
         readers.add(new EGMFormatReader("^egm\\d\\d_to\\d.*$"));
+        readers.add(new GRGSFormatReader("^grim\\d_.*$"));
     }
 
     /** Simple constructor.
-     * @param icgemficNames regular expression for ICGEM (Eigen) gravity field files,
+     * @param icgemFicNames regular expression for ICGEM (Eigen) gravity field files,
      * if null, ICGEM files reader will not be set up
-     * @param shmficNames regular expression for SHM (Eigen) gravity field files,
+     * @param shmFicNames regular expression for SHM (Eigen) gravity field files,
      * if null, SHM files reader will not be set up
-     * @param egmficNames regular expression for EGM gravity field files,
+     * @param egmFicNames regular expression for EGM gravity field files,
      * if null, EGM files reader will not be set up
+     * @param grgsFicNames TODO
      */
-    public PotentialReaderFactory(final String icgemficNames, final String shmficNames,
-                                  final String egmficNames) {
+    public PotentialReaderFactory(final String icgemFicNames, final String shmFicNames,
+                                  final String egmFicNames, String grgsFicNames) {
         readers = new ArrayList<PotentialCoefficientsReader>();
-        if (icgemficNames != null) {
-            readers.add(new ICGEMFormatReader(icgemficNames));
+        if (icgemFicNames != null) {
+            readers.add(new ICGEMFormatReader(icgemFicNames));
         }
-        if (shmficNames != null) {
-            readers.add(new SHMFormatReader(shmficNames));
+        if (shmFicNames != null) {
+            readers.add(new SHMFormatReader(shmFicNames));
         }
-        if (egmficNames != null) {
-            readers.add(new EGMFormatReader(egmficNames));
+        if (egmFicNames != null) {
+            readers.add(new EGMFormatReader(egmFicNames));
+        }
+        if (grgsFicNames != null) {
+            readers.add(new GRGSFormatReader(grgsFicNames));
         }
     }
 
     /** Adds a {@link PotentialCoefficientsReader} to the test list.
-     * By construction, the default list already contains the {@link SHMFormatReader}
-     * and the {@link EGMFormatReader}.
+     * By construction, the default list already contains the {@link
+     * ICGEMFormatReader}, {@link SHMFormatReader}, {@link EGMFormatReader}
+     * and {@link GRGSFormatReader}
      * @param reader the reader to add
      */
     public void addPotentialReader(final PotentialCoefficientsReader reader) {
