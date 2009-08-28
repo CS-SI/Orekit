@@ -141,7 +141,7 @@ Orbits
      
      ** hx = tan(i/2) cos(\u03a9)
      
-     ** hx = tan(i/2) sin(\u03a9)
+     ** hy = tan(i/2) sin(\u03a9)
      
      ** lv, lM or lE (rad) : respectively true longitude argument (\u03c9 + \u03a9 + v), 
      mean longitude argument (\u03c9 + \u03a9 + M) or eccentric longitude argument (\u03c9 + \u03a9 + E).

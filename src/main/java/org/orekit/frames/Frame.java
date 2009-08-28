@@ -351,7 +351,7 @@ public class Frame implements Serializable {
 
     /** Get the unique J2000 frame.
      * <p>The J2000 frame is also called the EME2000 frame.
-     * The later denomination is preferred in Orekit.</p>
+     * The latter denomination is preferred in Orekit.</p>
      * @return the unique instance of the J2000 frame
      * @deprecated as of 4.0, replaced by {@link FramesFactory#getEME2000()}
      * @see FramesFactory#getEME2000()
