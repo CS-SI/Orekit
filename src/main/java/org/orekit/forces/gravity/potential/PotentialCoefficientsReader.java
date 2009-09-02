@@ -272,7 +272,7 @@ public abstract class PotentialCoefficientsReader
             mfactNMinusM = factN;
             mfactNPlusM = factN;
             uRow[0] = Math.sqrt(2 * n + 1) * normalized[n][0];
-            for (int m = 1; m < nRow.length; m++) {
+            for (int m = 1; m < uRow.length; m++) {
                 mfactNPlusM  *= n + m;
                 mfactNMinusM /= n - m + 1;
                 uRow[m] = Math.sqrt((coeffN * mfactNMinusM) / mfactNPlusM) * nRow[m];

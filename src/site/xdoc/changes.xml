@@ -22,6 +22,10 @@
   <body>
     <release version="4.2" date="TBD"
              description="TBD">
+      <action dev="luc" type="fix" due-to="Christelle Blandin">
+        fixed denormalization of gravity field coefficients, the last coefficient
+        was not initialized
+      </action>
       <action dev="luc" type="add" >
         added support for the GRGS gravity field files formats.
       </action>
