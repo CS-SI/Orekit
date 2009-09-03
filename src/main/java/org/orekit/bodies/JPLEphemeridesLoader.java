@@ -331,8 +331,8 @@ public class JPLEphemeridesLoader implements DataLoader {
     }
 
     /** Check if a range is too far from the central date.
-     * <p>"Too far" is considered to be either end more than one year
-     * before central date or to start more than one year after central
+     * <p>"Too far" is considered to be either end more than 50 days
+     * before central date or to start more than 50 days after central
      * date.</p>
      * @param start start date of the range
      * @param end end date of the range
