@@ -27,6 +27,7 @@ import org.orekit.propagation.SpacecraftState;
  * the direction. As such, it is a simple container that returns the
  * values set in the constructor.</p>
  *
+ * @see BoxAndSolarArraySpacecraft
  * @author &Eacute;douard Delente
  * @author Fabien Maussion
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
