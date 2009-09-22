@@ -22,6 +22,9 @@
   <body>
     <release version="4.2" date="TBD"
              description="TBD">
+      <action dev="luc" type="update" >
+        the RadiationSensitive and DragSensitive interfaces now can throw OrekitException.
+      </action>
       <action dev="luc" type="fix" due-to="Christelle Blandin">
         fixed denormalization of gravity field coefficients, the last coefficient
         was not initialized

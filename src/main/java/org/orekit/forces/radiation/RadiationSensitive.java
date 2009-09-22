@@ -1,4 +1,4 @@
-/* Copyright 2002-2008 CS Communication & Systèmes
+/* Copyright 2002-2009 CS Communication & Systèmes
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.forces.radiation;
 import java.io.Serializable;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 
 /** Interface for spacecraft that are sensitive to radiation pressure forces.
@@ -33,23 +34,29 @@ public interface RadiationSensitive extends Serializable {
      * @param state current state information: date, kinematics, attitude
      * @param direction direction of the light flux in the spacecraft frame (unit vector)
      * @return surface (m<sup>2</sup>)
+     * @throws OrekitException if cross section cannot be computed
      */
-    double getRadiationCrossSection(SpacecraftState state, Vector3D direction);
+    double getRadiationCrossSection(SpacecraftState state, Vector3D direction)
+        throws OrekitException;
 
     /** Get the absorption coefficients vector.
      * @param state current state information: date, kinematics, attitude
      * @param direction direction of the light flux in the spacecraft frame (unit vector)
      * @return absorption coefficients vector in the spacecraft frame
      * the norm of the vector should be equal to the desired absorption coefficient
+     * @throws OrekitException if absorption coefficients vector cannot be computed
      */
-    Vector3D getAbsorptionCoef(SpacecraftState state, Vector3D direction);
+    Vector3D getAbsorptionCoef(SpacecraftState state, Vector3D direction)
+        throws OrekitException;
 
     /** Get the specular reflection coefficients vector.
      * @param state current state information: date, kinematics, attitude
      * @param direction direction of the light flux in the spacecraft frame (unit vector)
      * @return specular reflection coefficients vector in the spacecraft frame
      * the norm of the vector should be equal to the desired reflection coefficient
+     * @throws OrekitException if reflection coefficients vector cannot be computed
      */
-    Vector3D getReflectionCoef(SpacecraftState state, Vector3D direction);
+    Vector3D getReflectionCoef(SpacecraftState state, Vector3D direction)
+        throws OrekitException;
 
 }

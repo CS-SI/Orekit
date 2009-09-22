@@ -1,4 +1,4 @@
-/* Copyright 2002-2008 CS Communication & Systèmes
+/* Copyright 2002-2009 CS Communication & Systèmes
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.forces.drag;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 
 /** Interface for spacecraft that are sensitive to atmospheric drag forces.
@@ -33,8 +34,10 @@ public interface DragSensitive {
      * @param state current state information: date, kinematics, attitude
      * @param direction direction of the flux in the spacecraft frame (unit vector)
      * @return surface (m<sup>2</sup>)
+     * @throws OrekitException if cross section cannot be computed
      */
-    double getDragCrossSection(SpacecraftState state, Vector3D direction);
+    double getDragCrossSection(SpacecraftState state, Vector3D direction)
+        throws OrekitException;
 
     /** Get the drag coefficients vector.
      * See {@link org.orekit.forces.drag.DragForce} for more explanations.
@@ -42,7 +45,9 @@ public interface DragSensitive {
      * @param direction direction of the flux in the spacecraft frame (unit vector)
      * @return drag coefficients vector (defined in the spacecraft frame)
      * the norm of the vector should be equal to the desired drag coefficient
+     * @throws OrekitException if drag coefficients vector cannot be computed
      */
-    Vector3D getDragCoef(SpacecraftState state, Vector3D direction);
+    Vector3D getDragCoef(SpacecraftState state, Vector3D direction)
+        throws OrekitException;
 
 }
