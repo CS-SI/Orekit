@@ -40,7 +40,7 @@ public class ThirdBodyAttractionTest {
     private double mu;
 
     @Test(expected= OrekitException.class)
-    public void xxtestSunContrib() throws OrekitException {
+    public void testSunContrib() throws OrekitException {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
