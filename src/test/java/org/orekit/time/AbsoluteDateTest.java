@@ -120,12 +120,12 @@ public class AbsoluteDateTest {
         // 13 seconds offset between GPS time and UTC in 2005
         long noLeapGap = ((9347 * 24 + 16) * 60 + 31) * 60 + 17;
         long realGap   = (long) date1.durationFrom(dateRef);
-        Assert.assertEquals(13, realGap - noLeapGap);
+        Assert.assertEquals(13l, realGap - noLeapGap);
 
         // 14 seconds offset between GPS time and UTC in 2006
         noLeapGap = ((9712 * 24 + 16) * 60 + 31) * 60 + 17;
         realGap   = (long) date2.durationFrom(dateRef);
-        Assert.assertEquals(14, realGap - noLeapGap);
+        Assert.assertEquals(14l, realGap - noLeapGap);
 
     }
 
