@@ -577,9 +577,10 @@ public class TLE implements TimeStamped, Serializable {
     }
 
     /** Check the lines format validity.
-     * @param line1 the first element (69 char String)
-     * @param line2 the second element (69 char String)
-     * @return true if format is recognised, false if not
+     * @param line1 the first element
+     * @param line2 the second element
+     * @return true if format is recognized (non null lines, 69 characters length,
+     * line content), false if not
      * @exception OrekitException if checksum is not valid
      */
     public static boolean isFormatOK(final String line1, final String line2)
