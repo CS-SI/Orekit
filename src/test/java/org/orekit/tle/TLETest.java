@@ -159,11 +159,10 @@ public class TLETest {
                                 results = ex.getPVCoordinates(date);
                             }
                             catch(OrekitException e)  {
-                                if(satNum==28872  || satNum==23333 || satNum==29141 ) {
-                                    // expected behaviour
-                                }
-                                else {
-                                    Assert.fail("exception not expected"+e.getMessage());
+                                if (satNum==28872  || satNum==23333 || satNum==29141 ) {
+                                    // expected behavior
+                                } else {
+                                    Assert.fail("exception not expected " + e.getMessage());
                                 }
                             }
                             if (results != null) {
@@ -171,8 +170,8 @@ public class TLETest {
                                 double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
 
                                 cumulated += normDifPos;
-                                Assert.assertEquals( 0, normDifPos, 2e-3);;
-                                Assert.assertEquals( 0, normDifVel, 1e-5);
+                                Assert.assertEquals(0, normDifPos, 2e-3);;
+                                Assert.assertEquals(0, normDifVel, 1e-5);
 
                             }
 
