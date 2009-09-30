@@ -36,7 +36,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
-public class TleTest {
+public class TLETest {
 
     @Test
     public void testTLEFormat() throws OrekitException {
@@ -103,7 +103,7 @@ public class TleTest {
     public void testTLESeriesFormat() throws IOException, OrekitException {
 
         InputStream in =
-            TleTest.class.getResourceAsStream("/tle/regular-data/spot-5.txt");
+            TLETest.class.getResourceAsStream("/tle/regular-data/spot-5.txt");
         TLESeries series = new TLESeries(in);
         Assert.assertEquals(0,
                      series.getFirstDate().durationFrom(new AbsoluteDate(new DateComponents(2002, 05, 04),
@@ -142,12 +142,12 @@ public class TleTest {
         BufferedReader rResults = null;
 
         InputStream inEntry =
-            TleTest.class.getResourceAsStream("/tle/extrapolationTest-data/SatCode-entry");
+            TLETest.class.getResourceAsStream("/tle/extrapolationTest-data/SatCode-entry");
         rEntry = new BufferedReader(new InputStreamReader(inEntry));
 
         try {
             InputStream inResults =
-                TleTest.class.getResourceAsStream("/tle/extrapolationTest-data/SatCode-results");
+                TLETest.class.getResourceAsStream("/tle/extrapolationTest-data/SatCode-results");
             rResults = new BufferedReader(new InputStreamReader(inResults));
 
             try {
