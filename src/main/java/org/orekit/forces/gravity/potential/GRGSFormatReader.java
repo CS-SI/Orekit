@@ -50,18 +50,21 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
         // pattern for real numbers
         final String real = "[-+]?\\d?\\.\\d+[eEdD][-+]\\d\\d";
 
+        final String sep = ")\\s*(";
+        final String end = ")\\s*$";
+
         // regular expression for header lines
         final String[] header = {
             "^\\s*FIELD - .*$",
             "^\\s+AE\\s+1/F\\s+GM\\s+OMEGA\\s*$",
-            "^\\s*(" + real + ")\\s*(" + real + ")\\s*(" + real + ")\\s*(" + real + ")\\s*$",
+            "^\\s*(" + real + sep + real + sep + real + sep + real + end,
             "^\\s*REFERENCE\\s+DATE\\s+:\\s+\\d.*$",
             "^\\s*MAXIMAL\\s+DEGREE\\s+:\\s+(\\d+)\\s.*$",
             "^\\s*L\\s+M\\s+DOT\\s+CBAR\\s+SBAR\\s+SIGMA C\\s+SIGMA S\\s*$"
         };
 
         // regular expression for data lines
-        final String data = "^([ 0-9]{3})([ 0-9]{3})(   |DOT)\\s*(" + real + ")\\s*(" + real + ")\\s*(" + real + ")\\s*(" + real + ")\\s*$";
+        final String data = "^([ 0-9]{3})([ 0-9]{3})(   |DOT)\\s*(" + real + sep + real + sep + real + sep + real + end;
 
         // compile the regular expressions
         LINES = new Pattern[header.length + 1];
@@ -83,17 +86,17 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
     public void loadData(final InputStream input, final String name)
         throws IOException, ParseException, OrekitException {
 
-        //        FIELD - GRIM5, VERSION : C1, november 1999                                     
-        //        AE                  1/F                 GM                 OMEGA       
+        //        FIELD - GRIM5, VERSION : C1, november 1999
+        //        AE                  1/F                 GM                 OMEGA
         //0.63781364600000E+070.29825765000000E+030.39860044150000E+150.72921150000000E-04
-        //REFERENCE DATE : 1997.00                                                        
-        //MAXIMAL DEGREE : 120     Sigmas calibration factor : .5000E+01 (applied)        
-        //L  M DOT         CBAR                SBAR             SIGMA C      SIGMA S     
-        // 2  0DOT 0.13637590952454E-10 0.00000000000000E+00  .143968E-11  .000000E+00   
-        // 3  0DOT 0.28175700027753E-11 0.00000000000000E+00  .496704E-12  .000000E+00   
-        // 4  0DOT 0.12249148508277E-10 0.00000000000000E+00  .129977E-11  .000000E+00   
+        //REFERENCE DATE : 1997.00
+        //MAXIMAL DEGREE : 120     Sigmas calibration factor : .5000E+01 (applied)
+        //L  M DOT         CBAR                SBAR             SIGMA C      SIGMA S
+        // 2  0DOT 0.13637590952454E-10 0.00000000000000E+00  .143968E-11  .000000E+00
+        // 3  0DOT 0.28175700027753E-11 0.00000000000000E+00  .496704E-12  .000000E+00
+        // 4  0DOT 0.12249148508277E-10 0.00000000000000E+00  .129977E-11  .000000E+00
         // 0  0     .99999999988600E+00  .00000000000000E+00  .153900E-09  .000000E+00
-        // 2  0   -0.48416511550920E-03 0.00000000000000E+00  .204904E-10  .000000E+00   
+        // 2  0   -0.48416511550920E-03 0.00000000000000E+00  .204904E-10  .000000E+00
 
         final BufferedReader r = new BufferedReader(new InputStreamReader(input));
         boolean okConstants = false;
@@ -118,7 +121,7 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
                 okConstants = true;
             } else if (lineNumber == 5) {
                 // header line defining max degree
-                int maxDegree = Integer.parseInt(matcher.group(1));
+                final int maxDegree = Integer.parseInt(matcher.group(1));
                 normalizedC = new double[maxDegree + 1][];
                 normalizedS = new double[maxDegree + 1][];
                 for (int k = 0; k < normalizedC.length; k++) {
