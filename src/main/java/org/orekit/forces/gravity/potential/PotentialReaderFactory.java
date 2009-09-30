@@ -60,7 +60,7 @@ public class PotentialReaderFactory {
      * @param grgsFicNames TODO
      */
     public PotentialReaderFactory(final String icgemFicNames, final String shmFicNames,
-                                  final String egmFicNames, String grgsFicNames) {
+                                  final String egmFicNames, final String grgsFicNames) {
         readers = new ArrayList<PotentialCoefficientsReader>();
         if (icgemFicNames != null) {
             readers.add(new ICGEMFormatReader(icgemFicNames));
