@@ -30,9 +30,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -97,42 +94,6 @@ public class TLETest {
                           tleRef.getRevolutionNumberAtEpoch(), tleRef.getBStar());
         Assert.assertEquals(line1, tle.getLine1());
         Assert.assertEquals(line2, tle.getLine2());
-    }
-
-    @Test
-    public void testTLESeriesFormat() throws IOException, OrekitException {
-
-        InputStream in =
-            TLETest.class.getResourceAsStream("/tle/regular-data/spot-5.txt");
-        TLESeries series = new TLESeries(in);
-        Assert.assertEquals(0,
-                     series.getFirstDate().durationFrom(new AbsoluteDate(new DateComponents(2002, 05, 04),
-                                                                  new TimeComponents(11, 45, 15.695),
-                                                                  TimeScalesFactory.getUTC())),
-                                                                  1e-3);
-        Assert.assertEquals(0,
-                     series.getLastDate().durationFrom(new AbsoluteDate(new DateComponents(2002, 06, 24),
-                                                                 new TimeComponents(18, 12, 44.592),
-                                                                 TimeScalesFactory.getUTC())),
-                                                                 1e-3);
-
-        AbsoluteDate mid = new AbsoluteDate(new DateComponents(2002, 06, 02),
-                                            new TimeComponents(11, 12, 15),
-                                            TimeScalesFactory.getUTC());
-        Assert.assertEquals(0,
-                     series.getClosestTLE(mid).getDate().durationFrom(new AbsoluteDate(new DateComponents(2002, 6, 2),
-                                                                                 new TimeComponents(10, 8, 25.401),
-                                                                                 TimeScalesFactory.getUTC())),
-                                                                                 1e-3);
-        mid = new AbsoluteDate(new DateComponents(2001, 06, 02),
-                               new TimeComponents(11, 12, 15),
-                               TimeScalesFactory.getUTC());
-        Assert.assertTrue(series.getClosestTLE(mid).getDate().equals(series.getFirstDate()));
-        mid = new AbsoluteDate(new DateComponents(2003, 06, 02),
-                               new TimeComponents(11, 12, 15),
-                               TimeScalesFactory.getUTC());
-        Assert.assertTrue(series.getClosestTLE(mid).getDate().equals(series.getLastDate()));
-
     }
 
     @Test
