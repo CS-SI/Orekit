@@ -22,6 +22,10 @@
   <body>
     <release version="4.2" date="TBD"
              description="TBD">
+      <action dev="luc" type="fix" >
+        fixed corner cases in event detection during orbit propagation, sometimes
+        an already detected and handled event prevented the propagator to go further in time.
+      </action>
       <action dev="luc" type="add" >
         added a BoxAndSolarArray spacecraft model taking into account both attitude
         and Sun direction when computing surface forces.

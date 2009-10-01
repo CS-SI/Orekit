@@ -158,10 +158,7 @@ class EventState implements Serializable {
                     // variation direction, with respect to the integration direction
                     increasing = gb >= ga;
 
-                    final UnivariateRealSolver solver = new BrentSolver();
-                    solver.setAbsoluteAccuracy(detector.getThreshold());
-                    solver.setMaximalIterationCount(detector.getMaxIterationCount());
-                    final AbsoluteDate root = new AbsoluteDate(t0, solver.solve(new UnivariateRealFunction() {
+                    final UnivariateRealFunction f = new UnivariateRealFunction() {
                         private static final long serialVersionUID = 642356050167522213L;
                         public double value(final double t) throws FunctionEvaluationException {
                             try {
@@ -172,9 +169,29 @@ class EventState implements Serializable {
                                 throw new FunctionEvaluationException(e, t);
                             }
                         }
-                    }, ta.durationFrom(t0), tb.durationFrom(t0)));
-                    if ((previousEventTime == null) ||
-                        (Math.abs(previousEventTime.durationFrom(root)) > detector.getThreshold())) {
+                    };
+                    final UnivariateRealSolver solver = new BrentSolver();
+                    solver.setAbsoluteAccuracy(detector.getThreshold());
+                    solver.setMaximalIterationCount(detector.getMaxIterationCount());
+                    AbsoluteDate root;
+                    try {
+                        final double dtA = ta.durationFrom(t0);
+                        final double dtB = tb.durationFrom(t0);
+                        final double dtRoot = (dtA <= dtB) ? solver.solve(f, dtA, dtB) : solver.solve(f, dtB, dtA);
+                        root = new AbsoluteDate(t0, dtRoot);
+                    } catch (IllegalArgumentException iae) {
+                        // the interval did not really bracket a root
+                        root = null;
+                    }
+
+                    if ((root == null) ||
+                        ((Math.abs(root.durationFrom(ta)) <= detector.getThreshold()) &&
+                         (Math.abs(root.durationFrom(previousEventTime)) <= detector.getThreshold()))) {
+                            // we have either found nothing or found (again ?) a past event, we simply ignore it
+                            ta = tb;
+                            ga = gb;
+                    } else if ((previousEventTime == null) ||
+                               (Math.abs(previousEventTime.durationFrom(root)) > detector.getThreshold())) {
                         pendingEventTime = root;
                         if (pendingEvent && (Math.abs(t1.durationFrom(pendingEventTime)) <= detector.getThreshold())) {
                             // we were already waiting for this event which was
@@ -187,6 +204,10 @@ class EventState implements Serializable {
                         // moved in such a way the step cannot be accepted
                         pendingEvent = true;
                         return true;
+                    } else {
+                        // no sign change: there is no event for now
+                        ta = tb;
+                        ga = gb;
                     }
 
                 } else {
