@@ -35,7 +35,7 @@ public class DataProvidersManagerTest {
         DataProvidersManager.getInstance().clearProviders();
         Assert.assertFalse(DataProvidersManager.getInstance().isSupported(DirectoryCrawler.class));
         Assert.assertTrue(DataProvidersManager.getInstance().feed(".*", crawler));
-        Assert.assertEquals(14, crawler.getCount());
+        Assert.assertEquals(15, crawler.getCount());
     }
 
     @Test
@@ -49,7 +49,7 @@ public class DataProvidersManagerTest {
         } catch (OrekitException oe) {
             // expected
         }
-        Assert.assertEquals(14, crawler.getCount());
+        Assert.assertEquals(15, crawler.getCount());
     }
 
     @Test

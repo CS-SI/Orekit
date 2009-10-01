@@ -153,12 +153,17 @@ public class TLE implements TimeStamped, Serializable {
      * before trying to build this object.<p>
      * @param line1 the first element (69 char String)
      * @param line2 the second element (69 char String)
-     * @exception OrekitException if some format error occurs
+     * @exception OrekitException if some format error occurs or lines are inconsistent
      */
     public TLE(final String line1, final String line2) throws OrekitException {
 
         // identification
         satelliteNumber = parseInteger(line1, 2, 5);
+        final int satNum2 = parseInteger(line2, 2, 5);
+        if (satelliteNumber != satNum2) {
+            throw new OrekitException("TLE lines do not refer to the same object:\n{0}\n{1}",
+                                      line1, line2);
+        }
         classification  = line1.charAt(7);
         launchYear      = parseYear(line1, 9);
         launchNumber    = parseInteger(line1, 11, 3);

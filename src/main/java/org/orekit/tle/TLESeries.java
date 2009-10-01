@@ -16,7 +16,6 @@
  */
 package org.orekit.tle;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,29 +23,58 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.zip.GZIPInputStream;
 
+import org.orekit.data.DataLoader;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
 
-/** This class reads and handles series of TLEs, that have to be (for the moment)
- *  TLE from the same space object. It provides bounded ephemerides
- *  by finding the best initial TLE to propagate and then handling the
- *  propagation.
+/** This class reads and handles series of TLEs for one space object.
+ *  <p>
+ *  TLE data is read using the standard Orekit mechanism based on a configured
+ *  {@link DataProvidersManager DataProvidersManager}. This means TLE data may
+ *  be retrieved from many different storage media (local disk files, remote servers,
+ *  database ...).
+ *  </p>
+ *  <p>
+ *  This class provides bounded ephemerides by finding the best initial TLE to
+ *  propagate and then handling the propagation.
+ *  </p>
  *
+ * @see TLE
+ * @see DataProvidersManager
  * @author Fabien Maussion
+ * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class TLESeries implements Serializable {
+public class TLESeries implements DataLoader, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -6657661179006608529L;
+    private static final long serialVersionUID = -1120722267423537022L;
+
+    /** Default supported files name pattern. */
+    private static final String DEFAULT_SUPPORTED_NAMES = ".*\\.tle$";
+
+    /** Regular expression for supported files names. */
+    private final String supportedNames;
 
     /** Set containing all TLE entries. */
-    private SortedSet<TimeStamped> tles;
+    private final SortedSet<TimeStamped> tles;
+
+    /** Satellite number used for filtering. */
+    private int filterSatelliteNumber;
+
+    /** Launch year used for filtering (all digits). */
+    private int filterLaunchYear;
+
+    /** Launch number used for filtering. */
+    private int filterLaunchNumber;
+
+    /** Launch piece used for filtering. */
+    private String filterLaunchPiece;
 
     /** Previous TLE in the cached selection. */
     private TLE previous;
@@ -66,77 +94,236 @@ public class TLESeries implements Serializable {
     /** Date of the last TLE. */
     private AbsoluteDate lastDate;
 
-    /** The satellite id. */
-    private int satelliteNumber;
-
-    /** International designator. */
-    private String internationalDesignator;
+    /** Indicator for non-TLE extra lines. */
+    private final boolean ignoreNonTLELines;
 
     /** Simple constructor with a TLE file.
      * <p>Read TLE entries, if they match, are stored for later use. <p>
      * @param in the input to read (it can be compressed)
      * @exception IOException when the {@link InputStream} cannot be buffered.
      * @exception OrekitException when a file format error occurs
+     * @deprecated since 4.2 replaced by "new {@link
+     * #TLESeries(String, boolean)}.{@link #loadTLEData()}"
      */
+    @Deprecated
     public TLESeries(final InputStream in)
         throws IOException, OrekitException {
-        tles = new TreeSet<TimeStamped>(new ChronologicalComparator());
-        internationalDesignator = null;
-        satelliteNumber = 0;
+
+        supportedNames        = DEFAULT_SUPPORTED_NAMES;
+        ignoreNonTLELines     = false;
+        filterSatelliteNumber = -1;
+        filterLaunchYear      = -1;
+        filterLaunchNumber    = -1;
+        filterLaunchPiece     = null;
+
+        tles     = new TreeSet<TimeStamped>(new ChronologicalComparator());
         previous = null;
-        next = null;
-        read(in);
+        next     = null;
+
+        loadData(in, "");
+
     }
 
-    /** Read a TLE file.
-     * <p> The read TLE entries, if they match, are stored into a treeset for later use. <p>
-     * @param in the input to read (it can be compressed)
-     * @exception IOException when the {@link InputStream} cannot be buffered.
-     * @exception OrekitException when a format error occurs
+    /** Simple constructor with a TLE file.
+     * <p>This constructor does not load any data by itself. Data must be
+     * loaded later on by calling one of the {@link #loadTLEData()
+     * loadTLEData()} method, the {@link #loadTLEData(int)
+     * loadTLEData(filterSatelliteNumber)} method or the {@link #loadTLEData(int,
+     * int, String) loadTLEData(filterLaunchYear, filterLaunchNumber, filterLaunchPiece)} method.<p>
+     * @param supportedNames regular expression for supported files names
+     * (if null, a default pattern matching files with a ".tle" extension will be used)
+     * @param ignoreNonTLELines if true, extra non-TLE lines are silently ignored,
+     * if false an exception will be generated when such lines are encountered
+     * @see #loadTLEData()
+     * @see #loadTLEData(int)
+     * @see #loadTLEData(int, int, String)
      */
-    private void read(final InputStream in)
+    public TLESeries(final String supportedNames, final boolean ignoreNonTLELines) {
+
+        this.supportedNames    = supportedNames;
+        this.ignoreNonTLELines = ignoreNonTLELines;
+        filterSatelliteNumber  = -1;
+        filterLaunchYear       = -1;
+        filterLaunchNumber     = -1;
+        filterLaunchPiece      = null;
+
+        tles     = new TreeSet<TimeStamped>(new ChronologicalComparator());
+        previous = null;
+        next     = null;
+
+    }
+
+    /** Load TLE data for a specified object.
+     * <p>The TLE data already loaded in the instance will be discarded
+     * and replaced by the newly loaded data.</p>
+     * <p>The filtering values will be automatically set to the first loaded
+     * satellite. This feature is useful when the satellite selection is
+     * already set up by either the instance configuration (supported file
+     * names) or by the {@link DataProvidersManager data providers manager}
+     * configuration and the local filtering feature provided here can be ignored.</p>
+     * @exception OrekitException if some data can't be read, some
+     * file content is corrupted or no TLE data is available
+     * @see #loadTLEData(int)
+     * @see #loadTLEData(int, int, String)
+     */
+    public void loadTLEData() throws OrekitException {
+
+        // set the filtering parameters
+        filterSatelliteNumber = -1;
+        filterLaunchYear      = -1;
+        filterLaunchNumber    = -1;
+        filterLaunchPiece     = null;
+
+        // load the data from the configured data providers
+        tles.clear();
+        DataProvidersManager.getInstance().feed(supportedNames, this);
+        if (tles.isEmpty()) {
+            throw new OrekitException("no TLE data available");
+        }
+
+    }
+
+    /** Load TLE data for a specified object.
+     * <p>The TLE data already loaded in the instance will be discarded
+     * and replaced by the newly loaded data.</p>
+     * <p>Calling this method with the satellite number set to a negative value,
+     * is equivalent to call {@link #loadTLEData()}.</p>
+     * @param satelliteNumber satellite number
+     * @exception OrekitException if some data can't be read, some
+     * file content is corrupted or no TLE data is available for the selected object
+     * @see #loadTLEData()
+     * @see #loadTLEData(int, int, String)
+     */
+    public void loadTLEData(final int satelliteNumber) throws OrekitException {
+
+        if (satelliteNumber < 0) {
+            // no filtering at all
+            loadTLEData();
+        } else {
+            // set the filtering parameters
+            filterSatelliteNumber = satelliteNumber;
+            filterLaunchYear      = -1;
+            filterLaunchNumber    = -1;
+            filterLaunchPiece     = null;
+
+            // load the data from the configured data providers
+            tles.clear();
+            DataProvidersManager.getInstance().feed(supportedNames, this);
+            if (tles.isEmpty()) {
+                throw new OrekitException("no TLE data available for object {0}", satelliteNumber);
+            }
+        }
+
+    }
+
+    /** Load TLE data for a specified object.
+     * <p>The TLE data already loaded in the instance will be discarded
+     * and replaced by the newly loaded data.</p>
+     * <p>Calling this method with either the launch year or the launch number
+     * set to a negative value, or the launch piece set to null or an empty
+     * string are all equivalent to call {@link #loadTLEData()}.</p>
+     * @param launchYear launch year (all digits)
+     * @param launchNumber launch number
+     * @param launchPiece launch piece
+     * @exception OrekitException if some data can't be read, some
+     * file content is corrupted or no TLE data is available for the selected object
+     * @see #loadTLEData()
+     * @see #loadTLEData(int)
+     */
+    public void loadTLEData(final int launchYear, final int launchNumber,
+                            final String launchPiece) throws OrekitException {
+
+        if ((launchYear < 0) || (launchNumber < 0) ||
+            (launchPiece == null) || (launchPiece.length() == 0)) {
+            // no filtering at all
+            loadTLEData();
+        } else {
+            // set the filtering parameters
+            filterSatelliteNumber = -1;
+            filterLaunchYear      = launchYear;
+            filterLaunchNumber    = launchNumber;
+            filterLaunchPiece     = launchPiece;
+
+            // load the data from the configured data providers
+            tles.clear();
+            DataProvidersManager.getInstance().feed(supportedNames, this);
+            if (tles.isEmpty()) {
+                throw new OrekitException("no TLE data available for launch year {0}," +
+                                          " launch number {1}, launch piece {2}",
+                                          launchYear, launchNumber, launchPiece);
+            }
+        }
+
+    }
+
+    /** {@inheritDoc} */
+    public boolean stillAcceptsData() {
+        return tles.isEmpty();
+    }
+
+    /** {@inheritDoc} */
+    public void loadData(final InputStream input, final String name)
         throws IOException, OrekitException {
 
-        // TODO support additional formats, not portable enough
-        final BufferedReader r = new BufferedReader(new InputStreamReader(checkCompressed(in)));
+        final BufferedReader r = new BufferedReader(new InputStreamReader(input));
         try {
-            for (String line1 = r.readLine(); line1 != null; line1 = r.readLine()) {
 
-                // add second line
-                final String line2 = r.readLine();
-                if (line2 == null) {
-                    throw new OrekitException("Missing second line in TLE");
-                }
+            int lineNumber     = 0;
+            String pendingLine = null;
+            for (String line = r.readLine(); line != null; line = r.readLine()) {
 
-                // safety checks
-                if (!TLE.isFormatOK(line1, line2)) {
-                    r.close();
-                    throw new OrekitException("Non-TLE line in TLE data file");
-                }
+                ++lineNumber;
 
-                final int satNum = Integer.parseInt(line1.substring(2, 7).replace(' ', '0'));
-                final String iD = line1.substring(9, 17);
-                if (satelliteNumber == 0 && internationalDesignator == null) {
-                    satelliteNumber = satNum;
-                    internationalDesignator = iD;
+                if (pendingLine == null) {
+
+                    // we must wait for the second line
+                    pendingLine = line;
+
                 } else {
-                    if ((satNum != satelliteNumber) || !iD.equals(internationalDesignator)) {
-                        throw new OrekitException("The TLE's are not representing the same object.");
+
+                    // safety checks
+                    if (!TLE.isFormatOK(pendingLine, line)) {
+                        if (ignoreNonTLELines) {
+                            // just shift one line
+                            pendingLine = line;
+                        } else {
+                            throw new OrekitException("lines {0} and {1} are not TLE lines:\n{0}: \"{2}\"\n{1}: \"{3}\"",
+                                                      lineNumber - 1, lineNumber, pendingLine, line);
+                        }
                     }
+
+                    final TLE tle = new TLE(pendingLine, line);
+
+                    if (filterSatelliteNumber < 0) {
+                        if ((filterLaunchYear < 0) ||
+                            ((tle.getLaunchYear()   == filterLaunchYear) &&
+                             (tle.getLaunchNumber() == filterLaunchNumber) &&
+                             tle.getLaunchPiece().equals(filterLaunchPiece))) {
+                            // we now know the number of the object to load
+                            filterSatelliteNumber = tle.getSatelliteNumber();
+                        }
+                    }
+
+                    if (tle.getSatelliteNumber() == filterSatelliteNumber) {
+                        // accept this TLE
+                        tles.add(tle);
+                    }
+
+                    // we need to wait for two new lines
+                    pendingLine = null;
+
                 }
 
-                // everything seems OK
-                tles.add(new TLE(line1, line2));
-
             }
+
+            if ((pendingLine != null) && !ignoreNonTLELines) {
+                // there is an unexpected last line
+                throw new OrekitException("expected a second TLE line after line {0}:\n{0}: \"{1}\"",
+                                          lineNumber, pendingLine);
+            }
+
         } finally {
-            if (r != null) {
-                try {
-                    r.close();
-                } catch (IOException ioe) {
-                    throw new OrekitException(ioe.getMessage(), ioe);
-                }
-            }
+            r.close();
         }
 
     }
@@ -197,50 +384,38 @@ public class TLESeries implements Serializable {
         }
     }
 
-    /** Get the start date of the serie.
+    /** Get the start date of the series.
      * @return the first date
      */
     public AbsoluteDate getFirstDate() {
         if (firstDate == null) {
-            firstDate = ((TLE) tles.first()).getDate();
+            firstDate = tles.first().getDate();
         }
         return firstDate;
     }
 
-    /** Get the last date of the serie.
+    /** Get the last date of the series.
      * @return the end date
      */
     public AbsoluteDate getLastDate() {
         if (lastDate == null) {
-            lastDate = ((TLE) tles.last()).getDate();
+            lastDate = tles.last().getDate();
         }
         return lastDate;
     }
 
-    /** checks if a file is compressed or not.
-     * @param in the file to check.
-     * @return a readable file.
-     * @exception IOException if the file format is not understood.
+    /** Get the first TLE.
+     * @return first TLE
      */
-    private BufferedInputStream checkCompressed(final InputStream in)
-        throws IOException {
+    public TLE getFirst() {
+        return (TLE) tles.first();
+    }
 
-        BufferedInputStream filter = new BufferedInputStream(in);
-        filter.mark(1024 * 1024);
-
-        boolean isCompressed = false;
-        try {
-            isCompressed = new GZIPInputStream(filter).read() != -1;
-        } catch (IOException e) {
-            isCompressed = false;
-        }
-        filter.reset();
-
-        if (isCompressed) {
-            filter = new BufferedInputStream(new GZIPInputStream(filter));
-        }
-        filter.mark(1024 * 1024);
-        return filter;
+    /** Get the last TLE.
+     * @return last TLE
+     */
+    public TLE getLast() {
+        return (TLE) tles.last();
     }
 
 }
