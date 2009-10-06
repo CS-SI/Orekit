@@ -188,8 +188,8 @@ class EventState implements Serializable {
                         ((Math.abs(root.durationFrom(ta)) <= detector.getThreshold()) &&
                          (Math.abs(root.durationFrom(previousEventTime)) <= detector.getThreshold()))) {
                             // we have either found nothing or found (again ?) a past event, we simply ignore it
-                            ta = tb;
-                            ga = gb;
+                        ta = tb;
+                        ga = gb;
                     } else if ((previousEventTime == null) ||
                                (Math.abs(previousEventTime.durationFrom(root)) > detector.getThreshold())) {
                         pendingEventTime = root;
