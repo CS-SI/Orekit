@@ -31,7 +31,7 @@ import org.orekit.propagation.SpacecraftState;
  * of propagators concerning discrete conditions. The state of each
  * event detector is queried by the integrator at each step. When the
  * sign of the underlying g switching function changes, the step is rejected
- * and reduced, in order to make sure the signe changes occur only at steps
+ * and reduced, in order to make sure the sign changes occur only at steps
  * boundaries.</p>
  *
  * <p>When step ends exactly at a switching function sign change, the corresponding
