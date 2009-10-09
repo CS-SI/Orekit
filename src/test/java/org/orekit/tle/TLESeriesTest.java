@@ -20,15 +20,15 @@ package org.orekit.tle;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.PVCoordinates;
 
 
 public class TLESeriesTest {
@@ -65,17 +65,52 @@ public class TLESeriesTest {
         TLESeries series = new TLESeries("^spot-5-with-extra-lines\\.tle$", true);
         series.loadTLEData(-1);
         Assert.assertEquals(27421, series.getFirst().getSatelliteNumber());
-        Assert.assertEquals(0,
-                            series.getFirstDate().durationFrom(new AbsoluteDate(new DateComponents(2002, 5, 4),
-                                                                         new TimeComponents(11, 45, 15.695136),
-                                                                         TimeScalesFactory.getUTC())),
-                                                                         1e-13);
-        System.out.println(series.getLastDate());
-               Assert.assertEquals(0,
-                            series.getLastDate().durationFrom(new AbsoluteDate(new DateComponents(2002, 5, 4),
-                                                                        new TimeComponents(19, 10, 59.114784),
-                                                                        TimeScalesFactory.getUTC())),
-                                                                        1e-13);
+        AbsoluteDate referenceFirst =
+            new AbsoluteDate(2002, 5, 4, 11, 45, 15.695136, TimeScalesFactory.getUTC());
+        Assert.assertEquals(0, series.getFirstDate().durationFrom(referenceFirst), 1e-13);
+        AbsoluteDate referenceLast =
+            new AbsoluteDate(2002, 5, 4, 19, 10, 59.114784, TimeScalesFactory.getUTC());
+        Assert.assertEquals(0, series.getLastDate().durationFrom(referenceLast), 1e-13);
+    }
+
+    @Test
+    public void testPVStart() throws IOException, OrekitException {
+        TLESeries series = new TLESeries("^spot-5\\.tle$", false);
+        series.loadTLEData();
+
+        AbsoluteDate t0 = new AbsoluteDate(2002, 5, 4, 11, 0, 0.0, TimeScalesFactory.getUTC());
+
+        // this model is a rough fit on first 3 days of current tle with respect to first tle
+        // there are 1500m amplitude variations around a quadratic evolution that grows up to 90km
+        PolynomialFunction errorModel =
+            new PolynomialFunction(new double[] { -135.98, 0.010186, 1.3115e-06 });
+
+        TLEPropagator propagator = TLEPropagator.selectExtrapolator(series.getFirst());
+        for (double dt = 0; dt < 3 * 86400; dt += 600) {
+            AbsoluteDate date = new AbsoluteDate(t0, dt);
+            PVCoordinates delta = new PVCoordinates(1.0, series.getPVCoordinates(date),
+                                                    -1.0, propagator.getPVCoordinates(date));
+            Assert.assertEquals(errorModel.value(dt), delta.getPosition().getNorm(), 1500.0);
+        }
+
+    }
+
+    @Test
+    public void testPVEnd() throws IOException, OrekitException {
+        TLESeries series = new TLESeries("^spot-5\\.tle$", false);
+        series.loadTLEData();
+
+        AbsoluteDate t0 =
+            new AbsoluteDate(2002, 6, 21, 20, 0, 0.0, TimeScalesFactory.getUTC());
+
+        TLEPropagator propagator = TLEPropagator.selectExtrapolator(series.getLast());
+        for (double dt = 3 * 86400; dt >= 0; dt -= 600) {
+            AbsoluteDate date = new AbsoluteDate(t0, dt);
+            PVCoordinates delta = new PVCoordinates(1.0, series.getPVCoordinates(date),
+                                                    -1.0, propagator.getPVCoordinates(date));
+            Assert.assertEquals(0, delta.getPosition().getNorm(), 660.0);
+        }
+
     }
 
     @Test
@@ -105,33 +140,23 @@ public class TLESeriesTest {
         Assert.assertEquals(21, series.getLast().getLaunchNumber());
         Assert.assertEquals("A", series.getLast().getLaunchPiece());
 
-        Assert.assertEquals(0,
-                     series.getFirstDate().durationFrom(new AbsoluteDate(new DateComponents(2002, 05, 04),
-                                                                  new TimeComponents(11, 45, 15.695136),
-                                                                  TimeScalesFactory.getUTC())),
-                                                                  1e-13);
-        Assert.assertEquals(0,
-                     series.getLastDate().durationFrom(new AbsoluteDate(new DateComponents(2002, 06, 24),
-                                                                 new TimeComponents(18, 12, 44.591616001),
-                                                                 TimeScalesFactory.getUTC())),
-                                                                 1e-13);
+        AbsoluteDate referenceFirst =
+            new AbsoluteDate(2002, 5, 4, 11, 45, 15.695136, TimeScalesFactory.getUTC());
+        Assert.assertEquals(0, series.getFirstDate().durationFrom(referenceFirst), 1e-13);
+        AbsoluteDate referenceLast =
+            new AbsoluteDate(2002, 6, 24, 18, 12, 44.591616001, TimeScalesFactory.getUTC());
+        Assert.assertEquals(0, series.getLastDate().durationFrom(referenceLast), 1e-13);
 
-        AbsoluteDate mid = new AbsoluteDate(new DateComponents(2002, 06, 02),
-                                            new TimeComponents(11, 12, 15),
-                                            TimeScalesFactory.getUTC());
-        Assert.assertEquals(0,
-                     series.getClosestTLE(mid).getDate().durationFrom(new AbsoluteDate(new DateComponents(2002, 6, 2),
-                                                                                 new TimeComponents(10, 8, 25.401),
-                                                                                 TimeScalesFactory.getUTC())),
-                                                                                 1e-3);
-        mid = new AbsoluteDate(new DateComponents(2001, 06, 02),
-                               new TimeComponents(11, 12, 15),
-                               TimeScalesFactory.getUTC());
-        Assert.assertTrue(series.getClosestTLE(mid).getDate().equals(series.getFirstDate()));
-        mid = new AbsoluteDate(new DateComponents(2003, 06, 02),
-                               new TimeComponents(11, 12, 15),
-                               TimeScalesFactory.getUTC());
-        Assert.assertTrue(series.getClosestTLE(mid).getDate().equals(series.getLastDate()));
+        AbsoluteDate inside = new AbsoluteDate(2002, 06, 02, 11, 12, 15, TimeScalesFactory.getUTC());
+        AbsoluteDate referenceInside =
+            new AbsoluteDate(2002, 6, 2, 10, 8, 25.401, TimeScalesFactory.getUTC());
+        Assert.assertEquals(0, series.getClosestTLE(inside).getDate().durationFrom(referenceInside), 1e-3);
+
+        AbsoluteDate oneYearBefore = new AbsoluteDate(2001, 06, 02, 11, 12, 15, TimeScalesFactory.getUTC());
+        Assert.assertTrue(series.getClosestTLE(oneYearBefore).getDate().equals(series.getFirstDate()));
+
+        AbsoluteDate oneYearAfter = new AbsoluteDate(2003, 06, 02, 11, 12, 15, TimeScalesFactory.getUTC());
+        Assert.assertTrue(series.getClosestTLE(oneYearAfter).getDate().equals(series.getLastDate()));
 
     }
 

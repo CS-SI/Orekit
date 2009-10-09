@@ -286,6 +286,7 @@ public class TLESeries implements DataLoader, Serializable {
                         if (ignoreNonTLELines) {
                             // just shift one line
                             pendingLine = line;
+                            continue;
                         } else {
                             throw new OrekitException("lines {0} and {1} are not TLE lines:\n{0}: \"{2}\"\n{1}: \"{3}\"",
                                                       lineNumber - 1, lineNumber, pendingLine, line);
@@ -338,7 +339,7 @@ public class TLESeries implements DataLoader, Serializable {
     public PVCoordinates getPVCoordinates(final AbsoluteDate date)
         throws OrekitException {
         final TLE toExtrapolate = getClosestTLE(date);
-        if ((lastTLE == null) || (toExtrapolate.getDate().compareTo(lastTLE.getDate()) != 0)) {
+        if (toExtrapolate != lastTLE) {
             lastTLE = toExtrapolate;
             lastPropagator = TLEPropagator.selectExtrapolator(lastTLE);
         }

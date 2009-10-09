@@ -23,9 +23,9 @@
     <release version="4.2" date="TBD"
              description="TBD">
       <action dev="luc" type="update" >
-        improved TLE elemens loading. Now TLE lines are loaded using the standard data loading
+        improved TLE elements loading. Now TLE lines are loaded using the standard data loading
         mechanism (thus allowing loading from disk files, network, classpath ...), they can
-        contain TLE for several objects in one file, and they can contain some non-TLE lines
+        contain TLE for several objects in one file, and they may contain some non-TLE lines
         if desired.
       </action>
       <action dev="luc" type="fix" >

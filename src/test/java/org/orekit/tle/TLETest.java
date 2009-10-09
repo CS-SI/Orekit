@@ -76,6 +76,7 @@ public class TLETest {
         Assert.assertFalse(TLE.isFormatOK(line1, line2));
     }
 
+    @Test
     public void testSymmetry() throws OrekitException {
         checkSymmetry("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                       "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
@@ -94,6 +95,30 @@ public class TLETest {
                           tleRef.getRevolutionNumberAtEpoch(), tleRef.getBStar());
         Assert.assertEquals(line1, tle.getLine1());
         Assert.assertEquals(line2, tle.getLine2());
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testDifferentSatNumbers() throws OrekitException {
+        new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                "2 27422  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+    }
+
+    @Test
+    public void testChecksumOK() throws OrekitException {
+        TLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                       "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testWrongChecksum1() throws OrekitException {
+        TLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    21",
+                       "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testWrongChecksum2() throws OrekitException {
+        TLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                       "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    61");
     }
 
     @Test

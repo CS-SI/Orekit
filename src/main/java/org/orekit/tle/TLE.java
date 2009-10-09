@@ -577,7 +577,7 @@ public class TLE implements TimeStamped, Serializable {
         try {
             return getLine1() + System.getProperty("line.separator") + getLine2();
         } catch (OrekitException oe) {
-            return "???";
+            throw OrekitException.createInternalError(oe);
         }
     }
 
