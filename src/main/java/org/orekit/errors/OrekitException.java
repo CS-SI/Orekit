@@ -18,6 +18,7 @@ package org.orekit.errors;
 
 import java.text.MessageFormat;
 import java.text.ParseException;
+import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -44,12 +45,11 @@ public class OrekitException extends Exception {
     /** Serializable UID. */
     private static final long serialVersionUID = -6565493623428869182L;
 
-    /** Resources bundle. */
-    private static final ResourceBundle RESOURCES;
+    /** Format specifier (to be translated). */
+    private final String specifier;
 
-    static {
-        RESOURCES = ResourceBundle.getBundle("META-INF/localization/ExceptionsMessages");
-    }
+    /** Parts to insert in the format (no translation). */
+    private final Object[] parts;
 
     /** Simple constructor.
      * Build an exception with a translated and formatted message
@@ -57,7 +57,8 @@ public class OrekitException extends Exception {
      * @param parts parts to insert in the format (no translation)
      */
     public OrekitException(final String specifier, final Object ... parts) {
-        super(translate(specifier, parts));
+        this.specifier   = specifier;
+        this.parts = (parts == null) ? new Object[0] : parts.clone();
     }
 
     /** Simple constructor.
@@ -66,7 +67,9 @@ public class OrekitException extends Exception {
      * @param cause underlying cause
      */
     public OrekitException(final String message, final Throwable cause) {
-        super(message, cause);
+        super(cause);
+        this.specifier = message;
+        this.parts = new Object[0];
     }
 
     /** Simple constructor.
@@ -77,22 +80,68 @@ public class OrekitException extends Exception {
      */
     public OrekitException(final Throwable cause, final String specifier,
                            final Object ... parts) {
-        super(translate(specifier, parts), cause);
+        super(cause);
+        this.specifier = specifier;
+        this.parts = new Object[0];
     }
 
-    /** Translate and format a message.
+    /** Gets the message in a specified locale.
+     * @param locale Locale in which the message should be translated
+     * @return localized message
+     * @since 4.2
+     */
+    public String getMessage(final Locale locale) {
+        return buildMessage(locale, specifier, parts);
+    }
+
+   /** {@inheritDoc} */
+   @Override
+   public String getMessage() {
+       return getMessage(Locale.US);
+   }
+
+   /** {@inheritDoc} */
+   @Override
+   public String getLocalizedMessage() {
+       return getMessage(Locale.getDefault());
+   }
+
+   /**
+    * Translate a string to a given locale.
+    * @param s string to translate
+    * @param locale locale into which to translate the string
+    * @return translated string or original string
+    * for unsupported locales or unknown strings
+    */
+   private static String translate(final String s, final Locale locale) {
+       try {
+           ResourceBundle bundle =
+                   ResourceBundle.getBundle("META-INF/localization/ExceptionsMessages", locale);
+           if (bundle.getLocale().getLanguage().equals(locale.getLanguage())) {
+               // the value of the resource is the translated string
+               return bundle.getString(s);
+           }
+
+       } catch (MissingResourceException mre) {
+           // do nothing here
+       }
+
+       // the locale is not supported or the resource is unknown
+       // don't translate and fall back to using the string as is
+       return s;
+
+   }
+
+    /**
+     * Builds a message string by from a pattern and its arguments.
+     * @param locale Locale in which the message should be translated
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
-     * @return translated and formatted message
+     * @return a message string
      */
-    public static String translate(final String specifier, final Object ... parts) {
-        String translated;
-        try {
-            translated = RESOURCES.getString(specifier);
-        } catch (MissingResourceException mre) {
-            translated = specifier;
-        }
-        return new MessageFormat(translated).format(parts);
+    private static String buildMessage(final Locale locale, final String specifier,
+                                       final Object ... parts) {
+        return (specifier == null) ? "" : new MessageFormat(translate(specifier, locale), locale).format(parts);
     }
 
     /** Create an {@link java.lang.IllegalArgumentException} with localized message.
@@ -102,7 +151,25 @@ public class OrekitException extends Exception {
      */
     public static IllegalArgumentException createIllegalArgumentException(final String specifier,
                                                                           final Object ... parts) {
-        return new IllegalArgumentException(translate(specifier, parts));
+        return new IllegalArgumentException() {
+
+            /** Serializable UID. */
+            private static final long serialVersionUID = -2363165884898091700L;
+
+            /** {@inheritDoc} */
+            @Override
+            public String getMessage() {
+                return buildMessage(Locale.US, specifier, parts);
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public String getLocalizedMessage() {
+                return buildMessage(Locale.getDefault(), specifier, parts);
+            }
+
+        };
+
     }
 
     /** Create an {@link java.lang.IllegalStateException} with localized message.
@@ -112,7 +179,26 @@ public class OrekitException extends Exception {
      */
     public static IllegalStateException createIllegalStateException(final String specifier,
                                                                     final Object ... parts) {
-        return new IllegalStateException(translate(specifier, parts));
+
+        return new IllegalStateException() {
+
+            /** Serializable UID. */
+            private static final long serialVersionUID = 6291773904397909896L;
+
+            /** {@inheritDoc} */
+            @Override
+            public String getMessage() {
+                return buildMessage(Locale.US, specifier, parts);
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public String getLocalizedMessage() {
+                return buildMessage(Locale.getDefault(), specifier, parts);
+            }
+
+        };
+
     }
 
     /** Create an {@link java.text.ParseException} with localized message.
@@ -122,7 +208,26 @@ public class OrekitException extends Exception {
      */
     public static ParseException createParseException(final String specifier,
                                                       final Object ... parts) {
-        return new ParseException(translate(specifier, parts), 0);
+
+        return new ParseException("", 0) {
+
+            /** Serializable UID. */
+            private static final long serialVersionUID = 6711407414521775021L;
+
+            /** {@inheritDoc} */
+            @Override
+            public String getMessage() {
+                return buildMessage(Locale.US, specifier, parts);
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public String getLocalizedMessage() {
+                return buildMessage(Locale.getDefault(), specifier, parts);
+            }
+
+        };
+
     }
 
     /** Create an {@link java.lang.RuntimeException} for an internal error.
@@ -130,9 +235,32 @@ public class OrekitException extends Exception {
      * @return an {@link java.lang.RuntimeException} for an internal error
      */
     public static RuntimeException createInternalError(final Throwable cause) {
-        return new RuntimeException(translate("internal error, contact maintenance at {0}",
-                                              "orekit@c-s.fr"),
-                                    cause);
+
+        /** Format specifier (to be translated). */
+        final String specifier = "internal error, contact maintenance at {0}";
+
+        /** Parts to insert in the format (no translation). */
+        final String parts     = "orekit@c-s.fr";
+
+        return new RuntimeException() {
+
+            /** Serializable UID. */
+            private static final long serialVersionUID = -8775626362761076727L;
+
+            /** {@inheritDoc} */
+            @Override
+            public String getMessage() {
+                return buildMessage(Locale.US, specifier, parts);
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public String getLocalizedMessage() {
+                return buildMessage(Locale.getDefault(), specifier, parts);
+            }
+
+        };
+
     }
 
 }

@@ -23,6 +23,14 @@
     <release version="4.2" date="TBD"
              description="TBD">
       <action dev="luc" type="update" >
+        updated error message localization to be more consistent with Java exception. Now getMessage
+        returns a non-localized message and only getLocalizedMessage returns a message localized for
+        the platform default locale. A new getMessage(Locale) method has also been added to
+        retrieve the message in any desired locale, not only the platform default one. The messages
+        are also built and translated only when needed, so if an exception is triggered and
+        never displayed, the message will never be built.
+      </action>
+      <action dev="luc" type="update" >
         improved TLE elements loading. Now TLE lines are loaded using the standard data loading
         mechanism (thus allowing loading from disk files, network, classpath ...), they can
         contain TLE for several objects in one file, and they may contain some non-TLE lines
