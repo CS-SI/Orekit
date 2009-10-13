@@ -42,21 +42,17 @@ public class DateDetector extends AbstractDetector {
      * @param target target date
      */
     public DateDetector(final AbsoluteDate target) {
-        super(1.0e9, 1.0e-10);
+        super(10.e9, 10.e-10);
         this.target = target;
     }
 
     /** Handle a date event and choose what to do next.
      * <p>The default implementation behavior is to {@link
-     * EventDetector#STOP stop} propagation at date occurrence.
-     * This can be changed by overriding the {@link
-     * #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a derived class.</p>
+     * EventDetector#STOP stop} propagation at date occurrence.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param increasing if true, the value of the switching function increases
-     * when times increases around event (note that increase is measured with respect
-     * to physical time, not with respect to propagation which may go backward in time)
-     * @return one of {@link #STOP}, {@link #RESET_STATE}, {@link #RESET_DERIVATIVES}
-     * or {@link #CONTINUE}
+     * when times increases around event.
+     * @return {@link #STOP}
      * @exception OrekitException if some specific error occurs
      */
     public int eventOccurred(final SpacecraftState s, final boolean increasing)
@@ -64,7 +60,12 @@ public class DateDetector extends AbstractDetector {
         return STOP;
     }
 
-    /** {@inheritDoc} */
+    /** Compute the value of the switching function.
+     * This function measures the difference between the current and the target date.
+     * @param s the current state information: date, kinematics, attitude
+     * @return value of the switching function
+     * @exception OrekitException if some specific error occurs
+     */
     public double g(final SpacecraftState s) throws OrekitException {
         return s.getDate().durationFrom(target);
     }

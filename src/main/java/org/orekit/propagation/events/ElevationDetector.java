@@ -21,8 +21,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
 
 /** Finder for satellite raising/setting events.
- * <p>This class finds elevation events (i.e. satellite raising
- * and setting).</p>
+ * <p>This class finds elevation events (i.e. satellite raising and setting).</p>
  * <p>The default implementation behavior is to {@link
  * EventDetector#CONTINUE continue} propagation at raising and to
  * {@link EventDetector#STOP stop} propagation
@@ -44,22 +43,56 @@ public class ElevationDetector extends AbstractDetector {
     /** Topocentric frame in which elevation should be evaluated. */
     private final TopocentricFrame topo;
 
-    /** Build a new instance.
-     * <p>The maximal interval between elevation checks should
-     * be smaller than the half duration of the minimal pass to handle,
-     * otherwise some short passes could be missed.</p>
-     * @param maxCheck maximal interval in seconds
-     * @param elevation threshold elevation value
+    /** Build a new elevation detector.
+     * <p>This simple constructor takes default values for maximal checking
+     *  interval ({@link #DEFAULT_MAXCHECK}) and convergence threshold
+     * ({@link #DEFAULT_THRESHOLD}).</p>
+     * @param elevation threshold elevation value (°)
      * @param topo topocentric frame in which elevation should be evaluated
      */
-    public ElevationDetector(final double maxCheck, final double elevation,
-                             final TopocentricFrame topo) {
-        super(maxCheck, 1.0e-3);
+    public ElevationDetector(final double elevation, final TopocentricFrame topo) {
+        super(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD);
         this.elevation = elevation;
         this.topo = topo;
     }
 
-    /** Get the threshold elevation value.
+    /** Build a new elevation detector.
+     * <p>This constructor takes default value for convergence threshold
+     * ({@link #DEFAULT_THRESHOLD}).</p>
+     * <p>The maximal interval between elevation checks should
+     * be smaller than the half duration of the minimal pass to handle,
+     * otherwise some short passes could be missed.</p>
+     * @param maxCheck maximal checking interval (s)
+     * @param elevation threshold elevation value (°)
+     * @param topo topocentric frame in which elevation should be evaluated
+     */
+    public ElevationDetector(final double maxCheck,
+                             final double elevation,
+                             final TopocentricFrame topo) {
+        super(maxCheck, DEFAULT_THRESHOLD);
+        this.elevation = elevation;
+        this.topo = topo;
+    }
+
+    /** Build a new elevation detector.
+     * <p>The maximal interval between elevation checks should
+     * be smaller than the half duration of the minimal pass to handle,
+     * otherwise some short passes could be missed.</p>
+     * @param maxCheck maximal checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param elevation threshold elevation value (°)
+     * @param topo topocentric frame in which elevation should be evaluated
+     */
+    public ElevationDetector(final double maxCheck,
+                             final double threshold,
+                             final double elevation,
+                             final TopocentricFrame topo) {
+        super(maxCheck, threshold);
+        this.elevation = elevation;
+        this.topo = topo;
+    }
+
+    /** Get the threshold elevation value (°).
      * @return the threshold elevation value
      */
     public double getElevation() {
@@ -76,15 +109,11 @@ public class ElevationDetector extends AbstractDetector {
     /** Handle an elevation event and choose what to do next.
      * <p>The default implementation behavior is to {@link
      * EventDetector#CONTINUE continue} propagation at raising and to
-     * {@link EventDetector#STOP stop} propagation at setting. This can
-     * be changed by overriding the {@link #eventOccurred(SpacecraftState, boolean)
-     * eventOccurred} method in a derived class.</p>
+     * {@link EventDetector#STOP stop} propagation at setting.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param increasing if true, the value of the switching function increases
-     * when times increases around event (note that increase is measured with respect
-     * to physical time, not with respect to propagation which may go backward in time)
-     * @return one of {@link #STOP}, {@link #RESET_STATE}, {@link #RESET_DERIVATIVES}
-     * or {@link #CONTINUE}
+     * when times increases around event.
+     * @return {@link #STOP} or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
     public int eventOccurred(final SpacecraftState s, final boolean increasing)
@@ -92,7 +121,13 @@ public class ElevationDetector extends AbstractDetector {
         return increasing ? CONTINUE : STOP;
     }
 
-    /** {@inheritDoc} */
+    /** Compute the value of the switching function.
+     * This function measures the difference between the current elevation
+     * and the threshold elevation.
+     * @param s the current state information: date, kinematics, attitude
+     * @return value of the switching function
+     * @exception OrekitException if some specific error occurs
+     */
     public double g(final SpacecraftState s) throws OrekitException {
         return topo.getElevation(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate()) - elevation;
     }

@@ -41,28 +41,63 @@ public class AltitudeDetector extends AbstractDetector {
     /** Serializable UID. */
     private static final long serialVersionUID = -1552109617025755015L;
 
-    /** Threshold altitude value. */
+    /** Threshold altitude value (m). */
     private final double altitude;
 
     /** Body shape with respect to which altitude should be evaluated. */
     private final BodyShape bodyShape;
 
-    /** Build a new instance.
-     * <p>The maximal interval between elevation checks should
-     * be smaller than the half period of the orbit.</p>
-     * @param maxCheck maximal interval in seconds
+    /** Build a new altitude detector.
+     * <p>This simple constructor takes default values for maximal checking
+     *  interval ({@link #DEFAULT_MAXCHECK}) and convergence threshold
+     * ({@link #DEFAULT_THRESHOLD}).</p>
      * @param altitude threshold altitude value
      * @param bodyShape body shape with respect to which altitude should be evaluated
      */
-    public AltitudeDetector(final double maxCheck, final double altitude,
-                            final BodyShape bodyShape) {
-        super(maxCheck, 1.0e-3);
-        this.altitude = altitude;
+    public AltitudeDetector(final double altitude, final BodyShape bodyShape) {
+        super(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD);
+        this.altitude  = altitude;
+        this.bodyShape = bodyShape;
+    }
+
+    /** Build a new altitude detector.
+     * <p>This simple constructor takes default value for convergence threshold
+     * ({@link #DEFAULT_THRESHOLD}).</p>
+     * <p>The maximal interval between altitude checks should
+     * be smaller than the half duration of the minimal pass to handle,
+     * otherwise some short passes could be missed.</p>
+     * @param maxCheck maximal checking interval (s)
+     * @param altitude threshold altitude value (m)
+     * @param bodyShape body shape with respect to which altitude should be evaluated
+     */
+    public AltitudeDetector(final double maxCheck,
+            final double altitude,
+            final BodyShape bodyShape) {
+        super(maxCheck, DEFAULT_THRESHOLD);
+        this.altitude  = altitude;
+        this.bodyShape = bodyShape;
+    }
+
+    /** Build a new altitude detector.
+     * <p>The maximal interval between altitude checks should
+     * be smaller than the half duration of the minimal pass to handle,
+     * otherwise some short passes could be missed.</p>
+     * @param maxCheck maximal checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param altitude threshold altitude value (m)
+     * @param bodyShape body shape with respect to which altitude should be evaluated
+     */
+    public AltitudeDetector(final double maxCheck,
+            final double threshold,
+            final double altitude,
+            final BodyShape bodyShape) {
+        super(maxCheck, threshold);
+        this.altitude  = altitude;
         this.bodyShape = bodyShape;
     }
 
     /** Get the threshold altitude value.
-     * @return the threshold altitude value
+     * @return the threshold altitude value (m)
      */
     public double getAltitude() {
         return altitude;
@@ -78,16 +113,11 @@ public class AltitudeDetector extends AbstractDetector {
     /** Handle an altitude event and choose what to do next.
      * <p>The default implementation behavior is to {@link
      * EventDetector#CONTINUE continue} propagation when ascending and to
-     * {@link EventDetector#STOP stop} propagation
-     * when descending. This can be changed by overriding the
-     * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
-     * derived class.</p>
+     * {@link EventDetector#STOP stop} propagationwhen descending.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param increasing if true, the value of the switching function increases
-     * when times increases around event (note that increase is measured with respect
-     * to physical time, not with respect to propagation which may go backward in time)
-     * @return one of {@link #STOP}, {@link #RESET_STATE}, {@link #RESET_DERIVATIVES}
-     * or {@link #CONTINUE}
+     * when times increases around event
+     * @return {@link #STOP} or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
     public int eventOccurred(final SpacecraftState s, final boolean increasing)
@@ -95,7 +125,13 @@ public class AltitudeDetector extends AbstractDetector {
         return increasing ? CONTINUE : STOP;
     }
 
-    /** {@inheritDoc} */
+    /** Compute the value of the switching function.
+     * This function measures the difference between the current altitude
+     * and the threshold altitude.
+     * @param s the current state information: date, kinematics, attitude
+     * @return value of the switching function
+     * @exception OrekitException if some specific error occurs
+     */
     public double g(final SpacecraftState s) throws OrekitException {
         final Frame bodyFrame      = bodyShape.getBodyFrame();
         final PVCoordinates pvBody = s.getPVCoordinates(bodyFrame);

@@ -52,22 +52,28 @@ public class ApsideDetector extends AbstractDetector {
      */
     public ApsideDetector(final Orbit orbit) {
         super(orbit.getKeplerianPeriod() / 3,
-              1.0e-13 * Math.sqrt(orbit.getMu() * orbit.getA()));
+              1.0e-13 * orbit.getKeplerianPeriod());
+    }
+
+    /** Build a new instance.
+     * <p>The orbit is used only to set an upper bound for the
+     * max check interval to period/3</p>
+     * @param threshold convergence threshold (s)
+     * @param orbit initial orbit
+     */
+    public ApsideDetector(final double threshold, final Orbit orbit) {
+        super(orbit.getKeplerianPeriod() / 3, threshold);
     }
 
     /** Handle an apside crossing event and choose what to do next.
      * <p>The default implementation behavior is to {@link
      * EventDetector#CONTINUE continue} propagation at apogee
      * crossing and to {@link EventDetector#STOP stop} propagation
-     * at perigee crossing. This can be changed by overriding the
-     * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
-     * derived class.</p>
+     * at perigee crossing.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param increasing if true, the value of the switching function increases
-     * when times increases around event (note that increase is measured with respect
-     * to physical time, not with respect to propagation which may go backward in time)
-     * @return one of {@link #STOP}, {@link #RESET_STATE}, {@link #RESET_DERIVATIVES}
-     * or {@link #CONTINUE}
+     * when times increases around event.
+     * @return {@link #STOP} or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
     public int eventOccurred(final SpacecraftState s, final boolean increasing)
@@ -75,7 +81,12 @@ public class ApsideDetector extends AbstractDetector {
         return increasing ? STOP : CONTINUE;
     }
 
-    /** {@inheritDoc} */
+    /** Compute the value of the switching function.
+     * This function computes the dot product of the 2 vectors : position.velocity.
+     * @param s the current state information: date, kinematics, attitude
+     * @return value of the switching function
+     * @exception OrekitException if some specific error occurs
+     */
     public double g(final SpacecraftState s) throws OrekitException {
         final PVCoordinates pv = s.getPVCoordinates();
         return Vector3D.dotProduct(pv.getPosition(), pv.getVelocity());

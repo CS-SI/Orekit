@@ -112,12 +112,12 @@ public interface EventDetector extends Serializable {
     SpacecraftState resetState(SpacecraftState oldState) throws OrekitException;
 
     /** Get the convergence threshold in the event time search.
-     * @return convergence threshold
+     * @return convergence threshold (s)
      */
     double getThreshold();
 
     /** Get maximal time interval between switching function checks.
-     * @return maximal time interval between switching function checks
+     * @return maximal time interval (s) between switching function checks
      */
     double getMaxCheckInterval();
 

@@ -26,6 +26,12 @@ import org.orekit.propagation.SpacecraftState;
  */
 public abstract class AbstractDetector implements EventDetector {
 
+    /** Default maximum checking interval (s). */
+    public static final double DEFAULT_MAXCHECK = 600;
+
+    /** Default convergence threshold (s). */
+    public static final double DEFAULT_THRESHOLD = 1.e-6;
+
     /** Serializable UID. */
     private static final long serialVersionUID = -8212002898109868489L;
 
@@ -36,8 +42,8 @@ public abstract class AbstractDetector implements EventDetector {
     private final double threshold;
 
     /** Build a new instance.
-     * @param maxCheck maximal check interval
-     * @param threshold convergence threshold
+     * @param maxCheck maximum checking interval (s)
+     * @param threshold convergence threshold (s)
      */
     protected AbstractDetector(final double maxCheck, final double threshold) {
         this.maxCheck  = maxCheck;

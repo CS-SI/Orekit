@@ -49,15 +49,29 @@ public class NodeDetector extends AbstractDetector {
     private final Frame frame;
 
     /** Build a new instance.
-     * <p>The orbit is used only to set an upper bound for the
-     * max check interval to period/3.</p>
+     * <p>The orbit is used only to set an upper bound for the max check interval
+     * to period/3 and to set the convergence threshold according to orbit size.</p>
      * @param orbit initial orbit
      * @param frame frame in which the equator is defined (typical
      * values are {@link org.orekit.frames.FramesFactory#getEME2000() J<sub>2000</sub>} or
      * {@link org.orekit.frames.FramesFactory#getITRF2005() ITRF 2005})
      */
     public NodeDetector(final Orbit orbit, final Frame frame) {
-        super(orbit.getKeplerianPeriod() / 3, 1.0e-10);
+        super(orbit.getKeplerianPeriod() / 3, 1.0e-13 * orbit.getKeplerianPeriod());
+        this.frame  = frame;
+    }
+
+    /** Build a new instance.
+     * <p>The orbit is used only to set an upper bound for the max check interval
+     * to period/3.</p>
+     * @param threshold convergence threshold (s)
+     * @param orbit initial orbit
+     * @param frame frame in which the equator is defined (typical
+     * values are {@link org.orekit.frames.FramesFactory#getEME2000() J<sub>2000</sub>} or
+     * {@link org.orekit.frames.FramesFactory#getITRF2005() ITRF 2005})
+     */
+    public NodeDetector(final double threshold, final Orbit orbit, final Frame frame) {
+        super(orbit.getKeplerianPeriod() / 3, threshold);
         this.frame  = frame;
     }
 
@@ -72,15 +86,11 @@ public class NodeDetector extends AbstractDetector {
      * <p>The default implementation behavior is to {@link
      * EventDetector#CONTINUE continue} propagation at descending node
      * crossing and to {@link EventDetector#STOP stop} propagation
-     * at ascending node crossing. This can be changed by overriding the
-     * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
-     * derived class.</p>
+     * at ascending node crossing.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param increasing if true, the value of the switching function increases
-     * when times increases around event (note that increase is measured with respect
-     * to physical time, not with respect to propagation which may go backward in time)
-     * @return one of {@link #STOP}, {@link #RESET_STATE}, {@link #RESET_DERIVATIVES}
-     * or {@link #CONTINUE}
+     * when times increases around event
+     * @return {@link #STOP} or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
     public int eventOccurred(final SpacecraftState s, final boolean increasing)
@@ -88,7 +98,12 @@ public class NodeDetector extends AbstractDetector {
         return increasing ? STOP : CONTINUE;
     }
 
-    /** {@inheritDoc} */
+    /** Compute the value of the switching function.
+     * This function computes the Z position in the defined frame.
+     * @param s the current state information: date, kinematics, attitude
+     * @return value of the switching function
+     * @exception OrekitException if some specific error occurs
+     */
     public double g(final SpacecraftState s) throws OrekitException {
         return s.getPVCoordinates(frame).getPosition().getZ();
     }
