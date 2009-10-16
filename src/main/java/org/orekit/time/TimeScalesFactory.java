@@ -17,7 +17,12 @@
 package org.orekit.time;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 
 /** Factory for predefined time scales.
@@ -50,12 +55,26 @@ public class TimeScalesFactory implements Serializable {
     /** Barycentric Dynamic Coordinate Time scale. */
     private static TDBScale tdb = null;
 
+    /** UTCTAI offsets loaders. */
+    private static List<UTCTAILoader> loaders;
+    
+    static {
+    	loaders = new ArrayList<UTCTAILoader>();
+    	loaders.add(new UTCTAIHistoryFilesLoader());
+    }
+
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
      * nor a default constructor. This private constructor prevents
      * the compiler from generating one automatically.</p>
      */
     private TimeScalesFactory() {
+    }
+
+    /** Add a loader for UTC-TAI offsets history files
+     */
+    public static void addUTCTAILoader(final UTCTAILoader loader) {
+    	loaders.add(loader);
     }
 
     /** Get the International Atomic Time scale.
@@ -75,13 +94,27 @@ public class TimeScalesFactory implements Serializable {
 
     /** Get the Universal Time Coordinate scale.
      * @return Universal Time Coordinate scale
-     * @exception OrekitException if the leap seconds cannot be read
+     * @exception OrekitException if some data can't be read or some
+     * file content is corrupted
      */
     public static UTCScale getUTC() throws OrekitException {
         synchronized (TimeScalesFactory.class) {
 
             if (utc == null) {
-                utc = new UTCScale();
+                SortedMap<DateComponents, Integer> entries =
+                    new TreeMap<DateComponents, Integer>();
+                boolean loaded = false;
+                for (UTCTAILoader loader : loaders) {
+                    DataProvidersManager.getInstance().feed(loader.getSupportedNames(), loader);
+                    if (!loader.stillAcceptsData()) {
+                        entries = loader.loadTimeSteps();
+                        loaded = true;
+                    }
+                }
+                if (!loaded) {
+                    throw new OrekitException("no UTC-TAI history data loaded");
+                }
+                utc = new UTCScale(entries);
             }
 
             return utc;

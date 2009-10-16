@@ -28,8 +28,6 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.orekit.data.DataLoader;
-import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 
 
@@ -44,7 +42,7 @@ import org.orekit.errors.OrekitException;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-class UTCTAIHistoryFilesLoader implements DataLoader {
+class UTCTAIHistoryFilesLoader implements UTCTAILoader {
 
     /** Supported files name pattern. */
     private static final String SUPPORTED_NAMES = "^UTC-TAI\\.history$";
@@ -94,23 +92,21 @@ class UTCTAIHistoryFilesLoader implements DataLoader {
             monthsMap.put(months[i], i + 1);
         }
 
+        entries = new TreeMap<DateComponents, Integer>();
+ 
     }
 
-    /** Load UTC-TAI offsets entries read from one or more files.
-     * <p>The time steps are extracted from the <code>UTC-TAI.history[.gz]</code>
-     * files. Since entries are stored in a {@link java.util.SortedMap SortedMap},
-     * they are chronologically sorted and only one entry remains for a given date.
-     * If different files contain inconsistent data for the same date, the selected
-     * entry will depend on file analysis order, which is undefined.</p>
-     * @return sorted UTC-TAI offsets entries (may be empty if no data file is available)
-     * @exception OrekitException if some data can't be read or some
-     * file content is corrupted
+    /** Get the regular expression for supported files names.
+     * @return regular expression for supported files names
      */
-    public SortedMap<DateComponents, Integer> loadTimeSteps() throws OrekitException {
-        entries = new TreeMap<DateComponents, Integer>();
-        if (!DataProvidersManager.getInstance().feed(SUPPORTED_NAMES, this)) {
-            throw new OrekitException("no IERS UTC-TAI history data loaded");
-        }
+    public String getSupportedNames() {
+        return SUPPORTED_NAMES;
+    }
+
+    /** Load stored UTC-TAI offsets entries.
+     * @return sorted UTC-TAI offsets entries (may be empty if no data file is available)
+     */
+    public SortedMap<DateComponents, Integer> loadTimeSteps() {
         return entries;
     }
 
@@ -119,11 +115,23 @@ class UTCTAIHistoryFilesLoader implements DataLoader {
         return (entries == null) || entries.isEmpty();
     }
 
-    /** {@inheritDoc} */
+    /** Load UTC-TAI offsets entries read from some file.
+     * <p>The time steps are extracted from some <code>UTC-TAI.history[.gz]</code>
+     * file. Since entries are stored in a {@link java.util.SortedMap SortedMap},
+     * they are chronologically sorted and only one entry remains for a given date.</p>
+     * @param input data input stream
+     * @param name name of the file (or zip entry)
+     * @exception IOException if data can't be read
+     * @exception ParseException if data can't be parsed
+     * @exception OrekitException if some data is missing
+     * or if some loader specific error occurs
+     */
     public void loadData(final InputStream input, final String name)
         throws OrekitException, IOException, ParseException {
 
-        // set up a reader for line-oriented bulletin B files
+    	entries.clear();
+
+    	// set up a reader for line-oriented bulletin B files
         final BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
         // read all file, ignoring not recognized lines

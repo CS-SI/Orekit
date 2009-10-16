@@ -54,13 +54,10 @@ public class UTCScale implements TimeScale {
     private int current;
 
     /** Package private constructor for the factory.
-     * @exception OrekitException if the time steps cannot be read
+     * @param entries user supplied entries
      */
-    UTCScale() throws OrekitException {
+    UTCScale(final SortedMap<DateComponents, Integer> entries) {
 
-        // read user supplied entries
-        final SortedMap<DateComponents, Integer> entries =
-            new UTCTAIHistoryFilesLoader().loadTimeSteps();
         offsets = new UTCTAIOffset[entries.size() + 1];
         current = 0;
 
