@@ -205,6 +205,8 @@ public class SolarRadiationPressure implements ForceModel {
         };
     }
 
+    //TODO: UmbraDetector and PenumbraDetector extend EclipseDetector or add + alphaSun in UmbraDetector.g
+    
     /** This class defines the umbra entry/exit detector. */
     private class UmbraDetector extends AbstractDetector {
 
