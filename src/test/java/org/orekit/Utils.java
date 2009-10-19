@@ -51,6 +51,7 @@ public class Utils {
         Utils.clearFactory(SolarSystemBody.class, CelestialBody.class);
         Utils.clearFactory(FramesFactory.class, Frame.class);
         Utils.clearFactory(TimeScalesFactory.class, TimeScale.class);
+        TimeScalesFactory.clearUTCTAILoader();
         Utils.clearJPLEphemeridesConstants();
         DataProvidersManager.getInstance().clearProviders();
         StringBuffer buffer = new StringBuffer();

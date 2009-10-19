@@ -77,6 +77,13 @@ public class TimeScalesFactory implements Serializable {
     	loaders.add(loader);
     }
 
+    /** Clear loaders for UTC-TAI offsets history files to default state.
+     */
+    public static void clearUTCTAILoader() {
+    	loaders.clear();
+    	loaders.add(new UTCTAIHistoryFilesLoader());
+    }
+
     /** Get the International Atomic Time scale.
      * @return International Atomic Time scale
      */
