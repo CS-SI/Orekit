@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 import org.orekit.errors.PropagationException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /** This interface provides a way to propagate an orbit at any time.
  *
@@ -32,7 +33,7 @@ import org.orekit.time.AbsoluteDate;
  * @version $Revision$ $Date$
  */
 
-public interface BasicPropagator extends Serializable {
+public interface BasicPropagator extends PVCoordinatesProvider, Serializable {
 
     /** Propagate towards a target date.
      * <p>Simple propagators use only the target date as the specification for

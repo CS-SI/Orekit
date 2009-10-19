@@ -22,7 +22,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.SolarSystemBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
@@ -31,12 +30,13 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 public class SpinStabilizedTest {
 
     @Test
     public void testBBQMode() throws OrekitException {
-        CelestialBody sun = SolarSystemBody.getSun();
+        PVCoordinatesProvider sun = SolarSystemBody.getSun();
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());

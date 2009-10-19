@@ -18,12 +18,12 @@ package org.orekit.attitudes;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 /**
@@ -64,7 +64,7 @@ public class CelestialBodyPointed implements AttitudeLaw {
     private final Frame celestialFrame;
 
     /** Celestial body to point at. */
-    private final CelestialBody pointedBody;
+    private final PVCoordinatesProvider pointedBody;
 
     /** Phasing reference, in celestial frame. */
     private final Vector3D phasingCel;
@@ -84,7 +84,7 @@ public class CelestialBodyPointed implements AttitudeLaw {
      * @param phasingSat phasing reference, in satellite frame
      */
     public CelestialBodyPointed(final Frame celestialFrame,
-                                final CelestialBody pointedBody,
+                                final PVCoordinatesProvider pointedBody,
                                 final Vector3D phasingCel,
                                 final Vector3D pointingSat,
                                 final Vector3D phasingSat) {

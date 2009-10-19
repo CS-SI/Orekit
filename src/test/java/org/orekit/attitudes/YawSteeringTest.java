@@ -25,7 +25,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.bodies.SolarSystemBody;
 import org.orekit.errors.OrekitException;
@@ -37,6 +36,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 public class YawSteeringTest {
@@ -108,7 +108,7 @@ public class YawSteeringTest {
         NadirPointing nadirLaw = new NadirPointing(earthShape);
  
         // Target pointing attitude law with yaw compensation
-        CelestialBody sun = SolarSystemBody.getSun();
+        PVCoordinatesProvider sun = SolarSystemBody.getSun();
         YawSteering yawCompensLaw = new YawSteering(nadirLaw, sun, Vector3D.MINUS_I);
 
         // Get sun direction in satellite frame

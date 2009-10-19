@@ -23,6 +23,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 /** Topocentric frame.
@@ -30,7 +31,7 @@ import org.orekit.utils.PVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
-public class TopocentricFrame extends Frame {
+public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 720487682019109221L;
@@ -209,4 +210,9 @@ public class TopocentricFrame extends Frame {
 
     }
 
+    /** {@inheritDoc} */
+    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+        throws OrekitException {
+        return frame.getTransformTo(this, date).transformPVCoordinates(PVCoordinates.ZERO);
+    }
 }

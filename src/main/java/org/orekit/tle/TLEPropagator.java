@@ -21,8 +21,12 @@ import java.io.Serializable;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 /** This class provides elements to propagate TLE's.
@@ -51,7 +55,7 @@ import org.orekit.utils.PVCoordinates;
  * @see TLE
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public abstract class TLEPropagator implements Serializable {
+public abstract class TLEPropagator implements PVCoordinatesProvider, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 6389584529961457799L;
@@ -200,6 +204,13 @@ public abstract class TLEPropagator implements Serializable {
 
         // Compute PV with previous calculated parameters
         return computePVCoordinates();
+    }
+
+    /** {@inheritDoc} */
+    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+        throws OrekitException {
+        final Transform t = FramesFactory.getTEME(true).getTransformTo(frame, date);
+        return t.transformPVCoordinates(getPVCoordinates(date));
     }
 
     /** Computation of the first commons parameters.

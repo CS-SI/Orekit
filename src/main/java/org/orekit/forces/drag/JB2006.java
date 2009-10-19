@@ -18,7 +18,6 @@ package org.orekit.forces.drag;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.bodies.BodyShape;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -27,6 +26,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /** This is the realization of the Jacchia-Bowman 2006 atmospheric model.
  * <p>
@@ -194,7 +194,7 @@ public class JB2006 implements Atmosphere {
     private double rho;
 
     /** Sun position. */
-    private CelestialBody sun;
+    private PVCoordinatesProvider sun;
 
     /** External data container. */
     private JB2006InputParameters inputParams;
@@ -212,7 +212,7 @@ public class JB2006 implements Atmosphere {
      * @param earthFixed the earth fixed frame
      */
     public JB2006(final JB2006InputParameters parameters,
-                            final CelestialBody sun, final BodyShape earth,
+                            final PVCoordinatesProvider sun, final BodyShape earth,
                             final Frame earthFixed) {
         this.earth = earth;
         this.sun = sun;

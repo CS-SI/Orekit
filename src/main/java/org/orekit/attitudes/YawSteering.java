@@ -18,11 +18,11 @@ package org.orekit.attitudes;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 /**
@@ -67,7 +67,7 @@ public class YawSteering extends GroundPointingWrapper {
     private static final long serialVersionUID = -5804405406938727964L;
 
     /** Sun motion model. */
-    private final CelestialBody sun;
+    private final PVCoordinatesProvider sun;
 
     /** Satellite axis that must be roughly in Sun direction. */
     private final Vector3D phasingAxis;
@@ -79,7 +79,7 @@ public class YawSteering extends GroundPointingWrapper {
      * (if solar arrays rotation axis is Y, then this axis should be either +X or -X)
      */
     public YawSteering(final GroundPointing groundPointingLaw,
-                       final CelestialBody sun,
+                       final PVCoordinatesProvider sun,
                        final Vector3D phasingAxis) {
         super(groundPointingLaw);
         this.sun = sun;

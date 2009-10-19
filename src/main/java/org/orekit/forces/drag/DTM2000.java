@@ -26,7 +26,6 @@ import java.util.GregorianCalendar;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.bodies.BodyShape;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -35,6 +34,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /** This atmosphere model is the realization of the DTM-2000 model.
  * <p>
@@ -283,7 +283,7 @@ public class DTM2000 implements Atmosphere {
     // CHECKSTYLE: resume JavadocVariable check
 
     /** Sun position. */
-    private CelestialBody sun;
+    private PVCoordinatesProvider sun;
 
     /** External data container. */
     private DTM2000InputParameters inputParams;
@@ -302,7 +302,7 @@ public class DTM2000 implements Atmosphere {
      * @exception OrekitException if some resource file reading error occurs
      */
     public DTM2000(final DTM2000InputParameters parameters,
-                             final CelestialBody sun, final BodyShape earth,
+                             final PVCoordinatesProvider sun, final BodyShape earth,
                              final Frame earthFixed)
         throws OrekitException {
         this.earth = earth;

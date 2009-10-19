@@ -14,30 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.bodies;
 
-import java.io.Serializable;
+package org.orekit.utils;
 
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.time.AbsoluteDate;
 
-/** Interface for celestial bodies like Sun, Moon or solar system planets.
- * @author Luc Maisonobe
- * @see SolarSystemBody
+/**
+** Interface for PV coordinates providers.
+ * @author Veronique Pommier
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
+ * <p>The PV coordinates provider interface can be used by any class used for position/velocity
+ * computation, for example celestial bodies or spacecraft position/velocity propagators,
+ * and many others...
+ * </p>
  */
-public interface CelestialBody extends Serializable, PVCoordinatesProvider {
+public interface PVCoordinatesProvider {
 
-    /** Get an inertially oriented body-centered frame.
-     * <p>The frame is always bound to the body center, and its axes have a
-     * fixed orientation with respecto to other inertial frames.</p>
-     * @return an inertially oriented body-centered frame
+    /** Get the {@link PVCoordinates} of the body in the selected frame.
+     * @param date current date
+     * @param frame the frame where to define the position
+     * @return position/velocity of the body (m and m/s)
+     * @exception OrekitException if position cannot be computed in given frame
      */
-    Frame getFrame();
-
-    /** Get the attraction coefficient of the body.
-     * @return attraction coefficient of the body (m<sup>3</sup>/s<sup>2</sup>)
-     */
-    double getGM();
+    PVCoordinates getPVCoordinates(AbsoluteDate date,
+                                   Frame frame) throws OrekitException;
 
 }

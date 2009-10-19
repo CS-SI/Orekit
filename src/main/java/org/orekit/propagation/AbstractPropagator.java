@@ -21,6 +21,7 @@ import java.util.Collection;
 import org.apache.commons.math.ConvergenceException;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.CombinedEventsDetectorsManager;
@@ -29,6 +30,7 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepNormalizer;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinates;
 
 /** Common handling of {@link Propagator} methods for analytical-like propagators.
  * <p>
@@ -222,6 +224,12 @@ public abstract class AbstractPropagator implements Propagator {
         }
     }
 
+    /** {@inheritDoc} */
+    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+        throws OrekitException {
+        return propagate(date).getPVCoordinates(frame);
+    }
+
     /** Get the initial propagation date.
      * @return initial propagation date
      */
@@ -267,6 +275,13 @@ public abstract class AbstractPropagator implements Propagator {
             throws PropagationException {
             return basicPropagate(target);
         }
+
+        /** {@inheritDoc} */
+        public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+            throws OrekitException {
+            return propagate(date).getPVCoordinates(frame);
+        }
+
 
     }
 

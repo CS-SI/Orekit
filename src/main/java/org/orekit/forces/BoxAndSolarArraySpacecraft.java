@@ -18,13 +18,13 @@ package org.orekit.forces;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /** This class represents the features of a classical satellite
  * with a parallelepipedic body shape and rotating flat solar arrays.
@@ -89,7 +89,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     private final double specularReflectionCoeff;
 
     /** Sun model. */
-    private final CelestialBody sun;
+    private final PVCoordinatesProvider sun;
 
     /** Cached state. */
     private transient SpacecraftState cachedState;
@@ -115,7 +115,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      */
     public BoxAndSolarArraySpacecraft(final double xLength, final double yLength,
                                       final double zLength,
-                                      final CelestialBody sun, final double solarArrayArea,
+                                      final PVCoordinatesProvider sun, final double solarArrayArea,
                                       final Vector3D solarArrayAxis,
                                       final double dragCoeff,
                                       final double absorptionCoeff,
@@ -165,7 +165,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      */
     public BoxAndSolarArraySpacecraft(final double xLength, final double yLength,
                                       final double zLength,
-                                      final CelestialBody sun, final double solarArrayArea,
+                                      final PVCoordinatesProvider sun, final double solarArrayArea,
                                       final Vector3D solarArrayAxis,
                                       final AbsoluteDate referenceDate,
                                       final Vector3D referenceNormal,

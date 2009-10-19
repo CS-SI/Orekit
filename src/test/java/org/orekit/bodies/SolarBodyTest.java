@@ -32,6 +32,7 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 public class SolarBodyTest {
 
@@ -144,7 +145,7 @@ public class SolarBodyTest {
         SolarSystemBody.getSun();
     }
 
-    private void checkPV(CelestialBody body, AbsoluteDate date, Frame frame,
+    private void checkPV(PVCoordinatesProvider body, AbsoluteDate date, Frame frame,
                          Vector3D position, Vector3D velocity)
     throws OrekitException {
 
@@ -176,7 +177,7 @@ public class SolarBodyTest {
         checkKepler(SolarSystemBody.getPluto(),   SolarSystemBody.getSun(),   date, 39.24  * au, 3.0e-7);
     }
 
-    private void checkKepler(final CelestialBody orbiting, final CelestialBody central,
+    private void checkKepler(final PVCoordinatesProvider orbiting, final CelestialBody central,
                              final AbsoluteDate start, final double a, final double epsilon)
         throws OrekitException {
 

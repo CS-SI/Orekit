@@ -23,12 +23,15 @@ import java.util.TreeSet;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.attitudes.Attitude;
+import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.PVCoordinates;
 
 /** This class is designed to accept and handle tabulated orbital entries.
  * Tabulated entries are classified and then extrapolated in way to obtain
@@ -103,6 +106,12 @@ public class Ephemeris implements BoundedPropagator {
         }
         // outside date range, return null
         return null;
+    }
+
+    /** {@inheritDoc} */
+    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+        throws OrekitException {
+        return propagate(date).getPVCoordinates(frame);
     }
 
     /** Get the interpolated orbital parameters.

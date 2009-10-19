@@ -28,7 +28,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.bodies.SolarSystemBody;
 import org.orekit.errors.OrekitException;
@@ -44,6 +43,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 public class SolarRadiationPressureTest {
@@ -57,7 +57,7 @@ public class SolarRadiationPressureTest {
         Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
                                            Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
                                            0.1, 2, FramesFactory.getEME2000(), date, mu);
-        CelestialBody sun = SolarSystemBody.getSun();
+        PVCoordinatesProvider sun = SolarSystemBody.getSun();
         OneAxisEllipsoid earth =
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
                                  FramesFactory.getITRF2005());
@@ -109,7 +109,7 @@ public class SolarRadiationPressureTest {
                                            0.1, 2, FramesFactory.getEME2000(), date, mu);
         final double period = orbit.getKeplerianPeriod();
         Assert.assertEquals(86164, period, 1);
-        CelestialBody sun = SolarSystemBody.getSun();
+        PVCoordinatesProvider sun = SolarSystemBody.getSun();
 
         // creation of the force model
         OneAxisEllipsoid earth =

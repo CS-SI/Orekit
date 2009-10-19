@@ -45,6 +45,7 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepNormalizer;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinates;
 
 
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using
@@ -414,6 +415,12 @@ public class NumericalPropagator implements Propagator {
             throw new PropagationException(ie.getMessage(), ie);
 
         }
+    }
+
+    /** {@inheritDoc} */
+    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+        throws OrekitException {
+        return propagate(date).getPVCoordinates(frame);
     }
 
     /** Get the number of calls to the differential equations computation method.

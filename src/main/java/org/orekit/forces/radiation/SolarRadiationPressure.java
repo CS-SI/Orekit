@@ -17,7 +17,6 @@
 package org.orekit.forces.radiation;
 
 import org.apache.commons.math.geometry.Vector3D;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
@@ -27,6 +26,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /** Solar radiation pressure force model.
  *
@@ -54,7 +54,7 @@ public class SolarRadiationPressure implements ForceModel {
     private final double pRef;
 
     /** Sun model. */
-    private final CelestialBody sun;
+    private final PVCoordinatesProvider sun;
 
     /** Earth model. */
     private final double equatorialRadius;
@@ -72,7 +72,7 @@ public class SolarRadiationPressure implements ForceModel {
      * @param equatorialRadius spherical shape model (for umbra/penumbra computation)
      * @param spacecraft the object physical and geometrical information
      */
-    public SolarRadiationPressure(final CelestialBody sun, final double equatorialRadius,
+    public SolarRadiationPressure(final PVCoordinatesProvider sun, final double equatorialRadius,
                                   final RadiationSensitive spacecraft) {
         this(149597870000.0, 4.56e-6, sun, equatorialRadius, spacecraft);
     }
@@ -85,7 +85,7 @@ public class SolarRadiationPressure implements ForceModel {
      * @param spacecraft the object physical and geometrical information
      */
     public SolarRadiationPressure(final double dRef, final double pRef,
-                                  final CelestialBody sun,
+                                  final PVCoordinatesProvider sun,
                                   final double equatorialRadius,
                                   final RadiationSensitive spacecraft) {
         this.dRef  = dRef;

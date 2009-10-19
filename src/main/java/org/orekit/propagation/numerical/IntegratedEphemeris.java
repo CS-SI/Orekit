@@ -28,6 +28,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinates;
 
 /** This class stores sequentially generated orbital parameters for
  * later retrieval.
@@ -140,6 +141,12 @@ class IntegratedEphemeris
         } catch (DerivativeException de) {
             throw new PropagationException(de.getMessage(), de);
         }
+    }
+
+    /** {@inheritDoc} */
+    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+        throws OrekitException {
+        return propagate(date).getPVCoordinates(frame);
     }
 
     /** Get the first date of the range.
