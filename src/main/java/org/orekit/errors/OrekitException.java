@@ -94,43 +94,43 @@ public class OrekitException extends Exception {
         return buildMessage(locale, specifier, parts);
     }
 
-   /** {@inheritDoc} */
-   @Override
-   public String getMessage() {
-       return getMessage(Locale.US);
-   }
+    /** {@inheritDoc} */
+    @Override
+    public String getMessage() {
+        return getMessage(Locale.US);
+    }
 
-   /** {@inheritDoc} */
-   @Override
-   public String getLocalizedMessage() {
-       return getMessage(Locale.getDefault());
-   }
+    /** {@inheritDoc} */
+    @Override
+    public String getLocalizedMessage() {
+        return getMessage(Locale.getDefault());
+    }
 
-   /**
-    * Translate a string to a given locale.
-    * @param s string to translate
-    * @param locale locale into which to translate the string
-    * @return translated string or original string
-    * for unsupported locales or unknown strings
-    */
-   private static String translate(final String s, final Locale locale) {
-       try {
-           ResourceBundle bundle =
-                   ResourceBundle.getBundle("META-INF/localization/ExceptionsMessages", locale);
-           if (bundle.getLocale().getLanguage().equals(locale.getLanguage())) {
-               // the value of the resource is the translated string
-               return bundle.getString(s);
-           }
+    /**
+     * Translate a string to a given locale.
+     * @param s string to translate
+     * @param locale locale into which to translate the string
+     * @return translated string or original string
+     * for unsupported locales or unknown strings
+     */
+    private static String translate(final String s, final Locale locale) {
+        try {
+            ResourceBundle bundle =
+                ResourceBundle.getBundle("META-INF/localization/ExceptionsMessages", locale);
+            if (bundle.getLocale().getLanguage().equals(locale.getLanguage())) {
+                // the value of the resource is the translated string
+                return bundle.getString(s);
+            }
 
-       } catch (MissingResourceException mre) {
-           // do nothing here
-       }
+        } catch (MissingResourceException mre) {
+            // do nothing here
+        }
 
-       // the locale is not supported or the resource is unknown
-       // don't translate and fall back to using the string as is
-       return s;
+        // the locale is not supported or the resource is unknown
+        // don't translate and fall back to using the string as is
+        return s;
 
-   }
+    }
 
     /**
      * Builds a message string by from a pattern and its arguments.

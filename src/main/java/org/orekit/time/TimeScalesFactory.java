@@ -57,10 +57,10 @@ public class TimeScalesFactory implements Serializable {
 
     /** UTCTAI offsets loaders. */
     private static List<UTCTAILoader> loaders;
-    
+
     static {
-    	loaders = new ArrayList<UTCTAILoader>();
-    	loaders.add(new UTCTAIHistoryFilesLoader());
+        loaders = new ArrayList<UTCTAILoader>();
+        loaders.add(new UTCTAIHistoryFilesLoader());
     }
 
     /** Private constructor.
@@ -71,7 +71,8 @@ public class TimeScalesFactory implements Serializable {
     private TimeScalesFactory() {
     }
 
-    /** Add a loader for UTC-TAI offsets history files
+    /** Add a loader for UTC-TAI offsets history files.
+     * @param loader custom loader to add
      */
     public static void addUTCTAILoader(final UTCTAILoader loader) {
     	loaders.add(loader);
