@@ -17,9 +17,9 @@
 package org.orekit.propagation.events;
 
 import org.apache.commons.math.geometry.Vector3D;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for satellite eclipse related events.
  * <p>This class finds eclipse events, i.e. satellite within umbra (total
@@ -37,16 +37,16 @@ import org.orekit.propagation.SpacecraftState;
 public class EclipseDetector extends AbstractDetector {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2142227838234742496L;
+    private static final long serialVersionUID = -541311550206363031L;
 
     /** Occulting body. */
-    private final CelestialBody occulting;
+    private final PVCoordinatesProvider occulting;
 
     /** Occulting body radius (m). */
     private final double occultingRadius;
 
     /** Occulted body. */
-    private final CelestialBody occulted;
+    private final PVCoordinatesProvider occulted;
 
     /** Occulted body radius (m). */
     private final double occultedRadius;
@@ -64,9 +64,9 @@ public class EclipseDetector extends AbstractDetector {
      * @param occultingRadius the occulting body radius (m)
      * @param totalEclipse umbra (true) or penumbra (false) detection flag
      */
-    public EclipseDetector(final CelestialBody occulted,
+    public EclipseDetector(final PVCoordinatesProvider occulted,
             final double occultedRadius,
-            final CelestialBody occulting,
+            final PVCoordinatesProvider occulting,
             final double occultingRadius,
             final boolean totalEclipse) {
         super(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD);
@@ -91,9 +91,9 @@ public class EclipseDetector extends AbstractDetector {
      * @param totalEclipse umbra (true) or penumbra (false) detection flag
      */
     public EclipseDetector(final double maxCheck,
-            final CelestialBody occulted,
+            final PVCoordinatesProvider occulted,
             final double occultedRadius,
-            final CelestialBody occulting,
+            final PVCoordinatesProvider occulting,
             final double occultingRadius,
             final boolean totalEclipse) {
         super(maxCheck, DEFAULT_THRESHOLD);
@@ -119,9 +119,9 @@ public class EclipseDetector extends AbstractDetector {
      */
     public EclipseDetector(final double maxCheck,
             final double threshold,
-            final CelestialBody occulted,
+            final PVCoordinatesProvider occulted,
             final double occultedRadius,
-            final CelestialBody occulting,
+            final PVCoordinatesProvider occulting,
             final double occultingRadius,
             final boolean totalEclipse) {
         super(maxCheck, threshold);
@@ -141,9 +141,9 @@ public class EclipseDetector extends AbstractDetector {
      * @param occulting the occulting body
      * @param occultingRadius the occulting body radius (m)
      */
-    public EclipseDetector(final CelestialBody occulted,
+    public EclipseDetector(final PVCoordinatesProvider occulted,
             final double occultedRadius,
-            final CelestialBody occulting,
+            final PVCoordinatesProvider occulting,
             final double occultingRadius) {
         super(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD);
         this.occulted = occulted;
@@ -166,9 +166,9 @@ public class EclipseDetector extends AbstractDetector {
      * @param occultingRadius the occulting body radius in meters
      */
     public EclipseDetector(final double maxCheck,
-            final CelestialBody occulted,
+            final PVCoordinatesProvider occulted,
             final double occultedRadius,
-            final CelestialBody occulting,
+            final PVCoordinatesProvider occulting,
             final double occultingRadius) {
         super(maxCheck, DEFAULT_THRESHOLD);
         this.occulted = occulted;
@@ -192,9 +192,9 @@ public class EclipseDetector extends AbstractDetector {
      */
     public EclipseDetector(final double maxCheck,
             final double threshold,
-            final CelestialBody occulted,
+            final PVCoordinatesProvider occulted,
             final double occultedRadius,
-            final CelestialBody occulting,
+            final PVCoordinatesProvider occulting,
             final double occultingRadius) {
         super(maxCheck, threshold);
         this.occulted = occulted;
@@ -207,7 +207,7 @@ public class EclipseDetector extends AbstractDetector {
     /** Get the occulting body.
      * @return the occulting body
      */
-    public CelestialBody getOcculting() {
+    public PVCoordinatesProvider getOcculting() {
         return occulting;
     }
 
@@ -221,7 +221,7 @@ public class EclipseDetector extends AbstractDetector {
     /** Get the occulted body.
      * @return the occulted body
      */
-    public CelestialBody getOcculted() {
+    public PVCoordinatesProvider getOcculted() {
         return occulted;
     }
 
