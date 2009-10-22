@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.event;
+package org.orekit.propagation.events;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
@@ -30,7 +30,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
