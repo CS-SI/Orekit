@@ -21,18 +21,18 @@ import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.PVCoordinatesProvider;
 
-/** Finder for satellite raising/setting events.
- * <p>This class finds elevation events (i.e. satellite raising
- * and setting).</p>
+/** Finder for target entry/exit events with respect to a satellite sensor field of view.
+ * <p>This class handle fields of view with a circular boundary.</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector#CONTINUE continue} propagation at raising and to
+ * EventDetector#CONTINUE continue} propagation at fov entry and to
  * {@link EventDetector#STOP stop} propagation
- * at setting. This can be changed by overriding the
+ * at fov exit. This can be changed by overriding the
  * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
  * derived class.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
+ * @see DihedralFieldOfViewDetector
  * @author V&eacute;ronique Pommier-Maurussane
- * @version $Revision: 2761 $ $Date: 2009-04-28 17:49:07 +0200 (mar., 28 avr. 2009) $
+ * @version $Revision$ $Date$
  */
 public class CircularFieldOfViewDetector extends AbstractDetector {
 
@@ -49,7 +49,7 @@ public class CircularFieldOfViewDetector extends AbstractDetector {
     private final double halfAperture;
 
     /** Build a new instance.
-     * <p>The maximal interval between elevation checks should
+     * <p>The maximal interval between distance to fov boundary checks should
      * be smaller than the half duration of the minimal pass to handle,
      * otherwise some short passes could be missed.</p>
      * @param maxCheck maximal interval in seconds
@@ -94,8 +94,9 @@ public class CircularFieldOfViewDetector extends AbstractDetector {
      * eventOccurred} method in a derived class.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param increasing if true, the value of the switching function increases
-     * when times increases around event (note that increase is measured with respect
-     * to physical time, not with respect to propagation which may go backward in time)
+     * when times increases around event, i.e. target enters the fov (note that increase
+     * is measured with respect to physical time, not with respect to propagation which
+     * may go backward in time)
      * @return one of {@link #STOP}, {@link #RESET_STATE}, {@link #RESET_DERIVATIVES}
      * or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs

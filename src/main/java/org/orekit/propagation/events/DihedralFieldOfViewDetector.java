@@ -30,6 +30,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
  * derived class.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
+ * @see CircularFieldOfViewDetector
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision: 2761 $ $Date: 2009-04-28 17:49:07 +0200 (mar., 28 avr. 2009) $
  */
@@ -57,7 +58,7 @@ public class DihedralFieldOfViewDetector extends AbstractDetector {
     private final double halfAperture2;
 
     /** Build a new instance.
-     * <p>The maximal interval between elevation checks should
+     * <p>The maximal interval between distance to fov boundary checks should
      * be smaller than the half duration of the minimal pass to handle,
      * otherwise some short passes could be missed.</p>
      * @param maxCheck maximal interval in seconds
@@ -135,8 +136,9 @@ public class DihedralFieldOfViewDetector extends AbstractDetector {
      * eventOccurred} method in a derived class.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param increasing if true, the value of the switching function increases
-     * when times increases around event (note that increase is measured with respect
-     * to physical time, not with respect to propagation which may go backward in time)
+     * when times increases around event, i.e. target enters the fov (note that increase
+     * is measured with respect to physical time, not with respect to propagation which
+     * may go backward in time)
      * @return one of {@link #STOP}, {@link #RESET_STATE}, {@link #RESET_DERIVATIVES}
      * or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
