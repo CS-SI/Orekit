@@ -23,7 +23,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 
 
-public class DihedralFieldOfViewTest {
+public class DihedralFieldOfViewDetectorTest {
 
     // Body mu
     private double mu;
@@ -104,7 +104,7 @@ public class DihedralFieldOfViewTest {
     /** Finder for visibility event.
      * <p>This class extends the elevation detector modifying the event handler.<p>
      */
-    private static class DihedralSunVisiDetector extends DihedralFieldOfViewEventDetector {
+    private static class DihedralSunVisiDetector extends DihedralFieldOfViewDetector {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 1181779674621070074L;

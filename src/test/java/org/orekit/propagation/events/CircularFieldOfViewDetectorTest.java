@@ -23,7 +23,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 
 
-public class CircularFieldOfViewTest {
+public class CircularFieldOfViewDetectorTest {
 
     // Body mu
     private double mu;
@@ -101,7 +101,7 @@ public class CircularFieldOfViewTest {
     /** Finder for visibility event.
      * <p>This class extends the elevation detector modifying the event handler.<p>
      */
-    private static class CircularSunVisiDetector extends CircularFieldOfViewEventDetector {
+    private static class CircularSunVisiDetector extends CircularFieldOfViewDetector {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 1181779674621070074L;
