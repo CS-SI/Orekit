@@ -22,6 +22,19 @@
   <body>
     <release version="4.2" date="TBD"
              description="TBD">
+      <action dev="v&#233;ronique" type="add" >
+        a new PVCoordinatesProvider interface has been created on top of several existing classes
+        and interfaces (orbit propagator, celestial bodies, some moving frames ...). This is an
+        important generalization that allows to use either satellites or celestial bodies in many
+        algorithms (attitude pointing target, eclipses and field of view events ...) 
+      </action>
+      <action dev="v&#233;ronique" type="add" >
+        added new CircularFieldOfViewDetector and DihedralFieldOfViewDetector handling
+        field of view entry and exit events for any type of target
+      </action>
+      <action dev="pascal" type="add" >
+        added a new EclipseDetector handling either umbra or penumbra entry and exit events
+      </action>
       <action dev="luc" type="update" >
         updated error message localization to be more consistent with Java exception. Now getMessage
         returns a non-localized message and only getLocalizedMessage returns a message localized for
