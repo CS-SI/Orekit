@@ -35,6 +35,10 @@
       <action dev="pascal" type="add" >
         added a new EclipseDetector handling either umbra or penumbra entry and exit events
       </action>
+      <action dev="pascal" type="add" >
+        it is now possible to add a custom loader for UTC-TAI files (i.e. UTC leap seconds) to
+        support specific files formats different from the standard IERS file
+      </action>
       <action dev="luc" type="update" >
         updated error message localization to be more consistent with Java exception. Now getMessage
         returns a non-localized message and only getLocalizedMessage returns a message localized for
