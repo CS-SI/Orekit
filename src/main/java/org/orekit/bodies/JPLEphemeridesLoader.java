@@ -66,8 +66,11 @@ public class JPLEphemeridesLoader implements DataLoader {
     /** Binary record size in bytes for DE 406. */
     private static final int DE406_RECORD_SIZE =  728 * 8;
 
-    /** Supported files name pattern. */
-    private static final String SUPPORTED_FILES = "^unx[mp](\\d\\d\\d\\d)\\.(?:(?:405)|(?:406))$";
+    /** Default supported files name pattern. */
+    private static final String DEFAULT_SUPPORTED_NAMES = "^unx[mp](\\d\\d\\d\\d)\\.(?:(?:405)|(?:406))$";
+
+    /** 50 days in seconds. */
+    private static final double FIFTY_DAYS = 50 * 86400;
 
     /** List of supported ephemerides types. */
     public enum EphemerisType {
@@ -107,14 +110,17 @@ public class JPLEphemeridesLoader implements DataLoader {
 
     }
 
+    /** Regular expression for supported files names. */
+    private final String supportedNames;
+
     /** Constants defined in the file. */
-    private static final Map<String, Double> CONSTANTS = new HashMap<String, Double>();
+    private final Map<String, Double> constants = new HashMap<String, Double>();
 
     /** Ephemeris type to load. */
     private final EphemerisType type;
 
     /** Desired central date. */
-    private final AbsoluteDate centralDate;
+    private AbsoluteDate centralDate;
 
     /** Ephemeris for selected body. */
     private SortedSet<TimeStamped> ephemerides;
@@ -140,16 +146,58 @@ public class JPLEphemeridesLoader implements DataLoader {
     /** Number of chunks for the selected body. */
     private int chunks;
 
-    /** Create a loader for JPL ephemerides binary files.
+    /** Create a loader for JPL ephemerides binary files using default names.
+     * <p>
+     * Calling this constructor is equivalent to calling {@link
+     * #JPLEphemeridesLoader(String, EphemerisType, AbsoluteDate)
+     * JPLEphemeridesLoader(null, type, centralDate)}
+     * </p>
+     * <p>
+     * The central date is used to load only a part of an ephemeris. If it
+     * is non-null, all data within a +/-50 days range around this date will
+     * be loaded. If it is null, an arbitrary 100 days range will be loaded,
+     * this is useful to load only data from the header like astronomical
+     * unit or gravity coefficients.
+     * </p>
      * @param type ephemeris type to load
-     * @param centralDate desired central date
-     * (all data within a +/-50 days range around this date will be loaded)
+     * @param centralDate desired central date (may be null)
      * @exception OrekitException if the header constants cannot be read
      */
     public JPLEphemeridesLoader(final EphemerisType type, final AbsoluteDate centralDate)
         throws OrekitException {
+        this(null, type, centralDate);
+    }
 
-        if (CONSTANTS.isEmpty()) {
+    /** Create a loader for JPL ephemerides binary files.
+     * <p>
+     * If the regular expression for supported names is null or is the
+     * empty string, a default value of "^unx[mp](\\d\\d\\d\\d)\\.(?:(?:405)|(?:406))$"
+     * supporting both DE405 and DE406 ephemerides is used.
+     * </p>
+     * <p>
+     * The central date is used to load only a part of an ephemeris. If it
+     * is non-null, all data within a +/-50 days range around this date will
+     * be loaded. If it is null, an arbitrary 100 days range will be loaded,
+     * this is useful to load only data from the header like astronomical
+     * unit or gravity coefficients.
+     * </p>
+     * @param supportedNames regular expression for supported files names
+     * (may be null)
+     * @param type ephemeris type to load
+     * @param centralDate desired central date (may be null)
+     * @exception OrekitException if the header constants cannot be read
+     */
+    public JPLEphemeridesLoader(final String supportedNames,
+                                final EphemerisType type, final AbsoluteDate centralDate)
+        throws OrekitException {
+
+        if ((supportedNames == null) || (supportedNames.length() == 0)) {
+            this.supportedNames = DEFAULT_SUPPORTED_NAMES;
+        } else {
+            this.supportedNames = supportedNames;
+        }
+
+        if (constants.isEmpty()) {
             loadConstants();
         }
 
@@ -157,6 +205,7 @@ public class JPLEphemeridesLoader implements DataLoader {
         this.centralDate   = centralDate;
         maxChunksDuration  = Double.NaN;
         chunksDuration     = Double.NaN;
+
     }
 
     /** Load ephemerides.
@@ -169,38 +218,85 @@ public class JPLEphemeridesLoader implements DataLoader {
      */
     public synchronized SortedSet<TimeStamped> loadEphemerides() throws OrekitException {
         ephemerides = new TreeSet<TimeStamped>(new ChronologicalComparator());
-        if (!DataProvidersManager.getInstance().feed(SUPPORTED_FILES, this)) {
+        if (!DataProvidersManager.getInstance().feed(supportedNames, this)) {
             throw new OrekitException(NO_JPL_FILES_FOUND);
         }
         return ephemerides;
     }
 
     /** Get astronomical unit.
+     * <p>
+     * This method loads its constants from the files using the default JPL
+     * names only.
+     * </p>
+     * @return astronomical unit in meters
+     * @exception OrekitException if constants cannot be loaded
+     * @deprecated as of 4.2, replaced by the non-static method
+     * {@link #getLoadedAstronomicalUnit()}
+     */
+    @Deprecated
+    public static double getAstronomicalUnit() throws OrekitException {
+        return new JPLEphemeridesLoader(EphemerisType.SUN, null).getLoadedAstronomicalUnit();
+    }
+
+    /** Get astronomical unit.
      * @return astronomical unit in meters
      * @exception OrekitException if constants cannot be loaded
      */
-    public static double getAstronomicalUnit() throws OrekitException {
+    public double getLoadedAstronomicalUnit() throws OrekitException {
 
-        if (CONSTANTS.isEmpty()) {
+        if (constants.isEmpty()) {
             loadConstants();
         }
 
-        return 1000.0 * getConstant("AU");
+        return 1000.0 * getLoadedConstant("AU");
 
+    }
+
+    /** Get Earth/Moon mass ratio.
+     * <p>
+     * This method loads its constants from the files using the default JPL
+     * names only.
+     * </p>
+     * @return Earth/Moon mass ratio
+     * @exception OrekitException if constants cannot be loaded
+     * @deprecated as of 4.2, replaced by the non-static method
+     * {@link #getLoadedEarthMoonMassRatio()}
+     */
+    @Deprecated
+    public static double getEarthMoonMassRatio() throws OrekitException {
+        return new JPLEphemeridesLoader(EphemerisType.EARTH_MOON, null).getLoadedEarthMoonMassRatio();
     }
 
     /** Get Earth/Moon mass ratio.
      * @return Earth/Moon mass ratio
      * @exception OrekitException if constants cannot be loaded
      */
-    public static double getEarthMoonMassRatio() throws OrekitException {
+    public double getLoadedEarthMoonMassRatio() throws OrekitException {
 
-        if (CONSTANTS.isEmpty()) {
+        if (constants.isEmpty()) {
             loadConstants();
         }
 
-        return getConstant("EMRAT");
+        return getLoadedConstant("EMRAT");
 
+    }
+
+    /** Get the gravitational coefficient of a body.
+     * <p>
+     * This method loads its constants from the files using the default JPL
+     * names only.
+     * </p>
+     * @param body body for which the gravitational coefficient is requested
+     * @return gravitational coefficient in m<sup>3</sup>/s<sup>2</sup>
+     * @exception OrekitException if constants cannot be loaded
+     * @deprecated as of 4.2, replaced by the non-static method
+     * {@link #getLoadedGravitationalCoefficient(EphemerisType)}
+     */
+    @Deprecated
+    public static double getGravitationalCoefficient(final EphemerisType body)
+        throws OrekitException {
+        return new JPLEphemeridesLoader(EphemerisType.SUN, null).getLoadedGravitationalCoefficient(body);
     }
 
     /** Get the gravitational coefficient of a body.
@@ -208,10 +304,10 @@ public class JPLEphemeridesLoader implements DataLoader {
      * @return gravitational coefficient in m<sup>3</sup>/s<sup>2</sup>
      * @exception OrekitException if constants cannot be loaded
      */
-    public static double getGravitationalCoefficient(final EphemerisType body)
+    public double getLoadedGravitationalCoefficient(final EphemerisType body)
         throws OrekitException {
 
-        if (CONSTANTS.isEmpty()) {
+        if (constants.isEmpty()) {
             loadConstants();
         }
 
@@ -219,45 +315,65 @@ public class JPLEphemeridesLoader implements DataLoader {
         final double rawGM;
         switch (body) {
         case MERCURY :
-            rawGM = getConstant("GM1");
+            rawGM = getLoadedConstant("GM1");
             break;
         case VENUS :
-            rawGM = getConstant("GM2");
+            rawGM = getLoadedConstant("GM2");
             break;
         case EARTH_MOON :
-            rawGM = getConstant("GMB");
+            rawGM = getLoadedConstant("GMB");
             break;
         case MARS :
-            rawGM = getConstant("GM4");
+            rawGM = getLoadedConstant("GM4");
             break;
         case JUPITER :
-            rawGM = getConstant("GM5");
+            rawGM = getLoadedConstant("GM5");
             break;
         case SATURN :
             rawGM = getConstant("GM6");
             break;
         case URANUS :
-            rawGM = getConstant("GM7");
+            rawGM = getLoadedConstant("GM7");
             break;
         case NEPTUNE :
-            rawGM = getConstant("GM8");
+            rawGM = getLoadedConstant("GM8");
             break;
         case PLUTO :
-            rawGM = getConstant("GM9");
+            rawGM = getLoadedConstant("GM9");
             break;
         case MOON :
-            return getGravitationalCoefficient(EphemerisType.EARTH_MOON) /
-                   (1.0 + getEarthMoonMassRatio());
+            return getLoadedGravitationalCoefficient(EphemerisType.EARTH_MOON) /
+                   (1.0 + getLoadedEarthMoonMassRatio());
         case SUN :
-            rawGM = getConstant("GMS");
+            rawGM = getLoadedConstant("GMS");
             break;
         default :
             throw OrekitException.createInternalError(null);
         }
 
-        final double au    = getAstronomicalUnit();
+        final double au    = getLoadedAstronomicalUnit();
         return rawGM * au * au * au / (86400.0 * 86400.0);
 
+    }
+
+    /** Get a constant defined in the ephemerides headers.
+     * <p>
+     * This method loads its constants from the files using the default JPL
+     * names only.
+     * </p>
+     * <p>Note that since constants are defined in the JPL headers
+     * files, they are available as soon as one file is available, even
+     * if it doesn't match the desired central date. This is because the
+     * header must be parsed before the dates can be checked.</p>
+     * @param name name of the constant
+     * @return value of the constant of NaN if the constant is not defined
+     * @exception OrekitException if constants cannot be loaded
+     * @deprecated as of 4.2, replaced by the non-static method
+     * {@link #getLoadedConstant(String)}
+     */
+    @Deprecated
+    public static double getConstant(final String name) throws OrekitException {
+        return new JPLEphemeridesLoader(EphemerisType.SUN, null).getLoadedConstant(name);
     }
 
     /** Get a constant defined in the ephemerides headers.
@@ -269,13 +385,13 @@ public class JPLEphemeridesLoader implements DataLoader {
      * @return value of the constant of NaN if the constant is not defined
      * @exception OrekitException if constants cannot be loaded
      */
-    public static double getConstant(final String name) throws OrekitException {
+    public double getLoadedConstant(final String name) throws OrekitException {
 
-        if (CONSTANTS.isEmpty()) {
+        if (constants.isEmpty()) {
             loadConstants();
         }
 
-        final Double value = CONSTANTS.get(name);
+        final Double value = constants.get(name);
         return (value == null) ? Double.NaN : value.doubleValue();
 
     }
@@ -283,8 +399,8 @@ public class JPLEphemeridesLoader implements DataLoader {
     /** Load the header constants.
      * @exception OrekitException if constants cannot be loaded
      */
-    private static void loadConstants() throws OrekitException {
-        if (!DataProvidersManager.getInstance().feed(SUPPORTED_FILES, new HeaderConstantsLoader())) {
+    private void loadConstants() throws OrekitException {
+        if (!DataProvidersManager.getInstance().feed(supportedNames, new HeaderConstantsLoader())) {
             throw new OrekitException(NO_JPL_FILES_FOUND);
         }
     }
@@ -311,7 +427,13 @@ public class JPLEphemeridesLoader implements DataLoader {
         // parse first header record
         parseFirstHeaderRecord(record, name);
 
-        if (tooFarRange(startEpoch, finalEpoch)) {
+        if (centralDate == null) {
+            // this is the first call to the method and the central date is not set
+            // we set it arbitrarily to start + 50 days in order to load only
+            // the first 100 days worth of data
+            centralDate = new AbsoluteDate(startEpoch, FIFTY_DAYS);
+        } else if ((centralDate.durationFrom(finalEpoch) > FIFTY_DAYS) ||
+                   (startEpoch.durationFrom(centralDate) > FIFTY_DAYS)) {
             // this file does not cover a range we are interested in,
             // there is no need to parse it further
             return;
@@ -327,25 +449,6 @@ public class JPLEphemeridesLoader implements DataLoader {
         while (readInRecord(input, record, 0)) {
             parseDataRecord(record);
         }
-
-    }
-
-    /** Check if a range is too far from the central date.
-     * <p>"Too far" is considered to be either end more than 50 days
-     * before central date or to start more than 50 days after central
-     * date.</p>
-     * @param start start date of the range
-     * @param end end date of the range
-     * @return true if the range is closer than one year to the central date
-     */
-    private boolean tooFarRange(final AbsoluteDate start, final AbsoluteDate end) {
-
-        // 50 days in seconds
-        final double fiftyDays = 50 * 86400;
-
-        // check range bounds
-        return (centralDate.durationFrom(end) > fiftyDays) ||
-               (start.durationFrom(centralDate) > fiftyDays);
 
     }
 
@@ -365,16 +468,16 @@ public class JPLEphemeridesLoader implements DataLoader {
         // check astronomical unit consistency
         final double au = 1000 * extractDouble(record, 2680);
         ok = ok && (au > 1.4e11) && (au < 1.6e11);
-        if (Math.abs(getAstronomicalUnit() - au) >= 0.001) {
+        if (Math.abs(getLoadedAstronomicalUnit() - au) >= 0.001) {
             throw new OrekitException("inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})",
-                                      getAstronomicalUnit(), au);
+                                      getLoadedAstronomicalUnit(), au);
         }
 
         final double emRat = extractDouble(record, 2688);
         ok = ok && (emRat > 80) && (emRat < 82);
-        if (Math.abs(getEarthMoonMassRatio() - emRat) >= 1.0e-8) {
+        if (Math.abs(getLoadedEarthMoonMassRatio() - emRat) >= 1.0e-8) {
             throw new OrekitException("inconsistent values of Earth/Moon mass ratio in JPL ephemerides files: ({0} and {1})",
-                                      getEarthMoonMassRatio(), emRat);
+                                      getLoadedEarthMoonMassRatio(), emRat);
         }
 
         // indices of the Chebyshev coefficients for each ephemeris
@@ -434,7 +537,8 @@ public class JPLEphemeridesLoader implements DataLoader {
             throw new OrekitException(OUT_OF_RANGE_DATE, rangeEnd, startEpoch, finalEpoch);
         }
 
-        if (tooFarRange(rangeStart, rangeEnd)) {
+        if ((centralDate.durationFrom(rangeEnd) > FIFTY_DAYS) ||
+            (rangeStart.durationFrom(centralDate) > FIFTY_DAYS)) {
             // we are not interested in this record, don't parse it
             return;
         }
@@ -595,12 +699,12 @@ public class JPLEphemeridesLoader implements DataLoader {
     }
 
     /** Specialized loader for extracting constants from the headers. */
-    private static class HeaderConstantsLoader implements DataLoader {
+    private class HeaderConstantsLoader implements DataLoader {
 
         /** {@inheritDoc} */
         public boolean stillAcceptsData() {
             // we try to load files only until the constants map has been set up
-            return CONSTANTS.isEmpty();
+            return constants.isEmpty();
         }
 
         /** {@inheritDoc} */
@@ -622,7 +726,7 @@ public class JPLEphemeridesLoader implements DataLoader {
                     return;
                 }
                 final double constantValue = extractDouble(second, 8 * i);
-                CONSTANTS.put(constantName, constantValue);
+                constants.put(constantName, constantValue);
             }
 
         }

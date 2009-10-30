@@ -22,6 +22,12 @@
   <body>
     <release version="4.2" date="TBD"
              description="TBD">
+      <action dev="luc" type="update" >
+        the JPL ephemerides loader now support loading file with custom names and not only the
+        genuine names from JPL. A consequence of this change is that the various static getXxx()
+        methods (getAstronomicalUnit, getEarthMoonMassRatio ...) that use only the default file
+        names are deprecated and should be replaced by their new non-static counterparts.
+      </action>
       <action dev="v&#233;ronique" type="add" >
         a new PVCoordinatesProvider interface has been created on top of several existing classes
         and interfaces (orbit propagator, celestial bodies, some moving frames ...). This is an
