@@ -102,6 +102,9 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
         for (String line = r.readLine(); line != null; line = r.readLine()) {
             try {
                 ++lineNumber;
+                if (line.trim().length() == 0) {
+                    continue;
+                }
                 final String[] tab = line.split("\\s+");
                 if (inHeader) {
                     if ((tab.length == 2) && PRODUCT_TYPE.equals(tab[0])) {

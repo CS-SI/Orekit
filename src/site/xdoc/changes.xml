@@ -22,6 +22,10 @@
   <body>
     <release version="4.2" date="TBD"
              description="TBD">
+      <action dev="luc" type="fix" >
+        the loader for gravity fields in the ICGEM format now support empty lines in the file
+        (there is for example one blank line at the end of the file in the orekit-data zip archive).
+      </action>
       <action dev="luc" type="update" >
         the JPL ephemerides loader now support loading file with custom names and not only the
         genuine names from JPL. A consequence of this change is that the various static getXxx()
