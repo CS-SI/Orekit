@@ -30,7 +30,6 @@ public abstract class AbstractFilesLoaderTest {
 
     protected void setRoot(String directoryName) throws OrekitException {
         Utils.setDataRoot(directoryName);
-        DataProvidersManager.getInstance().clearProviders();
         set = new TreeSet<TimeStamped>(new ChronologicalComparator());
     }
 
