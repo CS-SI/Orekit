@@ -38,7 +38,7 @@ public abstract class AbstractEOPHistory implements Serializable {
     private static final long serialVersionUID = 9141543606409905199L;
 
     /** Earth Orientation Parameters (either IAU1980 or IAU2000). */
-    private SortedSet<TimeStamped> eop = null;
+    private final SortedSet<TimeStamped> eop;
 
     /** Previous EOP entry. */
     private TimeStampedEntry previous;
@@ -102,8 +102,8 @@ public abstract class AbstractEOPHistory implements Serializable {
      * @param  index index of the concerned field
      * @return the interpolated value for the indexed field
      */
-    protected double getInterpolatedField(final AbsoluteDate date,
-                                          final int index) {
+    protected synchronized double getInterpolatedField(final AbsoluteDate date,
+                                                       final int index) {
 
         // compute offsets assuming the current selection brackets the date
         double dtP = (previous == null) ? -1.0 : date.durationFrom(previous.getDate());

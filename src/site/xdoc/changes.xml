@@ -23,6 +23,9 @@
     <release version="4.2" date="TBD"
              description="TBD">
       <action dev="luc" type="fix" >
+        improved thread safety (however, Orekit is still not completely thread-safe).
+      </action>
+      <action dev="luc" type="fix" >
         the loader for gravity fields in the ICGEM format now support empty lines in the file
         (there is for example one blank line at the end of the file in the orekit-data zip archive).
       </action>
