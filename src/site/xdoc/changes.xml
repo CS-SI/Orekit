@@ -23,6 +23,11 @@
     <release version="4.2" date="TBD"
              description="TBD">
       <action dev="luc" type="fix" >
+        fixed an error in event detection: when two events were very close (for example a very
+        short ground station visibility), the second one may be ignored despite the first one
+        was detected.
+      </action>
+      <action dev="luc" type="fix" >
         improved thread safety (however, Orekit is still not completely thread-safe).
       </action>
       <action dev="luc" type="fix" >

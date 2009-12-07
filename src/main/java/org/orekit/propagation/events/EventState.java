@@ -173,20 +173,33 @@ class EventState implements Serializable {
                     final UnivariateRealSolver solver = new BrentSolver();
                     solver.setAbsoluteAccuracy(detector.getThreshold());
                     solver.setMaximalIterationCount(detector.getMaxIterationCount());
-                    AbsoluteDate root;
-                    try {
-                        final double dtA = ta.durationFrom(t0);
-                        final double dtB = tb.durationFrom(t0);
-                        final double dtRoot = (dtA <= dtB) ? solver.solve(f, dtA, dtB) : solver.solve(f, dtB, dtA);
-                        root = new AbsoluteDate(t0, dtRoot);
-                    } catch (IllegalArgumentException iae) {
-                        // the interval did not really bracket a root
-                        root = null;
+
+                    double dtA = ta.durationFrom(t0);
+                    final double dtB = tb.durationFrom(t0);
+                    if (ga * gb > 0) {
+                        // this is a corner case:
+                        // - there was an event near ta,
+                        // - there is another event between ta and tb
+                        // - when ta was computed, convergence was reached on the "wrong side" of the interval
+                        // this implies that the real sign of ga is the same as gb, so we need to slightly
+                        // shift ta to make sure ga and gb get opposite signs and the solver won't complain
+                        // about bracketing
+                        final double epsilon = (forward ? 0.25 : -0.25) * detector.getThreshold();
+                        for (int k = 0; (k < 4) && (ga * gb > 0); ++k) {
+                            dtA += epsilon;
+                            ga = f.value(dtA);
+                        }
+                        if (ga * gb > 0) {
+                            // this should never happen
+                            throw OrekitException.createInternalError(null);
+                        }
                     }
 
-                    if ((root == null) ||
-                        ((Math.abs(root.durationFrom(ta)) <= detector.getThreshold()) &&
-                         (Math.abs(root.durationFrom(previousEventTime)) <= detector.getThreshold()))) {
+                    final double dtRoot = (dtA <= dtB) ? solver.solve(f, dtA, dtB) : solver.solve(f, dtB, dtA);
+                    final AbsoluteDate root = new AbsoluteDate(t0, dtRoot);
+
+                    if ((Math.abs(root.durationFrom(ta)) <= detector.getThreshold()) &&
+                        (Math.abs(root.durationFrom(previousEventTime)) <= detector.getThreshold())) {
                             // we have either found nothing or found (again ?) a past event, we simply ignore it
                         ta = tb;
                         ga = gb;
