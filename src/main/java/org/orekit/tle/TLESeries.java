@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -60,6 +61,9 @@ public class TLESeries implements DataLoader, Serializable {
 
     /** Regular expression for supported files names. */
     private final String supportedNames;
+
+    /** Available satellite numbers. */
+    private final Set<Integer> availableSatNums;
 
     /** Set containing all TLE entries. */
     private final SortedSet<TimeStamped> tles;
@@ -110,6 +114,7 @@ public class TLESeries implements DataLoader, Serializable {
         throws IOException, OrekitException {
 
         supportedNames        = DEFAULT_SUPPORTED_NAMES;
+        availableSatNums      = new TreeSet<Integer>();
         ignoreNonTLELines     = false;
         filterSatelliteNumber = -1;
         filterLaunchYear      = -1;
@@ -141,6 +146,7 @@ public class TLESeries implements DataLoader, Serializable {
     public TLESeries(final String supportedNames, final boolean ignoreNonTLELines) {
 
         this.supportedNames    = supportedNames;
+        availableSatNums       = new TreeSet<Integer>();
         this.ignoreNonTLELines = ignoreNonTLELines;
         filterSatelliteNumber  = -1;
         filterLaunchYear       = -1;
@@ -168,6 +174,8 @@ public class TLESeries implements DataLoader, Serializable {
      */
     public void loadTLEData() throws OrekitException {
 
+        availableSatNums.clear();
+
         // set the filtering parameters
         filterSatelliteNumber = -1;
         filterLaunchYear      = -1;
@@ -181,6 +189,18 @@ public class TLESeries implements DataLoader, Serializable {
             throw new OrekitException("no TLE data available");
         }
 
+    }
+
+    /** Get the available satellite numbers.
+     * @return available satellite numbers
+     * @throws OrekitException if some data can't be read, some
+     * file content is corrupted or no TLE data is available
+     */
+    public Set<Integer> getAvailableSatelliteNumbers() throws OrekitException {
+        if (availableSatNums.isEmpty()) {
+            loadTLEData();
+        }
+        return availableSatNums;
     }
 
     /** Load TLE data for a specified object.
@@ -304,6 +324,8 @@ public class TLESeries implements DataLoader, Serializable {
                             filterSatelliteNumber = tle.getSatelliteNumber();
                         }
                     }
+
+                    availableSatNums.add(tle.getSatelliteNumber());
 
                     if (tle.getSatelliteNumber() == filterSatelliteNumber) {
                         // accept this TLE

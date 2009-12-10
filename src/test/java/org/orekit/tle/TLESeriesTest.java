@@ -19,6 +19,7 @@ package org.orekit.tle;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
 
 import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
 import org.junit.Assert;
@@ -58,6 +59,30 @@ public class TLESeriesTest {
     public void testNoTopexPoseidonLaunchElements() throws IOException, OrekitException {
         TLESeries series = new TLESeries("^spot-5\\.tle$", false);
         series.loadTLEData(1992, 52, "A");
+    }
+
+    @Test
+    public void testAvailableSatNums() throws IOException, OrekitException {
+        int[] refIds = {
+            5, 4632, 6251, 8195, 9880, 9998, 11801, 14128, 16925,
+            20413, 21897, 22312, 22674, 23177, 23333, 23599, 24208, 25954, 26900,
+            26975, 28057, 28129, 28350, 28623, 28626, 28872, 29141, 29238, 88888};
+
+        Utils.setDataRoot("tle/extrapolationTest-data:regular-data");
+        TLESeries series = new TLESeries(".*-entry$", true);
+        Set<Integer> available = series.getAvailableSatelliteNumbers();
+        Assert.assertEquals(refIds.length, available.size());
+        for (int ref : refIds) {
+            Assert.assertTrue(available.contains(ref));
+        }
+    }
+
+    @Test
+    public void testSpot5Available() throws IOException, OrekitException {
+        TLESeries series = new TLESeries("^spot-5\\.tle$", false);
+        Set<Integer> available = series.getAvailableSatelliteNumbers();
+        Assert.assertEquals(1, available.size());
+        Assert.assertTrue(available.contains(27421));
     }
 
     @Test
