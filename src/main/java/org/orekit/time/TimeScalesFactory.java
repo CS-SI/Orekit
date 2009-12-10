@@ -75,14 +75,14 @@ public class TimeScalesFactory implements Serializable {
      * @param loader custom loader to add
      */
     public static void addUTCTAILoader(final UTCTAILoader loader) {
-    	loaders.add(loader);
+        loaders.add(loader);
     }
 
     /** Clear loaders for UTC-TAI offsets history files to default state.
      */
     public static void clearUTCTAILoader() {
-    	loaders.clear();
-    	loaders.add(new UTCTAIHistoryFilesLoader());
+        loaders.clear();
+        loaders.add(new UTCTAIHistoryFilesLoader());
     }
 
     /** Get the International Atomic Time scale.

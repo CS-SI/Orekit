@@ -93,7 +93,7 @@ class UTCTAIHistoryFilesLoader implements UTCTAILoader {
         }
 
         entries = new TreeMap<DateComponents, Integer>();
- 
+
     }
 
     /** Get the regular expression for supported files names.
@@ -129,9 +129,9 @@ class UTCTAIHistoryFilesLoader implements UTCTAILoader {
     public void loadData(final InputStream input, final String name)
         throws OrekitException, IOException, ParseException {
 
-    	entries.clear();
+        entries.clear();
 
-    	// set up a reader for line-oriented bulletin B files
+        // set up a reader for line-oriented bulletin B files
         final BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
         // read all file, ignoring not recognized lines

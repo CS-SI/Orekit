@@ -26,14 +26,14 @@ import org.orekit.data.DataLoader;
  */
 public interface UTCTAILoader extends DataLoader {
 
-	/** Load UTC-TAI offsets entries.
-	 * @return sorted UTC-TAI offsets entries (may be empty)
-	 */
-	public SortedMap<DateComponents, Integer> loadTimeSteps();
+    /** Load UTC-TAI offsets entries.
+     * @return sorted UTC-TAI offsets entries (may be empty)
+     */
+    SortedMap<DateComponents, Integer> loadTimeSteps();
 
     /** Get the regular expression for supported UTC-TAI offsets files names.
      * @return regular expression for supported UTC-TAI offsets files names
      */
-    public String getSupportedNames();
+    String getSupportedNames();
 
 }
