@@ -22,6 +22,10 @@
   <body>
     <release version="4.2" date="TBD"
              description="TBD">
+      <action dev="luc" type="fix" due-to="C&#233;dric Martel">
+        fixed loading of Saturn gravitational coefficient that still used the deprecated
+        default file name.
+      </action>
       <action dev="luc" type="add" >
         added a way to list the available satellite numbers in TLE files.
       </action>

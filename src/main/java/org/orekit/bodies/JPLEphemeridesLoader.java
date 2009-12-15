@@ -330,7 +330,7 @@ public class JPLEphemeridesLoader implements DataLoader {
             rawGM = getLoadedConstant("GM5");
             break;
         case SATURN :
-            rawGM = getConstant("GM6");
+            rawGM = getLoadedConstant("GM6");
             break;
         case URANUS :
             rawGM = getLoadedConstant("GM7");
