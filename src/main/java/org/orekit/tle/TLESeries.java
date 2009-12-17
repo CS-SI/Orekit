@@ -145,7 +145,7 @@ public class TLESeries implements DataLoader, Serializable {
      */
     public TLESeries(final String supportedNames, final boolean ignoreNonTLELines) {
 
-        this.supportedNames    = supportedNames;
+        this.supportedNames    = (supportedNames == null) ? DEFAULT_SUPPORTED_NAMES : supportedNames;
         availableSatNums       = new TreeSet<Integer>();
         this.ignoreNonTLELines = ignoreNonTLELines;
         filterSatelliteNumber  = -1;
