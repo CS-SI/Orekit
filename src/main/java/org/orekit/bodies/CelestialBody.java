@@ -30,7 +30,7 @@ public interface CelestialBody extends Serializable, PVCoordinatesProvider {
 
     /** Get an inertially oriented body-centered frame.
      * <p>The frame is always bound to the body center, and its axes have a
-     * fixed orientation with respecto to other inertial frames.</p>
+     * fixed orientation with respect to other inertial frames.</p>
      * @return an inertially oriented body-centered frame
      */
     Frame getFrame();
