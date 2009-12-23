@@ -27,6 +27,7 @@ import org.orekit.utils.PVCoordinates;
 /** Position-Velocity model based on Chebyshev polynomials.
  * <p>This class represent the most basic element of the piecewise ephemerides
  * for solar system bodies like JPL DE 405 ephemerides.</p>
+ * @see JPLEphemeridesLoader
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
