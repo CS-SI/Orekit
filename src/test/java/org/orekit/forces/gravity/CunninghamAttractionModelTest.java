@@ -32,7 +32,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.bodies.SolarSystemBody;
+import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
@@ -97,7 +97,7 @@ public class CunninghamAttractionModelTest {
         private static final long serialVersionUID = 6818305166004802991L;
 
         public SpotStepHandler(AbsoluteDate date, double mu) throws OrekitException {
-            sun       = SolarSystemBody.getSun();
+            sun       = CelestialBodyFactory.getSun();
             previous  = Double.NaN;
         }
 

@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
-import org.orekit.bodies.SolarSystemBody;
+import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -51,7 +51,7 @@ public class DihedralFieldOfViewDetectorTest {
 
         // Event definition : circular field of view, along X axis, aperture 35°
         final double maxCheck  = 1.;
-        final PVCoordinatesProvider sunPV = SolarSystemBody.getSun();
+        final PVCoordinatesProvider sunPV = CelestialBodyFactory.getSun();
         final Vector3D center = Vector3D.MINUS_J;
         final Vector3D axis1 = Vector3D.PLUS_K;
         final Vector3D axis2 = Vector3D.PLUS_I;

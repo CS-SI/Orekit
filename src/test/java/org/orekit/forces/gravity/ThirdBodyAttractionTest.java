@@ -22,7 +22,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.bodies.SolarSystemBody;
+import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -55,7 +55,7 @@ public class ThirdBodyAttractionTest {
         // set up propagator
         NumericalPropagator calc =
             new NumericalPropagator(new GraggBulirschStoerIntegrator(10.0, period, 0, 1.0e-5));
-        calc.addForceModel(new ThirdBodyAttraction(SolarSystemBody.getSun()));
+        calc.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
 
         // set up step handler to perform checks
         calc.setMasterMode(Math.floor(period), new ReferenceChecker(date) {
@@ -92,7 +92,7 @@ public class ThirdBodyAttractionTest {
         // set up propagator
         NumericalPropagator calc =
             new NumericalPropagator(new GraggBulirschStoerIntegrator(10.0, period, 0, 1.0e-5));
-        calc.addForceModel(new ThirdBodyAttraction(SolarSystemBody.getMoon()));
+        calc.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
 
         // set up step handler to perform checks
         calc.setMasterMode(Math.floor(period), new ReferenceChecker(date) {

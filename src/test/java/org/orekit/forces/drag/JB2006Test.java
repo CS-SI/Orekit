@@ -26,9 +26,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.SolarInputs97to05;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.bodies.SolarSystemBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -44,7 +44,7 @@ public class JB2006Test {
     public void testWithOriginalTestsCases() throws OrekitException, ParseException {
 
         Frame itrf = FramesFactory.getITRF2005(true);
-        PVCoordinatesProvider sun = SolarSystemBody.getSun();
+        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
 
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
@@ -184,7 +184,7 @@ public class JB2006Test {
                                              TimeComponents.H00,
                                              TimeScalesFactory.getUTC());
         Frame itrf = FramesFactory.getITRF2005();
-        PVCoordinatesProvider sun = SolarSystemBody.getSun();
+        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
 
         SolarInputs97to05 in = SolarInputs97to05.getInstance();

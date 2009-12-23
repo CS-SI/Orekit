@@ -22,7 +22,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.bodies.SolarSystemBody;
+import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -36,7 +36,7 @@ public class CelestialBodyPointingTest {
 
     @Test
     public void testSunPointing() throws OrekitException {
-        PVCoordinatesProvider sun = SolarSystemBody.getSun();
+        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());

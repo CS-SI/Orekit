@@ -82,13 +82,25 @@ class PosVelChebyshev implements TimeStamped, Serializable {
         return duration;
     }
 
+    /** Check if the instance is the exact successor of another model.
+     * <p>The instance is the successor of another model if its start
+     * date is within a 1ms tolerance interval of the end date of the
+     * other model.</p>
+     * @param predecessor model to check instance against
+     * @return true if the instance is the successor of the predecessor model
+     */
+    public boolean isSuccessorOf(final PosVelChebyshev predecessor) {
+        final double gap = start.durationFrom(predecessor.start) - predecessor.duration;
+        return Math.abs(gap) < 0.001;
+    }
+
     /** Check if a date is in validity range.
      * @param date date to check
      * @return true if date is in validity range
      */
     public boolean inRange(final AbsoluteDate date) {
         final double dt = date.durationFrom(start);
-        return (dt >= 0) && (dt <= duration);
+        return (dt >= -0.001) && (dt <= duration + 0.001);
     }
 
     /** Get the position-velocity at a specified date.

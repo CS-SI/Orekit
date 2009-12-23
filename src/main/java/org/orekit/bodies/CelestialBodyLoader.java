@@ -16,28 +16,25 @@
  */
 package org.orekit.bodies;
 
-import java.io.Serializable;
+import org.orekit.data.DataLoader;
+import org.orekit.errors.OrekitException;
 
-import org.orekit.frames.Frame;
-import org.orekit.utils.PVCoordinatesProvider;
-
-/** Interface for celestial bodies like Sun, Moon or solar system planets.
+/** Interface for loading celestial bodies.
  * @author Luc Maisonobe
- * @see CelestialBodyFactory
  * @version $Revision$ $Date$
  */
-public interface CelestialBody extends Serializable, PVCoordinatesProvider {
+public interface CelestialBodyLoader extends DataLoader {
 
-    /** Get an inertially oriented body-centered frame.
-     * <p>The frame is always bound to the body center, and its axes have a
-     * fixed orientation with respect to other inertial frames.</p>
-     * @return an inertially oriented body-centered frame
+    /** Load celestial body.
+     * @param name name of the celestial body
+     * @return loaded celestial body
+     * @throws OrekitException if the body cannot be loaded
      */
-    Frame getFrame();
+    CelestialBody loadCelestialBody(String name) throws OrekitException;
 
-    /** Get the attraction coefficient of the body.
-     * @return attraction coefficient of the body (m<sup>3</sup>/s<sup>2</sup>)
+    /** Get the regular expression for supported PV coordinates files names.
+     * @return regular expression for supported PV coordinates files names
      */
-    double getGM();
+    String getSupportedNames();
 
 }

@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -28,10 +29,14 @@ import java.util.TreeSet;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.PVCoordinates;
 
 /** Loader for JPL ephemerides binary files (DE 405, DE 406).
  * <p>JPL ephemerides binary files contain ephemerides for all solar system planets.</p>
@@ -42,7 +47,7 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class JPLEphemeridesLoader implements DataLoader {
+public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
     /** Error message for no JPL files. */
     private static final String NO_JPL_FILES_FOUND =
@@ -75,6 +80,12 @@ public class JPLEphemeridesLoader implements DataLoader {
     /** List of supported ephemerides types. */
     public enum EphemerisType {
 
+        /** Constant for solar system barycenter. */
+        SOLAR_SYSTEM_BARYCENTER,
+
+        /** Constant for the Sun. */
+        SUN,
+
         /** Constant for Mercury. */
         MERCURY,
 
@@ -83,6 +94,12 @@ public class JPLEphemeridesLoader implements DataLoader {
 
         /** Constant for the Earth-Moon barycenter. */
         EARTH_MOON,
+
+        /** Constant for the Earth. */
+        EARTH,
+
+        /** Constant for the Moon. */
+        MOON,
 
         /** Constant for Mars. */
         MARS,
@@ -100,13 +117,7 @@ public class JPLEphemeridesLoader implements DataLoader {
         NEPTUNE,
 
         /** Constant for Pluto. */
-        PLUTO,
-
-        /** Constant for the Moon. */
-        MOON,
-
-        /** Constant for the Sun. */
-        SUN;
+        PLUTO
 
     }
 
@@ -116,14 +127,17 @@ public class JPLEphemeridesLoader implements DataLoader {
     /** Constants defined in the file. */
     private final Map<String, Double> constants = new HashMap<String, Double>();
 
+    /** Ephemeris type to generate. */
+    private final EphemerisType generateType;
+
     /** Ephemeris type to load. */
-    private final EphemerisType type;
+    private final EphemerisType loadType;
 
     /** Desired central date. */
     private AbsoluteDate centralDate;
 
-    /** Ephemeris for selected body. */
-    private SortedSet<TimeStamped> ephemerides;
+    /** Ephemeris for selected body (may contain holes between 100 days ranges). */
+    private final SortedSet<TimeStamped> ephemerides;
 
     /** Current file start epoch. */
     private AbsoluteDate startEpoch;
@@ -146,28 +160,6 @@ public class JPLEphemeridesLoader implements DataLoader {
     /** Number of chunks for the selected body. */
     private int chunks;
 
-    /** Create a loader for JPL ephemerides binary files using default names.
-     * <p>
-     * Calling this constructor is equivalent to calling {@link
-     * #JPLEphemeridesLoader(String, EphemerisType, AbsoluteDate)
-     * JPLEphemeridesLoader(null, type, centralDate)}
-     * </p>
-     * <p>
-     * The central date is used to load only a part of an ephemeris. If it
-     * is non-null, all data within a +/-50 days range around this date will
-     * be loaded. If it is null, an arbitrary 100 days range will be loaded,
-     * this is useful to load only data from the header like astronomical
-     * unit or gravity coefficients.
-     * </p>
-     * @param type ephemeris type to load
-     * @param centralDate desired central date (may be null)
-     * @exception OrekitException if the header constants cannot be read
-     */
-    public JPLEphemeridesLoader(final EphemerisType type, final AbsoluteDate centralDate)
-        throws OrekitException {
-        this(null, type, centralDate);
-    }
-
     /** Create a loader for JPL ephemerides binary files.
      * <p>
      * If the regular expression for supported names is null or is the
@@ -183,12 +175,13 @@ public class JPLEphemeridesLoader implements DataLoader {
      * </p>
      * @param supportedNames regular expression for supported files names
      * (may be null)
-     * @param type ephemeris type to load
+     * @param generateType ephemeris type to generate
      * @param centralDate desired central date (may be null)
      * @exception OrekitException if the header constants cannot be read
      */
     public JPLEphemeridesLoader(final String supportedNames,
-                                final EphemerisType type, final AbsoluteDate centralDate)
+                                final EphemerisType generateType,
+                                final AbsoluteDate centralDate)
         throws OrekitException {
 
         if ((supportedNames == null) || (supportedNames.length() == 0)) {
@@ -201,27 +194,96 @@ public class JPLEphemeridesLoader implements DataLoader {
             loadConstants();
         }
 
-        this.type          = type;
+        this.generateType  = generateType;
+        if (generateType == EphemerisType.SOLAR_SYSTEM_BARYCENTER) {
+            loadType = EphemerisType.EARTH_MOON;
+        } else if (generateType == EphemerisType.EARTH_MOON) {
+            loadType = EphemerisType.MOON;
+        } else {
+            loadType = generateType;
+        }
         this.centralDate   = centralDate;
+        ephemerides        = new TreeSet<TimeStamped>(new ChronologicalComparator());
         maxChunksDuration  = Double.NaN;
         chunksDuration     = Double.NaN;
 
     }
 
-    /** Load ephemerides.
-     * <p>The data is concatenated from all JPL ephemerides files
-     * which can be found in the configured data directories tree.</p>
-     * @return a set of ephemerides (all contained elements are really
-     * {@link PosVelChebyshev} instances)
-     * @exception OrekitException if some data can't be read or some
-     * file content is corrupted
-     */
-    public synchronized SortedSet<TimeStamped> loadEphemerides() throws OrekitException {
-        ephemerides = new TreeSet<TimeStamped>(new ChronologicalComparator());
-        if (!DataProvidersManager.getInstance().feed(supportedNames, this)) {
-            throw new OrekitException(NO_JPL_FILES_FOUND);
+    /** {@inheritDoc} */
+    public CelestialBody loadCelestialBody(final String name) throws OrekitException {
+
+        final String frameName = name + "/EME2000";
+        final double gm = getLoadedGravitationalCoefficient(generateType);
+
+        switch (generateType) {
+            case SOLAR_SYSTEM_BARYCENTER :
+                return new JPLCelestialBody(supportedNames, gm,
+                                            CelestialBodyFactory.getEarthMoonBarycenter().getFrame(),
+                                            frameName) {
+
+                    /** Serializable UID. */
+                    private static final long serialVersionUID = -949534646302786503L;
+
+                    /** {@inheritDoc} */
+                    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+                        throws OrekitException {
+                        // we define solar system barycenter with respect to Earth-Moon barycenter
+                        // so we need to revert the vectors provided by the JPL DE 405 ephemerides
+                        final PVCoordinates emPV = super.getPVCoordinates(date, frame);
+                        return new PVCoordinates(emPV.getPosition().negate(), emPV.getVelocity().negate());
+                    }
+
+                };
+            case EARTH_MOON :
+                final double scale = 1.0 / (1.0 + getLoadedEarthMoonMassRatio());
+                return new JPLCelestialBody(supportedNames, gm,
+                                            FramesFactory.getEME2000(), frameName) {
+
+                    /** Serializable UID. */
+                    private static final long serialVersionUID = -3710160379028246246L;
+
+                    /** {@inheritDoc} */
+                    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+                    throws OrekitException {
+                        // we define Earth-Moon barycenter with respect to Earth center so we need
+                        // to apply a scale factor to the Moon vectors provided by the JPL DE 405 ephemerides
+                        return new PVCoordinates(scale, super.getPVCoordinates(date, frame));
+                    }
+                };
+            case EARTH :
+                return new AbstractCelestialBody(gm, FramesFactory.getEME2000()) {
+
+                    /** Serializable UID. */
+                    private static final long serialVersionUID = -6542444016613134811L;
+
+                    /** {@inheritDoc} */
+                    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+                    throws OrekitException {
+
+                        // specific implementation for Earth:
+                        // the Earth is always exactly at the origin of its own EME2000 frame
+                        PVCoordinates pv = PVCoordinates.ZERO;
+                        if (frame != getFrame()) {
+                            pv = getFrame().getTransformTo(frame, date).transformPVCoordinates(pv);
+                        }
+                        return pv;
+
+                    }
+
+                };
+            case MOON :
+                return new JPLCelestialBody(supportedNames, gm,
+                                            FramesFactory.getEME2000(), frameName);
+            default :
+                return new JPLCelestialBody(supportedNames, gm,
+                                            CelestialBodyFactory.getSolarSystemBarycenter().getFrame(),
+                                            frameName);
         }
-        return ephemerides;
+    }
+
+    /** {@inheritDoc} */
+    public String getSupportedNames() {
+        return supportedNames;
     }
 
     /** Get astronomical unit.
@@ -236,7 +298,7 @@ public class JPLEphemeridesLoader implements DataLoader {
      */
     @Deprecated
     public static double getAstronomicalUnit() throws OrekitException {
-        return new JPLEphemeridesLoader(EphemerisType.SUN, null).getLoadedAstronomicalUnit();
+        return new JPLEphemeridesLoader(null, EphemerisType.SUN, null).getLoadedAstronomicalUnit();
     }
 
     /** Get astronomical unit.
@@ -265,7 +327,7 @@ public class JPLEphemeridesLoader implements DataLoader {
      */
     @Deprecated
     public static double getEarthMoonMassRatio() throws OrekitException {
-        return new JPLEphemeridesLoader(EphemerisType.EARTH_MOON, null).getLoadedEarthMoonMassRatio();
+        return new JPLEphemeridesLoader(null, EphemerisType.EARTH_MOON, null).getLoadedEarthMoonMassRatio();
     }
 
     /** Get Earth/Moon mass ratio.
@@ -296,7 +358,7 @@ public class JPLEphemeridesLoader implements DataLoader {
     @Deprecated
     public static double getGravitationalCoefficient(final EphemerisType body)
         throws OrekitException {
-        return new JPLEphemeridesLoader(EphemerisType.SUN, null).getLoadedGravitationalCoefficient(body);
+        return new JPLEphemeridesLoader(null, EphemerisType.SUN, null).getLoadedGravitationalCoefficient(body);
     }
 
     /** Get the gravitational coefficient of a body.
@@ -314,41 +376,55 @@ public class JPLEphemeridesLoader implements DataLoader {
         // coefficient in au<sup>3</sup>/day<sup>2</sup>
         final double rawGM;
         switch (body) {
-        case MERCURY :
-            rawGM = getLoadedConstant("GM1");
-            break;
-        case VENUS :
-            rawGM = getLoadedConstant("GM2");
-            break;
-        case EARTH_MOON :
-            rawGM = getLoadedConstant("GMB");
-            break;
-        case MARS :
-            rawGM = getLoadedConstant("GM4");
-            break;
-        case JUPITER :
-            rawGM = getLoadedConstant("GM5");
-            break;
-        case SATURN :
-            rawGM = getLoadedConstant("GM6");
-            break;
-        case URANUS :
-            rawGM = getLoadedConstant("GM7");
-            break;
-        case NEPTUNE :
-            rawGM = getLoadedConstant("GM8");
-            break;
-        case PLUTO :
-            rawGM = getLoadedConstant("GM9");
-            break;
-        case MOON :
-            return getLoadedGravitationalCoefficient(EphemerisType.EARTH_MOON) /
-                   (1.0 + getLoadedEarthMoonMassRatio());
-        case SUN :
-            rawGM = getLoadedConstant("GMS");
-            break;
-        default :
-            throw OrekitException.createInternalError(null);
+            case SOLAR_SYSTEM_BARYCENTER :
+                return getLoadedGravitationalCoefficient(EphemerisType.SUN)        +
+                       getLoadedGravitationalCoefficient(EphemerisType.MERCURY)    +
+                       getLoadedGravitationalCoefficient(EphemerisType.VENUS)      +
+                       getLoadedGravitationalCoefficient(EphemerisType.EARTH_MOON) +
+                       getLoadedGravitationalCoefficient(EphemerisType.MARS)       +
+                       getLoadedGravitationalCoefficient(EphemerisType.JUPITER)    +
+                       getLoadedGravitationalCoefficient(EphemerisType.SATURN)     +
+                       getLoadedGravitationalCoefficient(EphemerisType.URANUS)     +
+                       getLoadedGravitationalCoefficient(EphemerisType.NEPTUNE)    +
+                       getLoadedGravitationalCoefficient(EphemerisType.PLUTO);
+            case SUN :
+                rawGM = getLoadedConstant("GMS");
+                break;
+            case MERCURY :
+                rawGM = getLoadedConstant("GM1");
+                break;
+            case VENUS :
+                rawGM = getLoadedConstant("GM2");
+                break;
+            case EARTH_MOON :
+                rawGM = getLoadedConstant("GMB");
+                break;
+            case EARTH :
+                return getLoadedEarthMoonMassRatio() *
+                       getLoadedGravitationalCoefficient(EphemerisType.MOON);
+            case MOON :
+                return getLoadedGravitationalCoefficient(EphemerisType.EARTH_MOON) /
+                       (1.0 + getLoadedEarthMoonMassRatio());
+            case MARS :
+                rawGM = getLoadedConstant("GM4");
+                break;
+            case JUPITER :
+                rawGM = getLoadedConstant("GM5");
+                break;
+            case SATURN :
+                rawGM = getLoadedConstant("GM6");
+                break;
+            case URANUS :
+                rawGM = getLoadedConstant("GM7");
+                break;
+            case NEPTUNE :
+                rawGM = getLoadedConstant("GM8");
+                break;
+            case PLUTO :
+                rawGM = getLoadedConstant("GM9");
+                break;
+            default :
+                throw OrekitException.createInternalError(null);
         }
 
         final double au    = getLoadedAstronomicalUnit();
@@ -373,7 +449,7 @@ public class JPLEphemeridesLoader implements DataLoader {
      */
     @Deprecated
     public static double getConstant(final String name) throws OrekitException {
-        return new JPLEphemeridesLoader(EphemerisType.SUN, null).getLoadedConstant(name);
+        return new JPLEphemeridesLoader(null, EphemerisType.SUN, null).getLoadedConstant(name);
     }
 
     /** Get a constant defined in the ephemerides headers.
@@ -414,7 +490,53 @@ public class JPLEphemeridesLoader implements DataLoader {
 
     /** {@inheritDoc} */
     public boolean stillAcceptsData() {
-        return true;
+
+        // special case for Earth: we don't really load anything
+        if (generateType == EphemerisType.EARTH) {
+            return false;
+        }
+
+        synchronized (this) {
+
+            if (centralDate == null) {
+                return true;
+            }
+
+            final AbsoluteDate before = new AbsoluteDate(centralDate, -FIFTY_DAYS);
+            final AbsoluteDate after  = new AbsoluteDate(centralDate,  FIFTY_DAYS);
+            synchronized (JPLEphemeridesLoader.this) {
+                final Iterator<TimeStamped> iterator = ephemerides.tailSet(before).iterator();
+                if (! iterator.hasNext()) {
+                    return true;
+                }
+                PosVelChebyshev previous = (PosVelChebyshev) iterator.next();
+                if (! previous.inRange(before)) {
+                    // the date 50 days before central date is not covered yet
+                    // we need to read more data
+                    return true;
+                }
+                while (iterator.hasNext()) {
+                    final PosVelChebyshev current = (PosVelChebyshev) iterator.next();
+                    if (! current.isSuccessorOf(previous)) {
+                        // there is a hole in the [-50 days ; +50 days] interval
+                        // we need to read more data
+                        return true;
+                    }
+                    if (current.inRange(after)) {
+                        // the whole [-50 days ; +50 days] interval is covered
+                        // we don't need to read any more data
+                        return false;
+                    }
+                    previous = current;
+                }
+
+                // the date 50 days after central date is not covered yet
+                // we need to read more data
+                return true;
+
+            }
+
+        }
     }
 
     /** {@inheritDoc} */
@@ -427,16 +549,19 @@ public class JPLEphemeridesLoader implements DataLoader {
         // parse first header record
         parseFirstHeaderRecord(record, name);
 
-        if (centralDate == null) {
-            // this is the first call to the method and the central date is not set
-            // we set it arbitrarily to start + 50 days in order to load only
-            // the first 100 days worth of data
-            centralDate = new AbsoluteDate(startEpoch, FIFTY_DAYS);
-        } else if ((centralDate.durationFrom(finalEpoch) > FIFTY_DAYS) ||
-                   (startEpoch.durationFrom(centralDate) > FIFTY_DAYS)) {
-            // this file does not cover a range we are interested in,
-            // there is no need to parse it further
-            return;
+        synchronized (this) {
+            if (centralDate == null) {
+                // this is the first call to the method and the central date is not set
+                // we set it arbitrarily to startEpoch + 50 days in order to load only
+                // the first 100 days worth of data
+                centralDate = new AbsoluteDate(startEpoch, FIFTY_DAYS);
+            } else if ((centralDate.durationFrom(finalEpoch) > FIFTY_DAYS) ||
+                    (startEpoch.durationFrom(centralDate) > FIFTY_DAYS)) {
+                // this file does not cover a range we are interested in,
+                // there is no need to parse it further
+                return;
+            }
+
         }
 
         // the second record contains the values of the constants used for least-square filtering
@@ -486,17 +611,17 @@ public class JPLEphemeridesLoader implements DataLoader {
             final int row2 = extractInt(record, 2700 + 12 * i);
             final int row3 = extractInt(record, 2704 + 12 * i);
             ok = ok && (row1 > 0) && (row2 >= 0) && (row3 >= 0);
-            if (((i ==  0) && (type == EphemerisType.MERCURY))    ||
-                ((i ==  1) && (type == EphemerisType.VENUS))      ||
-                ((i ==  2) && (type == EphemerisType.EARTH_MOON)) ||
-                ((i ==  3) && (type == EphemerisType.MARS))       ||
-                ((i ==  4) && (type == EphemerisType.JUPITER))    ||
-                ((i ==  5) && (type == EphemerisType.SATURN))     ||
-                ((i ==  6) && (type == EphemerisType.URANUS))     ||
-                ((i ==  7) && (type == EphemerisType.NEPTUNE))    ||
-                ((i ==  8) && (type == EphemerisType.PLUTO))      ||
-                ((i ==  9) && (type == EphemerisType.MOON))       ||
-                ((i == 10) && (type == EphemerisType.SUN))) {
+            if (((i ==  0) && (loadType == EphemerisType.MERCURY))    ||
+                ((i ==  1) && (loadType == EphemerisType.VENUS))      ||
+                ((i ==  2) && (loadType == EphemerisType.EARTH_MOON)) ||
+                ((i ==  3) && (loadType == EphemerisType.MARS))       ||
+                ((i ==  4) && (loadType == EphemerisType.JUPITER))    ||
+                ((i ==  5) && (loadType == EphemerisType.SATURN))     ||
+                ((i ==  6) && (loadType == EphemerisType.URANUS))     ||
+                ((i ==  7) && (loadType == EphemerisType.NEPTUNE))    ||
+                ((i ==  8) && (loadType == EphemerisType.PLUTO))      ||
+                ((i ==  9) && (loadType == EphemerisType.MOON))       ||
+                ((i == 10) && (loadType == EphemerisType.SUN))) {
                 firstIndex = row1;
                 coeffs     = row2;
                 chunks     = row3;
@@ -537,19 +662,20 @@ public class JPLEphemeridesLoader implements DataLoader {
             throw new OrekitException(OUT_OF_RANGE_DATE, rangeEnd, startEpoch, finalEpoch);
         }
 
-        if ((centralDate.durationFrom(rangeEnd) > FIFTY_DAYS) ||
-            (rangeStart.durationFrom(centralDate) > FIFTY_DAYS)) {
-            // we are not interested in this record, don't parse it
-            return;
-        }
-
-        // loop over chunks inside the time range
-        AbsoluteDate chunkEnd = rangeStart;
-        final int nbChunks    = chunks;
-        final int nbCoeffs    = coeffs;
-        final int first       = firstIndex;
-        final double duration = chunksDuration;
         synchronized (this) {
+
+            if ((centralDate.durationFrom(rangeEnd) > FIFTY_DAYS) ||
+                    (rangeStart.durationFrom(centralDate) > FIFTY_DAYS)) {
+                // we are not interested in this record, don't parse it
+                return;
+            }
+
+            // loop over chunks inside the time range
+            AbsoluteDate chunkEnd = rangeStart;
+            final int nbChunks    = chunks;
+            final int nbCoeffs    = coeffs;
+            final int first       = firstIndex;
+            final double duration = chunksDuration;
             for (int i = 0; i < nbChunks; ++i) {
 
                 // set up chunk validity range
@@ -731,5 +857,106 @@ public class JPLEphemeridesLoader implements DataLoader {
 
         }
     };
+
+    private class JPLCelestialBody extends AbstractCelestialBody {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 7425624219901103158L;
+
+        /** Current Chebyshev model. */
+        private PosVelChebyshev model;
+
+        /** Frame in which ephemeris are defined. */
+        private final Frame definingFrame;
+
+        /** Private constructor for the singletons.
+         * @param supportedNames regular expression for supported files names (may be null)
+         * @param gm attraction coefficient (in m<sup>3</sup>/s<sup>2</sup>)
+         * @param definingFrame frame in which ephemeris are defined
+         * @param frameName name to use for the body-centered frame
+         */
+        private JPLCelestialBody(final String supportedNames, final double gm,
+                                 final Frame definingFrame, final String frameName) {
+            super(gm, frameName, definingFrame);
+            this.model         = null;
+            this.definingFrame = definingFrame;
+        }
+
+        /** {@inheritDoc} */
+        public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+            throws OrekitException {
+
+            // get position/velocity in parent frame
+            final PVCoordinates pv;
+            synchronized (JPLEphemeridesLoader.this) {
+                setPVModel(date);
+                pv = model.getPositionVelocity(date);            
+            }
+
+            // convert to required frame
+            if (frame == definingFrame) {
+                return pv;
+            } else {
+                final Transform transform = definingFrame.getTransformTo(frame, date);
+                return transform.transformPVCoordinates(pv);
+            }
+
+        }
+
+        /** Set the position-velocity model covering a specified date.
+         * @param date target date
+         * @exception OrekitException if current date is not covered by
+         * available ephemerides
+         */
+        private void setPVModel(final AbsoluteDate date) throws OrekitException {
+
+            // first quick check: is the current model valid for specified date ?
+            if (model != null) {
+
+                if (model.inRange(date)) {
+                    return;
+                }
+
+                // try searching only within the already loaded ephemeris part
+                final AbsoluteDate before = new AbsoluteDate(date, -model.getValidityDuration());
+                synchronized (JPLEphemeridesLoader.this) {
+                    for (final Iterator<TimeStamped> iterator = ephemerides.tailSet(before).iterator();
+                         iterator.hasNext();) {
+                        model = (PosVelChebyshev) iterator.next();
+                        if (model.inRange(date)) {
+                            return;
+                        }
+                    }
+                }
+
+            }
+
+            // existing ephemerides (if any) are too far from current date
+            // load a new part of ephemerides, centered around specified date
+            synchronized (JPLEphemeridesLoader.this) {
+                centralDate = date;
+            }
+            if (!DataProvidersManager.getInstance().feed(supportedNames, JPLEphemeridesLoader.this)) {
+                throw new OrekitException(NO_JPL_FILES_FOUND);
+            }
+
+            // second try, searching newly loaded part designed to bracket date
+            final AbsoluteDate before = new AbsoluteDate(date, -maxChunksDuration);
+            synchronized (JPLEphemeridesLoader.this) {
+                for (final Iterator<TimeStamped> iterator = ephemerides.tailSet(before).iterator();
+                     iterator.hasNext();) {
+                    model = (PosVelChebyshev) iterator.next();
+                    if (model.inRange(date)) {
+                        return;
+                    }
+                }
+            }
+
+            // no way, this means we don't have available data for this date
+            throw new OrekitException("out of range date for {0} ephemerides: {1}",
+                                      loadType, date);
+
+        }
+    }
 
 }

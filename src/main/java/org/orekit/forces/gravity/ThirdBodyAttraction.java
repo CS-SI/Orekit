@@ -41,8 +41,8 @@ public class ThirdBodyAttraction implements ForceModel {
 
     /** Simple constructor.
      * @param body the third body to consider
-     * (ex: {@link org.orekit.bodies.SolarSystemBody#getSun()} or
-     * {@link org.orekit.bodies.SolarSystemBody#getMoon()})
+     * (ex: {@link org.orekit.bodies.CelestialBodyFactory#getSun()} or
+     * {@link org.orekit.bodies.CelestialBodyFactory#getMoon()})
      */
     public ThirdBodyAttraction(final CelestialBody body) {
         this.body = body;

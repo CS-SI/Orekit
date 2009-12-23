@@ -18,7 +18,6 @@ package org.orekit.bodies;
 
 
 import java.text.ParseException;
-import java.util.SortedSet;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.junit.Assert;
@@ -26,16 +25,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.TimeStamped;
 
 public class JPLEphemeridesLoaderTest {
 
     @Test
     public void testConstants() throws OrekitException {
         JPLEphemeridesLoader loader =
-            new JPLEphemeridesLoader(JPLEphemeridesLoader.EphemerisType.SUN, null);
+            new JPLEphemeridesLoader(null, JPLEphemeridesLoader.EphemerisType.SUN, null);
         Assert.assertEquals(149597870691.0, loader.getLoadedAstronomicalUnit(), 0.1);
         Assert.assertEquals(81.30056, loader.getLoadedEarthMoonMassRatio(), 1.0e-8);
     }
@@ -43,7 +43,7 @@ public class JPLEphemeridesLoaderTest {
     @Test
     public void testGM() throws OrekitException {
         JPLEphemeridesLoader loader =
-            new JPLEphemeridesLoader(JPLEphemeridesLoader.EphemerisType.SUN, null);
+            new JPLEphemeridesLoader(null, JPLEphemeridesLoader.EphemerisType.SUN, null);
         Assert.assertEquals(22032.080e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MERCURY),
                             1.0e6);
@@ -91,30 +91,30 @@ public class JPLEphemeridesLoaderTest {
 
     private void checkDerivative(AbsoluteDate date) throws OrekitException, ParseException {
         JPLEphemeridesLoader loader =
-            new JPLEphemeridesLoader(JPLEphemeridesLoader.EphemerisType.MERCURY, date);
-        SortedSet<TimeStamped> set = loader.loadEphemerides();
+            new JPLEphemeridesLoader(null, JPLEphemeridesLoader.EphemerisType.MERCURY, date);
+        CelestialBody body = loader.loadCelestialBody(CelestialBodyFactory.MERCURY);
         double h = 10;
 
-        // four points finite differences estimation of the velocity
-        Vector3D pm2h = getPosition(set, new AbsoluteDate(date, -2 * h));
-        Vector3D pm1h = getPosition(set, new AbsoluteDate(date,     -h));
-        Vector3D pp1h = getPosition(set, new AbsoluteDate(date,      h));
-        Vector3D pp2h = getPosition(set, new AbsoluteDate(date,  2 * h));
-        double c = 1.0 / (12 * h);
-        Vector3D estimatedV = new Vector3D(c, pm2h, -8 * c, pm1h, 8 * c, pp1h, -c, pp2h);
+        // eight points finite differences estimation of the velocity
+        Frame eme2000 = FramesFactory.getEME2000();
+        Vector3D pm4h = body.getPVCoordinates(new AbsoluteDate(date, -4 * h), eme2000).getPosition();
+        Vector3D pm3h = body.getPVCoordinates(new AbsoluteDate(date, -3 * h), eme2000).getPosition();
+        Vector3D pm2h = body.getPVCoordinates(new AbsoluteDate(date, -2 * h), eme2000).getPosition();
+        Vector3D pm1h = body.getPVCoordinates(new AbsoluteDate(date,     -h), eme2000).getPosition();
+        Vector3D pp1h = body.getPVCoordinates(new AbsoluteDate(date,      h), eme2000).getPosition();
+        Vector3D pp2h = body.getPVCoordinates(new AbsoluteDate(date,  2 * h), eme2000).getPosition();
+        Vector3D pp3h = body.getPVCoordinates(new AbsoluteDate(date,  3 * h), eme2000).getPosition();
+        Vector3D pp4h = body.getPVCoordinates(new AbsoluteDate(date,  4 * h), eme2000).getPosition();
+        Vector3D d4   = pp4h.subtract(pm4h);
+        Vector3D d3   = pp3h.subtract(pm3h);
+        Vector3D d2   = pp2h.subtract(pm2h);
+        Vector3D d1   = pp1h.subtract(pm1h);
+        double c = 1.0 / (840 * h);
+        Vector3D estimatedV = new Vector3D(-3 * c, d4, 32 * c, d3, -168 * c, d2, 672 * c, d1);
 
-        Assert.assertEquals(0, getVelocity(set, date).subtract(estimatedV).getNorm(), 1.0e-5);
+        Vector3D loadedV = body.getPVCoordinates(date, eme2000).getVelocity();
+        Assert.assertEquals(0, loadedV.subtract(estimatedV).getNorm(), 3.0e-6);
 
-    }
-
-    private Vector3D getPosition(SortedSet<TimeStamped> set, AbsoluteDate date) {
-        PosVelChebyshev pv = (PosVelChebyshev) set.headSet(date).last();
-        return pv.getPositionVelocity(date).getPosition();        
-    }
-
-    private Vector3D getVelocity(SortedSet<TimeStamped> set, AbsoluteDate date) {
-        PosVelChebyshev pv = (PosVelChebyshev) set.headSet(date).last();
-        return pv.getPositionVelocity(date).getVelocity();        
     }
 
     @Before

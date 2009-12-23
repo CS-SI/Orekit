@@ -22,10 +22,6 @@
   <body>
     <release version="4.2" date="TBD"
              description="TBD">
-      <action dev="luc" type="fix" due-to="C&#233;dric Martel">
-        fixed loading of Saturn gravitational coefficient that still used the deprecated
-        default file name.
-      </action>
       <action dev="luc" type="add" >
         added a way to list the available satellite numbers in TLE files.
       </action>
@@ -41,11 +37,12 @@
         the loader for gravity fields in the ICGEM format now support empty lines in the file
         (there is for example one blank line at the end of the file in the orekit-data zip archive).
       </action>
-      <action dev="luc" type="update" >
-        the JPL ephemerides loader now support loading file with custom names and not only the
-        genuine names from JPL. A consequence of this change is that the various static getXxx()
-        methods (getAstronomicalUnit, getEarthMoonMassRatio ...) that use only the default file
-        names are deprecated and should be replaced by their new non-static counterparts.
+      <action dev="luc" type="add" >
+        a new celestial body factory has been set up with the same pattern as other data loading
+        factories: users can provide their own loader in addition to or in replacement of the
+        default ones. The default loaders use only JPL ephemerides (but they now support custom
+        names for the files and not only the genuine names from JPL. A consequence of this change
+        is that the SolarSystemBody class is now deprecated.
       </action>
       <action dev="v&#233;ronique" type="add" >
         a new PVCoordinatesProvider interface has been created on top of several existing classes
