@@ -23,21 +23,22 @@ Bodies
   external one for its gravity or lighting influence on spacecraft (typically in
   perturbing force computation) or as an internal one with its own frame.
 
-  The <SolarSystemBody> class is a factory providing several predefined instances
+  The <CelestialBodyFactory> class is a factory providing several predefined instances
   implementing the <CelestialBody> interface for the main solar system bodies. The Sun,
   the Moon, the eight planets and the Pluto dwarf planet are the supported bodies. In
   addition to these real bodies, two points are supported for convenience as if they
-  were real bodies: the solar system barycenter and the Earth-Moon barycenter. The
-  <SolarSystemBody> factory relies on the JPL DE 405 or DE 406 binary ephemerides files to
-  compute all positions and velocities. Note that the binary files are used, not the
-  ASCII ones, regardless of the processor endianness.
+  were real bodies: the solar system barycenter and the Earth-Moon barycenter.
+  By default, the <CelestialBodyFactory> relies on the JPL DE 405 or DE 406 binary
+  ephemerides files to compute all positions and velocities (note that the binary files
+  are used, not the ASCII ones, regardless of the processor endianness). This can be
+  overridden by defining a user specific loader for JPL ephemerides.
 
   As an example, computing the position of the Sun and the Moon in the EME2000 frame,
   this done as follows:
 
 +---------------------
-CelestialBody sun  = SolarSystemBody.getSun();
-CelestialBody moon = SolarSystemBody.getMoon();
+CelestialBody sun  = CelestialBodyFactory.getSun();
+CelestialBody moon = CelestialBodyFactory.getMoon();
 Vector3D sunInEME2000 =
     sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition();
 Vector3D moonInEME2000 =

@@ -69,8 +69,7 @@ public class TimeScalesFactory implements Serializable {
     /** Add a loader for UTC-TAI offsets history files.
      * @param loader custom loader to add
      * @see #getUTC()
-     * @see 
-     * @see #clearUTCTAILoader()
+     * @see #clearUTCTAILoaders()
      */
     public static void addUTCTAILoader(final UTCTAILoader loader) {
         loaders.add(loader);
@@ -83,7 +82,7 @@ public class TimeScalesFactory implements Serializable {
      * </p>
      * @see <a href="http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history">IERS UTC-TAI.history file</a>
      * @see #getUTC()
-     * @see #clearUTCTAILoader()
+     * @see #clearUTCTAILoaders()
      */
     public static void addDefaultUTCTAILoader() {
         addUTCTAILoader(new UTCTAIHistoryFilesLoader());
@@ -92,6 +91,7 @@ public class TimeScalesFactory implements Serializable {
     /** Clear loaders for UTC-TAI offsets history files.
      * @see #getUTC()
      * @see #addUTCTAILoader(UTCTAILoader)
+     * @see #addDefaultUTCTAILoader()
      */
     public static void clearUTCTAILoaders() {
         loaders.clear();
@@ -116,15 +116,16 @@ public class TimeScalesFactory implements Serializable {
      * <p>
      * If no {@link UTCTAILoader} has been added by calling {@link
      * #addUTCTAILoader(UTCTAILoader) addUTCTAILoader} or if {@link
-     * #clearUTCTAILoader() clearUTCTAILoader} has been called afterwards,
+     * #clearUTCTAILoaders() clearUTCTAILoaders} has been called afterwards,
      * the {@link #addDefaultUTCTAILoader() addDefaultUTCTAILoader} method
-     * will be called automatically. 
+     * will be called automatically.
      * </p>
      * @return Universal Time Coordinate scale
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
      * @see #addUTCTAILoader(UTCTAILoader)
-     * @see #clearUTCTAILoader()
+     * @see #clearUTCTAILoaders()
+     * @see #addDefaultUTCTAILoader()
      */
     public static UTCScale getUTC() throws OrekitException {
         synchronized (TimeScalesFactory.class) {

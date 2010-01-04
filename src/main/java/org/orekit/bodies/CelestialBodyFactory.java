@@ -134,7 +134,6 @@ public class CelestialBodyFactory {
     /** Add a loader for celestial bodies.
      * @param name name of the body (may be one of the predefined names or a user-defined name)
      * @param loader custom loader to add for the body
-     * @see #getCelestialBody(String name)
      * @see #addDefaultCelestialBodyLoader(String)
      * @see #clearCelestialBodyLoaders(String)
      * @see #clearCelestialBodyLoaders()
@@ -197,7 +196,7 @@ public class CelestialBodyFactory {
      * @exception OrekitException if the header constants cannot be read
      */
     public static void addDefaultCelestialBodyLoader(final String name, final String supportedNames)
-            throws OrekitException {
+        throws OrekitException {
 
         CelestialBodyLoader loader = null;
         if (name.equals(SOLAR_SYSTEM_BARYCENTER)) {
@@ -250,7 +249,6 @@ public class CelestialBodyFactory {
     /** Clear loaders for one celestial body.
      * @param name name of the body
      * @see #addCelestialBodyLoader(String, CelestialBodyLoader)
-     * @see #addDefaultCelestialBodyLoader(String)
      * @see #clearCelestialBodyLoaders()
      */
     public static void clearCelestialBodyLoaders(final String name) {
@@ -260,8 +258,6 @@ public class CelestialBodyFactory {
     }
 
     /** Clear loaders for all celestial bodies.
-     * @param name name of the body
-     * @see #getCelestialBody(String name)
      * @see #addCelestialBodyLoader(String, CelestialBodyLoader)
      * @see #clearCelestialBodyLoaders(String)
      */

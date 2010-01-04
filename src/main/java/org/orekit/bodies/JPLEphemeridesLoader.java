@@ -226,7 +226,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
                     /** {@inheritDoc} */
                     public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                        throws OrekitException {
+                    throws OrekitException {
                         // we define solar system barycenter with respect to Earth-Moon barycenter
                         // so we need to revert the vectors provided by the JPL DE 405 ephemerides
                         final PVCoordinates emPV = super.getPVCoordinates(date, frame);
@@ -506,18 +506,18 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             final AbsoluteDate after  = new AbsoluteDate(centralDate,  FIFTY_DAYS);
             synchronized (JPLEphemeridesLoader.this) {
                 final Iterator<TimeStamped> iterator = ephemerides.tailSet(before).iterator();
-                if (! iterator.hasNext()) {
+                if (!iterator.hasNext()) {
                     return true;
                 }
                 PosVelChebyshev previous = (PosVelChebyshev) iterator.next();
-                if (! previous.inRange(before)) {
+                if (!previous.inRange(before)) {
                     // the date 50 days before central date is not covered yet
                     // we need to read more data
                     return true;
                 }
                 while (iterator.hasNext()) {
                     final PosVelChebyshev current = (PosVelChebyshev) iterator.next();
-                    if (! current.isSuccessorOf(previous)) {
+                    if (!current.isSuccessorOf(previous)) {
                         // there is a hole in the [-50 days ; +50 days] interval
                         // we need to read more data
                         return true;
@@ -890,7 +890,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             final PVCoordinates pv;
             synchronized (JPLEphemeridesLoader.this) {
                 setPVModel(date);
-                pv = model.getPositionVelocity(date);            
+                pv = model.getPositionVelocity(date);
             }
 
             // convert to required frame
