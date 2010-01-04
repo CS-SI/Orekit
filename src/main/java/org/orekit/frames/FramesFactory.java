@@ -17,6 +17,8 @@
 package org.orekit.frames;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.orekit.errors.OrekitException;
@@ -101,6 +103,18 @@ import org.orekit.time.AbsoluteDate;
  */
 public class FramesFactory implements Serializable {
 
+    /** Default regular expression for the EOPC04 files (IAU1980 compatibles). */
+    public static final String EOPC04_1980_FILENAME = "^eopc04\\.(\\d\\d)$";
+
+    /** Default regular expression for the BulletinB files (IAU1980 compatibles). */
+    public static final String BULLETINB_1980_FILENAME = "^bulletinb((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
+
+    /** Default regular expression for the EOPC04 files (IAU2000 compatibles). */
+    public static final String EOPC04_2000_FILENAME = "^eopc04_IAU2000\\.(\\d\\d)$";
+
+    /** Default regular expression for the BulletinB files (IAU2000 compatibles). */
+    public static final String BULLETINB_2000_FILENAME = "^bulletinb_IAU2000((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
+
     /** Serialiazable UID. */
     private static final long serialVersionUID = 1720647682459923909L;
 
@@ -143,6 +157,13 @@ public class FramesFactory implements Serializable {
     /** MEME with EOP corrections. */
     private static Frame memeWithEopCorrections = null;
 
+    /** EOP 1980 loaders. */
+    private static final List<EOP1980HistoryLoader> eop1980Loaders =
+        new ArrayList<EOP1980HistoryLoader>();
+
+    /** EOP 2000 loaders. */
+    private static final List<EOP2000HistoryLoader> eop2000Loaders =
+        new ArrayList<EOP2000HistoryLoader>();
 
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
@@ -150,6 +171,128 @@ public class FramesFactory implements Serializable {
      * the compiler from generating one automatically.</p>
      */
     private FramesFactory() {
+    }
+
+    /** Add a loader for EOP 1980 history.
+     * @param loader custom loader to add for the EOP history
+     * @see #addDefaultEOP1980HistoryLoader()
+     * @see #clearEOP1980HistoryLoaders()
+     * @see #addEOP2000HistoryLoader(EOP2000HistoryLoader)
+     */
+    public static void addEOP1980HistoryLoader(final EOP1980HistoryLoader loader) {
+        synchronized (eop1980Loaders) {
+            eop1980Loaders.add(loader);
+        }
+    }
+
+    /** Add the default loaders for EOP 1980 history.
+     * <p>
+     * The default loaders look for IERS EOP 05 C04 and bulletins B files.
+     * </p>
+     * @param eopC04SupportedNames regular expression for supported EOP05 C04 files names
+     * (may be null if the default IERS file names are used)
+     * @param bulletinBSupportedNames regular expression for supported bulletin B files names
+     * (may be null if the default IERS file names are used)
+     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04_05/">IERS EOP 05 C04 files</a>
+     * @see <a href="http://hpiers.obspm.fr/eoppc/bul/bulb/">IERS bulletins B</a>
+     * @see #addEOP1980HistoryLoader(EOP1980HistoryLoader)
+     * @see #clearEOP1980HistoryLoaders()
+     * @see #addDefaultEOP2000HistoryLoaders(String, String)
+     */
+    public static void addDefaultEOP1980HistoryLoaders(final String eopC04SupportedNames,
+                                                       final String bulletinBSupportedNames) {
+        final String eopcNames = eopC04SupportedNames == null ? EOPC04_1980_FILENAME : eopC04SupportedNames;
+        addEOP1980HistoryLoader(new EOP05C04FilesLoader(eopcNames));
+        final String bulBNames = bulletinBSupportedNames == null ? BULLETINB_1980_FILENAME : bulletinBSupportedNames;
+        addEOP1980HistoryLoader(new BulletinBFilesLoader(bulBNames));
+    }
+
+    /** Clear loaders for EOP 1980 history.
+     * @see #addEOP1980HistoryLoader(EOP1980HistoryLoader)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String)
+     * @see #clearEOP2000HistoryLoaders()
+     */
+    public static void clearEOP1980HistoryLoaders() {
+        synchronized (eop1980Loaders) {
+            eop1980Loaders.clear();
+        }
+    }
+
+    /** Get Earth Orientation Parameters history (IAU1980) data.
+     * @return Earth Orientation Parameters history (IAU1980) data
+     * @exception OrekitException if the data cannot be loaded
+     */
+    public static EOP1980History getEOP1980History() throws OrekitException {
+        EOP1980History history = new EOP1980History();
+        if (eop1980Loaders.isEmpty()) {
+            addDefaultEOP1980HistoryLoaders(null, null);
+        }
+        for (final EOP1980HistoryLoader loader : eop1980Loaders) {
+            loader.fillHistory(history);
+        }
+        history.checkEOPContinuity(5 * 86400.0);
+        return history;
+    }
+
+    /** Add a loader for EOP 2000 history.
+     * @param loader custom loader to add for the EOP history
+     * @see #addDefaultEOP2000HistoryLoader()
+     * @see #clearEOP2000HistoryLoaders()
+     * @see #addEOP1980HistoryLoader(EOP1980HistoryLoader)
+     */
+    public static void addEOP2000HistoryLoader(final EOP2000HistoryLoader loader) {
+        synchronized (eop2000Loaders) {
+            eop2000Loaders.add(loader);
+        }
+    }
+
+    /** Add the default loaders for EOP 2000 history.
+     * <p>
+     * The default loaders look for IERS EOP 05 C04 and bulletins B files.
+     * </p>
+     * @param eopC04SupportedNames regular expression for supported EOP05 C04 files names
+     * (may be null if the default IERS file names are used)
+     * @param bulletinBSupportedNames regular expression for supported bulletin B files names
+     * (may be null if the default IERS file names are used)
+     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04_05/">IERS EOP 05 C04 files</a>
+     * @see <a href="http://hpiers.obspm.fr/eoppc/bul/bulb/">IERS bulletins B</a>
+     * @see #addEOP2000HistoryLoader(EOP2000HistoryLoader)
+     * @see #clearEOP2000HistoryLoaders()
+     * @see #addDefaultEOP1980HistoryLoaders(String, String)
+     */
+    public static void addDefaultEOP2000HistoryLoaders(final String eopC04SupportedNames,
+                                                       final String bulletinBSupportedNames) {
+        final String eopcNames = eopC04SupportedNames == null ? EOPC04_2000_FILENAME : eopC04SupportedNames;
+        addEOP2000HistoryLoader(new EOP05C04FilesLoader(eopcNames));
+        final String bulBNames = bulletinBSupportedNames == null ? BULLETINB_2000_FILENAME : bulletinBSupportedNames;
+        addEOP2000HistoryLoader(new BulletinBFilesLoader(bulBNames));
+    }
+
+    /** Clear loaders for EOP 2000 history.
+     * @see #addEOP2000HistoryLoader(EOP2000HistoryLoader)
+     * @see #addDefaultEOP2000HistoryLoaders(String, String)
+     * @see #clearEOP1980HistoryLoaders()
+     */
+    public static void clearEOP2000HistoryLoaders() {
+        synchronized (eop2000Loaders) {
+            eop2000Loaders.clear();
+        }
+    }
+
+    /** Get Earth Orientation Parameters history (IAU2000) data.
+     * @return Earth Orientation Parameters history (IAU2000) data
+     * @exception OrekitException if the data cannot be loaded
+     */
+    public static EOP2000History getEOP2000History() throws OrekitException {
+        EOP2000History history = new EOP2000History();
+        if (eop2000Loaders.isEmpty()) {
+            addDefaultEOP2000HistoryLoaders(null, null);
+        }
+        for (final EOP2000HistoryLoader loader : eop2000Loaders) {
+            loader.fillHistory(history);
+        }
+        history.checkEOPContinuity(5 * 86400.0);
+        return history;
     }
 
     /** Get the unique GCRF frame.

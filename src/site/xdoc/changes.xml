@@ -23,6 +23,9 @@
     <release version="4.2" date="TBD"
              description="TBD">
       <action dev="luc" type="add" >
+        users can now add their own class to support other Earth Orientation Parameters files formats
+      </action>
+      <action dev="luc" type="add" >
         added a way to list the available satellite numbers in TLE files.
       </action>
       <action dev="luc" type="fix" >

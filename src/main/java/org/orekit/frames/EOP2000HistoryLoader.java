@@ -1,4 +1,4 @@
-/* Copyright 2002-2008 CS Communication & Systèmes
+/* Copyright 2002-2010 CS Communication & Systèmes
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,29 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.data;
+package org.orekit.frames;
 
-import org.orekit.Utils;
+import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.EOPHistory;
-import org.orekit.time.TimeStamped;
 
-public abstract class AbstractFilesLoaderTest {
+/** Interface for loading Earth Orientation Parameters 2000 history.
+ * @author Luc Maisonobe
+ * @version $Revision$ $Date$
+ */
+public interface EOP2000HistoryLoader extends DataLoader {
 
-    protected void setRoot(String directoryName) throws OrekitException {
-        Utils.setDataRoot(directoryName);
-    }
-
-    protected int getMaxGap(EOPHistory history) {
-        double maxGap = 0;
-        TimeStamped previous = null;
-        for (final TimeStamped current : history) {
-            if (previous != null) {
-                maxGap = Math.max(maxGap, current.getDate().durationFrom(previous.getDate()));
-            }
-            previous = current;
-        }
-        return (int) Math.round(maxGap / 86400.0);
-    }
+    /** Load celestial body.
+     * @param history history to fill up
+     * @throws OrekitException if the history cannot be loaded
+     */
+    void fillHistory(EOP2000History history) throws OrekitException;
 
 }

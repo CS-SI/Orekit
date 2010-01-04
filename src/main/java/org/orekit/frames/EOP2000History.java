@@ -23,58 +23,21 @@ import org.orekit.time.AbsoluteDate;
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
-class EOP2000History extends AbstractEOPHistory {
+public class EOP2000History extends AbstractEOPHistory {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 9141543606409905199L;
+    private static final long serialVersionUID = 1940180123066815667L;
 
-    /** Id for X component of pole motion field. */
-    private static final int POLE_X_FIELD = 0;
-
-    /** Id for Y component of pole motion field. */
-    private static final int POLE_Y_FIELD = 1;
-
-    /** Id for UT1-UTC field. */
-    private static final int UT1_UTC_FIELD = 2;
-
-    /** Id for LoD field. */
-    private static final int LOD_FIELD = 3;
-
-    /** Regular name for the EOPC04 files (IAU2000 compatibles). */
-    private static final String EOPC04FILENAME = "^eopc04_IAU2000\\.(\\d\\d)$";
-
-    /** Regular name for the BulletinB files (IAU2000 compatibles). */
-    private static final String BULLETFILENAME = "^bulletinb_IAU2000((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
-
-   /** Simple constructor.
-     * @exception OrekitException if there is a problem while reading IERS data
+    /** Simple constructor.
      */
-    public EOP2000History() throws OrekitException {
-        super(EOPC04FILENAME, BULLETFILENAME);
+    public EOP2000History() {
     }
 
-    /** Get the UT1-UTC value.
-     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
-     * @param date date at which the value is desired
-     * @return UT1-UTC in seconds (0 if date is outside covered range)
+    /** Add an Earth Orientation Parameters entry.
+     * @param entry entry to add
      */
-    public double getUT1MinusUTC(final AbsoluteDate date) {
-
-        // interpolate UT1 - UTC
-        return getInterpolatedField(date, UT1_UTC_FIELD);
-
-    }
-
-    /** Get the LoD (Length of Day) value.
-     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
-     * @param date date at which the value is desired
-     * @return LoD in seconds (0 if date is outside covered range)
-     */
-    public double getLOD(final AbsoluteDate date) {
-
-        // interpolate LOD
-        return getInterpolatedField(date, LOD_FIELD);
-
+    public void addEntry(final EOP2000Entry entry) throws OrekitException {
+        entries.add(entry);
     }
 
     /** Get the pole IERS Reference Pole correction.
@@ -84,11 +47,15 @@ class EOP2000History extends AbstractEOPHistory {
      * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
      */
     public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
-
-        // interpolate XP and Yp
-        return new PoleCorrection(getInterpolatedField(date, POLE_X_FIELD),
-                                  getInterpolatedField(date, POLE_Y_FIELD));
-
+        if (prepareInterpolation(date)) {
+            final EOP2000Entry n = (EOP2000Entry) next;
+            final EOP2000Entry p = (EOP2000Entry) previous;
+            final double x = (dtP * n.getX() + dtN * p.getX()) / (dtP + dtN);
+            final double y = (dtP * n.getY() + dtN * p.getY()) / (dtP + dtN);
+            return new PoleCorrection(x, y);
+        } else {
+            return PoleCorrection.NULL_CORRECTION;
+        }
     }
 
 }

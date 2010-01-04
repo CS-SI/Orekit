@@ -32,7 +32,7 @@ import org.orekit.time.TimeScalesFactory;
 class TIRF2000Frame extends Frame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -1980349559678388058L;
+    private static final long serialVersionUID = 2467681437070913647L;
 
     /** 2&pi;. */
     private static final double TWO_PI = 2.0 * Math.PI;
@@ -86,7 +86,7 @@ class TIRF2000Frame extends Frame {
 
         super(FramesFactory.getCIRF2000(), null, name);
         tidalCorrection = ignoreTidalEffects ? null : new TidalCorrection();
-        eopHistory = new EOP2000History();
+        eopHistory = FramesFactory.getEOP2000History();
 
         // everything is in place, we can now synchronize the frame
         updateFrame(date);

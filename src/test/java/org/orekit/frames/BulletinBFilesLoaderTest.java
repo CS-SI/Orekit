@@ -23,35 +23,37 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.errors.OrekitException;
-import org.orekit.utils.TimeStampedEntry;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 
 
 public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
 
-    /** Regular name for the BulletinB files (IAU2000 compatibles). */
-    private static final String BULLETFILENAME = "^bulletinb_IAU2000((\\.\\d\\d\\d)|(-\\d\\d\\d\\.txt))$";
-
     @Test
     public void testMissingMonths() throws OrekitException {
         setRoot("missing-months");
-        new BulletinBFilesLoader(BULLETFILENAME, set).loadEOP();
-        Assert.assertTrue(getMaxGap() > 5);
+        EOP2000History history = new EOP2000History();
+        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistory(history);
+        Assert.assertTrue(getMaxGap(history) > 5);
     }
 
     @Test
     public void testStartDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        new BulletinBFilesLoader(BULLETFILENAME, set).loadEOP();
-        Assert.assertTrue(getMaxGap() < 5);
-        Assert.assertEquals(53709, ((TimeStampedEntry) set.first()).getMjd());
+        EOP2000History history = new EOP2000History();
+        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistory(history);
+        Assert.assertEquals(new AbsoluteDate(2005, 12, 5, TimeScalesFactory.getUTC()),
+                            history.getStartDate());
     }
 
     @Test
     public void testEndDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        new BulletinBFilesLoader(BULLETFILENAME, set).loadEOP();
-        Assert.assertTrue(getMaxGap() < 5);
-        Assert.assertEquals(53799, ((TimeStampedEntry) set.last()).getMjd());
+        EOP2000History history = new EOP2000History();
+        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistory(history);
+        Assert.assertTrue(getMaxGap(history) < 5);
+        Assert.assertEquals(new AbsoluteDate(2006, 3, 5, TimeScalesFactory.getUTC()),
+                            history.getEndDate());
     }
 
 }

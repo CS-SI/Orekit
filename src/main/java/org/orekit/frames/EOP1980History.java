@@ -23,58 +23,21 @@ import org.orekit.time.AbsoluteDate;
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
-class EOP1980History extends AbstractEOPHistory {
+public class EOP1980History extends AbstractEOPHistory {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -4645479420083885164L;
+    private static final long serialVersionUID = -3673081177492491161L;
 
-    /** Id for UT1-UTC field. */
-    private static final int UT1_UTC_FIELD = 2;
-
-    /** Id for LoD field. */
-    private static final int LOD_FIELD = 3;
-
-    /** Id for Correction for nutation in obliquity field. */
-    private static final int DDEPS_FIELD = 4;
-
-    /** Id for Correction for nutation in longitude field. */
-    private static final int DDPSI_FIELD = 5;
-
-    /** Regular name for the EOPC04 files (IAU1980 compatibles). */
-    private static final String EOPC04FILENAME = "^eopc04\\.(\\d\\d)$";
-
-    /** Regular name for the BulletinB files (IAU1980 compatibles). */
-    private static final String BULLETFILENAME = "^bulletinb((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
-
-   /** Simple constructor.
-     * @exception OrekitException if there is a problem while reading IERS data
+    /** Simple constructor.
      */
-    public EOP1980History() throws OrekitException {
-        super(EOPC04FILENAME, BULLETFILENAME);
+    public EOP1980History() {
     }
 
-    /** Get the UT1-UTC value.
-     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
-     * @param date date at which the value is desired
-     * @return UT1-UTC in seconds (0 if date is outside covered range)
+    /** Add an Earth Orientation Parameters entry.
+     * @param entry entry to add
      */
-    public double getUT1MinusUTC(final AbsoluteDate date) {
-
-        // interpolate UT1 - UTC
-        return getInterpolatedField(date, UT1_UTC_FIELD);
-
-    }
-
-    /** Get the LoD (Length of Day) value.
-     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
-     * @param date date at which the value is desired
-     * @return LoD in seconds (0 if date is outside covered range)
-     */
-    public double getLOD(final AbsoluteDate date) {
-
-        // interpolate LOD
-        return getInterpolatedField(date, LOD_FIELD);
-
+    public void addEntry(final EOP1980Entry entry) throws OrekitException {
+        entries.add(entry);
     }
 
     /** Get the correction to the nutation parameters.
@@ -84,11 +47,15 @@ class EOP1980History extends AbstractEOPHistory {
      * NutationCorrection.NULL_CORRECTION} if date is outside covered range)
      */
     public NutationCorrection getNutationCorrection(final AbsoluteDate date) {
-
-        // interpolate dDeps and dDpsi
-        return new NutationCorrection(getInterpolatedField(date, DDEPS_FIELD),
-                                      getInterpolatedField(date, DDPSI_FIELD));
-
+        if (prepareInterpolation(date)) {
+            final EOP1980Entry n = (EOP1980Entry) next;
+            final EOP1980Entry p = (EOP1980Entry) previous;
+            final double ddEps = (dtP * n.getDdEps() + dtN * p.getDdEps()) / (dtP + dtN);
+            final double ddPsi = (dtP * n.getDdPsi() + dtN * p.getDdPsi()) / (dtP + dtN);
+            return new NutationCorrection(ddEps, ddPsi);
+        } else {
+            return NutationCorrection.NULL_CORRECTION;
+        }
     }
 
 }

@@ -20,15 +20,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.SortedSet;
 import java.util.regex.Pattern;
 
-import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.DateComponents;
-import org.orekit.time.TimeStamped;
-import org.orekit.utils.TimeStampedEntry;
 
 /** Loader for EOP 05 C04 files.
  * <p>EOP 05 C04 files contain {@link TimeStampedEntry
@@ -51,7 +47,7 @@ import org.orekit.utils.TimeStampedEntry;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-class EOP05C04FilesLoader implements DataLoader {
+class EOP05C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
 
     /** Conversion factor. */
     private static final double ARC_SECONDS_TO_RADIANS = 2 * Math.PI / 1296000;
@@ -86,48 +82,34 @@ class EOP05C04FilesLoader implements DataLoader {
     /** Correction for nutation in longitude field. */
     private static final int DDPSI_FIELD = 9;
 
-    /** Pattern for data lines.
-     * <p>
-     * The data lines in the EOP 05 C04 yearly data files have the following fixed form:
-     * <p>
-     * <pre>
-     * year month day MJD ...12 floating values fields in decimal format...
-     * 2000   1   1  51544   0.043157   0.377872   0.3555456   ...
-     * 2000   1   2  51545   0.043475   0.377738   0.3547352   ...
-     * 2000   1   3  51546   0.043627   0.377507   0.3538988   ...
-     * </pre>
-     * <p>the corresponding fortran format is:
-     *  3(I4),I7,2(F11.6),2(F12.7),2(F12.6),2(F11.6),2(F12.7),2F12.6</p>
-     */
-    private static final Pattern LINE_PATTERN =
-        Pattern.compile("^\\d+ +\\d+ +\\d+ +\\d+(?: +-?\\d+\\.\\d+){12}$");
-
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
-    /** Earth Orientation Parameters entries. */
-    private SortedSet<TimeStamped> eop;
+    /** Pattern for data lines. */
+    private final Pattern linePattern;
+
+    /** History entries for IAU1980. */
+    private EOP1980History history1980;
+
+    /** History entries for IAU2000. */
+    private EOP2000History history2000;
 
     /** Build a loader for IERS EOP 05 C04 files.
      * @param supportedNames regular expression for supported files names
-     * @param eop set where to <em>add</em> EOP data
-     * (pre-existing data is preserved)
      */
-    public EOP05C04FilesLoader(final String supportedNames,
-                               final SortedSet<TimeStamped> eop) {
-        this.supportedNames = supportedNames;
-        this.eop = eop;
-    }
+    public EOP05C04FilesLoader(final String supportedNames) {
 
-    /** Load Earth Orientation Parameters.
-     * <p>The data is concatenated from all bulletin B data files
-     * which can be found in the configured IERS directory.</p>
-     * @return true if some data has been loaded
-     * @exception OrekitException if some data can't be read or some
-     * file content is corrupted
-     */
-    public boolean loadEOP() throws OrekitException {
-        return DataProvidersManager.getInstance().feed(supportedNames, this);
+        this.supportedNames = supportedNames;
+
+        // The data lines in the EOP 05 C04 yearly data files have the following fixed form:
+        // year month day MJD ...12 floating values fields in decimal format...
+        // 2000   1   1  51544   0.043157   0.377872   0.3555456   ...
+        // 2000   1   2  51545   0.043475   0.377738   0.3547352   ...
+        // 2000   1   3  51546   0.043627   0.377507   0.3538988   ...
+        // the corresponding fortran format is:
+        // 3(I4),I7,2(F11.6),2(F12.7),2(F12.6),2(F11.6),2(F12.7),2F12.6</p>
+        linePattern = Pattern.compile("^\\d+ +\\d+ +\\d+ +\\d+(?: +-?\\d+\\.\\d+){12}$");
+
     }
 
     /** {@inheritDoc} */
@@ -149,7 +131,7 @@ class EOP05C04FilesLoader implements DataLoader {
             ++lineNumber;
             boolean parsed = false;
 
-            if (LINE_PATTERN.matcher(line).matches()) {
+            if (linePattern.matcher(line).matches()) {
                 inHeader = false;
                 // this is a data line, build an entry from the extracted fields
                 final String[] fields = line.split(" +");
@@ -165,7 +147,12 @@ class EOP05C04FilesLoader implements DataLoader {
                     final double lod  = Double.parseDouble(fields[LOD_FIELD]);
                     final double dpsi = Double.parseDouble(fields[DDPSI_FIELD]) * ARC_SECONDS_TO_RADIANS;
                     final double deps = Double.parseDouble(fields[DDEPS_FIELD]) * ARC_SECONDS_TO_RADIANS;
-                    eop.add(new TimeStampedEntry(mjd, x, y, dtu1, lod, dpsi, deps));
+                    if (history1980 != null) {
+                        history1980.addEntry(new EOP1980Entry(mjd, dtu1, lod, dpsi, deps));
+                    }
+                    if (history2000 != null) {
+                        history2000.addEntry(new EOP2000Entry(mjd, dtu1, lod, x, y));
+                    }
                     parsed = true;
                 }
             }
@@ -181,5 +168,26 @@ class EOP05C04FilesLoader implements DataLoader {
         }
 
     }
+
+    /** {@inheritDoc} */
+    public void fillHistory(EOP1980History history)
+        throws OrekitException {
+        synchronized (this) {
+            history1980 = history;
+            history2000 = null;
+            DataProvidersManager.getInstance().feed(supportedNames, this);
+        }        
+    }
+
+    /** {@inheritDoc} */
+    public void fillHistory(EOP2000History history)
+        throws OrekitException {
+        synchronized (this) {
+            history1980 = null;
+            history2000 = history;
+            DataProvidersManager.getInstance().feed(supportedNames, this);
+        }        
+    }
+
 
 }

@@ -20,15 +20,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
-import org.orekit.time.TimeStamped;
-import org.orekit.utils.TimeStampedEntry;
 
 /** Loader for bulletin B files.
  * <p>Bulletin B files contain {@link TimeStampedEntry
@@ -41,7 +37,7 @@ import org.orekit.utils.TimeStampedEntry;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-class BulletinBFilesLoader implements DataLoader {
+class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
 
     /** Conversion factor. */
     private static final double ARC_SECONDS_TO_RADIANS = 2 * Math.PI / 1296000;
@@ -70,19 +66,18 @@ class BulletinBFilesLoader implements DataLoader {
     /** Data line pattern in section 2. */
     private final Pattern section2DataPattern;
 
-    /** Earth Orientation Parameters entries. */
-    private SortedSet<TimeStamped> eop;
+    /** History entries for IAU1980. */
+    private EOP1980History history1980;
 
-    /** Create a loader for IERS bulletin B files.
-     * @param supportedNames regular expression for supported files names
-     * @param eop set where to <em>add</em> EOP data
-     * (pre-existing data is preserved)
-     */
-    public BulletinBFilesLoader(final String supportedNames,
-                                final SortedSet<TimeStamped> eop) {
+    /** History entries for IAU2000. */
+    private EOP2000History history2000;
+
+    /** Build a loader for IERS bulletins B files.
+    * @param supportedNames regular expression for supported files names
+    */
+   public BulletinBFilesLoader(final String supportedNames) {
 
         this.supportedNames = supportedNames;
-        this.eop = eop;
 
         // the section headers lines in the bulletin B monthly data files have
         // the following form (the indentation discrepancy for section 6 is
@@ -127,17 +122,6 @@ class BulletinBFilesLoader implements DataLoader {
                                               storedRealField + storedRealField + storedRealField +
                                               finalBlanks);
 
-    }
-
-    /** Load Earth Orientation Parameters.
-     * <p>The data is concatenated from all bulletin B data files
-     * which can be found in the configured IERS directory.</p>
-     * @return true if some data has been loaded
-     * @exception OrekitException if some data can't be read or some
-     * file content is corrupted
-     */
-    public boolean loadEOP() throws OrekitException {
-        return DataProvidersManager.getInstance().feed(supportedNames, this);
     }
 
     /** {@inheritDoc} */
@@ -200,7 +184,12 @@ class BulletinBFilesLoader implements DataLoader {
                     final double dpsi  = Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS;
                     final double deps  = Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS;
                     if (date >= mjdMin) {
-                        eop.add(new TimeStampedEntry(date, x, y, dtu1, lod, dpsi, deps));
+                        if (history1980 != null) {
+                            history1980.addEntry(new EOP1980Entry(date, dtu1, lod, dpsi, deps));
+                        }
+                        if (history2000 != null) {
+                            history2000.addEntry(new EOP2000Entry(date, dtu1, lod, x, y));
+                        }
                         if (date >= mjdMax) {
                             // don't bother reading the rest of the file
                             return;
@@ -210,6 +199,26 @@ class BulletinBFilesLoader implements DataLoader {
             }
         }
 
+    }
+
+    /** {@inheritDoc} */
+    public void fillHistory(EOP1980History history)
+        throws OrekitException {
+        synchronized (this) {
+            history1980 = history;
+            history2000 = null;
+            DataProvidersManager.getInstance().feed(supportedNames, this);
+        }        
+    }
+
+    /** {@inheritDoc} */
+    public void fillHistory(EOP2000History history)
+        throws OrekitException {
+        synchronized (this) {
+            history1980 = null;
+            history2000 = history;
+            DataProvidersManager.getInstance().feed(supportedNames, this);
+        }        
     }
 
 }

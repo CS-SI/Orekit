@@ -1,4 +1,4 @@
-/* Copyright 2002-2008 CS Communication & Systèmes
+/* Copyright 2002-2010 CS Communication & Systèmes
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.frames;
 
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -25,89 +26,81 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.TimeStampedEntry;
 
-/** This class holds any kind of Earth Orientation Parameter data throughout a large time range.
- * It is a singleton since it handles voluminous data.
+/** This class loads any kind of Earth Orientation Parameter data throughout a large time range.
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
-public abstract class AbstractEOPHistory implements Serializable {
+public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 9141543606409905199L;
+    private static final long serialVersionUID = -4066489179973636623L;
 
-    /** Earth Orientation Parameters (either IAU1980 or IAU2000). */
-    private final SortedSet<TimeStamped> eop;
+    /** EOP history entries. */
+    protected final SortedSet<TimeStamped> entries;
 
     /** Previous EOP entry. */
-    private TimeStampedEntry previous;
+    protected EOPEntry previous;
 
     /** Next EOP entry. */
-    private TimeStampedEntry next;
+    protected EOPEntry next;
 
-   /** Private constructor for the singleton.
-     * @param ficEOP05C04  name of the EOP05C04 file to load
-     * @param ficBulletinB name of the BulletinB file to load
-     * @exception OrekitException if there is a problem while reading IERS data
+    /** Offset from previous date. */
+    protected double dtP;
+
+    /** Offset to next date. */
+    protected double dtN;
+
+    /** Simple constructor.
      */
-    protected AbstractEOPHistory(final String ficEOP05C04,
-                                 final String ficBulletinB) throws OrekitException {
-
-        // set up a date-ordered set, able to use either
-        // TimeStampedEntry or AbsoluteDate instances
-        // (beware to use AbsoluteDate ONLY as arguments to
-        // headSet or tailSet and NOT to add them in the set)
-        eop = new TreeSet<TimeStamped>(new ChronologicalComparator());
-
-        // consider first the more accurate EOP 05 C04 entries
-        final boolean eop05c04Loaded = new EOP05C04FilesLoader(ficEOP05C04, eop).loadEOP();
-
-        // add the final values from bulletin B entries for new dates
-        // (if duplicated dates occur, the existing data will be preserved)
-        final boolean bulletinBLoaded = new BulletinBFilesLoader(ficBulletinB, eop).loadEOP();
-
-        if (!(eop05c04Loaded || bulletinBLoaded)) {
-            throw new OrekitException("no Earth Orientation Parameters loaded");
-        }
-
-        // check the continuity of the loaded data
-        checkEOPContinuity(5 * 86400.0);
-
+    protected AbstractEOPHistory() {
+        entries = new TreeSet<TimeStamped>(new ChronologicalComparator());
     }
 
-    /** Check Earth orientation parameters continuity.
-     * @param maxGap maximal allowed gap between entries (in seconds)
-     * @exception OrekitException if there are holes in the data sequence
-     */
-    private void checkEOPContinuity(final double maxGap) throws OrekitException {
-        TimeStamped preceding = null;
-        for (final TimeStamped current : eop) {
+    /** {@inheritDoc} */
+    public Iterator<TimeStamped> iterator() {
+        return entries.iterator();
+    }
 
-            // compare the dates of preceding and current entries
-            if ((preceding != null) && ((current.getDate().durationFrom(preceding.getDate())) > maxGap)) {
-                throw new OrekitException("missing Earth Orientation Parameters between {0} and {1}",
-                                          preceding, current);
+    /** {@inheritDoc} */
+    public AbsoluteDate getStartDate() {
+        return entries.first().getDate();
+    }
 
-            }
+    /** {@inheritDoc} */
+    public AbsoluteDate getEndDate() {
+        return entries.last().getDate();
+    }
 
-            // prepare next iteration
-            preceding = current;
-
+    /** {@inheritDoc} */
+    public synchronized double getUT1MinusUTC(final AbsoluteDate date) {
+        if (prepareInterpolation(date)) {
+            return (dtP * next.getUT1MinusUTC() + dtN * previous.getUT1MinusUTC()) /
+                    (dtP + dtN);
+        } else {
+            return 0;
         }
     }
 
-    /** Get the interpolated value at some date for an indexed field of the entry.
+    /** {@inheritDoc} */
+    public double getLOD(final AbsoluteDate date) {
+        if (prepareInterpolation(date)) {
+            return (dtP * next.getLOD() + dtN * previous.getLOD()) /
+                    (dtP + dtN);
+        } else {
+            return 0;
+        }
+    }
+
+    /** Prepare interpolation between two entries.
      * @param  date target date
-     * @param  index index of the concerned field
-     * @return the interpolated value for the indexed field
+     * @return true if there are entries bracketing the target date
      */
-    protected synchronized double getInterpolatedField(final AbsoluteDate date,
-                                                       final int index) {
+    protected synchronized boolean prepareInterpolation(final AbsoluteDate date) {
 
         // compute offsets assuming the current selection brackets the date
-        double dtP = (previous == null) ? -1.0 : date.durationFrom(previous.getDate());
-        double dtN = (next == null) ? -1.0 : next.getDate().durationFrom(date);
+        dtP = (previous == null) ? -1.0 : date.durationFrom(previous.getDate());
+        dtN = (next == null) ? -1.0 : next.getDate().durationFrom(date);
 
         // check if bracketing was correct
         if ((dtP < 0) || (dtN < 0)) {
@@ -115,7 +108,7 @@ public abstract class AbstractEOPHistory implements Serializable {
             // bad luck, we need to recompute brackets
             if (!selectBracketingEntries(date)) {
                 // the specified date is outside of supported range
-                return 0;
+                return false;
             }
 
             // recompute offsets
@@ -124,9 +117,7 @@ public abstract class AbstractEOPHistory implements Serializable {
 
         }
 
-        // interpolate value
-        return (dtP * next.getField(index) + dtN * previous.getField(index)) /
-               (dtP + dtN);
+        return true;
 
     }
 
@@ -139,8 +130,8 @@ public abstract class AbstractEOPHistory implements Serializable {
     protected boolean selectBracketingEntries(final AbsoluteDate date) {
         try {
             // select the bracketing elements
-            next     = (TimeStampedEntry) (eop.tailSet(date).first());
-            previous = (TimeStampedEntry) (eop.headSet(next).last());
+            next     = (EOPEntry) (entries.tailSet(date).first());
+            previous = (EOPEntry) (entries.headSet(next).last());
             return true;
         } catch (NoSuchElementException nsee) {
             previous = null;
@@ -149,18 +140,25 @@ public abstract class AbstractEOPHistory implements Serializable {
         }
     }
 
-    /** Get the date of the first available Earth Orientation Parameters.
-     * @return the start date of the available data
+    /** Check Earth orientation parameters continuity.
+     * @param maxGap maximal allowed gap between entries (in seconds)
+     * @exception OrekitException if there are holes in the data sequence
      */
-    public AbsoluteDate getStartDate() {
-        return eop.first().getDate();
-    }
+    public void checkEOPContinuity(final double maxGap) throws OrekitException {
+        TimeStamped preceding = null;
+        for (final TimeStamped current : entries) {
 
-    /** Get the date of the last available Earth Orientation Parameters.
-     * @return the end date of the available data
-     */
-    public AbsoluteDate getEndDate() {
-        return eop.last().getDate();
+            // compare the dates of preceding and current entries
+            if ((preceding != null) && ((current.getDate().durationFrom(preceding.getDate())) > maxGap)) {
+                throw new OrekitException("missing Earth Orientation Parameters between {0} and {1}",
+                                          preceding, current);
+
+            }
+
+            // prepare next iteration
+            preceding = current;
+
+        }
     }
 
 }

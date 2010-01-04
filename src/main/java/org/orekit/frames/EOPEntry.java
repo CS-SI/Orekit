@@ -1,4 +1,4 @@
-/* Copyright 2002-2008 CS Communication & Systèmes
+/* Copyright 2002-2010 CS Communication & Systèmes
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.utils;
+package org.orekit.frames;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -24,42 +24,44 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
 
-
-/** Container class for Earth Orientation Parameters provided by IERS.
- * <p>Instances of this class correspond to lines from either the
- * EOP C 04 yearly files or the bulletin B monthly files.</p>
+/** This class holds an Earth Orientation Parameters entry.
  * @author Luc Maisonobe
- * @see org.orekit.frames.Frame
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
+ * @version $Revision$ $Date$
  */
-public class TimeStampedEntry implements TimeStamped, Serializable {
+public class EOPEntry implements TimeStamped, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -6655551509699738718L;
+    private static final long serialVersionUID = -2662304704586116425L;
 
     /** Entry date (modified julian day, 00h00 UTC scale). */
     private final int mjd;
 
-    /** Various entry fields. */
-    private final double[] fields;
-
     /** Entry date (absolute date). */
     private final AbsoluteDate date;
 
-    /** Simple constructor.
-     * @param mjd entry date
-     * @param fields various entry fields
-     * @exception OrekitException if the UTC scale cannot be initialized
-     */
-    public TimeStampedEntry(final int mjd, final double... fields)
+    /** UT1-UTC. */
+    private final double dt;
+
+    /** Length of day. */
+    private final double lod;
+
+   /** Simple constructor.
+    * @param mjd entry date (modified julian day, 00h00 UTC scale)
+    * @param dt UT1-UTC in seconds
+    * @param lod length of day
+    * @exception OrekitException if UTC time scale cannot be retrieved
+    */
+    public EOPEntry(final int mjd, final double dt, final double lod)
         throws OrekitException {
 
-        this.mjd    = mjd;
-        this.fields = fields.clone();
+        this.mjd = mjd;
 
         // convert mjd date at 00h00 UTC to absolute date
         final long javaTime = (mjd - 40587) * 86400000l;
         date = new AbsoluteDate(new Date(javaTime), TimeScalesFactory.getUTC());
+
+        this.dt    = dt;
+        this.lod   = lod;
 
     }
 
@@ -71,20 +73,23 @@ public class TimeStampedEntry implements TimeStamped, Serializable {
         return mjd;
     }
 
-    /** Get the entry date (absolute date).
-     * @return entry date
-     * @see #getMjd()
-     */
+    /** {@inheritDoc} */
     public AbsoluteDate getDate() {
         return date;
     }
 
-    /** Get some field among the entry.
-     * @param id index of the field to get
-     * @return the desired field
+    /** Get the UT1-UTC value.
+     * @return UT1-UTC in seconds
      */
-    public double getField(final int id) {
-        return fields[id];
+    public double getUT1MinusUTC() {
+        return dt;
+    }
+
+    /** Get the LoD (Length of Day) value.
+     * @return LoD in seconds
+     */
+    public double getLOD() {
+        return lod;
     }
 
 }

@@ -30,13 +30,13 @@ public class EOP2000HistoryTest {
     @Test
     public void testRegular() throws OrekitException {
         AbsoluteDate date = new AbsoluteDate(2004, 1, 4, TimeScalesFactory.getUTC());
-        double dt = new EOP2000History().getUT1MinusUTC(date);
+        double dt = FramesFactory.getEOP2000History().getUT1MinusUTC(date);
         Assert.assertEquals(-0.3906591, dt, 1.0e-10);
     }
 
     @Test
     public void testOutOfRange() throws OrekitException {
-        EOP2000History history = new EOP2000History();
+        EOP2000History history = FramesFactory.getEOP2000History();
         AbsoluteDate endDate = new AbsoluteDate(2006, 3, 5, TimeScalesFactory.getUTC());
         for (double t = -1000; t < 1000 ; t += 10) {
             AbsoluteDate date = new AbsoluteDate(endDate, t);

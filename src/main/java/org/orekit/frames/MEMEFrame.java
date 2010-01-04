@@ -31,7 +31,7 @@ import org.orekit.time.AbsoluteDate;
 class MEMEFrame extends Frame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -8158197605959616055L;
+    private static final long serialVersionUID = -2119588933116161867L;
 
     /** Radians per arcsecond. */
     private static final double RADIANS_PER_ARC_SECOND = Math.PI / (180.0 * 3600.0);
@@ -88,7 +88,7 @@ class MEMEFrame extends Frame {
 
         super(applyEOPCorr ? FramesFactory.getGCRF() : FramesFactory.getEME2000(), null , name);
 
-        eopHistory = applyEOPCorr ? new EOP1980History() : null;
+        eopHistory = applyEOPCorr ? FramesFactory.getEOP1980History() : null;
 
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
