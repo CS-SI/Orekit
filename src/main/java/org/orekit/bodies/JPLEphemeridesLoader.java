@@ -509,12 +509,10 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             }
 
             // use some safety margins
-            final double fourtyNineDays = FIFTY_DAYS - 86400.0;
-            final AbsoluteDate before = new AbsoluteDate(centralDate, -fourtyNineDays);
-            final AbsoluteDate after  = new AbsoluteDate(centralDate,  fourtyNineDays);
+            final AbsoluteDate before = new AbsoluteDate(centralDate, -FIFTY_DAYS);
+            final AbsoluteDate after  = new AbsoluteDate(centralDate,  FIFTY_DAYS);
             synchronized (JPLEphemeridesLoader.this) {
-                final Iterator<TimeStamped> iterator =
-                    ephemerides.tailSet(new AbsoluteDate(centralDate, -FIFTY_DAYS)).iterator();
+                final Iterator<TimeStamped> iterator = ephemerides.tailSet(before).iterator();
                 if (!iterator.hasNext()) {
                     return true;
                 }
