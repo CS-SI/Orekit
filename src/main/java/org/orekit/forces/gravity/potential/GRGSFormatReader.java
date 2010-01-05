@@ -47,24 +47,24 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
 
     static {
 
-        // pattern for real numbers
+        // sub-patterns
         final String real = "[-+]?\\d?\\.\\d+[eEdD][-+]\\d\\d";
-
         final String sep = ")\\s*(";
-        final String end = ")\\s*$";
 
         // regular expression for header lines
         final String[] header = {
             "^\\s*FIELD - .*$",
             "^\\s+AE\\s+1/F\\s+GM\\s+OMEGA\\s*$",
-            "^\\s*(" + real + sep + real + sep + real + sep + real + end,
+            "^\\s*(" + real + sep + real + sep + real + sep + real + ")\\s*$",
             "^\\s*REFERENCE\\s+DATE\\s+:\\s+\\d.*$",
             "^\\s*MAXIMAL\\s+DEGREE\\s+:\\s+(\\d+)\\s.*$",
-            "^\\s*L\\s+M\\s+DOT\\s+CBAR\\s+SBAR\\s+SIGMA C\\s+SIGMA S\\s*$"
+            "^\\s*L\\s+M\\s+DOT\\s+CBAR\\s+SBAR\\s+SIGMA C\\s+SIGMA S(\\s+LIB)?\\s*$"
         };
 
         // regular expression for data lines
-        final String data = "^([ 0-9]{3})([ 0-9]{3})(   |DOT)\\s*(" + real + sep + real + sep + real + sep + real + end;
+        final String data = "^([ 0-9]{3})([ 0-9]{3})(   |DOT)\\s*(" +
+                            real + sep + real + sep + real + sep + real +
+                            ")(\\s+[0-9]+)?\\s*$";
 
         // compile the regular expressions
         LINES = new Pattern[header.length + 1];
@@ -127,11 +127,19 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
                 for (int k = 0; k < normalizedC.length; k++) {
                     normalizedC[k] = new double[k + 1];
                     normalizedS[k] = new double[k + 1];
-                    if (k != 1) {
-                        // line 1 is not present in some files, let it default to 0
-                        // fill the other lines with NaN to check they are really read
-                        Arrays.fill(normalizedC[k], Double.NaN);
-                        Arrays.fill(normalizedS[k], Double.NaN);
+                    switch (k) {
+                        case 0 :
+                            // line 1 is not present in some files, set it to { 1.0 } for C and { 0.0 } for S
+                            normalizedC[0][0] = 1.0;
+                            normalizedS[0][0] = 0.0;
+                            break;
+                        case 1 :
+                            // line 1 is not present in some files, let it default to { 0.0, 0.0 }
+                            break;
+                        default :
+                            // fill the other lines with NaN to check they are really read
+                            Arrays.fill(normalizedC[k], Double.NaN);
+                            Arrays.fill(normalizedS[k], Double.NaN);
                     }
                 }
                 okMaxDegree = true;

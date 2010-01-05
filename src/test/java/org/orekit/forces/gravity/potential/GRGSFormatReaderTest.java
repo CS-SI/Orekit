@@ -28,6 +28,23 @@ import org.orekit.errors.OrekitException;
 public class GRGSFormatReaderTest {
 
     @Test
+    public void testAdditionalColumn() throws IOException, ParseException, OrekitException {
+        Utils.setDataRoot("potential");
+        PotentialReaderFactory factory = new PotentialReaderFactory(null, null, null, "grim5-c1.txt");
+        PotentialCoefficientsProvider provider = factory.getPotentialProvider();
+        double[][] C = provider.getC(5, 5, true);
+        double[][] S = provider.getS(5, 5, true);
+
+        Assert.assertEquals(0.95857491635129E-06,C[3][0],  0);
+        Assert.assertEquals(0.17481512311600E-06,C[5][5],  0);
+        Assert.assertEquals(0, S[4][0],  0);
+        Assert.assertEquals(0.30882755318300E-06 ,S[4][4],  0);
+        Assert.assertEquals(0.3986004415E+15 ,provider.getMu(),  0);
+        Assert.assertEquals(0.6378136460E+07 ,provider.getAe(),  0);
+
+    }
+
+    @Test
     public void testRegular05c() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
         PotentialReaderFactory factory = new PotentialReaderFactory(null, null, null, "grim5_C1.dat");
