@@ -201,9 +201,11 @@ public class FramesFactory implements Serializable {
      */
     public static void addDefaultEOP1980HistoryLoaders(final String eopC04SupportedNames,
                                                        final String bulletinBSupportedNames) {
-        final String eopcNames = eopC04SupportedNames == null ? EOPC04_1980_FILENAME : eopC04SupportedNames;
+        final String eopcNames =
+            (eopC04SupportedNames == null) ? EOPC04_1980_FILENAME : eopC04SupportedNames;
         addEOP1980HistoryLoader(new EOP05C04FilesLoader(eopcNames));
-        final String bulBNames = bulletinBSupportedNames == null ? BULLETINB_1980_FILENAME : bulletinBSupportedNames;
+        final String bulBNames =
+            (bulletinBSupportedNames == null) ? BULLETINB_1980_FILENAME : bulletinBSupportedNames;
         addEOP1980HistoryLoader(new BulletinBFilesLoader(bulBNames));
     }
 
@@ -219,6 +221,14 @@ public class FramesFactory implements Serializable {
     }
 
     /** Get Earth Orientation Parameters history (IAU1980) data.
+     * <p>
+     * If no {@link EOP1980HistoryLoader} has been added by calling {@link
+     * #addEOP1980HistoryLoader(EOP1980HistoryLoader) addEOP1980HistoryLoader}
+     * or if {@link #clearEOP1980HistoryLoaders() clearEOP1980HistoryLoaders}
+     * has been called afterwards,
+     * the {@link #addDefaultEOP1980HistoryLoaders(String, String)} method
+     * will be called automatically with two null parameters (supported file names).
+     * </p>
      * @return Earth Orientation Parameters history (IAU1980) data
      * @exception OrekitException if the data cannot be loaded
      */
@@ -262,9 +272,11 @@ public class FramesFactory implements Serializable {
      */
     public static void addDefaultEOP2000HistoryLoaders(final String eopC04SupportedNames,
                                                        final String bulletinBSupportedNames) {
-        final String eopcNames = eopC04SupportedNames == null ? EOPC04_2000_FILENAME : eopC04SupportedNames;
+        final String eopcNames =
+            (eopC04SupportedNames == null) ? EOPC04_2000_FILENAME : eopC04SupportedNames;
         addEOP2000HistoryLoader(new EOP05C04FilesLoader(eopcNames));
-        final String bulBNames = bulletinBSupportedNames == null ? BULLETINB_2000_FILENAME : bulletinBSupportedNames;
+        final String bulBNames =
+            (bulletinBSupportedNames == null) ? BULLETINB_2000_FILENAME : bulletinBSupportedNames;
         addEOP2000HistoryLoader(new BulletinBFilesLoader(bulBNames));
     }
 
@@ -280,6 +292,14 @@ public class FramesFactory implements Serializable {
     }
 
     /** Get Earth Orientation Parameters history (IAU2000) data.
+     * <p>
+     * If no {@link EOP2000HistoryLoader} has been added by calling {@link
+     * #addEOP2000HistoryLoader(EOP2000HistoryLoader) addEOP2000HistoryLoader}
+     * or if {@link #clearEOP2000HistoryLoaders() clearEOP2000HistoryLoaders}
+     * has been called afterwards,
+     * the {@link #addDefaultEOP2000HistoryLoaders(String, String)} method
+     * will be called automatically with two null parameters (supported file names).
+     * </p>
      * @return Earth Orientation Parameters history (IAU2000) data
      * @exception OrekitException if the data cannot be loaded
      */
