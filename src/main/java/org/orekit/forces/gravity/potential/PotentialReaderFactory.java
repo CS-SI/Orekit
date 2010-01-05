@@ -57,7 +57,8 @@ public class PotentialReaderFactory {
      * if null, SHM files reader will not be set up
      * @param egmFicNames regular expression for EGM gravity field files,
      * if null, EGM files reader will not be set up
-     * @param grgsFicNames TODO
+     * @param grgsFicNames regular expression for GRGS gravity field files,
+     * if null, GRGS files reader will not be set up
      */
     public PotentialReaderFactory(final String icgemFicNames, final String shmFicNames,
                                   final String egmFicNames, final String grgsFicNames) {
