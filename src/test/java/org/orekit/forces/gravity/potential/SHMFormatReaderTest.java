@@ -30,8 +30,8 @@ public class SHMFormatReaderTest {
     @Test
     public void testRegular03c() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        PotentialReaderFactory factory = new PotentialReaderFactory(null, "eigen_cg03c_coef", null, null);
-        PotentialCoefficientsProvider provider = factory.getPotentialProvider();
+        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_cg03c_coef"));
+        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
         double[][] C = provider.getC(5, 5, true);;
         double[][] S = provider.getS(5, 5, true);
 
@@ -47,8 +47,8 @@ public class SHMFormatReaderTest {
     @Test
     public void testReadCompressed01c() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        PotentialReaderFactory factory = new PotentialReaderFactory(null, "eigen-cg01c_coef", null, null);
-        PotentialCoefficientsProvider provider = factory.getPotentialProvider();
+        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen-cg01c_coef"));
+        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
         double[][] C = provider.getC(5, 5, true);;
         double[][] S = provider.getS(5, 5, true);;
 
@@ -63,22 +63,22 @@ public class SHMFormatReaderTest {
     @Test(expected=OrekitException.class)
     public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        PotentialReaderFactory factory = new PotentialReaderFactory(null, "eigen_corrupted1_coef", null, null);
-        factory.getPotentialProvider();
+        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_corrupted1_coef"));
+        GravityFieldFactory.getPotentialProvider();
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile2() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        PotentialReaderFactory factory = new PotentialReaderFactory(null, "eigen_corrupted2_coef", null, null);
-        factory.getPotentialProvider();
+        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_corrupted2_coef"));
+        GravityFieldFactory.getPotentialProvider();
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile3() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        PotentialReaderFactory factory = new PotentialReaderFactory(null, "eigen_corrupted3_coef", null, null);
-        factory.getPotentialProvider();
+        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_corrupted3_coef"));
+        GravityFieldFactory.getPotentialProvider();
     }
 
 }

@@ -30,8 +30,8 @@ public class ICGEMFormatReaderTest {
     @Test
     public void testRegular05c() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        PotentialReaderFactory factory = new PotentialReaderFactory("g007_eigen_05c_coef", null, null, null);
-        PotentialCoefficientsProvider provider = factory.getPotentialProvider();
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef"));
+        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
         double[][] C = provider.getC(5, 5, true);;
         double[][] S = provider.getS(5, 5, true);
 
@@ -47,15 +47,15 @@ public class ICGEMFormatReaderTest {
     @Test(expected=OrekitException.class)
     public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        PotentialReaderFactory factory = new PotentialReaderFactory("g007_eigen_corrupted1_coef", null, null, null);
-        factory.getPotentialProvider();
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_corrupted1_coef"));
+        GravityFieldFactory.getPotentialProvider();
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile2() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        PotentialReaderFactory factory = new PotentialReaderFactory("g007_eigen_corrupted2_coef", null, null, null);
-        factory.getPotentialProvider();
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_corrupted2_coef"));
+        GravityFieldFactory.getPotentialProvider();
     }
 
 }

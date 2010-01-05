@@ -1,4 +1,4 @@
-/* Copyright 2002-2008 CS Communication & Systèmes
+/* Copyright 2002-2010 CS Communication & Systèmes
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.junit.Assert;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.JPLEphemeridesLoader;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.TimeScale;
@@ -48,10 +49,14 @@ public class Utils {
 
     public static void setDataRoot(String root) {
         Utils.clearFactory(CelestialBodyFactory.class);
+        CelestialBodyFactory.clearCelestialBodyLoaders();
         Utils.clearFactory(FramesFactory.class, Frame.class);
+        FramesFactory.clearEOP1980HistoryLoaders();
+        FramesFactory.clearEOP2000HistoryLoaders();
         Utils.clearFactory(TimeScalesFactory.class, TimeScale.class);
         TimeScalesFactory.clearUTCTAILoaders();
         Utils.clearJPLEphemeridesConstants();
+        GravityFieldFactory.clearPotentialCoefficientsReaders();
         DataProvidersManager.getInstance().clearProviders();
         StringBuffer buffer = new StringBuffer();
         for (String component : root.split(":")) {

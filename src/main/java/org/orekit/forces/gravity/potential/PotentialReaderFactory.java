@@ -28,7 +28,9 @@ import org.orekit.errors.OrekitException;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
+ * @deprecated as of 4.2, replaced by {@link GravityFieldFactory}
  */
+@Deprecated
 public class PotentialReaderFactory {
 
     /** Potential readers. */
