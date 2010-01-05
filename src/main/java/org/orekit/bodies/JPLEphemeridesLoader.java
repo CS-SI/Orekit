@@ -282,6 +282,12 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     }
 
     /** {@inheritDoc} */
+    public boolean foundData() {
+        // special case for Earth: we don't really load anything so we always found something
+        return (generateType == EphemerisType.EARTH) ? true : !ephemerides.isEmpty();
+    }
+
+    /** {@inheritDoc} */
     public String getSupportedNames() {
         return supportedNames;
     }
@@ -502,10 +508,13 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 return true;
             }
 
-            final AbsoluteDate before = new AbsoluteDate(centralDate, -FIFTY_DAYS);
-            final AbsoluteDate after  = new AbsoluteDate(centralDate,  FIFTY_DAYS);
+            // use some safety margins
+            final double fourtyNineDays = FIFTY_DAYS - 86400.0;
+            final AbsoluteDate before = new AbsoluteDate(centralDate, -fourtyNineDays);
+            final AbsoluteDate after  = new AbsoluteDate(centralDate,  fourtyNineDays);
             synchronized (JPLEphemeridesLoader.this) {
-                final Iterator<TimeStamped> iterator = ephemerides.tailSet(before).iterator();
+                final Iterator<TimeStamped> iterator =
+                    ephemerides.tailSet(new AbsoluteDate(centralDate, -FIFTY_DAYS)).iterator();
                 if (!iterator.hasNext()) {
                     return true;
                 }

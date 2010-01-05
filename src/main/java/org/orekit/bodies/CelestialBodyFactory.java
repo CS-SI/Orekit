@@ -388,7 +388,6 @@ public class CelestialBodyFactory {
     public static CelestialBody getBody(final String name)
         throws OrekitException {
         synchronized (celestialBodiesMap) {
-
             CelestialBody body = celestialBodiesMap.get(name);
             if (body == null) {
                 synchronized (loadersMap) {
@@ -400,7 +399,7 @@ public class CelestialBodyFactory {
                     }
                     for (CelestialBodyLoader loader : loaders) {
                         DataProvidersManager.getInstance().feed(loader.getSupportedNames(), loader);
-                        if (!loader.stillAcceptsData()) {
+                        if (loader.foundData()) {
                             body   = loader.loadCelestialBody(name);
                             loaded = true;
                             break;

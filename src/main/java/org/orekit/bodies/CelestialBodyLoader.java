@@ -32,6 +32,11 @@ public interface CelestialBodyLoader extends DataLoader {
      */
     CelestialBody loadCelestialBody(String name) throws OrekitException;
 
+    /** Check if some data have already been loaded.
+     * @return true if some data have already been loaded
+     */
+    boolean foundData();
+
     /** Get the regular expression for supported PV coordinates files names.
      * @return regular expression for supported PV coordinates files names
      */
