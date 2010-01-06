@@ -247,13 +247,6 @@ public abstract class AbstractPropagator implements Propagator {
     protected abstract SpacecraftState basicPropagate(final AbsoluteDate date)
         throws PropagationException;
 
-    /** Reset the basic propagator initial state.
-     * @param state new initial state to consider
-     * @exception PropagationException if initial state cannot be reset
-     */
-    protected abstract void resetInitialState(final SpacecraftState state)
-        throws PropagationException;
-
     /** {@link BoundedPropagator} (but not really bounded) view of the instance. */
     private class UnboundedPropagatorView implements BoundedPropagator {
 

@@ -33,14 +33,6 @@
         GravityFieldFactory) and that TimeScalesFactory and FramesFactory have been extended. All these
         factories follow the same generic pattern.
       </action>
-      <action dev="luc" type="add" >
-        added a way to list the available satellite numbers in TLE files.
-      </action>
-      <action dev="luc" type="fix" >
-        fixed an error in event detection: when two events were very close (for example a very
-        short ground station visibility), the second one may be ignored despite the first one
-        was detected.
-      </action>
       <action dev="luc" type="fix" >
         improved thread safety (however, Orekit is still not completely thread-safe).
       </action>
@@ -51,26 +43,8 @@
       <action dev="luc" type="add" >
         added support for the GRGS gravity field files formats.
       </action>
-      <action dev="v&#233;ronique" type="add" >
-        a new PVCoordinatesProvider interface has been created on top of several existing classes
-        and interfaces (orbit propagator, celestial bodies, some moving frames ...). This is an
-        important generalization that allows to use either satellites or celestial bodies in many
-        algorithms (attitude pointing target, eclipses and field of view events ...) 
-      </action>
-      <action dev="v&#233;ronique" type="add" >
-        added new CircularFieldOfViewDetector and DihedralFieldOfViewDetector handling
-        field of view entry and exit events for any type of target
-      </action>
-      <action dev="pascal" type="add" >
-        added a new EclipseDetector handling either umbra or penumbra entry and exit events
-      </action>
-      <action dev="luc" type="update" >
-        updated error message localization to be more consistent with Java exception. Now getMessage
-        returns a non-localized message and only getLocalizedMessage returns a message localized for
-        the platform default locale. A new getMessage(Locale) method has also been added to
-        retrieve the message in any desired locale, not only the platform default one. The messages
-        are also built and translated only when needed, so if an exception is triggered and
-        never displayed, the message will never be built.
+      <action dev="luc" type="add" >
+        added a way to list the available satellite numbers in TLE files.
       </action>
       <action dev="luc" type="update" >
         improved TLE elements loading. Now TLE lines are loaded using the standard data loading
@@ -78,9 +52,31 @@
         contain TLE for several objects in one file, and they may contain some non-TLE lines
         if desired.
       </action>
+      <action dev="v&#233;ronique" type="add" >
+        a new PVCoordinatesProvider interface has been created on top of several existing classes
+        and interfaces (orbit propagator, celestial bodies, some moving frames ...). This is an
+        important generalization that allows to use either satellites or celestial bodies in many
+        algorithms (attitude pointing target, eclipses and field of view events ...) 
+      </action>
+      <action dev="luc" type="add" >
+        added a reset feature in all propagators, allowing to reuse an already configured
+        propagator for several different orbits
+      </action>
+      <action dev="luc" type="fix" >
+        fixed an error in event detection: when two events were very close (for example a very
+        short ground station visibility), the second one may be ignored despite the first one
+        was detected.
+      </action>
       <action dev="luc" type="fix" >
         fixed corner cases in event detection during orbit propagation, sometimes
         an already detected and handled event prevented the propagator to go further in time.
+      </action>
+      <action dev="pascal" type="add" >
+        added a new EclipseDetector handling either umbra or penumbra entry and exit events
+      </action>
+      <action dev="v&#233;ronique" type="add" >
+        added new CircularFieldOfViewDetector and DihedralFieldOfViewDetector handling
+        field of view entry and exit events for any type of target
       </action>
       <action dev="luc" type="add" >
         added a BoxAndSolarArray spacecraft model taking into account both attitude
@@ -92,6 +88,14 @@
       <action dev="luc" type="fix" due-to="Christelle Blandin">
         fixed denormalization of gravity field coefficients, the last coefficient
         was not initialized
+      </action>
+      <action dev="luc" type="update" >
+        updated error message localization to be more consistent with Java exception. Now getMessage
+        returns a non-localized message and only getLocalizedMessage returns a message localized for
+        the platform default locale. A new getMessage(Locale) method has also been added to
+        retrieve the message in any desired locale, not only the platform default one. The messages
+        are also built and translated only when needed, so if an exception is triggered and
+        never displayed, the message will never be built.
       </action>
     </release>
     <release version="4.1" date="2009-08-18"

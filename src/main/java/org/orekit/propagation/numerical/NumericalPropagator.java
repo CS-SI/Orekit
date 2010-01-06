@@ -304,6 +304,11 @@ public class NumericalPropagator implements Propagator {
      * @see #propagate(AbsoluteDate)
      */
     public void setInitialState(final SpacecraftState initialState) {
+        resetInitialState(initialState);
+    }
+
+    /** {@inheritDoc} */
+    public void resetInitialState(final SpacecraftState initialState) {
         if (Double.isNaN(mu)) {
             mu = initialState.getMu();
         }
@@ -385,11 +390,13 @@ public class NumericalPropagator implements Propagator {
                                      state[4], state[5], EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
                                      initialOrbit.getFrame(), date, mu);
 
-            return new SpacecraftState(orbit,
-                                       attitudeLaw.getState(date,
-                                                            orbit.getPVCoordinates(),
-                                                            orbit.getFrame()),
-                                                            state[6]);
+            resetInitialState(new SpacecraftState(orbit,
+                                                  attitudeLaw.getState(date,
+                                                                       orbit.getPVCoordinates(),
+                                                                       orbit.getFrame()),
+                                                                       state[6]));
+            return initialState;
+
         } catch (OrekitException oe) {
             throw new PropagationException(oe.getMessage(), oe);
         } catch (DerivativeException de) {

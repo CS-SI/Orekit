@@ -18,6 +18,7 @@ package org.orekit.propagation;
 
 import java.util.Collection;
 
+import org.orekit.errors.PropagationException;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
@@ -122,6 +123,13 @@ public interface Propagator extends BasicPropagator {
      * @see #setEphemerisMode()
      */
     BoundedPropagator getGeneratedEphemeris() throws IllegalStateException;
+
+    /** Reset the propagator initial state.
+     * @param state new initial state to consider
+     * @exception PropagationException if initial state cannot be reset
+     */
+    void resetInitialState(final SpacecraftState state)
+        throws PropagationException;
 
     /** Add an event detector.
      * @param detector event detector to add
