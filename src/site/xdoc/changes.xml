@@ -58,6 +58,11 @@
         important generalization that allows to use either satellites or celestial bodies in many
         algorithms (attitude pointing target, eclipses and field of view events ...) 
       </action>
+      <action dev="luc" type="fix" >
+        improved numerical propagator efficiency when used from an outside loop: the initial
+        state is automatically set to the last state at propagation end, thus allowing to
+        restart from here without recomputing everything
+      </action>
       <action dev="luc" type="add" >
         added a reset feature in all propagators, allowing to reuse an already configured
         propagator for several different orbits
