@@ -30,7 +30,7 @@ public class EGMFormatReaderTest {
     @Test
     public void testRead() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii"));
+        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", false));
         PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
         double[][] C = provider.getC(5, 5, true);
         double[][] S = provider.getS(5, 5, true);
@@ -60,14 +60,14 @@ public class EGMFormatReaderTest {
     @Test(expected=OrekitException.class)
     public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.corrupted-1"));
+        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.corrupted-1", false));
         GravityFieldFactory.getPotentialProvider();
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile2() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.corrupted-2"));
+        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.corrupted-2", false));
         GravityFieldFactory.getPotentialProvider();
     }
 

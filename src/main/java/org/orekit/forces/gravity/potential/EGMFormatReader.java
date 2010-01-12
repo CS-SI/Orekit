@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
@@ -41,8 +42,8 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
     /** Simple constructor.
      * @param supportedNames regular expression for supported files names
      */
-    public EGMFormatReader(final String supportedNames) {
-        super(supportedNames);
+    public EGMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed) {
+        super(supportedNames, missingCoefficientsAllowed);
         ae = 6378136.3;
         mu = 398600.4415e9;
     }
@@ -72,6 +73,14 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
                 // extend the cl array if needed
                 final int ck = cl.size();
                 for (int k = ck; k <= i; ++k) {
+                    final double[] d = new double[k + 1];
+                    if (!missingCoefficientsAllowed()) {
+                        Arrays.fill(d, Double.NaN);
+                    } else {
+                        if (k == 0) {
+                            d[0] = 1.0;
+                        }
+                    }
                     cl.add(new double[k + 1]);
                 }
                 final double[] cli = cl.get(i);
@@ -79,6 +88,10 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
                 // extend the sl array if needed
                 final int sk = sl.size();
                 for (int k = sk; k <= i; ++k) {
+                    final double[] d = new double[k + 1];
+                    if (!missingCoefficientsAllowed()) {
+                        Arrays.fill(d, Double.NaN);
+                    }
                     sl.add(new double[k + 1]);
                 }
                 final double[] sli = sl.get(i);
@@ -90,7 +103,23 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
             }
         }
 
-        if ((!okFields) || cl.size() < 1) {
+        boolean okCoeffs = true;
+        for (int k = 0; okCoeffs && k < cl.size(); k++) {
+            final double[] cK = cl.get(k);
+            for (int i = 0; okCoeffs && i < cK.length; ++i) {
+                if (Double.isNaN(cK[i])) {
+                    okCoeffs = false;
+                }
+            }
+            final double[] sK = sl.get(k);
+            for (int i = 0; okCoeffs && i < sK.length; ++i) {
+                if (Double.isNaN(sK[i])) {
+                    okCoeffs = false;
+                }
+            }
+        }
+
+        if ((!okFields) || (cl.size() < 1) || (!okCoeffs)) {
             throw new OrekitException("the reader is not adapted to the format ({0})",
                                       name);
         }

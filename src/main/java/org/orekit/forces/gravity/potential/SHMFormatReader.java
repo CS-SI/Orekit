@@ -52,9 +52,10 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
 
     /** Simple constructor.
      * @param supportedNames regular expression for supported files names
+     * @param missingCoefficientsAllowed allow missing coefficients in the input data
      */
-    public SHMFormatReader(final String supportedNames) {
-        super(supportedNames);
+    public SHMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed) {
+        super(supportedNames, missingCoefficientsAllowed);
     }
 
     /** {@inheritDoc} */
@@ -87,8 +88,14 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                         for (int k = 0; k < normalizedC.length; k++) {
                             normalizedC[k] = new double[k + 1];
                             normalizedS[k] = new double[k + 1];
-                            Arrays.fill(normalizedC[k], Double.NaN);
-                            Arrays.fill(normalizedS[k], Double.NaN);
+                            if (!missingCoefficientsAllowed()) {
+                                Arrays.fill(normalizedC[k], Double.NaN);
+                                Arrays.fill(normalizedS[k], Double.NaN);
+                            }
+                        }
+                        if (missingCoefficientsAllowed()) {
+                            // set the default value for the only expected non-zero coefficient
+                            normalizedC[0][0] = 1.0;
                         }
                         okSHM = true;
                     }

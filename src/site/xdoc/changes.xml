@@ -36,6 +36,10 @@
       <action dev="luc" type="fix" >
         improved thread safety (however, Orekit is still not completely thread-safe).
       </action>
+      <action dev="luc" type="add" >
+        the loaders for gravity fields now can optionally allow missing coefficients (they will be
+        replaced by 0.0 except c[0][0] which will be replaced by 1.0).
+      </action>
       <action dev="luc" type="fix" >
         the loader for gravity fields in the ICGEM format now support empty lines in the file
         (there is for example one blank line at the end of the file in the orekit-data zip archive).

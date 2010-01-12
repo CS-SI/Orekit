@@ -77,9 +77,10 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
 
     /** Simple constructor.
      * @param supportedNames regular expression for supported files names
+     * @param missingCoefficientsAllowed allow missing coefficients in the input data
      */
-    public GRGSFormatReader(final String supportedNames) {
-        super(supportedNames);
+    public GRGSFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed) {
+        super(supportedNames, missingCoefficientsAllowed);
     }
 
     /** {@inheritDoc} */
@@ -127,20 +128,14 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
                 for (int k = 0; k < normalizedC.length; k++) {
                     normalizedC[k] = new double[k + 1];
                     normalizedS[k] = new double[k + 1];
-                    switch (k) {
-                        case 0 :
-                            // line 1 is not present in some files, set it to { 1.0 } for C and { 0.0 } for S
-                            normalizedC[0][0] = 1.0;
-                            normalizedS[0][0] = 0.0;
-                            break;
-                        case 1 :
-                            // line 1 is not present in some files, let it default to { 0.0, 0.0 }
-                            break;
-                        default :
-                            // fill the other lines with NaN to check they are really read
-                            Arrays.fill(normalizedC[k], Double.NaN);
-                            Arrays.fill(normalizedS[k], Double.NaN);
+                    if (!missingCoefficientsAllowed()) {
+                        Arrays.fill(normalizedC[k], Double.NaN);
+                        Arrays.fill(normalizedS[k], Double.NaN);
                     }
+                }
+                if (missingCoefficientsAllowed()) {
+                    // set the default value for the only expected non-zero coefficient
+                    normalizedC[0][0] = 1.0;
                 }
                 okMaxDegree = true;
             } else if (lineNumber > 6) {

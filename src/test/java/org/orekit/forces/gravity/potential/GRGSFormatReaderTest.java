@@ -30,7 +30,7 @@ public class GRGSFormatReaderTest {
     @Test
     public void testAdditionalColumn() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5-c1.txt"));
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5-c1.txt", true));
         PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
         double[][] C = provider.getC(5, 5, true);
         double[][] S = provider.getS(5, 5, true);
@@ -47,7 +47,7 @@ public class GRGSFormatReaderTest {
     @Test
     public void testRegular05c() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat"));
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
         PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
         double[][] C = provider.getC(5, 5, true);
         double[][] S = provider.getS(5, 5, true);
@@ -64,21 +64,21 @@ public class GRGSFormatReaderTest {
     @Test(expected=OrekitException.class)
     public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_corrupted1.dat"));
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_corrupted1.dat", false));
         GravityFieldFactory.getPotentialProvider();
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile2() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_corrupted2.dat"));
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_corrupted2.dat", false));
         GravityFieldFactory.getPotentialProvider();
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile3() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_corrupted3.dat"));
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_corrupted3.dat", false));
         GravityFieldFactory.getPotentialProvider();
     }
 

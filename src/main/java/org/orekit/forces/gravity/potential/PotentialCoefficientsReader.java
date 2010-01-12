@@ -80,12 +80,18 @@ public abstract class PotentialCoefficientsReader
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
+    /** Allow missing coefficients in the input data. */
+    private final boolean missingCoefficientsAllowed;
+
     /** Simple constructor.
      * <p>Build an uninitialized reader.</p>
      * @param supportedNames regular expression for supported files names
+     * @param missingCoefficientsAllowed allow missing coefficients in the input data
      */
-    protected PotentialCoefficientsReader(final String supportedNames) {
+    protected PotentialCoefficientsReader(final String supportedNames,
+                                          final boolean missingCoefficientsAllowed) {
         this.supportedNames = supportedNames;
+        this.missingCoefficientsAllowed = missingCoefficientsAllowed;
         readCompleted = false;
         ae = Double.NaN;
         mu = Double.NaN;
@@ -102,6 +108,13 @@ public abstract class PotentialCoefficientsReader
      */
     public String getSupportedNames() {
         return supportedNames;
+    }
+
+    /** Check if missing coefficients are allowed in the input data.
+     * @return true if missing coefficients are allowed in the input data
+     */
+    public boolean missingCoefficientsAllowed() {
+        return missingCoefficientsAllowed;
     }
 
     /** {@inheritDoc} */

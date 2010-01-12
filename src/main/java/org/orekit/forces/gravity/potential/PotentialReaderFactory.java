@@ -46,10 +46,10 @@ public class PotentialReaderFactory {
      */
     public PotentialReaderFactory() {
         readers = new ArrayList<PotentialCoefficientsReader>();
-        readers.add(new ICGEMFormatReader("^g(\\d)+_eigen_(\\w)+_coef$"));
-        readers.add(new SHMFormatReader("^eigen[-_](\\w)+_coef$"));
-        readers.add(new EGMFormatReader("^egm\\d\\d_to\\d.*$"));
-        readers.add(new GRGSFormatReader("^grim\\d_.*$"));
+        readers.add(new ICGEMFormatReader("^g(\\d)+_eigen_(\\w)+_coef$", true));
+        readers.add(new SHMFormatReader("^eigen[-_](\\w)+_coef$", true));
+        readers.add(new EGMFormatReader("^egm\\d\\d_to\\d.*$", true));
+        readers.add(new GRGSFormatReader("^grim\\d_.*$", true));
     }
 
     /** Simple constructor.
@@ -66,16 +66,16 @@ public class PotentialReaderFactory {
                                   final String egmFicNames, final String grgsFicNames) {
         readers = new ArrayList<PotentialCoefficientsReader>();
         if (icgemFicNames != null) {
-            readers.add(new ICGEMFormatReader(icgemFicNames));
+            readers.add(new ICGEMFormatReader(icgemFicNames, true));
         }
         if (shmFicNames != null) {
-            readers.add(new SHMFormatReader(shmFicNames));
+            readers.add(new SHMFormatReader(shmFicNames, true));
         }
         if (egmFicNames != null) {
-            readers.add(new EGMFormatReader(egmFicNames));
+            readers.add(new EGMFormatReader(egmFicNames, true));
         }
         if (grgsFicNames != null) {
-            readers.add(new GRGSFormatReader(grgsFicNames));
+            readers.add(new GRGSFormatReader(grgsFicNames, true));
         }
     }
 

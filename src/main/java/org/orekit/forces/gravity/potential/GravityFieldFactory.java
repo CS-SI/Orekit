@@ -71,17 +71,17 @@ public class GravityFieldFactory {
      * <p>
      * The default readers supports ICGEM, SHM, EGM and GRGS formats with the
      * default names {@link #ICGEM_FILENAME}, {@link #SHM_FILENAME}, {@link
-     * #EGM_FILENAME}, {@link #GRGS_FILENAME}.
+     * #EGM_FILENAME}, {@link #GRGS_FILENAME} and don't allow missing coefficients.
      * </p>
      * @see #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * @see #clearPotentialCoefficientsReaders()
      */
     public static void addDefaultPotentialCoefficientsReaders() {
         synchronized (readers) {
-            readers.add(new ICGEMFormatReader(ICGEM_FILENAME));
-            readers.add(new SHMFormatReader(SHM_FILENAME));
-            readers.add(new EGMFormatReader(EGM_FILENAME));
-            readers.add(new GRGSFormatReader(GRGS_FILENAME));
+            readers.add(new ICGEMFormatReader(ICGEM_FILENAME, false));
+            readers.add(new SHMFormatReader(SHM_FILENAME, false));
+            readers.add(new EGMFormatReader(EGM_FILENAME, false));
+            readers.add(new GRGSFormatReader(GRGS_FILENAME, false));
         }
     }
 
