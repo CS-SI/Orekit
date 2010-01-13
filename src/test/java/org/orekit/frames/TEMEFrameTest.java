@@ -61,8 +61,8 @@ public class TEMEFrameTest {
             new PVCoordinates(new Vector3D(5094028.3745, 6127870.8164, 6380248.5164),
                               new Vector3D(-4746.263052, 786.014045, 5531.790562));
 
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.9, 1.2e-3);
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 2.5, 1.5e-3);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.8, 1.7e-3);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 2.3, 1.6e-3);
         checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 6.8e-5, 6.0e-7);
         checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76Wcorr), 0.90615, 7.4e-4);
 
@@ -96,11 +96,11 @@ public class TEMEFrameTest {
             new PVCoordinates(new Vector3D(-40576822.6395, -11502231.5015, 9733.7842),
                               new Vector3D(837.708020, -2957.480117, -0.814253));
 
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 10.1, 7.4e-4);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.4, 7.9e-4);
         checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76Wcorr), 4.5, 2.3e-5);
 
         checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 4.6e-5, 8.8e-7);
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 11.1, 7.4e-4);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 3.5, 7.7e-4);
 
     }
 

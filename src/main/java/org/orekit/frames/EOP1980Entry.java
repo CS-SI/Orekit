@@ -27,33 +27,26 @@ public class EOP1980Entry extends EOPEntry {
     /** Serializable UID. */
     private static final long serialVersionUID = 4764846281974843922L;
 
-    /** Correction for nutation in obliquity. */
-    public final double ddEps;
-
     /** Correction for nutation in longitude. */
     public final double ddPsi;
+
+    /** Correction for nutation in obliquity. */
+    public final double ddEps;
 
    /** Simple constructor.
     * @param mjd entry date (modified julian day, 00h00 UTC scale)
     * @param dt UT1-UTC in seconds
     * @param lod length of day
-    * @param ddEps correction for nutation in obliquity
     * @param ddPsi correction for nutation in longitude
+    * @param ddEps correction for nutation in obliquity
     * @exception OrekitException if UTC time scale cannot be retrieved
     */
     public EOP1980Entry(final int mjd, final double dt, final double lod,
-                        final double ddEps, final double ddPsi)
+                        final double ddPsi, final double ddEps)
         throws OrekitException {
         super(mjd, dt, lod);
-        this.ddEps = ddEps;
         this.ddPsi = ddPsi;
-    }
-
-    /** Get the correction for nutation in obliquity
-     * @return correction for nutation in obliquity
-     */
-    public double getDdEps() {
-        return ddEps;
+        this.ddEps = ddEps;
     }
 
     /** Get the correction for nutation in longitude
@@ -61,6 +54,13 @@ public class EOP1980Entry extends EOPEntry {
      */
     public double getDdPsi() {
         return ddPsi;
+    }
+
+    /** Get the correction for nutation in obliquity
+     * @return correction for nutation in obliquity
+     */
+    public double getDdEps() {
+        return ddEps;
     }
 
 }
