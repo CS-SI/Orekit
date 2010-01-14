@@ -387,7 +387,7 @@ public class CircularOrbit
         return new StringBuffer().append("circular parameters: ").append('{').
                                   append("a: ").append(a).
                                   append(", ex: ").append(ex).append(", ey: ").append(ey).
-                                  append(", i: ").append(i).
+                                  append(", i: ").append(Math.toDegrees(i)).
                                   append(", raan: ").append(raan).
                                   append(", alphaV: ").append(Math.toDegrees(alphaV)).
                                   append(";}").toString();

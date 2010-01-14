@@ -22,6 +22,10 @@
   <body>
     <release version="4.2" date="TBD"
              description="TBD">
+      <action dev="luc" type="fix">
+        added a forgotten radians to degrees conversion for the inclination
+        in CircularOrbit.toString()
+      </action>
       <action dev="luc" type="add">
         the Topocentric frame now provides a way to retrieve the body shape on which the
         frame is defined
