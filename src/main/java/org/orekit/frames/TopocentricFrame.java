@@ -221,7 +221,12 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
 
     }
 
-    /** {@inheritDoc} */
+    /** Get the {@link PVCoordinates} of the topocentric frame origin in the selected frame.
+     * @param date current date
+     * @param frame the frame where to define the position
+     * @return position/velocity of the topocentric frame origin (m and m/s)
+     * @exception OrekitException if position cannot be computed in given frame
+     */
     public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return frame.getTransformTo(this, date).transformPVCoordinates(PVCoordinates.ZERO);
