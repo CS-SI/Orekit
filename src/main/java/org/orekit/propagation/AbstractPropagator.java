@@ -138,7 +138,7 @@ public abstract class AbstractPropagator implements Propagator {
             SpacecraftState state = interpolator.getInterpolatedState();
 
             // evaluate step size
-            double stepSize;
+            final double stepSize;
             if (mode == MASTER_MODE) {
                 if (Double.isNaN(fixedStepSize)) {
                     stepSize = state.getKeplerianPeriod() / 100;
