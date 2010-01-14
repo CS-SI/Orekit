@@ -388,7 +388,7 @@ public class CircularOrbit
                                   append("a: ").append(a).
                                   append(", ex: ").append(ex).append(", ey: ").append(ey).
                                   append(", i: ").append(Math.toDegrees(i)).
-                                  append(", raan: ").append(raan).
+                                  append(", raan: ").append(Math.toDegrees(raan)).
                                   append(", alphaV: ").append(Math.toDegrees(alphaV)).
                                   append(";}").toString();
     }
