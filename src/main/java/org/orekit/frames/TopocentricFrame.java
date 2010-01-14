@@ -34,7 +34,10 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 720487682019109221L;
+    private static final long serialVersionUID = -5997915708080966466L;
+
+    /** Body shape on which the local point is defined. */
+    private final BodyShape parentShape;
 
     /** Point where the topocentric frame is defined. */
     private final GeodeticPoint point;
@@ -48,6 +51,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
                             final String name) {
 
         super(parentShape.getBodyFrame(), null, name);
+        this.parentShape = parentShape;
         this.point = point;
 
         // Build transformation from body centered frame to topocentric frame:
@@ -63,6 +67,13 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         // Compose both transformations
         setTransform(new Transform(translation, rotation));
 
+    }
+
+    /** Get the body shape on which the local point is defined.
+     * @return body shape on which the local point is defined
+     */
+    public BodyShape getParentShape() {
+        return parentShape;
     }
 
     /** Get the zenith direction of topocentric frame, expressed in parent shape frame.
