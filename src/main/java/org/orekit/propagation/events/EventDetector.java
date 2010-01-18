@@ -87,6 +87,32 @@ public interface EventDetector extends Serializable {
     double g(SpacecraftState s) throws OrekitException;
 
     /** Handle an event and choose what to do next.
+
+     * <p>The scheduling between this method and the {@link
+     * org.orekit.propagation.sampling.OrekitStepHandler OrekitStepHandler} method {@link
+     * org.orekit.propagation.sampling.OrekitStepHandler#handleStep(
+     * org.orekit.propagation.sampling.OrekitStepInterpolator, boolean)
+     * handleStep(interpolator, isLast)} is to call this method first and
+     * <code>handleStep</code> afterwards. This scheduling allows the propagator to
+     * pass <code>true</code> as the <code>isLast</code> parameter to the step
+     * handler to make it aware the step will be the last one if this method
+     * returns {@link #STOP}. As the interpolator may be used to navigate back
+     * throughout the last step (as {@link
+     * org.orekit.propagation.sampling.OrekitStepNormalizer OrekitStepNormalizer}
+     * does for example), user code called by this method and user
+     * code called by step handlers may experience apparently out of order values
+     * of the independent time variable. As an example, if the same user object
+     * implements both this {@link EventDetector EventDetector} interface and the
+     * {@link org.orekit.propagation.sampling.OrekitFixedStepHandler OrekitFixedStepHandler}
+     * interface, a <em>forward</em> integration may call its
+     * <code>eventOccurred</code> method with a state at 2000-01-01T00:00:10 first
+     * and call its <code>handleStep</code> method with a state at 2000-01-01T00:00:09
+     * afterwards. Such out of order calls are limited to the size of the
+     * integration step for {@link
+     * org.orekit.propagation.sampling.OrekitStepHandler variable step handlers} and
+     * to the size of the fixed step for {@link
+     * org.orekit.propagation.sampling.OrekitFixedStepHandler fixed step handlers}.</p>
+
      * @param s the current state information : date, kinematics, attitude
      * @param increasing if true, the value of the switching function increases
      * when times increases around event (note that increase is measured with respect
