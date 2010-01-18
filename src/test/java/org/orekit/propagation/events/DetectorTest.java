@@ -50,38 +50,47 @@ public class DetectorTest {
 
         Propagator propagator = new KeplerianPropagator(orbit);
         double stepSize = 60.0;
-        SchedulingChecker detector = new SchedulingChecker(new AbsoluteDate(date, 5.25 * stepSize),
+        OutOfOrderChecker detector = new OutOfOrderChecker(new AbsoluteDate(date, 5.25 * stepSize),
                                                            stepSize);
         propagator.addEventDetector(detector);
         propagator.setMasterMode(stepSize, detector);
         propagator.propagate(new AbsoluteDate(date, 10 * stepSize));
+        Assert.assertTrue(detector.outOfOrderCallDetected());
 
     }
 
-    private static class SchedulingChecker extends DateDetector implements OrekitFixedStepHandler {
+    private static class OutOfOrderChecker extends DateDetector implements OrekitFixedStepHandler {
 
         private static final long serialVersionUID = 26319257020496654L;
-        private boolean triggered;
+        private AbsoluteDate triggerDate;
+        private boolean outOfOrderCallDetected;
         private double stepSize;
 
-        public SchedulingChecker(final AbsoluteDate target, final double stepSize) {
+        public OutOfOrderChecker(final AbsoluteDate target, final double stepSize) {
             super(target);
-            triggered = false;
+            triggerDate = null;
+            outOfOrderCallDetected = false;
             this.stepSize = stepSize;
         }
 
         public int eventOccurred(SpacecraftState s, boolean increasing) {
-            triggered = true;
+            triggerDate = s.getDate();
             return CONTINUE;
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {
             // step handling and event occurrences may be out of order up to one step
-            if (triggered) {
-                Assert.assertTrue(currentState.getDate().durationFrom(getDate()) >= -stepSize);
-            } else {
-                Assert.assertTrue(currentState.getDate().durationFrom(getDate()) <= stepSize);
+            if (triggerDate != null) {
+                double dt = currentState.getDate().durationFrom(triggerDate);
+                if (dt < 0) {
+                    outOfOrderCallDetected = true;
+                    Assert.assertTrue(Math.abs(dt) < stepSize);
+                }
             }
+        }
+
+        public boolean outOfOrderCallDetected() {
+            return outOfOrderCallDetected;
         }
 
     }
