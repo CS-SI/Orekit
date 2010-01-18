@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 
 /** Finder for date events.
  * <p>This class finds date events (i.e. occurrence of a predefined date).</p>
@@ -30,10 +31,10 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-public class DateDetector extends AbstractDetector {
+public class DateDetector extends AbstractDetector implements TimeStamped {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -3885142394082532325L;
+    private static final long serialVersionUID = -334171965326514174L;
 
     /** Target date. */
     private AbsoluteDate target;
@@ -68,6 +69,13 @@ public class DateDetector extends AbstractDetector {
      */
     public double g(final SpacecraftState s) throws OrekitException {
         return s.getDate().durationFrom(target);
+    }
+
+    /** Get the target date.
+     * @return target date
+     */
+    public AbsoluteDate getDate() {
+        return target;
     }
 
 }
