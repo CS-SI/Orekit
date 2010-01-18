@@ -41,6 +41,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
 
     /** Simple constructor.
      * @param supportedNames regular expression for supported files names
+     * @param missingCoefficientsAllowed if true, allows missing coefficients in the input data
      */
     public EGMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed) {
         super(supportedNames, missingCoefficientsAllowed);
