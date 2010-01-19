@@ -1,4 +1,4 @@
-/* Copyright 2002-2008 CS Communication & Systèmes
+/* Copyright 2002-2010 CS Communication & Systèmes
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import org.orekit.time.AbsoluteDate;
 
 /** This class holds Earth Orientation Parameters (IAU1980) data throughout a large time range.
  * @author Pascal Parraud
- * @version $Revision$ $Date$
+ * @version $Revision: 3000 $ $Date: 2010-01-04 18:19:35 +0100 (lun., 04 janv. 2010) $
  */
 public class EOP1980History extends AbstractEOPHistory {
 
