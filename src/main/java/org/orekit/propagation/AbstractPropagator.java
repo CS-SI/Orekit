@@ -36,11 +36,11 @@ import org.orekit.utils.PVCoordinates;
  * <p>
  * This abstract class allows to provide easily the full set of {@link Propagator}
  * methods, including all propagation modes support and discrete events support
- * for any simple propagation method. Only two methods must be implemented by
- * derived classes: {@link #basicPropagate(AbsoluteDate)} and {@link
- * #resetInitialState(SpacecraftState)}. The first method should perform
+ * for any simple propagation method. Only three methods must be implemented by
+ * derived classes: {@link #getInitialDate()}, {@link #basicPropagate(AbsoluteDate)}
+ * and {@link #resetInitialState(SpacecraftState)}. The second method should perform
  * straightforward propagation starting from some internally stored initial state
- * up to the specified target date. The second method should reset the initial state
+ * up to the specified target date. The third method should reset the initial state
  * when called.
  * </p>
  * @author Luc Maisonobe
@@ -49,7 +49,7 @@ import org.orekit.utils.PVCoordinates;
 public abstract class AbstractPropagator implements Propagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -5509524223547965017L;
+    private static final long serialVersionUID = 4797122381575498520L;
 
     /** Propagation mode. */
     private int mode;
