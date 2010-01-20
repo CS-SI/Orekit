@@ -37,7 +37,7 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
     private static final long serialVersionUID = -334171965326514174L;
 
     /** Target date. */
-    private AbsoluteDate target;
+    private final AbsoluteDate target;
 
     /** Build a new instance.
      * @param target target date
