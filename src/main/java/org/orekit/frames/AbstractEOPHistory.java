@@ -29,7 +29,7 @@ import org.orekit.time.TimeStamped;
 
 /** This class loads any kind of Earth Orientation Parameter data throughout a large time range.
  * @author Pascal Parraud
- * @version $Revision: 3000 $ $Date: 2010-01-04 18:19:35 +0100 (lun., 04 janv. 2010) $
+ * @version $Revision$ $Date$
  */
 public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
 
@@ -151,7 +151,7 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
             // compare the dates of preceding and current entries
             if ((preceding != null) && ((current.getDate().durationFrom(preceding.getDate())) > maxGap)) {
                 throw new OrekitException("missing Earth Orientation Parameters between {0} and {1}",
-                                          preceding, current);
+                                          preceding.getDate(), current.getDate());
 
             }
 
