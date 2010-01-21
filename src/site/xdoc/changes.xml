@@ -84,6 +84,9 @@
         added a reset feature in all propagators, allowing to reuse an already configured
         propagator for several different orbits
       </action>
+      <action dev="luc" type="add" >
+        added a new simple linear attitude mode: FixedRate
+      </action>
       <action dev="luc" type="fix" >
         fixed an error in event detection: when two events were very close (for example a very
         short ground station visibility), the second one may be ignored despite the first one
