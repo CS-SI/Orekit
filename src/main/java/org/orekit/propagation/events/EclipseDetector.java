@@ -270,8 +270,8 @@ public class EclipseDetector extends AbstractDetector {
         final Vector3D ps   = pted.subtract(psat);
         final Vector3D po   = ping.subtract(psat);
         final double angle  = Vector3D.angle(ps, po);
-        final double rs     = Math.atan2(occultedRadius, ps.getNorm());
-        final double ro     = Math.atan2(occultingRadius, po.getNorm());
+        final double rs     = Math.asin(occultedRadius / ps.getNorm());
+        final double ro     = Math.asin(occultingRadius / po.getNorm());
         return totalEclipse ? (angle - ro + rs) : (angle - ro - rs);
     }
 
