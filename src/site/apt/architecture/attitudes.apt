@@ -46,6 +46,9 @@ Attitude
   ** inertial law, which represents an inertial attitude law, perfectly 
   aligned with the EME2000 frame.
   
+  ** fixed rate law, which represents a rotation around a fixed axis at
+  constant rate.
+  
   ** celestial body pointed, i.e satellite pointing axis directed towards given 
   celestial body.
     
