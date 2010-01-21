@@ -28,6 +28,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -54,6 +56,7 @@ public class InertialAttitudeTest {
         }
     }
 
+    @Test
     public void testCompensateMomentum() throws OrekitException {
         InertialLaw law = new InertialLaw(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2));
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
@@ -65,6 +68,39 @@ public class InertialAttitudeTest {
             Assert.assertEquals(0, evolution.getAngle(), 1.0e-10);
             Assert.assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
         }
+    }
+
+    @Test
+    public void testSpin() throws OrekitException {
+
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+                                             new TimeComponents(3, 25, 45.6789),
+                                             TimeScalesFactory.getUTC());
+
+        AttitudeLaw law = new InertialLaw(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2));
+
+        KeplerianOrbit orbit =
+            new KeplerianOrbit(7178000.0, 1.e-4, Math.toRadians(50.),
+                              Math.toRadians(10.), Math.toRadians(20.),
+                              Math.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
+                              FramesFactory.getEME2000(), date, 3.986004415e14);
+
+        Propagator propagator = new KeplerianPropagator(orbit, law);
+
+        double h = 100.0;
+        SpacecraftState sMinus = propagator.propagate(new AbsoluteDate(date, -h));
+        SpacecraftState s0     = propagator.propagate(date);
+        SpacecraftState sPlus  = propagator.propagate(new AbsoluteDate(date,  h));
+
+        // compute spin axis using finite differences
+        Rotation rMinus = sMinus.getAttitude().getRotation();
+        Rotation rPlus  = sPlus.getAttitude().getRotation();
+        Rotation dr     = rPlus.applyTo(rMinus.revert());
+        Assert.assertEquals(0, dr.getAngle(), 1.0e-10);
+
+        Vector3D spin0 = s0.getAttitude().getSpin();
+        Assert.assertEquals(0, spin0.getNorm(), 1.0e-10);
+
     }
 
     @Before

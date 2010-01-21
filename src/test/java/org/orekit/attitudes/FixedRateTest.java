@@ -25,6 +25,10 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -83,6 +87,44 @@ public class FixedRateTest {
         Rotation attitude3 = law.getState(new AbsoluteDate(law.getReferenceDate(), 720.0),
                                           pv, FramesFactory.getEME2000()).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude3, law.getReferenceAttitude().getRotation()), 1.0e-10);
+
+    }
+
+    @Test
+    public void testSpin() throws OrekitException {
+
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+                                             new TimeComponents(3, 25, 45.6789),
+                                             TimeScalesFactory.getUTC());
+
+        final double rate = 2 * Math.PI / (12 * 60);
+        AttitudeLaw law =
+            new FixedRate(new Attitude(FramesFactory.getEME2000(),
+                                       new Rotation(0.48, 0.64, 0.36, 0.48, false),
+                                       new Vector3D(rate, Vector3D.PLUS_K)), date);
+
+        KeplerianOrbit orbit =
+            new KeplerianOrbit(7178000.0, 1.e-4, Math.toRadians(50.),
+                              Math.toRadians(10.), Math.toRadians(20.),
+                              Math.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
+                              FramesFactory.getEME2000(), date, 3.986004415e14);
+
+        Propagator propagator = new KeplerianPropagator(orbit, law);
+
+        double h = 100.0;
+        SpacecraftState sMinus = propagator.propagate(new AbsoluteDate(date, -h));
+        SpacecraftState s0     = propagator.propagate(date);
+        SpacecraftState sPlus  = propagator.propagate(new AbsoluteDate(date,  h));
+
+        // compute spin axis using finite differences
+        Rotation rMinus = sMinus.getAttitude().getRotation();
+        Rotation rPlus  = sPlus.getAttitude().getRotation();
+        Rotation dr     = rPlus.applyTo(rMinus.revert());
+        double period   = 4 * Math.PI * h / dr.getAngle();
+
+        Vector3D spin0 = s0.getAttitude().getSpin();
+        Assert.assertEquals(period, 2 * Math.PI / spin0.getNorm(), 1.0e-10);
+        Assert.assertEquals(0.0, Vector3D.angle(dr.getAxis(), spin0), 1.0e-10);
 
     }
 
