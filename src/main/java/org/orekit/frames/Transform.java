@@ -305,6 +305,18 @@ public class Transform implements Serializable {
 
         /** {@inheritDoc} */
         @Override
+        public Vector3D transformPosition(final Vector3D position) {
+            return position;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Vector3D transformVector(final Vector3D vector) {
+            return vector;
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public Line transformLine(final Line line) {
             return line;
         }
