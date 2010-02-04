@@ -106,11 +106,13 @@ public class CircularOrbit
      * @param type type of longitude argument, must be one of {@link #MEAN_LONGITUDE_ARGUMENT},
      * {@link #ECCENTRIC_LONGITUDE_ARGUMENT} or  {@link #TRUE_LONGITUDE_ARGUMENT}
      * @param frame the frame in which are defined the parameters
+     * (<em>must</em> be a {@link Frame#isQuasiInertial quasi-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if the longitude argument type is not
      * one of {@link #MEAN_LONGITUDE_ARGUMENT}, {@link #ECCENTRIC_LONGITUDE_ARGUMENT}
-     * or {@link #TRUE_LONGITUDE_ARGUMENT}
+     * or {@link #TRUE_LONGITUDE_ARGUMENT} or if frame is not a {@link
+     * Frame#isQuasiInertial quasi-inertial frame}
      * @see #MEAN_LONGITUDE_ARGUMENT
      * @see #ECCENTRIC_LONGITUDE_ARGUMENT
      * @see #TRUE_LONGITUDE_ARGUMENT
@@ -150,11 +152,15 @@ public class CircularOrbit
     /** Constructor from cartesian parameters.
      * @param pvCoordinates the {@link PVCoordinates} in inertial frame
      * @param frame the frame in which are defined the {@link PVCoordinates}
+     * (<em>must</em> be a {@link Frame#isQuasiInertial quasi-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @exception IllegalArgumentException if frame is not a {@link
+     * Frame#isQuasiInertial quasi-inertial frame}
      */
     public CircularOrbit(final PVCoordinates pvCoordinates, final Frame frame,
-                              final AbsoluteDate date, final double mu) {
+                              final AbsoluteDate date, final double mu)
+        throws IllegalArgumentException {
         super(pvCoordinates, frame, date, mu);
 
         // compute semi-major axis

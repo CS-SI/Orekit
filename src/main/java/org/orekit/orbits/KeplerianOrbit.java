@@ -106,11 +106,13 @@ public class KeplerianOrbit extends Orbit {
      * @param type type of anomaly, must be one of {@link #MEAN_ANOMALY},
      * {@link #ECCENTRIC_ANOMALY} or  {@link #TRUE_ANOMALY}
      * @param frame the frame in which the parameters are defined
+     * (<em>must</em> be a {@link Frame#isQuasiInertial quasi-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if the longitude argument type is not
      * one of {@link #MEAN_ANOMALY}, {@link #ECCENTRIC_ANOMALY}
-     * or {@link #TRUE_ANOMALY}
+     * or {@link #TRUE_ANOMALY} or if frame is not a {@link
+     * Frame#isQuasiInertial quasi-inertial frame}
      * @see #MEAN_ANOMALY
      * @see #ECCENTRIC_ANOMALY
      * @see #TRUE_ANOMALY
@@ -149,11 +151,15 @@ public class KeplerianOrbit extends Orbit {
     /** Constructor from cartesian parameters.
      * @param pvCoordinates the PVCoordinates of the satellite
      * @param frame the frame in which are defined the {@link PVCoordinates}
+     * (<em>must</em> be a {@link Frame#isQuasiInertial quasi-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @exception IllegalArgumentException if frame is not a {@link
+     * Frame#isQuasiInertial quasi-inertial frame}
      */
     public KeplerianOrbit(final PVCoordinates pvCoordinates,
-                          final Frame frame, final AbsoluteDate date, final double mu) {
+                          final Frame frame, final AbsoluteDate date, final double mu)
+        throws IllegalArgumentException {
         super(pvCoordinates, frame, date, mu);
 
         // compute semi-major axis

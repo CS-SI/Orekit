@@ -68,11 +68,15 @@ public class CartesianOrbit extends Orbit {
     /** Constructor from cartesian parameters.
      * @param pvCoordinates the position and velocity of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined
+     * (<em>must</em> be a {@link Frame#isQuasiInertial quasi-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @exception IllegalArgumentException if frame is not a {@link
+     * Frame#isQuasiInertial quasi-inertial frame}
      */
     public CartesianOrbit(final PVCoordinates pvCoordinates, final Frame frame,
-                               final AbsoluteDate date, final double mu) {
+                          final AbsoluteDate date, final double mu)
+        throws IllegalArgumentException {
         super(pvCoordinates, frame, date, mu);
         equinoctial = new EquinoctialOrbit(pvCoordinates, frame, date, mu);
     }

@@ -55,18 +55,18 @@ public class Frames2 {
             // and its axes parallel to EME2000. It is derived from EME2000 frame at any moment
             // by an unknown transform which depends on the current position and the velocity.
             // Let's initialize this transform by the identity transform.
-            Frame cogFrame = new Frame(FramesFactory.getEME2000(), Transform.IDENTITY, "LOF");
+            Frame cogFrame = new Frame(FramesFactory.getEME2000(), Transform.IDENTITY, "LOF", false);
 
             // The satellite frame, with origin also at the CoG, depends on attitude.
             // For the sake of this tutorial, we consider a simple inertial attitude here
             Transform cogToSat = new Transform(new Rotation(0.6, 0.48, 0, 0.64, false));
-            Frame satFrame = new Frame(cogFrame, cogToSat, "sat");
+            Frame satFrame = new Frame(cogFrame, cogToSat, "sat", false);
 
             // Finally, the GPS antenna frame can be defined from the satellite frame by 2 transforms:
             // a translation and a rotation
             Transform translateGPS = new Transform(new Vector3D(0, 0, 1));
             Transform rotateGPS    = new Transform(new Rotation(new Vector3D(0, 1, 3), Math.toRadians(10)));
-            Frame gpsFrame         = new Frame(satFrame, new Transform(translateGPS, rotateGPS), "GPS");
+            Frame gpsFrame         = new Frame(satFrame, new Transform(translateGPS, rotateGPS), "GPS", false);
 
             // Considering the following Computing/Measurement date in UTC time scale
             TimeScale utc = TimeScalesFactory.getUTC();

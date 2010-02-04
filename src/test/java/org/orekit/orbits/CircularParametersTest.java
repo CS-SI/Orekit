@@ -23,7 +23,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -468,6 +470,17 @@ public class CircularParametersTest {
         Assert.assertEquals(0.0, positionOffset.getNorm(), position.getNorm() * Utils.epsilonTest);
         Assert.assertEquals(0.0, velocityOffset.getNorm(), velocity.getNorm() * Utils.epsilonTest);
 
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testNonInertialFrame() throws IllegalArgumentException {
+
+        Vector3D position = new Vector3D(33051.2, 26184.9, -1.3E-5);
+        Vector3D velocity = new Vector3D(-60376.2, 76208., 2.7E-4);
+        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
+        new CircularOrbit(pvCoordinates,
+                          new Frame(FramesFactory.getEME2000(), Transform.IDENTITY, "non-inertial", false),
+                          date, mu);
     }
 
     @Before

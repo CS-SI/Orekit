@@ -68,14 +68,34 @@ public class Frame implements Serializable {
     /** Instance name. */
     private final String name;
 
+    /** Indicator for quasi-inertial frames. */
+    private final boolean quasiInertial;
+
     /** Private constructor used only for the root frame.
      * @param name name of the frame
+     * @param quasiInertial true if frame is considered quasi-inertial
+     * (i.e. suitable for propagating orbit)
      */
-    private Frame(final String name) {
+    private Frame(final String name, final boolean quasiInertial) {
         parent    = null;
         transform = Transform.IDENTITY;
         commons   = new HashMap<Frame, Frame>();
         this.name = name;
+        this.quasiInertial = quasiInertial;
+    }
+
+    /** Build a non-inertial frame from its transform with respect to its parent.
+     * <p>calling this constructor is equivalent to call
+     * <code>{link {@link #Frame(Frame, Transform, String, boolean)
+     * Frame(parent, transform, name, false)}</code>.</p>
+     * @param parent parent frame (must be non-null)
+     * @param transform transform from parent frame to instance
+     * @param name name of the frame
+     * @exception IllegalArgumentException if the parent frame is null
+     */
+    public Frame(final Frame parent, final Transform transform, final String name)
+        throws IllegalArgumentException {
+        this(parent, transform, name, false);
     }
 
     /** Build a frame from its transform with respect to its parent.
@@ -89,19 +109,23 @@ public class Frame implements Serializable {
      * @param parent parent frame (must be non-null)
      * @param transform transform from parent frame to instance
      * @param name name of the frame
+     * @param quasiInertial true if frame is considered quasi-inertial
+     * (i.e. suitable for propagating orbit)
      * @exception IllegalArgumentException if the parent frame is null
      */
-    public Frame(final Frame parent, final Transform transform, final String name)
-        throws IllegalArgumentException {
+    public Frame(final Frame parent, final Transform transform, final String name,
+                 final boolean quasiInertial)
+    throws IllegalArgumentException {
 
         if (parent == null) {
             throw OrekitException.createIllegalArgumentException("null parent for frame {0}",
                                                                  name);
         }
-        this.name      = name;
-        this.parent    = parent;
-        this.transform = transform;
-        commons        = new HashMap<Frame, Frame>();
+        this.name          = name;
+        this.quasiInertial = quasiInertial;
+        this.parent        = parent;
+        this.transform     = transform;
+        commons            = new HashMap<Frame, Frame>();
 
     }
 
@@ -110,6 +134,19 @@ public class Frame implements Serializable {
      */
     public String getName() {
         return this.name;
+    }
+
+    /** Check if the frame is quasi-inertial.
+     * <p>Quasi-inertial frames are frames that do have a linear motion and
+     * either do not rotate or rotate at a very low rate resulting in
+     * neglectible inertial forces. This means they are suitable for orbit
+     * definition and propagation. Frames that are <em>not</em>
+     * quasi-inertial are <em>not</em> suitable for orbit definition and
+     * propagation.</p>
+     * @return true if frame is quasi-inertial
+     */
+    public boolean isQuasiInertial() {
+        return quasiInertial;
     }
 
     /** New definition of the java.util toString() method.
@@ -425,7 +462,7 @@ public class Frame implements Serializable {
     private static class LazyRootHolder {
 
         /** Unique instance. */
-        private static final Frame INSTANCE = new Frame("GCRF");
+        private static final Frame INSTANCE = new Frame("GCRF", true);
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public

@@ -50,7 +50,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
     public TopocentricFrame(final BodyShape parentShape, final GeodeticPoint point,
                             final String name) {
 
-        super(parentShape.getBodyFrame(), null, name);
+        super(parentShape.getBodyFrame(), null, name, false);
         this.parentShape = parentShape;
         this.point = point;
 

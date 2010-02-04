@@ -68,7 +68,7 @@ public class LocalOrbitalFrame extends Frame {
     public LocalOrbitalFrame(final Frame parent, final LOFType type,
                              final Propagator propagator, final String name)
         throws IllegalArgumentException {
-        super(parent, Transform.IDENTITY, name);
+        super(parent, Transform.IDENTITY, name, false);
         this.type       = type;
         this.propagator = propagator;
     }

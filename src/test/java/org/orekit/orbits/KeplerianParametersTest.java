@@ -23,7 +23,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -400,6 +402,17 @@ public class KeplerianParametersTest {
         Assert.assertTrue(positionOffset.getNorm() < Utils.epsilonTest);
         Assert.assertTrue(velocityOffset.getNorm() < Utils.epsilonTest);
 
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testNonInertialFrame() throws IllegalArgumentException {
+
+        Vector3D position = new Vector3D(-4947831., -3765382., -3708221.);
+        Vector3D velocity = new Vector3D(-2079., 5291., -7842.);
+        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
+        new KeplerianOrbit(pvCoordinates,
+                           new Frame(FramesFactory.getEME2000(), Transform.IDENTITY, "non-inertial", false),
+                           date, mu);
     }
 
     @Test

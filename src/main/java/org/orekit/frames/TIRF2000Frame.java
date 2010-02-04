@@ -84,7 +84,7 @@ class TIRF2000Frame extends Frame {
                             final AbsoluteDate date, final String name)
         throws OrekitException {
 
-        super(FramesFactory.getCIRF2000(), null, name);
+        super(FramesFactory.getCIRF2000(), null, name, false);
         tidalCorrection = ignoreTidalEffects ? null : new TidalCorrection();
         eopHistory = FramesFactory.getEOP2000History();
 

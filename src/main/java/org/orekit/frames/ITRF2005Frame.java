@@ -71,7 +71,7 @@ class ITRF2005Frame extends Frame {
                             final AbsoluteDate date, final String name)
         throws OrekitException {
 
-        super(FramesFactory.getTIRF2000(ignoreTidalEffects), null, name);
+        super(FramesFactory.getTIRF2000(ignoreTidalEffects), null, name, false);
 
         // everything is in place, we can now synchronize the frame
         updateFrame(date);

@@ -94,7 +94,7 @@ public abstract class AbstractCelestialBody implements CelestialBody {
          * @param definingFrame frame in which celestial body coordinates are defined
          */
         public BodyCenteredFrame(final String name, final Frame definingFrame) {
-            super(definingFrame, null, name);
+            super(definingFrame, null, name, true);
         }
 
         /** {@inheritDoc} */

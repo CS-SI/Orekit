@@ -39,7 +39,7 @@ public class FrameTest {
     public void testSameFrameNoRoot() throws OrekitException {
         Random random = new Random(0xc6e88d0f53e29116l);
         Transform t   = randomTransform(random);
-        Frame frame   = new Frame(FramesFactory.getEME2000(), t, null);
+        Frame frame   = new Frame(FramesFactory.getEME2000(), t, null, true);
         checkNoTransform(frame.getTransformTo(frame, new AbsoluteDate()), random);
     }
 
@@ -47,8 +47,8 @@ public class FrameTest {
     public void testSimilarFrames() throws OrekitException {
         Random random = new Random(0x1b868f67a83666e5l);
         Transform t   = randomTransform(random);
-        Frame frame1  = new Frame(FramesFactory.getEME2000(), t, null);
-        Frame frame2  = new Frame(FramesFactory.getEME2000(), t, null);
+        Frame frame1  = new Frame(FramesFactory.getEME2000(), t, null, true);
+        Frame frame2  = new Frame(FramesFactory.getEME2000(), t, null, false);
         checkNoTransform(frame1.getTransformTo(frame2, new AbsoluteDate()), random);
     }
 

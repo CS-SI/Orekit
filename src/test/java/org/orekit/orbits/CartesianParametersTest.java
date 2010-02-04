@@ -23,7 +23,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -162,6 +164,18 @@ public class CartesianParametersTest {
             // test of orthogonality between velocity and momentum
             Assert.assertTrue(Math.abs(Vector3D.dotProduct(velocity, momentum)) < Utils.epsilonTest);
         }
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testNonInertialFrame() throws IllegalArgumentException {
+
+        Vector3D position = new Vector3D(-26655470.0, 29881667.0,-113657.0);
+        Vector3D velocity = new Vector3D(-1125.0,-1122.0,195.0);
+        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
+        double mu = 3.9860047e14;
+        new CartesianOrbit(pvCoordinates,
+                           new Frame(FramesFactory.getEME2000(), Transform.IDENTITY, "non-inertial", false),
+                           date, mu);
     }
 
     @Before
