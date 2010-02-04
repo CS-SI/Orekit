@@ -48,7 +48,8 @@ public class InertialLaw implements AttitudeLaw {
      * @param rotation rotation from EME2000 to the desired satellite frame
      */
     public InertialLaw(final Rotation rotation) {
-        satelliteFrame = new Frame(FramesFactory.getEME2000(), new Transform(rotation), null);
+        satelliteFrame =
+            new Frame(FramesFactory.getEME2000(), new Transform(rotation), null, false);
     }
 
     /** {@inheritDoc} */
