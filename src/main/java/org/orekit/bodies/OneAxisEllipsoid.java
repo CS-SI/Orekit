@@ -296,13 +296,7 @@ public class OneAxisEllipsoid implements BodyShape {
             double tildePhi;
             if (D >= 0) {
                 final double rootD = Math.sqrt(D);
-                final double rMr = R - rootD;
-                final double rPr = R + rootD;
-                // if Java 1.5 is available, the following statement can be rewritten
-                // tildeT = Math.cbrt(rPr) + Math.cbrt(rMr) - b * ot;
-                tildeT = ((rPr > 0) ?  Math.pow(rPr, ONE_THIRD) : -Math.pow(-rPr, ONE_THIRD)) +
-                         ((rMr > 0) ?  Math.pow(rMr, ONE_THIRD) : -Math.pow(-rMr, ONE_THIRD)) -
-                         b * ONE_THIRD;
+                tildeT = Math.cbrt(R + rootD) + Math.cbrt(R - rootD) - b * ONE_THIRD;
                 final double tildeT2   = tildeT * tildeT;
                 final double tildeT2P1 = 1.0 + tildeT2;
                 tildePhi = Math.atan2(z * tildeT2P1 - 2 * k * tildeT,
