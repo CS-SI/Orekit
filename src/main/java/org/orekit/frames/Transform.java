@@ -81,11 +81,10 @@ import org.orekit.utils.PVCoordinates;
 public class Transform implements Serializable {
 
     /** Identity transform. */
-    public static final Transform IDENTITY =
-        new Transform(Vector3D.ZERO, Vector3D.ZERO, Rotation.IDENTITY, Vector3D.ZERO);
+    public static final Transform IDENTITY = new IdentityTransform();
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -7253696290377343283L;
+    private static final long serialVersionUID = -9008113096602590296L;
 
     /** Global translation. */
     private final Vector3D translation;
@@ -286,5 +285,36 @@ public class Transform implements Serializable {
     public Vector3D getRotationRate() {
         return rotationRate;
     }
+
+    /** Specialized class for identity transform. */
+    private static class IdentityTransform extends Transform {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = -9042082036141830517L;
+
+        /** Simple constructor. */
+        public IdentityTransform() {
+            super(Vector3D.ZERO, Vector3D.ZERO, Rotation.IDENTITY, Vector3D.ZERO);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Transform getInverse() {
+            return this;
+        };
+
+        /** {@inheritDoc} */
+        @Override
+        public Line transformLine(final Line line) {
+            return line;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public PVCoordinates transformPVCoordinates(final PVCoordinates pv) {
+            return pv;
+        }
+
+    };
 
 }

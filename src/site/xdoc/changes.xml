@@ -22,6 +22,10 @@
   <body>
     <release version="4.2" date="TBD"
              description="TBD">
+      <action dev="luc" type="add">
+        added a special implementation improving performances for the frequent
+        case of identity transform
+      </action>
       <action dev="luc" type="fix">
         added forgotten radians to degrees conversions for inclination
         and RAAN in CircularOrbit.toString()
