@@ -246,20 +246,17 @@ public class NadirPointingTest {
 
         Propagator propagator = new KeplerianPropagator(orbit, law, mu, 2500.0);
 
-        double h = 0.01;
+        double h = 0.1;
         SpacecraftState sMinus = propagator.propagate(new AbsoluteDate(date, -h));
         SpacecraftState s0     = propagator.propagate(date);
         SpacecraftState sPlus  = propagator.propagate(new AbsoluteDate(date,  h));
 
-        // compute spin axis using finite differences
-        Rotation rMinus = sMinus.getAttitude().getRotation();
-        Rotation rPlus  = sPlus.getAttitude().getRotation();
-        Rotation dr     = rMinus.applyTo(rPlus.revert());
-        double period   = 4 * Math.PI * h / dr.getAngle();
         Vector3D spin0 = s0.getAttitude().getSpin();
-
-        Assert.assertEquals(period, 2 * Math.PI / spin0.getNorm(), 0.011);
-        Assert.assertEquals(0.0, Math.toDegrees(Vector3D.angle(dr.getAxis(), spin0)), 0.11);
+        Rotation rM = sMinus.getAttitude().getRotation();
+        Rotation rP = sPlus.getAttitude().getRotation();
+        Vector3D reference = Attitude.estimateSpin(rM, rP, 2 * h);
+        Assert.assertTrue(Rotation.distance(rM, rP) > 2.0e-4);
+        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 2.0e-6);
 
     }
 
