@@ -23,11 +23,17 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.frames.Frame;
 
 
-/** This class handles attitude definition.
+/** This class handles attitude definition at a given date.
 
  * <p>This class represents the rotation between a reference frame and
  * the satellite frame, as well as the spin of the satellite (axis and
  * rotation rate).</p>
+ * <p>
+ * The state can be slightly shifted to close dates. This shift is based on
+ * a linear extrapolation for attitude taking the spin rate into account.
+ * It is <em>not</em> intended as a replacement for proper attitude propagation
+ * but should be sufficient for either small time shifts or coarse accuracy.
+ * </p>
  * <p>The instance <code>Attitude</code> is guaranteed to be immutable.</p>
  * @see     org.orekit.orbits.Orbit
  * @author V&eacute;ronique Pommier-Maurussane
@@ -37,7 +43,7 @@ import org.orekit.frames.Frame;
 public class Attitude implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 2840719248123327714L;
+    private static final long serialVersionUID = 5729155542976428027L;
 
     /** Reference frame. */
     private final Frame referenceFrame;
@@ -48,6 +54,20 @@ public class Attitude implements Serializable {
     /** Spin (spin axis AND velocity).  */
     private final Vector3D spin;
 
+    /** Estimate spin between two orientations.
+     * <p>Estimation is based on a simple fixed rate rotation
+     * during the time interval between the two attitude.</p>
+     * @param start start orientation
+     * @param end end orientation
+     * @param dt time elapsed between the dates of the two orientations
+     * @return spin allowing to go from start to end orientation
+     */
+    public static Vector3D estimateSpin(final Rotation start, final Rotation end,
+                                        final double dt) {
+        final Rotation evolution = start.applyTo(end.revert());
+        return new Vector3D(evolution.getAngle() / dt, evolution.getAxis());
+    }
+
     /** Creates a new instance.
      * @param referenceFrame reference frame from which attitude is defined
      * @param attitude rotation between reference frame and satellite frame
@@ -57,6 +77,32 @@ public class Attitude implements Serializable {
         this.referenceFrame = referenceFrame;
         this.attitude       = attitude;
         this.spin           = spin;
+    }
+
+    /** Time-shift the attitude.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a linear extrapolation for attitude taking the spin rate into account.
+     * It is <em>not</em> intended as a replacement for proper attitude propagation
+     * but should be sufficient for either small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return shifted attitude
+     */
+    public Attitude shift(final double dt) {
+        final double rate = spin.getNorm();
+        if (rate == 0.0) {
+            // special case for inertial attitudes
+            return this;
+        }
+
+        // BEWARE: there is really a minus sign here, because if
+        // the satellite frame rotate in one direction, the inertial vectors
+        // seem to rotate in the opposite direction
+        final Rotation evolution = new Rotation(spin, -rate * dt);
+
+        return new Attitude(referenceFrame, evolution.applyTo(attitude), spin);
+
     }
 
     /** Get the reference frame.

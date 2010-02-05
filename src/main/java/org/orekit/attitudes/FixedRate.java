@@ -16,8 +16,6 @@
  */
 package org.orekit.attitudes;
 
-import org.apache.commons.math.geometry.Rotation;
-import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -55,17 +53,7 @@ public class FixedRate implements AttitudeLaw {
     /** {@inheritDoc} */
     public Attitude getState(final AbsoluteDate date,
                              final PVCoordinates pv, final Frame frame) {
-        final Vector3D spin = referenceAttitude.getSpin();
-        final double angle = date.durationFrom(referenceDate) * spin.getNorm();
-        Rotation evolution;
-        try {
-            evolution = new Rotation(spin, angle);
-        } catch (ArithmeticException ae) {
-            // the spin is null
-            evolution = Rotation.IDENTITY;
-        }
-        final Rotation r = evolution.applyTo(referenceAttitude.getRotation());
-        return new Attitude(referenceAttitude.getReferenceFrame(), r, spin);
+        return referenceAttitude.shift(date.durationFrom(referenceDate));
     }
 
     /** Get the reference attitude.
