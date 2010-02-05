@@ -111,20 +111,16 @@ public class FixedRateTest {
 
         Propagator propagator = new KeplerianPropagator(orbit, law);
 
-        double h = 100.0;
+        double h = 0.01;
         SpacecraftState sMinus = propagator.propagate(new AbsoluteDate(date, -h));
         SpacecraftState s0     = propagator.propagate(date);
         SpacecraftState sPlus  = propagator.propagate(new AbsoluteDate(date,  h));
 
-        // compute spin axis using finite differences
-        Rotation rMinus = sMinus.getAttitude().getRotation();
-        Rotation rPlus  = sPlus.getAttitude().getRotation();
-        Rotation dr     = rPlus.applyTo(rMinus.revert());
-        double period   = 4 * Math.PI * h / dr.getAngle();
-
         Vector3D spin0 = s0.getAttitude().getSpin();
-        Assert.assertEquals(period, 2 * Math.PI / spin0.getNorm(), 1.0e-10);
-        Assert.assertEquals(0.0, Vector3D.angle(dr.getAxis(), spin0), 1.0e-10);
+        Vector3D reference = Attitude.estimateSpin(sMinus.getAttitude().getRotation(),
+                                                   sPlus.getAttitude().getRotation(),
+                                                   2 * h);
+        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-14);
 
     }
 
