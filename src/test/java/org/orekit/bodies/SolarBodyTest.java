@@ -156,7 +156,7 @@ public class SolarBodyTest {
         PVCoordinates reference =
             new PVCoordinates(new Vector3D(posScale, position), new Vector3D(velScale, velocity));
 
-        PVCoordinates error = new PVCoordinates(1.0, pv, -1.0, reference);
+        PVCoordinates error = new PVCoordinates(reference, pv);
         Assert.assertEquals(0, error.getPosition().getNorm(), 2.0e-3);
         Assert.assertEquals(0, error.getVelocity().getNorm(), 5.0e-10);
 

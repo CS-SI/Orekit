@@ -40,6 +40,7 @@ public class PVCoordinatesTest {
         PVCoordinates pv4 = new PVCoordinates(new Vector3D( 4,  0.4,  40),
                                               new Vector3D(-4, -0.4, -40));
         checkPV(pv4, new PVCoordinates(4, pv1), 1.0e-15);
+        checkPV(pv2, new PVCoordinates(pv1, pv3), 1.0e-15);
         checkPV(pv3, new PVCoordinates(1, pv1, 1, pv2), 1.0e-15);
         checkPV(new PVCoordinates(2, pv4), new PVCoordinates(3, pv1, 1, pv2, 1, pv3), 1.0e-15);
         checkPV(new PVCoordinates(3, pv3), new PVCoordinates(3, pv1, 1, pv2, 1, pv4), 1.0e-15);

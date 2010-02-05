@@ -48,7 +48,7 @@ public class PVCoordinates implements Serializable {
         velocity = Vector3D.ZERO;
     }
 
-    /** Builds a PVCoordinates couple.
+    /** Builds a PVCoordinates pair.
      * @param position the position vector (m)
      * @param velocity the velocity vector (m/s)
      */
@@ -58,19 +58,30 @@ public class PVCoordinates implements Serializable {
     }
 
     /** Multiplicative constructor
-     * Build a PVCoordinates from another one and a scale factor.
-     * The PVCoordinates built will be a * pv
+     * <p>Build a PVCoordinates from another one and a scale factor.</p>
+     * <p>The PVCoordinates built will be a * pv</p>
      * @param a scale factor
      * @param pv base (unscaled) PVCoordinates
      */
     public PVCoordinates(final double a, final PVCoordinates pv) {
-        this.position = new Vector3D(a, pv.position);
-        this.velocity = new Vector3D(a, pv.velocity);
+        position = new Vector3D(a, pv.position);
+        velocity = new Vector3D(a, pv.velocity);
+    }
+
+    /** Subtractive constructor
+     * <p>Build a relative PVCoordinates from a start and an end position.</p>
+     * <p>The PVCoordinates built will be end - start.</p>
+     * @param a scale factor
+     * @param pv base (unscaled) PVCoordinates
+     */
+    public PVCoordinates(final PVCoordinates start, final PVCoordinates end) {
+        this.position = end.position.subtract(start.position);
+        this.velocity = end.velocity.subtract(start.velocity);
     }
 
     /** Linear constructor
-     * Build a PVCoordinates from two other ones and corresponding scale factors.
-     * The PVCoordinates built will be a1 * u1 + a2 * u2
+     * <p>Build a PVCoordinates from two other ones and corresponding scale factors.</p>
+     * <p>The PVCoordinates built will be a1 * u1 + a2 * u2</p>
      * @param a1 first scale factor
      * @param pv1 first base (unscaled) PVCoordinates
      * @param a2 second scale factor
@@ -78,13 +89,13 @@ public class PVCoordinates implements Serializable {
      */
     public PVCoordinates(final double a1, final PVCoordinates pv1,
                          final double a2, final PVCoordinates pv2) {
-        this.position = new Vector3D(a1, pv1.position, a2, pv2.position);
-        this.velocity = new Vector3D(a1, pv1.velocity, a2, pv2.velocity);
+        position = new Vector3D(a1, pv1.position, a2, pv2.position);
+        velocity = new Vector3D(a1, pv1.velocity, a2, pv2.velocity);
     }
 
     /** Linear constructor
-     * Build a PVCoordinates from three other ones and corresponding scale factors.
-     * The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3
+     * <p>Build a PVCoordinates from three other ones and corresponding scale factors.</p>
+     * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
      * @param a1 first scale factor
      * @param pv1 first base (unscaled) PVCoordinates
      * @param a2 second scale factor
@@ -95,13 +106,13 @@ public class PVCoordinates implements Serializable {
     public PVCoordinates(final double a1, final PVCoordinates pv1,
                          final double a2, final PVCoordinates pv2,
                          final double a3, final PVCoordinates pv3) {
-        this.position = new Vector3D(a1, pv1.position, a2, pv2.position, a3, pv3.position);
-        this.velocity = new Vector3D(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity);
+        position = new Vector3D(a1, pv1.position, a2, pv2.position, a3, pv3.position);
+        velocity = new Vector3D(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity);
     }
 
     /** Linear constructor
-     * Build a PVCoordinates from four other ones and corresponding scale factors.
-     * The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4
+     * <p>Build a PVCoordinates from four other ones and corresponding scale factors.</p>
+     * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
      * @param a1 first scale factor
      * @param pv1 first base (unscaled) PVCoordinates
      * @param a2 second scale factor
@@ -115,10 +126,8 @@ public class PVCoordinates implements Serializable {
                          final double a2, final PVCoordinates pv2,
                          final double a3, final PVCoordinates pv3,
                          final double a4, final PVCoordinates pv4) {
-        this.position = new Vector3D(a1, pv1.position, a2, pv2.position,
-                          a3, pv3.position, a4, pv4.position);
-        this.velocity = new Vector3D(a1, pv1.velocity, a2, pv2.velocity,
-                          a3, pv3.velocity, a4, pv4.velocity);
+        position = new Vector3D(a1, pv1.position, a2, pv2.position, a3, pv3.position, a4, pv4.position);
+        velocity = new Vector3D(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity, a4, pv4.velocity);
     }
 
     /** Gets the position.
