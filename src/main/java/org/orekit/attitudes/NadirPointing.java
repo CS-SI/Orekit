@@ -21,6 +21,7 @@ import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -56,29 +57,72 @@ public class NadirPointing extends GroundPointing {
         this.shape = shape;
     }
 
-    /** Get target expressed in body frame at given date.
-     * @param date computation date.
-     * @param pv satellite position-velocity vector at given date in given frame.
-     * @param frame Frame in which satellite position-velocity is given.
-     * @return target position/velocity in body frame
-     * @throws OrekitException if some specific error occurs
-     *
-     * <p>User should check that position/velocity and frame is consistent with given frame.
-     * </p>
-     */
+    /** {@inheritDoc} */
     protected PVCoordinates getTargetInBodyFrame(final AbsoluteDate date,
                                                  final PVCoordinates pv, final Frame frame)
         throws OrekitException {
 
-        // Satellite position in geodetic coordinates
-        final GeodeticPoint gpSat = shape.transform(pv.getPosition(), frame, date);
+        // Get target in body frame
+        final PVCoordinates groundPoint = getObservedGroundPoint(date, pv, frame);
 
-        // Ground point under satellite vertical
-        final GeodeticPoint gpGround =
-            new GeodeticPoint(gpSat.getLatitude(), gpSat.getLongitude(), 0.0);
+        // Transform to given frame
+        final Transform t = frame.getTransformTo(getBodyFrame(), date);
 
-        // Return target = this intersection point, with null velocity
-        return new PVCoordinates(shape.transform(gpGround), Vector3D.ZERO);
+        // Target in body frame.
+        return t.transformPVCoordinates(groundPoint);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PVCoordinates getObservedGroundPoint(final AbsoluteDate date,
+                                                final PVCoordinates pv,
+                                                final Frame frame)
+        throws OrekitException {
+
+        // nadir point position in same frame as initial pv
+        final Vector3D p      = pv.getPosition();
+        final Vector3D v      = pv.getVelocity();
+        final Vector3D nadirP = getNadir(date, p, frame);
+
+        // velocity of nadir due to satellite self motion, computed using a four
+        // points finite differences algorithm because we cannot compute shape normal
+        // curvature along the track for any shape and the nadir motion depends on it
+        final double h           = 0.05;
+        final double s2          = 1.0 / (12 * h);
+        final double s1          = 8 * s2;
+        final Vector3D nadirP2h  = getNadir(new AbsoluteDate(date,  2 * h), new Vector3D(1, p,  2 * h, v), frame);
+        final Vector3D nadirM2h  = getNadir(new AbsoluteDate(date, -2 * h), new Vector3D(1, p, -2 * h, v), frame);
+        final Vector3D nadirP1h  = getNadir(new AbsoluteDate(date,      h), new Vector3D(1, p,      h, v), frame);
+        final Vector3D nadirM1h  = getNadir(new AbsoluteDate(date,     -h), new Vector3D(1, p,     -h, v), frame);
+        final Vector3D nadirV    = new Vector3D(-s2, nadirP2h, s2, nadirM2h, s1, nadirP1h, -s1, nadirM1h);
+
+        return new PVCoordinates(nadirP, nadirV);
+
+    }
+
+    /** Get nadir in a specified frame.
+     * @param date date when system state shall be computed
+     * @param position satellite position in given frame
+     * @param frame the frame in which pv is defined and in which nadir is requested
+     * @return nadir in specified frame
+     * @exception OrekitException if some conversion fails
+     */
+    private Vector3D getNadir(final AbsoluteDate date, final Vector3D position, final Frame frame)
+        throws OrekitException {
+
+        final Transform t = frame.getTransformTo(getBodyFrame(), date);
+        final Vector3D satInBodyFrame = t.transformPosition(position);
+
+        // satellite position in geodetic coordinates
+        final GeodeticPoint gpSat = shape.transform(satInBodyFrame, getBodyFrame(), date);
+
+        // nadir position in geodetic coordinates
+        final GeodeticPoint gpNadir = new GeodeticPoint(gpSat.getLatitude(), gpSat.getLongitude(), 0.0);
+
+        // nadir point position in specified frame
+        return t.getInverse().transformPosition(shape.transform(gpNadir));
+
     }
 
 }

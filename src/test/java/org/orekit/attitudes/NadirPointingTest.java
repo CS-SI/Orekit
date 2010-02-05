@@ -31,6 +31,9 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -86,7 +89,7 @@ public class NadirPointingTest {
         double angle = rotCompo.getAngle();
         Assert.assertEquals(angle, 0.0, Utils.epsilonAngle);
 
-}
+    }
     
     /** Test in the case of an elliptic earth : nadir pointing shall be :
      *   - the same as earth center pointing in case of equatorial or polar position
@@ -223,6 +226,41 @@ public class NadirPointingTest {
         double angle= Vector3D.angle(zSatItrf, targetVertical);        
         Assert.assertEquals(Math.sin(angle), 0.0, Utils.epsilonTest);
         
+    }
+
+    @Test
+    public void testSpin() throws OrekitException {
+
+        // Elliptic earth shape
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
+
+        // Create earth center pointing attitude law
+        NadirPointing law = new NadirPointing(earthShape);
+
+        //  Satellite on any position
+        KeplerianOrbit orbit =
+            new KeplerianOrbit(7178000.0, 1.e-4, Math.toRadians(50.),
+                              Math.toRadians(10.), Math.toRadians(20.),
+                              Math.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
+                              FramesFactory.getEME2000(), date, mu);
+
+        Propagator propagator = new KeplerianPropagator(orbit, law, mu, 2500.0);
+
+        double h = 0.01;
+        SpacecraftState sMinus = propagator.propagate(new AbsoluteDate(date, -h));
+        SpacecraftState s0     = propagator.propagate(date);
+        SpacecraftState sPlus  = propagator.propagate(new AbsoluteDate(date,  h));
+
+        // compute spin axis using finite differences
+        Rotation rMinus = sMinus.getAttitude().getRotation();
+        Rotation rPlus  = sPlus.getAttitude().getRotation();
+        Rotation dr     = rMinus.applyTo(rPlus.revert());
+        double period   = 4 * Math.PI * h / dr.getAngle();
+        Vector3D spin0 = s0.getAttitude().getSpin();
+
+        Assert.assertEquals(period, 2 * Math.PI / spin0.getNorm(), 0.011);
+        Assert.assertEquals(0.0, Math.toDegrees(Vector3D.angle(dr.getAxis(), spin0)), 0.11);
+
     }
 
     @Before
