@@ -93,10 +93,10 @@
         propagator for several different orbits
       </action>
       <action dev="luc" type="add" >
-        SpacecraftState instances can now be slightly shifted in time using simple evolution
-        models (keplerian for orbit and fixed rate for attitude), this is not a replacement
-        for proper propagation but is useful for small time shifts or when coarse accuracy
-        is sufficient
+        SpacecraftState and Attitude instances can now be slightly shifted in time using
+        simple evolution models (keplerian for orbit and fixed rate for attitude), this is
+        not a replacement for proper propagation but is useful for either small time shifts
+        or when coarse accuracy is sufficient
       </action>
       <action dev="luc" type="add" >
         added a new simple linear attitude mode: FixedRate
