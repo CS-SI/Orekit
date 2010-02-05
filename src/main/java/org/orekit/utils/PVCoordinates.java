@@ -21,6 +21,12 @@ import java.io.Serializable;
 import org.apache.commons.math.geometry.Vector3D;
 
 /** Simple container for Position/Velocity pairs.
+ * <p>
+ * The state can be slightly shifted to close dates. This shift is based on
+ * a simple linear model. It is <em>not</em> intended as a replacement for
+ * proper orbit propagation (it is not even Keplerian!) but should be sufficient
+ * for either small time shifts or coarse accuracy.
+ * </p>
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Fabien Maussion
  * @author Luc Maisonobe
@@ -32,13 +38,26 @@ public class PVCoordinates implements Serializable {
     public static final PVCoordinates ZERO = new PVCoordinates(Vector3D.ZERO, Vector3D.ZERO);
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 8581359579182947710L;
+    private static final long serialVersionUID = 4157449919684833834L;
 
     /** The position. */
     private final Vector3D position;
 
     /** The velocity. */
     private final Vector3D velocity;
+
+    /** Estimate velocity between two positions.
+     * <p>Estimation is based on a simple fixed velocity translation
+     * during the time interval between the two positions.</p>
+     * @param start start position
+     * @param end end position
+     * @param dt time elapsed between the dates of the two positions
+     * @return velocity allowing to go from start to end positions
+     */
+    public static Vector3D estimateVelocity(final Vector3D start, final Vector3D end, final double dt) {
+        final double scale = 1.0 / dt;
+        return new Vector3D(scale, end, -scale, start);
+    }
 
     /** Simple constructor.
      * <p> Sets the Coordinates to default : (0 0 0) (0 0 0).
@@ -128,6 +147,20 @@ public class PVCoordinates implements Serializable {
                          final double a4, final PVCoordinates pv4) {
         position = new Vector3D(a1, pv1.position, a2, pv2.position, a3, pv3.position, a4, pv4.position);
         velocity = new Vector3D(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity, a4, pv4.velocity);
+    }
+
+    /** Time-shift the state.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple linear model. It is <em>not</em> intended as a replacement for
+     * proper orbit propagation (it is not even Keplerian!) but should be sufficient
+     * for either small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return shifted state
+     */
+    public PVCoordinates shift(final double dt) {
+        return new PVCoordinates(new Vector3D(1, position, dt, velocity), velocity);
     }
 
     /** Gets the position.

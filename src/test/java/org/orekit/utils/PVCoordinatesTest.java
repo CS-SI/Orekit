@@ -48,6 +48,15 @@ public class PVCoordinatesTest {
     }
 
     @Test
+    public void testShift() {
+        Vector3D p1 = new Vector3D( 1,  0.1,  10);
+        Vector3D p2 = new Vector3D( 2,  0.2,  20);
+        Vector3D v  = new Vector3D(-1, -0.1, -10);
+        checkPV(new PVCoordinates(p2, v), new PVCoordinates(p1, v).shift(-1.0), 1.0e-15);
+        Assert.assertEquals(0.0, PVCoordinates.estimateVelocity(p1, p2, -1.0).subtract(v).getNorm(), 1.0e-15);
+    }
+
+    @Test
     public void testToString() {
         PVCoordinates pv =
             new PVCoordinates(new Vector3D( 1,  0.1,  10), new Vector3D(-1, -0.1, -10));
