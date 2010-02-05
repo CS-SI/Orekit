@@ -103,7 +103,7 @@ public class CelestialBodyPointed implements AttitudeLaw {
         // compute celestial references at the specified date
         final PVCoordinates bodyPV    = pointedBody.getPVCoordinates(date, celestialFrame);
         final PVCoordinates satCel    = frame.getTransformTo(celestialFrame, date).transformPVCoordinates(pv);
-        final PVCoordinates pointing  = new PVCoordinates(1.0, bodyPV, -1.0, satCel);
+        final PVCoordinates pointing  = new PVCoordinates(satCel, bodyPV);
         final Vector3D      pointingP = pointing.getPosition();
         final double r2 = Vector3D.dotProduct(pointingP, pointingP);
 
