@@ -29,6 +29,9 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CircularOrbit;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -101,6 +104,25 @@ public class BodyCenterPointingTest {
         double distance = pointingLine.distance(Vector3D.ZERO);
         
         Assert.assertTrue(distance < 1.e-8);
+    }
+
+    @Test
+    public void testSpin() throws OrekitException {
+
+        Propagator propagator = new KeplerianPropagator(circ, earthCenterAttitudeLaw);
+
+        double h = 0.01;
+        SpacecraftState sMinus = propagator.propagate(new AbsoluteDate(date, -h));
+        SpacecraftState s0     = propagator.propagate(date);
+        SpacecraftState sPlus  = propagator.propagate(new AbsoluteDate(date,  h));
+
+        Vector3D spin0 = s0.getAttitude().getSpin();
+        Vector3D reference = Attitude.estimateSpin(sMinus.getAttitude().getRotation(),
+                                                   sPlus.getAttitude().getRotation(),
+                                                   2 * h);
+        Assert.assertTrue(spin0.getNorm() > 1.0e-3);
+        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-13);
+
     }
 
     @Before
