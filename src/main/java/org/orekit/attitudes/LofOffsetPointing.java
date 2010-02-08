@@ -112,10 +112,10 @@ public class LofOffsetPointing extends GroundPointing {
         final double h                 = 0.05;
         final double s2                = 1.0 / (12 * h);
         final double s1                = 8 * s2;
-        final Vector3D intersectionP2h = getIntersectionPoint(new AbsoluteDate(date,  2 * h), pv.shift( 2 * h), frame);
-        final Vector3D intersectionM2h = getIntersectionPoint(new AbsoluteDate(date, -2 * h), pv.shift(-2 * h), frame);
-        final Vector3D intersectionP1h = getIntersectionPoint(new AbsoluteDate(date,      h), pv.shift(     h), frame);
-        final Vector3D intersectionM1h = getIntersectionPoint(new AbsoluteDate(date,     -h), pv.shift(    -h), frame);
+        final Vector3D intersectionP2h = getIntersectionPoint(date.shiftedBy( 2 * h), pv.shiftedBy( 2 * h), frame);
+        final Vector3D intersectionM2h = getIntersectionPoint(date.shiftedBy(-2 * h), pv.shiftedBy(-2 * h), frame);
+        final Vector3D intersectionP1h = getIntersectionPoint(date.shiftedBy(     h), pv.shiftedBy(     h), frame);
+        final Vector3D intersectionM1h = getIntersectionPoint(date.shiftedBy(    -h), pv.shiftedBy(    -h), frame);
         final Vector3D intersectionV   = new Vector3D(-s2, intersectionP2h, s2, intersectionM2h, s1, intersectionP1h, -s1, intersectionM1h);
 
         return new PVCoordinates(intersectionP, intersectionV);

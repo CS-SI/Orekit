@@ -116,7 +116,7 @@ public class SpacecraftState implements TimeStamped, Serializable {
         this.mass     = mass;
     }
 
-    /** Time-shift the state.
+    /** Get a time-shifted state.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
      * a simple keplerian model for orbit, a linear extrapolation for attitude
@@ -143,14 +143,19 @@ public class SpacecraftState implements TimeStamped, Serializable {
      * <tr><td bgcolor="#eeeeff">900</td><td>4000</td><td>6</td><td>0.010</td></tr>
      * </table>
      * @param dt time shift in seconds
-     * @return shifted state (orbit and attitude updated, mass unchanged)
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     * except for the mass which stay unchanged
      * @exception PropagationException if orbit cannot be propagated
+     * @see org.orekit.time.AbsoluteDate#shiftedBy(double)
+     * @see org.orekit.utils.PVCoordinates#shiftedBy(double)
+     * @see org.orekit.attitudes.Attitude#shiftedBy(double)
+     * @see org.orekit.orbits.Orbit#shiftedBy(double)
      */
-    public SpacecraftState shift(final double dt) throws PropagationException {
+    public SpacecraftState shiftedBy(final double dt) throws PropagationException {
         final AbsoluteDate refDate    = orbit.getDate();
         AttitudeLaw        law        = new FixedRate(attitude, refDate);
         Propagator         propagator = new KeplerianPropagator(orbit, law, orbit.getMu(), mass);
-        return propagator.propagate(new AbsoluteDate(refDate, dt));
+        return propagator.propagate(refDate.shiftedBy(dt));
     }
 
     /** Gets the current orbit.

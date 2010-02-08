@@ -152,8 +152,7 @@ public abstract class AbstractPropagator implements Propagator {
                 addEndDateChecker(getInitialDate(), target, eventsDetectorsManager);
 
             // iterate over the propagation range
-            AbsoluteDate stepEnd =
-                new AbsoluteDate(interpolator.getCurrentDate(), stepSize);
+            AbsoluteDate stepEnd = interpolator.getCurrentDate().shiftedBy(stepSize);
             for (boolean lastStep = false; !lastStep;) {
 
                 interpolator.shift();
@@ -198,9 +197,9 @@ public abstract class AbstractPropagator implements Propagator {
                 if (needUpdate) {
                     // an event detector has reduced the step
                     // we need to adapt step size for next iteration
-                    stepEnd = new AbsoluteDate(interpolator.getPreviousDate(), stepSize);
+                    stepEnd = interpolator.getPreviousDate().shiftedBy(stepSize);
                 } else {
-                    stepEnd = new AbsoluteDate(interpolator.getCurrentDate(), stepSize);
+                    stepEnd = interpolator.getCurrentDate().shiftedBy(stepSize);
                 }
 
             }

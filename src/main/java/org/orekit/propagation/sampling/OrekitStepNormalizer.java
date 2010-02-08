@@ -114,7 +114,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
             }
 
             // use the interpolator to push fixed steps events to the underlying handler
-            AbsoluteDate nextTime = new AbsoluteDate(lastDate, h);
+            AbsoluteDate nextTime = lastDate.shiftedBy(h);
             boolean nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentDate()) > 0);
             while (nextInStep) {
 
@@ -127,7 +127,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
                 lastState = interpolator.getInterpolatedState();
 
                 // prepare next iteration
-                nextTime = new AbsoluteDate(nextTime, h);
+                nextTime = nextTime.shiftedBy(h);
                 nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentDate()) > 0);
 
             }

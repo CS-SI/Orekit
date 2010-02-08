@@ -149,7 +149,7 @@ public class PVCoordinates implements Serializable {
         velocity = new Vector3D(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity, a4, pv4.velocity);
     }
 
-    /** Time-shift the state.
+    /** Get a time-shifted state.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
      * a simple linear model. It is <em>not</em> intended as a replacement for
@@ -157,9 +157,13 @@ public class PVCoordinates implements Serializable {
      * for either small time shifts or coarse accuracy.
      * </p>
      * @param dt time shift in seconds
-     * @return shifted state
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     * @see org.orekit.time.AbsoluteDate#shiftedBy(double)
+     * @see org.orekit.attitudes.Attitude#shiftedBy(double)
+     * @see org.orekit.orbits.Orbit#shiftedBy(double)
+     * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
      */
-    public PVCoordinates shift(final double dt) {
+    public PVCoordinates shiftedBy(final double dt) {
         return new PVCoordinates(new Vector3D(1, position, dt, velocity), velocity);
     }
 

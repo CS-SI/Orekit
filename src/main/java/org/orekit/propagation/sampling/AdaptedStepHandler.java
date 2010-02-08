@@ -101,14 +101,14 @@ public class AdaptedStepHandler
      * @return current grid date
      */
     public AbsoluteDate getCurrentDate() {
-        return new AbsoluteDate(initializedReference, rawInterpolator.getCurrentTime());
+        return initializedReference.shiftedBy(rawInterpolator.getCurrentTime());
     }
 
     /** Get the previous grid date.
      * @return previous grid date
      */
     public AbsoluteDate getPreviousDate() {
-        return new AbsoluteDate(initializedReference, rawInterpolator.getPreviousTime());
+        return initializedReference.shiftedBy(rawInterpolator.getPreviousTime());
     }
 
     /** Get the interpolated date.
@@ -120,7 +120,7 @@ public class AdaptedStepHandler
      * @see #getInterpolatedState()
      */
     public AbsoluteDate getInterpolatedDate() {
-        return new AbsoluteDate(initializedReference, rawInterpolator.getInterpolatedTime());
+        return initializedReference.shiftedBy(rawInterpolator.getInterpolatedTime());
     }
 
     /** Set the interpolated date.
@@ -143,8 +143,7 @@ public class AdaptedStepHandler
     public SpacecraftState getInterpolatedState() throws OrekitException {
         try {
             final double[] y = rawInterpolator.getInterpolatedState();
-            final AbsoluteDate interpolatedDate =
-                new AbsoluteDate(initializedReference, rawInterpolator.getInterpolatedTime());
+            final AbsoluteDate interpolatedDate = initializedReference.shiftedBy(rawInterpolator.getInterpolatedTime());
             final Orbit orbit =
                 new EquinoctialOrbit(y[0], y[1], y[2], y[3], y[4], y[5],
                                      EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,

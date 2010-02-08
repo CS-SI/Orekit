@@ -383,7 +383,7 @@ public class NumericalPropagator implements Propagator {
             final double stopTime = integrator.integrate(new DifferentialEquations(), t0, state, t1, state);
 
             // back to space dynamics view
-            final AbsoluteDate date = new AbsoluteDate(startDate, stopTime);
+            final AbsoluteDate date = startDate.shiftedBy(stopTime);
 
             final EquinoctialOrbit orbit =
                 new EquinoctialOrbit(state[0], state[1], state[2], state[3],
@@ -515,7 +515,7 @@ public class NumericalPropagator implements Propagator {
             throws OrekitException {
 
             // convert raw mathematical data to space dynamics objects
-            final AbsoluteDate date = new AbsoluteDate(referenceDate, t);
+            final AbsoluteDate date = referenceDate.shiftedBy(t);
             final EquinoctialOrbit orbit =
                 new EquinoctialOrbit(y[0], y[1], y[2], y[3], y[4], y[5],
                                      EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,

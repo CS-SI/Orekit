@@ -58,7 +58,7 @@ class UTCTAIOffset implements TimeStamped, Serializable {
      */
     public UTCTAIOffset(final AbsoluteDate leapDate, final double leap, final double offset) {
         this.leapDate      = leapDate;
-        this.validityStart = new AbsoluteDate(leapDate, leap);
+        this.validityStart = leapDate.shiftedBy(leap);
         this.validityEnd   = AbsoluteDate.FUTURE_INFINITY;
         this.leap          = leap;
         this.offset        = offset;

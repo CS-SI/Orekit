@@ -53,7 +53,7 @@ public class FixedRate implements AttitudeLaw {
     /** {@inheritDoc} */
     public Attitude getState(final AbsoluteDate date,
                              final PVCoordinates pv, final Frame frame) {
-        return referenceAttitude.shift(date.durationFrom(referenceDate));
+        return referenceAttitude.shiftedBy(date.durationFrom(referenceDate));
     }
 
     /** Get the reference attitude.

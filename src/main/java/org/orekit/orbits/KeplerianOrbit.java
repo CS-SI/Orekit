@@ -364,6 +364,13 @@ public class KeplerianOrbit extends Orbit {
         return pa + raan + getMeanAnomaly();
     }
 
+    /** {@inheritDoc} */
+    public KeplerianOrbit shiftedBy(final double dt) {
+        return new KeplerianOrbit(a, e, i, pa, raan,
+                                  getMeanAnomaly() + getKeplerianMeanMotion() * dt,
+                                  MEAN_ANOMALY, getFrame(), getDate().shiftedBy(dt), getMu());
+    }
+
     /**  Returns a string representation of this keplerian parameters object.
      * @return a string representation of this object
      */

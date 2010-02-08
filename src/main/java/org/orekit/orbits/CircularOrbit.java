@@ -386,6 +386,14 @@ public class CircularOrbit
         return getAlphaM() + raan;
     }
 
+    /** {@inheritDoc} */
+    public CircularOrbit shiftedBy(final double dt) {
+        return new CircularOrbit(a, ex, ey, i, raan,
+                                 getAlphaM() + getKeplerianMeanMotion() * dt,
+                                 MEAN_LONGITUDE_ARGUMENT, getFrame(),
+                                 getDate().shiftedBy(dt), getMu());
+    }
+
     /**  Returns a string representation of this Orbit object.
      * @return a string representation of this object
      */

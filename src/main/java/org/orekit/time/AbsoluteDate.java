@@ -117,12 +117,10 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
         new AbsoluteDate(DateComponents.JAVA_EPOCH, TimeComponents.H00, TimeScalesFactory.getTT());
 
     /** Dummy date at infinity in the past direction. */
-    public static final AbsoluteDate PAST_INFINITY =
-        new AbsoluteDate(AbsoluteDate.JAVA_EPOCH, Double.NEGATIVE_INFINITY);
+    public static final AbsoluteDate PAST_INFINITY = JAVA_EPOCH.shiftedBy(Double.NEGATIVE_INFINITY);
 
     /** Dummy date at infinity in the future direction. */
-    public static final AbsoluteDate FUTURE_INFINITY =
-        new AbsoluteDate(AbsoluteDate.JAVA_EPOCH, Double.POSITIVE_INFINITY);
+    public static final AbsoluteDate FUTURE_INFINITY = JAVA_EPOCH.shiftedBy(Double.POSITIVE_INFINITY);
 
     /** Serializable UID. */
     private static final long serialVersionUID = 617061803741806846L;
@@ -269,7 +267,22 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      */
     public static AbsoluteDate createGPSDate(final int weekNumber,
                                              final double milliInWeek) {
-        return new AbsoluteDate(GPS_EPOCH, weekNumber * 604800.0 + milliInWeek / 1000.0);
+        return GPS_EPOCH.shiftedBy(weekNumber * 604800.0 + milliInWeek / 1000.0);
+    }
+
+    /** Get a time-shifted date.
+     * <p>
+     * Calling this method is equivalent to call <code>new AbsoluteDate(this, dt)</code>.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new date, shifted with respect to instance (which is immutable)
+     * @see org.orekit.utils.PVCoordinates#shiftedBy(double)
+     * @see org.orekit.attitudes.Attitude#shiftedBy(double)
+     * @see org.orekit.orbits.Orbit#shiftedBy(double)
+     * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
+     */
+    public AbsoluteDate shiftedBy(final double dt) {
+        return new AbsoluteDate(this, dt);
     }
 
     /** Compute the physically elapsed duration between two instants.

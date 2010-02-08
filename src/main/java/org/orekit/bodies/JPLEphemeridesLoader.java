@@ -509,8 +509,8 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             }
 
             // use some safety margins
-            final AbsoluteDate before = new AbsoluteDate(centralDate, -FIFTY_DAYS);
-            final AbsoluteDate after  = new AbsoluteDate(centralDate,  FIFTY_DAYS);
+            final AbsoluteDate before = centralDate.shiftedBy(-FIFTY_DAYS);
+            final AbsoluteDate after  = centralDate.shiftedBy( FIFTY_DAYS);
             synchronized (JPLEphemeridesLoader.this) {
                 final Iterator<TimeStamped> iterator = ephemerides.tailSet(before).iterator();
                 if (!iterator.hasNext()) {
@@ -561,7 +561,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 // this is the first call to the method and the central date is not set
                 // we set it arbitrarily to startEpoch + 50 days in order to load only
                 // the first 100 days worth of data
-                centralDate = new AbsoluteDate(startEpoch, FIFTY_DAYS);
+                centralDate = startEpoch.shiftedBy(FIFTY_DAYS);
             } else if ((centralDate.durationFrom(finalEpoch) > FIFTY_DAYS) ||
                     (startEpoch.durationFrom(centralDate) > FIFTY_DAYS)) {
                 // this file does not cover a range we are interested in,
@@ -688,7 +688,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 // set up chunk validity range
                 final AbsoluteDate chunkStart = chunkEnd;
                 chunkEnd = (i == nbChunks - 1) ?
-                        rangeEnd : new AbsoluteDate(rangeStart, (i + 1) * duration);
+                        rangeEnd : rangeStart.shiftedBy((i + 1) * duration);
 
                 // extract Chebyshev coefficients for the selected body
                 // and convert them from kilometers to meters
@@ -925,7 +925,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 }
 
                 // try searching only within the already loaded ephemeris part
-                final AbsoluteDate before = new AbsoluteDate(date, -model.getValidityDuration());
+                final AbsoluteDate before = date.shiftedBy(-model.getValidityDuration());
                 synchronized (JPLEphemeridesLoader.this) {
                     for (final Iterator<TimeStamped> iterator = ephemerides.tailSet(before).iterator();
                          iterator.hasNext();) {
@@ -948,7 +948,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             }
 
             // second try, searching newly loaded part designed to bracket date
-            final AbsoluteDate before = new AbsoluteDate(date, -maxChunksDuration);
+            final AbsoluteDate before = date.shiftedBy(-maxChunksDuration);
             synchronized (JPLEphemeridesLoader.this) {
                 for (final Iterator<TimeStamped> iterator = ephemerides.tailSet(before).iterator();
                      iterator.hasNext();) {

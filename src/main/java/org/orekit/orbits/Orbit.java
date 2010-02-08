@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import java.io.Serializable;
+
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -23,8 +25,6 @@ import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
-
-import java.io.Serializable;
 
 /**
  * This class handles orbital parameters without date.
@@ -102,7 +102,7 @@ public abstract class Orbit implements TimeStamped, Serializable {
      * Frame#isQuasiInertial quasi-inertial frame}
      */
     protected Orbit(final PVCoordinates pvCoordinates, final Frame frame,
-                                final AbsoluteDate date, final double mu)
+                    final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         ensureQuasiInertialFrame(frame);
         this.date = date;
@@ -306,5 +306,21 @@ public abstract class Orbit implements TimeStamped, Serializable {
         pvCoordinates = new PVCoordinates(position, velocity);
 
     }
+
+    /** Get a time-shifted orbit.
+     * <p>
+     * The orbit can be slightly shifted to close dates. This shift is based on
+     * a simple keplerian model. It is <em>not</em> intended as a replacement
+     * for proper orbit and attitude propagation but should be sufficient for
+     * small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new orbit, shifted with respect to the instance (which is immutable)
+     * @see org.orekit.time.AbsoluteDate#shiftedBy(double)
+     * @see org.orekit.utils.PVCoordinates#shiftedBy(double)
+     * @see org.orekit.attitudes.Attitude#shiftedBy(double)
+     * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
+     */
+    public abstract Orbit shiftedBy(final double dt);
 
 }

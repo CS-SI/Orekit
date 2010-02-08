@@ -169,8 +169,8 @@ class IntegratedEphemeris
         throws DerivativeException {
         model.handleStep(interpolator, isLast);
         if (isLast) {
-            startDate = new AbsoluteDate(initializedReference, model.getInitialTime());
-            maxDate   = new AbsoluteDate(initializedReference, model.getFinalTime());
+            startDate = initializedReference.shiftedBy(model.getInitialTime());
+            maxDate   = initializedReference.shiftedBy(model.getFinalTime());
             if (maxDate.durationFrom(startDate) < 0) {
                 minDate = maxDate;
                 maxDate = startDate;

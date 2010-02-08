@@ -35,7 +35,7 @@ import org.orekit.time.AbsoluteDate;
 public class KeplerianPropagator extends AbstractPropagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 9192576472088570265L;
+    private static final long serialVersionUID = 2094439036855266946L;
 
     /** Default mass. */
     private static final double DEFAULT_MASS = 1000.0;
@@ -49,14 +49,8 @@ public class KeplerianPropagator extends AbstractPropagator {
     /** Attitude law. */
     private final AttitudeLaw attitudeLaw;
 
-    /** Central attraction coefficient (m^3/s^2). */
-    private final double mu;
-
     /** Initial mass. */
     private double mass;
-
-    /** Mean motion. */
-    private double meanMotion;
 
     /** Build a propagator from orbit only.
      * <p>The central attraction coefficient &mu; is set to the same value used
@@ -113,10 +107,7 @@ public class KeplerianPropagator extends AbstractPropagator {
                                final double mu, final double mass) {
         this.initialOrbit = new EquinoctialOrbit(initialOrbit);
         this.attitudeLaw  = attitudeLaw;
-        this.mu           = mu;
         this.mass         = mass;
-        final double a    = initialOrbit.getA();
-        this.meanMotion   = Math.sqrt(mu / a) / a;
     }
 
     /** {@inheritDoc} */
@@ -129,20 +120,12 @@ public class KeplerianPropagator extends AbstractPropagator {
         throws PropagationException {
         try {
 
-            // evaluation of LM = PA + RAAN + M at extrapolated time
-            final EquinoctialOrbit orbit =
-                new EquinoctialOrbit(initialOrbit.getA(), initialOrbit.getEquinoctialEx(),
-                                     initialOrbit.getEquinoctialEy(), initialOrbit.getHx(),
-                                     initialOrbit.getHy(),
-                                     initialOrbit.getLM() +
-                                     meanMotion * date.durationFrom(initialOrbit.getDate()) ,
-                                     EquinoctialOrbit.MEAN_LATITUDE_ARGUMENT,
-                                     initialOrbit.getFrame(), date, mu);
+            // evaluation of orbit
+            final Orbit orbit = initialOrbit.shiftedBy(date.durationFrom(initialOrbit.getDate()));
 
             // evaluation of attitude
-            final Attitude attitude = attitudeLaw.getState(date,
-                                                           orbit.getPVCoordinates(),
-                                                           orbit.getFrame());
+            final Attitude attitude =
+                attitudeLaw.getState(date, orbit.getPVCoordinates(), orbit.getFrame());
 
             return new SpacecraftState(orbit, attitude, mass);
 
@@ -156,8 +139,6 @@ public class KeplerianPropagator extends AbstractPropagator {
     public void resetInitialState(final SpacecraftState state)
         throws PropagationException {
         initialOrbit   = new EquinoctialOrbit(state.getOrbit());
-        final double a = initialOrbit.getA();
-        meanMotion     = Math.sqrt(mu / a) / a;
         mass           = state.getMass();
     }
 

@@ -91,10 +91,10 @@ public class NadirPointing extends GroundPointing {
         final double h           = 0.05;
         final double s2          = 1.0 / (12 * h);
         final double s1          = 8 * s2;
-        final Vector3D nadirP2h  = getNadir(new AbsoluteDate(date,  2 * h), new Vector3D(1, p,  2 * h, v), frame);
-        final Vector3D nadirM2h  = getNadir(new AbsoluteDate(date, -2 * h), new Vector3D(1, p, -2 * h, v), frame);
-        final Vector3D nadirP1h  = getNadir(new AbsoluteDate(date,      h), new Vector3D(1, p,      h, v), frame);
-        final Vector3D nadirM1h  = getNadir(new AbsoluteDate(date,     -h), new Vector3D(1, p,     -h, v), frame);
+        final Vector3D nadirP2h  = getNadir(date.shiftedBy( 2 * h), new Vector3D(1, p,  2 * h, v), frame);
+        final Vector3D nadirM2h  = getNadir(date.shiftedBy(-2 * h), new Vector3D(1, p, -2 * h, v), frame);
+        final Vector3D nadirP1h  = getNadir(date.shiftedBy(     h), new Vector3D(1, p,      h, v), frame);
+        final Vector3D nadirM1h  = getNadir(date.shiftedBy(    -h), new Vector3D(1, p,     -h, v), frame);
         final Vector3D nadirV    = new Vector3D(-s2, nadirP2h, s2, nadirM2h, s1, nadirP1h, -s1, nadirM1h);
 
         return new PVCoordinates(nadirP, nadirV);

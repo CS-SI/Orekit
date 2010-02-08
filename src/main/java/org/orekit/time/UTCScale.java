@@ -70,7 +70,7 @@ public class UTCScale implements TimeScale {
             final double offset            = entry.getValue().doubleValue();
             final double leap              = offset - last.getOffset();
             final AbsoluteDate taiDayStart = new AbsoluteDate(entry.getKey(), TimeScalesFactory.getTAI());
-            final AbsoluteDate leapDate    = new AbsoluteDate(taiDayStart, last.getOffset());
+            final AbsoluteDate leapDate    = taiDayStart.shiftedBy(last.getOffset());
             last.setValidityEnd(leapDate);
             last = new UTCTAIOffset(leapDate, leap, offset);
             offsets[current++] = last;

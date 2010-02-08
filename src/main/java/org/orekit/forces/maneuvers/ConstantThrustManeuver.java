@@ -77,10 +77,10 @@ public class ConstantThrustManeuver implements ForceModel {
 
         if (duration >= 0) {
             this.startDate = date;
-            this.endDate   = new AbsoluteDate(date, duration);
+            this.endDate   = date.shiftedBy(duration);
         } else {
             this.endDate   = date;
-            this.startDate = new AbsoluteDate(endDate, duration);
+            this.startDate = endDate.shiftedBy(duration);
         }
 
         this.thrust    = thrust;

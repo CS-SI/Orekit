@@ -126,7 +126,7 @@ public class AdaptedEventDetector implements EventHandler {
         throws OrekitException {
 
         // update space dynamics view
-        final AbsoluteDate currentDate = new AbsoluteDate(referenceDate, t);
+        final AbsoluteDate currentDate = referenceDate.shiftedBy(t);
         final EquinoctialOrbit currentOrbit =
             new EquinoctialOrbit(y[0], y[1], y[2], y[3], y[4], y[5],
                                  EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,

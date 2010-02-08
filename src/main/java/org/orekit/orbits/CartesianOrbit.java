@@ -16,7 +16,6 @@
  */
 package org.orekit.orbits;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -83,12 +82,10 @@ public class CartesianOrbit extends Orbit {
 
     /** Constructor from any kind of orbital parameters.
      * @param op orbital parameters to copy
-     * @exception OrekitException if some specific error occurs
      */
-    public CartesianOrbit(final Orbit op)
-        throws OrekitException {
+    public CartesianOrbit(final Orbit op) {
         super(op.getFrame(), op.getDate(), op.getMu());
-        equinoctial = new EquinoctialOrbit(op);
+        equinoctial = (op instanceof EquinoctialOrbit) ? (EquinoctialOrbit) op : new EquinoctialOrbit(op);
     }
 
     /** Get the semi-major axis.
@@ -159,6 +156,11 @@ public class CartesianOrbit extends Orbit {
      */
     public double getLM() {
         return equinoctial.getLM();
+    }
+
+    /** {@inheritDoc} */
+    public CartesianOrbit shiftedBy(final double dt) {
+        return new CartesianOrbit(equinoctial.shiftedBy(dt));
     }
 
     /**  Returns a string representation of this Orbit object.

@@ -142,12 +142,12 @@ class EventState implements Serializable {
             AbsoluteDate ta = t0;
             double ga = g0;
             final AbsoluteDate start = (t1.compareTo(t0) > 0) ?
-                    new AbsoluteDate(t0,  detector.getThreshold()) :
-                    new AbsoluteDate(t0, -detector.getThreshold());
+                    t0.shiftedBy(detector.getThreshold()) :
+                    t0.shiftedBy(-detector.getThreshold());
             for (int i = 0; i < n; ++i) {
 
                 // evaluate detector value at the end of the substep
-                final AbsoluteDate tb = new AbsoluteDate(start, (i + 1) * h);
+                final AbsoluteDate tb = start.shiftedBy((i + 1) * h);
                 interpolator.setInterpolatedDate(tb);
                 final double gb = detector.g(interpolator.getInterpolatedState());
 
@@ -162,7 +162,7 @@ class EventState implements Serializable {
                         private static final long serialVersionUID = 642356050167522213L;
                         public double value(final double t) throws FunctionEvaluationException {
                             try {
-                                final AbsoluteDate date = new AbsoluteDate(t0, t);
+                                final AbsoluteDate date = t0.shiftedBy(t);
                                 interpolator.setInterpolatedDate(date);
                                 return detector.g(interpolator.getInterpolatedState());
                             } catch (OrekitException e) {
@@ -196,7 +196,7 @@ class EventState implements Serializable {
                     }
 
                     final double dtRoot = (dtA <= dtB) ? solver.solve(f, dtA, dtB) : solver.solve(f, dtB, dtA);
-                    final AbsoluteDate root = new AbsoluteDate(t0, dtRoot);
+                    final AbsoluteDate root = t0.shiftedBy(dtRoot);
 
                     if ((Math.abs(root.durationFrom(ta)) <= detector.getThreshold()) &&
                         (Math.abs(root.durationFrom(previousEventTime)) <= detector.getThreshold())) {

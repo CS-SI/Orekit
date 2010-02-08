@@ -174,9 +174,8 @@ public class TLE implements TimeStamped, Serializable {
         // Date format transform:
         final DateComponents date = new DateComponents(parseYear(line1, 18), 1, 1);
         final double dayNb = parseDouble(line1, 20, 12);
-        epoch = new AbsoluteDate(new AbsoluteDate(date, TimeComponents.H00,
-                                                  TimeScalesFactory.getUTC()),
-                                 (dayNb - 1) * 86400); //-1 is due to TLE date definition
+        epoch = new AbsoluteDate(date, TimeComponents.H00,
+                                 TimeScalesFactory.getUTC()).shiftedBy((dayNb - 1) * 86400); //-1 is due to TLE date definition
 
         // mean motion development
         // converted from rev/day, 2 * rev/day^2 and 6 * rev/day^3 to rad/s, rad/s^2 and rad/s^3

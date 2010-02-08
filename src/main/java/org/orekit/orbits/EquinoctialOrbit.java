@@ -326,6 +326,14 @@ public class EquinoctialOrbit extends Orbit {
         return 2 * Math.atan(Math.sqrt(hx * hx + hy * hy));
     }
 
+    /** {@inheritDoc} */
+    public EquinoctialOrbit shiftedBy(final double dt) {
+        return new EquinoctialOrbit(a, ex, ey, hx, hy,
+                                    getLM() + getKeplerianMeanMotion() * dt,
+                                    MEAN_LATITUDE_ARGUMENT, getFrame(),
+                                    getDate().shiftedBy(dt), getMu());
+    }
+
     /**  Returns a string representation of this equinoctial parameters object.
      * @return a string representation of this object
      */

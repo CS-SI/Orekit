@@ -79,7 +79,7 @@ public class Attitude implements Serializable {
         this.spin           = spin;
     }
 
-    /** Time-shift the attitude.
+    /** Get a time-shifted attitude.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
      * a linear extrapolation for attitude taking the spin rate into account.
@@ -87,9 +87,13 @@ public class Attitude implements Serializable {
      * but should be sufficient for either small time shifts or coarse accuracy.
      * </p>
      * @param dt time shift in seconds
-     * @return shifted attitude
+     * @return a new attitude, shifted with respect to the instance (which is immutable)
+     * @see org.orekit.time.AbsoluteDate#shiftedBy(double)
+     * @see org.orekit.utils.PVCoordinates#shiftedBy(double)
+     * @see org.orekit.orbits.Orbit#shiftedBy(double)
+     * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
      */
-    public Attitude shift(final double dt) {
+    public Attitude shiftedBy(final double dt) {
         final double rate = spin.getNorm();
         if (rate == 0.0) {
             // special case for inertial attitudes

@@ -51,7 +51,7 @@ public class TDBScale implements TimeScale {
         final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
         double offset = 0;
         for (int i = 0; i < 3; i++) {
-            offset = -offsetFromTAI(new AbsoluteDate(reference, offset));
+            offset = -offsetFromTAI(reference.shiftedBy(offset));
         }
         return offset;
     }
