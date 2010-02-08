@@ -33,7 +33,7 @@ import org.orekit.utils.PVCoordinates;
  * This class represents the attitude law where the satellite z axis is
  * pointing to a ground point target.</p>
  * <p>
- * The target position and velocity are defined in a body frame specified by the user.
+ * The target position is defined in a body frame specified by the user.
  * It is important to make sure this frame is consistent.
  * </p>
  * <p>
@@ -46,19 +46,19 @@ import org.orekit.utils.PVCoordinates;
 public class TargetPointing extends GroundPointing {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 2018902366782191143L;
+    private static final long serialVersionUID = -8002434923471977301L;
 
     /** Target in body frame. */
     private final PVCoordinates target;
 
 
-    /** Creates a new instance from body frame and target expressed in position/velocity coordinates.
+    /** Creates a new instance from body frame and target expressed in cartesian coordinates.
      * @param bodyFrame body frame.
-     * @param target target expressed in position/velocity coordinates in body frame
+     * @param target target position in body frame
      */
-    public TargetPointing(final Frame bodyFrame, final PVCoordinates target) {
+    public TargetPointing(final Frame bodyFrame, final Vector3D target) {
         super(bodyFrame);
-        this.target = target;
+        this.target = new PVCoordinates(target, Vector3D.ZERO);
     }
 
     /** Creates a new instance from body shape and target expressed in geodetic coordinates.
@@ -72,7 +72,14 @@ public class TargetPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
-    public PVCoordinates getObservedGroundPoint(final Orbit orbit, final Frame frame)
+    protected Vector3D getTargetPoint(final Orbit orbit, final Frame frame)
+        throws OrekitException {
+        return getBodyFrame().getTransformTo(frame, orbit.getDate()).transformPosition(target.getPosition());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected PVCoordinates getTargetPV(final Orbit orbit, final Frame frame)
         throws OrekitException {
         return getBodyFrame().getTransformTo(frame, orbit.getDate()).transformPVCoordinates(target);
     }

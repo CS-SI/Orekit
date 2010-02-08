@@ -16,6 +16,7 @@
  */
 package org.orekit.attitudes;
 
+import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
@@ -37,7 +38,7 @@ import org.orekit.utils.PVCoordinates;
 public class BodyCenterPointing extends GroundPointing {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -1080963665744011149L;
+    private static final long serialVersionUID = -6528493179834801802L;
 
     /** Creates new instance.
      * @param bodyFrame Body frame
@@ -47,7 +48,14 @@ public class BodyCenterPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
-    public PVCoordinates getObservedGroundPoint(final Orbit orbit, final Frame frame)
+    protected Vector3D getTargetPoint(final Orbit orbit, final Frame frame)
+        throws OrekitException {
+        return getBodyFrame().getTransformTo(frame, orbit.getDate()).transformPosition(Vector3D.ZERO);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected PVCoordinates getTargetPV(final Orbit orbit, final Frame frame)
         throws OrekitException {
         return getBodyFrame().getTransformTo(frame, orbit.getDate()).transformPVCoordinates(PVCoordinates.ZERO);
     }

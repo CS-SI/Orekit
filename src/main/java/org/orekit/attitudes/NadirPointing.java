@@ -23,7 +23,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 
 /**
  * This class handles nadir pointing attitude law.
@@ -57,35 +56,7 @@ public class NadirPointing extends GroundPointing {
 
     /** {@inheritDoc} */
     @Override
-    public PVCoordinates getObservedGroundPoint(final Orbit orbit, final Frame frame)
-        throws OrekitException {
-
-        // nadir point position in same frame as initial pv
-        final Vector3D nadirP = getNadir(orbit, frame);
-
-        // velocity of nadir due to satellite self motion, computed using a four
-        // points finite differences algorithm because we cannot compute shape normal
-        // curvature along the track for any shape and the nadir motion depends on it
-        final double h           = 0.05;
-        final double s2          = 1.0 / (12 * h);
-        final double s1          = 8 * s2;
-        final Vector3D nadirP2h  = getNadir(orbit.shiftedBy( 2 * h), frame);
-        final Vector3D nadirM2h  = getNadir(orbit.shiftedBy(-2 * h), frame);
-        final Vector3D nadirP1h  = getNadir(orbit.shiftedBy(     h), frame);
-        final Vector3D nadirM1h  = getNadir(orbit.shiftedBy(    -h), frame);
-        final Vector3D nadirV    = new Vector3D(-s2, nadirP2h, s2, nadirM2h, s1, nadirP1h, -s1, nadirM1h);
-
-        return new PVCoordinates(nadirP, nadirV);
-
-    }
-
-    /** Get nadir in a specified frame.
-     * @param orbit orbit state
-     * @param frame frame in which observed ground point should be provided
-     * @return nadir in specified frame
-     * @exception OrekitException if some conversion fails
-     */
-    private Vector3D getNadir(final Orbit orbit, final Frame frame)
+    protected Vector3D getTargetPoint(final Orbit orbit, final Frame frame)
         throws OrekitException {
 
         final AbsoluteDate date = orbit.getDate();

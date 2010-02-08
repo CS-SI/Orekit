@@ -21,9 +21,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
-
 
 
 /**
@@ -63,56 +61,79 @@ public abstract class GroundPointing implements AttitudeLaw {
         return bodyFrame;
     }
 
-    /** Compute the target ground point at given date in given frame.
+    /** Compute the target point in specified frame.
+     * @param orbit orbit state
+     * @param frame frame in which observed ground point should be provided
+     * @return observed ground point position in specified frame
+     * @throws OrekitException if some specific error occurs,
+     * such as no target reached
+     */
+    protected abstract Vector3D getTargetPoint(final Orbit orbit, final Frame frame)
+        throws OrekitException;
+
+    /** Compute the target point position/velocity in specified frame.
+     * <p>The default implementation use a simple two points finite differences scheme,
+     * it may be replaced by more accurate models in specialized implementations.</p>
      * @param orbit orbit state
      * @param frame frame in which observed ground point should be provided
      * @return observed ground point position/velocity in specified frame
      * @throws OrekitException if some specific error occurs,
      * such as no target reached
      */
-    public abstract PVCoordinates getObservedGroundPoint(final Orbit orbit, final Frame frame)
-        throws OrekitException;
-
-    /** Compute the system state at given date in given frame.
-     * <p>User should check that position/velocity and frame are consistent.</p>
-     * @return satellite attitude state at date
-     * @throws OrekitException if some specific error occurs
-     */
-    public Attitude getState(Orbit orbit)
+    protected PVCoordinates getTargetPV(final Orbit orbit, final Frame frame)
         throws OrekitException {
 
-        final PVCoordinates pv = orbit.getPVCoordinates();
+        // target point position in same frame as initial pv
+        final Vector3D intersectionP = getTargetPoint(orbit, frame);
+
+        // velocity of target point due to satellite and target motions
+        final double h  = 0.1;
+        final double scale = 1.0 / h;
+        final Vector3D intersectionM1h = getTargetPoint(orbit.shiftedBy(-h), frame);
+        final Vector3D intersectionP1h = getTargetPoint(orbit.shiftedBy( h), frame);
+        final Vector3D intersectionV   = new Vector3D(scale, intersectionP1h, -scale, intersectionM1h);
+
+        return new PVCoordinates(intersectionP, intersectionV);
+
+    }
+
+
+    /** {@inheritDoc} */
+    public Attitude getState(final Orbit orbit)
+        throws OrekitException {
+
         final Frame frame = orbit.getFrame();
 
-        // Construction of the satellite-target position/velocity vector
-        final PVCoordinates pointing = new PVCoordinates(pv, getObservedGroundPoint(orbit, frame));
-        final Vector3D pos = pointing.getPosition();
-        final Vector3D vel = pointing.getVelocity();
+        // Construction of the satellite-target position/velocity vector at t-h, t and t+h
+        final double h = 0.1;
+        final Orbit oM1H          = orbit.shiftedBy(-h);
+        final PVCoordinates pvM1H = oM1H.getPVCoordinates();
+        final Vector3D deltaPM1h  = getTargetPoint(oM1H, frame).subtract(pvM1H.getPosition());
 
-//        double h = 0.1;
-//        PVCoordinates pM1h = new PVCoordinates(pv.shiftedBy(-h), getObservedGroundPoint(orbit.shiftedBy(-h), frame));
-//        PVCoordinates pP1h = new PVCoordinates(pv.shiftedBy( h), getObservedGroundPoint(orbit.shiftedBy( h), frame));
+        final PVCoordinates pv0   = orbit.getPVCoordinates();
+        final Vector3D deltaP0    = getTargetPoint(orbit, frame).subtract(pv0.getPosition());
+
+        final Orbit oP1H          = orbit.shiftedBy( h);
+        final PVCoordinates pvP1H = oP1H.getPVCoordinates();
+        final Vector3D deltaPP1h  = getTargetPoint(oP1H, frame).subtract(pvP1H.getPosition());
 
         // New orekit exception if null position.
-        if (pos.equals(Vector3D.ZERO)) {
+        if (deltaP0.equals(Vector3D.ZERO)) {
             throw new OrekitException("satellite collided with target");
         }
 
-        // Attitude rotation in given frame :
+        // Attitude rotation:
         // line of sight -> z satellite axis,
         // satellite velocity -> x satellite axis.
-        final Rotation rot = new Rotation(pos, pv.getVelocity(), Vector3D.PLUS_K, Vector3D.PLUS_I);
-//        final Rotation rotM1h = new Rotation(pM1h.getPosition(), pv.shiftedBy(    -h).getVelocity(), Vector3D.PLUS_K, Vector3D.PLUS_I);
-//        final Rotation rotP1h = new Rotation(pP1h.getPosition(), pv.shiftedBy(     h).getVelocity(), Vector3D.PLUS_K, Vector3D.PLUS_I);
-//        Vector3D es1 = Attitude.estimateSpin(rotM1h, rotP1h, 2 * h);
+        final Rotation rot    = new Rotation(deltaP0,   pv0.getVelocity(),   Vector3D.PLUS_K, Vector3D.PLUS_I);
 
         // Attitude spin
-        final Vector3D spin = new Vector3D(1 / pos.getNormSq(), Vector3D.crossProduct(pos, vel));
-//        System.out.println(date + "   " +
-//                           spin.getX() + " " + spin.getY() + " " + spin.getZ() + " (" + spin.getNorm() + ")   " +
-//                           es1.getX() + " " + es1.getY() + " " + es1.getZ() + " (" + es1.getNorm() + ")");
+        final Rotation rotM1h = new Rotation(deltaPM1h, pvM1H.getVelocity(), Vector3D.PLUS_K, Vector3D.PLUS_I);
+        final Rotation rotP1h = new Rotation(deltaPP1h, pvP1H.getVelocity(), Vector3D.PLUS_K, Vector3D.PLUS_I);
+        final Vector3D spin   = Attitude.estimateSpin(rotM1h, rotP1h, 2 * h);
 
-        return new Attitude(frame, rot, rot.applyTo(spin));
+        return new Attitude(frame, rot, spin);
+
     }
 
 }

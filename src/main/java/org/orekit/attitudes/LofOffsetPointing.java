@@ -67,43 +67,14 @@ public class LofOffsetPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
+    @Override
     public Attitude getState(Orbit orbit)
         throws OrekitException {
         return attitudeLaw.getState(orbit);
     }
 
     /** {@inheritDoc} */
-    @Override
-    public PVCoordinates getObservedGroundPoint(final Orbit orbit, final Frame frame)
-        throws OrekitException {
-
-        // intersection point position in same frame as initial pv
-        final Vector3D intersectionP = getIntersectionPoint(orbit, frame);
-
-        // velocity of intersection point due to satellite self motion, computed using a four
-        // points finite differences algorithm because we cannot compute shape normal
-        // curvature along the track for any shape and the intersection point motion depends on it
-        final double h                 = 0.05;
-        final double s2                = 1.0 / (12 * h);
-        final double s1                = 8 * s2;
-        final Vector3D intersectionP2h = getIntersectionPoint(orbit.shiftedBy( 2 * h), frame);
-        final Vector3D intersectionM2h = getIntersectionPoint(orbit.shiftedBy(-2 * h), frame);
-        final Vector3D intersectionP1h = getIntersectionPoint(orbit.shiftedBy(     h), frame);
-        final Vector3D intersectionM1h = getIntersectionPoint(orbit.shiftedBy(    -h), frame);
-        final Vector3D intersectionV   = new Vector3D(-s2, intersectionP2h,  s2, intersectionM2h,
-                                                       s1, intersectionP1h, -s1, intersectionM1h);
-
-        return new PVCoordinates(intersectionP, intersectionV);
-
-    }
-
-    /** Get line of sight and body shape intersection point in a specified frame.
-     * @param orbit orbit state
-     * @param frame the frame in which intersection point is requested
-     * @return intersection point in specified frame
-     * @exception OrekitException if some conversion fails
-     */
-    private Vector3D getIntersectionPoint(final Orbit orbit, final Frame frame)
+    protected Vector3D getTargetPoint(final Orbit orbit, final Frame frame)
         throws OrekitException {
 
         final AbsoluteDate date = orbit.getDate();

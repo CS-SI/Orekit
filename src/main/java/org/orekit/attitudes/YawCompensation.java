@@ -67,7 +67,7 @@ public class YawCompensation extends GroundPointingWrapper {
         // Compensation rotation definition :
         //  . Z satellite axis is unchanged
         //  . X satellite axis shall be aligned to target relative velocity
-        final PVCoordinates targetPV    = getGroundPointingLaw().getObservedGroundPoint(orbit, orbit.getFrame());
+        final PVCoordinates targetPV    = getGroundPointingLaw().getTargetPV(orbit, orbit.getFrame());
         final Vector3D targetVelocity   = targetPV.getVelocity();
         final Vector3D satVelocity      = orbit.getPVCoordinates().getVelocity();
         final Vector3D relativeVelocity = targetVelocity.subtract(satVelocity);

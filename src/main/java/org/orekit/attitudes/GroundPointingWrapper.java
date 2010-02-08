@@ -17,6 +17,7 @@
 package org.orekit.attitudes;
 
 import org.apache.commons.math.geometry.Rotation;
+import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
@@ -52,9 +53,16 @@ public abstract class GroundPointingWrapper extends GroundPointing {
     }
 
     /** {@inheritDoc} */
-    public PVCoordinates getObservedGroundPoint(final Orbit orbit, final Frame frame)
+    protected Vector3D getTargetPoint(final Orbit orbit, final Frame frame)
         throws OrekitException {
-        return groundPointingLaw.getObservedGroundPoint(orbit, frame);
+        return groundPointingLaw.getTargetPoint(orbit, frame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected PVCoordinates getTargetPV(final Orbit orbit, final Frame frame)
+        throws OrekitException {
+        return groundPointingLaw.getTargetPV(orbit, frame);
     }
 
     /** Compute the base system state at given date, without compensation.
@@ -68,6 +76,7 @@ public abstract class GroundPointingWrapper extends GroundPointing {
     }
 
     /** {@inheritDoc} */
+    @Override
     public Attitude getState(Orbit orbit)
         throws OrekitException {
 
