@@ -88,7 +88,7 @@ public class EphemerisMode {
             propagator.setInitialState(initialState);
             
             // Propagation with storage of the results in an integrated ephemeris
-            SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initialDate, 6000));
+            SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(6000));
 
             System.out.println(" Numerical propagation :");
             System.out.println("  Final date : " + finalState.getDate());
@@ -100,7 +100,7 @@ public class EphemerisMode {
             System.out.println(" Ephemeris defined from " + ephemeris.getMinDate() + " to " + ephemeris.getMaxDate());
             
             System.out.println(" Ephemeris propagation :");
-            AbsoluteDate intermediateDate = new AbsoluteDate(initialDate, 3000);
+            AbsoluteDate intermediateDate = initialDate.shiftedBy(3000);
             SpacecraftState intermediateState = ephemeris.propagate(intermediateDate);
             System.out.println("  date :  " + intermediateState.getDate());
             System.out.println("  " + intermediateState.getOrbit());
@@ -110,7 +110,7 @@ public class EphemerisMode {
             System.out.println("  date :  " + intermediateState.getDate());
             System.out.println("  " + intermediateState.getOrbit());
             
-            intermediateDate = new AbsoluteDate(initialDate, -1000);
+            intermediateDate = initialDate.shiftedBy(-1000);
             System.out.println();
             System.out.println("Attempting to propagate to date " + intermediateDate +
                                " which is OUT OF RANGE");

@@ -113,7 +113,7 @@ public class MasterMode {
             propagator.setMasterMode(60., new TutorialStepHandler());
 
             // Extrapolate from the initial to the final date
-            SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initialDate, 630.));
+            SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(630.));
             System.out.println(" Final date  : " + finalState.getDate());
             System.out.println(" Final state : " + finalState.getOrbit());
             

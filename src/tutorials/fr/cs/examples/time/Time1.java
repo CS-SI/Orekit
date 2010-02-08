@@ -48,7 +48,7 @@ public class Time1 {
 
             // create an end date 20 seconds after the start date
             double duration = 20.0;
-            AbsoluteDate end = new AbsoluteDate(start, duration);
+            AbsoluteDate end = start.shiftedBy(duration);
 
             // output header line
             System.out.println("        UTC date                  TAI date");
@@ -57,9 +57,7 @@ public class Time1 {
             // (a leap second was introduced this day, so the display should show
             //  the rare case of an UTC minute with more than 60 seconds)
             double step = 0.5;
-            for (AbsoluteDate date = start;
-                 date.compareTo(end) < 0;
-                 date = new AbsoluteDate(date, step)) {
+            for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(step)) {
                 System.out.println(date.toString(utc) + "   " + date.toString(tai));
             }
 

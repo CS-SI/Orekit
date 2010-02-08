@@ -88,7 +88,7 @@ public class VisibilityCheck {
             kepler.addEventDetector(sta1Visi);
 
             // Propagate from the initial date to the first raising or for the fixed duration
-            SpacecraftState finalState = kepler.propagate(new AbsoluteDate(initialDate, 1500.));
+            SpacecraftState finalState = kepler.propagate(initialDate.shiftedBy(1500.));
 
             System.out.println(" Final state : " + finalState.getDate().durationFrom(initialDate));
 
