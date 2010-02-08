@@ -88,19 +88,7 @@ public class YawCompensation extends GroundPointingWrapper {
      */
     public double getYawAngle(final Orbit orbit)
         throws OrekitException {
-
-        // Attitude rotation without yaw compensation
-        final Rotation rotNoYaw = getGroundPointingLaw().getState(orbit).getRotation();
-
-        // Attitude rotation without yaw compensation
-        final Rotation rotYaw = getState(orbit).getRotation();
-
-        // Compute yaw compensation angle by composition of both rotations
-        final Rotation compoRot = rotYaw.applyTo(rotNoYaw.revert());
-        final double yawAngle = compoRot.getAngle();
-
-        return yawAngle;
-
+        return getCompensation(orbit, getBaseState(orbit)).getAngle();
     }
 
 }
