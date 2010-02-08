@@ -95,7 +95,7 @@
       <action dev="luc" type="add" >
         SpacecraftState, Attitude and PVCoordinates instances can now be slightly shifted in
         time using simple evolution models (keplerian for orbit, fixed rate for attitude, fixed
-        translation for position/velocity), this is not a replacement for proper propagation but
+        translation for position/velocity). This is not a replacement for proper propagation but
         is useful for known simple motions or small time shifts or when coarse accuracy is sufficient
       </action>
       <action dev="luc" type="add" >

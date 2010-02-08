@@ -3,14 +3,16 @@
 This package provides tools to propagate orbital states with different methods.
 	
 <p> Propagation is the prediction of the evolution of an initial state.
- This initial state is represented in OREKIT by a 
+ The initial state and the propagated states are represented in OREKIT by a 
  {@link org.orekit.propagation.SpacecraftState}, which is a 
- simple container for all needed information : mass, 
+ simple container for all needed information at a specific date : mass, 
  {@link org.orekit.utils.PVCoordinates kinematics}, 
  {@link org.orekit.attitudes.Attitude attitude}, 
  {@link org.orekit.time.AbsoluteDate date}, 
- {@link org.orekit.frames.Frame frame}. Several ways to 
- calculate this prediction and store its results are proposed to the user.
+ {@link org.orekit.frames.Frame frame}. The state provides basic
+ interpolation features allowing to shift it slightly to close dates. For
+ more accurate and farthest dates, several full-featured propagators are
+ available to propagate the state.
 </p>
 
 <p> <h5> Keplerian propagation </h5> The {@link org.orekit.propagation.analytical.KeplerianPropagator}

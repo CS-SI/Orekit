@@ -21,21 +21,32 @@ import java.io.Serializable;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeLaw;
+import org.orekit.attitudes.FixedRate;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
 
 
 /** This class is the representation of a complete state holding orbit, attitude
- * and mass information.
+ * and mass information at a given date.
  *
- * <p> It contains an {@link Orbit orbital state} at a current
+ * <p>It contains an {@link Orbit orbital state} at a current
  * {@link AbsoluteDate} both handled by an {@link Orbit}, plus the current
  * mass and attitude.
+ * </p>
+ * <p>
+ * The state can be slightly shifted to close dates. This shift is based on
+ * a simple keplerian model for orbit, a linear extrapolation for attitude
+ * taking the spin rate into account and no mass change. It is <em>not</em>
+ * intended as a replacement for proper orbit and attitude propagation but
+ * should be sufficient for either small time shifts or coarse accuracy.
  * </p>
  * <p>
  * The instance <code>SpacecraftState</code> is guaranteed to be immutable.
@@ -43,6 +54,7 @@ import org.orekit.utils.PVCoordinates;
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
+ * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
 public class SpacecraftState implements TimeStamped, Serializable {
@@ -102,6 +114,43 @@ public class SpacecraftState implements TimeStamped, Serializable {
         this.orbit    = orbit;
         this.attitude = attitude;
         this.mass     = mass;
+    }
+
+    /** Time-shift the state.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple keplerian model for orbit, a linear extrapolation for attitude
+     * taking the spin rate into account and no mass change. It is <em>not</em>
+     * intended as a replacement for proper orbit and attitude propagation but
+     * should be sufficient for small time shifts or coarse accuracy.
+     * </p>
+     * <p>
+     * As a rough order of magnitude, the following table shows the interpolation
+     * errors obtained between this simple shift method and an {@link
+     * org.orekit.propagation.analytical.EcksteinHechlerPropagator Eckstein-Heschler
+     * propagator} for an 800km altitude narly circular and polar Earth orbit with
+     * {@link org.orekit.attitudes.BodyCenterPointing body center pointing}. Beware
+     * that these results may be different for other orbits.
+     * </p>
+     * <table border="1" cellpadding="5">
+     * <tr bgcolor="#ccccff"><font size="+3"><th>interpolation time (s)</th>
+     * <th>position error (m)</th><th>velocity error (m/s)</th>
+     * <th>attitude error (&deg;)</th></font></tr>
+     * <tr><td bgcolor="#eeeeff"> 60</td><td>  20</td><td>1</td><td>0.001</td></tr>
+     * <tr><td bgcolor="#eeeeff">120</td><td> 100</td><td>2</td><td>0.002</td></tr>
+     * <tr><td bgcolor="#eeeeff">300</td><td> 600</td><td>4</td><td>0.005</td></tr>
+     * <tr><td bgcolor="#eeeeff">600</td><td>2000</td><td>6</td><td>0.008</td></tr>
+     * <tr><td bgcolor="#eeeeff">900</td><td>4000</td><td>6</td><td>0.010</td></tr>
+     * </table>
+     * @param dt time shift in seconds
+     * @return shifted state (orbit and attitude updated, mass unchanged)
+     * @exception PropagationException if orbit cannot be propagated
+     */
+    public SpacecraftState shift(final double dt) throws PropagationException {
+        final AbsoluteDate refDate    = orbit.getDate();
+        AttitudeLaw        law        = new FixedRate(attitude, refDate);
+        Propagator         propagator = new KeplerianPropagator(orbit, law, orbit.getMu(), mass);
+        return propagator.propagate(new AbsoluteDate(refDate, dt));
     }
 
     /** Gets the current orbit.
