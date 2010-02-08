@@ -84,9 +84,9 @@ public class SpinStabilizedTest {
         Propagator propagator = new KeplerianPropagator(orbit, law);
 
         double h = 100.0;
-        SpacecraftState sMinus = propagator.propagate(new AbsoluteDate(date, -h));
+        SpacecraftState sMinus = propagator.propagate(date.shiftedBy(-h));
         SpacecraftState s0     = propagator.propagate(date);
-        SpacecraftState sPlus  = propagator.propagate(new AbsoluteDate(date,  h));
+        SpacecraftState sPlus  = propagator.propagate(date.shiftedBy(h));
 
         // compute spin axis using finite differences
         Rotation rMinus = sMinus.getAttitude().getRotation();

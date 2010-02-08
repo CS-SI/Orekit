@@ -56,7 +56,7 @@ public class ImpulseManeuverTest {
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, LofOffset.LOF_ALIGNED);
         propagator.addEventDetector(new ImpulseManeuver(new NodeDetector(initialOrbit, FramesFactory.getEME2000()),
                                                         new Vector3D(dv, Vector3D.PLUS_J), 400.0));
-        SpacecraftState propagated = propagator.propagate(new AbsoluteDate(initialOrbit.getDate(), 8000));
+        SpacecraftState propagated = propagator.propagate(initialOrbit.getDate().shiftedBy(8000));
         Assert.assertEquals(0.0028257, propagated.getI(), 1.0e-6);
     }
 

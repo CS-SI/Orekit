@@ -43,7 +43,7 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
         Transform t0 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date1);
 
         double dt = 10.0;
-        AbsoluteDate date2 = new AbsoluteDate(date1, dt);
+        AbsoluteDate date2 = date1.shiftedBy(dt);
         Transform t1 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date2);
         Transform evolution = new Transform(t0.getInverse(), t1);
 
@@ -51,8 +51,8 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
         Assert.assertEquals(0.0, evolution.transformPosition(Vector3D.ZERO).getNorm(), 1.0e-15);
         Assert.assertEquals(0.0, evolution.transformVector(p).getZ(), 0.003);
         Assert.assertEquals(2 * Math.PI * dt / 86164,
-                     Vector3D.angle(t0.transformVector(p), t1.transformVector(p)),
-                     1.0e-9);
+                            Vector3D.angle(t0.transformVector(p), t1.transformVector(p)),
+                            1.0e-9);
 
     }
 
@@ -65,15 +65,15 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
         Vector3D u = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
         Assert.assertTrue(Vector3D.angle(u, Vector3D.MINUS_I) < Math.toRadians(0.5));
 
-        date = new AbsoluteDate(date, 6 * 3600);
+        date = date.shiftedBy(6 * 3600);
         u = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
         Assert.assertTrue(Vector3D.angle(u, Vector3D.MINUS_J) < Math.toRadians(0.5));
 
-        date = new AbsoluteDate(date, 6 * 3600);
+        date = date.shiftedBy(6 * 3600);
         u = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
         Assert.assertTrue(Vector3D.angle(u, Vector3D.PLUS_I) < Math.toRadians(0.5));
 
-        date = new AbsoluteDate(date, 6 * 3600);
+        date = date.shiftedBy(6 * 3600);
         u = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
         Assert.assertTrue(Vector3D.angle(u, Vector3D.PLUS_J) < Math.toRadians(0.5));
 
@@ -87,13 +87,13 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
 
         Assert.assertEquals(180, Math.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
 
-        date = new AbsoluteDate(date, 6 * 3600);
+        date = date.shiftedBy(6 * 3600);
         Assert.assertEquals(-90, Math.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
 
-        date = new AbsoluteDate(date, 6 * 3600);
+        date = date.shiftedBy(6 * 3600);
         Assert.assertEquals(0, Math.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
 
-        date = new AbsoluteDate(date, 6 * 3600);
+        date = date.shiftedBy(6 * 3600);
         Assert.assertEquals(90, Math.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
 
     }
@@ -141,19 +141,19 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
         // compute local evolution using finite differences
         double h = 0.1;
         Rotation r0 = trans.getRotation();
-        AbsoluteDate date = new AbsoluteDate(t0, -2 * h);
+        AbsoluteDate date = t0.shiftedBy(-2 * h);
         Rotation evoM2h = FramesFactory.getEME2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
         double alphaM2h = -evoM2h.getAngle();
         Vector3D axisM2h = evoM2h.getAxis();
-        date = new AbsoluteDate(t0, -h);
+        date = t0.shiftedBy(-h);
         Rotation evoM1h = FramesFactory.getEME2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
         double alphaM1h = -evoM1h.getAngle();
         Vector3D axisM1h = evoM1h.getAxis();
-        date = new AbsoluteDate(t0,  h);
+        date = t0.shiftedBy(h);
         Rotation evoP1h = FramesFactory.getEME2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
         double alphaP1h =  evoP1h.getAngle();
         Vector3D axisP1h = evoP1h.getAxis().negate();
-        date = new AbsoluteDate(t0, 2 * h);
+        date = t0.shiftedBy(2 * h);
         Rotation evoP2h = FramesFactory.getEME2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
         double alphaP2h =  evoP2h.getAngle();
         Vector3D axisP2h = evoP2h.getAxis().negate();

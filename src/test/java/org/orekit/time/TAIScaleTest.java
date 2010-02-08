@@ -28,7 +28,7 @@ public class TAIScaleTest {
         TimeScale scale = TimeScalesFactory.getTAI();
         Assert.assertEquals("TAI", scale.toString());
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
-            AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
+            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * 86400);
             Assert.assertEquals(0, scale.offsetFromTAI(date), 0);
             DateTimeComponents components = date.getComponents(scale);
             Assert.assertEquals(0, scale.offsetToTAI(components.getDate(), components.getTime()), 0);

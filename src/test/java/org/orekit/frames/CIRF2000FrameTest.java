@@ -41,9 +41,7 @@ public class CIRF2000FrameTest {
         AbsoluteDate start = new AbsoluteDate(2002, 10,  3, TimeScalesFactory.getTAI());
         AbsoluteDate end   = new AbsoluteDate(2002, 10,  7, TimeScalesFactory.getTAI());
         double maxError = 0.0;
-        for (AbsoluteDate date = start;
-             date.compareTo(end) < 0;
-             date = new AbsoluteDate(date, 900)) {
+        for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(900)) {
             final Transform transform =
                 interpolatingFrame.getTransformTo(nonInterpolatingFrame, date);
             final double error = transform.getRotation().getAngle() * 648000 / Math.PI;

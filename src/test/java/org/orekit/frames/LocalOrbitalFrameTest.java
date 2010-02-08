@@ -32,7 +32,7 @@ public class LocalOrbitalFrameTest {
     @Test
     public void testTNW() throws OrekitException {
         
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
+        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
                                                 6.2, KeplerianOrbit.TRUE_ANOMALY, 
                                                 FramesFactory.getGCRF(), initDate,
@@ -42,7 +42,7 @@ public class LocalOrbitalFrameTest {
             new LocalOrbitalFrame(FramesFactory.getGCRF(), LocalOrbitalFrame.LOFType.TNW,
                                   propagator, "TNW");
 
-        AbsoluteDate date = new AbsoluteDate(initDate, 400);
+        AbsoluteDate date = initDate.shiftedBy(400);
         Transform t = tnw.getTransformTo(FramesFactory.getGCRF(), date);
         PVCoordinates pv1 = t.transformPVCoordinates(PVCoordinates.ZERO);
         Vector3D p1 = pv1.getPosition();
@@ -69,7 +69,7 @@ public class LocalOrbitalFrameTest {
     @Test
     public void testQSW() throws OrekitException {
         
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
+        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
                                                 6.2, KeplerianOrbit.TRUE_ANOMALY, 
                                                 FramesFactory.getGCRF(), initDate,
@@ -79,7 +79,7 @@ public class LocalOrbitalFrameTest {
             new LocalOrbitalFrame(FramesFactory.getGCRF(), LocalOrbitalFrame.LOFType.QSW,
                                   propagator, "QSW");
 
-        AbsoluteDate date = new AbsoluteDate(initDate, 400);
+        AbsoluteDate date = initDate.shiftedBy(400);
         Transform t = tnw.getTransformTo(FramesFactory.getGCRF(), date);
         PVCoordinates pv1 = t.transformPVCoordinates(PVCoordinates.ZERO);
         Vector3D p1 = pv1.getPosition();

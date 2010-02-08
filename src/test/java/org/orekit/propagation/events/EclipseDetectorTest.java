@@ -55,7 +55,7 @@ public class EclipseDetectorTest {
 		        return increasing ? CONTINUE : STOP;
             }
         });
-        final SpacecraftState finalState = propagator.propagate(new AbsoluteDate(iniDate, 6000));
+        final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(2710.218546, finalState.getDate().durationFrom(iniDate), 1.0e-3);
 
 //        System.out.println(" Ini date : " + iniDate.getDate());
@@ -69,7 +69,7 @@ public class EclipseDetectorTest {
         propagator.addEventDetector(new EclipseDetector(
                 CelestialBodyFactory.getSun(), sunRadius,
                 CelestialBodyFactory.getEarth(), earthRadius, false));
-        final SpacecraftState finalState = propagator.propagate(new AbsoluteDate(iniDate, 6000));
+        final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(3981.559573, finalState.getDate().durationFrom(iniDate), 1.0e-6);
 
 //        System.out.println(" Ini date : " + iniDate.getDate());

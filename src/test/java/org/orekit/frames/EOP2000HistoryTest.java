@@ -39,7 +39,7 @@ public class EOP2000HistoryTest {
         EOP2000History history = FramesFactory.getEOP2000History();
         AbsoluteDate endDate = new AbsoluteDate(2006, 3, 5, TimeScalesFactory.getUTC());
         for (double t = -1000; t < 1000 ; t += 10) {
-            AbsoluteDate date = new AbsoluteDate(endDate, t);
+            AbsoluteDate date = endDate.shiftedBy(t);
             double dt = history.getUT1MinusUTC(date);
             if (t <= 0) {
                 Assert.assertTrue(dt < 0.29236);

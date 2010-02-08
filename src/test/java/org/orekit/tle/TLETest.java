@@ -178,7 +178,7 @@ public class TLETest {
                             Vector3D testPos = new Vector3D(pX, pY, pZ);
                             Vector3D testVel = new Vector3D(vX, vY, vZ);
 
-                            AbsoluteDate date = new AbsoluteDate(tle.getDate(), minFromStart*60);
+                            AbsoluteDate date = tle.getDate().shiftedBy(minFromStart * 60);
                             PVCoordinates results = null;
                             try {
                                 results = ex.getPVCoordinates(date);

@@ -44,7 +44,7 @@ public class IntegratedEphemerisTest {
         Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
         double mu = 3.9860047e14;
 
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
+        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit =
             new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                  FramesFactory.getEME2000(), initDate, mu);
@@ -67,7 +67,7 @@ public class IntegratedEphemerisTest {
         // Integrated ephemeris
 
         // Propagation
-        AbsoluteDate finalDate = new AbsoluteDate(initDate, 86400);
+        AbsoluteDate finalDate = initDate.shiftedBy(86400);
         numericEx.setEphemerisMode();
         numericEx.setInitialState(new SpacecraftState(initialOrbit));
         numericEx.propagate(finalDate);
@@ -76,7 +76,7 @@ public class IntegratedEphemerisTest {
 
         // tests
         for (int i = 1; i <= 86400; i++) {
-            AbsoluteDate intermediateDate = new AbsoluteDate(initDate, i);
+            AbsoluteDate intermediateDate = initDate.shiftedBy(i);
             SpacecraftState keplerIntermediateOrbit = keplerEx.propagate(intermediateDate);
             SpacecraftState numericIntermediateOrbit = ephemeris.propagate(intermediateDate);
             Vector3D kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
@@ -85,7 +85,7 @@ public class IntegratedEphemerisTest {
         }
 
         // test inv
-        AbsoluteDate intermediateDate = new AbsoluteDate(initDate, 41589);
+        AbsoluteDate intermediateDate = initDate.shiftedBy(41589);
         SpacecraftState keplerIntermediateOrbit = keplerEx.propagate(intermediateDate);
         SpacecraftState state = keplerEx.propagate(finalDate);
         numericEx.setInitialState(state);

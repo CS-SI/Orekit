@@ -52,10 +52,10 @@ public class FixedRateTest {
         Rotation attitude0 = law.getState(law.getReferenceDate(),
                                           pv, FramesFactory.getEME2000()).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude0, law.getReferenceAttitude().getRotation()), 1.0e-10);
-        Rotation attitude1 = law.getState(new AbsoluteDate(law.getReferenceDate(), 10.0),
+        Rotation attitude1 = law.getState(law.getReferenceDate().shiftedBy(10.0),
                                           pv, FramesFactory.getEME2000()).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude1, law.getReferenceAttitude().getRotation()), 1.0e-10);
-        Rotation attitude2 = law.getState(new AbsoluteDate(law.getReferenceDate(), -20.0),
+        Rotation attitude2 = law.getState(law.getReferenceDate().shiftedBy(-20.0),
                                           pv, FramesFactory.getEME2000()).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude2, law.getReferenceAttitude().getRotation()), 1.0e-10);
 
@@ -77,14 +77,14 @@ public class FixedRateTest {
         Rotation attitude0 = law.getState(law.getReferenceDate(),
                                           pv, FramesFactory.getEME2000()).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude0, law.getReferenceAttitude().getRotation()), 1.0e-10);
-        Rotation attitude1 = law.getState(new AbsoluteDate(law.getReferenceDate(), 10.0),
+        Rotation attitude1 = law.getState(law.getReferenceDate().shiftedBy(10.0),
                                           pv, FramesFactory.getEME2000()).getRotation();
         Assert.assertEquals(10 * rate, Rotation.distance(attitude1, law.getReferenceAttitude().getRotation()), 1.0e-10);
-        Rotation attitude2 = law.getState(new AbsoluteDate(law.getReferenceDate(), -20.0),
+        Rotation attitude2 = law.getState(law.getReferenceDate().shiftedBy(-20.0),
                                           pv, FramesFactory.getEME2000()).getRotation();
         Assert.assertEquals(20 * rate, Rotation.distance(attitude2, law.getReferenceAttitude().getRotation()), 1.0e-10);
         Assert.assertEquals(30 * rate, Rotation.distance(attitude2, attitude1), 1.0e-10);
-        Rotation attitude3 = law.getState(new AbsoluteDate(law.getReferenceDate(), 720.0),
+        Rotation attitude3 = law.getState(law.getReferenceDate().shiftedBy(720.0),
                                           pv, FramesFactory.getEME2000()).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude3, law.getReferenceAttitude().getRotation()), 1.0e-10);
 
@@ -112,9 +112,9 @@ public class FixedRateTest {
         Propagator propagator = new KeplerianPropagator(orbit, law);
 
         double h = 0.01;
-        SpacecraftState sMinus = propagator.propagate(new AbsoluteDate(date, -h));
+        SpacecraftState sMinus = propagator.propagate(date.shiftedBy(-h));
         SpacecraftState s0     = propagator.propagate(date);
-        SpacecraftState sPlus  = propagator.propagate(new AbsoluteDate(date,  h));
+        SpacecraftState sPlus  = propagator.propagate(date.shiftedBy(h));
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Vector3D reference = Attitude.estimateSpin(sMinus.getAttitude().getRotation(),

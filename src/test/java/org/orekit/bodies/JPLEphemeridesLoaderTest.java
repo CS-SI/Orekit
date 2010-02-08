@@ -97,14 +97,14 @@ public class JPLEphemeridesLoaderTest {
 
         // eight points finite differences estimation of the velocity
         Frame eme2000 = FramesFactory.getEME2000();
-        Vector3D pm4h = body.getPVCoordinates(new AbsoluteDate(date, -4 * h), eme2000).getPosition();
-        Vector3D pm3h = body.getPVCoordinates(new AbsoluteDate(date, -3 * h), eme2000).getPosition();
-        Vector3D pm2h = body.getPVCoordinates(new AbsoluteDate(date, -2 * h), eme2000).getPosition();
-        Vector3D pm1h = body.getPVCoordinates(new AbsoluteDate(date,     -h), eme2000).getPosition();
-        Vector3D pp1h = body.getPVCoordinates(new AbsoluteDate(date,      h), eme2000).getPosition();
-        Vector3D pp2h = body.getPVCoordinates(new AbsoluteDate(date,  2 * h), eme2000).getPosition();
-        Vector3D pp3h = body.getPVCoordinates(new AbsoluteDate(date,  3 * h), eme2000).getPosition();
-        Vector3D pp4h = body.getPVCoordinates(new AbsoluteDate(date,  4 * h), eme2000).getPosition();
+        Vector3D pm4h = body.getPVCoordinates(date.shiftedBy(-4 * h), eme2000).getPosition();
+        Vector3D pm3h = body.getPVCoordinates(date.shiftedBy(-3 * h), eme2000).getPosition();
+        Vector3D pm2h = body.getPVCoordinates(date.shiftedBy(-2 * h), eme2000).getPosition();
+        Vector3D pm1h = body.getPVCoordinates(date.shiftedBy(    -h), eme2000).getPosition();
+        Vector3D pp1h = body.getPVCoordinates(date.shiftedBy(     h), eme2000).getPosition();
+        Vector3D pp2h = body.getPVCoordinates(date.shiftedBy( 2 * h), eme2000).getPosition();
+        Vector3D pp3h = body.getPVCoordinates(date.shiftedBy( 3 * h), eme2000).getPosition();
+        Vector3D pp4h = body.getPVCoordinates(date.shiftedBy( 4 * h), eme2000).getPosition();
         Vector3D d4   = pp4h.subtract(pm4h);
         Vector3D d3   = pp3h.subtract(pm3h);
         Vector3D d2   = pp2h.subtract(pm2h);

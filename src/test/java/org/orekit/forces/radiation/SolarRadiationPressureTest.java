@@ -77,7 +77,7 @@ public class SolarRadiationPressureTest {
         int count=0;
 
         for(int t=1;t<3*period;t+=1000) {
-            currentDate = new AbsoluteDate(date , t);
+            currentDate = date.shiftedBy(t);
             try {
 
                 double ratio = SRP.getLightningRatio(k.propagate(currentDate).getPVCoordinates().getPosition(),
@@ -134,7 +134,7 @@ public class SolarRadiationPressureTest {
 
         // Step Handler
         calc.setMasterMode(Math.floor(period), new SolarStepHandler());
-        AbsoluteDate finalDate = new AbsoluteDate(date, 10 * period);
+        AbsoluteDate finalDate = date.shiftedBy(10 * period);
         calc.setInitialState(new SpacecraftState(orbit, 1500.0));
         calc.propagate(finalDate);
         Assert.assertTrue(calc.getCalls() < 7100);

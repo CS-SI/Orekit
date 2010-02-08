@@ -50,11 +50,10 @@ public class DetectorTest {
 
         Propagator propagator = new KeplerianPropagator(orbit);
         double stepSize = 60.0;
-        OutOfOrderChecker detector = new OutOfOrderChecker(new AbsoluteDate(date, 5.25 * stepSize),
-                                                           stepSize);
+        OutOfOrderChecker detector = new OutOfOrderChecker(date.shiftedBy(5.25 * stepSize), stepSize);
         propagator.addEventDetector(detector);
         propagator.setMasterMode(stepSize, detector);
-        propagator.propagate(new AbsoluteDate(date, 10 * stepSize));
+        propagator.propagate(date.shiftedBy(10 * stepSize));
         Assert.assertTrue(detector.outOfOrderCallDetected());
 
     }

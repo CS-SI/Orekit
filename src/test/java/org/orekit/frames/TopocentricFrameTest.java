@@ -257,13 +257,13 @@ public class TopocentricFrameTest {
         KeplerianPropagator extrapolator = new KeplerianPropagator(orbit);
         
         // Extrapolate satellite position a short while after reference date
-        AbsoluteDate dateP = new AbsoluteDate(date, dt);
+        AbsoluteDate dateP = date.shiftedBy(dt);
         Transform j2000ToItrfP = FramesFactory.getEME2000().getTransformTo(earthSpheric.getBodyFrame(), dateP);
         SpacecraftState orbitP = extrapolator.propagate(dateP);
         Vector3D satPointGeoP = j2000ToItrfP.transformPVCoordinates(orbitP.getPVCoordinates()).getPosition();
         
         // Retropolate satellite position a short while before reference date
-        AbsoluteDate dateM = new AbsoluteDate(date, -dt);
+        AbsoluteDate dateM = date.shiftedBy(-dt);
         Transform j2000ToItrfM = FramesFactory.getEME2000().getTransformTo(earthSpheric.getBodyFrame(), dateM);
         SpacecraftState orbitM = extrapolator.propagate(dateM);
         Vector3D satPointGeoM = j2000ToItrfM.transformPVCoordinates(orbitM.getPVCoordinates()).getPosition();

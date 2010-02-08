@@ -32,7 +32,7 @@ public class TCGScaleTest {
         Assert.assertEquals("TCG", scale.toString());
         final double dtTT = 1e6;
         final AbsoluteDate t1 = AbsoluteDate.J2000_EPOCH;
-        final AbsoluteDate t2 = new AbsoluteDate(t1, dtTT);
+        final AbsoluteDate t2 = t1.shiftedBy(dtTT);
         final double dtTCG = dtTT + scale.offsetFromTAI(t2) - scale.offsetFromTAI(t1);
         Assert.assertEquals(1 - 6.969290134e-10, dtTT / dtTCG, 1.0e-15);
     }
@@ -41,7 +41,7 @@ public class TCGScaleTest {
     public void testSymmetry() {
         TimeScale scale = TimeScalesFactory.getTCG();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
-            AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
+            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * 86400);
             double dt1 = scale.offsetFromTAI(date);
             DateTimeComponents components = date.getComponents(scale);
             double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());

@@ -33,7 +33,7 @@ public class AttitudeTest {
                                          Vector3D.ZERO);
         Assert.assertEquals(Vector3D.ZERO, attitude.getSpin());
         double dt = 10.0;
-        Attitude shifted = attitude.shift(dt);
+        Attitude shifted = attitude.shiftedBy(dt);
         Assert.assertEquals(Vector3D.ZERO, shifted.getSpin());
         Assert.assertEquals(attitude.getRotation(), shifted.getRotation());
     }
@@ -47,7 +47,7 @@ public class AttitudeTest {
         Assert.assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-10);
         double dt = 10.0;
         double alpha = rate * dt;
-        Attitude shifted = attitude.shift(dt);
+        Attitude shifted = attitude.shiftedBy(dt);
         Assert.assertEquals(rate, shifted.getSpin().getNorm(), 1.0e-10);
         Assert.assertEquals(alpha, Rotation.distance(attitude.getRotation(), shifted.getRotation()), 1.0e-10);
 
@@ -68,7 +68,7 @@ public class AttitudeTest {
                                        new Vector3D(rate, Vector3D.PLUS_K));
         Assert.assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-10);
         double dt = 10.0;
-        Attitude shifted = attitude.shift(dt);
+        Attitude shifted = attitude.shiftedBy(dt);
         Assert.assertEquals(rate, shifted.getSpin().getNorm(), 1.0e-10);
         Assert.assertEquals(rate * dt, Rotation.distance(attitude.getRotation(), shifted.getRotation()), 1.0e-10);
 

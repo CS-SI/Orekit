@@ -16,7 +16,7 @@ public class TDBScaleTest {
     @Test
     public void testDate5000000() {
         TimeScale scale = TimeScalesFactory.getTDB();
-        AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 5000000);
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(5000000);
         Assert.assertEquals(32.185364155950634549, scale.offsetFromTAI(date), 1.0e-13);
     }
     
@@ -24,7 +24,7 @@ public class TDBScaleTest {
     public void testToTAI5000000() {
         TimeScale scale = TimeScalesFactory.getTDB();
         AbsoluteDate date = new AbsoluteDate(2000, 2, 28, 8, 53, 20.001364155950634549, scale);
-        double dt = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 5000000).durationFrom(date);
+        double dt = AbsoluteDate.J2000_EPOCH.shiftedBy(5000000).durationFrom(date);
         Assert.assertTrue(Math.abs(dt) < 1.0e-13);
     }
     

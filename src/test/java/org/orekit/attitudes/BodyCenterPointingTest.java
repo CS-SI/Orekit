@@ -112,9 +112,9 @@ public class BodyCenterPointingTest {
         Propagator propagator = new KeplerianPropagator(circ, earthCenterAttitudeLaw);
 
         double h = 0.01;
-        SpacecraftState sMinus = propagator.propagate(new AbsoluteDate(date, -h));
+        SpacecraftState sMinus = propagator.propagate(date.shiftedBy(-h));
         SpacecraftState s0     = propagator.propagate(date);
-        SpacecraftState sPlus  = propagator.propagate(new AbsoluteDate(date,  h));
+        SpacecraftState sPlus  = propagator.propagate(date.shiftedBy(h));
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Vector3D reference = Attitude.estimateSpin(sMinus.getAttitude().getRotation(),

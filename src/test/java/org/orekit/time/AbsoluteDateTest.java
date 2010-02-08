@@ -58,9 +58,9 @@ public class AbsoluteDateTest {
     public void testOutput() {
         TimeScale tt = TimeScalesFactory.getTT();
         Assert.assertEquals("1950-01-01T01:01:01.000",
-                     new AbsoluteDate(AbsoluteDate.FIFTIES_EPOCH, 3661.0).toString(tt));
+                            AbsoluteDate.FIFTIES_EPOCH.shiftedBy(3661.0).toString(tt));
         Assert.assertEquals("2000-01-01T13:01:01.000",
-                     new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 3661.0).toString(tt));
+                            AbsoluteDate.J2000_EPOCH.shiftedBy(3661.0).toString(tt));
     }
 
     @Test
@@ -162,7 +162,7 @@ public class AbsoluteDateTest {
         AbsoluteDate leapEnd   = new AbsoluteDate(1977,  1,  1,  0,  0, 16, tai);
         for (int i = -10; i < 10; ++i) {
             final double dt = 1.1 * (2 * i - 1);
-            AbsoluteDate d1 = new AbsoluteDate(leapStart, dt);
+            AbsoluteDate d1 = leapStart.shiftedBy(dt);
             AbsoluteDate d2 = new AbsoluteDate(leapStart, dt, tai);
             AbsoluteDate d3 = new AbsoluteDate(leapStart, dt, utc);
             AbsoluteDate d4 = new AbsoluteDate(leapEnd,   dt, tai);
@@ -186,7 +186,7 @@ public class AbsoluteDateTest {
             final double dt = 1.1 * (2 * i - 1);
             Assert.assertEquals(dt, new AbsoluteDate(leapStart, dt, utc).offsetFrom(leapStart, utc), 1.0e-10);
             Assert.assertEquals(dt, new AbsoluteDate(leapStart, dt, tai).offsetFrom(leapStart, tai), 1.0e-10);
-            Assert.assertEquals(dt, new AbsoluteDate(leapStart, dt).durationFrom(leapStart), 1.0e-10);
+            Assert.assertEquals(dt, leapStart.shiftedBy(dt).durationFrom(leapStart), 1.0e-10);
         }
     }
 
@@ -196,11 +196,9 @@ public class AbsoluteDateTest {
             new AbsoluteDate(new DateComponents(2006, 2, 25),
                              new TimeComponents(17, 10, 34),
                              utc);
-        AbsoluteDate d2 =
-            new AbsoluteDate(new AbsoluteDate(new DateComponents(2006, 2, 25),
-                                              new TimeComponents(17, 10, 0),
-                                              utc),
-                             34);
+        AbsoluteDate d2 = new AbsoluteDate(new DateComponents(2006, 2, 25),
+                                           new TimeComponents(17, 10, 0),
+                                           utc).shiftedBy(34);
         Assert.assertTrue(d1.equals(d2));
         Assert.assertFalse(d1.equals(this));
     }
@@ -248,13 +246,11 @@ public class AbsoluteDateTest {
             new AbsoluteDate(new DateComponents(2006, 2, 25),
                              new TimeComponents(17, 10, 34),
                              utc);
-        AbsoluteDate d2 =
-            new AbsoluteDate(new AbsoluteDate(new DateComponents(2006, 2, 25),
-                                              new TimeComponents(17, 10, 0),
-                                              utc),
-                             34);
+        AbsoluteDate d2 = new AbsoluteDate(new DateComponents(2006, 2, 25),
+                                           new TimeComponents(17, 10, 0),
+                                           utc).shiftedBy(34);
         Assert.assertEquals(d1.hashCode(), d2.hashCode());
-        Assert.assertTrue(d1.hashCode() != new AbsoluteDate(d1, 1.0e-3).hashCode());
+        Assert.assertTrue(d1.hashCode() != d1.shiftedBy(1.0e-3).hashCode());
     }
 
     @Test

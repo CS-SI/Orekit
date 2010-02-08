@@ -79,7 +79,7 @@ public class ElevationDetectorTest {
         propagator.resetInitialState(propagator.propagate(startDate));
         propagator.addEventDetector(detector);
         propagator.setMasterMode(10.0, detector);
-        propagator.propagate(new AbsoluteDate(startDate, 86400));
+        propagator.propagate(startDate.shiftedBy(86400));
 
     }
 

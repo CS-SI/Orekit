@@ -88,14 +88,14 @@ public class SpacecraftStateTest {
             -1.7504437924285588e-4, 2.1388130994378013e-5, -1.3397843704372905e-8, 2.96320042273176e-12
         });
 
-        AbsoluteDate centerDate = new AbsoluteDate(date, 100.0);
+        AbsoluteDate centerDate = date.shiftedBy(100.0);
         SpacecraftState centerState = propagator.propagate(centerDate);
         double maxResidualP = 0;
         double maxResidualV = 0;
         double maxResidualA = 0;
         for (double dt = 0; dt < 900.0; dt += 5) {
-            SpacecraftState shifted = centerState.shift(dt);
-            SpacecraftState propagated = propagator.propagate(new AbsoluteDate(centerDate, dt));
+            SpacecraftState shifted = centerState.shiftedBy(dt);
+            SpacecraftState propagated = propagator.propagate(centerDate.shiftedBy(dt));
             PVCoordinates dpv = new PVCoordinates(propagated.getPVCoordinates(), shifted.getPVCoordinates());
             double residualP = pModel.value(dt) - dpv.getPosition().getNorm();
             double residualV = vModel.value(dt) - dpv.getVelocity().getNorm();

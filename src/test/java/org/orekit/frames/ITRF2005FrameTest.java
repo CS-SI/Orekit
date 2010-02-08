@@ -37,7 +37,7 @@ public class ITRF2005FrameTest {
         double minCorrection = Double.POSITIVE_INFINITY;
         double maxCorrection = Double.NEGATIVE_INFINITY;
         for (double dt = 0; dt < 3 * 86400; dt += 60) {
-            final AbsoluteDate date = new AbsoluteDate(date0, dt);
+            final AbsoluteDate date = date0.shiftedBy(dt);
             final Transform t = itrfWith.getTransformTo(itrfWithout, date);
             Assert.assertEquals(0, t.getTranslation().getNorm(), 1.0e-15);
             final double milliarcSeconds = Math.toDegrees(t.getRotation().getAngle()) * 3600000.0;

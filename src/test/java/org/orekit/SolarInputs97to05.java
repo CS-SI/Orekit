@@ -188,8 +188,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
                 (date.durationFrom(currentParam.date) < 86400 )) {
             return;
         }
-        LineParameters before =
-            new LineParameters(new AbsoluteDate(date, -86400), null, 0, 0, 0, 0, 0, 0);
+        LineParameters before = new LineParameters(date.shiftedBy(-86400), null, 0, 0, 0, 0, 0, 0);
 
         // search starting from entries a few steps before the target date
         SortedSet<TimeStamped> tailSet = data.tailSet(before);
@@ -199,8 +198,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
                 currentParam = (LineParameters) data.tailSet(date).first();
             }
         } else {
-            throw new OrekitException("unable to find data for date {0}",
-                                      date);
+            throw new OrekitException("unable to find data for date {0}", date);
         }
     }
 
@@ -288,7 +286,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
     }
 
     public AbsoluteDate getMaxDate() {
-        return new AbsoluteDate(lastDate, 86400);
+        return lastDate.shiftedBy(86400);
     }
 
     public AbsoluteDate getMinDate() {
@@ -349,7 +347,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
 
         for(int i=0; i<8; i++) {
             result += getThreeHourlyKP(date);
-            myDate = new AbsoluteDate(myDate, -3*3600);
+            myDate = myDate.shiftedBy(3 * 3600);
         }
 
         return result/8;

@@ -67,7 +67,7 @@ public class TabulatedEphemerisTest {
                                           ae, mu, c20, c30, c40, c50, c60);
         SpacecraftState[] tab = new SpacecraftState[nbIntervals+1];
         for (int j = 0; j<= nbIntervals; j++) {
-            AbsoluteDate current = new AbsoluteDate(initDate, (j * deltaT) / nbIntervals);
+            AbsoluteDate current = initDate.shiftedBy((j * deltaT) / nbIntervals);
             tab[j] = eck.propagate(current);
         }
 
@@ -76,9 +76,9 @@ public class TabulatedEphemerisTest {
         Assert.assertEquals(0.0, te.getMaxDate().durationFrom(finalDate), 1.0e-9);
         Assert.assertEquals(0.0, te.getMinDate().durationFrom(initDate), 1.0e-9);
 
-        checkEphemerides(eck, te, new AbsoluteDate(initDate, 3600),  1.0e-9, true);
-        checkEphemerides(eck, te, new AbsoluteDate(initDate, 3660), 30, false);
-        checkEphemerides(eck, te, new AbsoluteDate(initDate, 3720),  1.0e-9, true);
+        checkEphemerides(eck, te, initDate.shiftedBy(3600),  1.0e-9, true);
+        checkEphemerides(eck, te, initDate.shiftedBy(3660), 30, false);
+        checkEphemerides(eck, te, initDate.shiftedBy(3720),  1.0e-9, true);
 
     }
 

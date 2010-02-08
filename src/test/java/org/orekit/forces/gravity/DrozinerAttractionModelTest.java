@@ -86,7 +86,7 @@ public class DrozinerAttractionModelTest {
         // let the step handler perform the test
         propagator.setMasterMode(86400, new SpotStepHandler());
         propagator.setInitialState(new SpacecraftState(orbit));
-        propagator.propagate(new AbsoluteDate(date, 7 * 86400));
+        propagator.propagate(date.shiftedBy(7 * 86400));
         Assert.assertTrue(propagator.getCalls() < 9200);
 
     }
@@ -132,7 +132,7 @@ public class DrozinerAttractionModelTest {
     OrekitException, DerivativeException, IntegratorException {
 
         //  Definition of initial conditions with position and velocity
-        AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Vector3D position = new Vector3D(3220103., 69623., 6449822.);
         Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
 
@@ -159,7 +159,7 @@ public class DrozinerAttractionModelTest {
         propagator.setMasterMode(20,
                                  new EckStepHandler(initialOrbit, ae, mu, c20, c30, c40, c50, c60));
         propagator.setInitialState(new SpacecraftState(initialOrbit));
-        propagator.propagate(new AbsoluteDate(date, 50000));
+        propagator.propagate(date.shiftedBy(50000));
         Assert.assertTrue(propagator.getCalls() < 1300);
 
     }
@@ -222,13 +222,13 @@ public class DrozinerAttractionModelTest {
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(100));
         propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, ae, mu, C, S));
         propagator.setInitialState(new SpacecraftState(orbit));
-        SpacecraftState cunnOrb = propagator.propagate(new AbsoluteDate(date, 86400));
+        SpacecraftState cunnOrb = propagator.propagate(date.shiftedBy(86400));
 
         propagator.removeForceModels();
         propagator.addForceModel(new DrozinerAttractionModel(ITRF2005, ae, mu, C, S));
 
         propagator.setInitialState(new SpacecraftState(orbit));
-        SpacecraftState drozOrb = propagator.propagate(new AbsoluteDate(date,  86400));
+        SpacecraftState drozOrb = propagator.propagate(date.shiftedBy(86400));
 
         Vector3D dif = cunnOrb.getPVCoordinates().getPosition().subtract(drozOrb.getPVCoordinates().getPosition());
         Assert.assertEquals(0, dif.getNorm(), 1.0e-6);

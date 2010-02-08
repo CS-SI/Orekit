@@ -61,13 +61,13 @@ public class ConstantThrustManeuverTest {
             new ConstantThrustManeuver(date, 10.0, 400.0, 300.0, Vector3D.PLUS_K);
         EventDetector[] switches = maneuver.getEventsDetectors();
 
-        Orbit o1 = dummyOrbit(new AbsoluteDate(date, - 1.0));
+        Orbit o1 = dummyOrbit(date.shiftedBy(- 1.0));
         Assert.assertTrue(switches[0].g(new SpacecraftState(o1)) < 0);
-        Orbit o2 = dummyOrbit(new AbsoluteDate(date,   1.0));
+        Orbit o2 = dummyOrbit(date.shiftedBy(  1.0));
         Assert.assertTrue(switches[0].g(new SpacecraftState(o2)) > 0);
-        Orbit o3 = dummyOrbit(new AbsoluteDate(date,   9.0));
+        Orbit o3 = dummyOrbit(date.shiftedBy(  9.0));
         Assert.assertTrue(switches[1].g(new SpacecraftState(o3)) < 0);
-        Orbit o4 = dummyOrbit(new AbsoluteDate(date,  11.0));
+        Orbit o4 = dummyOrbit(date.shiftedBy( 11.0));
         Assert.assertTrue(switches[1].g(new SpacecraftState(o4)) > 0);
     }
 
@@ -80,13 +80,13 @@ public class ConstantThrustManeuverTest {
             new ConstantThrustManeuver(date, -10.0, 400.0, 300.0, Vector3D.PLUS_K);
         EventDetector[] switches = maneuver.getEventsDetectors();
 
-        Orbit o1 = dummyOrbit(new AbsoluteDate(date, -11.0));
+        Orbit o1 = dummyOrbit(date.shiftedBy(-11.0));
         Assert.assertTrue(switches[0].g(new SpacecraftState(o1)) < 0);
-        Orbit o2 = dummyOrbit(new AbsoluteDate(date,  -9.0));
+        Orbit o2 = dummyOrbit(date.shiftedBy( -9.0));
         Assert.assertTrue(switches[0].g(new SpacecraftState(o2)) > 0);
-        Orbit o3 = dummyOrbit(new AbsoluteDate(date,  -1.0));
+        Orbit o3 = dummyOrbit(date.shiftedBy( -1.0));
         Assert.assertTrue(switches[1].g(new SpacecraftState(o3)) < 0);
-        Orbit o4 = dummyOrbit(new AbsoluteDate(date,   1.0));
+        Orbit o4 = dummyOrbit(date.shiftedBy(  1.0));
         Assert.assertTrue(switches[1].g(new SpacecraftState(o4)) > 0);
     }
 
@@ -135,7 +135,7 @@ public class ConstantThrustManeuverTest {
         propagator.setInitialState(initialState);
         propagator.setAttitudeLaw(law);
         propagator.addForceModel(maneuver);
-        final SpacecraftState finalorb = propagator.propagate(new AbsoluteDate(fireDate, 3800));
+        final SpacecraftState finalorb = propagator.propagate(fireDate.shiftedBy(3800));
 
         Assert.assertEquals(2007.88245442614, finalorb.getMass(), 1e-10);
         Assert.assertEquals(2.6872, Math.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), Math.PI)), 1e-4);

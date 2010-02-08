@@ -247,9 +247,9 @@ public class NadirPointingTest {
         Propagator propagator = new KeplerianPropagator(orbit, law, mu, 2500.0);
 
         double h = 0.1;
-        SpacecraftState sMinus = propagator.propagate(new AbsoluteDate(date, -h));
+        SpacecraftState sMinus = propagator.propagate(date.shiftedBy(-h));
         SpacecraftState s0     = propagator.propagate(date);
-        SpacecraftState sPlus  = propagator.propagate(new AbsoluteDate(date,  h));
+        SpacecraftState sPlus  = propagator.propagate(date.shiftedBy(h));
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Rotation rM = sMinus.getAttitude().getRotation();

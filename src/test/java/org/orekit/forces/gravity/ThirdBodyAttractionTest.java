@@ -69,7 +69,7 @@ public class ThirdBodyAttractionTest {
                 Math.cos(3.9820426e-7*t) + 17.6083e-5 * Math.sin(3.9820426e-7*t);
             }
         });
-        AbsoluteDate finalDate = new AbsoluteDate(date, 365 * period);
+        AbsoluteDate finalDate = date.shiftedBy(365 * period);
         calc.setInitialState(new SpacecraftState(orbit));
         calc.propagate(finalDate);
 
@@ -108,7 +108,7 @@ public class ThirdBodyAttractionTest {
                        1.00581e-06 * Math.sin(5.30637e-05 * t);
             }
         });
-        AbsoluteDate finalDate = new AbsoluteDate(date, 31 * period);
+        AbsoluteDate finalDate = date.shiftedBy(31 * period);
         calc.setInitialState(new SpacecraftState(orbit));
         calc.propagate(finalDate);
 

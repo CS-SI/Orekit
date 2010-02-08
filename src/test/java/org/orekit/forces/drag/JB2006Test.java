@@ -225,7 +225,7 @@ public class JB2006Test {
 
         GeodeticPoint point;
         for (int i = 0; i<367; i++) {
-            date = new AbsoluteDate(date, 86400);
+            date = date.shiftedBy(86400);
             point = new GeodeticPoint(Math.toRadians(40), 0, 300*1000);
             pos = earth.transform(point);
             roJb = jb.getDensity(date, pos, FramesFactory.getEME2000());
@@ -255,7 +255,7 @@ public class JB2006Test {
         Assert.assertEquals(9 , in.getAp(date),0);
 
 
-        date = new AbsoluteDate(date, 11*3600);
+        date = date.shiftedBy(11 * 3600);
         Assert.assertEquals(6 , in.getAp(date),0);
 
         date = new AbsoluteDate(new DateComponents(1998, 02, 02),
@@ -270,7 +270,7 @@ public class JB2006Test {
         Assert.assertEquals(81.3, in.getXM10(date),0);
         Assert.assertEquals(92.0, in.getXM10B(date),0);
         Assert.assertEquals(0 , in.getAp(date),0);
-        date = new AbsoluteDate(date, 6*3600-1);
+        date = date.shiftedBy(6 * 3600 - 1);
         Assert.assertEquals(3 , in.getAp(date),0);
     }
 

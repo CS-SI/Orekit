@@ -43,8 +43,8 @@ public class UTCScaleTest {
     public void testLeap2006() {
         AbsoluteDate leapDate =
             new AbsoluteDate(new DateComponents(2006, 01, 01), TimeComponents.H00, utc);
-        AbsoluteDate d1 = new AbsoluteDate(leapDate, -1);
-        AbsoluteDate d2 = new AbsoluteDate(leapDate, +1);
+        AbsoluteDate d1 = leapDate.shiftedBy(-1);
+        AbsoluteDate d2 = leapDate.shiftedBy(+1);
         Assert.assertEquals(2.0, d2.durationFrom(d1), 1.0e-10);
 
         AbsoluteDate d3 = new AbsoluteDate(new DateComponents(2005, 12, 31),
@@ -62,21 +62,21 @@ public class UTCScaleTest {
                                           new TimeComponents(23, 59, 59),
                                           utc);
         Assert.assertEquals("1983-06-30T23:59:59.000", d.toString(utc));
-        d = new AbsoluteDate(d, 0.251);
+        d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-06-30T23:59:59.251", d.toString(utc));
-        d = new AbsoluteDate(d, 0.251);
+        d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-06-30T23:59:59.502", d.toString(utc));
-        d = new AbsoluteDate(d, 0.251);
+        d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-06-30T23:59:59.753", d.toString(utc));
-        d = new AbsoluteDate(d, 0.251);
+        d = d.shiftedBy( 0.251);
         Assert.assertEquals("1983-06-30T23:59:60.004", d.toString(utc));
-        d = new AbsoluteDate(d, 0.251);
+        d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-06-30T23:59:60.255", d.toString(utc));
-        d = new AbsoluteDate(d, 0.251);
+        d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-06-30T23:59:60.506", d.toString(utc));
-        d = new AbsoluteDate(d, 0.251);
+        d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-06-30T23:59:60.757", d.toString(utc));
-        d = new AbsoluteDate(d, 0.251);
+        d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-07-01T00:00:00.008", d.toString(utc));
     }
 
@@ -84,7 +84,7 @@ public class UTCScaleTest {
     public void testSymmetry() {
         TimeScale scale = TimeScalesFactory.getGPS();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
-            AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt * 86400);
+            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * 86400);
             double dt1 = scale.offsetFromTAI(date);
             DateTimeComponents components = date.getComponents(scale);
             double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());

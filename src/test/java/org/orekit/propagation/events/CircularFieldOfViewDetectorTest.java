@@ -61,7 +61,7 @@ public class CircularFieldOfViewDetectorTest {
         propagator.addEventDetector(sunVisi);
 
         // Extrapolate from the initial to the final date
-        propagator.propagate(new AbsoluteDate(initDate, 6000.));
+        propagator.propagate(initDate.shiftedBy(6000.));
 
     }
     

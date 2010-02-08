@@ -48,8 +48,7 @@ public class InertialAttitudeTest {
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
         Attitude initial = propagator.propagate(t0).getAttitude();
         for (double t = 0; t < 10000.0; t += 100) {
-            Attitude attitude =
-                propagator.propagate(new AbsoluteDate(t0, t)).getAttitude();
+            Attitude attitude = propagator.propagate(t0.shiftedBy(t)).getAttitude();
             Rotation evolution = attitude.getRotation().applyTo(initial.getRotation().revert());
             Assert.assertEquals(0, evolution.getAngle(), 1.0e-10);
             Assert.assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
@@ -62,8 +61,7 @@ public class InertialAttitudeTest {
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
         Attitude initial = propagator.propagate(t0).getAttitude();
         for (double t = 0; t < 10000.0; t += 100) {
-            Attitude attitude =
-                propagator.propagate(new AbsoluteDate(t0, t)).getAttitude();
+            Attitude attitude = propagator.propagate(t0.shiftedBy(t)).getAttitude();
             Rotation evolution = attitude.getRotation().applyTo(initial.getRotation().revert());
             Assert.assertEquals(0, evolution.getAngle(), 1.0e-10);
             Assert.assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
@@ -88,9 +86,9 @@ public class InertialAttitudeTest {
         Propagator propagator = new KeplerianPropagator(orbit, law);
 
         double h = 100.0;
-        SpacecraftState sMinus = propagator.propagate(new AbsoluteDate(date, -h));
+        SpacecraftState sMinus = propagator.propagate(date.shiftedBy(-h));
         SpacecraftState s0     = propagator.propagate(date);
-        SpacecraftState sPlus  = propagator.propagate(new AbsoluteDate(date,  h));
+        SpacecraftState sPlus  = propagator.propagate(date.shiftedBy(h));
 
         // compute spin axis using finite differences
         Rotation rMinus = sMinus.getAttitude().getRotation();

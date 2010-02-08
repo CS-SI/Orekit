@@ -112,7 +112,7 @@ public class TLESeriesTest {
 
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(series.getFirst());
         for (double dt = 0; dt < 3 * 86400; dt += 600) {
-            AbsoluteDate date = new AbsoluteDate(t0, dt);
+            AbsoluteDate date = t0.shiftedBy(dt);
             PVCoordinates delta = new PVCoordinates(propagator.getPVCoordinates(date), series.getPVCoordinates(date));
             Assert.assertEquals(errorModel.value(dt), delta.getPosition().getNorm(), 1500.0);
         }
@@ -129,7 +129,7 @@ public class TLESeriesTest {
 
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(series.getLast());
         for (double dt = 3 * 86400; dt >= 0; dt -= 600) {
-            AbsoluteDate date = new AbsoluteDate(t0, dt);
+            AbsoluteDate date = t0.shiftedBy(dt);
             PVCoordinates delta = new PVCoordinates(propagator.getPVCoordinates(date), series.getPVCoordinates(date));
             Assert.assertEquals(0, delta.getPosition().getNorm(), 660.0);
         }

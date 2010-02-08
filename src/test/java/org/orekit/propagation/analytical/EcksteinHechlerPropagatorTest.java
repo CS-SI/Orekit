@@ -60,7 +60,7 @@ public class EcksteinHechlerPropagatorTest {
         Vector3D position = new Vector3D(3220103., 69623., 6449822.);
         Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
 
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
+        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                   FramesFactory.getEME2000(), initDate, mu);
 
@@ -73,7 +73,7 @@ public class EcksteinHechlerPropagatorTest {
         // Extrapolation at the initial date
         // ---------------------------------
         double delta_t = 0.0; // extrapolation duration in seconds
-        AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
+        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
         SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
 
@@ -104,7 +104,7 @@ public class EcksteinHechlerPropagatorTest {
 
         // Definition of initial conditions with keplerian parameters
         // -----------------------------------------------------------
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
+        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
                                                 6.2, KeplerianOrbit.TRUE_ANOMALY, 
                                                 FramesFactory.getEME2000(), initDate, mu);
@@ -118,7 +118,7 @@ public class EcksteinHechlerPropagatorTest {
         // Extrapolation at the initial date
         // ---------------------------------
         double delta_t = 0.0; // extrapolation duration in seconds
-        AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
+        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
         SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
 
@@ -156,7 +156,7 @@ public class EcksteinHechlerPropagatorTest {
         Vector3D position = new Vector3D(3220103., 69623., 6449822.);
         Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
 
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
+        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                   FramesFactory.getEME2000(), initDate, mu);
 
@@ -182,7 +182,7 @@ public class EcksteinHechlerPropagatorTest {
         // Extrapolation at a final date different from initial date
         // ---------------------------------------------------------
         double delta_t = 100.0; // extrapolation duration in seconds
-        AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
+        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
         SpacecraftState finalOrbitAna = extrapolatorAna.propagate(extrapDate);
         SpacecraftState finalOrbitKep = extrapolatorKep.propagate(extrapDate);
@@ -222,7 +222,7 @@ public class EcksteinHechlerPropagatorTest {
         Vector3D position = new Vector3D(3220103., 69623., 6449822.);
         Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
 
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
+        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                   FramesFactory.getEME2000(), initDate, mu);
 
@@ -235,7 +235,7 @@ public class EcksteinHechlerPropagatorTest {
         // Extrapolation at a final date different from initial date
         // ---------------------------------------------------------
         double delta_t = 100000.0; // extrapolation duration in seconds
-        AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
+        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
         SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
 
@@ -301,7 +301,7 @@ public class EcksteinHechlerPropagatorTest {
     public void propagatedKeplerian() throws OrekitException {
         // Definition of initial conditions with keplerian parameters
         // -----------------------------------------------------------
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
+        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
                                               6.2, KeplerianOrbit.TRUE_ANOMALY, 
                                               FramesFactory.getEME2000(), initDate, mu);
@@ -315,7 +315,7 @@ public class EcksteinHechlerPropagatorTest {
         // Extrapolation at a final date different from initial date
         // ---------------------------------------------------------
         double delta_t = 100000.0; // extrapolation duration in seconds
-        AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
+        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
         SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
 
@@ -382,7 +382,7 @@ public class EcksteinHechlerPropagatorTest {
 
         // Comparison with a given extrapolated orbit
         // -----------------------------------------
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.FIFTIES_EPOCH, 12584. * 86400.);
+        AbsoluteDate initDate = AbsoluteDate.FIFTIES_EPOCH.shiftedBy(12584. * 86400.);
 
         double a = 7200000.;
         double exp = .9848e-4; // e * cos(pom)
@@ -411,7 +411,7 @@ public class EcksteinHechlerPropagatorTest {
         // ---------------------------------------------------------
         double delta_t = (12587. - 12584.) * 86400.; // extrapolation duration in
         // seconds
-        AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
+        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
         SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
         // the final orbit
@@ -458,7 +458,7 @@ public class EcksteinHechlerPropagatorTest {
         // Extrapolation at the initial date
         // ---------------------------------
         double delta_t = 0.0;
-        AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
+        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
         extrapolator.propagate(extrapDate);
     }
 
@@ -479,7 +479,7 @@ public class EcksteinHechlerPropagatorTest {
         // Extrapolation at the initial date
         // ---------------------------------
         double delta_t = 0.0;
-        AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
+        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
         extrapolator.propagate(extrapDate);
     }
 
@@ -490,7 +490,7 @@ public class EcksteinHechlerPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(hyperbolic, ae, mu, c20, c30, c40, c50, c60);
-        propagator.propagate(new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10.0));
+        propagator.propagate(AbsoluteDate.J2000_EPOCH.shiftedBy(10.0));
     }
 
     @Test(expected = PropagationException.class)
@@ -508,7 +508,7 @@ public class EcksteinHechlerPropagatorTest {
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, wrongLaw,
                                           ae, mu, c20, c30, c40, c50, c60);
-        propagator.propagate(new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10.0));
+        propagator.propagate(AbsoluteDate.J2000_EPOCH.shiftedBy(10.0));
     }
 
     @Test
@@ -521,7 +521,7 @@ public class EcksteinHechlerPropagatorTest {
         NodeDetector detector = new NodeDetector(orbit, FramesFactory.getITRF2005());
         Assert.assertTrue(FramesFactory.getITRF2005() == detector.getFrame());
         propagator.addEventDetector(detector);
-        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF2005());
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 3500.0);
@@ -547,7 +547,7 @@ public class EcksteinHechlerPropagatorTest {
                 return CONTINUE;
             }
         });
-        AbsoluteDate farTarget = new AbsoluteDate(orbit.getDate(), 10000.0);
+        AbsoluteDate farTarget = orbit.getDate().shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         Assert.assertEquals(0.0, Math.abs(farTarget.durationFrom(propagated.getDate())), 1.0e-3);
     }
@@ -560,7 +560,7 @@ public class EcksteinHechlerPropagatorTest {
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, ae, mu, c20, c30, c40, c50, c60);
         propagator.addEventDetector(new ApsideDetector(orbit));
-        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF2005());
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 3000.0);
@@ -575,9 +575,9 @@ public class EcksteinHechlerPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, ae, mu, c20, c30, c40, c50, c60);
-        final AbsoluteDate stopDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 500.0);
+        final AbsoluteDate stopDate = AbsoluteDate.J2000_EPOCH.shiftedBy(500.0);
         propagator.addEventDetector(new DateDetector(stopDate));
-        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         Assert.assertEquals(0, stopDate.durationFrom(propagated.getDate()), 1.0e-10);
     }
@@ -601,7 +601,7 @@ public class EcksteinHechlerPropagatorTest {
                 previous = currentState.getDate();
             }
         });
-        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         propagator.propagate(farTarget);
     }
 
@@ -620,7 +620,7 @@ public class EcksteinHechlerPropagatorTest {
         Assert.assertEquals(0.09, detector.getElevation(), 1.0e-12);
         Assert.assertTrue(topo == detector.getTopocentricFrame());
         propagator.addEventDetector(detector);
-        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         final double elevation = topo.getElevation(propagated.getPVCoordinates().getPosition(),
                                                    propagated.getFrame(),

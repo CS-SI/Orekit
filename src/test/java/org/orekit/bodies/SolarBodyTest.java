@@ -189,9 +189,7 @@ public class SolarBodyTest {
         double duration = Math.min(50 * 86400, 0.01 * orbit.getKeplerianPeriod());
 
         double max = 0;
-        for (AbsoluteDate date = start;
-             date.durationFrom(start) < duration;
-             date = new AbsoluteDate(date, duration / 100)) {
+        for (AbsoluteDate date = start; date.durationFrom(start) < duration; date = date.shiftedBy(duration / 100)) {
             PVCoordinates ephemPV = orbiting.getPVCoordinates(date, central.getFrame());
             PVCoordinates keplerPV = propagator.propagate(date).getPVCoordinates();
             Vector3D error = keplerPV.getPosition().subtract(ephemPV.getPosition());

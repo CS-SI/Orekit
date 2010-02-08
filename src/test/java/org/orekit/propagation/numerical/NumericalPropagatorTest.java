@@ -82,7 +82,7 @@ public class NumericalPropagatorTest {
         // Propagation of the initial at t + dt
         final double dt = 3200;
         final SpacecraftState finalState = 
-            propagator.propagate(new AbsoluteDate(initDate, dt));
+            propagator.propagate(initDate.shiftedBy(dt));
 
         // Check results
         final double n = Math.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
@@ -116,12 +116,12 @@ public class NumericalPropagatorTest {
             public void reset() {
             }
         });
-        propagator.propagate(new AbsoluteDate(initDate, -3600));
+        propagator.propagate(initDate.shiftedBy(-3600));
     }
 
     @Test
     public void testStopEvent() throws OrekitException {
-        final AbsoluteDate stopDate = new AbsoluteDate(initDate, 1000);
+        final AbsoluteDate stopDate = initDate.shiftedBy(1000);
         propagator.addEventDetector(new DateDetector(stopDate) {
             private static final long serialVersionUID = -5024861864672841095L;
             public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
@@ -133,14 +133,14 @@ public class NumericalPropagatorTest {
             }
         });
         Assert.assertFalse(gotHere);
-        final SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initDate, 3200));
+        final SpacecraftState finalState = propagator.propagate(initDate.shiftedBy(3200));
         Assert.assertTrue(gotHere);
         Assert.assertEquals(0, finalState.getDate().durationFrom(stopDate), 1.0e-10);
     }
 
     @Test
     public void testResetStateEvent() throws OrekitException {
-        final AbsoluteDate resetDate = new AbsoluteDate(initDate, 1000);
+        final AbsoluteDate resetDate = initDate.shiftedBy(1000);
         propagator.addEventDetector(new DateDetector(resetDate) {
             private static final long serialVersionUID = 6453983658076746705L;
             public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
@@ -152,14 +152,14 @@ public class NumericalPropagatorTest {
             }
         });
         Assert.assertFalse(gotHere);
-        final SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initDate, 3200));
+        final SpacecraftState finalState = propagator.propagate(initDate.shiftedBy(3200));
         Assert.assertTrue(gotHere);
         Assert.assertEquals(initialState.getMass() - 200, finalState.getMass(), 1.0e-10);
     }
 
     @Test
     public void testResetDerivativesEvent() throws OrekitException {
-        final AbsoluteDate resetDate = new AbsoluteDate(initDate, 1000);
+        final AbsoluteDate resetDate = initDate.shiftedBy(1000);
         propagator.addEventDetector(new DateDetector(resetDate) {
             private static final long serialVersionUID = 4217482936692909475L;
             public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
@@ -170,7 +170,7 @@ public class NumericalPropagatorTest {
         final double dt = 3200;
         Assert.assertFalse(gotHere);
         final SpacecraftState finalState = 
-            propagator.propagate(new AbsoluteDate(initDate, dt));
+            propagator.propagate(initDate.shiftedBy(dt));
         Assert.assertTrue(gotHere);
         final double n = Math.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
         Assert.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
@@ -183,7 +183,7 @@ public class NumericalPropagatorTest {
 
     @Test
     public void testContinueEvent() throws OrekitException {
-        final AbsoluteDate resetDate = new AbsoluteDate(initDate, 1000);
+        final AbsoluteDate resetDate = initDate.shiftedBy(1000);
         propagator.addEventDetector(new DateDetector(resetDate) {
             private static final long serialVersionUID = 5959523015368708867L;
             public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
@@ -194,7 +194,7 @@ public class NumericalPropagatorTest {
         final double dt = 3200;
         Assert.assertFalse(gotHere);
         final SpacecraftState finalState = 
-            propagator.propagate(new AbsoluteDate(initDate, dt));
+            propagator.propagate(initDate.shiftedBy(dt));
         Assert.assertTrue(gotHere);
         final double n = Math.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
         Assert.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);

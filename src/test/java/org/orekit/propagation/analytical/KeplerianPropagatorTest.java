@@ -64,7 +64,7 @@ public class KeplerianPropagatorTest {
         Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
         Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
 
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
+        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                   FramesFactory.getEME2000(), initDate, mu);
 
@@ -75,7 +75,7 @@ public class KeplerianPropagatorTest {
         // Extrapolation at the initial date
         // ---------------------------------
         double delta_t = 0.0; // extrapolation duration in seconds
-        AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
+        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
         SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
 
@@ -98,7 +98,7 @@ public class KeplerianPropagatorTest {
     public void sameDateKeplerian() throws OrekitException {
         // Definition of initial conditions with keplerian parameters
         //-----------------------------------------------------------
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
+        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
                                                 6.2, KeplerianOrbit.TRUE_ANOMALY, 
                                                 FramesFactory.getEME2000(), initDate, mu);
@@ -110,7 +110,7 @@ public class KeplerianPropagatorTest {
         // Extrapolation at the initial date
         // ---------------------------------
         double delta_t = 0.0; // extrapolation duration in seconds
-        AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
+        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
         SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
 
@@ -138,7 +138,7 @@ public class KeplerianPropagatorTest {
         Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
         double mu = 3.9860047e14;
 
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
+        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                   FramesFactory.getEME2000(), initDate, mu);
 
@@ -149,7 +149,7 @@ public class KeplerianPropagatorTest {
         // Extrapolation at a final date different from initial date
         // ---------------------------------------------------------
         double delta_t = 100000.0; // extrapolation duration in seconds
-        AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
+        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
         SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
 
@@ -160,8 +160,8 @@ public class KeplerianPropagatorTest {
         double n = Math.sqrt(finalOrbit.getMu()/Math.pow(a, 3));
 
         Assert.assertEquals(n * delta_t,
-                     finalOrbit.getLM() - initialOrbit.getLM(),
-                     Utils.epsilonAngle);
+                            finalOrbit.getLM() - initialOrbit.getLM(),
+                            Utils.epsilonAngle);
 
         // computation of M final orbit
         double LM = finalOrbit.getLE()
@@ -227,7 +227,7 @@ public class KeplerianPropagatorTest {
 
         // Definition of initial conditions with keplerian parameters
         //-----------------------------------------------------------
-        AbsoluteDate initDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 584.);
+        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
                                                 6.2, KeplerianOrbit.TRUE_ANOMALY, 
                                                 FramesFactory.getEME2000(), initDate, mu);
@@ -239,7 +239,7 @@ public class KeplerianPropagatorTest {
         // Extrapolation at a final date different from initial date
         // ---------------------------------------------------------
         double delta_t = 100000.0; // extrapolation duration in seconds
-        AbsoluteDate extrapDate = new AbsoluteDate(initDate, delta_t);
+        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
         SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
         Assert.assertEquals(6092.3362422560844633, finalOrbit.getKeplerianPeriod(), 1.0e-12);
@@ -325,7 +325,7 @@ public class KeplerianPropagatorTest {
             }
         };
         KeplerianPropagator propagator = new KeplerianPropagator(orbit, wrongLaw);
-        propagator.propagate(new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10.0));
+        propagator.propagate(AbsoluteDate.J2000_EPOCH.shiftedBy(10.0));
     }
 
     @Test(expected = PropagationException.class)
@@ -349,7 +349,7 @@ public class KeplerianPropagatorTest {
             }
         });
 
-        propagator.propagate(new AbsoluteDate(orbit.getDate(), -3600));
+        propagator.propagate(orbit.getDate().shiftedBy(-3600));
 
     }
 
@@ -360,7 +360,7 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         propagator.addEventDetector(new NodeDetector(orbit, FramesFactory.getITRF2005()));
-        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF2005());
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 3500.0);
@@ -381,7 +381,7 @@ public class KeplerianPropagatorTest {
                 return CONTINUE;
             }
         });
-        AbsoluteDate farTarget = new AbsoluteDate(orbit.getDate(), 10000.0);
+        AbsoluteDate farTarget = orbit.getDate().shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         Assert.assertEquals(0.0, Math.abs(farTarget.durationFrom(propagated.getDate())), 1.0e-3);
     }
@@ -393,7 +393,7 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         propagator.addEventDetector(new ApsideDetector(orbit));
-        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF2005());
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 3000.0);
@@ -414,7 +414,7 @@ public class KeplerianPropagatorTest {
                                  1500000, bodyShape);
         Assert.assertEquals(1500000, detector.getAltitude(), 1.0e-12);
         propagator.addEventDetector(detector);
-        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 5400.0);
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) < 5500.0);
@@ -429,9 +429,9 @@ public class KeplerianPropagatorTest {
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
-        final AbsoluteDate stopDate = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 500.0);
+        final AbsoluteDate stopDate = AbsoluteDate.J2000_EPOCH.shiftedBy(500.0);
         propagator.addEventDetector(new DateDetector(stopDate));
-        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         Assert.assertEquals(0, stopDate.durationFrom(propagated.getDate()), 1.0e-10);
     }
@@ -447,7 +447,7 @@ public class KeplerianPropagatorTest {
         final TopocentricFrame topo =
             new TopocentricFrame(earthShape, new GeodeticPoint(0.389, -2.962, 0), null);
         propagator.addEventDetector(new ElevationDetector(60, 0.09, topo));
-        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         final double elevation = topo.getElevation(propagated.getPVCoordinates().getPosition(),
                                                    propagated.getFrame(),
@@ -477,7 +477,7 @@ public class KeplerianPropagatorTest {
                 previous = currentState.getDate();
             }
         });
-        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         propagator.propagate(farTarget);
     }
 
@@ -504,7 +504,7 @@ public class KeplerianPropagatorTest {
             public void reset() {
             }
         });
-        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         propagator.propagate(farTarget);
     }
 
@@ -515,7 +515,7 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         propagator.setEphemerisMode();
-        AbsoluteDate farTarget = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 10000.0);
+        AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         propagator.setEphemerisMode();
         propagator.propagate(farTarget);
         BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
