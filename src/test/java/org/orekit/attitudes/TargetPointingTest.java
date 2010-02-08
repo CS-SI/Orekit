@@ -59,6 +59,7 @@ public class TargetPointingTest {
 
     /** Test if both constructors are equivalent
      */
+    @Test
     public void testConstructors() throws OrekitException {
 
         //  Satellite position
@@ -75,13 +76,13 @@ public class TargetPointingTest {
                 
         // Target definition as a geodetic point AND as a position/velocity vector
         GeodeticPoint geoTargetITRF2005C = new GeodeticPoint(Math.toRadians(43.36), Math.toRadians(1.26), 600.);
-        PVCoordinates pvTargetITRF2005C = new PVCoordinates(earthShape.transform(geoTargetITRF2005C), Vector3D.ZERO);
+        Vector3D pTargetITRF2005C = earthShape.transform(geoTargetITRF2005C);
             
         // Attitude law definition from geodetic point target 
         TargetPointing geoTargetAttitudeLaw = new TargetPointing(geoTargetITRF2005C, earthShape);
         
         //  Attitude law definition from position/velocity target
-        TargetPointing pvTargetAttitudeLaw = new TargetPointing(frameITRF2005, pvTargetITRF2005C);
+        TargetPointing pvTargetAttitudeLaw = new TargetPointing(frameITRF2005, pTargetITRF2005C);
         
         // Check that both attitude are the same 
         // Get satellite rotation for target pointing law 
@@ -99,6 +100,7 @@ public class TargetPointingTest {
 
     /** Test if geodetic constructor works
      */
+    @Test
     public void testGeodeticConstructor() throws OrekitException {
 
         //  Satellite position
@@ -121,8 +123,8 @@ public class TargetPointingTest {
         TargetPointing geoTargetAttitudeLaw = new TargetPointing(geoTargetITRF2005, earthShape);
         
         // Check that observed ground point is the same as defined target 
-        PVCoordinates pvObservedEME2000 = geoTargetAttitudeLaw.getObservedGroundPoint(circ, FramesFactory.getEME2000());
-        GeodeticPoint geoObserved = earthShape.transform(pvObservedEME2000.getPosition(), FramesFactory.getEME2000(), date);
+        Vector3D pObservedEME2000 = geoTargetAttitudeLaw.getTargetPoint(circ, FramesFactory.getEME2000());
+        GeodeticPoint geoObserved = earthShape.transform(pObservedEME2000, FramesFactory.getEME2000(), date);
 
         Assert.assertEquals(geoObserved.getLongitude(), geoTargetITRF2005.getLongitude(), Utils.epsilonAngle);
         Assert.assertEquals(geoObserved.getLatitude(), geoTargetITRF2005.getLatitude(), Utils.epsilonAngle);
@@ -133,6 +135,7 @@ public class TargetPointingTest {
     /** Test with nadir target : Check that when the target is the same as nadir target at date,
      * satellite attitude is the same as nadir attitude at the same date, but different at a different date.
      */
+    @Test
     public void testNadirTarget() throws OrekitException {
 
         // Elliptic earth shape
@@ -151,8 +154,8 @@ public class TargetPointingTest {
         NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
         
         // Check nadir target 
-        PVCoordinates pvNadirTarget  = nadirAttitudeLaw.getObservedGroundPoint(circOrbit,  frameITRF2005);
-        GeodeticPoint geoNadirTarget = earthShape.transform(pvNadirTarget.getPosition(), frameITRF2005, date);
+        Vector3D pNadirTarget  = nadirAttitudeLaw.getTargetPoint(circOrbit,  frameITRF2005);
+        GeodeticPoint geoNadirTarget = earthShape.transform(pNadirTarget, frameITRF2005, date);
         
         // Create target attitude law 
         TargetPointing targetAttitudeLaw = new TargetPointing(geoNadirTarget, earthShape);
@@ -198,6 +201,7 @@ public class TargetPointingTest {
        
     /** Test if defined target belongs to the direction pointed by the satellite
      */
+    @Test
     public void testTargetInPointingDirection() throws OrekitException {
 
         // Create computation date 
@@ -245,6 +249,7 @@ public class TargetPointingTest {
 
     /** Test the difference between pointing over two longitudes separated by 5°
      */
+    @Test
     public void testSlewedTarget() throws OrekitException {
 
         // Spheric earth shape 
@@ -263,14 +268,14 @@ public class TargetPointingTest {
         NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
         
         // Get observed ground point from nadir pointing law
-        PVCoordinates pvNadirObservedEME2000 = nadirAttitudeLaw.getObservedGroundPoint(circ, FramesFactory.getEME2000());
-        PVCoordinates pvNadirObservedITRF2005 = eme2000ToItrf.transformPVCoordinates(pvNadirObservedEME2000);
+        Vector3D pNadirObservedEME2000 = nadirAttitudeLaw.getTargetPoint(circ, FramesFactory.getEME2000());
+        Vector3D pNadirObservedITRF2005 = eme2000ToItrf.transformPosition(pNadirObservedEME2000);
         
-        GeodeticPoint geoNadirObserved = earthShape.transform(pvNadirObservedITRF2005.getPosition(), frameITRF2005, date);
+        GeodeticPoint geoNadirObserved = earthShape.transform(pNadirObservedITRF2005, frameITRF2005, date);
 
         // Create target pointing attitude law with target equal to nadir target 
         // ********************************************************************* 
-        TargetPointing targetLawRef = new TargetPointing(frameITRF2005, pvNadirObservedITRF2005);
+        TargetPointing targetLawRef = new TargetPointing(frameITRF2005, pNadirObservedITRF2005);
         
         // Get attitude rotation in EME2000
         Rotation rotSatRefEME2000 = targetLawRef.getState(circ).getRotation();
@@ -279,8 +284,8 @@ public class TargetPointingTest {
         // ******************************************************************** 
         GeodeticPoint geoTarget = new GeodeticPoint(geoNadirObserved.getLatitude(),
                                                     geoNadirObserved.getLongitude() - Math.toRadians(5), geoNadirObserved.getAltitude());
-        PVCoordinates pvTargetITRF2005C = new PVCoordinates(earthShape.transform(geoTarget), Vector3D.ZERO);
-        TargetPointing targetLaw = new TargetPointing(frameITRF2005, pvTargetITRF2005C);
+        Vector3D pTargetITRF2005C = earthShape.transform(geoTarget);
+        TargetPointing targetLaw = new TargetPointing(frameITRF2005, pTargetITRF2005C);
         
         // Get attitude rotation 
         Rotation rotSatEME2000 = targetLaw.getState(circ).getRotation();
@@ -328,9 +333,7 @@ public class TargetPointingTest {
         Vector3D reference = Attitude.estimateSpin(sMinus.getAttitude().getRotation(),
                                                    sPlus.getAttitude().getRotation(),
                                                    2 * h);
-        System.out.println(spin0.getNorm() + " " + (2 * Math.PI / spin0.getNorm()));
-        System.out.println(reference.getNorm() + " " + (2 * Math.PI / reference.getNorm()));
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-14);
+        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.1e-10);
 
     }
 
