@@ -80,16 +80,22 @@ public abstract class GroundPointingWrapper extends GroundPointing {
     public Attitude getState(Orbit orbit)
         throws OrekitException {
 
-        // 1/ Get attitude from base attitude law
+        // Get attitude from base attitude law
         final Attitude base = getBaseState(orbit);
 
-        // 2/ Get yaw compensation
+        // Get compensation
         final Rotation compensation = getCompensation(orbit, base);
 
-        // 3/ Combination of base attitude and yaw compensation
+        // Compute compensation rotation rate
+        final double h = 0.1;
+        final Rotation compensationM1H  = getCompensation(orbit.shiftedBy(-h), base.shiftedBy(-h));
+        final Rotation compensationP1H  = getCompensation(orbit.shiftedBy( h), base.shiftedBy( h));
+        final Vector3D compensationRate = Attitude.estimateSpin(compensationM1H, compensationP1H, 2 * h);
+
+        // Combination of base attitude, compensation and compensation rate
         return new Attitude(orbit.getFrame(),
                             compensation.applyTo(base.getRotation()),
-                            compensation.applyTo(base.getSpin()));
+                            compensationRate.add(compensation.applyTo(base.getSpin())));
 
     }
 
