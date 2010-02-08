@@ -19,8 +19,9 @@ package org.orekit.attitudes;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.orbits.Orbit;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -63,15 +64,13 @@ public class LofOffset implements AttitudeLaw {
     }
 
 
-    /** Compute the system state at given date in given frame.
-     * <p>User should check that position/velocity and frame are consistent.</p>
-     * @param date date when system state shall be computed
-     * @param pv satellite position/velocity in given frame
-     * @param frame the frame in which pv is defined
-     * @return satellite attitude state at date
-     */
-    public Attitude getState(final AbsoluteDate date,
-                             final PVCoordinates pv, final Frame frame) {
+    /** {@inheritDoc} */
+    public Attitude getState(Orbit orbit)
+        throws OrekitException {
+
+        final PVCoordinates pv = orbit.getPVCoordinates();
+        final Frame frame = orbit.getFrame();
+
 
         // Construction of the local orbital frame
         final Vector3D p = pv.getPosition();

@@ -73,14 +73,11 @@ public class NadirPointingTest {
                                    Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
                                    FramesFactory.getEME2000(), date, mu);
         
-        // Transform satellite position to position/velocity parameters in EME2000 frame 
-        PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
-        
         // Get nadir attitude
-        Rotation rotNadir = nadirAttitudeLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
+        Rotation rotNadir = nadirAttitudeLaw.getState(circ).getRotation();
         
         // Get earth center attitude
-        Rotation rotCenter = earthCenterAttitudeLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
+        Rotation rotCenter = earthCenterAttitudeLaw.getState(circ).getRotation();
         
         // For a spheric earth, earth center pointing attitude and nadir pointing attitude
         // shall be the same, i.e the composition of inverse earth pointing rotation
@@ -113,14 +110,11 @@ public class NadirPointingTest {
             new KeplerianOrbit(7178000.0, 1.e-8, Math.toRadians(50.), 0., 0.,
                                     0., KeplerianOrbit.TRUE_ANOMALY, FramesFactory.getEME2000(), date, mu);
  
-        // Transform satellite position to position/velocity parameters in EME2000 frame 
-        PVCoordinates pvSatEME2000 = kep.getPVCoordinates();
-        
         // Get nadir attitude 
-        Rotation rotNadir = nadirAttitudeLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
+        Rotation rotNadir = nadirAttitudeLaw.getState(kep).getRotation();
         
         // Get earth center attitude 
-        Rotation rotCenter = earthCenterAttitudeLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
+        Rotation rotCenter = earthCenterAttitudeLaw.getState(kep).getRotation();
         
         // For a satellite at equatorial position, earth center pointing attitude and nadir pointing 
         // attitude shall be the same, i.e the composition of inverse earth pointing rotation
@@ -136,14 +130,11 @@ public class NadirPointingTest {
                                    Math.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
                                    FramesFactory.getEME2000(), date, mu);
  
-        // Transform satellite position to position/velocity parameters in EME2000 frame */
-        pvSatEME2000 = circ.getPVCoordinates();
-                
-        // Get nadir attitude 
-        rotNadir = nadirAttitudeLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
+       // Get nadir attitude 
+        rotNadir = nadirAttitudeLaw.getState(circ).getRotation();
         
         // Get earth center attitude 
-        rotCenter = earthCenterAttitudeLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
+        rotCenter = earthCenterAttitudeLaw.getState(circ).getRotation();
         
         // For a satellite at polar position, earth center pointing attitude and nadir pointing 
         // attitude shall be the same, i.e the composition of inverse earth pointing rotation 
@@ -159,14 +150,11 @@ public class NadirPointingTest {
                                    Math.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
                                    FramesFactory.getEME2000(), date, mu);
  
-        // Transform satellite position to position/velocity parameters in EME2000 frame 
-        pvSatEME2000 = circ.getPVCoordinates();
-        
         // Get nadir attitude 
-        rotNadir = nadirAttitudeLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
+        rotNadir = nadirAttitudeLaw.getState(circ).getRotation();
         
         // Get earth center attitude
-        rotCenter = earthCenterAttitudeLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
+        rotCenter = earthCenterAttitudeLaw.getState(circ).getRotation();
         
         // For a satellite at any position, earth center pointing attitude and nadir pointing 
         // and nadir pointing attitude shall not be the same, i.e the composition of inverse earth 
@@ -197,14 +185,10 @@ public class NadirPointingTest {
                                    Math.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
                                    FramesFactory.getEME2000(), date, mu);
  
-        // Transform satellite position to position/velocity parameters in EME2000 frame */
-        PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
-        PVCoordinates pvSatItrf = circ.getPVCoordinates(frameITRF2005);
-        
         //  Vertical test
         // *************** 
         // Get observed ground point position/velocity 
-        PVCoordinates pvTargetItrf = nadirAttitudeLaw.getObservedGroundPoint(date, pvSatItrf, frameITRF2005);
+        PVCoordinates pvTargetItrf = nadirAttitudeLaw.getObservedGroundPoint(circ, frameITRF2005);
         
         // Convert to geodetic coordinates
         GeodeticPoint geoTarget = earthShape.transform(pvTargetItrf.getPosition(), frameITRF2005, date);
@@ -216,7 +200,7 @@ public class NadirPointingTest {
         Vector3D targetVertical = new Vector3D(xVert, yVert, zVert);
         
         // Get attitude rotation state
-        Rotation rotSatEME2000 = nadirAttitudeLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
+        Rotation rotSatEME2000 = nadirAttitudeLaw.getState(circ).getRotation();
                 
         // Get satellite Z axis in EME2000 frame
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);

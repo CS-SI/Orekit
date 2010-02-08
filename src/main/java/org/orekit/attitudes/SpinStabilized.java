@@ -21,8 +21,8 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
+import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 
 
 /**
@@ -79,12 +79,14 @@ public class SpinStabilized implements AttitudeLaw {
     }
 
     /** {@inheritDoc} */
-    public Attitude getState(final AbsoluteDate date,
-                             final PVCoordinates pv, final Frame frame)
+    public Attitude getState(Orbit orbit)
         throws OrekitException {
 
+        final AbsoluteDate date = orbit.getDate();
+        final Frame frame = orbit.getFrame();
+
         // get attitude from underlying non-rotating law
-        final Attitude base = nonRotatingLaw.getState(date, pv, frame);
+        final Attitude base = nonRotatingLaw.getState(orbit);
         final Transform baseTransform = new Transform(base.getRotation(), base.getSpin());
 
         // compute spin transform due to spin from reference to current date

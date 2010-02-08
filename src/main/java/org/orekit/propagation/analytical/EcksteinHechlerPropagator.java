@@ -246,8 +246,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
             final Orbit orbit = propagateOrbit(date);
 
             // evaluate attitude
-            final Attitude attitude =
-                attitudeLaw.getState(date, orbit.getPVCoordinates(), orbit.getFrame());
+            final Attitude attitude = attitudeLaw.getState(orbit);
 
             return new SpacecraftState(orbit, attitude, mass);
 

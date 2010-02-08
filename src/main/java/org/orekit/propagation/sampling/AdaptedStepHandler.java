@@ -148,11 +148,7 @@ public class AdaptedStepHandler
                 new EquinoctialOrbit(y[0], y[1], y[2], y[3], y[4], y[5],
                                      EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
                                      initializedFrame, interpolatedDate, initializedMu);
-            return new SpacecraftState(orbit,
-                                       initializedAttitudeLaw.getState(interpolatedDate,
-                                                                       orbit.getPVCoordinates(),
-                                                                       initializedFrame),
-                                                                       y[6]);
+            return new SpacecraftState(orbit, initializedAttitudeLaw.getState(orbit), y[6]);
         } catch (DerivativeException de) {
             throw new PropagationException(de.getMessage(), de);
         }

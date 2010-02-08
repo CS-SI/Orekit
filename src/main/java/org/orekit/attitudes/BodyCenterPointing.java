@@ -16,8 +16,9 @@
  */
 package org.orekit.attitudes;
 
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.orbits.Orbit;
 import org.orekit.utils.PVCoordinates;
 
 /**
@@ -45,18 +46,10 @@ public class BodyCenterPointing extends GroundPointing {
         super(bodyFrame);
     }
 
-    /** Get target expressed in body frame at given date.
-     * @param date computation date.
-     * @param pv satellite position-velocity vector at given date in given frame.
-     * @param frame the frame in which satellite position-velocity is given.
-     * @return target position/velocity in body frame.
-     *
-     * <p>User should check that position/velocity and frame is consistent with given frame.
-     * </p>
-     */
-    protected PVCoordinates getTargetInBodyFrame(final AbsoluteDate date,
-                                                 final PVCoordinates pv, final Frame frame) {
-        return PVCoordinates.ZERO;
+    /** {@inheritDoc} */
+    public PVCoordinates getObservedGroundPoint(final Orbit orbit, final Frame frame)
+        throws OrekitException {
+        return getBodyFrame().getTransformTo(frame, orbit.getDate()).transformPVCoordinates(PVCoordinates.ZERO);
     }
 
 }

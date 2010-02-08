@@ -16,9 +16,8 @@
  */
 package org.orekit.attitudes;
 
-import org.orekit.frames.Frame;
+import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 
 
 /**
@@ -51,9 +50,8 @@ public class FixedRate implements AttitudeLaw {
     }
 
     /** {@inheritDoc} */
-    public Attitude getState(final AbsoluteDate date,
-                             final PVCoordinates pv, final Frame frame) {
-        return referenceAttitude.shiftedBy(date.durationFrom(referenceDate));
+    public Attitude getState(Orbit orbit) {
+        return referenceAttitude.shiftedBy(orbit.getDate().durationFrom(referenceDate));
     }
 
     /** Get the reference attitude.

@@ -131,12 +131,9 @@ public class AdaptedEventDetector implements EventHandler {
             new EquinoctialOrbit(y[0], y[1], y[2], y[3], y[4], y[5],
                                  EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
                                  integrationFrame, currentDate, mu);
-        return
-            new SpacecraftState(currentOrbit,
-                                attitudeLaw.getState(currentDate,
-                                                     currentOrbit.getPVCoordinates(),
-                                                     integrationFrame),
-                                y[6]);
+
+        return new SpacecraftState(currentOrbit,attitudeLaw.getState(currentOrbit), y[6]);
+
     }
 
 }

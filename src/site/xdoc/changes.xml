@@ -20,7 +20,7 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="4.2" date="TBD"
+    <release version="5.0" date="TBD"
              description="TBD">
       <action dev="luc" type="add">
         added a special implementation improving performances for the frequent

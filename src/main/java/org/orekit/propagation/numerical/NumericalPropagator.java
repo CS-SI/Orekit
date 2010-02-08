@@ -390,11 +390,7 @@ public class NumericalPropagator implements Propagator {
                                      state[4], state[5], EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
                                      initialOrbit.getFrame(), date, mu);
 
-            resetInitialState(new SpacecraftState(orbit,
-                                                  attitudeLaw.getState(date,
-                                                                       orbit.getPVCoordinates(),
-                                                                       orbit.getFrame()),
-                                                                       state[6]));
+            resetInitialState(new SpacecraftState(orbit, attitudeLaw.getState(orbit), state[6]));
             return initialState;
 
         } catch (OrekitException oe) {
@@ -520,8 +516,7 @@ public class NumericalPropagator implements Propagator {
                 new EquinoctialOrbit(y[0], y[1], y[2], y[3], y[4], y[5],
                                      EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
                                      frame, date, mu);
-            final Attitude attitude =
-                attitudeLaw.getState(date, orbit.getPVCoordinates(), frame);
+            final Attitude attitude = attitudeLaw.getState(orbit);
 
             return new SpacecraftState(orbit, attitude, y[6]);
 

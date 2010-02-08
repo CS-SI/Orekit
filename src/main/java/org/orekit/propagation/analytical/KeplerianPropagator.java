@@ -124,8 +124,7 @@ public class KeplerianPropagator extends AbstractPropagator {
             final Orbit orbit = initialOrbit.shiftedBy(date.durationFrom(initialOrbit.getDate()));
 
             // evaluation of attitude
-            final Attitude attitude =
-                attitudeLaw.getState(date, orbit.getPVCoordinates(), orbit.getFrame());
+            final Attitude attitude = attitudeLaw.getState(orbit);
 
             return new SpacecraftState(orbit, attitude, mass);
 

@@ -19,9 +19,7 @@ package org.orekit.attitudes;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.orbits.Orbit;
 import org.orekit.utils.PVCoordinatesProvider;
 
 
@@ -86,24 +84,15 @@ public class YawSteering extends GroundPointingWrapper {
         this.phasingAxis = phasingAxis;
     }
 
-    /** Compute the system yaw compensation rotation at given date.
-     * @param date date when the system state shall be computed
-     * @param pv satellite position-velocity vector at given date in given frame.
-     * @param base base satellite attitude in given frame.
-     * @param frame the frame in which satellite position-velocity an attitude are given.
-     * @return yaw compensation rotation at date, i.e rotation between non compensated
-     * attitude state and compensated state.
-     * @throws OrekitException if some specific error occurs
-     */
-    public Rotation getCompensation(final AbsoluteDate date, final PVCoordinates pv,
-                                    final Attitude base, final Frame frame)
+    /** {@inheritDoc} */
+    public Rotation getCompensation(final Orbit orbit, final Attitude base)
         throws OrekitException {
 
         // Compensation rotation definition :
         //  . Z satellite axis is unchanged
         //  . phasing axis shall be aligned to sun direction
-        final Vector3D sunDirection =
-            sun.getPVCoordinates(date, frame).getPosition().subtract(pv.getPosition());
+        final Vector3D sunPosition  = sun.getPVCoordinates(orbit.getDate(), orbit.getFrame()).getPosition();
+        final Vector3D sunDirection = sunPosition.subtract(orbit.getPVCoordinates().getPosition());
         final Rotation compensation =
             new Rotation(Vector3D.PLUS_K, base.getRotation().applyTo(sunDirection),
                          Vector3D.PLUS_K, phasingAxis);

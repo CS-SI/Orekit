@@ -21,6 +21,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
+import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -96,9 +97,12 @@ public class CelestialBodyPointed implements AttitudeLaw {
     }
 
     /** {@inheritDoc} */
-    public Attitude getState(final AbsoluteDate date,
-                             final PVCoordinates pv, final Frame frame)
+    public Attitude getState(Orbit orbit)
         throws OrekitException {
+
+        final AbsoluteDate date = orbit.getDate();
+        final PVCoordinates pv = orbit.getPVCoordinates();
+        final Frame frame = orbit.getFrame();
 
         // compute celestial references at the specified date
         final PVCoordinates bodyPV    = pointedBody.getPVCoordinates(date, celestialFrame);

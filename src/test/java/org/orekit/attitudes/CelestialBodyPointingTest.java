@@ -25,6 +25,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -46,7 +47,7 @@ public class CelestialBodyPointingTest {
         PVCoordinates pv =
             new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                               new Vector3D(0, 0, 3680.853673522056));
-        Attitude attitude = sunPointing.getState(date, pv, FramesFactory.getEME2000());
+        Attitude attitude = sunPointing.getState(new KeplerianOrbit(pv, FramesFactory.getEME2000(), date, 3.986004415e14));
         Vector3D xDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Vector3D zDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_K);
         Assert.assertEquals(0,

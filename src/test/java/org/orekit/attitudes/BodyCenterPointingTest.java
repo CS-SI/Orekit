@@ -62,11 +62,8 @@ public class BodyCenterPointingTest {
     @Test
     public void testTarget() throws OrekitException {
         
-        // Transform satellite position to position/velocity parameters in EME2000 frame 
-        PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
-        
         // Call get target method 
-        PVCoordinates target = earthCenterAttitudeLaw.getTargetInBodyFrame(date, pvSatEME2000, FramesFactory.getEME2000());
+        PVCoordinates target = earthCenterAttitudeLaw.getObservedGroundPoint(circ, circ.getFrame());
 
         // Check that target is body center
         double normPos = target.getPosition().getNorm();
@@ -86,7 +83,7 @@ public class BodyCenterPointingTest {
         //  Pointing direction
         // ******************** 
         // Get satellite attitude rotation, i.e rotation from EME2000 frame to satellite frame
-        Rotation rotSatEME2000 = earthCenterAttitudeLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
+        Rotation rotSatEME2000 = earthCenterAttitudeLaw.getState(circ).getRotation();
         
         // Transform Z axis from satellite frame to EME2000 
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);

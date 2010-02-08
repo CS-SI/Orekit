@@ -20,7 +20,7 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -63,59 +63,35 @@ public abstract class GroundPointing implements AttitudeLaw {
         return bodyFrame;
     }
 
-    /** Get target point in body frame.
-     * @param date date when the target point shall be computed
-     * @param pv position/velocity of the satellite
-     * @param frame frame in which the point is provided
-     * @return target in body frame
-     * @throws OrekitException if some specific error occurs,
-     * such as no target reached
-     */
-    protected abstract PVCoordinates getTargetInBodyFrame(AbsoluteDate date,
-                                                          PVCoordinates pv,
-                                                          Frame frame)
-        throws OrekitException;
-
     /** Compute the target ground point at given date in given frame.
-     * <p>User should check that position/velocity and frame are consistent.</p>
-     * @param date date when the point shall be computed
-     * @param pv position-velocity of the satellite
-     * @param frame frame in which the satellite coordinates are provided
-     * and in which the target ground point should be computed
-     * @return observed ground point position/velocity in given frame
+     * @param orbit orbit state
+     * @param frame frame in which observed ground point should be provided
+     * @return observed ground point position/velocity in specified frame
      * @throws OrekitException if some specific error occurs,
      * such as no target reached
      */
-    public PVCoordinates getObservedGroundPoint(final AbsoluteDate date,
-                                                final PVCoordinates pv,
-                                                final Frame frame)
-        throws OrekitException {
-
-        // Get target in body frame
-        final PVCoordinates targetInBodyFrame = getTargetInBodyFrame(date, pv, frame);
-
-        // Transform to given frame
-        final Transform t = bodyFrame.getTransformTo(frame, date);
-
-        // Target in given frame.
-        return t.transformPVCoordinates(targetInBodyFrame);
-    }
+    public abstract PVCoordinates getObservedGroundPoint(final Orbit orbit, final Frame frame)
+        throws OrekitException;
 
     /** Compute the system state at given date in given frame.
      * <p>User should check that position/velocity and frame are consistent.</p>
-     * @param date date when system state shall be computed
-     * @param pv satellite position/velocity in given frame
-     * @param frame the frame in which pv is defined
      * @return satellite attitude state at date
      * @throws OrekitException if some specific error occurs
      */
-    public Attitude getState(final AbsoluteDate date, final PVCoordinates pv, final Frame frame)
+    public Attitude getState(Orbit orbit)
         throws OrekitException {
 
+        final PVCoordinates pv = orbit.getPVCoordinates();
+        final Frame frame = orbit.getFrame();
+
         // Construction of the satellite-target position/velocity vector
-        final PVCoordinates pointing = new PVCoordinates(pv, getObservedGroundPoint(date, pv, frame));
+        final PVCoordinates pointing = new PVCoordinates(pv, getObservedGroundPoint(orbit, frame));
         final Vector3D pos = pointing.getPosition();
         final Vector3D vel = pointing.getVelocity();
+
+//        double h = 0.1;
+//        PVCoordinates pM1h = new PVCoordinates(pv.shiftedBy(-h), getObservedGroundPoint(orbit.shiftedBy(-h), frame));
+//        PVCoordinates pP1h = new PVCoordinates(pv.shiftedBy( h), getObservedGroundPoint(orbit.shiftedBy( h), frame));
 
         // New orekit exception if null position.
         if (pos.equals(Vector3D.ZERO)) {
@@ -126,9 +102,15 @@ public abstract class GroundPointing implements AttitudeLaw {
         // line of sight -> z satellite axis,
         // satellite velocity -> x satellite axis.
         final Rotation rot = new Rotation(pos, pv.getVelocity(), Vector3D.PLUS_K, Vector3D.PLUS_I);
+//        final Rotation rotM1h = new Rotation(pM1h.getPosition(), pv.shiftedBy(    -h).getVelocity(), Vector3D.PLUS_K, Vector3D.PLUS_I);
+//        final Rotation rotP1h = new Rotation(pP1h.getPosition(), pv.shiftedBy(     h).getVelocity(), Vector3D.PLUS_K, Vector3D.PLUS_I);
+//        Vector3D es1 = Attitude.estimateSpin(rotM1h, rotP1h, 2 * h);
 
         // Attitude spin
         final Vector3D spin = new Vector3D(1 / pos.getNormSq(), Vector3D.crossProduct(pos, vel));
+//        System.out.println(date + "   " +
+//                           spin.getX() + " " + spin.getY() + " " + spin.getZ() + " (" + spin.getNorm() + ")   " +
+//                           es1.getX() + " " + es1.getY() + " " + es1.getZ() + " (" + es1.getNorm() + ")");
 
         return new Attitude(frame, rot, rot.applyTo(spin));
     }

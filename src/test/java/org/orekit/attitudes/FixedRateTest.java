@@ -26,6 +26,7 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -39,53 +40,48 @@ public class FixedRateTest {
 
     @Test
     public void testZeroRate() throws OrekitException {
-        FixedRate law =
-            new FixedRate(new Attitude(FramesFactory.getEME2000(),
-                                       new Rotation(0.48, 0.64, 0.36, 0.48, false),
-                                       Vector3D.ZERO),
-                          new AbsoluteDate(new DateComponents(2004, 3, 2),
-                                           new TimeComponents(13, 17, 7.865),
-                                           TimeScalesFactory.getUTC()));
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 3, 2),
+                                             new TimeComponents(13, 17, 7.865),
+                                             TimeScalesFactory.getUTC());
+        FixedRate law = new FixedRate(new Attitude(FramesFactory.getEME2000(),
+                                                   new Rotation(0.48, 0.64, 0.36, 0.48, false),
+                                                   Vector3D.ZERO),
+                                      date);
         PVCoordinates pv =
             new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                               new Vector3D(0, 0, 3680.853673522056));
-        Rotation attitude0 = law.getState(law.getReferenceDate(),
-                                          pv, FramesFactory.getEME2000()).getRotation();
+        Orbit orbit = new KeplerianOrbit(pv, FramesFactory.getEME2000(), date, 3.986004415e14);
+        Rotation attitude0 = law.getState(orbit).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude0, law.getReferenceAttitude().getRotation()), 1.0e-10);
-        Rotation attitude1 = law.getState(law.getReferenceDate().shiftedBy(10.0),
-                                          pv, FramesFactory.getEME2000()).getRotation();
+        Rotation attitude1 = law.getState(orbit.shiftedBy(10.0)).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude1, law.getReferenceAttitude().getRotation()), 1.0e-10);
-        Rotation attitude2 = law.getState(law.getReferenceDate().shiftedBy(-20.0),
-                                          pv, FramesFactory.getEME2000()).getRotation();
+        Rotation attitude2 = law.getState(orbit.shiftedBy(20.0)).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude2, law.getReferenceAttitude().getRotation()), 1.0e-10);
 
     }
 
     @Test
     public void testNonZeroRate() throws OrekitException {
+        final AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 3, 2),
+                                                   new TimeComponents(13, 17, 7.865),
+                                                   TimeScalesFactory.getUTC());
         final double rate = 2 * Math.PI / (12 * 60);
-        FixedRate law =
-            new FixedRate(new Attitude(FramesFactory.getEME2000(),
-                                       new Rotation(0.48, 0.64, 0.36, 0.48, false),
-                                       new Vector3D(rate, Vector3D.PLUS_K)),
-                          new AbsoluteDate(new DateComponents(2004, 3, 2),
-                                           new TimeComponents(13, 17, 7.865),
-                                           TimeScalesFactory.getUTC()));
+        FixedRate law = new FixedRate(new Attitude(FramesFactory.getEME2000(),
+                                                   new Rotation(0.48, 0.64, 0.36, 0.48, false),
+                                                   new Vector3D(rate, Vector3D.PLUS_K)),
+                                      date);
         PVCoordinates pv =
             new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                               new Vector3D(0, 0, 3680.853673522056));
-        Rotation attitude0 = law.getState(law.getReferenceDate(),
-                                          pv, FramesFactory.getEME2000()).getRotation();
+        Orbit orbit = new KeplerianOrbit(pv, FramesFactory.getEME2000(), date, 3.986004415e14);
+        Rotation attitude0 = law.getState(orbit).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude0, law.getReferenceAttitude().getRotation()), 1.0e-10);
-        Rotation attitude1 = law.getState(law.getReferenceDate().shiftedBy(10.0),
-                                          pv, FramesFactory.getEME2000()).getRotation();
+        Rotation attitude1 = law.getState(orbit.shiftedBy(10.0)).getRotation();
         Assert.assertEquals(10 * rate, Rotation.distance(attitude1, law.getReferenceAttitude().getRotation()), 1.0e-10);
-        Rotation attitude2 = law.getState(law.getReferenceDate().shiftedBy(-20.0),
-                                          pv, FramesFactory.getEME2000()).getRotation();
+        Rotation attitude2 = law.getState(orbit.shiftedBy(-20.0)).getRotation();
         Assert.assertEquals(20 * rate, Rotation.distance(attitude2, law.getReferenceAttitude().getRotation()), 1.0e-10);
         Assert.assertEquals(30 * rate, Rotation.distance(attitude2, attitude1), 1.0e-10);
-        Rotation attitude3 = law.getState(law.getReferenceDate().shiftedBy(720.0),
-                                          pv, FramesFactory.getEME2000()).getRotation();
+        Rotation attitude3 = law.getState(orbit.shiftedBy(0.0)).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude3, law.getReferenceAttitude().getRotation()), 1.0e-10);
 
     }

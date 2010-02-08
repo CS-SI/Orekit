@@ -31,6 +31,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -49,7 +53,6 @@ public class YawSteeringTest {
     
     // Satellite position
     CircularOrbit circOrbit;
-    PVCoordinates pvSatITRF2005C;
     
     // Earth shape
     OneAxisEllipsoid earthShape;
@@ -66,31 +69,16 @@ public class YawSteeringTest {
         YawSteering yawCompensLaw =
             new YawSteering(nadirLaw, CelestialBodyFactory.getSun(), Vector3D.MINUS_I);
        
-        //  Check target
-        // **************
-        // without yaw compensation
-        PVCoordinates noYawTarget = nadirLaw.getTargetInBodyFrame(date, pvSatITRF2005C, frameITRF2005);
-         
-        // with yaw compensation
-        PVCoordinates yawTarget = yawCompensLaw.getTargetInBodyFrame(date, pvSatITRF2005C, frameITRF2005);
-
-        // Check difference
-        PVCoordinates targetDiff = new PVCoordinates(1.0, yawTarget, -1.0, noYawTarget);
-        double normTargetDiffPos = targetDiff.getPosition().getNorm();
-        double normTargetDiffVel = targetDiff.getVelocity().getNorm();
-       
-        Assert.assertTrue((normTargetDiffPos < Utils.epsilonTest)&&(normTargetDiffVel < Utils.epsilonTest));
-
         //  Check observed ground point
         // *****************************
         // without yaw compensation
-        PVCoordinates noYawObserved = nadirLaw.getObservedGroundPoint(date, pvSatITRF2005C, frameITRF2005);
+        PVCoordinates noYawObserved = nadirLaw.getObservedGroundPoint(circOrbit, frameITRF2005);
 
         // with yaw compensation
-        PVCoordinates yawObserved = yawCompensLaw.getObservedGroundPoint(date, pvSatITRF2005C, frameITRF2005);
+        PVCoordinates yawObserved = yawCompensLaw.getObservedGroundPoint(circOrbit, frameITRF2005);
 
         // Check difference
-        PVCoordinates observedDiff = new PVCoordinates(1.0, yawObserved, -1.0, noYawObserved);
+        PVCoordinates observedDiff = new PVCoordinates(noYawObserved, yawObserved);
         double normObservedDiffPos = observedDiff.getPosition().getNorm();
         double normObservedDiffVel = observedDiff.getVelocity().getNorm();
        
@@ -99,8 +87,6 @@ public class YawSteeringTest {
 
     @Test
     public void testSunAligned() throws OrekitException {
-
-        PVCoordinates pvSatEME2000 = circOrbit.getPVCoordinates();
 
         //  Attitude laws
         // **************
@@ -112,7 +98,7 @@ public class YawSteeringTest {
         YawSteering yawCompensLaw = new YawSteering(nadirLaw, sun, Vector3D.MINUS_I);
 
         // Get sun direction in satellite frame
-        Rotation rotYaw = yawCompensLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
+        Rotation rotYaw = yawCompensLaw.getState(circOrbit).getRotation();
         Vector3D sunEME2000 = sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition();
         Vector3D sunSat = rotYaw.applyTo(sunEME2000);
             
@@ -124,8 +110,6 @@ public class YawSteeringTest {
     @Test
     public void testCompensAxis() throws OrekitException {
 
-        PVCoordinates pvSatEME2000 = circOrbit.getPVCoordinates();
-
         //  Attitude laws
         // **************
         // Target pointing attitude law over satellite nadir at date, without yaw compensation
@@ -136,8 +120,8 @@ public class YawSteeringTest {
             new YawSteering(nadirLaw, CelestialBodyFactory.getSun(), Vector3D.MINUS_I);
 
         // Get attitude rotations from non yaw compensated / yaw compensated laws
-        Rotation rotNoYaw = nadirLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
-        Rotation rotYaw = yawCompensLaw.getState(date, pvSatEME2000, FramesFactory.getEME2000()).getRotation();
+        Rotation rotNoYaw = nadirLaw.getState(circOrbit).getRotation();
+        Rotation rotYaw = yawCompensLaw.getState(circOrbit).getRotation();
             
         // Compose rotations composition
         Rotation compoRot = rotYaw.applyTo(rotNoYaw.revert());
@@ -147,6 +131,40 @@ public class YawSteeringTest {
         Assert.assertEquals(0., yawAxis.getX(), Utils.epsilonTest);
         Assert.assertEquals(0., yawAxis.getY(), Utils.epsilonTest);
         Assert.assertEquals(1., yawAxis.getZ(), Utils.epsilonTest);
+
+    }
+
+    @Test
+    public void testSpin() throws OrekitException {
+
+        NadirPointing nadirLaw = new NadirPointing(earthShape);
+        
+        // Target pointing attitude law with yaw compensation
+        AttitudeLaw law = new YawSteering(nadirLaw, CelestialBodyFactory.getSun(), Vector3D.MINUS_I);
+
+        KeplerianOrbit orbit =
+            new KeplerianOrbit(7178000.0, 1.e-4, Math.toRadians(50.),
+                              Math.toRadians(10.), Math.toRadians(20.),
+                              Math.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
+                              FramesFactory.getEME2000(),
+                              date.shiftedBy(-300.0),
+                              3.986004415e14);
+
+        Propagator propagator = new KeplerianPropagator(orbit, law);
+
+        double h = 0.01;
+        SpacecraftState sMinus = propagator.propagate(date.shiftedBy(-h));
+        SpacecraftState s0     = propagator.propagate(date);
+        SpacecraftState sPlus  = propagator.propagate(date.shiftedBy(h));
+
+        Vector3D spin0 = s0.getAttitude().getSpin();
+        Vector3D reference = Attitude.estimateSpin(sMinus.getAttitude().getRotation(),
+                                                   sPlus.getAttitude().getRotation(),
+                                                   2 * h);
+        System.out.println(spin0.getNorm() + " " + (2 * Math.PI / spin0.getNorm()));
+        System.out.println(reference.getNorm() + " " + (2 * Math.PI / reference.getNorm()));
+        Assert.assertTrue(spin0.getNorm() > 1.0e-3);
+        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-14);
 
     }
 
@@ -172,8 +190,6 @@ public class YawSteeringTest {
                                        Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
                                        FramesFactory.getEME2000(), date, mu);
             
-            pvSatITRF2005C = circOrbit.getPVCoordinates(frameITRF2005);
-            
             // Elliptic earth shape */
             earthShape =
                 new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
@@ -189,7 +205,6 @@ public class YawSteeringTest {
         date = null;
         frameITRF2005 = null;
         circOrbit = null;
-        pvSatITRF2005C = null;
         earthShape = null;
     }
 

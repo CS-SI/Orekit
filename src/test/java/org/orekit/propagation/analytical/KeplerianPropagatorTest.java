@@ -31,7 +31,6 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
-import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -319,8 +318,7 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         AttitudeLaw wrongLaw = new AttitudeLaw() {
             private static final long serialVersionUID = 5918362126173997016L;
-            public Attitude getState(AbsoluteDate date, PVCoordinates pv,
-                                     Frame frame) throws OrekitException {
+            public Attitude getState(Orbit orbit) throws OrekitException {
                 throw new OrekitException(new RuntimeException(), "gasp");
             }
         };

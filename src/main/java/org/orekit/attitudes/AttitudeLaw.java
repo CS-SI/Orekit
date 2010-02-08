@@ -19,28 +19,24 @@ package org.orekit.attitudes;
 import java.io.Serializable;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.orbits.Orbit;
 
 
 /** This interface represents an attitude law model set.
  * <p>An attitude law provides a way to compute an {@link Attitude Attitude}
- * state at any date given a center of gravity position and velocity.</p>
+ * state from an orbit.</p>
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public interface AttitudeLaw extends Serializable {
 
     /** Compute the attitude state at given date.
-     * @param date date when attitude state shall be computed
-     * @param pv satellite position/velocity at date, in given frame
-     * @param frame frame in which satellite position/velocity are given
-     * @return attitude state at date, from specified frame to satellite
+     * @param orbit orbit state for which attitude is requested
+     * @return attitude attitude on the specified orbit, from orbit frame to satellite
      * frame
      * @throws OrekitException if some specific error occurs
      */
-    Attitude getState(AbsoluteDate date, PVCoordinates pv, Frame frame)
+    Attitude getState(Orbit orbit)
         throws OrekitException;
 
 }

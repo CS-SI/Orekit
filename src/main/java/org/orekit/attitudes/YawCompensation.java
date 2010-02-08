@@ -19,8 +19,7 @@ package org.orekit.attitudes;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.orbits.Orbit;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -61,25 +60,16 @@ public class YawCompensation extends GroundPointingWrapper {
         super(groundPointingLaw);
     }
 
-    /** Compute the system yaw compensation rotation at given date.
-     * @param date date when the system state shall be computed
-     * @param pv satellite position-velocity vector at given date in given frame.
-     * @param base base satellite attitude in given frame.
-     * @param frame the frame in which satellite position-velocity an attitude are given.
-     * @return yaw compensation rotation at date, i.e rotation between non compensated
-     * attitude state and compensated state.
-     * @throws OrekitException if some specific error occurs
-     */
-    public Rotation getCompensation(final AbsoluteDate date, final PVCoordinates pv,
-                                    final Attitude base, final Frame frame)
+    /** {@inheritDoc} */
+    public Rotation getCompensation(final Orbit orbit, final Attitude base)
         throws OrekitException {
 
         // Compensation rotation definition :
         //  . Z satellite axis is unchanged
         //  . X satellite axis shall be aligned to target relative velocity
-        final Vector3D satVelocity = pv.getVelocity();
-        final PVCoordinates targetPV = getGroundPointingLaw().getObservedGroundPoint(date, pv, frame);
-        final Vector3D targetVelocity = targetPV.getVelocity();
+        final PVCoordinates targetPV    = getGroundPointingLaw().getObservedGroundPoint(orbit, orbit.getFrame());
+        final Vector3D targetVelocity   = targetPV.getVelocity();
+        final Vector3D satVelocity      = orbit.getPVCoordinates().getVelocity();
         final Vector3D relativeVelocity = targetVelocity.subtract(satVelocity);
 
         // Create rotation transforming zsat to zsat and relativeVelocity to -xsat
@@ -88,30 +78,29 @@ public class YawCompensation extends GroundPointingWrapper {
                          Vector3D.PLUS_K, Vector3D.MINUS_I);
 
         return compensation;
+
     }
 
     /** Compute the yaw compensation angle at date.
-     * @param date date when the system state shall be computed
-     * @param pv satellite position-velocity vector at given date in given frame.
-     * @param frame the frame in which satellite position-velocity is given.
-     * @return yaw compensation angle at date.
+     * @param orbit orbit state
+     * @return yaw compensation angle for orbit.
      * @throws OrekitException if some specific error occurs
      */
-    public double getYawAngle(final AbsoluteDate date,
-                              final PVCoordinates pv, final Frame frame)
+    public double getYawAngle(final Orbit orbit)
         throws OrekitException {
 
         // Attitude rotation without yaw compensation
-        final Rotation rotNoYaw = getGroundPointingLaw().getState(date, pv, frame).getRotation();
+        final Rotation rotNoYaw = getGroundPointingLaw().getState(orbit).getRotation();
 
         // Attitude rotation without yaw compensation
-        final Rotation rotYaw = getState(date, pv, frame).getRotation();
+        final Rotation rotYaw = getState(orbit).getRotation();
 
         // Compute yaw compensation angle by composition of both rotations
         final Rotation compoRot = rotYaw.applyTo(rotNoYaw.revert());
         final double yawAngle = compoRot.getAngle();
 
         return yawAngle;
+
     }
 
 }

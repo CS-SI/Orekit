@@ -23,6 +23,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
+import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Line;
 import org.orekit.utils.PVCoordinates;
@@ -65,46 +66,19 @@ public class LofOffsetPointing extends GroundPointing {
         this.satPointingVector = satPointingVector;
     }
 
-    /** Compute the system state at given date in given frame.
-     * @param date date when system state shall be computed
-     * @param pv satellite position/velocity in given frame
-     * @param frame the frame in which pv is defined
-     * @return satellite attitude state at date
-     * @throws OrekitException if some specific error occurs
-     *
-     * <p>User should check that position/velocity and frame is consistent with given frame.
-     * </p> */
-    public Attitude getState(final AbsoluteDate date,
-                             final PVCoordinates pv, final Frame frame)
-        throws OrekitException {
-        return attitudeLaw.getState(date, pv, frame);
-    }
-
     /** {@inheritDoc} */
-    protected PVCoordinates getTargetInBodyFrame(final AbsoluteDate date,
-                                                 final PVCoordinates pv, final Frame frame)
+    public Attitude getState(Orbit orbit)
         throws OrekitException {
-
-        // Get target in body frame
-        final PVCoordinates groundPoint = getObservedGroundPoint(date, pv, frame);
-
-        // Transform to given frame
-        final Transform t = frame.getTransformTo(getBodyFrame(), date);
-
-        // Target in body frame.
-        return t.transformPVCoordinates(groundPoint);
-
+        return attitudeLaw.getState(orbit);
     }
 
     /** {@inheritDoc} */
     @Override
-    public PVCoordinates getObservedGroundPoint(final AbsoluteDate date,
-                                                final PVCoordinates pv,
-                                                final Frame frame)
+    public PVCoordinates getObservedGroundPoint(final Orbit orbit, final Frame frame)
         throws OrekitException {
 
         // intersection point position in same frame as initial pv
-        final Vector3D intersectionP = getIntersectionPoint(date, pv, frame);
+        final Vector3D intersectionP = getIntersectionPoint(orbit, frame);
 
         // velocity of intersection point due to satellite self motion, computed using a four
         // points finite differences algorithm because we cannot compute shape normal
@@ -112,31 +86,34 @@ public class LofOffsetPointing extends GroundPointing {
         final double h                 = 0.05;
         final double s2                = 1.0 / (12 * h);
         final double s1                = 8 * s2;
-        final Vector3D intersectionP2h = getIntersectionPoint(date.shiftedBy( 2 * h), pv.shiftedBy( 2 * h), frame);
-        final Vector3D intersectionM2h = getIntersectionPoint(date.shiftedBy(-2 * h), pv.shiftedBy(-2 * h), frame);
-        final Vector3D intersectionP1h = getIntersectionPoint(date.shiftedBy(     h), pv.shiftedBy(     h), frame);
-        final Vector3D intersectionM1h = getIntersectionPoint(date.shiftedBy(    -h), pv.shiftedBy(    -h), frame);
-        final Vector3D intersectionV   = new Vector3D(-s2, intersectionP2h, s2, intersectionM2h, s1, intersectionP1h, -s1, intersectionM1h);
+        final Vector3D intersectionP2h = getIntersectionPoint(orbit.shiftedBy( 2 * h), frame);
+        final Vector3D intersectionM2h = getIntersectionPoint(orbit.shiftedBy(-2 * h), frame);
+        final Vector3D intersectionP1h = getIntersectionPoint(orbit.shiftedBy(     h), frame);
+        final Vector3D intersectionM1h = getIntersectionPoint(orbit.shiftedBy(    -h), frame);
+        final Vector3D intersectionV   = new Vector3D(-s2, intersectionP2h,  s2, intersectionM2h,
+                                                       s1, intersectionP1h, -s1, intersectionM1h);
 
         return new PVCoordinates(intersectionP, intersectionV);
 
     }
 
     /** Get line of sight and body shape intersection point in a specified frame.
-     * @param date date when system state shall be computed
-     * @param pv satellite position/velocity in given frame
-     * @param frame the frame in which pv is defined and in which intersection point is requested
+     * @param orbit orbit state
+     * @param frame the frame in which intersection point is requested
      * @return intersection point in specified frame
      * @exception OrekitException if some conversion fails
      */
-    private Vector3D getIntersectionPoint(final AbsoluteDate date, final PVCoordinates pv, final Frame frame)
+    private Vector3D getIntersectionPoint(final Orbit orbit, final Frame frame)
         throws OrekitException {
 
-        // Compute satellite state at given date in given frame
-        final Rotation satRot = attitudeLaw.getState(date, pv, frame).getRotation();
+        final AbsoluteDate date = orbit.getDate();
+        final PVCoordinates pv = orbit.getPVCoordinates();
+
+        // Compute satellite state at given date in orbit frame
+        final Rotation satRot = attitudeLaw.getState(orbit).getRotation();
 
         // Compute satellite pointing axis and position/velocity in body frame
-        final Transform t = frame.getTransformTo(shape.getBodyFrame(), date);
+        final Transform t = orbit.getFrame().getTransformTo(shape.getBodyFrame(), date);
         final Vector3D pointingBodyFrame =
             t.transformVector(satRot.applyInverseTo(satPointingVector));
         final Vector3D pBodyFrame = t.transformPosition(pv.getPosition());
@@ -156,7 +133,7 @@ public class LofOffsetPointing extends GroundPointing {
             throw new OrekitException("attitude pointing law misses ground");
         }
 
-        return t.getInverse().transformPosition(vIntersection);
+        return shape.getBodyFrame().getTransformTo(frame, date).transformPosition(vIntersection);
 
     }
 

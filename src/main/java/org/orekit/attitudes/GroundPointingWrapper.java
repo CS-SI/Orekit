@@ -19,7 +19,7 @@ package org.orekit.attitudes;
 import org.apache.commons.math.geometry.Rotation;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.orbits.Orbit;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -51,64 +51,47 @@ public abstract class GroundPointingWrapper extends GroundPointing {
         return groundPointingLaw;
     }
 
-    /** Get target expressed in body frame at given date.
-     * @param date computation date.
-     * @param pv satellite position-velocity vector at given date in given frame.
-     * @param frame the frame in which satellite position-velocity is given.
-     * @return target position/velocity in body frame at date.
-     * @throws OrekitException if some specific error occurs
-     */
-    protected PVCoordinates getTargetInBodyFrame(final AbsoluteDate date,
-                                                 final PVCoordinates pv,
-                                                 final Frame frame)
+    /** {@inheritDoc} */
+    public PVCoordinates getObservedGroundPoint(final Orbit orbit, final Frame frame)
         throws OrekitException {
-        // return basic attitude law target
-        return groundPointingLaw.getTargetInBodyFrame(date, pv, frame);
+        return groundPointingLaw.getObservedGroundPoint(orbit, frame);
     }
 
     /** Compute the base system state at given date, without compensation.
-     * @param date date when the system state shall be computed
-     * @param pv satellite position-velocity vector at given date in given frame.
-     * @param frame the frame in which satellite position-velocity is given.
+     * @param orbit orbit state for which attitude is requested
      * @return satellite base attitude state, i.e without compensation.
      * @throws OrekitException if some specific error occurs
      */
-    public Attitude getBaseState(final AbsoluteDate date, final PVCoordinates pv, final Frame frame)
+    public Attitude getBaseState(final Orbit orbit)
         throws OrekitException {
-        return groundPointingLaw.getState(date, pv, frame);
+        return groundPointingLaw.getState(orbit);
     }
 
-    /** Compute the system state at given date.
-     * @param date date when the system state shall be computed
-     * @param pv satellite position-velocity vector at given date in given frame.
-     * @param frame the frame in which satellite position-velocity is given.
-     * @return satellite attitude state at date, in given frame.
-     * @throws OrekitException if some specific error occurs
-     */
-    public Attitude getState(final AbsoluteDate date, final PVCoordinates pv, final Frame frame)
+    /** {@inheritDoc} */
+    public Attitude getState(Orbit orbit)
         throws OrekitException {
 
         // 1/ Get attitude from base attitude law
-        final Attitude base = getBaseState(date, pv, frame);
+        final Attitude base = getBaseState(orbit);
 
         // 2/ Get yaw compensation
-        final Rotation compensation = getCompensation(date, pv, base, frame);
+        final Rotation compensation = getCompensation(orbit, base);
 
         // 3/ Combination of base attitude and yaw compensation
-        return new Attitude(frame, compensation.applyTo(base.getRotation()), compensation.applyTo(base.getSpin()));
+        return new Attitude(orbit.getFrame(),
+                            compensation.applyTo(base.getRotation()),
+                            compensation.applyTo(base.getSpin()));
+
     }
 
     /** Compute the compensation rotation at given date.
-     * @param date date when the system state shall be computed
-     * @param pv satellite position-velocity vector at given date in given frame.
+     * @param orbit orbit state for which compensation is requested
      * @param base base satellite attitude in given frame.
-     * @param frame the frame in which satellite position-velocity an attitude are given.
      * @return compensation rotation at date, i.e rotation between non compensated
      * attitude state and compensated state.
      * @throws OrekitException if some specific error occurs
      */
-    public abstract Rotation getCompensation(final AbsoluteDate date, final PVCoordinates pv,
-                                             final Attitude base, final Frame frame)
+    public abstract Rotation getCompensation(final Orbit orbit, final Attitude base)
         throws OrekitException;
 
 }

@@ -114,7 +114,7 @@ public class ConstantThrustManeuverTest {
             new KeplerianOrbit(a, e, i, omega, OMEGA, lv, KeplerianOrbit.TRUE_ANOMALY,
                                FramesFactory.getEME2000(), initDate, mu);
         final SpacecraftState initialState =
-            new SpacecraftState(orbit, law.getState(initDate, orbit.getPVCoordinates(), orbit.getFrame()), mass);
+            new SpacecraftState(orbit, law.getState(orbit), mass);
 
         final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
                                                        new TimeComponents(04, 15, 34.080),
