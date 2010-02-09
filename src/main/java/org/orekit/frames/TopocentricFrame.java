@@ -42,7 +42,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
     /** Point where the topocentric frame is defined. */
     private final GeodeticPoint point;
 
-    /** Constructor for the singleton.
+    /** Simple constructor.
      * @param parentShape body shape on which the local point is defined
      * @param point local surface point where topocentric frame is defined
      * @param name the string representation
