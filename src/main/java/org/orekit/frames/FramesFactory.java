@@ -158,11 +158,11 @@ public class FramesFactory implements Serializable {
     private static Frame memeWithEopCorrections = null;
 
     /** EOP 1980 loaders. */
-    private static final List<EOP1980HistoryLoader> eop1980Loaders =
+    private static final List<EOP1980HistoryLoader> EOP_1980_LOADERS =
         new ArrayList<EOP1980HistoryLoader>();
 
     /** EOP 2000 loaders. */
-    private static final List<EOP2000HistoryLoader> eop2000Loaders =
+    private static final List<EOP2000HistoryLoader> EOP_2000_LOADERS =
         new ArrayList<EOP2000HistoryLoader>();
 
     /** Private constructor.
@@ -180,8 +180,8 @@ public class FramesFactory implements Serializable {
      * @see #addEOP2000HistoryLoader(EOP2000HistoryLoader)
      */
     public static void addEOP1980HistoryLoader(final EOP1980HistoryLoader loader) {
-        synchronized (eop1980Loaders) {
-            eop1980Loaders.add(loader);
+        synchronized (EOP_1980_LOADERS) {
+            EOP_1980_LOADERS.add(loader);
         }
     }
 
@@ -215,8 +215,8 @@ public class FramesFactory implements Serializable {
      * @see #clearEOP2000HistoryLoaders()
      */
     public static void clearEOP1980HistoryLoaders() {
-        synchronized (eop1980Loaders) {
-            eop1980Loaders.clear();
+        synchronized (EOP_1980_LOADERS) {
+            EOP_1980_LOADERS.clear();
         }
     }
 
@@ -234,10 +234,10 @@ public class FramesFactory implements Serializable {
      */
     public static EOP1980History getEOP1980History() throws OrekitException {
         EOP1980History history = new EOP1980History();
-        if (eop1980Loaders.isEmpty()) {
+        if (EOP_1980_LOADERS.isEmpty()) {
             addDefaultEOP1980HistoryLoaders(null, null);
         }
-        for (final EOP1980HistoryLoader loader : eop1980Loaders) {
+        for (final EOP1980HistoryLoader loader : EOP_1980_LOADERS) {
             loader.fillHistory(history);
         }
         history.checkEOPContinuity(5 * 86400.0);
@@ -251,8 +251,8 @@ public class FramesFactory implements Serializable {
      * @see #addEOP1980HistoryLoader(EOP1980HistoryLoader)
      */
     public static void addEOP2000HistoryLoader(final EOP2000HistoryLoader loader) {
-        synchronized (eop2000Loaders) {
-            eop2000Loaders.add(loader);
+        synchronized (EOP_2000_LOADERS) {
+            EOP_2000_LOADERS.add(loader);
         }
     }
 
@@ -286,8 +286,8 @@ public class FramesFactory implements Serializable {
      * @see #clearEOP1980HistoryLoaders()
      */
     public static void clearEOP2000HistoryLoaders() {
-        synchronized (eop2000Loaders) {
-            eop2000Loaders.clear();
+        synchronized (EOP_2000_LOADERS) {
+            EOP_2000_LOADERS.clear();
         }
     }
 
@@ -305,10 +305,10 @@ public class FramesFactory implements Serializable {
      */
     public static EOP2000History getEOP2000History() throws OrekitException {
         EOP2000History history = new EOP2000History();
-        if (eop2000Loaders.isEmpty()) {
+        if (EOP_2000_LOADERS.isEmpty()) {
             addDefaultEOP2000HistoryLoaders(null, null);
         }
-        for (final EOP2000HistoryLoader loader : eop2000Loaders) {
+        for (final EOP2000HistoryLoader loader : EOP_2000_LOADERS) {
             loader.fillHistory(history);
         }
         history.checkEOPContinuity(5 * 86400.0);

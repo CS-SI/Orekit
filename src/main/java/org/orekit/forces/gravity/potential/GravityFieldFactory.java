@@ -44,8 +44,8 @@ public class GravityFieldFactory {
     /** Default regular expression for GRGS files. */
     public static final String GRGS_FILENAME = "^grim\\d_.*$";
 
-    /** Potential readers. */
-    private static final List<PotentialCoefficientsReader> readers =
+    /** Potential READERS. */
+    private static final List<PotentialCoefficientsReader> READERS =
         new ArrayList<PotentialCoefficientsReader>();
 
     /** Private constructor.
@@ -62,14 +62,14 @@ public class GravityFieldFactory {
      * @see #clearPotentialCoefficientsReaders()
      */
     public static void addPotentialCoefficientsReader(final PotentialCoefficientsReader reader) {
-        synchronized (readers) {
-            readers.add(reader);
+        synchronized (READERS) {
+            READERS.add(reader);
         }
     }
 
-    /** Add the default readers for gravity fields.
+    /** Add the default READERS for gravity fields.
      * <p>
-     * The default readers supports ICGEM, SHM, EGM and GRGS formats with the
+     * The default READERS supports ICGEM, SHM, EGM and GRGS formats with the
      * default names {@link #ICGEM_FILENAME}, {@link #SHM_FILENAME}, {@link
      * #EGM_FILENAME}, {@link #GRGS_FILENAME} and don't allow missing coefficients.
      * </p>
@@ -77,21 +77,21 @@ public class GravityFieldFactory {
      * @see #clearPotentialCoefficientsReaders()
      */
     public static void addDefaultPotentialCoefficientsReaders() {
-        synchronized (readers) {
-            readers.add(new ICGEMFormatReader(ICGEM_FILENAME, false));
-            readers.add(new SHMFormatReader(SHM_FILENAME, false));
-            readers.add(new EGMFormatReader(EGM_FILENAME, false));
-            readers.add(new GRGSFormatReader(GRGS_FILENAME, false));
+        synchronized (READERS) {
+            READERS.add(new ICGEMFormatReader(ICGEM_FILENAME, false));
+            READERS.add(new SHMFormatReader(SHM_FILENAME, false));
+            READERS.add(new EGMFormatReader(EGM_FILENAME, false));
+            READERS.add(new GRGSFormatReader(GRGS_FILENAME, false));
         }
     }
 
-    /** Clear gravity field readers.
+    /** Clear gravity field READERS.
      * @see #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * @see #addDefaultPotentialCoefficientsReaders()
      */
     public static void clearPotentialCoefficientsReaders() {
-        synchronized (readers) {
-            readers.clear();
+        synchronized (READERS) {
+            READERS.clear();
         }
     }
 
@@ -113,14 +113,14 @@ public class GravityFieldFactory {
     public static PotentialCoefficientsProvider getPotentialProvider()
         throws IOException, ParseException, OrekitException {
 
-        synchronized (readers) {
+        synchronized (READERS) {
 
-            if (readers.isEmpty()) {
+            if (READERS.isEmpty()) {
                 addDefaultPotentialCoefficientsReaders();
             }
 
-            // test the available readers
-            for (final PotentialCoefficientsReader reader : readers) {
+            // test the available READERS
+            for (final PotentialCoefficientsReader reader : READERS) {
                 DataProvidersManager.getInstance().feed(reader.getSupportedNames(), reader);
                 if (!reader.stillAcceptsData()) {
                     return reader;

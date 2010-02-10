@@ -17,8 +17,6 @@
 package org.orekit.bodies;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 
 /** Factory class for bodies of the solar system.
  * <p>The {@link #getSun() Sun}, the {@link #getMoon() Moon} and the planets

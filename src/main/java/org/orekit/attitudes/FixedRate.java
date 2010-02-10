@@ -39,14 +39,13 @@ public class FixedRate implements AttitudeLaw {
 
     /** Creates a new instance.
      * @param referenceAttitude attitude at reference date
-     * @param referenceDate reference date
      */
     public FixedRate(final Attitude referenceAttitude) {
         this.referenceAttitude = referenceAttitude;
     }
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(Orbit orbit)
+    public Attitude getAttitude(final Orbit orbit)
         throws OrekitException {
         final double timeShift = orbit.getDate().durationFrom(referenceAttitude.getDate());
         final Attitude shifted = referenceAttitude.shiftedBy(timeShift);

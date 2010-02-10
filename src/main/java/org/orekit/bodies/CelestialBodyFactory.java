@@ -23,8 +23,6 @@ import java.util.Map;
 
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 
 /** Factory class for bodies of the solar system.
  * <p>The {@link #getSun() Sun}, the {@link #getMoon() Moon} and the planets
@@ -116,11 +114,11 @@ public class CelestialBodyFactory {
     public static final String PLUTO = "Pluto";
 
     /** Celestial body loaders map. */
-    private static final Map<String, List<CelestialBodyLoader>> loadersMap =
+    private static final Map<String, List<CelestialBodyLoader>> LOADERS_MAP =
         new HashMap<String, List<CelestialBodyLoader>>();
 
     /** Celestial body map. */
-    private static final Map<String, CelestialBody> celestialBodiesMap =
+    private static final Map<String, CelestialBody> CELESTIAL_BODIES_MAP =
         new HashMap<String, CelestialBody>();
 
     /** Private constructor.
@@ -139,11 +137,11 @@ public class CelestialBodyFactory {
      * @see #clearCelestialBodyLoaders()
      */
     public static void addCelestialBodyLoader(final String name, final CelestialBodyLoader loader) {
-        synchronized (loadersMap) {
-            List<CelestialBodyLoader> loaders = loadersMap.get(name);
+        synchronized (LOADERS_MAP) {
+            List<CelestialBodyLoader> loaders = LOADERS_MAP.get(name);
             if (loaders == null) {
                 loaders = new ArrayList<CelestialBodyLoader>();
-                loadersMap.put(name, loaders);
+                LOADERS_MAP.put(name, loaders);
             }
             loaders.add(loader);
         }
@@ -252,8 +250,8 @@ public class CelestialBodyFactory {
      * @see #clearCelestialBodyLoaders()
      */
     public static void clearCelestialBodyLoaders(final String name) {
-        synchronized (loadersMap) {
-            loadersMap.remove(name);
+        synchronized (LOADERS_MAP) {
+            LOADERS_MAP.remove(name);
         }
     }
 
@@ -262,8 +260,8 @@ public class CelestialBodyFactory {
      * @see #clearCelestialBodyLoaders(String)
      */
     public static void clearCelestialBodyLoaders() {
-        synchronized (loadersMap) {
-            loadersMap.clear();
+        synchronized (LOADERS_MAP) {
+            LOADERS_MAP.clear();
         }
     }
 
@@ -387,15 +385,15 @@ public class CelestialBodyFactory {
      */
     public static CelestialBody getBody(final String name)
         throws OrekitException {
-        synchronized (celestialBodiesMap) {
-            CelestialBody body = celestialBodiesMap.get(name);
+        synchronized (CELESTIAL_BODIES_MAP) {
+            CelestialBody body = CELESTIAL_BODIES_MAP.get(name);
             if (body == null) {
-                synchronized (loadersMap) {
-                    List<CelestialBodyLoader> loaders = loadersMap.get(name);
+                synchronized (LOADERS_MAP) {
+                    List<CelestialBodyLoader> loaders = LOADERS_MAP.get(name);
                     boolean loaded = false;
                     if ((loaders == null) || loaders.isEmpty()) {
                         addDefaultCelestialBodyLoader(name, null);
-                        loaders = loadersMap.get(name);
+                        loaders = LOADERS_MAP.get(name);
                     }
                     for (CelestialBodyLoader loader : loaders) {
                         DataProvidersManager.getInstance().feed(loader.getSupportedNames(), loader);
@@ -412,7 +410,7 @@ public class CelestialBodyFactory {
                 }
 
                 // save the body
-                celestialBodiesMap.put(name, body);
+                CELESTIAL_BODIES_MAP.put(name, body);
 
             }
 

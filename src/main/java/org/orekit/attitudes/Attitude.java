@@ -61,6 +61,20 @@ public class Attitude implements TimeStamped, Serializable {
     /** Spin (spin axis AND velocity).  */
     private final Vector3D spin;
 
+    /** Creates a new instance.
+     * @param date date at which attitude is defined
+     * @param referenceFrame reference frame from which attitude is defined
+     * @param attitude rotation between reference frame and satellite frame
+     * @param spin satellite spin (axis and velocity, in <strong>satellite</strong> frame)
+     */
+    public Attitude(final AbsoluteDate date, final Frame referenceFrame,
+                    final Rotation attitude, final Vector3D spin) {
+        this.date           = date;
+        this.referenceFrame = referenceFrame;
+        this.attitude       = attitude;
+        this.spin           = spin;
+    }
+
     /** Estimate spin between two orientations.
      * <p>Estimation is based on a simple fixed rate rotation
      * during the time interval between the two attitude.</p>
@@ -73,19 +87,6 @@ public class Attitude implements TimeStamped, Serializable {
                                         final double dt) {
         final Rotation evolution = start.applyTo(end.revert());
         return new Vector3D(evolution.getAngle() / dt, evolution.getAxis());
-    }
-
-    /** Creates a new instance.
-     * @param referenceFrame reference frame from which attitude is defined
-     * @param attitude rotation between reference frame and satellite frame
-     * @param spin satellite spin (axis and velocity, in <strong>satellite</strong> frame)
-     */
-    public Attitude(final AbsoluteDate date, final Frame referenceFrame,
-                    final Rotation attitude, final Vector3D spin) {
-        this.date           = date;
-        this.referenceFrame = referenceFrame;
-        this.attitude       = attitude;
-        this.spin           = spin;
     }
 
     /** Get a time-shifted attitude.

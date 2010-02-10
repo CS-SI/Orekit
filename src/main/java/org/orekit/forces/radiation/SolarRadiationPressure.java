@@ -142,17 +142,17 @@ public class SolarRadiationPressure implements ForceModel {
             throw new OrekitException(LOW_TRAJECTORY_MESSAGE, r);
         }
 
-        final double alphaEarth = Math.atan(equatorialRadius / r);
+        final double alphaEarth = Math.asin(equatorialRadius / r);
 
         // Definition of the Sun's apparent radius
-        final double alphaSun = SUN_RADIUS / satSunVector.getNorm();
+        final double alphaSun = Math.asin(SUN_RADIUS / satSunVector.getNorm());
 
         // Retrieve the Sat-Sun / Sat-Central body angle
         final double sunEarthAngle = Vector3D.angle(satSunVector, position.negate());
 
         double result = 1.0;
 
-        // Is the satellite in complete penumbra ?
+        // Is the satellite in complete umbra ?
         if (sunEarthAngle - alphaEarth + alphaSun < 0.0) {
             result = 0.0;
         }
@@ -205,8 +205,6 @@ public class SolarRadiationPressure implements ForceModel {
         };
     }
 
-    //TODO: UmbraDetector and PenumbraDetector extend EclipseDetector or add + alphaSun in UmbraDetector.g
-
     /** This class defines the umbra entry/exit detector. */
     private class UmbraDetector extends AbstractDetector {
 
@@ -238,7 +236,7 @@ public class SolarRadiationPressure implements ForceModel {
             if (r <= equatorialRadius) {
                 throw new OrekitException(LOW_TRAJECTORY_MESSAGE, r);
             }
-            final double alphaEarth = equatorialRadius / r;
+            final double alphaEarth = Math.asin(equatorialRadius / r);
             return sunEarthAngle - alphaEarth;
         }
 
@@ -276,8 +274,8 @@ public class SolarRadiationPressure implements ForceModel {
             if (r <= equatorialRadius) {
                 throw new OrekitException(LOW_TRAJECTORY_MESSAGE, r);
             }
-            final double alphaEarth = equatorialRadius / r;
-            final double alphaSun   = SUN_RADIUS / satSunVector.getNorm();
+            final double alphaEarth = Math.asin(equatorialRadius / r);
+            final double alphaSun   = Math.asin(SUN_RADIUS / satSunVector.getNorm());
             return sunEarthAngle - alphaEarth - alphaSun;
         }
 

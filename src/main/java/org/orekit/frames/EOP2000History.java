@@ -16,12 +16,11 @@
  */
 package org.orekit.frames;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 /** This class holds Earth Orientation Parameters (IAU2000) data throughout a large time range.
  * @author Pascal Parraud
- * @version $Revision: 3000 $ $Date: 2010-01-04 18:19:35 +0100 (lun., 04 janv. 2010) $
+ * @version $Revision$ $Date$
  */
 public class EOP2000History extends AbstractEOPHistory {
 
@@ -36,7 +35,7 @@ public class EOP2000History extends AbstractEOPHistory {
     /** Add an Earth Orientation Parameters entry.
      * @param entry entry to add
      */
-    public void addEntry(final EOP2000Entry entry) throws OrekitException {
+    public void addEntry(final EOP2000Entry entry) {
         entries.add(entry);
     }
 

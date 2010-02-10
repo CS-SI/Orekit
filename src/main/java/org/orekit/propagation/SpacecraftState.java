@@ -130,7 +130,7 @@ public class SpacecraftState implements TimeStamped, Serializable {
      */
     private static void checkConsistency(final Orbit orbit, final Attitude attitude)
         throws IllegalArgumentException {
-        if (! orbit.getDate().equals(attitude.getDate())) {
+        if (!orbit.getDate().equals(attitude.getDate())) {
             throw OrekitException.createIllegalArgumentException(
                   "orbit date ({0}) does not match attitude date ({1})",
                   orbit.getDate(), attitude.getDate());
@@ -215,7 +215,8 @@ public class SpacecraftState implements TimeStamped, Serializable {
             new Transform(pv.getPosition().negate(), pv.getVelocity().negate());
 
         // attitude contribution
-        Transform attitudeTransform = new Transform(attitude.getRotation(), attitude.getSpin());
+        final Transform attitudeTransform =
+            new Transform(attitude.getRotation(), attitude.getSpin());
 
         // combine all contributions
         return new Transform(orbitTransform, attitudeTransform);

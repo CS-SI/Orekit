@@ -170,23 +170,23 @@ class EOP05C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
     }
 
     /** {@inheritDoc} */
-    public void fillHistory(EOP1980History history)
+    public void fillHistory(final EOP1980History history)
         throws OrekitException {
         synchronized (this) {
             history1980 = history;
             history2000 = null;
             DataProvidersManager.getInstance().feed(supportedNames, this);
-        }        
+        }
     }
 
     /** {@inheritDoc} */
-    public void fillHistory(EOP2000History history)
+    public void fillHistory(final EOP2000History history)
         throws OrekitException {
         synchronized (this) {
             history1980 = null;
             history2000 = history;
             DataProvidersManager.getInstance().feed(supportedNames, this);
-        }        
+        }
     }
 
 

@@ -77,7 +77,7 @@ public abstract class GroundPointingWrapper extends GroundPointing {
 
     /** {@inheritDoc} */
     @Override
-    public Attitude getAttitude(Orbit orbit)
+    public Attitude getAttitude(final Orbit orbit)
         throws OrekitException {
 
         // Get attitude from base attitude law

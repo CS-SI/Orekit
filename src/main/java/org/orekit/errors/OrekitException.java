@@ -115,7 +115,7 @@ public class OrekitException extends Exception {
      */
     private static String translate(final String s, final Locale locale) {
         try {
-            ResourceBundle bundle =
+            final ResourceBundle bundle =
                 ResourceBundle.getBundle("META-INF/localization/ExceptionsMessages", locale);
             if (bundle.getLocale().getLanguage().equals(locale.getLanguage())) {
                 // the value of the resource is the translated string

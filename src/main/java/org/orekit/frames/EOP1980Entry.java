@@ -28,10 +28,10 @@ public class EOP1980Entry extends EOPEntry {
     private static final long serialVersionUID = 4764846281974843922L;
 
     /** Correction for nutation in longitude. */
-    public final double ddPsi;
+    private final double ddPsi;
 
     /** Correction for nutation in obliquity. */
-    public final double ddEps;
+    private final double ddEps;
 
    /** Simple constructor.
     * @param mjd entry date (modified julian day, 00h00 UTC scale)
@@ -49,14 +49,14 @@ public class EOP1980Entry extends EOPEntry {
         this.ddEps = ddEps;
     }
 
-    /** Get the correction for nutation in longitude
+    /** Get the correction for nutation in longitude.
      * @return correction for nutation in longitude
      */
     public double getDdPsi() {
         return ddPsi;
     }
 
-    /** Get the correction for nutation in obliquity
+    /** Get the correction for nutation in obliquity.
      * @return correction for nutation in obliquity
      */
     public double getDdEps() {

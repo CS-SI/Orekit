@@ -49,14 +49,14 @@ public class EOP2000Entry extends EOPEntry {
         this.y = y;
     }
 
-    /** Get the X component of the pole motion
+    /** Get the X component of the pole motion.
      * @return X component of pole motion
      */
     public double getX() {
         return x;
     }
 
-    /** Get the Y component of the pole motion
+    /** Get the Y component of the pole motion.
      * @return Y component of pole motion
      */
     public double getY() {

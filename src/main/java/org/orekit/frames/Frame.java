@@ -115,7 +115,7 @@ public class Frame implements Serializable {
      */
     public Frame(final Frame parent, final Transform transform, final String name,
                  final boolean quasiInertial)
-    throws IllegalArgumentException {
+        throws IllegalArgumentException {
 
         if (parent == null) {
             throw OrekitException.createIllegalArgumentException("null parent for frame {0}",

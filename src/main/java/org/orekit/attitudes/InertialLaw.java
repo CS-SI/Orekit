@@ -53,7 +53,7 @@ public class InertialLaw implements AttitudeLaw {
     }
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(Orbit orbit)
+    public Attitude getAttitude(final Orbit orbit)
         throws OrekitException {
         final AbsoluteDate date = orbit.getDate();
         final Frame frame = orbit.getFrame();

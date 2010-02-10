@@ -109,7 +109,7 @@ public class KeplerianPropagator extends AbstractPropagator {
      * @param attitudeLaw attitude law
      * @param mu central attraction coefficient (m^3/s^2)
      * @param mass spacecraft mass (kg)
-     * @exception OrekitException if initial attitude cannot be computed
+     * @exception PropagationException if initial attitude cannot be computed
      */
     public KeplerianPropagator(final Orbit initialOrbit, final AttitudeLaw attitudeLaw,
                                final double mu, final double mass)

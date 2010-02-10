@@ -63,8 +63,8 @@ public class EventShifter extends AbstractDetector {
      * @param useShiftedStates if true, the state provided to {@link
      * #eventOccurred(SpacecraftState, boolean) eventOccurreed} method of
      * the <code>detector</code> will be left shifted, otherwise it will
-     * be <i>unshifted</i> to correspond to the underlying raw event. 
-     * @param increasingTimeShift increasing events time shift
+     * be <i>unshifted</i> to correspond to the underlying raw event.
+     * @param increasingTimeShift increasing events time shift.
      * @param decreasingTimeShift decreasing events time shift.
      */
     public EventShifter(final EventDetector detector, final boolean useShiftedStates,

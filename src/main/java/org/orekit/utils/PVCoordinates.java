@@ -46,21 +46,8 @@ public class PVCoordinates implements Serializable {
     /** The velocity. */
     private final Vector3D velocity;
 
-    /** Estimate velocity between two positions.
-     * <p>Estimation is based on a simple fixed velocity translation
-     * during the time interval between the two positions.</p>
-     * @param start start position
-     * @param end end position
-     * @param dt time elapsed between the dates of the two positions
-     * @return velocity allowing to go from start to end positions
-     */
-    public static Vector3D estimateVelocity(final Vector3D start, final Vector3D end, final double dt) {
-        final double scale = 1.0 / dt;
-        return new Vector3D(scale, end, -scale, start);
-    }
-
     /** Simple constructor.
-     * <p> Sets the Coordinates to default : (0 0 0) (0 0 0).
+     * <p> Sets the Coordinates to default : (0 0 0) (0 0 0).</p>
      */
     public PVCoordinates() {
         position = Vector3D.ZERO;
@@ -90,8 +77,8 @@ public class PVCoordinates implements Serializable {
     /** Subtractive constructor
      * <p>Build a relative PVCoordinates from a start and an end position.</p>
      * <p>The PVCoordinates built will be end - start.</p>
-     * @param a scale factor
-     * @param pv base (unscaled) PVCoordinates
+     * @param start Starting PVCoordinates
+     * @param end ending PVCoordinates
      */
     public PVCoordinates(final PVCoordinates start, final PVCoordinates end) {
         this.position = end.position.subtract(start.position);
@@ -147,6 +134,19 @@ public class PVCoordinates implements Serializable {
                          final double a4, final PVCoordinates pv4) {
         position = new Vector3D(a1, pv1.position, a2, pv2.position, a3, pv3.position, a4, pv4.position);
         velocity = new Vector3D(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity, a4, pv4.velocity);
+    }
+
+    /** Estimate velocity between two positions.
+     * <p>Estimation is based on a simple fixed velocity translation
+     * during the time interval between the two positions.</p>
+     * @param start start position
+     * @param end end position
+     * @param dt time elapsed between the dates of the two positions
+     * @return velocity allowing to go from start to end positions
+     */
+    public static Vector3D estimateVelocity(final Vector3D start, final Vector3D end, final double dt) {
+        final double scale = 1.0 / dt;
+        return new Vector3D(scale, end, -scale, start);
     }
 
     /** Get a time-shifted state.

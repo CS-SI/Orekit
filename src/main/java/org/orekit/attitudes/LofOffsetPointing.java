@@ -68,7 +68,7 @@ public class LofOffsetPointing extends GroundPointing {
 
     /** {@inheritDoc} */
     @Override
-    public Attitude getAttitude(Orbit orbit)
+    public Attitude getAttitude(final Orbit orbit)
         throws OrekitException {
         return attitudeLaw.getAttitude(orbit);
     }

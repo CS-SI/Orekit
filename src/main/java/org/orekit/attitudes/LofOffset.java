@@ -66,7 +66,7 @@ public class LofOffset implements AttitudeLaw {
 
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(Orbit orbit) {
+    public Attitude getAttitude(final Orbit orbit) {
 
         final PVCoordinates pv = orbit.getPVCoordinates();
         final Frame frame = orbit.getFrame();
