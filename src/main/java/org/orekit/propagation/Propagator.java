@@ -124,6 +124,11 @@ public interface Propagator extends BasicPropagator {
      */
     BoundedPropagator getGeneratedEphemeris() throws IllegalStateException;
 
+    /** Get the propagator initial state.
+     * @return initial state
+     */
+    SpacecraftState getInitialState();
+
     /** Reset the propagator initial state.
      * @param state new initial state to consider
      * @exception PropagationException if initial state cannot be reset

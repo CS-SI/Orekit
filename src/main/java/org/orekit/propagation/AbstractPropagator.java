@@ -37,7 +37,7 @@ import org.orekit.utils.PVCoordinates;
  * This abstract class allows to provide easily the full set of {@link Propagator}
  * methods, including all propagation modes support and discrete events support
  * for any simple propagation method. Only three methods must be implemented by
- * derived classes: {@link #getInitialDate()}, {@link #basicPropagate(AbsoluteDate)}
+ * derived classes: {@link #getInitialState()}, {@link #basicPropagate(AbsoluteDate)}
  * and {@link #resetInitialState(SpacecraftState)}. The second method should perform
  * straightforward propagation starting from some internally stored initial state
  * up to the specified target date. The third method should reset the initial state
@@ -134,7 +134,7 @@ public abstract class AbstractPropagator implements Propagator {
         try {
 
             // initial state
-            interpolator.storeDate(getInitialDate());
+            interpolator.storeDate(getInitialState().getDate());
             SpacecraftState state = interpolator.getInterpolatedState();
 
             // evaluate step size
@@ -149,7 +149,7 @@ public abstract class AbstractPropagator implements Propagator {
                 stepSize = target.durationFrom(interpolator.getCurrentDate());
             }
             final CombinedEventsDetectorsManager manager =
-                addEndDateChecker(getInitialDate(), target, eventsDetectorsManager);
+                addEndDateChecker(getInitialState().getDate(), target, eventsDetectorsManager);
 
             // iterate over the propagation range
             AbsoluteDate stepEnd = interpolator.getCurrentDate().shiftedBy(stepSize);
@@ -232,7 +232,7 @@ public abstract class AbstractPropagator implements Propagator {
     /** Get the initial propagation date.
      * @return initial propagation date
      */
-    protected abstract AbsoluteDate getInitialDate();
+    public abstract SpacecraftState getInitialState();
 
     /** Propagate an orbit without any fancy features.
      * <p>This method is similar in spirit to the {@link #propagate} method,

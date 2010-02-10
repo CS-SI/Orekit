@@ -42,7 +42,7 @@ import org.orekit.time.AbsoluteDate;
 public class EcksteinHechlerPropagator extends AbstractPropagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2154127352751738129L;
+    private static final long serialVersionUID = 1268374325750125229L;
 
     /** Default mass. */
     private static final double DEFAULT_MASS = 1000.0;
@@ -58,6 +58,9 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
 
     /** Mean parameters at the initial date. */
     private CircularOrbit mean;
+
+    /** Initial state. */
+    private SpacecraftState initialState;
 
     // CHECKSTYLE: stop JavadocVariable check
 
@@ -213,28 +216,34 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60)
         throws PropagationException {
+        try {
 
-        // store model coefficients
-        this.referenceRadius = referenceRadius;
-        this.mu  = mu;
-        this.c20 = c20;
-        this.c30 = c30;
-        this.c40 = c40;
-        this.c50 = c50;
-        this.c60 = c60;
+            // store model coefficients
+            this.referenceRadius = referenceRadius;
+            this.mu  = mu;
+            this.c20 = c20;
+            this.c30 = c30;
+            this.c40 = c40;
+            this.c50 = c50;
+            this.c60 = c60;
 
-        // compute mean parameters
-        this.mass = mass;
-        this.attitudeLaw = attitudeLaw;
+            // compute mean parameters
+            this.mass = mass;
+            this.attitudeLaw = attitudeLaw;
 
-        // transform into circular adapted parameters used by the Eckstein-Hechler model
-        computeMeanParameters(new CircularOrbit(initialOrbit));
+            initialState = new SpacecraftState(initialOrbit, attitudeLaw.getAttitude(initialOrbit), mass);
 
+            // transform into circular adapted parameters used by the Eckstein-Hechler model
+            computeMeanParameters(new CircularOrbit(initialOrbit));
+
+        } catch (OrekitException oe) {
+            throw new PropagationException(oe.getLocalizedMessage(), oe);
+        }
     }
 
     /** {@inheritDoc} */
-    protected AbsoluteDate getInitialDate() {
-        return mean.getDate();
+    public SpacecraftState getInitialState() {
+        return initialState;
     }
 
     /** {@inheritDoc} */
@@ -246,7 +255,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
             final Orbit orbit = propagateOrbit(date);
 
             // evaluate attitude
-            final Attitude attitude = attitudeLaw.getState(orbit);
+            final Attitude attitude = attitudeLaw.getAttitude(orbit);
 
             return new SpacecraftState(orbit, attitude, mass);
 
@@ -260,6 +269,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
         throws PropagationException {
         mass = state.getMass();
         computeMeanParameters(new CircularOrbit(state.getOrbit()));
+        initialState = state;
     }
 
     /** Compute mean parameters according to the Eckstein-Hechler analytical model.

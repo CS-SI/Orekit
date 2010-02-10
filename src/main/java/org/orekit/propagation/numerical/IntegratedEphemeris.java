@@ -133,7 +133,7 @@ class IntegratedEphemeris
                                      state[3], state[4], state[5], 2, initializedFrame, date, initializedMu);
             final double mass = state[6];
 
-            return new SpacecraftState(eq, initializedAttitudeLaw.getState(eq), mass);
+            return new SpacecraftState(eq, initializedAttitudeLaw.getAttitude(eq), mass);
         } catch (OrekitException oe) {
             throw new PropagationException(oe.getMessage(), oe);
         } catch (DerivativeException de) {

@@ -21,7 +21,6 @@ import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.attitudes.InertialLaw;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
-import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.SpacecraftState;
@@ -43,8 +42,8 @@ public class KeplerianPropagator extends AbstractPropagator {
     /** Default attitude law. */
     private static final AttitudeLaw DEFAULT_LAW = InertialLaw.EME2000_ALIGNED;
 
-    /** Initial orbit. */
-    private EquinoctialOrbit initialOrbit;
+    /** Initial state. */
+    private SpacecraftState initialState;
 
     /** Attitude law. */
     private final AttitudeLaw attitudeLaw;
@@ -57,8 +56,10 @@ public class KeplerianPropagator extends AbstractPropagator {
      * for the initial orbit definition. Mass and attitude law are set to
      * unspecified non-null arbitrary values.</p>
      * @param initialOrbit initial orbit
+     * @exception PropagationException if initial attitude cannot be computed
      */
-    public KeplerianPropagator(final Orbit initialOrbit)  {
+    public KeplerianPropagator(final Orbit initialOrbit)
+        throws PropagationException {
         this(initialOrbit, DEFAULT_LAW, initialOrbit.getMu(), DEFAULT_MASS);
     }
 
@@ -66,8 +67,10 @@ public class KeplerianPropagator extends AbstractPropagator {
      * <p>Mass and attitude law are set to unspecified non-null arbitrary values.</p>
      * @param initialOrbit initial orbit
      * @param mu central attraction coefficient (m^3/s^2)
+     * @exception PropagationException if initial attitude cannot be computed
      */
-    public KeplerianPropagator(final Orbit initialOrbit, final double mu)  {
+    public KeplerianPropagator(final Orbit initialOrbit, final double mu)
+        throws PropagationException {
         this(initialOrbit, DEFAULT_LAW, mu, DEFAULT_MASS);
     }
 
@@ -77,9 +80,11 @@ public class KeplerianPropagator extends AbstractPropagator {
      * non-null arbitrary value.</p>
      * @param initialOrbit initial orbit
      * @param attitudeLaw attitude law
+     * @exception PropagationException if initial attitude cannot be computed
      */
     public KeplerianPropagator(final Orbit initialOrbit,
-                               final AttitudeLaw attitudeLaw) {
+                               final AttitudeLaw attitudeLaw)
+        throws PropagationException {
         this(initialOrbit, attitudeLaw, initialOrbit.getMu(), DEFAULT_MASS);
     }
 
@@ -89,10 +94,12 @@ public class KeplerianPropagator extends AbstractPropagator {
      * @param initialOrbit initial orbit
      * @param attitudeLaw attitude law
      * @param mu central attraction coefficient (m^3/s^2)
+     * @exception PropagationException if initial attitude cannot be computed
      */
     public KeplerianPropagator(final Orbit initialOrbit,
                                final AttitudeLaw attitudeLaw,
-                               final double mu) {
+                               final double mu)
+        throws PropagationException {
         this(initialOrbit, attitudeLaw, mu, DEFAULT_MASS);
     }
 
@@ -102,17 +109,23 @@ public class KeplerianPropagator extends AbstractPropagator {
      * @param attitudeLaw attitude law
      * @param mu central attraction coefficient (m^3/s^2)
      * @param mass spacecraft mass (kg)
+     * @exception OrekitException if initial attitude cannot be computed
      */
     public KeplerianPropagator(final Orbit initialOrbit, final AttitudeLaw attitudeLaw,
-                               final double mu, final double mass) {
-        this.initialOrbit = new EquinoctialOrbit(initialOrbit);
-        this.attitudeLaw  = attitudeLaw;
-        this.mass         = mass;
+                               final double mu, final double mass)
+        throws PropagationException {
+        try {
+            this.initialState = new SpacecraftState(initialOrbit, attitudeLaw.getAttitude(initialOrbit), mass);
+            this.attitudeLaw  = attitudeLaw;
+            this.mass         = mass;
+        } catch (OrekitException oe) {
+            throw new PropagationException(oe.getLocalizedMessage(), oe);
+        }
     }
 
     /** {@inheritDoc} */
-    protected AbsoluteDate getInitialDate() {
-        return initialOrbit.getDate();
+    public SpacecraftState getInitialState() {
+        return initialState;
     }
 
     /** {@inheritDoc} */
@@ -121,15 +134,16 @@ public class KeplerianPropagator extends AbstractPropagator {
         try {
 
             // evaluation of orbit
+            final Orbit initialOrbit = initialState.getOrbit();
             final Orbit orbit = initialOrbit.shiftedBy(date.durationFrom(initialOrbit.getDate()));
 
             // evaluation of attitude
-            final Attitude attitude = attitudeLaw.getState(orbit);
+            final Attitude attitude = attitudeLaw.getAttitude(orbit);
 
             return new SpacecraftState(orbit, attitude, mass);
 
         } catch (OrekitException oe) {
-            throw new PropagationException(oe.getMessage(), oe);
+            throw new PropagationException(oe.getLocalizedMessage(), oe);
         }
 
     }
@@ -137,7 +151,7 @@ public class KeplerianPropagator extends AbstractPropagator {
     /** {@inheritDoc} */
     public void resetInitialState(final SpacecraftState state)
         throws PropagationException {
-        initialOrbit   = new EquinoctialOrbit(state.getOrbit());
+        initialState   = state;
         mass           = state.getMass();
     }
 
