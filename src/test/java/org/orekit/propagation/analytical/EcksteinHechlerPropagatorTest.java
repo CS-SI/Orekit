@@ -499,7 +499,7 @@ public class EcksteinHechlerPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         AttitudeLaw wrongLaw = new AttitudeLaw() {
             private static final long serialVersionUID = 5918362126173997016L;
-            public Attitude getState(Orbit orbit) throws OrekitException {
+            public Attitude getAttitude(Orbit orbit) throws OrekitException {
                 throw new OrekitException(new RuntimeException(), "gasp");
             }
         };
