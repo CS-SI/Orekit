@@ -39,7 +39,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
 
@@ -72,17 +71,15 @@ public class YawSteeringTest {
         //  Check observed ground point
         // *****************************
         // without yaw compensation
-        PVCoordinates noYawObserved = nadirLaw.getObservedGroundPoint(circOrbit, frameITRF2005);
+        Vector3D noYawObserved = nadirLaw.getTargetPoint(circOrbit, frameITRF2005);
 
         // with yaw compensation
-        PVCoordinates yawObserved = yawCompensLaw.getObservedGroundPoint(circOrbit, frameITRF2005);
+        Vector3D yawObserved = yawCompensLaw.getTargetPoint(circOrbit, frameITRF2005);
 
         // Check difference
-        PVCoordinates observedDiff = new PVCoordinates(noYawObserved, yawObserved);
-        double normObservedDiffPos = observedDiff.getPosition().getNorm();
-        double normObservedDiffVel = observedDiff.getVelocity().getNorm();
+        Vector3D observedDiff = noYawObserved.subtract(yawObserved);
        
-        Assert.assertTrue((normObservedDiffPos < Utils.epsilonTest)&&(normObservedDiffVel < Utils.epsilonTest));
+        Assert.assertTrue(observedDiff.getNorm() < Utils.epsilonTest);
    }
 
     @Test
@@ -98,7 +95,7 @@ public class YawSteeringTest {
         YawSteering yawCompensLaw = new YawSteering(nadirLaw, sun, Vector3D.MINUS_I);
 
         // Get sun direction in satellite frame
-        Rotation rotYaw = yawCompensLaw.getState(circOrbit).getRotation();
+        Rotation rotYaw = yawCompensLaw.getAttitude(circOrbit).getRotation();
         Vector3D sunEME2000 = sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition();
         Vector3D sunSat = rotYaw.applyTo(sunEME2000);
             
@@ -120,8 +117,8 @@ public class YawSteeringTest {
             new YawSteering(nadirLaw, CelestialBodyFactory.getSun(), Vector3D.MINUS_I);
 
         // Get attitude rotations from non yaw compensated / yaw compensated laws
-        Rotation rotNoYaw = nadirLaw.getState(circOrbit).getRotation();
-        Rotation rotYaw = yawCompensLaw.getState(circOrbit).getRotation();
+        Rotation rotNoYaw = nadirLaw.getAttitude(circOrbit).getRotation();
+        Rotation rotYaw = yawCompensLaw.getAttitude(circOrbit).getRotation();
             
         // Compose rotations composition
         Rotation compoRot = rotYaw.applyTo(rotNoYaw.revert());
@@ -161,10 +158,8 @@ public class YawSteeringTest {
         Vector3D reference = Attitude.estimateSpin(sMinus.getAttitude().getRotation(),
                                                    sPlus.getAttitude().getRotation(),
                                                    2 * h);
-        System.out.println(spin0.getNorm() + " " + (2 * Math.PI / spin0.getNorm()));
-        System.out.println(reference.getNorm() + " " + (2 * Math.PI / reference.getNorm()));
         Assert.assertTrue(spin0.getNorm() > 1.0e-3);
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-14);
+        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 2.0e-12);
 
     }
 

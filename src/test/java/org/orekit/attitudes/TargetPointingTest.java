@@ -86,10 +86,10 @@ public class TargetPointingTest {
         
         // Check that both attitude are the same 
         // Get satellite rotation for target pointing law 
-        Rotation rotPv = pvTargetAttitudeLaw.getState(circ).getRotation();
+        Rotation rotPv = pvTargetAttitudeLaw.getAttitude(circ).getRotation();
 
         // Get satellite rotation for nadir pointing law
-        Rotation rotGeo = geoTargetAttitudeLaw.getState(circ).getRotation();
+        Rotation rotGeo = geoTargetAttitudeLaw.getAttitude(circ).getRotation();
 
         // Rotations composition
         Rotation rotCompo = rotGeo.applyInverseTo(rotPv);
@@ -166,10 +166,10 @@ public class TargetPointingTest {
         // with nadir pointing rotation shall be identity. 
         
         // Get satellite rotation from target pointing law at date
-        Rotation rotTarget = targetAttitudeLaw.getState(circOrbit).getRotation();
+        Rotation rotTarget = targetAttitudeLaw.getAttitude(circOrbit).getRotation();
 
         // Get satellite rotation from nadir pointing law at date
-        Rotation rotNadir = nadirAttitudeLaw.getState(circOrbit).getRotation();
+        Rotation rotNadir = nadirAttitudeLaw.getAttitude(circOrbit).getRotation();
 
         // Compose attitude rotations
         Rotation rotCompo = rotTarget.applyInverseTo(rotNadir);
@@ -187,10 +187,10 @@ public class TargetPointingTest {
         SpacecraftState extrapOrbit = extrapolator.propagate(extrapDate);
         
         // Get satellite rotation from target pointing law at date + 1min
-        Rotation extrapRotTarget = targetAttitudeLaw.getState(extrapOrbit.getOrbit()).getRotation();
+        Rotation extrapRotTarget = targetAttitudeLaw.getAttitude(extrapOrbit.getOrbit()).getRotation();
         
         // Get satellite rotation from nadir pointing law at date
-        Rotation extrapRotNadir = nadirAttitudeLaw.getState(extrapOrbit.getOrbit()).getRotation();
+        Rotation extrapRotNadir = nadirAttitudeLaw.getAttitude(extrapOrbit.getOrbit()).getRotation();
 
         // Compose attitude rotations
         Rotation extrapRotCompo = extrapRotTarget.applyInverseTo(extrapRotNadir);
@@ -233,7 +233,7 @@ public class TargetPointingTest {
         //  Pointing direction
         // ********************
         // Get satellite attitude rotation, i.e rotation from EME2000 frame to satellite frame
-        Rotation rotSatEME2000 = targetAttitudeLaw.getState(circ).getRotation();
+        Rotation rotSatEME2000 = targetAttitudeLaw.getAttitude(circ).getRotation();
         
         // Transform Z axis from satellite frame to EME2000 
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);
@@ -278,7 +278,7 @@ public class TargetPointingTest {
         TargetPointing targetLawRef = new TargetPointing(frameITRF2005, pNadirObservedITRF2005);
         
         // Get attitude rotation in EME2000
-        Rotation rotSatRefEME2000 = targetLawRef.getState(circ).getRotation();
+        Rotation rotSatRefEME2000 = targetLawRef.getAttitude(circ).getRotation();
       
         // Create target pointing attitude law with target 5° from nadir target 
         // ******************************************************************** 
@@ -288,7 +288,7 @@ public class TargetPointingTest {
         TargetPointing targetLaw = new TargetPointing(frameITRF2005, pTargetITRF2005C);
         
         // Get attitude rotation 
-        Rotation rotSatEME2000 = targetLaw.getState(circ).getRotation();
+        Rotation rotSatEME2000 = targetLaw.getAttitude(circ).getRotation();
         
         // Compute difference between both attitude laws 
         // *********************************************

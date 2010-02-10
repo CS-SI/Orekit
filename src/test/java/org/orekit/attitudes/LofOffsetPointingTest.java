@@ -69,19 +69,19 @@ public class LofOffsetPointingTest {
         //************************
         final LofOffset lofLaw = LofOffset.LOF_ALIGNED;
         final LofOffsetPointing lofPointing = new LofOffsetPointing(earthSpheric, lofLaw, Vector3D.PLUS_K);
-        final Rotation lofRot = lofPointing.getState(circ).getRotation();
+        final Rotation lofRot = lofPointing.getAttitude(circ).getRotation();
  
         // Compare to body center pointing law
         //*************************************
         final BodyCenterPointing centerLaw = new BodyCenterPointing(earthSpheric.getBodyFrame());
-        final Rotation centerRot = centerLaw.getState(circ).getRotation();
+        final Rotation centerRot = centerLaw.getAttitude(circ).getRotation();
         final double angleBodyCenter = centerRot.applyInverseTo(lofRot).getAngle();
         Assert.assertEquals(0., angleBodyCenter, Utils.epsilonAngle);
 
         // Compare to nadir pointing law
         //*******************************
         final NadirPointing nadirLaw = new NadirPointing(earthSpheric);
-        final Rotation nadirRot = nadirLaw.getState(circ).getRotation();
+        final Rotation nadirRot = nadirLaw.getAttitude(circ).getRotation();
         final double angleNadir = nadirRot.applyInverseTo(lofRot).getAngle();
         Assert.assertEquals(0., angleNadir, Utils.epsilonAngle);
 
@@ -95,7 +95,7 @@ public class LofOffsetPointingTest {
                                    FramesFactory.getEME2000(), date, mu);
         final LofOffset upsideDown = new LofOffset(RotationOrder.XYX, Math.PI, 0, 0);
         final LofOffsetPointing pointing = new LofOffsetPointing(earthSpheric, upsideDown, Vector3D.PLUS_K);
-        pointing.getObservedGroundPoint(circ, circ.getFrame());
+        pointing.getTargetPoint(circ, circ.getFrame());
     }
 
     @Test

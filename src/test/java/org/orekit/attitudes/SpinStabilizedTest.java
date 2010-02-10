@@ -53,7 +53,7 @@ public class SpinStabilizedTest {
         PVCoordinates pv =
             new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                               new Vector3D(0, 0, 3680.853673522056));
-        Attitude attitude = bbq.getState(new KeplerianOrbit(pv, FramesFactory.getEME2000(), date, 3.986004415e14));
+        Attitude attitude = bbq.getAttitude(new KeplerianOrbit(pv, FramesFactory.getEME2000(), date, 3.986004415e14));
         Vector3D xDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Assert.assertEquals(Math.atan(1.0 / 5000.0),
                      Vector3D.angle(xDirection, sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition()),

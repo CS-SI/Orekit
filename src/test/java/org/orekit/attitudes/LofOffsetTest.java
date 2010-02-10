@@ -70,7 +70,7 @@ public class LofOffsetTest {
 
         // Lof aligned attitude law
         final LofOffset lofAlignedLaw = LofOffset.LOF_ALIGNED;
-        final Rotation lofOffsetRot = lofAlignedLaw.getState(orbit).getRotation();
+        final Rotation lofOffsetRot = lofAlignedLaw.getAttitude(orbit).getRotation();
         
         // Check that 
         final Vector3D p = pvSatEME2000.getPosition();
@@ -100,12 +100,12 @@ public class LofOffsetTest {
             
         // Attitude law definition from geodetic point target 
         final TargetPointing targetLaw = new TargetPointing(geoTargetITRF2005, earthShape);
-        final Rotation targetRot = targetLaw.getState(circ).getRotation();       
+        final Rotation targetRot = targetLaw.getAttitude(circ).getRotation();       
         
         // Create lof aligned attitude law
         // *******************************  
         final LofOffset lofAlignedLaw = LofOffset.LOF_ALIGNED;
-        final Rotation lofAlignedRot = lofAlignedLaw.getState(circ).getRotation();
+        final Rotation lofAlignedRot = lofAlignedLaw.getAttitude(circ).getRotation();
 
         // Get rotation from LOF to target pointing attitude
         Rotation rollPitchYaw = targetRot.applyTo(lofAlignedRot.revert());
@@ -117,7 +117,7 @@ public class LofOffsetTest {
         // Create lof offset attitude law with computed roll, pitch, yaw
         // **************************************************************  
         final LofOffset lofOffsetLaw = new LofOffset(RotationOrder.ZYX, yaw, pitch, roll);
-        final Rotation lofOffsetRot = lofOffsetLaw.getState(circ).getRotation();
+        final Rotation lofOffsetRot = lofOffsetLaw.getAttitude(circ).getRotation();
 
         // Compose rotations : target pointing attitudes
         final double angleCompo = targetRot.applyInverseTo(lofOffsetRot).getAngle();
@@ -137,8 +137,8 @@ public class LofOffsetTest {
        
         // Get roll, pitch, yaw angles corresponding to this pointing law
         final LofOffset lofAlignedLaw = LofOffset.LOF_ALIGNED;
-        final Rotation lofAlignedRot = lofAlignedLaw.getState(orbit).getRotation();
-        final Attitude targetAttitude = targetLaw.getState(orbit);
+        final Rotation lofAlignedRot = lofAlignedLaw.getAttitude(orbit).getRotation();
+        final Attitude targetAttitude = targetLaw.getAttitude(orbit);
         final Rotation rollPitchYaw = targetAttitude.getRotation().applyTo(lofAlignedRot.revert());
         final double[] angles = rollPitchYaw.getAngles(RotationOrder.ZYX);
         final double yaw = angles[0];
@@ -150,8 +150,8 @@ public class LofOffsetTest {
         final LofOffsetPointing lofOffsetPtLaw = new LofOffsetPointing(earthSpheric, lofOffsetLaw, Vector3D.PLUS_K);
 
         // Check target pointed by this law : shall be the same as defined
-        final PVCoordinates pvTargetRes = lofOffsetPtLaw.getObservedGroundPoint(orbit, earthSpheric.getBodyFrame());
-        final GeodeticPoint targetRes = earthSpheric.transform(pvTargetRes.getPosition(), earthSpheric.getBodyFrame(), date);
+        final Vector3D pTargetRes = lofOffsetPtLaw.getTargetPoint(orbit, earthSpheric.getBodyFrame());
+        final GeodeticPoint targetRes = earthSpheric.transform(pTargetRes, earthSpheric.getBodyFrame(), date);
         
         Assert.assertEquals(targetDef.getLongitude(), targetRes.getLongitude(), Utils.epsilonAngle);
         Assert.assertEquals(targetDef.getLongitude(), targetRes.getLongitude(), Utils.epsilonAngle);

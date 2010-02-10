@@ -63,12 +63,11 @@ public class BodyCenterPointingTest {
     public void testTarget() throws OrekitException {
         
         // Call get target method 
-        PVCoordinates target = earthCenterAttitudeLaw.getObservedGroundPoint(circ, circ.getFrame());
+        Vector3D target = earthCenterAttitudeLaw.getTargetPoint(circ, circ.getFrame());
 
         // Check that target is body center
-        double normPos = target.getPosition().getNorm();
-        double normVel = target.getVelocity().getNorm();
-        Assert.assertTrue((normPos < Utils.epsilonTest) && (normVel < Utils.epsilonTest));
+        double normPos = target.getNorm();
+        Assert.assertTrue((normPos < Utils.epsilonTest));
 
     }
 
@@ -83,7 +82,7 @@ public class BodyCenterPointingTest {
         //  Pointing direction
         // ******************** 
         // Get satellite attitude rotation, i.e rotation from EME2000 frame to satellite frame
-        Rotation rotSatEME2000 = earthCenterAttitudeLaw.getState(circ).getRotation();
+        Rotation rotSatEME2000 = earthCenterAttitudeLaw.getAttitude(circ).getRotation();
         
         // Transform Z axis from satellite frame to EME2000 
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);

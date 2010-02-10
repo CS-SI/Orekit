@@ -38,7 +38,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.PVCoordinates;
 
 
 public class NadirPointingTest {
@@ -74,10 +73,10 @@ public class NadirPointingTest {
                                    FramesFactory.getEME2000(), date, mu);
         
         // Get nadir attitude
-        Rotation rotNadir = nadirAttitudeLaw.getState(circ).getRotation();
+        Rotation rotNadir = nadirAttitudeLaw.getAttitude(circ).getRotation();
         
         // Get earth center attitude
-        Rotation rotCenter = earthCenterAttitudeLaw.getState(circ).getRotation();
+        Rotation rotCenter = earthCenterAttitudeLaw.getAttitude(circ).getRotation();
         
         // For a spheric earth, earth center pointing attitude and nadir pointing attitude
         // shall be the same, i.e the composition of inverse earth pointing rotation
@@ -111,17 +110,17 @@ public class NadirPointingTest {
                                     0., KeplerianOrbit.TRUE_ANOMALY, FramesFactory.getEME2000(), date, mu);
  
         // Get nadir attitude 
-        Rotation rotNadir = nadirAttitudeLaw.getState(kep).getRotation();
+        Rotation rotNadir = nadirAttitudeLaw.getAttitude(kep).getRotation();
         
         // Get earth center attitude 
-        Rotation rotCenter = earthCenterAttitudeLaw.getState(kep).getRotation();
+        Rotation rotCenter = earthCenterAttitudeLaw.getAttitude(kep).getRotation();
         
         // For a satellite at equatorial position, earth center pointing attitude and nadir pointing 
         // attitude shall be the same, i.e the composition of inverse earth pointing rotation
         // with nadir pointing rotation shall be identity. 
         Rotation rotCompo = rotCenter.applyInverseTo(rotNadir);
         double angle = rotCompo.getAngle();
-        Assert.assertEquals(angle, 0.0, 5.e-6);
+        Assert.assertEquals(0.0, angle, 5.e-6);
        
         //  Satellite on polar position
         // ***************************** 
@@ -131,10 +130,10 @@ public class NadirPointingTest {
                                    FramesFactory.getEME2000(), date, mu);
  
        // Get nadir attitude 
-        rotNadir = nadirAttitudeLaw.getState(circ).getRotation();
+        rotNadir = nadirAttitudeLaw.getAttitude(circ).getRotation();
         
         // Get earth center attitude 
-        rotCenter = earthCenterAttitudeLaw.getState(circ).getRotation();
+        rotCenter = earthCenterAttitudeLaw.getAttitude(circ).getRotation();
         
         // For a satellite at polar position, earth center pointing attitude and nadir pointing 
         // attitude shall be the same, i.e the composition of inverse earth pointing rotation 
@@ -151,10 +150,10 @@ public class NadirPointingTest {
                                    FramesFactory.getEME2000(), date, mu);
  
         // Get nadir attitude 
-        rotNadir = nadirAttitudeLaw.getState(circ).getRotation();
+        rotNadir = nadirAttitudeLaw.getAttitude(circ).getRotation();
         
         // Get earth center attitude
-        rotCenter = earthCenterAttitudeLaw.getState(circ).getRotation();
+        rotCenter = earthCenterAttitudeLaw.getAttitude(circ).getRotation();
         
         // For a satellite at any position, earth center pointing attitude and nadir pointing 
         // and nadir pointing attitude shall not be the same, i.e the composition of inverse earth 
@@ -188,10 +187,10 @@ public class NadirPointingTest {
         //  Vertical test
         // *************** 
         // Get observed ground point position/velocity 
-        PVCoordinates pvTargetItrf = nadirAttitudeLaw.getObservedGroundPoint(circ, frameITRF2005);
+        Vector3D pTargetItrf = nadirAttitudeLaw.getTargetPoint(circ, frameITRF2005);
         
         // Convert to geodetic coordinates
-        GeodeticPoint geoTarget = earthShape.transform(pvTargetItrf.getPosition(), frameITRF2005, date);
+        GeodeticPoint geoTarget = earthShape.transform(pTargetItrf, frameITRF2005, date);
 
         // Compute local vertical axis
         double xVert = Math.cos(geoTarget.getLongitude())*Math.cos(geoTarget.getLatitude());
@@ -200,7 +199,7 @@ public class NadirPointingTest {
         Vector3D targetVertical = new Vector3D(xVert, yVert, zVert);
         
         // Get attitude rotation state
-        Rotation rotSatEME2000 = nadirAttitudeLaw.getState(circ).getRotation();
+        Rotation rotSatEME2000 = nadirAttitudeLaw.getAttitude(circ).getRotation();
                 
         // Get satellite Z axis in EME2000 frame
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);
@@ -208,7 +207,7 @@ public class NadirPointingTest {
         
         // Check that satellite Z axis is colinear to local vertical axis
         double angle= Vector3D.angle(zSatItrf, targetVertical);        
-        Assert.assertEquals(Math.sin(angle), 0.0, Utils.epsilonTest);
+        Assert.assertEquals(0.0, Math.sin(angle), Utils.epsilonTest);
         
     }
 
