@@ -18,17 +18,13 @@ package org.orekit.propagation;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.geometry.Rotation;
-import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.attitudes.Attitude;
-import org.orekit.attitudes.AttitudeLaw;
-import org.orekit.attitudes.FixedRate;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
@@ -39,7 +35,8 @@ import org.orekit.utils.PVCoordinates;
  *
  * <p>It contains an {@link Orbit orbital state} at a current
  * {@link AbsoluteDate} both handled by an {@link Orbit}, plus the current
- * mass and attitude.
+ * mass and attitude. Orbit and state are guaranteed to be consistent in terms
+ * of date and reference frame.
  * </p>
  * <p>
  * The state can be slightly shifted to close dates. This shift is based on
@@ -65,10 +62,6 @@ public class SpacecraftState implements TimeStamped, Serializable {
     /** Default mass. */
     private static final double DEFAULT_MASS = 1000.0;
 
-    /** Default attitude law. */
-    private static final Attitude DEFAULT_ATTITUDE =
-        new Attitude(FramesFactory.getEME2000(), Rotation.IDENTITY, Vector3D.ZERO);
-
     /** Orbital state. */
     private final Orbit orbit;
 
@@ -83,16 +76,24 @@ public class SpacecraftState implements TimeStamped, Serializable {
      * @param orbit the orbit
      */
     public SpacecraftState(final Orbit orbit) {
-        this(orbit, DEFAULT_ATTITUDE, DEFAULT_MASS);
+        this.orbit    = orbit;
+        this.attitude = LofOffset.LOF_ALIGNED.getAttitude(orbit);
+        this.mass     = DEFAULT_MASS;
     }
 
     /** Build a spacecraft state from orbit and attitude law.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param orbit the orbit
      * @param attitude attitude
+     * @exception IllegalArgumentException if orbit and attitude dates
+     * or frames are not equal
      */
-    public SpacecraftState(final Orbit orbit, final Attitude attitude) {
-        this(orbit, attitude, DEFAULT_MASS);
+    public SpacecraftState(final Orbit orbit, final Attitude attitude)
+        throws IllegalArgumentException {
+        checkConsistency(orbit, attitude);
+        this.orbit    = orbit;
+        this.attitude = attitude;
+        this.mass     = DEFAULT_MASS;
     }
 
     /** Create a new instance from orbit and mass.
@@ -101,19 +102,44 @@ public class SpacecraftState implements TimeStamped, Serializable {
      * @param mass the mass (kg)
      */
     public SpacecraftState(final Orbit orbit, final double mass) {
-        this(orbit, DEFAULT_ATTITUDE, mass);
+        this.orbit    = orbit;
+        this.attitude = LofOffset.LOF_ALIGNED.getAttitude(orbit);
+        this.mass     = mass;
     }
 
     /** Build a spacecraft state from orbit, attitude law and mass.
      * @param orbit the orbit
      * @param attitude attitude
      * @param mass the mass (kg)
+     * @exception IllegalArgumentException if orbit and attitude dates
+     * or frames are not equal
      */
-    public SpacecraftState(final Orbit orbit, final Attitude attitude,
-                           final double mass) {
+    public SpacecraftState(final Orbit orbit, final Attitude attitude, final double mass)
+        throws IllegalArgumentException {
+        checkConsistency(orbit, attitude);
         this.orbit    = orbit;
         this.attitude = attitude;
         this.mass     = mass;
+    }
+
+    /** Check orbit and attitude dates are equal.
+     * @param orbit the orbit
+     * @param attitude attitude
+     * @exception IllegalArgumentException if orbit and attitude dates
+     * are not equal
+     */
+    private static void checkConsistency(final Orbit orbit, final Attitude attitude)
+        throws IllegalArgumentException {
+        if (! orbit.getDate().equals(attitude.getDate())) {
+            throw OrekitException.createIllegalArgumentException(
+                  "orbit date ({0}) does not match attitude date ({1})",
+                  orbit.getDate(), attitude.getDate());
+        }
+        if (orbit.getFrame() != attitude.getReferenceFrame()) {
+            throw OrekitException.createIllegalArgumentException(
+                  "orbit reference frame ({0}) does not match attitude reference frame ({1})",
+                  orbit.getFrame().getName(), attitude.getReferenceFrame().getName());
+        }
     }
 
     /** Get a time-shifted state.
@@ -152,10 +178,7 @@ public class SpacecraftState implements TimeStamped, Serializable {
      * @see org.orekit.orbits.Orbit#shiftedBy(double)
      */
     public SpacecraftState shiftedBy(final double dt) throws PropagationException {
-        final AbsoluteDate refDate    = orbit.getDate();
-        AttitudeLaw        law        = new FixedRate(attitude, refDate);
-        Propagator         propagator = new KeplerianPropagator(orbit, law, orbit.getMu(), mass);
-        return propagator.propagate(refDate.shiftedBy(dt));
+        return new SpacecraftState(orbit.shiftedBy(dt), attitude.shiftedBy(dt), mass);
     }
 
     /** Gets the current orbit.
@@ -177,6 +200,26 @@ public class SpacecraftState implements TimeStamped, Serializable {
      */
     public Frame getFrame() {
         return orbit.getFrame();
+    }
+
+    /** Compute the transform from orbite/attitude reference frame to spacecraft frame.
+     * <p>The spacecraft frame origin is at the point defined by the orbit,
+     * and its orientation is defined by the attitude.</p>
+     * @return transform from specified frame to current spacecraft frame
+     */
+    public Transform asTransform() {
+
+        // orbit contribution
+        final PVCoordinates pv = orbit.getPVCoordinates();
+        final Transform orbitTransform  =
+            new Transform(pv.getPosition().negate(), pv.getVelocity().negate());
+
+        // attitude contribution
+        Transform attitudeTransform = new Transform(attitude.getRotation(), attitude.getSpin());
+
+        // combine all contributions
+        return new Transform(orbitTransform, attitudeTransform);
+
     }
 
     /** Get the central attraction coefficient.

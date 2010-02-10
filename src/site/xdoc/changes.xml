@@ -31,6 +31,13 @@
         and RAAN in CircularOrbit.toString()
       </action>
       <action dev="luc" type="add">
+        a new SpacecraftFrame class has been added, taking into account orbit and
+        attitude thanks to an underlying propagator. This allow to see the spacecraft just
+        as another known geometrical object automatically handled and connected to all
+        other frames. For an instantaneous view, Transform instances can also be built
+        directly by SpacecraftState instances.
+      </action>
+      <action dev="luc" type="add">
         frames can now be flagged as quasi-inertial or not and only
         quasi-inertial frames are suitable for defining orbits
       </action>
@@ -101,6 +108,15 @@
         rate for attitude, fixed translation for position/velocity). This is not a replacement
         for proper propagation but is useful for known simple motions or small time shifts or
         when coarse accuracy is sufficient
+      </action>
+      <action dev="luc" type="fix" >
+        changed AttitudeLaw.getState signature to use complete orbit. This is an incompatible
+        change introduced to fix a major bug in spin computation for some attitude laws. The laws
+        for which orientation depends on satellite velocity have a spin vector that depends on
+        acceleration. This can be computed only if complete orbit is available. This change
+        should be simple to handle from a users point of view, as the caller generally already
+        has the orbit available and attitude laws implementations can retrieve all the former
+        parameters (date, position/velocity, frame) directly from orbit.
       </action>
       <action dev="luc" type="add" >
         added a new simple linear attitude mode: FixedRate

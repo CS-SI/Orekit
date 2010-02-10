@@ -23,15 +23,18 @@ import junit.framework.Assert;
 
 import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math.geometry.Rotation;
+import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.optimization.OptimizationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -48,26 +51,6 @@ public class SpacecraftStateTest {
     public void testInterpolationError()
         throws ParseException, OrekitException, OptimizationException {
 
-        double mass = 2500;
-        double a = 7187990.1979844316;
-        double e = 0.5e-4;
-        double i = 1.7105407051081795;
-        double omega = 1.9674147913622104;
-        double OMEGA = Math.toRadians(261);
-        double lv = 0;
-
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
-                                                 TimeComponents.H00,
-                                                 TimeScalesFactory.getUTC());
-
-        Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA,
-                                            lv, KeplerianOrbit.TRUE_ANOMALY, 
-                                            FramesFactory.getEME2000(), date, mu);
-        AttitudeLaw law = new BodyCenterPointing(FramesFactory.getITRF2005());
-
-        Propagator propagator =
-            new EcksteinHechlerPropagator(transPar, law, mass,
-                                          ae, mu, c20, c30, c40, c50, c60);
 
         // polynomial models for interpolation error in position, velocity and attitude
         // these models grow as follows
@@ -88,7 +71,7 @@ public class SpacecraftStateTest {
             -1.7504437924285588e-4, 2.1388130994378013e-5, -1.3397843704372905e-8, 2.96320042273176e-12
         });
 
-        AbsoluteDate centerDate = date.shiftedBy(100.0);
+        AbsoluteDate centerDate = orbit.getDate().shiftedBy(100.0);
         SpacecraftState centerState = propagator.propagate(centerDate);
         double maxResidualP = 0;
         double maxResidualV = 0;
@@ -111,35 +94,90 @@ public class SpacecraftStateTest {
         Assert.assertEquals(1.6e-4, maxResidualA, 4.0e-6);
     }
 
+    @Test(expected=IllegalArgumentException.class)
+    public void testDatesConsistency() throws OrekitException {
+        new SpacecraftState(orbit, attitudeLaw.getAttitude(orbit.shiftedBy(10.0)));
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testFramesConsistency() throws OrekitException {
+        new SpacecraftState(orbit,
+                            new Attitude(orbit.getDate(),
+                                         FramesFactory.getGCRF(),
+                                         Rotation.IDENTITY, Vector3D.ZERO));
+    }
+
+    @Test
+    public void testTransform()
+        throws ParseException, OrekitException, OptimizationException {
+
+        double maxDP = 0;
+        double maxDV = 0;
+        double maxDA = 0;
+        for (double t = 0; t < orbit.getKeplerianPeriod(); t += 60) {
+            final SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(t));
+            final Transform transform = state.asTransform().getInverse();
+            PVCoordinates pv = transform.transformPVCoordinates(PVCoordinates.ZERO);
+            PVCoordinates dPV = new PVCoordinates(pv, state.getPVCoordinates());
+            Vector3D mZDirection = transform.transformVector(Vector3D.MINUS_K);
+            double alpha = Vector3D.angle(mZDirection, state.getPVCoordinates().getPosition());
+            maxDP = Math.max(maxDP, dPV.getPosition().getNorm());
+            maxDV = Math.max(maxDV, dPV.getVelocity().getNorm());
+            maxDA = Math.max(maxDA, Math.toDegrees(alpha));
+        }
+        Assert.assertEquals(0.0, maxDP, 1.0e-6);
+        Assert.assertEquals(0.0, maxDV, 1.0e-9);
+        Assert.assertEquals(0.0, maxDA, 1.0e-12);
+
+    }
+
     @Before
     public void setUp() {
+        try {
         Utils.setDataRoot("regular-data");
-        mu  = 3.9860047e14;
-        ae  = 6.378137e6;
-        c20 = -1.08263e-3;
-        c30 = 2.54e-6;
-        c40 = 1.62e-6;
-        c50 = 2.3e-7;
-        c60 = -5.5e-7;
+        double mu  = 3.9860047e14;
+        double ae  = 6.378137e6;
+        double c20 = -1.08263e-3;
+        double c30 = 2.54e-6;
+        double c40 = 1.62e-6;
+        double c50 = 2.3e-7;
+        double c60 = -5.5e-7;
+
+        mass = 2500;
+        double a = 7187990.1979844316;
+        double e = 0.5e-4;
+        double i = 1.7105407051081795;
+        double omega = 1.9674147913622104;
+        double OMEGA = Math.toRadians(261);
+        double lv = 0;
+
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                                 TimeComponents.H00,
+                                                 TimeScalesFactory.getUTC());
+        orbit = new KeplerianOrbit(a, e, i, omega, OMEGA,
+                                            lv, KeplerianOrbit.TRUE_ANOMALY, 
+                                            FramesFactory.getEME2000(), date, mu);
+        attitudeLaw = new BodyCenterPointing(FramesFactory.getITRF2005());
+        propagator =
+            new EcksteinHechlerPropagator(orbit, attitudeLaw, mass,
+                                          ae, mu, c20, c30, c40, c50, c60);
+
+        } catch (OrekitException oe) {
+            Assert.fail(oe.getLocalizedMessage());
+        }
     }
 
     @After
     public void tearDown() {
-        mu  = Double.NaN;
-        ae  = Double.NaN;
-        c20 = Double.NaN;
-        c30 = Double.NaN;
-        c40 = Double.NaN;
-        c50 = Double.NaN;
-        c60 = Double.NaN;
+        mass  = Double.NaN;
+        orbit = null;
+        attitudeLaw = null;
+        propagator = null;
     }
 
-    private double mu;
-    private double ae;
-    private double c20;
-    private double c30;
-    private double c40;
-    private double c50;
-    private double c60;
+    private double mass;
+    private Orbit orbit;
+    private AttitudeLaw attitudeLaw;
+    private Propagator propagator;
 
 }
