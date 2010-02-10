@@ -419,10 +419,18 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      * @return true if the instance and the other date refer to the same instant
      */
     public boolean equals(final Object date) {
+
+        if (date == this) {
+            // first fast check
+            return true;
+        }
+
         if ((date != null) && (date instanceof AbsoluteDate)) {
             return durationFrom((AbsoluteDate) date) == 0;
         }
+
         return false;
+
     }
 
     /** Get a hashcode for this date.
