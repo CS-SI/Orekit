@@ -24,19 +24,19 @@ import org.orekit.orbits.Orbit;
 
 /** This interface represents an attitude law model set.
  * <p>An attitude law provides a way to compute an {@link Attitude Attitude}
- * state from an orbit.</p>
+ * from an orbital state.</p>
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public interface AttitudeLaw extends Serializable {
 
-    /** Compute the attitude state at given date.
+    /** Compute the attitude corresponding to an orbital state.
      * @param orbit orbit state for which attitude is requested
-     * @return attitude attitude on the specified orbit, from orbit frame to satellite
-     * frame
-     * @throws OrekitException if some specific error occurs
+     * @return attitude attitude on the specified orbit, using orbit
+     * inertial frame as its reference frame
+     * @throws OrekitException if attitude cannot be computed
      */
-    Attitude getState(Orbit orbit)
+    Attitude getAttitude(Orbit orbit)
         throws OrekitException;
 
 }

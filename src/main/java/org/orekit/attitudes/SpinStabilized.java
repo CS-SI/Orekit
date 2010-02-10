@@ -79,14 +79,14 @@ public class SpinStabilized implements AttitudeLaw {
     }
 
     /** {@inheritDoc} */
-    public Attitude getState(Orbit orbit)
+    public Attitude getAttitude(Orbit orbit)
         throws OrekitException {
 
         final AbsoluteDate date = orbit.getDate();
         final Frame frame = orbit.getFrame();
 
         // get attitude from underlying non-rotating law
-        final Attitude base = nonRotatingLaw.getState(orbit);
+        final Attitude base = nonRotatingLaw.getAttitude(orbit);
         final Transform baseTransform = new Transform(base.getRotation(), base.getSpin());
 
         // compute spin transform due to spin from reference to current date
@@ -97,7 +97,7 @@ public class SpinStabilized implements AttitudeLaw {
         final Transform combined = new Transform(baseTransform, spinInfluence);
 
         // build the attitude
-        return new Attitude(frame, combined.getRotation(), combined.getRotationRate());
+        return new Attitude(date, frame, combined.getRotation(), combined.getRotationRate());
 
     }
 

@@ -72,12 +72,12 @@ public abstract class GroundPointingWrapper extends GroundPointing {
      */
     public Attitude getBaseState(final Orbit orbit)
         throws OrekitException {
-        return groundPointingLaw.getState(orbit);
+        return groundPointingLaw.getAttitude(orbit);
     }
 
     /** {@inheritDoc} */
     @Override
-    public Attitude getState(Orbit orbit)
+    public Attitude getAttitude(Orbit orbit)
         throws OrekitException {
 
         // Get attitude from base attitude law
@@ -93,7 +93,7 @@ public abstract class GroundPointingWrapper extends GroundPointing {
         final Vector3D compensationRate = Attitude.estimateSpin(compensationM1H, compensationP1H, 2 * h);
 
         // Combination of base attitude, compensation and compensation rate
-        return new Attitude(orbit.getFrame(),
+        return new Attitude(orbit.getDate(), orbit.getFrame(),
                             compensation.applyTo(base.getRotation()),
                             compensationRate.add(compensation.applyTo(base.getSpin())));
 

@@ -55,7 +55,6 @@ public class NadirPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
-    @Override
     protected Vector3D getTargetPoint(final Orbit orbit, final Frame frame)
         throws OrekitException {
 

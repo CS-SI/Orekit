@@ -99,7 +99,7 @@ public abstract class GroundPointing implements AttitudeLaw {
 
 
     /** {@inheritDoc} */
-    public Attitude getState(final Orbit orbit)
+    public Attitude getAttitude(final Orbit orbit)
         throws OrekitException {
 
         final Frame frame = orbit.getFrame();
@@ -132,7 +132,7 @@ public abstract class GroundPointing implements AttitudeLaw {
         final Rotation rotP1h = new Rotation(deltaPP1h, pvP1H.getVelocity(), Vector3D.PLUS_K, Vector3D.PLUS_I);
         final Vector3D spin   = Attitude.estimateSpin(rotM1h, rotP1h, 2 * h);
 
-        return new Attitude(frame, rot, spin);
+        return new Attitude(orbit.getDate(), frame, rot, spin);
 
     }
 

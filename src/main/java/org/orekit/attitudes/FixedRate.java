@@ -16,8 +16,8 @@
  */
 package org.orekit.attitudes;
 
+import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
-import org.orekit.time.AbsoluteDate;
 
 
 /**
@@ -32,26 +32,25 @@ import org.orekit.time.AbsoluteDate;
 public class FixedRate implements AttitudeLaw {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 2809335511030866147L;
+    private static final long serialVersionUID = 6874119218379303688L;
 
     /** Reference attitude.  */
     private final Attitude referenceAttitude;
-
-    /** Reference date. */
-    private final AbsoluteDate referenceDate;
 
     /** Creates a new instance.
      * @param referenceAttitude attitude at reference date
      * @param referenceDate reference date
      */
-    public FixedRate(final Attitude referenceAttitude, final AbsoluteDate referenceDate) {
+    public FixedRate(final Attitude referenceAttitude) {
         this.referenceAttitude = referenceAttitude;
-        this.referenceDate     = referenceDate;
     }
 
     /** {@inheritDoc} */
-    public Attitude getState(Orbit orbit) {
-        return referenceAttitude.shiftedBy(orbit.getDate().durationFrom(referenceDate));
+    public Attitude getAttitude(Orbit orbit)
+        throws OrekitException {
+        final double timeShift = orbit.getDate().durationFrom(referenceAttitude.getDate());
+        final Attitude shifted = referenceAttitude.shiftedBy(timeShift);
+        return shifted.withReferenceFrame(orbit.getFrame());
     }
 
     /** Get the reference attitude.
@@ -59,13 +58,6 @@ public class FixedRate implements AttitudeLaw {
      */
     public Attitude getReferenceAttitude() {
         return referenceAttitude;
-    }
-
-    /** Get the reference date.
-     * @return reference date
-     */
-    public AbsoluteDate getReferenceDate() {
-        return referenceDate;
     }
 
 }

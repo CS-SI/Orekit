@@ -19,7 +19,6 @@ package org.orekit.attitudes;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.utils.PVCoordinates;
@@ -32,11 +31,13 @@ import org.orekit.utils.PVCoordinates;
  * The attitude law is defined as a rotation offset from local orbital frame.
  * This rotation can be defined by
  * NB : Local orbital frame is defined as follows :
- *       Z axis pointed towards central body,
- *       Y opposite to angular momentum
- *       X roughly along velocity (it would be perfectly aligned only for
- *       circular orbits or at perigee and apogee of non-circular orbits).</p>
- * <p>
+ * </p>
+ * <ul>
+ *   <li>Z axis pointed towards central body,</li>
+ *   <li>Y opposite to angular momentum</li>
+ *   <li>X roughly along velocity (it would be perfectly aligned only for
+ *       circular orbits or at perigee and apogee of non-circular orbits).</li>
+ * </ul>
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
@@ -65,8 +66,7 @@ public class LofOffset implements AttitudeLaw {
 
 
     /** {@inheritDoc} */
-    public Attitude getState(Orbit orbit)
-        throws OrekitException {
+    public Attitude getAttitude(Orbit orbit) {
 
         final PVCoordinates pv = orbit.getPVCoordinates();
         final Frame frame = orbit.getFrame();
@@ -82,7 +82,7 @@ public class LofOffset implements AttitudeLaw {
         final Vector3D spinAxis = new Vector3D(angularVelocity, Vector3D.MINUS_J);
 
         // Compose with offset rotation
-        return new Attitude(frame, offset.applyTo(lofRot), offset.applyTo(spinAxis));
+        return new Attitude(orbit.getDate(), frame, offset.applyTo(lofRot), offset.applyTo(spinAxis));
 
     }
 

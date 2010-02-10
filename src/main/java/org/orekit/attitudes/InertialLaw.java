@@ -22,6 +22,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
+import org.orekit.time.AbsoluteDate;
 
 
 /**
@@ -52,11 +53,12 @@ public class InertialLaw implements AttitudeLaw {
     }
 
     /** {@inheritDoc} */
-    public Attitude getState(Orbit orbit)
+    public Attitude getAttitude(Orbit orbit)
         throws OrekitException {
+        final AbsoluteDate date = orbit.getDate();
         final Frame frame = orbit.getFrame();
-        final Transform t = frame.getTransformTo(satelliteFrame, orbit.getDate());
-        return new Attitude(frame, t.getRotation(), t.getRotationRate());
+        final Transform t = frame.getTransformTo(satelliteFrame, date);
+        return new Attitude(date, frame, t.getRotation(), t.getRotationRate());
     }
 
 }

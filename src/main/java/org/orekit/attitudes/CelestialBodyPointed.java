@@ -97,7 +97,7 @@ public class CelestialBodyPointed implements AttitudeLaw {
     }
 
     /** {@inheritDoc} */
-    public Attitude getState(Orbit orbit)
+    public Attitude getAttitude(Orbit orbit)
         throws OrekitException {
 
         final AbsoluteDate date = orbit.getDate();
@@ -127,7 +127,7 @@ public class CelestialBodyPointed implements AttitudeLaw {
         }
 
         // build the attitude
-        return new Attitude(frame, transform.getRotation(), transform.getRotationRate());
+        return new Attitude(date, frame, transform.getRotation(), transform.getRotationRate());
 
     }
 

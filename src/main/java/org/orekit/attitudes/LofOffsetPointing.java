@@ -68,9 +68,9 @@ public class LofOffsetPointing extends GroundPointing {
 
     /** {@inheritDoc} */
     @Override
-    public Attitude getState(Orbit orbit)
+    public Attitude getAttitude(Orbit orbit)
         throws OrekitException {
-        return attitudeLaw.getState(orbit);
+        return attitudeLaw.getAttitude(orbit);
     }
 
     /** {@inheritDoc} */
@@ -81,7 +81,7 @@ public class LofOffsetPointing extends GroundPointing {
         final PVCoordinates pv = orbit.getPVCoordinates();
 
         // Compute satellite state at given date in orbit frame
-        final Rotation satRot = attitudeLaw.getState(orbit).getRotation();
+        final Rotation satRot = attitudeLaw.getAttitude(orbit).getRotation();
 
         // Compute satellite pointing axis and position/velocity in body frame
         final Transform t = orbit.getFrame().getTransformTo(shape.getBodyFrame(), date);

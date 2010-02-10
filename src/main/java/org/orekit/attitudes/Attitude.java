@@ -20,7 +20,11 @@ import java.io.Serializable;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 
 
 /** This class handles attitude definition at a given date.
@@ -40,10 +44,13 @@ import org.orekit.frames.Frame;
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 
-public class Attitude implements Serializable {
+public class Attitude implements TimeStamped, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 5729155542976428027L;
+    private static final long serialVersionUID = -947817502698754209L;
+
+    /** Current date. */
+    private final AbsoluteDate date;
 
     /** Reference frame. */
     private final Frame referenceFrame;
@@ -73,7 +80,9 @@ public class Attitude implements Serializable {
      * @param attitude rotation between reference frame and satellite frame
      * @param spin satellite spin (axis and velocity, in <strong>satellite</strong> frame)
      */
-    public Attitude(final Frame referenceFrame, final Rotation attitude, final Vector3D spin) {
+    public Attitude(final AbsoluteDate date, final Frame referenceFrame,
+                    final Rotation attitude, final Vector3D spin) {
+        this.date           = date;
         this.referenceFrame = referenceFrame;
         this.attitude       = attitude;
         this.spin           = spin;
@@ -105,8 +114,44 @@ public class Attitude implements Serializable {
         // seem to rotate in the opposite direction
         final Rotation evolution = new Rotation(spin, -rate * dt);
 
-        return new Attitude(referenceFrame, evolution.applyTo(attitude), spin);
+        return new Attitude(date.shiftedBy(dt), referenceFrame, evolution.applyTo(attitude), spin);
 
+    }
+
+    /** Get a similar attitude with a specific reference frame.
+     * <p>
+     * If the instance reference frame is already the specified one, the instance
+     * itself is returned without any object creation. Otherwise, a new instance
+     * will be created with the specified reference frame. In this case, the
+     * required intermediate rotation and spin between the specified and the
+     * original reference frame will be inserted.
+     * </p>
+     * @param newReferenceFrame desired reference frame for attitude
+     * @return an attitude that has the same orientation and motion as the instance,
+     * but guaranteed to have the specified reference frame
+     * @exception OrekitException if conversion between reference frames fails
+     */
+    public Attitude withReferenceFrame(final Frame newReferenceFrame)
+        throws OrekitException {
+
+        if (newReferenceFrame == referenceFrame) {
+            // simple case, the instance is already compliant
+            return this;
+        }
+
+        // we have to take an intermediate rotation into account
+        final Transform t = newReferenceFrame.getTransformTo(referenceFrame, date);
+        return new Attitude(date, newReferenceFrame,
+                            attitude.applyTo(t.getRotation()),
+                            spin.add(attitude.applyTo(t.getRotationRate())));
+
+    }
+
+    /** Get the date of attitude parameters.
+     * @return date of the attitude parameters
+     */
+    public AbsoluteDate getDate() {
+        return date;
     }
 
     /** Get the reference frame.
