@@ -100,7 +100,7 @@ public class Ephemeris implements BoundedPropagator {
             }
             // Classical interpolation
             return new SpacecraftState(getInterpolatedOp(tp, tn, date),
-                                       interpolatedAttitude(tp, tn),
+                                       interpolatedAttitude(date, tp, tn),
                                        interpolatedMass(tp, tn));
 
         }
@@ -140,11 +140,12 @@ public class Ephemeris implements BoundedPropagator {
     }
 
     /** Get the interpolated Attitude.
+     * @param date interpolation date
      * @param tp time in seconds since previous date
      * @param tn time in seconds until next date
      * @return the new attitude kinematics
      */
-    private Attitude interpolatedAttitude(final double tp, final double tn) {
+    private Attitude interpolatedAttitude(final AbsoluteDate date, final double tp, final double tn) {
 
         final double dt = tp + tn;
 
@@ -166,7 +167,7 @@ public class Ephemeris implements BoundedPropagator {
             new Transform(new Transform(previous.getAttitude().getRotation()),
                           new Transform(newRot, newInstRotAxis));
 
-        return new Attitude(previous.getFrame(), newTrans.getRotation(), newTrans.getRotationRate());
+        return new Attitude(date, previous.getFrame(), newTrans.getRotation(), newTrans.getRotationRate());
 
     }
 
