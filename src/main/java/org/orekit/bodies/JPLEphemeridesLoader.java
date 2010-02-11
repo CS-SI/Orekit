@@ -612,37 +612,41 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                                       getLoadedEarthMoonMassRatio(), emRat);
         }
 
-        // indices of the Chebyshev coefficients for each ephemeris
-        for (int i = 0; i < 12; ++i) {
-            final int row1 = extractInt(record, 2696 + 12 * i);
-            final int row2 = extractInt(record, 2700 + 12 * i);
-            final int row3 = extractInt(record, 2704 + 12 * i);
-            ok = ok && (row1 > 0) && (row2 >= 0) && (row3 >= 0);
-            if (((i ==  0) && (loadType == EphemerisType.MERCURY))    ||
-                ((i ==  1) && (loadType == EphemerisType.VENUS))      ||
-                ((i ==  2) && (loadType == EphemerisType.EARTH_MOON)) ||
-                ((i ==  3) && (loadType == EphemerisType.MARS))       ||
-                ((i ==  4) && (loadType == EphemerisType.JUPITER))    ||
-                ((i ==  5) && (loadType == EphemerisType.SATURN))     ||
-                ((i ==  6) && (loadType == EphemerisType.URANUS))     ||
-                ((i ==  7) && (loadType == EphemerisType.NEPTUNE))    ||
-                ((i ==  8) && (loadType == EphemerisType.PLUTO))      ||
-                ((i ==  9) && (loadType == EphemerisType.MOON))       ||
-                ((i == 10) && (loadType == EphemerisType.SUN))) {
-                firstIndex = row1;
-                coeffs     = row2;
-                chunks     = row3;
-            }
-        }
+        synchronized (this) {
 
-        // compute chunks duration
-        final double timeSpan = extractDouble(record, 2668);
-        ok = ok && (timeSpan > 0) && (timeSpan < 100);
-        chunksDuration = 86400.0 * (timeSpan / chunks);
-        if (Double.isNaN(maxChunksDuration)) {
-            maxChunksDuration = chunksDuration;
-        } else {
-            maxChunksDuration = Math.max(maxChunksDuration, chunksDuration);
+            // indices of the Chebyshev coefficients for each ephemeris
+            for (int i = 0; i < 12; ++i) {
+                final int row1 = extractInt(record, 2696 + 12 * i);
+                final int row2 = extractInt(record, 2700 + 12 * i);
+                final int row3 = extractInt(record, 2704 + 12 * i);
+                ok = ok && (row1 > 0) && (row2 >= 0) && (row3 >= 0);
+                if (((i ==  0) && (loadType == EphemerisType.MERCURY))    ||
+                        ((i ==  1) && (loadType == EphemerisType.VENUS))      ||
+                        ((i ==  2) && (loadType == EphemerisType.EARTH_MOON)) ||
+                        ((i ==  3) && (loadType == EphemerisType.MARS))       ||
+                        ((i ==  4) && (loadType == EphemerisType.JUPITER))    ||
+                        ((i ==  5) && (loadType == EphemerisType.SATURN))     ||
+                        ((i ==  6) && (loadType == EphemerisType.URANUS))     ||
+                        ((i ==  7) && (loadType == EphemerisType.NEPTUNE))    ||
+                        ((i ==  8) && (loadType == EphemerisType.PLUTO))      ||
+                        ((i ==  9) && (loadType == EphemerisType.MOON))       ||
+                        ((i == 10) && (loadType == EphemerisType.SUN))) {
+                    firstIndex = row1;
+                    coeffs     = row2;
+                    chunks     = row3;
+                }
+            }
+
+            // compute chunks duration
+            final double timeSpan = extractDouble(record, 2668);
+            ok = ok && (timeSpan > 0) && (timeSpan < 100);
+            chunksDuration = 86400.0 * (timeSpan / chunks);
+            if (Double.isNaN(maxChunksDuration)) {
+                maxChunksDuration = chunksDuration;
+            } else {
+                maxChunksDuration = Math.max(maxChunksDuration, chunksDuration);
+            }
+
         }
 
         // sanity checks
@@ -943,13 +947,14 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             synchronized (JPLEphemeridesLoader.this) {
                 centralDate = date;
             }
+
             if (!DataProvidersManager.getInstance().feed(supportedNames, JPLEphemeridesLoader.this)) {
                 throw new OrekitException(NO_JPL_FILES_FOUND);
             }
 
             // second try, searching newly loaded part designed to bracket date
-            final AbsoluteDate before = date.shiftedBy(-maxChunksDuration);
             synchronized (JPLEphemeridesLoader.this) {
+                final AbsoluteDate before = date.shiftedBy(-maxChunksDuration);
                 for (final Iterator<TimeStamped> iterator = ephemerides.tailSet(before).iterator();
                      iterator.hasNext();) {
                     model = (PosVelChebyshev) iterator.next();

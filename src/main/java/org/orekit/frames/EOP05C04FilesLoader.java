@@ -125,46 +125,50 @@ class EOP05C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
         final BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
         // read all file, ignoring header
-        int lineNumber = 0;
-        boolean inHeader = true;
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            ++lineNumber;
-            boolean parsed = false;
+        synchronized (this) {
 
-            if (linePattern.matcher(line).matches()) {
-                inHeader = false;
-                // this is a data line, build an entry from the extracted fields
-                final String[] fields = line.split(" +");
-                final int    year  = Integer.parseInt(fields[YEAR_FIELD]);
-                final int    month = Integer.parseInt(fields[MONTH_FIELD]);
-                final int    day   = Integer.parseInt(fields[DAY_FIELD]);
-                final int    mjd   = Integer.parseInt(fields[MJD_FIELD]);
-                if (new DateComponents(year, month, day).getMJD() == mjd) {
-                    // the first six fields are consistent with the expected format
-                    final double x    = Double.parseDouble(fields[POLE_X_FIELD]) * ARC_SECONDS_TO_RADIANS;
-                    final double y    = Double.parseDouble(fields[POLE_Y_FIELD]) * ARC_SECONDS_TO_RADIANS;
-                    final double dtu1 = Double.parseDouble(fields[UT1_UTC_FIELD]);
-                    final double lod  = Double.parseDouble(fields[LOD_FIELD]);
-                    final double dpsi = Double.parseDouble(fields[DDPSI_FIELD]) * ARC_SECONDS_TO_RADIANS;
-                    final double deps = Double.parseDouble(fields[DDEPS_FIELD]) * ARC_SECONDS_TO_RADIANS;
-                    if (history1980 != null) {
-                        history1980.addEntry(new EOP1980Entry(mjd, dtu1, lod, dpsi, deps));
+            int lineNumber = 0;
+            boolean inHeader = true;
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                ++lineNumber;
+                boolean parsed = false;
+
+                if (linePattern.matcher(line).matches()) {
+                    inHeader = false;
+                    // this is a data line, build an entry from the extracted fields
+                    final String[] fields = line.split(" +");
+                    final int    year  = Integer.parseInt(fields[YEAR_FIELD]);
+                    final int    month = Integer.parseInt(fields[MONTH_FIELD]);
+                    final int    day   = Integer.parseInt(fields[DAY_FIELD]);
+                    final int    mjd   = Integer.parseInt(fields[MJD_FIELD]);
+                    if (new DateComponents(year, month, day).getMJD() == mjd) {
+                        // the first six fields are consistent with the expected format
+                        final double x    = Double.parseDouble(fields[POLE_X_FIELD]) * ARC_SECONDS_TO_RADIANS;
+                        final double y    = Double.parseDouble(fields[POLE_Y_FIELD]) * ARC_SECONDS_TO_RADIANS;
+                        final double dtu1 = Double.parseDouble(fields[UT1_UTC_FIELD]);
+                        final double lod  = Double.parseDouble(fields[LOD_FIELD]);
+                        final double dpsi = Double.parseDouble(fields[DDPSI_FIELD]) * ARC_SECONDS_TO_RADIANS;
+                        final double deps = Double.parseDouble(fields[DDEPS_FIELD]) * ARC_SECONDS_TO_RADIANS;
+                        if (history1980 != null) {
+                            history1980.addEntry(new EOP1980Entry(mjd, dtu1, lod, dpsi, deps));
+                        }
+                        if (history2000 != null) {
+                            history2000.addEntry(new EOP2000Entry(mjd, dtu1, lod, x, y));
+                        }
+                        parsed = true;
                     }
-                    if (history2000 != null) {
-                        history2000.addEntry(new EOP2000Entry(mjd, dtu1, lod, x, y));
-                    }
-                    parsed = true;
+                }
+                if (!(inHeader || parsed)) {
+                    throw new OrekitException("unable to parse line {0} in IERS data file {1}",
+                                              lineNumber, name);
                 }
             }
-            if (!(inHeader || parsed)) {
-                throw new OrekitException("unable to parse line {0} in IERS data file {1}",
-                                          lineNumber, name);
-            }
-        }
 
-        // check if we have read something
-        if (inHeader) {
-            throw new OrekitException("file {0} is not a supported IERS data file", name);
+            // check if we have read something
+            if (inHeader) {
+                throw new OrekitException("file {0} is not a supported IERS data file", name);
+            }
+
         }
 
     }

@@ -47,11 +47,16 @@ public class EOP2000History extends AbstractEOPHistory {
      */
     public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
         if (prepareInterpolation(date)) {
-            final EOP2000Entry n = (EOP2000Entry) next;
-            final EOP2000Entry p = (EOP2000Entry) previous;
-            final double x = (dtP * n.getX() + dtN * p.getX()) / (dtP + dtN);
-            final double y = (dtP * n.getY() + dtN * p.getY()) / (dtP + dtN);
-            return new PoleCorrection(x, y);
+            synchronized (this) {
+
+                final EOP2000Entry n = (EOP2000Entry) next;
+                final EOP2000Entry p = (EOP2000Entry) previous;
+                final double x = (dtP * n.getX() + dtN * p.getX()) / (dtP + dtN);
+                final double y = (dtP * n.getY() + dtN * p.getY()) / (dtP + dtN);
+
+                return new PoleCorrection(x, y);
+
+            }
         } else {
             return PoleCorrection.NULL_CORRECTION;
         }

@@ -47,11 +47,15 @@ public class EOP1980History extends AbstractEOPHistory {
      */
     public NutationCorrection getNutationCorrection(final AbsoluteDate date) {
         if (prepareInterpolation(date)) {
-            final EOP1980Entry n = (EOP1980Entry) next;
-            final EOP1980Entry p = (EOP1980Entry) previous;
-            final double ddEps = (dtP * n.getDdEps() + dtN * p.getDdEps()) / (dtP + dtN);
-            final double ddPsi = (dtP * n.getDdPsi() + dtN * p.getDdPsi()) / (dtP + dtN);
-            return new NutationCorrection(ddEps, ddPsi);
+            synchronized (this) {
+
+                final EOP1980Entry n = (EOP1980Entry) next;
+                final EOP1980Entry p = (EOP1980Entry) previous;
+                final double ddEps = (dtP * n.getDdEps() + dtN * p.getDdEps()) / (dtP + dtN);
+                final double ddPsi = (dtP * n.getDdPsi() + dtN * p.getDdPsi()) / (dtP + dtN);
+                return new NutationCorrection(ddEps, ddPsi);
+
+            }
         } else {
             return NutationCorrection.NULL_CORRECTION;
         }

@@ -166,37 +166,41 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
         }
 
         // read the data lines in the final values part inside section 2
-        boolean inSection2 = false;
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            Matcher matcher = sectionHeaderPattern.matcher(line);
-            if (matcher.matches() && "2".equals(matcher.group(1))) {
-                // we are entering section 2
-                inSection2 = true;
-            } else if (inSection2) {
-                matcher = section2DataPattern.matcher(line);
-                if (matcher.matches()) {
-                    // this is a data line, build an entry from the extracted fields
-                    final int    date  = Integer.parseInt(matcher.group(1));
-                    final double x     = Double.parseDouble(matcher.group(2)) * ARC_SECONDS_TO_RADIANS;
-                    final double y     = Double.parseDouble(matcher.group(3)) * ARC_SECONDS_TO_RADIANS;
-                    final double dtu1  = Double.parseDouble(matcher.group(4));
-                    final double lod   = Double.parseDouble(matcher.group(5)) * MILLI_SECONDS_TO_SECONDS;
-                    final double dpsi  = Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS;
-                    final double deps  = Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS;
-                    if (date >= mjdMin) {
-                        if (history1980 != null) {
-                            history1980.addEntry(new EOP1980Entry(date, dtu1, lod, dpsi, deps));
-                        }
-                        if (history2000 != null) {
-                            history2000.addEntry(new EOP2000Entry(date, dtu1, lod, x, y));
-                        }
-                        if (date >= mjdMax) {
-                            // don't bother reading the rest of the file
-                            return;
+        synchronized (this) {
+            
+            boolean inSection2 = false;
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                Matcher matcher = sectionHeaderPattern.matcher(line);
+                if (matcher.matches() && "2".equals(matcher.group(1))) {
+                    // we are entering section 2
+                    inSection2 = true;
+                } else if (inSection2) {
+                    matcher = section2DataPattern.matcher(line);
+                    if (matcher.matches()) {
+                        // this is a data line, build an entry from the extracted fields
+                        final int    date  = Integer.parseInt(matcher.group(1));
+                        final double x     = Double.parseDouble(matcher.group(2)) * ARC_SECONDS_TO_RADIANS;
+                        final double y     = Double.parseDouble(matcher.group(3)) * ARC_SECONDS_TO_RADIANS;
+                        final double dtu1  = Double.parseDouble(matcher.group(4));
+                        final double lod   = Double.parseDouble(matcher.group(5)) * MILLI_SECONDS_TO_SECONDS;
+                        final double dpsi  = Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                        final double deps  = Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                        if (date >= mjdMin) {
+                            if (history1980 != null) {
+                                history1980.addEntry(new EOP1980Entry(date, dtu1, lod, dpsi, deps));
+                            }
+                            if (history2000 != null) {
+                                history2000.addEntry(new EOP2000Entry(date, dtu1, lod, x, y));
+                            }
+                            if (date >= mjdMax) {
+                                // don't bother reading the rest of the file
+                                return;
+                            }
                         }
                     }
                 }
             }
+
         }
 
     }
