@@ -70,7 +70,7 @@ public class SpacecraftFrame extends Frame implements PVCoordinatesProvider {
     @Override
     protected void updateFrame(final AbsoluteDate date) throws OrekitException {
         if ((cachedDate == null) || !cachedDate.equals(date)) {
-            setTransform(propagator.propagate(date).asTransform());
+            setTransform(propagator.propagate(date).toTransform());
             cachedDate = date;
         }
     }

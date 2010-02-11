@@ -116,7 +116,7 @@ public class SpacecraftStateTest {
         double maxDA = 0;
         for (double t = 0; t < orbit.getKeplerianPeriod(); t += 60) {
             final SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(t));
-            final Transform transform = state.asTransform().getInverse();
+            final Transform transform = state.toTransform().getInverse();
             PVCoordinates pv = transform.transformPVCoordinates(PVCoordinates.ZERO);
             PVCoordinates dPV = new PVCoordinates(pv, state.getPVCoordinates());
             Vector3D mZDirection = transform.transformVector(Vector3D.MINUS_K);
