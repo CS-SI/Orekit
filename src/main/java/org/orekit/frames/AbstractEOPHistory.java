@@ -36,6 +36,8 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
     /** Serializable UID. */
     private static final long serialVersionUID = -4066489179973636623L;
 
+    // CHECKSTYLE: stop VisibilityModifierCheck
+
     /** EOP history entries. */
     protected final SortedSet<TimeStamped> entries;
 
@@ -50,6 +52,8 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
 
     /** Offset to next date. */
     protected double dtN;
+
+    // CHECKSTYLE: resume VisibilityModifierCheck
 
     /** Simple constructor.
      */

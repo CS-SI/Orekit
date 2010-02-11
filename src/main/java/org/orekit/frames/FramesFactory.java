@@ -233,7 +233,7 @@ public class FramesFactory implements Serializable {
      * @exception OrekitException if the data cannot be loaded
      */
     public static EOP1980History getEOP1980History() throws OrekitException {
-        EOP1980History history = new EOP1980History();
+        final EOP1980History history = new EOP1980History();
         if (EOP_1980_LOADERS.isEmpty()) {
             addDefaultEOP1980HistoryLoaders(null, null);
         }
@@ -304,7 +304,7 @@ public class FramesFactory implements Serializable {
      * @exception OrekitException if the data cannot be loaded
      */
     public static EOP2000History getEOP2000History() throws OrekitException {
-        EOP2000History history = new EOP2000History();
+        final EOP2000History history = new EOP2000History();
         if (EOP_2000_LOADERS.isEmpty()) {
             addDefaultEOP2000HistoryLoaders(null, null);
         }

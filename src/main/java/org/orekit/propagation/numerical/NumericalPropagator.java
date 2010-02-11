@@ -139,7 +139,7 @@ public class NumericalPropagator implements Propagator {
     private final List<EventDetector> detectors;
 
     /** State vector. */
-    private final double[] state;
+    private final double[] stateVector;
 
     /** Start date. */
     private AbsoluteDate startDate;
@@ -181,7 +181,7 @@ public class NumericalPropagator implements Propagator {
         this.currentState = null;
         this.adder        = null;
         this.attitudeLaw  = InertialLaw.EME2000_ALIGNED;
-        this.state        = new double[7];
+        this.stateVector  = new double[7];
         setIntegrator(integrator);
         setSlaveMode();
     }
@@ -313,11 +313,11 @@ public class NumericalPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState initialState) {
+    public void resetInitialState(final SpacecraftState state) {
         if (Double.isNaN(mu)) {
-            mu = initialState.getMu();
+            mu = state.getMu();
         }
-        this.initialState = initialState;
+        this.initialState = state;
     }
 
     /** {@inheritDoc} */
@@ -359,13 +359,13 @@ public class NumericalPropagator implements Propagator {
             final double t1 = finalDate.durationFrom(startDate);
 
             // Map state to array
-            state[0] = initialOrbit.getA();
-            state[1] = initialOrbit.getEquinoctialEx();
-            state[2] = initialOrbit.getEquinoctialEy();
-            state[3] = initialOrbit.getHx();
-            state[4] = initialOrbit.getHy();
-            state[5] = initialOrbit.getLv();
-            state[6] = initialState.getMass();
+            stateVector[0] = initialOrbit.getA();
+            stateVector[1] = initialOrbit.getEquinoctialEx();
+            stateVector[2] = initialOrbit.getEquinoctialEy();
+            stateVector[3] = initialOrbit.getHx();
+            stateVector[4] = initialOrbit.getHy();
+            stateVector[5] = initialOrbit.getLv();
+            stateVector[6] = initialState.getMass();
 
             integrator.clearEventHandlers();
 
@@ -385,17 +385,17 @@ public class NumericalPropagator implements Propagator {
             }
 
             // mathematical integration
-            final double stopTime = integrator.integrate(new DifferentialEquations(), t0, state, t1, state);
+            final double stopTime = integrator.integrate(new DifferentialEquations(), t0, stateVector, t1, stateVector);
 
             // back to space dynamics view
             final AbsoluteDate date = startDate.shiftedBy(stopTime);
 
             final EquinoctialOrbit orbit =
-                new EquinoctialOrbit(state[0], state[1], state[2], state[3],
-                                     state[4], state[5], EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
+                new EquinoctialOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
+                                     stateVector[4], stateVector[5], EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
                                      initialOrbit.getFrame(), date, mu);
 
-            resetInitialState(new SpacecraftState(orbit, attitudeLaw.getAttitude(orbit), state[6]));
+            resetInitialState(new SpacecraftState(orbit, attitudeLaw.getAttitude(orbit), stateVector[6]));
             return initialState;
 
         } catch (OrekitException oe) {
