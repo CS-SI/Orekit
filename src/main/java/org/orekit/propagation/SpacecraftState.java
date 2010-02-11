@@ -207,7 +207,7 @@ public class SpacecraftState implements TimeStamped, Serializable {
      * and its orientation is defined by the attitude.</p>
      * @return transform from specified frame to current spacecraft frame
      */
-    public Transform asTransform() {
+    public Transform toTransform() {
 
         // orbit contribution
         final PVCoordinates pv = orbit.getPVCoordinates();
