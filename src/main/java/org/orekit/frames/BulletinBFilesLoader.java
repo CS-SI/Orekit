@@ -167,7 +167,7 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
 
         // read the data lines in the final values part inside section 2
         synchronized (this) {
-            
+
             boolean inSection2 = false;
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 Matcher matcher = sectionHeaderPattern.matcher(line);

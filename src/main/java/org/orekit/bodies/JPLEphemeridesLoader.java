@@ -216,68 +216,68 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         final double gm = getLoadedGravitationalCoefficient(generateType);
 
         switch (generateType) {
-            case SOLAR_SYSTEM_BARYCENTER :
-                return new JPLCelestialBody(supportedNames, gm,
-                                            CelestialBodyFactory.getEarthMoonBarycenter().getFrame(),
-                                            frameName) {
+        case SOLAR_SYSTEM_BARYCENTER :
+            return new JPLCelestialBody(supportedNames, gm,
+                                        CelestialBodyFactory.getEarthMoonBarycenter().getFrame(),
+                                        frameName) {
 
-                    /** Serializable UID. */
-                    private static final long serialVersionUID = -949534646302786503L;
+                /** Serializable UID. */
+                private static final long serialVersionUID = -949534646302786503L;
 
-                    /** {@inheritDoc} */
-                    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+                /** {@inheritDoc} */
+                public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
                     throws OrekitException {
-                        // we define solar system barycenter with respect to Earth-Moon barycenter
-                        // so we need to revert the vectors provided by the JPL DE 405 ephemerides
-                        final PVCoordinates emPV = super.getPVCoordinates(date, frame);
-                        return new PVCoordinates(emPV.getPosition().negate(), emPV.getVelocity().negate());
-                    }
+                    // we define solar system barycenter with respect to Earth-Moon barycenter
+                    // so we need to revert the vectors provided by the JPL DE 405 ephemerides
+                    final PVCoordinates emPV = super.getPVCoordinates(date, frame);
+                    return new PVCoordinates(emPV.getPosition().negate(), emPV.getVelocity().negate());
+                }
 
-                };
-            case EARTH_MOON :
-                final double scale = 1.0 / (1.0 + getLoadedEarthMoonMassRatio());
-                return new JPLCelestialBody(supportedNames, gm,
-                                            FramesFactory.getEME2000(), frameName) {
+            };
+        case EARTH_MOON :
+            final double scale = 1.0 / (1.0 + getLoadedEarthMoonMassRatio());
+            return new JPLCelestialBody(supportedNames, gm,
+                                        FramesFactory.getEME2000(), frameName) {
 
-                    /** Serializable UID. */
-                    private static final long serialVersionUID = -3710160379028246246L;
+                /** Serializable UID. */
+                private static final long serialVersionUID = -3710160379028246246L;
 
-                    /** {@inheritDoc} */
-                    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+                /** {@inheritDoc} */
+                public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
                     throws OrekitException {
-                        // we define Earth-Moon barycenter with respect to Earth center so we need
-                        // to apply a scale factor to the Moon vectors provided by the JPL DE 405 ephemerides
-                        return new PVCoordinates(scale, super.getPVCoordinates(date, frame));
-                    }
-                };
-            case EARTH :
-                return new AbstractCelestialBody(gm, FramesFactory.getEME2000()) {
+                    // we define Earth-Moon barycenter with respect to Earth center so we need
+                    // to apply a scale factor to the Moon vectors provided by the JPL DE 405 ephemerides
+                    return new PVCoordinates(scale, super.getPVCoordinates(date, frame));
+                }
+            };
+        case EARTH :
+            return new AbstractCelestialBody(gm, FramesFactory.getEME2000()) {
 
-                    /** Serializable UID. */
-                    private static final long serialVersionUID = -6542444016613134811L;
+                /** Serializable UID. */
+                private static final long serialVersionUID = -6542444016613134811L;
 
-                    /** {@inheritDoc} */
-                    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+                /** {@inheritDoc} */
+                public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
                     throws OrekitException {
 
-                        // specific implementation for Earth:
-                        // the Earth is always exactly at the origin of its own EME2000 frame
-                        PVCoordinates pv = PVCoordinates.ZERO;
-                        if (frame != getFrame()) {
-                            pv = getFrame().getTransformTo(frame, date).transformPVCoordinates(pv);
-                        }
-                        return pv;
-
+                    // specific implementation for Earth:
+                    // the Earth is always exactly at the origin of its own EME2000 frame
+                    PVCoordinates pv = PVCoordinates.ZERO;
+                    if (frame != getFrame()) {
+                        pv = getFrame().getTransformTo(frame, date).transformPVCoordinates(pv);
                     }
+                    return pv;
 
-                };
-            case MOON :
-                return new JPLCelestialBody(supportedNames, gm,
-                                            FramesFactory.getEME2000(), frameName);
-            default :
-                return new JPLCelestialBody(supportedNames, gm,
-                                            CelestialBodyFactory.getSolarSystemBarycenter().getFrame(),
-                                            frameName);
+                }
+
+            };
+        case MOON :
+            return new JPLCelestialBody(supportedNames, gm,
+                                        FramesFactory.getEME2000(), frameName);
+        default :
+            return new JPLCelestialBody(supportedNames, gm,
+                                        CelestialBodyFactory.getSolarSystemBarycenter().getFrame(),
+                                        frameName);
         }
     }
 
@@ -382,55 +382,55 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         // coefficient in au<sup>3</sup>/day<sup>2</sup>
         final double rawGM;
         switch (body) {
-            case SOLAR_SYSTEM_BARYCENTER :
-                return getLoadedGravitationalCoefficient(EphemerisType.SUN)        +
-                       getLoadedGravitationalCoefficient(EphemerisType.MERCURY)    +
-                       getLoadedGravitationalCoefficient(EphemerisType.VENUS)      +
-                       getLoadedGravitationalCoefficient(EphemerisType.EARTH_MOON) +
-                       getLoadedGravitationalCoefficient(EphemerisType.MARS)       +
-                       getLoadedGravitationalCoefficient(EphemerisType.JUPITER)    +
-                       getLoadedGravitationalCoefficient(EphemerisType.SATURN)     +
-                       getLoadedGravitationalCoefficient(EphemerisType.URANUS)     +
-                       getLoadedGravitationalCoefficient(EphemerisType.NEPTUNE)    +
-                       getLoadedGravitationalCoefficient(EphemerisType.PLUTO);
-            case SUN :
-                rawGM = getLoadedConstant("GMS");
-                break;
-            case MERCURY :
-                rawGM = getLoadedConstant("GM1");
-                break;
-            case VENUS :
-                rawGM = getLoadedConstant("GM2");
-                break;
-            case EARTH_MOON :
-                rawGM = getLoadedConstant("GMB");
-                break;
-            case EARTH :
-                return getLoadedEarthMoonMassRatio() *
-                       getLoadedGravitationalCoefficient(EphemerisType.MOON);
-            case MOON :
-                return getLoadedGravitationalCoefficient(EphemerisType.EARTH_MOON) /
-                       (1.0 + getLoadedEarthMoonMassRatio());
-            case MARS :
-                rawGM = getLoadedConstant("GM4");
-                break;
-            case JUPITER :
-                rawGM = getLoadedConstant("GM5");
-                break;
-            case SATURN :
-                rawGM = getLoadedConstant("GM6");
-                break;
-            case URANUS :
-                rawGM = getLoadedConstant("GM7");
-                break;
-            case NEPTUNE :
-                rawGM = getLoadedConstant("GM8");
-                break;
-            case PLUTO :
-                rawGM = getLoadedConstant("GM9");
-                break;
-            default :
-                throw OrekitException.createInternalError(null);
+        case SOLAR_SYSTEM_BARYCENTER :
+            return getLoadedGravitationalCoefficient(EphemerisType.SUN)        +
+                   getLoadedGravitationalCoefficient(EphemerisType.MERCURY)    +
+                   getLoadedGravitationalCoefficient(EphemerisType.VENUS)      +
+                   getLoadedGravitationalCoefficient(EphemerisType.EARTH_MOON) +
+                   getLoadedGravitationalCoefficient(EphemerisType.MARS)       +
+                   getLoadedGravitationalCoefficient(EphemerisType.JUPITER)    +
+                   getLoadedGravitationalCoefficient(EphemerisType.SATURN)     +
+                   getLoadedGravitationalCoefficient(EphemerisType.URANUS)     +
+                   getLoadedGravitationalCoefficient(EphemerisType.NEPTUNE)    +
+                   getLoadedGravitationalCoefficient(EphemerisType.PLUTO);
+        case SUN :
+            rawGM = getLoadedConstant("GMS");
+            break;
+        case MERCURY :
+            rawGM = getLoadedConstant("GM1");
+            break;
+        case VENUS :
+            rawGM = getLoadedConstant("GM2");
+            break;
+        case EARTH_MOON :
+            rawGM = getLoadedConstant("GMB");
+            break;
+        case EARTH :
+            return getLoadedEarthMoonMassRatio() *
+                   getLoadedGravitationalCoefficient(EphemerisType.MOON);
+        case MOON :
+            return getLoadedGravitationalCoefficient(EphemerisType.EARTH_MOON) /
+                   (1.0 + getLoadedEarthMoonMassRatio());
+        case MARS :
+            rawGM = getLoadedConstant("GM4");
+            break;
+        case JUPITER :
+            rawGM = getLoadedConstant("GM5");
+            break;
+        case SATURN :
+            rawGM = getLoadedConstant("GM6");
+            break;
+        case URANUS :
+            rawGM = getLoadedConstant("GM7");
+            break;
+        case NEPTUNE :
+            rawGM = getLoadedConstant("GM8");
+            break;
+        case PLUTO :
+            rawGM = getLoadedConstant("GM9");
+            break;
+        default :
+            throw OrekitException.createInternalError(null);
         }
 
         final double au    = getLoadedAstronomicalUnit();
@@ -869,6 +869,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         }
     };
 
+    /** Private CelestialBody class. */
     private class JPLCelestialBody extends AbstractCelestialBody {
 
         /** Serializable UID. */

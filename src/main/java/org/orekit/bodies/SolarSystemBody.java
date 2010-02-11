@@ -25,16 +25,16 @@ import org.orekit.errors.OrekitException;
  * #getSolarSystemBarycenter() solar system barycenter} and the {@link
  * #getEarthMoonBarycenter() Earth-Moon barycenter}.</p>
  * <p>The underlying body-centered frames are either direct children of {@link
- * Frame#getEME2000() EME2000} (for {@link #getMoon() Moon} and {@link
- * #getEarthMoonBarycenter() Earth-Moon barycenter}) or children from other
+ * org.orekit.frames.FramesFactory#getEME2000() EME2000} (for {@link #getMoon() Moon}
+ * and {@link #getEarthMoonBarycenter() Earth-Moon barycenter}) or children from other
  * body-centered frames. For example, the path from EME2000 to
  * Jupiter-centered frame is: EME2000, Earth-Moon barycenter centered,
  * solar system barycenter centered, Jupiter-centered. The defining transforms
  * of these frames are combinations of simple linear {@link
- * Transform#Transform(org.apache.commons.math.geometry.Vector3D,
+ * org.orekit.frames.Transform#Transform(org.apache.commons.math.geometry.Vector3D,
  * org.apache.commons.math.geometry.Vector3D) translation/velocity} transforms
  * without any rotation. The frame axes are therefore always parallel to
- * {@link Frame#getEME2000() EME2000} frame axes.</p>
+ * {@link org.orekit.frames.FramesFactory#getEME2000() EME2000} frame axes.</p>
  * <p>The position of the bodies provided by this class are interpolated using
  * the JPL DE 405/DE 406 ephemerides.</p>
  * @author Luc Maisonobe

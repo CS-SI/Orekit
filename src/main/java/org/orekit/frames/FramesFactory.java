@@ -175,7 +175,7 @@ public class FramesFactory implements Serializable {
 
     /** Add a loader for EOP 1980 history.
      * @param loader custom loader to add for the EOP history
-     * @see #addDefaultEOP1980HistoryLoader()
+     * @see #addDefaultEOP1980HistoryLoaders(String, String)
      * @see #clearEOP1980HistoryLoaders()
      * @see #addEOP2000HistoryLoader(EOP2000HistoryLoader)
      */
@@ -246,7 +246,7 @@ public class FramesFactory implements Serializable {
 
     /** Add a loader for EOP 2000 history.
      * @param loader custom loader to add for the EOP history
-     * @see #addDefaultEOP2000HistoryLoader()
+     * @see #addDefaultEOP2000HistoryLoaders(String, String)
      * @see #clearEOP2000HistoryLoaders()
      * @see #addEOP1980HistoryLoader(EOP1980HistoryLoader)
      */
