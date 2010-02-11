@@ -107,8 +107,8 @@ public class EventShifter extends AbstractDetector {
 
     /** {@inheritDoc} */
     public double g(final SpacecraftState s) throws OrekitException {
-        final double incShiftedG = g(s.shiftedBy(increasingTimeShift));
-        final double decShiftedG = g(s.shiftedBy(decreasingTimeShift));
+        final double incShiftedG = detector.g(s.shiftedBy(increasingTimeShift));
+        final double decShiftedG = detector.g(s.shiftedBy(decreasingTimeShift));
         return (increasingTimeShift < decShiftedG) ?
                Math.max(incShiftedG, decShiftedG) : Math.min(incShiftedG, decShiftedG);
     }
