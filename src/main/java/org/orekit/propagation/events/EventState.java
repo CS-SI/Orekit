@@ -198,7 +198,8 @@ class EventState implements Serializable {
                     final double dtRoot = (dtA <= dtB) ? solver.solve(f, dtA, dtB) : solver.solve(f, dtB, dtA);
                     final AbsoluteDate root = t0.shiftedBy(dtRoot);
 
-                    if ((Math.abs(root.durationFrom(ta)) <= detector.getThreshold()) &&
+                    if ((previousEventTime != null) &&
+                        (Math.abs(root.durationFrom(ta)) <= detector.getThreshold()) &&
                         (Math.abs(root.durationFrom(previousEventTime)) <= detector.getThreshold())) {
                             // we have either found nothing or found (again ?) a past event, we simply ignore it
                         ta = tb;
