@@ -19,9 +19,9 @@ package org.orekit.frames;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /** Class for frames moving with an orbiting satellite.
  * <p>There are two main local orbital frames:</p>
@@ -50,34 +50,35 @@ public class LocalOrbitalFrame extends Frame {
     }
 
     /** Serialiazable UID. */
-    private static final long serialVersionUID = 5413386845678794203L;
+    private static final long serialVersionUID = 4815246887625815981L;
 
     /** Frame type. */
     private final LOFType type;
 
-    /** Propagator used to compute frame motion. */
-    private final Propagator propagator;
+    /** Provider used to compute frame motion. */
+    private final PVCoordinatesProvider provider;
 
     /** Build a new instance.
      * @param parent parent frame (must be non-null)
      * @param type frame type
-     * @param propagator propagator used to compute frame motion
+     * @param provider provider used to compute frame motion
      * @param name name of the frame
      * @exception IllegalArgumentException if the parent frame is null
      */
     public LocalOrbitalFrame(final Frame parent, final LOFType type,
-                             final Propagator propagator, final String name)
+                             final PVCoordinatesProvider provider,
+                             final String name)
         throws IllegalArgumentException {
         super(parent, Transform.IDENTITY, name, false);
-        this.type       = type;
-        this.propagator = propagator;
+        this.type     = type;
+        this.provider = provider;
     }
 
     /** {@inheritDoc} */
     protected void updateFrame(final AbsoluteDate date) throws OrekitException {
 
         // get position/velocity with respect to parent frame
-        final PVCoordinates pv = propagator.propagate(date).getPVCoordinates(getParent());
+        final PVCoordinates pv = provider.getPVCoordinates(date, getParent());
         final Vector3D p = pv.getPosition();
         final Vector3D v = pv.getVelocity();
         final Vector3D momentum = Vector3D.crossProduct(p, v);
