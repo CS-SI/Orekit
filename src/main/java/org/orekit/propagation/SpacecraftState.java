@@ -154,7 +154,7 @@ public class SpacecraftState implements TimeStamped, Serializable {
      * As a rough order of magnitude, the following table shows the interpolation
      * errors obtained between this simple shift method and an {@link
      * org.orekit.propagation.analytical.EcksteinHechlerPropagator Eckstein-Heschler
-     * propagator} for an 800km altitude narly circular and polar Earth orbit with
+     * propagator} for an 800km altitude nearly circular polar Earth orbit with
      * {@link org.orekit.attitudes.BodyCenterPointing body center pointing}. Beware
      * that these results may be different for other orbits.
      * </p>
