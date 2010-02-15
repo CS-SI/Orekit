@@ -229,9 +229,7 @@ public abstract class AbstractPropagator implements Propagator {
         return propagate(date).getPVCoordinates(frame);
     }
 
-    /** Get the initial propagation date.
-     * @return initial propagation date
-     */
+    /** {@inheritDoc} */
     public abstract SpacecraftState getInitialState();
 
     /** Propagate an orbit without any fancy features.
