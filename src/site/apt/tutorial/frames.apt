@@ -129,7 +129,7 @@ double doppler =
 ** Source code
 
   The complete code for this example can be found in the source tree of the library,
-  in file <<<src/tutorials/fr/cs/examples/frames/Frame1.java>>>.
+  in file <<<src/tutorials/fr/cs/examples/frames/Frames1.java>>>.
 
 * Advanced use
 
@@ -152,7 +152,7 @@ double doppler =
 
 ** A smart solution
 
-  The solution provided by OREKIT is detailed above.
+  A possible solution provided by OREKIT is detailed above.
 
   The CoG frame has its origin at the satellite center of gravity and is aligned with EME2000.
   It is linked to its parent EME2000 frame by an a priori unknown transform which depends
@@ -257,4 +257,108 @@ Satellite velocity in EME2000: {-150.5129516; -532.0397437; 7436.0742692}
 ** Source code
 
   The complete code for this example can be found in the source tree of the library,
-  in file <<<src/tutorials/fr/cs/examples/frames/Frame2.java>>>.
+  in file <<<src/tutorials/fr/cs/examples/frames/Frames2.java>>>.
+
+* A useful frame : the SpacecraftFrame
+
+** The problem to be solved
+
+  Let's consider a spacecraft which attitude is guided by a yaw steering law,
+  we want to plot some of the effects of such a law on the spacecraft motion.
+
+** An immediate solution
+
+  First, an initial orbit for the spacecraft is defined with:
+
+  ** an inertial frame
+
+  ** a date in some time scale
+    
+  ** a central attraction coefficient
+    
+  ** a circular orbit defined in the inertial frame at the date.
+    
+  []
+
++---------------------
+Frame eme2000 = FramesFactory.getEME2000();
+AbsoluteDate initialDate = new AbsoluteDate(1970, 04, 07, 0, 0, 00.000,
+                                            TimeScalesFactory.getUTC());
+double mu =  3.986004415e+14;
+Orbit orbit = new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4,
+                                Math.toRadians(50.),
+                                Math.toRadians(220.),
+                                Math.toRadians(5.300),
+                                CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
+                                eme2000, initialDate, mu);
++---------------------
+
+  More precisions on the orbit representation can be found in the
+  {{{../architecture/orbits.html}orbits section}} of the library architecture
+  documentation.
+
+  Then the attitude law for the spacecraft is constructed:
+
+  * we first define a nadir pointing law towards the Earth under the spacecraft,
+
+  * then a yaw steering law is added in order to give maximal lightning to the
+    solar arrays, which rotation axis is Y in spacecraft frame.
+
+  []
+
++---------------------
+double ae =  6378137.0;
+double f  =  1.0 / 298.257223563;
+Frame itrf2005 = FramesFactory.getITRF2005(true);
+BodyShape earth = new OneAxisEllipsoid(ae, f, itrf2005);
+NadirPointing nadirLaw = new NadirPointing(earth);
++---------------------
+
++---------------------
+PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+YawSteering yawSteeringLaw = new YawSteering(nadirLaw, sun, Vector3D.MINUS_I);
++---------------------
+    
+  More precisions on the attitude representation can be found in the
+  {{{../architecture/attitudes.html}attitudes section}} of the library architecture
+  documentation.
+
+  As a propagator, we consider an analytic <EcksteinHechlerPropagator>.
+
++---------------------
+Propagator propagator =
+           new EcksteinHechlerPropagator(orbit, yawSteeringLaw, ae, mu,
+                                         -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, -5.5e-7);
++---------------------
+
+  More precisions on <Propagator> can be found in the
+  {{{../architecture/propagation.html}propagation section}} of the library
+  architecture documentation.
+
+  Then, the spacecraft frame is just associated with the propagator.
+
++---------------------
+SpacecraftFrame scFrame = new SpacecraftFrame(propagator, "Spacecraft");
++---------------------
+
+  Finally, we simply get the position of the Sun in spacecraft frame and the spacecraft
+  rotational rate in the inertial frame at any date with two single instructions:
+
++---------------------
+Vector3D sunSat = sun.getPVCoordinates(date, scFrame).getPosition();
+Vector3D spin = eme2000.getTransformTo(scFrame, date).getRotationRate();
++---------------------
+
+  The user doesn't need to bother about propagation and transforms, everything is
+  done in the background.
+
+  So, computing over an orbit, we can plot the following results showing clearly a
+  typical yaw steering behavior:
+
+[../images/frames3-tutorial.png]
+
+** Source code
+
+  The complete code for this example can be found in the source tree of the library,
+  in file <<<src/tutorials/fr/cs/examples/frames/Frames3.java>>>.
+  
