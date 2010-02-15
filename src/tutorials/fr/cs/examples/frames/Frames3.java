@@ -17,6 +17,9 @@
 
 package fr.cs.examples.frames;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -110,7 +113,15 @@ public class Frames3 {
             // The spacecraft frame is associated with the propagator.
             SpacecraftFrame satFrame = new SpacecraftFrame(propagator, "Satellite");
 
-            System.out.println("#time X Y Z Wx Wy Wz");
+            // Let's write the results in a file in order to draw some plots. 
+            final String homeRep = System.getProperty("user.home");
+            final String nameFic = "XYZ.dat";
+            final File resFile = new File(homeRep, nameFic);
+            FileWriter fichier = new FileWriter(resFile);
+
+            fichier.write("#time X Y Z Wx Wy Wz\n");
+
+            System.out.println("...");
 
             // Loop
             // from
@@ -130,20 +141,26 @@ public class Frames3 {
                 double sunY = sunSat.getY() / sunSat.getNorm();
                 double sunZ = sunSat.getZ() / sunSat.getNorm();
 
-                System.out.println(extrapDate
-                                   + "  " + d3.format(sunX)
-                                   + "  " + d3.format(sunY)
-                                   + "  " + d3.format(sunZ)
-                                   + "  " + d7.format(spin.getX())
-                                   + "  " + d7.format(spin.getY())
-                                   + "  " + d7.format(spin.getZ()));
+                fichier.write(extrapDate
+                              + "  " + d3.format(sunX)
+                              + "  " + d3.format(sunY)
+                              + "  " + d3.format(sunZ)
+                              + "  " + d7.format(spin.getX())
+                              + "  " + d7.format(spin.getY())
+                              + "  " + d7.format(spin.getZ()) + "\n");
 
                 extrapDate = extrapDate.shiftedBy(10);
 
             }
 
+            fichier.close();
+
+            System.out.println("Done");
+
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());
+        } catch (IOException ioe) {
+            System.err.println(ioe.getMessage());
         }
     }
 
