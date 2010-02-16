@@ -33,22 +33,29 @@ import org.orekit.errors.OrekitException;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.PVCoordinates;
 
 public class SpacecraftFrameTest {
 
     @Test
     public void testPropagator() throws OrekitException {
         AbsoluteDate stopDate = iniDate.shiftedBy(1000.0);
-        SpacecraftState propagated = scFrame.getPropagator().propagate(stopDate);
-        Assert.assertEquals(0, stopDate.durationFrom(propagated.getDate()), 1.0e-10);
+        PVCoordinates pv0 = scFrame.getPropagator().propagate(stopDate).getPVCoordinates();
+        Vector3D p0 = pv0.getPosition();
+        Vector3D v0 = pv0.getVelocity();
+        PVCoordinates pv1 = scFrame.getPVCoordinates(stopDate, eme2000);
+        Vector3D p1 = pv1.getPosition();
+        Vector3D v1 = pv0.getVelocity();
+
+        Assert.assertEquals(0, p1.subtract(p0).getNorm(), Utils.epsilonTest);
+        Assert.assertEquals(0, v1.subtract(v0).getNorm(), Utils.epsilonTest);
     }    
 
     @Test
-    public void testPV() throws OrekitException {
+    public void testYawSteering() throws OrekitException {
         AbsoluteDate stopDate = iniDate.shiftedBy(3000.0);
         Vector3D sunSat = sun.getPVCoordinates(stopDate, scFrame).getPosition();
         Assert.assertEquals(0, (sunSat.getY()/sunSat.getNorm()), Utils.epsilonTest);
