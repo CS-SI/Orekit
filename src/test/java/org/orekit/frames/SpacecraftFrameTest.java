@@ -41,15 +41,17 @@ import org.orekit.time.TimeScalesFactory;
 public class SpacecraftFrameTest {
 
     @Test
-    public void testPV() throws OrekitException {
-        Vector3D sunSat = sun.getPVCoordinates(stopDate, scFrame).getPosition();
-        Assert.assertEquals(0, (sunSat.getY()/sunSat.getNorm()), 1.0e-10);
+    public void testPropagator() throws OrekitException {
+        AbsoluteDate stopDate = iniDate.shiftedBy(1000.0);
+        SpacecraftState propagated = scFrame.getPropagator().propagate(stopDate);
+        Assert.assertEquals(0, stopDate.durationFrom(propagated.getDate()), 1.0e-10);
     }    
 
     @Test
-    public void testPropagator() throws OrekitException {
-        SpacecraftState propagated = scFrame.getPropagator().propagate(stopDate);
-        Assert.assertEquals(0, stopDate.durationFrom(propagated.getDate()), 1.0e-10);
+    public void testPV() throws OrekitException {
+        AbsoluteDate stopDate = iniDate.shiftedBy(3000.0);
+        Vector3D sunSat = sun.getPVCoordinates(stopDate, scFrame).getPosition();
+        Assert.assertEquals(0, (sunSat.getY()/sunSat.getNorm()), Utils.epsilonTest);
     }    
 
     @Before
@@ -66,8 +68,8 @@ public class SpacecraftFrameTest {
             double raan = Math.toRadians(220.);
             double alfa = Math.toRadians(5.300);
 
-            AbsoluteDate iniDate = new AbsoluteDate(1970, 04, 07, 0, 0, 0.0,
-                                                    TimeScalesFactory.getUTC());
+            iniDate = new AbsoluteDate(1970, 04, 07, 0, 0, 0.0,
+                                       TimeScalesFactory.getUTC());
             eme2000 = FramesFactory.getEME2000();
             Orbit orbit = new CircularOrbit(a, ex, ey, i, raan, alfa,
                                             CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
@@ -97,8 +99,6 @@ public class SpacecraftFrameTest {
             // The spacecraft frame is associated with the propagator.
             scFrame = new SpacecraftFrame(propagator, "Spacecraft");
             
-            stopDate = iniDate.shiftedBy(1000.0);
-
         } catch (OrekitException oe) {
             Assert.fail(oe.getLocalizedMessage());
         }
@@ -109,12 +109,12 @@ public class SpacecraftFrameTest {
         eme2000 = null;
         sun = null;
         scFrame = null;
-        stopDate = null;
+        iniDate = null;
     }
 
     private Frame eme2000;
     private CelestialBody sun;
     private SpacecraftFrame scFrame;
-    private AbsoluteDate stopDate;
+    private AbsoluteDate iniDate;
 
 }
