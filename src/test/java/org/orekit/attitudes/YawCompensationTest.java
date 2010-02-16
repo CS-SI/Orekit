@@ -102,18 +102,24 @@ public class YawCompensationTest {
                                                             inertFrame, circOrbit.getDate());
         Vector3D pEarth   = earthShape.transform(gp);
 
-        // velocity of ground point due to Earth motion only, in inertial frame
-        double h = 0.1;
+        // velocity of ground point, in inertial frame
+        double h = 1.0;
+        double s2 = 1.0 / (12 * h);
+        double s1 = 8.0 * s2;
+        Transform tM2h = earthFrame.getTransformTo(inertFrame, circOrbit.getDate().shiftedBy(-2 * h));
+        Vector3D pM2h = tM2h.transformPosition(pEarth);
         Transform tM1h = earthFrame.getTransformTo(inertFrame, circOrbit.getDate().shiftedBy(-h));
         Vector3D pM1h = tM1h.transformPosition(pEarth);
         Transform tP1h = earthFrame.getTransformTo(inertFrame, circOrbit.getDate().shiftedBy( h));
         Vector3D pP1h = tP1h.transformPosition(pEarth);
-        Vector3D velInert = new Vector3D(0.5 / h, pP1h, -0.5 / h, pM1h);
+        Transform tP2h = earthFrame.getTransformTo(inertFrame, circOrbit.getDate().shiftedBy( 2 * h));
+        Vector3D pP2h = tP2h.transformPosition(pEarth);
+        Vector3D velInert = new Vector3D(s1, pP1h, -s1, pM1h, -s2, pP2h, s2, pM2h);
+        Vector3D relativeVelocity = velInert.subtract(circOrbit.getPVCoordinates().getVelocity());
 
-        // velocity in satellite frame, must be in (X, Z) plane
-        Vector3D velSat = att0.getRotation().applyTo(velInert);
-        System.out.println(velInert + " " + velSat);
-        Assert.assertEquals(0.0, velSat.getY(), Utils.epsilonTest);
+        // relative velocity in satellite frame, must be in (X, Z) plane
+        Vector3D relVelSat = att0.getRotation().applyTo(relativeVelocity);
+        Assert.assertEquals(0.0, relVelSat.getY(), 2.0e-5);
 
     }
 
@@ -152,11 +158,12 @@ public class YawCompensationTest {
             PVCoordinates extrapPvSatEME2000 = extrapOrbit.getPVCoordinates();
             
             // Satellite latitude at date
-            double extrapLat = earthShape.transform(extrapPvSatEME2000.getPosition(), FramesFactory.getEME2000(), extrapDate).getLatitude();
+            double extrapLat =
+                earthShape.transform(extrapPvSatEME2000.getPosition(), FramesFactory.getEME2000(), extrapDate).getLatitude();
             
             // Compute yaw compensation angle -- rotations composition
-            double yawAngle = yawCompensLaw.getYawAngle(circOrbit);
-                        
+            double yawAngle = yawCompensLaw.getYawAngle(extrapOrbit.getOrbit());
+
             // Update minimum yaw compensation angle
             if (Math.abs(yawAngle) <= yawMin) {
                 yawMin = Math.abs(yawAngle);
@@ -169,35 +176,32 @@ public class YawCompensationTest {
             // 1/ Check yaw values around ascending node (max yaw)
             if ((Math.abs(extrapLat) < Math.toRadians(20.)) &&
                 (extrapPvSatEME2000.getVelocity().getZ() >= 0. )) {
-                System.out.println(Math.toDegrees(extrapLat) + " " + Math.toDegrees(yawAngle));
-//                Assert.assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.8488)) 
-//                        && (Math.abs(yawAngle) <= Math.toRadians(2.8532)));
+                Assert.assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.51)) &&
+                                  (Math.abs(yawAngle) <= Math.toRadians(2.86)));
             }
             
             // 2/ Check yaw values around maximum positive latitude (min yaw)
             if ( extrapLat > Math.toRadians(50.) ) {
-//                Assert.assertTrue((Math.abs(yawAngle) <= Math.toRadians(0.2628)) 
-//                        && (Math.abs(yawAngle) >= Math.toRadians(0.0001)));
+                Assert.assertTrue(Math.abs(yawAngle) <= Math.toRadians(0.26));
             }
             
             // 3/ Check yaw values around descending node (max yaw)
             if ( (Math.abs(extrapLat) < Math.toRadians(2.))
                     && (extrapPvSatEME2000.getVelocity().getZ() <= 0. ) ) {
-//                Assert.assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.8485)) 
-//                             && (Math.abs(yawAngle) <= Math.toRadians(2.8536)));
+                Assert.assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.51)) &&
+                                  (Math.abs(yawAngle) <= Math.toRadians(2.86)));
             }
          
             // 4/ Check yaw values around maximum negative latitude (min yaw)
             if ( extrapLat < Math.toRadians(-50.) ) {
-//                Assert.assertTrue((Math.abs(yawAngle) <= Math.toRadians(0.2359)) 
-//                             && (Math.abs(yawAngle) >= Math.toRadians(0.0141)));
+                Assert.assertTrue(Math.abs(yawAngle) <= Math.toRadians(0.26));
             }
 
         }
         
         // 5/ Check that minimum yaw compensation value is around maximum latitude
-        Assert.assertEquals(Math.toRadians( 0.003229), yawMin, Utils.epsilonAngle);
-        Assert.assertEquals(Math.toRadians(50.214853), latMin, Utils.epsilonAngle);
+        Assert.assertEquals(0.0, Math.toDegrees(yawMin), 0.004);
+        Assert.assertEquals(50.0, Math.toDegrees(latMin), 0.22);
 
     }
 
@@ -253,9 +257,8 @@ public class YawCompensationTest {
         Vector3D reference = Attitude.estimateSpin(sMinus.getAttitude().getRotation(),
                                                    sPlus.getAttitude().getRotation(),
                                                    2 * h);
-        System.out.println(spin0.getNorm() + " " + (2 * Math.PI / spin0.getNorm()));
         Assert.assertTrue(spin0.getNorm() > 1.0e-3);
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 2.0e-8);
+        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-9);
 
     }
 

@@ -118,6 +118,9 @@
         has the orbit available and attitude laws implementations can retrieve all the former
         parameters (date, position/velocity, frame) directly from orbit.
       </action>
+      <action dev="luc" type="fix" >
+        fixed spin rate computation errors in almost all attitude modes
+      </action>
       <action dev="luc" type="add" >
         added a new simple linear attitude mode: FixedRate
       </action>

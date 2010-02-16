@@ -19,8 +19,8 @@ package org.orekit.attitudes;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.utils.PVCoordinates;
 
 
 /**
@@ -64,15 +64,24 @@ public class YawCompensation extends GroundPointingWrapper {
     public Rotation getCompensation(final Orbit orbit, final Attitude base)
         throws OrekitException {
 
+        // compute relative velocity of FIXED ground point with respect to satellite
+        // beware the point considered is NOT the sliding point on central body surface
+        // as returned by getGroundPointingLaw().getTargetPV(), but the fixed point that
+        // at current time is the target, but before and after is only a body surface
+        // point with its own motion and not aligned with satellite Z axis.
+        // So the following computation needs to recompute velocity by itself, using
+        // the velocity provided by getTargetPV would be wrong!
+        final Frame bodyFrame  = getBodyFrame();
+        final Frame orbitFrame = orbit.getFrame();
+        final Vector3D surfacePointLocation = getGroundPointingLaw().getTargetPoint(orbit, orbitFrame);
+        final Vector3D bodySpin = bodyFrame.getTransformTo(orbitFrame, orbit.getDate()).getRotationRate().negate();
+        final Vector3D surfacePointVelocity = Vector3D.crossProduct(bodySpin, surfacePointLocation);
+        final Vector3D satVelocity = orbit.getPVCoordinates().getVelocity();
+        final Vector3D relativeVelocity = surfacePointVelocity.subtract(satVelocity);
+
         // Compensation rotation definition :
         //  . Z satellite axis is unchanged
-        //  . X satellite axis shall be aligned to target relative velocity
-        final PVCoordinates targetPV    = getGroundPointingLaw().getTargetPV(orbit, orbit.getFrame());
-        final Vector3D targetVelocity   = targetPV.getVelocity();
-        final Vector3D satVelocity      = orbit.getPVCoordinates().getVelocity();
-        final Vector3D relativeVelocity = targetVelocity.subtract(satVelocity);
-
-        // Create rotation transforming zsat to zsat and relativeVelocity to -xsat
+        //  . target relative velocity is in (Z,X) plane, in the -X half plane part
         final Rotation compensation =
             new Rotation(Vector3D.PLUS_K, base.getRotation().applyTo(relativeVelocity),
                          Vector3D.PLUS_K, Vector3D.MINUS_I);

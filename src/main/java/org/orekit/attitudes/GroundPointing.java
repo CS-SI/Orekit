@@ -88,7 +88,7 @@ public abstract class GroundPointing implements AttitudeLaw {
 
         // velocity of target point due to satellite and target motions
         final double h  = 0.1;
-        final double scale = 1.0 / h;
+        final double scale = 1.0 / (2 * h);
         final Vector3D intersectionM1h = getTargetPoint(orbit.shiftedBy(-h), frame);
         final Vector3D intersectionP1h = getTargetPoint(orbit.shiftedBy( h), frame);
         final Vector3D intersectionV   = new Vector3D(scale, intersectionP1h, -scale, intersectionM1h);
