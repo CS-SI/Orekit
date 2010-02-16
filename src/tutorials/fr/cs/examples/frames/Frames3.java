@@ -99,27 +99,27 @@ public class Frames3 {
      
             // Target pointing attitude law with yaw compensation
             PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-            YawSteering yawSteeringLaw = new YawSteering(nadirLaw, sun, Vector3D.MINUS_I);
+            YawSteering yawSteeringLaw =
+                new YawSteering(nadirLaw, sun, Vector3D.MINUS_I);
 
-            // Propagator : consider a simple keplerian motion
+            // Propagator : Eckstein-Hechler analytic propagator
             final double c20 = -1.08263e-3;
             final double c30 = 2.54e-6;
             final double c40 = 1.62e-6;
             final double c50 = 2.3e-7;
             final double c60 = -5.5e-7;
-            Propagator propagator = new EcksteinHechlerPropagator(orbit,
-                                       yawSteeringLaw, ae, mu, c20, c30, c40, c50, c60);
+            Propagator propagator =
+                new EcksteinHechlerPropagator(orbit, yawSteeringLaw,
+                                              ae, mu, c20, c30, c40, c50, c60);
 
             // The spacecraft frame is associated with the propagator.
-            SpacecraftFrame satFrame = new SpacecraftFrame(propagator, "Satellite");
+            SpacecraftFrame scFrame = new SpacecraftFrame(propagator, "Spacecraft");
 
             // Let's write the results in a file in order to draw some plots. 
             final String homeRep = System.getProperty("user.home");
-            final String nameFic = "XYZ.dat";
-            final File resFile = new File(homeRep, nameFic);
-            FileWriter fichier = new FileWriter(resFile);
+            FileWriter fileRes = new FileWriter(new File(homeRep, "XYZ.dat"));
 
-            fichier.write("#time X Y Z Wx Wy Wz\n");
+            fileRes.write("#time X Y Z Wx Wy Wz\n");
 
             System.out.println("...");
 
@@ -131,17 +131,17 @@ public class Frames3 {
 
             while (extrapDate.compareTo(finalDate) <= 0)  {
                 // We can simply get the position of the Sun in spacecraft frame at any time
-                Vector3D sunSat = sun.getPVCoordinates(extrapDate, satFrame).getPosition();
+                Vector3D sunSat = sun.getPVCoordinates(extrapDate, scFrame).getPosition();
 
                 // and the spacecraft rotational rate also 
-                Vector3D spin = eme2000.getTransformTo(satFrame, extrapDate).getRotationRate();
+                Vector3D spin = eme2000.getTransformTo(scFrame, extrapDate).getRotationRate();
 
                 // Lets calculate the reduced coordinates
                 double sunX = sunSat.getX() / sunSat.getNorm();
                 double sunY = sunSat.getY() / sunSat.getNorm();
                 double sunZ = sunSat.getZ() / sunSat.getNorm();
 
-                fichier.write(extrapDate
+                fileRes.write(extrapDate
                               + "  " + d3.format(sunX)
                               + "  " + d3.format(sunY)
                               + "  " + d3.format(sunZ)
@@ -153,7 +153,7 @@ public class Frames3 {
 
             }
 
-            fichier.close();
+            fileRes.close();
 
             System.out.println("Done");
 
