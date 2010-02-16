@@ -107,7 +107,7 @@ public class Attitude implements TimeStamped, Serializable {
         final double rate = spin.getNorm();
         if (rate == 0.0) {
             // special case for inertial attitudes
-            return this;
+            return new Attitude(date.shiftedBy(dt), referenceFrame, attitude, spin);
         }
 
         // BEWARE: there is really a minus sign here, because if
