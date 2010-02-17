@@ -236,8 +236,8 @@ Frames
 
 ** Spacecraft Frame
   
-  A frame may also be bounded to a spacecraft simply using the propagator which
-  computes the spacecraft state, including its orbit and attitude, at any time.
+  A frame can also be bound to a spacecraft simply using the propagator which
+  computes at any time the spacecraft state, including its orbit and attitude.
   The frame orientation depends on the underlying attitude law.
 
 * User defined frames
