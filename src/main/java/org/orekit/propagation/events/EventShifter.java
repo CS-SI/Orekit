@@ -45,11 +45,11 @@ public class EventShifter extends AbstractDetector {
     /** Indicator for using shifted or unshifted states at event occurrence. */
     private final boolean useShiftedStates;
 
-    /** Increasing events time shift. */
-    private final double increasingTimeShift;
+    /** Offset to apply to find increasing events. */
+    private final double increasingOffset;
 
-    /** Decreasing events time shift. */
-    private final double decreasingTimeShift;
+    /** Offset to apply to find decreasing events. */
+    private final double decreasingOffset;
 
     /** Build a new instance.
      * <p>The {@link #getMaxCheckInterval() max check interval}, the
@@ -62,7 +62,7 @@ public class EventShifter extends AbstractDetector {
      * @param detector event detector for the raw unshifted event
      * @param useShiftedStates if true, the state provided to {@link
      * #eventOccurred(SpacecraftState, boolean) eventOccurreed} method of
-     * the <code>detector</code> will be left shifted, otherwise it will
+     * the <code>detector</code> will remain shifted, otherwise it will
      * be <i>unshifted</i> to correspond to the underlying raw event.
      * @param increasingTimeShift increasing events time shift.
      * @param decreasingTimeShift decreasing events time shift.
@@ -70,24 +70,24 @@ public class EventShifter extends AbstractDetector {
     public EventShifter(final EventDetector detector, final boolean useShiftedStates,
                         final double increasingTimeShift, final double decreasingTimeShift) {
         super(detector.getMaxCheckInterval(), detector.getThreshold());
-        this.detector            = detector;
-        this.useShiftedStates    = useShiftedStates;
-        this.increasingTimeShift = increasingTimeShift;
-        this.decreasingTimeShift = decreasingTimeShift;
+        this.detector         = detector;
+        this.useShiftedStates = useShiftedStates;
+        this.increasingOffset = -increasingTimeShift;
+        this.decreasingOffset = -decreasingTimeShift;
     }
 
     /** Get the increasing events time shift.
      * @return increasing events time shift
      */
     public double getIncreasingTimeShift() {
-        return increasingTimeShift;
+        return increasingOffset;
     }
 
     /** Get the decreasing events time shift.
      * @return decreasing events time shift
      */
     public double getDecreasingTimeShift() {
-        return decreasingTimeShift;
+        return decreasingOffset;
     }
 
     /** {@inheritDoc} */
@@ -100,16 +100,16 @@ public class EventShifter extends AbstractDetector {
         }
 
         // we need to "unshift" the state
-        final double dt = increasing ? -increasingTimeShift : -decreasingTimeShift;
-        return detector.eventOccurred(s.shiftedBy(dt), increasing);
+        final double offset = increasing ? increasingOffset : decreasingOffset;
+        return detector.eventOccurred(s.shiftedBy(offset), increasing);
 
     }
 
     /** {@inheritDoc} */
     public double g(final SpacecraftState s) throws OrekitException {
-        final double incShiftedG = detector.g(s.shiftedBy(increasingTimeShift));
-        final double decShiftedG = detector.g(s.shiftedBy(decreasingTimeShift));
-        return (increasingTimeShift < decShiftedG) ?
+        final double incShiftedG = detector.g(s.shiftedBy(increasingOffset));
+        final double decShiftedG = detector.g(s.shiftedBy(decreasingOffset));
+        return (increasingOffset >= decreasingOffset) ?
                Math.max(incShiftedG, decShiftedG) : Math.min(incShiftedG, decShiftedG);
     }
 

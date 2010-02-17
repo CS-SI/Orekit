@@ -133,6 +133,11 @@
         fixed corner cases in event detection during orbit propagation, sometimes
         an already detected and handled event prevented the propagator to go further in time.
       </action>
+      <action dev="luc" type="add" >
+        added an EventShifter wrapper allowing to slightly shift raw events in time. This is useful
+        for example to switch an attitude mode from solar pointing to something else a few minutes
+        before eclipse entry and going back to solar pointing mode a few minutes after eclipse exit
+      </action>
       <action dev="pascal" type="add" >
         added a new EclipseDetector handling either umbra or penumbra entry and exit events
       </action>

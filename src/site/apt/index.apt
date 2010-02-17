@@ -126,6 +126,8 @@ Overview
 
     * predefined discrete events
 
+      * eclipse -both umbra and penumbra)
+
       * ascending and descending node crossing
 
       * apogee and perigee crossing
@@ -138,6 +140,10 @@ Overview
       * date
 
       * impulse maneuvers occurrence
+
+    * possibility to slightly shift events in time (for example to switch from
+      solar pointing mode to something else a few minutes before eclipse entry and
+      reverting to solar pointing mode a few minutes after eclipse exit)
 
   ** Attitude
 
