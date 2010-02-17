@@ -76,11 +76,11 @@ Frames
   has been arbitrarily chosen as the root of the frames tree: the <Geocentric Celestial
   Reference Frame> (GCRF) which is an inertial reference defined by IERS.
 
-  There are also a number of planetary frames associated with the predefined celestial bodies.
-
   For most purposes, the recommended frames to use are ITRF 2005 for terrestrial frame and
   GCRF for celestial frame. EME2000, MEME, TEME and PEF could also be used for compatibility
   with legacy systems.
+
+  There are also a number of planetary frames associated with the predefined celestial bodies.
 
 ** IERS 2003 Conventions
 
@@ -192,6 +192,18 @@ Frames
   The same kind of optimization used for the IAU-2000 precession-nutation model are also applied for
   the older IAU-1980 precession-nutation model, despite it is much simpler.
 
+** Solar system frames
+
+  All celestial bodies are linked to their own body-centered inertial frame, just
+  like the Earth is linked to EME2000 and GCRF. Since Orekit provides implementations
+  of the main solar system celestial bodies, it also provides body-centered frames
+  for these bodies. The predefined ones are the Sun, the Moon, the eight planets and
+  the Pluto dwarf planet. In addition to these real bodies, two points are supported
+  for convenience as if they were real bodies: the solar system barycenter and the
+  Earth-Moon barycenter.
+
+[../images/solar-system-frames.png]
+
 ** Topocentric Frame
   
   This frame model allows to define the frame associated to any position at 
@@ -222,17 +234,11 @@ Frames
   along orbital momentum and its Y axis completes the right-handed trihedra (it is roughly
   along velocity).
 
-** Solar system frames
-
-  All celestial bodies are linked to their own body-centered inertial frame, just
-  like the Earth is linked to EME2000 and GCRF. Since Orekit provides implementations
-  of the main solar system celestial bodies, it also provides body-centered frames
-  for these bodies. The predefined ones are the Sun, the Moon, the eight planets and
-  the Pluto dwarf planet. In addition to these real bodies, two points are supported
-  for convenience as if they were real bodies: the solar system barycenter and the
-  Earth-Moon barycenter.
-
-[../images/solar-system-frames.png]
+** Spacecraft Frame
+  
+  A frame may also be bounded to a spacecraft simply using the propagator which
+  computes the spacecraft state, including its orbit and attitude, at any time.
+  The frame orientation depends on the underlying attitude law.
 
 * User defined frames
 
