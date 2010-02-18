@@ -185,7 +185,9 @@ public class PVCoordinates implements Serializable {
      * <p>This vector is the p &otimes; v where p is position, v is velocity
      * and &otimes; is cross product. To get the real physical angular momentum
      * you need to multiply this vector by the mass.</p>
-     * @return the momentum vector (m<sup>2</sup>/s).
+     * <p>The returned vector is recomputed each time this method is called, it
+     * is not cached.</p>
+     * @return a new instance of the momentum vector (m<sup>2</sup>/s).
      */
     public Vector3D getMomentum() {
         return Vector3D.crossProduct(position, velocity);
