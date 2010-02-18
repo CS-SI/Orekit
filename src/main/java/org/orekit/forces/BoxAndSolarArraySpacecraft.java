@@ -214,7 +214,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                 // compute orientation for best lightning
                 final Frame inertialFrame = state.getFrame();
                 final Vector3D sunInert =
-                    sun.getPVCoordinates(cachedState.getDate(), inertialFrame).getPosition();
+                    sun.getPVCoordinates(cachedState.getDate(), inertialFrame).getPosition().normalize();
                 final Vector3D sunSpacecraft =
                     cachedState.getAttitude().getRotation().applyTo(sunInert);
                 final double d = Vector3D.dotProduct(sunSpacecraft, saZ);
@@ -249,7 +249,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         return Math.abs(direction.getX() * bodyXCrossSection) +
                Math.abs(direction.getY() * bodyYCrossSection) +
                Math.abs(direction.getZ() * bodyZCrossSection) +
-               Vector3D.dotProduct(direction, getNormal(state)) * solarArrayArea;
+               Math.abs(Vector3D.dotProduct(direction, getNormal(state)) * solarArrayArea);
     }
 
     /** {@inheritDoc} */
@@ -263,7 +263,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         return Math.abs(direction.getX() * bodyXCrossSection) +
                Math.abs(direction.getY() * bodyYCrossSection) +
                Math.abs(direction.getZ() * bodyZCrossSection) +
-               Vector3D.dotProduct(direction, getNormal(state)) * solarArrayArea;
+               Math.abs(Vector3D.dotProduct(direction, getNormal(state)) * solarArrayArea);
     }
 
     /** {@inheritDoc} */
