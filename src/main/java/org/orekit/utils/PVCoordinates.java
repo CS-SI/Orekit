@@ -181,6 +181,16 @@ public class PVCoordinates implements Serializable {
         return velocity;
     }
 
+    /** Gets the momentum.
+     * <p>This vector is the p &otimes; v where p is position, v is velocity
+     * and &otimes; is cross product. To get the real physical angular momentum
+     * you need to multiply this vector by the mass.</p>
+     * @return the momentum vector (m<sup>2</sup>/s).
+     */
+    public Vector3D getMomentum() {
+        return Vector3D.crossProduct(position, velocity);
+    }
+
     /** Return a string representation of this position/velocity pair.
      * @return string representation of this position/velocity pair
      */

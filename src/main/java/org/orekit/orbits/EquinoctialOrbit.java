@@ -165,12 +165,12 @@ public class EquinoctialOrbit extends Orbit {
         final Vector3D pvP = pvCoordinates.getPosition();
         final Vector3D pvV = pvCoordinates.getVelocity();
         final double r = pvP.getNorm();
-        final double V2 = Vector3D.dotProduct(pvV, pvV);
+        final double V2 = pvV.getNormSq();
         final double rV2OnMu = r * V2 / mu;
         a = r / (2 - rV2OnMu);
 
         // compute inclination vector
-        final Vector3D w = Vector3D.crossProduct(pvP, pvV).normalize();
+        final Vector3D w = pvCoordinates.getMomentum().normalize();
         final double d = 1.0 / (1 + w.getZ());
         hx = -d * w.getY();
         hy =  d * w.getX();

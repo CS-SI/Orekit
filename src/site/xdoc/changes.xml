@@ -157,7 +157,7 @@
         was not initialized
       </action>
       <action dev="luc" type="add" >
-        added a relative constructor for PVCoordinates
+        added a relative constructor and a getMomentum method to PVCoordinates
       </action>
       <action dev="luc" type="update" >
         updated error message localization to be more consistent with Java exception. Now getMessage

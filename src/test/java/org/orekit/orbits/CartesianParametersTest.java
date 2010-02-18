@@ -135,7 +135,7 @@ public class CartesianParametersTest {
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
 
-        Vector3D momentum = Vector3D.crossProduct(position, velocity).normalize();
+        Vector3D momentum = pvCoordinates.getMomentum().normalize();
 
         EquinoctialOrbit p = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 

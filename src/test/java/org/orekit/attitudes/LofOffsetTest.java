@@ -73,9 +73,7 @@ public class LofOffsetTest {
         final Rotation lofOffsetRot = lofAlignedLaw.getAttitude(orbit).getRotation();
         
         // Check that 
-        final Vector3D p = pvSatEME2000.getPosition();
-        final Vector3D v = pvSatEME2000.getVelocity();
-        final Vector3D momentumEME2000 = Vector3D.crossProduct(p, v);
+        final Vector3D momentumEME2000 = pvSatEME2000.getMomentum();
         final Vector3D momentumLof = lofOffsetRot.applyTo(momentumEME2000);
         final double cosinus = Math.cos(Vector3D.dotProduct(momentumLof, Vector3D.PLUS_K));
         Assert.assertEquals(1., cosinus, Utils.epsilonAngle);

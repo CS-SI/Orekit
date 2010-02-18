@@ -167,12 +167,12 @@ public class CircularOrbit
         final Vector3D pvP = pvCoordinates.getPosition();
         final Vector3D pvV = pvCoordinates.getVelocity();
         final double r  = pvP.getNorm();
-        final double V2 = Vector3D.dotProduct(pvV, pvV);
+        final double V2 = pvV.getNormSq();
         final double rV2OnMu = r * V2 / mu;
         a = r / (2 - rV2OnMu);
 
         // compute inclination
-        final Vector3D momentum = Vector3D.crossProduct(pvP, pvV);
+        final Vector3D momentum = pvCoordinates.getMomentum();
         i = Vector3D.angle(momentum, Vector3D.PLUS_K);
 
         // compute right ascension of ascending node

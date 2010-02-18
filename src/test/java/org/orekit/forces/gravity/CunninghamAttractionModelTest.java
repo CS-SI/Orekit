@@ -107,8 +107,6 @@ public class CunninghamAttractionModelTest {
             throws PropagationException {
 
 
-            Vector3D pos = currentState.getPVCoordinates().getPosition();
-            Vector3D vel = currentState.getPVCoordinates().getVelocity();
             AbsoluteDate current = currentState.getDate();
             Vector3D sunPos;
             try {
@@ -116,7 +114,7 @@ public class CunninghamAttractionModelTest {
             } catch (OrekitException e) {
                 throw new PropagationException(e.getLocalizedMessage(), e);
             }
-            Vector3D normal = Vector3D.crossProduct(pos,vel);
+            Vector3D normal = currentState.getPVCoordinates().getMomentum();
             double angle = Vector3D.angle(sunPos , normal);
             if (! Double.isNaN(previous)) {
                 Assert.assertEquals(previous, angle, 0.0013);
@@ -192,7 +190,7 @@ public class CunninghamAttractionModelTest {
                 Vector3D dif     = posEHP.subtract(posDROZ);
 
                 Vector3D T = new Vector3D(1 / velEHP.getNorm(), velEHP);
-                Vector3D W = Vector3D.crossProduct(posEHP, velEHP).normalize();
+                Vector3D W = EHPOrbit.getPVCoordinates().getMomentum().normalize();
                 Vector3D N = Vector3D.crossProduct(W, T);
 
                 Assert.assertTrue(dif.getNorm() < 111);

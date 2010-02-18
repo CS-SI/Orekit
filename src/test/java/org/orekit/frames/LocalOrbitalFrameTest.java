@@ -51,7 +51,7 @@ public class LocalOrbitalFrameTest {
             propagator.propagate(date).getPVCoordinates(FramesFactory.getGCRF());
         Vector3D p2 = pv2.getPosition();
         Vector3D v2 = pv2.getVelocity();
-        Vector3D momentum = Vector3D.crossProduct(p2, v2);
+        Vector3D momentum = pv2.getMomentum();
         Assert.assertEquals(0, p1.subtract(p2).getNorm(), 1.0e-14 * p1.getNorm());
         Assert.assertEquals(0, v1.subtract(v2).getNorm(), 1.0e-14 * v1.getNorm());
 
@@ -88,7 +88,7 @@ public class LocalOrbitalFrameTest {
             propagator.propagate(date).getPVCoordinates(FramesFactory.getGCRF());
         Vector3D p2 = pv2.getPosition();
         Vector3D v2 = pv2.getVelocity();
-        Vector3D momentum = Vector3D.crossProduct(p2, v2);
+        Vector3D momentum = pv2.getMomentum();
         Assert.assertEquals(0, p1.subtract(p2).getNorm(), 1.0e-14 * p1.getNorm());
         Assert.assertEquals(0, v1.subtract(v2).getNorm(), 1.0e-14 * v1.getNorm());
 

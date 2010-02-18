@@ -356,8 +356,7 @@ public class CircularParametersTest {
 
         Vector3D position = p.getPVCoordinates().getPosition();
         Vector3D velocity = p.getPVCoordinates().getVelocity();
-
-        Vector3D momentum = Vector3D.crossProduct(position,velocity).normalize();
+        Vector3D momentum = p.getPVCoordinates().getMomentum().normalize();
 
         double apogeeRadius  = p.getA() * (1 + p.getE());
         double perigeeRadius = p.getA() * (1 - p.getE());
@@ -402,8 +401,7 @@ public class CircularParametersTest {
 
         Vector3D position = pCirEqua.getPVCoordinates().getPosition();
         Vector3D velocity = pCirEqua.getPVCoordinates().getVelocity();
-
-        Vector3D momentum = Vector3D.crossProduct(position,velocity).normalize();
+        Vector3D momentum = pCirEqua.getPVCoordinates().getMomentum().normalize();
 
         double apogeeRadius  = pCirEqua.getA() * (1 + pCirEqua.getE());
         double perigeeRadius = pCirEqua.getA() * (1 - pCirEqua.getE());

@@ -166,7 +166,7 @@ public class KeplerianOrbit extends Orbit {
         final Vector3D pvP = pvCoordinates.getPosition();
         final Vector3D pvV = pvCoordinates.getVelocity();
         final double r = pvP.getNorm();
-        final double V2 = Vector3D.dotProduct(pvV, pvV);
+        final double V2 = pvV.getNormSq();
         final double rV2OnMu = r * V2 / mu;
         a = r / (2 - rV2OnMu);
 
@@ -177,8 +177,7 @@ public class KeplerianOrbit extends Orbit {
         e = Math.sqrt(eSE * eSE + eCE * eCE);
 
         // compute inclination
-        final Vector3D momentum =
-            Vector3D.crossProduct(pvP, pvV);
+        final Vector3D momentum = pvCoordinates.getMomentum();
         final double m2 = Vector3D.dotProduct(momentum, momentum);
         i = Vector3D.angle(momentum, Vector3D.PLUS_K);
 

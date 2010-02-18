@@ -81,7 +81,7 @@ public class LocalOrbitalFrame extends Frame {
         final PVCoordinates pv = provider.getPVCoordinates(date, getParent());
         final Vector3D p = pv.getPosition();
         final Vector3D v = pv.getVelocity();
-        final Vector3D momentum = Vector3D.crossProduct(p, v);
+        final Vector3D momentum = pv.getMomentum();
 
         // compute the translation part of the transform
         final Transform translation = new Transform(p.negate(), v.negate());

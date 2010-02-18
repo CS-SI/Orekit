@@ -151,7 +151,7 @@ public class TimeDerivativesEquations implements Serializable {
         final PVCoordinates pvCoordinates = storedParameters.getPVCoordinates();
 
         // compute orbital plane normal vector
-        lofW = Vector3D.crossProduct(pvCoordinates.getPosition(), pvCoordinates.getVelocity()).normalize();
+        lofW = pvCoordinates.getMomentum().normalize();
 
         // compute (q, s, w) local orbital frame
         lofQ = pvCoordinates.getPosition().normalize();

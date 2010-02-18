@@ -275,7 +275,7 @@ public class KeplerianParametersTest {
 
         Vector3D position = p.getPVCoordinates().getPosition();
         Vector3D velocity = p.getPVCoordinates().getVelocity();
-        Vector3D momentum = Vector3D.crossProduct(position,velocity).normalize();
+        Vector3D momentum = p.getPVCoordinates().getMomentum().normalize();
 
         double apogeeRadius  = p.getA() * (1 + p.getE());
         double perigeeRadius = p.getA() * (1 - p.getE());
