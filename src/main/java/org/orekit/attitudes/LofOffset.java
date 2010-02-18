@@ -74,7 +74,6 @@ public class LofOffset implements AttitudeLaw {
 
         // Construction of the local orbital frame
         final Vector3D p = pv.getPosition();
-        final Vector3D v = pv.getVelocity();
         final Vector3D momentum = pv.getMomentum();
         final double angularVelocity = momentum.getNorm() / p.getNormSq();
 
