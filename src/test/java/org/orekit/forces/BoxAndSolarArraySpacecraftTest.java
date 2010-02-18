@@ -40,7 +40,7 @@ import org.orekit.time.TimeScalesFactory;
 public class BoxAndSolarArraySpacecraftTest {
 
     @Test
-    public void testNormal() throws OrekitException {
+    public void testNormale() throws OrekitException {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -68,12 +68,63 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testCoefficients() throws OrekitException {
+    public void testBestPointing() throws OrekitException {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
             new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J, 1.0, 2.0, 0.5);
+
+        double minSx = Double.POSITIVE_INFINITY;
+        double maxSx = Double.NEGATIVE_INFINITY;
+        double minSy = Double.POSITIVE_INFINITY;
+        double maxSy = Double.NEGATIVE_INFINITY;
+        double minSz = Double.POSITIVE_INFINITY;
+        double maxSz = Double.NEGATIVE_INFINITY;
+        Vector3D dummy = new Vector3D(0.1, 0.2, 0.3).normalize();
+        for (double dt = 0; dt < 4000; dt += 2.0) {
+
+            SpacecraftState state = propagator.propagate(initialDate.shiftedBy(dt));
+
+            double sx = s.getDragCrossSection(state, Vector3D.PLUS_I);
+            Assert.assertEquals(sx, s.getRadiationCrossSection(state, Vector3D.PLUS_I), 1.0e-10);
+            minSx = Math.min(minSx, sx);
+            maxSx = Math.max(maxSx, sx);
+            double sy = s.getDragCrossSection(state, Vector3D.PLUS_J);
+            Assert.assertEquals(sy, s.getRadiationCrossSection(state, Vector3D.PLUS_J), 1.0e-10);
+            minSy = Math.min(minSy, sy);
+            maxSy = Math.max(maxSy, sy);
+            double sz = s.getDragCrossSection(state, Vector3D.PLUS_K);
+            Assert.assertEquals(sz, s.getRadiationCrossSection(state, Vector3D.PLUS_K), 1.0e-10);
+            minSz = Math.min(minSz, sz);
+            maxSz = Math.max(maxSz, sz);
+            Assert.assertEquals(0, Vector3D.angle(dummy, s.getAbsorptionCoef(state, dummy)), 1.0e-10);
+            Assert.assertEquals(0, Vector3D.angle(dummy, s.getReflectionCoef(state, dummy)), 1.0e-10);
+            Assert.assertEquals(0, Vector3D.angle(dummy, s.getDragCoef(state, dummy)), 1.0e-10);
+        }
+
+        // expected cross section along X is 3.5m * 2.5m for body + 20m^2 * |cos(alpha)|
+        // expected cross section along Y is 1.5m * 2.5m for body
+        // expected cross section along Z is 1.5m * 3.5m for body + 20m^2 * |sin(alpha)|
+        Assert.assertEquals(3.5 * 2.5,      minSx, 0.02);
+        Assert.assertEquals(3.5 * 2.5 + 20, maxSx, 0.02);
+        Assert.assertEquals(1.5 * 2.5,      minSy, 0.02);
+        Assert.assertEquals(1.5 * 2.5,      maxSy, 0.02);
+        Assert.assertEquals(1.5 * 3.5,      minSz, 0.02);
+        Assert.assertEquals(1.5 * 3.5 + 20, maxSz, 0.02);
+        
+    }
+
+    @Test
+    public void testRegularRate() throws OrekitException {
+
+        AbsoluteDate initialDate = propagator.getInitialState().getDate();
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        BoxAndSolarArraySpacecraft s =
+            new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0,
+                                           Vector3D.PLUS_J, initialDate, Vector3D.PLUS_I,
+                                           2.0 * Math.PI / propagator.getInitialState().getKeplerianPeriod(),
+                                           1.0, 2.0, 0.5);
 
         double minSx = Double.POSITIVE_INFINITY;
         double maxSx = Double.NEGATIVE_INFINITY;
