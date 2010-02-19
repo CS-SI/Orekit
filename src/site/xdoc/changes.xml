@@ -146,8 +146,9 @@
         field of view entry and exit events for any type of target
       </action>
       <action dev="luc" type="add" >
-        added a BoxAndSolarArray spacecraft model taking into account both attitude
-        and Sun direction when computing surface forces.
+        added a BoxAndSolarArray spacecraft model considering a convex body (either parallelepipedic
+        or defined by a set of facets) and a rotating solar array, for accurate modeling of surface
+        forces with attitude.
       </action>
       <action dev="luc" type="update" >
         the RadiationSensitive and DragSensitive interfaces now can throw OrekitException.

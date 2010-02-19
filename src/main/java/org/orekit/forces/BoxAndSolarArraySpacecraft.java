@@ -27,7 +27,12 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** This class represents the features of a classical satellite
- * with a parallelepipedic body shape and rotating flat solar arrays.
+ * with a convex body shape and rotating flat solar arrays.
+ * <p>
+ * The body can be either a simple parallelepipedic box aligned with
+ * spacecraft axes or a set of facets defined by their area and normal vector.
+ * This should handle accurately most spacecraft shapes.
+ * </p>
  * <p>
  * The solar array rotation with respect to satellite body can be either
  * the best lightning orientation (i.e. Sun exactly in solar array meridian
@@ -52,14 +57,8 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     /** Serializable UID. */
     private static final long serialVersionUID = 5583800166273334973L;
 
-    /** Body cross section normal to X direction (m<sup>2</sup>). */
-    private final double bodyXCrossSection;
-
-    /** Body cross section normal to Y direction (m<sup>2</sup>). */
-    private final double bodyYCrossSection;
-
-    /** Body cross section normal to Z direction (m<sup>2</sup>). */
-    private final double bodyZCrossSection;
+    /** Surface vectors for body facets. */
+    private final Vector3D[] facets;
 
     /** Solar array area (m<sup>2</sup>). */
     private final double solarArrayArea;
@@ -97,6 +96,23 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     /** Cached solar array normal. */
     private transient Vector3D cachedNormal;
 
+    /** Build the surface vectors for body facets of a simple parallelepipedic box.
+     * @param xLength length of the body along its X axis (m)
+     * @param yLength length of the body along its Y axis (m)
+     * @param zLength length of the body along its Z axis (m)
+     * @return surface vectors array
+     */
+    private static Vector3D[] simpleBoxFacets(final double xLength, final double yLength, final double zLength) {
+        return new Vector3D[] {
+            new Vector3D(yLength * zLength, Vector3D.MINUS_I),
+            new Vector3D(yLength * zLength, Vector3D.PLUS_I),
+            new Vector3D(xLength * zLength, Vector3D.MINUS_J),
+            new Vector3D(xLength * zLength, Vector3D.PLUS_J),
+            new Vector3D(xLength * yLength, Vector3D.MINUS_K),
+            new Vector3D(xLength * yLength, Vector3D.PLUS_K)
+        };
+    }
+
     /** Build a spacecraft model with best lightning of solar array.
      * <p>
      * Solar arrays orientation will be such that at each time the Sun direction
@@ -120,10 +136,37 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                       final double dragCoeff,
                                       final double absorptionCoeff,
                                       final double specularReflectionCoeff) {
+        this(simpleBoxFacets(xLength, yLength, zLength), sun, solarArrayArea, solarArrayAxis,
+             dragCoeff, absorptionCoeff, specularReflectionCoeff);
+    }
 
-        this.bodyXCrossSection = yLength * zLength;
-        this.bodyYCrossSection = xLength * zLength;
-        this.bodyZCrossSection = xLength * yLength;
+    /** Build a spacecraft model with best lightning of solar array.
+     * <p>
+     * The spacecraft body is described by an array of surface vectors. Each facet of
+     * the body is describe by a vector normal to the facet (pointing outward of the spacecraft)
+     * and whose norm is the surface area in m<sup>2</sup>.
+     * </p>
+     * <p>
+     * Solar arrays orientation will be such that at each time the Sun direction
+     * will always be in the solar array meridian plane defined by solar array
+     * rotation axis and solar array normal vector.
+     * </p>
+     * @param facets vector surface of all body facets (the array will be copied)
+     * @param sun sun model
+     * @param solarArrayArea area of the solar array (m<sup>2</sup>)
+     * @param solarArrayAxis solar array rotation axis in satellite frame
+     * @param dragCoeff drag coefficient
+     * @param absorptionCoeff absorption coefficient
+     * @param specularReflectionCoeff specular reflection coefficient
+     */
+    public BoxAndSolarArraySpacecraft(final Vector3D[] facets,
+                                      final PVCoordinatesProvider sun, final double solarArrayArea,
+                                      final Vector3D solarArrayAxis,
+                                      final double dragCoeff,
+                                      final double absorptionCoeff,
+                                      final double specularReflectionCoeff) {
+
+        this.facets = facets.clone();
 
         this.sun            = sun;
         this.solarArrayArea = solarArrayArea;
@@ -173,10 +216,45 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                       final double dragCoeff,
                                       final double absorptionCoeff,
                                       final double specularReflectionCoeff) {
+        this(simpleBoxFacets(xLength, yLength, zLength), sun, solarArrayArea, solarArrayAxis,
+             referenceDate, referenceNormal, rotationRate,
+             dragCoeff, absorptionCoeff, specularReflectionCoeff);
+    }
 
-        this.bodyXCrossSection = yLength * zLength;
-        this.bodyYCrossSection = xLength * zLength;
-        this.bodyZCrossSection = xLength * yLength;
+    /** Build a spacecraft model with linear rotation of solar array.
+     * <p>
+     * The spacecraft body is described by an array of surface vectors. Each facet of
+     * the body is describe by a vector normal to the facet (pointing outward of the spacecraft)
+     * and whose norm is the surface area in m<sup>2</sup>.
+     * </p>
+     * <p>
+     * Solar arrays orientation will be a regular rotation from the
+     * reference orientation at reference date and using a constant
+     * rotation rate.
+     * </p>
+     * @param facets vector surface of all body facets (the array will be copied)
+     * @param sun sun model
+     * @param solarArrayArea area of the solar array (m<sup>2</sup>)
+     * @param solarArrayAxis solar array rotation axis in satellite frame
+     * @param referenceDate reference date for the solar array rotation
+     * @param referenceNormal direction of the solar array normal at reference date
+     * in spacecraft frame
+     * @param rotationRate rotation rate of the solar array, may be 0 (rad/s)
+     * @param dragCoeff drag coefficient
+     * @param absorptionCoeff absorption coefficient
+     * @param specularReflectionCoeff specular reflection coefficient
+     */
+    public BoxAndSolarArraySpacecraft(final Vector3D[] facets,
+                                      final PVCoordinatesProvider sun, final double solarArrayArea,
+                                      final Vector3D solarArrayAxis,
+                                      final AbsoluteDate referenceDate,
+                                      final Vector3D referenceNormal,
+                                      final double rotationRate,
+                                      final double dragCoeff,
+                                      final double absorptionCoeff,
+                                      final double specularReflectionCoeff) {
+
+        this.facets = facets.clone();
 
         this.sun            = sun;
         this.solarArrayArea = solarArrayArea;
@@ -243,13 +321,27 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
     }
 
+
     /** {@inheritDoc} */
     public double getDragCrossSection(final SpacecraftState state, final Vector3D direction)
         throws OrekitException {
-        return Math.abs(direction.getX() * bodyXCrossSection) +
-               Math.abs(direction.getY() * bodyYCrossSection) +
-               Math.abs(direction.getZ() * bodyZCrossSection) +
-               Math.abs(Vector3D.dotProduct(direction, getNormal(state)) * solarArrayArea);
+
+        double section = 0;
+
+        // facets contribution
+        for (final Vector3D facet : facets) {
+            final double dot = Vector3D.dotProduct(facet, direction);
+            if (dot < 0) {
+                // the facet faces the incoming flux
+                section -= dot;
+            }
+        }
+
+        // solar array contribution
+        section += Math.abs(Vector3D.dotProduct(direction, getNormal(state)) * solarArrayArea);
+
+        return section;
+
     }
 
     /** {@inheritDoc} */
@@ -260,10 +352,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     /** {@inheritDoc} */
     public double getRadiationCrossSection(final SpacecraftState state, final Vector3D direction)
         throws OrekitException {
-        return Math.abs(direction.getX() * bodyXCrossSection) +
-               Math.abs(direction.getY() * bodyYCrossSection) +
-               Math.abs(direction.getZ() * bodyZCrossSection) +
-               Math.abs(Vector3D.dotProduct(direction, getNormal(state)) * solarArrayArea);
+        return getDragCrossSection(state, direction);
     }
 
     /** {@inheritDoc} */
