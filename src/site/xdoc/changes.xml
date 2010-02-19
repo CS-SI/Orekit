@@ -136,14 +136,17 @@
       <action dev="luc" type="add" >
         added an EventShifter wrapper allowing to slightly shift raw events in time. This is useful
         for example to switch an attitude mode from solar pointing to something else a few minutes
-        before eclipse entry and going back to solar pointing mode a few minutes after eclipse exit
+        before eclipse entry and going back to solar pointing mode a few minutes after eclipse exit.
+      </action>
+      <action dev="pascal" type="add">
+        added a new AlignmentDetector.
       </action>
       <action dev="pascal" type="add" >
-        added a new EclipseDetector handling either umbra or penumbra entry and exit events
+        added a new EclipseDetector handling either umbra or penumbra entry and exit events.
       </action>
       <action dev="v&#233;ronique" type="add" >
         added new CircularFieldOfViewDetector and DihedralFieldOfViewDetector handling
-        field of view entry and exit events for any type of target
+        field of view entry and exit events for any type of target.
       </action>
       <action dev="luc" type="add" >
         added a BoxAndSolarArray spacecraft model considering a convex body (either parallelepipedic
