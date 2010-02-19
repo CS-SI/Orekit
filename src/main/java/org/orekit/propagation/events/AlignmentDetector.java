@@ -25,7 +25,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for satellite/body alignment events.
  * <p>This class finds alignment events.</p>
- * <p>Alignment means the conjunction with some threshold angle between the satellite
+ * <p>Alignment means the conjunction, with some threshold angle, between the satellite
  * position and the projection in the orbital plane of some body position.</p>
  * <p>The default implementation behavior is to {@link #STOP stop} propagation when
  * alignment is reached. This can be changed by overriding the
