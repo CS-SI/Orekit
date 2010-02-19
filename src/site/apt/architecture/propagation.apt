@@ -72,12 +72,30 @@ Propagation
   event is triggered, it asks the propagator to stop and the returned value is the state
   exactly at the event time.
 
-  Three other available events detectors are a simple <DateDetector> which is simply triggered
-  at a predefined date, an <ElevationDetector> which is triggered at raising or setting
-  time of a satellite with respect to a ground point and an <AltitudeDetector> which is triggered
-  when satellite crosses a predefined altitude limit. The latter can be used to compute
-  easily operational forecasts.
+  Other available events detectors are :
 
+  * a simple <DateDetector>, which is simply triggered at a predefined date,
+
+  * an <ElevationDetector>, which is triggered at raising or setting time of a satellite with
+    respect to a ground point,
+
+  * an <AltitudeDetector> which is triggered when satellite crosses a predefined altitude limit
+    and can be used to compute easily operational forecasts, 
+
+  * a <CircularFieldOfViewDetector> and a <DihedralFieldOfViewDetector>, which are triggered
+    when some target enters or exits a satellite sensor field of view, 
+
+  * an <EclipseDetector>, which is triggered when some body enters or exits the umbra or the
+    penumbra of an other occulting body,
+
+  * an <AlignmentDetector>, which is triggered when satellite and some body are aligned
+    in the orbital plane.
+
+  []
+
+  An <EventShifter> is also provided in order to slightly shift the events occurrences times.
+  A typical use case is for handling operational delays before or after some physical event
+  really occurs.
 
 * Available propagators
 

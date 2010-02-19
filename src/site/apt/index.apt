@@ -126,16 +126,21 @@ Overview
 
     * predefined discrete events
 
-      * eclipse -both umbra and penumbra)
+      * eclipse (both umbra and penumbra)
 
       * ascending and descending node crossing
 
       * apogee and perigee crossing
 
+      * alignment with some body in the orbital plane
+        (with customizable threshold angle)
+
       * raising/setting with respect to a ground location
         (with customizable triggering elevation)
 
       * altitude crossing
+
+      * target detection in sensor field of view (circular or dihedral)
 
       * date
 
