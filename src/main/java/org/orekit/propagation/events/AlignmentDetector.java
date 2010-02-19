@@ -56,7 +56,7 @@ public class AlignmentDetector extends AbstractDetector {
      * <p>The orbit is used only to set an upper bound for the max check interval
      * to period/3 and to set the convergence threshold according to orbit size.</p>
      * @param orbit initial orbit
-     * @param body the body to align 
+     * @param body the body to align
      * @param alignAngle the alignment angle (rad)
      */
     public AlignmentDetector(final Orbit orbit,
@@ -74,7 +74,7 @@ public class AlignmentDetector extends AbstractDetector {
      * to period/3.</p>
      * @param threshold convergence threshold (s)
      * @param orbit initial orbit
-     * @param body the body to align 
+     * @param body the body to align
      * @param alignAngle the alignment angle (rad)
      */
     public AlignmentDetector(final double threshold,
@@ -129,8 +129,8 @@ public class AlignmentDetector extends AbstractDetector {
         final Vector3D a  = pv.getPosition().normalize();
         final Vector3D z  = pv.getMomentum().negate().normalize();
         final Vector3D b  = Vector3D.crossProduct(a, z).normalize();
-        final Vector3D x  = new Vector3D(cosAlignAngle, a,  sinAlignAngle, b) ;
-        final Vector3D y  = new Vector3D(sinAlignAngle, a, -cosAlignAngle, b) ;
+        final Vector3D x  = new Vector3D(cosAlignAngle, a,  sinAlignAngle, b);
+        final Vector3D y  = new Vector3D(sinAlignAngle, a, -cosAlignAngle, b);
         final Vector3D pb = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
         final double beta = Math.atan2(Vector3D.dotProduct(pb, y), Vector3D.dotProduct(pb, x));
         final double betm = -Math.PI - beta;
