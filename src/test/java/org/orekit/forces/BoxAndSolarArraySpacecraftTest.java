@@ -40,130 +40,185 @@ import org.orekit.time.TimeScalesFactory;
 public class BoxAndSolarArraySpacecraftTest {
 
     @Test
-    public void testNormale() throws OrekitException {
+    public void testBestPointing() throws OrekitException {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J, 1.0, 2.0, 0.5);
-
+            new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J, 0.0, 0.0, 0.0);
         for (double dt = 0; dt < 4000; dt += 60) {
 
             SpacecraftState state = propagator.propagate(initialDate.shiftedBy(dt));
 
-            Vector3D sunDirInert = sun.getPVCoordinates(initialDate, state.getFrame()).getPosition();
+            Vector3D sunInert = sun.getPVCoordinates(initialDate, state.getFrame()).getPosition();
             Vector3D momentum = state.getPVCoordinates().getMomentum();
-            double sunElevation = Math.PI / 2 - Vector3D.angle(sunDirInert, momentum);
+            double sunElevation = Math.PI / 2 - Vector3D.angle(sunInert, momentum);
             Assert.assertEquals(15.1, Math.toDegrees(sunElevation), 0.1);
 
             Vector3D n = s.getNormal(state);
             Assert.assertEquals(0.0, n.getY(), 1.0e-10);
 
             // normal misalignment should be entirely due to sun being out of orbital plane
-            Vector3D sunDirSat = state.getAttitude().getRotation().applyTo(sunDirInert);
-            double misAlignment = Vector3D.angle(sunDirSat, n);
+            Vector3D sunSat = state.getAttitude().getRotation().applyTo(sunInert);
+            double misAlignment = Vector3D.angle(sunSat, n);
             Assert.assertEquals(sunElevation, misAlignment, 1.0e-3);
 
         }
     }
 
     @Test
-    public void testBestPointing() throws OrekitException {
+    public void testCorrectFixedRate() throws OrekitException {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J, 1.0, 2.0, 0.5);
+            new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J,
+                                           initialDate,
+                                           new Vector3D(0.46565509814462996, 0.0,  0.884966287251619),
+                                           propagator.getInitialState().getKeplerianMeanMotion(),
+                                           0.0, 0.0, 0.0);
 
-        double minSx = Double.POSITIVE_INFINITY;
-        double maxSx = Double.NEGATIVE_INFINITY;
-        double minSy = Double.POSITIVE_INFINITY;
-        double maxSy = Double.NEGATIVE_INFINITY;
-        double minSz = Double.POSITIVE_INFINITY;
-        double maxSz = Double.NEGATIVE_INFINITY;
-        Vector3D dummy = new Vector3D(0.1, 0.2, 0.3).normalize();
-        for (double dt = 0; dt < 4000; dt += 2.0) {
+        for (double dt = 0; dt < 4000; dt += 60) {
 
             SpacecraftState state = propagator.propagate(initialDate.shiftedBy(dt));
 
-            double sx = s.getDragCrossSection(state, Vector3D.PLUS_I);
-            Assert.assertEquals(sx, s.getRadiationCrossSection(state, Vector3D.PLUS_I), 1.0e-10);
-            minSx = Math.min(minSx, sx);
-            maxSx = Math.max(maxSx, sx);
-            double sy = s.getDragCrossSection(state, Vector3D.PLUS_J);
-            Assert.assertEquals(sy, s.getRadiationCrossSection(state, Vector3D.PLUS_J), 1.0e-10);
-            minSy = Math.min(minSy, sy);
-            maxSy = Math.max(maxSy, sy);
-            double sz = s.getDragCrossSection(state, Vector3D.PLUS_K);
-            Assert.assertEquals(sz, s.getRadiationCrossSection(state, Vector3D.PLUS_K), 1.0e-10);
-            minSz = Math.min(minSz, sz);
-            maxSz = Math.max(maxSz, sz);
-            Assert.assertEquals(0, Vector3D.angle(dummy, s.getAbsorptionCoef(state, dummy)), 1.0e-10);
-            Assert.assertEquals(0, Vector3D.angle(dummy, s.getReflectionCoef(state, dummy)), 1.0e-10);
-            Assert.assertEquals(0, Vector3D.angle(dummy, s.getDragCoef(state, dummy)), 1.0e-10);
-        }
+            Vector3D sunInert = sun.getPVCoordinates(initialDate, state.getFrame()).getPosition();
+            Vector3D momentum = state.getPVCoordinates().getMomentum();
+            double sunElevation = Math.PI / 2 - Vector3D.angle(sunInert, momentum);
+            Assert.assertEquals(15.1, Math.toDegrees(sunElevation), 0.1);
 
-        // expected cross section along X is 3.5m * 2.5m for body + 20m^2 * |cos(alpha)|
-        // expected cross section along Y is 1.5m * 2.5m for body
-        // expected cross section along Z is 1.5m * 3.5m for body + 20m^2 * |sin(alpha)|
-        Assert.assertEquals(3.5 * 2.5,      minSx, 0.02);
-        Assert.assertEquals(3.5 * 2.5 + 20, maxSx, 0.02);
-        Assert.assertEquals(1.5 * 2.5,      minSy, 0.02);
-        Assert.assertEquals(1.5 * 2.5,      maxSy, 0.02);
-        Assert.assertEquals(1.5 * 3.5,      minSz, 0.02);
-        Assert.assertEquals(1.5 * 3.5 + 20, maxSz, 0.02);
-        
+            Vector3D n = s.getNormal(state);
+            Assert.assertEquals(0.0, n.getY(), 1.0e-10);
+
+            // normal misalignment should be entirely due to sun being out of orbital plane
+            Vector3D sunSat = state.getAttitude().getRotation().applyTo(sunInert);
+            double misAlignment = Vector3D.angle(sunSat, n);
+            Assert.assertEquals(sunElevation, misAlignment, 1.0e-3);
+
+        }
     }
 
     @Test
-    public void testRegularRate() throws OrekitException {
+        public void testTooSlowFixedRate() throws OrekitException {
+
+            AbsoluteDate initialDate = propagator.getInitialState().getDate();
+            CelestialBody sun = CelestialBodyFactory.getSun();
+            BoxAndSolarArraySpacecraft s =
+                new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J,
+                                               initialDate,
+                                               new Vector3D(0.46565509814462996, 0.0,  0.884966287251619),
+                                               0.1 * propagator.getInitialState().getKeplerianMeanMotion(),
+                                               0.0, 0.0, 0.0);
+
+            double maxDelta = 0;
+            for (double dt = 0; dt < 4000; dt += 60) {
+
+                SpacecraftState state = propagator.propagate(initialDate.shiftedBy(dt));
+
+                Vector3D sunInert = sun.getPVCoordinates(initialDate, state.getFrame()).getPosition();
+                Vector3D momentum = state.getPVCoordinates().getMomentum();
+                double sunElevation = Math.PI / 2 - Vector3D.angle(sunInert, momentum);
+                Assert.assertEquals(15.1, Math.toDegrees(sunElevation), 0.1);
+
+                Vector3D n = s.getNormal(state);
+                Assert.assertEquals(0.0, n.getY(), 1.0e-10);
+
+                // normal misalignment should become very large as solar array rotation is plain wrong
+                Vector3D sunSat = state.getAttitude().getRotation().applyTo(sunInert);
+                double misAlignment = Vector3D.angle(sunSat, n);
+                maxDelta = Math.max(maxDelta, Math.abs(sunElevation - misAlignment));
+
+            }
+            Assert.assertTrue(Math.toDegrees(maxDelta) > 120.0);
+
+    }
+
+    @Test
+    public void testWithoutReflection() throws OrekitException {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0,
-                                           Vector3D.PLUS_J, initialDate, Vector3D.PLUS_I,
-                                           2.0 * Math.PI / propagator.getInitialState().getKeplerianPeriod(),
-                                           1.0, 2.0, 0.5);
+            new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J, 1.0, 1.0, 0.0);
 
-        double minSx = Double.POSITIVE_INFINITY;
-        double maxSx = Double.NEGATIVE_INFINITY;
-        double minSy = Double.POSITIVE_INFINITY;
-        double maxSy = Double.NEGATIVE_INFINITY;
-        double minSz = Double.POSITIVE_INFINITY;
-        double maxSz = Double.NEGATIVE_INFINITY;
-        Vector3D dummy = new Vector3D(0.1, 0.2, 0.3).normalize();
-        for (double dt = 0; dt < 4000; dt += 2.0) {
+        Vector3D earthRot = new Vector3D(0.0, 0.0, 7.292115e-4);
+        for (double dt = 0; dt < 4000; dt += 60) {
 
-            SpacecraftState state = propagator.propagate(initialDate.shiftedBy(dt));
+            AbsoluteDate date = initialDate.shiftedBy(dt);
+            SpacecraftState state = propagator.propagate(date);
 
-            double sx = s.getDragCrossSection(state, Vector3D.PLUS_I);
-            Assert.assertEquals(sx, s.getRadiationCrossSection(state, Vector3D.PLUS_I), 1.0e-10);
-            minSx = Math.min(minSx, sx);
-            maxSx = Math.max(maxSx, sx);
-            double sy = s.getDragCrossSection(state, Vector3D.PLUS_J);
-            Assert.assertEquals(sy, s.getRadiationCrossSection(state, Vector3D.PLUS_J), 1.0e-10);
-            minSy = Math.min(minSy, sy);
-            maxSy = Math.max(maxSy, sy);
-            double sz = s.getDragCrossSection(state, Vector3D.PLUS_K);
-            Assert.assertEquals(sz, s.getRadiationCrossSection(state, Vector3D.PLUS_K), 1.0e-10);
-            minSz = Math.min(minSz, sz);
-            maxSz = Math.max(maxSz, sz);
-            Assert.assertEquals(0, Vector3D.angle(dummy, s.getAbsorptionCoef(state, dummy)), 1.0e-10);
-            Assert.assertEquals(0, Vector3D.angle(dummy, s.getReflectionCoef(state, dummy)), 1.0e-10);
-            Assert.assertEquals(0, Vector3D.angle(dummy, s.getDragCoef(state, dummy)), 1.0e-10);
+            // simple Earth fixed atmosphere
+            Vector3D p = state.getPVCoordinates().getPosition();
+            Vector3D v = state.getPVCoordinates().getVelocity();
+            Vector3D vAtm = Vector3D.crossProduct(earthRot, p);
+            Vector3D relativeVelocity = vAtm.subtract(v);
+
+            Vector3D drag = s.dragAcceleration(state, 0.001, relativeVelocity);
+            Assert.assertEquals(0.0, Vector3D.angle(relativeVelocity, drag), 1.0e-10);
+
+            Vector3D sunDirection = sun.getPVCoordinates(date, state.getFrame()).getPosition().normalize();
+            Vector3D flux = new Vector3D(-4.56e-6, sunDirection);
+            Vector3D radiation = s.radiationPressureAcceleration(state, flux);
+            Assert.assertEquals(0.0, Vector3D.angle(flux, radiation), 1.0e-9);
+
         }
 
-        // expected cross section along X is 3.5m * 2.5m for body + 20m^2 * |cos(alpha)|
-        // expected cross section along Y is 1.5m * 2.5m for body
-        // expected cross section along Z is 1.5m * 3.5m for body + 20m^2 * |sin(alpha)|
-        Assert.assertEquals(3.5 * 2.5,      minSx, 0.02);
-        Assert.assertEquals(3.5 * 2.5 + 20, maxSx, 0.02);
-        Assert.assertEquals(1.5 * 2.5,      minSy, 0.02);
-        Assert.assertEquals(1.5 * 2.5,      maxSy, 0.02);
-        Assert.assertEquals(1.5 * 3.5,      minSz, 0.02);
-        Assert.assertEquals(1.5 * 3.5 + 20, maxSz, 0.02);
-        
+    }
+
+    @Test
+    public void testPlaneSpecularReflection() throws OrekitException {
+
+        AbsoluteDate initialDate = propagator.getInitialState().getDate();
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        BoxAndSolarArraySpacecraft s =
+            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 0.0, 1.0);
+
+        for (double dt = 0; dt < 4000; dt += 60) {
+
+            AbsoluteDate date = initialDate.shiftedBy(dt);
+            SpacecraftState state = propagator.propagate(date);
+
+            Vector3D sunDirection = sun.getPVCoordinates(date, state.getFrame()).getPosition().normalize();
+            Vector3D flux = new Vector3D(-4.56e-6, sunDirection);
+            Vector3D acceleration = s.radiationPressureAcceleration(state, flux);
+            Vector3D normal = state.getAttitude().getRotation().applyInverseTo(s.getNormal(state));
+
+            // solar array normal is slightly misaligned with Sun direction due to Sun being out of orbital plane
+            Assert.assertEquals(15.1, Math.toDegrees(Vector3D.angle(sunDirection, normal)), 0.11);
+
+            // radiation pressure is exactly opposed to solar array normal as there is only specular reflection
+            Assert.assertEquals(180.0, Math.toDegrees(Vector3D.angle(acceleration, normal)), 1.0e-3);
+
+        }
+
+    }
+
+    @Test
+    public void testPlaneAbsorption() throws OrekitException {
+
+        AbsoluteDate initialDate = propagator.getInitialState().getDate();
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        BoxAndSolarArraySpacecraft s =
+            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
+
+        for (double dt = 0; dt < 4000; dt += 60) {
+
+            AbsoluteDate date = initialDate.shiftedBy(dt);
+            SpacecraftState state = propagator.propagate(date);
+
+            Vector3D sunDirection = sun.getPVCoordinates(date, state.getFrame()).getPosition().normalize();
+            Vector3D flux = new Vector3D(-4.56e-6, sunDirection);
+            Vector3D acceleration = s.radiationPressureAcceleration(state, flux);
+            Vector3D normal = state.getAttitude().getRotation().applyInverseTo(s.getNormal(state));
+
+            // solar array normal is slightly misaligned with Sun direction due to Sun being out of orbital plane
+            Assert.assertEquals(15.1, Math.toDegrees(Vector3D.angle(sunDirection, normal)), 0.11);
+
+            // radiation pressure is exactly opposed to Sun direction as there is only absorption
+            Assert.assertEquals(180.0, Math.toDegrees(Vector3D.angle(acceleration, sunDirection)), 1.0e-3);
+
+        }
+
     }
 
     @Before

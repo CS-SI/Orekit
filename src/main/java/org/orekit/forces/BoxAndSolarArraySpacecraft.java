@@ -1,4 +1,4 @@
-/* Copyright 2009 CS Communication & Systèmes
+/* Copyright 2002-2010 CS Communication & Systèmes
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,11 @@
  */
 package org.orekit.forces;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
@@ -26,8 +31,11 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
-/** This class represents the features of a classical satellite
+/** experimental class representing the features of a classical satellite
  * with a convex body shape and rotating flat solar arrays.
+ * <p>
+ * As of 5.0, this class is still considered experimental, so use it with care.
+ * </p>
  * <p>
  * The body can be either a simple parallelepipedic box aligned with
  * spacecraft axes or a set of facets defined by their area and normal vector.
@@ -55,10 +63,10 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensitive {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 5583800166273334973L;
+    private static final long serialVersionUID = -4426844682371384944L;
 
     /** Surface vectors for body facets. */
-    private final Vector3D[] facets;
+    private final List<Facet> facets;
 
     /** Solar array area (m<sup>2</sup>). */
     private final double solarArrayArea;
@@ -81,37 +89,14 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     /** Drag coefficient. */
     private final double dragCoeff;
 
-    /** Absorption coefficient. */
-    private final double absorptionCoeff;
-
     /** Specular reflection coefficient. */
     private final double specularReflectionCoeff;
 
+    /** Diffuse reflection coefficient. */
+    private final double diffuseReflectionCoeff;
+
     /** Sun model. */
     private final PVCoordinatesProvider sun;
-
-    /** Cached state. */
-    private transient SpacecraftState cachedState;
-
-    /** Cached solar array normal. */
-    private transient Vector3D cachedNormal;
-
-    /** Build the surface vectors for body facets of a simple parallelepipedic box.
-     * @param xLength length of the body along its X axis (m)
-     * @param yLength length of the body along its Y axis (m)
-     * @param zLength length of the body along its Z axis (m)
-     * @return surface vectors array
-     */
-    private static Vector3D[] simpleBoxFacets(final double xLength, final double yLength, final double zLength) {
-        return new Vector3D[] {
-            new Vector3D(yLength * zLength, Vector3D.MINUS_I),
-            new Vector3D(yLength * zLength, Vector3D.PLUS_I),
-            new Vector3D(xLength * zLength, Vector3D.MINUS_J),
-            new Vector3D(xLength * zLength, Vector3D.PLUS_J),
-            new Vector3D(xLength * yLength, Vector3D.MINUS_K),
-            new Vector3D(xLength * yLength, Vector3D.PLUS_K)
-        };
-    }
 
     /** Build a spacecraft model with best lightning of solar array.
      * <p>
@@ -125,9 +110,11 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param sun sun model
      * @param solarArrayArea area of the solar array (m<sup>2</sup>)
      * @param solarArrayAxis solar array rotation axis in satellite frame
-     * @param dragCoeff drag coefficient
-     * @param absorptionCoeff absorption coefficient
-     * @param specularReflectionCoeff specular reflection coefficient
+     * @param dragCoeff drag coefficient (used only for drag)
+     * @param absorptionCoeff absorption coefficient between 0.0 an 1.0
+     * (used only for radiation pressure)
+     * @param reflectionCoeff specular reflection coefficient between 0.0 an 1.0
+     * (used only for radiation pressure)
      */
     public BoxAndSolarArraySpacecraft(final double xLength, final double yLength,
                                       final double zLength,
@@ -135,9 +122,9 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                       final Vector3D solarArrayAxis,
                                       final double dragCoeff,
                                       final double absorptionCoeff,
-                                      final double specularReflectionCoeff) {
+                                      final double reflectionCoeff) {
         this(simpleBoxFacets(xLength, yLength, zLength), sun, solarArrayArea, solarArrayAxis,
-             dragCoeff, absorptionCoeff, specularReflectionCoeff);
+             dragCoeff, absorptionCoeff, reflectionCoeff);
     }
 
     /** Build a spacecraft model with best lightning of solar array.
@@ -151,22 +138,24 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * will always be in the solar array meridian plane defined by solar array
      * rotation axis and solar array normal vector.
      * </p>
-     * @param facets vector surface of all body facets (the array will be copied)
+     * @param facets body facets (only the facets with strictly positive area will be stored)
      * @param sun sun model
      * @param solarArrayArea area of the solar array (m<sup>2</sup>)
      * @param solarArrayAxis solar array rotation axis in satellite frame
-     * @param dragCoeff drag coefficient
-     * @param absorptionCoeff absorption coefficient
-     * @param specularReflectionCoeff specular reflection coefficient
+     * @param dragCoeff drag coefficient (used only for drag)
+     * @param absorptionCoeff absorption coefficient between 0.0 an 1.0
+     * (used only for radiation pressure)
+     * @param reflectionCoeff specular reflection coefficient between 0.0 an 1.0
+     * (used only for radiation pressure)
      */
-    public BoxAndSolarArraySpacecraft(final Vector3D[] facets,
+    public BoxAndSolarArraySpacecraft(final Facet[] facets,
                                       final PVCoordinatesProvider sun, final double solarArrayArea,
                                       final Vector3D solarArrayAxis,
                                       final double dragCoeff,
                                       final double absorptionCoeff,
-                                      final double specularReflectionCoeff) {
+                                      final double reflectionCoeff) {
 
-        this.facets = facets.clone();
+        this.facets = filter(facets);
 
         this.sun            = sun;
         this.solarArrayArea = solarArrayArea;
@@ -178,11 +167,8 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         this.saX = null;
 
         this.dragCoeff               = dragCoeff;
-        this.absorptionCoeff         = absorptionCoeff;
-        this.specularReflectionCoeff = specularReflectionCoeff;
-
-        this.cachedState  = null;
-        this.cachedNormal = null;
+        this.specularReflectionCoeff = reflectionCoeff;
+        this.diffuseReflectionCoeff  = 1 - (absorptionCoeff + reflectionCoeff);
 
     }
 
@@ -202,9 +188,11 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param referenceNormal direction of the solar array normal at reference date
      * in spacecraft frame
      * @param rotationRate rotation rate of the solar array, may be 0 (rad/s)
-     * @param dragCoeff drag coefficient
-     * @param absorptionCoeff absorption coefficient
-     * @param specularReflectionCoeff specular reflection coefficient
+     * @param dragCoeff drag coefficient (used only for drag)
+     * @param absorptionCoeff absorption coefficient between 0.0 an 1.0
+     * (used only for radiation pressure)
+     * @param reflectionCoeff specular reflection coefficient between 0.0 an 1.0
+     * (used only for radiation pressure)
      */
     public BoxAndSolarArraySpacecraft(final double xLength, final double yLength,
                                       final double zLength,
@@ -215,10 +203,10 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                       final double rotationRate,
                                       final double dragCoeff,
                                       final double absorptionCoeff,
-                                      final double specularReflectionCoeff) {
+                                      final double reflectionCoeff) {
         this(simpleBoxFacets(xLength, yLength, zLength), sun, solarArrayArea, solarArrayAxis,
              referenceDate, referenceNormal, rotationRate,
-             dragCoeff, absorptionCoeff, specularReflectionCoeff);
+             dragCoeff, absorptionCoeff, reflectionCoeff);
     }
 
     /** Build a spacecraft model with linear rotation of solar array.
@@ -232,7 +220,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * reference orientation at reference date and using a constant
      * rotation rate.
      * </p>
-     * @param facets vector surface of all body facets (the array will be copied)
+     * @param facets body facets (only the facets with strictly positive area will be stored)
      * @param sun sun model
      * @param solarArrayArea area of the solar array (m<sup>2</sup>)
      * @param solarArrayAxis solar array rotation axis in satellite frame
@@ -240,11 +228,13 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param referenceNormal direction of the solar array normal at reference date
      * in spacecraft frame
      * @param rotationRate rotation rate of the solar array, may be 0 (rad/s)
-     * @param dragCoeff drag coefficient
-     * @param absorptionCoeff absorption coefficient
-     * @param specularReflectionCoeff specular reflection coefficient
+     * @param dragCoeff drag coefficient (used only for drag)
+     * @param absorptionCoeff absorption coefficient between 0.0 an 1.0
+     * (used only for radiation pressure)
+     * @param reflectionCoeff specular reflection coefficient between 0.0 an 1.0
+     * (used only for radiation pressure)
      */
-    public BoxAndSolarArraySpacecraft(final Vector3D[] facets,
+    public BoxAndSolarArraySpacecraft(final Facet[] facets,
                                       final PVCoordinatesProvider sun, final double solarArrayArea,
                                       final Vector3D solarArrayAxis,
                                       final AbsoluteDate referenceDate,
@@ -252,9 +242,9 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                       final double rotationRate,
                                       final double dragCoeff,
                                       final double absorptionCoeff,
-                                      final double specularReflectionCoeff) {
+                                      final double reflectionCoeff) {
 
-        this.facets = facets.clone();
+        this.facets = filter(facets.clone());
 
         this.sun            = sun;
         this.solarArrayArea = solarArrayArea;
@@ -266,11 +256,8 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         this.saX = Vector3D.crossProduct(saY, saZ);
 
         this.dragCoeff               = dragCoeff;
-        this.absorptionCoeff         = absorptionCoeff;
-        this.specularReflectionCoeff = specularReflectionCoeff;
-
-        this.cachedState  = null;
-        this.cachedNormal = null;
+        this.specularReflectionCoeff = reflectionCoeff;
+        this.diffuseReflectionCoeff  = 1 - (absorptionCoeff + reflectionCoeff);
 
     }
 
@@ -283,86 +270,186 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     public synchronized Vector3D getNormal(final SpacecraftState state)
         throws OrekitException {
 
-        if (state != cachedState) {
-            // we need to recompute normal
-            cachedState = state;
+        final AbsoluteDate date = state.getDate();
 
-            if (referenceDate == null) {
-
-                // compute orientation for best lightning
-                final Frame inertialFrame = state.getFrame();
-                final Vector3D sunInert =
-                    sun.getPVCoordinates(cachedState.getDate(), inertialFrame).getPosition().normalize();
-                final Vector3D sunSpacecraft =
-                    cachedState.getAttitude().getRotation().applyTo(sunInert);
-                final double d = Vector3D.dotProduct(sunSpacecraft, saZ);
-                final double f = 1 - d * d;
-                if (f < MathUtils.EPSILON) {
-                    // extremely rare case: the sun is along solar array rotation axis
-                    // (there will not be much output power ...)
-                    // we set up an arbitrary normal
-                    cachedNormal = saZ.orthogonal();
-                } else {
-                    cachedNormal = new Vector3D(1.0 / Math.sqrt(f),
-                                                sunSpacecraft.subtract(new Vector3D(d, saZ)));
-                }
-
-            } else {
-
-                // compute linear angle rotation
-                final double dt    = cachedState.getDate().durationFrom(referenceDate);
-                final double alpha = rotationRate * dt;
-                cachedNormal = new Vector3D(Math.cos(alpha), saX, Math.sin(alpha), saY);
-
-            }
+        if (referenceDate != null) {
+            // use a simple rotation at fixed rate
+            final double alpha = rotationRate * date.durationFrom(referenceDate);
+            return new Vector3D(Math.cos(alpha), saX, Math.sin(alpha), saY);
         }
 
-        return cachedNormal;
+        // compute orientation for best lightning
+        final Frame frame = state.getFrame();
+        final Vector3D sunInert = sun.getPVCoordinates(date, frame).getPosition().normalize();
+        final Vector3D sunSpacecraft = state.getAttitude().getRotation().applyTo(sunInert);
+        final double d = Vector3D.dotProduct(sunSpacecraft, saZ);
+        final double f = 1 - d * d;
+        if (f < MathUtils.EPSILON) {
+            // extremely rare case: the sun is along solar array rotation axis
+            // (there will not be much output power ...)
+            // we set up an arbitrary normal
+            return saZ.orthogonal();
+        }
+
+        final double s = 1.0 / Math.sqrt(f);
+        return new Vector3D(s, sunSpacecraft, -s * d, saZ);
 
     }
 
 
     /** {@inheritDoc} */
-    public double getDragCrossSection(final SpacecraftState state, final Vector3D direction)
+    public Vector3D dragAcceleration(final SpacecraftState state, final double density,
+                                     final Vector3D relativeVelocity)
         throws OrekitException {
 
-        double section = 0;
-
-        // facets contribution
-        for (final Vector3D facet : facets) {
-            final double dot = Vector3D.dotProduct(facet, direction);
-            if (dot < 0) {
-                // the facet faces the incoming flux
-                section -= dot;
-            }
-        }
+        // relative velocity in spacecraft frame
+        final Vector3D v = state.getAttitude().getRotation().applyTo(relativeVelocity);
 
         // solar array contribution
-        section += Math.abs(Vector3D.dotProduct(direction, getNormal(state)) * solarArrayArea);
+        final Vector3D solarArrayFacet = new Vector3D(solarArrayArea, getNormal(state));
+        double sv = Math.abs(Vector3D.dotProduct(solarArrayFacet, v));
 
-        return section;
+        // body facets contribution
+        for (final Facet facet : facets) {
+            final double dot = Vector3D.dotProduct(facet.getNormal(), v);
+            if (dot < 0) {
+                // the facet intercepts the incoming flux
+                sv -= facet.getArea() * dot;
+            }
+        }
+
+        return new Vector3D(density * sv * dragCoeff / (2.0 * state.getMass()), relativeVelocity);
 
     }
 
     /** {@inheritDoc} */
-    public Vector3D getDragCoef(final SpacecraftState state, final Vector3D direction) {
-        return new Vector3D(dragCoeff, direction);
-    }
-
-    /** {@inheritDoc} */
-    public double getRadiationCrossSection(final SpacecraftState state, final Vector3D direction)
+    public Vector3D radiationPressureAcceleration(final SpacecraftState state, final Vector3D flux)
         throws OrekitException {
-        return getDragCrossSection(state, direction);
+
+        // radiation flux in spacecraft frame
+        final Rotation r = state.getAttitude().getRotation();
+        final Vector3D fluxSat = r.applyTo(flux);
+
+        // solar array contribution
+        Facet facet = new Facet(getNormal(state), solarArrayArea);
+        double dot = Vector3D.dotProduct(facet.getNormal(), fluxSat);
+        if (dot > 0) {
+            // the solar array is illuminated backward,
+            // fix signs to compute contribution correctly
+            dot   = -dot;
+            facet = new Facet(facet.getNormal().negate(), solarArrayArea);
+        }
+        Vector3D force = facetRadiationAcceleration(facet, fluxSat, dot);
+
+        // body facets contribution
+        for (final Facet bodyFacet : facets) {
+            dot = Vector3D.dotProduct(bodyFacet.getNormal(), fluxSat);
+            if (dot < 0) {
+                // the facet intercepts the incoming flux
+                force = force.add(facetRadiationAcceleration(bodyFacet, fluxSat, dot));
+            }
+        }
+
+        // convert to inertial frame
+        return r.applyInverseTo(new Vector3D(1.0 / state.getMass(), force));
+
     }
 
-    /** {@inheritDoc} */
-    public Vector3D getAbsorptionCoef(final SpacecraftState state, final Vector3D direction) {
-        return new Vector3D(absorptionCoeff, direction);
+    /** Compute contribution of one facet to force.
+     * <p>This method implements equation 8-44 from David A. Vallado's
+     * Fundamentals of Astrodynamics and Applications, third edition,
+     * 2007, Microcosm Press.</p>
+     * @param facet facet definition
+     * @param fluxSat radiation pressure flux in spacecraft frame
+     * @param dot dot product of facet and fluxSat (must be negative)
+     * @return contribution of the facet to force in spacecraft frame
+     */
+    private Vector3D facetRadiationAcceleration(final Facet facet, final Vector3D fluxSat,
+                                                final double dot) {
+        final double area = facet.getArea();
+        final double dOa  = dot / area;
+        final double psr  = fluxSat.getNorm();
+
+        // Vallado's equation 8-44 uses different parameters which are related to our parameters as:
+        // cos (phi) = -dot / (psr * area)
+        // n         = facet / area
+        // s         = -fluxSat / psr
+        final double cN = 2 * dOa * (diffuseReflectionCoeff / 3 - specularReflectionCoeff * dOa / psr);
+        final double cS = (dot / psr) * (specularReflectionCoeff - 1);
+        return new Vector3D(cN, facet.getNormal(), cS, fluxSat);
+
     }
 
-    /** {@inheritDoc} */
-    public Vector3D getReflectionCoef(final SpacecraftState state, final Vector3D direction) {
-        return new Vector3D(specularReflectionCoeff, direction);
+    /** Class representing a single facet of a convex spacecraft body.
+     * <p>Instance of this class are guaranteed to be immutable.</p>
+     * @author Luc Maisonobe
+     * @version $Revision$ $Date$
+     */
+    public static class Facet implements Serializable {
+
+        /** Serializble UID. */
+        private static final long serialVersionUID = -1743508315029520059L;
+
+        /** Unit Normal vector, pointing outward. */
+        private final Vector3D normal;
+
+        /** Area in m<sup>2</sup>. */
+        private final double area;
+
+        /** Simple constructor.
+         * @param normal vector normal to the facet, pointing outward (will be normalized)
+         * @param area facet area in m<sup>2</sup>
+         */
+        public Facet(final Vector3D normal, final double area) {
+            this.normal = normal.normalize();
+            this.area   = area;
+        }
+
+        /** Get unit normal vector.
+         * @return unit normal vector
+         */
+        public Vector3D getNormal() {
+            return normal;
+        }
+
+        /** Get facet area.
+         * @return facet area
+         */
+        public double getArea() {
+            return area;
+        }
+
+    }
+
+    /** Build the surface vectors for body facets of a simple parallelepipedic box.
+     * @param xLength length of the body along its X axis (m)
+     * @param yLength length of the body along its Y axis (m)
+     * @param zLength length of the body along its Z axis (m)
+     * @return surface vectors array
+     */
+    private static Facet[] simpleBoxFacets(final double xLength, final double yLength, final double zLength) {
+        return new Facet[] {
+            new Facet(Vector3D.MINUS_I, yLength * zLength),
+            new Facet(Vector3D.PLUS_I,  yLength * zLength),
+            new Facet(Vector3D.MINUS_J, xLength * zLength),
+            new Facet(Vector3D.PLUS_J,  xLength * zLength),
+            new Facet(Vector3D.MINUS_K, xLength * yLength),
+            new Facet(Vector3D.PLUS_K,  xLength * yLength)
+        };
+    }
+
+    /** Filter out zero area facets.
+     * @param facets original facets (may include zero area facets)
+     * @return filtered array
+     */
+    private static List<Facet> filter(final Facet[] facets) {
+        final List<Facet> filtered = new ArrayList<Facet>(facets.length);
+        for (Facet facet : facets) {
+            if (facet.getArea() > 0) {
+                filtered.add(facet);
+            }
+        }
+        return filtered;
     }
 
 }
