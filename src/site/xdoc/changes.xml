@@ -23,14 +23,6 @@
     <release version="5.0" date="TBD"
              description="TBD">
       <action dev="luc" type="add">
-        added a special implementation improving performances for the frequent
-        case of identity transform
-      </action>
-      <action dev="luc" type="fix">
-        added forgotten radians to degrees conversions for inclination
-        and RAAN in CircularOrbit.toString()
-      </action>
-      <action dev="luc" type="add">
         a new SpacecraftFrame class has been added, taking into account orbit and
         attitude thanks to an underlying propagator. This allow to see the spacecraft just
         as another known geometrical object automatically handled and connected to all
@@ -149,12 +141,14 @@
         field of view entry and exit events for any type of target.
       </action>
       <action dev="luc" type="add" >
-        added a BoxAndSolarArray spacecraft model considering a convex body (either parallelepipedic
-        or defined by a set of facets) and a rotating solar array, for accurate modeling of surface
-        forces with attitude.
+        added an experimental implementation of a BoxAndSolarArray spacecraft model considering a convex
+        body (either parallelepipedic or defined by a set of facets) and a rotating solar array, for
+        accurate modeling of surface forces with attitude. Beware that this class is still considered
+        experimental, so use it with care!
       </action>
       <action dev="luc" type="update" >
-        the RadiationSensitive and DragSensitive interfaces now can throw OrekitException.
+        completely changed the RadiationSensitive and DragSensitive interfaces to be more comprehensive
+        and handle properly lift and side force effects when used with non-symmetric spacecrafts/flux geometry
       </action>
       <action dev="luc" type="fix" due-to="Christelle Blandin">
         fixed denormalization of gravity field coefficients, the last coefficient
@@ -162,6 +156,14 @@
       </action>
       <action dev="luc" type="add" >
         added a relative constructor and a getMomentum method to PVCoordinates
+      </action>
+      <action dev="luc" type="add">
+        added a special implementation improving performances for the frequent
+        case of identity transform
+      </action>
+      <action dev="luc" type="fix">
+        added forgotten radians to degrees conversions for inclination
+        and RAAN in CircularOrbit.toString()
       </action>
       <action dev="luc" type="update" >
         updated error message localization to be more consistent with Java exception. Now getMessage

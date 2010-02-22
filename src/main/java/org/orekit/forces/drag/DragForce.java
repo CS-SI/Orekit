@@ -19,9 +19,11 @@ package org.orekit.forces.drag;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
+import org.orekit.time.AbsoluteDate;
 
 
 /** Atmospheric drag force model.
@@ -41,7 +43,7 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
 public class DragForce implements ForceModel {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 3430941727178712005L;
+    private static final long serialVersionUID = 2574653656986559955L;
 
     /** Atmospheric model. */
     private final Atmosphere atmosphere;
@@ -53,8 +55,7 @@ public class DragForce implements ForceModel {
      * @param atmosphere atmospheric model
      * @param spacecraft the object physical and geometrical information
      */
-    public DragForce(final Atmosphere atmosphere,
-                           final DragSensitive spacecraft) {
+    public DragForce(final Atmosphere atmosphere, final DragSensitive spacecraft) {
         this.atmosphere = atmosphere;
         this.spacecraft = spacecraft;
     }
@@ -67,22 +68,17 @@ public class DragForce implements ForceModel {
     public void addContribution(final SpacecraftState s,
                                 final TimeDerivativesEquations adder)
         throws OrekitException {
-        final double rho =
-            atmosphere.getDensity(s.getDate(), s.getPVCoordinates().getPosition(), s.getFrame());
 
-        final Vector3D vAtm =
-            atmosphere.getVelocity(s.getDate(), s.getPVCoordinates().getPosition(), s.getFrame());
+        final AbsoluteDate date     = s.getDate();
+        final Frame        frame    = s.getFrame();
+        final Vector3D     position = s.getPVCoordinates().getPosition();
 
-        final Vector3D incidence = vAtm.subtract(s.getPVCoordinates().getVelocity());
-        final double v2 = Vector3D.dotProduct(incidence, incidence);
-
-        final Vector3D inSpacecraft =
-            s.getAttitude().getRotation().applyTo(incidence.normalize());
-        final double k = rho * v2 * spacecraft.getDragCrossSection(s, inSpacecraft) / (2 * s.getMass());
-        final Vector3D cD = spacecraft.getDragCoef(s, inSpacecraft);
+        final double rho    = atmosphere.getDensity(date, position, frame);
+        final Vector3D vAtm = atmosphere.getVelocity(date, position, frame);
+        final Vector3D relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
 
         // Addition of calculated acceleration to adder
-        adder.addXYZAcceleration(k * cD.getX(), k * cD.getY(), k * cD.getZ());
+        adder.addAcceleration(spacecraft.dragAcceleration(s, rho, relativeVelocity), frame);
 
     }
 

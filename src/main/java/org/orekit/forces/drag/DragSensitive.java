@@ -16,38 +16,33 @@
  */
 package org.orekit.forces.drag;
 
+import java.io.Serializable;
+
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 
 /** Interface for spacecraft that are sensitive to atmospheric drag forces.
  *
- * @see org.orekit.forces.drag.DragForce
- * @author Fabien Maussion
+ * @see DragForce
  * @author Luc Maisonobe
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
+ * @version $Revision$ $Date$
  */
-public interface DragSensitive {
+public interface DragSensitive extends Serializable {
 
-    /** Get the visible surface from a specific direction.
-     * See {@link org.orekit.forces.drag.DragForce} for more explanations.
+    /** Compute the acceleration due to drag.
+     * <p>
+     * The computation includes all spacecraft specific characteristics
+     * like shape, area and coefficients.
+     * </p>
      * @param state current state information: date, kinematics, attitude
-     * @param direction direction of the flux in the spacecraft frame (unit vector)
-     * @return surface (m<sup>2</sup>)
-     * @throws OrekitException if cross section cannot be computed
+     * @param density atmospheric density at spacecraft position
+     * @param relativeVelocity relative velocity of atmosphere with respect to spacecraft,
+     * in the same inertial frame as spacecraft orbit (m/s)
+     * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s<sup>2</sup>)
+     * @throws OrekitException if acceleration cannot be computed
      */
-    double getDragCrossSection(SpacecraftState state, Vector3D direction)
-        throws OrekitException;
-
-    /** Get the drag coefficients vector.
-     * See {@link org.orekit.forces.drag.DragForce} for more explanations.
-     * @param state current state information: date, kinematics, attitude
-     * @param direction direction of the flux in the spacecraft frame (unit vector)
-     * @return drag coefficients vector (defined in the spacecraft frame)
-     * the norm of the vector should be equal to the desired drag coefficient
-     * @throws OrekitException if drag coefficients vector cannot be computed
-     */
-    Vector3D getDragCoef(SpacecraftState state, Vector3D direction)
+    Vector3D dragAcceleration(SpacecraftState state, double density, Vector3D relativeVelocity)
         throws OrekitException;
 
 }

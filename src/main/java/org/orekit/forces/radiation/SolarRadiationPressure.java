@@ -47,11 +47,8 @@ public class SolarRadiationPressure implements ForceModel {
     /** Sun radius (m). */
     private static final double SUN_RADIUS = 6.95e8;
 
-    /** Reference distance (m). */
-    private final double dRef;
-
-    /** Reference radiation pressure at dRef (N/m<sup>2</sup>).*/
-    private final double pRef;
+    /** Reference flux normalized for a 1m distance (N). */
+    private final double kRef;
 
     /** Sun model. */
     private final PVCoordinatesProvider sun;
@@ -78,8 +75,13 @@ public class SolarRadiationPressure implements ForceModel {
     }
 
     /** Complete constructor.
-     * @param dRef reference distance for the radiation pressure (m)
-     * @param pRef reference radiation pressure at dRef (N/m<sup>2</sup>)
+     * <p>Note that reference solar radiation pressure <code>pRef</code> in
+     * N/m<sup>2</sup> is linked to solar flux SF in W/m<sup>2</sup> using
+     * formula pRef = SF/c where c is the speed of light (299792458 m/s). So
+     * at 1UA a 1367 W/m<sup>2</sup> solar flux is a 4.56 10<sup>-6</sup>
+     * N/m<sup>2</sup> solar radiation pressure.</p>
+     * @param dRef reference distance for the solar radiation pressure (m)
+     * @param pRef reference solar radiation pressure at dRef (N/m<sup>2</sup>)
      * @param sun Sun model
      * @param equatorialRadius spherical shape model (for umbra/penumbra computation)
      * @param spacecraft the object physical and geometrical information
@@ -88,8 +90,7 @@ public class SolarRadiationPressure implements ForceModel {
                                   final PVCoordinatesProvider sun,
                                   final double equatorialRadius,
                                   final RadiationSensitive spacecraft) {
-        this.dRef  = dRef;
-        this.pRef  = pRef;
+        this.kRef  = pRef * dRef * dRef;
         this.sun   = sun;
         this.equatorialRadius = equatorialRadius;
         this.spacecraft = spacecraft;
@@ -99,26 +100,18 @@ public class SolarRadiationPressure implements ForceModel {
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
         throws OrekitException {
 
+        final AbsoluteDate date     = s.getDate();
+        final Frame        frame    = s.getFrame();
+        final Vector3D     position = s.getPVCoordinates().getPosition();
+
         // raw radiation pressure
-        final Vector3D sunSatVector = getSatSunVector(s).negate();
-        final double dRatio = dRef / sunSatVector.getNorm();
-        final double rawP   = pRef * dRatio * dRatio *
-                              getLightningRatio(s.getPVCoordinates().getPosition(),
-                                                s.getFrame(), s.getDate());
-
-        // spacecraft characteristics effects
-        final Vector3D u = sunSatVector.normalize();
-        final Vector3D inSpacecraft = s.getAttitude().getRotation().applyTo(u);
-        final double kd = (1.0 - spacecraft.getAbsorptionCoef(s, inSpacecraft).getNorm()) *
-            (1.0 - spacecraft.getReflectionCoef(s, inSpacecraft).getNorm());
-
-        final double acceleration =
-            rawP * (1 + kd * 4.0 / 9.0 ) * spacecraft.getRadiationCrossSection(s, inSpacecraft) / s.getMass();
+        final Vector3D satSunVector = getSatSunVector(s);
+        final double r2             = satSunVector.getNormSq();
+        final double rawP           = kRef * getLightningRatio(position, frame, date) / r2;
+        final Vector3D flux         = new Vector3D(-rawP / Math.sqrt(r2), satSunVector);
 
         // provide the perturbing acceleration to the derivatives adder
-        adder.addXYZAcceleration(acceleration * u.getX(),
-                                 acceleration * u.getY(),
-                                 acceleration * u.getZ());
+        adder.addAcceleration(spacecraft.radiationPressureAcceleration(s, flux), frame);
 
     }
 

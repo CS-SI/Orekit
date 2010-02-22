@@ -24,8 +24,8 @@ import org.orekit.propagation.SpacecraftState;
 /** This class represents the features of a simplified spacecraft.
  * <p>The model of this spacecraft is a simple spherical model, this
  * means that all coefficients are constant and do not depend of
- * the direction. As such, it is a simple container that returns the
- * values set in the constructor.</p>
+ * the direction.</p>
+ * <p>Instances of this class are guaranteed to be immutable.</p>
  *
  * @see BoxAndSolarArraySpacecraft
  * @author &Eacute;douard Delente
@@ -35,86 +35,37 @@ import org.orekit.propagation.SpacecraftState;
 public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7948570591152935928L;
+    private static final long serialVersionUID = -1596721390500187750L;
 
-    /** Cross section (m<sup>2</sup>). */
-    private double crossSection;
+    /** Composite drag coefficient (S.Cd/2). */
+    private final double kD;
 
-    /** Drag coefficient. */
-    private double dragCoeff;
-
-    /** Absorption coefficient. */
-    private double absorptionCoeff;
-
-    /** Specular reflection coefficient. */
-    private double reflectionCoeff;
+    /** Composite radiation pressure coefficient. */
+    private final double kP;
 
     /** Simple constructor.
      * @param crossSection Surface (m<sup>2</sup>)
-     * @param dragCoeff Drag coefficient
-     * @param absorptionCoeff coefficient Absorption coefficient
-     * @param reflectionCoeff Specular reflection coefficient
+     * @param dragCoeff drag coefficient (used only for drag)
+     * @param absorptionCoeff absorption coefficient between 0.0 an 1.0
+     * (used only for radiation pressure)
+     * @param reflectionCoeff specular reflection coefficient between 0.0 an 1.0
+     * (used only for radiation pressure)
      */
     public SphericalSpacecraft(final double crossSection, final double dragCoeff,
                                final double absorptionCoeff, final double reflectionCoeff) {
-
-        this.crossSection = crossSection;
-        this.dragCoeff = dragCoeff;
-        this.absorptionCoeff = absorptionCoeff;
-        this.reflectionCoeff = reflectionCoeff;
+        kD = dragCoeff * crossSection / 2;
+        kP = crossSection * (1 + 4 * (1.0 - absorptionCoeff) * (1.0 - reflectionCoeff) / 9);
     }
 
     /** {@inheritDoc} */
-    public double getDragCrossSection(final SpacecraftState state, final Vector3D direction) {
-        return crossSection;
+    public Vector3D dragAcceleration(final SpacecraftState state, final double density,
+                                     final Vector3D relativeVelocity) {
+        return new Vector3D(density * relativeVelocity.getNorm() * kD / state.getMass(), relativeVelocity);
     }
 
     /** {@inheritDoc} */
-    public Vector3D getDragCoef(final SpacecraftState state, final Vector3D direction) {
-        return new Vector3D(dragCoeff, direction);
-    }
-
-    /** {@inheritDoc} */
-    public Vector3D getAbsorptionCoef(final SpacecraftState state, final Vector3D direction) {
-        return new Vector3D(absorptionCoeff, direction);
-    }
-
-    /** {@inheritDoc} */
-    public double getRadiationCrossSection(final SpacecraftState state, final Vector3D direction) {
-        return crossSection;
-    }
-
-    /** {@inheritDoc} */
-    public Vector3D getReflectionCoef(final SpacecraftState state, final Vector3D direction) {
-        return new Vector3D(reflectionCoeff, direction);
-    }
-
-    /** Set the cross section.
-     * @param crossSection crossSection (m<sup>2</sup>)
-     */
-    public void setCrossSection(final double crossSection) {
-        this.crossSection = crossSection;
-    }
-
-    /** Set the drag coefficient.
-     * @param dragCoeff coefficient drag coefficient
-     */
-    public void setDragCoeff(final double dragCoeff) {
-        this.dragCoeff = dragCoeff;
-    }
-
-    /** Set the absorption coefficient.
-     * @param absorptionCoeff coefficient absorption coefficient
-     */
-    public void setAbsorptionCoeff(final double absorptionCoeff) {
-        this.absorptionCoeff = absorptionCoeff;
-    }
-
-    /** Set the specular reflection coefficient.
-     * @param reflectionCoeff coefficient specular reflection coefficient
-     */
-    public void setReflectionCoeff(final double reflectionCoeff) {
-        this.reflectionCoeff = reflectionCoeff;
+    public Vector3D radiationPressureAcceleration(final SpacecraftState state, final Vector3D flux) {
+        return new Vector3D(kP / state.getMass(), flux);
     }
 
 }

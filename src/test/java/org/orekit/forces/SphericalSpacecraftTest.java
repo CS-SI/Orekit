@@ -32,7 +32,7 @@ import org.orekit.time.TimeScalesFactory;
 public class SphericalSpacecraftTest {
 
     @Test
-    public void testConstructor() {
+    public void testDrag() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 04, 07),
                                 TimeComponents.H00,
                                 TimeScalesFactory.getTAI());
@@ -44,61 +44,50 @@ public class SphericalSpacecraftTest {
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(raan),
                                    Math.toRadians(5.300 - raan), CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
                                    FramesFactory.getEME2000(), date, mu);
+
         SpacecraftState state = new SpacecraftState(circ);
-        SphericalSpacecraft s = new SphericalSpacecraft(1.0, 2.0, 3.0, 4.0);
-        Vector3D[] directions = { Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.PLUS_K };
-        for (int i = 0; i < directions.length; ++i) {
-            Assert.assertEquals(1.0, s.getDragCrossSection(state, directions[i]), 1.0e-15);
-            Assert.assertEquals(0.0,
-                         new Vector3D(-1, s.getDragCoef(state, directions[i]),
-                                      2.0, directions[i]).getNorm(),
-                         1.0e-15);
-            Assert.assertEquals(0.0,
-                         new Vector3D(-1, s.getAbsorptionCoef(state, directions[i]),
-                                      3.0, directions[i]).getNorm(),
-                         1.0e-15);
-            Assert.assertEquals(0.0,
-                         new Vector3D(-1, s.getReflectionCoef(state, directions[i]),
-                                      4.0, directions[i]).getNorm(),
-                         1.0e-15);
-        }
+        double surface = 5.0;
+        double cd      = 2.0;
+        SphericalSpacecraft s = new SphericalSpacecraft(surface, cd, 0.0, 0.0);
+        Vector3D relativeVelocity = new Vector3D(36.0, 48.0, 80.0);
+
+        double rho = 0.001;
+        Vector3D computedAcceleration = s.dragAcceleration(state, rho, relativeVelocity);
+        Vector3D d = relativeVelocity.normalize();
+        double v2 = relativeVelocity.getNormSq();
+        Vector3D expectedAcceleration = new Vector3D(rho * surface * cd * v2 / (2 * state.getMass()), d);
+        Assert.assertEquals(0.0, computedAcceleration.subtract(expectedAcceleration).getNorm(), 1.0e-15);
+
     }
 
     @Test
-    public void testSettersGetters() {
+    public void testRadiationPressure() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 04, 07),
-                                             TimeComponents.H00,
-                                             TimeScalesFactory.getTAI());
+                                TimeComponents.H00,
+                                TimeScalesFactory.getTAI());
 
-                     // Satellite position as circular parameters
-                     final double mu = 3.9860047e14;
-                     final double raan = 270.;
-                     Orbit circ =
-                         new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(raan),
-                                                Math.toRadians(5.300 - raan), CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
-                                                FramesFactory.getEME2000(), date, mu);
-                     SpacecraftState state = new SpacecraftState(circ);
-        SphericalSpacecraft s = new SphericalSpacecraft(0, 0, 0, 0);
-        s.setCrossSection(1.0);
-        s.setDragCoeff(2.0);
-        s.setAbsorptionCoeff(3.0);
-        s.setReflectionCoeff(4.0);
-        Vector3D[] directions = { Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.PLUS_K };
-        for (int i = 0; i < directions.length; ++i) {
-            Assert.assertEquals(1.0, s.getDragCrossSection(state, directions[i]), 1.0e-15);
-            Assert.assertEquals(0.0,
-                         new Vector3D(-1, s.getDragCoef(state, directions[i]),
-                                      2.0, directions[i]).getNorm(),
-                         1.0e-15);
-            Assert.assertEquals(0.0,
-                         new Vector3D(-1, s.getAbsorptionCoef(state, directions[i]),
-                                      3.0, directions[i]).getNorm(),
-                         1.0e-15);
-            Assert.assertEquals(0.0,
-                         new Vector3D(-1, s.getReflectionCoef(state, directions[i]),
-                                      4.0, directions[i]).getNorm(),
-                         1.0e-15);
-        }
+        // Satellite position as circular parameters
+        final double mu = 3.9860047e14;
+        final double raan = 270.;
+        Orbit circ =
+            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(raan),
+                                   Math.toRadians(5.300 - raan), CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
+                                   FramesFactory.getEME2000(), date, mu);
+
+        SpacecraftState state = new SpacecraftState(circ);
+        double surface = 5.0;
+        double kA      = 0.9;
+        double kR      = 0.1;
+        SphericalSpacecraft s = new SphericalSpacecraft(surface, 0.0, kA, kR);
+        Vector3D flux = new Vector3D(36.0, 48.0, 80.0);
+
+        Vector3D computedAcceleration = s.radiationPressureAcceleration(state, flux);
+        Vector3D d = flux.normalize();
+        double f = flux.getNorm();
+        double p = (1 - kA) * (1 - kR);
+        Vector3D expectedAcceleration = new Vector3D(surface * f * (1 + 4 * p / 9) / state.getMass(), d);
+        Assert.assertEquals(0.0, computedAcceleration.subtract(expectedAcceleration).getNorm(), 1.0e-15);
+
     }
 
 }
