@@ -120,6 +120,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
      * @exception PropagationException if the mean parameters cannot be computed
+     * @see org.orekit.utils.Constants
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final double referenceRadius, final double mu,

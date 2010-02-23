@@ -165,6 +165,9 @@
         added forgotten radians to degrees conversions for inclination
         and RAAN in CircularOrbit.toString()
       </action>
+      <action dev="luc" type="add">
+        added a Constants interface including a few useful physical constants.
+      </action>
       <action dev="luc" type="update" >
         updated error message localization to be more consistent with Java exception. Now getMessage
         returns a non-localized message and only getLocalizedMessage returns a message localized for
