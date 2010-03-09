@@ -18,6 +18,8 @@ package org.orekit.time;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 
@@ -90,6 +92,21 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     /** Offset between J2000 epoch and modified julian day epoch. */
     private static final int MJD_TO_J2000 = 51544;
 
+    /** Basic and extended format calendar date. */
+    private static Pattern CALENDAR_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?(\\d\\d)-?(\\d\\d)$");
+
+    /** Basic and extended format ordinal date. */
+    private static Pattern ORDINAL_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?(\\d\\d\\d)$");
+
+    /** Basic and extended format week date. */
+    private static Pattern WEEK_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?W(\\d\\d)-?(\\d)$");
+
+    /** Message for inexistent date components. */
+    private static final String MESSAGE_INVALID_COMPONENTS = "non-existent date {0}-{1}-{2}";
+
+    /** Message for inexistent date. */
+    private static final String MESSAGE_INVALID_DATE = "non-existent date {0}";
+
     static {
         // this static statement makes sure the reference epoch are initialized
         // once AFTER the various factories have been set up
@@ -139,7 +156,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         // check the parameters for mismatch
         // (i.e. invalid date components, like 29 february on non-leap years)
         if ((year != check.year) || (month != check.month) || (day != check.day)) {
-            throw OrekitException.createIllegalArgumentException("non-existent date {0}-{1}-{2}",
+            throw OrekitException.createIllegalArgumentException(MESSAGE_INVALID_COMPONENTS,
                                                                  year, month, day);
         }
 
@@ -202,6 +219,89 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         this(epoch.getJ2000Day() + offset);
     }
 
+    /** Build a date from week components.
+     * <p>The calendar week number is a number between 1 and 52 or 53 depending
+     * on the year. Week 1 is defined by ISO as the one that includes the first
+     * Thursday of a year. Week 1 may therefore start the previous year and week
+     * 52 or 53 may end in the next year. As an example calendar date 1995-01-01
+     * corresponds to week date 1994-W52-7 (i.e. Sunday in the last week of 1994
+     * is in fact the first day of year 1995). This date would beAnother example is calendar date
+     * 1996-12-31 which corresponds to week date 1997-W01-2 (i.e. Tuesday in the
+     * first week of 1997 is in fact the last day of year 1996).</p>
+     * @param wYear year associated to week numbering
+     * @param week week number in year,from 1 to 52 or 53
+     * @param dayOfWeek day of week, from 1 (Monday) to 7 (Sunday)
+     * @exception IllegalArgumentException if inconsistent arguments
+     * are given (parameters out of range, week 53 on a 52 weeks year ...)
+     */
+    public static DateComponents createFromWeekComponents(final int wYear, final int week, final int dayOfWeek)
+        throws IllegalArgumentException {
+
+        final DateComponents firstWeekMonday = new DateComponents(getFirstWeekMonday(wYear));
+        final DateComponents d = new DateComponents(firstWeekMonday, 7 * week + dayOfWeek - 8);
+
+        // check the parameters for invalid date components
+        if ((week != d.getCalendarWeek()) || (dayOfWeek != d.getDayOfWeek())) {
+            throw OrekitException.createIllegalArgumentException(MESSAGE_INVALID_COMPONENTS,
+                                                                 wYear, "W" + week, dayOfWeek);
+        }
+
+        return d;
+
+    }
+
+    /** Parse a string in ISO-8601 format to build a date.
+     * <p>The supported formats are:
+     * <ul>
+     *   <li>basic format calendar date: YYYYMMDD</li>
+     *   <li>extended format calendar date: YYYY-MM-DD</li>
+     *   <li>basic format ordinal date: YYYYDDD</li>
+     *   <li>extended format ordinal date: YYYY-DDD</li>
+     *   <li>basic format week date: YYYYWwwD</li>
+     *   <li>extended format week date: YYYY-Www-D</li>
+     * </ul>
+     * As shown by the list above, only the complete representations defined in section 4.1
+     * of ISO-8601 standard are supported, neither expended representations nor representations
+     * with reduced accuracy are supported.
+     * </p>
+     * <p>
+     * Parsing a single integer as a julian day is <em>not</em> supported as it may be ambiguous
+     * with either the basic format calendar date or the basic format ordinal date depending
+     * on the number of digits.
+     * </p>
+     * @param string string to parse
+     * @param a parsed date
+     * @exception IllegalArgumentException if string cannot be parsed
+     */
+    public static  DateComponents parseDate(final String string) {
+
+        // is the date a calendar date ?
+        final Matcher calendarMatcher = CALENDAR_FORMAT.matcher(string);
+        if (calendarMatcher.matches()) {
+            return new DateComponents(Integer.parseInt(calendarMatcher.group(1)),
+                                      Integer.parseInt(calendarMatcher.group(2)),
+                                      Integer.parseInt(calendarMatcher.group(3)));
+        }
+
+        // is the date an ordinal date ?
+        final Matcher ordinalMatcher = ORDINAL_FORMAT.matcher(string);
+        if (ordinalMatcher.matches()) {
+            return new DateComponents(Integer.parseInt(ordinalMatcher.group(1)),
+                                      Integer.parseInt(ordinalMatcher.group(2)));
+        }
+
+        // is the date a week date ?
+        final Matcher weekMatcher = WEEK_FORMAT.matcher(string);
+        if (weekMatcher.matches()) {
+            return createFromWeekComponents(Integer.parseInt(weekMatcher.group(1)),
+                                            Integer.parseInt(weekMatcher.group(2)),
+                                            Integer.parseInt(weekMatcher.group(3)));
+        }
+
+        throw OrekitException.createIllegalArgumentException(MESSAGE_INVALID_DATE, string);
+
+    }
+
     /** Get the year number.
      * @return year number (may be 0 or negative for BC years)
      */
@@ -246,6 +346,44 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
      */
     public int getMJD() {
         return MJD_TO_J2000 + getJ2000Day();
+    }
+
+    /** Get the calendar week number.
+     * <p>The calendar week number is a number between 1 and 52 or 53 depending
+     * on the year. Week 1 is defined by ISO as the one that includes the first
+     * Thursday of a year. Week 1 may therefore start the previous year and week
+     * 52 or 53 may end in the next year. As an example calendar date 1995-01-01
+     * corresponds to week date 1994-W52-7 (i.e. Sunday in the last week of 1994
+     * is in fact the first day of year 1995). Another example is calendar date
+     * 1996-12-31 which corresponds to week date 1997-W01-2 (i.e. Tuesday in the
+     * first week of 1997 is in fact the last day of year 1996).</p>
+     * @return calendar week number
+     */
+    public int getCalendarWeek() {
+        int firstWeekMonday = getFirstWeekMonday(year);
+        int daysSincefirstMonday = getJ2000Day() - firstWeekMonday;
+        if (daysSincefirstMonday < 0) {
+            // we are still in a week from previous year
+            daysSincefirstMonday += firstWeekMonday - getFirstWeekMonday(year - 1);
+        } else if (daysSincefirstMonday > 363) {
+            // up to three days at end of year may belong to first week of next year
+            // (by chance, there is no need for a specific check in year 1582 ...)
+            final int weekYearLength = getFirstWeekMonday(year + 1) - firstWeekMonday;
+            if (daysSincefirstMonday >= weekYearLength) {
+                daysSincefirstMonday -= weekYearLength;
+            }
+        }
+        return 1 + daysSincefirstMonday / 7;
+    }
+
+    /** Get the monday of a year first week.
+     * @param year year to consider
+     * @param j2000 day of the monday of the first weak of year
+     */
+    private static int getFirstWeekMonday(final int year) {
+        final int yearFirst = new DateComponents(year, 1, 1).getJ2000Day();
+        final int offsetToMonday = 4 - (yearFirst + 2) % 7;
+        return yearFirst + offsetToMonday + ((offsetToMonday > 3) ? -7 : 0);
     }
 
     /** Get the day of week.

@@ -86,12 +86,36 @@ public class TimeComponentsTest {
         Assert.assertEquals(86399.9, new TimeComponents(23, 59, 59.9).getSecondsInDay(), 1.0e-10);
     }
 
+    @Test
     public void testString() {
         Assert.assertEquals("00:00:00.000", new TimeComponents(0).toString());
         Assert.assertEquals("06:00:00.000", new TimeComponents(21600).toString());
         Assert.assertEquals("12:00:00.000", new TimeComponents(43200).toString());
         Assert.assertEquals("18:00:00.000", new TimeComponents(64800).toString());
         Assert.assertEquals("23:59:59.900", new TimeComponents(86399.9).toString());
+    }
+
+    @Test
+    public void testParse() {
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("235959.900").getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59.900").getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59,900").getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("235959.900Z").getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59.900Z").getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("235959.900+00").getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59.900+00").getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("235959.900+00:00").getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59.900+00:00").getSecondsInDay(), 1.0e-10);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testBadFormat() {
+        TimeComponents.parseTime("23h59m59s");
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testBadZone() {
+        TimeComponents.parseTime("23:59:59+01:00");
     }
 
     @Test

@@ -106,6 +106,29 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
 
     }
 
+    /** Parse a string in ISO-8601 format to build a date/time.
+     * <p>The supported formats are all date formats supported by {@link DateComponents#parseDate(String)}
+     * and all time formats supported by {@link TimeComponents#parseTime(String)} separated
+     * by the standard time separator 'T', or date components only (in which case a 00:00:00 hour is
+     * implied). Typical examples are 2000-01-01T12:00:00Z or 1976W186T210000.
+     * </p>
+     * @param string string to parse
+     * @param a parsed date/time
+     * @exception IllegalArgumentException if string cannot be parsed
+     */
+    public static DateTimeComponents parseDateTime(final String string) {
+
+        // is there a time ?
+        int tIndex = string.indexOf('T');
+        if (tIndex > 0) {
+            return new DateTimeComponents(DateComponents.parseDate(string.substring(0, tIndex)),
+                                          TimeComponents.parseTime(string.substring(tIndex + 1)));
+        }
+
+        return new DateTimeComponents(DateComponents.parseDate(string), TimeComponents.H00);
+
+    }
+
     /** Compute the seconds offset between two instances.
      * @param dateTime dateTime to subtract from the instance
      * @return offset in seconds between the two instants

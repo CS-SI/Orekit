@@ -72,4 +72,20 @@ public class DateTimeComponentsTest {
         Assert.assertEquals("2000-01-01T12:00:00.000", date.toString());
     }
 
+    @Test
+    public void testParse() {
+        String s = "2000-01-02T03:04:05.000";
+        Assert.assertEquals(s, DateTimeComponents.parseDateTime(s).toString());
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testBadDay() {
+        DateTimeComponents.parseDateTime("2000-02-30T03:04:05.000+00:00");
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testBadZone() {
+        DateTimeComponents.parseDateTime("2000-02-29T03:04:05.000+00:01");
+    }
+
 }

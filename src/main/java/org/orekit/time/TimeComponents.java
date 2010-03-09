@@ -20,6 +20,8 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 
@@ -50,6 +52,9 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     private static final DecimalFormat SECONDS_FORMAT =
         new DecimalFormat("00.000", new DecimalFormatSymbols(Locale.US));
 
+    /** Basic and extends formats for local time, UTC time (only 0 difference with UTC is supported). */
+    private static Pattern ISO8601_FORMATS = Pattern.compile("^(\\d\\d):?(\\d\\d):?(\\d\\d(?:[.,]\\d+)?)?(?:Z|[-+]00(?::00)?)?$");
+
     /** Hour number. */
     private final int hour;
 
@@ -76,7 +81,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         if ((hour   < 0) || (hour   >  23) ||
                 (minute < 0) || (minute >  59) ||
                 (second < 0) || (second >= 61.0)) {
-            throw OrekitException.createIllegalArgumentException("non-existent hour {0}:{1}:{2}",
+            throw OrekitException.createIllegalArgumentException("non-existent time {0}:{1}:{2}",
                                                                  hour, minute, second);
         }
 
@@ -103,6 +108,44 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         minute = (int) Math.floor(remains / 60.0);
         remains -= minute * 60;
         second = remains;
+
+    }
+
+    /** Parse a string in ISO-8601 format to build a time.
+     * <p>The supported formats are:
+     * <ul>
+     *   <li>basic format local time: hhmmss (with optional decimals in seconds)</li>
+     *   <li>extended format local time: hh:mm:ss (with optional decimals in seconds)</li>
+     *   <li>basic format UTC time: hhmmssZ (with optional decimals in seconds)</li>
+     *   <li>extended format UTC time: hh:mm:ssZ (with optional decimals in seconds)</li>
+     *   <li>basic format local time with 00h UTC offset: hhmmss+00 (with optional decimals in seconds)</li>
+     *   <li>extended format local time with 00h UTC offset: hhmmss+00 (with optional decimals in seconds)</li>
+     *   <li>basic format local time with 00h and 00m UTC offset: hhmmss+00:00 (with optional decimals in seconds)</li>
+     *   <li>extended format local time with 00h and 00m UTC offset: hhmmss+00:00 (with optional decimals in seconds)</li>
+     * </ul>
+     * As shown by the list above, only the complete representations defined in section 4.2
+     * of ISO-8601 standard are supported, neither expended representations nor representations
+     * with reduced accuracy are supported.
+     * </p>
+     * <p>As this class does not support time zones (because space flight dynamics uses {@link
+     * TimeScale time scales} with offsets from UTC having sub-second accuracy), only UTC is zone is
+     * supported (and in fact ignored). It is the responsibility of the {@link AbsoluteDate} class to
+     * handle time scales appropriately.</p>
+     * @param string string to parse
+     * @param a parsed time
+     * @exception IllegalArgumentException if string cannot be parsed
+     */
+    public static  TimeComponents parseTime(final String string) {
+
+        // is the date a calendar date ?
+        final Matcher timeMatcher = ISO8601_FORMATS.matcher(string);
+        if (timeMatcher.matches()) {
+            return new TimeComponents(Integer.parseInt(timeMatcher.group(1)),
+                                      Integer.parseInt(timeMatcher.group(2)),
+                                      Double.parseDouble(timeMatcher.group(3).replace(',', '.')));
+        }
+
+        throw OrekitException.createIllegalArgumentException("non-existent time {0}", string);
 
     }
 

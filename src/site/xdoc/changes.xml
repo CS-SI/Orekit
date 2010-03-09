@@ -168,6 +168,14 @@
       <action dev="luc" type="add">
         added a Constants interface including a few useful physical constants.
       </action>
+      <action dev="luc" type="add">
+        added a way to build date components from week components (this can be used
+        for scheduled operations with week-related periods)
+      </action>
+      <action dev="luc" type="add">
+        added string parsing features for dates and times components supporting ISO-8601
+        formats
+      </action>
       <action dev="luc" type="update" >
         updated error message localization to be more consistent with Java exception. Now getMessage
         returns a non-localized message and only getLocalizedMessage returns a message localized for
