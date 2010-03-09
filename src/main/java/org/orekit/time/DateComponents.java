@@ -270,7 +270,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
      * on the number of digits.
      * </p>
      * @param string string to parse
-     * @param a parsed date
+     * @return a parsed date
      * @exception IllegalArgumentException if string cannot be parsed
      */
     public static  DateComponents parseDate(final String string) {
