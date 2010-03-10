@@ -139,6 +139,20 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
         offset = J2000_EPOCH.offset;
     }
 
+    /** Build an instance from a location (parsed from a string) in a {@link TimeScale time scale}.
+     * <p>
+     * The supported formats for location are mainly the ones defined in ISO-8601 standard,
+     * the exact subset is explained in {@link DateTimeComponents#parseDateTime(String)},
+     * {@link DateComponents#parseDate(String)} and {@link TimeComponents#parseTime(String)}.
+     * </p>
+     * @param location location in the time scale, must be in a supported format
+     * @param timeScale time scale
+     * @exception IllegalArgumentException if location string is not in a supported format
+     */
+    public AbsoluteDate(final String location, final TimeScale timeScale) {
+        this(DateTimeComponents.parseDateTime(location), timeScale);
+    }
+
     /** Build an instance from a location in a {@link TimeScale time scale}.
      * @param location location in the time scale
      * @param timeScale time scale

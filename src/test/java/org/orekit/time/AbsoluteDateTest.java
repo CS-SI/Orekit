@@ -55,6 +55,16 @@ public class AbsoluteDateTest {
     }
 
     @Test
+    public void testParse() throws OrekitException {
+        Assert.assertEquals(AbsoluteDate.MODIFIED_JULIAN_EPOCH,
+                            new AbsoluteDate("1858-W46-3", TimeScalesFactory.getTT()));        
+        Assert.assertEquals(AbsoluteDate.JULIAN_EPOCH,
+                            new AbsoluteDate("-4712-01-01T12:00:00.000", TimeScalesFactory.getTT()));        
+        Assert.assertEquals(AbsoluteDate.FIFTIES_EPOCH,
+                            new AbsoluteDate("1950-01-01", TimeScalesFactory.getTT()));        
+    }
+
+    @Test
     public void testOutput() {
         TimeScale tt = TimeScalesFactory.getTT();
         Assert.assertEquals("1950-01-01T01:01:01.000",
