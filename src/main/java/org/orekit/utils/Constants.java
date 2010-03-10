@@ -24,6 +24,9 @@ package org.orekit.utils;
 public interface Constants {
 
 
+    /** Duration of a mean solar day: 86400 s. */
+    double JULIAN_DAY = 86400.0;
+
     /** Speed of light: 299792458.0 m/s. */
     double SPEED_OF_LIGHT = 299792458.0;
 
@@ -135,5 +138,79 @@ public interface Constants {
 
     /** Earth un-normalized sixth zonal coefficient from EIGEN5C model: -5.406653715879098e-7. */
     double EIGEN5C_EARTH_C60 = -5.406653715879098e-7;
+
+    /** Gaussian gravitational constant: 0.01720209895 &sqrt;(AU<sup>3</sup>/d<sup>2</sup>). */
+    double JPL_SSD_GAUSSIAN_GRAVITATIONAL_CONSTANT = 0.01720209895;
+
+    /** Astronomical Unit: 149597870691 m. */
+    double JPL_SSD_ASTRONOMICAL_UNIT = 149597870691.0;
+
+    /** Sun attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    double JPL_SSD_SUN_GM = JPL_SSD_GAUSSIAN_GRAVITATIONAL_CONSTANT * JPL_SSD_GAUSSIAN_GRAVITATIONAL_CONSTANT *
+                            JPL_SSD_ASTRONOMICAL_UNIT * JPL_SSD_ASTRONOMICAL_UNIT * JPL_SSD_ASTRONOMICAL_UNIT /
+                            (JULIAN_DAY * JULIAN_DAY);
+
+    /** Sun/Mercury mass ratio: 6023600. */
+    double JPL_SSD_SUN_MERCURY_MASS_RATIO = 6023600;
+
+    /** Sun/Mercury attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    double JPL_SSD_MERCURY_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_MERCURY_MASS_RATIO;
+
+    /** Sun/Venus mass ratio: 408523.71. */
+    double JPL_SSD_SUN_VENUS_MASS_RATIO = 408523.71;
+
+    /** Sun/Venus attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    double JPL_SSD_VENUS_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_VENUS_MASS_RATIO;
+
+    /** Sun/(Earth + Moon) mass ratio: 328900.56. */
+    double JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO = 328900.56;
+
+    /** Sun/(Earth + Moon) attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    double JPL_SSD_EARTH_PLUS_MOON_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO;
+
+    /** Earth/Moon mass ratio: 81.30059. */
+    double JPL_SSD_EARTH_MOON_MASS_RATIO = 81.300596;
+
+    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    double JPL_SSD_MOON_GM = JPL_SSD_EARTH_PLUS_MOON_GM / (1.0 + JPL_SSD_EARTH_MOON_MASS_RATIO);
+
+    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    double JPL_SSD_EARTH_GM = JPL_SSD_MOON_GM * JPL_SSD_EARTH_MOON_MASS_RATIO;
+
+    /** Sun/(Mars system) mass ratio: 3098708.0. */
+    double JPL_SSD_SUN_MARS_SYSTEM_MASS_RATIO = 3098708.0;
+
+    /** Sun/(Mars system) attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    double JPL_SSD_MARS_SYSTEM_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_MARS_SYSTEM_MASS_RATIO;
+
+    /** Sun/(Jupiter system) mass ratio: 1047.3486. */
+    double JPL_SSD_SUN_JUPITER_SYSTEM_MASS_RATIO = 1047.3486;
+
+    /** Sun/(Jupiter system) ttraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    double JPL_SSD_JUPITER_SYSTEM_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_JUPITER_SYSTEM_MASS_RATIO;
+
+    /** Sun/(Saturn system) mass ratio: 3497.898. */
+    double JPL_SSD_SUN_SATURN_SYSTEM_MASS_RATIO = 3497.898;
+
+    /** Sun/(Saturn system) attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    double JPL_SSD_SATURN_SYSTEM_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_SATURN_SYSTEM_MASS_RATIO;
+
+    /** Sun/(Uranus system) mass ratio: 22902.98. */
+    double JPL_SSD_SUN_URANUS_SYSTEM_MASS_RATIO = 22902.98;
+
+    /** Sun/(Uranus system) attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    double JPL_SSD_URANUS_SYSTEM_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_URANUS_SYSTEM_MASS_RATIO;
+
+    /** Sun/(Neptune system) mass ratio: 19412.24. */
+    double JPL_SSD_SUN_NEPTUNE_SYSTEM_MASS_RATIO = 19412.24;
+
+    /** Sun/(Neptune system) attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    double JPL_SSD_NEPTUNE_SYSTEM_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_NEPTUNE_SYSTEM_MASS_RATIO;
+
+    /** Sun/(Pluto system) mass ratio: 1.35e8. */
+    double JPL_SSD_SUN_PLUTO_SYSTEM_MASS_RATIO = 1.35e8;
+
+    /** Sun/(Pluto system) ttraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    double JPL_SSD_PLUTO_SYSTEM_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_PLUTO_SYSTEM_MASS_RATIO;
 
 }
