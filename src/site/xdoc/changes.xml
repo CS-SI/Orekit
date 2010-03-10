@@ -24,14 +24,14 @@
              description="TBD">
       <action dev="luc" type="add">
         a new SpacecraftFrame class has been added, taking into account orbit and
-        attitude thanks to an underlying propagator. This allow to see the spacecraft just
+        attitude thanks to an underlying propagator. This allows to see the spacecraft just
         as another known geometrical object automatically handled and connected to all
         other frames. For an instantaneous view, Transform instances can also be built
         directly by SpacecraftState instances.
       </action>
       <action dev="luc" type="add">
-        frames can now be flagged as quasi-inertial or not and only
-        quasi-inertial frames are suitable for defining orbits
+        frames can now be flagged as quasi-inertial or not; only quasi-inertial frames
+        are suitable for defining orbits
       </action>
       <action dev="luc" type="add">
         the Topocentric frame now provides a way to retrieve the body shape on which the
@@ -39,7 +39,7 @@
       </action>
       <action dev="luc" type="fix" due-to="John Pritchard">
         fixed a parameters inversion in Earth Orientation Parameters for IAU-1980 models.
-        The error could introduce up to a few meters in position error during transformations
+        The error could introduce up to a few meters error in position during transformations
         between TEME and MEME
       </action>
       <action dev="luc" type="add" >
@@ -54,7 +54,7 @@
         factories follow the same generic pattern.
       </action>
       <action dev="luc" type="fix" >
-        improved thread safety (however, Orekit is still not completely thread-safe).
+        improved thread safety (however, Orekit is still NOT completely thread-safe).
       </action>
       <action dev="luc" type="add" >
         the loaders for gravity fields now can optionally allow missing coefficients (they will be
@@ -78,8 +78,8 @@
       </action>
       <action dev="v&#233;ronique" type="add" >
         a new PVCoordinatesProvider interface has been created on top of several existing classes
-        and interfaces (orbit propagator, celestial bodies, some moving frames ...). This is an
-        important generalization that allows to use either satellites or celestial bodies in many
+        and interfaces (orbit propagator, celestial bodies, some moving frames ...). This is a
+        major generalization that allows to use either satellites or celestial bodies in many
         algorithms (attitude pointing target, eclipses and field of view events ...) 
       </action>
       <action dev="luc" type="fix" >
@@ -97,9 +97,9 @@
       <action dev="luc" type="add" >
         AbsoluteDate, Orbit, PVCoordinates, Attitude and SpacecraftState instances can now all
         be slightly shifted in time using simple evolution models (keplerian for orbit, fixed
-        rate for attitude, fixed translation for position/velocity). This is not a replacement
-        for proper propagation but is useful for known simple motions or small time shifts or
-        when coarse accuracy is sufficient
+        angular rate for attitude, fixed translation for position/velocity). This is not a
+        replacement for proper propagation but is useful for known simple motions or small
+        time shifts or when coarse accuracy is sufficient
       </action>
       <action dev="luc" type="fix" >
         changed AttitudeLaw.getState signature to use complete orbit. This is an incompatible
@@ -158,12 +158,10 @@
         added a relative constructor and a getMomentum method to PVCoordinates
       </action>
       <action dev="luc" type="add">
-        added a special implementation improving performances for the frequent
-        case of identity transform
+        added a special implementation improving performances for the frequent case of identity transform
       </action>
       <action dev="luc" type="fix">
-        added forgotten radians to degrees conversions for inclination
-        and RAAN in CircularOrbit.toString()
+        fixed forgotten radians to degrees conversions for inclination and RAAN in CircularOrbit.toString()
       </action>
       <action dev="luc" type="add">
         added a Constants interface including a few useful physical constants.
@@ -173,8 +171,7 @@
         for scheduled operations with week-related periods)
       </action>
       <action dev="luc" type="add">
-        added string parsing features for dates and times components supporting ISO-8601
-        formats
+        added string parsing features for dates and times components supporting ISO-8601 formats
       </action>
       <action dev="luc" type="update" >
         updated error message localization to be more consistent with Java exception. Now getMessage
