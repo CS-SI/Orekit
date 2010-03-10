@@ -171,10 +171,10 @@ public interface Constants {
     /** Earth/Moon mass ratio: 81.30059. */
     double JPL_SSD_EARTH_MOON_MASS_RATIO = 81.300596;
 
-    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Moon attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
     double JPL_SSD_MOON_GM = JPL_SSD_EARTH_PLUS_MOON_GM / (1.0 + JPL_SSD_EARTH_MOON_MASS_RATIO);
 
-    /** Attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Earth attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
     double JPL_SSD_EARTH_GM = JPL_SSD_MOON_GM * JPL_SSD_EARTH_MOON_MASS_RATIO;
 
     /** Sun/(Mars system) mass ratio: 3098708.0. */
