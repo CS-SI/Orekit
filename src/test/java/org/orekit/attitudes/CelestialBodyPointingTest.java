@@ -30,6 +30,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -53,7 +54,7 @@ public class CelestialBodyPointingTest {
         Assert.assertEquals(0,
                      Vector3D.dotProduct(zDirection, Vector3D.crossProduct(xDirection, Vector3D.PLUS_K)),
                      1.0e-15);
-        double period = 2 * Math.PI / (attitude.getSpin().getNorm() * 86400);
+        double period = 2 * Math.PI / (attitude.getSpin().getNorm() * Constants.JULIAN_DAY);
         Assert.assertTrue((period > 350) && (period < 370));
 
         // the following statement checks we take parallax into account

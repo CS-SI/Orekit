@@ -18,6 +18,8 @@ package org.orekit.time;
 
 import java.io.Serializable;
 
+import org.orekit.utils.Constants;
+
 /** Holder for date and time components.
  * <p>This class is a simple holder with no processing methods.</p>
  * <p>Instance of this class are guaranteed to be immutable.</p>
@@ -96,8 +98,8 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
         seconds += offset;
 
         // fix range
-        final int dayShift = (int) Math.floor(seconds / 86400.0);
-        seconds -= 86400.0 * dayShift;
+        final int dayShift = (int) Math.floor(seconds / Constants.JULIAN_DAY);
+        seconds -= Constants.JULIAN_DAY * dayShift;
         day     += dayShift;
 
         // set up components
@@ -138,7 +140,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
     public double offsetFrom(final DateTimeComponents dateTime) {
         final int dateOffset = date.getJ2000Day() - dateTime.date.getJ2000Day();
         final double timeOffset = time.getSecondsInDay() - dateTime.time.getSecondsInDay();
-        return 86400.0 * dateOffset + timeOffset;
+        return Constants.JULIAN_DAY * dateOffset + timeOffset;
     }
 
     /** Get the date component.

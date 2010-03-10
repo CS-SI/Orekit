@@ -24,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.utils.Constants;
 
 
 /** Class representing a time within the day broken up as hour,
@@ -92,12 +93,12 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     }
 
     /** Build a time from the second number within the day.
-     * @param secondInDay second number from 0.0 to 86400.0 (excluded)
+     * @param secondInDay second number from 0.0 to {@link Constants#JULIAN_DAY} (excluded)
      * @exception IllegalArgumentException if seconds number is out of range
      */
     public TimeComponents(final double secondInDay) {
         // range check
-        if ((secondInDay < 0) || (secondInDay >= 86400.0)) {
+        if ((secondInDay < 0) || (secondInDay >= Constants.JULIAN_DAY)) {
             throw OrekitException.createIllegalArgumentException("out of range seconds number: {0}",
                                                                  secondInDay);
         }
@@ -171,7 +172,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     }
 
     /** Get the second number within the day.
-     * @return second number from 0.0 to 86400.0
+     * @return second number from 0.0 to Constants.JULIAN_DAY
      */
     public double getSecondsInDay() {
         return second + 60 * minute + 3600 * hour;

@@ -21,6 +21,7 @@ import org.apache.commons.math.geometry.Vector3D;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 
 
 /** International Terrestrial Reference Frame 2005.
@@ -41,7 +42,7 @@ class ITRF2005Frame extends Frame {
     private static final double RADIANS_PER_ARC_SECOND = TWO_PI / 1296000;
 
     /** Julian century per second. */
-    private static final double JULIAN_CENTURY_PER_SECOND = 1.0 / (36525.0 * 86400.0);
+    private static final double JULIAN_CENTURY_PER_SECOND = 1.0 / (36525.0 * Constants.JULIAN_DAY);
 
     /** S' rate in radians per julian century.
      * Approximately -47 microarcsecond per julian century (Lambert and Bizouard, 2002)

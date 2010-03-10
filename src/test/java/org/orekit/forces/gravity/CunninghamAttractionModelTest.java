@@ -49,6 +49,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -84,9 +85,9 @@ public class CunninghamAttractionModelTest {
         propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, 6378136.460, mu, c, s));
 
         // let the step handler perform the test
-        propagator.setMasterMode(86400, new SpotStepHandler(date, mu));
+        propagator.setMasterMode(Constants.JULIAN_DAY, new SpotStepHandler(date, mu));
         propagator.setInitialState(new SpacecraftState(orbit));
-        propagator.propagate(date.shiftedBy(7 * 86400));
+        propagator.propagate(date.shiftedBy(7 * Constants.JULIAN_DAY));
         Assert.assertTrue(propagator.getCalls() < 9200);
 
     }
@@ -233,7 +234,7 @@ public class CunninghamAttractionModelTest {
         }));
 
         propagator.setInitialState(new SpacecraftState(orbit));
-        SpacecraftState cunnOrb = propagator.propagate(date.shiftedBy(86400));
+        SpacecraftState cunnOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
 
         propagator.removeForceModels();
 
@@ -248,7 +249,7 @@ public class CunninghamAttractionModelTest {
         }));
 
         propagator.setInitialState(new SpacecraftState(orbit));
-        SpacecraftState drozOrb = propagator.propagate(date.shiftedBy(86400));
+        SpacecraftState drozOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
 
         Vector3D dif = cunnOrb.getPVCoordinates().getPosition().subtract(drozOrb.getPVCoordinates().getPosition());
         Assert.assertEquals(0, dif.getNorm(), 3.1e-7);

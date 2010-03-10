@@ -20,6 +20,7 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.EOPHistory;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.Constants;
 
 public abstract class AbstractFilesLoaderTest {
 
@@ -36,7 +37,7 @@ public abstract class AbstractFilesLoaderTest {
             }
             previous = current;
         }
-        return (int) Math.round(maxGap / 86400.0);
+        return (int) Math.round(maxGap / Constants.JULIAN_DAY);
     }
 
 }

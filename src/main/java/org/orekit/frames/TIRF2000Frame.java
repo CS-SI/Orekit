@@ -23,6 +23,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 
 /** Terrestrial Intermediate Reference Frame 2000.
  * <p> The pole motion is not considered : Pseudo Earth Fixed Frame. It handles
@@ -124,12 +125,12 @@ class TIRF2000Frame extends Frame {
             final double dtu1        = eopHistory.getUT1MinusUTC(date);
             final double utcMinusTai = TimeScalesFactory.getUTC().offsetFromTAI(date);
             final double tu =
-                (date.durationFrom(ERA_REFERENCE) + utcMinusTai + dtu1 + tidalDtu1) / 86400.0;
+                (date.durationFrom(ERA_REFERENCE) + utcMinusTai + dtu1 + tidalDtu1) / Constants.JULIAN_DAY;
             era  = ERA_0 + ERA_1A * tu + ERA_1B * tu;
             era -= TWO_PI * Math.floor((era + Math.PI) / TWO_PI);
 
             // set up the transform from parent CIRF
-            final Vector3D rotationRate = new Vector3D((ERA_1A + ERA_1B) / 86400, Vector3D.PLUS_K);
+            final Vector3D rotationRate = new Vector3D((ERA_1A + ERA_1B) / Constants.JULIAN_DAY, Vector3D.PLUS_K);
             setTransform(new Transform(new Rotation(Vector3D.PLUS_K, -era), rotationRate));
             cachedDate = date;
 

@@ -39,6 +39,7 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 public class ElevationDetectorTest {
@@ -79,7 +80,7 @@ public class ElevationDetectorTest {
         propagator.resetInitialState(propagator.propagate(startDate));
         propagator.addEventDetector(detector);
         propagator.setMasterMode(10.0, detector);
-        propagator.propagate(startDate.shiftedBy(86400));
+        propagator.propagate(startDate.shiftedBy(Constants.JULIAN_DAY));
 
     }
 

@@ -16,6 +16,8 @@
  */
 package org.orekit.time;
 
+import org.orekit.utils.Constants;
+
 /** Barycentric Dynamic Time.
  * <p>Time used to take account of time dilation when calculating orbits of planets,
  * asteroids, comets and interplanetary spacecraft in the Solar system. It was based
@@ -41,7 +43,7 @@ public class TDBScale implements TimeScale {
 
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate date) {
-        final double dtDays = date.durationFrom(AbsoluteDate.J2000_EPOCH) / 86400;
+        final double dtDays = date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY;
         final double g = Math.toRadians(357.53 + 0.9856003 * dtDays);
         return TimeScalesFactory.getTT().offsetFromTAI(date) + (0.001658 * Math.sin(g) + 0.000014 * Math.sin(2 * g));
     }

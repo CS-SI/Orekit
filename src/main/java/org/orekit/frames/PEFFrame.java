@@ -23,6 +23,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 
 /** Pseudo Earth Fixed Frame.
  * <p> This frame handles the sidereal time according to IAU-82 model.</p>
@@ -41,7 +42,7 @@ class PEFFrame extends Frame {
     private static final double TWO_PI = 2.0 * Math.PI;
 
     /** Seconds per day. */
-    private static final double SECONDS_PER_DAY = 86400.;
+    private static final double SECONDS_PER_DAY = Constants.JULIAN_DAY;
 
     /** Radians per second of time. */
     private static final double RADIANS_PER_SECOND = TWO_PI / SECONDS_PER_DAY;

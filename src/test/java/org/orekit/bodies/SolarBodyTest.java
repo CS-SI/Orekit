@@ -31,6 +31,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -152,7 +153,7 @@ public class SolarBodyTest {
         PVCoordinates pv = body.getPVCoordinates(date, frame);
 
         final double posScale = 149597870691.0;
-        final double velScale = posScale / 86400.0;
+        final double velScale = posScale / Constants.JULIAN_DAY;
         PVCoordinates reference =
             new PVCoordinates(new Vector3D(posScale, position), new Vector3D(velScale, velocity));
 
@@ -186,7 +187,7 @@ public class SolarBodyTest {
                                          central.getFrame(),start, central.getGM());
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         Assert.assertEquals(a, orbit.getA(), 0.02 * a);
-        double duration = Math.min(50 * 86400, 0.01 * orbit.getKeplerianPeriod());
+        double duration = Math.min(50 * Constants.JULIAN_DAY, 0.01 * orbit.getKeplerianPeriod());
 
         double max = 0;
         for (AbsoluteDate date = start; date.durationFrom(start) < duration; date = date.shiftedBy(duration / 100)) {

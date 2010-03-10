@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.utils.Constants;
 
 public class GPSScaleTest {
 
@@ -50,7 +51,7 @@ public class GPSScaleTest {
         TimeScale scale = TimeScalesFactory.getGPS();
         double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH);
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
-            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * 86400);
+            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
             Assert.assertEquals(reference, scale.offsetFromTAI(date), 1.0e-15);
         }
     }
@@ -59,7 +60,7 @@ public class GPSScaleTest {
     public void testSymmetry() {
         TimeScale scale = TimeScalesFactory.getGPS();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
-            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * 86400);
+            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
             double dt1 = scale.offsetFromTAI(date);
             DateTimeComponents components = date.getComponents(scale);
             double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());

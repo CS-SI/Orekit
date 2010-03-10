@@ -34,6 +34,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.Constants;
 
 
 /** This class reads and provides solar activity data needed by the
@@ -179,22 +180,22 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
 
     private void findClosestLine(AbsoluteDate date) throws OrekitException {
 
-        if ((date.durationFrom(firstDate) < 0) || (date.durationFrom(lastDate) > 86400)) {
+        if ((date.durationFrom(firstDate) < 0) || (date.durationFrom(lastDate) > Constants.JULIAN_DAY)) {
             throw new OrekitException("out of range" );
         }
 
         // don't search if the cached selection is fine
         if ((currentParam != null) && (date.durationFrom(currentParam.date) >= 0) &&
-                (date.durationFrom(currentParam.date) < 86400 )) {
+                (date.durationFrom(currentParam.date) < Constants.JULIAN_DAY )) {
             return;
         }
-        LineParameters before = new LineParameters(date.shiftedBy(-86400), null, 0, 0, 0, 0, 0, 0);
+        LineParameters before = new LineParameters(date.shiftedBy(-Constants.JULIAN_DAY), null, 0, 0, 0, 0, 0, 0);
 
         // search starting from entries a few steps before the target date
         SortedSet<TimeStamped> tailSet = data.tailSet(before);
         if (tailSet != null) {
             currentParam = (LineParameters) tailSet.first();
-            if (currentParam.date.durationFrom(date) == -86400) {
+            if (currentParam.date.durationFrom(date) == -Constants.JULIAN_DAY) {
                 currentParam = (LineParameters) data.tailSet(date).first();
             }
         } else {
@@ -286,7 +287,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
     }
 
     public AbsoluteDate getMaxDate() {
-        return lastDate.shiftedBy(86400);
+        return lastDate.shiftedBy(Constants.JULIAN_DAY);
     }
 
     public AbsoluteDate getMinDate() {

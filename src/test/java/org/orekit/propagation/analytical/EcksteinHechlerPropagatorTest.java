@@ -45,6 +45,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -381,7 +382,7 @@ public class EcksteinHechlerPropagatorTest {
 
         // Comparison with a given extrapolated orbit
         // -----------------------------------------
-        AbsoluteDate initDate = AbsoluteDate.FIFTIES_EPOCH.shiftedBy(12584. * 86400.);
+        AbsoluteDate initDate = AbsoluteDate.FIFTIES_EPOCH.shiftedBy(12584. * Constants.JULIAN_DAY);
 
         double a = 7200000.;
         double exp = .9848e-4; // e * cos(pom)
@@ -408,7 +409,7 @@ public class EcksteinHechlerPropagatorTest {
 
         // Extrapolation at a final date different from initial date
         // ---------------------------------------------------------
-        double delta_t = (12587. - 12584.) * 86400.; // extrapolation duration in
+        double delta_t = (12587. - 12584.) * Constants.JULIAN_DAY; // extrapolation duration in
         // seconds
         AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 

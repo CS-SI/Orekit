@@ -24,7 +24,7 @@ package org.orekit.utils;
 public interface Constants {
 
 
-    /** Duration of a mean solar day: 86400 s. */
+    /** Duration of a mean solar day: Constants.JULIAN_DAY s. */
     double JULIAN_DAY = 86400.0;
 
     /** Speed of light: 299792458.0 m/s. */

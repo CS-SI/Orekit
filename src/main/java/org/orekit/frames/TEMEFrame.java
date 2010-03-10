@@ -20,6 +20,7 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 
 /** True Equator, Mean Equinox of Date Frame.
  * <p>This frame handles nutation effects according to the IAU-80 theory.</p>
@@ -50,7 +51,7 @@ class TEMEFrame extends Frame {
     private static final double RADIANS_PER_ARC_SECOND = Math.PI / 648000;
 
     /** Julian century per second. */
-    private static final double JULIAN_CENTURY_PER_SECOND = 1.0 / (36525.0 * 86400.0);
+    private static final double JULIAN_CENTURY_PER_SECOND = 1.0 / (36525.0 * Constants.JULIAN_DAY);
 
     // CHECKSTYLE: stop JavadocVariable check
 

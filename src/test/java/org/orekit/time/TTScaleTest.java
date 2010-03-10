@@ -19,6 +19,7 @@ package org.orekit.time;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.utils.Constants;
 
 
 public class TTScaleTest {
@@ -29,7 +30,7 @@ public class TTScaleTest {
         Assert.assertEquals("TT", scale.toString());
         double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH);
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
-            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * 86400);
+            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
             Assert.assertEquals(reference, scale.offsetFromTAI(date), 1.0e-15);
         }
     }
@@ -38,7 +39,7 @@ public class TTScaleTest {
     public void testSymmetry() {
         TimeScale scale = TimeScalesFactory.getTT();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
-            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * 86400);
+            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
             double dt1 = scale.offsetFromTAI(date);
             DateTimeComponents components = date.getComponents(scale);
             double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());

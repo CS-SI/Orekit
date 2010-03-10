@@ -25,6 +25,7 @@ import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -742,7 +743,7 @@ public class JB2006 implements Atmosphere {
         }
 
         // compute modified julian days date
-        final double dateMJD = date.durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH) / 86400.;
+        final double dateMJD = date.durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH) / Constants.JULIAN_DAY;
 
         // compute geodetic position
         final GeodeticPoint inBody = earth.transform(position, frame, date);

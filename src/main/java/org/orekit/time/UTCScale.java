@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.utils.Constants;
 
 /** Coordinated Universal Time.
  * <p>UTC is related to TAI using step adjustments from time to time
@@ -100,7 +101,7 @@ public class UTCScale implements TimeScale {
     /** {@inheritDoc} */
     public synchronized double offsetToTAI(final DateComponents date,
                                            final TimeComponents time) {
-        setCurrent(date.getJ2000Day() * 86400.0 + time.getSecondsInDay() - 43200);
+        setCurrent(date.getJ2000Day() * Constants.JULIAN_DAY + time.getSecondsInDay() - Constants.JULIAN_DAY / 2);
         return offsets[current].getOffset();
     }
 

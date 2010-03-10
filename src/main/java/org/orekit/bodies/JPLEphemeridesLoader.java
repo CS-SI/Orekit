@@ -36,6 +36,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 /** Loader for JPL ephemerides binary files (DE 405, DE 406).
@@ -75,7 +76,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     private static final String DEFAULT_SUPPORTED_NAMES = "^unx[mp](\\d\\d\\d\\d)\\.(?:(?:405)|(?:406))$";
 
     /** 50 days in seconds. */
-    private static final double FIFTY_DAYS = 50 * 86400;
+    private static final double FIFTY_DAYS = 50 * Constants.JULIAN_DAY;
 
     /** List of supported ephemerides types. */
     public enum EphemerisType {
@@ -434,7 +435,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         }
 
         final double au    = getLoadedAstronomicalUnit();
-        return rawGM * au * au * au / (86400.0 * 86400.0);
+        return rawGM * au * au * au / (Constants.JULIAN_DAY * Constants.JULIAN_DAY);
 
     }
 
@@ -640,7 +641,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             // compute chunks duration
             final double timeSpan = extractDouble(record, 2668);
             ok = ok && (timeSpan > 0) && (timeSpan < 100);
-            chunksDuration = 86400.0 * (timeSpan / chunks);
+            chunksDuration = Constants.JULIAN_DAY * (timeSpan / chunks);
             if (Double.isNaN(maxChunksDuration)) {
                 maxChunksDuration = chunksDuration;
             } else {
@@ -783,7 +784,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * @return extracted date
      */
     private static AbsoluteDate extractDate(final byte[] record, final int offset) {
-        final double dt = extractDouble(record, offset) * 86400;
+        final double dt = extractDouble(record, offset) * Constants.JULIAN_DAY;
         return new AbsoluteDate(AbsoluteDate.JULIAN_EPOCH, dt, TimeScalesFactory.getTT());
     }
 

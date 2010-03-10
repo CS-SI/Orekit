@@ -19,6 +19,7 @@ package org.orekit.tle;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 
 /** This class contains methods to compute propagated coordinates with the SDP4 model.
  * <p>
@@ -120,11 +121,11 @@ abstract class SDP4  extends TLEPropagator {
         final double omega_E = 1.00273790934;
         final double jd = (date.durationFrom(AbsoluteDate.JULIAN_EPOCH) +
                            date.timeScalesOffset(TimeScalesFactory.getUTC(), TimeScalesFactory.getTT())
-                          ) / 86400;
+                          ) / Constants.JULIAN_DAY;
 
         // Earth rotations per sidereal day (non-constant)
         final double UT = (jd + 0.5) % 1;
-        final double seconds_per_day = 86400.;
+        final double seconds_per_day = Constants.JULIAN_DAY;
         final double jd_2000 = 2451545.0;   /* 1.5 Jan 2000 = JD 2451545. */
         final double t_cen = (jd - UT - jd_2000) / 36525.;
         double GMST = 24110.54841 +

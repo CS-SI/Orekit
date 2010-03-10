@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -55,7 +56,7 @@ public class TLETest {
         Assert.assertEquals(0.0001333, tle.getE(), 1e-10);
         Assert.assertEquals(133.9522, Math.toDegrees(tle.getPerigeeArgument()), 1e-10);
         Assert.assertEquals(226.1918, Math.toDegrees(tle.getMeanAnomaly()), 1e-10);
-        Assert.assertEquals(14.26113993, tle.getMeanMotion() * 86400 / (2 * Math.PI), 0);
+        Assert.assertEquals(14.26113993, tle.getMeanMotion() * Constants.JULIAN_DAY / (2 * Math.PI), 0);
         Assert.assertEquals(tle.getRevolutionNumberAtEpoch(), 6, 0);
         Assert.assertEquals(tle.getElementNumber(), 2 ,0);
 

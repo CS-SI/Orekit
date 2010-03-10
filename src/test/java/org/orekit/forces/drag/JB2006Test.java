@@ -36,6 +36,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinatesProvider;
 
 public class JB2006Test {
@@ -225,7 +226,7 @@ public class JB2006Test {
 
         GeodeticPoint point;
         for (int i = 0; i<367; i++) {
-            date = date.shiftedBy(86400);
+            date = date.shiftedBy(Constants.JULIAN_DAY);
             point = new GeodeticPoint(Math.toRadians(40), 0, 300*1000);
             pos = earth.transform(point);
             roJb = jb.getDensity(date, pos, FramesFactory.getEME2000());

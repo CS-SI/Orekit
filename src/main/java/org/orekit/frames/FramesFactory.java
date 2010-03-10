@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.commons.math.geometry.Rotation;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 
 
 /** Factory for predefined reference frames.
@@ -240,7 +241,7 @@ public class FramesFactory implements Serializable {
         for (final EOP1980HistoryLoader loader : EOP_1980_LOADERS) {
             loader.fillHistory(history);
         }
-        history.checkEOPContinuity(5 * 86400.0);
+        history.checkEOPContinuity(5 * Constants.JULIAN_DAY);
         return history;
     }
 
@@ -311,7 +312,7 @@ public class FramesFactory implements Serializable {
         for (final EOP2000HistoryLoader loader : EOP_2000_LOADERS) {
             loader.fillHistory(history);
         }
-        history.checkEOPContinuity(5 * 86400.0);
+        history.checkEOPContinuity(5 * Constants.JULIAN_DAY);
         return history;
     }
 

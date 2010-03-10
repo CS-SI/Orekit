@@ -24,6 +24,7 @@ import org.orekit.data.BodiesElements;
 import org.orekit.data.PoissonSeries;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 
 /** Celestial Intermediate Reference Frame 2000.
  * <p>This frame includes both precession and nutation effects according to
@@ -54,7 +55,7 @@ class CIRF2000Frame extends Frame {
     private static final double RADIANS_PER_ARC_SECOND = Math.PI / 648000;
 
     /** Julian century per second. */
-    private static final double JULIAN_CENTURY_PER_SECOND = 1.0 / (36525.0 * 86400.0);
+    private static final double JULIAN_CENTURY_PER_SECOND = 1.0 / (36525.0 * Constants.JULIAN_DAY);
 
     // CHECKSTYLE: stop JavadocVariable check
 

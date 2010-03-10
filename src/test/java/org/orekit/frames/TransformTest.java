@@ -23,6 +23,7 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -218,7 +219,7 @@ public class TransformTest {
 
             Rotation instantRot    = randomRotation(rnd);
             Vector3D normAxis = instantRot.getAxis();
-            double w  = Math.abs(instantRot.getAngle())/86400;
+            double w  = Math.abs(instantRot.getAngle())/Constants.JULIAN_DAY;
 
             // random rotation
             Rotation rot    = randomRotation(rnd);

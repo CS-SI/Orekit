@@ -19,6 +19,7 @@ package org.orekit.frames;
 import java.io.Serializable;
 
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 
 
 /** Compute tidal correction to the pole motion.
@@ -242,7 +243,7 @@ public class TidalCorrection implements Serializable {
     private void setInterpolatedCorrections(final AbsoluteDate date) {
 
         final double t =
-            date.durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH) / 86400.0 - 37076.5;
+            date.durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH) / Constants.JULIAN_DAY - 37076.5;
 
         final int n    = dtRef.length;
         final int nM12 = (n - 1) / 2;

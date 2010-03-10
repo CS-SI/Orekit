@@ -31,6 +31,7 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -67,7 +68,7 @@ public class IntegratedEphemerisTest {
         // Integrated ephemeris
 
         // Propagation
-        AbsoluteDate finalDate = initDate.shiftedBy(86400);
+        AbsoluteDate finalDate = initDate.shiftedBy(Constants.JULIAN_DAY);
         numericEx.setEphemerisMode();
         numericEx.setInitialState(new SpacecraftState(initialOrbit));
         numericEx.propagate(finalDate);
@@ -75,7 +76,7 @@ public class IntegratedEphemerisTest {
         BoundedPropagator ephemeris = numericEx.getGeneratedEphemeris();
 
         // tests
-        for (int i = 1; i <= 86400; i++) {
+        for (int i = 1; i <= Constants.JULIAN_DAY; i++) {
             AbsoluteDate intermediateDate = initDate.shiftedBy(i);
             SpacecraftState keplerIntermediateOrbit = keplerEx.propagate(intermediateDate);
             SpacecraftState numericIntermediateOrbit = ephemeris.propagate(intermediateDate);

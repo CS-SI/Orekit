@@ -29,6 +29,7 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.Constants;
 
 /** This class is a container for a single set of TLE data.
  *
@@ -175,7 +176,7 @@ public class TLE implements TimeStamped, Serializable {
         final DateComponents date = new DateComponents(parseYear(line1, 18), 1, 1);
         final double dayNb = parseDouble(line1, 20, 12);
         epoch = new AbsoluteDate(date, TimeComponents.H00,
-                                 TimeScalesFactory.getUTC()).shiftedBy((dayNb - 1) * 86400); //-1 is due to TLE date definition
+                                 TimeScalesFactory.getUTC()).shiftedBy((dayNb - 1) * Constants.JULIAN_DAY); //-1 is due to TLE date definition
 
         // mean motion development
         // converted from rev/day, 2 * rev/day^2 and 6 * rev/day^3 to rad/s, rad/s^2 and rad/s^3
@@ -307,7 +308,7 @@ public class TLE implements TimeStamped, Serializable {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final int year = epoch.getComponents(utc).getDate().getYear();
         buffer.append(addPadding(year % 100, '0', 2, true));
-        final double day = 1.0 + epoch.durationFrom(new AbsoluteDate(year, 1, 1, utc)) / 86400;
+        final double day = 1.0 + epoch.durationFrom(new AbsoluteDate(year, 1, 1, utc)) / Constants.JULIAN_DAY;
         buffer.append(f38.format(day));
 
         buffer.append(' ');
