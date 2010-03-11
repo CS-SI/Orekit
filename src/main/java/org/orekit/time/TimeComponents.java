@@ -133,7 +133,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * supported (and in fact ignored). It is the responsibility of the {@link AbsoluteDate} class to
      * handle time scales appropriately.</p>
      * @param string string to parse
-     * @param a parsed time
+     * @return a parsed time
      * @exception IllegalArgumentException if string cannot be parsed
      */
     public static  TimeComponents parseTime(final String string) {

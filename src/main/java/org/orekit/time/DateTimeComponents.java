@@ -115,7 +115,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * implied). Typical examples are 2000-01-01T12:00:00Z or 1976W186T210000.
      * </p>
      * @param string string to parse
-     * @param a parsed date/time
+     * @return a parsed date/time
      * @exception IllegalArgumentException if string cannot be parsed
      */
     public static DateTimeComponents parseDateTime(final String string) {
