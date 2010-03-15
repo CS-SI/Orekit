@@ -19,7 +19,7 @@ business friendly free licenses.
 compile-time/run-time dependency:
 
   - commons-math from the Apache Software Foundation
-    http://jakarta.apache.org/commons/math/
+    http://commons.apache.org/math/
     released under the Apache license, version 2
 
 test-time dependency:
