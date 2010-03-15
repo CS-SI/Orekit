@@ -88,7 +88,7 @@ public class OrekitException extends Exception {
     /** Gets the message in a specified locale.
      * @param locale Locale in which the message should be translated
      * @return localized message
-     * @since 4.2
+     * @since 5.0
      */
     public String getMessage(final Locale locale) {
         return buildMessage(locale, specifier, parts);
