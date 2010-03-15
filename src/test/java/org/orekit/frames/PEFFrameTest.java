@@ -59,8 +59,8 @@ public class PEFFrameTest {
         // at 2004-04-06 there is a 0.471ms difference in dut1 and a 0.077ms difference
         // in lod with the data used by Vallado to set up this test case
         PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTEME), pvPEF);
-        Assert.assertEquals(0.283011, delta.getPosition().getNorm(), 1.0e-8);
-        Assert.assertEquals(1.533846e-4, delta.getVelocity().getNorm(), 3.0e-11);
+        Assert.assertEquals(0.283011, delta.getPosition().getNorm(), 1.0e-6);
+        Assert.assertEquals(1.533846e-4, delta.getVelocity().getNorm(), 1.0e-10);
 
         // if dut1 and lod corrections are ignored, results must be really bad
         t = FramesFactory.getTEME(false).getTransformTo(FramesFactory.getPEF(false), t0);
@@ -97,7 +97,7 @@ public class PEFFrameTest {
         // at 2004-06-01 there is a 0.047ms difference in dut1 and a 0.416ms difference
         // in lod with the data used by Vallado to set up this test case
         PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTEME), pvPEF);
-        Assert.assertEquals(0.193876, delta.getPosition().getNorm(), 2.0e-7);
+        Assert.assertEquals(0.193876, delta.getPosition().getNorm(), 1.0e-6);
         Assert.assertEquals(1.427464e-5, delta.getVelocity().getNorm(), 9.0e-12);
 
         // if dut1 and lod corrections are ignored, results must be really bad

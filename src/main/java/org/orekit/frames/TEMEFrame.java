@@ -50,9 +50,6 @@ class TEMEFrame extends Frame {
     /** Radians per arcsecond. */
     private static final double RADIANS_PER_ARC_SECOND = Math.PI / 648000;
 
-    /** Julian century per second. */
-    private static final double JULIAN_CENTURY_PER_SECOND = 1.0 / (36525.0 * Constants.JULIAN_DAY);
-
     // CHECKSTYLE: stop JavadocVariable check
 
     // Coefficients for the Mean Obliquity of the Ecliptic.
@@ -325,7 +322,7 @@ class TEMEFrame extends Frame {
             setInterpolatedNutationElements(tts);
 
             // offset from J2000 epoch in julian centuries
-            final double ttc = tts * JULIAN_CENTURY_PER_SECOND;
+            final double ttc = tts / Constants.JULIAN_CENTURY;
 
             // compute the mean obliquity of the ecliptic
             moe = ((MOE_3 * ttc + MOE_2) * ttc + MOE_1) * ttc + MOE_0;
@@ -433,7 +430,7 @@ class TEMEFrame extends Frame {
     protected void computeNutationElements(final double t) {
 
         // offset in julian centuries
-        final double tc =  t * JULIAN_CENTURY_PER_SECOND;
+        final double tc =  t / Constants.JULIAN_CENTURY;
         // mean anomaly of the Moon
         final double l  = ((F13 * tc + F12) * tc + F110) * tc + F10 + ((F111 * tc) % 1.0) * TWO_PI;
         // mean anomaly of the Sun

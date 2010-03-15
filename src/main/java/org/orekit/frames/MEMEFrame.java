@@ -37,9 +37,6 @@ class MEMEFrame extends Frame {
     /** Radians per arcsecond. */
     private static final double RADIANS_PER_ARC_SECOND = Math.PI / (180.0 * 3600.0);
 
-    /** Julian century per second. */
-    private static final double JULIAN_CENTURY_PER_SECOND = 1.0 / (36525.0 * Constants.JULIAN_DAY);
-
     /** 1st coefficient for ZETA precession angle. */
     private static final double ZETA_1 = 2306.2181   * RADIANS_PER_ARC_SECOND;
     /** 2nd coefficient for ZETA precession angle. */
@@ -135,7 +132,7 @@ class MEMEFrame extends Frame {
 
             // offset from J2000 epoch in julian centuries
             final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
-            final double ttc = tts * JULIAN_CENTURY_PER_SECOND;
+            final double ttc = tts / Constants.JULIAN_CENTURY;
 
             // compute the zeta precession angle
             final double zeta = ((ZETA_3 * ttc + ZETA_2) * ttc + ZETA_1) * ttc;

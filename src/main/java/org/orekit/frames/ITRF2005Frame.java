@@ -41,9 +41,6 @@ class ITRF2005Frame extends Frame {
     /** Radians per arcsecond. */
     private static final double RADIANS_PER_ARC_SECOND = TWO_PI / 1296000;
 
-    /** Julian century per second. */
-    private static final double JULIAN_CENTURY_PER_SECOND = 1.0 / (36525.0 * Constants.JULIAN_DAY);
-
     /** S' rate in radians per julian century.
      * Approximately -47 microarcsecond per julian century (Lambert and Bizouard, 2002)
      */
@@ -91,7 +88,7 @@ class ITRF2005Frame extends Frame {
 
             // offset from J2000 epoch in julian centuries
             final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
-            final double ttc =  tts * JULIAN_CENTURY_PER_SECOND;
+            final double ttc =  tts / Constants.JULIAN_CENTURY;
 
             // pole correction parameters
             final PoleCorrection pCorr = ((TIRF2000Frame) getParent()).getPoleCorrection(date);

@@ -54,9 +54,6 @@ class CIRF2000Frame extends Frame {
     /** Radians per arcsecond. */
     private static final double RADIANS_PER_ARC_SECOND = Math.PI / 648000;
 
-    /** Julian century per second. */
-    private static final double JULIAN_CENTURY_PER_SECOND = 1.0 / (36525.0 * Constants.JULIAN_DAY);
-
     // CHECKSTYLE: stop JavadocVariable check
 
     // lunisolar nutation elements
@@ -343,7 +340,7 @@ class CIRF2000Frame extends Frame {
     protected void computePoleCoordinates(final double t) {
 
         // offset in julian centuries
-        final double tc =  t * JULIAN_CENTURY_PER_SECOND;
+        final double tc =  t / Constants.JULIAN_CENTURY;
 
         final BodiesElements elements =
             new BodiesElements((((F14 * tc + F13) * tc + F12) * tc + F11) * tc + F10, // mean anomaly of the Moon

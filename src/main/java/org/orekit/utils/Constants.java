@@ -24,17 +24,26 @@ package org.orekit.utils;
 public interface Constants {
 
 
+    /** Speed of light: 299792458.0 m/s. */
+    double SPEED_OF_LIGHT = 299792458.0;
+
+
     /** Duration of a mean solar day: 86400.0 s. */
     double JULIAN_DAY = 86400.0;
 
-    /** Speed of light: 299792458.0 m/s. */
-    double SPEED_OF_LIGHT = 299792458.0;
+    /** Duration of a julian year: 365.25 {@link #JULIAN_DAY}. */
+    double JULIAN_YEAR = 31557600.0;
+
+    /** Duration of a julian century: 36525 {@link #JULIAN_DAY}. */
+    double JULIAN_CENTURY = 36525 * JULIAN_DAY;
+
 
     /** Sun radius: 695500000 m. */
     double SUN_RADIUS = 6.955e8;
 
     /** Moon equatorial radius: 1737400 m. */
     double MOON_EQUATORIAL_RADIUS = 1737400.0;
+
 
     /** Earth equatorial radius from WGS84 model: 6378137.0 m. */
     double WGS84_EARTH_EQUATORIAL_RADIUS = 6378137.0;
@@ -139,7 +148,8 @@ public interface Constants {
     /** Earth un-normalized sixth zonal coefficient from EIGEN5C model: -5.406653715879098e-7. */
     double EIGEN5C_EARTH_C60 = -5.406653715879098e-7;
 
-    /** Gaussian gravitational constant: 0.01720209895 &sqrt;(AU<sup>3</sup>/d<sup>2</sup>). */
+
+    /** Gaussian gravitational constant: 0.01720209895 &radic;(AU<sup>3</sup>/d<sup>2</sup>). */
     double JPL_SSD_GAUSSIAN_GRAVITATIONAL_CONSTANT = 0.01720209895;
 
     /** Astronomical Unit: 149597870691 m. */
