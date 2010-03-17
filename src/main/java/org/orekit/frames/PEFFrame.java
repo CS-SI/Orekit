@@ -41,11 +41,8 @@ class PEFFrame extends Frame {
     /** 2&pi;. */
     private static final double TWO_PI = 2.0 * Math.PI;
 
-    /** Seconds per day. */
-    private static final double SECONDS_PER_DAY = Constants.JULIAN_DAY;
-
     /** Radians per second of time. */
-    private static final double RADIANS_PER_SECOND = TWO_PI / SECONDS_PER_DAY;
+    private static final double RADIANS_PER_SECOND = TWO_PI / Constants.JULIAN_DAY;
 
     /** Radians per arcsecond. */
     private static final double RADIANS_PER_ARC_SECOND = Math.PI / 648000;
@@ -348,17 +345,16 @@ class PEFFrame extends Frame {
             final double eqe = getNewEquationOfEquinoxes(date, ttc);
 
             // offset in julian centuries from J2000 epoch (UT1 scale)
-            final MEMEFrame meme = (MEMEFrame) getParent().getParent();
             final double dtai = date.durationFrom(GMST_REFERENCE);
             final double dutc = TimeScalesFactory.getUTC().offsetFromTAI(date);
-            final double dut1 = meme.getUT1MinusUTC(date);
+            final double dut1 = FramesFactory.getEOP1980History().getUT1MinusUTC(date);
 
             final double tut1 = dtai + dutc + dut1;
             final double tt   = tut1 / Constants.JULIAN_CENTURY;
 
             // Seconds in the day, adjusted by 12 hours because the
             // UT1 is supplied as a Julian date beginning at noon.
-            final double sd = (tut1 + SECONDS_PER_DAY / 2.) % SECONDS_PER_DAY;
+            final double sd = (tut1 + Constants.JULIAN_DAY / 2.) % Constants.JULIAN_DAY;
 
             // compute Greenwich mean sidereal time, in radians
             final double gmst = (((GMST_3 * tt + GMST_2) * tt + GMST_1) * tt + GMST_0 + sd) *
@@ -368,8 +364,8 @@ class PEFFrame extends Frame {
             final double gast = gmst + eqe;
 
             // compute true angular rotation of Earth, in rad/s
-            final double lod = meme.getLOD(date);
-            final double omp = AVE * (1 - lod / SECONDS_PER_DAY);
+            final double lod = ((MEMEFrame) getParent().getParent()).getLOD(date);
+            final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
             final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
 
             // set up the transform from parent TEME

@@ -77,8 +77,8 @@ Frames
   Reference Frame> (GCRF) which is an inertial reference defined by IERS.
 
   For most purposes, the recommended frames to use are ITRF 2005 for terrestrial frame and
-  GCRF for celestial frame. EME2000, MEME, TEME and PEF could also be used for compatibility
-  with legacy systems.
+  GCRF for celestial frame. EME2000, MEME, TEME, PEF and Veis1950 could also be used for
+  compatibility with legacy systems.
 
   There are also a number of planetary frames associated with the predefined celestial bodies.
 
@@ -128,7 +128,7 @@ Frames
   This paradigm is deprecated by IERS. It involves additional complexity, first because
   of the larger number of frames and second because these frames are computed by mixed models
   with IAU-76 precession, correction terms to match IAU-2000, and a need to convert Earth
-  Earth Orientation data from the published form to a form suitable for this model. Another
+  Orientation data from the published form to a form suitable for this model. Another
   drawback of this method is that the intermediate frames do not match the similar frames
   with the same names used prior to IERS conventions 2003 since a correction is added to the
   IAU-76 precession model and the IAU-80 nutation model is completely replaced by the nutation

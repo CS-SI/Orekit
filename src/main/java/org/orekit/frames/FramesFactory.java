@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math.geometry.Rotation;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -89,9 +88,9 @@ import org.orekit.utils.Constants;
  *                                                 |            |          |                    |
  *  (Terrestrial Intermediate Reference Frame) TIRF2000     TIRF2000      PEF                  PEF  (Pseudo Earth Fixed)
  *                                                 |    w/o tidal effects                w/o EOP corrections
- *                                     Pole motion |            |
- *                                                 |            |
- * (International Terrestrial Reference Frame) ITRF2005     ITRF2005
+ *                                     Pole motion |            |                               |
+ *                                                 |            |                               |
+ * (International Terrestrial Reference Frame) ITRF2005     ITRF2005                        VEIS1950
  *                                                      w/o tidal effects
  * </pre>
  * <p>
@@ -430,18 +429,14 @@ public class FramesFactory implements Serializable {
 
     /** Get the VEIS 1950 reference frame.
      * @return the selected reference frame singleton.
+     * @exception OrekitException if data embedded in the
+     * library cannot be read.
      */
-    public static Frame getVeis1950() {
+    public static Frame getVeis1950() throws OrekitException {
         synchronized (FramesFactory.class) {
 
             if (veis1950 == null) {
-                veis1950 = new Frame(getEME2000(),
-                                     new Transform(new Rotation(0.99998141186121629647,
-                                                                -2.01425201682020570e-5,
-                                                                -2.43283773387856897e-3,
-                                                                5.59078052583013584e-3,
-                                                                true)),
-                                     "VEIS1950", true);
+                veis1950 = new VEISFrame(AbsoluteDate.J2000_EPOCH, "VEIS1950");
             }
 
             return veis1950;
@@ -454,9 +449,9 @@ public class FramesFactory implements Serializable {
      * The applyEOPCorr parameter is available mainly for testing purposes or for
      * consistency with legacy software that don't handle EOP parameters. Beware
      * that setting this parameter to {@code false} leads to very crude accuracy
-     * (order of magnitudes for errors are above 100m in LEO and above 1000m in GEO).
+     * (order of magnitudes for errors are above 1m in LEO and above 10m in GEO).
      * </p>
-     * @param applyEOPCorr if true, EOP corrections are applied (here dut1 and lod)
+     * @param applyEOPCorr if true, EOP corrections are applied (here, lod)
      * @return the selected reference frame singleton.
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.

@@ -37,6 +37,10 @@
         the Topocentric frame now provides a way to retrieve the body shape on which the
         frame is defined
       </action>
+      <action dev="pascal" type="update">
+        changed the way Veis 1950 frame is constructed.
+        Now, its parent is the PEF frame with no EOP corrections applied.
+      </action>
       <action dev="luc" type="fix" due-to="John Pritchard">
         fixed a parameters inversion in Earth Orientation Parameters for IAU-1980 models.
         The error could introduce up to a few meters error in position during transformations
@@ -80,7 +84,7 @@
         a new PVCoordinatesProvider interface has been created on top of several existing classes
         and interfaces (orbit propagator, celestial bodies, some moving frames ...). This is a
         major generalization that allows to use either satellites or celestial bodies in many
-        algorithms (attitude pointing target, eclipses and field of view events ...) 
+        algorithms (attitude pointing target, eclipses and field of view events ...)
       </action>
       <action dev="luc" type="fix" >
         improved numerical propagator efficiency when used from an outside loop: the initial
@@ -233,7 +237,7 @@
         fixed a reversed sign in solar radiation pressure
       </action>
       <action dev="pascal" type="update" >
-        Orekit supports the two different naming patterns for bulletins B provided by IERS 
+        Orekit supports the two different naming patterns for bulletins B provided by IERS
         on http://www.iers.org/ and http://hpiers.obspm.fr/eop-pc/.
       </action>
       <action dev="luc" type="update" >

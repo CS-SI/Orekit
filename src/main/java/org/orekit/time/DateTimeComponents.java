@@ -121,7 +121,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
     public static DateTimeComponents parseDateTime(final String string) {
 
         // is there a time ?
-        int tIndex = string.indexOf('T');
+        final int tIndex = string.indexOf('T');
         if (tIndex > 0) {
             return new DateTimeComponents(DateComponents.parseDate(string.substring(0, tIndex)),
                                           TimeComponents.parseTime(string.substring(tIndex + 1)));

@@ -231,6 +231,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
      * @param wYear year associated to week numbering
      * @param week week number in year,from 1 to 52 or 53
      * @param dayOfWeek day of week, from 1 (Monday) to 7 (Sunday)
+     * @return a builded date
      * @exception IllegalArgumentException if inconsistent arguments
      * are given (parameters out of range, week 53 on a 52 weeks year ...)
      */
@@ -360,7 +361,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
      * @return calendar week number
      */
     public int getCalendarWeek() {
-        int firstWeekMonday = getFirstWeekMonday(year);
+        final int firstWeekMonday = getFirstWeekMonday(year);
         int daysSincefirstMonday = getJ2000Day() - firstWeekMonday;
         if (daysSincefirstMonday < 0) {
             // we are still in a week from previous year
@@ -378,7 +379,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
     /** Get the monday of a year first week.
      * @param year year to consider
-     * @param j2000 day of the monday of the first weak of year
+     * @return day of the monday of the first weak of year
      */
     private static int getFirstWeekMonday(final int year) {
         final int yearFirst = new DateComponents(year, 1, 1).getJ2000Day();

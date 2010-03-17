@@ -56,11 +56,11 @@ public class PEFFrameAlternateConfigurationTest {
         Transform t = FramesFactory.getTEME(true).getTransformTo(FramesFactory.getPEF(true), t0);
         checkPV(pvPEF, t.transformPVCoordinates(pvTEME), 0.0091, 4.7e-6);
 
-        // if dut1 and lod corrections are ignored, results must be really bad
+        // if lod correction is ignored, results are quite the same
         t = FramesFactory.getTEME(false).getTransformTo(FramesFactory.getPEF(false), t0);
         PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTEME), pvPEF);
-        Assert.assertEquals(255.644, delta.getPosition().getNorm(), 4.0e-6);
-        Assert.assertEquals(0.13856, delta.getVelocity().getNorm(), 9.0e-7);
+        Assert.assertEquals(9.1e-3, delta.getPosition().getNorm(), 1.0e-6);
+        Assert.assertEquals(1.4e-5, delta.getVelocity().getNorm(), 1.0e-7);
 
     }
 
@@ -89,11 +89,11 @@ public class PEFFrameAlternateConfigurationTest {
 
         checkPV(pvPEF, t.transformPVCoordinates(pvTEME), 0.049, 5.2e-7);
 
-        // if dut1 and lod corrections are ignored, results must be really bad
+        // if lod correction is ignored, results are quite the same
         t = FramesFactory.getTEME(false).getTransformTo(FramesFactory.getPEF(false), t0);
         PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTEME), pvPEF);
-        Assert.assertEquals(1448.217, delta.getPosition().getNorm(), 4.0e-4);
-        Assert.assertEquals(6.1e-5, delta.getVelocity().getNorm(), 2.0e-8);
+        Assert.assertEquals(4.8e-2, delta.getPosition().getNorm(), 1.5e-4);
+        Assert.assertEquals(5.2e-7, delta.getVelocity().getNorm(), 4.0e-9);
 
     }
 
