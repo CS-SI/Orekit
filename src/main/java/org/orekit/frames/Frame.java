@@ -447,10 +447,12 @@ public class Frame implements Serializable {
 
     /** Get the VEIS 1950 reference frame.
      * @return the selected reference frame singleton.
+     * @exception OrekitException if data data embedded in the
+     * library cannot be read.
      * @deprecated as of 4.1, replaced by {@link FramesFactory#getVeis1950()}
      */
     @Deprecated
-    public static Frame getVeis1950() {
+    public static Frame getVeis1950() throws OrekitException {
         return FramesFactory.getVeis1950();
     }
 
