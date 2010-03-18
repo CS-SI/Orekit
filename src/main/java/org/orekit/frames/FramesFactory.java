@@ -45,7 +45,7 @@ import org.orekit.utils.Constants;
  * <p>
  * This frame is the current (as of 2008) reference realization of
  * the International Terrestrial Reference System produced by IERS.
- * It is described in <a href="http://www.iers.org/documents/publications/tn/tn32/tn32.pdf">
+ * It is described in <a href="ftp://tai.bipm.org/iers/conv2003/tn32.pdf">
  * IERS conventions (2003)</a>. It replaces the Earth Centered Earth Fixed
  * frame which is the reference frame for GPS satellites.
  * <p>
