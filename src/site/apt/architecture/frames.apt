@@ -85,7 +85,7 @@ Frames
 ** IERS 2003 Conventions
 
   One predefined set corresponds to the frames from the
-  {{{http://www.iers.org/documents/publications/tn/tn32/tn32.pdf}IERS conventions (2003)}}. 
+  {{{ftp://tai.bipm.org/iers/conv2003/tn32.pdf}IERS conventions (2003)}}. 
   This set defines the GCRF reference frame on the celestial (i.e. inertial) side,
   the ITRF (International Terrestrial Reference Frame) on the terrestrial side and several
   intermediate frames between them. Several versions of ITRF have been defined. Orekit
