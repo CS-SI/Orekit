@@ -144,10 +144,11 @@ Frames
 *** Orekit implementation of IERS conventions
 
   In summary, Orekit implements the following frames:
-  - those related to the IERS 2003 convention: GCRF, CIRF 2000, TIRF 2000 with and without
-    tidal effects, ITRF 2005 with and without tidal effects,
-  - those related to the older IERS conventions: MEME with and without EOP correction,
-    TEME with and without EOP correction, PEF with and without EOP correction, Veis 1950.
+
+  ** those related to the IERS 2003 convention: GCRF, CIRF 2000, TIRF 2000 with and without
+     tidal effects, ITRF 2005 with and without tidal effects,
+  ** those related to the older IERS conventions: MEME with and without EOP correction,
+     TEME with and without EOP correction, PEF with and without EOP correction, Veis 1950.
 
 **** CIO-based transformations
 
