@@ -28,7 +28,7 @@ import org.orekit.utils.Constants;
 /** Pseudo Earth Fixed Frame.
  * <p> This frame handles the sidereal time according to IAU-82 model.</p>
  * <p> Its parent frame is the {@link TEMEFrame}.</p>
- * <p>The pole motion is not applied here.</p>
+ * <p> The pole motion is not applied here.</p>
  * @author Pascal Parraud
  * @author Thierry Ceolin
  * @version $Revision$ $Date$
@@ -282,7 +282,10 @@ class PEFFrame extends Frame {
     /** Cached date to avoid useless calculus. */
     private AbsoluteDate cachedDate;
 
-    /** Simple constructor, applying EOP corrections (here, dut1 and lod).
+    /** Flag for EOP correction application. */
+    private final boolean applyEOPCorrection;
+
+    /** Simple constructor, applying EOP corrections (here, lod).
      * @param date the date.
      * @param name name of the frame
      * @exception OrekitException if EOP parameters cannot be read
@@ -293,7 +296,7 @@ class PEFFrame extends Frame {
     }
 
     /** Simple constructor.
-     * @param applyEOPCorr if true, EOP corrections are applied (here, dut1 and lod)
+     * @param applyEOPCorr if true, EOP corrections are applied (here, lod)
      * @param date the current date
      * @param name the string representation
      * @exception OrekitException if EOP parameters are desired but cannot be read
@@ -303,6 +306,8 @@ class PEFFrame extends Frame {
         throws OrekitException {
 
         super(FramesFactory.getTEME(applyEOPCorr), null, name, false);
+
+        applyEOPCorrection = applyEOPCorr;
 
         // set up an interpolation model on 12 points with a 1/2 day step
         // this leads to an interpolation error of about 1.7e-10 arcseconds
@@ -318,6 +323,13 @@ class PEFFrame extends Frame {
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
 
+    }
+
+    /** Indicate if EOP correction is applied.
+     * @return true if EOP correction is applied
+     */
+    boolean isEOPCorrectionApplied() {
+        return applyEOPCorrection;
     }
 
     /** Update the frame to the given date.

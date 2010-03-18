@@ -64,6 +64,9 @@ class MEMEFrame extends Frame {
     /** EOP history (null if EOP are ignored). */
     private final EOP1980History eopHistory;
 
+    /** Flag for EOP correction application. */
+    private final boolean applyEOPCorrection;
+
     /** Simple constructor, applying EOP corrections (here, EME2000/GCRF bias compensation).
      * @param date the date.
      * @param name name of the frame
@@ -75,7 +78,7 @@ class MEMEFrame extends Frame {
     }
 
     /** Simple constructor.
-     * @param applyEOPCorr if true, EOP correction are applied (here, EME2000/GCRF bias compensation)
+     * @param applyEOPCorr if true, EOP correction is applied (here, EME2000/GCRF bias compensation)
      * @param date the date.
      * @param name name of the frame
      * @exception OrekitException if EOP parameters are desired but cannot be read
@@ -88,18 +91,18 @@ class MEMEFrame extends Frame {
 
         eopHistory = applyEOPCorr ? FramesFactory.getEOP1980History() : null;
 
+        applyEOPCorrection = applyEOPCorr;
+
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
 
     }
 
-    /** Get the UT1-UTC value.
-     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
-     * @param date date at which the value is desired
-     * @return UT1-UTC in seconds (0 if date is outside covered range)
+    /** Indicate if EOP correction is applied.
+     * @return true if EOP correction is applied
      */
-    double getUT1MinusUTC(final AbsoluteDate date) {
-        return (eopHistory == null) ? 0.0 : eopHistory.getUT1MinusUTC(date);
+    boolean isEOPCorrectionApplied() {
+        return applyEOPCorrection;
     }
 
     /** Get the LoD (Length of Day) value.

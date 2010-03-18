@@ -428,6 +428,7 @@ public class FramesFactory implements Serializable {
     }
 
     /** Get the VEIS 1950 reference frame.
+     * <p>Its parent frame is the {@link PEFFrame} without EOP corrections.<p>
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the
      * library cannot be read.

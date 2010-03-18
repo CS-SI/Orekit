@@ -261,6 +261,9 @@ class TEMEFrame extends Frame {
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
+    /** Flag for EOP correction application. */
+    private final boolean applyEOPCorrection;
+
     /** Simple constructor, applying EOP corrections (here, nutation).
      * @param date the date.
      * @param name name of the frame
@@ -272,13 +275,7 @@ class TEMEFrame extends Frame {
     }
 
     /** Simple constructor.
-     * <p>
-     * The applyEOPCorr parameter is available mainly for testing purposes or for
-     * consistency with legacy software that don't handle EOP parameters. Beware
-     * that setting this parameter to {@code false} leads to very crude accuracy
-     * (order of magnitudes are about 1m in LEO and 10m in GEO).
-     * </p>
-     * @param applyEOPCorr if true, EOP corrections are applied (here, nutation)
+     * @param applyEOPCorr if true, EOP correction is applied (here, nutation)
      * @param date the date.
      * @param name name of the frame
      * @exception OrekitException if EOP parameters are desired but cannot be read
@@ -288,6 +285,8 @@ class TEMEFrame extends Frame {
         throws OrekitException {
 
         super(FramesFactory.getMEME(applyEOPCorr), null , name, true);
+
+        applyEOPCorrection = applyEOPCorr;
 
         // set up an interpolation model on 12 points with a 1/2 day step
         // this leads to an interpolation error of about 1.7e-10 arcseconds
@@ -303,6 +302,13 @@ class TEMEFrame extends Frame {
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
 
+    }
+
+    /** Indicate if EOP correction is applied.
+     * @return true if EOP correction is applied
+     */
+    boolean isEOPCorrectionApplied() {
+        return applyEOPCorrection;
     }
 
     /** Update the frame to the given date.
