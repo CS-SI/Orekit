@@ -79,11 +79,11 @@ import org.orekit.utils.PVCoordinates;
  * keplerian forces. In this case, the simpler {@link
  * org.orekit.propagation.analytical.KeplerianPropagator KeplerianPropagator} class would
  * perhaps be more effective. The propagator is only in one mode at a time.</p>
- * <p>The underlying numerical integrator set up in the constructor can also be configured.
- * Typical tuning parameters for adaptive stepsize integrators are the min, max and perhaps
- * start step size as well as the absolute and/or relative errors thresholds. The state
- * that is seen by the integrator is a simple seven elements double array. The six first
- * elements are the {@link EquinoctialOrbit equinoxial orbit parameters} (a, e<sub>x</sub>,
+ * <p>The underlying numerical integrator set up in the constructor may also have its own
+ * configuration parameters. Typical configuration parameters for adaptive stepsize integrators
+ * are the min, max and perhaps start step size as well as the absolute and/or relative errors
+ * thresholds. The state that is seen by the integrator is a simple seven elements double array.
+ * The six first elements are the {@link EquinoctialOrbit equinoxial orbit parameters} (a, e<sub>x</sub>,
  * e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, l<sub>v</sub>) in meters and radians, and
  * the last element is the mass in kilograms. The following code snippet shows a typical
  * setting for Low Earth Orbit propagation:</p>
