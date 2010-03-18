@@ -42,13 +42,15 @@ Frames
   one, including velocity composition effects.
 
   Transforms are used both:
-  
-  ** to define the relationship from a parent to a child frames. 
-  This transform (<<tdef>> on the following scheme), is stored in the child frame.
-  
-  ** to merge all individual transforms encountered while walking the tree from one
-  frame to any other one, whatever far away they are from each other (<<trel>> on the
-  following scheme).
+
+  * to define the relationship from a parent to a child frames. 
+    This transform (<<tdef>> on the following scheme), is stored in the child frame.
+
+  * to merge all individual transforms encountered while walking the tree from one
+    frame to any other one, whatever far away they are from each other (<<trel>> on the
+    following scheme).
+
+  []
 
 [../images/transform.png]
 
@@ -145,15 +147,16 @@ Frames
 
   In summary, Orekit implements the following frames:
 
-  ** those related to the IERS 2003 convention: GCRF, CIRF 2000, TIRF 2000 with and without
-     tidal effects, ITRF 2005 with and without tidal effects,
-  ** those related to the older IERS conventions: MEME with and without EOP correction,
-     TEME with and without EOP correction, PEF with and without EOP correction, Veis 1950.
+  * those related to the IERS 2003 convention: GCRF, CIRF 2000, TIRF 2000 with and without
+    tidal effects, ITRF 2005 with and without tidal effects,
+
+  * those related to the older IERS conventions: MEME with and without EOP correction,
+    TEME with and without EOP correction, PEF with and without EOP correction, Veis 1950.
 
 **** CIO-based transformations
 
   Here is a schematic representation of the partial tree containing the supported IERS frames
-  based on CIO
+  based on CIO.
     
 [../images/iers-tree.png]
 
@@ -193,7 +196,7 @@ Frames
   The path from EME2000 to Veis1950, involving the MEME, TEME and PEF without EOP correction is
   devoted to some legacy systems, whereas the MEME, TEME and PEF with EOP correction are for
   compatibility with the IERS 2003 convention. The gap between the two branches can reach a few
-  meters, a very crude accuracy in many space systems.
+  meters, a rather crude accuracy for many space systems.
 
   The same kind of optimization used for the IAU-2000 precession-nutation model are also applied for
   the older IAU-1980 precession-nutation model, despite it is much simpler.
