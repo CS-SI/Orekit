@@ -45,8 +45,7 @@ import org.orekit.utils.Constants;
  * <p>
  * This frame is the current (as of 2008) reference realization of
  * the International Terrestrial Reference System produced by IERS.
- * It is described in <a
- * href="http://www.iers.org/documents/publications/tn/tn32/tn32.pdf">
+ * It is described in <a href="http://www.iers.org/documents/publications/tn/tn32/tn32.pdf">
  * IERS conventions (2003)</a>. It replaces the Earth Centered Earth Fixed
  * frame which is the reference frame for GPS satellites.
  * <p>
@@ -428,7 +427,7 @@ public class FramesFactory implements Serializable {
     }
 
     /** Get the VEIS 1950 reference frame.
-     * <p>Its parent frame is the {@link PEFFrame} without EOP corrections.<p>
+     * <p>Its parent frame is the PEF frame without EOP corrections.<p>
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the
      * library cannot be read.
