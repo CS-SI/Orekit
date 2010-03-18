@@ -21,7 +21,9 @@ import java.util.Random;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.errors.FrameAncestorException;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
@@ -92,26 +94,6 @@ public class FrameTest {
 
         checkNoTransform(new Transform(T, S.getInverse()) , random);
 
-    }
-
-    @Test
-    public void testVeis1950() throws OrekitException {
-        Transform t = FramesFactory.getVeis1950().getTransformTo(FramesFactory.getEME2000(), new AbsoluteDate());
-        Vector3D i50    = t.transformVector(Vector3D.PLUS_I);
-        Vector3D j50    = t.transformVector(Vector3D.PLUS_J);
-        Vector3D k50    = t.transformVector(Vector3D.PLUS_K);
-        Vector3D i50Ref = new Vector3D( 0.9999256489473456,
-                                        0.011181451214217871,
-                                        4.8653597990872734e-3);
-        Vector3D j50Ref = new Vector3D(-0.011181255200285388,
-                                       0.9999374855347822,
-                                       -6.748721516262951e-5);
-        Vector3D k50Ref = new Vector3D(-4.865810248725263e-3,
-                                       1.3081367862337385e-5,
-                                       0.9999881617896792);
-        Assert.assertEquals(0, i50.subtract(i50Ref).getNorm(), 1.0e-15);
-        Assert.assertEquals(0, j50.subtract(j50Ref).getNorm(), 1.0e-15);
-        Assert.assertEquals(0, k50.subtract(k50Ref).getNorm(), 1.0e-15);
     }
 
     @Test
@@ -245,6 +227,11 @@ public class FrameTest {
             Vector3D c = transform.transformPosition(a);
             Assert.assertEquals(0, a.subtract(c).getNorm(), 1.0e-10);
         }
+    }
+
+    @Before
+    public void setUp() {
+        Utils.setDataRoot("compressed-data");
     }
 
 }
