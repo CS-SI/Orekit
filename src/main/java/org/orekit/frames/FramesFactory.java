@@ -429,8 +429,7 @@ public class FramesFactory implements Serializable {
     /** Get the VEIS 1950 reference frame.
      * <p>Its parent frame is the PEF frame without EOP corrections.<p>
      * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the
-     * library cannot be read.
+     * @exception OrekitException if data embedded in the library cannot be read
      */
     public static Frame getVeis1950() throws OrekitException {
         synchronized (FramesFactory.class) {
@@ -447,14 +446,13 @@ public class FramesFactory implements Serializable {
     /** Get the PEF reference frame.
      * <p>
      * The applyEOPCorr parameter is available mainly for testing purposes or for
-     * consistency with legacy software that don't handle EOP parameters. Beware
-     * that setting this parameter to {@code false} leads to very crude accuracy
-     * (order of magnitudes for errors are above 1m in LEO and above 10m in GEO).
+     * consistency with legacy software that don't handle EOP correction parameters.
+     * Beware that setting this parameter to {@code false} leads to crude accuracy
+     * (order of magnitudes for errors might be above 1m in LEO and 10m in GEO).
      * </p>
      * @param applyEOPCorr if true, EOP corrections are applied (here, lod)
      * @return the selected reference frame singleton.
-     * @exception OrekitException if the nutation model data embedded in the
-     * library cannot be read.
+     * @exception OrekitException if data embedded in the library cannot be read
      */
     public static Frame getPEF(final boolean applyEOPCorr) throws OrekitException {
         synchronized (FramesFactory.class) {
@@ -479,14 +477,13 @@ public class FramesFactory implements Serializable {
     /** Get the TEME reference frame.
      * <p>
      * The applyEOPCorr parameter is available mainly for testing purposes or for
-     * consistency with legacy software that don't handle EOP parameters. Beware
-     * that setting this parameter to {@code false} leads to very crude accuracy
-     * (order of magnitudes for errors are about 1m in LEO and 10m in GEO).
+     * consistency with legacy software that don't handle EOP correction parameters.
+     * Beware that setting this parameter to {@code false} leads to crude accuracy
+     * (order of magnitudes for errors might be above 1m in LEO and 10m in GEO).
      * </p>
      * @param applyEOPCorr if true, EOP corrections are applied (here, nutation)
      * @return the selected reference frame singleton.
-     * @exception OrekitException if the nutation model data embedded in the
-     * library cannot be read.
+     * @exception OrekitException if data embedded in the library cannot be read
      */
     public static Frame getTEME(final boolean applyEOPCorr) throws OrekitException {
         synchronized (FramesFactory.class) {
@@ -511,13 +508,13 @@ public class FramesFactory implements Serializable {
     /** Get the MEME reference frame.
      * <p>
      * The applyEOPCorr parameter is available mainly for testing purposes or for
-     * consistency with legacy software that don't handle EOP parameters. Beware
-     * that setting this parameter to {@code false} leads to very crude accuracy
-     * (order of magnitudes for errors are about 1m in LEO and 10m in GEO).
+     * consistency with legacy software that don't handle EOP correction parameters.
+     * Beware that setting this parameter to {@code false} leads to crude accuracy
+     * (order of magnitudes for errors might be above 1m in LEO and 10m in GEO).
      * </p>
      * @param applyEOPCorr if true, EOP corrections are applied (EME2000/GCRF bias compensation)
      * @return the selected reference frame singleton.
-     * @exception OrekitException if EOP parameters are desired but cannot be read
+     * @exception OrekitException if data embedded in the library cannot be read
      */
     public static Frame getMEME(final boolean applyEOPCorr) throws OrekitException {
         synchronized (FramesFactory.class) {
