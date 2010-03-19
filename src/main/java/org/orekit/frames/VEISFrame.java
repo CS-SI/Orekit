@@ -27,7 +27,6 @@ import org.orekit.utils.Constants;
 /** Veis 1950 Frame.
  * <p>Its parent frame is the {@link PEFFrame} without EOP correction application.<p>
  * <p>This frame is mainly provided for consistency with legacy softwares.</p>
- * 
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
