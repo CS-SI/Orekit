@@ -26,6 +26,7 @@ import org.orekit.propagation.SpacecraftState;
  *
  * @see DragForce
  * @author Luc Maisonobe
+ * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
 public interface DragSensitive extends Serializable {
@@ -43,6 +44,16 @@ public interface DragSensitive extends Serializable {
      * @throws OrekitException if acceleration cannot be computed
      */
     Vector3D dragAcceleration(SpacecraftState state, double density, Vector3D relativeVelocity)
-        throws OrekitException;
+    throws OrekitException;
+
+    /** Set the drag coefficient.
+     *  @param value drag coefficient
+     */
+    void setDragCoefficient(double value);
+
+    /** Get the drag coefficient.
+     * @return drag coefficient
+     */
+    double getDragCoefficient();
 
 }

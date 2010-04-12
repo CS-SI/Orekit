@@ -16,14 +16,18 @@
  */
 package org.orekit.forces.radiation;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.ForceModel;
+import org.orekit.forces.ForceModelWithJacobians;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
+import org.orekit.propagation.numerical.TimeDerivativesEquationsWithJacobians;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -33,9 +37,16 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Fabien Maussion
  * @author &Eacute;douard Delente
  * @author V&eacute;ronique Pommier-Maurussane
+ * @author Pascal Parraud
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class SolarRadiationPressure implements ForceModel {
+public class SolarRadiationPressure implements ForceModelWithJacobians {
+
+    /** Parameter name for absorption coefficient. */
+    public static final String ABSORPTION_COEFFICIENT = "ABSORPTION COEFFICIENT";
+
+    /** Parameter name for specular reflection coefficient. */
+    public static final String REFLECTION_COEFFICIENT = "REFLECTION COEFFICIENT";
 
     /** Serializable UID. */
     private static final long serialVersionUID = 8874297900604482921L;
@@ -58,6 +69,9 @@ public class SolarRadiationPressure implements ForceModel {
 
     /** Spacecraft. */
     private final RadiationSensitive spacecraft;
+    
+    /** List of the parameters names. */
+    private final ArrayList<String> parametersNames = new ArrayList<String>();
 
     /** Simple constructor with default reference values.
      * <p>When this constructor is used, the reference values are:</p>
@@ -94,6 +108,8 @@ public class SolarRadiationPressure implements ForceModel {
         this.sun   = sun;
         this.equatorialRadius = equatorialRadius;
         this.spacecraft = spacecraft;
+        this.parametersNames.add(ABSORPTION_COEFFICIENT);
+        this.parametersNames.add(REFLECTION_COEFFICIENT);
     }
 
     /** {@inheritDoc} */
@@ -197,6 +213,38 @@ public class SolarRadiationPressure implements ForceModel {
             new UmbraDetector(), new PenumbraDetector()
         };
     }
+
+    /** {@inheritDoc} */
+	public void addContributionWithJacobians(SpacecraftState s,
+			TimeDerivativesEquationsWithJacobians adder) throws OrekitException {
+	}
+
+    /** {@inheritDoc} */
+	public Collection<String> getParametersNames() {
+		return parametersNames;
+	}
+
+    /** {@inheritDoc} */
+	public double getParameter(String name) throws IllegalArgumentException {
+		if (name.matches(ABSORPTION_COEFFICIENT)) {
+			return spacecraft.getAbsorptionCoefficient();
+		} else if (name.matches(REFLECTION_COEFFICIENT)) {
+			return spacecraft.getReflectionCoefficient();
+		} else {
+			throw OrekitException.createIllegalArgumentException("unknown parameter {0}", name);
+		}
+	}
+
+    /** {@inheritDoc} */
+	public void setParameter(String name, double value) throws IllegalArgumentException {
+		if (name.matches(ABSORPTION_COEFFICIENT)) {
+			spacecraft.setAbsorptionCoefficient(value);
+		} else if (name.matches(REFLECTION_COEFFICIENT)) {
+			spacecraft.setReflectionCoefficient(value);
+		} else {
+			throw OrekitException.createIllegalArgumentException("unknown parameter {0}", name);
+		}
+	}
 
     /** This class defines the umbra entry/exit detector. */
     private class UmbraDetector extends AbstractDetector {

@@ -26,6 +26,7 @@ import org.orekit.propagation.SpacecraftState;
  *
  * @see SolarRadiationPressure
  * @author Luc Maisonobe
+ * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
 public interface RadiationSensitive extends Serializable {
@@ -42,5 +43,25 @@ public interface RadiationSensitive extends Serializable {
      */
     Vector3D radiationPressureAcceleration(SpacecraftState state, Vector3D flux)
         throws OrekitException;
+
+    /** Set the absorption coefficient.
+     * @param value absorption coefficient
+     */
+    void setAbsorptionCoefficient(double value);
+
+    /** Get the absorption coefficient.
+     * @return absorption coefficient
+     */
+    double getAbsorptionCoefficient();
+
+    /** Set the specular reflection coefficient.
+     * @param value specular reflection coefficient
+     */
+    void setReflectionCoefficient(double value);
+
+    /** Get the specular reflection coefficient.
+     * @return reflection coefficient
+     */
+    double getReflectionCoefficient();
 
 }

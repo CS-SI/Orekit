@@ -58,6 +58,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  *
  * @see SphericalSpacecraft
  * @author Luc Maisonobe
+ * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
 public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensitive {
@@ -87,13 +88,16 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     private final Vector3D saZ;
 
     /** Drag coefficient. */
-    private final double dragCoeff;
+    private double dragCoeff;
+
+    /** Absorption coefficient. */
+    private double absorptionCoeff;
 
     /** Specular reflection coefficient. */
-    private final double specularReflectionCoeff;
+    private double specularReflectionCoeff;
 
     /** Diffuse reflection coefficient. */
-    private final double diffuseReflectionCoeff;
+    private double diffuseReflectionCoeff;
 
     /** Sun model. */
     private final PVCoordinatesProvider sun;
@@ -167,9 +171,9 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         this.saX = null;
 
         this.dragCoeff               = dragCoeff;
+        this.absorptionCoeff         = absorptionCoeff;
         this.specularReflectionCoeff = reflectionCoeff;
         this.diffuseReflectionCoeff  = 1 - (absorptionCoeff + reflectionCoeff);
-
     }
 
     /** Build a spacecraft model with linear rotation of solar array.
@@ -256,6 +260,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         this.saX = Vector3D.crossProduct(saY, saZ);
 
         this.dragCoeff               = dragCoeff;
+        this.absorptionCoeff         = absorptionCoeff;
         this.specularReflectionCoeff = reflectionCoeff;
         this.diffuseReflectionCoeff  = 1 - (absorptionCoeff + reflectionCoeff);
 
@@ -451,5 +456,37 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         }
         return filtered;
     }
+
+    /** {@inheritDoc} */
+	public void setAbsorptionCoefficient(double value) {
+		absorptionCoeff = value;
+        diffuseReflectionCoeff = 1 - (absorptionCoeff + specularReflectionCoeff);
+	}
+
+    /** {@inheritDoc} */
+	public double getAbsorptionCoefficient() {
+		return absorptionCoeff;
+	}
+
+    /** {@inheritDoc} */
+	public void setReflectionCoefficient(double value) {
+		specularReflectionCoeff = value;
+        diffuseReflectionCoeff  = 1 - (absorptionCoeff + specularReflectionCoeff);
+	}
+
+    /** {@inheritDoc} */
+	public double getReflectionCoefficient() {
+		return specularReflectionCoeff;
+	}
+
+    /** {@inheritDoc} */
+	public void setDragCoefficient(double value) {
+		dragCoeff = value;
+	}
+
+    /** {@inheritDoc} */
+	public double getDragCoefficient() {
+		return dragCoeff;
+	}
 
 }

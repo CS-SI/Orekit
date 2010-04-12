@@ -16,13 +16,17 @@
  */
 package org.orekit.forces.drag;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.ForceModel;
+import org.orekit.forces.ForceModelWithJacobians;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
+import org.orekit.propagation.numerical.TimeDerivativesEquationsWithJacobians;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -31,16 +35,20 @@ import org.orekit.time.AbsoluteDate;
  *
  * &gamma = (1/2 * Ro * V<sup>2</sup> * S / Mass) * DragCoefVector
  *
- * With DragCoefVector = {Cx, Cy, Cz} and S given by the user threw the interface
+ * With DragCoefVector = {Cx, Cy, Cz} and S given by the user through the interface
  * {@link DragSensitive}
  *
  * @author &Eacute;douard Delente
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
+ * @author Pascal Parraud
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 
-public class DragForce implements ForceModel {
+public class DragForce implements ForceModelWithJacobians {
+
+    /** Parameter name for drag coefficient. */
+    public static final String DRAG_COEFFICIENT = "DRAG COEFFICIENT";
 
     /** Serializable UID. */
     private static final long serialVersionUID = 2574653656986559955L;
@@ -50,6 +58,9 @@ public class DragForce implements ForceModel {
 
     /** Spacecraft. */
     private final DragSensitive spacecraft;
+    
+    /** List of the parameters names. */
+    private final ArrayList<String> parametersNames = new ArrayList<String>();
 
     /** Simple constructor.
      * @param atmosphere atmospheric model
@@ -58,6 +69,7 @@ public class DragForce implements ForceModel {
     public DragForce(final Atmosphere atmosphere, final DragSensitive spacecraft) {
         this.atmosphere = atmosphere;
         this.spacecraft = spacecraft;
+        this.parametersNames.add(DRAG_COEFFICIENT);
     }
 
     /** Compute the contribution of the drag to the perturbing acceleration.
@@ -87,6 +99,34 @@ public class DragForce implements ForceModel {
      */
     public EventDetector[] getEventsDetectors() {
         return new EventDetector[0];
+    }
+
+    /** {@inheritDoc} */
+	public void addContributionWithJacobians(SpacecraftState s,
+			TimeDerivativesEquationsWithJacobians adder) throws OrekitException {
+	}
+
+    /** {@inheritDoc} */
+	public Collection<String> getParametersNames() {
+		return parametersNames;
+	}
+
+    /** {@inheritDoc} */
+	public double getParameter(String name) throws IllegalArgumentException {
+		if (name.matches(DRAG_COEFFICIENT)) {
+			return spacecraft.getDragCoefficient();
+		} else {
+			throw OrekitException.createIllegalArgumentException("unknown parameter {0}", name);
+		}
+	}
+
+    /** {@inheritDoc} */
+	public void setParameter(String name, double value) throws IllegalArgumentException {
+		if (name.matches(DRAG_COEFFICIENT)) {
+			spacecraft.setDragCoefficient(value);
+		} else {
+			throw OrekitException.createIllegalArgumentException("unknown parameter {0}", name);
+	    }
     }
 
 }

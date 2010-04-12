@@ -127,43 +127,43 @@ public class NumericalPropagator implements Propagator {
     private static final long serialVersionUID = -2385169798425713766L;
 
     /** Attitude law. */
-    private AttitudeLaw attitudeLaw;
+    protected AttitudeLaw attitudeLaw;
 
     /** Central body gravitational constant. */
-    private double mu;
+    protected double mu;
 
     /** Force models used during the extrapolation of the Orbit. */
-    private final List<ForceModel> forceModels;
+    protected final List<ForceModel> forceModels;
 
     /** Event detectors not related to force models. */
-    private final List<EventDetector> detectors;
+    protected final List<EventDetector> detectors;
 
     /** State vector. */
-    private final double[] stateVector;
+    protected final double[] stateVector;
 
     /** Start date. */
-    private AbsoluteDate startDate;
+    protected AbsoluteDate startDate;
 
     /** Initial state to propagate. */
-    private SpacecraftState initialState;
+    protected SpacecraftState initialState;
 
     /** Current state to propagate. */
-    private SpacecraftState currentState;
+    protected SpacecraftState currentState;
 
     /** Integrator selected by the user for the orbital extrapolation process. */
-    private transient FirstOrderIntegrator integrator;
+    protected transient FirstOrderIntegrator integrator;
 
     /** Counter for differential equations calls. */
-    private int calls;
+    protected int calls;
 
     /** Gauss equations handler. */
-    private TimeDerivativesEquations adder;
+    protected TimeDerivativesEquations adder;
 
     /** Propagator mode handler. */
-    private ModeHandler modeHandler;
+    protected ModeHandler modeHandler;
 
     /** Current mode. */
-    private int mode;
+    protected int mode;
 
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude law is set to an
@@ -443,7 +443,7 @@ public class NumericalPropagator implements Propagator {
     /** Wrap an Orekit event detector and register it to the integrator.
      * @param osf event handler to wrap
      */
-    private void setUpEventDetector(final EventDetector osf) {
+    protected void setUpEventDetector(final EventDetector osf) {
         final EventHandler handler =
             new AdaptedEventDetector(osf, startDate, mu,
                                      initialState.getFrame(), attitudeLaw);

@@ -22,6 +22,15 @@
   <body>
     <release version="5.0" date="TBD"
              description="TBD">
+      <action dev="pascal" type="add">
+        a new experimental numerical propagator has been added, in addition to computing
+        the spacecraft state at target time, it also computes the partial derivatives of
+        this state with respect to the initial state (one jacobian) and with respect to
+        models parameters (another jacobian). The jacobians are integrated alongside with
+        the state, using variational equations for better accuracy and numerical robustness.
+        This will help further implementation of orbit determination or optimization
+        algorithms. This code is still considered to be experimental as of 5.0.
+      </action>
       <action dev="luc" type="add">
         a new SpacecraftFrame class has been added, taking into account orbit and
         attitude thanks to an underlying propagator. This allows to see the spacecraft just

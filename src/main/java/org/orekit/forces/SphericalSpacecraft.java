@@ -30,6 +30,7 @@ import org.orekit.propagation.SpacecraftState;
  * @see BoxAndSolarArraySpacecraft
  * @author &Eacute;douard Delente
  * @author Fabien Maussion
+ * @author Pascal Parraud
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
@@ -37,11 +38,23 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
     /** Serializable UID. */
     private static final long serialVersionUID = -1596721390500187750L;
 
+    /** Cross section (m<sup>2</sup>). */
+    private final double crossSection;
+
+    /** Drag coefficient. */
+    private double dragCoeff;
+
+    /** Absorption coefficient. */
+    private double absorptionCoeff;
+
+    /** Specular reflection coefficient. */
+    private double specularReflectionCoeff;
+
     /** Composite drag coefficient (S.Cd/2). */
-    private final double kD;
+    private double kD;
 
     /** Composite radiation pressure coefficient. */
-    private final double kP;
+    private double kP;
 
     /** Simple constructor.
      * @param crossSection Surface (m<sup>2</sup>)
@@ -51,10 +64,18 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
      * @param reflectionCoeff specular reflection coefficient between 0.0 an 1.0
      * (used only for radiation pressure)
      */
-    public SphericalSpacecraft(final double crossSection, final double dragCoeff,
-                               final double absorptionCoeff, final double reflectionCoeff) {
-        kD = dragCoeff * crossSection / 2;
-        kP = crossSection * (1 + 4 * (1.0 - absorptionCoeff) * (1.0 - reflectionCoeff) / 9);
+    public SphericalSpacecraft(final double crossSection,
+                               final double dragCoeff,
+                               final double absorptionCoeff,
+                               final double reflectionCoeff) {
+
+        this.crossSection            = crossSection;
+        this.dragCoeff               = dragCoeff;
+        this.absorptionCoeff         = absorptionCoeff;
+        this.specularReflectionCoeff = reflectionCoeff;
+        
+        this.setKD();
+        this.setKP();
     }
 
     /** {@inheritDoc} */
@@ -67,5 +88,48 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
     public Vector3D radiationPressureAcceleration(final SpacecraftState state, final Vector3D flux) {
         return new Vector3D(kP / state.getMass(), flux);
     }
+
+    /** {@inheritDoc} */
+	public void setDragCoefficient(double value) {
+		dragCoeff = value;
+		this.setKD();
+	}
+
+    /** {@inheritDoc} */
+	public double getDragCoefficient() {
+		return dragCoeff;
+	}
+
+    /** {@inheritDoc} */
+	public void setAbsorptionCoefficient(double value) {
+		absorptionCoeff = value;
+		this.setKP();
+	}
+
+    /** {@inheritDoc} */
+	public double getAbsorptionCoefficient() {
+		return absorptionCoeff;
+	}
+
+    /** {@inheritDoc} */
+	public void setReflectionCoefficient(double value) {
+		specularReflectionCoeff = value;
+		this.setKP();
+	}
+
+    /** {@inheritDoc} */
+	public double getReflectionCoefficient() {
+		return specularReflectionCoeff;
+	}
+
+    /** Set kD value */
+	private void setKD() {
+        kD = dragCoeff * crossSection / 2;
+	}
+
+    /** Set kP value */
+	private void setKP() {
+        kP = crossSection * (1 + 4 * (1.0 - absorptionCoeff) * (1.0 - specularReflectionCoeff) / 9);
+	}
 
 }

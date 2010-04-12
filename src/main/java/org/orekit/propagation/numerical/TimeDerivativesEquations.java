@@ -256,7 +256,7 @@ public class TimeDerivativesEquations implements Serializable {
     }
 
     /** Add the contribution of the Kepler evolution.
-     * <p>Since the Kepler evolution if the most important, it should
+     * <p>Since the Kepler evolution is the most important, it should
      * be added after all the other ones, in order to improve
      * numerical accuracy.</p>
      */
