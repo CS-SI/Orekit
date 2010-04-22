@@ -104,6 +104,10 @@
         added a reset feature in all propagators, allowing to reuse an already configured
         propagator for several different orbits
       </action>
+      <action dev="luc" type="fix" >
+        fixed an interpolation error for orbits crossing the -PI/+PI singularity between
+        entries in the Ephemeris class
+      </action>
       <action dev="luc" type="update" >
         KeplerianPropagator now preserve orbits types
       </action>

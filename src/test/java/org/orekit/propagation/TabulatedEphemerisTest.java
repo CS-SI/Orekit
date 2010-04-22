@@ -19,21 +19,27 @@ package org.orekit.propagation;
 
 import java.text.ParseException;
 
+import org.apache.commons.math.geometry.Vector3D;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.PVCoordinates;
 
 
 public class TabulatedEphemerisTest {
@@ -81,6 +87,49 @@ public class TabulatedEphemerisTest {
         checkEphemerides(eck, te, initDate.shiftedBy(3720),  1.0e-9, true);
 
     }
+
+    @Test
+    public void testPiWraping() throws OrekitException {
+
+        TimeScale utc= TimeScalesFactory.getUTC();
+        Frame frame = FramesFactory.getEME2000();
+        double mu=CelestialBodyFactory.getEarth().getGM();
+        AbsoluteDate t0 = new AbsoluteDate(2009, 10, 29, 0, 0, 0, utc);
+
+        AbsoluteDate t1 = new AbsoluteDate(t0, 1320.0);
+        Vector3D p1 = new Vector3D(-0.17831296727974E+08,  0.67919502669856E+06, -0.16591008368477E+07);
+        Vector3D v1 = new Vector3D(-0.38699705630724E+04, -0.36209408682762E+04, -0.16255053872347E+03);
+        SpacecraftState s1 = new SpacecraftState(new CartesianOrbit(new PVCoordinates(p1, v1), frame, t1, mu));
+
+        AbsoluteDate t2 = new AbsoluteDate(t0, 1440.0);
+        Vector3D p2 = new Vector3D(-0.18286942572033E+08,  0.24442124296930E+06, -0.16777961761695E+07);
+        Vector3D v2 = new Vector3D(-0.37252897467918E+04, -0.36246628128896E+04, -0.14917724596280E+03);
+        SpacecraftState s2 = new SpacecraftState(new CartesianOrbit(new PVCoordinates(p2, v2), frame, t2, mu));
+
+        AbsoluteDate t3 = new AbsoluteDate(t0, 1560.0);
+        Vector3D p3 = new Vector3D(-0.18725635245837E+08, -0.19058407701834E+06, -0.16949352249614E+07);
+        Vector3D v3 = new Vector3D(-0.35873348682393E+04, -0.36248828501784E+04, -0.13660045394149E+03);
+        SpacecraftState s3 = new SpacecraftState(new CartesianOrbit(new PVCoordinates(p3, v3), frame, t3, mu));
+
+        Ephemeris ephem= new Ephemeris(new SpacecraftState[] { s1, s2, s3 });
+
+        Vector3D pA = ephem.propagate(new AbsoluteDate(t0, 24 * 60)).getPVCoordinates(frame).getPosition();
+        Assert.assertEquals(-18286942.572, pA.getX(), 1.0e-3);
+        Assert.assertEquals(   244421.243, pA.getY(), 1.0e-3);
+        Assert.assertEquals( -1677796.176, pA.getZ(), 1.0e-3);
+
+        Vector3D pB = ephem.propagate(new AbsoluteDate(t0, 25 * 60)).getPVCoordinates(frame).getPosition();
+        Assert.assertEquals(-18505774.837, pB.getX(), 1.0e-3);
+        Assert.assertEquals(    29483.655, pB.getY(), 1.0e-3);
+        Assert.assertEquals( -1686453.500, pB.getZ(), 1.0e-3);
+
+        Vector3D pC = ephem.propagate(new AbsoluteDate(t0, 26 * 60)).getPVCoordinates(frame).getPosition();
+        Assert.assertEquals(-18725635.246, pC.getX(), 1.0e-3);
+        Assert.assertEquals(  -190584.077, pC.getY(), 1.0e-3);
+        Assert.assertEquals( -1694935.225, pC.getZ(), 1.0e-3);
+
+    }
+
 
     private void checkEphemerides(BasicPropagator eph1, BasicPropagator eph2, AbsoluteDate date,
                                   double threshold, boolean expectedBelow)

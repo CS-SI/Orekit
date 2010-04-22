@@ -22,6 +22,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.MathUtils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -131,7 +132,7 @@ public class Ephemeris implements BoundedPropagator {
         final double ey = cN * previous.getEquinoctialEy() + cP * next.getEquinoctialEy();
         final double hx = cN * previous.getHx() + cP * next.getHx();
         final double hy = cN * previous.getHy() + cP * next.getHy();
-        final double lv = cN * previous.getLv() + cP * next.getLv();
+        final double lv = cN * previous.getLv() + cP * MathUtils.normalizeAngle(next.getLv(), previous.getLv());
 
         return new EquinoctialOrbit(a, ex, ey, hx, hy, lv,
                                          EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
