@@ -190,6 +190,9 @@
       <action dev="luc" type="add">
         added string parsing features for dates and times components supporting ISO-8601 formats
       </action>
+      <action dev="luc" type="add">
+        Orekit is now packaged as an OSGi bundle
+      </action>
       <action dev="luc" type="update" >
         updated error message localization to be more consistent with Java exception. Now getMessage
         returns a non-localized message and only getLocalizedMessage returns a message localized for
