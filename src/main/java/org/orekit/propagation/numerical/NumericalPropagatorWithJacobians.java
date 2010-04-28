@@ -55,16 +55,16 @@ import org.orekit.time.AbsoluteDate;
  * these for a simple numerical integration.
  * </p>
  * <p>
- * The Jacobian for the six {@link EquinoctialOrbit equinoxial orbit parameters}
+ * The Jacobian for the six {@link EquinoctialOrbit equinoctial orbit parameters}
  * (a, e<sub>x</sub>, e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, l<sub>v</sub>)
  * and the mass is computed as a 7x7 array.
  * </p>
  * <p>
  * Partial derivatives can also be computed for the 7 elements state vector with
- * respect to {@link #selectedParameters selected parameters} from
+ * respect to {@link #selectParameters selected parameters} from
  * {@link ForceModelWithJacobians force models}.
  * </p>
- * 
+ *
  * @see NumericalPropagator
  * @see ForceModelWithJacobians
  *
@@ -73,10 +73,16 @@ import org.orekit.time.AbsoluteDate;
  */
 public class NumericalPropagatorWithJacobians extends NumericalPropagator {
 
-	/** Serializable UID. */
-	private static final long serialVersionUID = 4139595812211569107L;
+    /** Serializable UID. */
+    private static final long serialVersionUID = 4139595812211569107L;
 
-	/** Force models used when extrapolating the Orbit. */
+    /** Absolute vectorial error field name. */
+    private static final String ABSOLUTE_TOLERANCE = "vecAbsoluteTolerance";
+
+    /** Relative vectorial error field name. */
+    private static final String RELATIVE_TOLERANCE = "vecRelativeTolerance";
+
+    /** Force models used when extrapolating the Orbit. */
     private final List<ForceModelWithJacobians> forceModelsWJ;
 
     /** State vector derivative with respect to the parameter. */
@@ -98,7 +104,6 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
      * called after creation, the integrated orbit will follow a keplerian
      * evolution only.
      * @param integrator numerical integrator to use for propagation.
-     * @see NumericalPropagator(FirstOrderIntegrator )
      */
     public NumericalPropagatorWithJacobians(final FirstOrderIntegrator integrator) {
         super(integrator);
@@ -115,7 +120,7 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
         if (!(model instanceof ForceModelWithJacobians)) {
             forceModelsWJ.add(new ForceModelWrapper(model));
         } else {
-            forceModelsWJ.add((ForceModelWithJacobians)model);
+            forceModelsWJ.add((ForceModelWithJacobians) model);
         }
     }
 
@@ -138,7 +143,7 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
      * @see ForceModelWithJacobians
      * @see Parameterizable
      */
-    public void selectParameters(String[] parameters) {
+    public void selectParameters(final String[] parameters) {
         selectedParameters = parameters.clone();
         DY0DP = new double[7][selectedParameters.length];
         for (final double[] row : DY0DP) {
@@ -147,11 +152,11 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
     }
 
     /** Get the parameters selected for jacobian processing.
-     * @param parameters parameters considered for jacobian processing
+     * @return parameters considered for jacobian processing
      * @see #selectParameters(String)
      */
     public String[] getParameterNames() {
-        return selectedParameters;
+        return selectedParameters.clone();
     }
 
     /** Propagate towards a target date and compute partial derivatives.
@@ -233,27 +238,27 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
             stateVector[6] = initialState.getMass();
 
             // set up parameters for jacobian computation
-            int      noParam = 0;
-            int      nbParam = selectedParameters.length;
-            double[] paramWJ = new double[nbParam];
-            double[] hP      = new double[nbParam];
+            int noParam = 0;
+            final int      nbParam = selectedParameters.length;
+            final double[] paramWJ = new double[nbParam];
+            final double[] hP      = new double[nbParam];
 
             for (final String parameter : selectedParameters) {
-            	boolean found = false;
-            	for (final ForceModelWithJacobians fmwj : forceModelsWJ) {
-            		for (String parFMWJ : fmwj.getParametersNames()) {
-                		if (parFMWJ.matches(parameter)) {
-                        	found = true;
-                        	paramWJ[noParam] = fmwj.getParameter(parFMWJ);
-                        	hP[noParam] = paramWJ[noParam] * Math.sqrt(MathUtils.EPSILON);
-                			paramPairs.add(new ParameterPair(parameter, fmwj));
-                			noParam++;
-                		}
-            		}
-            	}
-            	if (!found) {
-            		throw new PropagationException("unknown parameter {0}", parameter);
-            	}
+                boolean found = false;
+                for (final ForceModelWithJacobians fmwj : forceModelsWJ) {
+                    for (String parFMWJ : fmwj.getParametersNames()) {
+                        if (parFMWJ.matches(parameter)) {
+                            found = true;
+                            paramWJ[noParam] = fmwj.getParameter(parFMWJ);
+                            hP[noParam] = paramWJ[noParam] * Math.sqrt(MathUtils.EPSILON);
+                            paramPairs.add(new ParameterPair(parameter, fmwj));
+                            noParam++;
+                        }
+                    }
+                }
+                if (!found) {
+                    throw new PropagationException("unknown parameter {0}", parameter);
+                }
             }
 
             // if selectParameters was not invoked and then no parameter selected
@@ -265,15 +270,15 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
             }
 
             // get hY from integrator tolerance array
-            double[] hY = getHy(integrator);
+            final double[] hY = getHy(integrator);
 
             // resize integrator tolerance array
             expandToleranceArray(integrator);
 
-            FirstOrderIntegratorWithJacobians integratorWJ = 
-                	new FirstOrderIntegratorWithJacobians(integrator,
-                		                                  new DifferentialEquations(),
-                		                                  paramWJ, hY, hP);
+            final FirstOrderIntegratorWithJacobians integratorWJ =
+                    new FirstOrderIntegratorWithJacobians(integrator,
+                                                          new DifferentialEquations(),
+                                                          paramWJ, hY, hP);
 
             try {
                 // mathematical integration
@@ -294,9 +299,9 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
 
                 resetInitialState(new SpacecraftState(orbit, attitudeLaw.getAttitude(orbit), stateVector[6]));
             } finally {
-            	if (integrator != null) {
-            		resetToleranceArray(integrator);
-            	}
+                if (integrator != null) {
+                    resetToleranceArray(integrator);
+                }
             }
 
             return initialState;
@@ -332,76 +337,77 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
      * @param integrator integrator
      */
     private void expandToleranceArray(final FirstOrderIntegrator integrator) {
-    	if (integrator instanceof AdaptiveStepsizeIntegrator) {
-    		int n = stateVector.length;
-    		int k = selectedParameters.length;
-    		resizeArray(integrator, "vecAbsoluteTolerance", n * (n + 1 + k), true);
-    		resizeArray(integrator, "vecRelativeTolerance", n * (n + 1 + k), false);
-    	}
+        if (integrator instanceof AdaptiveStepsizeIntegrator) {
+            final int n = stateVector.length;
+            final int k = selectedParameters.length;
+            resizeArray(integrator, ABSOLUTE_TOLERANCE, n * (n + 1 + k), true);
+            resizeArray(integrator, RELATIVE_TOLERANCE, n * (n + 1 + k), false);
+        }
     }
 
     /** Reset integrator tolerance array to original size.
      * @param integrator integrator
      */
     private void resetToleranceArray(final FirstOrderIntegrator integrator) {
-    	if (integrator instanceof AdaptiveStepsizeIntegrator) {
-    		int n = stateVector.length;
-    		resizeArray(integrator, "vecAbsoluteTolerance", n, true);
-    		resizeArray(integrator, "vecRelativeTolerance", n, false);
-    	}
+        if (integrator instanceof AdaptiveStepsizeIntegrator) {
+            final int n = stateVector.length;
+            resizeArray(integrator, ABSOLUTE_TOLERANCE, n, true);
+            resizeArray(integrator, RELATIVE_TOLERANCE, n, false);
+        }
     }
 
     /** Resize object internal array.
      * @param instance instance concerned
-     * @param fieldName field name 
+     * @param fieldName field name
      * @param newSize new array size
      * @param isAbsolute flag to fill the new array
      */
     private void resizeArray(final Object instance, final String fieldName,
                              final int newSize, final boolean isAbsolute) {
-    	try {
-    		final Field arrayField = AdaptiveStepsizeIntegrator.class.getDeclaredField(fieldName);
-    		arrayField.setAccessible(true);
-    		final double[] originalArray = (double[]) arrayField.get(instance);
-    		final int originalSize = originalArray.length;
-    		double[] resizedArray = new double[newSize];
-    		if (newSize > originalSize) {
-    			// expand array
-    			System.arraycopy(originalArray, 0, resizedArray, 0, originalSize);
-    			final double filler = isAbsolute ? Double.POSITIVE_INFINITY : 0.0;
-    			Arrays.fill(resizedArray, originalSize, newSize, filler);
-    		} else {
-    			// shrink array
-    			System.arraycopy(originalArray, 0, resizedArray, 0, newSize);
-    		}
-    		arrayField.set(instance, resizedArray);
-    	} catch (NoSuchFieldException nsfe) {
-    		throw OrekitException.createInternalError(nsfe);
-    	} catch (IllegalAccessException iae) {
-    		throw OrekitException.createInternalError(iae);
-    	}
+        try {
+            final Field arrayField = AdaptiveStepsizeIntegrator.class.getDeclaredField(fieldName);
+            arrayField.setAccessible(true);
+            final double[] originalArray = (double[]) arrayField.get(instance);
+            final int originalSize = originalArray.length;
+            final double[] resizedArray = new double[newSize];
+            if (newSize > originalSize) {
+                // expand array
+                System.arraycopy(originalArray, 0, resizedArray, 0, originalSize);
+                final double filler = isAbsolute ? Double.POSITIVE_INFINITY : 0.0;
+                Arrays.fill(resizedArray, originalSize, newSize, filler);
+            } else {
+                // shrink array
+                System.arraycopy(originalArray, 0, resizedArray, 0, newSize);
+            }
+            arrayField.set(instance, resizedArray);
+        } catch (NoSuchFieldException nsfe) {
+            throw OrekitException.createInternalError(nsfe);
+        } catch (IllegalAccessException iae) {
+            throw OrekitException.createInternalError(iae);
+        }
     }
 
     /** Get hY from integrator absolute tolerance array.
      * @param integrator integrator
+     * @return step sizes array for df/dy computing
      */
     private double[] getHy(final FirstOrderIntegrator integrator) {
-    	double[] hY = new double[0];
-    	if (integrator instanceof AdaptiveStepsizeIntegrator) {
-        	try {
-        		Field arrayField = AdaptiveStepsizeIntegrator.class.getDeclaredField("vecAbsoluteTolerance");
-        		arrayField.setAccessible(true);
-        		hY = (double[]) arrayField.get(integrator);
-        		for (int i = 0; i < hY.length; i++) {
-        			hY[i] *= 10.;
-        		}
-        	} catch (NoSuchFieldException nsfe) {
-        		throw OrekitException.createInternalError(nsfe);
-        	} catch (IllegalAccessException iae) {
-        		throw OrekitException.createInternalError(iae);
-        	}
-    	}
-		return hY;
+        double[] hY = new double[0];
+        if (integrator instanceof AdaptiveStepsizeIntegrator) {
+            try {
+                final Field arrayField = AdaptiveStepsizeIntegrator.class.getDeclaredField(ABSOLUTE_TOLERANCE);
+                arrayField.setAccessible(true);
+                hY = (double[]) arrayField.get(integrator);
+                for (int i = 0; i < hY.length; i++) {
+                    hY[i] *= 10.;
+                }
+            } catch (NoSuchFieldException nsfe) {
+                throw OrekitException.createInternalError(nsfe);
+            } catch (IllegalAccessException iae) {
+                throw OrekitException.createInternalError(iae);
+            }
+        }
+        return hY;
     }
 
     /** Internal class for differential equations representation. */
@@ -452,21 +458,21 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
         }
 
         /** {@inheritDoc} */
-		public void computeJacobians(double t, double[] y, double[] yDot,
-				                     double[][] dFdY, double[][] dFdP)
-		    throws DerivativeException {
-		}
+        public void computeJacobians(final double t, final double[] y, final double[] yDot,
+                                     final double[][] dFdY, final double[][] dFdP)
+            throws DerivativeException {
+        }
 
         /** {@inheritDoc} */
-		public int getParametersDimension() {
-			return selectedParameters.length;
-		}
+        public int getParametersDimension() {
+            return selectedParameters.length;
+        }
 
         /** {@inheritDoc} */
-	    public void setParameter(int index, double value) {
-	    	ParameterPair pp = paramPairs.get(index);
-	    	pp.getParamHandler().setParameter(pp.getParamName(), value);
-	    }
+        public void setParameter(final int index, final double value) {
+            final ParameterPair pp = paramPairs.get(index);
+            pp.getParamHandler().setParameter(pp.getParamName(), value);
+        }
 
         /** Convert state array to space dynamics objects (AbsoluteDate and OrbitalParameters).
          * @param t integration time (s)
@@ -496,88 +502,89 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
     }
 
     /** Internal class used to pair a parameter name with its handler. */
-    private class ParameterPair {
+    private static class ParameterPair {
 
-        /** Parameter name */
-    	final private String paramName;
+        /** Parameter name. */
+        private final String paramName;
 
-        /** Parameter handler */
-    	final private Parameterizable paramHandler;
+        /** Parameter handler. */
+        private final Parameterizable paramHandler;
 
         /** Simple constructor.
          * @param paramName parameter name
          * @param paramHandler force model handling the parameter
          */
-    	public ParameterPair(String paramName, Parameterizable paramHandler) {
-    		this.paramName = paramName;
-    		this.paramHandler = paramHandler;
-    	}
+        public ParameterPair(final String paramName, final Parameterizable paramHandler) {
+            this.paramName = paramName;
+            this.paramHandler = paramHandler;
+        }
 
         /** Get parameter name.
          * @return parameter name
          */
-    	public String getParamName() {
-    		return paramName;
-    	}
+        public String getParamName() {
+            return paramName;
+        }
 
         /** Get parameter handler.
          * @return force model handling the parameter
          */
-    	public Parameterizable getParamHandler() {
-    		return paramHandler;
-    	}
+        public Parameterizable getParamHandler() {
+            return paramHandler;
+        }
 
     }
 
     /** Internal class enabling basic force model
      *  to be used when processing parameters jacobian.
      */
-    private class ForceModelWrapper implements ForceModelWithJacobians {
+    private static class ForceModelWrapper implements ForceModelWithJacobians {
 
         /** Serializable UID. */
-		private static final long serialVersionUID = 3625153851142193056L;
+        private static final long serialVersionUID = 3625153851142193056L;
 
-		/** Wrapped basic force model. */
-    	private final ForceModel basic;
+        /** Wrapped basic force model. */
+        private final ForceModel basic;
 
         /** Simple constructor.
          * @param basic force model to wrap
          */
-    	public ForceModelWrapper(ForceModel basic) {
-    		this.basic = basic;
-    	}
+        public ForceModelWrapper(final ForceModel basic) {
+            this.basic = basic;
+        }
 
         /** {@inheritDoc} */
-    	public void addContribution(SpacecraftState s,
-    			                    TimeDerivativesEquations adder)
+        public void addContribution(final SpacecraftState s,
+                                    final TimeDerivativesEquations adder)
             throws OrekitException {
-    		basic.addContribution(s, adder);
-    	}
+            basic.addContribution(s, adder);
+        }
 
         /** {@inheritDoc} */
-    	public EventDetector[] getEventsDetectors() {
-    		return basic.getEventsDetectors();
-    	}
+        public EventDetector[] getEventsDetectors() {
+            return basic.getEventsDetectors();
+        }
 
         /** {@inheritDoc} */
-    	public void addContributionWithJacobians(SpacecraftState s,
-    			                                 TimeDerivativesEquationsWithJacobians adder)
+        public void addContributionWithJacobians(final SpacecraftState s,
+                                                 final TimeDerivativesEquationsWithJacobians adder)
             throws OrekitException {
-    	}
+        }
 
         /** {@inheritDoc} */
-    	public double getParameter(String name) throws IllegalArgumentException {
-    		return Double.NaN;
-    	}
+        public double getParameter(final String name) throws IllegalArgumentException {
+            return Double.NaN;
+        }
 
         /** {@inheritDoc} */
-    	public Collection<String> getParametersNames() {
-    		return new ArrayList<String>();
-    	}
+        public Collection<String> getParametersNames() {
+            return new ArrayList<String>();
+        }
 
         /** {@inheritDoc} */
-    	public void setParameter(String name, double value) throws IllegalArgumentException {
-    	}
+        public void setParameter(final String name, final double value)
+            throws IllegalArgumentException {
+        }
 
     }
 

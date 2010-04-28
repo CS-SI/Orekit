@@ -55,6 +55,9 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
     private static final String LOW_TRAJECTORY_MESSAGE =
         "trajectory inside the Brillouin sphere (r = {0})";
 
+    /** Error message for unknown parameter. */
+    private static final String UNKNOWN_PARAMETER_MESSAGE = "unknown parameter {0}";
+
     /** Sun radius (m). */
     private static final double SUN_RADIUS = 6.95e8;
 
@@ -69,7 +72,7 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
 
     /** Spacecraft. */
     private final RadiationSensitive spacecraft;
-    
+
     /** List of the parameters names. */
     private final ArrayList<String> parametersNames = new ArrayList<String>();
 
@@ -215,36 +218,39 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
     }
 
     /** {@inheritDoc} */
-	public void addContributionWithJacobians(SpacecraftState s,
-			TimeDerivativesEquationsWithJacobians adder) throws OrekitException {
-	}
+    public void addContributionWithJacobians(final SpacecraftState s,
+                                             final TimeDerivativesEquationsWithJacobians adder)
+        throws OrekitException {
+    }
 
     /** {@inheritDoc} */
-	public Collection<String> getParametersNames() {
-		return parametersNames;
-	}
+    public Collection<String> getParametersNames() {
+        return parametersNames;
+    }
 
     /** {@inheritDoc} */
-	public double getParameter(String name) throws IllegalArgumentException {
-		if (name.matches(ABSORPTION_COEFFICIENT)) {
-			return spacecraft.getAbsorptionCoefficient();
-		} else if (name.matches(REFLECTION_COEFFICIENT)) {
-			return spacecraft.getReflectionCoefficient();
-		} else {
-			throw OrekitException.createIllegalArgumentException("unknown parameter {0}", name);
-		}
-	}
+    public double getParameter(final String name)
+        throws IllegalArgumentException {
+        if (name.matches(ABSORPTION_COEFFICIENT)) {
+            return spacecraft.getAbsorptionCoefficient();
+        } else if (name.matches(REFLECTION_COEFFICIENT)) {
+            return spacecraft.getReflectionCoefficient();
+        } else {
+            throw OrekitException.createIllegalArgumentException(UNKNOWN_PARAMETER_MESSAGE, name);
+        }
+    }
 
     /** {@inheritDoc} */
-	public void setParameter(String name, double value) throws IllegalArgumentException {
-		if (name.matches(ABSORPTION_COEFFICIENT)) {
-			spacecraft.setAbsorptionCoefficient(value);
-		} else if (name.matches(REFLECTION_COEFFICIENT)) {
-			spacecraft.setReflectionCoefficient(value);
-		} else {
-			throw OrekitException.createIllegalArgumentException("unknown parameter {0}", name);
-		}
-	}
+    public void setParameter(final String name, final double value)
+        throws IllegalArgumentException {
+        if (name.matches(ABSORPTION_COEFFICIENT)) {
+            spacecraft.setAbsorptionCoefficient(value);
+        } else if (name.matches(REFLECTION_COEFFICIENT)) {
+            spacecraft.setReflectionCoefficient(value);
+        } else {
+            throw OrekitException.createIllegalArgumentException(UNKNOWN_PARAMETER_MESSAGE, name);
+        }
+    }
 
     /** This class defines the umbra entry/exit detector. */
     private class UmbraDetector extends AbstractDetector {

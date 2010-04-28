@@ -73,7 +73,7 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
         this.dragCoeff               = dragCoeff;
         this.absorptionCoeff         = absorptionCoeff;
         this.specularReflectionCoeff = reflectionCoeff;
-        
+
         this.setKD();
         this.setKP();
     }
@@ -90,46 +90,46 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
     }
 
     /** {@inheritDoc} */
-	public void setDragCoefficient(double value) {
-		dragCoeff = value;
-		this.setKD();
-	}
+    public void setDragCoefficient(final double value) {
+        dragCoeff = value;
+        this.setKD();
+    }
 
     /** {@inheritDoc} */
-	public double getDragCoefficient() {
-		return dragCoeff;
-	}
+    public double getDragCoefficient() {
+        return dragCoeff;
+    }
 
     /** {@inheritDoc} */
-	public void setAbsorptionCoefficient(double value) {
-		absorptionCoeff = value;
-		this.setKP();
-	}
+    public void setAbsorptionCoefficient(final double value) {
+        absorptionCoeff = value;
+        this.setKP();
+    }
 
     /** {@inheritDoc} */
-	public double getAbsorptionCoefficient() {
-		return absorptionCoeff;
-	}
+    public double getAbsorptionCoefficient() {
+        return absorptionCoeff;
+    }
 
     /** {@inheritDoc} */
-	public void setReflectionCoefficient(double value) {
-		specularReflectionCoeff = value;
-		this.setKP();
-	}
+    public void setReflectionCoefficient(final double value) {
+        specularReflectionCoeff = value;
+        this.setKP();
+    }
 
     /** {@inheritDoc} */
-	public double getReflectionCoefficient() {
-		return specularReflectionCoeff;
-	}
+    public double getReflectionCoefficient() {
+        return specularReflectionCoeff;
+    }
 
-    /** Set kD value */
-	private void setKD() {
+    /** Set kD value. */
+    private void setKD() {
         kD = dragCoeff * crossSection / 2;
-	}
+    }
 
-    /** Set kP value */
-	private void setKP() {
+    /** Set kP value. */
+    private void setKP() {
         kP = crossSection * (1 + 4 * (1.0 - absorptionCoeff) * (1.0 - specularReflectionCoeff) / 9);
-	}
+    }
 
 }

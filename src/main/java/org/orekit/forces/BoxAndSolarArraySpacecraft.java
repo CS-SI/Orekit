@@ -458,35 +458,35 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     }
 
     /** {@inheritDoc} */
-	public void setAbsorptionCoefficient(double value) {
-		absorptionCoeff = value;
+    public void setAbsorptionCoefficient(final double value) {
+        absorptionCoeff = value;
         diffuseReflectionCoeff = 1 - (absorptionCoeff + specularReflectionCoeff);
-	}
+    }
 
     /** {@inheritDoc} */
-	public double getAbsorptionCoefficient() {
-		return absorptionCoeff;
-	}
+    public double getAbsorptionCoefficient() {
+        return absorptionCoeff;
+    }
 
     /** {@inheritDoc} */
-	public void setReflectionCoefficient(double value) {
-		specularReflectionCoeff = value;
+    public void setReflectionCoefficient(final double value) {
+        specularReflectionCoeff = value;
         diffuseReflectionCoeff  = 1 - (absorptionCoeff + specularReflectionCoeff);
-	}
+    }
 
     /** {@inheritDoc} */
-	public double getReflectionCoefficient() {
-		return specularReflectionCoeff;
-	}
+    public double getReflectionCoefficient() {
+        return specularReflectionCoeff;
+    }
 
     /** {@inheritDoc} */
-	public void setDragCoefficient(double value) {
-		dragCoeff = value;
-	}
+    public void setDragCoefficient(final double value) {
+        dragCoeff = value;
+    }
 
     /** {@inheritDoc} */
-	public double getDragCoefficient() {
-		return dragCoeff;
-	}
+    public double getDragCoefficient() {
+        return dragCoeff;
+    }
 
 }

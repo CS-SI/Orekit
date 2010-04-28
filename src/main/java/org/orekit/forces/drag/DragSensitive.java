@@ -44,7 +44,7 @@ public interface DragSensitive extends Serializable {
      * @throws OrekitException if acceleration cannot be computed
      */
     Vector3D dragAcceleration(SpacecraftState state, double density, Vector3D relativeVelocity)
-    throws OrekitException;
+        throws OrekitException;
 
     /** Set the drag coefficient.
      *  @param value drag coefficient

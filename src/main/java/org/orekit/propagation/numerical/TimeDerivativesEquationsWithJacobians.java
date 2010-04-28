@@ -42,7 +42,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 public class TimeDerivativesEquationsWithJacobians extends TimeDerivativesEquations {
 
     /** Serializable UID. */
-	private static final long serialVersionUID = -1378236382967204061L;
+    private static final long serialVersionUID = -1378236382967204061L;
 
     /** Reference to the orbital parameters jacobian array to initialize. */
     private double[][] storedDFDY;
@@ -65,9 +65,9 @@ public class TimeDerivativesEquationsWithJacobians extends TimeDerivativesEquati
      * @exception PropagationException if the orbit evolve out of supported range
      */
     protected void initDerivativesWithJacobians(final double[] yDot,
-    		                                    final double[][] dFdY,
+                                                final double[][] dFdY,
                                                 final double[][] dFdP,
-    		                                    final EquinoctialOrbit orbit)
+                                                final EquinoctialOrbit orbit)
         throws PropagationException {
 
         initDerivatives(yDot, orbit);

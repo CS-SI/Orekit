@@ -53,12 +53,15 @@ public class DragForce implements ForceModelWithJacobians {
     /** Serializable UID. */
     private static final long serialVersionUID = 2574653656986559955L;
 
+    /** Error message for unknown parameter. */
+    private static final String UNKNOWN_PARAMETER_MESSAGE = "unknown parameter {0}";
+
     /** Atmospheric model. */
     private final Atmosphere atmosphere;
 
     /** Spacecraft. */
     private final DragSensitive spacecraft;
-    
+
     /** List of the parameters names. */
     private final ArrayList<String> parametersNames = new ArrayList<String>();
 
@@ -102,31 +105,32 @@ public class DragForce implements ForceModelWithJacobians {
     }
 
     /** {@inheritDoc} */
-	public void addContributionWithJacobians(SpacecraftState s,
-			TimeDerivativesEquationsWithJacobians adder) throws OrekitException {
-	}
+    public void addContributionWithJacobians(final SpacecraftState s,
+                                             final TimeDerivativesEquationsWithJacobians adder)
+        throws OrekitException {
+    }
 
     /** {@inheritDoc} */
-	public Collection<String> getParametersNames() {
-		return parametersNames;
-	}
+    public Collection<String> getParametersNames() {
+        return parametersNames;
+    }
 
     /** {@inheritDoc} */
-	public double getParameter(String name) throws IllegalArgumentException {
-		if (name.matches(DRAG_COEFFICIENT)) {
-			return spacecraft.getDragCoefficient();
-		} else {
-			throw OrekitException.createIllegalArgumentException("unknown parameter {0}", name);
-		}
-	}
+    public double getParameter(final String name) throws IllegalArgumentException {
+        if (name.matches(DRAG_COEFFICIENT)) {
+            return spacecraft.getDragCoefficient();
+        } else {
+            throw OrekitException.createIllegalArgumentException(UNKNOWN_PARAMETER_MESSAGE, name);
+        }
+    }
 
     /** {@inheritDoc} */
-	public void setParameter(String name, double value) throws IllegalArgumentException {
-		if (name.matches(DRAG_COEFFICIENT)) {
-			spacecraft.setDragCoefficient(value);
-		} else {
-			throw OrekitException.createIllegalArgumentException("unknown parameter {0}", name);
-	    }
+    public void setParameter(final String name, final double value) throws IllegalArgumentException {
+        if (name.matches(DRAG_COEFFICIENT)) {
+            spacecraft.setDragCoefficient(value);
+        } else {
+            throw OrekitException.createIllegalArgumentException(UNKNOWN_PARAMETER_MESSAGE, name);
+        }
     }
 
 }

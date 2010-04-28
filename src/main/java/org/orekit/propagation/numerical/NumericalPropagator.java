@@ -126,6 +126,8 @@ public class NumericalPropagator implements Propagator {
     /** Serializable UID. */
     private static final long serialVersionUID = -2385169798425713766L;
 
+    // CHECKSTYLE: stop VisibilityModifierCheck
+
     /** Attitude law. */
     protected AttitudeLaw attitudeLaw;
 
@@ -164,6 +166,8 @@ public class NumericalPropagator implements Propagator {
 
     /** Current mode. */
     protected int mode;
+
+    // CHECKSTYLE: resume VisibilityModifierCheck
 
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude law is set to an
