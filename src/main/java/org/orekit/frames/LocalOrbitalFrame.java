@@ -88,11 +88,9 @@ public class LocalOrbitalFrame extends Frame {
 
         // compute the rotation part of the transform
         final Rotation r = new Rotation((type == LOFType.TNW) ? v : p, momentum,
-                                                              Vector3D.PLUS_I, Vector3D.PLUS_K);
+                                         Vector3D.PLUS_I, Vector3D.PLUS_K);
         final Transform rotation =
-            new Transform(r,
-                          new Vector3D(1.0 / p.getNormSq(),
-                                       r.applyTo(momentum)));
+            new Transform(r, new Vector3D(1.0 / p.getNormSq(), r.applyTo(momentum)));
 
         // update the frame defining transform
         setTransform(new Transform(translation, rotation));
