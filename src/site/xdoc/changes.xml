@@ -105,6 +105,11 @@
         propagator for several different orbits
       </action>
       <action dev="luc" type="fix" >
+        fixed a mode handling error in NumericalPropagator: when a propagator was reused
+        with a new mode setting, the previous step handlers were still used in addition to
+        the new ones instead of replacing them
+      </action>
+      <action dev="luc" type="fix" >
         fixed an interpolation error for orbits crossing the -PI/+PI singularity between
         entries in the Ephemeris class
       </action>

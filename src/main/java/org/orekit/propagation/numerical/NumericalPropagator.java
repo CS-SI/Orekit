@@ -266,28 +266,55 @@ public class NumericalPropagator implements Propagator {
         return mode;
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>Note that this method has the side effect of replacing the step handlers
+     * of the underlying integrator set up in the {@link
+     * #NumericalPropagator(FirstOrderIntegrator) constructor} or the {@link
+     * #setIntegrator(FirstOrderIntegrator) setIntegrator} method. So if a specific
+     * step handler is needed, it should be added after this method has been callled.</p>
+     */
     public void setSlaveMode() {
+        integrator.clearEventHandlers();
         integrator.addStepHandler(DummyStepHandler.getInstance());
         modeHandler = null;
         mode = SLAVE_MODE;
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>Note that this method has the side effect of replacing the step handlers
+     * of the underlying integrator set up in the {@link
+     * #NumericalPropagator(FirstOrderIntegrator) constructor} or the {@link
+     * #setIntegrator(FirstOrderIntegrator) setIntegrator} method. So if a specific
+     * step handler is needed, it should be added after this method has been callled.</p>
+     */
     public void setMasterMode(final double h, final OrekitFixedStepHandler handler) {
         setMasterMode(new OrekitStepNormalizer(h, handler));
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>Note that this method has the side effect of replacing the step handlers
+     * of the underlying integrator set up in the {@link
+     * #NumericalPropagator(FirstOrderIntegrator) constructor} or the {@link
+     * #setIntegrator(FirstOrderIntegrator) setIntegrator} method. So if a specific
+     * step handler is needed, it should be added after this method has been callled.</p>
+     */
     public void setMasterMode(final OrekitStepHandler handler) {
+        integrator.clearEventHandlers();
         final AdaptedStepHandler wrapped = new AdaptedStepHandler(handler);
         integrator.addStepHandler(wrapped);
         modeHandler = wrapped;
         mode = MASTER_MODE;
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>Note that this method has the side effect of replacing the step handlers
+     * of the underlying integrator set up in the {@link
+     * #NumericalPropagator(FirstOrderIntegrator) constructor} or the {@link
+     * #setIntegrator(FirstOrderIntegrator) setIntegrator} method. So if a specific
+     * step handler is needed, it should be added after this method has been callled.</p>
+     */
     public void setEphemerisMode() {
+        integrator.clearEventHandlers();
         final IntegratedEphemeris ephemeris = new IntegratedEphemeris();
         integrator.addStepHandler(ephemeris);
         modeHandler = ephemeris;
