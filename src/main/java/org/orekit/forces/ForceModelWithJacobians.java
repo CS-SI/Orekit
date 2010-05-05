@@ -22,9 +22,9 @@ import org.orekit.propagation.numerical.TimeDerivativesEquationsWithJacobians;
 
 /** This interface represents a force modifying spacecraft motion.
  *
- * <p> Objects implementing this interface are intended to be added to a
- * {@link org.orekit.propagation.numerical.NumericalPropagatorWithJacobians numerical propagator}
- * processing the jacobians before the propagation is started. </p>
+ * <p> Objects implementing this interface are intended to be added, before the propagation is started,
+ * to a {@link org.orekit.propagation.numerical.NumericalPropagatorWithJacobians numerical propagator}
+ * in order to compute partial derivatives with respect to the selected force model parameters. </p>
  *
  * @see ForceModel
  *
