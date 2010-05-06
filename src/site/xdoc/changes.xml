@@ -20,8 +20,18 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="5.0" date="TBD"
-             description="TBD">
+    <release version="5.0" date="2010-05-06"
+             description="version 5.0 is a major release of Orekit. It introduces several new
+             features and bug fixes. Some slight incompatibilities with respect to previous
+             versions have been introduced, but they should be easy to overcome to users. Users
+             are strongly advised to upgrade to this version. The major points introduced in version
+             5.0 are a very general PVCoordinatesProvider interface, a new shiftedBy method allowing
+             many time-dependent instances (AbsoluteDate, Orbit, PVCoordinates, Attitude and SpacecraftState)
+             to be slightly shifted in time using simple evolution models (keplerian for orbit, fixed
+             angular rate for attitude, fixed translation for position/velocity), a redesign of the
+             attitude interfaces and an experimental (read subject to change) numerical propagator
+             able to compute jacobians of the state with respect to both initial state and force
+             models parameters. Version 5.0 now depends on version 2.1 of Apache commons math.">
       <action dev="pascal" type="add">
         a new experimental numerical propagator has been added, in addition to computing
         the spacecraft state at target time, it also computes the partial derivatives of
