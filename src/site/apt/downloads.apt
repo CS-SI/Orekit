@@ -23,6 +23,17 @@ Downloads
 *----------*--------------------------------------------------------*
 |  package |                          link                          |
 *----------*--------------------------------------------------------*
+|  source  | {{{./downloads/orekit-5.0-src.zip}orekit-5.0-src.zip}} |
+*----------*--------------------------------------------------------*
+|  binary  |     {{{./downloads/orekit-5.0.jar}orekit-5.0.jar}}     |
+*----------*--------------------------------------------------------*
+|  javadoc | {{{./downloads/orekit-5.0-doc.jar}orekit-5.0-doc.jar}} |
+*----------*--------------------------------------------------------*
+version 5.0 downloads (release date: 2010-05-06)
+
+*----------*--------------------------------------------------------*
+|  package |                          link                          |
+*----------*--------------------------------------------------------*
 |  source  | {{{./downloads/orekit-4.1-src.zip}orekit-4.1-src.zip}} |
 *----------*--------------------------------------------------------*
 |  binary  |     {{{./downloads/orekit-4.1.jar}orekit-4.1.jar}}     |
@@ -62,10 +73,9 @@ version 3.1 downloads (release date: 2008-07-16)
 
   This file contents is:
 
-    ** leap seconds data up to 2006 (i.e. the leap second introduced at the end of
-       2008 is NOT included as the file was not up to date when retrieved from IERS),
+    ** leap seconds data up to 2010
 
-    ** Earth Orientation Parameters up to mid-2008
+    ** Earth Orientation Parameters up to start-2010
 
     ** DE 406 planetary ephemerides from 1962 to 2029
   
