@@ -50,19 +50,25 @@ import org.orekit.time.AbsoluteDate;
  * As of 5.0, this class is still considered experimental, so use it with care.
  * </p>
  * <p>
- * Propagation is done the same way {@link NumericalPropagator} does.
- * The underlying numerical integrator configuration can be the same as
- * these for a simple numerical integration.
+ * The underlying numerical integrator configuration can be exactly the same
+ * as these for a simple {@link NumericalPropagator numerical integration}.
  * </p>
  * <p>
  * The Jacobian for the six {@link EquinoctialOrbit equinoctial orbit parameters}
  * (a, e<sub>x</sub>, e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, l<sub>v</sub>)
- * and the mass is computed as a 7x7 array.
+ * and the mass is computed as a 7x7 array such as:
+ *   <pre>
+ *     dFdY[i][j] = dyi/dyj
+ *     with: y0 = a, y1 = ex, y2 = ey, y3 = hx, y4 = hy, y5 = lv, y6 = mass
+ *   </pre>
  * </p>
  * <p>
  * Partial derivatives can also be computed for the 7 elements state vector with
- * respect to {@link #selectParameters selected parameters} from
- * {@link ForceModelWithJacobians force models}.
+ * respect to n {@link #selectParameters selected parameters} from
+ * {@link ForceModelWithJacobians force models}. They are computed as a 7xn array:
+ *   <pre>
+ *     dFdP[i][j] = dyi/dpj
+ *   </pre>
  * </p>
  *
  * @see NumericalPropagator
@@ -153,7 +159,7 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
 
     /** Get the parameters selected for jacobian processing.
      * @return parameters considered for jacobian processing
-     * @see #selectParameters(String)
+     * @see #selectParameters(String[])
      */
     public String[] getParameterNames() {
         return selectedParameters.clone();
@@ -164,7 +170,7 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
      * {@link NumericalPropagator#propagate(AbsoluteDate) basic one}.</p>
      * <p>Jacobian for orbit parameters is given as a 7x7 array.</p>
      * <p>Partial derivatives will be computed as a 7xn array
-     * when n parameters have been {@link #selectParameters(String) selected}
+     * when n parameters have been {@link #selectParameters(String[]) selected}
      * (n may be 0).</p>
      * <p>Those parameters are related to some {@link ForceModelWithJacobians force models}
      * which must have been added elsewhere.</p>

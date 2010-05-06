@@ -20,11 +20,13 @@ import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.TimeDerivativesEquationsWithJacobians;
 
-/** This interface represents a force modifying spacecraft motion.
+/** This interface represents a parameterized force modifying spacecraft motion.
  *
  * <p> Objects implementing this interface are intended to be added, before the propagation is started,
  * to a {@link org.orekit.propagation.numerical.NumericalPropagatorWithJacobians numerical propagator}
- * in order to compute partial derivatives with respect to the selected force model parameters. </p>
+ * in order to compute partial derivatives of orbital parameters with respect to the
+ * {@link org.orekit.propagation.numerical.NumericalPropagatorWithJacobians#selectParameters(String[]) selected}
+ * force model parameters.</p>
  *
  * @see ForceModel
  *

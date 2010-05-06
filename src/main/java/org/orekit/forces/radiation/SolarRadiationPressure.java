@@ -42,10 +42,10 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class SolarRadiationPressure implements ForceModelWithJacobians {
 
-    /** Parameter name for absorption coefficient. */
+    /** Parameter name for absorption coefficient enabling jacobian processing. */
     public static final String ABSORPTION_COEFFICIENT = "ABSORPTION COEFFICIENT";
 
-    /** Parameter name for specular reflection coefficient. */
+    /** Parameter name for specular reflection coefficient enabling jacobian processing. */
     public static final String REFLECTION_COEFFICIENT = "REFLECTION COEFFICIENT";
 
     /** Serializable UID. */

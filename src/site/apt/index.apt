@@ -95,6 +95,9 @@ Overview
       * state of the art ODE integrators (adaptive stepsize with error control,
         continuous output, switching functions, G-stop, step normalization ...)
 
+      * computation of jacobians with respect to orbital parameters and selected
+        force models parameters
+
       * serialization mechanism to store complete results on persistent storage for
         later use
 

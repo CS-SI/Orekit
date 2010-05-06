@@ -29,7 +29,8 @@
         models parameters (another jacobian). The jacobians are integrated alongside with
         the state, using variational equations for better accuracy and numerical robustness.
         This will help further implementation of orbit determination or optimization
-        algorithms. This code is still considered to be experimental as of 5.0.
+        algorithms. This code is still considered to be experimental as of 5.0 and the API
+        could change in the future.
       </action>
       <action dev="luc" type="add">
         a new SpacecraftFrame class has been added, taking into account orbit and
@@ -197,6 +198,9 @@
       </action>
       <action dev="luc" type="add">
         Orekit is now packaged as an OSGi bundle
+      </action>
+      <action dev="pascal" type="add">
+        added some pieces of an UML model for the library (available in the source distribution)
       </action>
       <action dev="luc" type="update" >
         updated error message localization to be more consistent with Java exception. Now getMessage

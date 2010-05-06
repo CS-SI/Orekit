@@ -165,9 +165,15 @@ integrator.setInitialStepSize(initStep);
 propagator = new NumericalPropagator(integrator);
 +---------------------
 
+  In addition, the <NumericalPropagatorWithJacobians> class enables to compute the sensitivity
+  of the state vector to the initial state or some parameter of the force models. It computes
+  the jacobians dy(t)/dy0 and dy(t)/dp where y0 is the initial state and p some parameter.
+
 * Authors
 
   ** Luc Maisonobe
   
   ** Fabien Maussion
+  
+  ** Pascal Parraud
   

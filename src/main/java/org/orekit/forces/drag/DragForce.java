@@ -31,6 +31,7 @@ import org.orekit.time.AbsoluteDate;
 
 
 /** Atmospheric drag force model.
+ *
  * The drag acceleration is computed as follows :
  *
  * &gamma = (1/2 * Ro * V<sup>2</sup> * S / Mass) * DragCoefVector
@@ -47,7 +48,7 @@ import org.orekit.time.AbsoluteDate;
 
 public class DragForce implements ForceModelWithJacobians {
 
-    /** Parameter name for drag coefficient. */
+    /** Parameter name for drag coefficient enabling jacobian processing. */
     public static final String DRAG_COEFFICIENT = "DRAG COEFFICIENT";
 
     /** Serializable UID. */

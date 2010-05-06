@@ -28,8 +28,8 @@ import org.orekit.orbits.EquinoctialOrbit;
  * As of 5.0, this class is still considered experimental, so use it with care.
  * </p>
  * <p>
- * It is related to {@link NumericalPropagatorWithJacobians} in the same way
- * {@link TimeDerivativesEquations} is related {@link NumericalPropagator}.
+ * It is related to {@link NumericalPropagatorWithJacobians} like
+ * {@link TimeDerivativesEquations} to {@link NumericalPropagator}.
  * </p>
  *
  * @see TimeDerivativesEquations

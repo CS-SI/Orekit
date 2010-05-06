@@ -18,7 +18,8 @@ package org.orekit.forces;
 
 import java.util.Collection;
 
-/** This interface enables the parameters jacobian processing.
+/** This interface enables to process partial derivatives
+ *  with respect to force model parameters.
  *
  * @author Pascal Parraud
  * @version $Revision$ $Date$
@@ -26,7 +27,7 @@ import java.util.Collection;
 
 public interface Parameterizable {
 
-    /** Get the names of the supported parameters.
+    /** Get the names of the supported parameters for partial derivatives processing.
      * @return parameters names
      */
     Collection<String> getParametersNames();

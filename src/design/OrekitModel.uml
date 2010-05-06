@@ -1,0 +1,760 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uml:Model xmi:version="2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/3.0.0/UML" xmi:id="_V1zp8FNqEd-tcOhvGq_PAw" name="OrekitModel">
+  <packageImport xmi:id="_V1zp8VNqEd-tcOhvGq_PAw">
+    <importedPackage xmi:type="uml:Model" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#_0"/>
+  </packageImport>
+  <packageImport xmi:id="_zxaiEFNqEd-tcOhvGq_PAw">
+    <importedPackage xmi:type="uml:Model" href="pathmap://UML_LIBRARIES/JavaPrimitiveTypes.library.uml#_0"/>
+  </packageImport>
+  <packagedElement xmi:type="uml:Package" xmi:id="_9d6ckFNqEd-tcOhvGq_PAw" name="time">
+    <ownedComment xmi:id="_ghgpwFONEd-tcOhvGq_PAw" annotatedElement="_9d6ckFNqEd-tcOhvGq_PAw">
+      <body>This independent package provides classes to handle epochs, time scales, and to compare instants together.</body>
+    </ownedComment>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_oNXCgFOKEd-tcOhvGq_PAw" name="UTCTAILoader"/>
+    <packagedElement xmi:type="uml:Class" xmi:id="_MNw2AFOIEd-tcOhvGq_PAw" name="TimeComponents"/>
+    <packagedElement xmi:type="uml:Class" xmi:id="_F8Rp0FOIEd-tcOhvGq_PAw" name="DateComponents"/>
+    <packagedElement xmi:type="uml:Class" xmi:id="_WR7CkFOIEd-tcOhvGq_PAw" name="DateTimeComponents"/>
+    <packagedElement xmi:type="uml:Class" xmi:id="_nK1D8FOJEd-tcOhvGq_PAw" name="TimeScaleFactory">
+      <ownedComment xmi:id="_w8OFgFOJEd-tcOhvGq_PAw" annotatedElement="_nK1D8FOJEd-tcOhvGq_PAw">
+        <body>Factory for predefined time scales.
+
+This is a utility class, so its constructor is private.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_8TWmgFkTEd-m5vkAa9eXJA" name="getTimeScale" type="_qxG5AFOHEd-tcOhvGq_PAw" isUnique="false" association="_8RN4gFkTEd-m5vkAa9eXJA">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_AFtd0FkUEd-m5vkAa9eXJA" value="1"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_AFgpgFkUEd-m5vkAa9eXJA" value="1"/>
+        <defaultValue xmi:type="uml:InstanceValue" xmi:id="_JSSiIFkUEd-m5vkAa9eXJA"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_VGqIEFkUEd-m5vkAa9eXJA" name="addUTCTAILoader" type="_oNXCgFOKEd-tcOhvGq_PAw" isUnique="false" association="_VFUEQFkUEd-m5vkAa9eXJA">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_VHZu8FkUEd-m5vkAa9eXJA" value="*"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_VHU2cFkUEd-m5vkAa9eXJA"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_K3iU0FOGEd-tcOhvGq_PAw" name="AbsoluteDate" clientDependency="_zWh2sFOHEd-tcOhvGq_PAw">
+      <interfaceRealization xmi:id="_zWh2sFOHEd-tcOhvGq_PAw" name="Realization of TimeStamped" supplier="_QQCqkFOGEd-tcOhvGq_PAw" client="_K3iU0FOGEd-tcOhvGq_PAw" contract="_QQCqkFOGEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_2r-6IFOIEd-tcOhvGq_PAw" name="TTScale" clientDependency="_bA4LYFOQEd-tcOhvGq_PAw">
+      <interfaceRealization xmi:id="_bA4LYFOQEd-tcOhvGq_PAw" name="Realization of TimeScale" supplier="_qxG5AFOHEd-tcOhvGq_PAw" client="_2r-6IFOIEd-tcOhvGq_PAw" contract="_qxG5AFOHEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_BBwbIFOJEd-tcOhvGq_PAw" name="TCGScale" clientDependency="_ZgOQ8FOQEd-tcOhvGq_PAw">
+      <interfaceRealization xmi:id="_ZgOQ8FOQEd-tcOhvGq_PAw" name="Realization of TimeScale" supplier="_qxG5AFOHEd-tcOhvGq_PAw" client="_BBwbIFOJEd-tcOhvGq_PAw" contract="_qxG5AFOHEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_CxhIkFOJEd-tcOhvGq_PAw" name="TDBScale" clientDependency="_YoFIAFOQEd-tcOhvGq_PAw">
+      <interfaceRealization xmi:id="_YoFIAFOQEd-tcOhvGq_PAw" name="Realization of TimeScale" supplier="_qxG5AFOHEd-tcOhvGq_PAw" client="_CxhIkFOJEd-tcOhvGq_PAw" contract="_qxG5AFOHEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_6gjX8FOIEd-tcOhvGq_PAw" name="GPSScale" clientDependency="_aHNYcFOQEd-tcOhvGq_PAw">
+      <interfaceRealization xmi:id="_aHNYcFOQEd-tcOhvGq_PAw" name="Realization of TimeScale" supplier="_qxG5AFOHEd-tcOhvGq_PAw" client="_6gjX8FOIEd-tcOhvGq_PAw" contract="_qxG5AFOHEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_tgk6gFOIEd-tcOhvGq_PAw" name="TAIScale" clientDependency="_cPON0FOQEd-tcOhvGq_PAw">
+      <interfaceRealization xmi:id="_cPON0FOQEd-tcOhvGq_PAw" name="Realization of TimeScale" supplier="_qxG5AFOHEd-tcOhvGq_PAw" client="_tgk6gFOIEd-tcOhvGq_PAw" contract="_qxG5AFOHEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_zneAQFOIEd-tcOhvGq_PAw" name="UTCScale" clientDependency="_b15H0FOQEd-tcOhvGq_PAw">
+      <interfaceRealization xmi:id="_b15H0FOQEd-tcOhvGq_PAw" name="Realization of TimeScale" supplier="_qxG5AFOHEd-tcOhvGq_PAw" client="_zneAQFOIEd-tcOhvGq_PAw" contract="_qxG5AFOHEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_QQCqkFOGEd-tcOhvGq_PAw" name="TimeStamped">
+      <ownedComment xmi:id="_-x7_gFOGEd-tcOhvGq_PAw" annotatedElement="_QQCqkFOGEd-tcOhvGq_PAw">
+        <body>This interface represents objects that have a AbsoluteDate  date attached to them.
+
+Classes implementing this interface can be stored chronologically in sorted sets using ChronologicalComparator as the underlying comparator. An example using for Orbit instances is given here:
+
+     SortedSet&lt;Orbit> sortedOrbits =
+         new TreeSet&lt;Orbit>(new ChronologicalComparator());
+     sortedOrbits.add(orbit1);
+     sortedOrbits.add(orbit2);
+     ...</body>
+      </ownedComment>
+      <ownedOperation xmi:id="_SwLFAFOGEd-tcOhvGq_PAw" name="getDate">
+        <ownedComment xmi:id="_Dbm5UFOHEd-tcOhvGq_PAw" annotatedElement="_SwLFAFOGEd-tcOhvGq_PAw">
+          <body>Get the date.</body>
+        </ownedComment>
+        <ownedParameter xmi:id="_a8LdIFOGEd-tcOhvGq_PAw" name="" type="_K3iU0FOGEd-tcOhvGq_PAw" direction="return"/>
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_fPJm0FOJEd-tcOhvGq_PAw" name="ChronologicalComparator"/>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_qxG5AFOHEd-tcOhvGq_PAw" name="TimeScale"/>
+    <packagedElement xmi:type="uml:Association" xmi:id="_8RN4gFkTEd-m5vkAa9eXJA" name="A_TimeScaleFactory_TimeScale" memberEnd="_8TWmgFkTEd-m5vkAa9eXJA _8UDxIFkTEd-m5vkAa9eXJA">
+      <ownedEnd xmi:id="_8UDxIFkTEd-m5vkAa9eXJA" name="timeScaleFactory" type="_nK1D8FOJEd-tcOhvGq_PAw" isUnique="false" association="_8RN4gFkTEd-m5vkAa9eXJA">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_8UzYAFkTEd-m5vkAa9eXJA" value="*"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_8U3pcFkTEd-m5vkAa9eXJA"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_VFUEQFkUEd-m5vkAa9eXJA" name="A_TimeScaleFactory_UTCTAILoader" memberEnd="_VGqIEFkUEd-m5vkAa9eXJA _VHeAYFkUEd-m5vkAa9eXJA">
+      <ownedEnd xmi:id="_VHeAYFkUEd-m5vkAa9eXJA" name="timeScaleFactory" type="_nK1D8FOJEd-tcOhvGq_PAw" isUnique="false" association="_VFUEQFkUEd-m5vkAa9eXJA">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_VILLAFkUEd-m5vkAa9eXJA" value="*"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_VIPccFkUEd-m5vkAa9eXJA"/>
+      </ownedEnd>
+    </packagedElement>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_EJMo0FNrEd-tcOhvGq_PAw" name="propagation">
+    <ownedComment xmi:id="_wV9zcFOtEd-tcOhvGq_PAw" annotatedElement="_EJMo0FNrEd-tcOhvGq_PAw">
+      <body>This package provides tools to propagate orbital states with different methods.</body>
+    </ownedComment>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_gy-TUFQ0Ed-tcOhvGq_PAw" name="BasicPropagator">
+      <ownedComment xmi:id="_n5aKgFQ0Ed-tcOhvGq_PAw" annotatedElement="_gy-TUFQ0Ed-tcOhvGq_PAw">
+        <body>This interface provides a way to propagate an orbit at any time.
+It is the simplest abstraction for orbit propagation.
+It only allows propagation to a predefined date.</body>
+      </ownedComment>
+      <generalization xmi:id="_xjvP4FQ2Ed-tcOhvGq_PAw" general="_JkD4kFN3Ed-tcOhvGq_PAw"/>
+      <ownedOperation xmi:id="_TfDe0FQ3Ed-tcOhvGq_PAw" name="propagate">
+        <ownedComment xmi:id="_Tnw5cFQ4Ed-tcOhvGq_PAw" annotatedElement="_TfDe0FQ3Ed-tcOhvGq_PAw">
+          <body>Propagate towards a target date.</body>
+        </ownedComment>
+        <ownedParameter xmi:id="_hu1XQFQ3Ed-tcOhvGq_PAw" type="_NoUxcFQ2Ed-tcOhvGq_PAw" direction="return"/>
+        <ownedParameter xmi:id="_caxAIFQ4Ed-tcOhvGq_PAw" name="target" type="_K3iU0FOGEd-tcOhvGq_PAw"/>
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_0wi1AFQ0Ed-tcOhvGq_PAw" name="Propagator">
+      <ownedComment xmi:id="__MMUgFQ0Ed-tcOhvGq_PAw" annotatedElement="_0wi1AFQ0Ed-tcOhvGq_PAw">
+        <body>This interface provides a way to propagate an orbit at any time.
+It is the top-level abstraction for orbit propagation.
+It is implemented by analytical models which have no time limit, by orbit readers based on external data files, by numerical integrators using rich force models and by continuous models built after numerical integration has been completed and dense output data as been gathered.</body>
+      </ownedComment>
+      <generalization xmi:id="_PPnU0FQ1Ed-tcOhvGq_PAw" general="_gy-TUFQ0Ed-tcOhvGq_PAw"/>
+      <ownedAttribute xmi:id="_D-rPQFQ5Ed-tcOhvGq_PAw" name="EPHEMERIS_GENERATION_MODE" isStatic="true">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/JavaPrimitiveTypes.library.uml#int"/>
+        <defaultValue xmi:type="uml:LiteralInteger" xmi:id="_ypczYFQ5Ed-tcOhvGq_PAw" value="2"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_fwwPEFQ5Ed-tcOhvGq_PAw" name="MASTER_MODE" visibility="public" isStatic="true">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/JavaPrimitiveTypes.library.uml#int"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_gagWsFQ5Ed-tcOhvGq_PAw" value="1"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_gaP4AFQ5Ed-tcOhvGq_PAw" value="1"/>
+        <defaultValue xmi:type="uml:LiteralInteger" xmi:id="_xXjGoFQ5Ed-tcOhvGq_PAw" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_n1IVMFQ5Ed-tcOhvGq_PAw" name="SLAVE_MODE" visibility="public" isStatic="true">
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/JavaPrimitiveTypes.library.uml#int"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_r3ewUFQ5Ed-tcOhvGq_PAw" value="1"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_r3RU8FQ5Ed-tcOhvGq_PAw" value="1"/>
+        <defaultValue xmi:type="uml:LiteralInteger" xmi:id="_ublEwFQ5Ed-tcOhvGq_PAw"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_QsSuMFQ1Ed-tcOhvGq_PAw" name="BoundedPropagator">
+      <ownedComment xmi:id="_WvcjcFQ1Ed-tcOhvGq_PAw" annotatedElement="_QsSuMFQ1Ed-tcOhvGq_PAw">
+        <body>This interface is intended for ephemerides valid only during a time range.
+It provides a mean to retrieve orbital parameters at any time within a given range.
+It should be implemented by orbit readers based on external data files and by continuous models built after numerical integration has been completed and dense output data as been gathered.</body>
+      </ownedComment>
+      <generalization xmi:id="_gIbFAFQ1Ed-tcOhvGq_PAw" general="_gy-TUFQ0Ed-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_0XEvoFQ1Ed-tcOhvGq_PAw" name="Ephemeris" clientDependency="_6VkHUFQ1Ed-tcOhvGq_PAw">
+      <ownedComment xmi:id="_-sFboFQ1Ed-tcOhvGq_PAw" annotatedElement="_0XEvoFQ1Ed-tcOhvGq_PAw">
+        <body>This class is designed to accept and handle tabulated orbital entries.
+Tabulated entries are classified and then extrapolated in way to obtain continuous output, with accuracy and computation methods configured by the user.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_6VkHUFQ1Ed-tcOhvGq_PAw" name="Realization of BoundedPropagator" supplier="_QsSuMFQ1Ed-tcOhvGq_PAw" client="_0XEvoFQ1Ed-tcOhvGq_PAw" contract="_QsSuMFQ1Ed-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_NoUxcFQ2Ed-tcOhvGq_PAw" name="SpacecraftState" clientDependency="_mGtL4FQ2Ed-tcOhvGq_PAw">
+      <ownedComment xmi:id="_QBu40FQ2Ed-tcOhvGq_PAw" annotatedElement="_NoUxcFQ2Ed-tcOhvGq_PAw">
+        <body>This class is the representation of a complete state holding orbit, attitude and mass information at a given date.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_mGtL4FQ2Ed-tcOhvGq_PAw" name="Realization of TimeStamped" supplier="_QQCqkFOGEd-tcOhvGq_PAw" client="_NoUxcFQ2Ed-tcOhvGq_PAw" contract="_QQCqkFOGEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_DX-tkFQ3Ed-tcOhvGq_PAw" name="AbstractPropagator" clientDependency="_9KH80FQ5Ed-tcOhvGq_PAw" isAbstract="true">
+      <interfaceRealization xmi:id="_9KH80FQ5Ed-tcOhvGq_PAw" name="Realization of Propagator" supplier="_0wi1AFQ0Ed-tcOhvGq_PAw" client="_DX-tkFQ3Ed-tcOhvGq_PAw" contract="_0wi1AFQ0Ed-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Package" xmi:id="_OPPOMFQ7Ed-tcOhvGq_PAw" name="analytical">
+      <packagedElement xmi:type="uml:Class" xmi:id="_gI3XoFQ6Ed-tcOhvGq_PAw" name="KeplerianPropagator">
+        <ownedComment xmi:id="_HDXdYFQ7Ed-tcOhvGq_PAw" annotatedElement="_gI3XoFQ6Ed-tcOhvGq_PAw">
+          <body>Simple keplerian orbit propagator.</body>
+        </ownedComment>
+        <generalization xmi:id="_L-I40FQ8Ed-tcOhvGq_PAw" general="_DX-tkFQ3Ed-tcOhvGq_PAw"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="_bjercFQ7Ed-tcOhvGq_PAw" name="EcksteinHechlerPropagator">
+        <ownedComment xmi:id="_g-p6sFQ7Ed-tcOhvGq_PAw" annotatedElement="_bjercFQ7Ed-tcOhvGq_PAw">
+          <body>This class propagates a SpacecraftState  using the analytical Eckstein-Hechler model.</body>
+        </ownedComment>
+        <generalization xmi:id="_M1v2QFQ8Ed-tcOhvGq_PAw" general="_DX-tkFQ3Ed-tcOhvGq_PAw"/>
+      </packagedElement>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Package" xmi:id="_c-4DsFRBEd-tcOhvGq_PAw" name="numerical">
+      <packagedElement xmi:type="uml:Class" xmi:id="_9gUVoFRBEd-tcOhvGq_PAw" name="NumericalPropagator" clientDependency="_I8NxMFRCEd-tcOhvGq_PAw">
+        <ownedComment xmi:id="_AgVKAFRCEd-tcOhvGq_PAw" annotatedElement="_9gUVoFRBEd-tcOhvGq_PAw">
+          <body>This class propagates orbits using numerical integration.</body>
+        </ownedComment>
+        <interfaceRealization xmi:id="_I8NxMFRCEd-tcOhvGq_PAw" name="Realization of Propagator" supplier="_0wi1AFQ0Ed-tcOhvGq_PAw" client="_9gUVoFRBEd-tcOhvGq_PAw" contract="_0wi1AFQ0Ed-tcOhvGq_PAw"/>
+        <nestedClassifier xmi:type="uml:Class" xmi:id="_ccAxwFRCEd-tcOhvGq_PAw" name="DifferentialEquations" visibility="private"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="_MN_rAFRCEd-tcOhvGq_PAw" name="TimeDerivativesEquations">
+        <ownedComment xmi:id="_1K8JoFRCEd-tcOhvGq_PAw" annotatedElement="_MN_rAFRCEd-tcOhvGq_PAw">
+          <body>This class sums up the contribution of several forces into orbit and mass derivatives.</body>
+        </ownedComment>
+      </packagedElement>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Package" xmi:id="__RhA8FRWEd-tcOhvGq_PAw" name="events">
+      <ownedComment xmi:id="_FwKfYFRXEd-tcOhvGq_PAw" annotatedElement="__RhA8FRWEd-tcOhvGq_PAw">
+        <body>This package provides interfaces and classes dealing with events occurring during propagation.</body>
+      </ownedComment>
+      <packagedElement xmi:type="uml:Interface" xmi:id="_E5ybkFRYEd-tcOhvGq_PAw" name="EventDetector">
+        <ownedComment xmi:id="_GjgycFRYEd-tcOhvGq_PAw" annotatedElement="_E5ybkFRYEd-tcOhvGq_PAw">
+          <body>This interface represents space-dynamics aware events detectors.</body>
+        </ownedComment>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="_SxX2cFRYEd-tcOhvGq_PAw" name="AbstractDetector" clientDependency="_ZrX0IFRYEd-tcOhvGq_PAw">
+        <ownedComment xmi:id="_VQu00FRYEd-tcOhvGq_PAw" annotatedElement="_SxX2cFRYEd-tcOhvGq_PAw">
+          <body>Common parts shared by several orbital events finders.</body>
+        </ownedComment>
+        <interfaceRealization xmi:id="_ZrX0IFRYEd-tcOhvGq_PAw" name="Realization of EventDetector" supplier="_E5ybkFRYEd-tcOhvGq_PAw" client="_SxX2cFRYEd-tcOhvGq_PAw" contract="_E5ybkFRYEd-tcOhvGq_PAw"/>
+      </packagedElement>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Package" xmi:id="_nHwrUFRZEd-tcOhvGq_PAw" name="sampling">
+      <ownedComment xmi:id="_tk9_UFRZEd-tcOhvGq_PAw" annotatedElement="_nHwrUFRZEd-tcOhvGq_PAw">
+        <body>This package provides interfaces and classes dealing with step handling during propagation.</body>
+      </ownedComment>
+      <packagedElement xmi:type="uml:Interface" xmi:id="_5Ued8FRaEd-tcOhvGq_PAw" name="OrekitFixedStepHandler">
+        <ownedComment xmi:id="_61SJYFRaEd-tcOhvGq_PAw" annotatedElement="_5Ued8FRaEd-tcOhvGq_PAw">
+          <body>This interface is a space-dynamics aware fixed size step handler.</body>
+        </ownedComment>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Interface" xmi:id="__k-LoFRaEd-tcOhvGq_PAw" name="OrekitStepHandler">
+        <ownedComment xmi:id="_EzCL8FRbEd-tcOhvGq_PAw" annotatedElement="__k-LoFRaEd-tcOhvGq_PAw">
+          <body>This interface is a space-dynamics aware step handler.</body>
+        </ownedComment>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Interface" xmi:id="_ZbxKgFRbEd-tcOhvGq_PAw" name="OrekitStepInterpolator">
+        <ownedComment xmi:id="_i4j1EFRbEd-tcOhvGq_PAw" annotatedElement="_ZbxKgFRbEd-tcOhvGq_PAw">
+          <body>This interface is a space-dynamics aware step interpolator.</body>
+        </ownedComment>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="_qEpBQFRbEd-tcOhvGq_PAw" name="AdaptedStepHandler" clientDependency="_KQFtsFRfEd-tcOhvGq_PAw _LtaVYFRhEd-vOfBRMshFkw">
+        <ownedComment xmi:id="_ukFBAFRbEd-tcOhvGq_PAw" annotatedElement="_qEpBQFRbEd-tcOhvGq_PAw">
+          <body>Adapt an OrekitStepHandler  to commons-math StepHandler interface.</body>
+        </ownedComment>
+        <interfaceRealization xmi:id="_KQFtsFRfEd-tcOhvGq_PAw" name="Realization of OrekitStepInterpolator" supplier="_ZbxKgFRbEd-tcOhvGq_PAw" client="_qEpBQFRbEd-tcOhvGq_PAw" contract="_ZbxKgFRbEd-tcOhvGq_PAw"/>
+        <interfaceRealization xmi:id="_LtaVYFRhEd-vOfBRMshFkw" name="Realization of OrekitStepInterpolator" supplier="_ZbxKgFRbEd-tcOhvGq_PAw" client="_qEpBQFRbEd-tcOhvGq_PAw" contract="_ZbxKgFRbEd-tcOhvGq_PAw"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="_qV4iQFRbEd-tcOhvGq_PAw" name="BasicStepInterpolator" clientDependency="_tJzUAFReEd-tcOhvGq_PAw _MMdo4FRhEd-vOfBRMshFkw">
+        <ownedComment xmi:id="_HosqIFReEd-tcOhvGq_PAw" annotatedElement="_qV4iQFRbEd-tcOhvGq_PAw">
+          <body>Implementation of the OrekitStepInterpolator interface based on a BasicPropagator.</body>
+        </ownedComment>
+        <interfaceRealization xmi:id="_tJzUAFReEd-tcOhvGq_PAw" name="Realization of OrekitStepInterpolator" supplier="_ZbxKgFRbEd-tcOhvGq_PAw" client="_qV4iQFRbEd-tcOhvGq_PAw" contract="_ZbxKgFRbEd-tcOhvGq_PAw"/>
+        <interfaceRealization xmi:id="_MMdo4FRhEd-vOfBRMshFkw" name="Realization of OrekitStepInterpolator" supplier="_ZbxKgFRbEd-tcOhvGq_PAw" client="_qV4iQFRbEd-tcOhvGq_PAw" contract="_ZbxKgFRbEd-tcOhvGq_PAw"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="_qoVkMFRbEd-tcOhvGq_PAw" name="OrekitStepNormalizer" clientDependency="_qPgtIFReEd-tcOhvGq_PAw _K7ODcFRhEd-vOfBRMshFkw">
+        <ownedComment xmi:id="_TIP2oFReEd-tcOhvGq_PAw" annotatedElement="_qoVkMFRbEd-tcOhvGq_PAw">
+          <body>This class wraps an object implementing OrekitFixedStepHandler  into a OrekitStepHandler.</body>
+        </ownedComment>
+        <interfaceRealization xmi:id="_qPgtIFReEd-tcOhvGq_PAw" name="Realization of OrekitStepHandler" supplier="__k-LoFRaEd-tcOhvGq_PAw" client="_qoVkMFRbEd-tcOhvGq_PAw" contract="__k-LoFRaEd-tcOhvGq_PAw"/>
+        <interfaceRealization xmi:id="_K7ODcFRhEd-vOfBRMshFkw" name="Realization of OrekitStepHandler" supplier="__k-LoFRaEd-tcOhvGq_PAw" client="_qoVkMFRbEd-tcOhvGq_PAw" contract="__k-LoFRaEd-tcOhvGq_PAw"/>
+      </packagedElement>
+    </packagedElement>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_Lge_cFNrEd-tcOhvGq_PAw" name="orbits">
+    <ownedComment xmi:id="_7e0tUFOkEd-tcOhvGq_PAw" annotatedElement="_Lge_cFNrEd-tcOhvGq_PAw">
+      <body>This package provides classes to represent orbits.</body>
+    </ownedComment>
+    <packagedElement xmi:type="uml:Class" xmi:id="_L7P2kFNwEd-tcOhvGq_PAw" name="Orbit" clientDependency="_ZVAIEFRDEd-tcOhvGq_PAw" isAbstract="true">
+      <ownedComment xmi:id="_6YpIYFOkEd-tcOhvGq_PAw" annotatedElement="_L7P2kFNwEd-tcOhvGq_PAw">
+        <body>This class handles orbital parameters without date.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_ZVAIEFRDEd-tcOhvGq_PAw" name="Realization of TimeStamped" supplier="_QQCqkFOGEd-tcOhvGq_PAw" client="_L7P2kFNwEd-tcOhvGq_PAw" contract="_QQCqkFOGEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_og5BUFNwEd-tcOhvGq_PAw" name="CartesianOrbit">
+      <ownedComment xmi:id="_DQSegFOlEd-tcOhvGq_PAw" annotatedElement="_og5BUFNwEd-tcOhvGq_PAw">
+        <body>This class holds cartesian orbital parameters.</body>
+      </ownedComment>
+      <generalization xmi:id="_8scNQFNzEd-tcOhvGq_PAw" general="_L7P2kFNwEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_HEKWYFNxEd-tcOhvGq_PAw" name="KeplerianOrbit">
+      <ownedComment xmi:id="_JhevwFOlEd-tcOhvGq_PAw" annotatedElement="_HEKWYFNxEd-tcOhvGq_PAw">
+        <body>This class handles traditional keplerian orbital parameters.</body>
+      </ownedComment>
+      <generalization xmi:id="_VaJdIFN0Ed-tcOhvGq_PAw" isSubstitutable="false" general="_L7P2kFNwEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_AWhZsFNxEd-tcOhvGq_PAw" name="CircularOrbit">
+      <ownedComment xmi:id="_QDENcFOlEd-tcOhvGq_PAw" annotatedElement="_AWhZsFNxEd-tcOhvGq_PAw">
+        <body>This class handles circular orbital parameters.</body>
+      </ownedComment>
+      <generalization xmi:id="_icG3kFN0Ed-tcOhvGq_PAw" general="_L7P2kFNwEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_DOXwkFNxEd-tcOhvGq_PAw" name="EquinoctialOrbit">
+      <ownedComment xmi:id="_NKYJEFOlEd-tcOhvGq_PAw" annotatedElement="_DOXwkFNxEd-tcOhvGq_PAw">
+        <body>This class handles equinoctial orbital parameters, which can support both circular and equatorial orbits.</body>
+      </ownedComment>
+      <generalization xmi:id="_h-lOEFN0Ed-tcOhvGq_PAw" general="_L7P2kFNwEd-tcOhvGq_PAw"/>
+    </packagedElement>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_TdKiIFNrEd-tcOhvGq_PAw" name="frames">
+    <ownedComment xmi:id="_kiYC4FOoEd-tcOhvGq_PAw" annotatedElement="_TdKiIFNrEd-tcOhvGq_PAw">
+      <body>Tridimensional references frames class.</body>
+    </ownedComment>
+    <packagedElement xmi:type="uml:Class" xmi:id="_D1ti8FOpEd-tcOhvGq_PAw" name="Frame">
+      <ownedComment xmi:id="_H0SRUFOpEd-tcOhvGq_PAw" annotatedElement="_D1ti8FOpEd-tcOhvGq_PAw">
+        <body>Tridimensional references frames class.</body>
+      </ownedComment>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_SvD80FOpEd-tcOhvGq_PAw" name="Transform">
+      <ownedComment xmi:id="_XhpiEFOpEd-tcOhvGq_PAw" annotatedElement="_SvD80FOpEd-tcOhvGq_PAw">
+        <body>Transformation class in three dimensional space.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_lEVrAFOpEd-tcOhvGq_PAw" name="IDENTITY" isStatic="true" type="_SvD80FOpEd-tcOhvGq_PAw" isUnique="false">
+        <defaultValue xmi:type="uml:InstanceValue" xmi:id="_rQtGoFOpEd-tcOhvGq_PAw"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_2wpUsFOpEd-tcOhvGq_PAw" name="FramesFactory">
+      <ownedComment xmi:id="_4AqyIFOpEd-tcOhvGq_PAw" annotatedElement="_2wpUsFOpEd-tcOhvGq_PAw">
+        <body>Factory for predefined reference frames.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_WxW-cFR2Ed-vOfBRMshFkw" name="getFrame" type="_D1ti8FOpEd-tcOhvGq_PAw" isUnique="false" association="_WxEDgFR2Ed-vOfBRMshFkw">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_jY2qcFR2Ed-vOfBRMshFkw" value="1"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_jYnZ4FR2Ed-vOfBRMshFkw" value="1"/>
+      </ownedAttribute>
+      <ownedOperation xmi:id="_kviNwFOrEd-tcOhvGq_PAw" name="getCIRF2000" isStatic="true">
+        <ownedComment xmi:id="_E7Bd0FOsEd-tcOhvGq_PAw" annotatedElement="_kviNwFOrEd-tcOhvGq_PAw">
+          <body>Get the CIRF2000 frame.</body>
+        </ownedComment>
+        <ownedParameter xmi:id="_AlavgFOsEd-tcOhvGq_PAw" type="_D1ti8FOpEd-tcOhvGq_PAw" direction="return"/>
+      </ownedOperation>
+      <ownedOperation xmi:id="_Drhk0FOsEd-tcOhvGq_PAw" name="getEME2000" isStatic="true">
+        <ownedComment xmi:id="_RndUMFOsEd-tcOhvGq_PAw" annotatedElement="_Drhk0FOsEd-tcOhvGq_PAw">
+          <body>Get the EME2000 frame.</body>
+        </ownedComment>
+        <ownedParameter xmi:id="_QQ4i0FOsEd-tcOhvGq_PAw" type="_D1ti8FOpEd-tcOhvGq_PAw" direction="return"/>
+      </ownedOperation>
+      <ownedOperation xmi:id="_Whlr4FOsEd-tcOhvGq_PAw" name="getGCRF" isStatic="true">
+        <ownedComment xmi:id="_cfa8QFOsEd-tcOhvGq_PAw" annotatedElement="_Whlr4FOsEd-tcOhvGq_PAw">
+          <body>Get the GCRF frame.
+
+The GCRF frame is the root frame in the frame tree.</body>
+        </ownedComment>
+        <ownedParameter xmi:id="_bqQ14FOsEd-tcOhvGq_PAw" type="_D1ti8FOpEd-tcOhvGq_PAw" direction="return"/>
+      </ownedOperation>
+      <ownedOperation xmi:id="_mDFD0FOsEd-tcOhvGq_PAw" name="getITRF2005" isStatic="true">
+        <ownedComment xmi:id="_nbQ-wFOsEd-tcOhvGq_PAw" annotatedElement="_mDFD0FOsEd-tcOhvGq_PAw">
+          <body>Get the ITRF2005 frame.</body>
+        </ownedComment>
+      </ownedOperation>
+      <ownedOperation xmi:id="_uah28FOsEd-tcOhvGq_PAw" name="getMEME" isStatic="true">
+        <ownedComment xmi:id="_xvDiwFOsEd-tcOhvGq_PAw" annotatedElement="_uah28FOsEd-tcOhvGq_PAw">
+          <body>Get the MEME frame.</body>
+        </ownedComment>
+        <ownedParameter xmi:id="_xAGLAFOsEd-tcOhvGq_PAw" type="_D1ti8FOpEd-tcOhvGq_PAw" direction="return"/>
+      </ownedOperation>
+      <ownedOperation xmi:id="_1lsdIFOsEd-tcOhvGq_PAw" name="getPEF" isStatic="true">
+        <ownedComment xmi:id="_9NJ9wFOsEd-tcOhvGq_PAw" annotatedElement="_1lsdIFOsEd-tcOhvGq_PAw">
+          <body>Get the PEF frame.</body>
+        </ownedComment>
+        <ownedParameter xmi:id="_5xKYAFOsEd-tcOhvGq_PAw" type="_D1ti8FOpEd-tcOhvGq_PAw" direction="return"/>
+      </ownedOperation>
+      <ownedOperation xmi:id="_BonccFOtEd-tcOhvGq_PAw" name="getTEME" isStatic="true">
+        <ownedComment xmi:id="_EI_HcFOtEd-tcOhvGq_PAw" annotatedElement="_BonccFOtEd-tcOhvGq_PAw">
+          <body>Get the TEME frame.</body>
+        </ownedComment>
+        <ownedParameter xmi:id="_DjE-AFOtEd-tcOhvGq_PAw" type="_D1ti8FOpEd-tcOhvGq_PAw" direction="return"/>
+      </ownedOperation>
+      <ownedOperation xmi:id="_I41hwFOtEd-tcOhvGq_PAw" name="getTIRF2000" isStatic="true">
+        <ownedComment xmi:id="_PCxUcFOtEd-tcOhvGq_PAw" annotatedElement="_I41hwFOtEd-tcOhvGq_PAw">
+          <body>Get the TIRF2000 frame.</body>
+        </ownedComment>
+        <ownedParameter xmi:id="_NRyfAFOtEd-tcOhvGq_PAw" type="_D1ti8FOpEd-tcOhvGq_PAw" direction="return"/>
+      </ownedOperation>
+      <ownedOperation xmi:id="_SJ_kEFOtEd-tcOhvGq_PAw" name="getVeis1950" isStatic="true">
+        <ownedComment xmi:id="_YXfBEFOtEd-tcOhvGq_PAw" annotatedElement="_SJ_kEFOtEd-tcOhvGq_PAw">
+          <body>Get the VEIS 1950 reference frame.</body>
+        </ownedComment>
+        <ownedParameter xmi:id="_XEtKkFOtEd-tcOhvGq_PAw" type="_D1ti8FOpEd-tcOhvGq_PAw" direction="return"/>
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_XcPoMFOqEd-tcOhvGq_PAw" name="LocalOrbitalFrame">
+      <ownedComment xmi:id="_ZiDeIFOqEd-tcOhvGq_PAw" annotatedElement="_XcPoMFOqEd-tcOhvGq_PAw">
+        <body>Class for frames moving with an orbiting satellite.
+
+There are two main local orbital frames:
+
+    * the (t, n, w) frame has its X axis along velocity (tangential), its Z axis along orbital momentum and its Y axis completes the right-handed trihedra (it is roughly pointing towards the central body)
+    * the (q, s, w) frame has its X axis along position (radial), its Z axis along orbital momentum and its Y axis completes the right-handed trihedra (it is roughly along velocity)</body>
+      </ownedComment>
+      <generalization xmi:id="_Ux66gFOrEd-tcOhvGq_PAw" general="_D1ti8FOpEd-tcOhvGq_PAw"/>
+      <nestedClassifier xmi:type="uml:Enumeration" xmi:id="_duzycFOqEd-tcOhvGq_PAw" name="LOFType">
+        <ownedComment xmi:id="_jvSHIFOqEd-tcOhvGq_PAw" annotatedElement="_duzycFOqEd-tcOhvGq_PAw">
+          <body>List of supported local orbital frame types.</body>
+        </ownedComment>
+      </nestedClassifier>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_9qH4gFOqEd-tcOhvGq_PAw" name="SpacecraftFrame">
+      <ownedComment xmi:id="__YIScFOqEd-tcOhvGq_PAw" annotatedElement="_9qH4gFOqEd-tcOhvGq_PAw">
+        <body>Frame associated to a satellite body, taking into account orbit and attitude.</body>
+      </ownedComment>
+      <generalization xmi:id="_T9IAgFOrEd-tcOhvGq_PAw" general="_D1ti8FOpEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_GuuskFOrEd-tcOhvGq_PAw" name="TopocentricFrame">
+      <ownedComment xmi:id="_JxfS8FOrEd-tcOhvGq_PAw" annotatedElement="_GuuskFOrEd-tcOhvGq_PAw">
+        <body>Frame associated to a position at the surface of a body shape.</body>
+      </ownedComment>
+      <generalization xmi:id="_VQWi8FOrEd-tcOhvGq_PAw" general="_D1ti8FOpEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_WxEDgFR2Ed-vOfBRMshFkw" name="A_FramesFactory_Frame" memberEnd="_WxW-cFR2Ed-vOfBRMshFkw _Wx9bYFR2Ed-vOfBRMshFkw">
+      <ownedEnd xmi:id="_Wx9bYFR2Ed-vOfBRMshFkw" name="framesFactory" type="_2wpUsFOpEd-tcOhvGq_PAw" isUnique="false" association="_WxEDgFR2Ed-vOfBRMshFkw">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_WySykFR2Ed-vOfBRMshFkw" value="*"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_WyUnwFR2Ed-vOfBRMshFkw"/>
+      </ownedEnd>
+    </packagedElement>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_wptU0FNrEd-tcOhvGq_PAw" name="forces">
+    <ownedComment xmi:id="_9I0ocFONEd-tcOhvGq_PAw" annotatedElement="_wptU0FNrEd-tcOhvGq_PAw">
+      <body>This package provides the interface for force models that will be used by the NumericalPropagator, as well as some classical spacecraft models for surface forces (spherical, box and solar array ...).</body>
+    </ownedComment>
+    <packagedElement xmi:type="uml:Class" xmi:id="_dOIYAFOOEd-tcOhvGq_PAw" name="SphericalSpacecraft" clientDependency="_-jMsAFOeEd-tcOhvGq_PAw __GhbgFOeEd-tcOhvGq_PAw">
+      <ownedComment xmi:id="_ivtPkFOhEd-tcOhvGq_PAw" annotatedElement="_dOIYAFOOEd-tcOhvGq_PAw">
+        <body>This class represents the features of a simplified spacecraft.
+
+The model of this spacecraft is a simple spherical model, this means that all coefficients are constant and do not depend of the direction.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_-jMsAFOeEd-tcOhvGq_PAw" name="Realization of DragSensitive" supplier="_JshbwFOdEd-tcOhvGq_PAw" client="_dOIYAFOOEd-tcOhvGq_PAw" contract="_JshbwFOdEd-tcOhvGq_PAw"/>
+      <interfaceRealization xmi:id="__GhbgFOeEd-tcOhvGq_PAw" name="Realization of RadiationSensitive" supplier="_7XLt4FOcEd-tcOhvGq_PAw" client="_dOIYAFOOEd-tcOhvGq_PAw" contract="_7XLt4FOcEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_orArAFOOEd-tcOhvGq_PAw" name="BoxAndSolarArraySpacecraft" clientDependency="_7PgGoFOeEd-tcOhvGq_PAw _9kQ-kFOeEd-tcOhvGq_PAw">
+      <ownedComment xmi:id="_mTk-8FOhEd-tcOhvGq_PAw" annotatedElement="_orArAFOOEd-tcOhvGq_PAw">
+        <body>experimental class representing the features of a classical satellite with a convex body shape and rotating flat solar arrays.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_7PgGoFOeEd-tcOhvGq_PAw" name="Realization of RadiationSensitive" supplier="_7XLt4FOcEd-tcOhvGq_PAw" client="_orArAFOOEd-tcOhvGq_PAw" contract="_7XLt4FOcEd-tcOhvGq_PAw"/>
+      <interfaceRealization xmi:id="_9kQ-kFOeEd-tcOhvGq_PAw" name="Realization of DragSensitive" supplier="_JshbwFOdEd-tcOhvGq_PAw" client="_orArAFOOEd-tcOhvGq_PAw" contract="_JshbwFOdEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_itIEYFObEd-tcOhvGq_PAw" name="ForceModel">
+      <ownedComment xmi:id="_niYjIFObEd-tcOhvGq_PAw" annotatedElement="_itIEYFObEd-tcOhvGq_PAw">
+        <body>This interface represents a force modifying spacecraft motion.</body>
+      </ownedComment>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Package" xmi:id="_ZMrMYFOcEd-tcOhvGq_PAw" name="drag">
+      <packagedElement xmi:type="uml:Interface" xmi:id="_JshbwFOdEd-tcOhvGq_PAw" name="DragSensitive">
+        <ownedComment xmi:id="_8hiEUFOgEd-tcOhvGq_PAw" annotatedElement="_JshbwFOdEd-tcOhvGq_PAw">
+          <body>Interface for spacecraft that are sensitive to atmospheric drag forces.</body>
+        </ownedComment>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="_WcixoFOdEd-tcOhvGq_PAw" name="DragForce" clientDependency="_v0DaMFOiEd-tcOhvGq_PAw _wbGzIFOiEd-tcOhvGq_PAw">
+        <ownedComment xmi:id="_DDHiAFOhEd-tcOhvGq_PAw" annotatedElement="_WcixoFOdEd-tcOhvGq_PAw">
+          <body>Atmospheric drag force model.</body>
+        </ownedComment>
+        <interfaceRealization xmi:id="_v0DaMFOiEd-tcOhvGq_PAw" name="Realization of Parameterizable" supplier="_W2xdQFOiEd-tcOhvGq_PAw" client="_WcixoFOdEd-tcOhvGq_PAw" contract="_W2xdQFOiEd-tcOhvGq_PAw"/>
+        <interfaceRealization xmi:id="_wbGzIFOiEd-tcOhvGq_PAw" name="Realization of ForceModelWithJacobians" supplier="_rMf1sFOhEd-tcOhvGq_PAw" client="_WcixoFOdEd-tcOhvGq_PAw" contract="_rMf1sFOhEd-tcOhvGq_PAw"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Interface" xmi:id="_b9tMwFOgEd-tcOhvGq_PAw" name="Atmosphere">
+        <ownedComment xmi:id="_fAscoFOgEd-tcOhvGq_PAw" annotatedElement="_b9tMwFOgEd-tcOhvGq_PAw">
+          <body>Interface for atmospheric models.</body>
+        </ownedComment>
+      </packagedElement>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Package" xmi:id="_eACNsFOcEd-tcOhvGq_PAw" name="gravity">
+      <packagedElement xmi:type="uml:Class" xmi:id="_i89TUFOfEd-tcOhvGq_PAw" name="CunninghamAttractionModel" clientDependency="_r7WqUFOiEd-tcOhvGq_PAw">
+        <ownedComment xmi:id="_m1MJIFOfEd-tcOhvGq_PAw" annotatedElement="_i89TUFOfEd-tcOhvGq_PAw">
+          <body>This class represents the gravitational field of a celestial body.
+
+The algorithm implemented in this class has been designed by Leland E. Cunningham (Lockheed Missiles and Space Company, Sunnyvale and Astronomy Department University of California, Berkeley) in his 1969 paper: On the computation of the spherical harmonic terms needed during the numerical integration of the orbital motion of an artificial satellite (Celestial Mechanics 2, 1970).</body>
+        </ownedComment>
+        <interfaceRealization xmi:id="_r7WqUFOiEd-tcOhvGq_PAw" name="Realization of ForceModel" supplier="_itIEYFObEd-tcOhvGq_PAw" client="_i89TUFOfEd-tcOhvGq_PAw" contract="_itIEYFObEd-tcOhvGq_PAw"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="_r9_O8FOfEd-tcOhvGq_PAw" name="DrozinerAttractionModel" clientDependency="_sgW00FOiEd-tcOhvGq_PAw">
+        <ownedComment xmi:id="_vuqrQFOfEd-tcOhvGq_PAw" annotatedElement="_r9_O8FOfEd-tcOhvGq_PAw">
+          <body>This class represents the gravitational field of a celestial body.
+
+The algorithm implemented in this class has been designed by Andrzej Droziner (Institute of Mathematical Machines, Warsaw) in his 1976 paper: An algorithm for recurrent calculation of gravitational acceleration (artificial satellites, Vol. 12, No 2, June 1977).</body>
+        </ownedComment>
+        <interfaceRealization xmi:id="_sgW00FOiEd-tcOhvGq_PAw" name="Realization of ForceModel" supplier="_itIEYFObEd-tcOhvGq_PAw" client="_r9_O8FOfEd-tcOhvGq_PAw" contract="_itIEYFObEd-tcOhvGq_PAw"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="_2xcKcFOfEd-tcOhvGq_PAw" name="ThirdBodyAttraction" clientDependency="_s6wR0FOiEd-tcOhvGq_PAw">
+        <ownedComment xmi:id="_-me0EFOfEd-tcOhvGq_PAw" annotatedElement="_2xcKcFOfEd-tcOhvGq_PAw">
+          <body>Third body attraction force model.</body>
+        </ownedComment>
+        <interfaceRealization xmi:id="_s6wR0FOiEd-tcOhvGq_PAw" name="Realization of ForceModel" supplier="_itIEYFObEd-tcOhvGq_PAw" client="_2xcKcFOfEd-tcOhvGq_PAw" contract="_itIEYFObEd-tcOhvGq_PAw"/>
+      </packagedElement>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Package" xmi:id="_p6vFIFOcEd-tcOhvGq_PAw" name="maneuvers">
+      <ownedComment xmi:id="_6FfnEFOdEd-tcOhvGq_PAw" annotatedElement="_p6vFIFOcEd-tcOhvGq_PAw">
+        <body>This package provides models of simple maneuvers.</body>
+      </ownedComment>
+      <packagedElement xmi:type="uml:Class" xmi:id="_8NqNcFOdEd-tcOhvGq_PAw" name="ConstantThrustManeuver" clientDependency="_qusC4FOiEd-tcOhvGq_PAw">
+        <ownedComment xmi:id="__yhbUFOdEd-tcOhvGq_PAw" annotatedElement="_8NqNcFOdEd-tcOhvGq_PAw">
+          <body>This class implements a simple maneuver with constant thrust.</body>
+        </ownedComment>
+        <interfaceRealization xmi:id="_qusC4FOiEd-tcOhvGq_PAw" name="Realization of ForceModel" supplier="_itIEYFObEd-tcOhvGq_PAw" client="_8NqNcFOdEd-tcOhvGq_PAw" contract="_itIEYFObEd-tcOhvGq_PAw"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="_KRwaUFOeEd-tcOhvGq_PAw" name="ImpulseManeuver">
+        <ownedComment xmi:id="_U-zL0FOeEd-tcOhvGq_PAw" annotatedElement="_KRwaUFOeEd-tcOhvGq_PAw">
+          <body>This class implements an impulse maneuver as a discrete event that can be provided to any Propagator.</body>
+        </ownedComment>
+      </packagedElement>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Package" xmi:id="_v9gf4FOcEd-tcOhvGq_PAw" name="radiation">
+      <packagedElement xmi:type="uml:Class" xmi:id="_y3HKQFOcEd-tcOhvGq_PAw" name="SolarRadiationPressure" clientDependency="_uqlQsFOiEd-tcOhvGq_PAw _vPjmAFOiEd-tcOhvGq_PAw">
+        <ownedComment xmi:id="_cFRX4FOhEd-tcOhvGq_PAw" annotatedElement="_y3HKQFOcEd-tcOhvGq_PAw">
+          <body>Solar radiation pressure force model.</body>
+        </ownedComment>
+        <interfaceRealization xmi:id="_uqlQsFOiEd-tcOhvGq_PAw" name="Realization of ForceModelWithJacobians" supplier="_rMf1sFOhEd-tcOhvGq_PAw" client="_y3HKQFOcEd-tcOhvGq_PAw" contract="_rMf1sFOhEd-tcOhvGq_PAw"/>
+        <interfaceRealization xmi:id="_vPjmAFOiEd-tcOhvGq_PAw" name="Realization of Parameterizable" supplier="_W2xdQFOiEd-tcOhvGq_PAw" client="_y3HKQFOcEd-tcOhvGq_PAw" contract="_W2xdQFOiEd-tcOhvGq_PAw"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Interface" xmi:id="_7XLt4FOcEd-tcOhvGq_PAw" name="RadiationSensitive">
+        <ownedComment xmi:id="_HRUn0FOhEd-tcOhvGq_PAw" annotatedElement="_7XLt4FOcEd-tcOhvGq_PAw">
+          <body>Interface for spacecraft that are sensitive to radiation pressure forces.</body>
+        </ownedComment>
+      </packagedElement>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_rMf1sFOhEd-tcOhvGq_PAw" name="ForceModelWithJacobians" clientDependency="_3XxqUFOiEd-tcOhvGq_PAw _32wFUFOiEd-tcOhvGq_PAw">
+      <ownedComment xmi:id="_Ea27kFOiEd-tcOhvGq_PAw" annotatedElement="_rMf1sFOhEd-tcOhvGq_PAw">
+        <body>This interface represents a force modifying spacecraft motion.
+
+Objects implementing this interface are intended to be added to a numerical propagator processing the partial derivatives before the propagation is started.</body>
+      </ownedComment>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_W2xdQFOiEd-tcOhvGq_PAw" name="Parameterizable">
+      <ownedComment xmi:id="_L2DsYFOjEd-tcOhvGq_PAw" annotatedElement="_W2xdQFOiEd-tcOhvGq_PAw">
+        <body>This interface enables to process the partial derivatives with respect to some force model parameter.</body>
+      </ownedComment>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Realization" xmi:id="_3XxqUFOiEd-tcOhvGq_PAw" name="FromForceModelWithJacobianstoForceModel" supplier="_itIEYFObEd-tcOhvGq_PAw" client="_rMf1sFOhEd-tcOhvGq_PAw"/>
+    <packagedElement xmi:type="uml:Realization" xmi:id="_32wFUFOiEd-tcOhvGq_PAw" name="FromForceModelWithJacobianstoParameterizable" supplier="_W2xdQFOiEd-tcOhvGq_PAw" client="_rMf1sFOhEd-tcOhvGq_PAw"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_DFa60FNvEd-tcOhvGq_PAw" name="utils">
+    <ownedComment xmi:id="_nnPCYFOlEd-tcOhvGq_PAw" annotatedElement="_DFa60FNvEd-tcOhvGq_PAw">
+      <body>This package provides useful objects.</body>
+    </ownedComment>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_EnZKQFN3Ed-tcOhvGq_PAw" name="Constants">
+      <ownedComment xmi:id="_NSM-cFOcEd-tcOhvGq_PAw" annotatedElement="_EnZKQFN3Ed-tcOhvGq_PAw">
+        <body>Set of useful physical constants.</body>
+      </ownedComment>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_JkD4kFN3Ed-tcOhvGq_PAw" name="PVCoordinatesProvider">
+      <ownedComment xmi:id="_pjkzQFOlEd-tcOhvGq_PAw" annotatedElement="_JkD4kFN3Ed-tcOhvGq_PAw">
+        <body>The PV coordinates provider interface can be used by any class used for position/velocity computation, for example celestial bodies or spacecraft position/velocity propagators, and many others...</body>
+      </ownedComment>
+      <ownedOperation xmi:id="_vUQjwFQ6Ed-tcOhvGq_PAw" name="getPVCoordinates">
+        <ownedComment xmi:id="_moy9kFQ8Ed-tcOhvGq_PAw" annotatedElement="_vUQjwFQ6Ed-tcOhvGq_PAw">
+          <body>Get the PVCoordinates of the body in the selected frame.</body>
+        </ownedComment>
+        <ownedParameter xmi:id="_ZwB7YFQ8Ed-tcOhvGq_PAw" name="date" type="_K3iU0FOGEd-tcOhvGq_PAw">
+          <ownedComment xmi:id="_i5uDwFQ8Ed-tcOhvGq_PAw" annotatedElement="_ZwB7YFQ8Ed-tcOhvGq_PAw">
+            <body>current date</body>
+          </ownedComment>
+        </ownedParameter>
+        <ownedParameter xmi:id="_ub8JwFQ8Ed-tcOhvGq_PAw" name="frame" type="_D1ti8FOpEd-tcOhvGq_PAw">
+          <ownedComment xmi:id="_1p6zYFQ8Ed-tcOhvGq_PAw" annotatedElement="_ub8JwFQ8Ed-tcOhvGq_PAw">
+            <body>the frame where to define position and velocity</body>
+          </ownedComment>
+        </ownedParameter>
+        <ownedParameter xmi:id="_YmA_UFQ8Ed-tcOhvGq_PAw" name="pv" type="_UayxkFN3Ed-tcOhvGq_PAw" direction="return">
+          <ownedComment xmi:id="_5ptCsFQ8Ed-tcOhvGq_PAw" annotatedElement="_YmA_UFQ8Ed-tcOhvGq_PAw">
+            <body>position/velocity of the body (m and m/s)</body>
+          </ownedComment>
+        </ownedParameter>
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_gdCQ4FN2Ed-tcOhvGq_PAw" name="Line">
+      <ownedComment xmi:id="_H5IccFOmEd-tcOhvGq_PAw" annotatedElement="_gdCQ4FN2Ed-tcOhvGq_PAw">
+        <body>The class represent lines in a three dimensional space.</body>
+      </ownedComment>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_UayxkFN3Ed-tcOhvGq_PAw" name="PVCoordinates">
+      <ownedComment xmi:id="_DfLZoFOmEd-tcOhvGq_PAw" annotatedElement="_UayxkFN3Ed-tcOhvGq_PAw">
+        <body>Simple container for Position/Velocity pairs.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_tdbkQFOmEd-tcOhvGq_PAw" name="ZERO" visibility="public" isStatic="true" type="_UayxkFN3Ed-tcOhvGq_PAw">
+        <ownedComment xmi:id="_Vsi3EFOoEd-tcOhvGq_PAw" annotatedElement="_tdbkQFOmEd-tcOhvGq_PAw">
+          <body>Fixed position/velocity at origin (both p and v are zero vectors).</body>
+        </ownedComment>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_N3Gk0FOoEd-tcOhvGq_PAw" value="1"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_N3C6cFOoEd-tcOhvGq_PAw" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_ZSZTUFNvEd-tcOhvGq_PAw" name="attitudes">
+    <ownedComment xmi:id="_UnzN0FOuEd-tcOhvGq_PAw" annotatedElement="_ZSZTUFNvEd-tcOhvGq_PAw">
+      <body>This package provides classes to represent simple attitudes.</body>
+    </ownedComment>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_hfiVQFOuEd-tcOhvGq_PAw" name="AttitudeLaw">
+      <ownedComment xmi:id="_ji5UIFOuEd-tcOhvGq_PAw" annotatedElement="_hfiVQFOuEd-tcOhvGq_PAw">
+        <body>This interface represents an attitude law model set.
+
+An attitude law provides a way to compute an Attitude from an orbital state.</body>
+      </ownedComment>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_muDBgFOuEd-tcOhvGq_PAw" name="Attitude" clientDependency="_BY_UsFRgEd-tcOhvGq_PAw">
+      <ownedComment xmi:id="_pBSPcFOuEd-tcOhvGq_PAw" annotatedElement="_muDBgFOuEd-tcOhvGq_PAw">
+        <body>This class handles attitude definition at a given date.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_BY_UsFRgEd-tcOhvGq_PAw" name="Realization of TimeStamped" supplier="_QQCqkFOGEd-tcOhvGq_PAw" client="_muDBgFOuEd-tcOhvGq_PAw" contract="_QQCqkFOGEd-tcOhvGq_PAw"/>
+    </packagedElement>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_fCGBEFNvEd-tcOhvGq_PAw" name="bodies">
+    <ownedComment xmi:id="_4E_UoFOtEd-tcOhvGq_PAw" annotatedElement="_fCGBEFNvEd-tcOhvGq_PAw">
+      <body>New_Comment</body>
+    </ownedComment>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_GCwQAFOuEd-tcOhvGq_PAw" name="CelestialBody">
+      <ownedComment xmi:id="_HNb6cFOuEd-tcOhvGq_PAw" annotatedElement="_GCwQAFOuEd-tcOhvGq_PAw">
+        <body>Interface for celestial bodies like Sun, Moon or solar system planets.</body>
+      </ownedComment>
+      <generalization xmi:id="_2hILYFRAEd-tcOhvGq_PAw" general="_JkD4kFN3Ed-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_KkadUFOuEd-tcOhvGq_PAw" name="BodyShape">
+      <ownedComment xmi:id="_NKfHsFOuEd-tcOhvGq_PAw" annotatedElement="_KkadUFOuEd-tcOhvGq_PAw">
+        <body>Interface representing the rigid surface shape of a natural body.</body>
+      </ownedComment>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_lzNSAFQ_Ed-tcOhvGq_PAw" name="GeodeticPoint">
+      <ownedComment xmi:id="_xV-5MFRhEd-vOfBRMshFkw" annotatedElement="_lzNSAFQ_Ed-tcOhvGq_PAw">
+        <body>Point location relative to a 2D body surface.</body>
+      </ownedComment>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_wtX5gFQ_Ed-tcOhvGq_PAw" name="OneAxisEllipsoid" clientDependency="_h7wC0FRAEd-tcOhvGq_PAw">
+      <ownedComment xmi:id="_43fi0FRhEd-vOfBRMshFkw" annotatedElement="_wtX5gFQ_Ed-tcOhvGq_PAw">
+        <body>Modeling of a one-axis ellipsoid.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_h7wC0FRAEd-tcOhvGq_PAw" name="Realization of BodyShape" supplier="_KkadUFOuEd-tcOhvGq_PAw" client="_wtX5gFQ_Ed-tcOhvGq_PAw" contract="_KkadUFOuEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="__XTXUFQ_Ed-tcOhvGq_PAw" name="AbstractCelestialBody" clientDependency="_HcTIgFRAEd-tcOhvGq_PAw" isAbstract="true">
+      <ownedComment xmi:id="_89E4IFRhEd-vOfBRMshFkw" annotatedElement="__XTXUFQ_Ed-tcOhvGq_PAw">
+        <body>Abstract implementation of the CelestialBody interface.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_HcTIgFRAEd-tcOhvGq_PAw" name="Realization of CelestialBody" supplier="_GCwQAFOuEd-tcOhvGq_PAw" client="__XTXUFQ_Ed-tcOhvGq_PAw" contract="_GCwQAFOuEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_IykX4FRAEd-tcOhvGq_PAw" name="CelestialBodyFactory">
+      <ownedComment xmi:id="_Nt8FsFRAEd-tcOhvGq_PAw" annotatedElement="_IykX4FRAEd-tcOhvGq_PAw">
+        <body>Factory class for bodies of the solar system.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_vIiwQFRsEd-vOfBRMshFkw" name="getBody" type="_GCwQAFOuEd-tcOhvGq_PAw" isUnique="false" association="_vIJHoFRsEd-vOfBRMshFkw">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="__AHs8FRsEd-vOfBRMshFkw" value="1"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="__AC0cFRsEd-vOfBRMshFkw" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_lxcokFRtEd-vOfBRMshFkw" name="addCelestialBodyLoader" type="_ThRuwFRrEd-vOfBRMshFkw" isUnique="false" aggregation="shared" association="_lxFcMFRtEd-vOfBRMshFkw">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_svMd0FRtEd-vOfBRMshFkw" value="*"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_su-bYFRtEd-vOfBRMshFkw" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_ThRuwFRrEd-vOfBRMshFkw" name="CelestialBodyLoader">
+      <ownedComment xmi:id="_V7XyoFRrEd-vOfBRMshFkw" annotatedElement="_ThRuwFRrEd-vOfBRMshFkw">
+        <body>Interface for loading celestial bodies.</body>
+      </ownedComment>
+      <generalization xmi:id="_W2NNwFRsEd-vOfBRMshFkw" general="_XZvSQFRkEd-vOfBRMshFkw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_rTVOsFRrEd-vOfBRMshFkw" name="JPLEphemeridesLoader" clientDependency="_2Ouv0FRsEd-vOfBRMshFkw">
+      <ownedComment xmi:id="_u_R8AFRrEd-vOfBRMshFkw" annotatedElement="_rTVOsFRrEd-vOfBRMshFkw">
+        <body>Loader for JPL ephemerides binary files (DE 405, DE 406).</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_2Ouv0FRsEd-vOfBRMshFkw" name="Realization of CelestialBodyLoader" supplier="_ThRuwFRrEd-vOfBRMshFkw" client="_rTVOsFRrEd-vOfBRMshFkw" contract="_ThRuwFRrEd-vOfBRMshFkw"/>
+      <nestedClassifier xmi:type="uml:Class" xmi:id="_4DKP8FRuEd-vOfBRMshFkw" name="JPLCelestialBody" visibility="private">
+        <generalization xmi:id="_Y3AggFRvEd-vOfBRMshFkw" general="__XTXUFQ_Ed-tcOhvGq_PAw"/>
+      </nestedClassifier>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_vIJHoFRsEd-vOfBRMshFkw" name="A_CelestialBodyFactory_CelestialBody" memberEnd="_vIiwQFRsEd-vOfBRMshFkw _vI4ugFRsEd-vOfBRMshFkw">
+      <ownedEnd xmi:id="_vI4ugFRsEd-vOfBRMshFkw" name="celestialBodyFactory" type="_IykX4FRAEd-tcOhvGq_PAw" isUnique="false" association="_vIJHoFRsEd-vOfBRMshFkw">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_vJMQgFRsEd-vOfBRMshFkw" value="*"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_vJOswFRsEd-vOfBRMshFkw"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_lxFcMFRtEd-vOfBRMshFkw" name="A_CelestialBodyFactory_CelestialBodyLoader" memberEnd="_lxcokFRtEd-vOfBRMshFkw _lxym0FRtEd-vOfBRMshFkw">
+      <ownedEnd xmi:id="_lxym0FRtEd-vOfBRMshFkw" name="celestialBodyFactory" type="_IykX4FRAEd-tcOhvGq_PAw" isUnique="false" association="_lxFcMFRtEd-vOfBRMshFkw">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_lyGv4FRtEd-vOfBRMshFkw" value="*"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_lyIlEFRtEd-vOfBRMshFkw"/>
+      </ownedEnd>
+    </packagedElement>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_hcC7AFNvEd-tcOhvGq_PAw" name="data">
+    <ownedComment xmi:id="_0TFW0FONEd-tcOhvGq_PAw" annotatedElement="_hcC7AFNvEd-tcOhvGq_PAw">
+      <body>This package provide base classes for exploring the configured data directory tree and read external data that can be used by the library.</body>
+    </ownedComment>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_XZvSQFRkEd-vOfBRMshFkw" name="DataLoader">
+      <ownedComment xmi:id="_aJ33kFRkEd-vOfBRMshFkw" annotatedElement="_XZvSQFRkEd-vOfBRMshFkw">
+        <body>Interface for loading data files from data providers.</body>
+      </ownedComment>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_XyctMFRkEd-vOfBRMshFkw" name="DataProvider">
+      <ownedComment xmi:id="_hOP5QFRkEd-vOfBRMshFkw" annotatedElement="_XyctMFRkEd-vOfBRMshFkw">
+        <body>Interface for providing data files to file loaders.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_CXZHkFRpEd-vOfBRMshFkw" name="feed" type="_XZvSQFRkEd-vOfBRMshFkw" isUnique="false" association="_CW5YUFRpEd-vOfBRMshFkw">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_VWM68FRpEd-vOfBRMshFkw" value="1"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_VWICcFRpEd-vOfBRMshFkw" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_o2yX8FRkEd-vOfBRMshFkw" name="DataProvidersManager">
+      <ownedComment xmi:id="_p9zqYFRkEd-vOfBRMshFkw" annotatedElement="_o2yX8FRkEd-vOfBRMshFkw">
+        <body>Singleton class managing all supported data providers.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_AAIAIFRnEd-vOfBRMshFkw" name="OREKIT_DATA_PATH" isStatic="true">
+        <ownedComment xmi:id="_K2UtoFRnEd-vOfBRMshFkw" annotatedElement="_AAIAIFRnEd-vOfBRMshFkw">
+          <body>Name of the property defining the root directories or zip/jar files path for default configuration.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <defaultValue xmi:type="uml:InstanceValue" xmi:id="_GU7mEFRnEd-vOfBRMshFkw"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_1GjHIFRpEd-vOfBRMshFkw" name="addProvider" type="_XyctMFRkEd-vOfBRMshFkw" isUnique="false" aggregation="shared" association="_1GOXAFRpEd-vOfBRMshFkw">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_ADv0gFRqEd-vOfBRMshFkw" value="*"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_ADhyEFRqEd-vOfBRMshFkw" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_fqC0MFRnEd-vOfBRMshFkw" name="ClasspathCrawler" clientDependency="_-jsMcFRoEd-vOfBRMshFkw">
+      <ownedComment xmi:id="_iDrlEFRnEd-vOfBRMshFkw" annotatedElement="_fqC0MFRnEd-vOfBRMshFkw">
+        <body>Provider for data files stored as resources in the classpath.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_-jsMcFRoEd-vOfBRMshFkw" name="Realization of DataProvider" supplier="_XyctMFRkEd-vOfBRMshFkw" client="_fqC0MFRnEd-vOfBRMshFkw" contract="_XyctMFRkEd-vOfBRMshFkw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_uUvHAFRnEd-vOfBRMshFkw" name="DirectoryCrawler" clientDependency="__Zek8FRoEd-vOfBRMshFkw">
+      <ownedComment xmi:id="_vT-9gFRnEd-vOfBRMshFkw" annotatedElement="_uUvHAFRnEd-vOfBRMshFkw">
+        <body>Provider for data files stored in a directories tree on filesystem.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="__Zek8FRoEd-vOfBRMshFkw" name="Realization of DataProvider" supplier="_XyctMFRkEd-vOfBRMshFkw" client="_uUvHAFRnEd-vOfBRMshFkw" contract="_XyctMFRkEd-vOfBRMshFkw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_1rWIMFRnEd-vOfBRMshFkw" name="NetworkCrawler" clientDependency="_-HUZgFRoEd-vOfBRMshFkw">
+      <ownedComment xmi:id="__t5yQFRnEd-vOfBRMshFkw" annotatedElement="_1rWIMFRnEd-vOfBRMshFkw">
+        <body>Provider for data files directly fetched from network.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_-HUZgFRoEd-vOfBRMshFkw" name="Realization of DataProvider" supplier="_XyctMFRkEd-vOfBRMshFkw" client="_1rWIMFRnEd-vOfBRMshFkw" contract="_XyctMFRkEd-vOfBRMshFkw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_T6fAUFRoEd-vOfBRMshFkw" name="ZipJarCrawler" clientDependency="_-9elcFRoEd-vOfBRMshFkw">
+      <ownedComment xmi:id="_YsxqoFRoEd-vOfBRMshFkw" annotatedElement="_T6fAUFRoEd-vOfBRMshFkw">
+        <body>Helper class for loading data files from a zip/jar archive.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_-9elcFRoEd-vOfBRMshFkw" name="Realization of DataProvider" supplier="_XyctMFRkEd-vOfBRMshFkw" client="_T6fAUFRoEd-vOfBRMshFkw" contract="_XyctMFRkEd-vOfBRMshFkw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_CW5YUFRpEd-vOfBRMshFkw" name="A_DataProvider_DataLoader" memberEnd="_CXZHkFRpEd-vOfBRMshFkw _CXsCgFRpEd-vOfBRMshFkw">
+      <ownedEnd xmi:id="_CXsCgFRpEd-vOfBRMshFkw" name="dataProvider" type="_XyctMFRkEd-vOfBRMshFkw" isUnique="false" association="_CW5YUFRpEd-vOfBRMshFkw">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_CX-9cFRpEd-vOfBRMshFkw" value="*"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_CYAyoFRpEd-vOfBRMshFkw"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_1GOXAFRpEd-vOfBRMshFkw" name="A_DataProvidersManager_DataProvider" memberEnd="_1GjHIFRpEd-vOfBRMshFkw _1G2pIFRpEd-vOfBRMshFkw">
+      <ownedEnd xmi:id="_1G2pIFRpEd-vOfBRMshFkw" name="dataProvidersManager" type="_o2yX8FRkEd-vOfBRMshFkw" isUnique="false" association="_1GOXAFRpEd-vOfBRMshFkw">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_1HKLIFRpEd-vOfBRMshFkw" value="1"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_1HMAUFRpEd-vOfBRMshFkw" value="1"/>
+      </ownedEnd>
+    </packagedElement>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_j_cr4FNvEd-tcOhvGq_PAw" name="errors">
+    <ownedComment xmi:id="_C7nN0FOLEd-tcOhvGq_PAw" annotatedElement="_j_cr4FNvEd-tcOhvGq_PAw">
+      <body>This package provides classes to generate and handle exceptions.</body>
+    </ownedComment>
+    <packagedElement xmi:type="uml:Class" xmi:id="_-MS_AFOKEd-tcOhvGq_PAw" name="FrameAncestorException">
+      <ownedComment xmi:id="_ZaDw0FOLEd-tcOhvGq_PAw" annotatedElement="_-MS_AFOKEd-tcOhvGq_PAw">
+        <body>This class is the base class for exception thrown by the Frame.updateTransform method.</body>
+      </ownedComment>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_KeRG8FOLEd-tcOhvGq_PAw" name="OrekitException">
+      <ownedComment xmi:id="_SwElEFOLEd-tcOhvGq_PAw" annotatedElement="_KeRG8FOLEd-tcOhvGq_PAw">
+        <body>This class is the base class for all specific exceptions thrown by the orekit classes.
+
+When the orekit classes throw exceptions that are specific to the package, these exceptions are always subclasses of OrekitException. When exceptions that are already covered by the standard java API should be thrown, like ArrayIndexOutOfBoundsException or InvalidParameterException, these standard exceptions are thrown rather than the commons-math specific ones.
+
+This class also provides utility methods to throw some standard java exceptions with localized messages.</body>
+      </ownedComment>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_fwbdAFOLEd-tcOhvGq_PAw" name="PropagationException">
+      <ownedComment xmi:id="_ms3qsFOLEd-tcOhvGq_PAw" annotatedElement="_fwbdAFOLEd-tcOhvGq_PAw">
+        <body>This class is the base class for all specific exceptions thrown by during the propagation computation.</body>
+      </ownedComment>
+      <generalization xmi:id="_ElENAFONEd-tcOhvGq_PAw" general="_KeRG8FOLEd-tcOhvGq_PAw"/>
+    </packagedElement>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_vw_nUFNvEd-tcOhvGq_PAw" name="tle"/>
+  <packagedElement xmi:type="uml:Package" xmi:id="_3_X2wFRbEd-tcOhvGq_PAw" name="commons-math">
+    <ownedComment xmi:id="__nHrQFRbEd-tcOhvGq_PAw" annotatedElement="_3_X2wFRbEd-tcOhvGq_PAw">
+      <body>This package enables to display the commons-math useful classes.</body>
+    </ownedComment>
+    <packagedElement xmi:type="uml:Class" xmi:id="_ua-58FRcEd-tcOhvGq_PAw" name="Vector3D"/>
+    <packagedElement xmi:type="uml:Class" xmi:id="_xR-8QFRcEd-tcOhvGq_PAw" name="Rotation"/>
+    <packagedElement xmi:type="uml:Interface" xmi:id="__2_d0FRcEd-tcOhvGq_PAw" name="FirstOrderIntegrator"/>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_iuZhkFRdEd-tcOhvGq_PAw" name="FirstOrderDifferentialEquations"/>
+  </packagedElement>
+  <profileApplication xmi:id="_V1zp8lNqEd-tcOhvGq_PAw">
+    <eAnnotations xmi:id="_V1zp81NqEd-tcOhvGq_PAw" source="http://www.eclipse.org/uml2/2.0.0/UML">
+      <references xmi:type="ecore:EPackage" href="http://www.eclipse.org/uml2/schemas/Standard/1#/"/>
+    </eAnnotations>
+    <appliedProfile href="pathmap://UML_PROFILES/Standard.profile.uml#_0"/>
+  </profileApplication>
+</uml:Model>
