@@ -75,9 +75,12 @@ Vector3D moonInEME2000 =
   The <GeodeticPoint> class allows handling of such coordinates. It is a simple container
   that does not provide processing methods.
 
+* Package organization
+ 
+[../images/design/OrekitModel_bodiesPackage.png]
+
 * Authors
 
   ** Luc Maisonobe
-  
 
-  
+  ** Pascal Parraud

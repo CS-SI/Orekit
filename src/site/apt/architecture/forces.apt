@@ -65,7 +65,10 @@ Forces
   * forces induced by maneuvers. At present, only constant thrust maneuvers 
   are implemented, with the possibility to define an impulse maneuver, thanks 
   to the event detector mechanism.
-  
+
+* Package organization
+ 
+[../images/design/OrekitModel_forcesPackage.png]
 
 * Authors
 
@@ -74,3 +77,6 @@ Forces
  ** Mathieu Rom\u00e9ro
  
  ** Edouard Delente
+ 
+ ** Pascal Parraud
+ 

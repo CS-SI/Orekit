@@ -33,11 +33,6 @@ Attitude
   around an abstract class called "GroundPointing".
   At last, there exists attitude laws wrapping a "base" attitude law, and adding to this 
   base attitude law a complementary rotation in order to fulfill specific mission constraints.
-  
-  The attitude package is organized as follows :
-  
-[../images/attitudes.png]
-
 
 * Description of attitudes laws  
 
@@ -105,6 +100,9 @@ Attitude
   such a way the solar arrays have maximal lightning without changing the
   roll and pitch.
 
+* Package organization
+
+[../images/attitudes.png]
 
 * Authors
 

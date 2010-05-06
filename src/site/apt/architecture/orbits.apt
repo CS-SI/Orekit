@@ -185,6 +185,9 @@ Orbits
   Eckstein-Hechler propagator is defined in terms of circular orbit only. So
   there is an implicit conversion done at propagator initialization time.
 
+* Package organization
+ 
+[../images/design/OrekitModel_orbitsPackage.png]
 
 * Authors
 

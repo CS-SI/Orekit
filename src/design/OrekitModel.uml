@@ -10,7 +10,9 @@
     <ownedComment xmi:id="_ghgpwFONEd-tcOhvGq_PAw" annotatedElement="_9d6ckFNqEd-tcOhvGq_PAw">
       <body>This independent package provides classes to handle epochs, time scales, and to compare instants together.</body>
     </ownedComment>
-    <packagedElement xmi:type="uml:Interface" xmi:id="_oNXCgFOKEd-tcOhvGq_PAw" name="UTCTAILoader"/>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_oNXCgFOKEd-tcOhvGq_PAw" name="UTCTAILoader">
+      <generalization xmi:id="_eYqv4FkdEd-m5vkAa9eXJA" general="_XZvSQFRkEd-vOfBRMshFkw"/>
+    </packagedElement>
     <packagedElement xmi:type="uml:Class" xmi:id="_MNw2AFOIEd-tcOhvGq_PAw" name="TimeComponents"/>
     <packagedElement xmi:type="uml:Class" xmi:id="_F8Rp0FOIEd-tcOhvGq_PAw" name="DateComponents"/>
     <packagedElement xmi:type="uml:Class" xmi:id="_WR7CkFOIEd-tcOhvGq_PAw" name="DateTimeComponents"/>
@@ -26,8 +28,8 @@ This is a utility class, so its constructor is private.</body>
         <defaultValue xmi:type="uml:InstanceValue" xmi:id="_JSSiIFkUEd-m5vkAa9eXJA"/>
       </ownedAttribute>
       <ownedAttribute xmi:id="_VGqIEFkUEd-m5vkAa9eXJA" name="addUTCTAILoader" type="_oNXCgFOKEd-tcOhvGq_PAw" isUnique="false" association="_VFUEQFkUEd-m5vkAa9eXJA">
-        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_VHZu8FkUEd-m5vkAa9eXJA" value="*"/>
-        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_VHU2cFkUEd-m5vkAa9eXJA"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_RLpxcFkcEd-m5vkAa9eXJA" value="*"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_RLZ50FkcEd-m5vkAa9eXJA" value="1"/>
       </ownedAttribute>
     </packagedElement>
     <packagedElement xmi:type="uml:Class" xmi:id="_K3iU0FOGEd-tcOhvGq_PAw" name="AbsoluteDate" clientDependency="_zWh2sFOHEd-tcOhvGq_PAw">
@@ -724,6 +726,7 @@ An attitude law provides a way to compute an Attitude from an orbital state.</bo
       <ownedComment xmi:id="_ZaDw0FOLEd-tcOhvGq_PAw" annotatedElement="_-MS_AFOKEd-tcOhvGq_PAw">
         <body>This class is the base class for exception thrown by the Frame.updateTransform method.</body>
       </ownedComment>
+      <generalization xmi:id="_BJy3YFkcEd-m5vkAa9eXJA" general="_KeRG8FOLEd-tcOhvGq_PAw"/>
     </packagedElement>
     <packagedElement xmi:type="uml:Class" xmi:id="_KeRG8FOLEd-tcOhvGq_PAw" name="OrekitException">
       <ownedComment xmi:id="_SwElEFOLEd-tcOhvGq_PAw" annotatedElement="_KeRG8FOLEd-tcOhvGq_PAw">
@@ -739,9 +742,9 @@ This class also provides utility methods to throw some standard java exceptions 
         <body>This class is the base class for all specific exceptions thrown by during the propagation computation.</body>
       </ownedComment>
       <generalization xmi:id="_ElENAFONEd-tcOhvGq_PAw" general="_KeRG8FOLEd-tcOhvGq_PAw"/>
+      <generalization xmi:id="_Ao80IFkcEd-m5vkAa9eXJA" general="_KeRG8FOLEd-tcOhvGq_PAw"/>
     </packagedElement>
   </packagedElement>
-  <packagedElement xmi:type="uml:Package" xmi:id="_vw_nUFNvEd-tcOhvGq_PAw" name="tle"/>
   <packagedElement xmi:type="uml:Package" xmi:id="_3_X2wFRbEd-tcOhvGq_PAw" name="commons-math">
     <ownedComment xmi:id="__nHrQFRbEd-tcOhvGq_PAw" annotatedElement="_3_X2wFRbEd-tcOhvGq_PAw">
       <body>This package enables to display the commons-math useful classes.</body>
@@ -750,6 +753,29 @@ This class also provides utility methods to throw some standard java exceptions 
     <packagedElement xmi:type="uml:Class" xmi:id="_xR-8QFRcEd-tcOhvGq_PAw" name="Rotation"/>
     <packagedElement xmi:type="uml:Interface" xmi:id="__2_d0FRcEd-tcOhvGq_PAw" name="FirstOrderIntegrator"/>
     <packagedElement xmi:type="uml:Interface" xmi:id="_iuZhkFRdEd-tcOhvGq_PAw" name="FirstOrderDifferentialEquations"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_5XwwYFkZEd-m5vkAa9eXJA" name="tle">
+    <ownedComment xmi:id="_DpI5kFkaEd-m5vkAa9eXJA" annotatedElement="_5XwwYFkZEd-m5vkAa9eXJA">
+      <body>This package provides classes to read and extrapolate tle's.</body>
+    </ownedComment>
+    <packagedElement xmi:type="uml:Class" xmi:id="_R38hoFkaEd-m5vkAa9eXJA" name="TLE" clientDependency="_UMGgIFkbEd-m5vkAa9eXJA">
+      <ownedComment xmi:id="_Veo7gFkaEd-m5vkAa9eXJA" annotatedElement="_R38hoFkaEd-m5vkAa9eXJA">
+        <body>This class is a container for a single set of TLE data.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_UMGgIFkbEd-m5vkAa9eXJA" name="Realization of TimeStamped" supplier="_QQCqkFOGEd-tcOhvGq_PAw" client="_R38hoFkaEd-m5vkAa9eXJA" contract="_QQCqkFOGEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_e2mwcFkaEd-m5vkAa9eXJA" name="TLEPropagator" clientDependency="_MYVo4FkbEd-m5vkAa9eXJA">
+      <ownedComment xmi:id="_nGyd8FkaEd-m5vkAa9eXJA" annotatedElement="_e2mwcFkaEd-m5vkAa9eXJA">
+        <body>This class provides elements to propagate TLE's.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_MYVo4FkbEd-m5vkAa9eXJA" name="Realization of PVCoordinatesProvider" supplier="_JkD4kFN3Ed-tcOhvGq_PAw" client="_e2mwcFkaEd-m5vkAa9eXJA" contract="_JkD4kFN3Ed-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_xeM9sFkaEd-m5vkAa9eXJA" name="TLESeries" clientDependency="_D7OSoFkbEd-m5vkAa9eXJA">
+      <ownedComment xmi:id="_0b2akFkaEd-m5vkAa9eXJA" annotatedElement="_xeM9sFkaEd-m5vkAa9eXJA">
+        <body>This class reads and handles series of TLEs for one space object.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_D7OSoFkbEd-m5vkAa9eXJA" name="Realization of DataLoader" supplier="_XZvSQFRkEd-vOfBRMshFkw" client="_xeM9sFkaEd-m5vkAa9eXJA" contract="_XZvSQFRkEd-vOfBRMshFkw"/>
+    </packagedElement>
   </packagedElement>
   <profileApplication xmi:id="_V1zp8lNqEd-tcOhvGq_PAw">
     <eAnnotations xmi:id="_V1zp81NqEd-tcOhvGq_PAw" source="http://www.eclipse.org/uml2/2.0.0/UML">

@@ -17,6 +17,9 @@ Errors
   the classical mechanism of exceptions. Errors messages generated are automatically 
   translated, the languages available are english, french, italian, norse and spanish.
 
+* Package organization
+ 
+[../images/design/OrekitModel_errorsPackage.png]
 
 * Authors
 
@@ -24,5 +27,6 @@ Errors
   
   ** Fabien Maussion
   
-  
+  ** Pascal Parraud
+
   

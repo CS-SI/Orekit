@@ -47,7 +47,8 @@ import org.orekit.time.AbsoluteDate;
  *  numerical integration and enables jacobians computation for orbit parameters
  *  and partial derivatives computation with respect to some force models parameters.
  * <p>
- * As of 5.0, this class is still considered experimental, so use it with care.
+ * As of 5.0, this class is still considered experimental, so use it with care,
+ * the API could change in the future.
  * </p>
  * <p>
  * The underlying numerical integrator configuration can be exactly the same

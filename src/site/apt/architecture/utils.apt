@@ -24,6 +24,10 @@ Utils
 
   * <<Line>> object, used to represent a geometric line and associated useful operations.
 
+* Package organization
+ 
+[../images/design/OrekitModel_utilsPackage.png]
+
 * Author 
 
   ** Luc Maisonobe

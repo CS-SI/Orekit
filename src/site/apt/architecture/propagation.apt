@@ -169,6 +169,10 @@ propagator = new NumericalPropagator(integrator);
   of the state vector to the initial state or some parameter of the force models. It computes
   the jacobians dy(t)/dy0 and dy(t)/dp where y0 is the initial state and p some parameter.
 
+* Package organization
+ 
+[../images/design/OrekitModel_propagationPackage.png]
+
 * Authors
 
   ** Luc Maisonobe

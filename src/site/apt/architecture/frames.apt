@@ -285,6 +285,10 @@ Frames
   global tree, combines all transforms and updates the single transform between itself and its parent
   GCRF frame. 
 
+* Package organization
+ 
+[../images/design/OrekitModel_framesPackage.png]
+
 * Authors
 
    ** Luc Maisonobe
