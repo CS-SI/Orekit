@@ -567,11 +567,141 @@ Objects implementing this interface are intended to be added to a numerical prop
 An attitude law provides a way to compute an Attitude from an orbital state.</body>
       </ownedComment>
     </packagedElement>
-    <packagedElement xmi:type="uml:Class" xmi:id="_muDBgFOuEd-tcOhvGq_PAw" name="Attitude" clientDependency="_BY_UsFRgEd-tcOhvGq_PAw">
+    <packagedElement xmi:type="uml:Class" xmi:id="_muDBgFOuEd-tcOhvGq_PAw" name="Attitude" clientDependency="_BY_UsFRgEd-tcOhvGq_PAw _BA8X8Fw-Ed-YfIr2LTIjvQ">
       <ownedComment xmi:id="_pBSPcFOuEd-tcOhvGq_PAw" annotatedElement="_muDBgFOuEd-tcOhvGq_PAw">
         <body>This class handles attitude definition at a given date.</body>
       </ownedComment>
       <interfaceRealization xmi:id="_BY_UsFRgEd-tcOhvGq_PAw" name="Realization of TimeStamped" supplier="_QQCqkFOGEd-tcOhvGq_PAw" client="_muDBgFOuEd-tcOhvGq_PAw" contract="_QQCqkFOGEd-tcOhvGq_PAw"/>
+      <interfaceRealization xmi:id="_BA8X8Fw-Ed-YfIr2LTIjvQ" name="Realization of TimeStamped" supplier="_QQCqkFOGEd-tcOhvGq_PAw" client="_muDBgFOuEd-tcOhvGq_PAw" contract="_QQCqkFOGEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_vj0usFwaEd-YfIr2LTIjvQ" name="SpinStabilized" clientDependency="_eCUxYFwbEd-YfIr2LTIjvQ">
+      <ownedComment xmi:id="_H2dMIFwbEd-YfIr2LTIjvQ" annotatedElement="_vj0usFwaEd-YfIr2LTIjvQ">
+        <body>This class handles a spin stabilized attitude law.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_kU-bMFwbEd-YfIr2LTIjvQ" name="attitudeLaw" type="_hfiVQFOuEd-tcOhvGq_PAw" isUnique="false" aggregation="shared" association="_kUvKoFwbEd-YfIr2LTIjvQ">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_kVW1sFwbEd-YfIr2LTIjvQ" value="*"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_kVUZcFwbEd-YfIr2LTIjvQ"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_85JOYFw4Ed-YfIr2LTIjvQ" name="attitudeLaw" type="_hfiVQFOuEd-tcOhvGq_PAw" isUnique="false" aggregation="shared" association="_84uXoFw4Ed-YfIr2LTIjvQ">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_HIdiEFw5Ed-YfIr2LTIjvQ" value="1"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_HIMcUFw5Ed-YfIr2LTIjvQ" value="1"/>
+      </ownedAttribute>
+      <interfaceRealization xmi:id="_eCUxYFwbEd-YfIr2LTIjvQ" name="Realization of AttitudeLaw" supplier="_hfiVQFOuEd-tcOhvGq_PAw" client="_vj0usFwaEd-YfIr2LTIjvQ" contract="_hfiVQFOuEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_kUvKoFwbEd-YfIr2LTIjvQ" name="A_SpinStabilized_AttitudeLaw" memberEnd="_kU-bMFwbEd-YfIr2LTIjvQ _kVZR8FwbEd-YfIr2LTIjvQ">
+      <ownedEnd xmi:id="_kVZR8FwbEd-YfIr2LTIjvQ" name="spinStabilized" type="_vj0usFwaEd-YfIr2LTIjvQ" isUnique="false" aggregation="shared" association="_kUvKoFwbEd-YfIr2LTIjvQ">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_kVy6kFwbEd-YfIr2LTIjvQ" value="1"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_kV1W0FwbEd-YfIr2LTIjvQ"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_x5kooFwbEd-YfIr2LTIjvQ" name="InertialLaw" clientDependency="_xLR5EFw4Ed-YfIr2LTIjvQ">
+      <ownedComment xmi:id="_z9irgFwbEd-YfIr2LTIjvQ" annotatedElement="_x5kooFwbEd-YfIr2LTIjvQ">
+        <body>This class handles an inertial attitude law.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_xLR5EFw4Ed-YfIr2LTIjvQ" name="Realization of AttitudeLaw" supplier="_hfiVQFOuEd-tcOhvGq_PAw" client="_x5kooFwbEd-YfIr2LTIjvQ" contract="_hfiVQFOuEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_SotuoFw4Ed-YfIr2LTIjvQ" name="GroundPointing" clientDependency="_zCmAAFw4Ed-YfIr2LTIjvQ" isAbstract="true">
+      <ownedComment xmi:id="_XkxY8Fw4Ed-YfIr2LTIjvQ" annotatedElement="_SotuoFw4Ed-YfIr2LTIjvQ">
+        <body>This class handles ground pointing attitude laws.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_zCmAAFw4Ed-YfIr2LTIjvQ" name="Realization of AttitudeLaw" supplier="_hfiVQFOuEd-tcOhvGq_PAw" client="_SotuoFw4Ed-YfIr2LTIjvQ" contract="_hfiVQFOuEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_gkcpsFw4Ed-YfIr2LTIjvQ" name="LofOffset" clientDependency="_0Xk18Fw4Ed-YfIr2LTIjvQ">
+      <ownedComment xmi:id="_jchDAFw4Ed-YfIr2LTIjvQ" annotatedElement="_gkcpsFw4Ed-YfIr2LTIjvQ">
+        <body>This class provides a default attitude law.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_0Xk18Fw4Ed-YfIr2LTIjvQ" name="Realization of AttitudeLaw" supplier="_hfiVQFOuEd-tcOhvGq_PAw" client="_gkcpsFw4Ed-YfIr2LTIjvQ" contract="_hfiVQFOuEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_84uXoFw4Ed-YfIr2LTIjvQ" name="A_SpinStabilized_AttitudeLaw" memberEnd="_85JOYFw4Ed-YfIr2LTIjvQ _85t2IFw4Ed-YfIr2LTIjvQ">
+      <ownedEnd xmi:id="_85t2IFw4Ed-YfIr2LTIjvQ" name="spinStabilized" type="_vj0usFwaEd-YfIr2LTIjvQ" isUnique="false" association="_84uXoFw4Ed-YfIr2LTIjvQ">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_86HewFw4Ed-YfIr2LTIjvQ" value="*"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_86J7AFw4Ed-YfIr2LTIjvQ"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_TJAi0Fw5Ed-YfIr2LTIjvQ" name="GroundPointingWrapper" isAbstract="true">
+      <ownedComment xmi:id="_yFRmsFw5Ed-YfIr2LTIjvQ" annotatedElement="_TJAi0Fw5Ed-YfIr2LTIjvQ">
+        <body>This class leverages common parts for compensation modes around ground pointing attitudes.</body>
+      </ownedComment>
+      <generalization xmi:id="_BFtOEFw8Ed-YfIr2LTIjvQ" general="_SotuoFw4Ed-YfIr2LTIjvQ"/>
+      <ownedAttribute xmi:id="_LvXe8Fw9Ed-YfIr2LTIjvQ" name="groundPointing" type="_SotuoFw4Ed-YfIr2LTIjvQ" isUnique="false" aggregation="shared" association="_LucR4Fw9Ed-YfIr2LTIjvQ">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_PWKmgFw9Ed-YfIr2LTIjvQ" value="1"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_PV5gwFw9Ed-YfIr2LTIjvQ" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_xVg9sFw5Ed-YfIr2LTIjvQ" name="NadirPointing">
+      <ownedComment xmi:id="_9HxDwFw5Ed-YfIr2LTIjvQ" annotatedElement="_xVg9sFw5Ed-YfIr2LTIjvQ">
+        <body>This class handles nadir pointing attitude law.</body>
+      </ownedComment>
+      <generalization xmi:id="_BhUzEFw8Ed-YfIr2LTIjvQ" general="_SotuoFw4Ed-YfIr2LTIjvQ"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_DKUcEFw6Ed-YfIr2LTIjvQ" name="BodyCenterPointing">
+      <ownedComment xmi:id="_GhOGcFw6Ed-YfIr2LTIjvQ" annotatedElement="_DKUcEFw6Ed-YfIr2LTIjvQ">
+        <body>This class handles body center pointing attitude law.</body>
+      </ownedComment>
+      <generalization xmi:id="_B_hyAFw8Ed-YfIr2LTIjvQ" general="_SotuoFw4Ed-YfIr2LTIjvQ"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_MkJ5QFw6Ed-YfIr2LTIjvQ" name="TargetPointing">
+      <ownedComment xmi:id="_P60TEFw6Ed-YfIr2LTIjvQ" annotatedElement="_MkJ5QFw6Ed-YfIr2LTIjvQ">
+        <body>This class handles target pointing attitude law.</body>
+      </ownedComment>
+      <generalization xmi:id="_Cmg5gFw8Ed-YfIr2LTIjvQ" general="_SotuoFw4Ed-YfIr2LTIjvQ"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_eoqnkFw6Ed-YfIr2LTIjvQ" name="LofOffsetPointing">
+      <ownedComment xmi:id="_gMX2AFw6Ed-YfIr2LTIjvQ" annotatedElement="_eoqnkFw6Ed-YfIr2LTIjvQ">
+        <body>This class provides a default attitude law.</body>
+      </ownedComment>
+      <generalization xmi:id="_DJJsgFw8Ed-YfIr2LTIjvQ" general="_SotuoFw4Ed-YfIr2LTIjvQ"/>
+      <ownedAttribute xmi:id="_uDH4gFw8Ed-YfIr2LTIjvQ" name="lofOffset" type="_gkcpsFw4Ed-YfIr2LTIjvQ" isUnique="false" aggregation="shared" association="_uBSFcFw8Ed-YfIr2LTIjvQ">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_zQ-dcFw8Ed-YfIr2LTIjvQ" value="1"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_zQt-wFw8Ed-YfIr2LTIjvQ" value="1"/>
+        <defaultValue xmi:type="uml:InstanceValue" xmi:id="_zYHnQFw8Ed-YfIr2LTIjvQ"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_Vqn5EFw7Ed-YfIr2LTIjvQ" name="FixedRate" clientDependency="_xT47IFw7Ed-YfIr2LTIjvQ">
+      <ownedComment xmi:id="_XJ1CAFw7Ed-YfIr2LTIjvQ" annotatedElement="_Vqn5EFw7Ed-YfIr2LTIjvQ">
+        <body>This class handles a simple attitude law at constant rate around a fixed axis.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_uELL8Fw9Ed-YfIr2LTIjvQ" name="attitude" type="_muDBgFOuEd-tcOhvGq_PAw" isUnique="false" aggregation="shared" association="_uDIqIFw9Ed-YfIr2LTIjvQ">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_wBbi0Fw9Ed-YfIr2LTIjvQ" value="1"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_wBKdEFw9Ed-YfIr2LTIjvQ" value="1"/>
+      </ownedAttribute>
+      <interfaceRealization xmi:id="_xT47IFw7Ed-YfIr2LTIjvQ" name="Realization of AttitudeLaw" supplier="_hfiVQFOuEd-tcOhvGq_PAw" client="_Vqn5EFw7Ed-YfIr2LTIjvQ" contract="_hfiVQFOuEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_DWpjgFwcEd-YfIr2LTIjvQ" name="CelestialBodyPointed" clientDependency="_yO3dAFw4Ed-YfIr2LTIjvQ">
+      <ownedComment xmi:id="_InX2QFwcEd-YfIr2LTIjvQ" annotatedElement="_DWpjgFwcEd-YfIr2LTIjvQ">
+        <body>This class handles a celestial body pointed attitude law.</body>
+      </ownedComment>
+      <interfaceRealization xmi:id="_yO3dAFw4Ed-YfIr2LTIjvQ" name="Realization of AttitudeLaw" supplier="_hfiVQFOuEd-tcOhvGq_PAw" client="_DWpjgFwcEd-YfIr2LTIjvQ" contract="_hfiVQFOuEd-tcOhvGq_PAw"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_X9MjMFw8Ed-YfIr2LTIjvQ" name="YawSteering">
+      <ownedComment xmi:id="_a1zvEFw8Ed-YfIr2LTIjvQ" annotatedElement="_X9MjMFw8Ed-YfIr2LTIjvQ">
+        <body>This class handles yaw steering law.</body>
+      </ownedComment>
+      <generalization xmi:id="_o-5JoFw8Ed-YfIr2LTIjvQ" general="_TJAi0Fw5Ed-YfIr2LTIjvQ"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_eH_RgFw8Ed-YfIr2LTIjvQ" name="YawCompensation">
+      <ownedComment xmi:id="_gkmd4Fw8Ed-YfIr2LTIjvQ" annotatedElement="_eH_RgFw8Ed-YfIr2LTIjvQ">
+        <body>This class handles yaw compensation attitude law.</body>
+      </ownedComment>
+      <generalization xmi:id="_sOFpgFw8Ed-YfIr2LTIjvQ" general="_TJAi0Fw5Ed-YfIr2LTIjvQ"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_uBSFcFw8Ed-YfIr2LTIjvQ" name="A_LofOffsetPointing_LofOffset" memberEnd="_uDH4gFw8Ed-YfIr2LTIjvQ _uDjWUFw8Ed-YfIr2LTIjvQ">
+      <ownedEnd xmi:id="_uDjWUFw8Ed-YfIr2LTIjvQ" name="lofOffsetPointing" type="_eoqnkFw6Ed-YfIr2LTIjvQ" isUnique="false" association="_uBSFcFw8Ed-YfIr2LTIjvQ">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_uD-NEFw8Ed-YfIr2LTIjvQ" value="*"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_uEApUFw8Ed-YfIr2LTIjvQ"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_LucR4Fw9Ed-YfIr2LTIjvQ" name="A_GroundPointingWrapper_GroundPointing" memberEnd="_LvXe8Fw9Ed-YfIr2LTIjvQ _Lvzj0Fw9Ed-YfIr2LTIjvQ">
+      <ownedEnd xmi:id="_Lvzj0Fw9Ed-YfIr2LTIjvQ" name="groundPointingWrapper" type="_TJAi0Fw5Ed-YfIr2LTIjvQ" isUnique="false" association="_LucR4Fw9Ed-YfIr2LTIjvQ">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_LwPBoFw9Ed-YfIr2LTIjvQ" value="*"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_LwRd4Fw9Ed-YfIr2LTIjvQ"/>
+      </ownedEnd>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="_uDIqIFw9Ed-YfIr2LTIjvQ" name="A_FixedRate_Attitude" memberEnd="_uELL8Fw9Ed-YfIr2LTIjvQ _uEn34Fw9Ed-YfIr2LTIjvQ">
+      <ownedEnd xmi:id="_uEn34Fw9Ed-YfIr2LTIjvQ" name="fixedRate" type="_Vqn5EFw7Ed-YfIr2LTIjvQ" isUnique="false" association="_uDIqIFw9Ed-YfIr2LTIjvQ">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_uFDVsFw9Ed-YfIr2LTIjvQ" value="*"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_uFFx8Fw9Ed-YfIr2LTIjvQ"/>
+      </ownedEnd>
     </packagedElement>
   </packagedElement>
   <packagedElement xmi:type="uml:Package" xmi:id="_fCGBEFNvEd-tcOhvGq_PAw" name="bodies">
