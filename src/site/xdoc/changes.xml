@@ -20,6 +20,16 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="5.1" date="TBD"
+             description="TBD.">
+      <action dev="luc" type="add">
+        added an AttitudesSequence class which can handle several laws, only one of
+        which being active at any time. The active law changes as switch events are
+        triggered. This can be used for example to alternate between daylight attitude mode
+        and eclipse attitude mode, or between normal observing mode and special modes
+        for ground contact or maneuvers.
+      </action>
+    </release>
     <release version="5.0" date="2010-05-06"
              description="version 5.0 is a major release of Orekit. It introduces several new
              features and bug fixes. Some slight incompatibilities with respect to previous

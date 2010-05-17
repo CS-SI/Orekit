@@ -18,6 +18,10 @@ it represents a state at a specific instant.
 In order to represent attitude evolution in time, the {@link
 org.orekit.attitudes.AttitudeLaw AttitudeLaw} interface is available.
 Several classical attitude laws are already provided in this package.
+One special implementation is the {@link
+org.orekit.attitudes.AttitudesSequence AttitudesSequence} class which
+handle a set of laws, only one of which being active at any time. The
+active law changes as switch events are triggered.
 </p>
 
 @author Fabien Maussion
