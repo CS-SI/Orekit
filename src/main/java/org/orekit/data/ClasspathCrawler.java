@@ -109,8 +109,8 @@ public class ClasspathCrawler implements DataProvider {
                         if (ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
 
                             // browse inside the zip/jar file
-                            new ZipJarCrawler(name).feed(supported, visitor);
-                            loaded = true;
+                            final DataProvider zipProvider = new ZipJarCrawler(name);
+                            loaded = zipProvider.feed(supported, visitor) || loaded;
 
                         } else {
 

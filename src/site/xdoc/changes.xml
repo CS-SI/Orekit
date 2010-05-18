@@ -29,6 +29,10 @@
         and eclipse attitude mode, or between normal observing mode and special modes
         for ground contact or maneuvers.
       </action>
+      <action dev="pascal" type="fix" due-to="Bruno Revelin">
+        fixed an error when crawling a classpath or a directory a zip file was found.
+        This might lead to select an inappropriate data provider.
+      </action>
     </release>
     <release version="5.0" date="2010-05-06"
              description="version 5.0 is a major release of Orekit. It introduces several new

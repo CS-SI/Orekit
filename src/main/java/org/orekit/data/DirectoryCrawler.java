@@ -111,8 +111,7 @@ public class DirectoryCrawler implements DataProvider {
 
                         // browse inside the zip/jar file
                         final DataProvider zipProvider = new ZipJarCrawler(list[i]);
-                        zipProvider.feed(supported, visitor);
-                        loaded = true;
+                        loaded = zipProvider.feed(supported, visitor) || loaded;
 
                     } else {
 
