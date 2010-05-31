@@ -23,17 +23,14 @@ import java.util.Locale;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
-import org.apache.commons.math.geometry.Vector3DFormat;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.attitudes.AttitudesSequence;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
-import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -70,7 +67,6 @@ public class EarthObservation {
 
             //  Initial state definition : date, orbit
             final AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, TimeScalesFactory.getUTC());
-            System.out.println(initialDate.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY);
             final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
             final Vector3D velocity  = new Vector3D(505.8479685, 942.7809215, 7435.922231);
             final Orbit initialOrbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
@@ -87,7 +83,7 @@ public class EarthObservation {
                 private static final long serialVersionUID = 8091992101063392941L;
                 public int eventOccurred(final SpacecraftState s, final boolean increasing) {
                     if (!increasing) {
-                        output.add(s.getDate() + ": switching to night law");
+                        output.add(s.getDate() + " : event occured, entering eclipse => switching to night law");
                     }
                     return CONTINUE;
                 }
@@ -96,7 +92,7 @@ public class EarthObservation {
                 private static final long serialVersionUID = -377454330129772997L;
                 public int eventOccurred(final SpacecraftState s, final boolean increasing) {
                     if (increasing) {
-                        output.add(s.getDate() + ": switching to day law");
+                        output.add(s.getDate() + " : event occured, exiting eclipse => switching to day law");
                     }
                     return CONTINUE;
                 }
@@ -111,36 +107,24 @@ public class EarthObservation {
                 attitudesSequence.resetActiveLaw(nightRestingLaw);
             }
 
-            // Propagator : consider a simple keplerian motion (could be more elaborate)
+            // Propagator : consider the analytical Eckstein-Hechler model
             final Propagator propagator = new EcksteinHechlerPropagator(initialOrbit, attitudesSequence,
                                                                         Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                                                         Constants.EIGEN5C_EARTH_MU, Constants.EIGEN5C_EARTH_C20,
                                                                         Constants.EIGEN5C_EARTH_C30, Constants.EIGEN5C_EARTH_C40,
                                                                         Constants.EIGEN5C_EARTH_C50, Constants.EIGEN5C_EARTH_C60);
+
+            // Register the switching events to the propagator
             attitudesSequence.registerSwitchEvents(propagator);
 
             propagator.setMasterMode(180.0, new OrekitFixedStepHandler() {
                 private static final long serialVersionUID = -5740543464313002093L;
-                private DecimalFormat f1 = new DecimalFormat("0.0000000000000000E00",
-                                                             DecimalFormatSymbols.getInstance(Locale.US));
-                private Vector3DFormat f2 = new Vector3DFormat(" ", " ", " ", f1);
-                private PVCoordinatesProvider sun  = CelestialBodyFactory.getSun();
-                private PVCoordinatesProvider moon = CelestialBodyFactory.getMoon();
-                private Frame eme2000 = FramesFactory.getEME2000();
-                private Frame itrf2005 = FramesFactory.getITRF2005();
-                private String printVector3D(final String name, final Vector3D v) {
-                    return name + " " + f2.format(v);
-                }
-                private String printRotation(final String name, final Rotation r) {
-                    return name +
-                           " " + f1.format(r.getQ3()) +
-                           " " + f1.format(r.getQ0()) +
-                           " " + f1.format(r.getQ1()) +
-                           " " + f1.format(r.getQ2());
-                }
                 public void handleStep(SpacecraftState currentState, boolean isLast) throws PropagationException {
                     try {
-                        // the Earth position in spacecraft should be along spacecraft Z axis
+                    	DecimalFormatSymbols angleDegree = DecimalFormatSymbols.getInstance(Locale.US);
+                    	angleDegree.setDecimalSeparator('°');
+                        DecimalFormat ad = new DecimalFormat(" 00.000;-00.000", angleDegree);
+                        // the Earth position in spacecraft frame should be along spacecraft Z axis
                         // during nigthtime and away from it during daytime due to roll and pitch offsets
                         final Vector3D earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
                         final double pointingOffset = Vector3D.angle(earth, Vector3D.PLUS_K);
@@ -150,42 +134,24 @@ public class EarthObservation {
                         final double eclipseAngle = dayNightEvent.g(currentState);
 
                         output.add(currentState.getDate() +
-                                   " " + Math.toDegrees(eclipseAngle) +
-                                   " " + Math.toDegrees(pointingOffset));
-                        final AbsoluteDate date = currentState.getDate();
-                        final PVCoordinates pv = currentState.getPVCoordinates(eme2000);
-                        final Rotation lvlhRot = new Rotation(pv.getPosition(), pv.getMomentum(), Vector3D.MINUS_K, Vector3D.MINUS_J);
-                        final Rotation earthRot = eme2000.getTransformTo(itrf2005, date).getRotation();
-                        System.out.println("Scenario::setVectorMap 0x960b7e0 " +
-                                   (date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) +
-                                   " " + printVector3D("sun", sun.getPVCoordinates(date, eme2000).getPosition()) +
-                                   " " + printVector3D("moon", moon.getPVCoordinates(date, eme2000).getPosition()) +
-                                   " " + printVector3D("satPos", pv.getPosition()) +
-                                   " " + printVector3D("satVel", pv.getVelocity()) +
-                                   " " + printVector3D("orbMom", pv.getMomentum()));
-                        System.out.println("Scenario::setQuatMap 0x960b7e0 " +
-                                           (date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) +
-                                   " " + printRotation("earthFrame", earthRot) +
-                                   " " + printRotation("LVLHFrame", lvlhRot));
-                        System.out.println("Scenario::computeStep 0x960b7e0 " +
-                                           (date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY));
-                        System.out.println("  -> " +
-                                           printRotation("", currentState.getAttitude().getRotation()) +
-                                           " " + printVector3D("", currentState.getAttitude().getSpin()));
+                                   " " + ad.format(Math.toDegrees(eclipseAngle)) +
+                                   " " + ad.format(Math.toDegrees(pointingOffset)));
                     } catch (OrekitException oe) {
                         throw new PropagationException(oe.getLocalizedMessage(), oe);
                     }
                 }
             });
 
-            // Propagate from the initial date to the first raising or for the fixed duration
-            propagator.propagate(initialDate.shiftedBy(20000.));
+            // Propagate from the initial date for the fixed duration
+            SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(12600.));
 
             // we print the lines according to lexicographic order, which is chronological order here
             // to make sure out of orders calls between step handler and event handlers don't mess things up
-//            for (final String line : output) {
-//                System.out.println(line);
-//            }
+            for (final String line : output) {
+                System.out.println(line);
+            }
+
+            System.out.println("Propagation ended at " + finalState.getDate());
 
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());

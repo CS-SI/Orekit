@@ -49,6 +49,7 @@
       <item name="Utils"         href="/architecture/utils.html"         />
     </menu>
     <menu name="Tutorial">
+      <item name="Attitude"      href="/tutorial/attitude.html"    />
       <item name="Frames"        href="/tutorial/frames.html"      />
       <item name="Propagation"   href="/tutorial/propagation.html" />
       <item name="Time"          href="/tutorial/time.html"        />

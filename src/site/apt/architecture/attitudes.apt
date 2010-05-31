@@ -11,7 +11,7 @@
 ~~ See the License for the specific language governing permissions and
 ~~ limitations under the License.
 
-Attitude
+Attitudes
 
   This package provides classes to represent simple attitudes.
 	
@@ -100,6 +100,13 @@ Attitude
   such a way the solar arrays have maximal lightning without changing the
   roll and pitch.
 
+** Attitude sequence
+
+  The <AttitudeSequence> class manages a sequence of different attitude laws activated
+  in rows according to switching events. Only one attitude law in the sequence is in
+  an active state. When one of the switch event associated with the active law occurs,
+  the active law becomes the one specified with the event.
+
 * Package organization
 
 [../images/attitudes.png]
@@ -109,3 +116,4 @@ Attitude
   ** Luc Maisonobe
   
   ** V\u00e9ronique Pommier-Maurussane
+  

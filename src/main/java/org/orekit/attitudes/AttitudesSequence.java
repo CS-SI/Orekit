@@ -113,10 +113,9 @@ public class AttitudesSequence implements AttitudeLaw {
      * otherwise switch is triggered on decreasing event
      * @param after attitude law to activate after the switch event occurrence
      * (used only if switchEvent is non null)
-     * @see #addAttitude(AttitudeLaw)
      */
-    public void addSwitchingCondition(AttitudeLaw before, EventDetector switchEvent,
-                                      final boolean switchOnIncrease, AttitudeLaw after) {
+    public void addSwitchingCondition(final AttitudeLaw before, final EventDetector switchEvent,
+                                      final boolean switchOnIncrease, final AttitudeLaw after) {
 
         // add the before law if not already known
         if (!switchingMap.containsKey(before)) {
@@ -135,14 +134,14 @@ public class AttitudesSequence implements AttitudeLaw {
 
             // add the switching condition
             switchingMap.get(before).add(new Switch(switchEvent, switchOnIncrease, after));
-            
+
         }
-        
+
     }
 
     /** {@inheritDoc} */
     @Override
-    public Attitude getAttitude(Orbit orbit) throws OrekitException {
+    public Attitude getAttitude(final Orbit orbit) throws OrekitException {
         // delegate attitude computation to the active law
         return active.getAttitude(orbit);
     }
@@ -168,15 +167,15 @@ public class AttitudesSequence implements AttitudeLaw {
          * otherwise switch is triggered on decreasing event
          * @param next next attitude law
          */
-       public Switch(final EventDetector event, final boolean switchOnIncrease, final AttitudeLaw next) {
-           this.event            = event;
-           this.switchOnIncrease = switchOnIncrease;
-           this.next             = next;
-       }
+        public Switch(final EventDetector event, final boolean switchOnIncrease, final AttitudeLaw next) {
+            this.event            = event;
+            this.switchOnIncrease = switchOnIncrease;
+            this.next             = next;
+        }
 
-       /** {@inheritDoc} */
+        /** {@inheritDoc} */
         @Override
-        public int eventOccurred(SpacecraftState s, boolean increasing)
+        public int eventOccurred(final SpacecraftState s, final boolean increasing)
             throws OrekitException {
 
             if (!(increasing ^ switchOnIncrease)) {
@@ -190,7 +189,7 @@ public class AttitudesSequence implements AttitudeLaw {
 
         /** {@inheritDoc} */
         @Override
-        public double g(SpacecraftState s)
+        public double g(final SpacecraftState s)
             throws OrekitException {
             return event.g(s);
         }
@@ -215,7 +214,7 @@ public class AttitudesSequence implements AttitudeLaw {
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(SpacecraftState oldState)
+        public SpacecraftState resetState(final SpacecraftState oldState)
             throws OrekitException {
             return event.resetState(oldState);
         }
