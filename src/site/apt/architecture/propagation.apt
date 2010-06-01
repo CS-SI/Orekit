@@ -72,7 +72,7 @@ Propagation
   event is triggered, it asks the propagator to stop and the returned value is the state
   exactly at the event time.
 
-  Other available events detectors are :
+  Several events detectors are available, amongst which :
 
   * a simple <DateDetector>, which is simply triggered at a predefined date,
 
@@ -89,7 +89,7 @@ Propagation
     penumbra of an other occulting body,
 
   * an <AlignmentDetector>, which is triggered when satellite and some body are aligned
-    in the orbital plane.
+    in the orbital plane...
 
   []
 

@@ -32,6 +32,8 @@ Attitude
     
   []
 
+  The initial orbit is here defined as a <KeplerianOrbit>.
+
 +---------------------
 AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, TimeScalesFactory.getUTC());
 Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
@@ -41,12 +43,10 @@ Orbit initialOrbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
                                         Constants.EIGEN5C_EARTH_MU);
 +---------------------
 
-  The initial orbit is here defined as a <KeplerianOrbit>.
-
   More precisions on the orbit representation can be found
   in the {{{../architecture/orbits.html}orbits section}}
   of the library architecture documentation.
-  
+
   Let's define a couple of <AttitudeLaw>, built on <LofOffset> laws for instance.
 
 +---------------------
@@ -55,7 +55,7 @@ AttitudeLaw nightRestingLaw   = LofOffset.LOF_ALIGNED;
 +---------------------
 
   Let's also define some <EventDetector>. For this tutorial need,
-  we build two specialized event detectors upon an <EclipseDetector>:
+  two specialized event detectors are built upon an <EclipseDetector>:
 
   ** one, <dayNightEvent>, to detect the day to night transition,
     
@@ -91,8 +91,8 @@ EventDetector nightDayEvent = new EclipseDetector(sun, 696000000., earth, Consta
   {{{../architecture/propagation.html}propagation section}}
   of the library architecture documentation.
 
-  Then an <AttitudesSequence> is defined, for the sake of this tutorial,
-  by adding two switching conditions:
+  An <AttitudesSequence> is then defined, for the sake of this tutorial,
+  by adding two switching conditions acting as a simple loop:
 
   ** the first one enables the transition from <dayObservationLaw> to <nightRestingLaw>
      when a <dayNightEvent> occurs,
@@ -102,21 +102,19 @@ EventDetector nightDayEvent = new EclipseDetector(sun, 696000000., earth, Consta
     
   []
 
-  An <AttitudesSequence> needs at least one switching condition to be meaningful,
-  but there is no upper limit.
-
-  An active <AttitudeLaw> may have several switch events and next law settings,
-  leading to different activation patterns depending on which event is triggered first.
-  
-  In the case of this tutorial, the sequence acts as a simple loop.
-
 +---------------------
 AttitudesSequence attitudesSequence = new AttitudesSequence();
 attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent, false, nightRestingLaw);
 attitudesSequence.addSwitchingCondition(nightRestingLaw, nightDayEvent, true, dayObservationLaw);
 +---------------------
 
-  Don't forget to set the current active law according to the current state:
+  An <AttitudesSequence> needs at least one switching condition to be meaningful,
+  but there is no upper limit.
+
+  An active <AttitudeLaw> may have several switch events and next law settings,
+  leading to different activation patterns depending on which event is triggered first.
+
+  So, don't forget to set the current active law according to the current state:
 
 +---------------------
 if (dayNightEvent.g(new SpacecraftState(initialOrbit)) >= 0) {
@@ -147,12 +145,12 @@ Propagator propagator = new EcksteinHechlerPropagator(initialOrbit, attitudesSeq
 attitudesSequence.registerSwitchEvents(propagator);
 +---------------------
 
-  The propagator operating mode is then set to master mode with fixed step.
+  The propagator operating mode is set to master mode with fixed step.
   The implementation of the interface <OrekitFixedStepHandler> aims to define
   the <handleStep> method called within the loop. For the purpose of this
   tutorial, the <handleStep> method will print at the current date two angles,
-  the first one indicates if the spacecraft is eclipsed while the second shows
-  the current attitude law.
+  the first one indicates if the spacecraft is eclipsed while the second informs
+  about the current attitude law.
 
 +---------------------
 propagator.setMasterMode(180., new OrekitFixedStepHandler() {

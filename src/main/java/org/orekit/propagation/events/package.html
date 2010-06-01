@@ -22,14 +22,25 @@ exactly at the right time.
 The package provides some predefined events:
 </p>
 <ul>
+  <li>{@link org.orekit.propagation.events.AlignmentDetector AlignmentDetector}
+  detects satellite/body alignment (and by default stop when reaching alignment)
+  </li>
   <li>{@link org.orekit.propagation.events.AltitudeDetector AltitudeDetector}
   detects altitude crossing (and by default stop at descending)
   </li>
   <li>{@link org.orekit.propagation.events.ApsideDetector ApsideDetector}
   detects apside crossing (and by default stop at perigee)
   </li>
+  <li>{@link org.orekit.propagation.events.CircularFieldOfViewDetector CircularFieldOfViewDetector}
+  detects target entry/exit a satellite sensor field of view with a circular boundary
+  (and by default continue on entry and stop on exit)
+  </li>
   <li>{@link org.orekit.propagation.events.DateDetector DateDetector}
-  detect occurrence of a predefine instant (and by default stop there)
+  detects occurrence of a predefine instant (and by default stop there)
+  </li>
+  <li>{@link org.orekit.propagation.events.DihedralFieldOfViewDetector DihedralFieldOfViewDetector}
+  detects target entry/exit a satellite sensor field of view with a dihedral boundary
+  (and by default continue on entry and stop on exit)
   </li>
   <li>{@link org.orekit.propagation.events.EclipseDetector EclipseDetector}
   detects satellite entering/exiting an eclipse (and by default stop on exit)
@@ -56,5 +67,6 @@ adaptations of the signatures to space dynamics.
 </ul>
 
 @author Luc Maisonobe
+@author Pascal Parraud
 </body>
 </html>
