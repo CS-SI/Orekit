@@ -47,7 +47,7 @@ Orbit initialOrbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
   in the {{{../architecture/orbits.html}orbits section}}
   of the library architecture documentation.
 
-  Let's define a couple of <AttitudeLaw>, built on <LofOffset> laws for instance.
+  Let's define a couple of <AttitudeLaw>, built upon <LofOffset> laws for instance.
 
 +---------------------
 AttitudeLaw dayObservationLaw = new LofOffset(RotationOrder.XYZ, Math.toRadians(20), Math.toRadians(40), 0);
