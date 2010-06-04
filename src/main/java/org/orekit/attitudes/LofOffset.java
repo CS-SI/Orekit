@@ -54,6 +54,30 @@ public class LofOffset implements AttitudeLaw {
     private final Rotation offset;
 
     /** Creates new instance.
+     * <p>
+     * An important thing to note is that the rotation order and angles signs used here
+     * are compliant with an <em>attitude</em> definition, i.e. they correspond to
+     * a frame that rotate in a field of fixed vectors. The underlying definitions used
+     * in commons-math {@link org.apache.commons.math.geometry.Rotation#Rotation(RotationOrder,
+     * double, double, double) Rotation(RotationOrder, double, double, double)} use
+     * <em>reversed</em> definition, i.e. they correspond to a vectors field rotating
+     * with respect to a fixed frame. So to retrieve the angles provided here from the
+     * commons-math underlying rotation, one has to <em>revert</em> the rotation, as in
+     * the following code snippet:
+     * </p>
+     * <pre>
+     *   LofOffset law          = new LofOffset(order, alpha1, alpha2, alpha3);
+     *   Rotation  offsetAtt    = law.getAttitude(orbit).getRotation();
+     *   Rotation  alignedAtt   = LofOffset.LOF_ALIGNED.getAttitude(orbit).getRotation();
+     *   Rotation  offsetProper = offsetAtt.applyTo(alignedAtt.revert());
+     *
+     *   // note the call to revert in the following statement
+     *   double[] angles = offsetProper.revert().getAngles(order);
+     *
+     *   System.out.println(alpha1 + " == " + angles[0]);  
+     *   System.out.println(alpha2 + " == " + angles[1]);  
+     *   System.out.println(alpha3 + " == " + angles[2]);  
+     * </pre>
      * @param order order of rotations to use for (alpha1, alpha2, alpha3) composition
      * @param alpha1 angle of the first elementary rotation
      * @param alpha2 angle of the second elementary rotation
@@ -61,7 +85,7 @@ public class LofOffset implements AttitudeLaw {
      */
     public LofOffset(final RotationOrder order, final double alpha1,
                      final double alpha2, final double alpha3) {
-        this.offset = new Rotation(order, alpha1, alpha2, alpha3);
+        this.offset = new Rotation(order, alpha1, alpha2, alpha3).revert();
     }
 
 

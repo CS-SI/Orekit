@@ -20,20 +20,16 @@ import org.orekit.utils.PVCoordinates;
 
 public class TimerDetectorTest {
 
-    private int                  evtno;
-    private double               mu;
-    private double               dt;
-    private AbsoluteDate         iniDate;
-    private AbsoluteDate         triggerDate;
-    private SpacecraftState      initialState;
-    private TimerDetector        timerDetector;
-    private DateDetector         dateDetector;
-    private NumericalPropagator  propagator;
+    private int evtno = 0;
+    private double dt;
+    private AbsoluteDate iniDate;
+    private TimerDetector timerDetector;
+    private NumericalPropagator propagator;
 
     @Test
     public void testSimpleTimer() throws OrekitException {
-    	triggerDate = iniDate.shiftedBy(dt);
-    	timerDetector = new TimerDetector(triggerDate, dt) {
+    	AbsoluteDate triggerDate = iniDate.shiftedBy(dt);
+    	TimerDetector timerDetector = new TimerDetector(triggerDate, dt) {
             private static final long serialVersionUID = 1L;
 			public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
 		        return STOP;
@@ -48,19 +44,22 @@ public class TimerDetectorTest {
 
     @Test
     public void testEmbeddedTimer() throws OrekitException {
-        timerDetector = new TimerDetector(dt) {
+
+    	timerDetector = new TimerDetector(dt) {
             private static final long serialVersionUID = 1L;
 			public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
 		        return STOP;
             }
         };
-    	dateDetector = new DateDetector(iniDate.shiftedBy(2.*dt)) {
+
+        EventDetector dateDetector = new DateDetector(iniDate.shiftedBy(2.*dt)) {
             private static final long serialVersionUID = 1L;
 			public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
   		        timerDetector.resetDate(s.getDate());
 		        return CONTINUE;
             }
         };
+
         propagator.addEventDetector(dateDetector);
         propagator.addEventDetector(timerDetector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(100.*dt));
@@ -70,8 +69,7 @@ public class TimerDetectorTest {
 
     @Test
     public void testAutoEmbeddedTimer() throws OrekitException {
-        evtno = 0;
-    	triggerDate = iniDate;
+        AbsoluteDate triggerDate = iniDate;
     	timerDetector = new TimerDetector(triggerDate, dt) {
             private static final long serialVersionUID = 1L;
 			public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
@@ -89,14 +87,13 @@ public class TimerDetectorTest {
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
-        mu = 3.9860047e14;
-        dt = 60.;
+        final double mu = 3.9860047e14;
         final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
         final Vector3D velocity  = new Vector3D(505.8479685, 942.7809215, 7435.922231);
         iniDate = new AbsoluteDate(1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                  FramesFactory.getEME2000(), iniDate, mu);
-        initialState = new SpacecraftState(orbit);
+        SpacecraftState initialState = new SpacecraftState(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
         };
@@ -108,16 +105,14 @@ public class TimerDetectorTest {
         integrator.setInitialStepSize(60);
         propagator = new NumericalPropagator(integrator);
         propagator.setInitialState(initialState);
+        dt = 60.;
     }
 
     @After
     public void tearDown() {
         iniDate = null;
-        initialState = null;
         propagator = null;
-        triggerDate = null;
         timerDetector = null;
-        dateDetector = null;
     }
 
 }
