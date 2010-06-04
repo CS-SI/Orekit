@@ -22,6 +22,10 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix">
+        fixed an error in LofOffset attitude mode: the computed attitude was reversed
+        with respect to the specification
+      </action>
       <action dev="luc" type="add">
         added an AttitudesSequence class which can handle several laws, only one of
         which being active at any time. The active law changes as switch events are

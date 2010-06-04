@@ -33,6 +33,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -106,7 +107,7 @@ public class LofOffsetTest {
         final Rotation lofAlignedRot = lofAlignedLaw.getAttitude(circ).getRotation();
 
         // Get rotation from LOF to target pointing attitude
-        Rotation rollPitchYaw = targetRot.applyTo(lofAlignedRot.revert());
+        Rotation rollPitchYaw = targetRot.applyTo(lofAlignedRot.revert()).revert();
         final double[] angles = rollPitchYaw.getAngles(RotationOrder.ZYX);
         final double yaw = angles[0];
         final double pitch = angles[1];
@@ -137,7 +138,7 @@ public class LofOffsetTest {
         final LofOffset lofAlignedLaw = LofOffset.LOF_ALIGNED;
         final Rotation lofAlignedRot = lofAlignedLaw.getAttitude(orbit).getRotation();
         final Attitude targetAttitude = targetLaw.getAttitude(orbit);
-        final Rotation rollPitchYaw = targetAttitude.getRotation().applyTo(lofAlignedRot.revert());
+        final Rotation rollPitchYaw = targetAttitude.getRotation().applyTo(lofAlignedRot.revert()).revert();
         final double[] angles = rollPitchYaw.getAngles(RotationOrder.ZYX);
         final double yaw = angles[0];
         final double pitch = angles[1];
@@ -183,6 +184,80 @@ public class LofOffsetTest {
                                                    2 * h);
         Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 4.0e-11);
 
+    }
+
+    @Test
+    public void testAnglesSign() throws OrekitException {
+
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+                                             new TimeComponents(3, 25, 45.6789),
+                                             TimeScalesFactory.getUTC());
+        KeplerianOrbit orbit =
+            new KeplerianOrbit(7178000.0, 1.e-8, Math.toRadians(50.),
+                              Math.toRadians(10.), Math.toRadians(20.),
+                              Math.toRadians(0.), KeplerianOrbit.MEAN_ANOMALY, 
+                              FramesFactory.getEME2000(), date, 3.986004415e14);
+
+        double alpha = 0.1;
+        double cos = Math.cos(alpha);
+        double sin = Math.sin(alpha);
+
+        // Roll
+        Attitude attitude = new LofOffset(RotationOrder.XYZ, alpha, 0.0, 0.0).getAttitude(orbit);
+        checkSatVector(orbit, attitude, Vector3D.PLUS_I,  1.0,  0.0,  0.0, 1.0e-8);
+        checkSatVector(orbit, attitude, Vector3D.PLUS_J,  0.0,  cos,  sin, 1.0e-8);
+        checkSatVector(orbit, attitude, Vector3D.PLUS_K,  0.0, -sin,  cos, 1.0e-8);
+
+        // Pitch
+        attitude = new LofOffset(RotationOrder.XYZ, 0.0, alpha, 0.0).getAttitude(orbit);
+        checkSatVector(orbit, attitude, Vector3D.PLUS_I,  cos,  0.0, -sin, 1.0e-8);
+        checkSatVector(orbit, attitude, Vector3D.PLUS_J,  0.0,  1.0,  0.0, 1.0e-8);
+        checkSatVector(orbit, attitude, Vector3D.PLUS_K,  sin,  0.0,  cos, 1.0e-8);
+
+        // Yaw
+        attitude = new LofOffset(RotationOrder.XYZ, 0.0, 0.0, alpha).getAttitude(orbit);
+        checkSatVector(orbit, attitude, Vector3D.PLUS_I,  cos,  sin,  0.0, 1.0e-8);
+        checkSatVector(orbit, attitude, Vector3D.PLUS_J, -sin,  cos,  0.0, 1.0e-8);
+        checkSatVector(orbit, attitude, Vector3D.PLUS_K,  0.0,  0.0,  1.0, 1.0e-8);
+
+    }
+
+    @Test
+    public void testRetrieveAngles() throws OrekitException, CardanEulerSingularityException {
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+                                             new TimeComponents(3, 25, 45.6789),
+                                             TimeScalesFactory.getUTC());
+        KeplerianOrbit orbit =
+            new KeplerianOrbit(7178000.0, 1.e-4, Math.toRadians(50.),
+                              Math.toRadians(10.), Math.toRadians(20.),
+                              Math.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
+                              FramesFactory.getEME2000(), date, 3.986004415e14);
+
+        RotationOrder order = RotationOrder.ZXY;
+        double alpha1 = 0.123;
+        double alpha2 = 0.456;
+        double alpha3 = 0.789;
+        LofOffset law = new LofOffset(order, alpha1, alpha2, alpha3);
+        Rotation offsetAtt  = law.getAttitude(orbit).getRotation();
+        Rotation alignedAtt = LofOffset.LOF_ALIGNED.getAttitude(orbit).getRotation();
+        Rotation offsetProper = offsetAtt.applyTo(alignedAtt.revert());
+        double[] angles = offsetProper.revert().getAngles(order);
+        Assert.assertEquals(alpha1, angles[0], 1.0e-11);  
+        Assert.assertEquals(alpha2, angles[1], 1.0e-11);  
+        Assert.assertEquals(alpha3, angles[2], 1.0e-11);  
+    }
+
+    private void checkSatVector(Orbit o, Attitude a, Vector3D satVector,
+                                double expectedX, double expectedY, double expectedZ,
+                                double threshold) {
+        Vector3D zLof = o.getPVCoordinates().getPosition().normalize().negate();
+        Vector3D yLof = o.getPVCoordinates().getMomentum().normalize().negate();
+        Vector3D xLof = Vector3D.crossProduct(yLof, zLof);
+        Assert.assertTrue(Vector3D.dotProduct(xLof, o.getPVCoordinates().getVelocity()) > 0);
+        Vector3D v = a.getRotation().applyInverseTo(satVector);
+        Assert.assertEquals(expectedX, Vector3D.dotProduct(v, xLof), 1.0e-8);
+        Assert.assertEquals(expectedY, Vector3D.dotProduct(v, yLof), 1.0e-8);
+        Assert.assertEquals(expectedZ, Vector3D.dotProduct(v, zLof), 1.0e-8);
     }
 
     @Before

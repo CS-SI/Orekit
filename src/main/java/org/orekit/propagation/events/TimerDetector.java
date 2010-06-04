@@ -39,11 +39,11 @@ public class TimerDetector extends AbstractDetector implements TimeStamped {
     /** Flag the current way of g with respect to time. */
     private boolean gIncrease = true;
 
+    /** Current/previous value of g function. */
+    private double gvalue = 0.0;
+
     /** Flag for date reset. */
     private boolean reset = true;
-
-    /** Previous trigger date. */
-    private AbsoluteDate previous;
 
     /** Current trigger date. */
     private AbsoluteDate trigger;
@@ -60,7 +60,6 @@ public class TimerDetector extends AbstractDetector implements TimeStamped {
      */
     public TimerDetector(final AbsoluteDate triggerDate, final double duration) {
         super(10.e9, 10.e-10);
-        previous = null;
         trigger = null;
         target = null;
         dt = duration;
@@ -99,15 +98,19 @@ public class TimerDetector extends AbstractDetector implements TimeStamped {
     public double g(final SpacecraftState s) throws OrekitException {
         final AbsoluteDate gDate = s.getDate();
         if (reset) {
-            if (previous == null) {
-                gIncrease = true;
-            }
-            else if (gDate.durationFrom(previous) * gDate.durationFrom(target) > 0) {
-                gIncrease = !gIncrease;
+        	if (Math.abs(gvalue) < this.getThreshold()) {
+        		if (gIncrease) {
+        			gIncrease = gDate.durationFrom(target) > 0 ? false : true;
+        		} else {
+        			gIncrease = gDate.durationFrom(target) > 0 ? true : false;
+        		}
+        	} else {
+            	gIncrease = gvalue * gDate.durationFrom(target) < 0 ? false : true;
             }
             reset = false;
         }
-        return gIncrease ? gDate.durationFrom(target) : target.durationFrom(gDate);
+        gvalue =  gIncrease ? gDate.durationFrom(target) : target.durationFrom(gDate);
+        return gvalue;
     }
 
     /** Get the trigger date.
@@ -128,9 +131,6 @@ public class TimerDetector extends AbstractDetector implements TimeStamped {
      * @param triggerDate trigger date
      */
     public void resetDate(final AbsoluteDate triggerDate) {
-        if (target != null) {
-            previous = target;
-        }
         if (triggerDate != null) {
             trigger = triggerDate;
             target = new AbsoluteDate(triggerDate, dt);
