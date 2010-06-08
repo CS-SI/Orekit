@@ -90,6 +90,18 @@ public class InertialAttitudeTest {
         SpacecraftState s0     = propagator.propagate(date);
         SpacecraftState sPlus  = propagator.propagate(date.shiftedBy(h));
 
+        // check spin is consistent with attitude evolution
+        double errorAngleMinus     = Rotation.distance(sMinus.shiftedBy(h).getAttitude().getRotation(),
+                                                       s0.getAttitude().getRotation());
+        double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
+                                                       s0.getAttitude().getRotation());
+        Assert.assertTrue(errorAngleMinus <= 1.0e-6 * evolutionAngleMinus);
+        double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
+                                                       sPlus.shiftedBy(-h).getAttitude().getRotation());
+        double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
+                                                       sPlus.getAttitude().getRotation());
+        Assert.assertTrue(errorAnglePlus <= 1.0e-6 * evolutionAnglePlus);
+
         // compute spin axis using finite differences
         Rotation rMinus = sMinus.getAttitude().getRotation();
         Rotation rPlus  = sPlus.getAttitude().getRotation();
