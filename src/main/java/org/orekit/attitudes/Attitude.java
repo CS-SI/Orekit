@@ -111,7 +111,7 @@ public class Attitude implements TimeStamped, Serializable {
         }
 
         // BEWARE: there is really a minus sign here, because if
-        // the satellite frame rotate in one direction, the inertial vectors
+        // the satellite frame rotates in one direction, the inertial vectors
         // seem to rotate in the opposite direction
         final Rotation evolution = new Rotation(spin, -rate * dt);
 
