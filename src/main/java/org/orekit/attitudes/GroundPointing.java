@@ -25,7 +25,7 @@ import org.orekit.utils.PVCoordinates;
 
 
 /**
- * This class handles ground pointing attitude laws.
+ * Base class for ground pointing attitude laws.
  *
  * <p>This class is a basic model for different kind of ground pointing
  * attitude laws, such as : body center pointing, nadir pointing,
