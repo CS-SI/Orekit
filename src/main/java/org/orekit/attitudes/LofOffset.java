@@ -25,7 +25,8 @@ import org.orekit.utils.PVCoordinates;
 
 
 /**
- * This class provides a default attitude law.
+ * Attitude law defined by fixed Roll, Pitch and Yaw angles (in any order)
+ * with respect to a local orbital frame.
 
  * <p>
  * The attitude law is defined as a rotation offset from local orbital frame.
