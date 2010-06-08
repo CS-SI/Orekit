@@ -70,10 +70,7 @@ public class SpinStabilizedTest {
                                              TimeScalesFactory.getUTC());
         double rate = 2.0 * Math.PI / (12 * 60);
         AttitudeLaw law =
-            new SpinStabilized(new CelestialBodyPointed(FramesFactory.getEME2000(),
-                                                        CelestialBodyFactory.getSun(),
-                                                        Vector3D.PLUS_K,
-                                     Vector3D.PLUS_I, Vector3D.PLUS_K),
+            new SpinStabilized(new InertialLaw(Rotation.IDENTITY),
                                date, Vector3D.PLUS_K, rate);
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, Math.toRadians(50.),
@@ -83,20 +80,32 @@ public class SpinStabilizedTest {
 
         Propagator propagator = new KeplerianPropagator(orbit, law);
 
-        double h = 100.0;
+        double h = 10.0;
         SpacecraftState sMinus = propagator.propagate(date.shiftedBy(-h));
         SpacecraftState s0     = propagator.propagate(date);
         SpacecraftState sPlus  = propagator.propagate(date.shiftedBy(h));
+        Vector3D spin0         = s0.getAttitude().getSpin();
+
+        // check spin is consistent with attitude evolution
+        double errorAngleMinus     = Rotation.distance(sMinus.shiftedBy(h).getAttitude().getRotation(),
+                                                       s0.getAttitude().getRotation());
+        double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
+                                                       s0.getAttitude().getRotation());
+        Assert.assertTrue(errorAngleMinus <= 1.0e-6 * evolutionAngleMinus);
+        double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
+                                                       sPlus.shiftedBy(-h).getAttitude().getRotation());
+        double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
+                                                       sPlus.getAttitude().getRotation());
+        Assert.assertTrue(errorAnglePlus <= 1.0e-6 * evolutionAnglePlus);
 
         // compute spin axis using finite differences
-        Rotation rMinus = sMinus.getAttitude().getRotation();
-        Rotation rPlus  = sPlus.getAttitude().getRotation();
-        Rotation dr     = rPlus.applyTo(rMinus.revert());
-        double period   = 4 * Math.PI * h / dr.getAngle();
+        Rotation rM = sMinus.getAttitude().getRotation();
+        Rotation rP = sPlus.getAttitude().getRotation();
+        Vector3D reference = Attitude.estimateSpin(rM, rP, 2 * h);
 
-        Vector3D spin0 = s0.getAttitude().getSpin();
-        Assert.assertEquals(period, 2 * Math.PI / spin0.getNorm(), 0.05);
-        Assert.assertEquals(0.0, Math.toDegrees(Vector3D.angle(dr.getAxis(), spin0)), 8.0e-4);
+        Assert.assertEquals(2 * Math.PI / reference.getNorm(), 2 * Math.PI / spin0.getNorm(), 0.05);
+        Assert.assertEquals(0.0, Math.toDegrees(Vector3D.angle(reference, spin0)), 1.0e-10);
+        Assert.assertEquals(0.0, Math.toDegrees(Vector3D.angle(Vector3D.PLUS_K, spin0)), 1.0e-10);
 
     }
 

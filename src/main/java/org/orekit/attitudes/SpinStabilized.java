@@ -91,7 +91,7 @@ public class SpinStabilized implements AttitudeLaw {
 
         // compute spin transform due to spin from reference to current date
         final Transform spinInfluence =
-            new Transform(new Rotation(axis, rate * date.durationFrom(start)), spin);
+            new Transform(new Rotation(axis, -rate * date.durationFrom(start)), spin);
 
         // combine the two transforms
         final Transform combined = new Transform(baseTransform, spinInfluence);
