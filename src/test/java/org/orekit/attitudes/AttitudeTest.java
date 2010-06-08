@@ -73,6 +73,22 @@ public class AttitudeTest {
         Assert.assertEquals(rate, shifted.getSpin().getNorm(), 1.0e-10);
         Assert.assertEquals(rate * dt, Rotation.distance(attitude.getRotation(), shifted.getRotation()), 1.0e-10);
 
+        Vector3D shiftedX  = shifted.getRotation().applyInverseTo(Vector3D.PLUS_I);
+        Vector3D shiftedY  = shifted.getRotation().applyInverseTo(Vector3D.PLUS_J);
+        Vector3D shiftedZ  = shifted.getRotation().applyInverseTo(Vector3D.PLUS_K);
+        Vector3D originalX = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
+        Vector3D originalY = attitude.getRotation().applyInverseTo(Vector3D.PLUS_J);
+        Vector3D originalZ = attitude.getRotation().applyInverseTo(Vector3D.PLUS_K);
+        Assert.assertEquals( Math.cos(rate * dt), Vector3D.dotProduct(shiftedX, originalX), 1.0e-10);
+        Assert.assertEquals( Math.sin(rate * dt), Vector3D.dotProduct(shiftedX, originalY), 1.0e-10);
+        Assert.assertEquals( 0.0,                 Vector3D.dotProduct(shiftedX, originalZ), 1.0e-10);
+        Assert.assertEquals(-Math.sin(rate * dt), Vector3D.dotProduct(shiftedY, originalX), 1.0e-10);
+        Assert.assertEquals( Math.cos(rate * dt), Vector3D.dotProduct(shiftedY, originalY), 1.0e-10);
+        Assert.assertEquals( 0.0,                 Vector3D.dotProduct(shiftedY, originalZ), 1.0e-10);
+        Assert.assertEquals( 0.0,                 Vector3D.dotProduct(shiftedZ, originalX), 1.0e-10);
+        Assert.assertEquals( 0.0,                 Vector3D.dotProduct(shiftedZ, originalY), 1.0e-10);
+        Assert.assertEquals( 1.0,                 Vector3D.dotProduct(shiftedZ, originalZ), 1.0e-10);
+
         Vector3D forward = Attitude.estimateSpin(attitude.getRotation(), shifted.getRotation(), dt);
         Assert.assertEquals(0.0, forward.subtract(attitude.getSpin()).getNorm(), 1.0e-10);
 
