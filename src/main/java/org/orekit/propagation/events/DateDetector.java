@@ -152,16 +152,16 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
             increasing = (gDate == null) ? true : target.durationFrom(gDate) > 0.0;
             currentIndex = 0;
             eventDateList.add(new EventDate(target, increasing));
-    	} else {
-            int lastIndex = eventDateList.size() - 1;
+        } else {
+            final int lastIndex = eventDateList.size() - 1;
             if (eventDateList.get(0).getDate().durationFrom(target) > getMaxCheckInterval()) {
                 increasing = !eventDateList.get(0).isgIncrease();
                 eventDateList.add(0, new EventDate(target, increasing));
                 currentIndex++;
-          } else if (target.durationFrom(eventDateList.get(lastIndex).getDate()) > getMaxCheckInterval()) {
+            } else if (target.durationFrom(eventDateList.get(lastIndex).getDate()) > getMaxCheckInterval()) {
                 increasing = !eventDateList.get(lastIndex).isgIncrease();
                 eventDateList.add(new EventDate(target, increasing));
-        	} else {
+            } else {
                 throw OrekitException.createIllegalArgumentException(ADD_DATE_ERROR, target,
                                                                      eventDateList.get(0).getDate(),
                                                                      eventDateList.get(lastIndex).getDate(),
@@ -175,7 +175,7 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
      * @return current EventDate
      */
     private EventDate getClosest(final AbsoluteDate target) {
-        double dt = target.durationFrom(eventDateList.get(currentIndex).getDate());
+        final double dt = target.durationFrom(eventDateList.get(currentIndex).getDate());
         if (dt < 0.0 && currentIndex > 0) {
             boolean found = false;
             while (currentIndex > 0 && !found) {
@@ -185,11 +185,11 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
                     found = true;
                 }
             }
-    	} else if (dt > 0.0 && currentIndex < eventDateList.size() - 1) {
-            int maxIndex = eventDateList.size() - 1;
+        } else if (dt > 0.0 && currentIndex < eventDateList.size() - 1) {
+            final int maxIndex = eventDateList.size() - 1;
             boolean found = false;
             while (currentIndex < maxIndex && !found) {
-            	if (target.durationFrom(eventDateList.get(currentIndex + 1).getDate()) > eventDateList.get(currentIndex).getDate().durationFrom(target)) {
+                if (target.durationFrom(eventDateList.get(currentIndex + 1).getDate()) > eventDateList.get(currentIndex).getDate().durationFrom(target)) {
                     currentIndex++;
                 } else {
                     found = true;
@@ -200,9 +200,9 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
     }
 
     /** Event date specification. */
-    private class EventDate implements Serializable, TimeStamped {
+    private static class EventDate implements Serializable, TimeStamped {
 
-		/** Serializable UID. */
+        /** Serializable UID. */
         private static final long serialVersionUID = -7641032576122527149L;
 
         /** Event date. */
@@ -223,14 +223,14 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
         /** Getter for event date.
          * @return event date
          */
-		public AbsoluteDate getDate() {
+        public AbsoluteDate getDate() {
             return eventDate;
-		}
+        }
 
         /** Getter for g function way at event date.
          * @return g function increasing flag
          */
-		public boolean isgIncrease() {
+        public boolean isgIncrease() {
             return gIncrease;
         }
 
