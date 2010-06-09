@@ -26,7 +26,7 @@ import org.orekit.time.TimeStamped;
 
 /** Finder for date events.
  * <p>This class finds date events (i.e. occurrence of some predefined dates).</p>
- * <p>As of version 5.1, this is an enhanced date detector:</p>
+ * <p>As of version 5.1, it is an enhanced date detector:</p>
  * <ul>
  *   <li>it can be defined without prior date ({@link #DateDetector(double,double)})</li>
  *   <li>several dates can be added ({@link #addEventDate(AbsoluteDate)})</li>
@@ -46,6 +46,10 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
     /** Serializable UID. */
     private static final long serialVersionUID = -334171965326514174L;
 
+    /** Error message for adding event date error. */
+    private static final String ADD_DATE_ERROR =
+        "event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added";
+
     /** Last date for g computation. */
     private AbsoluteDate gDate;
 
@@ -56,10 +60,10 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
     private int currentIndex;
 
     /** Build a new instance.
-     * <p>This one is dedicated to date detection when
-     * the event date cannot be known before propagating.
-     * It has to be set somewhere else by adding some event
-     * date later. It then acts like a timer.</p>
+     * <p>This constructor is dedicated to date detection
+     * when the event date is not known before propagating.
+     * It can be triggered later by adding some event date,
+     * it then acts like a timer.</p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
      * @see #addEventDate(AbsoluteDate)
@@ -85,9 +89,9 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
     }
 
     /** Build a new instance.
-     * <p>This one is dedicated to single date detection.
-     * MaxCheck is set to 10.e9, so almost no other date
-     * can be added. Tolerance is set to 10.e-10.</p>
+     * <p>This constructor is dedicated to single date detection.
+     * MaxCheck is set to 10.e9, so almost no other date can be
+     * added. Tolerance is set to 10.e-10.</p>
      * @param target target date
      * @see #addEventDate(AbsoluteDate)
      */
@@ -99,8 +103,8 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
      * <p>The default implementation behavior is to {@link
      * EventDetector#STOP stop} propagation at date occurrence.</p>
      * @param s the current state information : date, kinematics, attitude
-     * @param increasing if true, the value of the switching function increases
-     * when times increases around event.
+     * @param increasing the way of the switching function is not guaranted
+     * as it can change according to the added event dates.
      * @return {@link #STOP}
      * @exception OrekitException if some specific error occurs
      */
@@ -116,13 +120,13 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
      * @exception OrekitException if some specific error occurs
      */
     public double g(final SpacecraftState s) throws OrekitException {
-    	gDate = s.getDate();
-    	if (currentIndex < 0) {
-    		return -1.0;
-    	} else {
-    		final EventDate event = getClosest(gDate);
+        gDate = s.getDate();
+        if (currentIndex < 0) {
+            return -1.0;
+        } else {
+            final EventDate event = getClosest(gDate);
             return event.isgIncrease() ? gDate.durationFrom(event.getDate()) : event.getDate().durationFrom(gDate);
-    	}
+        }
     }
 
     /** Get the current event date according to the propagator.
@@ -133,58 +137,65 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
     }
 
     /** Add an event date.
-     * <p>The 
-     * @return target date
-     * @throws IllegalArgumentException if the new event date is too close from already defined interval
+     * <p>The date to add must be:</p>
+     * <ul>
+     *   <li>less than the smallest already registered event date minus the maxCheck</li>
+     *   <li>or more than the largest already registered event date plus the maxCheck</li>
+     * </ul>
+     * @param target target date
+     * @throws IllegalArgumentException if the date is too close from already defined interval
      * @see #DateDetector(double, double)
      */
     public void addEventDate(final AbsoluteDate target) throws IllegalArgumentException {
-    	final boolean increasing;
-    	if (currentIndex < 0) {
-    		increasing = (gDate == null) ? true : target.durationFrom(gDate) > 0.0;
-    		currentIndex = 0;
-    		eventDateList.add(new EventDate(target, increasing));
+        final boolean increasing;
+        if (currentIndex < 0) {
+            increasing = (gDate == null) ? true : target.durationFrom(gDate) > 0.0;
+            currentIndex = 0;
+            eventDateList.add(new EventDate(target, increasing));
     	} else {
-    		int lastIndex = eventDateList.size() - 1;
-        	if (eventDateList.get(0).getDate().durationFrom(target) > getMaxCheckInterval()) {
-        		increasing = !eventDateList.get(0).isgIncrease();
+            int lastIndex = eventDateList.size() - 1;
+            if (eventDateList.get(0).getDate().durationFrom(target) > getMaxCheckInterval()) {
+                increasing = !eventDateList.get(0).isgIncrease();
                 eventDateList.add(0, new EventDate(target, increasing));
-        		currentIndex++;
+                currentIndex++;
           } else if (target.durationFrom(eventDateList.get(lastIndex).getDate()) > getMaxCheckInterval()) {
-        		increasing = !eventDateList.get(lastIndex).isgIncrease();
+                increasing = !eventDateList.get(lastIndex).isgIncrease();
                 eventDateList.add(new EventDate(target, increasing));
         	} else {
-        		throw OrekitException.createIllegalArgumentException("Event date {0} cannot be added between {1} and {2} with a maxcheck of {3} seconds.",
-                    target, eventDateList.get(0).getDate(), eventDateList.get(lastIndex).getDate(), this.getMaxCheckInterval());
-        	}   		
-    	}
+                throw OrekitException.createIllegalArgumentException(ADD_DATE_ERROR, target,
+                                                                     eventDateList.get(0).getDate(),
+                                                                     eventDateList.get(lastIndex).getDate(),
+                                                                     this.getMaxCheckInterval());
+            }
+        }
     }
 
     /** Get the closest EventDate to the target date.
+     * @param target target date
      * @return current EventDate
      */
     private EventDate getClosest(final AbsoluteDate target) {
-    	double dt = target.durationFrom(eventDateList.get(currentIndex).getDate());
-    	if (dt < 0.0 && currentIndex > 0) {
-    		boolean found = false;
+        double dt = target.durationFrom(eventDateList.get(currentIndex).getDate());
+        if (dt < 0.0 && currentIndex > 0) {
+            boolean found = false;
             while (currentIndex > 0 && !found) {
-            	if (target.durationFrom(eventDateList.get(currentIndex-1).getDate()) < eventDateList.get(currentIndex).getDate().durationFrom(target)) {
-            		currentIndex--;
-            	} else {
-            		found = true;
-            	}
+                if (target.durationFrom(eventDateList.get(currentIndex - 1).getDate()) < eventDateList.get(currentIndex).getDate().durationFrom(target)) {
+                    currentIndex--;
+                } else {
+                    found = true;
+                }
             }
-    	} else if (dt > 0.0 && currentIndex < eventDateList.size()-1) {
-    		int maxIndex = eventDateList.size() - 1;
-    		boolean found = false;
+    	} else if (dt > 0.0 && currentIndex < eventDateList.size() - 1) {
+            int maxIndex = eventDateList.size() - 1;
+            boolean found = false;
             while (currentIndex < maxIndex && !found) {
-            	if (target.durationFrom(eventDateList.get(currentIndex+1).getDate()) > eventDateList.get(currentIndex).getDate().durationFrom(target)) {
-            		currentIndex++;
-            	} else {
-            		found = true;
-            	}
+            	if (target.durationFrom(eventDateList.get(currentIndex + 1).getDate()) > eventDateList.get(currentIndex).getDate().durationFrom(target)) {
+                    currentIndex++;
+                } else {
+                    found = true;
+                }
             }
-    	}
+        }
         return eventDateList.get(currentIndex);
     }
 
@@ -192,7 +203,7 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
     private class EventDate implements Serializable, TimeStamped {
 
 		/** Serializable UID. */
-		private static final long serialVersionUID = -7641032576122527149L;
+        private static final long serialVersionUID = -7641032576122527149L;
 
         /** Event date. */
         private final AbsoluteDate eventDate;
@@ -213,15 +224,15 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
          * @return event date
          */
 		public AbsoluteDate getDate() {
-			return eventDate;
+            return eventDate;
 		}
 
         /** Getter for g function way at event date.
          * @return g function increasing flag
          */
 		public boolean isgIncrease() {
-			return gIncrease;
-		}
+            return gIncrease;
+        }
 
     }
 
