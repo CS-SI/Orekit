@@ -360,13 +360,13 @@ public class FramesFactory implements Serializable {
             if (ignoreTidalEffects) {
                 if (itrf2005WithoutTidalEffects == null) {
                     itrf2005WithoutTidalEffects =
-                        new ITRF2005Frame(false, AbsoluteDate.J2000_EPOCH, "ITRF2005");
+                        new ITRF2005Frame(ignoreTidalEffects, AbsoluteDate.J2000_EPOCH, "ITRF2005 w/o tides");
                 }
                 return itrf2005WithoutTidalEffects;
             } else {
                 if (itrf2005WithTidalEffects == null) {
                     itrf2005WithTidalEffects =
-                        new ITRF2005Frame(true, AbsoluteDate.J2000_EPOCH, "ITRF2005 w/o tides");
+                        new ITRF2005Frame(ignoreTidalEffects, AbsoluteDate.J2000_EPOCH, "ITRF2005");
                 }
                 return itrf2005WithTidalEffects;
             }
@@ -395,13 +395,13 @@ public class FramesFactory implements Serializable {
             if (ignoreTidalEffects) {
                 if (tirf2000WithoutTidalEffects == null) {
                     tirf2000WithoutTidalEffects =
-                        new TIRF2000Frame(false, AbsoluteDate.J2000_EPOCH, "TIRF2000");
+                        new TIRF2000Frame(ignoreTidalEffects, AbsoluteDate.J2000_EPOCH, "TIRF2000 w/o tides");
                 }
                 return tirf2000WithoutTidalEffects;
             } else {
                 if (tirf2000WithTidalEffects == null) {
                     tirf2000WithTidalEffects =
-                        new TIRF2000Frame(true, AbsoluteDate.J2000_EPOCH, "TIRF2000 w/o tides");
+                        new TIRF2000Frame(ignoreTidalEffects, AbsoluteDate.J2000_EPOCH, "TIRF2000");
                 }
                 return tirf2000WithTidalEffects;
             }
