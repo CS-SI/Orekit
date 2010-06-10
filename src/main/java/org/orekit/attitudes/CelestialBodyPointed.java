@@ -37,7 +37,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * </p>
  * <p>
  * The celestial body implicitly defines two of the three degrees of freedom
- * and the phasing reference defines the last degree of freedom. This definition
+ * and the phasing reference defines the remaining degree of freedom. This definition
  * can be represented as first aligning exactly the satellite pointing axis to
  * the current direction of the celestial body, and then to find the rotation
  * around this axis such that the satellite phasing axis is in the half-plane
@@ -46,7 +46,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * </p>
  * <p>
  * In order for this definition to work, the user must ensure that the phasing
- * references are <strong>never</strong> aligned with the pointing references.
+ * reference is <strong>never</strong> aligned with the pointing reference.
  * Since the pointed body moves as the date changes, this should be ensured
  * regardless of the date. A simple way to do this for Sun, Moon or any planet
  * pointing is to choose a phasing reference far from the ecliptic plane. Using
@@ -61,7 +61,7 @@ public class CelestialBodyPointed implements AttitudeLaw {
     /** Serializable UID. */
     private static final long serialVersionUID = 6222161082155807729L;
 
-    /** Frame in which {@link #pointedBody} and {@link #phasingCel} are defined. */
+    /** Frame in which {@link #phasingCel} is defined. */
     private final Frame celestialFrame;
 
     /** Celestial body to point at. */
@@ -77,8 +77,7 @@ public class CelestialBodyPointed implements AttitudeLaw {
     private final Vector3D phasingSat;
 
     /** Creates new instance.
-     * @param celestialFrame frame in which <code>pointedBody</code>
-     * and <code>phasingCel</code> are defined
+     * @param celestialFrame frame in which <code>phasingCel</code> is defined
      * @param pointedBody celestial body to point at
      * @param phasingCel phasing reference, in celestial frame
      * @param pointingSat satellite vector defining the pointing direction
@@ -100,27 +99,34 @@ public class CelestialBodyPointed implements AttitudeLaw {
     public Attitude getAttitude(final Orbit orbit)
         throws OrekitException {
 
-        final AbsoluteDate date = orbit.getDate();
-        final PVCoordinates pv = orbit.getPVCoordinates();
-        final Frame frame = orbit.getFrame();
+        final AbsoluteDate  date  = orbit.getDate();
+        final PVCoordinates satPV = orbit.getPVCoordinates(celestialFrame);
 
         // compute celestial references at the specified date
         final PVCoordinates bodyPV    = pointedBody.getPVCoordinates(date, celestialFrame);
-        final PVCoordinates satCel    = frame.getTransformTo(celestialFrame, date).transformPVCoordinates(pv);
-        final PVCoordinates pointing  = new PVCoordinates(satCel, bodyPV);
+        final PVCoordinates pointing  = new PVCoordinates(satPV, bodyPV);
         final Vector3D      pointingP = pointing.getPosition();
-        final double r2 = Vector3D.dotProduct(pointingP, pointingP);
+        final double        r2        = Vector3D.dotProduct(pointingP, pointingP);
 
-        // evaluate instant rotation axis
+        // evaluate instant rotation axis due to sat and body motion only (no phasing yet)
         final Vector3D rotAxisCel =
             new Vector3D(1 / r2, Vector3D.crossProduct(pointingP, pointing.getVelocity()));
+
+        // fix instant rotation to take phasing constraint into account
+        // (adding a rotation around pointing axis ensuring the motion of the phasing axis
+        //  is constrained in the pointing-phasing plane)
+        final Vector3D v1    = Vector3D.crossProduct(rotAxisCel, phasingCel);
+        final Vector3D v2    = Vector3D.crossProduct(pointingP,  phasingCel);
+        final double   compensation = -Vector3D.dotProduct(v1, v2) / v2.getNormSq();
+        final Vector3D phasedRotAxisCel = new Vector3D(1.0, rotAxisCel, compensation, pointingP);
 
         // compute transform from celestial frame to satellite frame
         final Rotation celToSatRotation =
             new Rotation(pointingP, phasingCel, pointingSat, phasingSat);
-        final Vector3D celToSatSpin = celToSatRotation.applyTo(rotAxisCel);
-        Transform transform = new Transform(celToSatRotation, celToSatSpin);
 
+        // build transform combining rotation and instant rotation axis
+        Transform transform = new Transform(celToSatRotation, celToSatRotation.applyTo(phasedRotAxisCel));
+        final Frame frame = orbit.getFrame();
         if (frame != celestialFrame) {
             // prepend transform from specified frame to celestial frame
             transform = new Transform(frame.getTransformTo(celestialFrame, date), transform);
