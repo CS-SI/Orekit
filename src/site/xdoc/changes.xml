@@ -22,8 +22,16 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix">
+        improved CelestialBodyPointed attitude mode: the spin now correctly includes
+        the coupling effect of the phasing reference
+      </action>
+      <action dev="luc" type="fix">
+        fixed an error in SpinStabilized attitude mode: the spin was reversed
+        with respect to the specification
+      </action>
       <action dev="pascal" type="update">
-        enhanced DateDetector behaviour
+        enhanced DateDetector behaviour to allow adding new event dates on the fly
       </action>
       <action dev="pascal" type="fix" due-to="Derek Surka">
         fixed an error in FramesFactory when getting ITRF2005 and TIRF2000 frames:
