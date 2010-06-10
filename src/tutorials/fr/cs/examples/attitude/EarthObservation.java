@@ -97,8 +97,8 @@ public class EarthObservation {
                     return CONTINUE;
                 }
             };
-            attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent, false, nightRestingLaw);
-            attitudesSequence.addSwitchingCondition(nightRestingLaw, nightDayEvent, true, dayObservationLaw);
+            attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent, false, true, nightRestingLaw);
+            attitudesSequence.addSwitchingCondition(nightRestingLaw, nightDayEvent, true, false, dayObservationLaw);
             if (dayNightEvent.g(new SpacecraftState(initialOrbit)) >= 0) {
                 // initial position is in daytime
                 attitudesSequence.resetActiveLaw(dayObservationLaw);

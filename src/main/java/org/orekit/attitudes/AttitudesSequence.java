@@ -80,7 +80,7 @@ public class AttitudesSequence implements AttitudeLaw {
      * <p>
      * This method must be called once before propagation, after the
      * switching conditions have been set up by calls to {@link
-     * #addSwitchingCondition(AttitudeLaw, EventDetector, boolean, AttitudeLaw)}.
+     * #addSwitchingCondition(AttitudeLaw, EventDetector, boolean, boolean, AttitudeLaw)}.
      * </p>
      * @param propagator propagator that will handle the events
      */
@@ -110,12 +110,15 @@ public class AttitudesSequence implements AttitudeLaw {
      * for a law without any ending condition, in this case the after law is not
      * referenced and may be null too)
      * @param switchOnIncrease if true, switch is triggered on increasing event
-     * otherwise switch is triggered on decreasing event
+     * @param switchOnDecrease if true, switch is triggered on decreasing event
      * @param after attitude law to activate after the switch event occurrence
      * (used only if switchEvent is non null)
      */
-    public void addSwitchingCondition(final AttitudeLaw before, final EventDetector switchEvent,
-                                      final boolean switchOnIncrease, final AttitudeLaw after) {
+    public void addSwitchingCondition(final AttitudeLaw before,
+                                      final EventDetector switchEvent,
+                                      final boolean switchOnIncrease,
+                                      final boolean switchOnDecrease,
+                                      final AttitudeLaw after) {
 
         // add the before law if not already known
         if (!switchingMap.containsKey(before)) {
@@ -133,7 +136,7 @@ public class AttitudesSequence implements AttitudeLaw {
             }
 
             // add the switching condition
-            switchingMap.get(before).add(new Switch(switchEvent, switchOnIncrease, after));
+            switchingMap.get(before).add(new Switch(switchEvent, switchOnIncrease, switchOnDecrease, after));
 
         }
 
@@ -158,18 +161,26 @@ public class AttitudesSequence implements AttitudeLaw {
         /** Event direction triggering the switch. */
         private final boolean switchOnIncrease;
 
+        /** Event direction triggering the switch. */
+        private final boolean switchOnDecrease;
+
         /** Next attitude law. */
         private final AttitudeLaw next;
 
         /** Simple constructor.
          * @param event event
          * @param switchOnIncrease if true, switch is triggered on increasing event
+         * @param switchOnDecrease if true, switch is triggered on decreasing event
          * otherwise switch is triggered on decreasing event
          * @param next next attitude law
          */
-        public Switch(final EventDetector event, final boolean switchOnIncrease, final AttitudeLaw next) {
+        public Switch(final EventDetector event,
+                      final boolean switchOnIncrease,
+                      final boolean switchOnDecrease,
+                      final AttitudeLaw next) {
             this.event            = event;
             this.switchOnIncrease = switchOnIncrease;
+            this.switchOnDecrease = switchOnDecrease;
             this.next             = next;
         }
 
@@ -178,7 +189,7 @@ public class AttitudesSequence implements AttitudeLaw {
         public int eventOccurred(final SpacecraftState s, final boolean increasing)
             throws OrekitException {
 
-            if (!(increasing ^ switchOnIncrease)) {
+            if ((increasing && switchOnIncrease) || (!increasing && switchOnDecrease)) {
                 // switch to next attitude law
                 active = next;
             }

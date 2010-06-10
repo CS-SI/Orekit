@@ -95,17 +95,17 @@ EventDetector nightDayEvent = new EclipseDetector(sun, 696000000., earth, Consta
   by adding two switching conditions acting as a simple loop:
 
   ** the first one enables the transition from <dayObservationLaw> to <nightRestingLaw>
-     when a <dayNightEvent> occurs,
-    
+     when a decreasing <dayNightEvent> occurs,
+
   ** the second one enables the transition from <nightRestingLaw> to <dayObservationLaw>
-     when a <nightDayEvent> occurs.
-    
+     when an increasing <nightDayEvent> occurs.
+
   []
 
 +---------------------
 AttitudesSequence attitudesSequence = new AttitudesSequence();
-attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent, false, nightRestingLaw);
-attitudesSequence.addSwitchingCondition(nightRestingLaw, nightDayEvent, true, dayObservationLaw);
+attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent, false, true, nightRestingLaw);
+attitudesSequence.addSwitchingCondition(nightRestingLaw, nightDayEvent, true, false, dayObservationLaw);
 +---------------------
 
   An <AttitudesSequence> needs at least one switching condition to be meaningful,
