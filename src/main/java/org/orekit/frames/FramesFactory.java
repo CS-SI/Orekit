@@ -16,6 +16,7 @@
  */
 package org.orekit.frames;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -331,7 +332,19 @@ public class FramesFactory implements Serializable {
         synchronized (FramesFactory.class) {
 
             if (eme2000 == null) {
-                eme2000 = new EME2000Frame("EME2000");
+                eme2000 = new EME2000Frame("EME2000") {
+
+                    /** Serializable UID. */
+                    private static final long serialVersionUID = -866603085892124698L;
+
+                    /** Replace deserialized objects by singleton instance.
+                     * @return singleton instance
+                     */
+                    private Object readResolve() {
+                        return FramesFactory.getEME2000();
+                    }
+
+                };
             }
 
             return eme2000;
@@ -359,14 +372,46 @@ public class FramesFactory implements Serializable {
 
             if (ignoreTidalEffects) {
                 if (itrf2005WithoutTidalEffects == null) {
-                    itrf2005WithoutTidalEffects =
-                        new ITRF2005Frame(ignoreTidalEffects, AbsoluteDate.J2000_EPOCH, "ITRF2005 w/o tides");
+                    itrf2005WithoutTidalEffects = new ITRF2005Frame(ignoreTidalEffects, AbsoluteDate.J2000_EPOCH, "ITRF2005") {
+
+                        /** Serializable UID. */
+                        private static final long serialVersionUID = -2640892226391889960L;
+
+                        /** Replace deserialized objects by singleton instance.
+                         * @return singleton instance
+                         * @exception ObjectStreamException if object cannot be deserialized
+                         */
+                        private Object readResolve() throws ObjectStreamException {
+                            try {
+                                return FramesFactory.getITRF2005(true);
+                            } catch (OrekitException oe) {
+                                throw new OrekitDeserializationException(oe.getLocalizedMessage(), oe.getCause());
+                            }
+                        }
+
+                    };
                 }
                 return itrf2005WithoutTidalEffects;
             } else {
                 if (itrf2005WithTidalEffects == null) {
-                    itrf2005WithTidalEffects =
-                        new ITRF2005Frame(ignoreTidalEffects, AbsoluteDate.J2000_EPOCH, "ITRF2005");
+                    itrf2005WithTidalEffects = new ITRF2005Frame(ignoreTidalEffects, AbsoluteDate.J2000_EPOCH, "ITRF2005 w/o tides") {
+
+                        /** Serializable UID. */
+                        private static final long serialVersionUID = -3431876499543540474L;
+
+                        /** Replace deserialized objects by singleton instance.
+                         * @return singleton instance
+                         * @exception ObjectStreamException if object cannot be deserialized
+                         */
+                        private Object readResolve() throws ObjectStreamException {
+                            try {
+                                return FramesFactory.getITRF2005(false);
+                            } catch (OrekitException oe) {
+                                throw new OrekitDeserializationException(oe.getLocalizedMessage(), oe.getCause());
+                            }
+                        }
+
+                    };
                 }
                 return itrf2005WithTidalEffects;
             }
@@ -394,14 +439,46 @@ public class FramesFactory implements Serializable {
 
             if (ignoreTidalEffects) {
                 if (tirf2000WithoutTidalEffects == null) {
-                    tirf2000WithoutTidalEffects =
-                        new TIRF2000Frame(ignoreTidalEffects, AbsoluteDate.J2000_EPOCH, "TIRF2000 w/o tides");
+                    tirf2000WithoutTidalEffects = new TIRF2000Frame(ignoreTidalEffects, AbsoluteDate.J2000_EPOCH, "TIRF2000") {
+
+                        /** Serializable UID. */
+                        private static final long serialVersionUID = -2710970729436471122L;
+
+                        /** Replace deserialized objects by singleton instance.
+                         * @return singleton instance
+                         * @exception ObjectStreamException if object cannot be deserialized
+                         */
+                        private Object readResolve() throws ObjectStreamException {
+                            try {
+                                return FramesFactory.getTIRF2000(true);
+                            } catch (OrekitException oe) {
+                                throw new OrekitDeserializationException(oe.getLocalizedMessage(), oe.getCause());
+                            }
+                        }
+
+                    };
                 }
                 return tirf2000WithoutTidalEffects;
             } else {
                 if (tirf2000WithTidalEffects == null) {
-                    tirf2000WithTidalEffects =
-                        new TIRF2000Frame(ignoreTidalEffects, AbsoluteDate.J2000_EPOCH, "TIRF2000");
+                    tirf2000WithTidalEffects = new TIRF2000Frame(ignoreTidalEffects, AbsoluteDate.J2000_EPOCH, "TIRF2000 w/o tides") {
+
+                        /** Serializable UID. */
+                        private static final long serialVersionUID = 3808731606471752890L;
+
+                        /** Replace deserialized objects by singleton instance.
+                         * @return singleton instance
+                         * @exception ObjectStreamException if object cannot be deserialized
+                         */
+                        private Object readResolve() throws ObjectStreamException {
+                            try {
+                                return FramesFactory.getTIRF2000(false);
+                            } catch (OrekitException oe) {
+                                throw new OrekitDeserializationException(oe.getLocalizedMessage(), oe.getCause());
+                            }
+                        }
+
+                    };
                 }
                 return tirf2000WithTidalEffects;
             }
@@ -418,7 +495,24 @@ public class FramesFactory implements Serializable {
         synchronized (FramesFactory.class) {
 
             if (cirf == null) {
-                cirf = new CIRF2000Frame(AbsoluteDate.J2000_EPOCH, "CIRF2000");
+                cirf = new CIRF2000Frame(AbsoluteDate.J2000_EPOCH, "CIRF2000") {
+
+                    /** Serializable UID. */
+                    private static final long serialVersionUID = -6326024572591614460L;
+
+                    /** Replace deserialized objects by singleton instance.
+                     * @return singleton instance
+                     * @exception ObjectStreamException if object cannot be deserialized
+                     */
+                    private Object readResolve() throws ObjectStreamException {
+                        try {
+                            return FramesFactory.getCIRF2000();
+                        } catch (OrekitException oe) {
+                            throw new OrekitDeserializationException(oe.getLocalizedMessage(), oe.getCause());
+                        }
+                    }
+
+                };
             }
 
             return cirf;
@@ -435,7 +529,24 @@ public class FramesFactory implements Serializable {
         synchronized (FramesFactory.class) {
 
             if (veis1950 == null) {
-                veis1950 = new VEISFrame(AbsoluteDate.J2000_EPOCH, "VEIS1950");
+                veis1950 = new VEISFrame(AbsoluteDate.J2000_EPOCH, "VEIS1950") {
+
+                    /** Serializable UID. */
+                    private static final long serialVersionUID = -2722113556157388660L;
+
+                    /** Replace deserialized objects by singleton instance.
+                     * @return singleton instance
+                     * @exception ObjectStreamException if object cannot be deserialized
+                     */
+                    private Object readResolve() throws ObjectStreamException {
+                        try {
+                            return FramesFactory.getVeis1950();
+                        } catch (OrekitException oe) {
+                            throw new OrekitDeserializationException(oe.getLocalizedMessage(), oe.getCause());
+                        }
+                    }
+
+                };
             }
 
             return veis1950;
@@ -459,14 +570,46 @@ public class FramesFactory implements Serializable {
 
             if (applyEOPCorr) {
                 if (pefWithEopCorrections == null) {
-                    pefWithEopCorrections =
-                        new PEFFrame(true, AbsoluteDate.J2000_EPOCH, "PEF with EOP");
+                    pefWithEopCorrections = new PEFFrame(true, AbsoluteDate.J2000_EPOCH, "PEF with EOP") {
+
+                        /** Serializable UID. */
+                        private static final long serialVersionUID = -7991144890003311599L;
+
+                        /** Replace deserialized objects by singleton instance.
+                         * @return singleton instance
+                         * @exception ObjectStreamException if object cannot be deserialized
+                         */
+                        private Object readResolve() throws ObjectStreamException {
+                            try {
+                                return FramesFactory.getPEF(true);
+                            } catch (OrekitException oe) {
+                                throw new OrekitDeserializationException(oe.getLocalizedMessage(), oe.getCause());
+                            }
+                        }
+
+                    };
                 }
                 return pefWithEopCorrections;
             } else {
                 if (pefWithoutEopCorrections == null) {
-                    pefWithoutEopCorrections =
-                        new PEFFrame(false, AbsoluteDate.J2000_EPOCH, "PEF without EOP");
+                    pefWithoutEopCorrections = new PEFFrame(false, AbsoluteDate.J2000_EPOCH, "PEF without EOP") {
+
+                        /** Serializable UID. */
+                        private static final long serialVersionUID = 5595635822670691035L;
+
+                        /** Replace deserialized objects by singleton instance.
+                         * @return singleton instance
+                         * @exception ObjectStreamException if object cannot be deserialized
+                         */
+                        private Object readResolve() throws ObjectStreamException {
+                            try {
+                                return FramesFactory.getPEF(false);
+                            } catch (OrekitException oe) {
+                                throw new OrekitDeserializationException(oe.getLocalizedMessage(), oe.getCause());
+                            }
+                        }
+
+                    };
                 }
                 return pefWithoutEopCorrections;
             }
@@ -490,14 +633,46 @@ public class FramesFactory implements Serializable {
 
             if (applyEOPCorr) {
                 if (temeWithEopCorrections == null) {
-                    temeWithEopCorrections =
-                        new TEMEFrame(true, AbsoluteDate.J2000_EPOCH, "TEME with EOP");
+                    temeWithEopCorrections = new TEMEFrame(true, AbsoluteDate.J2000_EPOCH, "TEME with EOP") {
+
+                        /** Serializable UID. */
+                        private static final long serialVersionUID = -8707395410625695711L;
+
+                        /** Replace deserialized objects by singleton instance.
+                         * @return singleton instance
+                         * @exception ObjectStreamException if object cannot be deserialized
+                         */
+                        private Object readResolve() throws ObjectStreamException {
+                            try {
+                                return FramesFactory.getTEME(true);
+                            } catch (OrekitException oe) {
+                                throw new OrekitDeserializationException(oe.getLocalizedMessage(), oe.getCause());
+                            }
+                        }
+
+                    };
                 }
                 return temeWithEopCorrections;
             } else {
                 if (temeWithoutEopCorrections == null) {
-                    temeWithoutEopCorrections =
-                        new TEMEFrame(false, AbsoluteDate.J2000_EPOCH, "TEME without EOP");
+                    temeWithoutEopCorrections = new TEMEFrame(false, AbsoluteDate.J2000_EPOCH, "TEME without EOP") {
+
+                        /** Serializable UID. */
+                        private static final long serialVersionUID = -2464158354310660114L;
+
+                        /** Replace deserialized objects by singleton instance.
+                         * @return singleton instance
+                         * @exception ObjectStreamException if object cannot be deserialized
+                         */
+                        private Object readResolve() throws ObjectStreamException {
+                            try {
+                                return FramesFactory.getTEME(false);
+                            } catch (OrekitException oe) {
+                                throw new OrekitDeserializationException(oe.getLocalizedMessage(), oe.getCause());
+                            }
+                        }
+
+                    };
                 }
                 return temeWithoutEopCorrections;
             }
@@ -521,14 +696,46 @@ public class FramesFactory implements Serializable {
 
             if (applyEOPCorr) {
                 if (memeWithEopCorrections == null) {
-                    memeWithEopCorrections =
-                        new MEMEFrame(true, AbsoluteDate.J2000_EPOCH, "MEME with EOP");
+                    memeWithEopCorrections = new MEMEFrame(true, AbsoluteDate.J2000_EPOCH, "MEME with EOP") {
+
+                        /** Serializable UID. */
+                        private static final long serialVersionUID = 8636329180516025555L;
+
+                        /** Replace deserialized objects by singleton instance.
+                         * @return singleton instance
+                         * @exception ObjectStreamException if object cannot be deserialized
+                         */
+                        private Object readResolve() throws ObjectStreamException {
+                            try {
+                                return FramesFactory.getMEME(true);
+                            } catch (OrekitException oe) {
+                                throw new OrekitDeserializationException(oe.getLocalizedMessage(), oe.getCause());
+                            }
+                        }
+
+                    };
                 }
                 return memeWithEopCorrections;
             } else {
                 if (memeWithoutEopCorrections == null) {
-                    memeWithoutEopCorrections =
-                        new MEMEFrame(false, AbsoluteDate.J2000_EPOCH, "MEME without EOP");
+                    memeWithoutEopCorrections = new MEMEFrame(false, AbsoluteDate.J2000_EPOCH, "MEME without EOP") {
+
+                        /** Serializable UID. */
+                        private static final long serialVersionUID = 2576943546992450611L;
+
+                        /** Replace deserialized objects by singleton instance.
+                         * @return singleton instance
+                         * @exception ObjectStreamException if object cannot be deserialized
+                         */
+                        private Object readResolve() throws ObjectStreamException {
+                            try {
+                                return FramesFactory.getMEME(false);
+                            } catch (OrekitException oe) {
+                                throw new OrekitDeserializationException(oe.getLocalizedMessage(), oe.getCause());
+                            }
+                        }
+
+                    };
                 }
                 return memeWithoutEopCorrections;
             }
@@ -536,4 +743,19 @@ public class FramesFactory implements Serializable {
         }
     }
 
+    private static class OrekitDeserializationException extends ObjectStreamException {
+
+        /** Serialiazable UID. */
+        private static final long serialVersionUID = -3163609376249707927L;
+
+        /** Simple constructor.
+         * Build an exception from a cause and with a specified message
+         * @param message descriptive message
+         * @param cause underlying cause
+         */
+        public OrekitDeserializationException(final String message, final Throwable cause) {
+            super(message);
+        }
+
+    }
 }
