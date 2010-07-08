@@ -743,6 +743,8 @@ public class FramesFactory implements Serializable {
         }
     }
 
+
+    /** Extended ObjectStreamException with some more information. */
     private static class OrekitDeserializationException extends ObjectStreamException {
 
         /** Serialiazable UID. */
