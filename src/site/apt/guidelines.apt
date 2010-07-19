@@ -61,7 +61,7 @@ Development Guidelines
   really hard, so this goal should not be taken too lightly. Good designs are a
   matter of balance between two few objects that do too many things internally
   an ignore each other and too many objects that do nothing alone and always need
-  a bunch of other objects to work. Always think in terms of balance, and check if
+  a bunch of other objects to work. Always think in terms of balance, and check
   what happens if you remove something from the design. Quite often, removing something
   improves the design and should be done.
 
