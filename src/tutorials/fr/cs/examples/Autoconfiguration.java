@@ -17,6 +17,7 @@
 package fr.cs.examples;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.orekit.data.DataProvidersManager;
@@ -79,12 +80,17 @@ public class Autoconfiguration {
      * @param directory directory to try
      */
     private static void appendIfExists(final StringBuffer path, final String directory) {
-        final URL url = Autoconfiguration.class.getClassLoader().getResource(directory);
-        if (url != null) {
-            if (path.length() > 0) {
-                path.append(System.getProperty("path.separator"));
+        try {
+            final URL url = Autoconfiguration.class.getClassLoader().getResource(directory);
+            if (url != null) {
+                if (path.length() > 0) {
+                    path.append(System.getProperty("path.separator"));
+                }
+                path.append(url.toURI().getPath());
             }
-            path.append(url.getFile().replaceAll("%20", " "));
+        } catch (URISyntaxException use) {
+            // display an error message and simply ignore the path
+            System.err.println(use.getLocalizedMessage());
         }
     }
 

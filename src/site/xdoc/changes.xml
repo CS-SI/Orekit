@@ -23,6 +23,10 @@
     <release version="5.1" date="TBD"
              description="TBD.">
       <action dev="luc" type="fix">
+        fixed an errors in data loading in tutorials when one of the path in the classpath
+        contained a space
+      </action>
+      <action dev="luc" type="fix">
         improved CelestialBodyPointed attitude mode: the spin now correctly includes
         the coupling effect of the phasing reference
       </action>
