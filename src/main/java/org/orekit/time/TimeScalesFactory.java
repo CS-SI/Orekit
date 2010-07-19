@@ -145,7 +145,7 @@ public class TimeScalesFactory implements Serializable {
                     }
                 }
                 if (!loaded) {
-                    throw new OrekitException("no UTC-TAI history data loaded");
+                    throw new OrekitException("no IERS UTC-TAI history data loaded");
                 }
                 utc = new UTCScale(entries);
             }
