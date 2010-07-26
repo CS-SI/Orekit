@@ -192,7 +192,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         throws OrekitException {
 
         // Transform given point from given frame to topocentric frame
-        final Transform t = getTransformTo(frame, date).getInverse();
+        final Transform t = frame.getTransformTo(this, date);
         final Vector3D extPointTopo = t.transformPosition(extPoint);
 
         // Compute range
@@ -229,6 +229,6 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      */
     public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        return frame.getTransformTo(this, date).transformPVCoordinates(PVCoordinates.ZERO);
+        return getTransformTo(frame, date).transformPVCoordinates(PVCoordinates.ZERO);
     }
 }

@@ -23,6 +23,11 @@
     <release version="5.1" date="TBD"
              description="TBD.">
       <action dev="luc" type="fix">
+        fixed an error in TopocentricFrame.getPVCoordinates: the coordinates returned were not the
+        coordinates of the topocentric frame origin with respect to the specified frame, but were the
+        coordinates of the specified frame origin with respect to the topocentric frame.
+      </action>
+      <action dev="luc" type="fix">
         fixed an errors in data loading in tutorials when one of the path in the classpath
         contained a space
       </action>
