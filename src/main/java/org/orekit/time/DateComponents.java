@@ -209,7 +209,8 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
     /** Build a date from its offset with respect to a reference epoch.
      * <p>This constructor is mainly useful to build a date from a modified
-     * julian day (using {@link #MODIFIED_JULIAN_EPOCH}).</p>
+     * julian day (using {@link #MODIFIED_JULIAN_EPOCH}) or a GPS week number
+     * (using {@link #GPS_EPOCH}).</p>
      * @param epoch reference epoch
      * @param offset offset with respect to a reference epoch
      * @see #DateComponents(int)

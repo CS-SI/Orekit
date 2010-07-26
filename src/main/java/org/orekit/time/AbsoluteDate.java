@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.utils.Constants;
 
 
 /** This class represents a specific instant in time.
@@ -168,10 +169,12 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      */
     public AbsoluteDate(final DateComponents date, final TimeComponents time,
                         final TimeScale timeScale) {
-        // set the epoch at the start of the current minute
+        // set the epoch at the start of the current second
         final int j2000Day = date.getJ2000Day();
-        epoch  = 60l * ((j2000Day * 24l + time.getHour()) * 60l + time.getMinute() - 720l);
-        offset = time.getSecond() + timeScale.offsetToTAI(date, time);
+        final double sd = time.getSecond();
+        final long   sl = (long) Math.floor(sd);
+        epoch  = 60l * ((j2000Day * 24l + time.getHour()) * 60l + time.getMinute() - 720l) + sl;
+        offset = (sd - sl) + timeScale.offsetToTAI(date, time);
     }
 
     /** Build an instance from a location in a {@link TimeScale time scale}.
@@ -244,8 +247,10 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      * @see #durationFrom(AbsoluteDate)
      */
     public AbsoluteDate(final AbsoluteDate since, final double elapsedDuration) {
-        epoch = since.epoch;
-        this.offset = since.offset + elapsedDuration;
+        final long   dl = Math.round(elapsedDuration);
+        final double dd = elapsedDuration - dl;
+        epoch  = since.epoch  + dl;
+        offset = since.offset + dd;
     }
 
     /** Build an instance from an apparent clock offset with respect to another
@@ -281,7 +286,11 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      */
     public static AbsoluteDate createGPSDate(final int weekNumber,
                                              final double milliInWeek) {
-        return GPS_EPOCH.shiftedBy(weekNumber * 604800.0 + milliInWeek / 1000.0);
+        final int day = (int) Math.floor(milliInWeek / (1000.0 * Constants.JULIAN_DAY));
+        final double secondsInDay = milliInWeek / 1000.0 - day * Constants.JULIAN_DAY;
+        return new AbsoluteDate(new DateComponents(DateComponents.GPS_EPOCH, weekNumber * 7 + day),
+                                new TimeComponents(secondsInDay),
+                                TimeScalesFactory.getGPS());
     }
 
     /** Get a time-shifted date.
@@ -345,11 +354,10 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      * @see #AbsoluteDate(AbsoluteDate, double, TimeScale)
      */
     public double offsetFrom(final AbsoluteDate instant, final TimeScale timeScale) {
-        final double elapsedDuration = (epoch - instant.epoch) +
-                                       (offset - instant.offset);
-        final double startOffset     = timeScale.offsetFromTAI(instant);
-        final double endOffset       = timeScale.offsetFromTAI(this);
-        return  elapsedDuration - startOffset + endOffset;
+        final long   elapsedDurationA = epoch - instant.epoch;
+        final double elapsedDurationB = (offset         + timeScale.offsetFromTAI(this)) -
+                                        (instant.offset + timeScale.offsetFromTAI(instant));
+        return  elapsedDurationA + elapsedDurationB;
     }
 
     /** Compute the offset between two time scales at the current instant.
@@ -375,7 +383,7 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      * of the instant in the time scale
      */
     public Date toDate(final TimeScale timeScale) {
-        final double time = epoch + offset + timeScale.offsetFromTAI(this);
+        final double time = epoch + (offset + timeScale.offsetFromTAI(this));
         return new Date(Math.round((time + 10957.5 * 86400.0) * 1000));
     }
 
@@ -386,18 +394,22 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
     public DateTimeComponents getComponents(final TimeScale timeScale) {
 
         // compute offset from 2000-01-01T00:00:00 in specified time scale
-        final double offset2000 = epoch + offset + 43200 + timeScale.offsetFromTAI(this);
-        final int    day        = (int) Math.floor(offset2000 / 86400.0);
+        final long   offset2000A = epoch + 43200l;
+        final double offset2000B = offset + timeScale.offsetFromTAI(this);
+        final long   remainder   = offset2000A % 86400l;
+        final int    dayA        = (int) ((offset2000A - remainder) / 86400l);
+        final int    dayB        = (int) Math.floor((offset2000B + remainder) / 86400.0);
 
         // extract calendar elements
-        final DateComponents date = new DateComponents(DateComponents.J2000_EPOCH, day);
-        TimeComponents time = new TimeComponents(offset2000 - 86400.0 * day);
+        final DateComponents date = new DateComponents(DateComponents.J2000_EPOCH, dayA + dayB);
+        TimeComponents time = new TimeComponents((int) (remainder - 86400l * dayB), offset2000B);
+
         try {
             final UTCScale utc = (UTCScale) timeScale;
             if (utc.insideLeap(this)) {
                 // fix the seconds number to take the leap into account
                 time = new TimeComponents(time.getHour(), time.getMinute(),
-                                       time.getSecond() + utc.getLeap(this));
+                                          time.getSecond() + utc.getLeap(this));
             }
         } catch (ClassCastException cce) {
             // ignored

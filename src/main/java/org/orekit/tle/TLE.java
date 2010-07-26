@@ -172,11 +172,15 @@ public class TLE implements TimeStamped, Serializable {
         ephemerisType   = parseInteger(line1, 62, 1);
         elementNumber   = parseInteger(line1, 64, 4);
 
-        // Date format transform:
-        final DateComponents date = new DateComponents(parseYear(line1, 18), 1, 1);
-        final double dayNb = parseDouble(line1, 20, 12);
-        epoch = new AbsoluteDate(date, TimeComponents.H00,
-                                 TimeScalesFactory.getUTC()).shiftedBy((dayNb - 1) * Constants.JULIAN_DAY); //-1 is due to TLE date definition
+        // Date format transform (nota: 27/31250 == 86400/100000000)
+        final int    year      = parseYear(line1, 18);
+        final int    dayInYear = parseInteger(line1, 20, 3);
+        final long   df        = 27l * parseInteger(line1, 24, 8);
+        final int    secondsA  = (int) (df / 31250l);
+        final double secondsB  = (df % 31250l) / 31250.0;
+        epoch = new AbsoluteDate(new DateComponents(year, dayInYear),
+                                 new TimeComponents(secondsA, secondsB),
+                                 TimeScalesFactory.getUTC());
 
         // mean motion development
         // converted from rev/day, 2 * rev/day^2 and 6 * rev/day^3 to rad/s, rad/s^2 and rad/s^3

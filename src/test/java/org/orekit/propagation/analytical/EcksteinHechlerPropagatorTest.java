@@ -427,7 +427,7 @@ public class EcksteinHechlerPropagatorTest {
         pom = Math.atan2(eyp, exp);
         ex = e * Math.cos(pom + gom);
         ey = e * Math.sin(pom + gom);
-        Assert.assertEquals(finalOrbit.getDate().durationFrom(extrapDate), 0.0, Utils.epsilonTest);
+        Assert.assertEquals(0.0, finalOrbit.getDate().durationFrom(extrapDate), Utils.epsilonTest * delta_t);
         Assert.assertEquals(finalOrbit.getA(), a, 10. * Utils.epsilonTest * finalOrbit.getA());
         Assert.assertEquals(finalOrbit.getEquinoctialEx(), ex, Utils.epsilonE * finalOrbit.getE());
         Assert.assertEquals(finalOrbit.getEquinoctialEy(), ey, Utils.epsilonE * finalOrbit.getE());

@@ -145,7 +145,7 @@ public class AbsoluteDateTest {
         AbsoluteDate ref  = new AbsoluteDate(new DateComponents(2006, 8, 9),
                                              new TimeComponents(16, 31, 03),
                                              utc);
-        Assert.assertEquals(0, date.durationFrom(ref), 1.0e-12);
+        Assert.assertEquals(0, date.durationFrom(ref), 1.0e-15);
     }
 
     @Test
@@ -273,6 +273,15 @@ public class AbsoluteDateTest {
         Assert.assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
         Assert.assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.PAST_INFINITY)));
         Assert.assertTrue(Double.isInfinite(AbsoluteDate.PAST_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
+    }
+
+    @Test
+    public void testAccuracy() {
+        TimeScale tai = TimeScalesFactory.getTAI();
+        double sec = 0.281;
+        AbsoluteDate t = new AbsoluteDate(2010, 6, 21, 18, 42, sec, tai);
+        double recomputedSec = t.getComponents(tai).getTime().getSecond();
+        Assert.assertEquals(sec, recomputedSec, 1.0e-14);
     }
 
     @Before

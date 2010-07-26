@@ -168,7 +168,7 @@ public class TLESeriesTest {
             new AbsoluteDate(2002, 5, 4, 11, 45, 15.695136, TimeScalesFactory.getUTC());
         Assert.assertEquals(0, series.getFirstDate().durationFrom(referenceFirst), 1e-13);
         AbsoluteDate referenceLast =
-            new AbsoluteDate(2002, 6, 24, 18, 12, 44.591616001, TimeScalesFactory.getUTC());
+            new AbsoluteDate(2002, 6, 24, 18, 12, 44.591616, TimeScalesFactory.getUTC());
         Assert.assertEquals(0, series.getLastDate().durationFrom(referenceLast), 1e-13);
 
         AbsoluteDate inside = new AbsoluteDate(2002, 06, 02, 11, 12, 15, TimeScalesFactory.getUTC());

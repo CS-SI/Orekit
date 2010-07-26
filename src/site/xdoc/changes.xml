@@ -23,6 +23,10 @@
     <release version="5.1" date="TBD"
              description="TBD.">
       <action dev="luc" type="fix">
+        improved AbsoluteDate accuracy by shifting epoch when needed and separating long/double
+        computations to avoid too large offsets and numerical cancellations
+      </action>
+      <action dev="luc" type="fix">
         fixed an error in TopocentricFrame.getPVCoordinates: the coordinates returned were not the
         coordinates of the topocentric frame origin with respect to the specified frame, but were the
         coordinates of the specified frame origin with respect to the topocentric frame.

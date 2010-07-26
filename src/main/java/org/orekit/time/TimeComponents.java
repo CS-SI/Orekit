@@ -97,7 +97,22 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @exception IllegalArgumentException if seconds number is out of range
      */
     public TimeComponents(final double secondInDay) {
+        this(0, secondInDay);
+    }
+
+    /** Build a time from the second number within the day.
+     * <p>
+     * The second number is defined here as the sum
+     * {@code secondInDayA + secondInDayB} from 0.0 to {@link Constants#JULIAN_DAY}
+     * (excluded). The two parameters are used for increased accuracy.
+     * </p>
+     * @param secondInDayA first part of the second number
+     * @param secondInDayB last part of the second number
+     * @exception IllegalArgumentException if seconds number is out of range
+     */
+    public TimeComponents(int secondInDayA, double secondInDayB) {
         // range check
+        double secondInDay = secondInDayA + secondInDayB;
         if ((secondInDay < 0) || (secondInDay >= Constants.JULIAN_DAY)) {
             throw OrekitException.createIllegalArgumentException("out of range seconds number: {0}",
                                                                  secondInDay);
@@ -105,10 +120,10 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
         // extract the time components
         hour = (int) Math.floor(secondInDay / 3600.0);
-        double remains = secondInDay - hour * 3600;
-        minute = (int) Math.floor(remains / 60.0);
-        remains -= minute * 60;
-        second = remains;
+        final int hs = 3600 * hour;
+        minute = (int) Math.floor((secondInDay - hs) / 60.0);
+        final int ms = 60 * minute;
+        second = (secondInDayA - hs - ms) + secondInDayB;
 
     }
 
