@@ -18,7 +18,7 @@
 
   <property name="lib.dir"                 location="lib"                    />
 
-  <property name="commons-math.version"    value="2.0" />
+  <property name="commons-math.version"    value="2.2" />
   <property name="commons-math.jar"        value="commons-math-${commons-math.version}.jar" />
   <property name="commons-math.maven.path" value="org/apache/commons/commons-math" />
   <property name="maven.repository"        value="http://repo1.maven.org/maven2" />

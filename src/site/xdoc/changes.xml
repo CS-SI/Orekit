@@ -22,6 +22,9 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="update">
+        Orekit now depends on at least version 2.2 of Apache commons-math
+      </action>
       <action dev="luc" type="add">
         PropagationException can now be created directly from OrekitException, thus simplifying
         wrapping lower Orekit errors in step handlers

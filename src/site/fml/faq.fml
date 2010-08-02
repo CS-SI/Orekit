@@ -105,13 +105,13 @@
         <p>
           Up to version 4.0, Orekit depended on features of commons-math which were not released
           as of mid 2008, so the dependency was set to 2.0-SNAPSHOT development version.
-          This development version was available from Apache subversion repository.
+          This development version was available from Apache subversion repository. Starting
+          with version 4.1, Orekit depends only on released versions of Apache commons-math
         </p>
         <p>
-          Starting with version 4.1, Orekit depends only on released versions of commons-math
-          (commons-math 2.0 released in early August 2009) which is now available in maven standard
-          repositories. You should upgrade to at least Orekit 4.1 to use the officially
-          supported 2.0 release of commons math.
+          Orekit 4.1 depends on version 2.0 of Apache commons-math.
+          Orekit 5.0 depends on version 2.1 of Apache commons-math.
+          Orekit 5.1 depends on version 2.2 of Apache commons-math.
         </p>
       </answer>
     </faq>
