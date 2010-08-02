@@ -32,6 +32,7 @@ import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.ForceModelWithJacobians;
@@ -82,12 +83,6 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 4139595812211569107L;
-
-    /** Absolute vectorial error field name. */
-    private static final String ABSOLUTE_TOLERANCE = "vecAbsoluteTolerance";
-
-    /** Relative vectorial error field name. */
-    private static final String RELATIVE_TOLERANCE = "vecRelativeTolerance";
 
     /** Force models used when extrapolating the Orbit. */
     private final List<ForceModelWithJacobians> forceModelsWJ;
@@ -187,17 +182,17 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
         try {
 
             if (initialState == null) {
-                throw new PropagationException("initial state not specified for orbit propagation");
+                throw new PropagationException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
             }
             if (initialState.getMass() <= 0.0) {
-                throw new IllegalArgumentException("Mass is null or negative");
+                throw new PropagationException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS, initialState.getMass());
             }
             if (initialState.getDate().equals(finalDate)) {
                 // don't extrapolate
                 return initialState;
             }
             if (integrator == null) {
-                throw new PropagationException("ODE integrator not set for orbit propagation");
+                throw new PropagationException(OrekitMessages.ODE_INTEGRATOR_NOT_SET_FOR_ORBIT_PROPAGATION);
             }
 
             // space dynamics view
@@ -264,7 +259,7 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
                     }
                 }
                 if (!found) {
-                    throw new PropagationException("unknown parameter {0}", parameter);
+                    throw new PropagationException(OrekitMessages.UNKNOWN_PARAMETER, parameter);
                 }
             }
 
@@ -279,42 +274,33 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
             // get hY from integrator tolerance array
             final double[] hY = getHy(integrator);
 
-            // resize integrator tolerance array
-            expandToleranceArray(integrator);
-
             final FirstOrderIntegratorWithJacobians integratorWJ =
                     new FirstOrderIntegratorWithJacobians(integrator,
                                                           new DifferentialEquations(),
                                                           paramWJ, hY, hP);
 
-            try {
-                // mathematical integration
-                final double stopTime = integratorWJ.integrate(t0, stateVector, DY0DP,
-                                                               t1, stateVector, dFdY, DY0DP);
-                // fill in jacobian
-                for (int i = 0; i < DY0DP.length; i++) {
-                    System.arraycopy(DY0DP[i], 0, dFdP[i], 0, DY0DP[i].length);
-                }
-
-                // back to space dynamics view
-                final AbsoluteDate date = startDate.shiftedBy(stopTime);
-
-                final EquinoctialOrbit orbit =
-                    new EquinoctialOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
-                                         stateVector[4], stateVector[5], EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
-                                         initialOrbit.getFrame(), date, mu);
-
-                resetInitialState(new SpacecraftState(orbit, attitudeLaw.getAttitude(orbit), stateVector[6]));
-            } finally {
-                if (integrator != null) {
-                    resetToleranceArray(integrator);
-                }
+            // mathematical integration
+            final double stopTime = integratorWJ.integrate(t0, stateVector, DY0DP,
+                                                           t1, stateVector, dFdY, DY0DP);
+            // fill in jacobian
+            for (int i = 0; i < DY0DP.length; i++) {
+                System.arraycopy(DY0DP[i], 0, dFdP[i], 0, DY0DP[i].length);
             }
+
+            // back to space dynamics view
+            final AbsoluteDate date = startDate.shiftedBy(stopTime);
+
+            final EquinoctialOrbit orbit =
+                new EquinoctialOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
+                                     stateVector[4], stateVector[5], EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
+                                     initialOrbit.getFrame(), date, mu);
+
+            resetInitialState(new SpacecraftState(orbit, attitudeLaw.getAttitude(orbit), stateVector[6]));
 
             return initialState;
 
         } catch (OrekitException oe) {
-            throw new PropagationException(oe.getMessage(), oe);
+            throw new PropagationException(oe);
         } catch (DerivativeException de) {
 
             // recover a possible embedded PropagationException
@@ -324,7 +310,7 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
                 }
             }
 
-            throw new PropagationException(de.getMessage(), de);
+            throw new PropagationException(de, de.getLocalizablePattern(), de.getArguments());
 
         } catch (IntegratorException ie) {
 
@@ -335,62 +321,8 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
                 }
             }
 
-            throw new PropagationException(ie.getMessage(), ie);
+            throw new PropagationException(ie, ie.getLocalizablePattern(), ie.getArguments());
 
-        }
-    }
-
-    /** Expand integrator tolerance array to fit compound state vector.
-     * @param integrator integrator
-     */
-    private void expandToleranceArray(final FirstOrderIntegrator integrator) {
-        if (integrator instanceof AdaptiveStepsizeIntegrator) {
-            final int n = stateVector.length;
-            final int k = selectedParameters.length;
-            resizeArray(integrator, ABSOLUTE_TOLERANCE, n * (n + 1 + k), true);
-            resizeArray(integrator, RELATIVE_TOLERANCE, n * (n + 1 + k), false);
-        }
-    }
-
-    /** Reset integrator tolerance array to original size.
-     * @param integrator integrator
-     */
-    private void resetToleranceArray(final FirstOrderIntegrator integrator) {
-        if (integrator instanceof AdaptiveStepsizeIntegrator) {
-            final int n = stateVector.length;
-            resizeArray(integrator, ABSOLUTE_TOLERANCE, n, true);
-            resizeArray(integrator, RELATIVE_TOLERANCE, n, false);
-        }
-    }
-
-    /** Resize object internal array.
-     * @param instance instance concerned
-     * @param fieldName field name
-     * @param newSize new array size
-     * @param isAbsolute flag to fill the new array
-     */
-    private void resizeArray(final Object instance, final String fieldName,
-                             final int newSize, final boolean isAbsolute) {
-        try {
-            final Field arrayField = AdaptiveStepsizeIntegrator.class.getDeclaredField(fieldName);
-            arrayField.setAccessible(true);
-            final double[] originalArray = (double[]) arrayField.get(instance);
-            final int originalSize = originalArray.length;
-            final double[] resizedArray = new double[newSize];
-            if (newSize > originalSize) {
-                // expand array
-                System.arraycopy(originalArray, 0, resizedArray, 0, originalSize);
-                final double filler = isAbsolute ? Double.POSITIVE_INFINITY : 0.0;
-                Arrays.fill(resizedArray, originalSize, newSize, filler);
-            } else {
-                // shrink array
-                System.arraycopy(originalArray, 0, resizedArray, 0, newSize);
-            }
-            arrayField.set(instance, resizedArray);
-        } catch (NoSuchFieldException nsfe) {
-            throw OrekitException.createInternalError(nsfe);
-        } catch (IllegalAccessException iae) {
-            throw OrekitException.createInternalError(iae);
         }
     }
 
@@ -402,7 +334,7 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
         double[] hY = new double[0];
         if (integrator instanceof AdaptiveStepsizeIntegrator) {
             try {
-                final Field arrayField = AdaptiveStepsizeIntegrator.class.getDeclaredField(ABSOLUTE_TOLERANCE);
+                final Field arrayField = AdaptiveStepsizeIntegrator.class.getDeclaredField("vecAbsoluteTolerance");
                 arrayField.setAccessible(true);
                 hY = (double[]) arrayField.get(integrator);
                 for (int i = 0; i < hY.length; i++) {
@@ -440,8 +372,8 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
 
                 // compute cartesian coordinates
                 if (currentState.getMass() <= 0.0) {
-                    throw OrekitException.createIllegalArgumentException("spacecraft mass becomes negative (m: {0})",
-                                                                         currentState.getMass());
+                    throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
+                                                   currentState.getMass());
                 }
 
                 // initialize derivatives
@@ -459,7 +391,7 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
                 ++calls;
 
             } catch (OrekitException oe) {
-                throw new DerivativeException(oe.getMessage());
+                throw new DerivativeException(oe.getSpecifier(), oe.getParts());
             }
 
         }
