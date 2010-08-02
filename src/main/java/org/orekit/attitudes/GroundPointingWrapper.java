@@ -29,7 +29,7 @@ import org.orekit.utils.PVCoordinates;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public abstract class GroundPointingWrapper extends GroundPointing {
+public abstract class GroundPointingWrapper extends GroundPointing implements AttitudeLawModifier {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 262999520075931766L;
@@ -45,10 +45,20 @@ public abstract class GroundPointingWrapper extends GroundPointing {
         this.groundPointingLaw = groundPointingLaw;
     }
 
-    /** Get the attitude rotation.
-     * @return attitude satellite rotation from reference frame.
+    /** Get the underlying ground pointing law.
+     * @return underlying ground pointing law.
+     * @see #getUnderlyingAttitudeLaw()
+     * @deprecated as of 5.1, replaced by {@link #getUnderlyingAttitudeLaw()}
      */
+    @Deprecated
     public GroundPointing getGroundPointingLaw() {
+        return groundPointingLaw;
+    }
+
+    /** Get the underlying (ground pointing) attitude law.
+     * @return underlying attitude law, which in this case is a {@link GroundPointing} instance
+     */
+    public AttitudeLaw getUnderlyingAttitudeLaw() {
         return groundPointingLaw;
     }
 

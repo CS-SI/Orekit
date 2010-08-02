@@ -29,6 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 
 /** Loader for UTC versus TAI history files.
@@ -148,7 +149,7 @@ class UTCTAIHistoryFilesLoader implements UTCTAILoader {
             Matcher matcher = regularPattern.matcher(line);
             if (matcher.matches()) {
                 if (lastLine > 0) {
-                    throw new OrekitException("unexpected data after line {0} in file {1}: {2}",
+                    throw new OrekitException(OrekitMessages.UNEXPECTED_DATA_AFTER_LINE_IN_FILE,
                                               lastLine, name, line);
                 }
             } else {
@@ -184,7 +185,7 @@ class UTCTAIHistoryFilesLoader implements UTCTAILoader {
 
                     final Integer offset = Integer.valueOf(matcher.group(matcher.groupCount()));
                     if ((lastDate != null) && leapDay.compareTo(lastDate) <= 0) {
-                        throw new OrekitException("non-chronological dates in file {0}, line {1}",
+                        throw new OrekitException(OrekitMessages.NON_CHRONOLOGICAL_DATES_IN_FILE,
                                                   name, lineNumber);
                     }
                     lastDate = leapDay;
@@ -192,15 +193,14 @@ class UTCTAIHistoryFilesLoader implements UTCTAILoader {
                     entries.put(leapDay, offset);
 
                 } catch (NumberFormatException nfe) {
-                    throw new OrekitException("unable to parse line {0} in IERS UTC-TAI history file {1}",
-                                              lineNumber, name);
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              lineNumber, name, line);
                 }
             }
         }
 
         if (!foundEntries) {
-            throw new OrekitException("no entries found in IERS UTC-TAI history file {0}",
-                                      name);
+            throw new OrekitException(OrekitMessages.NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE, name);
         }
 
     }

@@ -22,6 +22,7 @@ import java.text.ParseException;
 
 import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /**This abstract class represents a Gravitational Potential Coefficients file reader.
  *
@@ -37,14 +38,6 @@ import org.orekit.errors.OrekitException;
  */
 public abstract class PotentialCoefficientsReader
     implements DataLoader, PotentialCoefficientsProvider {
-
-    /** Error message for too large degree. */
-    private static final String TOO_LARGE_DEGREE =
-        "too large degree (n = {0}, potential maximal degree is {1})";
-
-    /** Error message for too large order. */
-    private static final String TOO_LARGE_ORDER =
-        "too large order (m = {0}, potential maximal order is {1})";
 
     // CHECKSTYLE: stop VisibilityModifierCheck
 
@@ -130,7 +123,7 @@ public abstract class PotentialCoefficientsReader
     public double[] getJ(final boolean normalized, final int n)
         throws OrekitException {
         if (n >= normalizedC.length) {
-            throw new OrekitException(TOO_LARGE_DEGREE, n, normalizedC.length - 1);
+            throw new OrekitException(OrekitMessages.TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD, n, normalizedC.length - 1);
         }
 
         final double[] completeJ = normalized ? getNormalizedJ() : getUnNormalizedJ();
@@ -178,10 +171,10 @@ public abstract class PotentialCoefficientsReader
 
         // safety checks
         if (n >= complete.length) {
-            throw new OrekitException(TOO_LARGE_DEGREE, n, complete.length - 1);
+            throw new OrekitException(OrekitMessages.TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD, n, complete.length - 1);
         }
         if (m >= complete[complete.length - 1].length) {
-            throw new OrekitException(TOO_LARGE_ORDER, m, complete[complete.length - 1].length - 1);
+            throw new OrekitException(OrekitMessages.TOO_LARGE_ORDER_FOR_GRAVITY_FIELD, m, complete[complete.length - 1].length - 1);
         }
 
         // truncate each array row in turn

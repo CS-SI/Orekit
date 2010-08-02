@@ -24,6 +24,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /** Reader for the SHM gravity field format.
  *
@@ -136,8 +137,8 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
         }
 
         if (!(okEarth && okSHM && okCoeffs)) {
-            throw new OrekitException("the reader is not adapted to the format ({0})",
-                                      name);
+            throw new OrekitException(OrekitMessages.UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER,
+                                      name, "SHMFormatReader");
         }
 
         readCompleted = true;

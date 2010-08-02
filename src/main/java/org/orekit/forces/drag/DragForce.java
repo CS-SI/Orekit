@@ -21,6 +21,7 @@ import java.util.Collection;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModelWithJacobians;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
@@ -53,9 +54,6 @@ public class DragForce implements ForceModelWithJacobians {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 2574653656986559955L;
-
-    /** Error message for unknown parameter. */
-    private static final String UNKNOWN_PARAMETER_MESSAGE = "unknown parameter {0}";
 
     /** Atmospheric model. */
     private final Atmosphere atmosphere;
@@ -121,7 +119,7 @@ public class DragForce implements ForceModelWithJacobians {
         if (name.matches(DRAG_COEFFICIENT)) {
             return spacecraft.getDragCoefficient();
         } else {
-            throw OrekitException.createIllegalArgumentException(UNKNOWN_PARAMETER_MESSAGE, name);
+            throw OrekitException.createIllegalArgumentException(OrekitMessages.UNKNOWN_PARAMETER, name);
         }
     }
 
@@ -130,7 +128,7 @@ public class DragForce implements ForceModelWithJacobians {
         if (name.matches(DRAG_COEFFICIENT)) {
             spacecraft.setDragCoefficient(value);
         } else {
-            throw OrekitException.createIllegalArgumentException(UNKNOWN_PARAMETER_MESSAGE, name);
+            throw OrekitException.createIllegalArgumentException(OrekitMessages.UNKNOWN_PARAMETER, name);
         }
     }
 

@@ -216,10 +216,10 @@ public abstract class AbstractPropagator implements Propagator {
                 }
             }
 
-            throw new PropagationException(oe.getMessage(), oe);
+            throw new PropagationException(oe);
 
         } catch (ConvergenceException ce) {
-            throw new PropagationException(ce.getMessage(), ce);
+            throw new PropagationException(ce, ce.getLocalizablePattern(), ce.getArguments());
         }
     }
 

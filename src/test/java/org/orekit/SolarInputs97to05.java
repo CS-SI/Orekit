@@ -27,7 +27,9 @@ import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
+import org.apache.commons.math.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.drag.DTM2000InputParameters;
 import org.orekit.forces.drag.JB2006InputParameters;
 import org.orekit.time.AbsoluteDate;
@@ -128,7 +130,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
 
             lineAp = rAp.readLine();
             if (lineAp == null) {
-                throw new OrekitException("inconsistent JB2006 and geomagnetic indices files");
+                throw new OrekitException(new DummyLocalizable("inconsistent JB2006 and geomagnetic indices files"));
             }
             ap = lineAp.trim().split("\\s+");
 
@@ -137,11 +139,11 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
             int apYear  = Integer.parseInt(ap[11]);
 
             if (fluxDay != Integer.parseInt(ap[0])) {
-                throw new OrekitException("inconsistent JB2006 and geomagnetic indices files");
+                throw new OrekitException(new DummyLocalizable("inconsistent JB2006 and geomagnetic indices files"));
             }
             if (((fluxYear <  2000) && ((fluxYear - 1900) != apYear)) ||
                 ((fluxYear >= 2000) && ((fluxYear - 2000) != apYear))) {
-                throw new OrekitException("inconsistent JB2006 and geomagnetic indices files");
+                throw new OrekitException(new DummyLocalizable("inconsistent JB2006 and geomagnetic indices files"));
             }
 
             cal.set(Calendar.YEAR, fluxYear);
@@ -181,7 +183,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
     private void findClosestLine(AbsoluteDate date) throws OrekitException {
 
         if ((date.durationFrom(firstDate) < 0) || (date.durationFrom(lastDate) > Constants.JULIAN_DAY)) {
-            throw new OrekitException("out of range" );
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, date, firstDate, lastDate);
         }
 
         // don't search if the cached selection is fine
@@ -199,7 +201,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
                 currentParam = (LineParameters) data.tailSet(date).first();
             }
         } else {
-            throw new OrekitException("unable to find data for date {0}", date);
+            throw new OrekitException(new DummyLocalizable("unable to find data for date {0}"), date);
         }
     }
 

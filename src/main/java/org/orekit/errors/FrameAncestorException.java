@@ -16,6 +16,8 @@
  */
 package org.orekit.errors;
 
+import org.apache.commons.math.exception.Localizable;
+
 /** This class is the base class for exception thrown by
  * the {@link org.orekit.frames.Frame#updateTransform(Frame,
  * Frame,Transform,AbsoluteDate) Frame.updateTransform} method.
@@ -24,14 +26,14 @@ package org.orekit.errors;
 public class FrameAncestorException extends OrekitException {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -3832819553370782380L;
+    private static final long serialVersionUID = -8279818119798166504L;
 
     /** Simple constructor.
      * Build an exception with a translated and formatted message
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
      */
-    public FrameAncestorException(final String specifier, final Object ... parts) {
+    public FrameAncestorException(final Localizable specifier, final Object ... parts) {
         super(specifier, parts);
     }
 

@@ -150,7 +150,7 @@ public class AdaptedStepHandler
                                      initializedFrame, interpolatedDate, initializedMu);
             return new SpacecraftState(orbit, initializedAttitudeLaw.getAttitude(orbit), y[6]);
         } catch (DerivativeException de) {
-            throw new PropagationException(de.getMessage(), de);
+            throw new PropagationException(de, de.getLocalizablePattern(), de.getArguments());
         }
     }
 

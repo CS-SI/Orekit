@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /** Singleton class managing all supported {@link DataProvider data providers}.
 
@@ -66,10 +67,6 @@ public class DataProvidersManager implements Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -6462388122735180273L;
-
-    /** Error message for unknown path entries. */
-    private static final String NEITHER_DIRECTORY_NOR_ZIP_ARCHIVE =
-        "{0} is neither a directory nor a zip/jar archive file";
 
     /** Supported data providers. */
     private final List<DataProvider> providers;
@@ -129,9 +126,9 @@ public class DataProvidersManager implements Serializable {
                     // check component
                     if (!file.exists()) {
                         if (DataProvider.ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
-                            throw new OrekitException("{0} does not exist in filesystem", name);
+                            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);
                         } else {
-                            throw new OrekitException("data root directory {0} does not exist", name);
+                            throw new OrekitException(OrekitMessages.DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS, name);
                         }
                     }
 
@@ -140,7 +137,7 @@ public class DataProvidersManager implements Serializable {
                     } else if (DataProvider.ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
                         addProvider(new ZipJarCrawler(file));
                     } else {
-                        throw new OrekitException(NEITHER_DIRECTORY_NOR_ZIP_ARCHIVE, name);
+                        throw new OrekitException(OrekitMessages.NEITHER_DIRECTORY_NOR_ZIP_OR_JAR, name);
                     }
 
                 }

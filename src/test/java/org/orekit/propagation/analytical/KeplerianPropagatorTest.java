@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical;
 
 
+import org.apache.commons.math.exception.DummyLocalizable;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
 import org.junit.After;
@@ -319,7 +320,7 @@ public class KeplerianPropagatorTest {
         AttitudeLaw wrongLaw = new AttitudeLaw() {
             private static final long serialVersionUID = 5918362126173997016L;
             public Attitude getAttitude(Orbit orbit) throws OrekitException {
-                throw new OrekitException(new RuntimeException(), "gasp");
+                throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
             }
         };
         KeplerianPropagator propagator = new KeplerianPropagator(orbit, wrongLaw);
@@ -337,7 +338,7 @@ public class KeplerianPropagatorTest {
             public void handleStep(OrekitStepInterpolator interpolator,
                                    boolean isLast) throws PropagationException {
                 if (isLast) {
-                    throw new PropagationException("dummy error", (Throwable) null);
+                    throw new PropagationException((Throwable) null, new DummyLocalizable("dummy error"));
                 }
             }
             public boolean requiresDenseOutput() {

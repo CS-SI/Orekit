@@ -27,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.math.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
 
 
@@ -161,9 +162,9 @@ public class NetworkCrawler implements DataProvider {
             return loaded;
 
         } catch (IOException ioe) {
-            throw new OrekitException(ioe.getMessage(), ioe);
+            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         } catch (ParseException pe) {
-            throw new OrekitException(pe.getMessage(), pe);
+            throw new OrekitException(pe, new DummyLocalizable(pe.getMessage()));
         }
 
     }

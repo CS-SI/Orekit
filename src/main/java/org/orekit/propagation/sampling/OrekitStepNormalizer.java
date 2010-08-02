@@ -147,7 +147,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
                 }
             }
 
-            throw new PropagationException(oe.getMessage(), oe);
+            throw new PropagationException(oe);
 
         }
     }

@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
@@ -45,10 +46,6 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -334171965326514174L;
-
-    /** Error message for adding event date error. */
-    private static final String ADD_DATE_ERROR =
-        "event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added";
 
     /** Last date for g computation. */
     private AbsoluteDate gDate;
@@ -162,10 +159,11 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
                 increasing = !eventDateList.get(lastIndex).isgIncrease();
                 eventDateList.add(new EventDate(target, increasing));
             } else {
-                throw OrekitException.createIllegalArgumentException(ADD_DATE_ERROR, target,
+                throw OrekitException.createIllegalArgumentException(OrekitMessages.EVENT_DATE_TOO_CLOSE,
+                                                                     target,
                                                                      eventDateList.get(0).getDate(),
                                                                      eventDateList.get(lastIndex).getDate(),
-                                                                     this.getMaxCheckInterval());
+                                                                     getMaxCheckInterval());
             }
         }
     }

@@ -18,6 +18,7 @@ package org.orekit.orbits;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -140,7 +141,7 @@ public class EquinoctialOrbit extends Orbit {
         default :
             this.lv = Double.NaN;
             throw OrekitException.createIllegalArgumentException(
-                  "angle type not supported, supported angles: {0}, {1} and {2}",
+                  OrekitMessages.ANGLE_TYPE_NOT_SUPPORTED,
                   "MEAN_LATITUDE_ARGUMENT", "ECCENTRIC_LATITUDE_ARGUMENT",
                   "TRUE_LATITUDE_ARGUMENT");
         }

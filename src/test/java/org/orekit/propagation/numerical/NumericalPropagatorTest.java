@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.numerical;
 
+import org.apache.commons.math.exception.DummyLocalizable;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
@@ -107,7 +108,7 @@ public class NumericalPropagatorTest {
                     Assert.assertTrue(interpolator.getInterpolatedDate().compareTo(previousCall) < 0);
                 }
                 if (--countDown == 0) {
-                    throw new PropagationException("dummy error", (Throwable) null);
+                    throw new PropagationException((Throwable) null, new DummyLocalizable("dummy error"));
                 }
             }
             public boolean requiresDenseOutput() {

@@ -137,7 +137,7 @@ public class EarthObservation {
                                    " " + ad.format(Math.toDegrees(eclipseAngle)) +
                                    " " + ad.format(Math.toDegrees(pointingOffset)));
                     } catch (OrekitException oe) {
-                        throw new PropagationException(oe.getLocalizedMessage(), oe);
+                        throw new PropagationException(oe);
                     }
                 }
             });

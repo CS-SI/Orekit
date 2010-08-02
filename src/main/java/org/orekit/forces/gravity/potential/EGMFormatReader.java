@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /**This reader is adapted to the EGM Format.
  *
@@ -121,8 +122,8 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
         }
 
         if ((!okFields) || (cl.size() < 1) || (!okCoeffs)) {
-            throw new OrekitException("the reader is not adapted to the format ({0})",
-                                      name);
+            throw new OrekitException(OrekitMessages.UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER,
+                                      name, "EGMFormatReader");
         }
 
         // convert to simple triangular arrays

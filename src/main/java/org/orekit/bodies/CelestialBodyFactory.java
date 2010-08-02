@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /** Factory class for bodies of the solar system.
  * <p>The {@link #getSun() Sun}, the {@link #getMoon() Moon} and the planets
@@ -404,7 +405,7 @@ public class CelestialBodyFactory {
                         }
                     }
                     if (!loaded) {
-                        throw new OrekitException("no data loaded for celestial body {0}", name);
+                        throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, name);
                     }
 
                 }

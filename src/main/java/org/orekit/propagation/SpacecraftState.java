@@ -21,6 +21,7 @@ import java.io.Serializable;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -132,12 +133,12 @@ public class SpacecraftState implements TimeStamped, Serializable {
         throws IllegalArgumentException {
         if (!orbit.getDate().equals(attitude.getDate())) {
             throw OrekitException.createIllegalArgumentException(
-                  "orbit date ({0}) does not match attitude date ({1})",
+                  OrekitMessages.ORBIT_AND_ATTITUDE_DATES_MISMATCH,
                   orbit.getDate(), attitude.getDate());
         }
         if (orbit.getFrame() != attitude.getReferenceFrame()) {
             throw OrekitException.createIllegalArgumentException(
-                  "orbit reference frame ({0}) does not match attitude reference frame ({1})",
+                  OrekitMessages.ORBIT_AND_ATTITUDE_FRAMES_MISMATCH,
                   orbit.getFrame().getName(), attitude.getReferenceFrame().getName());
         }
     }

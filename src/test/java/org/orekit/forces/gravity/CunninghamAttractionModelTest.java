@@ -113,7 +113,7 @@ public class CunninghamAttractionModelTest {
             try {
                 sunPos = sun.getPVCoordinates(current , FramesFactory.getEME2000()).getPosition();
             } catch (OrekitException e) {
-                throw new PropagationException(e.getLocalizedMessage(), e);
+                throw new PropagationException(e);
             }
             Vector3D normal = currentState.getPVCoordinates().getMomentum();
             double angle = Vector3D.angle(sunPos , normal);

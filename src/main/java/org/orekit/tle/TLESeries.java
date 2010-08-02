@@ -28,6 +28,7 @@ import java.util.TreeSet;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;
@@ -186,7 +187,7 @@ public class TLESeries implements DataLoader, Serializable {
         tles.clear();
         DataProvidersManager.getInstance().feed(supportedNames, this);
         if (tles.isEmpty()) {
-            throw new OrekitException("no TLE data available");
+            throw new OrekitException(OrekitMessages.NO_TLE_DATA_AVAILABLE);
         }
 
     }
@@ -230,7 +231,7 @@ public class TLESeries implements DataLoader, Serializable {
             tles.clear();
             DataProvidersManager.getInstance().feed(supportedNames, this);
             if (tles.isEmpty()) {
-                throw new OrekitException("no TLE data available for object {0}", satelliteNumber);
+                throw new OrekitException(OrekitMessages.NO_TLE_FOR_OBJECT, satelliteNumber);
             }
         }
 
@@ -268,8 +269,7 @@ public class TLESeries implements DataLoader, Serializable {
             tles.clear();
             DataProvidersManager.getInstance().feed(supportedNames, this);
             if (tles.isEmpty()) {
-                throw new OrekitException("no TLE data available for launch year {0}," +
-                                          " launch number {1}, launch piece {2}",
+                throw new OrekitException(OrekitMessages.NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE,
                                           launchYear, launchNumber, launchPiece);
             }
         }
@@ -308,7 +308,7 @@ public class TLESeries implements DataLoader, Serializable {
                             pendingLine = line;
                             continue;
                         } else {
-                            throw new OrekitException("lines {0} and {1} are not TLE lines:\n{0}: \"{2}\"\n{1}: \"{3}\"",
+                            throw new OrekitException(OrekitMessages.NOT_TLE_LINES,
                                                       lineNumber - 1, lineNumber, pendingLine, line);
                         }
                     }
@@ -341,7 +341,7 @@ public class TLESeries implements DataLoader, Serializable {
 
             if ((pendingLine != null) && !ignoreNonTLELines) {
                 // there is an unexpected last line
-                throw new OrekitException("expected a second TLE line after line {0}:\n{0}: \"{1}\"",
+                throw new OrekitException(OrekitMessages.MISSING_SECOND_TLE_LINE,
                                           lineNumber, pendingLine);
             }
 

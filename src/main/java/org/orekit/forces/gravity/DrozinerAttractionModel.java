@@ -18,6 +18,7 @@ package org.orekit.forces.gravity;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -84,7 +85,7 @@ public class DrozinerAttractionModel implements ForceModel {
         order = C[degree].length - 1;
 
         if ((C.length != S.length) || (C[C.length - 1].length != S[S.length - 1].length)) {
-            throw OrekitException.createIllegalArgumentException("potential arrays sizes mismatch (C: {0}x{1}, S: {2}x{3})",
+            throw OrekitException.createIllegalArgumentException(OrekitMessages.POTENTIAL_ARRAYS_SIZES_MISMATCH,
                                                                  C.length, C[degree].length, S.length, S[degree].length);
         }
 
@@ -122,12 +123,12 @@ public class DrozinerAttractionModel implements ForceModel {
         final double r12 = xBody * xBody + yBody * yBody;
         final double r1 = Math.sqrt(r12);
         if (r1 <= 10e-2) {
-            throw new OrekitException("polar trajectory (distance to polar axis: {0})", r1);
+            throw new OrekitException(OrekitMessages.POLAR_TRAJECTORY, r1);
         }
         final double r2 = r12 + zBody * zBody;
         final double r  = Math.sqrt(r2);
         if (r <= equatorialRadius) {
-            throw new OrekitException("trajectory inside the Brillouin sphere (r = {0})", r);
+            throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
         }
         final double r3    = r2  * r;
         final double aeOnr = equatorialRadius / r;

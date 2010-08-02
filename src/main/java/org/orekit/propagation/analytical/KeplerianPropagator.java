@@ -119,7 +119,7 @@ public class KeplerianPropagator extends AbstractPropagator {
             this.attitudeLaw  = attitudeLaw;
             this.mass         = mass;
         } catch (OrekitException oe) {
-            throw new PropagationException(oe.getLocalizedMessage(), oe);
+            throw new PropagationException(oe);
         }
     }
 
@@ -143,7 +143,7 @@ public class KeplerianPropagator extends AbstractPropagator {
             return new SpacecraftState(orbit, attitude, mass);
 
         } catch (OrekitException oe) {
-            throw new PropagationException(oe.getLocalizedMessage(), oe);
+            throw new PropagationException(oe);
         }
 
     }

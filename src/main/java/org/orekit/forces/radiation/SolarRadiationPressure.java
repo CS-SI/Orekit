@@ -21,6 +21,7 @@ import java.util.Collection;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModelWithJacobians;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
@@ -50,13 +51,6 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 8874297900604482921L;
-
-    /** Error message for too low trajectory. */
-    private static final String LOW_TRAJECTORY_MESSAGE =
-        "trajectory inside the Brillouin sphere (r = {0})";
-
-    /** Error message for unknown parameter. */
-    private static final String UNKNOWN_PARAMETER_MESSAGE = "unknown parameter {0}";
 
     /** Sun radius (m). */
     private static final double SUN_RADIUS = 6.95e8;
@@ -151,7 +145,7 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
         // Earth apparent radius
         final double r = position.getNorm();
         if (r <= equatorialRadius) {
-            throw new OrekitException(LOW_TRAJECTORY_MESSAGE, r);
+            throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
         }
 
         final double alphaEarth = Math.asin(equatorialRadius / r);
@@ -236,7 +230,7 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
         } else if (name.matches(REFLECTION_COEFFICIENT)) {
             return spacecraft.getReflectionCoefficient();
         } else {
-            throw OrekitException.createIllegalArgumentException(UNKNOWN_PARAMETER_MESSAGE, name);
+            throw OrekitException.createIllegalArgumentException(OrekitMessages.UNKNOWN_PARAMETER, name);
         }
     }
 
@@ -248,7 +242,7 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
         } else if (name.matches(REFLECTION_COEFFICIENT)) {
             spacecraft.setReflectionCoefficient(value);
         } else {
-            throw OrekitException.createIllegalArgumentException(UNKNOWN_PARAMETER_MESSAGE, name);
+            throw OrekitException.createIllegalArgumentException(OrekitMessages.UNKNOWN_PARAMETER, name);
         }
     }
 
@@ -281,7 +275,7 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
             final double sunEarthAngle = Math.PI - Vector3D.angle(getSatSunVector(s), satPos);
             final double r = satPos.getNorm();
             if (r <= equatorialRadius) {
-                throw new OrekitException(LOW_TRAJECTORY_MESSAGE, r);
+                throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
             }
             final double alphaEarth = Math.asin(equatorialRadius / r);
             return sunEarthAngle - alphaEarth;
@@ -319,7 +313,7 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
             final double sunEarthAngle  = Math.PI - Vector3D.angle(satSunVector, satPos);
             final double r = satPos.getNorm();
             if (r <= equatorialRadius) {
-                throw new OrekitException(LOW_TRAJECTORY_MESSAGE, r);
+                throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
             }
             final double alphaEarth = Math.asin(equatorialRadius / r);
             final double alphaSun   = Math.asin(SUN_RADIUS / satSunVector.getNorm());

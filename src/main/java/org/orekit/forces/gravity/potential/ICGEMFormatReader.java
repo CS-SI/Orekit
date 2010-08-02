@@ -24,6 +24,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /** Reader for the ICGEM gravity field format.
  *
@@ -77,12 +78,6 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     /** Gravity field coefficient first time derivative. */
     private static final String DOT                     = "dot";
 
-    /** Format error message. */
-    private static final String WRONG_FORMAT_MESSAGE    = "the reader is not adapted to the format ({0})";
-
-    /** Line parsing error message. */
-    private static final String LINE_PARSING_MESSAGE    = "unable to parse line {0} of file {1}:\n{2}";
-
     /** Simple constructor.
      * @param supportedNames regular expression for supported files names
      * @param missingCoefficientsAllowed if true, allows missing coefficients in the input data
@@ -110,7 +105,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                 if (inHeader) {
                     if ((tab.length == 2) && PRODUCT_TYPE.equals(tab[0])) {
                         if (!GRAVITY_FIELD.equals(tab[1])) {
-                            throw OrekitException.createParseException(LINE_PARSING_MESSAGE,
+                            throw OrekitException.createParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                                        lineNumber, name, line);
                         }
                     } else if ((tab.length == 2) && GRAVITY_CONSTANT.equals(tab[0])) {
@@ -141,7 +136,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
 
                     } else if ((tab.length == 2) && NORMALIZATION_INDICATOR.equals(tab[0])) {
                         if (!NORMALIZED.equals(tab[1])) {
-                            throw OrekitException.createParseException(LINE_PARSING_MESSAGE,
+                            throw OrekitException.createParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                                        lineNumber, name, line);
                         }
                     } else if ((tab.length == 2) && END_OF_HEADER.equals(tab[0])) {
@@ -157,12 +152,12 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                     } else if ((tab.length == 7) && DOT.equals(tab[0])) {
                         // we ignore the time derivative records
                     } else {
-                        throw OrekitException.createParseException(LINE_PARSING_MESSAGE,
+                        throw OrekitException.createParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                                    lineNumber, name, line);
                     }
                 }
             } catch (NumberFormatException nfe) {
-                throw OrekitException.createParseException(LINE_PARSING_MESSAGE,
+                throw OrekitException.createParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                            lineNumber, name, line);
             }
         }
@@ -184,7 +179,8 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
         }
 
         if (!(okMu && okAe && okCoeffs)) {
-            throw new OrekitException(WRONG_FORMAT_MESSAGE, name);
+            throw new OrekitException(OrekitMessages.UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER,
+                                      name, "ICGEMFormatReader");
         }
 
         readCompleted = true;

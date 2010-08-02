@@ -20,6 +20,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
@@ -735,8 +736,7 @@ public class JB2006 implements Atmosphere {
         if (date.compareTo(inputParams.getMaxDate()) > 0 ||
             date.compareTo(inputParams.getMinDate()) < 0) {
             final TimeScale utcScale = TimeScalesFactory.getUTC();
-            throw new OrekitException("no solar activity available at {0}, " +
-                                      "data available only in range [{1}, {2}]",
+            throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
                                       date.toString(utcScale),
                                       inputParams.getMinDate().toString(utcScale),
                                       inputParams.getMaxDate().toString(utcScale));

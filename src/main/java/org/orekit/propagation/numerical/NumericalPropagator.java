@@ -31,6 +31,7 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.attitudes.InertialLaw;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
@@ -325,7 +326,7 @@ public class NumericalPropagator implements Propagator {
     public BoundedPropagator getGeneratedEphemeris()
         throws IllegalStateException {
         if (mode != EPHEMERIS_GENERATION_MODE) {
-            throw OrekitException.createIllegalStateException("propagator is not in batch mode");
+            throw OrekitException.createIllegalStateException(OrekitMessages.PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE);
         }
         return (IntegratedEphemeris) modeHandler;
     }
@@ -357,14 +358,14 @@ public class NumericalPropagator implements Propagator {
         try {
 
             if (initialState == null) {
-                throw new PropagationException("initial state not specified for orbit propagation");
+                throw new PropagationException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
             }
             if (initialState.getDate().equals(finalDate)) {
                 // don't extrapolate
                 return initialState;
             }
             if (integrator == null) {
-                throw new PropagationException("ODE integrator not set for orbit propagation");
+                throw new PropagationException(OrekitMessages.ODE_INTEGRATOR_NOT_SET_FOR_ORBIT_PROPAGATION);
             }
 
             // space dynamics view
@@ -430,7 +431,7 @@ public class NumericalPropagator implements Propagator {
             return initialState;
 
         } catch (OrekitException oe) {
-            throw new PropagationException(oe.getMessage(), oe);
+            throw new PropagationException(oe);
         } catch (DerivativeException de) {
 
             // recover a possible embedded PropagationException
@@ -440,7 +441,7 @@ public class NumericalPropagator implements Propagator {
                 }
             }
 
-            throw new PropagationException(de.getMessage(), de);
+            throw new PropagationException(de, de.getLocalizablePattern(), de.getArguments());
 
         } catch (IntegratorException ie) {
 
@@ -451,7 +452,7 @@ public class NumericalPropagator implements Propagator {
                 }
             }
 
-            throw new PropagationException(ie.getMessage(), ie);
+            throw new PropagationException(ie, ie.getLocalizablePattern(), ie.getArguments());
 
         }
     }
@@ -508,10 +509,9 @@ public class NumericalPropagator implements Propagator {
                 // update space dynamics view
                 currentState = mapState(t, y, startDate, currentState.getFrame());
 
-                // compute cartesian coordinates
                 if (currentState.getMass() <= 0.0) {
-                    throw OrekitException.createIllegalArgumentException("spacecraft mass becomes negative (m: {0})",
-                                                                         currentState.getMass());
+                    throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
+                                                   currentState.getMass());
                 }
                 // initialize derivatives
                 adder.initDerivatives(yDot, (EquinoctialOrbit) currentState.getOrbit());
@@ -528,7 +528,7 @@ public class NumericalPropagator implements Propagator {
                 ++calls;
 
             } catch (OrekitException oe) {
-                throw new DerivativeException(oe.getMessage());
+                throw new DerivativeException(oe.getSpecifier(), oe.getParts());
             }
 
         }

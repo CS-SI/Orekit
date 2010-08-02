@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.regex.Pattern;
 
+import org.apache.commons.math.exception.DummyLocalizable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -116,7 +117,7 @@ public class DataProvidersManagerTest {
         Assert.assertNull(manager.removeProvider(new DataProvider() {
             private static final long serialVersionUID = 6368246625696570910L;
             public boolean feed(Pattern supported, DataLoader visitor) throws OrekitException {
-                throw new OrekitException("oops!");
+                throw new OrekitException(new DummyLocalizable("oops!"));
             }
         }.getClass()));
         Assert.assertEquals(1, manager.getProviders().size());
@@ -171,7 +172,7 @@ public class DataProvidersManagerTest {
             throws OrekitException {
             ++count;
             if (shouldFail) {
-                throw new OrekitException("intentional failure");
+                throw new OrekitException(new DummyLocalizable("intentional failure"));
             }
         }
         public int getCount() {

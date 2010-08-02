@@ -118,7 +118,7 @@ public class ElevationDetectorTest {
                 }
 
             } catch (OrekitException e) {
-                throw new PropagationException(e.getMessage(), e);
+                throw new PropagationException(e);
             }
 
         }

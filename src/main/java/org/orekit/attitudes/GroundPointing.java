@@ -19,6 +19,7 @@ package org.orekit.attitudes;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.utils.PVCoordinates;
@@ -119,7 +120,7 @@ public abstract class GroundPointing implements AttitudeLaw {
 
         // New orekit exception if null position.
         if (deltaP0.equals(Vector3D.ZERO)) {
-            throw new OrekitException("satellite collided with target");
+            throw new OrekitException(OrekitMessages.SATELLITE_COLLIDED_WITH_TARGET);
         }
 
         // Attitude rotation:

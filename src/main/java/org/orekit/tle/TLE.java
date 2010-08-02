@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -77,10 +78,6 @@ public class TLE implements TimeStamped, Serializable {
     private static final Pattern LINE_2_PATTERN =
         Pattern.compile("2 [ 0-9]{5} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{7} " +
                         "[ 0-9]{3}[.][ 0-9]{4} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{2}[.][ 0-9]{13}[ 0-9]");
-
-    /** Checksum error message. */
-    private static final String CHECKSUM_MESSAGE =
-        "wrong checksum of TLE line {0}, expected {1} but got {2} ({3})";
 
     /** International symbols for parsing. */
     private static final DecimalFormatSymbols SYMBOLS =
@@ -162,7 +159,7 @@ public class TLE implements TimeStamped, Serializable {
         satelliteNumber = parseInteger(line1, 2, 5);
         final int satNum2 = parseInteger(line2, 2, 5);
         if (satelliteNumber != satNum2) {
-            throw new OrekitException("TLE lines do not refer to the same object:\n{0}\n{1}",
+            throw new OrekitException(OrekitMessages.TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT,
                                       line1, line2);
         }
         classification  = line1.charAt(7);
@@ -608,14 +605,14 @@ public class TLE implements TimeStamped, Serializable {
         // check sums
         final int checksum1 = checksum(line1);
         if (Integer.parseInt(line1.substring(68)) != (checksum1 % 10)) {
-            throw new OrekitException(CHECKSUM_MESSAGE,
+            throw new OrekitException(OrekitMessages.TLE_CHECKSUM_ERROR,
                                       1, line1.substring(68) ,
                                       checksum1 % 10, line1);
         }
 
         final int checksum2 = checksum(line2);
         if (Integer.parseInt(line2.substring(68)) != (checksum2 % 10)) {
-            throw new OrekitException(CHECKSUM_MESSAGE,
+            throw new OrekitException(OrekitMessages.TLE_CHECKSUM_ERROR,
                                       2, line2.substring(68) ,
                                           checksum2 % 10, line2);
         }

@@ -23,6 +23,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;
@@ -158,7 +159,7 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
 
             // compare the dates of preceding and current entries
             if ((preceding != null) && ((current.getDate().durationFrom(preceding.getDate())) > maxGap)) {
-                throw new OrekitException("missing Earth Orientation Parameters between {0} and {1}",
+                throw new OrekitException(OrekitMessages.MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES,
                                           preceding.getDate(), current.getDate());
 
             }

@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /** Factory used to read gravity field files in several supported formats.
  * @author Fabien Maussion
@@ -107,7 +108,7 @@ public class PotentialReaderFactory {
             }
         }
 
-        throw new OrekitException("no gravity field data loaded");
+        throw new OrekitException(OrekitMessages.NO_GRAVITY_FIELD_DATA_LOADED);
 
     }
 

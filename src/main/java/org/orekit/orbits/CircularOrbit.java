@@ -18,6 +18,7 @@ package org.orekit.orbits;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -142,7 +143,7 @@ public class CircularOrbit
         default :
             this.alphaV = Double.NaN;
             throw OrekitException.createIllegalArgumentException(
-                  "angle type not supported, supported angles: {0}, {1} and {2}",
+                  OrekitMessages.ANGLE_TYPE_NOT_SUPPORTED,
                   "MEAN_LONGITUDE_ARGUMENT", "ECCENTRIC_LONGITUDE_ARGUMENT",
                   "TRUE_LONGITUDE_ARGUMENT");
         }

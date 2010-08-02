@@ -25,7 +25,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.math.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 
 /** Provider for data files stored as resources in the classpath.
@@ -81,7 +83,7 @@ public class ClasspathCrawler implements DataProvider {
                 final InputStream stream =
                     ClasspathCrawler.class.getClassLoader().getResourceAsStream(convertedName);
                 if (stream == null) {
-                    throw new OrekitException("{0} does not exist in classpath", name);
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, name);
                 }
 
                 listElements.add(convertedName);
@@ -152,9 +154,9 @@ public class ClasspathCrawler implements DataProvider {
             return loaded;
 
         } catch (IOException ioe) {
-            throw new OrekitException(ioe.getMessage(), ioe);
+            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         } catch (ParseException pe) {
-            throw new OrekitException(pe.getMessage(), pe);
+            throw new OrekitException(pe, new DummyLocalizable(pe.getMessage()));
         }
 
     }

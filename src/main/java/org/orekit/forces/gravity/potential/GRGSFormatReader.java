@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /** Reader for the GRGS gravity field format.
  *
@@ -111,7 +112,7 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
             // match current header or data line
             final Matcher matcher = LINES[Math.min(LINES.length, lineNumber) - 1].matcher(line);
             if (!matcher.matches()) {
-                throw OrekitException.createParseException("unable to parse line {0} of file {1}:\n{2}",
+                throw OrekitException.createParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                            lineNumber, name, line);
             }
 
@@ -168,8 +169,8 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
         }
 
         if (!(okConstants && okMaxDegree && okCoeffs)) {
-            throw new OrekitException("the reader is not adapted to the format ({0})",
-                                      name);
+            throw new OrekitException(OrekitMessages.UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER,
+                                      name, "GRGSFormatReader");
         }
 
         readCompleted = true;

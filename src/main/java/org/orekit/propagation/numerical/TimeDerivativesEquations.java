@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -190,9 +191,7 @@ public class TimeDerivativesEquations implements Serializable {
         final double e2  = ex2 + ey2;
         final double e   = Math.sqrt(e2);
         if (e >= 1) {
-            throw new PropagationException(
-                  "orbit becomes hyperbolic, unable to propagate it further (e: {0})",
-                  e);
+            throw new PropagationException(OrekitMessages.ORBIT_BECOMES_HYPERBOLIC_UNABLE_TO_PROPAGATE_FURTHER, e);
         }
 
         // intermediate variables
@@ -329,8 +328,7 @@ public class TimeDerivativesEquations implements Serializable {
      */
     public void addMassDerivative(final double q) {
         if (q > 0) {
-            throw OrekitException.createIllegalArgumentException(
-                  "positive flow rate (q: {0})", q);
+            throw OrekitException.createIllegalArgumentException(OrekitMessages.POSITIVE_FLOW_RATE, q);
         }
         storedYDot[6] += q;
     }

@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateComponents;
 
 /** Loader for EOP 05 C04 files.
@@ -159,14 +160,14 @@ class EOP05C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
                     }
                 }
                 if (!(inHeader || parsed)) {
-                    throw new OrekitException("unable to parse line {0} in IERS data file {1}",
-                                              lineNumber, name);
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              lineNumber, name, line);
                 }
             }
 
             // check if we have read something
             if (inHeader) {
-                throw new OrekitException("file {0} is not a supported IERS data file", name);
+                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
             }
 
         }

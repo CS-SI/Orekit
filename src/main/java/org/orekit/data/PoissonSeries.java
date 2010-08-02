@@ -26,7 +26,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.math.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /**
  * Class representing a Poisson series for nutation or ephemeris computations.
@@ -47,10 +49,6 @@ public class PoissonSeries implements Serializable {
     /** Serializable UID. */
     private static final long serialVersionUID = -3016824169123970737L;
 
-    /** Error message for non IERS files. */
-    private static final String NOT_IERS_FILE =
-        "file {0} is not an IERS data file";
-
     /** Coefficients of the polynomial part. */
     private double[] coefficients;
 
@@ -67,7 +65,7 @@ public class PoissonSeries implements Serializable {
         throws OrekitException {
 
         if (stream == null) {
-            throw new OrekitException("unable to find file {0}", name);
+            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);
         }
 
         try {
@@ -109,7 +107,7 @@ public class PoissonSeries implements Serializable {
                 }
             }
             if (coefficients == null) {
-                throw new OrekitException(NOT_IERS_FILE, name);
+                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
             }
 
             line = reader.readLine();
@@ -150,16 +148,14 @@ public class PoissonSeries implements Serializable {
             }
 
             if (array.isEmpty()) {
-                throw new OrekitException(NOT_IERS_FILE, name);
+                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
             }
 
             // store the non-polynomial part series
             series = (SeriesTerm[][]) array.toArray(new SeriesTerm[array.size()][]);
 
-        } catch (NumberFormatException nfe) {
-            throw new OrekitException(nfe.getMessage(), nfe);
         } catch (IOException ioe) {
-            throw new OrekitException(ioe.getMessage(), ioe);
+            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         }
 
     }
@@ -213,7 +209,7 @@ public class PoissonSeries implements Serializable {
 
         // sanity check
         if (Integer.parseInt(headerMatcher.group(1)) != expected) {
-            throw new OrekitException("missing serie j = {0} in file {1} (line {2})",
+            throw new OrekitException(OrekitMessages.MISSING_SERIE_J_IN_FILE,
                                       expected, name, lineNumber);
         }
 
@@ -235,7 +231,7 @@ public class PoissonSeries implements Serializable {
 
         // sanity check
         if (line == null) {
-            throw new OrekitException("unexpected end of file {0} (after line {1})",
+            throw new OrekitException(OrekitMessages.UNEXPECTED_END_OF_FILE_AFTER_LINE,
                                       name, lineNumber - 1);
         }
 
@@ -254,7 +250,7 @@ public class PoissonSeries implements Serializable {
                                         Integer.parseInt(fields[l -  2]), Integer.parseInt(fields[l -  1]));
         }
 
-        throw new OrekitException("unable to parse line {0} of file {1}:\n{2}",
+        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                   lineNumber, name, line);
 
     }

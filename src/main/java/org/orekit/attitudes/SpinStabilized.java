@@ -35,7 +35,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class SpinStabilized implements AttitudeLaw {
+public class SpinStabilized implements AttitudeLawModifier {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -7025790361794748354L;
@@ -73,14 +73,21 @@ public class SpinStabilized implements AttitudeLaw {
 
     /** Get the underlying non-rotating attitude law.
      * @return underlying non-rotating attitude law
+     * @deprecated as of 5.1, replaced by {@link #getUnderlyingAttitudeLaw()}
      */
+    @Deprecated
     public AttitudeLaw getNonRotatingLaw() {
         return nonRotatingLaw;
     }
 
     /** {@inheritDoc} */
+    public AttitudeLaw getUnderlyingAttitudeLaw() {
+        return nonRotatingLaw;
+    }
+
+    /** {@inheritDoc} */
     public Attitude getAttitude(final Orbit orbit)
-        throws OrekitException {
+    throws OrekitException {
 
         final AbsoluteDate date = orbit.getDate();
         final Frame frame = orbit.getFrame();

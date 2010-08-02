@@ -73,7 +73,7 @@ public class YawCompensation extends GroundPointingWrapper {
         // the velocity provided by getTargetPV would be wrong!
         final Frame bodyFrame  = getBodyFrame();
         final Frame orbitFrame = orbit.getFrame();
-        final Vector3D surfacePointLocation = getGroundPointingLaw().getTargetPoint(orbit, orbitFrame);
+        final Vector3D surfacePointLocation = ((GroundPointing) getUnderlyingAttitudeLaw()).getTargetPoint(orbit, orbitFrame);
         final Vector3D bodySpin = bodyFrame.getTransformTo(orbitFrame, orbit.getDate()).getRotationRate().negate();
         final Vector3D surfacePointVelocity = Vector3D.crossProduct(bodySpin, surfacePointLocation);
         final Vector3D satVelocity = orbit.getPVCoordinates().getVelocity();

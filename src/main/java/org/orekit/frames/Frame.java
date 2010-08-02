@@ -22,6 +22,7 @@ import java.util.LinkedList;
 
 import org.orekit.errors.FrameAncestorException;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -118,7 +119,7 @@ public class Frame implements Serializable {
         throws IllegalArgumentException {
 
         if (parent == null) {
-            throw OrekitException.createIllegalArgumentException("null parent for frame {0}",
+            throw OrekitException.createIllegalArgumentException(OrekitMessages.NULL_PARENT_FOR_FRAME,
                                                                  name);
         }
         this.name          = name;
@@ -280,8 +281,8 @@ public class Frame implements Serializable {
         if (fA.isChildOf(this) || (fA == this)) {
 
             if (fB.isChildOf(this) || (fB == this)) {
-                throw new FrameAncestorException("both frames {0} and {1} are child of {2}",
-                                                 fA.getName(), fB.getName(), getName());
+                throw new FrameAncestorException(OrekitMessages.FRAME_ANCESTOR_OF_BOTH_FRAMES,
+                                                 getName(), fA.getName(), fB.getName());
             }
 
             // swap f1 and f2 to make sure the child is f2
@@ -291,8 +292,8 @@ public class Frame implements Serializable {
             fAtoB = fAtoB.getInverse();
 
         } else  if (!(fB.isChildOf(this) || (fB == this))) {
-            throw new FrameAncestorException("neither frames {0} nor {1} have {2} as ancestor",
-                                             fA.getName(), fB.getName(), getName());
+            throw new FrameAncestorException(OrekitMessages.FRAME_ANCESTOR_OF_NEITHER_FRAME,
+                                             getName(), fA.getName(), fB.getName());
         }
 
         // rebuild the transform by traveling from parent to self

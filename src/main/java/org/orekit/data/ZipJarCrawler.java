@@ -28,6 +28,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.math.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
 
 
@@ -120,9 +121,9 @@ public class ZipJarCrawler implements DataProvider {
             return loaded;
 
         } catch (IOException ioe) {
-            throw new OrekitException(ioe.getMessage(), ioe);
+            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         } catch (ParseException pe) {
-            throw new OrekitException(pe.getMessage(), pe);
+            throw new OrekitException(pe, new DummyLocalizable(pe.getMessage()));
         }
 
     }

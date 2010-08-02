@@ -21,6 +21,7 @@ import java.io.Serializable;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -334,14 +335,10 @@ public abstract class TLEPropagator implements PVCoordinatesProvider, Serializab
         final double x7thm1 = 7.0 * cosi0Sq - 1.0;
 
         if (e > (1 - 1e-6)) {
-            throw new OrekitException("eccentricity becomes too large for TLE propagation " +
-                                      "(e: {0}, satellite number: {1})",
-                                      e, tle.getSatelliteNumber());
+            throw new OrekitException(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL, e);
         }
         if ((a * (1.0 - e) < 1.0) || (a * (1.0 + e) < 1.0)) {
-            throw new OrekitException("too small perigee radius for TLE propagation " +
-                                      "(r: {0}, satellite number: {1})",
-                                      a * (1. - e), tle.getSatelliteNumber());
+            throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, a * (1.0 - e));
         }
 
         // Solve Kepler's' Equation.

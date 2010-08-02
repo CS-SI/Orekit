@@ -22,6 +22,17 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add">
+        PropagationException can now be created directly from OrekitException, thus simplifying
+        wrapping lower Orekit errors in step handlers
+      </action>
+      <action dev="luc" type="update">
+        improved exception propagation from low level java runtime and Apache commons-math libraries
+        preserving initial error stack trace
+      </action>
+      <action dev="luc" type="update">
+        changed exception localization framework to simplify messages handling
+      </action>
       <action dev="luc" type="fix">
         improved AbsoluteDate accuracy by shifting epoch when needed and separating long/double
         computations to avoid too large offsets and numerical cancellations

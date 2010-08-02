@@ -21,6 +21,7 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.attitudes.InertialLaw;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
@@ -238,7 +239,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
             computeMeanParameters(new CircularOrbit(initialOrbit));
 
         } catch (OrekitException oe) {
-            throw new PropagationException(oe.getLocalizedMessage(), oe);
+            throw new PropagationException(oe);
         }
     }
 
@@ -261,7 +262,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
             return new SpacecraftState(orbit, attitude, mass);
 
         } catch (OrekitException oe) {
-            throw new PropagationException(oe.getMessage(), oe);
+            throw new PropagationException(oe);
         }
     }
 
@@ -284,7 +285,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
 
         // sanity check
         if (osculating.getA() < referenceRadius) {
-            throw new PropagationException("trajectory inside the Brillouin sphere (r = {0})",
+            throw new PropagationException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE,
                                            osculating.getA());
         }
 
@@ -355,17 +356,17 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
                 final double e = mean.getE();
                 if (e > 0.1) {
                     // if 0.005 < e < 0.1 no error is triggered, but accuracy is poor
-                    throw new PropagationException("orbit with excessive eccentricity (e = {0})", e);
+                    throw new PropagationException(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL, e);
                 }
 
                 final double meanI = mean.getI();
                 if ((meanI < 0.) || (meanI > Math.PI) || (Math.abs(Math.sin(meanI)) < 1.0e-10)) {
-                    throw new PropagationException("almost equatorial orbit (i = {0} degrees)",
+                    throw new PropagationException(OrekitMessages.ALMOST_EQUATORIAL_ORBIT,
                                                    Math.toDegrees(meanI));
                 }
 
                 if ((Math.abs(meanI - 1.1071487) < 1.0e-3) || (Math.abs(meanI - 2.0344439) < 1.0e-3)) {
-                    throw new PropagationException("almost critically inclined orbit (i = {0} degrees)",
+                    throw new PropagationException(OrekitMessages.ALMOST_CRITICALLY_INCLINED_ORBIT,
                                                    Math.toDegrees(meanI));
                 }
 
@@ -375,9 +376,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
 
         }
 
-        throw new PropagationException("unable to compute Eckstein-Hechler mean" +
-                                       " parameters after {0} iterations",
-                                       i);
+        throw new PropagationException(OrekitMessages.UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS, i);
 
     }
 

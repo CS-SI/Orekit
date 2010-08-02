@@ -24,6 +24,7 @@ import java.util.TreeMap;
 
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /** Factory for predefined time scales.
  * <p>
@@ -145,7 +146,7 @@ public class TimeScalesFactory implements Serializable {
                     }
                 }
                 if (!loaded) {
-                    throw new OrekitException("no IERS UTC-TAI history data loaded");
+                    throw new OrekitException(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED);
                 }
                 utc = new UTCScale(entries);
             }

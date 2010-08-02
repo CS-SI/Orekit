@@ -21,6 +21,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
@@ -101,7 +102,7 @@ public class LofOffsetPointing extends GroundPointing {
         // Check there is an intersection and it is not in the reverse pointing direction
         if ((vIntersection == null) ||
             (Vector3D.dotProduct(vIntersection.subtract(pBodyFrame), pointingBodyFrame) < 0)) {
-            throw new OrekitException("attitude pointing law misses ground");
+            throw new OrekitException(OrekitMessages.ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND);
         }
 
         return shape.getBodyFrame().getTransformTo(frame, date).transformPosition(vIntersection);

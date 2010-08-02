@@ -25,7 +25,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.math.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 
 /**  Provider for data files stored in a directories tree on filesystem.
@@ -64,7 +66,7 @@ public class DirectoryCrawler implements DataProvider {
      */
     public DirectoryCrawler(final File root) throws OrekitException {
         if (!root.isDirectory()) {
-            throw new OrekitException("{0} is not a directory", root.getAbsolutePath());
+            throw new OrekitException(OrekitMessages.NOT_A_DIRECTORY, root.getAbsolutePath());
         }
         this.root = root;
     }
@@ -75,9 +77,9 @@ public class DirectoryCrawler implements DataProvider {
         try {
             return feed(supported, visitor, root);
         } catch (IOException ioe) {
-            throw new OrekitException(ioe.getMessage(), ioe);
+            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         } catch (ParseException pe) {
-            throw new OrekitException(pe.getMessage(), pe);
+            throw new OrekitException(pe, new DummyLocalizable(pe.getMessage()));
         }
     }
 

@@ -242,7 +242,7 @@ class EventState implements Serializable {
             if ((cause != null) && (cause instanceof OrekitException)) {
                 throw (OrekitException) cause;
             }
-            throw new OrekitException(e.getMessage(), e);
+            throw new OrekitException(e, e.getLocalizablePattern(), e.getArguments());
         }
 
     }

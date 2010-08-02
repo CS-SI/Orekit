@@ -24,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
 
 
@@ -82,7 +83,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         if ((hour   < 0) || (hour   >  23) ||
                 (minute < 0) || (minute >  59) ||
                 (second < 0) || (second >= 61.0)) {
-            throw OrekitException.createIllegalArgumentException("non-existent time {0}:{1}:{2}",
+            throw OrekitException.createIllegalArgumentException(OrekitMessages.NON_EXISTENT_HMS_TIME,
                                                                  hour, minute, second);
         }
 
@@ -114,7 +115,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         // range check
         double secondInDay = secondInDayA + secondInDayB;
         if ((secondInDay < 0) || (secondInDay >= Constants.JULIAN_DAY)) {
-            throw OrekitException.createIllegalArgumentException("out of range seconds number: {0}",
+            throw OrekitException.createIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER,
                                                                  secondInDay);
         }
 
@@ -161,7 +162,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
                                       Double.parseDouble(timeMatcher.group(3).replace(',', '.')));
         }
 
-        throw OrekitException.createIllegalArgumentException("non-existent time {0}", string);
+        throw OrekitException.createIllegalArgumentException(OrekitMessages.NON_EXISTENT_TIME, string);
 
     }
 

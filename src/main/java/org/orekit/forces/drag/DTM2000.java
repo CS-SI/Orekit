@@ -24,10 +24,12 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import org.apache.commons.math.exception.DummyLocalizable;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
@@ -332,9 +334,10 @@ public class DTM2000 implements Atmosphere {
                              final double hl, final double f, final double fbar,
                              final double akp3, final double akp24)
         throws OrekitException {
-        if (alti < 120000) {
-            throw new OrekitException(" Altitude is below the minimal range of 120000 m : {0}" ,
-                                      alti);
+        final double threshold = 120000;
+        if (alti < threshold) {
+            throw new OrekitException(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD,
+                                      alti, threshold);
         }
         this.cachedDay  = day;
         this.cachedAlti = alti / 1000;
@@ -750,11 +753,9 @@ public class DTM2000 implements Atmosphere {
         Arrays.fill(dt0,  Double.NaN);
         Arrays.fill(dtp,  Double.NaN);
 
-        final InputStream in =
-            DTM2000.class.getResourceAsStream(DTM2000);
+        final InputStream in = DTM2000.class.getResourceAsStream(DTM2000);
         if (in == null) {
-            throw new OrekitException("unable to find dtm 2000 model data file {0}",
-                                      DTM2000);
+            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, DTM2000);
         }
 
         BufferedReader r = null;
@@ -785,13 +786,13 @@ public class DTM2000 implements Atmosphere {
                 tp[num] = Double.parseDouble(line.substring(0, 13).replace(' ', '0'));
             }
         } catch (IOException ioe) {
-            throw new OrekitException(ioe.getMessage(), ioe);
+            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         } finally {
             if (r != null) {
                 try {
                     r.close();
                 } catch (IOException ioe) {
-                    throw new OrekitException(ioe.getMessage(), ioe);
+                    throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
                 }
             }
         }
@@ -856,8 +857,7 @@ public class DTM2000 implements Atmosphere {
         if ((date.compareTo(inputParams.getMaxDate()) > 0) ||
             (date.compareTo(inputParams.getMinDate()) < 0)) {
             final TimeScale utcScale = TimeScalesFactory.getUTC();
-            throw new OrekitException("no solar activity available at {0}, " +
-                                      "data available only in range [{1}, {2}]",
+            throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
                                       date.toString(utcScale),
                                       inputParams.getMinDate().toString(utcScale),
                                       inputParams.getMaxDate().toString(utcScale));

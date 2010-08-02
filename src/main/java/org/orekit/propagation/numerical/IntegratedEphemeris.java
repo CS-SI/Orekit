@@ -22,6 +22,7 @@ import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -122,7 +123,7 @@ class IntegratedEphemeris
         throws PropagationException {
         try {
             if ((date.compareTo(minDate) < 0) || (date.compareTo(maxDate) > 0)) {
-                throw new PropagationException("out of range date for ephemerides: {0}, [{1}, {2}]",
+                throw new PropagationException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE,
                                                date, minDate, maxDate);
             }
             model.setInterpolatedTime(date.durationFrom(startDate));
@@ -135,9 +136,9 @@ class IntegratedEphemeris
 
             return new SpacecraftState(eq, initializedAttitudeLaw.getAttitude(eq), mass);
         } catch (OrekitException oe) {
-            throw new PropagationException(oe.getMessage(), oe);
+            throw new PropagationException(oe);
         } catch (DerivativeException de) {
-            throw new PropagationException(de.getMessage(), de);
+            throw new PropagationException(de, de.getLocalizablePattern(), de.getArguments());
         }
     }
 

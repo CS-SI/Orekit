@@ -29,6 +29,7 @@ import java.util.TreeSet;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -49,22 +50,6 @@ import org.orekit.utils.PVCoordinates;
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class JPLEphemeridesLoader implements CelestialBodyLoader {
-
-    /** Error message for no JPL files. */
-    private static final String NO_JPL_FILES_FOUND =
-        "no JPL ephemerides binary files found";
-
-    /** Error message for header read error. */
-    private static final String HEADER_READ_ERROR =
-        "unable to read header record from JPL ephemerides binary file {0}";
-
-    /** Error message for unsupported file. */
-    private static final String NOT_JPL_EPHEMERIS =
-        "file {0} is not a JPL ephemerides binary file";
-
-    /** Error message for unsupported file. */
-    private static final String OUT_OF_RANGE_DATE =
-        "out of range date for ephemerides: {0}, [{1}, {2}]";
 
     /** Binary record size in bytes for DE 405. */
     private static final int DE405_RECORD_SIZE = 1018 * 8;
@@ -484,7 +469,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      */
     private void loadConstants() throws OrekitException {
         if (!DataProvidersManager.getInstance().feed(supportedNames, new HeaderConstantsLoader())) {
-            throw new OrekitException(NO_JPL_FILES_FOUND);
+            throw new OrekitException(OrekitMessages.NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND);
         }
     }
 
@@ -575,7 +560,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         // the second record contains the values of the constants used for least-square filtering
         // we ignore them here (they have been read once for all while setting up the constants map)
         if (!readInRecord(input, record, 0)) {
-            throw new OrekitException(HEADER_READ_ERROR, name);
+            throw new OrekitException(OrekitMessages.UNABLE_TO_READ_JPL_HEADER, name);
         }
 
         // read ephemerides data
@@ -602,14 +587,14 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         final double au = 1000 * extractDouble(record, 2680);
         ok = ok && (au > 1.4e11) && (au < 1.6e11);
         if (Math.abs(getLoadedAstronomicalUnit() - au) >= 0.001) {
-            throw new OrekitException("inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})",
+            throw new OrekitException(OrekitMessages.INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES,
                                       getLoadedAstronomicalUnit(), au);
         }
 
         final double emRat = extractDouble(record, 2688);
         ok = ok && (emRat > 80) && (emRat < 82);
         if (Math.abs(getLoadedEarthMoonMassRatio() - emRat) >= 1.0e-8) {
-            throw new OrekitException("inconsistent values of Earth/Moon mass ratio in JPL ephemerides files: ({0} and {1})",
+            throw new OrekitException(OrekitMessages.INCONSISTENT_EARTH_MOON_RATIO_IN_FILES,
                                       getLoadedEarthMoonMassRatio(), emRat);
         }
 
@@ -652,7 +637,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
         // sanity checks
         if (!ok) {
-            throw new OrekitException(NOT_JPL_EPHEMERIS, name);
+            throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
         }
 
     }
@@ -666,12 +651,12 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         // extract time range covered by the record
         final AbsoluteDate rangeStart = extractDate(record, 0);
         if (rangeStart.compareTo(startEpoch) < 0) {
-            throw new OrekitException(OUT_OF_RANGE_DATE, rangeStart, startEpoch, finalEpoch);
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, rangeStart, startEpoch, finalEpoch);
         }
 
         final AbsoluteDate rangeEnd   = extractDate(record, 8);
         if (rangeEnd.compareTo(finalEpoch) > 0) {
-            throw new OrekitException(OUT_OF_RANGE_DATE, rangeEnd, startEpoch, finalEpoch);
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, rangeEnd, startEpoch, finalEpoch);
         }
 
         synchronized (this) {
@@ -729,7 +714,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         // read first part of record, up to the ephemeris type
         final byte[] firstPart = new byte[2844];
         if (!readInRecord(input, firstPart, 0)) {
-            throw new OrekitException(HEADER_READ_ERROR, name);
+            throw new OrekitException(OrekitMessages.UNABLE_TO_READ_JPL_HEADER, name);
         }
 
         // get the ephemeris type, deduce the record size
@@ -742,7 +727,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             recordSize = DE406_RECORD_SIZE;
             break;
         default :
-            throw new OrekitException(NOT_JPL_EPHEMERIS, name);
+            throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
         }
 
         // build a record with the proper size and finish read of the first complete record
@@ -750,7 +735,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         final byte[] record = new byte[recordSize];
         System.arraycopy(firstPart, 0, record, 0, firstPart.length);
         if (!readInRecord(input, record, start)) {
-            throw new OrekitException(HEADER_READ_ERROR, name);
+            throw new OrekitException(OrekitMessages.UNABLE_TO_READ_JPL_HEADER, name);
         }
 
         return record;
@@ -853,7 +838,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             final byte[] first  = readFirstRecord(input, name);
             final byte[] second = new byte[first.length];
             if (!readInRecord(input, second, 0)) {
-                throw new OrekitException(HEADER_READ_ERROR, name);
+                throw new OrekitException(OrekitMessages.UNABLE_TO_READ_JPL_HEADER, name);
             }
 
             // constants defined in the file
@@ -951,7 +936,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             }
 
             if (!DataProvidersManager.getInstance().feed(supportedNames, JPLEphemeridesLoader.this)) {
-                throw new OrekitException(NO_JPL_FILES_FOUND);
+                throw new OrekitException(OrekitMessages.NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND);
             }
 
             // second try, searching newly loaded part designed to bracket date
@@ -967,7 +952,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             }
 
             // no way, this means we don't have available data for this date
-            throw new OrekitException("out of range date for {0} ephemerides: {1}",
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_BODY_EPHEMERIDES_DATE,
                                       loadType, date);
 
         }

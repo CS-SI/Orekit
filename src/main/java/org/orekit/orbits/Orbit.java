@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
@@ -120,7 +121,7 @@ public abstract class Orbit implements TimeStamped, Serializable {
         throws IllegalArgumentException {
         if (!frame.isQuasiInertial()) {
             throw OrekitException.createIllegalArgumentException(
-                "non quasi-inertial frame \"{0}\" is not suitable for defining orbits",
+                OrekitMessages.NON_QUASI_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS,
                 frame.getName());
         }
     }
