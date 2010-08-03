@@ -119,6 +119,8 @@ public enum OrekitMessages implements Localizable {
     // CHECKSTYLE: resume JavadocVariable
     // CHECKSTYLE: resume MultipleVariableDeclarations
 
+    /** Base name of the resource bundle in classpath. */
+    private static final String RESOURCE_BASE_NAME = "META-INF/localization/OrekitMessages";
 
     /** Source English format. */
     private final String sourceFormat;
@@ -139,19 +141,23 @@ public enum OrekitMessages implements Localizable {
     /** {@inheritDoc} */
     public String getLocalizedString(final Locale locale) {
         try {
-            ResourceBundle bundle =
-                    ResourceBundle.getBundle("META-INF/localization/OrekitMessages", locale);
+            ResourceBundle bundle = ResourceBundle.getBundle(RESOURCE_BASE_NAME, locale);
             if (bundle.getLocale().getLanguage().equals(locale.getLanguage())) {
-                // the value of the resource is the translated format
-                return bundle.getString(toString());
+                final String translated = bundle.getString(name());
+                if ((translated != null) &&
+                    (translated.length() > 0) &&
+                    (!translated.toLowerCase().contains("missing translation"))) {
+                    // the value of the resource is the translated format
+                    return translated;
+                }
             }
 
         } catch (MissingResourceException mre) {
             // do nothing here
         }
 
-        // either the locale is not supported or the resource is unknown
-        // don't translate and fall back to using the source format
+        // either the locale is not supported or the resource is not translated or
+        // it is unknown: don't translate and fall back to using the source format
         return sourceFormat;
 
     }
