@@ -18,6 +18,7 @@ package org.orekit;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import org.junit.Assert;
@@ -48,25 +49,31 @@ public class Utils {
     public static final double mu =  3.986004415e+14;
 
     public static void setDataRoot(String root) {
-        Utils.clearFactory(CelestialBodyFactory.class);
-        CelestialBodyFactory.clearCelestialBodyLoaders();
-        Utils.clearFactory(FramesFactory.class, Frame.class);
-        FramesFactory.clearEOP1980HistoryLoaders();
-        FramesFactory.clearEOP2000HistoryLoaders();
-        Utils.clearFactory(TimeScalesFactory.class, TimeScale.class);
-        TimeScalesFactory.clearUTCTAILoaders();
-        Utils.clearJPLEphemeridesConstants();
-        GravityFieldFactory.clearPotentialCoefficientsReaders();
-        DataProvidersManager.getInstance().clearProviders();
-        StringBuffer buffer = new StringBuffer();
-        for (String component : root.split(":")) {
-            String componentPath = Utils.class.getClassLoader().getResource(component).getPath();
-            if (buffer.length() > 0) {
-                buffer.append(System.getProperty("path.separator"));
+        try {
+            Utils.clearFactory(CelestialBodyFactory.class);
+            CelestialBodyFactory.clearCelestialBodyLoaders();
+            Utils.clearFactory(FramesFactory.class, Frame.class);
+            FramesFactory.clearEOP1980HistoryLoaders();
+            FramesFactory.clearEOP2000HistoryLoaders();
+            Utils.clearFactory(TimeScalesFactory.class, TimeScale.class);
+            TimeScalesFactory.clearUTCTAILoaders();
+            Utils.clearJPLEphemeridesConstants();
+            GravityFieldFactory.clearPotentialCoefficientsReaders();
+            DataProvidersManager.getInstance().clearProviders();
+            DataProvidersManager.getInstance().clearLoadedDataNames();
+            StringBuffer buffer = new StringBuffer();
+            for (String component : root.split(":")) {
+                String componentPath;
+                componentPath = Utils.class.getClassLoader().getResource(component).toURI().getPath();
+                if (buffer.length() > 0) {
+                    buffer.append(System.getProperty("path.separator"));
+                }
+                buffer.append(componentPath);
             }
-            buffer.append(componentPath);
+            System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, buffer.toString());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
-        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, buffer.toString());
     }
 
     private static void clearFactory(Class<?> factoryClass) {
