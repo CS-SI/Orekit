@@ -17,7 +17,10 @@
 package org.orekit.data;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -71,6 +74,9 @@ public class DataProvidersManager implements Serializable {
     /** Supported data providers. */
     private final List<DataProvider> providers;
 
+    /** Loaded data. */
+    private final List<String> loaded;
+
     /** Build an instance with default configuration.
      * <p>
      * This is a singleton, so the constructor is private.
@@ -78,6 +84,7 @@ public class DataProvidersManager implements Serializable {
      */
     private DataProvidersManager() {
         providers = new ArrayList<DataProvider>();
+        loaded    = new ArrayList<String>();
     }
 
     /** Get the unique instance.
@@ -173,11 +180,34 @@ public class DataProvidersManager implements Serializable {
      * @see #clearProviders()
      * @see #isSupported(Class)
      * @see #getProviders()
+     * @deprecated as of 5.1, replaced by {@link #removeProvider(DataProvider)}
      */
+    @Deprecated
     public DataProvider removeProvider(final Class<? extends DataProvider> providerClass) {
-        for (final Iterator<DataProvider> iterator = providers.iterator(); iterator.hasNext();) {
-            final DataProvider provider = iterator.next();
+        for (final DataProvider provider : providers) {
             if (providerClass.isInstance(provider)) {
+                return removeProvider(provider);
+            }
+        }
+        return null;
+    }
+
+    /** Remove one provider.
+     * <p>
+     * 
+     * </p>
+     * @param provider provider instance to remove
+     * @return instance removed (null if the provider was not already present)
+     * @see #addProvider(DataProvider)
+     * @see #clearProviders()
+     * @see #isSupported(DataProvider)
+     * @see #getProviders()
+     * @since 5.1
+     */
+    public DataProvider removeProvider(final DataProvider provider) {
+        for (final Iterator<DataProvider> iterator = providers.iterator(); iterator.hasNext();) {
+            final DataProvider current = iterator.next();
+            if (current == provider) {
                 iterator.remove();
                 return provider;
             }
@@ -202,11 +232,31 @@ public class DataProvidersManager implements Serializable {
      * @see #removeProvider(Class)
      * @see #clearProviders()
      * @see #getProviders()
+     * @deprecated as of 5.1, replaced by {@link #isSupported(DataProvider)}
      */
+    @Deprecated
     public boolean isSupported(final Class<? extends DataProvider> providerClass) {
         for (final Iterator<DataProvider> iterator = providers.iterator(); iterator.hasNext();) {
             final DataProvider provider = iterator.next();
             if (providerClass.isInstance(provider)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Check if some provider is supported.
+     * @param provider provider to check
+     * @return true if the specified provider instane is already in the supported list
+     * @see #addProvider(DataProvider)
+     * @see #removeProvider(DataProvider)
+     * @see #clearProviders()
+     * @see #getProviders()
+     * @since 5.1
+     */
+    public boolean isSupported(final DataProvider provider) {
+        for (final DataProvider current : providers) {
+            if (current == provider) {
                 return true;
             }
         }
@@ -222,6 +272,26 @@ public class DataProvidersManager implements Serializable {
      */
     public List<DataProvider> getProviders() {
         return Collections.unmodifiableList(providers);
+    }
+
+    /** Get an unmodifiable view of the list of data file names that have been loaded.
+     * <p>
+     * The names returned are exactly the ones that were given to the {@link
+     * DataLoader#loadData(InputStream, String) DataLoader.loadData} method.
+     * </p>
+     * @return unmodifiable view of the list of data file names that have been loaded
+     * @see #feed(String, DataLoader)
+     * @see #clearLoadedDataNames()
+     */
+    public List<String> getLoadedDataNames() {
+        return Collections.unmodifiableList(loaded);
+    }
+
+    /** Clear the list of data file names that have been loaded.
+     * @see #getLoadedDataNames()
+     */
+    public void clearLoadedDataNames() {
+        loaded.clear();
     }
 
     /** Feed a data file loader by browsing all data providers.
@@ -256,13 +326,16 @@ public class DataProvidersManager implements Serializable {
             addDefaultProviders();
         }
 
+        // monitor the data that the loader will load
+        DataLoader monitoredLoader = new MonitoringWrapper(loader);
+
         // crawl the data collection
         OrekitException delayedException = null;
         for (final DataProvider provider : providers) {
             try {
 
                 // try to feed the visitor using the current provider
-                if (provider.feed(supported, loader)) {
+                if (provider.feed(supported, monitoredLoader)) {
                     return true;
                 }
 
@@ -277,6 +350,39 @@ public class DataProvidersManager implements Serializable {
         }
 
         return false;
+
+    }
+
+    /** Data loading monitoring wrapper class. */
+    private class MonitoringWrapper implements DataLoader {
+
+        /** Wrapped loader. */
+        private final DataLoader loader;
+
+        /** Simple constructor.
+         * @param loader loader to monitor
+         */
+        public MonitoringWrapper(final DataLoader loader) {
+            this.loader = loader;
+        }
+
+        /** {@inheritDoc} */
+        public boolean stillAcceptsData() {
+            // delegate to monitored loader
+            return loader.stillAcceptsData();
+        }
+
+        /** {@inheritDoc} */
+        public void loadData(InputStream input, String name)
+            throws IOException, ParseException, OrekitException {
+
+            // delegate to monitored loader
+            loader.loadData(input, name);
+
+            // monitor the fact new data has been loaded
+            loaded.add(name);
+
+        }
 
     }
 

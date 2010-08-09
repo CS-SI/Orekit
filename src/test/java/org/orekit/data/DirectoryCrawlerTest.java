@@ -20,6 +20,7 @@ package org.orekit.data;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.regex.Pattern;
@@ -31,53 +32,53 @@ import org.orekit.errors.OrekitException;
 public class DirectoryCrawlerTest {
 
     @Test(expected=OrekitException.class)
-    public void testNoDirectory() throws OrekitException {
-        File existing = new File(getClass().getClassLoader().getResource("regular-data").getPath());
+    public void testNoDirectory() throws OrekitException, URISyntaxException {
+        File existing = new File(getClass().getClassLoader().getResource("regular-data").toURI().getPath());
         File inexistent = new File(existing.getParent(), "inexistant-directory");
         new DirectoryCrawler(inexistent).feed(Pattern.compile(".*"), new CountingLoader());
    }
 
     @Test(expected=OrekitException.class)
-    public void testNotADirectory() throws OrekitException {
+    public void testNotADirectory() throws OrekitException, URISyntaxException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data/UTC-TAI.history");
-        new DirectoryCrawler(new File(url.getPath())).feed(Pattern.compile(".*"), new CountingLoader());
+        new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), new CountingLoader());
     }
 
     @Test
-    public void testNominal() throws OrekitException {
+    public void testNominal() throws OrekitException, URISyntaxException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         CountingLoader crawler = new CountingLoader();
-        new DirectoryCrawler(new File(url.getPath())).feed(Pattern.compile(".*"), crawler);
+        new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), crawler);
         Assert.assertTrue(crawler.getCount() > 0);
     }
 
     @Test
-    public void testCompressed() throws OrekitException {
+    public void testCompressed() throws OrekitException, URISyntaxException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("compressed-data");
         CountingLoader crawler = new CountingLoader();
-        new DirectoryCrawler(new File(url.getPath())).feed(Pattern.compile(".*"), crawler);
+        new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), crawler);
         Assert.assertTrue(crawler.getCount() > 0);
     }
 
     @Test
-    public void testMultiZipClasspath() throws OrekitException {
+    public void testMultiZipClasspath() throws OrekitException, URISyntaxException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
-        File parent = new File(url.getPath()).getParentFile();
+        File parent = new File(url.toURI().getPath()).getParentFile();
         CountingLoader crawler = new CountingLoader();
         new DirectoryCrawler(parent).feed(Pattern.compile(".*\\.txt$"), crawler);
         Assert.assertEquals(6, crawler.getCount());
     }
 
     @Test(expected=OrekitException.class)
-    public void testIOException() throws OrekitException {
+    public void testIOException() throws OrekitException, URISyntaxException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         try {
-            new DirectoryCrawler(new File(url.getPath())).feed(Pattern.compile(".*"), new IOExceptionLoader());
+            new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), new IOExceptionLoader());
         } catch (OrekitException oe) {
             // expected behavior
             Assert.assertNotNull(oe.getCause());
@@ -88,11 +89,11 @@ public class DirectoryCrawlerTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testParseException() throws OrekitException {
+    public void testParseException() throws OrekitException, URISyntaxException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         try {
-            new DirectoryCrawler(new File(url.getPath())).feed(Pattern.compile(".*"), new ParseExceptionLoader());
+            new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), new ParseExceptionLoader());
         } catch (OrekitException oe) {
             // expected behavior
             Assert.assertNotNull(oe.getCause());
@@ -120,7 +121,7 @@ public class DirectoryCrawlerTest {
             return true;
         }
         public void loadData(InputStream input, String name) throws IOException {
-            if (name.equals("UTC-TAI.history")) {
+            if (name.endsWith("UTC-TAI.history")) {
                 throw new IOException("dummy error");
             }
         }
@@ -131,7 +132,7 @@ public class DirectoryCrawlerTest {
             return true;
         }
         public void loadData(InputStream input, String name) throws ParseException {
-            if (name.equals("UTC-TAI.history")) {
+            if (name.endsWith("UTC-TAI.history")) {
                 throw new ParseException("dummy error", 0);
             }
         }

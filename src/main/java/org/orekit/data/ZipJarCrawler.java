@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.regex.Matcher;
@@ -29,6 +30,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.math.exception.DummyLocalizable;
+import org.apache.commons.math.exception.LocalizedFormats;
 import org.orekit.errors.OrekitException;
 
 
@@ -70,6 +72,9 @@ public class ZipJarCrawler implements DataProvider {
     /** Zip archive on network. */
     private final URL url;
 
+    /** Prefix name of the zip. */
+    private final String name;
+
     /** Build a zip crawler for an archive file on filesystem.
      * @param file zip file to browse
      */
@@ -77,24 +82,37 @@ public class ZipJarCrawler implements DataProvider {
         this.file     = file;
         this.resource = null;
         this.url      = null;
+        this.name     = file.getAbsolutePath();
     }
 
     /** Build a zip crawler for an archive file in classpath.
      * @param resource name of the zip file to browse
+     * @exception OrekitException if resource name is malformed
      */
-    public ZipJarCrawler(final String resource) {
-        this.file     = null;
-        this.resource = resource;
-        this.url      = null;
+    public ZipJarCrawler(final String resource) throws OrekitException {
+        try {
+            this.file     = null;
+            this.resource = resource;
+            this.url      = null;
+            this.name     = ZipJarCrawler.class.getClassLoader().getResource(resource).toURI().toString();
+        } catch (URISyntaxException use) {
+            throw new OrekitException(use, LocalizedFormats.SIMPLE_MESSAGE, use.getMessage());
+        }
     }
 
     /** Build a zip crawler for an archive file on network.
      * @param url URL of the zip file on network
+     * @exception OrekitException if url syntax is malformed
      */
-    public ZipJarCrawler(final URL url) {
-        this.file     = null;
-        this.resource = null;
-        this.url      = url;
+    public ZipJarCrawler(final URL url) throws OrekitException {
+        try {
+            this.file     = null;
+            this.resource = null;
+            this.url      = url;
+            this.name     = url.toURI().toString();
+        } catch (URISyntaxException use) {
+            throw new OrekitException(use, LocalizedFormats.SIMPLE_MESSAGE, use.getMessage());
+        }
     }
 
     /** {@inheritDoc} */
@@ -115,7 +133,7 @@ public class ZipJarCrawler implements DataProvider {
 
             // add the zip format analysis layer and browse the archive
             final ZipInputStream zip = new ZipInputStream(rawStream);
-            final boolean loaded = feed(supported, visitor, zip);
+            final boolean loaded = feed(name, supported, visitor, zip);
             zip.close();
 
             return loaded;
@@ -129,6 +147,7 @@ public class ZipJarCrawler implements DataProvider {
     }
 
     /** Feed a data file loader by browsing the entries in a zip/jar.
+     * @param prefix prefix to use for name
      * @param supported pattern for file names supported by the visitor
      * @param visitor data file visitor to use
      * @param zip zip/jar input stream
@@ -138,7 +157,8 @@ public class ZipJarCrawler implements DataProvider {
      * @exception IOException if data cannot be read
      * @exception ParseException if data cannot be read
      */
-    private boolean feed(final Pattern supported, final DataLoader visitor, final ZipInputStream zip)
+    private boolean feed(final String prefix, final Pattern supported,
+                         final DataLoader visitor, final ZipInputStream zip)
         throws OrekitException, IOException, ParseException {
 
         OrekitException delayedException = null;
@@ -152,10 +172,12 @@ public class ZipJarCrawler implements DataProvider {
 
                 if (visitor.stillAcceptsData() && !entry.isDirectory()) {
 
+                    final String fullName = prefix + "!" + entry.getName();
+
                     if (ZIP_ARCHIVE_PATTERN.matcher(entry.getName()).matches()) {
 
                         // recurse inside the archive entry
-                        loaded = feed(supported, visitor, new ZipInputStream(zip)) || loaded;
+                        loaded = feed(fullName, supported, visitor, new ZipInputStream(zip)) || loaded;
 
                     } else {
 
@@ -175,7 +197,7 @@ public class ZipJarCrawler implements DataProvider {
                             // visit the current entry
                             final InputStream stream =
                                 gzipMatcher.matches() ? new GZIPInputStream(zip) : zip;
-                            visitor.loadData(stream, entryName);
+                            visitor.loadData(stream, fullName);
                             loaded = true;
 
                         }

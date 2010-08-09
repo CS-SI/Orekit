@@ -16,8 +16,10 @@
  */
 package org.orekit.data;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
@@ -116,8 +118,9 @@ public class NetworkCrawler implements DataProvider {
                 try {
 
                     if (visitor.stillAcceptsData()) {
-                        final String name = url.getPath();
-                        if (ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
+                        final String name     = url.toURI().toString();
+                        final String fileName = new File(url.getPath()).getName();
+                        if (ZIP_ARCHIVE_PATTERN.matcher(fileName).matches()) {
 
                             // browse inside the zip/jar file
                             new ZipJarCrawler(url).feed(supported, visitor);
@@ -126,8 +129,8 @@ public class NetworkCrawler implements DataProvider {
                         } else {
 
                             // remove suffix from gzip files
-                            final Matcher gzipMatcher = GZIP_FILE_PATTERN.matcher(name);
-                            final String baseName = gzipMatcher.matches() ? gzipMatcher.group(1) : name;
+                            final Matcher gzipMatcher = GZIP_FILE_PATTERN.matcher(fileName);
+                            final String baseName = gzipMatcher.matches() ? gzipMatcher.group(1) : fileName;
 
                             if (supported.matcher(baseName).matches()) {
 
@@ -161,6 +164,8 @@ public class NetworkCrawler implements DataProvider {
 
             return loaded;
 
+        } catch (URISyntaxException use) {
+            throw new OrekitException(use, new DummyLocalizable(use.getMessage()));
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         } catch (ParseException pe) {

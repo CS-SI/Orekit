@@ -18,6 +18,8 @@ package org.orekit.data;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.math.exception.DummyLocalizable;
+import org.apache.commons.math.exception.LocalizedFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -70,8 +73,7 @@ public class ClasspathCrawler implements DataProvider {
      * @param list list of data file names within the classpath
      * @exception OrekitException if a list elements is not an existing resource
      */
-    public ClasspathCrawler(final String... list)
-        throws OrekitException {
+    public ClasspathCrawler(final String... list) throws OrekitException {
 
         listElements = new ArrayList<String>();
 
@@ -80,8 +82,8 @@ public class ClasspathCrawler implements DataProvider {
             if (!"".equals(name)) {
 
                 final String convertedName = name.replace('\\', '/');
-                final InputStream stream =
-                    ClasspathCrawler.class.getClassLoader().getResourceAsStream(convertedName);
+                final ClassLoader classLoader = ClasspathCrawler.class.getClassLoader();
+                final InputStream stream = classLoader.getResourceAsStream(convertedName);
                 if (stream == null) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, name);
                 }
@@ -104,7 +106,7 @@ public class ClasspathCrawler implements DataProvider {
         try {
             OrekitException delayedException = null;
             boolean loaded = false;
-            for (String name : listElements) {
+            for (final String name : listElements) {
                 try {
 
                     if (visitor.stillAcceptsData()) {
@@ -122,14 +124,15 @@ public class ClasspathCrawler implements DataProvider {
 
                             if (supported.matcher(baseName).matches()) {
 
-                                final InputStream stream =
-                                    ClasspathCrawler.class.getClassLoader().getResourceAsStream(name);
+                                final ClassLoader classLoader = ClasspathCrawler.class.getClassLoader();
+                                final InputStream stream      = classLoader.getResourceAsStream(name);
+                                final URI uri                 = classLoader.getResource(name).toURI();
 
                                 // visit the current file
                                 if (gzipMatcher.matches()) {
-                                    visitor.loadData(new GZIPInputStream(stream), name);
+                                    visitor.loadData(new GZIPInputStream(stream), uri.toString());
                                 } else {
-                                    visitor.loadData(stream, name);
+                                    visitor.loadData(stream, uri.toString());
                                 }
 
                                 stream.close();
@@ -144,6 +147,9 @@ public class ClasspathCrawler implements DataProvider {
                     // maybe the next path component will be able to provide data
                     // wait until all components have been tried
                     delayedException = oe;
+                } catch (URISyntaxException use) {
+                    // this should bever happen
+                    throw new OrekitException(use, LocalizedFormats.SIMPLE_MESSAGE, use.getMessage());
                 }
             }
 

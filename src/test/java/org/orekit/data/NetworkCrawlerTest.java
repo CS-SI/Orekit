@@ -44,13 +44,12 @@ public class NetworkCrawlerTest {
     // settings according to your local network or remove the proxy authentication
     // settings if you have a transparent connection to internet
 //    @Test
-//    public void remote() throws java.net.MalformedURLException, OrekitException {
+//    public void remote() throws java.net.MalformedURLException, OrekitException, URISyntaxException {
 //
 //        System.setProperty("http.proxyHost",     "proxy.your.domain.com");
 //        System.setProperty("http.proxyPort",     "8080");
 //        System.setProperty("http.nonProxyHosts", "localhost|*.your.domain.com");
 //        java.net.Authenticator.setDefault(new AuthenticatorDialog());
-//
 //        CountingLoader loader = new CountingLoader();
 //        NetworkCrawler crawler =
 //            new NetworkCrawler(new URL("http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history"));
@@ -77,7 +76,7 @@ public class NetworkCrawlerTest {
         CountingLoader crawler = new CountingLoader();
         new NetworkCrawler(url("compressed-data/UTC-TAI.history.gz"),
                            url("compressed-data/eopc04_IAU2000.00.gz"),
-                           url("compressed-data/eopc04_IAU2000.02.gz")).feed(Pattern.compile(".*/eopc04.*"), crawler);
+                           url("compressed-data/eopc04_IAU2000.02.gz")).feed(Pattern.compile("^eopc04.*"), crawler);
         Assert.assertEquals(2, crawler.getCount());
     }
 

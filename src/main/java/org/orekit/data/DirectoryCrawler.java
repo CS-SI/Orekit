@@ -129,7 +129,7 @@ public class DirectoryCrawler implements DataProvider {
                             if (gzipMatcher.matches()) {
                                 input = new GZIPInputStream(input);
                             }
-                            visitor.loadData(input, list[i].getName());
+                            visitor.loadData(input, list[i].getPath());
                             input.close();
                             loaded = true;
 

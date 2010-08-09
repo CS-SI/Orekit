@@ -19,7 +19,8 @@ package org.orekit.data;
 
 import java.io.File;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URISyntaxException;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.math.exception.DummyLocalizable;
@@ -34,9 +35,29 @@ public class DataProvidersManagerTest {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("regular-data"));
         CountingLoader crawler = new CountingLoader(false);
         DataProvidersManager.getInstance().clearProviders();
-        Assert.assertFalse(DataProvidersManager.getInstance().isSupported(DirectoryCrawler.class));
+        Assert.assertFalse(DataProvidersManager.getInstance().isSupported(new DirectoryCrawler(new File(getPath("regular-data")))));
         Assert.assertTrue(DataProvidersManager.getInstance().feed(".*", crawler));
         Assert.assertEquals(17, crawler.getCount());
+    }
+
+    @Test
+    public void testLoadMonitoring() throws OrekitException {
+        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("regular-data"));
+        DataProvidersManager manager = DataProvidersManager.getInstance();
+        manager.clearProviders();
+        manager.clearLoadedDataNames();
+        Assert.assertFalse(manager.isSupported(new DirectoryCrawler(new File(getPath("regular-data")))));
+        Assert.assertEquals(0, manager.getLoadedDataNames().size());
+        CountingLoader tleCounter = new CountingLoader(false);
+        Assert.assertTrue(manager.feed(".*\\.tle$", tleCounter));
+        Assert.assertEquals(3, tleCounter.getCount());
+        Assert.assertEquals(3, manager.getLoadedDataNames().size());
+        CountingLoader de405Counter = new CountingLoader(false);
+        Assert.assertTrue(manager.feed(".*\\.405$", de405Counter));
+        Assert.assertEquals(4, de405Counter.getCount());
+        Assert.assertEquals(7, manager.getLoadedDataNames().size());
+        manager.clearLoadedDataNames();
+        Assert.assertEquals(0, manager.getLoadedDataNames().size());
     }
 
     @Test
@@ -94,13 +115,15 @@ public class DataProvidersManagerTest {
         CountingLoader crawler = new CountingLoader(false);
         DataProvidersManager manager = DataProvidersManager.getInstance();
         manager.clearProviders();
-        Assert.assertFalse(manager.isSupported(DirectoryCrawler.class));
+        Assert.assertFalse(manager.isSupported(new DirectoryCrawler(new File(getPath("regular-data")))));
         Assert.assertTrue(manager.feed(".*", crawler));
         Assert.assertTrue(crawler.getCount() > 0);
-        Assert.assertTrue(manager.isSupported(DirectoryCrawler.class));
-        Assert.assertFalse(manager.isSupported(ClasspathCrawler.class));
-        Assert.assertEquals(1, manager.getProviders().size());
-        Assert.assertNotNull(manager.removeProvider(DirectoryCrawler.class));
+        List<DataProvider> providers = manager.getProviders();
+        Assert.assertEquals(1, providers.size());
+        for (DataProvider provider : providers) {
+            Assert.assertTrue(manager.isSupported(provider));            
+        }
+        Assert.assertNotNull(manager.removeProvider(providers.get(0)));
         Assert.assertEquals(0, manager.getProviders().size());
         DataProvider provider = new DataProvider() {
             private static final long serialVersionUID = -5312255682914297696L;
@@ -112,16 +135,16 @@ public class DataProvidersManagerTest {
         Assert.assertEquals(1, manager.getProviders().size());
         manager.addProvider(provider);
         Assert.assertEquals(2, manager.getProviders().size());
-        Assert.assertNotNull(manager.removeProvider(provider.getClass()));
+        Assert.assertNotNull(manager.removeProvider(provider));
         Assert.assertEquals(1, manager.getProviders().size());
         Assert.assertNull(manager.removeProvider(new DataProvider() {
             private static final long serialVersionUID = 6368246625696570910L;
             public boolean feed(Pattern supported, DataLoader visitor) throws OrekitException {
                 throw new OrekitException(new DummyLocalizable("oops!"));
             }
-        }.getClass()));
+        }));
         Assert.assertEquals(1, manager.getProviders().size());
-        Assert.assertNotNull(manager.removeProvider(provider.getClass()));
+        Assert.assertNotNull(manager.removeProvider(manager.getProviders().get(0)));
         Assert.assertEquals(0, manager.getProviders().size());
     }
 
@@ -181,9 +204,13 @@ public class DataProvidersManagerTest {
     }
 
     private String getPath(String resourceName) {
-        ClassLoader loader = DirectoryCrawlerTest.class.getClassLoader();
-        URL url = loader.getResource(resourceName);
-        return url.getPath();
+        try {
+            ClassLoader loader = DirectoryCrawlerTest.class.getClassLoader();
+            return loader.getResource(resourceName).toURI().getPath();
+        } catch (URISyntaxException e) {
+            Assert.fail(e.getLocalizedMessage());
+            return null;
+        }
     }
 
 }

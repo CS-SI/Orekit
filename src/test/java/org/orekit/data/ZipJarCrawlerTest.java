@@ -19,6 +19,7 @@ package org.orekit.data;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Pattern;
 
@@ -36,11 +37,11 @@ public class ZipJarCrawlerTest {
     }
 
     @Test
-    public void testMultiZip() throws OrekitException {
+    public void testMultiZip() throws OrekitException, URISyntaxException {
         URL url =
             ZipJarCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
         CountingLoader crawler = new CountingLoader();
-        new ZipJarCrawler(new File(url.getPath())).feed(Pattern.compile(".*\\.txt$"), crawler);
+        new ZipJarCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*\\.txt$"), crawler);
         Assert.assertEquals(6, crawler.getCount());
     }
 
