@@ -56,4 +56,29 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
                             history.getEndDate());
     }
 
+    @Test
+    public void testNewFormatNominal() throws OrekitException, ParseException {
+        setRoot("new-bulletinB");
+        EOP1980History history = new EOP1980History();
+        new BulletinBFilesLoader("bulletinb.270").fillHistory(history);
+        Assert.assertEquals(new AbsoluteDate(2010, 6, 2, TimeScalesFactory.getUTC()),
+                            history.getStartDate());
+        Assert.assertEquals(new AbsoluteDate(2010, 7, 1, TimeScalesFactory.getUTC()),
+                            history.getEndDate());
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testNewFormatTruncated() throws OrekitException, ParseException {
+        setRoot("new-bulletinB");
+        EOP1980History history = new EOP1980History();
+        new BulletinBFilesLoader("bulletinb-truncated.270").fillHistory(history);
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testNewFormatInconsistent() throws OrekitException, ParseException {
+        setRoot("new-bulletinB");
+        EOP1980History history = new EOP1980History();
+        new BulletinBFilesLoader("bulletinb-inconsistent.270").fillHistory(history);
+    }
+
 }
