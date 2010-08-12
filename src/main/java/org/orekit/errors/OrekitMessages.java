@@ -20,7 +20,7 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-import org.apache.commons.math.exception.Localizable;
+import org.apache.commons.math.exception.util.Localizable;
 
 /**
  * Enumeration for localized messages formats.
@@ -62,6 +62,7 @@ public enum OrekitMessages implements Localizable {
     NO_EARTH_ORIENTATION_PARAMETERS_LOADED("no Earth Orientation Parameters loaded"),
     MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES("missing Earth Orientation Parameters between {0} and {1}"),
     NOT_A_SUPPORTED_IERS_DATA_FILE("file {0} is not a supported IERS data file"),
+    INCONSISTENT_DATES_IN_IERS_FILE("inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}"),
     UNEXPECTED_DATA_AFTER_LINE_IN_FILE("unexpected data after line {0} in file {1}: {2}"),
     NON_CHRONOLOGICAL_DATES_IN_FILE("non-chronological dates in file {0}, line {1}"),
     NO_IERS_UTC_TAI_HISTORY_DATA_LOADED("no IERS UTC-TAI history data loaded"),
@@ -76,7 +77,7 @@ public enum OrekitMessages implements Localizable {
     NO_GRAVITY_FIELD_DATA_LOADED("no gravity field data loaded"),
     POTENTIAL_ARRAYS_SIZES_MISMATCH("potential arrays sizes mismatch (C: {0}x{1}, S: {2}x{3})"),
     POLAR_TRAJECTORY("polar trajectory (distance to polar axis: {0})"),
-    UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER("unexpect format error for file {0} with loader {1}"),
+    UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER("unexpected format error for file {0} with loader {1}"),
     TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD("too large degree (n = {0}, potential maximal degree is {1})"),
     TOO_LARGE_ORDER_FOR_GRAVITY_FIELD("too large order (m = {0}, potential maximal order is {1})"),
     NO_TLE_FOR_OBJECT("no TLE data available for object {0}"),
