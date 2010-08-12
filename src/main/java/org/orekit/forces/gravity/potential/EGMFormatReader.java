@@ -122,8 +122,10 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
         }
 
         if ((!okFields) || (cl.size() < 1) || (!okCoeffs)) {
+            String loaderName = getClass().getName();
+            loaderName = loaderName.substring(loaderName.lastIndexOf('.') + 1);
             throw new OrekitException(OrekitMessages.UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER,
-                                      name, "EGMFormatReader");
+                                      name, loaderName);
         }
 
         // convert to simple triangular arrays

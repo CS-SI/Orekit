@@ -137,8 +137,10 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
         }
 
         if (!(okEarth && okSHM && okCoeffs)) {
+            String loaderName = getClass().getName();
+            loaderName = loaderName.substring(loaderName.lastIndexOf('.') + 1);
             throw new OrekitException(OrekitMessages.UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER,
-                                      name, "SHMFormatReader");
+                                      name, loaderName);
         }
 
         readCompleted = true;
