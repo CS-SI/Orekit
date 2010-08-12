@@ -142,22 +142,26 @@ class EOP05C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
                     final int    month = Integer.parseInt(fields[MONTH_FIELD]);
                     final int    day   = Integer.parseInt(fields[DAY_FIELD]);
                     final int    mjd   = Integer.parseInt(fields[MJD_FIELD]);
-                    if (new DateComponents(year, month, day).getMJD() == mjd) {
-                        // the first six fields are consistent with the expected format
-                        final double x    = Double.parseDouble(fields[POLE_X_FIELD]) * ARC_SECONDS_TO_RADIANS;
-                        final double y    = Double.parseDouble(fields[POLE_Y_FIELD]) * ARC_SECONDS_TO_RADIANS;
-                        final double dtu1 = Double.parseDouble(fields[UT1_UTC_FIELD]);
-                        final double lod  = Double.parseDouble(fields[LOD_FIELD]);
-                        final double dpsi = Double.parseDouble(fields[DDPSI_FIELD]) * ARC_SECONDS_TO_RADIANS;
-                        final double deps = Double.parseDouble(fields[DDEPS_FIELD]) * ARC_SECONDS_TO_RADIANS;
-                        if (history1980 != null) {
-                            history1980.addEntry(new EOP1980Entry(mjd, dtu1, lod, dpsi, deps));
-                        }
-                        if (history2000 != null) {
-                            history2000.addEntry(new EOP2000Entry(mjd, dtu1, lod, x, y));
-                        }
-                        parsed = true;
+                    if (new DateComponents(year, month, day).getMJD() != mjd) {
+                        throw new OrekitException(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE,
+                                                  name, year, month, day, mjd);
                     }
+
+                    // the first six fields are consistent with the expected format
+                    final double x    = Double.parseDouble(fields[POLE_X_FIELD]) * ARC_SECONDS_TO_RADIANS;
+                    final double y    = Double.parseDouble(fields[POLE_Y_FIELD]) * ARC_SECONDS_TO_RADIANS;
+                    final double dtu1 = Double.parseDouble(fields[UT1_UTC_FIELD]);
+                    final double lod  = Double.parseDouble(fields[LOD_FIELD]);
+                    final double dpsi = Double.parseDouble(fields[DDPSI_FIELD]) * ARC_SECONDS_TO_RADIANS;
+                    final double deps = Double.parseDouble(fields[DDEPS_FIELD]) * ARC_SECONDS_TO_RADIANS;
+                    if (history1980 != null) {
+                        history1980.addEntry(new EOP1980Entry(mjd, dtu1, lod, dpsi, deps));
+                    }
+                    if (history2000 != null) {
+                        history2000.addEntry(new EOP2000Entry(mjd, dtu1, lod, x, y));
+                    }
+                    parsed = true;
+
                 }
                 if (!(inHeader || parsed)) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
