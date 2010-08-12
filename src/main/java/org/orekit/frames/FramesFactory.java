@@ -103,11 +103,17 @@ import org.orekit.utils.Constants;
  */
 public class FramesFactory implements Serializable {
 
+    /** Default regular expression for the XML EOP files (IAU1980 compatibles). */
+    public static final String XML_EOP_1980_FILENAME = "^finals\\..*\\.xml$";
+
     /** Default regular expression for the EOPC04 files (IAU1980 compatibles). */
     public static final String EOPC04_1980_FILENAME = "^eopc04\\.(\\d\\d)$";
 
     /** Default regular expression for the BulletinB files (IAU1980 compatibles). */
     public static final String BULLETINB_1980_FILENAME = "^bulletinb((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
+
+    /** Default regular expression for the XML EOP files (IAU2000 compatibles). */
+    public static final String XML_EOP_2000_FILENAME = "^finals2000A\\..*\\.xml$";
 
     /** Default regular expression for the EOPC04 files (IAU2000 compatibles). */
     public static final String EOPC04_2000_FILENAME = "^eopc04_IAU2000\\.(\\d\\d)$";
@@ -189,6 +195,8 @@ public class FramesFactory implements Serializable {
      * <p>
      * The default loaders look for IERS EOP 05 C04 and bulletins B files.
      * </p>
+     * @param xmleopSupportedNames regular expression for supported XML EOP files names
+     * (may be null if the default IERS file names are used)
      * @param eopC04SupportedNames regular expression for supported EOP05 C04 files names
      * (may be null if the default IERS file names are used)
      * @param bulletinBSupportedNames regular expression for supported bulletin B files names
@@ -199,8 +207,12 @@ public class FramesFactory implements Serializable {
      * @see #clearEOP1980HistoryLoaders()
      * @see #addDefaultEOP2000HistoryLoaders(String, String)
      */
-    public static void addDefaultEOP1980HistoryLoaders(final String eopC04SupportedNames,
+    public static void addDefaultEOP1980HistoryLoaders(final String xmleopSupportedNames,
+                                                       final String eopC04SupportedNames,
                                                        final String bulletinBSupportedNames) {
+        final String xmlNames =
+            (xmleopSupportedNames == null) ? XML_EOP_1980_FILENAME : xmleopSupportedNames;
+        addEOP1980HistoryLoader(new XMLEOPFilesLoader(xmlNames));
         final String eopcNames =
             (eopC04SupportedNames == null) ? EOPC04_1980_FILENAME : eopC04SupportedNames;
         addEOP1980HistoryLoader(new EOP05C04FilesLoader(eopcNames));
@@ -235,7 +247,7 @@ public class FramesFactory implements Serializable {
     public static EOP1980History getEOP1980History() throws OrekitException {
         final EOP1980History history = new EOP1980History();
         if (EOP_1980_LOADERS.isEmpty()) {
-            addDefaultEOP1980HistoryLoaders(null, null);
+            addDefaultEOP1980HistoryLoaders(null, null, null);
         }
         for (final EOP1980HistoryLoader loader : EOP_1980_LOADERS) {
             loader.fillHistory(history);
@@ -260,6 +272,8 @@ public class FramesFactory implements Serializable {
      * <p>
      * The default loaders look for IERS EOP 05 C04 and bulletins B files.
      * </p>
+     * @param xmleopSupportedNames regular expression for supported XML EOP files names
+     * (may be null if the default IERS file names are used)
      * @param eopC04SupportedNames regular expression for supported EOP05 C04 files names
      * (may be null if the default IERS file names are used)
      * @param bulletinBSupportedNames regular expression for supported bulletin B files names
@@ -270,8 +284,12 @@ public class FramesFactory implements Serializable {
      * @see #clearEOP2000HistoryLoaders()
      * @see #addDefaultEOP1980HistoryLoaders(String, String)
      */
-    public static void addDefaultEOP2000HistoryLoaders(final String eopC04SupportedNames,
+    public static void addDefaultEOP2000HistoryLoaders(final String xmleopSupportedNames,
+                                                       final String eopC04SupportedNames,
                                                        final String bulletinBSupportedNames) {
+        final String xmlNames =
+            (xmleopSupportedNames == null) ? XML_EOP_2000_FILENAME : xmleopSupportedNames;
+        addEOP2000HistoryLoader(new XMLEOPFilesLoader(xmlNames));
         final String eopcNames =
             (eopC04SupportedNames == null) ? EOPC04_2000_FILENAME : eopC04SupportedNames;
         addEOP2000HistoryLoader(new EOP05C04FilesLoader(eopcNames));
@@ -306,7 +324,7 @@ public class FramesFactory implements Serializable {
     public static EOP2000History getEOP2000History() throws OrekitException {
         final EOP2000History history = new EOP2000History();
         if (EOP_2000_LOADERS.isEmpty()) {
-            addDefaultEOP2000HistoryLoaders(null, null);
+            addDefaultEOP2000HistoryLoaders(null, null, null);
         }
         for (final EOP2000HistoryLoader loader : EOP_2000_LOADERS) {
             loader.fillHistory(history);

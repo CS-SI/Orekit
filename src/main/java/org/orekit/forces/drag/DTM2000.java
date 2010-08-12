@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import org.apache.commons.math.exception.DummyLocalizable;
+import org.apache.commons.math.exception.util.DummyLocalizable;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;

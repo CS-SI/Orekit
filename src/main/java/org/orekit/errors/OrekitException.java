@@ -20,7 +20,7 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.Locale;
 
-import org.apache.commons.math.exception.Localizable;
+import org.apache.commons.math.exception.util.Localizable;
 
 /** This class is the base class for all specific exceptions thrown by
  * the orekit classes.

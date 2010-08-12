@@ -29,8 +29,8 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.math.exception.DummyLocalizable;
-import org.apache.commons.math.exception.LocalizedFormats;
+import org.apache.commons.math.exception.util.DummyLocalizable;
+import org.apache.commons.math.exception.util.LocalizedFormats;
 import org.orekit.errors.OrekitException;
 
 

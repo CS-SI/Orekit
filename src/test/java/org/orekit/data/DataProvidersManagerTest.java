@@ -23,7 +23,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.apache.commons.math.exception.DummyLocalizable;
+import org.apache.commons.math.exception.util.DummyLocalizable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -37,7 +37,7 @@ public class DataProvidersManagerTest {
         DataProvidersManager.getInstance().clearProviders();
         Assert.assertFalse(DataProvidersManager.getInstance().isSupported(new DirectoryCrawler(new File(getPath("regular-data")))));
         Assert.assertTrue(DataProvidersManager.getInstance().feed(".*", crawler));
-        Assert.assertEquals(17, crawler.getCount());
+        Assert.assertEquals(18, crawler.getCount());
     }
 
     @Test
@@ -71,7 +71,7 @@ public class DataProvidersManagerTest {
         } catch (OrekitException oe) {
             // expected
         }
-        Assert.assertEquals(17, crawler.getCount());
+        Assert.assertEquals(18, crawler.getCount());
     }
 
     @Test

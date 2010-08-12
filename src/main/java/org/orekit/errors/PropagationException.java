@@ -16,7 +16,7 @@
  */
 package org.orekit.errors;
 
-import org.apache.commons.math.exception.Localizable;
+import org.apache.commons.math.exception.util.Localizable;
 
 /** This class is the base class for all specific exceptions thrown by
  * during the propagation computation.

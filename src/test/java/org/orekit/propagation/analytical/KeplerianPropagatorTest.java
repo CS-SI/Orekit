@@ -17,7 +17,7 @@
 package org.orekit.propagation.analytical;
 
 
-import org.apache.commons.math.exception.DummyLocalizable;
+import org.apache.commons.math.exception.util.DummyLocalizable;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
 import org.junit.After;
