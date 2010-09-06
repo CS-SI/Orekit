@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 
+import org.apache.commons.math.util.FastMath;
 import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -180,7 +181,7 @@ public abstract class PotentialCoefficientsReader
         // truncate each array row in turn
         final double[][] result = new double[n + 1][];
         for (int i = 0; i <= n; i++) {
-            final double[] ri = new double[Math.min(i, m) + 1];
+            final double[] ri = new double[FastMath.min(i, m) + 1];
             System.arraycopy(complete[i], 0, ri, 0, ri.length);
             result[i] = ri;
         }
@@ -277,11 +278,11 @@ public abstract class PotentialCoefficientsReader
             factN *= n;
             mfactNMinusM = factN;
             mfactNPlusM = factN;
-            uRow[0] = Math.sqrt(2 * n + 1) * normalized[n][0];
+            uRow[0] = FastMath.sqrt(2 * n + 1) * normalized[n][0];
             for (int m = 1; m < uRow.length; m++) {
                 mfactNPlusM  *= n + m;
                 mfactNMinusM /= n - m + 1;
-                uRow[m] = Math.sqrt((coeffN * mfactNMinusM) / mfactNPlusM) * nRow[m];
+                uRow[m] = FastMath.sqrt((coeffN * mfactNMinusM) / mfactNPlusM) * nRow[m];
             }
             unNormalized[n] = uRow;
         }

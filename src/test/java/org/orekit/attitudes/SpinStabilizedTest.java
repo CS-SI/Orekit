@@ -19,6 +19,7 @@ package org.orekit.attitudes;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +46,7 @@ public class SpinStabilizedTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
-        double rate = 2.0 * Math.PI / (12 * 60);
+        double rate = 2.0 * FastMath.PI / (12 * 60);
         AttitudeLaw bbq =
             new SpinStabilized(new CelestialBodyPointed(FramesFactory.getEME2000(), sun, Vector3D.PLUS_K,
                                      Vector3D.PLUS_I, Vector3D.PLUS_K),
@@ -55,7 +56,7 @@ public class SpinStabilizedTest {
                               new Vector3D(0, 0, 3680.853673522056));
         Attitude attitude = bbq.getAttitude(new KeplerianOrbit(pv, FramesFactory.getEME2000(), date, 3.986004415e14));
         Vector3D xDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
-        Assert.assertEquals(Math.atan(1.0 / 5000.0),
+        Assert.assertEquals(FastMath.atan(1.0 / 5000.0),
                      Vector3D.angle(xDirection, sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition()),
                      1.0e-15);
         Assert.assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-6);
@@ -68,14 +69,14 @@ public class SpinStabilizedTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
-        double rate = 2.0 * Math.PI / (12 * 60);
+        double rate = 2.0 * FastMath.PI / (12 * 60);
         AttitudeLaw law =
             new SpinStabilized(new InertialLaw(Rotation.IDENTITY),
                                date, Vector3D.PLUS_K, rate);
         KeplerianOrbit orbit =
-            new KeplerianOrbit(7178000.0, 1.e-4, Math.toRadians(50.),
-                              Math.toRadians(10.), Math.toRadians(20.),
-                              Math.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
+            new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
+                              FastMath.toRadians(10.), FastMath.toRadians(20.),
+                              FastMath.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);
@@ -103,9 +104,9 @@ public class SpinStabilizedTest {
         Rotation rP = sPlus.getAttitude().getRotation();
         Vector3D reference = Attitude.estimateSpin(rM, rP, 2 * h);
 
-        Assert.assertEquals(2 * Math.PI / reference.getNorm(), 2 * Math.PI / spin0.getNorm(), 0.05);
-        Assert.assertEquals(0.0, Math.toDegrees(Vector3D.angle(reference, spin0)), 1.0e-10);
-        Assert.assertEquals(0.0, Math.toDegrees(Vector3D.angle(Vector3D.PLUS_K, spin0)), 1.0e-10);
+        Assert.assertEquals(2 * FastMath.PI / reference.getNorm(), 2 * FastMath.PI / spin0.getNorm(), 0.05);
+        Assert.assertEquals(0.0, FastMath.toDegrees(Vector3D.angle(reference, spin0)), 1.0e-10);
+        Assert.assertEquals(0.0, FastMath.toDegrees(Vector3D.angle(Vector3D.PLUS_K, spin0)), 1.0e-10);
 
     }
 

@@ -18,6 +18,7 @@ package org.orekit.forces;
 
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,8 +53,8 @@ public class BoxAndSolarArraySpacecraftTest {
 
             Vector3D sunInert = sun.getPVCoordinates(initialDate, state.getFrame()).getPosition();
             Vector3D momentum = state.getPVCoordinates().getMomentum();
-            double sunElevation = Math.PI / 2 - Vector3D.angle(sunInert, momentum);
-            Assert.assertEquals(15.1, Math.toDegrees(sunElevation), 0.1);
+            double sunElevation = FastMath.PI / 2 - Vector3D.angle(sunInert, momentum);
+            Assert.assertEquals(15.1, FastMath.toDegrees(sunElevation), 0.1);
 
             Vector3D n = s.getNormal(state);
             Assert.assertEquals(0.0, n.getY(), 1.0e-10);
@@ -84,8 +85,8 @@ public class BoxAndSolarArraySpacecraftTest {
 
             Vector3D sunInert = sun.getPVCoordinates(initialDate, state.getFrame()).getPosition();
             Vector3D momentum = state.getPVCoordinates().getMomentum();
-            double sunElevation = Math.PI / 2 - Vector3D.angle(sunInert, momentum);
-            Assert.assertEquals(15.1, Math.toDegrees(sunElevation), 0.1);
+            double sunElevation = FastMath.PI / 2 - Vector3D.angle(sunInert, momentum);
+            Assert.assertEquals(15.1, FastMath.toDegrees(sunElevation), 0.1);
 
             Vector3D n = s.getNormal(state);
             Assert.assertEquals(0.0, n.getY(), 1.0e-10);
@@ -117,8 +118,8 @@ public class BoxAndSolarArraySpacecraftTest {
 
                 Vector3D sunInert = sun.getPVCoordinates(initialDate, state.getFrame()).getPosition();
                 Vector3D momentum = state.getPVCoordinates().getMomentum();
-                double sunElevation = Math.PI / 2 - Vector3D.angle(sunInert, momentum);
-                Assert.assertEquals(15.1, Math.toDegrees(sunElevation), 0.1);
+                double sunElevation = FastMath.PI / 2 - Vector3D.angle(sunInert, momentum);
+                Assert.assertEquals(15.1, FastMath.toDegrees(sunElevation), 0.1);
 
                 Vector3D n = s.getNormal(state);
                 Assert.assertEquals(0.0, n.getY(), 1.0e-10);
@@ -126,10 +127,10 @@ public class BoxAndSolarArraySpacecraftTest {
                 // normal misalignment should become very large as solar array rotation is plain wrong
                 Vector3D sunSat = state.getAttitude().getRotation().applyTo(sunInert);
                 double misAlignment = Vector3D.angle(sunSat, n);
-                maxDelta = Math.max(maxDelta, Math.abs(sunElevation - misAlignment));
+                maxDelta = FastMath.max(maxDelta, FastMath.abs(sunElevation - misAlignment));
 
             }
-            Assert.assertTrue(Math.toDegrees(maxDelta) > 120.0);
+            Assert.assertTrue(FastMath.toDegrees(maxDelta) > 120.0);
 
     }
 
@@ -184,10 +185,10 @@ public class BoxAndSolarArraySpacecraftTest {
             Vector3D normal = state.getAttitude().getRotation().applyInverseTo(s.getNormal(state));
 
             // solar array normal is slightly misaligned with Sun direction due to Sun being out of orbital plane
-            Assert.assertEquals(15.1, Math.toDegrees(Vector3D.angle(sunDirection, normal)), 0.11);
+            Assert.assertEquals(15.1, FastMath.toDegrees(Vector3D.angle(sunDirection, normal)), 0.11);
 
             // radiation pressure is exactly opposed to solar array normal as there is only specular reflection
-            Assert.assertEquals(180.0, Math.toDegrees(Vector3D.angle(acceleration, normal)), 1.0e-3);
+            Assert.assertEquals(180.0, FastMath.toDegrees(Vector3D.angle(acceleration, normal)), 1.0e-3);
 
         }
 
@@ -212,10 +213,10 @@ public class BoxAndSolarArraySpacecraftTest {
             Vector3D normal = state.getAttitude().getRotation().applyInverseTo(s.getNormal(state));
 
             // solar array normal is slightly misaligned with Sun direction due to Sun being out of orbital plane
-            Assert.assertEquals(15.1, Math.toDegrees(Vector3D.angle(sunDirection, normal)), 0.11);
+            Assert.assertEquals(15.1, FastMath.toDegrees(Vector3D.angle(sunDirection, normal)), 0.11);
 
             // radiation pressure is exactly opposed to Sun direction as there is only absorption
-            Assert.assertEquals(180.0, Math.toDegrees(Vector3D.angle(acceleration, sunDirection)), 1.0e-3);
+            Assert.assertEquals(180.0, FastMath.toDegrees(Vector3D.angle(acceleration, sunDirection)), 1.0e-3);
 
         }
 
@@ -240,8 +241,8 @@ public class BoxAndSolarArraySpacecraftTest {
         // Satellite position as circular parameters, raan chosen to have sun elevation with
         // respect to orbit plane roughly evolving roughly from 15 to 15.2 degrees in the test range
         Orbit circ =
-            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(280),
-                                   Math.toRadians(10.0), CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
+            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(280),
+                                   FastMath.toRadians(10.0), CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
                                    FramesFactory.getEME2000(), date, mu);
         propagator =
             new EcksteinHechlerPropagator(circ, LofOffset.LOF_ALIGNED, ae, mu, c20, c30, c40, c50, c60);

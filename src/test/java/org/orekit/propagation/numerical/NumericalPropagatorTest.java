@@ -21,6 +21,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -86,7 +87,7 @@ public class NumericalPropagatorTest {
             propagator.propagate(initDate.shiftedBy(dt));
 
         // Check results
-        final double n = Math.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
+        final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
         Assert.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
         Assert.assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
         Assert.assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
@@ -173,7 +174,7 @@ public class NumericalPropagatorTest {
         final SpacecraftState finalState = 
             propagator.propagate(initDate.shiftedBy(dt));
         Assert.assertTrue(gotHere);
-        final double n = Math.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
+        final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
         Assert.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
         Assert.assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
         Assert.assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
@@ -197,7 +198,7 @@ public class NumericalPropagatorTest {
         final SpacecraftState finalState = 
             propagator.propagate(initDate.shiftedBy(dt));
         Assert.assertTrue(gotHere);
-        final double n = Math.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
+        final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
         Assert.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
         Assert.assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
         Assert.assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);

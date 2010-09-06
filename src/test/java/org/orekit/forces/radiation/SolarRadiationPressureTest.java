@@ -24,6 +24,7 @@ import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +56,7 @@ public class SolarRadiationPressureTest {
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
-                                           Math.tan(0.001745329)*Math.cos(2*Math.PI/3), Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
+                                           FastMath.tan(0.001745329)*FastMath.cos(2*FastMath.PI/3), FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
                                            0.1, 2, FramesFactory.getEME2000(), date, mu);
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth =
@@ -65,7 +66,7 @@ public class SolarRadiationPressureTest {
             new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
                                        (RadiationSensitive) new SphericalSpacecraft(50.0, 0.5, 0.5, 0.5));
 
-        double period = 2*Math.PI*Math.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
+        double period = 2*FastMath.PI*FastMath.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
         Assert.assertEquals(86164, period,1);
 
         // creation of the propagator
@@ -83,8 +84,8 @@ public class SolarRadiationPressureTest {
                 double ratio = SRP.getLightningRatio(k.propagate(currentDate).getPVCoordinates().getPosition(),
                                                      FramesFactory.getEME2000(), currentDate);
 
-                if(Math.floor(ratio)!=changed) {
-                    changed = Math.floor(ratio);
+                if(FastMath.floor(ratio)!=changed) {
+                    changed = FastMath.floor(ratio);
                     if(changed == 0) {
                         count++;
                     }
@@ -104,8 +105,8 @@ public class SolarRadiationPressureTest {
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
-                                           Math.tan(0.001745329)*Math.cos(2*Math.PI/3),
-                                           Math.tan(0.001745329)*Math.sin(2*Math.PI/3),
+                                           FastMath.tan(0.001745329)*FastMath.cos(2*FastMath.PI/3),
+                                           FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
                                            0.1, 2, FramesFactory.getEME2000(), date, mu);
         final double period = orbit.getKeplerianPeriod();
         Assert.assertEquals(86164, period, 1);
@@ -133,7 +134,7 @@ public class SolarRadiationPressureTest {
         calc.addForceModel(SRP);
 
         // Step Handler
-        calc.setMasterMode(Math.floor(period), new SolarStepHandler());
+        calc.setMasterMode(FastMath.floor(period), new SolarStepHandler());
         AbsoluteDate finalDate = date.shiftedBy(10 * period);
         calc.setInitialState(new SpacecraftState(orbit, 1500.0));
         calc.propagate(finalDate);
@@ -158,10 +159,10 @@ public class SolarRadiationPressureTest {
         public void handleStep(SpacecraftState currentState, boolean isLast) {
             final double dex = currentState.getEquinoctialEx() - 0.01071166;
             final double dey = currentState.getEquinoctialEy() - 0.00654848;
-            final double alpha = Math.toDegrees(Math.atan2(dey, dex));
+            final double alpha = FastMath.toDegrees(FastMath.atan2(dey, dex));
             Assert.assertTrue(alpha > 100.0);
             Assert.assertTrue(alpha < 112.0);
-            checkRadius(Math.sqrt(dex * dex + dey * dey), 0.003524, 0.003541);
+            checkRadius(FastMath.sqrt(dex * dex + dey * dey), 0.003524, 0.003541);
         }
 
     }

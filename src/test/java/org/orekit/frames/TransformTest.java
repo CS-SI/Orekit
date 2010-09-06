@@ -21,6 +21,7 @@ import java.util.Random;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.utils.Constants;
@@ -44,7 +45,7 @@ public class TransformTest {
     @Test
     public void testSimpleComposition() {
         Transform transform =
-            new Transform(new Transform(new Rotation(Vector3D.PLUS_K, 0.5 * Math.PI)),
+            new Transform(new Transform(new Rotation(Vector3D.PLUS_K, 0.5 * FastMath.PI)),
                           new Transform(Vector3D.PLUS_I));
         Vector3D u = transform.transformPosition(new Vector3D(1.0, 1.0, 1.0));
         Vector3D v = new Vector3D(0.0, 1.0, 1.0);
@@ -147,7 +148,7 @@ public class TransformTest {
 
         // rotation transform test
         PVCoordinates pointP3 = new PVCoordinates(Vector3D.PLUS_J, new Vector3D(-2, 1, 0));
-        Rotation R = new Rotation(Vector3D.PLUS_K, Math.PI/2);
+        Rotation R = new Rotation(Vector3D.PLUS_K, FastMath.PI/2);
         Transform R1toR3 = new Transform(R, new Vector3D(0, 0, -2));
         PVCoordinates result2 = R1toR3.transformPVCoordinates(pointP1);
         checkVectors(pointP3.getPosition(), result2.getPosition());
@@ -169,7 +170,7 @@ public class TransformTest {
 
         // combine 2 rotation tranform
         PVCoordinates pointP5 = new PVCoordinates(new Vector3D(-1,0,0),new Vector3D(-1 , 0 , 3));
-        Rotation R2 = new Rotation( new Vector3D(0,0,1), Math.PI );
+        Rotation R2 = new Rotation( new Vector3D(0,0,1), FastMath.PI );
         Transform R1toR5 = new Transform(R2 , new Vector3D(0, -3, 0));
         Transform R3toR5 = new Transform (R3toR1, R1toR5);
         PVCoordinates combResult = R3toR5.transformPVCoordinates(pointP3);
@@ -219,7 +220,7 @@ public class TransformTest {
 
             Rotation instantRot    = randomRotation(rnd);
             Vector3D normAxis = instantRot.getAxis();
-            double w  = Math.abs(instantRot.getAngle())/Constants.JULIAN_DAY;
+            double w  = FastMath.abs(instantRot.getAngle())/Constants.JULIAN_DAY;
 
             // random rotation
             Rotation rot    = randomRotation(rnd);
@@ -344,7 +345,7 @@ public class TransformTest {
         double q1 = random.nextDouble() * 2 - 1;
         double q2 = random.nextDouble() * 2 - 1;
         double q3 = random.nextDouble() * 2 - 1;
-        double q  = Math.sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
+        double q  = FastMath.sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
         return new Rotation(q0 / q, q1 / q, q2 / q, q3 / q, false);
     }
 

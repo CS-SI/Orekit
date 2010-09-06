@@ -19,6 +19,7 @@ package fr.cs.examples.propagation;
 
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -52,9 +53,9 @@ public class EphemerisMode {
             // Initial orbit parameters
             double a = 24396159; // semi major axis in meters
             double e = 0.72831215; // eccentricity
-            double i = Math.toRadians(7); // inclination
-            double omega = Math.toRadians(180); // perigee argument
-            double raan = Math.toRadians(261); // right ascension of ascending node
+            double i = FastMath.toRadians(7); // inclination
+            double omega = FastMath.toRadians(180); // perigee argument
+            double raan = FastMath.toRadians(261); // right ascension of ascending node
             double lM = 0; // mean anomaly
 
             // Inertial frame

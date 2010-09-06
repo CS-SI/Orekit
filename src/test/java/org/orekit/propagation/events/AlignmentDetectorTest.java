@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -45,7 +46,7 @@ public class AlignmentDetectorTest {
     @Test
     public void testAlignment() throws OrekitException {
 
-        double alignAngle = Math.toRadians(0.0);
+        double alignAngle = FastMath.toRadians(0.0);
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         AlignmentDetector alignDetector =
             new AlignmentDetector(initialState.getOrbit(), sun, alignAngle);

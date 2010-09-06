@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
@@ -120,9 +121,9 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         }
 
         // extract the time components
-        hour = (int) Math.floor(secondInDay / 3600.0);
+        hour = (int) FastMath.floor(secondInDay / 3600.0);
         final int hs = 3600 * hour;
-        minute = (int) Math.floor((secondInDay - hs) / 60.0);
+        minute = (int) FastMath.floor((secondInDay - hs) / 60.0);
         final int ms = 60 * minute;
         second = (secondInDayA - hs - ms) + secondInDayB;
 

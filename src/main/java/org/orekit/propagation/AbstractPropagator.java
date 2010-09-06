@@ -19,6 +19,7 @@ package org.orekit.propagation;
 import java.util.Collection;
 
 import org.apache.commons.math.ConvergenceException;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
@@ -293,7 +294,7 @@ public abstract class AbstractPropagator implements Propagator {
             newManager.addEventDetector(detector);
         }
         final double dt = endDate.durationFrom(startDate);
-        newManager.addEventDetector(new EndDateDetector(endDate, Double.POSITIVE_INFINITY, Math.ulp(dt)));
+        newManager.addEventDetector(new EndDateDetector(endDate, Double.POSITIVE_INFINITY, FastMath.ulp(dt)));
         return newManager;
     }
 

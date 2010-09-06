@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -70,11 +71,11 @@ public class ElevationDetectorTest {
         double f  =  1.0 / 298.257223563; // flattening
         Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
         BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
-        GeodeticPoint point = new GeodeticPoint(Math.toRadians(48.833),
-                                                Math.toRadians(2.333),
+        GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(48.833),
+                                                FastMath.toRadians(2.333),
                                                 0.0);
         CheckingDetector detector =
-            new CheckingDetector(Math.toRadians(5.0), new TopocentricFrame(earth, point, "Gstation"));
+            new CheckingDetector(FastMath.toRadians(5.0), new TopocentricFrame(earth, point, "Gstation"));
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 12, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));

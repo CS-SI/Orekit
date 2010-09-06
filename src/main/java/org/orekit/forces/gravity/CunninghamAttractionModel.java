@@ -18,6 +18,7 @@ package org.orekit.forces.gravity;
 
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
@@ -132,7 +133,7 @@ public class CunninghamAttractionModel implements ForceModel {
         final double y2 = y * y;
         final double z2 = z * z;
         final double r2 = x2 + y2 + z2;
-        final double r = Math.sqrt(r2);
+        final double r = FastMath.sqrt(r2);
         if (r <= equatorialRadius) {
             throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
         }

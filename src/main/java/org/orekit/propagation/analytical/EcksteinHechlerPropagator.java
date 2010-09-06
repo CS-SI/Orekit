@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical;
 
+import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeLaw;
@@ -294,9 +295,9 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
 
         // threshold for each parameter
         final double epsilon         = 1.0e-13;
-        final double thresholdA      = epsilon * (1 + Math.abs(mean.getA()));
+        final double thresholdA      = epsilon * (1 + FastMath.abs(mean.getA()));
         final double thresholdE      = epsilon * (1 + mean.getE());
-        final double thresholdAngles = epsilon * Math.PI;
+        final double thresholdAngles = epsilon * FastMath.PI;
 
         int i = 0;
         while (i++ < 100) {
@@ -314,8 +315,8 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
             ql *= q;
             g6 = c60 * ql;
 
-            cosI1 = Math.cos(mean.getI());
-            sinI1 = Math.sin(mean.getI());
+            cosI1 = FastMath.cos(mean.getI());
+            sinI1 = FastMath.sin(mean.getI());
             sinI2 = sinI1 * sinI1;
             sinI4 = sinI2 * sinI2;
             sinI6 = sinI2 * sinI4;
@@ -345,12 +346,12 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
                                      mean.getDate(), mean.getMu());
 
             // check convergence
-            if ((Math.abs(deltaA)      < thresholdA) &&
-                (Math.abs(deltaEx)     < thresholdE) &&
-                (Math.abs(deltaEy)     < thresholdE) &&
-                (Math.abs(deltaI)      < thresholdAngles) &&
-                (Math.abs(deltaRAAN)   < thresholdAngles) &&
-                (Math.abs(deltaAlphaM) < thresholdAngles)) {
+            if ((FastMath.abs(deltaA)      < thresholdA) &&
+                (FastMath.abs(deltaEx)     < thresholdE) &&
+                (FastMath.abs(deltaEy)     < thresholdE) &&
+                (FastMath.abs(deltaI)      < thresholdAngles) &&
+                (FastMath.abs(deltaRAAN)   < thresholdAngles) &&
+                (FastMath.abs(deltaAlphaM) < thresholdAngles)) {
 
                 // sanity checks
                 final double e = mean.getE();
@@ -360,14 +361,14 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
                 }
 
                 final double meanI = mean.getI();
-                if ((meanI < 0.) || (meanI > Math.PI) || (Math.abs(Math.sin(meanI)) < 1.0e-10)) {
+                if ((meanI < 0.) || (meanI > FastMath.PI) || (FastMath.abs(FastMath.sin(meanI)) < 1.0e-10)) {
                     throw new PropagationException(OrekitMessages.ALMOST_EQUATORIAL_ORBIT,
-                                                   Math.toDegrees(meanI));
+                                                   FastMath.toDegrees(meanI));
                 }
 
-                if ((Math.abs(meanI - 1.1071487) < 1.0e-3) || (Math.abs(meanI - 2.0344439) < 1.0e-3)) {
+                if ((FastMath.abs(meanI - 1.1071487) < 1.0e-3) || (FastMath.abs(meanI - 2.0344439) < 1.0e-3)) {
                     throw new PropagationException(OrekitMessages.ALMOST_CRITICALLY_INCLINED_ORBIT,
-                                                   Math.toDegrees(meanI));
+                                                   FastMath.toDegrees(meanI));
                 }
 
                 return;
@@ -389,7 +390,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
         throws PropagationException {
 
         // keplerian evolution
-        final double xnot = date.durationFrom(mean.getDate()) * Math.sqrt(mu / mean.getA()) / mean.getA();
+        final double xnot = date.durationFrom(mean.getDate()) * FastMath.sqrt(mu / mean.getA()) / mean.getA();
 
         // secular effects
 
@@ -398,8 +399,8 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
         final double rdpomp = 7.5 * g4 * (1.0 - 31.0 / 8.0 * sinI2 + 49.0 / 16.0 * sinI4) -
                               13.125 * g6 * (1.0 - 8.0 * sinI2 + 129.0 / 8.0 * sinI4 - 297.0 / 32.0 * sinI6);
         final double x = (rdpom + rdpomp) * xnot;
-        final double cx = Math.cos(x);
-        final double sx = Math.sin(x);
+        final double cx = FastMath.cos(x);
+        final double sx = FastMath.sin(x);
         q = 3.0 / (32.0 * rdpom);
         final double eps1 =
             q * g4 * sinI2 * (30.0 - 35.0 * sinI2) -
@@ -418,7 +419,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
             0.9375 * g4 * (7.0 * sinI2 - 4.0) +
             3.28125 * g6 * (2.0 - 9.0 * sinI2 + 8.25 * sinI4);
         final double omm =
-            MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + q * cosI1 * xnot, Math.PI);
+            MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + q * cosI1 * xnot, FastMath.PI);
 
         // latitude argument
         final double rdl = 1.0 - 1.50 * g2 * (3.0 - 4.0 * sinI2);
@@ -426,11 +427,11 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
             2.25 * g2 * g2 * (9.0 - 263.0 / 12.0 * sinI2 + 341.0 / 24.0 * sinI4) +
             15.0 / 16.0 * g4 * (8.0 - 31.0 * sinI2 + 24.5 * sinI4) +
             105.0 / 32.0 * g6 * (-10.0 / 3.0 + 25.0 * sinI2 - 48.75 * sinI4 + 27.5 * sinI6);
-        final double xlm = MathUtils.normalizeAngle(mean.getAlphaM() + q * xnot, Math.PI);
+        final double xlm = MathUtils.normalizeAngle(mean.getAlphaM() + q * xnot, FastMath.PI);
 
         // periodical terms
-        final double cl1 = Math.cos(xlm);
-        final double sl1 = Math.sin(xlm);
+        final double cl1 = FastMath.cos(xlm);
+        final double sl1 = FastMath.sin(xlm);
         final double cl2 = cl1 * cl1 - sl1 * sl1;
         final double sl2 = cl1 * sl1 + sl1 * cl1;
         final double cl3 = cl2 * cl1 - sl2 * sl1;
@@ -531,8 +532,8 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
 
         // osculating parameters
         return new CircularOrbit(mean.getA() * (1.0 + rda), exm + rdex, eym + rdey,
-                                 xim + rdxi, MathUtils.normalizeAngle(omm + rdom, Math.PI),
-                                 MathUtils.normalizeAngle(xlm + rdxl, Math.PI),
+                                 xim + rdxi, MathUtils.normalizeAngle(omm + rdom, FastMath.PI),
+                                 MathUtils.normalizeAngle(xlm + rdxl, FastMath.PI),
                                  CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
                                  mean.getFrame(), date, mean.getMu());
 

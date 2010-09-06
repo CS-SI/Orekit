@@ -19,6 +19,7 @@ package fr.cs.examples.propagation;
 
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
@@ -65,9 +66,9 @@ public class MasterMode {
             // Initial orbit
             double a = 24396159; // semi major axis in meters
             double e = 0.72831215; // eccentricity
-            double i = Math.toRadians(7); // inclination
-            double omega = Math.toRadians(180); // perigee argument
-            double raan = Math.toRadians(261); // right ascention of ascending node
+            double i = FastMath.toRadians(7); // inclination
+            double omega = FastMath.toRadians(180); // perigee argument
+            double raan = FastMath.toRadians(261); // right ascention of ascending node
             double lM = 0; // mean anomaly
             Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM,
                                                     KeplerianOrbit.MEAN_ANOMALY, 

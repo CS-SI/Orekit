@@ -17,6 +17,7 @@
 package org.orekit.orbits;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -173,9 +174,9 @@ public class KeplerianOrbit extends Orbit {
 
         // compute eccentricity
         final double muA = mu * a;
-        final double eSE = Vector3D.dotProduct(pvP, pvV) / Math.sqrt(muA);
+        final double eSE = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(muA);
         final double eCE = rV2OnMu - 1;
-        e = Math.sqrt(eSE * eSE + eCE * eCE);
+        e = FastMath.sqrt(eSE * eSE + eCE * eCE);
 
         // compute inclination
         final Vector3D momentum = pvCoordinates.getMomentum();
@@ -186,25 +187,25 @@ public class KeplerianOrbit extends Orbit {
         final Vector3D node = Vector3D.crossProduct(Vector3D.PLUS_K, momentum);
         final double n2 = Vector3D.dotProduct(node, node);
         // the following comparison with 0 IS REALLY numerically justified and stable
-        raan = (n2 == 0) ? 0 : Math.atan2(node.getY(), node.getX());
+        raan = (n2 == 0) ? 0 : FastMath.atan2(node.getY(), node.getX());
 
         // compute true anomaly
         if (e < E_CIRC) {
             v = 0;
         } else {
-            final double E = Math.atan2(eSE, eCE);
-            final double k = 1 / (1 + Math.sqrt(m2 / muA));
-            v = E + 2 * Math.atan(k * eSE / (1 - k * eCE));
+            final double E = FastMath.atan2(eSE, eCE);
+            final double k = 1 / (1 + FastMath.sqrt(m2 / muA));
+            v = E + 2 * FastMath.atan(k * eSE / (1 - k * eCE));
         }
 
         // compute perigee argument
-        final double cosRaan = Math.cos(raan);
-        final double sinRaan = Math.sin(raan);
+        final double cosRaan = FastMath.cos(raan);
+        final double sinRaan = FastMath.sin(raan);
         final double px = cosRaan * pvP.getX() +
                           sinRaan * pvP.getY();
-        final double py = Math.cos(i) * (cosRaan * pvP.getY() - sinRaan * pvP.getX()) +
-                          Math.sin(i) * pvP.getZ();
-        pa = Math.atan2(py, px) - v;
+        final double py = FastMath.cos(i) * (cosRaan * pvP.getY() - sinRaan * pvP.getX()) +
+                          FastMath.sin(i) * pvP.getZ();
+        pa = FastMath.atan2(py, px) - v;
     }
 
     /** Constructor from any kind of orbital parameters.
@@ -215,8 +216,8 @@ public class KeplerianOrbit extends Orbit {
         a    = op.getA();
         e    = op.getE();
         i    = op.getI();
-        raan = Math.atan2(op.getHy(), op.getHx());
-        pa   = Math.atan2(op.getEquinoctialEy(), op.getEquinoctialEx()) - raan;
+        raan = FastMath.atan2(op.getHy(), op.getHx());
+        pa   = FastMath.atan2(op.getEquinoctialEy(), op.getEquinoctialEx()) - raan;
         v    = op.getLv() - (pa + raan);
     }
 
@@ -266,8 +267,8 @@ public class KeplerianOrbit extends Orbit {
      * @return eccentric anomaly (rad)
      */
     public double getEccentricAnomaly() {
-        final double beta = e / (1 + Math.sqrt((1 - e) * (1 + e)));
-        return v - 2 * Math.atan(beta * Math.sin(v) / (1 + beta * Math.cos(v)));
+        final double beta = e / (1 + FastMath.sqrt((1 - e) * (1 + e)));
+        return v - 2 * FastMath.atan(beta * FastMath.sin(v) / (1 + beta * FastMath.cos(v)));
     }
 
     /** Computes the eccentric anomaly.
@@ -275,8 +276,8 @@ public class KeplerianOrbit extends Orbit {
      * @return v the true anomaly
      */
     private double computeEccentricAnomaly (final double E) {
-        final double beta = e / (1 + Math.sqrt((1 - e) * (1 + e)));
-        return E + 2 * Math.atan(beta * Math.sin(E) / (1 - beta * Math.cos(E)));
+        final double beta = e / (1 + FastMath.sqrt((1 - e) * (1 + e)));
+        return E + 2 * FastMath.atan(beta * FastMath.sin(E) / (1 - beta * FastMath.cos(E)));
     }
 
     /** Get the mean anomaly.
@@ -284,7 +285,7 @@ public class KeplerianOrbit extends Orbit {
      */
     public double getMeanAnomaly() {
         final double E = getEccentricAnomaly();
-        return E - e * Math.sin(E);
+        return E - e * FastMath.sin(E);
     }
 
     /** Computes the mean anomaly.
@@ -299,8 +300,8 @@ public class KeplerianOrbit extends Orbit {
         double EmM   = 0.0;
         int iter = 0;
         do {
-            final double f2 = e * Math.sin(E);
-            final double f1 = 1.0 - e * Math.cos(E);
+            final double f2 = e * FastMath.sin(E);
+            final double f1 = 1.0 - e * FastMath.cos(E);
             final double f0 = EmM - f2;
 
             final double f12 = 2 * f1;
@@ -309,7 +310,7 @@ public class KeplerianOrbit extends Orbit {
             EmM -= shift;
             E    = M + EmM;
 
-        } while ((++iter < 50) && (Math.abs(shift) > 1.0e-12));
+        } while ((++iter < 50) && (FastMath.abs(shift) > 1.0e-12));
 
         return computeEccentricAnomaly(E);
 
@@ -319,28 +320,28 @@ public class KeplerianOrbit extends Orbit {
      * @return first component of the eccentricity vector
      */
     public double getEquinoctialEx() {
-        return  e * Math.cos(pa + raan);
+        return  e * FastMath.cos(pa + raan);
     }
 
     /** Get the second component of the eccentricity vector.
      * @return second component of the eccentricity vector
      */
     public double getEquinoctialEy() {
-        return  e * Math.sin(pa + raan);
+        return  e * FastMath.sin(pa + raan);
     }
 
     /** Get the first component of the inclination vector.
      * @return first component of the inclination vector.
      */
     public double getHx() {
-        return  Math.cos(raan) * Math.tan(i / 2);
+        return  FastMath.cos(raan) * FastMath.tan(i / 2);
     }
 
     /** Get the second component of the inclination vector.
      * @return second component of the inclination vector.
      */
     public double getHy() {
-        return  Math.sin(raan) * Math.tan(i / 2);
+        return  FastMath.sin(raan) * FastMath.tan(i / 2);
     }
 
     /** Get the true latitude argument.
@@ -378,10 +379,10 @@ public class KeplerianOrbit extends Orbit {
         return new StringBuffer().append("keplerian parameters: ").append('{').
                                   append("a: ").append(a).
                                   append("; e: ").append(e).
-                                  append("; i: ").append(Math.toDegrees(i)).
-                                  append("; pa: ").append(Math.toDegrees(pa)).
-                                  append("; raan: ").append(Math.toDegrees(raan)).
-                                  append("; lv: ").append(Math.toDegrees(v)).
+                                  append("; i: ").append(FastMath.toDegrees(i)).
+                                  append("; pa: ").append(FastMath.toDegrees(pa)).
+                                  append("; raan: ").append(FastMath.toDegrees(raan)).
+                                  append("; lv: ").append(FastMath.toDegrees(v)).
                                   append(";}").toString();
     }
 

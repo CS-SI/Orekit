@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 
 /** EME2000 frame : mean equator at J2000.0.
  * <p>This frame was the standard inertial reference prior to GCRF. It was defined
@@ -33,7 +34,7 @@ class EME2000Frame extends Frame {
     private static final long serialVersionUID = -1045789793339869819L;
 
     /** Radians per arcsecond. */
-    private static final double RADIANS_PER_ARC_SECOND = Math.PI / (180.0 * 3600.0);
+    private static final double RADIANS_PER_ARC_SECOND = FastMath.PI / (180.0 * 3600.0);
 
     /** Obliquity of the ecliptic. */
     private static final double EPSILON_0 = 84381.44 * RADIANS_PER_ARC_SECOND;
@@ -56,7 +57,7 @@ class EME2000Frame extends Frame {
 
         // build the bias transform
         final Rotation r1 = new Rotation(Vector3D.PLUS_I, D_EPSILON_B);
-        final Rotation r2 = new Rotation(Vector3D.PLUS_J, -D_PSI_B * Math.sin(EPSILON_0));
+        final Rotation r2 = new Rotation(Vector3D.PLUS_J, -D_PSI_B * FastMath.sin(EPSILON_0));
         final Rotation r3 = new Rotation(Vector3D.PLUS_K, -ALPHA_0);
         final Rotation bias = r1.applyTo(r2.applyTo(r3));
 

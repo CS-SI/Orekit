@@ -19,6 +19,7 @@ package org.orekit.attitudes;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -41,7 +42,7 @@ public class AttitudeTest {
 
     @Test
     public void testShift() throws OrekitException {
-        double rate = 2 * Math.PI / (12 * 60);
+        double rate = 2 * FastMath.PI / (12 * 60);
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          Rotation.IDENTITY,
                                          new Vector3D(rate, Vector3D.PLUS_K));
@@ -53,9 +54,9 @@ public class AttitudeTest {
         Assert.assertEquals(alpha, Rotation.distance(attitude.getRotation(), shifted.getRotation()), 1.0e-10);
 
         Vector3D xSat = shifted.getRotation().applyInverseTo(Vector3D.PLUS_I);
-        Assert.assertEquals(0.0, xSat.subtract(new Vector3D(Math.cos(alpha), Math.sin(alpha), 0)).getNorm(), 1.0e-10);
+        Assert.assertEquals(0.0, xSat.subtract(new Vector3D(FastMath.cos(alpha), FastMath.sin(alpha), 0)).getNorm(), 1.0e-10);
         Vector3D ySat = shifted.getRotation().applyInverseTo(Vector3D.PLUS_J);
-        Assert.assertEquals(0.0, ySat.subtract(new Vector3D(-Math.sin(alpha), Math.cos(alpha), 0)).getNorm(), 1.0e-10);
+        Assert.assertEquals(0.0, ySat.subtract(new Vector3D(-FastMath.sin(alpha), FastMath.cos(alpha), 0)).getNorm(), 1.0e-10);
         Vector3D zSat = shifted.getRotation().applyInverseTo(Vector3D.PLUS_K);
         Assert.assertEquals(0.0, zSat.subtract(Vector3D.PLUS_K).getNorm(), 1.0e-10);
 
@@ -63,7 +64,7 @@ public class AttitudeTest {
 
     @Test
     public void testSpin() throws OrekitException {
-        double rate = 2 * Math.PI / (12 * 60);
+        double rate = 2 * FastMath.PI / (12 * 60);
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          new Rotation(0.48, 0.64, 0.36, 0.48, false),
                                          new Vector3D(rate, Vector3D.PLUS_K));
@@ -79,11 +80,11 @@ public class AttitudeTest {
         Vector3D originalX = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Vector3D originalY = attitude.getRotation().applyInverseTo(Vector3D.PLUS_J);
         Vector3D originalZ = attitude.getRotation().applyInverseTo(Vector3D.PLUS_K);
-        Assert.assertEquals( Math.cos(rate * dt), Vector3D.dotProduct(shiftedX, originalX), 1.0e-10);
-        Assert.assertEquals( Math.sin(rate * dt), Vector3D.dotProduct(shiftedX, originalY), 1.0e-10);
+        Assert.assertEquals( FastMath.cos(rate * dt), Vector3D.dotProduct(shiftedX, originalX), 1.0e-10);
+        Assert.assertEquals( FastMath.sin(rate * dt), Vector3D.dotProduct(shiftedX, originalY), 1.0e-10);
         Assert.assertEquals( 0.0,                 Vector3D.dotProduct(shiftedX, originalZ), 1.0e-10);
-        Assert.assertEquals(-Math.sin(rate * dt), Vector3D.dotProduct(shiftedY, originalX), 1.0e-10);
-        Assert.assertEquals( Math.cos(rate * dt), Vector3D.dotProduct(shiftedY, originalY), 1.0e-10);
+        Assert.assertEquals(-FastMath.sin(rate * dt), Vector3D.dotProduct(shiftedY, originalX), 1.0e-10);
+        Assert.assertEquals( FastMath.cos(rate * dt), Vector3D.dotProduct(shiftedY, originalY), 1.0e-10);
         Assert.assertEquals( 0.0,                 Vector3D.dotProduct(shiftedY, originalZ), 1.0e-10);
         Assert.assertEquals( 0.0,                 Vector3D.dotProduct(shiftedZ, originalX), 1.0e-10);
         Assert.assertEquals( 0.0,                 Vector3D.dotProduct(shiftedZ, originalY), 1.0e-10);

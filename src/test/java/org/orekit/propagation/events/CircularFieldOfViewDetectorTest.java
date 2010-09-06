@@ -1,6 +1,7 @@
 package org.orekit.propagation.events;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +54,7 @@ public class CircularFieldOfViewDetectorTest {
         final double maxCheck  = 1.;
         final PVCoordinatesProvider sunPV = CelestialBodyFactory.getSun();
         final Vector3D center = Vector3D.PLUS_I;
-        final double aperture = Math.toRadians(35);
+        final double aperture = FastMath.toRadians(35);
 
         final EventDetector sunVisi = new CircularSunVisiDetector(maxCheck, sunPV, center, aperture);
 

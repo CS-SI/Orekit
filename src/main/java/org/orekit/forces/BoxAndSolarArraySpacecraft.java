@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.DragSensitive;
@@ -280,7 +281,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         if (referenceDate != null) {
             // use a simple rotation at fixed rate
             final double alpha = rotationRate * date.durationFrom(referenceDate);
-            return new Vector3D(Math.cos(alpha), saX, Math.sin(alpha), saY);
+            return new Vector3D(FastMath.cos(alpha), saX, FastMath.sin(alpha), saY);
         }
 
         // compute orientation for best lightning
@@ -296,7 +297,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             return saZ.orthogonal();
         }
 
-        final double s = 1.0 / Math.sqrt(f);
+        final double s = 1.0 / FastMath.sqrt(f);
         return new Vector3D(s, sunSpacecraft, -s * d, saZ);
 
     }
@@ -312,7 +313,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
         // solar array contribution
         final Vector3D solarArrayFacet = new Vector3D(solarArrayArea, getNormal(state));
-        double sv = Math.abs(Vector3D.dotProduct(solarArrayFacet, v));
+        double sv = FastMath.abs(Vector3D.dotProduct(solarArrayFacet, v));
 
         // body facets contribution
         for (final Facet facet : facets) {

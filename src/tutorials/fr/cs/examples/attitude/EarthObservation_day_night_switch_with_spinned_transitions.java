@@ -27,6 +27,7 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.geometry.Vector3DFormat;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.attitudes.AttitudesSequence;
 import org.orekit.attitudes.LofOffset;
@@ -86,10 +87,10 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
             final AttitudesSequence attitudesSequence = new AttitudesSequence();
 
             // Attitude laws definition
-            final double settingRate = Math.toRadians(1.0);
-            final AttitudeLaw dayObservationLaw = new LofOffset(RotationOrder.XYZ, Math.toRadians(20), Math.toRadians(40), 0);
+            final double settingRate = FastMath.toRadians(1.0);
+            final AttitudeLaw dayObservationLaw = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
             final AttitudeLaw nightRestingLaw   = LofOffset.LOF_ALIGNED;
-            final AttitudeLaw transitionLaw     = new LofOffset(RotationOrder.XYZ, Math.toRadians(20), 0, 0);
+            final AttitudeLaw transitionLaw     = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), 0, 0);
             final AttitudeLaw rollSetUpLaw      = new SpinStabilized(nightRestingLaw, AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, settingRate);
             final AttitudeLaw pitchSetUpLaw     = new SpinStabilized(transitionLaw, AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_J, settingRate);
             final AttitudeLaw pitchTearDownLaw  = new SpinStabilized(dayObservationLaw, AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_J, -settingRate);
@@ -309,12 +310,12 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
                         final double endDayNightTimer2 = endDayNightRdV2Event_decrease.g(currentState);
 
                         output.add(currentState.getDate() +
-                                   " " + Math.toDegrees(eclipseAngle) +
+                                   " " + FastMath.toDegrees(eclipseAngle) +
                                    " " + endNightDayTimer1 +
                                    " " + endNightDayTimer2 +
                                    " " + endDayNightTimer1 +
                                    " " + endDayNightTimer2 +
-                                   " " + Math.toDegrees(pointingOffset));
+                                   " " + FastMath.toDegrees(pointingOffset));
                         final AbsoluteDate date = currentState.getDate();
                         final PVCoordinates pv = currentState.getPVCoordinates(eme2000);
                         final Rotation lvlhRot = new Rotation(pv.getPosition(), pv.getMomentum(), Vector3D.MINUS_K, Vector3D.MINUS_J);

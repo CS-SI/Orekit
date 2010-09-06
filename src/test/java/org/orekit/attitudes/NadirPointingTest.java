@@ -19,6 +19,7 @@ package org.orekit.attitudes;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -68,8 +69,8 @@ public class NadirPointingTest {
         
         // Create satellite position as circular parameters 
         CircularOrbit circ =
-            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
-                                   Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
+                                   FastMath.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
                                    FramesFactory.getEME2000(), date, mu);
         
         // Get nadir attitude
@@ -106,7 +107,7 @@ public class NadirPointingTest {
         //  Satellite on equatorial position
         // ********************************** 
         KeplerianOrbit kep =
-            new KeplerianOrbit(7178000.0, 1.e-8, Math.toRadians(50.), 0., 0.,
+            new KeplerianOrbit(7178000.0, 1.e-8, FastMath.toRadians(50.), 0., 0.,
                                     0., KeplerianOrbit.TRUE_ANOMALY, FramesFactory.getEME2000(), date, mu);
  
         // Get nadir attitude 
@@ -125,8 +126,8 @@ public class NadirPointingTest {
         //  Satellite on polar position
         // ***************************** 
         CircularOrbit circ =
-            new CircularOrbit(7178000.0, 1.e-5, 0., Math.toRadians(90.), 0.,
-                                   Math.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
+            new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(90.), 0.,
+                                   FastMath.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
                                    FramesFactory.getEME2000(), date, mu);
  
        // Get nadir attitude 
@@ -145,8 +146,8 @@ public class NadirPointingTest {
         //  Satellite on any position
         // *************************** 
         circ =
-            new CircularOrbit(7178000.0, 1.e-5, 0., Math.toRadians(50.), 0.,
-                                   Math.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
+            new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(50.), 0.,
+                                   FastMath.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
                                    FramesFactory.getEME2000(), date, mu);
  
         // Get nadir attitude 
@@ -160,7 +161,7 @@ public class NadirPointingTest {
         // pointing rotation with nadir pointing rotation shall be different from identity.
         rotCompo = rotCenter.applyInverseTo(rotNadir);
         angle = rotCompo.getAngle();
-        Assert.assertEquals(angle, Math.toRadians(0.16797386586252272), Utils.epsilonAngle);
+        Assert.assertEquals(angle, FastMath.toRadians(0.16797386586252272), Utils.epsilonAngle);
     }
        
     /** Vertical test : check that Z satellite axis is colinear to local vertical axis,
@@ -180,8 +181,8 @@ public class NadirPointingTest {
 
         //  Satellite on any position
         CircularOrbit circ =
-            new CircularOrbit(7178000.0, 1.e-5, 0., Math.toRadians(50.), 0.,
-                                   Math.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
+            new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(50.), 0.,
+                                   FastMath.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
                                    FramesFactory.getEME2000(), date, mu);
  
         //  Vertical test
@@ -193,9 +194,9 @@ public class NadirPointingTest {
         GeodeticPoint geoTarget = earthShape.transform(pTargetItrf, frameITRF2005, date);
 
         // Compute local vertical axis
-        double xVert = Math.cos(geoTarget.getLongitude())*Math.cos(geoTarget.getLatitude());
-        double yVert = Math.sin(geoTarget.getLongitude())*Math.cos(geoTarget.getLatitude());
-        double zVert = Math.sin(geoTarget.getLatitude());
+        double xVert = FastMath.cos(geoTarget.getLongitude())*FastMath.cos(geoTarget.getLatitude());
+        double yVert = FastMath.sin(geoTarget.getLongitude())*FastMath.cos(geoTarget.getLatitude());
+        double zVert = FastMath.sin(geoTarget.getLatitude());
         Vector3D targetVertical = new Vector3D(xVert, yVert, zVert);
         
         // Get attitude rotation state
@@ -207,7 +208,7 @@ public class NadirPointingTest {
         
         // Check that satellite Z axis is colinear to local vertical axis
         double angle= Vector3D.angle(zSatItrf, targetVertical);        
-        Assert.assertEquals(0.0, Math.sin(angle), Utils.epsilonTest);
+        Assert.assertEquals(0.0, FastMath.sin(angle), Utils.epsilonTest);
         
     }
 
@@ -222,9 +223,9 @@ public class NadirPointingTest {
 
         //  Satellite on any position
         KeplerianOrbit orbit =
-            new KeplerianOrbit(7178000.0, 1.e-4, Math.toRadians(50.),
-                              Math.toRadians(10.), Math.toRadians(20.),
-                              Math.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
+            new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
+                              FastMath.toRadians(10.), FastMath.toRadians(20.),
+                              FastMath.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
                               FramesFactory.getEME2000(), date, mu);
 
         Propagator propagator = new KeplerianPropagator(orbit, law, mu, 2500.0);

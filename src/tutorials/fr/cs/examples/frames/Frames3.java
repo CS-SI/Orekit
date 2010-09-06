@@ -25,6 +25,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.attitudes.NadirPointing;
 import org.orekit.attitudes.YawSteering;
 import org.orekit.bodies.BodyShape;
@@ -77,9 +78,9 @@ public class Frames3 {
             double mu = 3.986004415e+14; // gravitation coefficient
             Frame eme2000 = FramesFactory.getEME2000(); // inertial frame
             Orbit orbit = new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4,
-                                            Math.toRadians(50.),
-                                            Math.toRadians(220.),
-                                            Math.toRadians(5.300),
+                                            FastMath.toRadians(50.),
+                                            FastMath.toRadians(220.),
+                                            FastMath.toRadians(5.300),
                                             CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
                                             eme2000,
                                             initialDate,

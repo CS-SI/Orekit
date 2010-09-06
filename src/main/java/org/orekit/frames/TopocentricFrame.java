@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -150,7 +151,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         final Vector3D extPointTopo = t.transformPosition(extPoint);
 
         // Elevation angle is PI/2 - angle between zenith and given point direction
-        return Math.asin(extPointTopo.normalize().getZ());
+        return FastMath.asin(extPointTopo.normalize().getZ());
     }
 
     /** Get the azimuth of a point with regards to the topocentric frame center point.
@@ -172,9 +173,9 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         final Vector3D extPointTopo = t.transformPosition(extPoint);
 
         // Compute azimuth
-        double azimuth = Math.atan2(extPointTopo.getX(), extPointTopo.getY());
+        double azimuth = FastMath.atan2(extPointTopo.getX(), extPointTopo.getY());
         if (azimuth < 0.) {
-            azimuth += 2. * Math.PI;
+            azimuth += 2. * FastMath.PI;
         }
         return azimuth;
 

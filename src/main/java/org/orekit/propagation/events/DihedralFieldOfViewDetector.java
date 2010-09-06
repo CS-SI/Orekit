@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -159,14 +160,14 @@ public class DihedralFieldOfViewDetector extends AbstractDetector {
         final Vector3D targetPosSat = s.getAttitude().getRotation().applyTo(targetPosInert);
 
         // Compute the four angles from the four fov boundaries.
-        final double angle1 = Math.atan2(Vector3D.dotProduct(targetPosSat, normalCenterPlane1),
+        final double angle1 = FastMath.atan2(Vector3D.dotProduct(targetPosSat, normalCenterPlane1),
                                    Vector3D.dotProduct(targetPosSat, center));
-        final double angle2 = Math.atan2(Vector3D.dotProduct(targetPosSat, normalCenterPlane2),
+        final double angle2 = FastMath.atan2(Vector3D.dotProduct(targetPosSat, normalCenterPlane2),
                                    Vector3D.dotProduct(targetPosSat, center));
 
         // g function value is distance to the fov boundary, computed as a dihedral angle.
         // It is positive inside the fov, and negative outside.
-        return Math.min(halfAperture1 - Math.abs(angle1) ,  halfAperture2 - Math.abs(angle2));
+        return FastMath.min(halfAperture1 - FastMath.abs(angle1) ,  halfAperture2 - FastMath.abs(angle2));
     }
 
 }

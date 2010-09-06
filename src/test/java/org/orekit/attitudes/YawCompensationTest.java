@@ -19,6 +19,7 @@ package org.orekit.attitudes;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -165,8 +166,8 @@ public class YawCompensationTest {
             double yawAngle = yawCompensLaw.getYawAngle(extrapOrbit.getOrbit());
 
             // Update minimum yaw compensation angle
-            if (Math.abs(yawAngle) <= yawMin) {
-                yawMin = Math.abs(yawAngle);
+            if (FastMath.abs(yawAngle) <= yawMin) {
+                yawMin = FastMath.abs(yawAngle);
                 latMin = extrapLat;
             }           
 
@@ -174,34 +175,34 @@ public class YawCompensationTest {
             // ------------------
             
             // 1/ Check yaw values around ascending node (max yaw)
-            if ((Math.abs(extrapLat) < Math.toRadians(20.)) &&
+            if ((FastMath.abs(extrapLat) < FastMath.toRadians(20.)) &&
                 (extrapPvSatEME2000.getVelocity().getZ() >= 0. )) {
-                Assert.assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.51)) &&
-                                  (Math.abs(yawAngle) <= Math.toRadians(2.86)));
+                Assert.assertTrue((FastMath.abs(yawAngle) >= FastMath.toRadians(2.51)) &&
+                                  (FastMath.abs(yawAngle) <= FastMath.toRadians(2.86)));
             }
             
             // 2/ Check yaw values around maximum positive latitude (min yaw)
-            if ( extrapLat > Math.toRadians(50.) ) {
-                Assert.assertTrue(Math.abs(yawAngle) <= Math.toRadians(0.26));
+            if ( extrapLat > FastMath.toRadians(50.) ) {
+                Assert.assertTrue(FastMath.abs(yawAngle) <= FastMath.toRadians(0.26));
             }
             
             // 3/ Check yaw values around descending node (max yaw)
-            if ( (Math.abs(extrapLat) < Math.toRadians(2.))
+            if ( (FastMath.abs(extrapLat) < FastMath.toRadians(2.))
                     && (extrapPvSatEME2000.getVelocity().getZ() <= 0. ) ) {
-                Assert.assertTrue((Math.abs(yawAngle) >= Math.toRadians(2.51)) &&
-                                  (Math.abs(yawAngle) <= Math.toRadians(2.86)));
+                Assert.assertTrue((FastMath.abs(yawAngle) >= FastMath.toRadians(2.51)) &&
+                                  (FastMath.abs(yawAngle) <= FastMath.toRadians(2.86)));
             }
          
             // 4/ Check yaw values around maximum negative latitude (min yaw)
-            if ( extrapLat < Math.toRadians(-50.) ) {
-                Assert.assertTrue(Math.abs(yawAngle) <= Math.toRadians(0.26));
+            if ( extrapLat < FastMath.toRadians(-50.) ) {
+                Assert.assertTrue(FastMath.abs(yawAngle) <= FastMath.toRadians(0.26));
             }
 
         }
         
         // 5/ Check that minimum yaw compensation value is around maximum latitude
-        Assert.assertEquals(0.0, Math.toDegrees(yawMin), 0.004);
-        Assert.assertEquals(50.0, Math.toDegrees(latMin), 0.22);
+        Assert.assertEquals(0.0, FastMath.toDegrees(yawMin), 0.004);
+        Assert.assertEquals(50.0, FastMath.toDegrees(latMin), 0.22);
 
     }
 
@@ -240,9 +241,9 @@ public class YawCompensationTest {
         AttitudeLaw law = new YawCompensation(nadirLaw);
 
         KeplerianOrbit orbit =
-            new KeplerianOrbit(7178000.0, 1.e-4, Math.toRadians(50.),
-                              Math.toRadians(10.), Math.toRadians(20.),
-                              Math.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
+            new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
+                              FastMath.toRadians(10.), FastMath.toRadians(20.),
+                              FastMath.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
                               FramesFactory.getEME2000(),
                               date.shiftedBy(-300.0), 3.986004415e14);
 
@@ -292,8 +293,8 @@ public class YawCompensationTest {
 
             //  Satellite position
             circOrbit =
-                new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
-                                       Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
+                                       FastMath.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
                                        FramesFactory.getEME2000(), date, mu);
             
             // Elliptic earth shape */

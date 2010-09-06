@@ -19,6 +19,7 @@ package org.orekit.bodies;
 import java.io.Serializable;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
@@ -92,7 +93,7 @@ class PosVelChebyshev implements TimeStamped, Serializable {
      */
     public boolean isSuccessorOf(final PosVelChebyshev predecessor) {
         final double gap = start.durationFrom(predecessor.start) - predecessor.duration;
-        return Math.abs(gap) < 0.001;
+        return FastMath.abs(gap) < 0.001;
     }
 
     /** Check if a date is in validity range.

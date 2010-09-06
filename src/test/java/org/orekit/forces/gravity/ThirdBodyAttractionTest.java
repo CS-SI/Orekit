@@ -18,6 +18,7 @@ package org.orekit.forces.gravity;
 
 
 import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,10 +48,10 @@ public class ThirdBodyAttractionTest {
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
-                                           Math.tan(0.001745329) * Math.cos(2 * Math.PI / 3),
-                                           Math.tan(0.001745329) * Math.sin(2 * Math.PI / 3),
+                                           FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
+                                           FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3),
                                            0.1, 2, FramesFactory.getEME2000(), date, mu);
-        double period = 2 * Math.PI * orbit.getA() * Math.sqrt(orbit.getA() / orbit.getMu());
+        double period = 2 * FastMath.PI * orbit.getA() * FastMath.sqrt(orbit.getA() / orbit.getMu());
 
         // set up propagator
         NumericalPropagator calc =
@@ -58,15 +59,15 @@ public class ThirdBodyAttractionTest {
         calc.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
 
         // set up step handler to perform checks
-        calc.setMasterMode(Math.floor(period), new ReferenceChecker(date) {
+        calc.setMasterMode(FastMath.floor(period), new ReferenceChecker(date) {
             private static final long serialVersionUID = 6539780121834779598L;
             protected double hXRef(double t) {
                 return -1.06757e-3 + 0.221415e-11 * t + 18.9421e-5 *
-                Math.cos(3.9820426e-7*t) - 7.59983e-5 * Math.sin(3.9820426e-7*t);
+                FastMath.cos(3.9820426e-7*t) - 7.59983e-5 * FastMath.sin(3.9820426e-7*t);
             }
             protected double hYRef(double t) {
                 return 1.43526e-3 + 7.49765e-11 * t + 6.9448e-5 *
-                Math.cos(3.9820426e-7*t) + 17.6083e-5 * Math.sin(3.9820426e-7*t);
+                FastMath.cos(3.9820426e-7*t) + 17.6083e-5 * FastMath.sin(3.9820426e-7*t);
             }
         });
         AbsoluteDate finalDate = date.shiftedBy(365 * period);
@@ -84,10 +85,10 @@ public class ThirdBodyAttractionTest {
                                              TimeScalesFactory.getUTC());
         Orbit orbit =
             new EquinoctialOrbit(42164000,10e-3,10e-3,
-                                      Math.tan(0.001745329) * Math.cos(2 * Math.PI / 3),
-                                      Math.tan(0.001745329) * Math.sin(2 * Math.PI / 3),
+                                      FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
+                                      FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3),
                                       0.1, 2, FramesFactory.getEME2000(), date, mu);
-        double period = 2 * Math.PI * orbit.getA() * Math.sqrt(orbit.getA() / orbit.getMu());
+        double period = 2 * FastMath.PI * orbit.getA() * FastMath.sqrt(orbit.getA() / orbit.getMu());
 
         // set up propagator
         NumericalPropagator calc =
@@ -95,17 +96,17 @@ public class ThirdBodyAttractionTest {
         calc.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
 
         // set up step handler to perform checks
-        calc.setMasterMode(Math.floor(period), new ReferenceChecker(date) {
+        calc.setMasterMode(FastMath.floor(period), new ReferenceChecker(date) {
             private static final long serialVersionUID = -4725658720642817168L;
             protected double hXRef(double t) {
                 return  -0.000906173 + 1.93933e-11 * t +
-                         1.0856e-06  * Math.cos(5.30637e-05 * t) -
-                         1.22574e-06 * Math.sin(5.30637e-05 * t);
+                         1.0856e-06  * FastMath.cos(5.30637e-05 * t) -
+                         1.22574e-06 * FastMath.sin(5.30637e-05 * t);
             }
             protected double hYRef(double t) {
                 return 0.00151973 + 1.88991e-10 * t -
-                       1.25972e-06  * Math.cos(5.30637e-05 * t) -
-                       1.00581e-06 * Math.sin(5.30637e-05 * t);
+                       1.25972e-06  * FastMath.cos(5.30637e-05 * t) -
+                       1.00581e-06 * FastMath.sin(5.30637e-05 * t);
             }
         });
         AbsoluteDate finalDate = date.shiftedBy(31 * period);

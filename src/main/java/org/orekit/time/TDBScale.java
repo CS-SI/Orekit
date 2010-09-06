@@ -16,6 +16,7 @@
  */
 package org.orekit.time;
 
+import org.apache.commons.math.util.FastMath;
 import org.orekit.utils.Constants;
 
 /** Barycentric Dynamic Time.
@@ -44,8 +45,8 @@ public class TDBScale implements TimeScale {
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate date) {
         final double dtDays = date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY;
-        final double g = Math.toRadians(357.53 + 0.9856003 * dtDays);
-        return TimeScalesFactory.getTT().offsetFromTAI(date) + (0.001658 * Math.sin(g) + 0.000014 * Math.sin(2 * g));
+        final double g = FastMath.toRadians(357.53 + 0.9856003 * dtDays);
+        return TimeScalesFactory.getTT().offsetFromTAI(date) + (0.001658 * FastMath.sin(g) + 0.000014 * FastMath.sin(2 * g));
     }
 
     /** {@inheritDoc} */

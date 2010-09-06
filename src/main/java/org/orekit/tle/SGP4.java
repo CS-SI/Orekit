@@ -16,6 +16,7 @@
  */
 package org.orekit.tle;
 
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 
 /** This class contains methods to compute propagated coordinates with the SGP4 model.
@@ -73,7 +74,7 @@ class SGP4 extends TLEPropagator {
         lessThan220 = perige < 220;
         if (!lessThan220) {
             final double c1sq = c1 * c1;
-            delM0 = 1.0 + eta * Math.cos(tle.getMeanAnomaly());
+            delM0 = 1.0 + eta * FastMath.cos(tle.getMeanAnomaly());
             delM0 *= delM0 * delM0;
             d2 = 4 * a0dp * tsi * c1sq;
             final double temp = d2 * tsi * c1 / 3.0;
@@ -82,7 +83,7 @@ class SGP4 extends TLEPropagator {
             t3cof = d2 + 2 * c1sq;
             t4cof = 0.25 * (3 * d3 + c1 * (12 * d2 + 10 * c1sq));
             t5cof = 0.2 * (3 * d4 + 12 * c1 * d3 + 6 * d2 * d2 + 15 * c1sq * (2 * d2 + c1sq));
-            sinM0 = Math.sin(tle.getMeanAnomaly());
+            sinM0 = FastMath.sin(tle.getMeanAnomaly());
             if (tle.getE() < 1e-4) {
                 omgcof = 0.;
                 xmcof = 0.;
@@ -91,7 +92,7 @@ class SGP4 extends TLEPropagator {
                                   TLEConstants.NORMALIZED_EQUATORIAL_RADIUS * sini0 / tle.getE();
                 xmcof = -TLEConstants.TWO_THIRD * coef * tle.getBStar() *
                         TLEConstants.NORMALIZED_EQUATORIAL_RADIUS / eeta;
-                omgcof = tle.getBStar() * c3 * Math.cos(tle.getPerigeeArgument());
+                omgcof = tle.getBStar() * c3 * FastMath.cos(tle.getPerigeeArgument());
             }
         }
 
@@ -118,7 +119,7 @@ class SGP4 extends TLEPropagator {
 
         if (!lessThan220) {
             final double delomg = omgcof * tSince;
-            double delm = 1. + eta * Math.cos(xmdf);
+            double delm = 1. + eta * FastMath.cos(xmdf);
             delm = xmcof * (delm * delm * delm - delM0);
             final double temp = delomg + delm;
             xmp = xmdf + temp;
@@ -126,7 +127,7 @@ class SGP4 extends TLEPropagator {
             final double tcube = tsq * tSince;
             final double tfour = tSince * tcube;
             tempa = tempa - d2 * tsq - d3 * tcube - d4 * tfour;
-            tempe = tempe + tle.getBStar() * c5 * (Math.sin(xmp) - sinM0);
+            tempe = tempe + tle.getBStar() * c5 * (FastMath.sin(xmp) - sinM0);
             templ = templ + t3cof * tcube + tfour * (t4cof + tSince * t5cof);
         }
 

@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -71,9 +72,9 @@ public class EclipseDetector extends AbstractDetector {
             final boolean totalEclipse) {
         super(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD);
         this.occulted = occulted;
-        this.occultedRadius = Math.abs(occultedRadius);
+        this.occultedRadius = FastMath.abs(occultedRadius);
         this.occulting = occulting;
-        this.occultingRadius = Math.abs(occultingRadius);
+        this.occultingRadius = FastMath.abs(occultingRadius);
         this.totalEclipse = totalEclipse;
     }
 
@@ -98,9 +99,9 @@ public class EclipseDetector extends AbstractDetector {
             final boolean totalEclipse) {
         super(maxCheck, DEFAULT_THRESHOLD);
         this.occulted = occulted;
-        this.occultedRadius = Math.abs(occultedRadius);
+        this.occultedRadius = FastMath.abs(occultedRadius);
         this.occulting = occulting;
-        this.occultingRadius = Math.abs(occultingRadius);
+        this.occultingRadius = FastMath.abs(occultingRadius);
         this.totalEclipse = totalEclipse;
     }
 
@@ -126,9 +127,9 @@ public class EclipseDetector extends AbstractDetector {
             final boolean totalEclipse) {
         super(maxCheck, threshold);
         this.occulted = occulted;
-        this.occultedRadius = Math.abs(occultedRadius);
+        this.occultedRadius = FastMath.abs(occultedRadius);
         this.occulting = occulting;
-        this.occultingRadius = Math.abs(occultingRadius);
+        this.occultingRadius = FastMath.abs(occultingRadius);
         this.totalEclipse = totalEclipse;
     }
 
@@ -147,9 +148,9 @@ public class EclipseDetector extends AbstractDetector {
             final double occultingRadius) {
         super(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD);
         this.occulted = occulted;
-        this.occultedRadius = Math.abs(occultedRadius);
+        this.occultedRadius = FastMath.abs(occultedRadius);
         this.occulting = occulting;
-        this.occultingRadius = Math.abs(occultingRadius);
+        this.occultingRadius = FastMath.abs(occultingRadius);
         this.totalEclipse = true;
     }
 
@@ -172,9 +173,9 @@ public class EclipseDetector extends AbstractDetector {
             final double occultingRadius) {
         super(maxCheck, DEFAULT_THRESHOLD);
         this.occulted = occulted;
-        this.occultedRadius = Math.abs(occultedRadius);
+        this.occultedRadius = FastMath.abs(occultedRadius);
         this.occulting = occulting;
-        this.occultingRadius = Math.abs(occultingRadius);
+        this.occultingRadius = FastMath.abs(occultingRadius);
         this.totalEclipse = true;
     }
 
@@ -198,9 +199,9 @@ public class EclipseDetector extends AbstractDetector {
             final double occultingRadius) {
         super(maxCheck, threshold);
         this.occulted = occulted;
-        this.occultedRadius = Math.abs(occultedRadius);
+        this.occultedRadius = FastMath.abs(occultedRadius);
         this.occulting = occulting;
-        this.occultingRadius = Math.abs(occultingRadius);
+        this.occultingRadius = FastMath.abs(occultingRadius);
         this.totalEclipse = true;
     }
 
@@ -270,8 +271,8 @@ public class EclipseDetector extends AbstractDetector {
         final Vector3D ps   = pted.subtract(psat);
         final Vector3D po   = ping.subtract(psat);
         final double angle  = Vector3D.angle(ps, po);
-        final double rs     = Math.asin(occultedRadius / ps.getNorm());
-        final double ro     = Math.asin(occultingRadius / po.getNorm());
+        final double rs     = FastMath.asin(occultedRadius / ps.getNorm());
+        final double ro     = FastMath.asin(occultingRadius / po.getNorm());
         return totalEclipse ? (angle - ro + rs) : (angle - ro - rs);
     }
 

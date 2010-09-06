@@ -25,6 +25,7 @@ import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.optimization.OptimizationException;
+import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -83,11 +84,11 @@ public class SpacecraftStateTest {
             double residualP = pModel.value(dt) - dpv.getPosition().getNorm();
             double residualV = vModel.value(dt) - dpv.getVelocity().getNorm();
             double residualA = aModel.value(dt) -
-                               Math.toDegrees(Rotation.distance(shifted.getAttitude().getRotation(),
+                               FastMath.toDegrees(Rotation.distance(shifted.getAttitude().getRotation(),
                                                                 propagated.getAttitude().getRotation()));
-            maxResidualP = Math.max(maxResidualP, residualP);
-            maxResidualV = Math.max(maxResidualV, residualV);
-            maxResidualA = Math.max(maxResidualA, residualA);
+            maxResidualP = FastMath.max(maxResidualP, residualP);
+            maxResidualV = FastMath.max(maxResidualV, residualV);
+            maxResidualA = FastMath.max(maxResidualA, residualA);
         }
         Assert.assertEquals(1.6,    maxResidualP, 4.0e-2);
         Assert.assertEquals(0.014,  maxResidualV, 4.0e-4);
@@ -121,9 +122,9 @@ public class SpacecraftStateTest {
             PVCoordinates dPV = new PVCoordinates(pv, state.getPVCoordinates());
             Vector3D mZDirection = transform.transformVector(Vector3D.MINUS_K);
             double alpha = Vector3D.angle(mZDirection, state.getPVCoordinates().getPosition());
-            maxDP = Math.max(maxDP, dPV.getPosition().getNorm());
-            maxDV = Math.max(maxDV, dPV.getVelocity().getNorm());
-            maxDA = Math.max(maxDA, Math.toDegrees(alpha));
+            maxDP = FastMath.max(maxDP, dPV.getPosition().getNorm());
+            maxDV = FastMath.max(maxDV, dPV.getVelocity().getNorm());
+            maxDA = FastMath.max(maxDA, FastMath.toDegrees(alpha));
         }
         Assert.assertEquals(0.0, maxDP, 1.0e-6);
         Assert.assertEquals(0.0, maxDV, 1.0e-9);
@@ -148,7 +149,7 @@ public class SpacecraftStateTest {
         double e = 0.5e-4;
         double i = 1.7105407051081795;
         double omega = 1.9674147913622104;
-        double OMEGA = Math.toRadians(261);
+        double OMEGA = FastMath.toRadians(261);
         double lv = 0;
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),

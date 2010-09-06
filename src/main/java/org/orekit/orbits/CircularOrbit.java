@@ -17,6 +17,7 @@
 package org.orekit.orbits;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -180,32 +181,32 @@ public class CircularOrbit
         final Vector3D node     = Vector3D.crossProduct(Vector3D.PLUS_K, momentum);
         final double   n2       = Vector3D.dotProduct(node, node);
         // the following comparison with 0 IS REALLY numerically justified and stable
-        raan = (n2 == 0) ? 0 : Math.atan2(node.getY(), node.getX());
+        raan = (n2 == 0) ? 0 : FastMath.atan2(node.getY(), node.getX());
 
         // 2D-coordinates in the canonical frame
-        final double cosRaan = Math.cos(raan);
-        final double sinRaan = Math.sin(raan);
-        final double cosI    = Math.cos(i);
-        final double sinI    = Math.sin(i);
-        final Vector3D rVec  = new Vector3D(cosRaan, Math.sin(raan), 0);
+        final double cosRaan = FastMath.cos(raan);
+        final double sinRaan = FastMath.sin(raan);
+        final double cosI    = FastMath.cos(i);
+        final double sinI    = FastMath.sin(i);
+        final Vector3D rVec  = new Vector3D(cosRaan, FastMath.sin(raan), 0);
         final Vector3D sVec  = new Vector3D(-cosI * sinRaan, cosI * cosRaan, sinI);
         final double x2      = Vector3D.dotProduct(pvP, rVec) / a;
         final double y2      = Vector3D.dotProduct(pvP, sVec) / a;
 
         // compute eccentricity vector
-        final double eSE    = Vector3D.dotProduct(pvP, pvV) / Math.sqrt(mu * a);
+        final double eSE    = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(mu * a);
         final double eCE    = rV2OnMu - 1;
         final double e2     = eCE * eCE + eSE * eSE;
         final double f      = eCE - e2;
-        final double g      = Math.sqrt(1 - e2) * eSE;
+        final double g      = FastMath.sqrt(1 - e2) * eSE;
         final double aOnR   = a / r;
         final double a2OnR2 = aOnR * aOnR;
         ex = a2OnR2 * (f * x2 + g * y2);
         ey = a2OnR2 * (f * y2 - g * x2);
 
         // compute longitude argument
-        final double beta = 1 / (1 + Math.sqrt(1 - ex * ex - ey * ey));
-        alphaV = computeAlphaE(Math.atan2(y2 + ey + eSE * beta * ex, x2 + ex - eSE * beta * ey));
+        final double beta = 1 / (1 + FastMath.sqrt(1 - ex * ex - ey * ey));
+        alphaV = computeAlphaE(FastMath.atan2(y2 + ey + eSE * beta * ex, x2 + ex - eSE * beta * ey));
     }
 
     /** Constructor from any kind of orbital parameters.
@@ -215,9 +216,9 @@ public class CircularOrbit
         super(op.getFrame(), op.getDate(), op.getMu());
         a    = op.getA();
         i    = op.getI();
-        raan = Math.atan2(op.getHy(), op.getHx());
-        final double cosRaan = Math.cos(raan);
-        final double sinRaan = Math.sin(raan);
+        raan = FastMath.atan2(op.getHy(), op.getHx());
+        final double cosRaan = FastMath.cos(raan);
+        final double sinRaan = FastMath.sin(raan);
         final double equiEx = op.getEquinoctialEx();
         final double equiEy = op.getEquinoctialEy();
         ex   = equiEx * cosRaan + equiEy * sinRaan;
@@ -236,14 +237,14 @@ public class CircularOrbit
      * @return e cos(&omega; + &Omega;), first component of the eccentricity vector
      */
     public double getEquinoctialEx() {
-        return ex * Math.cos(raan) - ey * Math.sin(raan);
+        return ex * FastMath.cos(raan) - ey * FastMath.sin(raan);
     }
 
     /** Get the second component of the equinoctial eccentricity vector.
      * @return e sin(&omega; + &Omega;), second component of the eccentricity vector
      */
     public double getEquinoctialEy() {
-        return ey * Math.cos(raan) + ex * Math.sin(raan);
+        return ey * FastMath.cos(raan) + ex * FastMath.sin(raan);
     }
 
     /** Get the first component of the circular eccentricity vector.
@@ -264,14 +265,14 @@ public class CircularOrbit
      * @return first component of the inclination vector.
      */
     public double getHx() {
-        return  Math.cos(raan) * Math.tan(i / 2);
+        return  FastMath.cos(raan) * FastMath.tan(i / 2);
     }
 
     /** Get the second component of the inclination vector.
      * @return second component of the inclination vector.
      */
     public double getHy() {
-        return  Math.sin(raan) * Math.tan(i / 2);
+        return  FastMath.sin(raan) * FastMath.tan(i / 2);
     }
 
     /** Get the true longitude argument.
@@ -285,10 +286,10 @@ public class CircularOrbit
      * @return E + &omega; eccentric longitude argument (rad)
      */
     public double getAlphaE() {
-        final double epsilon   = Math.sqrt(1 - ex * ex - ey * ey);
-        final double cosAlphaV = Math.cos(alphaV);
-        final double sinAlphaV = Math.sin(alphaV);
-        return alphaV + 2 * Math.atan((ey * cosAlphaV - ex * sinAlphaV) /
+        final double epsilon   = FastMath.sqrt(1 - ex * ex - ey * ey);
+        final double cosAlphaV = FastMath.cos(alphaV);
+        final double sinAlphaV = FastMath.sin(alphaV);
+        return alphaV + 2 * FastMath.atan((ey * cosAlphaV - ex * sinAlphaV) /
                                       (epsilon + 1 + ex * cosAlphaV + ey * sinAlphaV));
     }
 
@@ -297,10 +298,10 @@ public class CircularOrbit
      * @return the true longitude argument.
      */
     private double computeAlphaE(final double alphaE) {
-        final double epsilon   = Math.sqrt(1 - ex * ex - ey * ey);
-        final double cosAlphaE = Math.cos(alphaE);
-        final double sinAlphaE = Math.sin(alphaE);
-        return alphaE + 2 * Math.atan((ex * sinAlphaE - ey * cosAlphaE) /
+        final double epsilon   = FastMath.sqrt(1 - ex * ex - ey * ey);
+        final double cosAlphaE = FastMath.cos(alphaE);
+        final double sinAlphaE = FastMath.sin(alphaE);
+        return alphaE + 2 * FastMath.atan((ex * sinAlphaE - ey * cosAlphaE) /
                                       (epsilon + 1 - ex * cosAlphaE - ey * sinAlphaE));
     }
 
@@ -309,7 +310,7 @@ public class CircularOrbit
      */
     public double getAlphaM() {
         final double alphaE = getAlphaE();
-        return alphaE - ex * Math.sin(alphaE) + ey * Math.cos(alphaE);
+        return alphaE - ex * FastMath.sin(alphaE) + ey * FastMath.cos(alphaE);
     }
 
     /** Computes the mean longitude argument.
@@ -323,8 +324,8 @@ public class CircularOrbit
         double alphaE = alphaM;
         double shift = 0.0;
         double alphaEMalphaM = 0.0;
-        double cosLE = Math.cos(alphaE);
-        double sinLE = Math.sin(alphaE);
+        double cosLE = FastMath.cos(alphaE);
+        double sinLE = FastMath.sin(alphaE);
         int iter = 0;
         do {
             final double f2 = ex * sinLE - ey * cosLE;
@@ -336,10 +337,10 @@ public class CircularOrbit
 
             alphaEMalphaM -= shift;
             alphaE         = alphaM + alphaEMalphaM;
-            cosLE          = Math.cos(alphaE);
-            sinLE          = Math.sin(alphaE);
+            cosLE          = FastMath.cos(alphaE);
+            sinLE          = FastMath.sin(alphaE);
 
-        } while ((++iter < 50) && (Math.abs(shift) > 1.0e-12));
+        } while ((++iter < 50) && (FastMath.abs(shift) > 1.0e-12));
 
         return computeAlphaE(alphaE); // which set the alphaV parameter
 
@@ -349,7 +350,7 @@ public class CircularOrbit
      * @return eccentricity
      */
     public double getE() {
-        return Math.sqrt(ex * ex + ey * ey);
+        return FastMath.sqrt(ex * ex + ey * ey);
     }
 
     /** Get the inclination.
@@ -402,9 +403,9 @@ public class CircularOrbit
         return new StringBuffer().append("circular parameters: ").append('{').
                                   append("a: ").append(a).
                                   append(", ex: ").append(ex).append(", ey: ").append(ey).
-                                  append(", i: ").append(Math.toDegrees(i)).
-                                  append(", raan: ").append(Math.toDegrees(raan)).
-                                  append(", alphaV: ").append(Math.toDegrees(alphaV)).
+                                  append(", i: ").append(FastMath.toDegrees(i)).
+                                  append(", raan: ").append(FastMath.toDegrees(raan)).
+                                  append(", alphaV: ").append(FastMath.toDegrees(alphaV)).
                                   append(";}").toString();
     }
 

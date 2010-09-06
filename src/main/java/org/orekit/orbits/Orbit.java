@@ -19,6 +19,7 @@ package org.orekit.orbits;
 import java.io.Serializable;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -199,7 +200,7 @@ public abstract class Orbit implements TimeStamped, Serializable {
      */
     public double getKeplerianPeriod() {
         final double a = getA();
-        return 2.0 * Math.PI * a * Math.sqrt(a / mu);
+        return 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu);
     }
 
     /** Get the keplerian mean motion.
@@ -209,7 +210,7 @@ public abstract class Orbit implements TimeStamped, Serializable {
      */
     public double getKeplerianMeanMotion() {
         final double a = getA();
-        return Math.sqrt(mu / a) / a;
+        return FastMath.sqrt(mu / a) / a;
     }
 
     /** Get the date of orbital parameters.
@@ -284,19 +285,19 @@ public abstract class Orbit implements TimeStamped, Serializable {
         final double ex2  = ex * ex;
         final double ey2  = ey * ey;
         final double e2   = ex2 + ey2;
-        final double eta  = 1 + Math.sqrt(1 - e2);
+        final double eta  = 1 + FastMath.sqrt(1 - e2);
         final double beta = 1. / eta;
 
         // eccentric latitude argument
-        final double cLe    = Math.cos(lE);
-        final double sLe    = Math.sin(lE);
+        final double cLe    = FastMath.cos(lE);
+        final double sLe    = FastMath.sin(lE);
         final double exCeyS = ex * cLe + ey * sLe;
 
         // coordinates of position and velocity in the orbital plane
         final double x      = a * ((1 - beta * ey2) * cLe + beta * exey * sLe - ex);
         final double y      = a * ((1 - beta * ex2) * sLe + beta * exey * cLe - ey);
 
-        final double factor = Math.sqrt(mu / a) / (1 - exCeyS);
+        final double factor = FastMath.sqrt(mu / a) / (1 - exCeyS);
         final double xdot   = factor * (-sLe + beta * ey * exCeyS);
         final double ydot   = factor * ( cLe - beta * ex * exCeyS);
 

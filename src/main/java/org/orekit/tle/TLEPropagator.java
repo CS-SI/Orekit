@@ -19,6 +19,7 @@ package org.orekit.tle;
 import java.io.Serializable;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -174,10 +175,10 @@ public abstract class TLEPropagator implements PVCoordinatesProvider, Serializab
      */
     public static TLEPropagator selectExtrapolator(final TLE tle) throws OrekitException {
 
-        final double a1 = Math.pow( TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
-        final double cosi0 = Math.cos(tle.getI());
+        final double a1 = FastMath.pow( TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
+        final double cosi0 = FastMath.cos(tle.getI());
         final double temp = TLEConstants.CK2 * 1.5 * (3 * cosi0 * cosi0 - 1.0) *
-                            Math.pow(1.0 - tle.getE() * tle.getE(), -1.5);
+                            FastMath.pow(1.0 - tle.getE() * tle.getE(), -1.5);
         final double delta1 = temp / (a1 * a1);
         final double a0 = a1 * (1.0 - delta1 * (TLEConstants.ONE_THIRD + delta1 * (delta1 * 134.0 / 81.0 + 1.0)));
         final double delta0 = temp / (a0 * a0);
@@ -186,7 +187,7 @@ public abstract class TLEPropagator implements PVCoordinatesProvider, Serializab
         final double xn0dp = tle.getMeanMotion() * 60.0 / (delta0 + 1.0);
 
         // Period >= 225 minutes is deep space
-        if (2 * Math.PI / (xn0dp * TLEConstants.MINUTES_PER_DAY) >= (1.0 / 6.4)) {
+        if (2 * FastMath.PI / (xn0dp * TLEConstants.MINUTES_PER_DAY) >= (1.0 / 6.4)) {
             return new DeepSDP4(tle);
         } else {
             return new SGP4(tle);
@@ -218,13 +219,13 @@ public abstract class TLEPropagator implements PVCoordinatesProvider, Serializab
      */
     private void initializeCommons() {
 
-        final double a1 = Math.pow(TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
-        cosi0 = Math.cos(tle.getI());
+        final double a1 = FastMath.pow(TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
+        cosi0 = FastMath.cos(tle.getI());
         theta2 = cosi0 * cosi0;
         final double x3thm1 = 3.0 * theta2 - 1.0;
         e0sq = tle.getE() * tle.getE();
         beta02 = 1.0 - e0sq;
-        beta0 = Math.sqrt(beta02);
+        beta0 = FastMath.sqrt(beta02);
         final double tval = TLEConstants.CK2 * 1.5 * x3thm1 / (beta0 * beta02);
         final double delta1 = tval / (a1 * a1);
         final double a0 = a1 * (1.0 - delta1 * (TLEConstants.ONE_THIRD + delta1 * (1.0 + 134.0 / 81.0 * delta1)));
@@ -260,16 +261,16 @@ public abstract class TLEPropagator implements PVCoordinatesProvider, Serializab
         etasq = eta * eta;
         eeta = tle.getE() * eta;
 
-        final double psisq = Math.abs(1.0 - etasq); // abs because pow 3.5 needs positive value
+        final double psisq = FastMath.abs(1.0 - etasq); // abs because pow 3.5 needs positive value
         final double tsi_squared = tsi * tsi;
         coef = q0ms24 * tsi_squared * tsi_squared;
-        coef1 = coef / Math.pow(psisq, 3.5);
+        coef1 = coef / FastMath.pow(psisq, 3.5);
 
         // C2 and C1 coefficients computation :
         c2 = coef1 * xn0dp * (a0dp * (1.0 + 1.5 * etasq + eeta * (4.0 + etasq)) +
              0.75 * TLEConstants.CK2 * tsi / psisq * x3thm1 * (8.0 + 3.0 * etasq * (8.0 + etasq)));
         c1 = tle.getBStar() * c2;
-        sini0 = Math.sin(tle.getI());
+        sini0 = FastMath.sin(tle.getI());
 
         final double x1mth2 = 1.0 - theta2;
 
@@ -278,7 +279,7 @@ public abstract class TLEPropagator implements PVCoordinatesProvider, Serializab
              tle.getE() * (0.5 + 2.0 * etasq) -
              2 * TLEConstants.CK2 * tsi / (a0dp * psisq) *
              (-3.0 * x3thm1 * (1.0 - 2.0 * eeta + etasq * (1.5 - 0.5 * eeta)) +
-              0.75 * x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) * Math.cos(2.0 * tle.getPerigeeArgument())));
+              0.75 * x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) * FastMath.cos(2.0 * tle.getPerigeeArgument())));
 
         final double theta4 = theta2 * theta2;
         final double temp1 = 3 * TLEConstants.CK2 * pinvsq * xn0dp;
@@ -312,16 +313,16 @@ public abstract class TLEPropagator implements PVCoordinatesProvider, Serializab
     private PVCoordinates computePVCoordinates() throws OrekitException {
 
         // Long period periodics
-        final double axn = e * Math.cos(omega);
+        final double axn = e * FastMath.cos(omega);
         double temp = 1.0 / (a * (1.0 - e * e));
         final double xlcof = 0.125 * TLEConstants.A3OVK2 * sini0 * (3.0 + 5.0 * cosi0) / (1.0 + cosi0);
         final double aycof = 0.25 * TLEConstants.A3OVK2 * sini0;
         final double xll = temp * xlcof * axn;
         final double aynl = temp * aycof;
         final double xlt = xl + xll;
-        final double ayn = e * Math.sin(omega) + aynl;
+        final double ayn = e * FastMath.sin(omega) + aynl;
         final double elsq = axn * axn + ayn * ayn;
-        final double capu = MathUtils.normalizeAngle(xlt - xnode, Math.PI);
+        final double capu = MathUtils.normalizeAngle(xlt - xnode, FastMath.PI);
         double epw = capu;
         double ecosE = 0;
         double esinE = 0;
@@ -347,18 +348,18 @@ public abstract class TLEPropagator implements PVCoordinatesProvider, Serializab
 
             boolean doSecondOrderNewtonRaphson = true;
 
-            sinEPW = Math.sin( epw);
-            cosEPW = Math.cos( epw);
+            sinEPW = FastMath.sin( epw);
+            cosEPW = FastMath.cos( epw);
             ecosE = axn * cosEPW + ayn * sinEPW;
             esinE = axn * sinEPW - ayn * cosEPW;
             final double f = capu - epw + esinE;
-            if (Math.abs(f) < newtonRaphsonEpsilon) {
+            if (FastMath.abs(f) < newtonRaphsonEpsilon) {
                 break;
             }
             final double fdot = 1.0 - ecosE;
             double delta_epw = f / fdot;
             if (j == 0) {
-                final double maxNewtonRaphson = 1.25 * Math.abs(e);
+                final double maxNewtonRaphson = 1.25 * FastMath.abs(e);
                 doSecondOrderNewtonRaphson = false;
                 if (delta_epw > maxNewtonRaphson) {
                     delta_epw = maxNewtonRaphson;
@@ -379,11 +380,11 @@ public abstract class TLEPropagator implements PVCoordinatesProvider, Serializab
         final double pl = a * temp;
         final double r = a * (1.0 - ecosE);
         double temp2 = a / r;
-        final double betal = Math.sqrt(temp);
+        final double betal = FastMath.sqrt(temp);
         temp = esinE / (1.0 + betal);
         final double cosu = temp2 * (cosEPW - axn + ayn * temp);
         final double sinu = temp2 * (sinEPW - ayn - axn * temp);
-        final double u = Math.atan2(sinu, cosu);
+        final double u = FastMath.atan2(sinu, cosu);
         final double sin2u = 2.0 * sinu * cosu;
         final double cos2u = 2.0 * cosu * cosu - 1.0;
         final double temp1 = TLEConstants.CK2 / pl;
@@ -396,12 +397,12 @@ public abstract class TLEPropagator implements PVCoordinatesProvider, Serializab
         final double xinck = i + 1.5 * temp2 * cosi0 * sini0 * cos2u;
 
         // Orientation vectors
-        final double sinuk = Math.sin(uk);
-        final double cosuk = Math.cos(uk);
-        final double sinik = Math.sin(xinck);
-        final double cosik = Math.cos(xinck);
-        final double sinnok = Math.sin(xnodek);
-        final double cosnok = Math.cos(xnodek);
+        final double sinuk = FastMath.sin(uk);
+        final double cosuk = FastMath.cos(uk);
+        final double sinik = FastMath.sin(xinck);
+        final double cosik = FastMath.cos(xinck);
+        final double sinnok = FastMath.sin(xnodek);
+        final double cosnok = FastMath.cos(xnodek);
         final double xmx = -sinnok * cosik;
         final double xmy = cosnok * cosik;
         final double ux = xmx * sinuk + cosnok * cosuk;
@@ -412,9 +413,9 @@ public abstract class TLEPropagator implements PVCoordinatesProvider, Serializab
         final double cr = 1000 * rk * TLEConstants.EARTH_RADIUS;
         final Vector3D pos = new Vector3D(cr * ux, cr * uy, cr * uz);
 
-        final double rdot   = TLEConstants.XKE * Math.sqrt(a) * esinE / r;
-        final double rfdot  = TLEConstants.XKE * Math.sqrt(pl) / r;
-        final double xn     = TLEConstants.XKE / (a * Math.sqrt(a));
+        final double rdot   = TLEConstants.XKE * FastMath.sqrt(a) * esinE / r;
+        final double rfdot  = TLEConstants.XKE * FastMath.sqrt(pl) / r;
+        final double xn     = TLEConstants.XKE / (a * FastMath.sqrt(a));
         final double rdotk  = rdot - xn * temp1 * x1mth2 * sin2u;
         final double rfdotk = rfdot + xn * temp1 * (x1mth2 * cos2u + 1.5 * x3thm1);
         final double vx     = xmx * cosuk - cosnok * sinuk;

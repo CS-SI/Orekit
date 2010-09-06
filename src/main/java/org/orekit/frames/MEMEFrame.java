@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -35,7 +36,7 @@ class MEMEFrame extends Frame {
     private static final long serialVersionUID = -2119588933116161867L;
 
     /** Radians per arcsecond. */
-    private static final double RADIANS_PER_ARC_SECOND = Math.PI / (180.0 * 3600.0);
+    private static final double RADIANS_PER_ARC_SECOND = FastMath.PI / (180.0 * 3600.0);
 
     /** 1st coefficient for ZETA precession angle. */
     private static final double ZETA_1 = 2306.2181   * RADIANS_PER_ARC_SECOND;

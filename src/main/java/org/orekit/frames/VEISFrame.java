@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -36,7 +37,7 @@ class VEISFrame extends Frame {
     private static final long serialVersionUID = -6478931867252825900L;
 
     /** 2&pi;. */
-    private static final double TWO_PI = 2.0 * Math.PI;
+    private static final double TWO_PI = 2.0 * FastMath.PI;
 
     /** Reference date. */
     private static AbsoluteDate VST_REFERENCE =

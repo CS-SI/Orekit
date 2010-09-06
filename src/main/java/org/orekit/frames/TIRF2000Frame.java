@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -36,7 +37,7 @@ class TIRF2000Frame extends Frame {
     private static final long serialVersionUID = 2467681437070913647L;
 
     /** 2&pi;. */
-    private static final double TWO_PI = 2.0 * Math.PI;
+    private static final double TWO_PI = 2.0 * FastMath.PI;
 
     /** Reference date of Capitaine's Earth Rotation Angle model. */
     private static final AbsoluteDate ERA_REFERENCE =
@@ -127,7 +128,7 @@ class TIRF2000Frame extends Frame {
             final double tu =
                 (date.durationFrom(ERA_REFERENCE) + utcMinusTai + dtu1 + tidalDtu1) / Constants.JULIAN_DAY;
             era  = ERA_0 + ERA_1A * tu + ERA_1B * tu;
-            era -= TWO_PI * Math.floor((era + Math.PI) / TWO_PI);
+            era -= TWO_PI * FastMath.floor((era + FastMath.PI) / TWO_PI);
 
             // set up the transform from parent CIRF
             final Vector3D rotationRate = new Vector3D((ERA_1A + ERA_1B) / Constants.JULIAN_DAY, Vector3D.PLUS_K);

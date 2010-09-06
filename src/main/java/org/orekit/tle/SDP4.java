@@ -16,6 +16,7 @@
  */
 package org.orekit.tle;
 
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -91,7 +92,7 @@ abstract class SDP4  extends TLEPropagator {
         deepSecularEffects(tSince);
 
         final double tempa = 1 - c1 * tSince;
-        a   = Math.pow(TLEConstants.XKE / xn, TLEConstants.TWO_THIRD) * tempa * tempa;
+        a   = FastMath.pow(TLEConstants.XKE / xn, TLEConstants.TWO_THIRD) * tempa * tempa;
         em -= tle.getBStar() * c4 * tSince;
 
         // Update for deep-space periodic effects
@@ -102,8 +103,8 @@ abstract class SDP4  extends TLEPropagator {
         xl = xll + omgadf + xnode;
 
         // Dundee change:  Reset cosio,  sinio for new xinc:
-        cosi0 = Math.cos(xinc);
-        sini0 = Math.sin(xinc);
+        cosi0 = FastMath.cos(xinc);
+        sini0 = FastMath.sin(xinc);
         e = em;
         i = xinc;
         omega = omgadf;
@@ -135,7 +136,7 @@ abstract class SDP4  extends TLEPropagator {
             GMST += seconds_per_day;
         }
 
-        return 2 * Math.PI * GMST / seconds_per_day;
+        return 2 * FastMath.PI * GMST / seconds_per_day;
 
     }
 

@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.regex.Pattern;
 
+import org.apache.commons.math.util.FastMath;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -51,7 +52,7 @@ import org.orekit.time.DateComponents;
 class EOP05C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
 
     /** Conversion factor. */
-    private static final double ARC_SECONDS_TO_RADIANS = 2 * Math.PI / 1296000;
+    private static final double ARC_SECONDS_TO_RADIANS = 2 * FastMath.PI / 1296000;
 
     /** Year field. */
     private static final int YEAR_FIELD = 0;

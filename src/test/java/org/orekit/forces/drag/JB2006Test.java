@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.text.ParseException;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -81,90 +82,90 @@ public class JB2006Test {
         double roTestCase = 0.4066e-11;
         double tzTestCase=1137.7;
         double tinfTestCase=1145.8;
-        Assert.assertEquals(roTestCase*1e12, Math.round(myRo*1e15)/1e3,0);
-        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e12, FastMath.round(myRo*1e15)/1e3,0);
+        Assert.assertEquals(tzTestCase, FastMath.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, FastMath.round(atm.getExosphericTemp()*10)/10.0,0);
 
         // alt = 90
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*90,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase = 0.3285e-05;
         tzTestCase=183.0;
         tinfTestCase=1142.8;
-        Assert.assertEquals(roTestCase*1e05, Math.round(myRo*1e09)/1e4,0);
-        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e05, FastMath.round(myRo*1e09)/1e4,0);
+        Assert.assertEquals(tzTestCase, FastMath.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, FastMath.round(atm.getExosphericTemp()*10)/10.0,0);
 
         // alt = 110
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*110,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase = 0.7587e-07;
         tzTestCase=257.4;
         tinfTestCase=1142.8;
-        Assert.assertEquals(roTestCase*1e07, Math.round(myRo*1e11)/1e4,0);
-        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e07, FastMath.round(myRo*1e11)/1e4,0);
+        Assert.assertEquals(tzTestCase, FastMath.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, FastMath.round(atm.getExosphericTemp()*10)/10.0,0);
 
         // alt = 180
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*180,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase = 0.5439; // *1e-9
         tzTestCase=915.0;
         tinfTestCase=1130.9;
-        Assert.assertEquals(roTestCase, Math.round(myRo*1e13)/1e4,0);
-        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase, FastMath.round(myRo*1e13)/1e4,0);
+        Assert.assertEquals(tzTestCase, FastMath.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, FastMath.round(atm.getExosphericTemp()*10)/10.0,0);
 
         // alt = 230
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*230,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase =0.1250e-09;
         tzTestCase=1047.5;
         tinfTestCase=1137.4;
-        Assert.assertEquals(roTestCase*1e09, Math.round(myRo*1e13)/1e4,0);
-        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e09, FastMath.round(myRo*1e13)/1e4,0);
+        Assert.assertEquals(tzTestCase, FastMath.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, FastMath.round(atm.getExosphericTemp()*10)/10.0,0);
 
         // alt = 270
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*270,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase =0.4818e-10;
         tzTestCase=1095.6;
         tinfTestCase=1142.5;
-        Assert.assertEquals(roTestCase*1e10, Math.round(myRo*1e14)/1e4,0);
-        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e10, FastMath.round(myRo*1e14)/1e4,0);
+        Assert.assertEquals(tzTestCase, FastMath.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, FastMath.round(atm.getExosphericTemp()*10)/10.0,0);
 
         // alt = 660
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*660,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase =0.9451e-13;
         tzTestCase=1149.0;
         tinfTestCase=1149.9 ;
-        Assert.assertEquals(roTestCase*1e13, Math.round(myRo*1e17)/1e4,0);
-        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e13, FastMath.round(myRo*1e17)/1e4,0);
+        Assert.assertEquals(tzTestCase, FastMath.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, FastMath.round(atm.getExosphericTemp()*10)/10.0,0);
 
         //  alt = 890
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*890,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase =0.8305e-14;
         tzTestCase=1142.5;
         tinfTestCase=1142.8 ;
-        Assert.assertEquals(roTestCase*1e14, Math.round(myRo*1e18)/1e4,0);
-        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e14, FastMath.round(myRo*1e18)/1e4,0);
+        Assert.assertEquals(tzTestCase, FastMath.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, FastMath.round(atm.getExosphericTemp()*10)/10.0,0);
 
         //  alt = 1320
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*1320,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase =0.2004e-14;
         tzTestCase=1142.7;
         tinfTestCase=1142.8 ;
-        Assert.assertEquals(roTestCase*1e14, Math.round(myRo*1e18)/1e4,0);
-        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e14, FastMath.round(myRo*1e18)/1e4,0);
+        Assert.assertEquals(tzTestCase, FastMath.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, FastMath.round(atm.getExosphericTemp()*10)/10.0,0);
 
         //  alt = 1600
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*1600,F10, F10B, AP,S10,S10B,XM10,XM10B);
         roTestCase = 0.1159e-14;
         tzTestCase=1142.8;
         tinfTestCase=1142.8 ;
-        Assert.assertEquals(roTestCase*1e14, Math.round(myRo*1e18)/1e4,0);
-        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e14, FastMath.round(myRo*1e18)/1e4,0);
+        Assert.assertEquals(tzTestCase, FastMath.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, FastMath.round(atm.getExosphericTemp()*10)/10.0,0);
 
 
         //  OTHER entries
@@ -173,9 +174,9 @@ public class JB2006Test {
         roTestCase = 0.4838e-11;
         tzTestCase=1137.4 ;
         tinfTestCase= 1145.4 ;
-        Assert.assertEquals(roTestCase*1e11, Math.round(myRo*1e15)/1e4,0);
-        Assert.assertEquals(tzTestCase, Math.round(atm.getLocalTemp()*10)/10.0,0);
-        Assert.assertEquals(tinfTestCase, Math.round(atm.getExosphericTemp()*10)/10.0,0);
+        Assert.assertEquals(roTestCase*1e11, FastMath.round(myRo*1e15)/1e4,0);
+        Assert.assertEquals(tzTestCase, FastMath.round(atm.getLocalTemp()*10)/10.0,0);
+        Assert.assertEquals(tinfTestCase, FastMath.round(atm.getExosphericTemp()*10)/10.0,0);
 
     }
 
@@ -227,7 +228,7 @@ public class JB2006Test {
         GeodeticPoint point;
         for (int i = 0; i<367; i++) {
             date = date.shiftedBy(Constants.JULIAN_DAY);
-            point = new GeodeticPoint(Math.toRadians(40), 0, 300*1000);
+            point = new GeodeticPoint(FastMath.toRadians(40), 0, 300*1000);
             pos = earth.transform(point);
             roJb = jb.getDensity(date, pos, FramesFactory.getEME2000());
             roDtm = dtm.getDensity(date, pos, FramesFactory.getEME2000());

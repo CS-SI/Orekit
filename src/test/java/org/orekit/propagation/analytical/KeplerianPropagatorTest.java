@@ -19,6 +19,7 @@ package org.orekit.propagation.analytical;
 
 import org.apache.commons.math.exception.util.DummyLocalizable;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -81,16 +82,16 @@ public class KeplerianPropagatorTest {
 
         double a = finalOrbit.getA();
         // another way to compute n
-        double n = Math.sqrt(finalOrbit.getMu()/Math.pow(a, 3));
+        double n = FastMath.sqrt(finalOrbit.getMu()/FastMath.pow(a, 3));
 
         Assert.assertEquals(n*delta_t,
                             finalOrbit.getLM() - initialOrbit.getLM(),
-                            Utils.epsilonTest * Math.abs(n*delta_t));
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(),initialOrbit.getLM()), initialOrbit.getLM(), Utils.epsilonAngle * Math.abs(initialOrbit.getLM()));
+                            Utils.epsilonTest * FastMath.abs(n*delta_t));
+        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(),initialOrbit.getLM()), initialOrbit.getLM(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getLM()));
 
         Assert.assertEquals(finalOrbit.getA(), initialOrbit.getA(), Utils.epsilonTest * initialOrbit.getA());
         Assert.assertEquals(finalOrbit.getE(), initialOrbit.getE(), Utils.epsilonE * initialOrbit.getE());
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getI(), initialOrbit.getI()), initialOrbit.getI(), Utils.epsilonAngle * Math.abs(initialOrbit.getI()));
+        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getI(), initialOrbit.getI()), initialOrbit.getI(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getI()));
 
     }
 
@@ -116,16 +117,16 @@ public class KeplerianPropagatorTest {
 
         double a = finalOrbit.getA();
         // another way to compute n
-        double n = Math.sqrt(finalOrbit.getMu()/Math.pow(a, 3));
+        double n = FastMath.sqrt(finalOrbit.getMu()/FastMath.pow(a, 3));
 
         Assert.assertEquals(n*delta_t,
                      finalOrbit.getLM() - initialOrbit.getLM(),
-                     Utils.epsilonTest * Math.max(100.,Math.abs(n*delta_t)));
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(),initialOrbit.getLM()), initialOrbit.getLM(), Utils.epsilonAngle * Math.abs(initialOrbit.getLM()));
+                     Utils.epsilonTest * FastMath.max(100.,FastMath.abs(n*delta_t)));
+        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(),initialOrbit.getLM()), initialOrbit.getLM(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getLM()));
 
         Assert.assertEquals(finalOrbit.getA(), initialOrbit.getA(), Utils.epsilonTest * initialOrbit.getA());
         Assert.assertEquals(finalOrbit.getE(), initialOrbit.getE(), Utils.epsilonE * initialOrbit.getE());
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getI(),initialOrbit.getI()), initialOrbit.getI(), Utils.epsilonAngle * Math.abs(initialOrbit.getI()));
+        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getI(),initialOrbit.getI()), initialOrbit.getI(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getI()));
 
     }
 
@@ -157,7 +158,7 @@ public class KeplerianPropagatorTest {
         // computation of (M final - M initial) with another method
         double a = finalOrbit.getA();
         // another way to compute n
-        double n = Math.sqrt(finalOrbit.getMu()/Math.pow(a, 3));
+        double n = FastMath.sqrt(finalOrbit.getMu()/FastMath.pow(a, 3));
 
         Assert.assertEquals(n * delta_t,
                             finalOrbit.getLM() - initialOrbit.getLM(),
@@ -165,13 +166,13 @@ public class KeplerianPropagatorTest {
 
         // computation of M final orbit
         double LM = finalOrbit.getLE()
-        - finalOrbit.getEquinoctialEx()*Math.sin(finalOrbit.getLE())
-        + finalOrbit.getEquinoctialEy()*Math.cos(finalOrbit.getLE());
+        - finalOrbit.getEquinoctialEx()*FastMath.sin(finalOrbit.getLE())
+        + finalOrbit.getEquinoctialEy()*FastMath.cos(finalOrbit.getLE());
 
         Assert.assertEquals(LM , finalOrbit.getLM() , Utils.epsilonAngle);
 
         // test of tan ((LE - Lv)/2) :
-        Assert.assertEquals(Math.tan((finalOrbit.getLE() - finalOrbit.getLv())/2.),
+        Assert.assertEquals(FastMath.tan((finalOrbit.getLE() - finalOrbit.getLv())/2.),
                      tangLEmLv(finalOrbit.getLv(),finalOrbit.getEquinoctialEx(),finalOrbit.getEquinoctialEy()),
                      Utils.epsilonAngle);
 
@@ -179,8 +180,8 @@ public class KeplerianPropagatorTest {
         // with ex and ey the same for initial and final orbit
         double deltaM = finalOrbit.getLM() - initialOrbit.getLM();
         double deltaE = finalOrbit.getLE() - initialOrbit.getLE();
-        double delta  = finalOrbit.getEquinoctialEx() * (Math.sin(finalOrbit.getLE()) - Math.sin(initialOrbit.getLE()))
-        - finalOrbit.getEquinoctialEy() * (Math.cos(finalOrbit.getLE()) - Math.cos(initialOrbit.getLE()));
+        double delta  = finalOrbit.getEquinoctialEx() * (FastMath.sin(finalOrbit.getLE()) - FastMath.sin(initialOrbit.getLE()))
+        - finalOrbit.getEquinoctialEy() * (FastMath.cos(finalOrbit.getLE()) - FastMath.cos(initialOrbit.getLE()));
 
         Assert.assertEquals(deltaM, deltaE - delta, Utils.epsilonAngle);
 
@@ -203,10 +204,10 @@ public class KeplerianPropagatorTest {
         double hx2 = hx*hx;
         double hy2 = hy*hy;
         double h2p1 = 1. + hx2 + hy2;
-        double beta = 1. / (1. + Math.sqrt(1. - ex2 - ey2));
+        double beta = 1. / (1. + FastMath.sqrt(1. - ex2 - ey2));
 
-        double x3 = -ex + (1.- beta*ey2)*Math.cos(LE) + beta*ex*ey*Math.sin(LE);
-        double y3 = -ey + (1. -beta*ex2)*Math.sin(LE) + beta*ex*ey*Math.cos(LE);
+        double x3 = -ex + (1.- beta*ey2)*FastMath.cos(LE) + beta*ex*ey*FastMath.sin(LE);
+        double y3 = -ey + (1. -beta*ex2)*FastMath.sin(LE) + beta*ex*ey*FastMath.cos(LE);
 
         Vector3D U = new Vector3D((1. + hx2 - hy2)/ h2p1,
                                   (2.*hx*hy)/h2p1,
@@ -248,7 +249,7 @@ public class KeplerianPropagatorTest {
         // computation of (M final - M initial) with another method
         double a = finalOrbit.getA();
         // another way to compute n
-        double n = Math.sqrt(finalOrbit.getMu()/Math.pow(a, 3));
+        double n = FastMath.sqrt(finalOrbit.getMu()/FastMath.pow(a, 3));
 
         Assert.assertEquals(n * delta_t,
                      finalOrbit.getLM() - initialOrbit.getLM(),
@@ -256,13 +257,13 @@ public class KeplerianPropagatorTest {
 
         // computation of M final orbit
         double LM = finalOrbit.getLE()
-        - finalOrbit.getEquinoctialEx()*Math.sin(finalOrbit.getLE())
-        + finalOrbit.getEquinoctialEy()*Math.cos(finalOrbit.getLE());
+        - finalOrbit.getEquinoctialEx()*FastMath.sin(finalOrbit.getLE())
+        + finalOrbit.getEquinoctialEy()*FastMath.cos(finalOrbit.getLE());
 
         Assert.assertEquals(LM , finalOrbit.getLM() , Utils.epsilonAngle);
 
         // test of tan ((LE - Lv)/2) :
-        Assert.assertEquals(Math.tan((finalOrbit.getLE() - finalOrbit.getLv())/2.),
+        Assert.assertEquals(FastMath.tan((finalOrbit.getLE() - finalOrbit.getLv())/2.),
                      tangLEmLv(finalOrbit.getLv(),finalOrbit.getEquinoctialEx(),finalOrbit.getEquinoctialEy()),
                      Utils.epsilonAngle);
 
@@ -270,7 +271,7 @@ public class KeplerianPropagatorTest {
         // with ex and ey the same for initial and final orbit
         double deltaM = finalOrbit.getLM() - initialOrbit.getLM();
         double deltaE = finalOrbit.getLE() - initialOrbit.getLE();
-        double delta  = finalOrbit.getEquinoctialEx() * (Math.sin(finalOrbit.getLE()) - Math.sin(initialOrbit.getLE())) - finalOrbit.getEquinoctialEy() * (Math.cos(finalOrbit.getLE()) - Math.cos(initialOrbit.getLE()));
+        double delta  = finalOrbit.getEquinoctialEx() * (FastMath.sin(finalOrbit.getLE()) - FastMath.sin(initialOrbit.getLE())) - finalOrbit.getEquinoctialEy() * (FastMath.cos(finalOrbit.getLE()) - FastMath.cos(initialOrbit.getLE()));
 
         Assert.assertEquals(deltaM, deltaE - delta, Utils.epsilonAngle);
 
@@ -293,10 +294,10 @@ public class KeplerianPropagatorTest {
         double hx2 = hx*hx;
         double hy2 = hy*hy;
         double h2p1 = 1. + hx2 + hy2;
-        double beta = 1. / (1. + Math.sqrt(1. - ex2 - ey2));
+        double beta = 1. / (1. + FastMath.sqrt(1. - ex2 - ey2));
 
-        double x3 = -ex + (1.- beta*ey2)*Math.cos(LE) + beta*ex*ey*Math.sin(LE);
-        double y3 = -ey + (1. -beta*ex2)*Math.sin(LE) + beta*ex*ey*Math.cos(LE);
+        double x3 = -ex + (1.- beta*ey2)*FastMath.cos(LE) + beta*ex*ey*FastMath.sin(LE);
+        double y3 = -ey + (1. -beta*ex2)*FastMath.sin(LE) + beta*ex*ey*FastMath.cos(LE);
 
         Vector3D U = new Vector3D((1. + hx2 - hy2)/ h2p1,
                                   (2.*hx*hy)/h2p1,
@@ -382,7 +383,7 @@ public class KeplerianPropagatorTest {
         });
         AbsoluteDate farTarget = orbit.getDate().shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        Assert.assertEquals(0.0, Math.abs(farTarget.durationFrom(propagated.getDate())), 1.0e-3);
+        Assert.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate())), 1.0e-3);
     }
 
     @Test
@@ -524,8 +525,8 @@ public class KeplerianPropagatorTest {
 
     private static double tangLEmLv(double Lv,double ex,double ey){
         // tan ((LE - Lv) /2)) =
-        return (ey*Math.cos(Lv) - ex*Math.sin(Lv)) /
-        (1 + ex*Math.cos(Lv) + ey*Math.sin(Lv) + Math.sqrt(1 - ex*ex - ey*ey));
+        return (ey*FastMath.cos(Lv) - ex*FastMath.sin(Lv)) /
+        (1 + ex*FastMath.cos(Lv) + ey*FastMath.sin(Lv) + FastMath.sqrt(1 - ex*ex - ey*ey));
     }
 
     @Before

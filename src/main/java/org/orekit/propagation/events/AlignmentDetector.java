@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -65,8 +66,8 @@ public class AlignmentDetector extends AbstractDetector {
         super(orbit.getKeplerianPeriod() / 3, 1.0e-13 * orbit.getKeplerianPeriod());
         this.body = body;
         this.alignAngle = alignAngle;
-        this.cosAlignAngle = Math.cos(alignAngle);
-        this.sinAlignAngle = Math.sin(alignAngle);
+        this.cosAlignAngle = FastMath.cos(alignAngle);
+        this.sinAlignAngle = FastMath.sin(alignAngle);
     }
 
     /** Build a new alignment detector.
@@ -84,8 +85,8 @@ public class AlignmentDetector extends AbstractDetector {
         super(orbit.getKeplerianPeriod() / 3, threshold);
         this.body = body;
         this.alignAngle = alignAngle;
-        this.cosAlignAngle = Math.cos(alignAngle);
-        this.sinAlignAngle = Math.sin(alignAngle);
+        this.cosAlignAngle = FastMath.cos(alignAngle);
+        this.sinAlignAngle = FastMath.sin(alignAngle);
     }
 
     /** Get the body to align.
@@ -132,9 +133,9 @@ public class AlignmentDetector extends AbstractDetector {
         final Vector3D x  = new Vector3D(cosAlignAngle, a,  sinAlignAngle, b);
         final Vector3D y  = new Vector3D(sinAlignAngle, a, -cosAlignAngle, b);
         final Vector3D pb = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-        final double beta = Math.atan2(Vector3D.dotProduct(pb, y), Vector3D.dotProduct(pb, x));
-        final double betm = -Math.PI - beta;
-        final double betp =  Math.PI - beta;
+        final double beta = FastMath.atan2(Vector3D.dotProduct(pb, y), Vector3D.dotProduct(pb, x));
+        final double betm = -FastMath.PI - beta;
+        final double betp =  FastMath.PI - beta;
         if (beta < betm) {
             return betm;
         } else if (beta < betp) {

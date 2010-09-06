@@ -1,6 +1,7 @@
 package org.orekit.propagation.events;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,8 +56,8 @@ public class DihedralFieldOfViewDetectorTest {
         final Vector3D center = Vector3D.MINUS_J;
         final Vector3D axis1 = Vector3D.PLUS_K;
         final Vector3D axis2 = Vector3D.PLUS_I;
-        final double aperture1 = Math.toRadians(28);
-        final double aperture2 = Math.toRadians(120);
+        final double aperture1 = FastMath.toRadians(28);
+        final double aperture2 = FastMath.toRadians(120);
 
         final EventDetector sunVisi = new DihedralSunVisiDetector(maxCheck, sunPV, center, axis1, aperture1, axis2, aperture2);
 

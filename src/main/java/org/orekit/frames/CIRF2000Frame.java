@@ -20,6 +20,7 @@ import java.io.InputStream;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.PoissonSeries;
 import org.orekit.errors.OrekitException;
@@ -52,36 +53,36 @@ class CIRF2000Frame extends Frame {
     private static final long serialVersionUID = 4112885226125872560L;
 
     /** Radians per arcsecond. */
-    private static final double RADIANS_PER_ARC_SECOND = Math.PI / 648000;
+    private static final double RADIANS_PER_ARC_SECOND = FastMath.PI / 648000;
 
     // CHECKSTYLE: stop JavadocVariable check
 
     // lunisolar nutation elements
-    private static final double F10 = Math.toRadians(134.96340251);
+    private static final double F10 = FastMath.toRadians(134.96340251);
     private static final double F11 = 1717915923.217800  * RADIANS_PER_ARC_SECOND;
     private static final double F12 =         31.879200  * RADIANS_PER_ARC_SECOND;
     private static final double F13 =          0.051635  * RADIANS_PER_ARC_SECOND;
     private static final double F14 =         -0.0002447 * RADIANS_PER_ARC_SECOND;
 
-    private static final double F20 = Math.toRadians(357.52910918);
+    private static final double F20 = FastMath.toRadians(357.52910918);
     private static final double F21 = 129596581.048100   * RADIANS_PER_ARC_SECOND;
     private static final double F22 =        -0.553200   * RADIANS_PER_ARC_SECOND;
     private static final double F23 =         0.000136   * RADIANS_PER_ARC_SECOND;
     private static final double F24 =        -0.00001149 * RADIANS_PER_ARC_SECOND;
 
-    private static final double F30 = Math.toRadians(93.27209062);
+    private static final double F30 = FastMath.toRadians(93.27209062);
     private static final double F31 = 1739527262.847800   * RADIANS_PER_ARC_SECOND;
     private static final double F32 =        -12.751200   * RADIANS_PER_ARC_SECOND;
     private static final double F33 =         -0.001037   * RADIANS_PER_ARC_SECOND;
     private static final double F34 =          0.00000417 * RADIANS_PER_ARC_SECOND;
 
-    private static final double F40 = Math.toRadians(297.85019547);
+    private static final double F40 = FastMath.toRadians(297.85019547);
     private static final double F41 = 1602961601.209000   * RADIANS_PER_ARC_SECOND;
     private static final double F42 =         -6.370600   * RADIANS_PER_ARC_SECOND;
     private static final double F43 =          0.006593   * RADIANS_PER_ARC_SECOND;
     private static final double F44 =         -0.00003169 * RADIANS_PER_ARC_SECOND;
 
-    private static final double F50 = Math.toRadians(125.04455501);
+    private static final double F50 = FastMath.toRadians(125.04455501);
     private static final double F51 = -6962890.543100   * RADIANS_PER_ARC_SECOND;
     private static final double F52 =        7.472200   * RADIANS_PER_ARC_SECOND;
     private static final double F53 =        0.007702   * RADIANS_PER_ARC_SECOND;
@@ -238,11 +239,11 @@ class CIRF2000Frame extends Frame {
 
         // set up the bias, precession and nutation rotation
         final double x2Py2  = xCurrent * xCurrent + yCurrent * yCurrent;
-        final double zP1    = 1 + Math.sqrt(1 - x2Py2);
-        final double r      = Math.sqrt(x2Py2);
-        final double sPe2   = 0.5 * (sCurrent + Math.atan2(yCurrent, xCurrent));
-        final double cos    = Math.cos(sPe2);
-        final double sin    = Math.sin(sPe2);
+        final double zP1    = 1 + FastMath.sqrt(1 - x2Py2);
+        final double r      = FastMath.sqrt(x2Py2);
+        final double sPe2   = 0.5 * (sCurrent + FastMath.atan2(yCurrent, xCurrent));
+        final double cos    = FastMath.cos(sPe2);
+        final double sin    = FastMath.sin(sPe2);
         final double xPr    = xCurrent + r;
         final double xPrCos = xPr * cos;
         final double xPrSin = xPr * sin;
@@ -299,13 +300,13 @@ class CIRF2000Frame extends Frame {
         final int nM12 = (n - 1) / 2;
 
         // evaluate new location of center interval
-        final double newTCenter = h * Math.floor(t / h);
+        final double newTCenter = h * FastMath.floor(t / h);
 
         // shift reusable reference points
         int iMin = 0;
         int iMax = n;
-        final int shift = (int) Math.rint((newTCenter - tCenter) / h);
-        if (!Double.isNaN(tCenter) && (Math.abs(shift) < n)) {
+        final int shift = (int) FastMath.rint((newTCenter - tCenter) / h);
+        if (!Double.isNaN(tCenter) && (FastMath.abs(shift) < n)) {
             if (shift >= 0) {
                 System.arraycopy(xRef, shift, xRef, 0, n - shift);
                 System.arraycopy(yRef, shift, yRef, 0, n - shift);

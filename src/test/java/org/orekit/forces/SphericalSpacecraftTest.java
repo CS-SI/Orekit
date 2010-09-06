@@ -18,6 +18,7 @@ package org.orekit.forces;
 
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.frames.FramesFactory;
@@ -41,8 +42,8 @@ public class SphericalSpacecraftTest {
         final double mu = 3.9860047e14;
         final double raan = 270.;
         Orbit circ =
-            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(raan),
-                                   Math.toRadians(5.300 - raan), CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
+            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(raan),
+                                   FastMath.toRadians(5.300 - raan), CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
                                    FramesFactory.getEME2000(), date, mu);
 
         SpacecraftState state = new SpacecraftState(circ);
@@ -70,8 +71,8 @@ public class SphericalSpacecraftTest {
         final double mu = 3.9860047e14;
         final double raan = 270.;
         Orbit circ =
-            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(raan),
-                                   Math.toRadians(5.300 - raan), CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
+            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(raan),
+                                   FastMath.toRadians(5.300 - raan), CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
                                    FramesFactory.getEME2000(), date, mu);
 
         SpacecraftState state = new SpacecraftState(circ);

@@ -18,6 +18,7 @@ package org.orekit.time;
 
 import java.io.Serializable;
 
+import org.apache.commons.math.util.FastMath;
 import org.orekit.utils.Constants;
 
 /** Holder for date and time components.
@@ -98,7 +99,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
         seconds += offset;
 
         // fix range
-        final int dayShift = (int) Math.floor(seconds / Constants.JULIAN_DAY);
+        final int dayShift = (int) FastMath.floor(seconds / Constants.JULIAN_DAY);
         seconds -= Constants.JULIAN_DAY * dayShift;
         day     += dayShift;
 

@@ -19,6 +19,7 @@ package org.orekit.attitudes;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,7 +65,7 @@ public class FixedRateTest {
         final AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                                    new TimeComponents(13, 17, 7.865),
                                                    TimeScalesFactory.getUTC());
-        final double rate = 2 * Math.PI / (12 * 60);
+        final double rate = 2 * FastMath.PI / (12 * 60);
         FixedRate law = new FixedRate(new Attitude(date, FramesFactory.getEME2000(),
                                                    new Rotation(0.48, 0.64, 0.36, 0.48, false),
                                                    new Vector3D(rate, Vector3D.PLUS_K)));
@@ -91,16 +92,16 @@ public class FixedRateTest {
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
 
-        final double rate = 2 * Math.PI / (12 * 60);
+        final double rate = 2 * FastMath.PI / (12 * 60);
         AttitudeLaw law =
             new FixedRate(new Attitude(date, FramesFactory.getEME2000(),
                                        new Rotation(0.48, 0.64, 0.36, 0.48, false),
                                        new Vector3D(rate, Vector3D.PLUS_K)));
 
         KeplerianOrbit orbit =
-            new KeplerianOrbit(7178000.0, 1.e-4, Math.toRadians(50.),
-                              Math.toRadians(10.), Math.toRadians(20.),
-                              Math.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
+            new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
+                              FastMath.toRadians(10.), FastMath.toRadians(20.),
+                              FastMath.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);

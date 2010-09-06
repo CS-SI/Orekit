@@ -20,6 +20,7 @@ package org.orekit.attitudes;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -100,7 +101,7 @@ public class YawSteeringTest {
         Vector3D sunSat = rotYaw.applyTo(sunEME2000);
             
         // Check sun is in (X,Z) plane
-        Assert.assertEquals(0.0, Math.sin(sunSat.getAlpha()), 1.0e-7);
+        Assert.assertEquals(0.0, FastMath.sin(sunSat.getAlpha()), 1.0e-7);
 
     }
     
@@ -140,9 +141,9 @@ public class YawSteeringTest {
         AttitudeLaw law = new YawSteering(nadirLaw, CelestialBodyFactory.getSun(), Vector3D.MINUS_I);
 
         KeplerianOrbit orbit =
-            new KeplerianOrbit(7178000.0, 1.e-4, Math.toRadians(50.),
-                              Math.toRadians(10.), Math.toRadians(20.),
-                              Math.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
+            new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
+                              FastMath.toRadians(10.), FastMath.toRadians(20.),
+                              FastMath.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
                               FramesFactory.getEME2000(),
                               date.shiftedBy(-300.0),
                               3.986004415e14);
@@ -193,8 +194,8 @@ public class YawSteeringTest {
 
             //  Satellite position
             circOrbit =
-                new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
-                                       Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
+                                       FastMath.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
                                        FramesFactory.getEME2000(), date, mu);
             
             // Elliptic earth shape */

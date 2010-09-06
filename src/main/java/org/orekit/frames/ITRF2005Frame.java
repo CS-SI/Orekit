@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
@@ -36,7 +37,7 @@ class ITRF2005Frame extends Frame {
     private static final long serialVersionUID = 3691591368789020041L;
 
     /** 2&pi;. */
-    private static final double TWO_PI = 2.0 * Math.PI;
+    private static final double TWO_PI = 2.0 * FastMath.PI;
 
     /** Radians per arcsecond. */
     private static final double RADIANS_PER_ARC_SECOND = TWO_PI / 1296000;

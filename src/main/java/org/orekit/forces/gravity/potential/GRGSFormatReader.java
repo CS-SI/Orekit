@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -110,7 +111,7 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
             ++lineNumber;
 
             // match current header or data line
-            final Matcher matcher = LINES[Math.min(LINES.length, lineNumber) - 1].matcher(line);
+            final Matcher matcher = LINES[FastMath.min(LINES.length, lineNumber) - 1].matcher(line);
             if (!matcher.matches()) {
                 throw OrekitException.createParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                            lineNumber, name, line);

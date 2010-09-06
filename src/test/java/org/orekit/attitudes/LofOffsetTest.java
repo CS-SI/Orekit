@@ -21,6 +21,7 @@ import org.apache.commons.math.geometry.CardanEulerSingularityException;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -76,7 +77,7 @@ public class LofOffsetTest {
         // Check that 
         final Vector3D momentumEME2000 = pvSatEME2000.getMomentum();
         final Vector3D momentumLof = lofOffsetRot.applyTo(momentumEME2000);
-        final double cosinus = Math.cos(Vector3D.dotProduct(momentumLof, Vector3D.PLUS_K));
+        final double cosinus = FastMath.cos(Vector3D.dotProduct(momentumLof, Vector3D.PLUS_K));
         Assert.assertEquals(1., cosinus, Utils.epsilonAngle);
         
     }
@@ -87,15 +88,15 @@ public class LofOffsetTest {
 
         //  Satellite position
         final CircularOrbit circ =
-           new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(0.), Math.toRadians(270.),
-                                   Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+           new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
+                                   FastMath.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
                                    FramesFactory.getEME2000(), date, mu);
 
         // Create target pointing attitude law
         // ************************************  
         // Elliptic earth shape
         final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
-        final GeodeticPoint geoTargetITRF2005 = new GeodeticPoint(Math.toRadians(43.36), Math.toRadians(1.26), 600.);
+        final GeodeticPoint geoTargetITRF2005 = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
             
         // Attitude law definition from geodetic point target 
         final TargetPointing targetLaw = new TargetPointing(geoTargetITRF2005, earthShape);
@@ -131,7 +132,7 @@ public class LofOffsetTest {
         throws OrekitException, CardanEulerSingularityException {
         
         // Create target point and target pointing law towards that point
-        final GeodeticPoint targetDef  = new GeodeticPoint(Math.toRadians(5.), Math.toRadians(-40.), 0.);
+        final GeodeticPoint targetDef  = new GeodeticPoint(FastMath.toRadians(5.), FastMath.toRadians(-40.), 0.);
         final TargetPointing targetLaw = new TargetPointing(targetDef, earthSpheric);
        
         // Get roll, pitch, yaw angles corresponding to this pointing law
@@ -166,9 +167,9 @@ public class LofOffsetTest {
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
         KeplerianOrbit orbit =
-            new KeplerianOrbit(7178000.0, 1.e-4, Math.toRadians(50.),
-                              Math.toRadians(10.), Math.toRadians(20.),
-                              Math.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
+            new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
+                              FastMath.toRadians(10.), FastMath.toRadians(20.),
+                              FastMath.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);
@@ -205,14 +206,14 @@ public class LofOffsetTest {
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
         KeplerianOrbit orbit =
-            new KeplerianOrbit(7178000.0, 1.e-8, Math.toRadians(50.),
-                              Math.toRadians(10.), Math.toRadians(20.),
-                              Math.toRadians(0.), KeplerianOrbit.MEAN_ANOMALY, 
+            new KeplerianOrbit(7178000.0, 1.e-8, FastMath.toRadians(50.),
+                              FastMath.toRadians(10.), FastMath.toRadians(20.),
+                              FastMath.toRadians(0.), KeplerianOrbit.MEAN_ANOMALY, 
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         double alpha = 0.1;
-        double cos = Math.cos(alpha);
-        double sin = Math.sin(alpha);
+        double cos = FastMath.cos(alpha);
+        double sin = FastMath.sin(alpha);
 
         // Roll
         Attitude attitude = new LofOffset(RotationOrder.XYZ, alpha, 0.0, 0.0).getAttitude(orbit);
@@ -240,9 +241,9 @@ public class LofOffsetTest {
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
         KeplerianOrbit orbit =
-            new KeplerianOrbit(7178000.0, 1.e-4, Math.toRadians(50.),
-                              Math.toRadians(10.), Math.toRadians(20.),
-                              Math.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
+            new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
+                              FastMath.toRadians(10.), FastMath.toRadians(20.),
+                              FastMath.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         RotationOrder order = RotationOrder.ZXY;
@@ -295,8 +296,8 @@ public class LofOffsetTest {
             
             //  Satellite position
             orbit =
-                new CircularOrbit(7178000.0, 0.5e-8, -0.5e-8, Math.toRadians(50.), Math.toRadians(150.),
-                                       Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                new CircularOrbit(7178000.0, 0.5e-8, -0.5e-8, FastMath.toRadians(50.), FastMath.toRadians(150.),
+                                       FastMath.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
                                        FramesFactory.getEME2000(), date, mu);
             pvSatEME2000 = orbit.getPVCoordinates();
 

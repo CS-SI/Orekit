@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -258,7 +259,7 @@ public class EventShifterTest {
         }
 
         public double getTimeError() {
-            return Math.abs(dt - expectedDT);
+            return FastMath.abs(dt - expectedDT);
         }
 
     }

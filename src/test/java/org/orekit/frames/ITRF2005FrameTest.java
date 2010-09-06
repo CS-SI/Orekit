@@ -17,6 +17,7 @@
 package org.orekit.frames;
 
 
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,9 +42,9 @@ public class ITRF2005FrameTest {
             final AbsoluteDate date = date0.shiftedBy(dt);
             final Transform t = itrfWith.getTransformTo(itrfWithout, date);
             Assert.assertEquals(0, t.getTranslation().getNorm(), 1.0e-15);
-            final double milliarcSeconds = Math.toDegrees(t.getRotation().getAngle()) * 3600000.0;
-            minCorrection = Math.min(minCorrection, milliarcSeconds);
-            maxCorrection = Math.max(maxCorrection, milliarcSeconds);
+            final double milliarcSeconds = FastMath.toDegrees(t.getRotation().getAngle()) * 3600000.0;
+            minCorrection = FastMath.min(minCorrection, milliarcSeconds);
+            maxCorrection = FastMath.max(maxCorrection, milliarcSeconds);
         }
 
         Assert.assertEquals(0.064, minCorrection, 0.001);

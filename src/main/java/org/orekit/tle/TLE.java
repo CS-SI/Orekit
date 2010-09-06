@@ -22,6 +22,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -181,18 +182,18 @@ public class TLE implements TimeStamped, Serializable {
 
         // mean motion development
         // converted from rev/day, 2 * rev/day^2 and 6 * rev/day^3 to rad/s, rad/s^2 and rad/s^3
-        meanMotion                 = parseDouble(line2, 52, 11) * Math.PI / 43200.0;
-        meanMotionFirstDerivative  = parseDouble(line1, 33, 10) * Math.PI / 1.86624e9;
+        meanMotion                 = parseDouble(line2, 52, 11) * FastMath.PI / 43200.0;
+        meanMotionFirstDerivative  = parseDouble(line1, 33, 10) * FastMath.PI / 1.86624e9;
         meanMotionSecondDerivative = Double.parseDouble((line1.substring(44, 45) + '.' +
                                                          line1.substring(45, 50) + 'e' +
                                                          line1.substring(50, 52)).replace(' ', '0')) *
-                                     Math.PI / 5.3747712e13;
+                                     FastMath.PI / 5.3747712e13;
 
         eccentricity = Double.parseDouble("." + line2.substring(26, 33).replace(' ', '0'));
-        inclination  = Math.toRadians(parseDouble(line2, 8, 8));
-        pa           = Math.toRadians(parseDouble(line2, 34, 8));
-        raan         = Math.toRadians(Double.parseDouble(line2.substring(17, 25).replace(' ', '0')));
-        meanAnomaly  = Math.toRadians(parseDouble(line2, 43, 8));
+        inclination  = FastMath.toRadians(parseDouble(line2, 8, 8));
+        pa           = FastMath.toRadians(parseDouble(line2, 34, 8));
+        raan         = FastMath.toRadians(Double.parseDouble(line2.substring(17, 25).replace(' ', '0')));
+        meanAnomaly  = FastMath.toRadians(parseDouble(line2, 43, 8));
 
         revolutionNumberAtEpoch = parseInteger(line2, 63, 5);
         bStar = Double.parseDouble((line1.substring(53, 54) + '.' +
@@ -313,12 +314,12 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append(f38.format(day));
 
         buffer.append(' ');
-        final double n1 = meanMotionFirstDerivative * 1.86624e9 / Math.PI;
+        final double n1 = meanMotionFirstDerivative * 1.86624e9 / FastMath.PI;
         final String sn1 = addPadding(new DecimalFormat(".00000000", SYMBOLS).format(n1), ' ', 10, true);
         buffer.append(sn1);
 
         buffer.append(' ');
-        final double n2 = meanMotionSecondDerivative * 5.3747712e13 / Math.PI;
+        final double n2 = meanMotionSecondDerivative * 5.3747712e13 / FastMath.PI;
         final String doubleDash = "--";
         final String sn2 = fExp.format(n2).replace('E', '-').replace(doubleDash, "-").replace(".", "");
         buffer.append(addPadding(sn2, ' ', 8, true));
@@ -353,18 +354,18 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append(addPadding(satelliteNumber, '0', 5, true));
 
         buffer.append(' ');
-        buffer.append(addPadding(f34.format(Math.toDegrees(inclination)), ' ', 8, true));
+        buffer.append(addPadding(f34.format(FastMath.toDegrees(inclination)), ' ', 8, true));
         buffer.append(' ');
-        buffer.append(addPadding(f34.format(Math.toDegrees(raan)), ' ', 8, true));
+        buffer.append(addPadding(f34.format(FastMath.toDegrees(raan)), ' ', 8, true));
         buffer.append(' ');
-        buffer.append(addPadding((int) Math.rint(eccentricity * 1.0e7), '0', 7, true));
+        buffer.append(addPadding((int) FastMath.rint(eccentricity * 1.0e7), '0', 7, true));
         buffer.append(' ');
-        buffer.append(addPadding(f34.format(Math.toDegrees(pa)), ' ', 8, true));
+        buffer.append(addPadding(f34.format(FastMath.toDegrees(pa)), ' ', 8, true));
         buffer.append(' ');
-        buffer.append(addPadding(f34.format(Math.toDegrees(meanAnomaly)), ' ', 8, true));
+        buffer.append(addPadding(f34.format(FastMath.toDegrees(meanAnomaly)), ' ', 8, true));
 
         buffer.append(' ');
-        buffer.append(addPadding(f211.format(meanMotion * 43200.0 / Math.PI), ' ', 11, true));
+        buffer.append(addPadding(f211.format(meanMotion * 43200.0 / FastMath.PI), ' ', 11, true));
         buffer.append(addPadding(revolutionNumberAtEpoch, ' ', 5, true));
 
         buffer.append(Integer.toString(checksum(buffer)));

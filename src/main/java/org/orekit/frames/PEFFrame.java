@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -39,13 +40,13 @@ class PEFFrame extends Frame {
     private static final long serialVersionUID = -1424363818757228417L;
 
     /** 2&pi;. */
-    private static final double TWO_PI = 2.0 * Math.PI;
+    private static final double TWO_PI = 2.0 * FastMath.PI;
 
     /** Radians per second of time. */
     private static final double RADIANS_PER_SECOND = TWO_PI / Constants.JULIAN_DAY;
 
     /** Radians per arcsecond. */
-    private static final double RADIANS_PER_ARC_SECOND = Math.PI / 648000;
+    private static final double RADIANS_PER_ARC_SECOND = FastMath.PI / 648000;
 
     /** Angular velocity of the Earth, in rad/s. */
     private static final double AVE = 7.292115146706979e-5;
@@ -80,35 +81,35 @@ class PEFFrame extends Frame {
 
     // lunisolar nutation elements
     // Coefficients for l (Mean Anomaly of the Moon).
-    private static final double F10  = Math.toRadians(134.96340251);
+    private static final double F10  = FastMath.toRadians(134.96340251);
     private static final double F110 =    715923.2178    * RADIANS_PER_ARC_SECOND;
     private static final double F111 =      1325.0;
     private static final double F12  =        31.87908   * RADIANS_PER_ARC_SECOND;
     private static final double F13  =         0.0516348 * RADIANS_PER_ARC_SECOND;
 
     // Coefficients for l' (Mean Anomaly of the Sun).
-    private static final double F20  = Math.toRadians(357.52752910918);
+    private static final double F20  = FastMath.toRadians(357.52752910918);
     private static final double F210 =   1292581.048     * RADIANS_PER_ARC_SECOND;
     private static final double F211 =        99.0;
     private static final double F22  =        -0.55332   * RADIANS_PER_ARC_SECOND;
     private static final double F23  =         0.0001368 * RADIANS_PER_ARC_SECOND;
 
     // Coefficients for F = L (Mean Longitude of the Moon) - Omega.
-    private static final double F30  = Math.toRadians(93.27209062);
+    private static final double F30  = FastMath.toRadians(93.27209062);
     private static final double F310 =    295262.8477    * RADIANS_PER_ARC_SECOND;
     private static final double F311 =      1342.0;
     private static final double F32  =       -12.7512    * RADIANS_PER_ARC_SECOND;
     private static final double F33  =        -0.0010368 * RADIANS_PER_ARC_SECOND;
 
     // Coefficients for D (Mean Elongation of the Moon from the Sun).
-    private static final double F40  = Math.toRadians(297.85019547);
+    private static final double F40  = FastMath.toRadians(297.85019547);
     private static final double F410 =   1105601.209     * RADIANS_PER_ARC_SECOND;
     private static final double F411 =      1236.0;
     private static final double F42  =        -6.37056   * RADIANS_PER_ARC_SECOND;
     private static final double F43  =         0.0065916 * RADIANS_PER_ARC_SECOND;
 
     // Coefficients for Omega (Mean Longitude of the Ascending Node of the Moon).
-    private static final double F50  = Math.toRadians(125.04452222);
+    private static final double F50  = FastMath.toRadians(125.04452222);
     private static final double F510 =   -482890.539 * RADIANS_PER_ARC_SECOND;
     private static final double F511 =        -5.0;
     private static final double F52  =         7.455 * RADIANS_PER_ARC_SECOND;
@@ -427,13 +428,13 @@ class PEFFrame extends Frame {
         final int nM12 = (n - 1) / 2;
 
         // evaluate new location of center interval
-        final double newTCenter = h * Math.floor(t / h);
+        final double newTCenter = h * FastMath.floor(t / h);
 
         // shift reusable reference points
         int iMin = 0;
         int iMax = n;
-        final int shift = (int) Math.rint((newTCenter - tCenter) / h);
-        if (!Double.isNaN(tCenter) && (Math.abs(shift) < n)) {
+        final int shift = (int) FastMath.rint((newTCenter - tCenter) / h);
+        if (!Double.isNaN(tCenter) && (FastMath.abs(shift) < n)) {
             if (shift >= 0) {
                 System.arraycopy(dpsiRef, shift, dpsiRef, 0, n - shift);
                 System.arraycopy(depsRef, shift, depsRef, 0, n - shift);
@@ -491,8 +492,8 @@ class PEFFrame extends Frame {
             // Accumulate current nutation term.
             final double s = SL[j] + SLT[j] * tc;
             final double c = CO[j] + COT[j] * tc;
-            if (s != 0.0) dpsi += s * Math.sin(arg);
-            if (c != 0.0) deps += c * Math.cos(arg);
+            if (s != 0.0) dpsi += s * FastMath.sin(arg);
+            if (c != 0.0) deps += c * FastMath.cos(arg);
         }
 
         // Convert results from 0.1 mas units to radians. */
@@ -517,7 +518,7 @@ class PEFFrame extends Frame {
         final double om = ((F53 * tc + F52) * tc + F510) * tc + F50 + ((F511 * tc) % 1.0) * TWO_PI;
 
         // Equation of the Equinoxes
-        return dpsiCurrent * Math.cos(moe) + EQE_1 * Math.sin(om) + EQE_2 * Math.sin(om + om);
+        return dpsiCurrent * FastMath.cos(moe) + EQE_1 * FastMath.sin(om) + EQE_2 * FastMath.sin(om + om);
 
     }
 }

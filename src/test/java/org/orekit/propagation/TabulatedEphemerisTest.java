@@ -20,6 +20,7 @@ package org.orekit.propagation;
 import java.text.ParseException;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,7 +53,7 @@ public class TabulatedEphemerisTest {
         double e = 0.5e-4;
         double i = 1.7105407051081795;
         double omega = 1.9674147913622104;
-        double OMEGA = Math.toRadians(261);
+        double OMEGA = FastMath.toRadians(261);
         double lv = 0;
 
         AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
@@ -136,12 +137,12 @@ public class TabulatedEphemerisTest {
         throws PropagationException {
         SpacecraftState state1 = eph1.propagate(date);
         SpacecraftState state2 = eph2.propagate(date);
-        double maxError = Math.abs(state1.getA() - state2.getA());
-        maxError = Math.max(maxError, Math.abs(state1.getEquinoctialEx() - state2.getEquinoctialEx()));
-        maxError = Math.max(maxError, Math.abs(state1.getEquinoctialEy() - state2.getEquinoctialEy()));
-        maxError = Math.max(maxError, Math.abs(state1.getHx() - state2.getHx()));
-        maxError = Math.max(maxError, Math.abs(state1.getHy() - state2.getHy()));
-        maxError = Math.max(maxError, Math.abs(state1.getLv() - state2.getLv()));
+        double maxError = FastMath.abs(state1.getA() - state2.getA());
+        maxError = FastMath.max(maxError, FastMath.abs(state1.getEquinoctialEx() - state2.getEquinoctialEx()));
+        maxError = FastMath.max(maxError, FastMath.abs(state1.getEquinoctialEy() - state2.getEquinoctialEy()));
+        maxError = FastMath.max(maxError, FastMath.abs(state1.getHx() - state2.getHx()));
+        maxError = FastMath.max(maxError, FastMath.abs(state1.getHy() - state2.getHy()));
+        maxError = FastMath.max(maxError, FastMath.abs(state1.getLv() - state2.getLv()));
         if (expectedBelow) {
             Assert.assertTrue(maxError <= threshold);
         } else {

@@ -17,6 +17,7 @@
 package org.orekit.orbits;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -180,14 +181,14 @@ public class EquinoctialOrbit extends Orbit {
         final Vector3D p = pvP;
         final double cLv = (p.getX() - d * p.getZ() * w.getX()) / r;
         final double sLv = (p.getY() - d * p.getZ() * w.getY()) / r;
-        lv = Math.atan2(sLv, cLv);
+        lv = FastMath.atan2(sLv, cLv);
 
         // compute eccentricity vector
-        final double eSE = Vector3D.dotProduct(p, pvV) / Math.sqrt(mu * a);
+        final double eSE = Vector3D.dotProduct(p, pvV) / FastMath.sqrt(mu * a);
         final double eCE = rV2OnMu - 1;
         final double e2  = eCE * eCE + eSE * eSE;
         final double f   = eCE - e2;
-        final double g   = Math.sqrt(1 - e2) * eSE;
+        final double g   = FastMath.sqrt(1 - e2) * eSE;
         ex = a * (f * cLv + g * sLv) / r;
         ey = a * (f * sLv - g * cLv) / r;
     }
@@ -251,12 +252,12 @@ public class EquinoctialOrbit extends Orbit {
      * @return E + &omega; + &Omega; eccentric latitude argument (rad)
      */
     public double getLE() {
-        final double epsilon = Math.sqrt(1 - ex * ex - ey * ey);
-        final double cosLv   = Math.cos(lv);
-        final double sinLv   = Math.sin(lv);
+        final double epsilon = FastMath.sqrt(1 - ex * ex - ey * ey);
+        final double cosLv   = FastMath.cos(lv);
+        final double sinLv   = FastMath.sin(lv);
         final double num     = ey * cosLv - ex * sinLv;
         final double den     = epsilon + 1 + ex * cosLv + ey * sinLv;
-        return lv + 2 * Math.atan(num / den);
+        return lv + 2 * FastMath.atan(num / den);
     }
 
     /** Computes the eccentric latitude argument.
@@ -264,12 +265,12 @@ public class EquinoctialOrbit extends Orbit {
      * @return the true latitude argument
      */
     private double computeLE(final double lE) {
-        final double epsilon = Math.sqrt(1 - ex * ex - ey * ey);
-        final double cosLE   = Math.cos(lE);
-        final double sinLE   = Math.sin(lE);
+        final double epsilon = FastMath.sqrt(1 - ex * ex - ey * ey);
+        final double cosLE   = FastMath.cos(lE);
+        final double sinLE   = FastMath.sin(lE);
         final double num = ex * sinLE - ey * cosLE;
         final double den = epsilon + 1 - ex * cosLE - ey * sinLE;
-        return lE + 2 * Math.atan(num / den);
+        return lE + 2 * FastMath.atan(num / den);
     }
 
     /** Get the mean latitude argument.
@@ -277,7 +278,7 @@ public class EquinoctialOrbit extends Orbit {
      */
     public double getLM() {
         final double lE = getLE();
-        return lE - ex * Math.sin(lE) + ey * Math.cos(lE);
+        return lE - ex * FastMath.sin(lE) + ey * FastMath.cos(lE);
     }
 
     /** Computes the mean latitude argument.
@@ -291,8 +292,8 @@ public class EquinoctialOrbit extends Orbit {
         double lE = lM;
         double shift = 0.0;
         double lEmlM = 0.0;
-        double cosLE = Math.cos(lE);
-        double sinLE = Math.sin(lE);
+        double cosLE = FastMath.cos(lE);
+        double sinLE = FastMath.sin(lE);
         int iter = 0;
         do {
             final double f2 = ex * sinLE - ey * cosLE;
@@ -304,10 +305,10 @@ public class EquinoctialOrbit extends Orbit {
 
             lEmlM -= shift;
             lE     = lM + lEmlM;
-            cosLE  = Math.cos(lE);
-            sinLE  = Math.sin(lE);
+            cosLE  = FastMath.cos(lE);
+            sinLE  = FastMath.sin(lE);
 
-        } while ((++iter < 50) && (Math.abs(shift) > 1.0e-12));
+        } while ((++iter < 50) && (FastMath.abs(shift) > 1.0e-12));
 
         return computeLE(lE); // which set the lv parameter
 
@@ -317,14 +318,14 @@ public class EquinoctialOrbit extends Orbit {
      * @return eccentricity
      */
     public double getE() {
-        return Math.sqrt(ex * ex + ey * ey);
+        return FastMath.sqrt(ex * ex + ey * ey);
     }
 
     /** Get the inclination.
      * @return inclination (rad)
      */
     public double getI() {
-        return 2 * Math.atan(Math.sqrt(hx * hx + hy * hy));
+        return 2 * FastMath.atan(FastMath.sqrt(hx * hx + hy * hy));
     }
 
     /** {@inheritDoc} */
@@ -343,7 +344,7 @@ public class EquinoctialOrbit extends Orbit {
                                   append("a: ").append(a).
                                   append("; ex: ").append(ex).append("; ey: ").append(ey).
                                   append("; hx: ").append(hx).append("; hy: ").append(hy).
-                                  append("; lv: ").append(Math.toDegrees(lv)).
+                                  append("; lv: ").append(FastMath.toDegrees(lv)).
                                   append(";}").toString();
     }
 

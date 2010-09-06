@@ -19,6 +19,7 @@ package org.orekit.frames;
 
 import java.io.FileNotFoundException;
 
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,8 +45,8 @@ public class CIRF2000FrameTest {
         for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(900)) {
             final Transform transform =
                 interpolatingFrame.getTransformTo(nonInterpolatingFrame, date);
-            final double error = transform.getRotation().getAngle() * 648000 / Math.PI;
-            maxError = Math.max(maxError, error);
+            final double error = transform.getRotation().getAngle() * 648000 / FastMath.PI;
+            maxError = FastMath.max(maxError, error);
         }
 
         Assert.assertTrue(maxError < 1.3e-10);

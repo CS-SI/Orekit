@@ -19,6 +19,7 @@ package org.orekit.bodies;
 import java.io.Serializable;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
 
 /** Point location relative to a 2D body surface.
@@ -99,10 +100,10 @@ public class GeodeticPoint implements Serializable {
      */
     public Vector3D getZenith() {
         if (zenith == null) {
-            final double cosLat = Math.cos(latitude);
-            final double sinLat = Math.sin(latitude);
-            final double cosLon = Math.cos(longitude);
-            final double sinLon = Math.sin(longitude);
+            final double cosLat = FastMath.cos(latitude);
+            final double sinLat = FastMath.sin(latitude);
+            final double cosLon = FastMath.cos(longitude);
+            final double sinLon = FastMath.sin(longitude);
             zenith = new Vector3D(cosLon * cosLat, sinLon * cosLat, sinLat);
         }
         return zenith;
@@ -128,10 +129,10 @@ public class GeodeticPoint implements Serializable {
      */
     public Vector3D getNorth() {
         if (north == null) {
-            final double cosLat = Math.cos(latitude);
-            final double sinLat = Math.sin(latitude);
-            final double cosLon = Math.cos(longitude);
-            final double sinLon = Math.sin(longitude);
+            final double cosLat = FastMath.cos(latitude);
+            final double sinLat = FastMath.sin(latitude);
+            final double cosLon = FastMath.cos(longitude);
+            final double sinLon = FastMath.sin(longitude);
             north = new Vector3D(-cosLon * sinLat, -sinLon * sinLat, cosLat);
         }
         return north;
@@ -157,7 +158,7 @@ public class GeodeticPoint implements Serializable {
      */
     public Vector3D getEast() {
         if (east == null) {
-            east = new Vector3D(-Math.sin(longitude), Math.cos(longitude), 0);
+            east = new Vector3D(-FastMath.sin(longitude), FastMath.cos(longitude), 0);
         }
         return east;
     }

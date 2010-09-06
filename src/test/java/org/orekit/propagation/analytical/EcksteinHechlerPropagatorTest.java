@@ -21,6 +21,7 @@ import java.util.Collection;
 
 import org.apache.commons.math.exception.util.DummyLocalizable;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -87,16 +88,16 @@ public class EcksteinHechlerPropagatorTest {
                      * initialOrbit.getE());
         Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getHx(), initialOrbit.getHx()),
                      initialOrbit.getHx(), Utils.epsilonAngle
-                     * Math.abs(initialOrbit.getI()));
+                     * FastMath.abs(initialOrbit.getI()));
         Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getHy(), initialOrbit.getHy()),
                      initialOrbit.getHy(), Utils.epsilonAngle
-                     * Math.abs(initialOrbit.getI()));
+                     * FastMath.abs(initialOrbit.getI()));
         Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLv(), initialOrbit.getLv()),
                      initialOrbit.getLv(), Utils.epsilonAngle
-                     * Math.abs(initialOrbit.getLv()));
+                     * FastMath.abs(initialOrbit.getLv()));
         Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(), initialOrbit.getLM()),
                      initialOrbit.getLM(), Utils.epsilonAngle
-                     * Math.abs(initialOrbit.getLM()));
+                     * FastMath.abs(initialOrbit.getLM()));
 
     }
 
@@ -132,19 +133,19 @@ public class EcksteinHechlerPropagatorTest {
                      * initialOrbit.getE());
         Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getHx(), initialOrbit.getHx()),
                      initialOrbit.getHx(), Utils.epsilonAngle
-                     * Math.abs(initialOrbit.getI()));
+                     * FastMath.abs(initialOrbit.getI()));
         Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getHy(), initialOrbit.getHy()),
                      initialOrbit.getHy(), Utils.epsilonAngle
-                     * Math.abs(initialOrbit.getI()));
+                     * FastMath.abs(initialOrbit.getI()));
         Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLv(), initialOrbit.getLv()),
                      initialOrbit.getLv(), Utils.epsilonAngle
-                     * Math.abs(initialOrbit.getLv()));
+                     * FastMath.abs(initialOrbit.getLv()));
         Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLE(), initialOrbit.getLE()),
                      initialOrbit.getLE(), Utils.epsilonAngle
-                     * Math.abs(initialOrbit.getLE()));
+                     * FastMath.abs(initialOrbit.getLE()));
         Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(), initialOrbit.getLM()),
                      initialOrbit.getLM(), Utils.epsilonAngle
-                     * Math.abs(initialOrbit.getLM()));
+                     * FastMath.abs(initialOrbit.getLM()));
 
     }
 
@@ -199,19 +200,19 @@ public class EcksteinHechlerPropagatorTest {
                      * finalOrbitKep.getE());
         Assert.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHx(), finalOrbitKep.getHx()),
                      finalOrbitKep.getHx(), Utils.epsilonAngle
-                     * Math.abs(finalOrbitKep.getI()));
+                     * FastMath.abs(finalOrbitKep.getI()));
         Assert.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHy(), finalOrbitKep.getHy()),
                      finalOrbitKep.getHy(), Utils.epsilonAngle
-                     * Math.abs(finalOrbitKep.getI()));
+                     * FastMath.abs(finalOrbitKep.getI()));
         Assert.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLv(), finalOrbitKep.getLv()),
                      finalOrbitKep.getLv(), Utils.epsilonAngle
-                     * Math.abs(finalOrbitKep.getLv()));
+                     * FastMath.abs(finalOrbitKep.getLv()));
         Assert.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLE(), finalOrbitKep.getLE()),
                      finalOrbitKep.getLE(), Utils.epsilonAngle
-                     * Math.abs(finalOrbitKep.getLE()));
+                     * FastMath.abs(finalOrbitKep.getLE()));
         Assert.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLM(), finalOrbitKep.getLM()),
                      finalOrbitKep.getLM(), Utils.epsilonAngle
-                     * Math.abs(finalOrbitKep.getLM()));
+                     * FastMath.abs(finalOrbitKep.getLM()));
 
     }
 
@@ -244,27 +245,27 @@ public class EcksteinHechlerPropagatorTest {
 
         // computation of M final orbit
         double LM = finalOrbit.getLE() - finalOrbit.getEquinoctialEx()
-        * Math.sin(finalOrbit.getLE()) + finalOrbit.getEquinoctialEy()
-        * Math.cos(finalOrbit.getLE());
+        * FastMath.sin(finalOrbit.getLE()) + finalOrbit.getEquinoctialEy()
+        * FastMath.cos(finalOrbit.getLE());
 
         Assert.assertEquals(LM, finalOrbit.getLM(), Utils.epsilonAngle
-                     * Math.abs(finalOrbit.getLM()));
+                     * FastMath.abs(finalOrbit.getLM()));
 
         // test of tan ((LE - Lv)/2) :
-        Assert.assertEquals(Math.tan((finalOrbit.getLE() - finalOrbit.getLv()) / 2.),
+        Assert.assertEquals(FastMath.tan((finalOrbit.getLE() - finalOrbit.getLv()) / 2.),
                      tangLEmLv(finalOrbit.getLv(), finalOrbit.getEquinoctialEx(), finalOrbit
                                .getEquinoctialEy()), Utils.epsilonAngle);
 
         // test of evolution of M vs E: LM = LE - ex*sin(LE) + ey*cos(LE)
         double deltaM = finalOrbit.getLM() - initialOrbit.getLM();
         double deltaE = finalOrbit.getLE() - initialOrbit.getLE();
-        double delta = finalOrbit.getEquinoctialEx() * Math.sin(finalOrbit.getLE())
-        - initialOrbit.getEquinoctialEx() * Math.sin(initialOrbit.getLE())
-        - finalOrbit.getEquinoctialEy() * Math.cos(finalOrbit.getLE())
-        + initialOrbit.getEquinoctialEy() * Math.cos(initialOrbit.getLE());
+        double delta = finalOrbit.getEquinoctialEx() * FastMath.sin(finalOrbit.getLE())
+        - initialOrbit.getEquinoctialEx() * FastMath.sin(initialOrbit.getLE())
+        - finalOrbit.getEquinoctialEy() * FastMath.cos(finalOrbit.getLE())
+        + initialOrbit.getEquinoctialEy() * FastMath.cos(initialOrbit.getLE());
 
         Assert.assertEquals(deltaM, deltaE - delta, Utils.epsilonAngle
-                     * Math.abs(deltaE - delta));
+                     * FastMath.abs(deltaE - delta));
 
         // for final orbit
         double ex = finalOrbit.getEquinoctialEx();
@@ -278,12 +279,12 @@ public class EcksteinHechlerPropagatorTest {
         double hx2 = hx * hx;
         double hy2 = hy * hy;
         double h2p1 = 1. + hx2 + hy2;
-        double beta = 1. / (1. + Math.sqrt(1. - ex2 - ey2));
+        double beta = 1. / (1. + FastMath.sqrt(1. - ex2 - ey2));
 
-        double x3 = -ex + (1. - beta * ey2) * Math.cos(LE) + beta * ex * ey
-        * Math.sin(LE);
-        double y3 = -ey + (1. - beta * ex2) * Math.sin(LE) + beta * ex * ey
-        * Math.cos(LE);
+        double x3 = -ex + (1. - beta * ey2) * FastMath.cos(LE) + beta * ex * ey
+        * FastMath.sin(LE);
+        double y3 = -ey + (1. - beta * ex2) * FastMath.sin(LE) + beta * ex * ey
+        * FastMath.cos(LE);
 
         Vector3D U = new Vector3D((1. + hx2 - hy2) / h2p1, (2. * hx * hy) / h2p1,
                                   (-2. * hy) / h2p1);
@@ -324,13 +325,13 @@ public class EcksteinHechlerPropagatorTest {
 
         // computation of M final orbit
         double LM = finalOrbit.getLE() - finalOrbit.getEquinoctialEx()
-        * Math.sin(finalOrbit.getLE()) + finalOrbit.getEquinoctialEy()
-        * Math.cos(finalOrbit.getLE());
+        * FastMath.sin(finalOrbit.getLE()) + finalOrbit.getEquinoctialEy()
+        * FastMath.cos(finalOrbit.getLE());
 
         Assert.assertEquals(LM, finalOrbit.getLM(), Utils.epsilonAngle);
 
         // test of tan((LE - Lv)/2) :
-        Assert.assertEquals(Math.tan((finalOrbit.getLE() - finalOrbit.getLv()) / 2.),
+        Assert.assertEquals(FastMath.tan((finalOrbit.getLE() - finalOrbit.getLv()) / 2.),
                      tangLEmLv(finalOrbit.getLv(), finalOrbit.getEquinoctialEx(), finalOrbit
                                .getEquinoctialEy()), Utils.epsilonAngle);
 
@@ -338,13 +339,13 @@ public class EcksteinHechlerPropagatorTest {
         // with ex and ey the same for initial and final orbit
         double deltaM = finalOrbit.getLM() - initialOrbit.getLM();
         double deltaE = finalOrbit.getLE() - initialOrbit.getLE();
-        double delta = finalOrbit.getEquinoctialEx() * Math.sin(finalOrbit.getLE())
-        - initialOrbit.getEquinoctialEx() * Math.sin(initialOrbit.getLE())
-        - finalOrbit.getEquinoctialEy() * Math.cos(finalOrbit.getLE())
-        + initialOrbit.getEquinoctialEy() * Math.cos(initialOrbit.getLE());
+        double delta = finalOrbit.getEquinoctialEx() * FastMath.sin(finalOrbit.getLE())
+        - initialOrbit.getEquinoctialEx() * FastMath.sin(initialOrbit.getLE())
+        - finalOrbit.getEquinoctialEy() * FastMath.cos(finalOrbit.getLE())
+        + initialOrbit.getEquinoctialEy() * FastMath.cos(initialOrbit.getLE());
 
         Assert.assertEquals(deltaM, deltaE - delta, Utils.epsilonAngle
-                     * Math.abs(deltaE - delta));
+                     * FastMath.abs(deltaE - delta));
 
         // for final orbit
         double ex = finalOrbit.getEquinoctialEx();
@@ -358,12 +359,12 @@ public class EcksteinHechlerPropagatorTest {
         double hx2 = hx * hx;
         double hy2 = hy * hy;
         double h2p1 = 1. + hx2 + hy2;
-        double beta = 1. / (1. + Math.sqrt(1. - ex2 - ey2));
+        double beta = 1. / (1. + FastMath.sqrt(1. - ex2 - ey2));
 
-        double x3 = -ex + (1. - beta * ey2) * Math.cos(LE) + beta * ex * ey
-        * Math.sin(LE);
-        double y3 = -ey + (1. - beta * ex2) * Math.sin(LE) + beta * ex * ey
-        * Math.cos(LE);
+        double x3 = -ex + (1. - beta * ey2) * FastMath.cos(LE) + beta * ex * ey
+        * FastMath.sin(LE);
+        double y3 = -ey + (1. - beta * ex2) * FastMath.sin(LE) + beta * ex * ey
+        * FastMath.cos(LE);
 
         Vector3D U = new Vector3D((1. + hx2 - hy2) / h2p1, (2. * hx * hy) / h2p1,
                                   (-2. * hy) / h2p1);
@@ -392,13 +393,13 @@ public class EcksteinHechlerPropagatorTest {
         double gom = 1.919862;
         double pso_M = 0.5236193; // M + pom
 
-        double e = Math.sqrt(exp * exp + eyp * eyp);
-        double pom = Math.atan2(eyp, exp);
-        double ex = e * Math.cos(pom + gom);
-        double ey = e * Math.sin(pom + gom);
+        double e = FastMath.sqrt(exp * exp + eyp * eyp);
+        double pom = FastMath.atan2(eyp, exp);
+        double ex = e * FastMath.cos(pom + gom);
+        double ey = e * FastMath.sin(pom + gom);
         Orbit initialOrbit = new EquinoctialOrbit(a, ex, ey,
-                                                Math.tan(i / 2) * Math.cos(gom),
-                                                Math.tan(i / 2) * Math.sin(gom),
+                                                FastMath.tan(i / 2) * FastMath.cos(gom),
+                                                FastMath.tan(i / 2) * FastMath.sin(gom),
                                                 pso_M + gom,
                                                 EquinoctialOrbit.MEAN_LATITUDE_ARGUMENT, 
                                                 FramesFactory.getEME2000(), initDate, mu);
@@ -424,20 +425,20 @@ public class EcksteinHechlerPropagatorTest {
         gom = 1.9674147913622104;
         pso_M = 4.42298640282359; // M + pom
 
-        e = Math.sqrt(exp * exp + eyp * eyp);
-        pom = Math.atan2(eyp, exp);
-        ex = e * Math.cos(pom + gom);
-        ey = e * Math.sin(pom + gom);
+        e = FastMath.sqrt(exp * exp + eyp * eyp);
+        pom = FastMath.atan2(eyp, exp);
+        ex = e * FastMath.cos(pom + gom);
+        ey = e * FastMath.sin(pom + gom);
         Assert.assertEquals(0.0, finalOrbit.getDate().durationFrom(extrapDate), Utils.epsilonTest * delta_t);
         Assert.assertEquals(finalOrbit.getA(), a, 10. * Utils.epsilonTest * finalOrbit.getA());
         Assert.assertEquals(finalOrbit.getEquinoctialEx(), ex, Utils.epsilonE * finalOrbit.getE());
         Assert.assertEquals(finalOrbit.getEquinoctialEy(), ey, Utils.epsilonE * finalOrbit.getE());
-        Assert.assertEquals(finalOrbit.getHx(), Math.tan(i / 2.) * Math.cos(gom),
-                     Utils.epsilonAngle * Math.abs(finalOrbit.getHx()));
-        Assert.assertEquals(finalOrbit.getHy(), Math.tan(i / 2.) * Math.sin(gom),
-                     Utils.epsilonAngle * Math.abs(finalOrbit.getHy()));
+        Assert.assertEquals(finalOrbit.getHx(), FastMath.tan(i / 2.) * FastMath.cos(gom),
+                     Utils.epsilonAngle * FastMath.abs(finalOrbit.getHx()));
+        Assert.assertEquals(finalOrbit.getHy(), FastMath.tan(i / 2.) * FastMath.sin(gom),
+                     Utils.epsilonAngle * FastMath.abs(finalOrbit.getHy()));
         Assert.assertEquals(finalOrbit.getLM(), pso_M + gom, Utils.epsilonAngle
-                     * Math.abs(finalOrbit.getLM()));
+                     * FastMath.abs(finalOrbit.getLM()));
 
     }
 
@@ -549,7 +550,7 @@ public class EcksteinHechlerPropagatorTest {
         });
         AbsoluteDate farTarget = orbit.getDate().shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        Assert.assertEquals(0.0, Math.abs(farTarget.durationFrom(propagated.getDate())), 1.0e-3);
+        Assert.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate())), 1.0e-3);
     }
 
     @Test
@@ -634,8 +635,8 @@ public class EcksteinHechlerPropagatorTest {
 
     private static double tangLEmLv(double Lv, double ex, double ey) {
         // tan ((LE - Lv) /2)) =
-        return (ey * Math.cos(Lv) - ex * Math.sin(Lv))
-        / (1 + ex * Math.cos(Lv) + ey * Math.sin(Lv) + Math.sqrt(1 - ex * ex
+        return (ey * FastMath.cos(Lv) - ex * FastMath.sin(Lv))
+        / (1 + ex * FastMath.cos(Lv) + ey * FastMath.sin(Lv) + FastMath.sqrt(1 - ex * ex
                                                                  - ey * ey));
     }
 

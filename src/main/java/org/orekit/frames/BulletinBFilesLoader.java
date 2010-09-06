@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.math.util.FastMath;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -57,10 +58,10 @@ import org.orekit.time.DateComponents;
 class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
 
     /** Conversion factor. */
-    private static final double ARC_SECONDS_TO_RADIANS = 2 * Math.PI / 1296000;
+    private static final double ARC_SECONDS_TO_RADIANS = 2 * FastMath.PI / 1296000;
 
     /** Conversion factor. */
-    private static final double MILLI_ARC_SECONDS_TO_RADIANS = 2 * Math.PI / 1296000000;
+    private static final double MILLI_ARC_SECONDS_TO_RADIANS = 2 * FastMath.PI / 1296000000;
 
     /** Conversion factor. */
     private static final double MILLI_SECONDS_TO_SECONDS = 1.e-3;
@@ -342,8 +343,8 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
                 if (matcher.matches()) {
                     // this is a data line, build an entry from the extracted fields
                     final int mjd = Integer.parseInt(matcher.group(1));
-                    mjdMin = Math.min(mjdMin, mjd);
-                    mjdMax = Math.max(mjdMax, mjd);
+                    mjdMin = FastMath.min(mjdMin, mjd);
+                    mjdMax = FastMath.max(mjdMax, mjd);
                 } else {
                     matcher = FINAL_VALUES_END.matcher(line);
                     if (matcher.matches()) {
@@ -429,8 +430,8 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
                         throw new OrekitException(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE,
                                                   name, year, month, day, mjd);
                     }
-                    mjdMin = Math.min(mjdMin, mjd);
-                    mjdMax = Math.max(mjdMax, mjd);
+                    mjdMin = FastMath.min(mjdMin, mjd);
+                    mjdMax = FastMath.max(mjdMax, mjd);
                     final double dtu1 = Double.parseDouble(matcher.group(5)) * MILLI_SECONDS_TO_SECONDS;
                     fieldsMap.put(mjd, new double[] { dtu1, Double.NaN, Double.NaN, Double.NaN});
                 } else {

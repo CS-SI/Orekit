@@ -20,6 +20,7 @@ package org.orekit.forces.gravity.potential;
 import java.io.IOException;
 import java.text.ParseException;
 
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -43,14 +44,14 @@ public class EGMFormatReaderTest {
         double a = (-0.295301647654E-06);
         double b = 9*8*7*6*5*4*3*2;
         double c = 2*11/b;
-        double result = a*Math.sqrt(c);
+        double result = a*FastMath.sqrt(c);
 
         Assert.assertEquals(result,UC[5][4],  0);
 
         a = -0.188560802735E-06;
         b = 8*7*6*5*4*3*2;
         c=2*9/b;
-        result = a*Math.sqrt(c);
+        result = a*FastMath.sqrt(c);
         Assert.assertEquals(result,UC[4][4],  0);
 
         Assert.assertEquals(1.0826266835531513e-3, provider.getJ(false, 2)[2],0);

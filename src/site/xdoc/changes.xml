@@ -22,6 +22,10 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="update">
+        use the new FastMath class from commons-math instead of the standard java.util.Math
+        class for increased accuracy and speed
+      </action>
       <action dev="luc" type="add">
         added support for the new bulletinB data published by Paris-Meudon observatory
         for IAU-1980 precession-nutation model (IERS has ceased publishing bulletinB

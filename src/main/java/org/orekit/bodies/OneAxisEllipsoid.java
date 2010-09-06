@@ -17,6 +17,7 @@
 package org.orekit.bodies;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -181,20 +182,20 @@ public class OneAxisEllipsoid implements BodyShape {
         if (b2 < ac) {
             return null;
         }
-        final double s  = Math.sqrt(b2 - ac);
+        final double s  = FastMath.sqrt(b2 - ac);
         final double k1 = (b < 0) ? (b - s) / a : c / (b + s);
         final double k2 = c / (a * k1);
 
         // select the right point
         final double k =
-            (Math.abs(k1 - closeAbscissa) < Math.abs(k2 - closeAbscissa)) ? k1 : k2;
+            (FastMath.abs(k1 - closeAbscissa) < FastMath.abs(k2 - closeAbscissa)) ? k1 : k2;
         final Vector3D intersection = lineInBodyFrame.pointAt(k);
         final double ix = intersection.getX();
         final double iy = intersection.getY();
         final double iz = intersection.getZ();
 
-        final double lambda = Math.atan2(iy, ix);
-        final double phi    = Math.atan2(iz, g2 * Math.sqrt(ix * ix + iy * iy));
+        final double lambda = FastMath.atan2(iy, ix);
+        final double phi    = FastMath.atan2(iz, g2 * FastMath.sqrt(ix * ix + iy * iy));
         return new GeodeticPoint(phi, lambda, 0.0);
 
     }
@@ -205,13 +206,13 @@ public class OneAxisEllipsoid implements BodyShape {
      */
     public Vector3D transform(final GeodeticPoint point) {
         final double longitude = point.getLongitude();
-        final double cLambda   = Math.cos(longitude);
-        final double sLambda   = Math.sin(longitude);
+        final double cLambda   = FastMath.cos(longitude);
+        final double sLambda   = FastMath.sin(longitude);
         final double latitude  = point.getLatitude();
-        final double cPhi      = Math.cos(latitude);
-        final double sPhi      = Math.sin(latitude);
+        final double cPhi      = FastMath.cos(latitude);
+        final double sPhi      = FastMath.sin(latitude);
         final double h         = point.getAltitude();
-        final double n         = ae / Math.sqrt(1.0 - e2 * sPhi * sPhi);
+        final double n         = ae / FastMath.sqrt(1.0 - e2 * sPhi * sPhi);
         final double r         = (n + h) * cPhi;
         return new Vector3D(r * cLambda, r * sLambda, (g2 * n + h) * sPhi);
     }
@@ -237,15 +238,15 @@ public class OneAxisEllipsoid implements BodyShape {
         final double z2         = z * z;
         final double r2         = pointInBodyFrame.getX() * pointInBodyFrame.getX() +
                                   pointInBodyFrame.getY() * pointInBodyFrame.getY();
-        final double r          = Math.sqrt(r2);
+        final double r          = FastMath.sqrt(r2);
         final double g2r2ma2    = g2 * (r2 - ae2);
         final double g2r2ma2pz2 = g2r2ma2 + z2;
-        final double dist       = Math.sqrt(r2 + z2);
+        final double dist       = FastMath.sqrt(r2 + z2);
         final boolean inside    = g2r2ma2pz2 <= 0;
 
         // point at the center
         if (dist < (closeApproachThreshold * ae)) {
-            return new GeodeticPoint(0.5 * Math.PI, 0.0, -ae * Math.sqrt(1.0 - e2));
+            return new GeodeticPoint(0.5 * FastMath.PI, 0.0, -ae * FastMath.sqrt(1.0 - e2));
         }
 
         final double cz = r / dist;
@@ -260,12 +261,12 @@ public class OneAxisEllipsoid implements BodyShape {
         double c  = g2r2ma2pz2;
         double b2 = b * b;
         final double ac = a * c;
-        double k  = c / (b + Math.sqrt(b2 - ac));
-        final double lambda = Math.atan2(pointInBodyFrame.getY(), pointInBodyFrame.getX());
-        double phi    = Math.atan2(z - k * sz, g2 * (r - k * cz));
+        double k  = c / (b + FastMath.sqrt(b2 - ac));
+        final double lambda = FastMath.atan2(pointInBodyFrame.getY(), pointInBodyFrame.getX());
+        double phi    = FastMath.atan2(z - k * sz, g2 * (r - k * cz));
 
         // point on the ellipse
-        if (Math.abs(k) < (closeApproachThreshold * dist)) {
+        if (FastMath.abs(k) < (closeApproachThreshold * dist)) {
             return new GeodeticPoint(phi, lambda, k);
         }
 
@@ -295,49 +296,49 @@ public class OneAxisEllipsoid implements BodyShape {
             double tildeT;
             double tildePhi;
             if (D >= 0) {
-                final double rootD = Math.sqrt(D);
-                tildeT = Math.cbrt(R + rootD) + Math.cbrt(R - rootD) - b * ONE_THIRD;
+                final double rootD = FastMath.sqrt(D);
+                tildeT = FastMath.cbrt(R + rootD) + FastMath.cbrt(R - rootD) - b * ONE_THIRD;
                 final double tildeT2   = tildeT * tildeT;
                 final double tildeT2P1 = 1.0 + tildeT2;
-                tildePhi = Math.atan2(z * tildeT2P1 - 2 * k * tildeT,
+                tildePhi = FastMath.atan2(z * tildeT2P1 - 2 * k * tildeT,
                                       g2 * (r * tildeT2P1 - k * (1.0 - tildeT2)));
             } else {
                 Q = -Q;
-                final double qRoot     = Math.sqrt(Q);
-                final double theta     = Math.acos(R / (Q * qRoot));
+                final double qRoot     = FastMath.sqrt(Q);
+                final double theta     = FastMath.acos(R / (Q * qRoot));
 
                 // first root based on theta / 3,
-                tildeT           = 2.0 * qRoot * Math.cos(theta * ONE_THIRD) - b * ONE_THIRD;
+                tildeT           = 2.0 * qRoot * FastMath.cos(theta * ONE_THIRD) - b * ONE_THIRD;
                 double tildeT2   = tildeT * tildeT;
                 double tildeT2P1 = 1.0 + tildeT2;
-                tildePhi         = Math.atan2(z * tildeT2P1 - 2 * k * tildeT,
+                tildePhi         = FastMath.atan2(z * tildeT2P1 - 2 * k * tildeT,
                                               g2 * (r * tildeT2P1 - k * (1.0 - tildeT2)));
                 if ((tildePhi * phi) < 0) {
                     // the first root was on the wrong hemisphere,
                     // try the second root based on (theta + 2PI) / 3
-                    tildeT    = 2.0 * qRoot * Math.cos((theta + 2.0 * Math.PI) * ONE_THIRD) - b * ONE_THIRD;
+                    tildeT    = 2.0 * qRoot * FastMath.cos((theta + 2.0 * FastMath.PI) * ONE_THIRD) - b * ONE_THIRD;
                     tildeT2   = tildeT * tildeT;
                     tildeT2P1 = 1.0 + tildeT2;
-                    tildePhi  = Math.atan2(z * tildeT2P1 - 2 * k * tildeT,
+                    tildePhi  = FastMath.atan2(z * tildeT2P1 - 2 * k * tildeT,
                                            g2 * (r * tildeT2P1 - k * (1.0 - tildeT2)));
                     if (tildePhi * phi < 0) {
                         // the second root was on the wrong  hemisphere,
                         // try the third (and last) root based on (theta + 4PI) / 3
-                        tildeT    = 2.0 * qRoot * Math.cos((theta + 4.0 * Math.PI) * ONE_THIRD) - b * ONE_THIRD;
+                        tildeT    = 2.0 * qRoot * FastMath.cos((theta + 4.0 * FastMath.PI) * ONE_THIRD) - b * ONE_THIRD;
                         tildeT2   = tildeT * tildeT;
                         tildeT2P1 = 1.0 + tildeT2;
-                        tildePhi  = Math.atan2(z * tildeT2P1 - 2 * k * tildeT,
+                        tildePhi  = FastMath.atan2(z * tildeT2P1 - 2 * k * tildeT,
                                                g2 * (r * tildeT2P1 - k * (1.0 - tildeT2)));
                     }
                 }
             }
 
             // midpoint on the ellipse
-            final double dPhi  = Math.abs(0.5 * (tildePhi - phi));
+            final double dPhi  = FastMath.abs(0.5 * (tildePhi - phi));
             phi          = 0.5 * (phi + tildePhi);
-            final double cPhi  = Math.cos(phi);
-            final double sPhi  = Math.sin(phi);
-            final double coeff = Math.sqrt(1.0 - e2 * sPhi * sPhi);
+            final double cPhi  = FastMath.cos(phi);
+            final double sPhi  = FastMath.sin(phi);
+            final double coeff = FastMath.sqrt(1.0 - e2 * sPhi * sPhi);
             if (dPhi < angularThreshold) {
                 // angular convergence reached
                 return new GeodeticPoint(phi, lambda,
@@ -347,7 +348,7 @@ public class OneAxisEllipsoid implements BodyShape {
             b = ae / coeff;
             final double dR = r - cPhi * b;
             final double dZ = z - sPhi * b * g2;
-            k = Math.sqrt(dR * dR + dZ * dZ);
+            k = FastMath.sqrt(dR * dR + dZ * dZ);
             if (inside) {
                 k = -k;
             }

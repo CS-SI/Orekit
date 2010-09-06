@@ -18,6 +18,8 @@ package org.orekit.data;
 
 import java.io.Serializable;
 
+import org.apache.commons.math.util.FastMath;
+
 /** Base class for nutation series terms.
  * @author Luc Maisonobe
  * @see PoissonSeries
@@ -49,7 +51,7 @@ public abstract class SeriesTerm implements Serializable {
      */
     public double value(final BodiesElements elements) {
         final double a = argument(elements);
-        return sinCoeff * Math.sin(a) + cosCoeff * Math.cos(a);
+        return sinCoeff * FastMath.sin(a) + cosCoeff * FastMath.cos(a);
     }
 
     /** Compute the argument for the current date.

@@ -24,6 +24,7 @@ import java.util.Locale;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.geometry.Vector3DFormat;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -65,7 +66,7 @@ public class Frames2 {
             // Finally, the GPS antenna frame can be defined from the satellite frame by 2 transforms:
             // a translation and a rotation
             Transform translateGPS = new Transform(new Vector3D(0, 0, 1));
-            Transform rotateGPS    = new Transform(new Rotation(new Vector3D(0, 1, 3), Math.toRadians(10)));
+            Transform rotateGPS    = new Transform(new Rotation(new Vector3D(0, 1, 3), FastMath.toRadians(10)));
             Frame gpsFrame         = new Frame(satFrame, new Transform(translateGPS, rotateGPS), "GPS", false);
 
             // Considering the following Computing/Measurement date in UTC time scale

@@ -26,6 +26,7 @@ import java.util.GregorianCalendar;
 
 import org.apache.commons.math.exception.util.DummyLocalizable;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -361,10 +362,10 @@ public class DTM2000 implements Atmosphere {
         final double zlb = ZLB0; // + dzlb ??
 
         // compute Legendre polynomials wrt geographic pole
-        final double c = Math.sin(alat);
+        final double c = FastMath.sin(alat);
         final double c2 = c * c;
         final double c4 = c2 * c2;
-        final double s = Math.cos(alat);
+        final double s = FastMath.cos(alat);
         final double s2 = s * s;
         p10 = c;
         p20 = 1.5 * c2 - 0.5;
@@ -385,7 +386,7 @@ public class DTM2000 implements Atmosphere {
         p33 = 15.0 * s * s2;
 
         // compute Legendre polynomials wrt magnetic pole (79N, 71W)
-        final double clmlmg = Math.cos(xlon - XLMG);
+        final double clmlmg = FastMath.cos(xlon - XLMG);
         final double cmg  = s * CPMG * clmlmg + c * SPMG;
         final double cmg2 = cmg * cmg;
         final double cmg4 = cmg2 * cmg2;
@@ -395,8 +396,8 @@ public class DTM2000 implements Atmosphere {
 
         // local time
         hl0 = cachedHl;
-        ch  = Math.cos(hl0);
-        sh  = Math.sin(hl0);
+        ch  = FastMath.cos(hl0);
+        sh  = FastMath.sin(hl0);
         c2h = ch * ch - sh * sh;
         s2h = 2.0 * ch * sh;
         c3h = c2h * ch - s2h * sh;
@@ -429,7 +430,7 @@ public class DTM2000 implements Atmosphere {
         final double dzeta   = (RE + zlb) / (RE + cachedAlti);
         final double zeta    = (cachedAlti - zlb) * dzeta;
         final double sigzeta = sigma * zeta;
-        final double expsz   = Math.exp(-sigzeta);
+        final double expsz   = FastMath.exp(-sigzeta);
         tz = tinf - (tinf - t120) * expsz;
 
         final double[] dbase = new double[7];
@@ -437,27 +438,27 @@ public class DTM2000 implements Atmosphere {
         kleq = 1;
 
         final double gdelh = gFunction(h, dh, 0, kleq);
-        dh[1] = Math.exp(gdelh);
+        dh[1] = FastMath.exp(gdelh);
         dbase[1] = h[1] * dh[1];
 
         final double gdelhe = gFunction(he, dhe, 0, kleq);
-        dhe[1] = Math.exp(gdelhe);
+        dhe[1] = FastMath.exp(gdelhe);
         dbase[2] = he[1] * dhe[1];
 
         final double gdelo = gFunction(o, dox, 1, kleq);
-        dox[1] = Math.exp(gdelo);
+        dox[1] = FastMath.exp(gdelo);
         dbase[3] = o[1] * dox[1];
 
         final double gdelaz2 = gFunction(az2, daz2, 1, kleq);
-        daz2[1] = Math.exp(gdelaz2);
+        daz2[1] = FastMath.exp(gdelaz2);
         dbase[4] = az2[1] * daz2[1];
 
         final double gdelo2 = gFunction(o2, do2, 1, kleq);
-        do2[1] = Math.exp(gdelo2);
+        do2[1] = FastMath.exp(gdelo2);
         dbase[5] = o2[1] * do2[1];
 
         final double gdelaz = gFunction(az, daz, 1, kleq);
-        daz[1] = Math.exp(gdelaz);
+        daz[1] = FastMath.exp(gdelaz);
         dbase[6] = az[1] * daz[1];
 
         final double zlbre  = 1.0 + zlb / RE;
@@ -470,7 +471,7 @@ public class DTM2000 implements Atmosphere {
         for (int i = 1; i <= 6; i++) {
             final double gamma = MA[i] * glb;
             final double upapg = 1.0 + ALEFA[i] + gamma;
-            fz[i] = Math.pow(t120tz, upapg) * Math.exp(-sigzeta * gamma);
+            fz[i] = FastMath.pow(t120tz, upapg) * FastMath.exp(-sigzeta * gamma);
             // concentrations of H, He, O, N2, O2, N (particles/cm<sup>3</sup>)
             cc[i] = dbase[i] * fz[i];
             // densities of H, He, O, N2, O2, N (g/cm<sup>3</sup>)
@@ -584,18 +585,18 @@ public class DTM2000 implements Atmosphere {
              a[72] * da[72] + a[73] * da[73] + a[75] * da[75] +
              a[76] * da[76] + a78   * da[78] + a[79] * da[79];
 //      termes annuels symetriques en latitude
-        da[9]  = Math.cos(ROT * (cachedDay - a[11]));
+        da[9]  = FastMath.cos(ROT * (cachedDay - a[11]));
         da[10] = p20 * da[9];
 //      termes semi-annuels symetriques en latitude
-        da[12] = Math.cos(ROT2 * (cachedDay - a[14]));
+        da[12] = FastMath.cos(ROT2 * (cachedDay - a[14]));
         da[13] = p20 * da[12];
 //      termes annuels non symetriques en latitude
-        final double coste = Math.cos(ROT * (cachedDay - a[18]));
+        final double coste = FastMath.cos(ROT * (cachedDay - a[18]));
         da[15] = p10 * coste;
         da[16] = p30 * coste;
         da[17] = p50 * coste;
 //      terme  semi-annuel  non symetrique  en latitude
-        final double cos2te = Math.cos(ROT2 * (cachedDay - a[20]));
+        final double cos2te = FastMath.cos(ROT2 * (cachedDay - a[20]));
         da[19] = p10 * cos2te;
         da[39] = p30 * cos2te;
         da[59] = p50 * cos2te;
@@ -674,13 +675,13 @@ public class DTM2000 implements Atmosphere {
         da[ikp] += dakp * akp[2];
         da[ikp + 1] = da[ikp] + dakp * c2fi * akp[2];
 //      termes de longitude
-        final double clfl = Math.cos(xlon);
+        final double clfl = FastMath.cos(xlon);
         da[49] = p11 * clfl;
         da[50] = p21 * clfl;
         da[51] = p31 * clfl;
         da[52] = p41 * clfl;
         da[53] = p51 * clfl;
-        final double slfl = Math.sin(xlon);
+        final double slfl = FastMath.sin(xlon);
         da[54] = p11 * slfl;
         da[55] = p21 * slfl;
         da[56] = p31 * slfl;
@@ -876,7 +877,7 @@ public class DTM2000 implements Atmosphere {
         // compute local solar time
 
         final Vector3D sunPos = sun.getPVCoordinates(date, frame).getPosition();
-        final double hl = Math.PI + Math.atan2(sunPos.getX() * position.getY() - sunPos.getY() * position.getX(),
+        final double hl = FastMath.PI + FastMath.atan2(sunPos.getX() * position.getY() - sunPos.getY() * position.getX(),
                                                sunPos.getX() * position.getX() + sunPos.getY() * position.getY());
 
         // get current solar activity data and compute

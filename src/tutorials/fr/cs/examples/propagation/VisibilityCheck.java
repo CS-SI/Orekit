@@ -18,6 +18,7 @@
 package fr.cs.examples.propagation;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -73,15 +74,15 @@ public class VisibilityCheck {
             BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
 
             // Station
-            final double longitude = Math.toRadians(45.);
-            final double latitude  = Math.toRadians(25.);
+            final double longitude = FastMath.toRadians(45.);
+            final double latitude  = FastMath.toRadians(25.);
             final double altitude  = 0.;
             final GeodeticPoint station1 = new GeodeticPoint(latitude, longitude, altitude);
             final TopocentricFrame sta1Frame = new TopocentricFrame(earth, station1, "station1");
 
             // Event definition 
             final double maxcheck  = 1.;
-            final double elevation = Math.toRadians(5.);
+            final double elevation = FastMath.toRadians(5.);
             final EventDetector sta1Visi = new VisibilityDetector(maxcheck, elevation, sta1Frame);
 
             // Add event to be detected

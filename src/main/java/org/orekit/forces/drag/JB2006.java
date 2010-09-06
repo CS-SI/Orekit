@@ -17,6 +17,7 @@
 package org.orekit.forces.drag;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -252,13 +253,13 @@ public class JB2006 implements Atmosphere {
                           2.094 * (s10 - s10B) + 0.343 * (xm10 - xm10B);
 
         // Equation (15)
-        final double eta =   0.5 * Math.abs(satLat - sunDecli);
-        final double theta = 0.5 * Math.abs(satLat + sunDecli);
+        final double eta =   0.5 * FastMath.abs(satLat - sunDecli);
+        final double theta = 0.5 * FastMath.abs(satLat + sunDecli);
 
         // Equation (16)
         final double h     = satLon - sunRA;
-        final double tau   = h - 0.64577182 + 0.10471976 * Math.sin(h + 0.75049158);
-        double solTimeHour = Math.toDegrees(h + PI) / 15.0;
+        final double tau   = h - 0.64577182 + 0.10471976 * FastMath.sin(h + 0.75049158);
+        double solTimeHour = FastMath.toDegrees(h + PI) / 15.0;
         if (solTimeHour >= 24) {
             solTimeHour = solTimeHour - 24.;
         }
@@ -267,14 +268,14 @@ public class JB2006 implements Atmosphere {
         }
 
         // Equation (17)
-        final double C = Math.pow(Math.cos(eta), 2.5);
-        final double S = Math.pow(Math.sin(theta), 2.5);
-        final double tmp = Math.abs(Math.cos(0.5 * tau));
+        final double C = FastMath.pow(FastMath.cos(eta), 2.5);
+        final double S = FastMath.pow(FastMath.sin(theta), 2.5);
+        final double tmp = FastMath.abs(FastMath.cos(0.5 * tau));
         final double DF = S + (C - S) * tmp * tmp * tmp;
         final double TSUBL = tc * (1. + 0.31 * DF);
 
         // Equation (18)
-        final double EXPAP = Math.exp(-0.08 * ap);
+        final double EXPAP = FastMath.exp(-0.08 * ap);
         final double DTG = ap + 100. * (1. - EXPAP);
 
         // Compute correction to dTc for local solar time and lat correction
@@ -285,7 +286,7 @@ public class JB2006 implements Atmosphere {
         temp[1] = TINF;
 
         // Equation (9)
-        final double TSUBX = 444.3807 + 0.02385 * TINF - 392.8292 * Math.exp(-0.0021357 * TINF);
+        final double TSUBX = 444.3807 + 0.02385 * TINF - 392.8292 * FastMath.exp(-0.0021357 * TINF);
 
         // Equation (11)
         final double GSUBX = 0.054285714 * (TSUBX - 183.);
@@ -302,10 +303,10 @@ public class JB2006 implements Atmosphere {
 
         // Equation (5)
         final double Z1 = 90.;
-        final double Z2 = Math.min(scaledSatAlt, 105.0);
-        double AL = Math.log(Z2 / Z1);
-        int N = (int) Math.floor(AL / R1) + 1;
-        double ZR = Math.exp(AL / N);
+        final double Z2 = FastMath.min(scaledSatAlt, 105.0);
+        double AL = FastMath.log(Z2 / Z1);
+        int N = (int) FastMath.floor(AL / R1) + 1;
+        double ZR = FastMath.exp(AL / N);
         final double AMBAR1 = xAmbar(Z1);
         final double TLOC1 = xLocal(Z1, TC);
         double ZEND   = Z1;
@@ -332,7 +333,7 @@ public class JB2006 implements Atmosphere {
             SUM2 = SUM2 + DZ * SUM1;
         }
         final double FACT1 = 1000.0 / RSTAR;
-        rho = 3.46e-6 * AMBAR2 * TLOC1 * Math.exp(-FACT1 * SUM2) / (AMBAR1 * TLOC2);
+        rho = 3.46e-6 * AMBAR2 * TLOC1 * FastMath.exp(-FACT1 * SUM2) / (AMBAR1 * TLOC2);
 
         // Equation (2)
         final double ANM = AVOGAD * rho;
@@ -341,13 +342,13 @@ public class JB2006 implements Atmosphere {
         // Equation (3)
         double FACT2  = ANM / 28.960;
         final double[] ALN = new double[7];
-        ALN[1] = Math.log(FRAC[1] * FACT2);
-        ALN[4] = Math.log(FRAC[3] * FACT2);
-        ALN[5] = Math.log(FRAC[4] * FACT2);
+        ALN[1] = FastMath.log(FRAC[1] * FACT2);
+        ALN[4] = FastMath.log(FRAC[3] * FACT2);
+        ALN[5] = FastMath.log(FRAC[4] * FACT2);
 
         // Equation (4)
-        ALN[2] = Math.log(FACT2 * (1. + FRAC[2]) - AN);
-        ALN[3] = Math.log(2. * (AN - FACT2));
+        ALN[2] = FastMath.log(FACT2 * (1. + FRAC[2]) - AN);
+        ALN[3] = FastMath.log(2. * (AN - FACT2));
 
         if (scaledSatAlt <= 105.0) {
             temp[2] = TLOC2;
@@ -355,10 +356,10 @@ public class JB2006 implements Atmosphere {
             ALN[6] = ALN[5] - 25.0;
         } else {
             // Equation (6)
-            final double Z3 = Math.min(scaledSatAlt, 500.0);
-            AL   = Math.log(Z3 / Z);
-            N    = (int) Math.floor(AL / R2) + 1;
-            ZR   = Math.exp(AL / N);
+            final double Z3 = FastMath.min(scaledSatAlt, 500.0);
+            AL   = FastMath.log(Z3 / Z);
+            N    = (int) FastMath.floor(AL / R2) + 1;
+            ZR   = FastMath.exp(AL / N);
             SUM2 = 0.;
             AIN  = GRAVL / TLOC2;
 
@@ -378,14 +379,14 @@ public class JB2006 implements Atmosphere {
                 SUM2 = SUM2 + DZ * SUM1;
             }
 
-            final double Z4 = Math.max(scaledSatAlt, 500.0);
-            AL = Math.log(Z4 / Z);
+            final double Z4 = FastMath.max(scaledSatAlt, 500.0);
+            AL = FastMath.log(Z4 / Z);
             double R = R2;
             if (scaledSatAlt > 500.0) {
                 R = R3;
             }
-            N = (int) Math.floor(AL / R) + 1;
-            ZR = Math.exp(AL / N);
+            N = (int) FastMath.floor(AL / R) + 1;
+            ZR = FastMath.exp(AL / N);
             double SUM3 = 0.;
             double TLOC4 = 0;
             for (int I = 1; I <= N; ++I) {
@@ -406,13 +407,13 @@ public class JB2006 implements Atmosphere {
             double HSIGN;
             if (scaledSatAlt <= 500.) {
                 temp[2] = TLOC3;
-                ALTR = Math.log(TLOC3 / TLOC2);
+                ALTR = FastMath.log(TLOC3 / TLOC2);
                 FACT2 = FACT1 * SUM2;
                 HSIGN = 1.0;
 
             } else {
                 temp[2] = TLOC4;
-                ALTR = Math.log(TLOC4 / TLOC2);
+                ALTR = FastMath.log(TLOC4 / TLOC2);
                 FACT2 = FACT1 * (SUM2 + SUM3);
                 HSIGN = -1.0;
             }
@@ -421,18 +422,18 @@ public class JB2006 implements Atmosphere {
             }
 
             // Equation (7) - Note that in CIRA72, AL10T5 = DLOG10(T500)
-            final double AL10T5 = Math.log(TINF) / Math.log(10);
+            final double AL10T5 = FastMath.log(TINF) / FastMath.log(10);
             final double ALNH5 = (5.5 * AL10T5 - 39.40) * AL10T5 + 73.13;
-            ALN[6] = AL10 * (ALNH5 + 6.) + HSIGN * (Math.log(TLOC4 / TLOC3) + FACT1 * SUM3 * AMW[6]);
+            ALN[6] = AL10 * (ALNH5 + 6.) + HSIGN * (FastMath.log(TLOC4 / TLOC3) + FACT1 * SUM3 * AMW[6]);
 
         }
 
         // Equation (24)  - J70 Seasonal-Latitudinal Variation
         final double CAPPHI = ((dateMJD - 36204.0) / 365.2422) % 1;
         final int signum = (satLat >= 0) ? 1 : -1;
-        final double sinLat = Math.sin(satLat);
-        final double DLRSL = 0.02 * (scaledSatAlt - 90.) * Math.exp(-0.045 * (scaledSatAlt - 90.)) *
-                             signum * Math.sin(TWOPI * CAPPHI + 1.72) * sinLat * sinLat;
+        final double sinLat = FastMath.sin(satLat);
+        final double DLRSL = 0.02 * (scaledSatAlt - 90.) * FastMath.exp(-0.045 * (scaledSatAlt - 90.)) *
+                             signum * FastMath.sin(TWOPI * CAPPHI + 1.72) * sinLat * sinLat;
 
         // Equation (23) - Computes the semiannual variation
         double DLRSA = 0;
@@ -458,7 +459,7 @@ public class JB2006 implements Atmosphere {
         double SUMNM = 0.0;
 
         for (int I = 1; I <= 6; ++I) {
-            AN = Math.exp(ALN[I]);
+            AN = FastMath.exp(ALN[I]);
             SUMN += AN;
             SUMNM += AN * AMW[I];
         }
@@ -504,7 +505,7 @@ public class JB2006 implements Atmosphere {
         final double tx3 = tx2 * tx;
         final double tx4 = tx3 * tx;
         final double tx5 = tx4 * tx;
-        final double ycs = Math.cos(satLat);
+        final double ycs = FastMath.cos(satLat);
         final double f   = (f10 - 100.0) / 100.0;
         double h;
         double sum;
@@ -627,7 +628,7 @@ public class JB2006 implements Atmosphere {
         if (dz <= 0) {
             return ((-9.8204695e-6 * dz - 7.3039742e-4) * dz * dz + 1.0) * dz * TC[1] + TC[0];
         } else {
-            return TC[0] + TC[2] * Math.atan(TC[3] * dz * (1 + 4.5e-6 * Math.pow(dz, 2.5)));
+            return TC[0] + TC[2] * FastMath.atan(TC[3] * dz * (1 + 4.5e-6 * FastMath.pow(dz, 2.5)));
         }
     }
 
@@ -658,14 +659,14 @@ public class JB2006 implements Atmosphere {
 
         // SEMIANNUAL PHASE FUNCTION
         final double tau   = TWOPI * (day - 1.0) / 365;
-        final double sin1P = Math.sin(tau);
-        final double cos1P = Math.cos(tau);
-        final double sin2P = Math.sin(2.0 * tau);
-        final double cos2P = Math.cos(2.0 * tau);
-        final double sin3P = Math.sin(3.0 * tau);
-        final double cos3P = Math.cos(3.0 * tau);
-        final double sin4P = Math.sin(4.0 * tau);
-        final double cos4P = Math.cos(4.0 * tau);
+        final double sin1P = FastMath.sin(tau);
+        final double cos1P = FastMath.cos(tau);
+        final double sin2P = FastMath.sin(2.0 * tau);
+        final double cos2P = FastMath.cos(2.0 * tau);
+        final double sin3P = FastMath.sin(3.0 * tau);
+        final double cos3P = FastMath.cos(3.0 * tau);
+        final double sin4P = FastMath.sin(4.0 * tau);
+        final double cos4P = FastMath.cos(4.0 * tau);
         final double gtz = GTM[1] + GTM[2] * sin1P + GTM[3] * cos1P +
                            GTM[4] * sin2P + GTM[5] * cos2P +
                            GTM[6] * sin3P + GTM[7] * cos3P +
@@ -677,7 +678,7 @@ public class JB2006 implements Atmosphere {
                            GTM[19] * f10Bar2  + GTM[20] * f10Bar2  * sin1P + GTM[21] * f10Bar2  * cos1P +
                            GTM[22] * f10Bar2  * sin2P + GTM[23] * f10Bar2  * cos2P;
 
-        return Math.max(1.0e-6, fzz) * gtz;
+        return FastMath.max(1.0e-6, fzz) * gtz;
 
     }
 

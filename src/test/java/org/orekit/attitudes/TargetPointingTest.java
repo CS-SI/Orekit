@@ -19,6 +19,7 @@ package org.orekit.attitudes;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -65,8 +66,8 @@ public class TargetPointingTest {
         //  Satellite position
         // ********************
         CircularOrbit circ =
-            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
-                                   Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
+                                   FastMath.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
                                    FramesFactory.getEME2000(), date, mu);
         
         //  Attitude laws
@@ -75,7 +76,7 @@ public class TargetPointingTest {
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
                 
         // Target definition as a geodetic point AND as a position/velocity vector
-        GeodeticPoint geoTargetITRF2005C = new GeodeticPoint(Math.toRadians(43.36), Math.toRadians(1.26), 600.);
+        GeodeticPoint geoTargetITRF2005C = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
         Vector3D pTargetITRF2005C = earthShape.transform(geoTargetITRF2005C);
             
         // Attitude law definition from geodetic point target 
@@ -106,8 +107,8 @@ public class TargetPointingTest {
         //  Satellite position
         // ******************** 
         CircularOrbit circ =
-            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
-                                   Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
+                                   FastMath.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
                                    FramesFactory.getEME2000(), date, mu);
         
         //  Attitude law
@@ -117,7 +118,7 @@ public class TargetPointingTest {
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
                 
         // Target definition as a geodetic point 
-        GeodeticPoint geoTargetITRF2005 = new GeodeticPoint(Math.toRadians(43.36), Math.toRadians(1.26), 600.);
+        GeodeticPoint geoTargetITRF2005 = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
             
         //  Attitude law definition 
         TargetPointing geoTargetAttitudeLaw = new TargetPointing(geoTargetITRF2005, earthShape);
@@ -143,8 +144,8 @@ public class TargetPointingTest {
                 
         // Satellite on any position 
         CircularOrbit circOrbit =
-            new CircularOrbit(7178000.0, 1.e-5, 0., Math.toRadians(50.), 0.,
-                                   Math.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
+            new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(50.), 0.,
+                                   FastMath.toRadians(90.), CircularOrbit.TRUE_LONGITUDE_ARGUMENT, 
                                    FramesFactory.getEME2000(), date, mu);
 
         //  Target attitude law with target under satellite nadir 
@@ -195,7 +196,7 @@ public class TargetPointingTest {
         // Compose attitude rotations
         Rotation extrapRotCompo = extrapRotTarget.applyInverseTo(extrapRotNadir);
         double extrapAngle = extrapRotCompo.getAngle();
-        Assert.assertEquals(extrapAngle, Math.toRadians(24.684793905118823), Utils.epsilonAngle);
+        Assert.assertEquals(extrapAngle, FastMath.toRadians(24.684793905118823), Utils.epsilonAngle);
         
     }
        
@@ -216,15 +217,15 @@ public class TargetPointingTest {
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
                 
         // Create target pointing attitude law 
-        GeodeticPoint geoTarget = new GeodeticPoint(Math.toRadians(43.36), Math.toRadians(1.26), 600.);
+        GeodeticPoint geoTarget = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
         TargetPointing targetAttitudeLaw = new TargetPointing(geoTarget, earthShape);
         
         //  Satellite position
         // ********************
         // Create satellite position as circular parameters
         CircularOrbit circ =
-            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, Math.toRadians(50.), Math.toRadians(270.),
-                                   Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
+                                   FastMath.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
                                    FramesFactory.getEME2000(), date, mu);
         
         // Transform satellite position to position/velocity parameters in EME2000 frame
@@ -260,7 +261,7 @@ public class TargetPointingTest {
         // Create satellite position as circular parameters
         CircularOrbit circ =
             new CircularOrbit(42164000.0, 0.5e-8, -0.5e-8, 0., 0.,
-                                   Math.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                   FastMath.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
                                    FramesFactory.getEME2000(), date, mu);
         
         // Create nadir pointing attitude law 
@@ -283,7 +284,7 @@ public class TargetPointingTest {
         // Create target pointing attitude law with target 5° from nadir target 
         // ******************************************************************** 
         GeodeticPoint geoTarget = new GeodeticPoint(geoNadirObserved.getLatitude(),
-                                                    geoNadirObserved.getLongitude() - Math.toRadians(5), geoNadirObserved.getAltitude());
+                                                    geoNadirObserved.getLongitude() - FastMath.toRadians(5), geoNadirObserved.getAltitude());
         Vector3D pTargetITRF2005C = earthShape.transform(geoTarget);
         TargetPointing targetLaw = new TargetPointing(frameITRF2005, pTargetITRF2005C);
         
@@ -294,8 +295,8 @@ public class TargetPointingTest {
         // *********************************************
         // Difference between attitudes
         //  expected
-        double tanDeltaExpected = (6378136.460/(42164000.0-6378136.460))*Math.tan(Math.toRadians(5));
-        double deltaExpected = Math.atan(tanDeltaExpected);
+        double tanDeltaExpected = (6378136.460/(42164000.0-6378136.460))*FastMath.tan(FastMath.toRadians(5));
+        double deltaExpected = FastMath.atan(tanDeltaExpected);
          
         //  real
         double deltaReal = rotSatEME2000.applyInverseTo(rotSatRefEME2000).getAngle();
@@ -313,13 +314,13 @@ public class TargetPointingTest {
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
                 
         // Create target pointing attitude law 
-        GeodeticPoint geoTarget = new GeodeticPoint(Math.toRadians(43.36), Math.toRadians(1.26), 600.);
+        GeodeticPoint geoTarget = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
         AttitudeLaw law = new TargetPointing(geoTarget, earthShape);
 
         KeplerianOrbit orbit =
-            new KeplerianOrbit(7178000.0, 1.e-4, Math.toRadians(50.),
-                              Math.toRadians(10.), Math.toRadians(20.),
-                              Math.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
+            new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
+                              FastMath.toRadians(10.), FastMath.toRadians(20.),
+                              FastMath.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);

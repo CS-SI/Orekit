@@ -20,6 +20,7 @@ package org.orekit.bodies;
 import java.text.ParseException;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -187,14 +188,14 @@ public class SolarBodyTest {
                                          central.getFrame(),start, central.getGM());
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         Assert.assertEquals(a, orbit.getA(), 0.02 * a);
-        double duration = Math.min(50 * Constants.JULIAN_DAY, 0.01 * orbit.getKeplerianPeriod());
+        double duration = FastMath.min(50 * Constants.JULIAN_DAY, 0.01 * orbit.getKeplerianPeriod());
 
         double max = 0;
         for (AbsoluteDate date = start; date.durationFrom(start) < duration; date = date.shiftedBy(duration / 100)) {
             PVCoordinates ephemPV = orbiting.getPVCoordinates(date, central.getFrame());
             PVCoordinates keplerPV = propagator.propagate(date).getPVCoordinates();
             Vector3D error = keplerPV.getPosition().subtract(ephemPV.getPosition());
-            max = Math.max(max, error.getNorm());
+            max = FastMath.max(max, error.getNorm());
         }
         Assert.assertTrue(max < epsilon * a);
     }

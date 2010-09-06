@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
+import org.apache.commons.math.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
@@ -35,10 +36,10 @@ public class TidalCorrection implements Serializable {
     private static final long serialVersionUID = 9143236723147294697L;
 
     /** pi;/2. */
-    private static final double HALF_PI = Math.PI / 2.0;
+    private static final double HALF_PI = FastMath.PI / 2.0;
 
     /** Angular units conversion factor. */
-    private static final double MICRO_ARC_SECONDS_TO_RADIANS = Math.PI / 648000000000.0;
+    private static final double MICRO_ARC_SECONDS_TO_RADIANS = FastMath.PI / 648000000000.0;
 
     /** Time units conversion factor. */
     private static final double MICRO_SECONDS_TO_SECONDS = 1.0e-6;
@@ -282,13 +283,13 @@ public class TidalCorrection implements Serializable {
         final int nM12 = (n - 1) / 2;
 
         // evaluate new location of center interval
-        final double newTCenter = h * Math.floor(t / h);
+        final double newTCenter = h * FastMath.floor(t / h);
 
         // shift reusable reference points
         int iMin = 0;
         int iMax = n;
-        final int shift = (int) Math.rint((newTCenter - tCenter) / h);
-        if (!Double.isNaN(tCenter) && (Math.abs(shift) < n)) {
+        final int shift = (int) FastMath.rint((newTCenter - tCenter) / h);
+        if (!Double.isNaN(tCenter) && (FastMath.abs(shift) < n)) {
             if (shift >= 0) {
                 System.arraycopy(dxRef, shift, dxRef, 0, n - shift);
                 System.arraycopy(dyRef, shift, dyRef, 0, n - shift);
@@ -336,16 +337,16 @@ public class TidalCorrection implements Serializable {
             final double fj  = FREQUENCY[j];
 
             final double alphaA = pj + fj * d60A;
-            anm00 += hsj * Math.cos(alphaA);
-            bnm00 -= hsj * Math.sin(alphaA);
+            anm00 += hsj * FastMath.cos(alphaA);
+            bnm00 -= hsj * FastMath.sin(alphaA);
 
             final double alphaB = pj + fj * d60B;
-            anm01 += hsj * Math.cos(alphaB);
-            bnm01 -= hsj * Math.sin(alphaB);
+            anm01 += hsj * FastMath.cos(alphaB);
+            bnm01 -= hsj * FastMath.sin(alphaB);
 
             final double alphaC = pj + fj * d60C;
-            anm02 += hsj * Math.cos(alphaC);
-            bnm02 -= hsj * Math.sin(alphaC);
+            anm02 += hsj * FastMath.cos(alphaC);
+            bnm02 -= hsj * FastMath.sin(alphaC);
 
         }
 
@@ -362,16 +363,16 @@ public class TidalCorrection implements Serializable {
             final double fj  = FREQUENCY[j];
 
             final double alphaA = pj + fj * d60A;
-            anm10 += hsj * Math.cos(alphaA);
-            bnm10 -= hsj * Math.sin(alphaA);
+            anm10 += hsj * FastMath.cos(alphaA);
+            bnm10 -= hsj * FastMath.sin(alphaA);
 
             final double alphaB = pj + fj * d60B;
-            anm11 += hsj * Math.cos(alphaB);
-            bnm11 -= hsj * Math.sin(alphaB);
+            anm11 += hsj * FastMath.cos(alphaB);
+            bnm11 -= hsj * FastMath.sin(alphaB);
 
             final double alphaC = pj + fj * d60C;
-            anm12 += hsj * Math.cos(alphaC);
-            bnm12 -= hsj * Math.sin(alphaC);
+            anm12 += hsj * FastMath.cos(alphaC);
+            bnm12 -= hsj * FastMath.sin(alphaC);
 
         }
 

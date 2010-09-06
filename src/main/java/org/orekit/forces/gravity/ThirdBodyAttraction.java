@@ -17,6 +17,7 @@
 package org.orekit.forces.gravity;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
@@ -60,8 +61,8 @@ public class ThirdBodyAttraction implements ForceModel {
 
         // compute relative acceleration
         final Vector3D gamma =
-            new Vector3D(body.getGM() * Math.pow(r2Sat, -1.5), satToBody,
-                        -body.getGM() * Math.pow(r2Central, -1.5), centralToBody);
+            new Vector3D(body.getGM() * FastMath.pow(r2Sat, -1.5), satToBody,
+                        -body.getGM() * FastMath.pow(r2Central, -1.5), centralToBody);
 
         // add contribution to the ODE second member
         adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());

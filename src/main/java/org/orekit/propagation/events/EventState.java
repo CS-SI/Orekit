@@ -23,6 +23,7 @@ import org.apache.commons.math.FunctionEvaluationException;
 import org.apache.commons.math.analysis.UnivariateRealFunction;
 import org.apache.commons.math.analysis.solvers.BrentSolver;
 import org.apache.commons.math.analysis.solvers.UnivariateRealSolver;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -136,7 +137,7 @@ class EventState implements Serializable {
             forward = interpolator.isForward();
             final AbsoluteDate t1 = interpolator.getCurrentDate();
             final double dt = t1.durationFrom(t0);
-            final int    n  = Math.max(1, (int) Math.ceil(Math.abs(dt) / detector.getMaxCheckInterval()));
+            final int    n  = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt) / detector.getMaxCheckInterval()));
             final double h  = dt / n;
 
             AbsoluteDate ta = t0;
@@ -199,15 +200,15 @@ class EventState implements Serializable {
                     final AbsoluteDate root = t0.shiftedBy(dtRoot);
 
                     if ((previousEventTime != null) &&
-                        (Math.abs(root.durationFrom(ta)) <= detector.getThreshold()) &&
-                        (Math.abs(root.durationFrom(previousEventTime)) <= detector.getThreshold())) {
+                        (FastMath.abs(root.durationFrom(ta)) <= detector.getThreshold()) &&
+                        (FastMath.abs(root.durationFrom(previousEventTime)) <= detector.getThreshold())) {
                             // we have either found nothing or found (again ?) a past event, we simply ignore it
                         ta = tb;
                         ga = gb;
                     } else if ((previousEventTime == null) ||
-                               (Math.abs(previousEventTime.durationFrom(root)) > detector.getThreshold())) {
+                               (FastMath.abs(previousEventTime.durationFrom(root)) > detector.getThreshold())) {
                         pendingEventTime = root;
-                        if (pendingEvent && (Math.abs(t1.durationFrom(pendingEventTime)) <= detector.getThreshold())) {
+                        if (pendingEvent && (FastMath.abs(t1.durationFrom(pendingEventTime)) <= detector.getThreshold())) {
                             // we were already waiting for this event which was
                             // found during a previous call for a step that was
                             // rejected, this step must now be accepted since it

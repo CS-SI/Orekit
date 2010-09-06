@@ -29,6 +29,7 @@ import org.apache.commons.math.ode.jacobians.FirstOrderIntegratorWithJacobians;
 import org.apache.commons.math.ode.jacobians.ODEWithJacobians;
 import org.apache.commons.math.ode.jacobians.ParameterizedODE;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
@@ -252,7 +253,7 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
                         if (parFMWJ.matches(parameter)) {
                             found = true;
                             paramWJ[noParam] = fmwj.getParameter(parFMWJ);
-                            hP[noParam] = paramWJ[noParam] * Math.sqrt(MathUtils.EPSILON);
+                            hP[noParam] = paramWJ[noParam] * FastMath.sqrt(MathUtils.EPSILON);
                             paramPairs.add(new ParameterPair(parameter, fmwj));
                             noParam++;
                         }

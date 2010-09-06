@@ -17,6 +17,7 @@
 package org.orekit.forces.gravity;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
@@ -121,12 +122,12 @@ public class DrozinerAttractionModel implements ForceModel {
 
         // Computation of intermediate variables
         final double r12 = xBody * xBody + yBody * yBody;
-        final double r1 = Math.sqrt(r12);
+        final double r1 = FastMath.sqrt(r12);
         if (r1 <= 10e-2) {
             throw new OrekitException(OrekitMessages.POLAR_TRAJECTORY, r1);
         }
         final double r2 = r12 + zBody * zBody;
-        final double r  = Math.sqrt(r2);
+        final double r  = FastMath.sqrt(r2);
         if (r <= equatorialRadius) {
             throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
         }

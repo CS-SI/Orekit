@@ -19,6 +19,7 @@ package org.orekit.frames;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,7 +51,7 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
         Vector3D p = new Vector3D(6000,6000,0);
         Assert.assertEquals(0.0, evolution.transformPosition(Vector3D.ZERO).getNorm(), 1.0e-15);
         Assert.assertEquals(0.0, evolution.transformVector(p).getZ(), 0.003);
-        Assert.assertEquals(2 * Math.PI * dt / 86164,
+        Assert.assertEquals(2 * FastMath.PI * dt / 86164,
                             Vector3D.angle(t0.transformVector(p), t1.transformVector(p)),
                             1.0e-9);
 
@@ -63,19 +64,19 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
         Frame ITRF2005 = FramesFactory.getITRF2005();
 
         Vector3D u = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
-        Assert.assertTrue(Vector3D.angle(u, Vector3D.MINUS_I) < Math.toRadians(0.5));
+        Assert.assertTrue(Vector3D.angle(u, Vector3D.MINUS_I) < FastMath.toRadians(0.5));
 
         date = date.shiftedBy(6 * 3600);
         u = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
-        Assert.assertTrue(Vector3D.angle(u, Vector3D.MINUS_J) < Math.toRadians(0.5));
+        Assert.assertTrue(Vector3D.angle(u, Vector3D.MINUS_J) < FastMath.toRadians(0.5));
 
         date = date.shiftedBy(6 * 3600);
         u = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
-        Assert.assertTrue(Vector3D.angle(u, Vector3D.PLUS_I) < Math.toRadians(0.5));
+        Assert.assertTrue(Vector3D.angle(u, Vector3D.PLUS_I) < FastMath.toRadians(0.5));
 
         date = date.shiftedBy(6 * 3600);
         u = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
-        Assert.assertTrue(Vector3D.angle(u, Vector3D.PLUS_J) < Math.toRadians(0.5));
+        Assert.assertTrue(Vector3D.angle(u, Vector3D.PLUS_J) < FastMath.toRadians(0.5));
 
     }
 
@@ -85,16 +86,16 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
         AbsoluteDate date = new AbsoluteDate(2001, 03, 21, 0, 4, 0, TimeScalesFactory.getUTC());
         TIRF2000Frame TIRF2000 = (TIRF2000Frame) FramesFactory.getTIRF2000();
 
-        Assert.assertEquals(180, Math.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
+        Assert.assertEquals(180, FastMath.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
 
         date = date.shiftedBy(6 * 3600);
-        Assert.assertEquals(-90, Math.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
+        Assert.assertEquals(-90, FastMath.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
 
         date = date.shiftedBy(6 * 3600);
-        Assert.assertEquals(0, Math.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
+        Assert.assertEquals(0, FastMath.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
 
         date = date.shiftedBy(6 * 3600);
-        Assert.assertEquals(90, Math.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
+        Assert.assertEquals(90, FastMath.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
 
     }
 

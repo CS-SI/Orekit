@@ -18,6 +18,7 @@ package org.orekit.propagation.numerical;
 
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -66,7 +67,7 @@ public class NumericalPropagatorWithJacobiansTest {
     private final double srpr = 0.9; // solar radiation pressure coeff.
 
     // Threshold for test acceptance
-    private final double ERRMAX = Math.sqrt(MathUtils.EPSILON);
+    private final double ERRMAX = FastMath.sqrt(MathUtils.EPSILON);
 
     @Test
     public void testWithoutJacobian() throws OrekitException {
@@ -79,7 +80,7 @@ public class NumericalPropagatorWithJacobiansTest {
             propagator.propagate(initDate.shiftedBy(dt));
 
         // Check results
-        final double n = Math.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
+        final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
         Assert.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
         Assert.assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
         Assert.assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
@@ -142,12 +143,12 @@ public class NumericalPropagatorWithJacobiansTest {
         final double dLvda0 = (endStateDa.getLv() - finalState.getLv()) / da;
         final double dMda0  = (endStateDa.getMass() - finalState.getMass()) / da;
 
-        Assert.assertTrue(Math.abs((dAda0  - dFdY[0][0])/finalState.getA()) < ERRMAX);
-        Assert.assertTrue(Math.abs((dExda0 - dFdY[1][0])/finalState.getEquinoctialEx()) < ERRMAX);
-        Assert.assertTrue(Math.abs((dEyda0 - dFdY[2][0])/finalState.getEquinoctialEy()) < ERRMAX);
-        Assert.assertTrue(Math.abs((dHxda0 - dFdY[3][0])/finalState.getHx()) < ERRMAX);
-        Assert.assertTrue(Math.abs((dHyda0 - dFdY[4][0])/finalState.getHy()) < ERRMAX);
-        Assert.assertTrue(Math.abs((dLvda0 - dFdY[5][0])/finalState.getHy()) < ERRMAX);
+        Assert.assertTrue(FastMath.abs((dAda0  - dFdY[0][0])/finalState.getA()) < ERRMAX);
+        Assert.assertTrue(FastMath.abs((dExda0 - dFdY[1][0])/finalState.getEquinoctialEx()) < ERRMAX);
+        Assert.assertTrue(FastMath.abs((dEyda0 - dFdY[2][0])/finalState.getEquinoctialEy()) < ERRMAX);
+        Assert.assertTrue(FastMath.abs((dHxda0 - dFdY[3][0])/finalState.getHx()) < ERRMAX);
+        Assert.assertTrue(FastMath.abs((dHyda0 - dFdY[4][0])/finalState.getHy()) < ERRMAX);
+        Assert.assertTrue(FastMath.abs((dLvda0 - dFdY[5][0])/finalState.getHy()) < ERRMAX);
         Assert.assertEquals(dMda0, dFdY[6][0], 0.0);
 
     	final double dex = absTolV[1]*1.e1;
@@ -165,12 +166,12 @@ public class NumericalPropagatorWithJacobiansTest {
         final double dLvdex0 = (endStateDex.getLv() - finalState.getLv()) / dex;
         final double dMdex0  = (endStateDex.getMass() - finalState.getMass()) / dex;
 
-        Assert.assertTrue(Math.abs((dAdex0  - dFdY[0][1])/finalState.getA()) < ERRMAX);
-        Assert.assertTrue(Math.abs((dExdex0 - dFdY[1][1])/finalState.getEquinoctialEx()) < ERRMAX);
-        Assert.assertTrue(Math.abs((dEydex0 - dFdY[2][1])/finalState.getEquinoctialEy()) < ERRMAX);
-        Assert.assertTrue(Math.abs((dHxdex0 - dFdY[3][1])/finalState.getHx()) < ERRMAX);
-        Assert.assertTrue(Math.abs((dHydex0 - dFdY[4][1])/finalState.getHy()) < ERRMAX);
-        Assert.assertTrue(Math.abs((dLvdex0 - dFdY[5][1])/finalState.getHy()) < ERRMAX);
+        Assert.assertTrue(FastMath.abs((dAdex0  - dFdY[0][1])/finalState.getA()) < ERRMAX);
+        Assert.assertTrue(FastMath.abs((dExdex0 - dFdY[1][1])/finalState.getEquinoctialEx()) < ERRMAX);
+        Assert.assertTrue(FastMath.abs((dEydex0 - dFdY[2][1])/finalState.getEquinoctialEy()) < ERRMAX);
+        Assert.assertTrue(FastMath.abs((dHxdex0 - dFdY[3][1])/finalState.getHx()) < ERRMAX);
+        Assert.assertTrue(FastMath.abs((dHydex0 - dFdY[4][1])/finalState.getHy()) < ERRMAX);
+        Assert.assertTrue(FastMath.abs((dLvdex0 - dFdY[5][1])/finalState.getHy()) < ERRMAX);
         Assert.assertEquals(dMdex0, dFdY[6][1], 0.0);
 
     	final double dey = absTolV[2]*1.e1;
@@ -188,12 +189,12 @@ public class NumericalPropagatorWithJacobiansTest {
         final double dLvdey0 = (endStateDey.getLv() - finalState.getLv()) / dey;
         final double dMdey0  = (endStateDey.getMass() - finalState.getMass()) / dey;
 
-        Assert.assertTrue(Math.abs(dAdey0  - dFdY[0][2])/finalState.getA() < ERRMAX);
-        Assert.assertTrue(Math.abs(dExdey0 - dFdY[1][2])/finalState.getEquinoctialEx() < ERRMAX);
-        Assert.assertTrue(Math.abs(dEydey0 - dFdY[2][2])/finalState.getEquinoctialEy() < ERRMAX);
-        Assert.assertTrue(Math.abs(dHxdey0 - dFdY[3][2])/finalState.getHx() < ERRMAX);
-        Assert.assertTrue(Math.abs(dHydey0 - dFdY[4][2])/finalState.getHy() < ERRMAX);
-        Assert.assertTrue(Math.abs(dLvdey0 - dFdY[5][2])/finalState.getLv() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dAdey0  - dFdY[0][2])/finalState.getA() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dExdey0 - dFdY[1][2])/finalState.getEquinoctialEx() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dEydey0 - dFdY[2][2])/finalState.getEquinoctialEy() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dHxdey0 - dFdY[3][2])/finalState.getHx() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dHydey0 - dFdY[4][2])/finalState.getHy() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dLvdey0 - dFdY[5][2])/finalState.getLv() < ERRMAX);
         Assert.assertEquals(dMdey0, dFdY[6][2], 0.0);
 
     	final double dhx = absTolV[3]*1.e1;
@@ -211,12 +212,12 @@ public class NumericalPropagatorWithJacobiansTest {
         final double dLvdhx0 = (endStateDhx.getLv() - finalState.getLv()) / dhx;
         final double dMdhx0  = (endStateDhx.getMass() - finalState.getMass()) / dhx;
 
-        Assert.assertTrue(Math.abs(dAdhx0  - dFdY[0][3])/finalState.getA() < ERRMAX);
-        Assert.assertTrue(Math.abs(dExdhx0 - dFdY[1][3])/finalState.getEquinoctialEx() < ERRMAX);
-        Assert.assertTrue(Math.abs(dEydhx0 - dFdY[2][3])/finalState.getEquinoctialEy() < ERRMAX);
-        Assert.assertTrue(Math.abs(dHxdhx0 - dFdY[3][3])/finalState.getHx() < ERRMAX);
-        Assert.assertTrue(Math.abs(dHydhx0 - dFdY[4][3])/finalState.getHy() < ERRMAX);
-        Assert.assertTrue(Math.abs(dLvdhx0 - dFdY[5][3])/finalState.getLv() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dAdhx0  - dFdY[0][3])/finalState.getA() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dExdhx0 - dFdY[1][3])/finalState.getEquinoctialEx() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dEydhx0 - dFdY[2][3])/finalState.getEquinoctialEy() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dHxdhx0 - dFdY[3][3])/finalState.getHx() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dHydhx0 - dFdY[4][3])/finalState.getHy() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dLvdhx0 - dFdY[5][3])/finalState.getLv() < ERRMAX);
         Assert.assertEquals(dMdhx0, dFdY[6][3], 0.0);
 
     	final double dhy = absTolV[4]*1.e1;
@@ -234,12 +235,12 @@ public class NumericalPropagatorWithJacobiansTest {
         final double dLvdhy0 = (endStateDhy.getLv() - finalState.getLv()) / dhy;
         final double dMdhy0  = (endStateDhy.getMass() - finalState.getMass()) / dhy;
 
-        Assert.assertTrue(Math.abs(dAdhy0  - dFdY[0][4])/finalState.getA() < ERRMAX);
-        Assert.assertTrue(Math.abs(dExdhy0 - dFdY[1][4])/finalState.getEquinoctialEx() < ERRMAX);
-        Assert.assertTrue(Math.abs(dEydhy0 - dFdY[2][4])/finalState.getEquinoctialEy() < ERRMAX);
-        Assert.assertTrue(Math.abs(dHxdhy0 - dFdY[3][4])/finalState.getHx() < ERRMAX);
-        Assert.assertTrue(Math.abs(dHydhy0 - dFdY[4][4])/finalState.getHy() < ERRMAX);
-        Assert.assertTrue(Math.abs(dLvdhy0 - dFdY[5][4])/finalState.getLv() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dAdhy0  - dFdY[0][4])/finalState.getA() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dExdhy0 - dFdY[1][4])/finalState.getEquinoctialEx() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dEydhy0 - dFdY[2][4])/finalState.getEquinoctialEy() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dHxdhy0 - dFdY[3][4])/finalState.getHx() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dHydhy0 - dFdY[4][4])/finalState.getHy() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dLvdhy0 - dFdY[5][4])/finalState.getLv() < ERRMAX);
         Assert.assertEquals(dMdhy0, dFdY[6][4], 0.0);
 
     	final double dlv = absTolV[5]*1.e1;
@@ -257,12 +258,12 @@ public class NumericalPropagatorWithJacobiansTest {
         final double dLvdlv0 = (endStateDlv.getLv() - finalState.getLv()) / dlv;
         final double dMdlv0  = (endStateDlv.getMass() - finalState.getMass()) / dlv;
 
-        Assert.assertTrue(Math.abs(dAdlv0  - dFdY[0][5])/finalState.getA() < ERRMAX);
-        Assert.assertTrue(Math.abs(dExdlv0 - dFdY[1][5])/finalState.getEquinoctialEx() < ERRMAX);
-        Assert.assertTrue(Math.abs(dEydlv0 - dFdY[2][5])/finalState.getEquinoctialEy() < ERRMAX);
-        Assert.assertTrue(Math.abs(dHxdlv0 - dFdY[3][5])/finalState.getHx() < ERRMAX);
-        Assert.assertTrue(Math.abs(dHydlv0 - dFdY[4][5])/finalState.getHy() < ERRMAX);
-        Assert.assertTrue(Math.abs(dLvdlv0 - dFdY[5][5])/finalState.getLv() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dAdlv0  - dFdY[0][5])/finalState.getA() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dExdlv0 - dFdY[1][5])/finalState.getEquinoctialEx() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dEydlv0 - dFdY[2][5])/finalState.getEquinoctialEy() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dHxdlv0 - dFdY[3][5])/finalState.getHx() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dHydlv0 - dFdY[4][5])/finalState.getHy() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dLvdlv0 - dFdY[5][5])/finalState.getLv() < ERRMAX);
         Assert.assertEquals(dMdlv0, dFdY[6][5], 0.0);
     }
 
@@ -296,12 +297,12 @@ public class NumericalPropagatorWithJacobiansTest {
         final double dHydP = (endStateDP.getHy() - finalState.getHy()) / dp;
         final double dLvdP = (endStateDP.getLv() - finalState.getLv()) / dp;
 
-        Assert.assertTrue(Math.abs(dAdP  - dFdP[0][0])/finalState.getA() < ERRMAX);
-        Assert.assertTrue(Math.abs(dExdP - dFdP[1][0])/finalState.getEquinoctialEx() < ERRMAX);
-        Assert.assertTrue(Math.abs(dEydP - dFdP[2][0])/finalState.getEquinoctialEy() < ERRMAX);
-        Assert.assertTrue(Math.abs(dHxdP - dFdP[3][0])/finalState.getHx() < ERRMAX);
-        Assert.assertTrue(Math.abs(dHydP - dFdP[4][0])/finalState.getHy() < ERRMAX);
-        Assert.assertTrue(Math.abs(dLvdP - dFdP[5][0])/finalState.getLv() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dAdP  - dFdP[0][0])/finalState.getA() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dExdP - dFdP[1][0])/finalState.getEquinoctialEx() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dEydP - dFdP[2][0])/finalState.getEquinoctialEy() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dHxdP - dFdP[3][0])/finalState.getHx() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dHydP - dFdP[4][0])/finalState.getHy() < ERRMAX);
+        Assert.assertTrue(FastMath.abs(dLvdP - dFdP[5][0])/finalState.getLv() < ERRMAX);
     }
 
     @Test(expected=PropagationException.class)

@@ -20,6 +20,7 @@ import java.util.Random;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -209,7 +210,7 @@ public class FrameTest {
                 double q1 = random.nextDouble() * 2 - 1;
                 double q2 = random.nextDouble() * 2 - 1;
                 double q3 = random.nextDouble() * 2 - 1;
-                double q  = Math.sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
+                double q  = FastMath.sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
                 Rotation r = new Rotation(q0 / q, q1 / q, q2 / q, q3 / q, false);
                 transform = new Transform(transform, new Transform(r));
             }

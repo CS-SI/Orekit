@@ -17,6 +17,7 @@
 package org.orekit.frames;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -60,7 +61,7 @@ public class LocalOrbitalFrameTest {
         Vector3D zDirection = t.transformVector(Vector3D.PLUS_K);
         Assert.assertEquals(0, Vector3D.angle(v2, xDirection), 1.0e-15);
         Assert.assertEquals(0, Vector3D.angle(momentum, zDirection), 1.0e-15);
-        Assert.assertEquals(Math.PI, Vector3D.angle(t.getRotationRate(), zDirection), 1.0e-15);
+        Assert.assertEquals(FastMath.PI, Vector3D.angle(t.getRotationRate(), zDirection), 1.0e-15);
         Assert.assertTrue(Vector3D.dotProduct(yDirection, p2) < 0);
 
         Assert.assertEquals(initialOrbit.getKeplerianMeanMotion(), t.getRotationRate().getNorm(), 1.0e-7);
@@ -98,7 +99,7 @@ public class LocalOrbitalFrameTest {
         Vector3D zDirection = t.transformVector(Vector3D.PLUS_K);
         Assert.assertEquals(0, Vector3D.angle(p2, xDirection), 1.0e-15);
         Assert.assertEquals(0, Vector3D.angle(momentum, zDirection), 1.0e-15);
-        Assert.assertEquals(Math.PI, Vector3D.angle(t.getRotationRate(), zDirection), 1.0e-15);
+        Assert.assertEquals(FastMath.PI, Vector3D.angle(t.getRotationRate(), zDirection), 1.0e-15);
         Assert.assertTrue(Vector3D.dotProduct(yDirection, v2) > 0);
 
         Assert.assertEquals(initialOrbit.getKeplerianMeanMotion(), t.getRotationRate().getNorm(), 1.0e-7);

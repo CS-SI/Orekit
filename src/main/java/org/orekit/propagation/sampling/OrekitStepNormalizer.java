@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.sampling;
 
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.propagation.SpacecraftState;
@@ -56,7 +57,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
      * @param handler fixed time step handler to wrap
      */
     public OrekitStepNormalizer(final double h, final OrekitFixedStepHandler handler) {
-        this.h       = Math.abs(h);
+        this.h       = FastMath.abs(h);
         this.handler = handler;
         reset();
     }

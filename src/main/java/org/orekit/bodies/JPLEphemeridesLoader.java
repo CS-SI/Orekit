@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.commons.math.util.FastMath;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -586,14 +587,14 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         // check astronomical unit consistency
         final double au = 1000 * extractDouble(record, 2680);
         ok = ok && (au > 1.4e11) && (au < 1.6e11);
-        if (Math.abs(getLoadedAstronomicalUnit() - au) >= 0.001) {
+        if (FastMath.abs(getLoadedAstronomicalUnit() - au) >= 0.001) {
             throw new OrekitException(OrekitMessages.INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES,
                                       getLoadedAstronomicalUnit(), au);
         }
 
         final double emRat = extractDouble(record, 2688);
         ok = ok && (emRat > 80) && (emRat < 82);
-        if (Math.abs(getLoadedEarthMoonMassRatio() - emRat) >= 1.0e-8) {
+        if (FastMath.abs(getLoadedEarthMoonMassRatio() - emRat) >= 1.0e-8) {
             throw new OrekitException(OrekitMessages.INCONSISTENT_EARTH_MOON_RATIO_IN_FILES,
                                       getLoadedEarthMoonMassRatio(), emRat);
         }
@@ -630,7 +631,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             if (Double.isNaN(maxChunksDuration)) {
                 maxChunksDuration = chunksDuration;
             } else {
-                maxChunksDuration = Math.max(maxChunksDuration, chunksDuration);
+                maxChunksDuration = FastMath.max(maxChunksDuration, chunksDuration);
             }
 
         }

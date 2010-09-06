@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 
 
+import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,8 +38,8 @@ public class TidalCorrectionTest {
         // compute the pole motion component for tidal correction
         final PoleCorrection tidalCorr = new TidalCorrection().getPoleCorrection(date);
 
-        Assert.assertEquals(Math.toRadians(-204.09237446540885e-6 / 3600), tidalCorr.getXp(), 2.0e-14);
-        Assert.assertEquals(Math.toRadians(-161.48436351246889e-6 / 3600), tidalCorr.getYp(), 0.7e-14);
+        Assert.assertEquals(FastMath.toRadians(-204.09237446540885e-6 / 3600), tidalCorr.getXp(), 2.0e-14);
+        Assert.assertEquals(FastMath.toRadians(-161.48436351246889e-6 / 3600), tidalCorr.getYp(), 0.7e-14);
 
     }
 

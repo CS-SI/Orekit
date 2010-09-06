@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events;
 
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 
@@ -110,7 +111,7 @@ public class EventShifter extends AbstractDetector {
         final double incShiftedG = detector.g(s.shiftedBy(increasingOffset));
         final double decShiftedG = detector.g(s.shiftedBy(decreasingOffset));
         return (increasingOffset >= decreasingOffset) ?
-               Math.max(incShiftedG, decShiftedG) : Math.min(incShiftedG, decShiftedG);
+               FastMath.max(incShiftedG, decShiftedG) : FastMath.min(incShiftedG, decShiftedG);
     }
 
 }

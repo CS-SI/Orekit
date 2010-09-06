@@ -18,6 +18,7 @@ package org.orekit.forces.maneuvers;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -130,7 +131,7 @@ public class ImpulseManeuver implements EventDetector {
                                                       oldPV.getVelocity().add(deltaV));
 
         // compute new mass
-        final double newMass = oldState.getMass() * Math.exp(-deltaV.getNorm() / vExhaust);
+        final double newMass = oldState.getMass() * FastMath.exp(-deltaV.getNorm() / vExhaust);
 
         // pack everything in a new state
         return new SpacecraftState(new EquinoctialOrbit(newPV, eme2000, date, oldState.getMu()),

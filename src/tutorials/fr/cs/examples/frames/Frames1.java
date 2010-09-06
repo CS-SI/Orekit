@@ -22,6 +22,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -80,8 +81,8 @@ public class Frames1 {
             BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
 
             // Station
-            final double longitude = Math.toRadians(45.);
-            final double latitude  = Math.toRadians(25.);
+            final double longitude = FastMath.toRadians(45.);
+            final double latitude  = FastMath.toRadians(25.);
             final double altitude  = 0.;
             final GeodeticPoint station = new GeodeticPoint(latitude, longitude, altitude);
             final TopocentricFrame staF = new TopocentricFrame(earth, station, "station1");

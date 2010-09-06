@@ -18,6 +18,7 @@ package org.orekit.forces.maneuvers;
 
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +41,7 @@ public class ImpulseManeuverTest {
     @Test
     public void testInclinationManeuver() throws OrekitException {
         final Orbit initialOrbit =
-            new KeplerianOrbit(24532000.0, 0.72, 0.3, Math.PI, 0.4, 2.0,
+            new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0,
                                KeplerianOrbit.MEAN_ANOMALY,
                                FramesFactory.getEME2000(),
                                new AbsoluteDate(new DateComponents(2008, 06, 23),
@@ -51,8 +52,8 @@ public class ImpulseManeuverTest {
         final double e  = initialOrbit.getE();
         final double i  = initialOrbit.getI();
         final double mu = initialOrbit.getMu();
-        final double vApo = Math.sqrt(mu * (1 - e) / (a * (1 + e)));
-        double dv = 0.99 * Math.tan(i) * vApo;
+        final double vApo = FastMath.sqrt(mu * (1 - e) / (a * (1 + e)));
+        double dv = 0.99 * FastMath.tan(i) * vApo;
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, LofOffset.LOF_ALIGNED);
         propagator.addEventDetector(new ImpulseManeuver(new NodeDetector(initialOrbit, FramesFactory.getEME2000()),
                                                         new Vector3D(dv, Vector3D.PLUS_J), 400.0));

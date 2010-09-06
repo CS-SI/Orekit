@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -83,7 +84,7 @@ public class DetectorTest {
                 double dt = currentState.getDate().durationFrom(triggerDate);
                 if (dt < 0) {
                     outOfOrderCallDetected = true;
-                    Assert.assertTrue(Math.abs(dt) < stepSize);
+                    Assert.assertTrue(FastMath.abs(dt) < stepSize);
                 }
             }
         }

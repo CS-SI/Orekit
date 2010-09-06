@@ -19,6 +19,7 @@ package org.orekit.propagation.numerical;
 import java.io.Serializable;
 import java.util.Arrays;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
@@ -189,26 +190,26 @@ public class TimeDerivativesEquations implements Serializable {
         final double ex2 = ex * ex;
         final double ey2 = ey * ey;
         final double e2  = ex2 + ey2;
-        final double e   = Math.sqrt(e2);
+        final double e   = FastMath.sqrt(e2);
         if (e >= 1) {
             throw new PropagationException(OrekitMessages.ORBIT_BECOMES_HYPERBOLIC_UNABLE_TO_PROPAGATE_FURTHER, e);
         }
 
         // intermediate variables
         final double oMe2        = (1 - e) * (1 + e);
-        final double epsilon     = Math.sqrt(oMe2);
+        final double epsilon     = FastMath.sqrt(oMe2);
         final double a           = storedParameters.getA();
-        final double na          = Math.sqrt(orbit.getMu() / a);
+        final double na          = FastMath.sqrt(orbit.getMu() / a);
         final double n           = na / a;
         final double lv          = storedParameters.getLv();
-        final double cLv         = Math.cos(lv);
-        final double sLv         = Math.sin(lv);
+        final double cLv         = FastMath.cos(lv);
+        final double sLv         = FastMath.sin(lv);
         final double excLv       = ex * cLv;
         final double eysLv       = ey * sLv;
         final double excLvPeysLv = excLv + eysLv;
         final double ksi         = 1 + excLvPeysLv;
         final double nu          = ex * sLv - ey * cLv;
-        final double sqrt        = Math.sqrt(ksi * ksi + nu * nu);
+        final double sqrt        = FastMath.sqrt(ksi * ksi + nu * nu);
         final double oPksi       = 2 + excLvPeysLv;
         final double hx          = storedParameters.getHx();
         final double hy          = storedParameters.getHy();

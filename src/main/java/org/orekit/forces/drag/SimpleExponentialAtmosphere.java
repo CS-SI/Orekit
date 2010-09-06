@@ -17,6 +17,7 @@
 package org.orekit.forces.drag;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -73,7 +74,7 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
     public double getDensity(final AbsoluteDate date, final Vector3D position, final Frame frame)
         throws OrekitException {
         final GeodeticPoint gp = shape.transform(position, frame, date);
-        return rho0 * Math.exp((h0 - gp.getAltitude()) / hscale);
+        return rho0 * FastMath.exp((h0 - gp.getAltitude()) / hscale);
     }
 
     /** {@inheritDoc} */

@@ -25,6 +25,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.attitudes.AttitudesSequence;
 import org.orekit.attitudes.LofOffset;
@@ -75,7 +76,7 @@ public class EarthObservation {
 
             // Attitudes sequence definition
             final AttitudesSequence attitudesSequence = new AttitudesSequence();
-            final AttitudeLaw dayObservationLaw = new LofOffset(RotationOrder.XYZ, Math.toRadians(20), Math.toRadians(40), 0);
+            final AttitudeLaw dayObservationLaw = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
             final AttitudeLaw nightRestingLaw   = LofOffset.LOF_ALIGNED;
             final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
             final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
@@ -134,8 +135,8 @@ public class EarthObservation {
                         final double eclipseAngle = dayNightEvent.g(currentState);
 
                         output.add(currentState.getDate() +
-                                   " " + ad.format(Math.toDegrees(eclipseAngle)) +
-                                   " " + ad.format(Math.toDegrees(pointingOffset)));
+                                   " " + ad.format(FastMath.toDegrees(eclipseAngle)) +
+                                   " " + ad.format(FastMath.toDegrees(pointingOffset)));
                     } catch (OrekitException oe) {
                         throw new PropagationException(oe);
                     }

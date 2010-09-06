@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModelWithJacobians;
@@ -121,7 +122,7 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
         final Vector3D satSunVector = getSatSunVector(s);
         final double r2             = satSunVector.getNormSq();
         final double rawP           = kRef * getLightningRatio(position, frame, date) / r2;
-        final Vector3D flux         = new Vector3D(-rawP / Math.sqrt(r2), satSunVector);
+        final Vector3D flux         = new Vector3D(-rawP / FastMath.sqrt(r2), satSunVector);
 
         // provide the perturbing acceleration to the derivatives adder
         adder.addAcceleration(spacecraft.radiationPressureAcceleration(s, flux), frame);
@@ -148,10 +149,10 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
             throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
         }
 
-        final double alphaEarth = Math.asin(equatorialRadius / r);
+        final double alphaEarth = FastMath.asin(equatorialRadius / r);
 
         // Definition of the Sun's apparent radius
-        final double alphaSun = Math.asin(SUN_RADIUS / satSunVector.getNorm());
+        final double alphaSun = FastMath.asin(SUN_RADIUS / satSunVector.getNorm());
 
         // Retrieve the Sat-Sun / Sat-Central body angle
         final double sunEarthAngle = Vector3D.angle(satSunVector, position.negate());
@@ -176,14 +177,14 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
                 (sunEarthAngle * sunEarthAngle +
                         (alphaEarth - alphaSun) * (alphaSun + alphaEarth)) / (2 * sunEarthAngle);
 
-            final double P1 = Math.PI * alphaSun * alphaSun -
-                alphaSun * alphaSun * Math.acos(alpha1 / alphaSun) +
-                alpha1 * Math.sqrt(alphaSun * alphaSun - alpha1 * alpha1);
+            final double P1 = FastMath.PI * alphaSun * alphaSun -
+                alphaSun * alphaSun * FastMath.acos(alpha1 / alphaSun) +
+                alpha1 * FastMath.sqrt(alphaSun * alphaSun - alpha1 * alpha1);
 
-            final double P2 = alphaEarth * alphaEarth * Math.acos(alpha2 / alphaEarth) -
-                alpha2 * Math.sqrt(alphaEarth * alphaEarth - alpha2 * alpha2);
+            final double P2 = alphaEarth * alphaEarth * FastMath.acos(alpha2 / alphaEarth) -
+                alpha2 * FastMath.sqrt(alphaEarth * alphaEarth - alpha2 * alpha2);
 
-            result = (P1 - P2) / (Math.PI * alphaSun * alphaSun);
+            result = (P1 - P2) / (FastMath.PI * alphaSun * alphaSun);
 
 
         }
@@ -272,12 +273,12 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
             throws OrekitException {
 
             final Vector3D satPos = s.getPVCoordinates().getPosition();
-            final double sunEarthAngle = Math.PI - Vector3D.angle(getSatSunVector(s), satPos);
+            final double sunEarthAngle = FastMath.PI - Vector3D.angle(getSatSunVector(s), satPos);
             final double r = satPos.getNorm();
             if (r <= equatorialRadius) {
                 throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
             }
-            final double alphaEarth = Math.asin(equatorialRadius / r);
+            final double alphaEarth = FastMath.asin(equatorialRadius / r);
             return sunEarthAngle - alphaEarth;
         }
 
@@ -310,13 +311,13 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
 
             final Vector3D satPos       = s.getPVCoordinates().getPosition();
             final Vector3D satSunVector = getSatSunVector(s);
-            final double sunEarthAngle  = Math.PI - Vector3D.angle(satSunVector, satPos);
+            final double sunEarthAngle  = FastMath.PI - Vector3D.angle(satSunVector, satPos);
             final double r = satPos.getNorm();
             if (r <= equatorialRadius) {
                 throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
             }
-            final double alphaEarth = Math.asin(equatorialRadius / r);
-            final double alphaSun   = Math.asin(SUN_RADIUS / satSunVector.getNorm());
+            final double alphaEarth = FastMath.asin(equatorialRadius / r);
+            final double alphaSun   = FastMath.asin(SUN_RADIUS / satSunVector.getNorm());
             return sunEarthAngle - alphaEarth - alphaSun;
         }
 

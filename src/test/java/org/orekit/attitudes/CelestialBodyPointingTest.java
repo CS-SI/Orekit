@@ -19,6 +19,7 @@ package org.orekit.attitudes;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +60,7 @@ public class CelestialBodyPointingTest {
 
         // the following statement checks we take parallax into account
         // Sun-Earth-Sat are in quadrature, with distance (Earth, Sat) == distance(Sun, Earth) / 5000
-        Assert.assertEquals(Math.atan(1.0 / 5000.0),
+        Assert.assertEquals(FastMath.atan(1.0 / 5000.0),
                             Vector3D.angle(xDirection,
                                            sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition()),
                                            1.0e-15);

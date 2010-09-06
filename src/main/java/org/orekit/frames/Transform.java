@@ -65,7 +65,7 @@ import org.orekit.utils.PVCoordinates;
  *
  * The transform to apply then is defined as follows :
  *
- * Rotation rotation = new Rotation(Vector3D.PLUS_K, Math.PI / 2);
+ * Rotation rotation = new Rotation(Vector3D.PLUS_K, FastMath.PI / 2);
  * Vector3D rotationRate = new Vector3D(0, 0, -2);
  *
  * Transform R1toR2 = new Transform(rotation, rotationRate);

@@ -24,6 +24,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.math.exception.util.LocalizedFormats;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -50,7 +51,7 @@ import org.xml.sax.helpers.DefaultHandler;
 class XMLEOPFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
 
     /** Conversion factor for arc seconds entries. */
-    private static final double ARC_SECONDS_TO_RADIANS = 2 * Math.PI / 1296000;
+    private static final double ARC_SECONDS_TO_RADIANS = 2 * FastMath.PI / 1296000;
 
     /** Conversion factor for milli-arc seconds entries. */
     private static final double MILLI_ARC_SECONDS_TO_RADIANS = ARC_SECONDS_TO_RADIANS / 1000.0;

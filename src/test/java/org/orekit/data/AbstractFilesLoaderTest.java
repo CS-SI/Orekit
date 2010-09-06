@@ -16,6 +16,7 @@
  */
 package org.orekit.data;
 
+import org.apache.commons.math.util.FastMath;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.EOPHistory;
@@ -33,11 +34,11 @@ public abstract class AbstractFilesLoaderTest {
         TimeStamped previous = null;
         for (final TimeStamped current : history) {
             if (previous != null) {
-                maxGap = Math.max(maxGap, current.getDate().durationFrom(previous.getDate()));
+                maxGap = FastMath.max(maxGap, current.getDate().durationFrom(previous.getDate()));
             }
             previous = current;
         }
-        return (int) Math.round(maxGap / Constants.JULIAN_DAY);
+        return (int) FastMath.round(maxGap / Constants.JULIAN_DAY);
     }
 
 }

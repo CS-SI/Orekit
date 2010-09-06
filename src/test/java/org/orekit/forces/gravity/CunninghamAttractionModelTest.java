@@ -27,6 +27,7 @@ import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -72,9 +73,9 @@ public class CunninghamAttractionModelTest {
                                             new Transform(new Rotation(pole, Vector3D.PLUS_K)),
                                             "pole aligned", true);
 
-        double i     = Math.toRadians(98.7);
-        double omega = Math.toRadians(93.0);
-        double OMEGA = Math.toRadians(15.0 * 22.5);
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                                        0, KeplerianOrbit.MEAN_ANOMALY,
                                                        poleAligned, date, mu);
@@ -195,9 +196,9 @@ public class CunninghamAttractionModelTest {
                 Vector3D N = Vector3D.crossProduct(W, T);
 
                 Assert.assertTrue(dif.getNorm() < 111);
-                Assert.assertTrue(Math.abs(Vector3D.dotProduct(dif, T)) < 111);
-                Assert.assertTrue(Math.abs(Vector3D.dotProduct(dif, N)) <  54);
-                Assert.assertTrue(Math.abs(Vector3D.dotProduct(dif, W)) <  12);
+                Assert.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, T)) < 111);
+                Assert.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, N)) <  54);
+                Assert.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, W)) <  12);
 
             } catch (PropagationException e) {
                 e.printStackTrace();
@@ -215,9 +216,9 @@ public class CunninghamAttractionModelTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
-        double i     = Math.toRadians(98.7);
-        double omega = Math.toRadians(93.0);
-        double OMEGA = Math.toRadians(15.0 * 22.5);
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                                        0, KeplerianOrbit.MEAN_ANOMALY,
                                                        FramesFactory.getEME2000(), date, mu);

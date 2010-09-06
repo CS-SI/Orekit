@@ -27,6 +27,7 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.geometry.Vector3DFormat;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.attitudes.AttitudesSequence;
 import org.orekit.attitudes.LofOffset;
@@ -88,22 +89,22 @@ public class EarthObservation_day_night_switch_with_fixed_transitions {
             //-------------------------
 
             // Mode : day
-            final AttitudeLaw dayObservationLaw = new LofOffset(RotationOrder.XYZ, Math.toRadians(20), Math.toRadians(40), 0);
+            final AttitudeLaw dayObservationLaw = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
 
             // Mode : night
             final AttitudeLaw nightRestingLaw   = LofOffset.LOF_ALIGNED;
 
             // Mode : day-night rdv 1
-            final AttitudeLaw dayNightRdV1Law = new LofOffset(RotationOrder.XYZ, Math.toRadians(20), Math.toRadians(20), 0);
+            final AttitudeLaw dayNightRdV1Law = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(20), 0);
 
             // Mode : day-night rdv 2
-            final AttitudeLaw dayNightRdV2Law = new LofOffset(RotationOrder.XYZ, Math.toRadians(20), 0, 0);
+            final AttitudeLaw dayNightRdV2Law = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), 0, 0);
 
             // Mode : night-day rdv 1
-            final AttitudeLaw nightDayRdV1Law = new LofOffset(RotationOrder.XYZ, Math.toRadians(20), 0, 0);
+            final AttitudeLaw nightDayRdV1Law = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), 0, 0);
 
             // Mode : night-day rdv 2
-            final AttitudeLaw nightDayRdV2Law = new LofOffset(RotationOrder.XYZ, Math.toRadians(20), Math.toRadians(20), 0);
+            final AttitudeLaw nightDayRdV2Law = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(20), 0);
 
             // Event detectors definition
             //---------------------------
@@ -319,12 +320,12 @@ public class EarthObservation_day_night_switch_with_fixed_transitions {
                         final double endDayNightTimer2 = endDayNightRdV2Event_decrease.g(currentState);
 
                         output.add(currentState.getDate() +
-                                   " " + Math.toDegrees(eclipseAngle) +
+                                   " " + FastMath.toDegrees(eclipseAngle) +
                                    " " + endNightDayTimer1 +
                                    " " + endNightDayTimer2 +
                                    " " + endDayNightTimer1 +
                                    " " + endDayNightTimer2 +
-                                   " " + Math.toDegrees(pointingOffset));
+                                   " " + FastMath.toDegrees(pointingOffset));
                         final AbsoluteDate date = currentState.getDate();
                         final PVCoordinates pv = currentState.getPVCoordinates(eme2000);
                         final Rotation lvlhRot = new Rotation(pv.getPosition(), pv.getMomentum(), Vector3D.MINUS_K, Vector3D.MINUS_J);

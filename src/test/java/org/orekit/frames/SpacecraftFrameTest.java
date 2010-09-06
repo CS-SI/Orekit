@@ -17,6 +17,7 @@
 package org.orekit.frames;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -71,9 +72,9 @@ public class SpacecraftFrameTest {
             double a  = 7178000.0;
             double ex = 0.5e-4;
             double ey = 0.5e-4;
-            double i  = Math.toRadians(50.);
-            double raan = Math.toRadians(220.);
-            double alfa = Math.toRadians(5.300);
+            double i  = FastMath.toRadians(50.);
+            double raan = FastMath.toRadians(220.);
+            double alfa = FastMath.toRadians(5.300);
 
             iniDate = new AbsoluteDate(1970, 04, 07, 0, 0, 0.0,
                                        TimeScalesFactory.getUTC());

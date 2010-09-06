@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,12 +52,12 @@ public class TLETest {
         Assert.assertEquals("A", tle.getLaunchPiece());
         Assert.assertEquals(-0.0089879, tle.getBStar(), 0);
         Assert.assertEquals(0, tle.getEphemerisType());
-        Assert.assertEquals(98.749, Math.toDegrees(tle.getI()), 1e-10);
-        Assert.assertEquals(199.5121, Math.toDegrees(tle.getRaan()), 1e-10);
+        Assert.assertEquals(98.749, FastMath.toDegrees(tle.getI()), 1e-10);
+        Assert.assertEquals(199.5121, FastMath.toDegrees(tle.getRaan()), 1e-10);
         Assert.assertEquals(0.0001333, tle.getE(), 1e-10);
-        Assert.assertEquals(133.9522, Math.toDegrees(tle.getPerigeeArgument()), 1e-10);
-        Assert.assertEquals(226.1918, Math.toDegrees(tle.getMeanAnomaly()), 1e-10);
-        Assert.assertEquals(14.26113993, tle.getMeanMotion() * Constants.JULIAN_DAY / (2 * Math.PI), 0);
+        Assert.assertEquals(133.9522, FastMath.toDegrees(tle.getPerigeeArgument()), 1e-10);
+        Assert.assertEquals(226.1918, FastMath.toDegrees(tle.getMeanAnomaly()), 1e-10);
+        Assert.assertEquals(14.26113993, tle.getMeanMotion() * Constants.JULIAN_DAY / (2 * FastMath.PI), 0);
         Assert.assertEquals(tle.getRevolutionNumberAtEpoch(), 6, 0);
         Assert.assertEquals(tle.getElementNumber(), 2 ,0);
 

@@ -21,6 +21,7 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -96,15 +97,15 @@ public class ConstantThrustManeuverTest {
         final double mass = 2500;
         final double a = 24396159;
         final double e = 0.72831215;
-        final double i = Math.toRadians(7);
-        final double omega = Math.toRadians(180);
-        final double OMEGA = Math.toRadians(261);
+        final double i = FastMath.toRadians(7);
+        final double omega = FastMath.toRadians(180);
+        final double OMEGA = FastMath.toRadians(261);
         final double lv = 0;
 
         final double duration = 3653.99;
         final double f = 420;
-        final double delta = Math.toRadians(-7.4978);
-        final double alpha = Math.toRadians(351);
+        final double delta = FastMath.toRadians(-7.4978);
+        final double alpha = FastMath.toRadians(351);
         final AttitudeLaw law = new InertialLaw(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
 
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
@@ -138,7 +139,7 @@ public class ConstantThrustManeuverTest {
         final SpacecraftState finalorb = propagator.propagate(fireDate.shiftedBy(3800));
 
         Assert.assertEquals(2007.88245442614, finalorb.getMass(), 1e-10);
-        Assert.assertEquals(2.6872, Math.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), Math.PI)), 1e-4);
+        Assert.assertEquals(2.6872, FastMath.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), FastMath.PI)), 1e-4);
         Assert.assertEquals(28970, finalorb.getA()/1000, 1);
 
     }
