@@ -2,7 +2,7 @@
 
 <project name="orekit" default="jar" basedir=".">
 
-  <property name="project.version"         value="5.0"   />
+  <property name="project.version"         value="5.1-SNAPSHOT"   />
 
   <property name="src.dir"                 location="src"                    />
   <property name="main.src.dir"            value="${src.dir}/main/java"      />
@@ -18,7 +18,7 @@
 
   <property name="lib.dir"                 location="lib"                    />
 
-  <property name="commons-math.version"    value="2.2" />
+  <property name="commons-math.version"    value="2.2-SNAPSHOT" />
   <property name="commons-math.jar"        value="commons-math-${commons-math.version}.jar" />
   <property name="commons-math.maven.path" value="org/apache/commons/commons-math" />
   <property name="maven.repository"        value="http://repo1.maven.org/maven2" />

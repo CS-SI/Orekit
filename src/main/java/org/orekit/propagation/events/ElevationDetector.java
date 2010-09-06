@@ -47,7 +47,7 @@ public class ElevationDetector extends AbstractDetector {
      * <p>This simple constructor takes default values for maximal checking
      *  interval ({@link #DEFAULT_MAXCHECK}) and convergence threshold
      * ({@link #DEFAULT_THRESHOLD}).</p>
-     * @param elevation threshold elevation value (°)
+     * @param elevation threshold elevation value (rad)
      * @param topo topocentric frame in which elevation should be evaluated
      */
     public ElevationDetector(final double elevation, final TopocentricFrame topo) {
@@ -63,7 +63,7 @@ public class ElevationDetector extends AbstractDetector {
      * be smaller than the half duration of the minimal pass to handle,
      * otherwise some short passes could be missed.</p>
      * @param maxCheck maximal checking interval (s)
-     * @param elevation threshold elevation value (°)
+     * @param elevation threshold elevation value (rad)
      * @param topo topocentric frame in which elevation should be evaluated
      */
     public ElevationDetector(final double maxCheck,
@@ -80,7 +80,7 @@ public class ElevationDetector extends AbstractDetector {
      * otherwise some short passes could be missed.</p>
      * @param maxCheck maximal checking interval (s)
      * @param threshold convergence threshold (s)
-     * @param elevation threshold elevation value (°)
+     * @param elevation threshold elevation value (rad)
      * @param topo topocentric frame in which elevation should be evaluated
      */
     public ElevationDetector(final double maxCheck,
@@ -92,8 +92,8 @@ public class ElevationDetector extends AbstractDetector {
         this.topo = topo;
     }
 
-    /** Get the threshold elevation value (°).
-     * @return the threshold elevation value
+    /** Get the threshold elevation value.
+     * @return the threshold elevation value (rad)
      */
     public double getElevation() {
         return elevation;
