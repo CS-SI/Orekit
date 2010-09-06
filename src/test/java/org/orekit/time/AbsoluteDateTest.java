@@ -19,6 +19,7 @@ package org.orekit.time;
 
 import java.util.Date;
 
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -177,13 +178,13 @@ public class AbsoluteDateTest {
             AbsoluteDate d3 = new AbsoluteDate(leapStart, dt, utc);
             AbsoluteDate d4 = new AbsoluteDate(leapEnd,   dt, tai);
             AbsoluteDate d5 = new AbsoluteDate(leapEnd,   dt, utc);
-            Assert.assertTrue(Math.abs(d1.durationFrom(d2)) < 1.0e-10);
+            Assert.assertTrue(FastMath.abs(d1.durationFrom(d2)) < 1.0e-10);
             if (dt < 0) {
-                Assert.assertTrue(Math.abs(d2.durationFrom(d3)) < 1.0e-10);
+                Assert.assertTrue(FastMath.abs(d2.durationFrom(d3)) < 1.0e-10);
                 Assert.assertTrue(d4.durationFrom(d5) > (1.0 - 1.0e-10));
             } else {
                 Assert.assertTrue(d2.durationFrom(d3) < (-1.0 + 1.0e-10));
-                Assert.assertTrue(Math.abs(d4.durationFrom(d5)) < 1.0e-10);
+                Assert.assertTrue(FastMath.abs(d4.durationFrom(d5)) < 1.0e-10);
             }
         }
     }
@@ -281,10 +282,23 @@ public class AbsoluteDateTest {
         double sec = 0.281;
         AbsoluteDate t = new AbsoluteDate(2010, 6, 21, 18, 42, sec, tai);
         double recomputedSec = t.getComponents(tai).getTime().getSecond();
-        Assert.assertEquals(sec, recomputedSec, 1.0e-14);
+        Assert.assertEquals(sec, recomputedSec, FastMath.ulp(sec));
     }
 
-    @Before
+    @Test
+    public void testIterationAccuracy() {
+        TimeScale tai = TimeScalesFactory.getTAI();
+        final AbsoluteDate t0 = new AbsoluteDate(2010, 6, 21, 18, 42, 0.281, tai);
+        final double step = 0.1;
+        AbsoluteDate iteratedDate = t0;
+        for (int i = 1; i < 10000; ++i) {
+            iteratedDate = iteratedDate.shiftedBy(step);
+            AbsoluteDate directDate = t0.shiftedBy(i * step);
+            Assert.assertEquals(0.0, iteratedDate.durationFrom(directDate), 1.0e-13);
+        }
+    }
+
+   @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");
         utc = TimeScalesFactory.getUTC();

@@ -50,8 +50,10 @@
         changed exception localization framework to simplify messages handling
       </action>
       <action dev="luc" type="fix">
-        improved AbsoluteDate accuracy by shifting epoch when needed and separating long/double
-        computations to avoid too large offsets and numerical cancellations
+        greatly improved AbsoluteDate accuracy by shifting epoch when needed and separating
+        long/double computations to avoid too large offsets and numerical cancellations, it is
+        now possible to still have an absolute date accurate to about 1.0e-13s after shifting
+        it 10000 times by 0.1s steps
       </action>
       <action dev="luc" type="fix">
         fixed an error in TopocentricFrame.getPVCoordinates: the coordinates returned were not the
