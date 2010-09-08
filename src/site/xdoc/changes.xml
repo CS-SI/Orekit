@@ -76,6 +76,13 @@
         fixed an error in SpinStabilized attitude mode: the spin was reversed
         with respect to the specification
       </action>
+      <action dev="pascal" type="add">
+        added an AzimuthElevationDetector dealing with local physical mask for visibility
+      </action>
+      <action dev="pascal" type="add">
+        added an ApparentElevationDetector taking refraction into account in a terrestrial
+        environment
+      </action>
       <action dev="pascal" type="update">
         enhanced DateDetector behaviour to allow adding new event dates on the fly
       </action>

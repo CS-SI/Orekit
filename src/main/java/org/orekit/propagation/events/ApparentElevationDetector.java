@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events;
 
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
@@ -31,8 +32,8 @@ import org.orekit.propagation.SpacecraftState;
  * {@link ElevationDetector} fits better.</p>
  * <p>Refraction angle is computed according to Saemundssen formula quoted by Meeus.
  *  For reference, see <b>Astronomical Algorithms</b> (1998), 2nd ed,
- *  (ISBN 0-943396-61-1), chap. 15.</p> 
- * <p>This formula is about 30 arcseconds of accuracy very close to the horizon, as 
+ *  (ISBN 0-943396-61-1), chap. 15.</p>
+ * <p>This formula is about 30 arcseconds of accuracy very close to the horizon, as
  *  variable atmospheric effects become very important.</p>
  * <p>Local pressure and temperature can be set to correct refraction at the viewpoint.</p>
  * <p>The default implementation behavior is to {@link
@@ -130,7 +131,7 @@ public class ApparentElevationDetector extends AbstractDetector {
      * <p>Otherwise the default value for the local pressure is set to {@link #DEFAULT_PRESSURE}.</p>
      * @param pressure the pressure to set (Pa)
      */
-    public void setPressure(double pressure) {
+    public void setPressure(final double pressure) {
         this.pressure = pressure;
         this.correfrac = (pressure / DEFAULT_PRESSURE) * (DEFAULT_TEMPERATURE / temperature);
     }
@@ -139,7 +140,7 @@ public class ApparentElevationDetector extends AbstractDetector {
      * <p>Otherwise the default value for the local temperature is set to {@link #DEFAULT_TEMPERATURE}.</p>
      * @param temperature the temperature to set (K)
      */
-    public void setTemperature(double temperature) {
+    public void setTemperature(final double temperature) {
         this.temperature = temperature;
         this.correfrac = (pressure / DEFAULT_PRESSURE) * (DEFAULT_TEMPERATURE / temperature);
     }
@@ -183,7 +184,7 @@ public class ApparentElevationDetector extends AbstractDetector {
      * @exception OrekitException if some specific error occurs
      */
     public int eventOccurred(final SpacecraftState s, final boolean increasing)
-    throws OrekitException {
+        throws OrekitException {
         return increasing ? CONTINUE : STOP;
     }
 
@@ -195,21 +196,21 @@ public class ApparentElevationDetector extends AbstractDetector {
      * @exception OrekitException if some specific error occurs
      */
     public double g(final SpacecraftState s) throws OrekitException {
-        double trueElevation = topo.getElevation(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
+        final double trueElevation = topo.getElevation(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
         return trueElevation + getRefraction(trueElevation) - elevation;
     }
 
     /** Compute the refraction angle from the true (geometrical) elevation.
-     * @param elevation true elevation (rad)
+     * @param trueElevation true elevation (rad)
      * @return refraction angle (rad)
      */
-    private double getRefraction(final double elevation) {
+    private double getRefraction(final double trueElevation) {
         double refraction = 0.0;
-        double eld = Math.toDegrees(elevation);
+        final double eld = FastMath.toDegrees(trueElevation);
         if (eld > MIN_ELEVATION && eld < MAX_ELEVATION) {
-            double tmp = eld + 10.3 / (eld + 5.11);
-            double ref = 1.02 / Math.tan(Math.toRadians(tmp)) / 60.;
-            refraction = Math.toRadians(correfrac * ref);
+            final double tmp = eld + 10.3 / (eld + 5.11);
+            final double ref = 1.02 / FastMath.tan(FastMath.toRadians(tmp)) / 60.;
+            refraction = FastMath.toRadians(correfrac * ref);
         }
         return refraction;
     }

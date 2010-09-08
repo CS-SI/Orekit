@@ -41,7 +41,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
-public class ApparentElevationDetectorTest {
+public class AzimuthElevationDetectorTest {
 
     private double mu;
     private double ae;
@@ -52,7 +52,7 @@ public class ApparentElevationDetectorTest {
     private double c60;
 
     @Test
-    public void testHorizon() throws OrekitException {
+    public void testEvent() throws OrekitException {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -73,8 +73,20 @@ public class ApparentElevationDetectorTest {
                                                 FastMath.toRadians(2.333),
                                                 0.0);
         TopocentricFrame topo = new TopocentricFrame(earth, point, "Gstation");
-        ApparentElevationDetector detector =
-            new ApparentElevationDetector(FastMath.toRadians(0.0), topo) {
+        double [][] masque = {{FastMath.toRadians(0),FastMath.toRadians(5)},
+                              {FastMath.toRadians(30),FastMath.toRadians(4)},
+                              {FastMath.toRadians(60),FastMath.toRadians(3)},
+                              {FastMath.toRadians(90),FastMath.toRadians(2)},
+                              {FastMath.toRadians(120),FastMath.toRadians(3)},
+                              {FastMath.toRadians(150),FastMath.toRadians(4)},
+                              {FastMath.toRadians(180),FastMath.toRadians(5)},
+                              {FastMath.toRadians(210),FastMath.toRadians(6)},
+                              {FastMath.toRadians(240),FastMath.toRadians(5)},
+                              {FastMath.toRadians(270),FastMath.toRadians(4)},
+                              {FastMath.toRadians(300),FastMath.toRadians(3)},
+                              {FastMath.toRadians(330),FastMath.toRadians(4)}};
+        AzimuthElevationDetector detector =
+            new AzimuthElevationDetector(masque, topo) {
                 /** Serializable UID. */
                 private static final long serialVersionUID = 7515758050410436713L;
                 public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
@@ -87,49 +99,40 @@ public class ApparentElevationDetectorTest {
         propagator.addEventDetector(detector);
         final SpacecraftState fs = propagator.propagate(startDate.shiftedBy(Constants.JULIAN_DAY));
         double elevation = topo.getElevation(fs.getPVCoordinates().getPosition(), fs.getFrame(), fs.getDate());
-        Assert.assertEquals(FastMath.toRadians(-0.5746255623877098), elevation, 2.0e-5);
+        Assert.assertEquals(0.065, elevation, 2.0e-5);
 
     }
 
     @Test
-    public void testPresTemp() throws OrekitException {
-
-        final TimeScale utc = TimeScalesFactory.getUTC();
-        final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
-        final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
-        final AbsoluteDate date = new AbsoluteDate(2003, 9, 16, utc);
-        final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
-                                                 FramesFactory.getEME2000(), date, mu);
-
-        Propagator propagator =
-            new EcksteinHechlerPropagator(orbit, ae, mu, c20, c30, c40, c50, c60);
+    public void testMasque() throws OrekitException {
 
         // Earth and frame  
-        double ae =  6378137.0; // equatorial radius in meter
-        double f  =  1.0 / 298.257223563; // flattening
-        Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
-        BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
-        GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(48.833),
-                                                FastMath.toRadians(2.333),
-                                                0.0);
-        TopocentricFrame topo = new TopocentricFrame(earth, point, "Gstation");
-        ApparentElevationDetector detector =
-            new ApparentElevationDetector(FastMath.toRadians(2.0), topo) {
-                /** Serializable UID. */
-                private static final long serialVersionUID = 7515758050410436713L;
-                public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
-                    return increasing ? STOP : CONTINUE;
-                }
-        };
-        detector.setPressure(101325);
-        detector.setTemperature(290);
+        BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                               Constants.WGS84_EARTH_FLATTENING,
+                                               FramesFactory.getITRF2005());
+        TopocentricFrame topo = new TopocentricFrame(earth, new GeodeticPoint(0.0, 0.0, 0.0), "");
+        double [][] masque = {{FastMath.toRadians(  0),FastMath.toRadians(5)},
+                              {FastMath.toRadians(180),FastMath.toRadians(3)},
+                              {FastMath.toRadians(-90),FastMath.toRadians(4)}};
+        AzimuthElevationDetector detector = new AzimuthElevationDetector(masque, topo);
 
-        AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 20, 0, 0, utc);
-        propagator.resetInitialState(propagator.propagate(startDate));
-        propagator.addEventDetector(detector);
-        final SpacecraftState fs = propagator.propagate(startDate.shiftedBy(Constants.JULIAN_DAY));
-        double elevation = topo.getElevation(fs.getPVCoordinates().getPosition(), fs.getFrame(), fs.getDate());
-        Assert.assertEquals(FastMath.toRadians(1.7026104902251749), elevation, 2.0e-5);
+        double azimuth = FastMath.toRadians(90);
+        double elevation = detector.getElevation(azimuth);
+        Assert.assertEquals(FastMath.toRadians(4), elevation, 1.0e-15);
+
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testException() throws OrekitException {
+
+        // Earth and frame  
+        BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                               Constants.WGS84_EARTH_FLATTENING,
+                                               FramesFactory.getITRF2005());
+        TopocentricFrame topo = new TopocentricFrame(earth, new GeodeticPoint(0.0, 0.0, 0.0), "");
+        double [][] masque = {{FastMath.toRadians(   0),FastMath.toRadians(5)},
+                              {FastMath.toRadians( 360),FastMath.toRadians(4)}};
+        new AzimuthElevationDetector(masque, topo);
 
     }
 

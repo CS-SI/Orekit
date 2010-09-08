@@ -115,6 +115,7 @@ public enum OrekitMessages implements Localizable {
     NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND("no JPL ephemerides binary files found"),
     OUT_OF_RANGE_BODY_EPHEMERIDES_DATE("out of range date for {0} ephemerides: {1}"),
     OUT_OF_RANGE_EPHEMERIDES_DATE("out of range date for ephemerides: {0}, [{1}, {2}]"),
+    UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH("unexpected two elevation values: {0} and {1}, for one azimuth: {2}"),
     UNKNOWN_PARAMETER("unknown parameter {0}");
 
     // CHECKSTYLE: resume JavadocVariable
