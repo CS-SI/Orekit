@@ -104,7 +104,7 @@ public class AzimuthElevationDetector extends AbstractDetector {
         this.topo = topo;
     }
 
-    /** Build a new elevation detector.
+    /** Build a new azimuth-elevation detector.
      * <p>The maximal interval between elevation checks should
      * be smaller than the half duration of the minimal pass to handle,
      * otherwise some short passes could be missed.</p>
