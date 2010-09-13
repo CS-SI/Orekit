@@ -22,6 +22,10 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix">
+        fixed an out of memory error when lots of temporary frames were created in loops
+        and discarded
+      </action>
       <action dev="luc" type="update">
         use the new FastMath class from commons-math instead of the standard java.util.Math
         class for increased accuracy and speed

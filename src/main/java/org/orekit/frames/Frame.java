@@ -17,8 +17,8 @@
 package org.orekit.frames;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.WeakHashMap;
 
 import org.orekit.errors.FrameAncestorException;
 import org.orekit.errors.OrekitException;
@@ -38,7 +38,7 @@ import org.orekit.time.AbsoluteDate;
  * to frame<sub>B</sub></em>, we mean that if the coordinates of some absolute
  * vector (say the direction of a distant star for example) has coordinates
  * u<sub>A</sub> in frame<sub>A</sub> and u<sub>B</sub> in frame<sub>B</sub>,
- * then u<sub>B</sub>={@link Transform#transformVector(Vector3D) t.transformVector(u<sub>A</sub>)}.
+ * then u<sub>B</sub>={@link Transform#transformVector(org.apache.commons.math.geometry.Vector3D) t.transformVector(u<sub>A</sub>)}.
  * <p>The transforms may be constant or varying. For simple fixed transforms,
  * using this base class is sufficient. For varying transforms (time-dependent
  * or telemetry-based for example), it may be useful to define specific subclasses
@@ -64,7 +64,7 @@ public class Frame implements Serializable {
     private Transform transform;
 
     /** Map of deepest frames commons with other frames. */
-    private final HashMap<Frame, Frame> commons;
+    private final WeakHashMap<Frame, Frame> commons;
 
     /** Instance name. */
     private final String name;
@@ -80,7 +80,7 @@ public class Frame implements Serializable {
     private Frame(final String name, final boolean quasiInertial) {
         parent    = null;
         transform = Transform.IDENTITY;
-        commons   = new HashMap<Frame, Frame>();
+        commons   = new WeakHashMap<Frame, Frame>();
         this.name = name;
         this.quasiInertial = quasiInertial;
     }
@@ -126,7 +126,7 @@ public class Frame implements Serializable {
         this.quasiInertial = quasiInertial;
         this.parent        = parent;
         this.transform     = transform;
-        commons            = new HashMap<Frame, Frame>();
+        commons            = new WeakHashMap<Frame, Frame>();
 
     }
 
