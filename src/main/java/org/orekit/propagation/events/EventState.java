@@ -171,9 +171,8 @@ class EventState implements Serializable {
                             }
                         }
                     };
-                    final UnivariateRealSolver solver = new BrentSolver();
-                    solver.setAbsoluteAccuracy(detector.getThreshold());
-                    solver.setMaximalIterationCount(detector.getMaxIterationCount());
+                    final UnivariateRealSolver solver = new BrentSolver(detector.getMaxIterationCount(),
+                                                                        detector.getThreshold());
 
                     double dtA = ta.durationFrom(t0);
                     final double dtB = tb.durationFrom(t0);
