@@ -287,15 +287,35 @@ public class AbsoluteDateTest {
 
     @Test
     public void testIterationAccuracy() {
-        TimeScale tai = TimeScalesFactory.getTAI();
+
+        final TimeScale tai = TimeScalesFactory.getTAI();
         final AbsoluteDate t0 = new AbsoluteDate(2010, 6, 21, 18, 42, 0.281, tai);
-        final double step = 0.1;
+
+        // 0.1 is not representable exactly in double precision
+        // we will accumulate error, between -0.5ULP and -3ULP at each iteration
+        checkIteration(0.1, t0, 10000, 3.0, -1.19, 1.0e-4);
+
+        // 0.125 is representable exactly in double precision
+        // error will be null
+        checkIteration(0.125, t0, 10000, 1.0e-15, 0.0, 1.0e-15);
+
+    }
+
+    private void checkIteration(final double step, final AbsoluteDate t0, final int nMax,
+                                final double maxErrorFactor,
+                                final double expectedMean, final double meanTolerance) {
+        final double epsilon = FastMath.ulp(step);
         AbsoluteDate iteratedDate = t0;
-        for (int i = 1; i < 10000; ++i) {
+        double mean = 0;
+        for (int i = 1; i < nMax; ++i) {
             iteratedDate = iteratedDate.shiftedBy(step);
             AbsoluteDate directDate = t0.shiftedBy(i * step);
-            Assert.assertEquals(0.0, iteratedDate.durationFrom(directDate), 1.0e-13);
+            final double error = iteratedDate.durationFrom(directDate);
+            mean += error / (i * epsilon);
+            Assert.assertEquals(0.0, iteratedDate.durationFrom(directDate), maxErrorFactor * i * epsilon);
         }
+        mean /= nMax;
+        Assert.assertEquals(expectedMean, mean, meanTolerance);
     }
 
    @Before

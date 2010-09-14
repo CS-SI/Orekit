@@ -248,10 +248,27 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      * @see #durationFrom(AbsoluteDate)
      */
     public AbsoluteDate(final AbsoluteDate since, final double elapsedDuration) {
+
         final double sum = since.offset + elapsedDuration;
-        final long   dl = FastMath.round(sum);
-        offset = sum - dl;
-        epoch  = since.epoch  + dl;
+        if (Double.isInfinite(sum)) {
+            offset = sum;
+            epoch  = 0;
+        } else {
+            // compute sum exactly, using Møller-Knuth TwoSum algorithm without branching
+            // the following statements must NOT be simplified, they rely on floating point
+            // arithmetic properties (rounding and representable numbers)
+            // at the end, the EXACT result of addition since.offset + elapsedDuration
+            // is sum + residual, where sum is the closest representable number to the exact
+            // result and residual is the missing part that does not fit in the first number
+            final double oPrime   = sum - elapsedDuration;
+            final double dPrime   = sum - oPrime;
+            final double deltaO   = since.offset - oPrime;
+            final double deltaD   = elapsedDuration - dPrime;
+            final double residual = deltaO + deltaD;
+            final long   dl       = (long) FastMath.floor(sum);
+            offset = (sum - dl) + residual;
+            epoch  = since.epoch  + dl;
+        }
     }
 
     /** Build an instance from an apparent clock offset with respect to another
