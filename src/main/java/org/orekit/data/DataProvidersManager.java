@@ -24,7 +24,9 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
@@ -75,7 +77,7 @@ public class DataProvidersManager implements Serializable {
     private final List<DataProvider> providers;
 
     /** Loaded data. */
-    private final List<String> loaded;
+    private final Set<String> loaded;
 
     /** Build an instance with default configuration.
      * <p>
@@ -84,7 +86,7 @@ public class DataProvidersManager implements Serializable {
      */
     private DataProvidersManager() {
         providers = new ArrayList<DataProvider>();
-        loaded    = new ArrayList<String>();
+        loaded    = new LinkedHashSet<String>();
     }
 
     /** Get the unique instance.
@@ -274,20 +276,20 @@ public class DataProvidersManager implements Serializable {
         return Collections.unmodifiableList(providers);
     }
 
-    /** Get an unmodifiable view of the list of data file names that have been loaded.
+    /** Get an unmodifiable view of the set of data file names that have been loaded.
      * <p>
      * The names returned are exactly the ones that were given to the {@link
      * DataLoader#loadData(InputStream, String) DataLoader.loadData} method.
      * </p>
-     * @return unmodifiable view of the list of data file names that have been loaded
+     * @return unmodifiable view of the set of data file names that have been loaded
      * @see #feed(String, DataLoader)
      * @see #clearLoadedDataNames()
      */
-    public List<String> getLoadedDataNames() {
-        return Collections.unmodifiableList(loaded);
+    public Set<String> getLoadedDataNames() {
+        return Collections.unmodifiableSet(loaded);
     }
 
-    /** Clear the list of data file names that have been loaded.
+    /** Clear the set of data file names that have been loaded.
      * @see #getLoadedDataNames()
      */
     public void clearLoadedDataNames() {
