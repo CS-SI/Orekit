@@ -18,7 +18,6 @@ package org.orekit.frames;
 
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
-import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -35,29 +34,26 @@ class MEMEFrame extends Frame {
     /** Serializable UID. */
     private static final long serialVersionUID = -2119588933116161867L;
 
-    /** Radians per arcsecond. */
-    private static final double RADIANS_PER_ARC_SECOND = FastMath.PI / (180.0 * 3600.0);
-
     /** 1st coefficient for ZETA precession angle. */
-    private static final double ZETA_1 = 2306.2181   * RADIANS_PER_ARC_SECOND;
+    private static final double ZETA_1 = 2306.2181   * Constants.ARC_SECONDS_TO_RADIANS;
     /** 2nd coefficient for ZETA precession angle. */
-    private static final double ZETA_2 =    0.30188  * RADIANS_PER_ARC_SECOND;
+    private static final double ZETA_2 =    0.30188  * Constants.ARC_SECONDS_TO_RADIANS;
     /** 3rd coefficient for ZETA precession angle. */
-    private static final double ZETA_3 =    0.017998 * RADIANS_PER_ARC_SECOND;
+    private static final double ZETA_3 =    0.017998 * Constants.ARC_SECONDS_TO_RADIANS;
 
     /** 1st coefficient for THETA precession angle. */
-    private static final double THETA_1 = 2004.3109   * RADIANS_PER_ARC_SECOND;
+    private static final double THETA_1 = 2004.3109   * Constants.ARC_SECONDS_TO_RADIANS;
     /** 2nd coefficient for THETA precession angle. */
-    private static final double THETA_2 =   -0.42665  * RADIANS_PER_ARC_SECOND;
+    private static final double THETA_2 =   -0.42665  * Constants.ARC_SECONDS_TO_RADIANS;
     /** 3rd coefficient for THETA precession angle. */
-    private static final double THETA_3 =   -0.041833 * RADIANS_PER_ARC_SECOND;
+    private static final double THETA_3 =   -0.041833 * Constants.ARC_SECONDS_TO_RADIANS;
 
     /** 1st coefficient for Z precession angle. */
-    private static final double Z_1 = 2306.2181   * RADIANS_PER_ARC_SECOND;
+    private static final double Z_1 = 2306.2181   * Constants.ARC_SECONDS_TO_RADIANS;
     /** 2nd coefficient for Z precession angle. */
-    private static final double Z_2 =    1.09468  * RADIANS_PER_ARC_SECOND;
+    private static final double Z_2 =    1.09468  * Constants.ARC_SECONDS_TO_RADIANS;
     /** 3rd coefficient for Z precession angle. */
-    private static final double Z_3 =    0.018203 * RADIANS_PER_ARC_SECOND;
+    private static final double Z_3 =    0.018203 * Constants.ARC_SECONDS_TO_RADIANS;
 
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;

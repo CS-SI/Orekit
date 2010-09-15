@@ -19,6 +19,7 @@ package org.orekit.frames;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.FastMath;
+import org.orekit.utils.Constants;
 
 /** EME2000 frame : mean equator at J2000.0.
  * <p>This frame was the standard inertial reference prior to GCRF. It was defined
@@ -33,20 +34,17 @@ class EME2000Frame extends Frame {
     /** Serializable UID. */
     private static final long serialVersionUID = -1045789793339869819L;
 
-    /** Radians per arcsecond. */
-    private static final double RADIANS_PER_ARC_SECOND = FastMath.PI / (180.0 * 3600.0);
-
     /** Obliquity of the ecliptic. */
-    private static final double EPSILON_0 = 84381.44 * RADIANS_PER_ARC_SECOND;
+    private static final double EPSILON_0 = 84381.44 * Constants.ARC_SECONDS_TO_RADIANS;
 
     /** Bias in longitude. */
-    private static final double D_PSI_B = -0.041775 * RADIANS_PER_ARC_SECOND;
+    private static final double D_PSI_B = -0.041775 * Constants.ARC_SECONDS_TO_RADIANS;
 
     /** Bias in obliquity. */
-    private static final double D_EPSILON_B = -0.0068192 * RADIANS_PER_ARC_SECOND;
+    private static final double D_EPSILON_B = -0.0068192 * Constants.ARC_SECONDS_TO_RADIANS;
 
     /** Right Ascension of the 2000 equinox in ICRS frame. */
-    private static final double ALPHA_0 = -0.0146 * RADIANS_PER_ARC_SECOND;
+    private static final double ALPHA_0 = -0.0146 * Constants.ARC_SECONDS_TO_RADIANS;
 
     /** Simple constructor.
      * @param name name of the frame

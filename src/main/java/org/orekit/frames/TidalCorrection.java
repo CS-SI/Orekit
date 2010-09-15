@@ -39,7 +39,7 @@ public class TidalCorrection implements Serializable {
     private static final double HALF_PI = FastMath.PI / 2.0;
 
     /** Angular units conversion factor. */
-    private static final double MICRO_ARC_SECONDS_TO_RADIANS = FastMath.PI / 648000000000.0;
+    private static final double MICRO_ARC_SECONDS_TO_RADIANS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
 
     /** Time units conversion factor. */
     private static final double MICRO_SECONDS_TO_SECONDS = 1.0e-6;

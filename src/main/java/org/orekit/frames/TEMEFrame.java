@@ -19,6 +19,7 @@ package org.orekit.frames;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -45,55 +46,49 @@ class TEMEFrame extends Frame {
     /** Serializable UID. */
     private static final long serialVersionUID = -2301804206118748070L;
 
-    /** 2&pi;. */
-    private static final double TWO_PI = 2.0 * FastMath.PI;
-
-    /** Radians per arcsecond. */
-    private static final double RADIANS_PER_ARC_SECOND = FastMath.PI / 648000;
-
     // CHECKSTYLE: stop JavadocVariable check
 
     // Coefficients for the Mean Obliquity of the Ecliptic.
-    private static final double MOE_0 = 84381.448    * RADIANS_PER_ARC_SECOND;
-    private static final double MOE_1 =   -46.8150   * RADIANS_PER_ARC_SECOND;
-    private static final double MOE_2 =    -0.00059  * RADIANS_PER_ARC_SECOND;
-    private static final double MOE_3 =     0.001813 * RADIANS_PER_ARC_SECOND;
+    private static final double MOE_0 = 84381.448    * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double MOE_1 =   -46.8150   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double MOE_2 =    -0.00059  * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double MOE_3 =     0.001813 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // lunisolar nutation elements
     // Coefficients for l (Mean Anomaly of the Moon).
     private static final double F10  = FastMath.toRadians(134.96298139);
-    private static final double F110 =    715922.633 * RADIANS_PER_ARC_SECOND;
+    private static final double F110 =    715922.633 * Constants.ARC_SECONDS_TO_RADIANS;
     private static final double F111 =      1325.0;
-    private static final double F12  =        31.310 * RADIANS_PER_ARC_SECOND;
-    private static final double F13  =         0.064 * RADIANS_PER_ARC_SECOND;
+    private static final double F12  =        31.310 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F13  =         0.064 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // Coefficients for l' (Mean Anomaly of the Sun).
     private static final double F20  = FastMath.toRadians(357.52772333);
-    private static final double F210 =   1292581.224 * RADIANS_PER_ARC_SECOND;
+    private static final double F210 =   1292581.224 * Constants.ARC_SECONDS_TO_RADIANS;
     private static final double F211 =        99.0;
-    private static final double F22  =        -0.577 * RADIANS_PER_ARC_SECOND;
-    private static final double F23  =        -0.012 * RADIANS_PER_ARC_SECOND;
+    private static final double F22  =        -0.577 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F23  =        -0.012 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // Coefficients for F = L (Mean Longitude of the Moon) - Omega.
     private static final double F30  = FastMath.toRadians(93.27191028);
-    private static final double F310 =    295263.137 * RADIANS_PER_ARC_SECOND;
+    private static final double F310 =    295263.137 * Constants.ARC_SECONDS_TO_RADIANS;
     private static final double F311 =      1342.0;
-    private static final double F32  =       -13.257 * RADIANS_PER_ARC_SECOND;
-    private static final double F33  =         0.011 * RADIANS_PER_ARC_SECOND;
+    private static final double F32  =       -13.257 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F33  =         0.011 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // Coefficients for D (Mean Elongation of the Moon from the Sun).
     private static final double F40  = FastMath.toRadians(297.85036306);
-    private static final double F410 =   1105601.328 * RADIANS_PER_ARC_SECOND;
+    private static final double F410 =   1105601.328 * Constants.ARC_SECONDS_TO_RADIANS;
     private static final double F411 =      1236.0;
-    private static final double F42  =        -6.891 * RADIANS_PER_ARC_SECOND;
-    private static final double F43  =         0.019 * RADIANS_PER_ARC_SECOND;
+    private static final double F42  =        -6.891 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F43  =         0.019 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // Coefficients for Omega (Mean Longitude of the Ascending Node of the Moon).
     private static final double F50  = FastMath.toRadians(125.04452222);
-    private static final double F510 =   -482890.539 * RADIANS_PER_ARC_SECOND;
+    private static final double F510 =   -482890.539 * Constants.ARC_SECONDS_TO_RADIANS;
     private static final double F511 =        -5.0;
-    private static final double F52  =         7.455 * RADIANS_PER_ARC_SECOND;
-    private static final double F53  =         0.008 * RADIANS_PER_ARC_SECOND;
+    private static final double F52  =         7.455 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F53  =         0.008 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // CHECKSTYLE: resume JavadocVariable check
 
@@ -439,15 +434,15 @@ class TEMEFrame extends Frame {
         // offset in julian centuries
         final double tc =  t / Constants.JULIAN_CENTURY;
         // mean anomaly of the Moon
-        final double l  = ((F13 * tc + F12) * tc + F110) * tc + F10 + ((F111 * tc) % 1.0) * TWO_PI;
+        final double l  = ((F13 * tc + F12) * tc + F110) * tc + F10 + ((F111 * tc) % 1.0) * MathUtils.TWO_PI;
         // mean anomaly of the Sun
-        final double lp = ((F23 * tc + F22) * tc + F210) * tc + F20 + ((F211 * tc) % 1.0) * TWO_PI;
+        final double lp = ((F23 * tc + F22) * tc + F210) * tc + F20 + ((F211 * tc) % 1.0) * MathUtils.TWO_PI;
         // L - &Omega; where L is the mean longitude of the Moon
-        final double f  = ((F33 * tc + F32) * tc + F310) * tc + F30 + ((F311 * tc) % 1.0) * TWO_PI;
+        final double f  = ((F33 * tc + F32) * tc + F310) * tc + F30 + ((F311 * tc) % 1.0) * MathUtils.TWO_PI;
         // mean elongation of the Moon from the Sun
-        final double d  = ((F43 * tc + F42) * tc + F410) * tc + F40 + ((F411 * tc) % 1.0) * TWO_PI;
+        final double d  = ((F43 * tc + F42) * tc + F410) * tc + F40 + ((F411 * tc) % 1.0) * MathUtils.TWO_PI;
         // mean longitude of the ascending node of the Moon
-        final double om = ((F53 * tc + F52) * tc + F510) * tc + F50 + ((F511 * tc) % 1.0) * TWO_PI;
+        final double om = ((F53 * tc + F52) * tc + F510) * tc + F50 + ((F511 * tc) % 1.0) * MathUtils.TWO_PI;
 
         // loop size
         final int n = CL.length;
@@ -469,8 +464,8 @@ class TEMEFrame extends Frame {
         }
 
         // Convert results from 0.1 mas units to radians. */
-        dpsiCurrent = dpsi * RADIANS_PER_ARC_SECOND * 1.e-4;
-        depsCurrent = deps * RADIANS_PER_ARC_SECOND * 1.e-4;
+        dpsiCurrent = dpsi * Constants.ARC_SECONDS_TO_RADIANS * 1.e-4;
+        depsCurrent = deps * Constants.ARC_SECONDS_TO_RADIANS * 1.e-4;
 
     }
 

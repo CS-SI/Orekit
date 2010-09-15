@@ -18,6 +18,7 @@ package org.orekit.bodies;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -316,7 +317,7 @@ public class OneAxisEllipsoid implements BodyShape {
                 if ((tildePhi * phi) < 0) {
                     // the first root was on the wrong hemisphere,
                     // try the second root based on (theta + 2PI) / 3
-                    tildeT    = 2.0 * qRoot * FastMath.cos((theta + 2.0 * FastMath.PI) * ONE_THIRD) - b * ONE_THIRD;
+                    tildeT    = 2.0 * qRoot * FastMath.cos((theta + MathUtils.TWO_PI) * ONE_THIRD) - b * ONE_THIRD;
                     tildeT2   = tildeT * tildeT;
                     tildeT2P1 = 1.0 + tildeT2;
                     tildePhi  = FastMath.atan2(z * tildeT2P1 - 2 * k * tildeT,

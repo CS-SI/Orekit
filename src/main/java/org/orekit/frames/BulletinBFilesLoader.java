@@ -30,6 +30,7 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateComponents;
+import org.orekit.utils.Constants;
 
 /** Loader for bulletin B files.
  * <p>Bulletin B files contain {@link TimeStampedEntry
@@ -58,10 +59,7 @@ import org.orekit.time.DateComponents;
 class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
 
     /** Conversion factor. */
-    private static final double ARC_SECONDS_TO_RADIANS = 2 * FastMath.PI / 1296000;
-
-    /** Conversion factor. */
-    private static final double MILLI_ARC_SECONDS_TO_RADIANS = 2 * FastMath.PI / 1296000000;
+    private static final double MILLI_ARC_SECONDS_TO_RADIANS = Constants.ARC_SECONDS_TO_RADIANS / 1000;
 
     /** Conversion factor. */
     private static final double MILLI_SECONDS_TO_SECONDS = 1.e-3;
@@ -376,8 +374,8 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
             if (matcher.matches()) {
                 // this is a data line, build an entry from the extracted fields
                 final int    date  = Integer.parseInt(matcher.group(1));
-                final double x     = Double.parseDouble(matcher.group(2)) * ARC_SECONDS_TO_RADIANS;
-                final double y     = Double.parseDouble(matcher.group(3)) * ARC_SECONDS_TO_RADIANS;
+                final double x     = Double.parseDouble(matcher.group(2)) * Constants.ARC_SECONDS_TO_RADIANS;
+                final double y     = Double.parseDouble(matcher.group(3)) * Constants.ARC_SECONDS_TO_RADIANS;
                 final double dtu1  = Double.parseDouble(matcher.group(4));
                 final double lod   = Double.parseDouble(matcher.group(5)) * MILLI_SECONDS_TO_SECONDS;
                 final double dpsi  = Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS;

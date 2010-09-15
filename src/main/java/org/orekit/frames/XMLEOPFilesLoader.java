@@ -24,11 +24,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.math.exception.util.LocalizedFormats;
-import org.apache.commons.math.util.FastMath;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateComponents;
+import org.orekit.utils.Constants;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -50,11 +50,8 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 class XMLEOPFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
 
-    /** Conversion factor for arc seconds entries. */
-    private static final double ARC_SECONDS_TO_RADIANS = 2 * FastMath.PI / 1296000;
-
     /** Conversion factor for milli-arc seconds entries. */
-    private static final double MILLI_ARC_SECONDS_TO_RADIANS = ARC_SECONDS_TO_RADIANS / 1000.0;
+    private static final double MILLI_ARC_SECONDS_TO_RADIANS = Constants.ARC_SECONDS_TO_RADIANS / 1000.0;
 
     /** Conversion factor for milli seconds entries. */
     private static final double MILLI_SECONDS_TO_SECONDS = 1.0 / 1000.0;
@@ -298,9 +295,9 @@ class XMLEOPFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
             } else if (qName.equals(LOD_ELT)) {
                 lod = overwrite(lod, MILLI_SECONDS_TO_SECONDS);
             } else if (qName.equals(X_ELT)) {
-                x = overwrite(x, ARC_SECONDS_TO_RADIANS);
+                x = overwrite(x, Constants.ARC_SECONDS_TO_RADIANS);
             } else if (qName.equals(Y_ELT)) {
-                y = overwrite(y, ARC_SECONDS_TO_RADIANS);
+                y = overwrite(y, Constants.ARC_SECONDS_TO_RADIANS);
             } else if (qName.equals(DPSI_ELT)) {
                 dpsi = overwrite(dpsi, MILLI_ARC_SECONDS_TO_RADIANS);
             } else if (qName.equals(DEPSILON_ELT)) {
@@ -341,9 +338,9 @@ class XMLEOPFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
             } else if (qName.equals(LOD_ELT)) {
                 lod = overwrite(lod, MILLI_SECONDS_TO_SECONDS);
             } else if (qName.equals(X_ELT)) {
-                x = overwrite(x, ARC_SECONDS_TO_RADIANS);
+                x = overwrite(x, Constants.ARC_SECONDS_TO_RADIANS);
             } else if (qName.equals(Y_ELT)) {
-                y = overwrite(y, ARC_SECONDS_TO_RADIANS);
+                y = overwrite(y, Constants.ARC_SECONDS_TO_RADIANS);
             } else if (qName.equals(DPSI_ELT)) {
                 dpsi = overwrite(dpsi, MILLI_ARC_SECONDS_TO_RADIANS);
             } else if (qName.equals(DEPSILON_ELT)) {

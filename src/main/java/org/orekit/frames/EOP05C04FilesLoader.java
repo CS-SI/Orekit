@@ -22,11 +22,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.regex.Pattern;
 
-import org.apache.commons.math.util.FastMath;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateComponents;
+import org.orekit.utils.Constants;
 
 /** Loader for EOP 05 C04 files.
  * <p>EOP 05 C04 files contain {@link TimeStampedEntry
@@ -50,9 +50,6 @@ import org.orekit.time.DateComponents;
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 class EOP05C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
-
-    /** Conversion factor. */
-    private static final double ARC_SECONDS_TO_RADIANS = 2 * FastMath.PI / 1296000;
 
     /** Year field. */
     private static final int YEAR_FIELD = 0;
@@ -149,12 +146,12 @@ class EOP05C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
                     }
 
                     // the first six fields are consistent with the expected format
-                    final double x    = Double.parseDouble(fields[POLE_X_FIELD]) * ARC_SECONDS_TO_RADIANS;
-                    final double y    = Double.parseDouble(fields[POLE_Y_FIELD]) * ARC_SECONDS_TO_RADIANS;
+                    final double x    = Double.parseDouble(fields[POLE_X_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
+                    final double y    = Double.parseDouble(fields[POLE_Y_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
                     final double dtu1 = Double.parseDouble(fields[UT1_UTC_FIELD]);
                     final double lod  = Double.parseDouble(fields[LOD_FIELD]);
-                    final double dpsi = Double.parseDouble(fields[DDPSI_FIELD]) * ARC_SECONDS_TO_RADIANS;
-                    final double deps = Double.parseDouble(fields[DDEPS_FIELD]) * ARC_SECONDS_TO_RADIANS;
+                    final double dpsi = Double.parseDouble(fields[DDPSI_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
+                    final double deps = Double.parseDouble(fields[DDEPS_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
                     if (history1980 != null) {
                         history1980.addEntry(new EOP1980Entry(mjd, dtu1, lod, dpsi, deps));
                     }

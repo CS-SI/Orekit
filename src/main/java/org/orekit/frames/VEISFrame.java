@@ -19,6 +19,7 @@ package org.orekit.frames;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -35,9 +36,6 @@ class VEISFrame extends Frame {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -6478931867252825900L;
-
-    /** 2&pi;. */
-    private static final double TWO_PI = 2.0 * FastMath.PI;
 
     /** Reference date. */
     private static AbsoluteDate VST_REFERENCE =
@@ -88,7 +86,7 @@ class VEISFrame extends Frame {
             final double rdtt = ttd - (int) ttd;
 
             // compute Veis sidereal time, in radians
-            final double vst = (VST0 + VST1 * ttd + TWO_PI * rdtt) % TWO_PI;
+            final double vst = (VST0 + VST1 * ttd + MathUtils.TWO_PI * rdtt) % MathUtils.TWO_PI;
 
             // compute angular rotation of Earth, in rad/s
             final Vector3D rotationRate = new Vector3D(-VSTD, Vector3D.PLUS_K);

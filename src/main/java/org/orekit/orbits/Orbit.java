@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -200,7 +201,7 @@ public abstract class Orbit implements TimeStamped, Serializable {
      */
     public double getKeplerianPeriod() {
         final double a = getA();
-        return 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu);
+        return MathUtils.TWO_PI * a * FastMath.sqrt(a / mu);
     }
 
     /** Get the keplerian mean motion.

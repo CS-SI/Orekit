@@ -17,6 +17,7 @@
 package org.orekit.tle;
 
 import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -136,7 +137,7 @@ abstract class SDP4  extends TLEPropagator {
             GMST += seconds_per_day;
         }
 
-        return 2 * FastMath.PI * GMST / seconds_per_day;
+        return MathUtils.TWO_PI * GMST / seconds_per_day;
 
     }
 

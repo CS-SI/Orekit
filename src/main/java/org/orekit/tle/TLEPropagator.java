@@ -187,7 +187,7 @@ public abstract class TLEPropagator implements PVCoordinatesProvider, Serializab
         final double xn0dp = tle.getMeanMotion() * 60.0 / (delta0 + 1.0);
 
         // Period >= 225 minutes is deep space
-        if (2 * FastMath.PI / (xn0dp * TLEConstants.MINUTES_PER_DAY) >= (1.0 / 6.4)) {
+        if (MathUtils.TWO_PI / (xn0dp * TLEConstants.MINUTES_PER_DAY) >= (1.0 / 6.4)) {
             return new DeepSDP4(tle);
         } else {
             return new SGP4(tle);

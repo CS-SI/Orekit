@@ -52,41 +52,38 @@ class CIRF2000Frame extends Frame {
     /** Serializable UID. */
     private static final long serialVersionUID = 4112885226125872560L;
 
-    /** Radians per arcsecond. */
-    private static final double RADIANS_PER_ARC_SECOND = FastMath.PI / 648000;
-
     // CHECKSTYLE: stop JavadocVariable check
 
     // lunisolar nutation elements
     private static final double F10 = FastMath.toRadians(134.96340251);
-    private static final double F11 = 1717915923.217800  * RADIANS_PER_ARC_SECOND;
-    private static final double F12 =         31.879200  * RADIANS_PER_ARC_SECOND;
-    private static final double F13 =          0.051635  * RADIANS_PER_ARC_SECOND;
-    private static final double F14 =         -0.0002447 * RADIANS_PER_ARC_SECOND;
+    private static final double F11 = 1717915923.217800  * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F12 =         31.879200  * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F13 =          0.051635  * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F14 =         -0.0002447 * Constants.ARC_SECONDS_TO_RADIANS;
 
     private static final double F20 = FastMath.toRadians(357.52910918);
-    private static final double F21 = 129596581.048100   * RADIANS_PER_ARC_SECOND;
-    private static final double F22 =        -0.553200   * RADIANS_PER_ARC_SECOND;
-    private static final double F23 =         0.000136   * RADIANS_PER_ARC_SECOND;
-    private static final double F24 =        -0.00001149 * RADIANS_PER_ARC_SECOND;
+    private static final double F21 = 129596581.048100   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F22 =        -0.553200   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F23 =         0.000136   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F24 =        -0.00001149 * Constants.ARC_SECONDS_TO_RADIANS;
 
     private static final double F30 = FastMath.toRadians(93.27209062);
-    private static final double F31 = 1739527262.847800   * RADIANS_PER_ARC_SECOND;
-    private static final double F32 =        -12.751200   * RADIANS_PER_ARC_SECOND;
-    private static final double F33 =         -0.001037   * RADIANS_PER_ARC_SECOND;
-    private static final double F34 =          0.00000417 * RADIANS_PER_ARC_SECOND;
+    private static final double F31 = 1739527262.847800   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F32 =        -12.751200   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F33 =         -0.001037   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F34 =          0.00000417 * Constants.ARC_SECONDS_TO_RADIANS;
 
     private static final double F40 = FastMath.toRadians(297.85019547);
-    private static final double F41 = 1602961601.209000   * RADIANS_PER_ARC_SECOND;
-    private static final double F42 =         -6.370600   * RADIANS_PER_ARC_SECOND;
-    private static final double F43 =          0.006593   * RADIANS_PER_ARC_SECOND;
-    private static final double F44 =         -0.00003169 * RADIANS_PER_ARC_SECOND;
+    private static final double F41 = 1602961601.209000   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F42 =         -6.370600   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F43 =          0.006593   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F44 =         -0.00003169 * Constants.ARC_SECONDS_TO_RADIANS;
 
     private static final double F50 = FastMath.toRadians(125.04455501);
-    private static final double F51 = -6962890.543100   * RADIANS_PER_ARC_SECOND;
-    private static final double F52 =        7.472200   * RADIANS_PER_ARC_SECOND;
-    private static final double F53 =        0.007702   * RADIANS_PER_ARC_SECOND;
-    private static final double F54 =       -0.00005939 * RADIANS_PER_ARC_SECOND;
+    private static final double F51 = -6962890.543100   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F52 =        7.472200   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F53 =        0.007702   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F54 =       -0.00005939 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // planetary nutation elements
     private static final double F60 = 4.402608842;
@@ -219,7 +216,7 @@ class CIRF2000Frame extends Frame {
 
         // nutation models are in micro arcseconds in the data files
         // we store and use them in radians
-        return new PoissonSeries(stream, RADIANS_PER_ARC_SECOND * 1.0e-6, name);
+        return new PoissonSeries(stream, Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6, name);
 
     }
 

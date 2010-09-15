@@ -19,6 +19,7 @@ package org.orekit.frames;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math.util.MathUtils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -175,7 +176,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         // Compute azimuth
         double azimuth = FastMath.atan2(extPointTopo.getX(), extPointTopo.getY());
         if (azimuth < 0.) {
-            azimuth += 2. * FastMath.PI;
+            azimuth += MathUtils.TWO_PI;
         }
         return azimuth;
 

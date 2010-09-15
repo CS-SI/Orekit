@@ -16,6 +16,8 @@
  */
 package org.orekit.utils;
 
+import org.apache.commons.math.util.MathUtils;
+
 /** Set of useful physical constants.
 
  * @author Luc Maisonobe
@@ -36,6 +38,10 @@ public interface Constants {
 
     /** Duration of a julian century: 36525 {@link #JULIAN_DAY}. */
     double JULIAN_CENTURY = 36525 * JULIAN_DAY;
+
+
+    /** Conversion factor from arc seconds to radians: 2*PI/(360*60*60). */
+    double ARC_SECONDS_TO_RADIANS = MathUtils.TWO_PI / 1296000;
 
 
     /** Sun radius: 695500000 m. */
