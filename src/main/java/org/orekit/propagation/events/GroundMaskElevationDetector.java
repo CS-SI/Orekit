@@ -60,7 +60,7 @@ import org.orekit.propagation.SpacecraftState;
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
-public class AzimuthElevationDetector extends AbstractDetector {
+public class GroundMaskElevationDetector extends AbstractDetector {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -8124322408349693773L;
@@ -79,7 +79,7 @@ public class AzimuthElevationDetector extends AbstractDetector {
      * @param topo topocentric frame in which elevation should be evaluated
      * @exception IllegalArgumentException if azimuth-elevation mask is not supported
      */
-    public AzimuthElevationDetector(final double[][] azimelev, final TopocentricFrame topo) {
+    public GroundMaskElevationDetector(final double[][] azimelev, final TopocentricFrame topo) {
         super(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD);
         this.azelmask = checkMask(azimelev);
         this.topo = topo;
@@ -96,7 +96,7 @@ public class AzimuthElevationDetector extends AbstractDetector {
      * @param topo topocentric frame in which elevation should be evaluated
      * @exception IllegalArgumentException if azimuth-elevation mask is not supported
      */
-    public AzimuthElevationDetector(final double maxCheck,
+    public GroundMaskElevationDetector(final double maxCheck,
                                     final double[][] azimelev,
                                     final TopocentricFrame topo) {
         super(maxCheck, DEFAULT_THRESHOLD);
@@ -114,7 +114,7 @@ public class AzimuthElevationDetector extends AbstractDetector {
      * @param topo topocentric frame in which elevation should be evaluated
      * @exception IllegalArgumentException if azimuth-elevation mask is not supported
      */
-    public AzimuthElevationDetector(final double maxCheck,
+    public GroundMaskElevationDetector(final double maxCheck,
                                     final double threshold,
                                     final double[][] azimelev,
                                     final TopocentricFrame topo) {

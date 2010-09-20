@@ -81,7 +81,7 @@
         with respect to the specification
       </action>
       <action dev="pascal" type="add">
-        added an AzimuthElevationDetector dealing with local physical mask for visibility
+        added a GroundMaskElevationDetector dealing with local physical mask for visibility
       </action>
       <action dev="pascal" type="add">
         added an ApparentElevationDetector taking refraction into account in a terrestrial

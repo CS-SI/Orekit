@@ -85,8 +85,8 @@ public class AzimuthElevationDetectorTest {
                               {FastMath.toRadians(270),FastMath.toRadians(4)},
                               {FastMath.toRadians(300),FastMath.toRadians(3)},
                               {FastMath.toRadians(330),FastMath.toRadians(4)}};
-        AzimuthElevationDetector detector =
-            new AzimuthElevationDetector(masque, topo) {
+        GroundMaskElevationDetector detector =
+            new GroundMaskElevationDetector(masque, topo) {
                 /** Serializable UID. */
                 private static final long serialVersionUID = 7515758050410436713L;
                 public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
@@ -114,7 +114,7 @@ public class AzimuthElevationDetectorTest {
         double [][] masque = {{FastMath.toRadians(  0),FastMath.toRadians(5)},
                               {FastMath.toRadians(180),FastMath.toRadians(3)},
                               {FastMath.toRadians(-90),FastMath.toRadians(4)}};
-        AzimuthElevationDetector detector = new AzimuthElevationDetector(masque, topo);
+        GroundMaskElevationDetector detector = new GroundMaskElevationDetector(masque, topo);
 
         double azimuth = FastMath.toRadians(90);
         double elevation = detector.getElevation(azimuth);
@@ -132,7 +132,7 @@ public class AzimuthElevationDetectorTest {
         TopocentricFrame topo = new TopocentricFrame(earth, new GeodeticPoint(0.0, 0.0, 0.0), "");
         double [][] masque = {{FastMath.toRadians(   0),FastMath.toRadians(5)},
                               {FastMath.toRadians( 360),FastMath.toRadians(4)}};
-        new AzimuthElevationDetector(masque, topo);
+        new GroundMaskElevationDetector(masque, topo);
 
     }
 

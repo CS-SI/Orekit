@@ -79,6 +79,9 @@ Propagation
   * an <ElevationDetector>, which is triggered at raising or setting time of a satellite with
     respect to a ground point,
 
+  * a <GroundMaskElevationDetector>, which is similar to the previous one but adds a ground mask
+    to be used when threshold elevation is azimuth-dependent,
+
   * an <AltitudeDetector> which is triggered when satellite crosses a predefined altitude limit
     and can be used to compute easily operational forecasts, 
 
