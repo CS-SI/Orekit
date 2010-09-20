@@ -87,7 +87,7 @@ public class SpinStabilized implements AttitudeLawModifier {
 
     /** {@inheritDoc} */
     public Attitude getAttitude(final Orbit orbit)
-    throws OrekitException {
+        throws OrekitException {
 
         final AbsoluteDate date = orbit.getDate();
         final Frame frame = orbit.getFrame();

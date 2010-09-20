@@ -111,7 +111,7 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
         // 1 - DAILY FINAL VALUES OF  x, y, UT1-UTC, dX, dY
         // 2 - DAILY FINAL VALUES OF CELESTIAL POLE OFFSETS dPsi1980 & dEps1980
         // 3 - EARTH ANGULAR VELOCITY : DAILY FINAL VALUES OF LOD, OMEGA AT 0hUTC
-        // 4 - INFORMATION ON TIME SCALES      
+        // 4 - INFORMATION ON TIME SCALES
         // 5 - SUMMARY OF CONTRIBUTED EARTH ORIENTATION PARAMETERS SERIES
         SECTION_1_HEADER = Pattern.compile("^ +1 - (\\p{Upper}+) \\p{Upper}+ \\p{Upper}+.*");
         SECTION_2_HEADER = Pattern.compile("^ +2 - \\p{Upper}+ \\p{Upper}+ \\p{Upper}+.*");
@@ -238,7 +238,7 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
         synchronized (this) {
 
             // skip header up to section 1 and check if we are parsing an lod or new format file
-            Matcher section1Matcher = seekToLine(SECTION_1_HEADER, reader, name);
+            final Matcher section1Matcher = seekToLine(SECTION_1_HEADER, reader, name);
             final boolean isOldFormat = "EARTH".equals(section1Matcher.group(1));
 
             if (isOldFormat) {
@@ -260,7 +260,7 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
                     return;
                 }
 
-                Map<Integer, double[]> fieldsMap = new HashMap<Integer, double[]>();
+                final Map<Integer, double[]> fieldsMap = new HashMap<Integer, double[]>();
 
                 // extract UT1-UTC from section 1
                 loadDTNewFormat(fieldsMap, reader, name);
@@ -305,9 +305,9 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
     private Matcher seekToLine(final Pattern pattern, final BufferedReader reader, final String name)
         throws IOException, OrekitException {
 
-        for (line = reader.readLine();line != null; line = reader.readLine()) {
+        for (line = reader.readLine(); line != null; line = reader.readLine()) {
             ++lineNumber;
-            Matcher matcher = pattern.matcher(line);
+            final Matcher matcher = pattern.matcher(line);
             if (matcher.matches()) {
                 return matcher;
             }
@@ -358,7 +358,6 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
     }
 
     /** Read EOP data from section 2 in the old bulletin B format.
-     * @param mjdBounds MJD bounds of the final data part
      * @param reader reader from where file content is obtained
      * @param name name of the file (or zip entry)
      * @exception IOException if data can't be read
@@ -370,7 +369,7 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
         // read the data lines in the final values part inside section 2
         for (line = reader.readLine(); line != null; line = reader.readLine()) {
             lineNumber++;
-            Matcher matcher = SECTION_2_DATA_OLD_FORMAT.matcher(line);
+            final Matcher matcher = SECTION_2_DATA_OLD_FORMAT.matcher(line);
             if (matcher.matches()) {
                 // this is a data line, build an entry from the extracted fields
                 final int    date  = Integer.parseInt(matcher.group(1));
@@ -431,7 +430,7 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
                     mjdMin = FastMath.min(mjdMin, mjd);
                     mjdMax = FastMath.max(mjdMax, mjd);
                     final double dtu1 = Double.parseDouble(matcher.group(5)) * MILLI_SECONDS_TO_SECONDS;
-                    fieldsMap.put(mjd, new double[] { dtu1, Double.NaN, Double.NaN, Double.NaN});
+                    fieldsMap.put(mjd, new double[] {dtu1, Double.NaN, Double.NaN, Double.NaN});
                 } else {
                     matcher = FINAL_VALUES_END.matcher(line);
                     if (matcher.matches()) {
@@ -455,14 +454,14 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
         throws OrekitException, IOException {
         for (line = reader.readLine(); line != null; line = reader.readLine()) {
             lineNumber++;
-            Matcher matcher = SECTION_2_DATA_NEW_FORMAT.matcher(line);
+            final Matcher matcher = SECTION_2_DATA_NEW_FORMAT.matcher(line);
             if (matcher.matches()) {
                 // this is a data line, build an entry from the extracted fields
                 final int    mjd  = Integer.parseInt(matcher.group(1));
                 if (mjd >= mjdMin) {
                     final double dpsi = Double.parseDouble(matcher.group(2)) * MILLI_ARC_SECONDS_TO_RADIANS;
                     final double deps = Double.parseDouble(matcher.group(3)) * MILLI_ARC_SECONDS_TO_RADIANS;
-                    double[] array = fieldsMap.get(mjd);
+                    final double[] array = fieldsMap.get(mjd);
                     if (array == null) {
                         notifyUnexpectedErrorEncountered(name);
                     }
@@ -488,13 +487,13 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
         throws OrekitException, IOException {
         for (line = reader.readLine(); line != null; line = reader.readLine()) {
             lineNumber++;
-            Matcher matcher = SECTION_3_DATA_NEW_FORMAT.matcher(line);
+            final Matcher matcher = SECTION_3_DATA_NEW_FORMAT.matcher(line);
             if (matcher.matches()) {
                 // this is a data line, build an entry from the extracted fields
                 final int    mjd = Integer.parseInt(matcher.group(1));
                 if (mjd >= mjdMin) {
                     final double lod = Double.parseDouble(matcher.group(2)) * MILLI_SECONDS_TO_SECONDS;
-                    double[] array = fieldsMap.get(mjd);
+                    final double[] array = fieldsMap.get(mjd);
                     if (array == null) {
                         notifyUnexpectedErrorEncountered(name);
                     }

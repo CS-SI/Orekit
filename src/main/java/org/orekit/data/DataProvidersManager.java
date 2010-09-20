@@ -195,9 +195,6 @@ public class DataProvidersManager implements Serializable {
     }
 
     /** Remove one provider.
-     * <p>
-     * 
-     * </p>
      * @param provider provider instance to remove
      * @return instance removed (null if the provider was not already present)
      * @see #addProvider(DataProvider)
@@ -329,7 +326,7 @@ public class DataProvidersManager implements Serializable {
         }
 
         // monitor the data that the loader will load
-        DataLoader monitoredLoader = new MonitoringWrapper(loader);
+        final DataLoader monitoredLoader = new MonitoringWrapper(loader);
 
         // crawl the data collection
         OrekitException delayedException = null;
@@ -375,7 +372,7 @@ public class DataProvidersManager implements Serializable {
         }
 
         /** {@inheritDoc} */
-        public void loadData(InputStream input, String name)
+        public void loadData(final InputStream input, final String name)
             throws IOException, ParseException, OrekitException {
 
             // delegate to monitored loader

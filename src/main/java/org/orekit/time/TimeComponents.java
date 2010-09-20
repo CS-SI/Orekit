@@ -112,9 +112,9 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @param secondInDayB last part of the second number
      * @exception IllegalArgumentException if seconds number is out of range
      */
-    public TimeComponents(int secondInDayA, double secondInDayB) {
+    public TimeComponents(final int secondInDayA, final double secondInDayB) {
         // range check
-        double secondInDay = secondInDayA + secondInDayB;
+        final double secondInDay = secondInDayA + secondInDayB;
         if ((secondInDay < 0) || (secondInDay >= Constants.JULIAN_DAY)) {
             throw OrekitException.createIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER,
                                                                  secondInDay);
