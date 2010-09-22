@@ -41,7 +41,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
-public class AzimuthElevationDetectorTest {
+public class GroundMaskElevationDetectorTest {
 
     private double mu;
     private double ae;
