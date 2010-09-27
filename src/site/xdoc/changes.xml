@@ -22,6 +22,9 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add">
+        added a freeze method to Transform, to remove time-dependent parts
+      </action>
       <action dev="luc" type="fix">
         fixed an out of memory error when lots of temporary frames were created in loops
         and discarded

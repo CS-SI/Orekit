@@ -28,6 +28,8 @@ import org.orekit.Utils;
 import org.orekit.errors.FrameAncestorException;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.PVCoordinates;
 
 public class FrameTest {
 
@@ -131,6 +133,47 @@ public class FrameTest {
 
         Assert.assertEquals(false, f9.isChildOf(f8));
 
+    }
+
+    @Test
+    public void testH0m9() throws OrekitException {
+        AbsoluteDate h0 = new AbsoluteDate("2010-07-01T10:42:09", TimeScalesFactory.getUTC());
+        Frame eme2000   = FramesFactory.getEME2000();
+        Frame itrf      = FramesFactory.getITRF2005();
+
+        // Get transform between inertial EME2000 frame and Earth frame ITRF2005 at h0 - 9 seconds
+        AbsoluteDate h0M9 = h0.shiftedBy(-9.0);
+        Transform t = eme2000.getTransformTo(itrf, h0M9).freeze();
+
+        // create a new inertially oriented frame that is aligned with ITRF2005 at h0 - 9 seconds
+        Frame launchFrame = new Frame(eme2000, t, "launch frame");
+
+        // check velocity module is unchanged
+        Vector3D pEme2000 = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        Vector3D vEme2000 = new Vector3D(-2194.0, -2141.0, -8.0);
+        PVCoordinates pvEme2000 = new PVCoordinates(pEme2000, vEme2000);
+        PVCoordinates pvH0m9 = eme2000.getTransformTo(launchFrame, h0M9).transformPVCoordinates(pvEme2000);
+        Assert.assertEquals(vEme2000.getNorm(), pvH0m9.getVelocity().getNorm(), 1.0e-6);
+
+        // check this frame is fixed with respect to EME2000 whereas ITRF2005 frame is not
+        // the following loop should have a fixed angle a1 and an evolving angle a2
+        double minA1 = Double.POSITIVE_INFINITY;
+        double maxA1 = Double.NEGATIVE_INFINITY;
+        double minA2 = Double.POSITIVE_INFINITY;
+        double maxA2 = Double.NEGATIVE_INFINITY;
+        double dt;
+        for (dt = 0; dt < 86164; dt += 300.0) {
+            AbsoluteDate date = h0M9.shiftedBy(dt);
+            double a1 = eme2000.getTransformTo(launchFrame, date).getRotation().getAngle();
+            double a2 = eme2000.getTransformTo(itrf,        date).getRotation().getAngle();
+            minA1 = FastMath.min(minA1, a1);
+            maxA1 = FastMath.max(maxA1, a1);
+            minA2 = FastMath.min(minA2, a2);
+            maxA2 = FastMath.max(maxA2, a2);
+        }
+        Assert.assertEquals(0, maxA1 - minA1, 1.0e-12);
+        Assert.assertEquals(FastMath.PI, maxA2 - minA2, 0.01);
+        
     }
 
     @Test

@@ -210,6 +210,17 @@ public class Transform implements Serializable {
                              rotation.applyInverseTo(rotationRate.negate()));
     }
 
+    /** Get a freezed transform.
+     * <p>
+     * This method creates a copy of the instance but frozen in time,
+     * i.e. with velocity and rotation rate forced to zero.
+     * </p>
+     * @return a new transform, without any time-dependent parts
+     */
+    public Transform freeze() {
+        return new Transform(translation, Vector3D.ZERO, rotation, Vector3D.ZERO);
+    }
+
     /** Transform a position vector (including translation effects).
      * @param position vector to transform
      * @return transformed position
