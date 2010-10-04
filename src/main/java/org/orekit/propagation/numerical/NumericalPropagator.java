@@ -275,7 +275,7 @@ public class NumericalPropagator implements Propagator {
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setSlaveMode() {
-        integrator.clearEventHandlers();
+        integrator.clearStepHandlers();
         integrator.addStepHandler(DummyStepHandler.getInstance());
         modeHandler = null;
         mode = SLAVE_MODE;
@@ -300,7 +300,7 @@ public class NumericalPropagator implements Propagator {
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setMasterMode(final OrekitStepHandler handler) {
-        integrator.clearEventHandlers();
+        integrator.clearStepHandlers();
         final AdaptedStepHandler wrapped = new AdaptedStepHandler(handler);
         integrator.addStepHandler(wrapped);
         modeHandler = wrapped;
@@ -315,7 +315,7 @@ public class NumericalPropagator implements Propagator {
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setEphemerisMode() {
-        integrator.clearEventHandlers();
+        integrator.clearStepHandlers();
         final IntegratedEphemeris ephemeris = new IntegratedEphemeris();
         integrator.addStepHandler(ephemeris);
         modeHandler = ephemeris;
