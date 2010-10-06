@@ -57,6 +57,9 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     /** Reference epoch for 1950 dates: 1950-01-01. */
     public static final DateComponents FIFTIES_EPOCH;
 
+    /** Reference epoch for CCSDS Time Code Format (CCSDS 301.0-B-3): 1958-01-01. */
+    public static final DateComponents CCSDS_EPOCH;
+
     /** Reference epoch for GPS weeks: 1980-01-06. */
     public static final DateComponents GPS_EPOCH;
 
@@ -67,7 +70,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     public static final DateComponents JAVA_EPOCH;
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -8135106344024686522L;
+    private static final long serialVersionUID = -2462694707837970938L;
 
     /** Factory for proleptic julian calendar (up to 0000-12-31). */
     private static final YearFactory PROLEPTIC_JULIAN_FACTORY = new ProlepticJulianFactory();
@@ -108,6 +111,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         JULIAN_EPOCH          = new DateComponents(-4712,  1,  1);
         MODIFIED_JULIAN_EPOCH = new DateComponents(1858, 11, 17);
         FIFTIES_EPOCH         = new DateComponents(1950, 1, 1);
+        CCSDS_EPOCH           = new DateComponents(1958, 1, 1);
         GPS_EPOCH             = new DateComponents(1980, 1, 6);
         J2000_EPOCH           = new DateComponents(2000, 1, 1);
         JAVA_EPOCH            = new DateComponents(1970, 1, 1);

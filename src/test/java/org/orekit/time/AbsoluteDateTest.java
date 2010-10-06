@@ -29,12 +29,13 @@ import org.orekit.errors.OrekitException;
 public class AbsoluteDateTest {
 
     @Test
-    public void testStandardEpoch() {
+    public void testStandardEpoch() throws OrekitException {
         TimeScale tai = TimeScalesFactory.getTAI();
         TimeScale tt  = TimeScalesFactory.getTT();
         Assert.assertEquals(-210866760000000l, AbsoluteDate.JULIAN_EPOCH.toDate(tt).getTime());
         Assert.assertEquals(-3506716800000l,   AbsoluteDate.MODIFIED_JULIAN_EPOCH.toDate(tt).getTime());
         Assert.assertEquals(-631152000000l,    AbsoluteDate.FIFTIES_EPOCH.toDate(tt).getTime());
+        Assert.assertEquals(-378691200000l,    AbsoluteDate.CCSDS_EPOCH.toDate(tai).getTime());
         Assert.assertEquals(315964819000l,     AbsoluteDate.GPS_EPOCH.toDate(tai).getTime());
         Assert.assertEquals(946728000000l,     AbsoluteDate.J2000_EPOCH.toDate(tt).getTime());
     }
@@ -46,13 +47,15 @@ public class AbsoluteDateTest {
         Assert.assertEquals("1858-11-17T00:00:00.000",
                      AbsoluteDate.MODIFIED_JULIAN_EPOCH.toString(TimeScalesFactory.getTT()));
         Assert.assertEquals("1950-01-01T00:00:00.000",
-                     AbsoluteDate.FIFTIES_EPOCH.toString(TimeScalesFactory.getTT()));
+                            AbsoluteDate.FIFTIES_EPOCH.toString(TimeScalesFactory.getTT()));
+        Assert.assertEquals("1958-01-01T00:00:00.000",
+                            AbsoluteDate.CCSDS_EPOCH.toString(TimeScalesFactory.getTAI()));
         Assert.assertEquals("1980-01-06T00:00:00.000",
                      AbsoluteDate.GPS_EPOCH.toString(TimeScalesFactory.getUTC()));
         Assert.assertEquals("2000-01-01T12:00:00.000",
                      AbsoluteDate.J2000_EPOCH.toString(TimeScalesFactory.getTT()));
         Assert.assertEquals("1970-01-01T00:00:00.000",
-                     AbsoluteDate.JAVA_EPOCH.toString(TimeScalesFactory.getTT()));
+                     AbsoluteDate.JAVA_EPOCH.toString(TimeScalesFactory.getTAI()));
     }
 
     @Test
@@ -63,6 +66,8 @@ public class AbsoluteDateTest {
                             new AbsoluteDate("-4712-01-01T12:00:00.000", TimeScalesFactory.getTT()));        
         Assert.assertEquals(AbsoluteDate.FIFTIES_EPOCH,
                             new AbsoluteDate("1950-01-01", TimeScalesFactory.getTT()));        
+        Assert.assertEquals(AbsoluteDate.CCSDS_EPOCH,
+                            new AbsoluteDate("1958-001", TimeScalesFactory.getTAI()));        
     }
 
     @Test

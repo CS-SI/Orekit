@@ -72,10 +72,11 @@ import org.orekit.utils.Constants;
  * A few reference epochs which are commonly used in space systems have been defined. These
  * epochs can be used as the basis for offset computation. The supported epochs are:
  * {@link #JULIAN_EPOCH}, {@link #MODIFIED_JULIAN_EPOCH}, {@link #FIFTIES_EPOCH},
- * {@link #GPS_EPOCH}, {@link #J2000_EPOCH}, {@link #JAVA_EPOCH}. In addition to these reference
- * epochs, two other constants are defined for convenience: {@link #PAST_INFINITY} and
- * {@link #FUTURE_INFINITY}, which can be used either as dummy dates when a date is not yet
- * initialized, or for initialization of loops searching for a min or max date.
+ * {@link #CCSDS_EPOCH}, {@link #GPS_EPOCH}, {@link #J2000_EPOCH}, {@link #JAVA_EPOCH}.
+ * In addition to these reference epochs, two other constants are defined for convenience:
+ * {@link #PAST_INFINITY} and {@link #FUTURE_INFINITY}, which can be used either as dummy
+ * dates when a date is not yet initialized, or for initialization of loops searching for
+ * a min or max date.
  * </p>
  * <p>
  * Instances of the <code>AbsoluteDate</code> class are guaranteed to be immutable.
@@ -88,7 +89,7 @@ import org.orekit.utils.Constants;
  */
 public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Serializable {
 
-    /** Reference epoch for julian dates: -4712-01-01T12:00:00.
+    /** Reference epoch for julian dates: -4712-01-01T12:00:00 Terrestrial Time.
      * <p>Both <code>java.util.Date</code> and {@link DateComponents} classes
      * follow the astronomical conventions and consider a year 0 between
      * years -1 and +1, hence this reference date lies in year -4712 and not
@@ -98,13 +99,18 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
     public static final AbsoluteDate JULIAN_EPOCH =
         new AbsoluteDate(DateComponents.JULIAN_EPOCH, TimeComponents.H12, TimeScalesFactory.getTT());
 
-    /** Reference epoch for modified julian dates: 1858-11-17T00:00:00. */
+    /** Reference epoch for modified julian dates: 1858-11-17T00:00:00 Terrestrial Time. */
     public static final AbsoluteDate MODIFIED_JULIAN_EPOCH =
         new AbsoluteDate(DateComponents.MODIFIED_JULIAN_EPOCH, TimeComponents.H00, TimeScalesFactory.getTT());
 
-    /** Reference epoch for 1950 dates: 1950-01-01T00:00:00. */
+    /** Reference epoch for 1950 dates: 1950-01-01T00:00:00 Terrestrial Time. */
     public static final AbsoluteDate FIFTIES_EPOCH =
         new AbsoluteDate(DateComponents.FIFTIES_EPOCH, TimeComponents.H00, TimeScalesFactory.getTT());
+
+    /** Reference epoch for CCSDS Time Code Format (CCSDS 301.0-B-3):
+     * 1958-01-01T00:00:00 International Atomic Time (<em>not</em> UTC). */
+    public static final AbsoluteDate CCSDS_EPOCH =
+        new AbsoluteDate(DateComponents.CCSDS_EPOCH, TimeComponents.H00, TimeScalesFactory.getTAI());
 
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 GPS time. */
     public static final AbsoluteDate GPS_EPOCH =
@@ -114,9 +120,9 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
     public static final AbsoluteDate J2000_EPOCH =
         new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTT());
 
-    /** Java Reference epoch: 1970-01-01T00:00:00 TT. */
+    /** Java Reference epoch: 1970-01-01T00:00:00 Universal Time Coordinate (which is considered equal to TAI earlier than 1972). */
     public static final AbsoluteDate JAVA_EPOCH =
-        new AbsoluteDate(DateComponents.JAVA_EPOCH, TimeComponents.H00, TimeScalesFactory.getTT());
+        new AbsoluteDate(DateComponents.JAVA_EPOCH, TimeComponents.H00, TimeScalesFactory.getTAI());
 
     /** Dummy date at infinity in the past direction. */
     public static final AbsoluteDate PAST_INFINITY = JAVA_EPOCH.shiftedBy(Double.NEGATIVE_INFINITY);
@@ -170,12 +176,27 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      */
     public AbsoluteDate(final DateComponents date, final TimeComponents time,
                         final TimeScale timeScale) {
-        // set the epoch at the start of the current second
-        final int j2000Day = date.getJ2000Day();
-        final double sd = time.getSecond() + timeScale.offsetToTAI(date, time);
-        final long   sl = (long) FastMath.floor(sd);
-        epoch  = 60l * ((j2000Day * 24l + time.getHour()) * 60l + time.getMinute() - 720l) + sl;
-        offset = sd - sl;
+
+        final double seconds  = time.getSecond();
+        final double tsOffset = timeScale.offsetToTAI(date, time);
+
+        // compute sum exactly, using Møller-Knuth TwoSum algorithm without branching
+        // the following statements must NOT be simplified, they rely on floating point
+        // arithmetic properties (rounding and representable numbers)
+        // at the end, the EXACT result of addition seconds + tsOffset
+        // is sum + residual, where sum is the closest representable number to the exact
+        // result and residual is the missing part that does not fit in the first number
+        final double sum      = seconds + tsOffset;
+        final double sPrime   = sum - tsOffset;
+        final double tPrime   = sum - sPrime;
+        final double deltaS   = seconds  - sPrime;
+        final double deltaT   = tsOffset - tPrime;
+        final double residual = deltaS   + deltaT;
+        final long   dl       = (long) FastMath.floor(sum);
+
+        offset = (sum - dl) + residual;
+        epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l + time.getMinute() - 720l) + dl;
+
     }
 
     /** Build an instance from a location in a {@link TimeScale time scale}.
@@ -227,8 +248,8 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      */
     public AbsoluteDate(final Date location, final TimeScale timeScale) {
         this(new DateComponents(DateComponents.JAVA_EPOCH,
-                             (int) (location.getTime() / 86400000l)),
-             new TimeComponents(0.001 * (location.getTime() % 86400000l)),
+                                (int) (location.getTime() / 86400000l)),
+                                new TimeComponents(0.001 * (location.getTime() % 86400000l)),
              timeScale);
     }
 

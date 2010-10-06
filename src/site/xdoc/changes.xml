@@ -23,6 +23,10 @@
     <release version="5.1" date="TBD"
              description="TBD.">
       <action dev="luc" type="add">
+        added support for CCSDS recommended reference epoch (1958-01-01T00:00:00 in TAI)
+        as per CCSDS Time Code Format (CCSDS 301.0-B-3)
+      </action>
+      <action dev="luc" type="add">
         added a freeze method to Transform, to remove time-dependent parts
       </action>
       <action dev="luc" type="fix">
