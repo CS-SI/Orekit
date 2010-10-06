@@ -22,6 +22,9 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix">
+        fixed an error in JPL ephemerides: they are in TDB time scale
+      </action>
       <action dev="luc" type="add">
         added support for CCSDS recommended reference epoch (1958-01-01T00:00:00 in TAI)
         as per CCSDS Time Code Format (CCSDS 301.0-B-3)

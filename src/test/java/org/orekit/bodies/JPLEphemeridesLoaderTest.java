@@ -81,7 +81,7 @@ public class JPLEphemeridesLoaderTest {
 
     @Test
     public void testDerivative405() throws OrekitException, ParseException {
-        checkDerivative(new AbsoluteDate(1969, 6, 28, TimeScalesFactory.getTT()));
+        checkDerivative(new AbsoluteDate(1969, 6, 25, TimeScalesFactory.getTT()));
     }
 
     @Test
@@ -93,7 +93,7 @@ public class JPLEphemeridesLoaderTest {
         JPLEphemeridesLoader loader =
             new JPLEphemeridesLoader(null, JPLEphemeridesLoader.EphemerisType.MERCURY, date);
         CelestialBody body = loader.loadCelestialBody(CelestialBodyFactory.MERCURY);
-        double h = 10;
+        double h = 20;
 
         // eight points finite differences estimation of the velocity
         Frame eme2000 = FramesFactory.getEME2000();
@@ -113,7 +113,7 @@ public class JPLEphemeridesLoaderTest {
         Vector3D estimatedV = new Vector3D(-3 * c, d4, 32 * c, d3, -168 * c, d2, 672 * c, d1);
 
         Vector3D loadedV = body.getPVCoordinates(date, eme2000).getVelocity();
-        Assert.assertEquals(0, loadedV.subtract(estimatedV).getNorm(), 3.0e-6);
+        Assert.assertEquals(0, loadedV.subtract(estimatedV).getNorm(), 5.0e-11 * loadedV.getNorm());
 
     }
 

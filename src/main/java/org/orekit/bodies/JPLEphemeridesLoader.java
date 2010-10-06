@@ -36,6 +36,8 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
@@ -770,8 +772,17 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * @return extracted date
      */
     private static AbsoluteDate extractDate(final byte[] record, final int offset) {
-        final double dt = extractDouble(record, offset) * Constants.JULIAN_DAY;
-        return new AbsoluteDate(AbsoluteDate.JULIAN_EPOCH, dt, TimeScalesFactory.getTT());
+        final double t       = extractDouble(record, offset);
+        int    jDay    = (int) FastMath.floor(t);
+        double seconds = (t + 0.5 - jDay) * Constants.JULIAN_DAY;
+        if (seconds >= Constants.JULIAN_DAY) {
+            ++jDay;
+            seconds -= Constants.JULIAN_DAY;
+        }
+        final AbsoluteDate date =
+            new AbsoluteDate(new DateComponents(DateComponents.JULIAN_EPOCH, jDay),
+                             new TimeComponents(seconds), TimeScalesFactory.getTDB());
+        return date;
     }
 
     /** Extract a double from a record.

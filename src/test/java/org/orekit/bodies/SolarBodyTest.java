@@ -41,44 +41,44 @@ public class SolarBodyTest {
     @Test
     public void geocentricPV() throws OrekitException, ParseException {
         Utils.setDataRoot("regular-data");
-        AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TimeScalesFactory.getTT());
+        AbsoluteDate date = new AbsoluteDate(1969, 06, 25, TimeScalesFactory.getTDB());
         Frame geocentricFrame = FramesFactory.getEME2000();
         checkPV(CelestialBodyFactory.getMoon(), date, geocentricFrame,
-                new Vector3D(-0.0008081773279115, -0.0019946300016204, -0.0010872626608381),
-                new Vector3D( 0.0006010848166591, -0.0001674454606152, -0.0000855621449740));
+                new Vector3D(-0.0022350411591597575, -0.0010106334699928434, -5.658291803646671E-4),
+                new Vector3D(3.1279236468844985E-4, -4.526815459166321E-4, -2.428841016970333E-4));
         checkPV(CelestialBodyFactory.getEarth(), date, geocentricFrame, Vector3D.ZERO, Vector3D.ZERO);
     }
 
     @Test
     public void heliocentricPV() throws OrekitException, ParseException {
         Utils.setDataRoot("regular-data");
-        AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TimeScalesFactory.getTT());
+        AbsoluteDate date = new AbsoluteDate(1969, 06, 25, TimeScalesFactory.getTDB());
         Frame heliocentricFrame = CelestialBodyFactory.getSun().getFrame();
         checkPV(CelestialBodyFactory.getSun(), date, heliocentricFrame, Vector3D.ZERO, Vector3D.ZERO);
         checkPV(CelestialBodyFactory.getMercury(), date, heliocentricFrame,
-                new Vector3D( 0.3572602064472754,   -0.0915490424305184, -0.0859810399869404),
-                new Vector3D( 0.0033678456621938,    0.0248893428422493,  0.0129440715867960));
+                new Vector3D(0.3388866970713254, -0.16350851403469605, -0.12250815624343761),
+                new Vector3D(0.008716751907934464, 0.02294287010530833, 0.011349219084264612));
         checkPV(CelestialBodyFactory.getVenus(), date, heliocentricFrame,
-                new Vector3D( 0.6082494331856039,   -0.3491324431959005, -0.1955443457854069),
-                new Vector3D( 0.0109524201099088,    0.0156125067398625,  0.0063288764517467));
+                new Vector3D(0.5733328682513444, -0.3947124128748959, -0.21383496742544283),
+                new Vector3D(0.012311818929592546, 0.014756722625966128, 0.005857890214695866));
         checkPV(CelestialBodyFactory.getMars(), date, heliocentricFrame,
-                new Vector3D(-0.1146885824390927,   -1.3283665308334880, -0.6061551894193808),
-                new Vector3D( 0.0144820048079447,    0.0002372854923607, -0.0002837498361024));
+        new Vector3D(-0.15808000178306866, -1.3285167111540124, -0.6050478023304016),
+        new Vector3D(0.014443621048367267, -1.3669889027283553E-4, -4.542404441793112E-4));
         checkPV(CelestialBodyFactory.getJupiter(), date, heliocentricFrame,
-                new Vector3D(-5.3842094069921451,   -0.8312476561610838, -0.2250947570335498),
-                new Vector3D( 0.0010923632912185,   -0.0065232941911923, -0.0028230122672194));
+        new Vector3D(-5.387442227958154, -0.8116709870422928, -0.21662388956102652),
+        new Vector3D(0.0010628473875341506, -0.006527800816267844, -0.0028242250304474767));
         checkPV(CelestialBodyFactory.getSaturn(), date, heliocentricFrame,
-                new Vector3D( 7.8898899338228166,    4.5957107269260122,  1.558431516725089),
-                new Vector3D(-0.0032172034910937,    0.0043306322335557,  0.0019264174637995));
+        new Vector3D(7.89952834654684, 4.582711147265509, 1.552649660593234),
+        new Vector3D(-0.003208403682518813, 0.004335751536569781, 0.001928152129122073));
         checkPV(CelestialBodyFactory.getUranus(), date, heliocentricFrame,
-                new Vector3D(-18.2699008149782607,  -1.1627115802190469, -0.2503695407425549),
-                new Vector3D(  0.0002215401656274,  -0.0037676535582462, -0.0016532438049224));
+        new Vector3D(-18.2705614311796, -1.151408356279009, -0.24540975062356502),
+        new Vector3D(2.1887052624725852E-4, -0.0037678288699642877, -0.0016532828516810242));
         checkPV(CelestialBodyFactory.getNeptune(), date, heliocentricFrame,
-                new Vector3D(-16.0595450919244627, -23.9429482908794995, -9.4004227803540061),
-                new Vector3D(  0.0026431227915766,  -0.0015034920807588, -0.0006812710048723));
+        new Vector3D(-16.06747366050193, -23.938436657940095, -9.39837851302005),
+        new Vector3D(0.0026425894813251684, -0.0015042632480101307, -6.815738977894145E-4));
         checkPV(CelestialBodyFactory.getPluto(), date, heliocentricFrame,
-                new Vector3D(-30.4878221121555448,  -0.8732454301967293,  8.9112969841847551),
-                new Vector3D(  0.0003225621959332,  -0.0031487479275516, -0.0010801779315937));
+        new Vector3D(-30.488788499360652, -0.8637991387172488, 8.914537151982762),
+        new Vector3D(3.21695873843002E-4, -0.0031487797507673814, -0.0010799339515148705));
     }
 
     @Test(expected = OrekitException.class)

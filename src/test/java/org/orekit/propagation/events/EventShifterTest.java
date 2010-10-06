@@ -58,12 +58,12 @@ public class EventShifterTest {
                                                      false, -5, -10));
         propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(6, log.size());
-        log.get(0).checkExpected(2280.238432488, "shifted decreasing");
-        log.get(1).checkExpected(2300.238432488, "unshifted decreasing");
-        log.get(2).checkExpected(2300.238432488, "raw decreasing");
-        log.get(3).checkExpected(4361.986163340, "shifted increasing");
-        log.get(4).checkExpected(4376.986163340, "unshifted increasing");
-        log.get(5).checkExpected(4376.986163340, "raw increasing");
+        log.get(0).checkExpected(2280.238432465, "shifted decreasing");
+        log.get(1).checkExpected(2300.238432465, "unshifted decreasing");
+        log.get(2).checkExpected(2300.238432465, "raw decreasing");
+        log.get(3).checkExpected(4361.986163327, "shifted increasing");
+        log.get(4).checkExpected(4376.986163327, "unshifted increasing");
+        log.get(5).checkExpected(4376.986163327, "raw increasing");
     }
 
     @Test
@@ -75,12 +75,12 @@ public class EventShifterTest {
                                                      false, -5,  10));
         propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(6, log.size());
-        log.get(0).checkExpected(2300.238432488, "raw decreasing");
-        log.get(1).checkExpected(2300.238432488, "unshifted decreasing");
-        log.get(2).checkExpected(2320.238432488, "shifted decreasing");
-        log.get(3).checkExpected(4361.986163340, "shifted increasing");
-        log.get(4).checkExpected(4376.986163340, "unshifted increasing");
-        log.get(5).checkExpected(4376.986163340, "raw increasing");
+        log.get(0).checkExpected(2300.238432465, "raw decreasing");
+        log.get(1).checkExpected(2300.238432465, "unshifted decreasing");
+        log.get(2).checkExpected(2320.238432465, "shifted decreasing");
+        log.get(3).checkExpected(4361.986163327, "shifted increasing");
+        log.get(4).checkExpected(4376.986163327, "unshifted increasing");
+        log.get(5).checkExpected(4376.986163327, "raw increasing");
     }
 
     @Test
@@ -92,12 +92,12 @@ public class EventShifterTest {
                                                      false,  5, -10));
         propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(6, log.size());
-        log.get(0).checkExpected(2280.238432488, "shifted decreasing");
-        log.get(1).checkExpected(2300.238432488, "unshifted decreasing");
-        log.get(2).checkExpected(2300.238432488, "raw decreasing");
-        log.get(3).checkExpected(4376.986163340, "raw increasing");
-        log.get(4).checkExpected(4376.986163340, "unshifted increasing");
-        log.get(5).checkExpected(4391.986163340, "shifted increasing");
+        log.get(0).checkExpected(2280.238432465, "shifted decreasing");
+        log.get(1).checkExpected(2300.238432465, "unshifted decreasing");
+        log.get(2).checkExpected(2300.238432465, "raw decreasing");
+        log.get(3).checkExpected(4376.986163327, "raw increasing");
+        log.get(4).checkExpected(4376.986163327, "unshifted increasing");
+        log.get(5).checkExpected(4391.986163327, "shifted increasing");
     }
 
     @Test
@@ -109,12 +109,12 @@ public class EventShifterTest {
                                                      false,  5,  10));
         propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(6, log.size());
-        log.get(0).checkExpected(2300.238432488, "raw decreasing");
-        log.get(1).checkExpected(2300.238432488, "unshifted decreasing");
-        log.get(2).checkExpected(2320.238432488, "shifted decreasing");
-        log.get(3).checkExpected(4376.986163340, "raw increasing");
-        log.get(4).checkExpected(4376.986163340, "unshifted increasing");
-        log.get(5).checkExpected(4391.986163340, "shifted increasing");
+        log.get(0).checkExpected(2300.238432465, "raw decreasing");
+        log.get(1).checkExpected(2300.238432465, "unshifted decreasing");
+        log.get(2).checkExpected(2320.238432465, "shifted decreasing");
+        log.get(3).checkExpected(4376.986163327, "raw increasing");
+        log.get(4).checkExpected(4376.986163327, "unshifted increasing");
+        log.get(5).checkExpected(4391.986163327, "shifted increasing");
     }
 
     @Test
@@ -131,48 +131,47 @@ public class EventShifterTest {
         propagator.propagate(iniDate.shiftedBy(20000));
 
         // the raw eclipses (not all within the propagation range) are at times:
-        // [ 2300.238432488376,  4376.986163339668]
-        // [ 8210.85851805207,  10287.572940962871]
-        // [14121.47825296295,  16198.159277289944]
-        // [20032.097637517574, 22108.745172651445]
-        // [25942.716672012015, 28019.330627377545]
-        // [31853.335356741933, 33929.91564179805]
-        // [37763.95369200261,  39840.50021624244]
-
+        // [ 2300.23843246594,   4376.986163326932]
+        // [ 8210.85851802963,  10287.572940950127]
+        // [14121.478252940502, 16198.159277277191]
+        // [20032.097637495113, 22108.745172638683]
+        // [25942.716671989547, 28019.330627364776]
+        // [31853.335356719457, 33929.91564178527]
+        // [ 37763.95369198012, 39840.50021622965]
         Assert.assertEquals(33, log.size());
-        log.get( 0).checkExpected(  287.572940963, "-10000s increasing");
-        log.get( 1).checkExpected( 1300.238432488, "-1000s decreasing");
-        log.get( 2).checkExpected( 2200.238432488, "-100s decreasing");
-        log.get( 3).checkExpected( 2290.238432488, "-10s decreasing");
-        log.get( 4).checkExpected( 2300.238432488, "raw decreasing");
-        log.get( 5).checkExpected( 3376.986163340, "-1000s increasing");
+        log.get( 0).checkExpected(  287.572940950, "-10000s increasing");
+        log.get( 1).checkExpected( 1300.238432465, "-1000s decreasing");
+        log.get( 2).checkExpected( 2200.238432465, "-100s decreasing");
+        log.get( 3).checkExpected( 2290.238432465, "-10s decreasing");
+        log.get( 4).checkExpected( 2300.238432465, "raw decreasing");
+        log.get( 5).checkExpected( 3376.986163327, "-1000s increasing");
         log.get( 6).checkExpected( 4132.109689462, "-10000s decreasing");
-        log.get( 7).checkExpected( 4276.986163340, "-100s increasing");
-        log.get( 8).checkExpected( 4366.986163340, "-10s increasing");
-        log.get( 9).checkExpected( 4376.986163340, "raw increasing");
-        log.get(10).checkExpected( 6198.159277290, "-10000s increasing");
-        log.get(11).checkExpected( 7210.858518052, "-1000s decreasing");
-        log.get(12).checkExpected( 8110.858518052, "-100s decreasing");
-        log.get(13).checkExpected( 8200.858518052, "-10s decreasing");
-        log.get(14).checkExpected( 8210.858518052, "raw decreasing");
-        log.get(15).checkExpected( 9287.572940963, "-1000s increasing");
-        log.get(16).checkExpected(10032.097637518, "-10000s decreasing");
-        log.get(17).checkExpected(10187.572940963, "-100s increasing");
-        log.get(18).checkExpected(10277.572940963, "-10s increasing");
-        log.get(19).checkExpected(10287.572940963, "raw increasing");
-        log.get(20).checkExpected(12108.745172651, "-10000s increasing");
-        log.get(21).checkExpected(13121.478252963, "-1000s decreasing");
-        log.get(22).checkExpected(14021.478252963, "-100s decreasing");
-        log.get(23).checkExpected(14111.478252963, "-10s decreasing");
-        log.get(24).checkExpected(14121.478252963, "raw decreasing");
-        log.get(25).checkExpected(15198.159277290, "-1000s increasing");
-        log.get(26).checkExpected(15942.716672012, "-10000s decreasing");
-        log.get(27).checkExpected(16098.159277290, "-100s increasing");
-        log.get(28).checkExpected(16188.159277290, "-10s increasing");
-        log.get(29).checkExpected(16198.159277290, "raw increasing");
-        log.get(30).checkExpected(18019.330627378, "-10000s increasing");
-        log.get(31).checkExpected(19032.097637518, "-1000s decreasing");
-        log.get(32).checkExpected(19932.097637518, "-100s decreasing");
+        log.get( 7).checkExpected( 4276.986163327, "-100s increasing");
+        log.get( 8).checkExpected( 4366.986163327, "-10s increasing");
+        log.get( 9).checkExpected( 4376.986163327, "raw increasing");
+        log.get(10).checkExpected( 6198.159277277, "-10000s increasing");
+        log.get(11).checkExpected( 7210.858518030, "-1000s decreasing");
+        log.get(12).checkExpected( 8110.858518030, "-100s decreasing");
+        log.get(13).checkExpected( 8200.858518030, "-10s decreasing");
+        log.get(14).checkExpected( 8210.858518030, "raw decreasing");
+        log.get(15).checkExpected( 9287.572940950, "-1000s increasing");
+        log.get(16).checkExpected(10032.097637495, "-10000s decreasing");
+        log.get(17).checkExpected(10187.572940950, "-100s increasing");
+        log.get(18).checkExpected(10277.572940950, "-10s increasing");
+        log.get(19).checkExpected(10287.572940950, "raw increasing");
+        log.get(20).checkExpected(12108.745172639, "-10000s increasing");
+        log.get(21).checkExpected(13121.478252941, "-1000s decreasing");
+        log.get(22).checkExpected(14021.478252941, "-100s decreasing");
+        log.get(23).checkExpected(14111.478252941, "-10s decreasing");
+        log.get(24).checkExpected(14121.478252941, "raw decreasing");
+        log.get(25).checkExpected(15198.159277277, "-1000s increasing");
+        log.get(26).checkExpected(15942.716671989, "-10000s decreasing");
+        log.get(27).checkExpected(16098.159277277, "-100s increasing");
+        log.get(28).checkExpected(16188.159277277, "-10s increasing");
+        log.get(29).checkExpected(16198.159277277, "raw increasing");
+        log.get(30).checkExpected(18019.330627365, "-10000s increasing");
+        log.get(31).checkExpected(19032.097637495, "-1000s decreasing");
+        log.get(32).checkExpected(19932.097637495, "-100s decreasing");
 
         for (EventEntry entry : log) {
             double error = entry.getTimeError();
