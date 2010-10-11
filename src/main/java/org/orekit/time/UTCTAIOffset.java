@@ -18,14 +18,18 @@ package org.orekit.time;
 
 import java.io.Serializable;
 
+import org.orekit.utils.Constants;
+
 /** Offset between {@link UTCScale UTC} and  {@link TAIScale TAI} time scales.
  * <p>The {@link UTCScale UTC} and  {@link TAIScale TAI} time scales are two
  * scales offset with respect to each other. The {@link TAIScale TAI} scale is
  * continuous whether the {@link UTCScale UTC} includes some discontinuity when
  * leap seconds are introduced by the <a href="http://www.iers.org/">International
  * Earth Rotation Service</a> (IERS).</p>
- * <p>This class represents the constant offset between the two scales that is
- * valid between two leap seconds occurrences.</p>
+ * <p>This class represents the offset between the two scales that is
+ * valid between two leap seconds occurrences. It handles both the linear offsets
+ * used from 1961-01-01 to 1971-12-31 and the constant integer offsets used since
+ * 1972-01-01.</p>
  * @author Luc Maisonobe
  * @see UTCScale
  * @see UTCTAIHistoryFilesLoader
@@ -45,23 +49,52 @@ class UTCTAIOffset implements TimeStamped, Serializable {
     /** Offset end of validity date. */
     private AbsoluteDate validityEnd;
 
+    /** Reference date for the slope multiplication as Modified Julian Day. */
+    private final int mjdRef;
+
+    /** Reference date for the slope multiplication. */
+    private final AbsoluteDate reference;
+
     /** Value of the leap at offset validity start (in seconds). */
     private final double leap;
 
-    /** Offset in seconds (TAI minus UTC). */
+    /** Offset at validity start in seconds (TAI minus UTC). */
     private final double offset;
 
-    /** Simple constructor.
+    /** Offset slope in seconds per UTC second (TAI minus UTC / dUTC). */
+    private final double slopeUTC;
+
+    /** Offset slope in seconds per TAI second (TAI minus UTC / dTAI). */
+    private final double slopeTAI;
+
+    /** Simple constructor for a constant model.
      * @param leapDate leap date
      * @param leap value of the leap at offset validity start (in seconds)
      * @param offset offset in seconds (TAI minus UTC)
      */
     public UTCTAIOffset(final AbsoluteDate leapDate, final double leap, final double offset) {
+        this(leapDate, leap, offset, 0, 0);
+    }
+
+    /** Simple constructor for a linear model.
+     * @param leapDate leap date
+     * @param leap value of the leap at offset validity start (in seconds)
+     * @param offset offset in seconds (TAI minus UTC)
+     * @param mjdRef reference date for the slope multiplication as Modified Julian Day
+     * @param slope offset slope in seconds per UTC second (TAI minus UTC / dUTC)
+     */
+    public UTCTAIOffset(final AbsoluteDate leapDate, final double leap, final double offset,
+                        final int mjdRef, final double slope) {
         this.leapDate      = leapDate;
         this.validityStart = leapDate.shiftedBy(leap);
         this.validityEnd   = AbsoluteDate.FUTURE_INFINITY;
+        this.mjdRef        = mjdRef;
+        this.reference     = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjdRef),
+                                              TimeScalesFactory.getTAI()).shiftedBy(offset);
         this.leap          = leap;
         this.offset        = offset;
+        this.slopeUTC      = slope;
+        this.slopeTAI      = slope / (1 + slope);
     }
 
     /** Get the date of the start of the leap.
@@ -108,11 +141,23 @@ class UTCTAIOffset implements TimeStamped, Serializable {
         return leap;
     }
 
-    /** Get the offset in seconds.
-     * @return offset in seconds.
+    /** Get the TAI - UTC offset in seconds.
+     * @param date date at which the offset is requested
+     * @return TAI - UTC offset in seconds.
      */
-    public double getOffset() {
-        return offset;
+    public double getOffset(final AbsoluteDate date) {
+        return offset + date.durationFrom(reference) * slopeTAI;
+    }
+
+    /** Get the TAI - UTC offset in seconds.
+     * @param date date components (in UTC) at which the offset is requested
+     * @param time time components (in UTC) at which the offset is requested
+     * @return TAI - UTC offset in seconds.
+     */
+    public double getOffset(final DateComponents date, TimeComponents time) {
+        final int    days     = date.getMJD() - mjdRef;
+        final double fraction = time.getSecondsInDay();
+        return offset + days * (slopeUTC * Constants.JULIAN_DAY) + fraction * slopeUTC;
     }
 
 }

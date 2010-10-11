@@ -8,15 +8,19 @@ which represents a unique instant in time, with no ambiguity. For that
 purpose, the ways to define this object are quite strict.</p>
 
 <p>The easiest and most evident way is to define an instant with an offset from another
- one. Orekit defines 6 reference epochs. The first 5 are commonly used in the space
- community and the last one is commonly used in the computer science field.
+ one. Orekit defines 9 reference epochs. The first 6 are commonly used in the space
+ community, the seventh one is commonly used in the computer science field and the
+ last two are convenient for initialization in min/max research loops:
  <ul>
   	  <li>{@link org.orekit.time.AbsoluteDate#JULIAN_EPOCH Julian Epoch}: -4712-01-01 at 12:00:00, TTScale</li>
       <li>{@link org.orekit.time.AbsoluteDate#MODIFIED_JULIAN_EPOCH Modified Julian Epoch}: 1858-11-17 at 00:00:00, TTScale</li>
       <li>{@link org.orekit.time.AbsoluteDate#FIFTIES_EPOCH Fifties Epoch}: 1950-01-01 at 00:00:00,  TTScale</li>
+      <li>{@link org.orekit.time.AbsoluteDate#CCSDS_EPOCH CCSDS Epoch}: 1958-01-01 at 00:00:00,  TAIScale</li>
       <li>{@link org.orekit.time.AbsoluteDate#GPS_EPOCH GPS Epoch}: 1980-01-06 at 00:00:00,  UTCScale</li>
       <li>{@link org.orekit.time.AbsoluteDate#J2000_EPOCH J2000 Epoch}: 2000-01-01 at 12:00:00, TTScale</li>
-      <li>{@link org.orekit.time.AbsoluteDate#JAVA_EPOCH Java Epoch}: 1970-01-01 at 00:00:00. TTScale</li>
+      <li>{@link org.orekit.time.AbsoluteDate#JAVA_EPOCH Java Epoch}: 1970-01-01 at 00:00:00, TTScale</li>
+      <li>{@link org.orekit.time.AbsoluteDate#PAST_INFINITY_EPOCH Past infinity Epoch}: at infinity in the past,</li>
+      <li>{@link org.orekit.time.AbsoluteDate#FUTURE_INFINITY_EPOCH Future infinity Epoch}: at infinity in the future.</li>
  </ul> 
 </p>
 
@@ -36,7 +40,10 @@ purpose, the ways to define this object are quite strict.</p>
         to 2009-01-01) and other ones can be supported by providing UTC-TAI.history files somewhere
         in the directory hierarchy pointed to by the <code>orekit.data.directory</code> property,</li>
     <li>{@link org.orekit.time.TCGScale}: Geocentric Coordinate Time. Coordinate time at the
-        center of mass of the Earth. This time scale depends linearly from TTScale.</li>
+        center of mass of the Earth. This time scale depends linearly from TTScale,</li>
+    <li>{@link org.orekit.time.TDBScale}: Barycentric Dynamic Time. Time used to compute
+        ephemerides in the solar system. This time is offset with respect to TT by small
+        relativistic corrections due to Earth motion,</li>
     <li>{@link org.orekit.time.GPSScale}: Global Positioning System reference scale. This scale
         was equal to UTC at start of the {@link org.orekit.time.AbsoluteDate#GPS_EPOCH GPS Epoch}
         when it was 19 seconds behind TAI, and remained parallel to TAI since then (i.e. UTC is now

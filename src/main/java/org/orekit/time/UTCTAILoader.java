@@ -27,6 +27,11 @@ import org.orekit.data.DataLoader;
 public interface UTCTAILoader extends DataLoader {
 
     /** Load UTC-TAI offsets entries.
+     * <p>
+     * Only the integer offsets used since 1972-01-01 are loaded here, the
+     * linear offsets used between 1961-01-01 and 1971-12-31 are hard-coded
+     * in the {@link UTCScale UTCScale} class itself.
+     * </p>
      * @return sorted UTC-TAI offsets entries (may be empty)
      */
     SortedMap<DateComponents, Integer> loadTimeSteps();

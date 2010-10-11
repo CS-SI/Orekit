@@ -45,7 +45,7 @@ public class SpinStabilizedTest {
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
-                                             TimeScalesFactory.getUTC());
+                                             TimeScalesFactory.getTAI());
         double rate = 2.0 * FastMath.PI / (12 * 60);
         AttitudeLaw bbq =
             new SpinStabilized(new CelestialBodyPointed(FramesFactory.getEME2000(), sun, Vector3D.PLUS_K,

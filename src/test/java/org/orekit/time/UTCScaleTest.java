@@ -95,12 +95,45 @@ public class UTCScaleTest {
 
     @Test
     public void testOffsets() {
-        checkOffset(1970, 01, 01,   0);
-        checkOffset(1972, 03, 05, -10);
-        checkOffset(1972, 07, 14, -11);
+
+        // we arbitrary put UTC == TAI before 1961-01-01
+        checkOffset(1950,  1,  1,   0);
+
+        // excerpt from UTC-TAI.history file:
+        //  1961  Jan.  1 - 1961  Aug.  1     1.422 818 0s + (MJD - 37 300) x 0.001 296s
+        //        Aug.  1 - 1962  Jan.  1     1.372 818 0s +        ""
+        //  1962  Jan.  1 - 1963  Nov.  1     1.845 858 0s + (MJD - 37 665) x 0.001 123 2s
+        //  1963  Nov.  1 - 1964  Jan.  1     1.945 858 0s +        ""
+        //  1964  Jan.  1 -       April 1     3.240 130 0s + (MJD - 38 761) x 0.001 296s
+        //        April 1 -       Sept. 1     3.340 130 0s +        ""
+        //        Sept. 1 - 1965  Jan.  1     3.440 130 0s +        ""
+        //  1965  Jan.  1 -       March 1     3.540 130 0s +        ""
+        //        March 1 -       Jul.  1     3.640 130 0s +        ""
+        //        Jul.  1 -       Sept. 1     3.740 130 0s +        ""
+        //        Sept. 1 - 1966  Jan.  1     3.840 130 0s +        ""
+        //  1966  Jan.  1 - 1968  Feb.  1     4.313 170 0s + (MJD - 39 126) x 0.002 592s
+        //  1968  Feb.  1 - 1972  Jan.  1     4.213 170 0s +        ""
+        checkOffset(1961,  1,  2,  -(1.422818 +   1 * 0.001296));  // MJD 37300 +   1
+        checkOffset(1961,  8,  2,  -(1.372818 + 213 * 0.001296));  // MJD 37300 + 213
+        checkOffset(1962,  1,  2,  -(1.845858 +   1 * 0.0011232)); // MJD 37665 +   1
+        checkOffset(1963, 11,  2,  -(1.945858 + 670 * 0.0011232)); // MJD 37665 + 670
+        checkOffset(1964,  1,  2,  -(3.240130 - 365 * 0.001296));  // MJD 38761 - 365
+        checkOffset(1964,  4,  2,  -(3.340130 - 274 * 0.001296));  // MJD 38761 - 274
+        checkOffset(1964,  9,  2,  -(3.440130 - 121 * 0.001296));  // MJD 38761 - 121
+        checkOffset(1965,  1,  2,  -(3.540130 +   1 * 0.001296));  // MJD 38761 +   1
+        checkOffset(1965,  3,  2,  -(3.640130 +  60 * 0.001296));  // MJD 38761 +  60
+        checkOffset(1965,  7,  2,  -(3.740130 + 182 * 0.001296));  // MJD 38761 + 182
+        checkOffset(1965,  9,  2,  -(3.840130 + 244 * 0.001296));  // MJD 38761 + 244
+        checkOffset(1966,  1,  2,  -(4.313170 +   1 * 0.002592));  // MJD 39126 +   1
+        checkOffset(1968,  2,  2,  -(4.213170 + 762 * 0.002592));  // MJD 39126 + 762
+
+        // since 1972-01-01, offsets are only whole seconds
+        checkOffset(1972,  3,  5, -10);
+        checkOffset(1972,  7, 14, -11);
         checkOffset(1979, 12, 31, -18);
-        checkOffset(1980, 01, 22, -19);
-        checkOffset(2006, 07, 07, -33);
+        checkOffset(1980,  1, 22, -19);
+        checkOffset(2006,  7,  7, -33);
+
     }
 
     private void checkOffset(int year, int month, int day, double offset) {

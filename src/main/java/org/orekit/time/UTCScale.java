@@ -24,15 +24,19 @@ import org.orekit.utils.Constants;
 
 /** Coordinated Universal Time.
  * <p>UTC is related to TAI using step adjustments from time to time
- * according to IERS (International Earth Rotation Service) rules. These
- * adjustments require introduction of leap seconds.</p>
+ * according to IERS (International Earth Rotation Service) rules. Before 1972,
+ * these adjustments were piecewise linear offsets. Since 1972, these adjustments
+ * are piecewise constant offsets, which require introduction of leap seconds.</p>
  * <p>Leap seconds are always inserted as additional seconds at the last minute
  * of the day, pushing the next day forward. Such minutes are therefore more
- * than 60 seconds long. As an example, when a one second leap was introduced
- * at the end of 2005, the UTC time sequence was 2005-12-31T23:59:59 UTC,
- * followed by 2005-12-31T23:59:60 UTC, followed by 2006-01-01T00:00:00 UTC.</p>
- * <p>The OREKIT library retrieves time steps data thanks to the {@link
- * org.orekit.data.DataProvidersManager DataProvidersManager} class.</p>
+ * than 60 seconds long. In theory, there may be seconds removal instead of seconds
+ * insertion, but up to now (2010) it has never been used. As an example, when a
+ * one second leap was introduced at the end of 2005, the UTC time sequence was
+ * 2005-12-31T23:59:59 UTC, followed by 2005-12-31T23:59:60 UTC, followed by
+ * 2006-01-01T00:00:00 UTC.</p>
+ * <p>The OREKIT library retrieves the post-1972 constant time steps data thanks
+ * to the {@link org.orekit.data.DataProvidersManager DataProvidersManager} class.
+ * The linear models used between 1961 and 1972 are built-in in the class itself.</p>
  * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
@@ -43,10 +47,6 @@ public class UTCScale implements TimeScale {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 1096634108833538374L;
-
-    /** Reference TAI date. */
-    private static final AbsoluteDate TAI_REFERENCE =
-        new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTAI());
 
     /** Time steps. */
     private UTCTAIOffset[] offsets;
@@ -59,26 +59,77 @@ public class UTCScale implements TimeScale {
      */
     UTCScale(final SortedMap<DateComponents, Integer> entries) {
 
-        offsets = new UTCTAIOffset[entries.size() + 1];
+        offsets = new UTCTAIOffset[entries.size() + 14];
         current = 0;
 
-        // set up a first entry covering the far past before first leap second
-        UTCTAIOffset last = new UTCTAIOffset(AbsoluteDate.PAST_INFINITY, 0, 0);
-        offsets[current++] = last;
+        // set up a first entry covering the far past before first offset
+        offsets[current] = new UTCTAIOffset(AbsoluteDate.PAST_INFINITY, 0, 0);
+
+        // set up the linear offsets used between 1961-01-01 and 1971-12-31
+        // excerpt from UTC-TAI.history file:
+        //  1961  Jan.  1 - 1961  Aug.  1     1.422 818 0s + (MJD - 37 300) x 0.001 296s
+        //        Aug.  1 - 1962  Jan.  1     1.372 818 0s +        ""
+        //  1962  Jan.  1 - 1963  Nov.  1     1.845 858 0s + (MJD - 37 665) x 0.001 123 2s
+        //  1963  Nov.  1 - 1964  Jan.  1     1.945 858 0s +        ""
+        //  1964  Jan.  1 -       April 1     3.240 130 0s + (MJD - 38 761) x 0.001 296s
+        //        April 1 -       Sept. 1     3.340 130 0s +        ""
+        //        Sept. 1 - 1965  Jan.  1     3.440 130 0s +        ""
+        //  1965  Jan.  1 -       March 1     3.540 130 0s +        ""
+        //        March 1 -       Jul.  1     3.640 130 0s +        ""
+        //        Jul.  1 -       Sept. 1     3.740 130 0s +        ""
+        //        Sept. 1 - 1966  Jan.  1     3.840 130 0s +        ""
+        //  1966  Jan.  1 - 1968  Feb.  1     4.313 170 0s + (MJD - 39 126) x 0.002 592s
+        //  1968  Feb.  1 - 1972  Jan.  1     4.213 170 0s +        ""
+        addOffsetModel(new DateComponents(1961,  1, 1), 37300, 1.4228180, 0.0012960);
+        addOffsetModel(new DateComponents(1961,  8, 1), 37300, 1.3728180, 0.0012960);
+        addOffsetModel(new DateComponents(1962,  1, 1), 37665, 1.8458580, 0.0011232);
+        addOffsetModel(new DateComponents(1963, 11, 1), 37665, 1.9458580, 0.0011232);
+        addOffsetModel(new DateComponents(1964,  1, 1), 38761, 3.2401300, 0.0012960);
+        addOffsetModel(new DateComponents(1964,  4, 1), 38761, 3.3401300, 0.0012960);
+        addOffsetModel(new DateComponents(1964,  9, 1), 38761, 3.4401300, 0.0012960);
+        addOffsetModel(new DateComponents(1965,  1, 1), 38761, 3.5401300, 0.0012960);
+        addOffsetModel(new DateComponents(1965,  3, 1), 38761, 3.6401300, 0.0012960);
+        addOffsetModel(new DateComponents(1965,  7, 1), 38761, 3.7401300, 0.0012960);
+        addOffsetModel(new DateComponents(1965,  9, 1), 38761, 3.8401300, 0.0012960);
+        addOffsetModel(new DateComponents(1966,  1, 1), 39126, 4.3131700, 0.0025920);
+        addOffsetModel(new DateComponents(1968,  2, 1), 39126, 4.2131700, 0.0025920);
 
         // add leap second entries in chronological order
         for (Map.Entry<DateComponents, Integer> entry : entries.entrySet()) {
-            final double offset            = entry.getValue().doubleValue();
-            final double leap              = offset - last.getOffset();
-            final AbsoluteDate taiDayStart = new AbsoluteDate(entry.getKey(), TimeScalesFactory.getTAI());
-            final AbsoluteDate leapDate    = taiDayStart.shiftedBy(last.getOffset());
-            last.setValidityEnd(leapDate);
-            last = new UTCTAIOffset(leapDate, leap, offset);
-            offsets[current++] = last;
+            addOffsetModel(entry.getKey(), 0, entry.getValue(), 0);
         }
 
-        // set the current index on the last known leap
-        --current;
+    }
+
+    /** Add an offset model.
+     * <p>
+     * This method <em>must</em> be called in chronological order.
+     * </p>
+     * @param date date of the constant offset model start
+     * @param mjdRef reference date of the linear model as a modified julian day
+     * @param offset offset at reference date in seconds (TAI minus UTC)
+     * @param slope offset slope in seconds per UTC day (TAI minus UTC / dUTC)
+     */
+    private void addOffsetModel(final DateComponents date, final int mjdRef,
+                                final double offset, final double slope) {
+
+        final TimeScale tai = TimeScalesFactory.getTAI();
+
+        // start of the leap
+        final UTCTAIOffset previous    = offsets[current];
+        double previousOffset          = previous.getOffset(date, TimeComponents.H00);
+        final AbsoluteDate leapStart   = new AbsoluteDate(date, tai).shiftedBy(previousOffset);
+
+        // end of the leap
+        final double startOffset       = offset + slope * (date.getMJD() - mjdRef);
+        final AbsoluteDate leapEnd     = new AbsoluteDate(date, tai).shiftedBy(startOffset);
+
+        // leap computed at leap start and in UTC scale
+        final double normalizedSlope   = slope / Constants.JULIAN_DAY;
+        final double leap              = leapEnd.durationFrom(leapStart) / (1 + normalizedSlope);
+
+        previous.setValidityEnd(leapStart);
+        offsets[++current] = new UTCTAIOffset(leapStart, leap, offset, mjdRef, normalizedSlope);
 
     }
 
@@ -95,14 +146,18 @@ public class UTCScale implements TimeScale {
     /** {@inheritDoc} */
     public synchronized double offsetFromTAI(final AbsoluteDate date) {
         setCurrent(date);
-        return -offsets[current].getOffset();
+        return -offsets[current].getOffset(date);
     }
 
     /** {@inheritDoc} */
     public synchronized double offsetToTAI(final DateComponents date,
                                            final TimeComponents time) {
-        setCurrent(date.getJ2000Day() * Constants.JULIAN_DAY + time.getSecondsInDay() - Constants.JULIAN_DAY / 2);
-        return offsets[current].getOffset();
+        final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
+        double offset = 0;
+        for (int i = 0; i < 3; i++) {
+            offset = -offsetFromTAI(reference.shiftedBy(offset));
+        }
+        return offset;
     }
 
     /** {@inheritDoc} */
@@ -155,21 +210,6 @@ public class UTCScale implements TimeScale {
             --current;
         }
         while (date.compareTo(offsets[current].getValidityEnd()) >= 0) {
-            ++current;
-        }
-    }
-
-    /** Set the current index.
-     * @param utcTime location of an event in the utc time scale
-     * as a seconds index starting at 2000-01-01T12:00:00
-     */
-    private synchronized void setCurrent(final double utcTime) {
-        while (offsets[current].getValidityStart().durationFrom(TAI_REFERENCE) >
-               (utcTime + offsets[current].getOffset())) {
-            --current;
-        }
-        while (offsets[current].getValidityEnd().durationFrom(TAI_REFERENCE) <=
-               (utcTime + offsets[current].getOffset())) {
             ++current;
         }
     }

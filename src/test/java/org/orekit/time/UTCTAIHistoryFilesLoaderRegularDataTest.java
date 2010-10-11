@@ -34,7 +34,7 @@ public class UTCTAIHistoryFilesLoaderRegularDataTest {
     @Test
     public void testFirstLeap() throws OrekitException {
         UTCScale utc = (UTCScale) TimeScalesFactory.getUTC();
-        Assert.assertEquals("1971-12-31T23:59:60.000", utc.getFirstKnownLeapSecond().toString(utc));
+        Assert.assertEquals("1960-12-31T23:59:60.000", utc.getFirstKnownLeapSecond().toString(utc));
     }
 
     @Test

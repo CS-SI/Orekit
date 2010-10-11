@@ -132,7 +132,7 @@ class UTCTAIHistoryFilesLoader implements UTCTAILoader {
 
         entries.clear();
 
-        // set up a reader for line-oriented bulletin B files
+        // set up a reader for line-oriented file
         final BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
         // read all file, ignoring not recognized lines
@@ -180,8 +180,8 @@ class UTCTAIHistoryFilesLoader implements UTCTAILoader {
                         throw new NumberFormatException();
                     }
                     final DateComponents leapDay = new DateComponents(Integer.parseInt(year.trim()),
-                                                                month.intValue(),
-                                                                Integer.parseInt(matcher.group(3).trim()));
+                                                                      month.intValue(),
+                                                                      Integer.parseInt(matcher.group(3).trim()));
 
                     final Integer offset = Integer.valueOf(matcher.group(matcher.groupCount()));
                     if ((lastDate != null) && leapDay.compareTo(lastDate) <= 0) {
