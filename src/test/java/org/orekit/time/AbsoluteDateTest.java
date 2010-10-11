@@ -244,6 +244,150 @@ public class AbsoluteDateTest {
         }
     }
 
+    @Test
+    public void testCCSDSUnsegmented() throws OrekitException {
+
+        AbsoluteDate reference = new AbsoluteDate("2002-05-23T12:34:56.789", TimeScalesFactory.getUTC());
+        double lsb = Math.pow(2.0, -24);
+
+        byte[] timeCCSDSEpoch = new byte[] { 0x53, 0x7F, 0x40, -0x70, -0x37, -0x05, -0x19 };
+        for (int preamble = 0x00; preamble < 0x100; ++preamble) {
+            if (preamble == 0x1F) {
+                // using CCSDS reference epoch
+                AbsoluteDate ccsds1 =
+                    AbsoluteDate.parseCCSDSUnsegmentedTimeCode((byte) preamble, timeCCSDSEpoch, null);
+                Assert.assertEquals(0, ccsds1.durationFrom(reference), lsb / 2);
+            } else {
+                try {
+                    AbsoluteDate.parseCCSDSUnsegmentedTimeCode((byte) preamble, timeCCSDSEpoch, null);
+                    Assert.fail("an exception should have been thrown");
+                } catch (OrekitException iae) {
+                    // expected
+                }
+                
+            }
+        }
+
+        // missing epoch
+        byte[] timeJ2000Epoch = new byte[] { 0x04, 0x7E, -0x0B, -0x10, -0x07, 0x16, -0x79 };
+        try {
+            AbsoluteDate.parseCCSDSUnsegmentedTimeCode((byte) 0x2F, timeJ2000Epoch, null);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException iae) {
+            // expected
+        }
+
+        // using J2000.0 epoch
+        AbsoluteDate ccsds3 =
+            AbsoluteDate.parseCCSDSUnsegmentedTimeCode((byte) 0x2F, timeJ2000Epoch, AbsoluteDate.J2000_EPOCH);
+        Assert.assertEquals(0, ccsds3.durationFrom(reference), lsb / 2);
+
+    }
+
+    @Test
+    public void testCCSDSDaySegmented() throws OrekitException {
+
+        AbsoluteDate reference = new AbsoluteDate("2002-05-23T12:34:56.789012345678", TimeScalesFactory.getUTC());
+        double lsb = 1.0e-13;
+        byte[] timeCCSDSEpoch = new byte[] { 0x3F, 0x55, 0x02, -0x4D, 0x2C, -0x6B, 0x00, -0x44, 0x61, 0x4E };
+
+        for (int preamble = 0x00; preamble < 0x100; ++preamble) {
+            if (preamble == 0x42) {
+                // using CCSDS reference epoch
+                AbsoluteDate ccsds1 =
+                    AbsoluteDate.parseCCSDSDaySegmentedTimeCode((byte) preamble, timeCCSDSEpoch, null);
+                Assert.assertEquals(0, ccsds1.durationFrom(reference), lsb / 2);
+            } else {
+                try {
+                    AbsoluteDate.parseCCSDSDaySegmentedTimeCode((byte) preamble, timeCCSDSEpoch, null);
+                    Assert.fail("an exception should have been thrown");
+                } catch (OrekitException iae) {
+                    // expected
+                }
+                
+            }
+        }
+
+        // missing epoch
+        byte[] timeJ2000Epoch = new byte[] { 0x03, 0x69, 0x02, -0x4D, 0x2C, -0x6B, 0x00, -0x44, 0x61, 0x4E };
+        try {
+            AbsoluteDate.parseCCSDSDaySegmentedTimeCode((byte) 0x4A, timeJ2000Epoch, null);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException iae) {
+            // expected
+        }
+
+        // using J2000.0 epoch
+        AbsoluteDate ccsds3 =
+            AbsoluteDate.parseCCSDSDaySegmentedTimeCode((byte) 0x4A, timeJ2000Epoch, DateComponents.J2000_EPOCH);
+        Assert.assertEquals(0, ccsds3.durationFrom(reference), lsb / 2);
+
+        // limit to microsecond
+        byte[] timeMicrosecond = new byte[] { 0x03, 0x69, 0x02, -0x4D, 0x2C, -0x6B, 0x00, 0x0C };
+        AbsoluteDate ccsds4 =
+            AbsoluteDate.parseCCSDSDaySegmentedTimeCode((byte) 0x49, timeMicrosecond, DateComponents.J2000_EPOCH);
+        Assert.assertEquals(-0.345678e-6, ccsds4.durationFrom(reference), lsb / 2);
+
+    }
+
+    @Test
+    public void testCCSDSCalendarSegmented() throws OrekitException {
+
+        AbsoluteDate reference = new AbsoluteDate("2002-05-23T12:34:56.789012345678", TimeScalesFactory.getUTC());
+        double lsb = 1.0e-13;
+
+        // month of year / day of month variation
+        byte[] timeMonthDay = new byte[] { 0x07, -0x2E, 0x05, 0x17, 0x0C, 0x22, 0x38, 0x4E, 0x5A, 0x0C, 0x22, 0x38, 0x4E };
+        for (int preamble = 0x00; preamble < 0x100; ++preamble) {
+            if (preamble == 0x56) {
+                AbsoluteDate ccsds1 =
+                    AbsoluteDate.parseCCSDSCalendarSegmentedTimeCode((byte) preamble, timeMonthDay);
+                Assert.assertEquals(0, ccsds1.durationFrom(reference), lsb / 2);
+            } else {
+                try {
+                    AbsoluteDate.parseCCSDSCalendarSegmentedTimeCode((byte) preamble, timeMonthDay);
+                    Assert.fail("an exception should have been thrown");
+                } catch (OrekitException iae) {
+                    // expected
+                } catch (IllegalArgumentException iae) {
+                    // should happen when preamble specifies day of year variation
+                    // since there is no day 1303 (= 5 * 256 + 23) in any year ...
+                    Assert.assertEquals(preamble & 0x08, 0x08);
+                }
+                
+            }
+        }
+
+        // day of year variation
+        byte[] timeDay = new byte[] { 0x07, -0x2E, 0x00, -0x71, 0x0C, 0x22, 0x38, 0x4E, 0x5A, 0x0C, 0x22, 0x38, 0x4E };
+        for (int preamble = 0x00; preamble < 0x100; ++preamble) {
+            if (preamble == 0x5E) {
+                AbsoluteDate ccsds1 =
+                    AbsoluteDate.parseCCSDSCalendarSegmentedTimeCode((byte) preamble, timeDay);
+                Assert.assertEquals(0, ccsds1.durationFrom(reference), lsb / 2);
+            } else {
+                try {
+                    AbsoluteDate.parseCCSDSCalendarSegmentedTimeCode((byte) preamble, timeDay);
+                    Assert.fail("an exception should have been thrown");
+                } catch (OrekitException iae) {
+                    // expected
+                } catch (IllegalArgumentException iae) {
+                    // should happen when preamble specifies month of year / day of month variation
+                    // since there is no month 0 in any year ...
+                    Assert.assertEquals(preamble & 0x08, 0x00);
+                }
+                
+            }
+        }
+
+        // limit to microsecond
+        byte[] timeMicrosecond = new byte[] { 0x07, -0x2E, 0x00, -0x71, 0x0C, 0x22, 0x38, 0x4E, 0x5A, 0x0C };
+        AbsoluteDate ccsds4 =
+            AbsoluteDate.parseCCSDSCalendarSegmentedTimeCode((byte) 0x5B, timeMicrosecond);
+        Assert.assertEquals(-0.345678e-6, ccsds4.durationFrom(reference), lsb / 2);
+
+    }
+
     @Test(expected=IllegalArgumentException.class)
     public void testExpandedConstructors() throws OrekitException {
         Assert.assertEquals(new AbsoluteDate(new DateComponents(2002, 05, 28),

@@ -116,7 +116,10 @@ public enum OrekitMessages implements Localizable {
     OUT_OF_RANGE_BODY_EPHEMERIDES_DATE("out of range date for {0} ephemerides: {1}"),
     OUT_OF_RANGE_EPHEMERIDES_DATE("out of range date for ephemerides: {0}, [{1}, {2}]"),
     UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH("unexpected two elevation values: {0} and {1}, for one azimuth: {2}"),
-    UNKNOWN_PARAMETER("unknown parameter {0}");
+    UNKNOWN_PARAMETER("unknown parameter {0}"),
+    CCSDS_DATE_INVALID_PREAMBLE_FIELD("invalid preamble field in CCSDS date: {0}"),
+    CCSDS_DATE_INVALID_LENGTH_TIME_FIELD("invalid time field length in CCSDS date: {0}, expected {1}"),
+    CCSDS_DATE_MISSING_AGENCY_EPOCH("missing agency epoch in CCSDS date");
 
     // CHECKSTYLE: resume JavadocVariable
     // CHECKSTYLE: resume MultipleVariableDeclarations

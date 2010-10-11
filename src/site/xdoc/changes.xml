@@ -25,9 +25,15 @@
       <action dev="luc" type="fix">
         fixed an error in JPL ephemerides: they are in TDB time scale
       </action>
+      <action dev="luc" type="fix">
+        fixed UTC time scale between 1961-01-01 and 1971-12-31 ; in this time range
+        the offset between UTC and TAI was piecewise linear
+      </action>
       <action dev="luc" type="add">
-        added support for CCSDS recommended reference epoch (1958-01-01T00:00:00 in TAI)
-        as per CCSDS Time Code Format (CCSDS 301.0-B-3)
+        completed support for CCSDS Time Code Format (CCSDS 301.0-B-3) ; now in addition
+        to ASCII Calendar Segmented Time Code which has been supported for a while,
+        Orekit also supports CCSDS Unsegmented Time Code (CUC), CCSDS Day Segmented
+        Time Code (CDS) and CCSDS Calendar Segmented Time Code (CCS)
       </action>
       <action dev="luc" type="add">
         added a freeze method to Transform, to remove time-dependent parts
