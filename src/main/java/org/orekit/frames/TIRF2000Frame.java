@@ -25,6 +25,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 
 /** Terrestrial Intermediate Reference Frame 2000.
@@ -64,6 +65,9 @@ class TIRF2000Frame extends Frame {
     /** EOP history. */
     private final EOP2000History eopHistory;
 
+    /** UT1 time scale. */
+    private final UT1Scale ut1;
+
     /** Simple constructor, ignoring tidal effects.
      * @param date the current date
      * @param name the string representation
@@ -86,7 +90,8 @@ class TIRF2000Frame extends Frame {
 
         super(FramesFactory.getCIRF2000(), null, name, false);
         tidalCorrection = ignoreTidalEffects ? null : new TidalCorrection();
-        eopHistory = FramesFactory.getEOP2000History();
+        eopHistory      = FramesFactory.getEOP2000History();
+        ut1             = TimeScalesFactory.getUT1();
 
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
@@ -121,10 +126,8 @@ class TIRF2000Frame extends Frame {
 
             // compute Earth Rotation Angle using Nicole Capitaine model (2000)
             final double tidalDtu1   = (tidalCorrection == null) ? 0 : tidalCorrection.getDUT1(date);
-            final double dtu1        = eopHistory.getUT1MinusUTC(date);
-            final double utcMinusTai = TimeScalesFactory.getUTC().offsetFromTAI(date);
             final double tu =
-                (date.durationFrom(ERA_REFERENCE) + utcMinusTai + dtu1 + tidalDtu1) / Constants.JULIAN_DAY;
+                (date.durationFrom(ERA_REFERENCE) + ut1.offsetFromTAI(date) + tidalDtu1) / Constants.JULIAN_DAY;
             era  = ERA_0 + ERA_1A * tu + ERA_1B * tu;
             era -= MathUtils.TWO_PI * FastMath.floor((era + FastMath.PI) / MathUtils.TWO_PI);
 

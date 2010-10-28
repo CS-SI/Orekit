@@ -52,6 +52,11 @@ Time
     (IERS) is in charge of this time-keeping. These adjustments require introduction
     of leap seconds, which means some days are not 86400 seconds long,
 
+    ** <<Universal Time 1>>. UT1 is a time scale directly linked to the actual
+    rotation of the Earth. It is an irregular scale, reflecting Earth irregular
+    rotation rate. The offset between UT1 and UTCScale is found in the Earth
+    Orientation Parameters published by IERS,
+
     ** <<Geocentric Coordinate Time>>. Coordinate time at the
     center of mass of the Earth. This time scale depends linearly from TTScale
     (and hence from TAI),
@@ -60,10 +65,17 @@ Time
     solar system. This time is offset with respect to TT by small relativistic
     corrections due to Earth motion,
 
+    ** <<Barycentric Coordinate Time>>. Coordinate time used for computations in
+    the solar system. This time scale depends linearly on TDBScale,
+
     ** <<Global Positioning System reference scale>>. This scale
     was equal to UTC at start of the GPS Epoch when UTC was 19 seconds behind TAI,
     and stayed parallel to TAI since then (i.e. UTC is now offset from GPS due to
-    leap seconds). TGPS = TAI - 19 s.
+    leap seconds). TGPS = TAI - 19 s,
+
+    ** <<Greenwich Mean Sidereal Time scale>>. The Greenwich Mean Sidereal Time
+    is the hour angle between the meridian of Greenwich and mean equinox of
+    date at 0h UT1.
 
   Orekit supports both the linear models of UTC-TAI offsets used between 1961 and 1972 and
   the constant models with only whole seconds offsets (and leap seconds) used since 1972.

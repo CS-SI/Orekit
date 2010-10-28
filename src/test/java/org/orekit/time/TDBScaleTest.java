@@ -1,10 +1,30 @@
 package org.orekit.time;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
+
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 
 
 public class TDBScaleTest {
+
+    @Test
+    public void dummy() throws FileNotFoundException {
+        PrintStream out = new PrintStream("/home/luc/x.dat");
+        for (int d = 0; d < 366; ++d) {
+            for (int h = 0; h < 24; ++h) {
+                final double dtDays = d + h / 24.0;
+                final double g1 = FastMath.toRadians(357.53 + 0.9856003 * dtDays);
+                final double g2 = FastMath.toRadians(359.534953014 + 0.9856003 * dtDays);
+                out.println(dtDays + " " +
+                            (0.001658 * FastMath.sin(g1) + 0.000014 * FastMath.sin(2 * g1)) + " " +
+                            (0.001658 * FastMath.sin(g2) + 0.000014 * FastMath.sin(2 * g2)));
+            }
+        }
+        out.close();
+    }
 
     @Test
     public void testReference() {

@@ -119,7 +119,16 @@ public enum OrekitMessages implements Localizable {
     UNKNOWN_PARAMETER("unknown parameter {0}"),
     CCSDS_DATE_INVALID_PREAMBLE_FIELD("invalid preamble field in CCSDS date: {0}"),
     CCSDS_DATE_INVALID_LENGTH_TIME_FIELD("invalid time field length in CCSDS date: {0}, expected {1}"),
-    CCSDS_DATE_MISSING_AGENCY_EPOCH("missing agency epoch in CCSDS date");
+    CCSDS_DATE_MISSING_AGENCY_EPOCH("missing agency epoch in CCSDS date"),
+    CCSDS_ORBIT_DATA_MESSAGE_UNEXPECTED_UNIT("unexpected unit \"{0}\" in CCSDS Orbit Data Message, expected \"{1}\""),
+    CCSDS_ORBIT_DATA_MESSAGE_MISSING_DATE("missing date in CCSDS Orbit Data Message"),
+    CCSDS_ORBIT_DATA_MESSAGE_MISSING_FRAME("missing frame in CCSDS Orbit Data Message"),
+    CCSDS_ORBIT_DATA_MESSAGE_UNKNOWN_FRAME("unknown frame {0} in CCSDS Orbit Data Message"),
+    CCSDS_ORBIT_DATA_MESSAGE_MISSING_GM("missing gravitational coefficient in CCSDS Orbit Data Message"),
+    CCSDS_ORBIT_DATA_MESSAGE_MISSING_POSITION("missing position in CCSDS Orbit Data Message"),
+    CCSDS_ORBIT_DATA_MESSAGE_MISSING_VELOCITY("missing velocity in CCSDS Orbit Data Message"),
+    CCSDS_ORBIT_DATA_MESSAGE_MISSING_ORBIT("missing orbit in CCSDS Orbit Data Message"),
+    CCSDS_ORBIT_DATA_MESSAGE_MISSING_COVARIANCE("missing covariance in CCSDS Orbit Data Message");
 
     // CHECKSTYLE: resume JavadocVariable
     // CHECKSTYLE: resume MultipleVariableDeclarations

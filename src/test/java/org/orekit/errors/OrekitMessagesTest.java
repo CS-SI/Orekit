@@ -29,7 +29,7 @@ public class OrekitMessagesTest {
 
     @Test
     public void testMessageNumber() {
-        Assert.assertEquals(77, OrekitMessages.values().length);
+        Assert.assertEquals(86, OrekitMessages.values().length);
     }
 
     @Test
@@ -39,7 +39,7 @@ public class OrekitMessagesTest {
             ResourceBundle bundle =
                 ResourceBundle.getBundle("META-INF/localization/OrekitMessages", new Locale(language));
             for (OrekitMessages message : OrekitMessages.values()) {
-                Assert.assertTrue("missing key \"" + message.name() + "\" for language " + language,
+                Assert.assertTrue("missing key \"" + message.name() + "\" for language \"" + language + "\"",
                                   bundle.containsKey(message.name()));
             }
             Assert.assertEquals(messagesNumber, bundle.keySet().size());
@@ -65,7 +65,7 @@ public class OrekitMessagesTest {
     }
 
     @Test
-    public void testVarialePartsConsistency() {
+    public void testVariablePartsConsistency() {
         for (final String language : new String[] { "de", "en", "es", "fr", "gl", "it", "no" } ) {
             Locale locale = new Locale(language);
             for (OrekitMessages message : OrekitMessages.values()) {

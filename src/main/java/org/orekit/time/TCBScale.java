@@ -1,5 +1,5 @@
 /* Copyright 2002-2010 CS Communication & Systèmes
- * Licensed to CS Communication & Syst�mes (CS) under one or more
+ * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,38 +16,48 @@
  */
 package org.orekit.time;
 
-import org.apache.commons.math.util.FastMath;
-import org.orekit.utils.Constants;
-
-/** Barycentric Dynamic Time.
- * <p>Time used to take account of time dilation when calculating orbits of planets,
- * asteroids, comets and interplanetary spacecraft in the Solar system. It was based
- * on a Dynamical time scale but was not well defined and not rigorously correct as
- * a relativistic time scale. It was subsequently deprecated in favour of
- * Barycentric Coordinate Time (TCB), but at the 2006 General Assembly of the
- * International Astronomical Union TDB was rehabilitated by making it a specific
- * fixed linear transformation of TCB.</p>
- * <p>By convention, TDB = TT + 0.001658 sin(g) + 0.000014 sin(2g)seconds
- * where g = 357.53 + 0.9856003 (JD - 2451545) degrees.</p>
- * @author Aude Privat
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
+/** Barycentric Coordinate Time.
+ * <p>Coordinate time at the center of mass of the Solar System.
+ * This time scale depends linearly from {@link TDBScale Barycentric Dynamical Time}.</p>
+ * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * so there is no public constructor.</p>
+ * @author Luc Maisonobe
+ * @see AbsoluteDate
+ * @version $Revision$ $Date$
  */
-public class TDBScale implements TimeScale {
+public class TCBScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -4138483908215161856L;
+    private static final long serialVersionUID = -3705249003333693710L;
+
+    /** LG rate. */
+    private static double LB_RATE = 1.550505e-8;
+
+    /** Barycentric dynamic time scale. */
+    private final TDBScale tdb;
+
+    /** Reference date for TCB.
+     * <p>The reference date is such that the four following instants are equal:</p>
+     * <ul>
+     *   <li>1977-01-01T00:00:32.184 TT</li>
+     *   <li>1977-01-01T00:00:32.184 TCG</li>
+     *   <li>1977-01-01T00:00:32.184 TCB</li>
+     *   <li>1977-01-01T00:00:00.000 TAI</li>
+     * </ul>
+     */
+    private static final AbsoluteDate REFERENCE_DATE =
+        new AbsoluteDate(1977, 01, 01, TimeScalesFactory.getTAI());
 
     /** Package private constructor for the factory.
+     * @param tdb Barycentric dynamic time scale
      */
-    TDBScale() {
+    TCBScale(final TDBScale tdb) {
+        this.tdb = tdb;
     }
 
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate date) {
-        final double dtDays = date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY;
-        final double g = FastMath.toRadians(357.53 + 0.9856003 * dtDays);
-//        final double g = FastMath.toRadians(359.534953014 + 0.9856003 * dtDays);
-        return TimeScalesFactory.getTT().offsetFromTAI(date) + (0.001658 * FastMath.sin(g) + 0.000014 * FastMath.sin(2 * g));
+        return tdb.offsetFromTAI(date) + LB_RATE * date.durationFrom(REFERENCE_DATE);
     }
 
     /** {@inheritDoc} */
@@ -62,7 +72,7 @@ public class TDBScale implements TimeScale {
 
     /** {@inheritDoc} */
     public String getName() {
-        return "TDB";
+        return "TCB";
     }
 
     /** {@inheritDoc} */

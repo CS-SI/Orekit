@@ -25,6 +25,7 @@ import java.util.TreeMap;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FramesFactory;
 
 /** Factory for predefined time scales.
  * <p>
@@ -36,13 +37,16 @@ import org.orekit.errors.OrekitMessages;
 public class TimeScalesFactory implements Serializable {
 
     /** Serialiazable UID. */
-    private static final long serialVersionUID = 250016254726663365L;
+    private static final long serialVersionUID = -2063625014942931917L;
 
     /** International Atomic Time scale. */
     private static TAIScale tai = null;
 
     /** Universal Time Coordinate scale. */
     private static UTCScale utc = null;
+
+    /** Universal Time 1 scale. */
+    private static UT1Scale ut1 = null;
 
     /** Terrestrial Time scale. */
     private static TTScale tt = null;
@@ -53,8 +57,14 @@ public class TimeScalesFactory implements Serializable {
     /** Geocentric Coordinate Time scale. */
     private static TCGScale tcg = null;
 
-    /** Barycentric Dynamic Coordinate Time scale. */
+    /** Barycentric Dynamic Time scale. */
     private static TDBScale tdb = null;
+
+    /** Barycentric Coordinate Time scale. */
+    private static TCBScale tcb = null;
+
+    /** Greenwich Mean Sidereal Time scale. */
+    private static GMSTScale gmst = null;
 
     /** UTCTAI offsets loaders. */
     private static List<UTCTAILoader> loaders = new ArrayList<UTCTAILoader>();
@@ -156,6 +166,32 @@ public class TimeScalesFactory implements Serializable {
         }
     }
 
+    /** Get the Universal Time 1 scale.
+     * <p>
+     * UT1 scale depends on both UTC scale and Earth Orientation Parameters,
+     * so this method loads these data sets. See the {@link #getUTC()
+     * TimeScalesFactory.getUTC()} and {@link FramesFactory#getEOP2000History()
+     * FramesFactory.getEOP2000History()} methods for an explanation of how the
+     * corresponding data loaders can be configured.
+     * </p>
+     * @return Universal Time 1 scale
+     * @exception OrekitException if some data can't be read or some
+     * file content is corrupted
+     * @see #getUTC()
+     * @see FramesFactory#getEOP2000History()
+     */
+    public static UT1Scale getUT1() throws OrekitException {
+        synchronized (TimeScalesFactory.class) {
+
+            if (ut1 == null) {
+                ut1 = new UT1Scale(FramesFactory.getEOP2000History(), getUTC());
+            }
+
+            return ut1;
+
+        }
+    }
+
     /** Get the Terrestrial Time scale.
      * @return Terrestrial Time scale
      */
@@ -212,6 +248,38 @@ public class TimeScalesFactory implements Serializable {
             }
 
             return tdb;
+
+        }
+    }
+
+    /** Get the Barycentric Coordinate Time scale.
+     * @return Barycentric Coordinate Time scale
+     */
+    public static TCBScale getTCB() {
+        synchronized (TimeScalesFactory.class) {
+
+            if (tcb == null) {
+                tcb = new TCBScale(getTDB());
+            }
+
+            return tcb;
+
+        }
+    }
+
+    /** Get the Greenwich Mean Sidereal Time scale.
+     * @return Greenwich Mean Sidereal Time scale
+     * @exception OrekitException if some data can't be read or some
+     * file content is corrupted
+     */
+    public static GMSTScale getGMST() throws OrekitException {
+        synchronized (TimeScalesFactory.class) {
+
+            if (gmst == null) {
+                gmst = new GMSTScale(getUT1());
+            }
+
+            return gmst;
 
         }
     }

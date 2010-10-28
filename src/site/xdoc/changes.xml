@@ -22,6 +22,9 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add">
+        added the UT1, TCB and GMST time scales used in CCSDS Orbit Data Messages
+      </action>
       <action dev="luc" type="fix">
         fixed an error in JPL ephemerides: they are in TDB time scale
       </action>

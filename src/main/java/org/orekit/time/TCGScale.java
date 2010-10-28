@@ -34,10 +34,11 @@ public class TCGScale implements TimeScale {
     private static double LG_RATE = 6.969290134e-10;
 
     /** Reference date for TCG.
-     * <p>The reference date is such that the three following instants are equal:</p>
+     * <p>The reference date is such that the four following instants are equal:</p>
      * <ul>
      *   <li>1977-01-01T00:00:32.184 TT</li>
      *   <li>1977-01-01T00:00:32.184 TCG</li>
+     *   <li>1977-01-01T00:00:32.184 TCB</li>
      *   <li>1977-01-01T00:00:00.000 TAI</li>
      * </ul>
      */
