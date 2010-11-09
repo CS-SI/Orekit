@@ -81,8 +81,13 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
     public synchronized double getUT1MinusUTC(final AbsoluteDate date) {
         if (prepareInterpolation(date)) {
             synchronized (this) {
-                return (dtP * next.getUT1MinusUTC() + dtN * previous.getUT1MinusUTC()) /
-                    (dtP + dtN);
+                double dutN = next.getUT1MinusUTC();
+                double dutP = previous.getUT1MinusUTC();
+                if (dutN - dutP > 0.9) {
+                    // there was a leap second between the two entries
+                    dutN -= 1.0;
+                }
+                return (dtP * dutN + dtN * dutP) / (dtP + dtN);
             }
         } else {
             return 0;
@@ -93,8 +98,7 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
     public double getLOD(final AbsoluteDate date) {
         if (prepareInterpolation(date)) {
             synchronized (this) {
-                return (dtP * next.getLOD() + dtN * previous.getLOD()) /
-                    (dtP + dtN);
+                return (dtP * next.getLOD() + dtN * previous.getLOD()) / (dtP + dtN);
             }
         } else {
             return 0;

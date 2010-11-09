@@ -51,6 +51,21 @@ public class EOP2000HistoryTest {
         }
     }
 
+    @Test
+    public void testUTCLeap() throws OrekitException {
+        EOP2000History history = FramesFactory.getEOP2000History();
+        AbsoluteDate endLeap = new AbsoluteDate(2006, 1, 1, TimeScalesFactory.getUTC());
+        for (double dt = -200; dt < 200; dt += 3) {
+            final AbsoluteDate date = endLeap.shiftedBy(dt);
+            double dtu1 = history.getUT1MinusUTC(date);
+            if (dt <= 0) {
+                Assert.assertEquals(-0.6612, dtu1, 3.0e-5);
+            } else {
+                Assert.assertEquals(0.3388, dtu1, 3.0e-5);
+            }
+        }
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");

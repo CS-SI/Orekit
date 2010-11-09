@@ -26,6 +26,9 @@
         added the UT1, TCB and GMST time scales used in CCSDS Orbit Data Messages
       </action>
       <action dev="luc" type="fix">
+        fixed a dut1 interpolation error for the day just before a leap second introduction
+      </action>
+      <action dev="luc" type="fix">
         fixed an error in JPL ephemerides: they are in TDB time scale
       </action>
       <action dev="luc" type="fix">
