@@ -25,6 +25,9 @@
       <action dev="luc" type="add">
         added the UT1, TCB and GMST time scales used in CCSDS Orbit Data Messages
       </action>
+      <action dev="luc" type="add">
+        added a getPoint method to TopocentricFrame
+      </action>
       <action dev="luc" type="fix">
         fixed a dut1 interpolation error for the day just before a leap second introduction
       </action>

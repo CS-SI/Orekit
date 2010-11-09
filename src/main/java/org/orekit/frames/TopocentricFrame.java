@@ -78,6 +78,13 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         return parentShape;
     }
 
+    /** Get the surface point defining the origin of the frame.
+     * @return surface point defining the origin of the frame
+     */
+    public GeodeticPoint getPoint() {
+        return point;
+    }
+
     /** Get the zenith direction of topocentric frame, expressed in parent shape frame.
      * <p>The zenith direction is defined as the normal to local horizontal plane.</p>
      * @return unit vector in the zenith direction

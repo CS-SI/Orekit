@@ -110,6 +110,10 @@ public class TopocentricFrameTest {
         // First point at latitude 45°
         final GeodeticPoint point1 = new GeodeticPoint(FastMath.toRadians(45.), FastMath.toRadians(30.), 0.);
         final TopocentricFrame topoFrame1 = new TopocentricFrame(earthSpheric, point1, "lon 30");
+        final GeodeticPoint p1 = topoFrame1.getPoint();
+        Assert.assertEquals(point1.getLatitude(), p1.getLatitude(), 1.0e-15);
+        Assert.assertEquals(point1.getLongitude(), p1.getLongitude(), 1.0e-15);
+        Assert.assertEquals(point1.getAltitude(), p1.getAltitude(), 1.0e-15);
         
         // Second point at latitude -45° and same longitude
         final GeodeticPoint point2 = new GeodeticPoint(FastMath.toRadians(45.), FastMath.toRadians(210.), 0.);
