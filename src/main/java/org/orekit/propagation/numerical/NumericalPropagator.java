@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.math.ode.DerivativeException;
+import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
@@ -41,6 +41,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AdaptedEventDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.precomputed.IntegratedEphemeris;
 import org.orekit.propagation.sampling.AdaptedStepHandler;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
@@ -432,16 +433,16 @@ public class NumericalPropagator implements Propagator {
 
         } catch (OrekitException oe) {
             throw new PropagationException(oe);
-        } catch (DerivativeException de) {
+        } catch (MathUserException mue) {
 
             // recover a possible embedded PropagationException
-            for (Throwable t = de; t != null; t = t.getCause()) {
+            for (Throwable t = mue; t != null; t = t.getCause()) {
                 if (t instanceof PropagationException) {
                     throw (PropagationException) t;
                 }
             }
 
-            throw new PropagationException(de, de.getLocalizablePattern(), de.getArguments());
+            throw new PropagationException(mue, mue.getGeneralPattern(), mue.getArguments());
 
         } catch (IntegratorException ie) {
 
@@ -452,7 +453,7 @@ public class NumericalPropagator implements Propagator {
                 }
             }
 
-            throw new PropagationException(ie, ie.getLocalizablePattern(), ie.getArguments());
+            throw new PropagationException(ie, ie.getGeneralPattern(), ie.getArguments());
 
         }
     }
@@ -503,7 +504,7 @@ public class NumericalPropagator implements Propagator {
 
         /** {@inheritDoc} */
         public void computeDerivatives(final double t, final double[] y, final double[] yDot)
-            throws DerivativeException {
+            throws MathUserException {
 
             try {
                 // update space dynamics view
@@ -528,7 +529,7 @@ public class NumericalPropagator implements Propagator {
                 ++calls;
 
             } catch (OrekitException oe) {
-                throw new DerivativeException(oe.getSpecifier(), oe.getParts());
+                throw new MathUserException(oe, oe.getSpecifier(), oe.getParts());
             }
 
         }

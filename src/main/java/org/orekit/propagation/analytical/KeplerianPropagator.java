@@ -133,9 +133,15 @@ public class KeplerianPropagator extends AbstractPropagator {
         throws PropagationException {
         try {
 
-            // evaluation of orbit
-            final Orbit initialOrbit = initialState.getOrbit();
-            final Orbit orbit = initialOrbit.shiftedBy(date.durationFrom(initialOrbit.getDate()));
+            
+            // propagate orbit
+            Orbit orbit = initialState.getOrbit();
+            do {
+                // we use a loop here to compensate for very small date shifts error
+                // that occur with long propagation time
+                orbit = orbit.shiftedBy(date.durationFrom(orbit.getDate()));
+            } while(!date.equals(orbit.getDate()));
+
 
             // evaluation of attitude
             final Attitude attitude = attitudeLaw.getAttitude(orbit);

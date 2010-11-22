@@ -220,7 +220,7 @@ public abstract class AbstractPropagator implements Propagator {
             throw new PropagationException(oe);
 
         } catch (ConvergenceException ce) {
-            throw new PropagationException(ce, ce.getLocalizablePattern(), ce.getArguments());
+            throw new PropagationException(ce, ce.getGeneralPattern(), ce.getArguments());
         }
     }
 

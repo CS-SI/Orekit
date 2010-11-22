@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.math.ode.DerivativeException;
+import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.jacobians.FirstOrderIntegratorWithJacobians;
@@ -302,16 +302,16 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
 
         } catch (OrekitException oe) {
             throw new PropagationException(oe);
-        } catch (DerivativeException de) {
+        } catch (MathUserException mue) {
 
             // recover a possible embedded PropagationException
-            for (Throwable t = de; t != null; t = t.getCause()) {
+            for (Throwable t = mue; t != null; t = t.getCause()) {
                 if (t instanceof PropagationException) {
                     throw (PropagationException) t;
                 }
             }
 
-            throw new PropagationException(de, de.getLocalizablePattern(), de.getArguments());
+            throw new PropagationException(mue, mue.getGeneralPattern(), mue.getArguments());
 
         } catch (IntegratorException ie) {
 
@@ -322,7 +322,7 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
                 }
             }
 
-            throw new PropagationException(ie, ie.getLocalizablePattern(), ie.getArguments());
+            throw new PropagationException(ie, ie.getGeneralPattern(), ie.getArguments());
 
         }
     }
@@ -365,7 +365,7 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
 
         /** {@inheritDoc} */
         public void computeDerivatives(final double t, final double[] y, final double[] yDot)
-            throws DerivativeException {
+            throws MathUserException {
 
             try {
                 // update space dynamics view
@@ -392,15 +392,14 @@ public class NumericalPropagatorWithJacobians extends NumericalPropagator {
                 ++calls;
 
             } catch (OrekitException oe) {
-                throw new DerivativeException(oe.getSpecifier(), oe.getParts());
+                throw new MathUserException(oe, oe.getSpecifier(), oe.getParts());
             }
 
         }
 
         /** {@inheritDoc} */
         public void computeJacobians(final double t, final double[] y, final double[] yDot,
-                                     final double[][] dFdY, final double[][] dFdP)
-            throws DerivativeException {
+                                     final double[][] dFdY, final double[][] dFdP) {
         }
 
         /** {@inheritDoc} */

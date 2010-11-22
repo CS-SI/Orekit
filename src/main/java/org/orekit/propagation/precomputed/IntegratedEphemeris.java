@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical;
+package org.orekit.propagation.precomputed;
 
+import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.ode.ContinuousOutputModel;
-import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.orekit.attitudes.AttitudeLaw;
@@ -28,6 +28,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.numerical.ModeHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -65,7 +66,7 @@ import org.orekit.utils.PVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1698 $ $Date:2008-06-18 16:01:17 +0200 (mer., 18 juin 2008) $
  */
-class IntegratedEphemeris
+public class IntegratedEphemeris
     implements BoundedPropagator, ModeHandler, StepHandler {
 
     /** Serializable UID. */
@@ -137,8 +138,8 @@ class IntegratedEphemeris
             return new SpacecraftState(eq, initializedAttitudeLaw.getAttitude(eq), mass);
         } catch (OrekitException oe) {
             throw new PropagationException(oe);
-        } catch (DerivativeException de) {
-            throw new PropagationException(de, de.getLocalizablePattern(), de.getArguments());
+        } catch (MathUserException mue) {
+            throw new PropagationException(mue, mue.getGeneralPattern(), mue.getArguments());
         }
     }
 
@@ -164,8 +165,7 @@ class IntegratedEphemeris
 
     /** {@inheritDoc} */
     public void handleStep(final StepInterpolator interpolator,
-                           final boolean isLast)
-        throws DerivativeException {
+                           final boolean isLast) {
         model.handleStep(interpolator, isLast);
         if (isLast) {
             startDate = initializedReference.shiftedBy(model.getInitialTime());

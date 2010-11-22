@@ -18,7 +18,7 @@ package org.orekit.propagation.sampling;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.ode.DerivativeException;
+import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.orekit.attitudes.AttitudeLaw;
@@ -88,12 +88,12 @@ public class AdaptedStepHandler
 
     /** {@inheritDoc} */
     public void handleStep(final StepInterpolator interpolator, final boolean isLast)
-        throws DerivativeException {
+        throws MathUserException {
         try {
             this.rawInterpolator = interpolator;
             handler.handleStep(this, isLast);
         } catch (PropagationException pe) {
-            throw new DerivativeException(pe);
+            throw new MathUserException(pe, pe.getSpecifier(), pe.getParts());
         }
     }
 
@@ -149,8 +149,8 @@ public class AdaptedStepHandler
                                      EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
                                      initializedFrame, interpolatedDate, initializedMu);
             return new SpacecraftState(orbit, initializedAttitudeLaw.getAttitude(orbit), y[6]);
-        } catch (DerivativeException de) {
-            throw new PropagationException(de, de.getLocalizablePattern(), de.getArguments());
+        } catch (MathUserException mue) {
+            throw new PropagationException(mue, mue.getGeneralPattern(), mue.getArguments());
         }
     }
 

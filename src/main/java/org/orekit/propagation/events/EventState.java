@@ -19,10 +19,10 @@ package org.orekit.propagation.events;
 import java.io.Serializable;
 
 import org.apache.commons.math.ConvergenceException;
-import org.apache.commons.math.FunctionEvaluationException;
 import org.apache.commons.math.analysis.UnivariateRealFunction;
 import org.apache.commons.math.analysis.solvers.BrentSolver;
 import org.apache.commons.math.analysis.solvers.UnivariateRealSolver;
+import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
@@ -148,7 +148,7 @@ class EventState implements Serializable {
             for (int i = 0; i < n; ++i) {
 
                 // evaluate detector value at the end of the substep
-                final AbsoluteDate tb = start.shiftedBy((i + 1) * h);
+                final AbsoluteDate tb = (i == n - 1) ? t1 : start.shiftedBy((i + 1) * h);
                 interpolator.setInterpolatedDate(tb);
                 final double gb = detector.g(interpolator.getInterpolatedState());
 
@@ -161,13 +161,13 @@ class EventState implements Serializable {
 
                     final UnivariateRealFunction f = new UnivariateRealFunction() {
                         private static final long serialVersionUID = 642356050167522213L;
-                        public double value(final double t) throws FunctionEvaluationException {
+                        public double value(final double t) throws MathUserException {
                             try {
                                 final AbsoluteDate date = t0.shiftedBy(t);
                                 interpolator.setInterpolatedDate(date);
                                 return detector.g(interpolator.getInterpolatedState());
                             } catch (OrekitException e) {
-                                throw new FunctionEvaluationException(e, t);
+                                throw new MathUserException(e, e.getSpecifier(), e.getParts());
                             }
                         }
                     };
@@ -237,12 +237,12 @@ class EventState implements Serializable {
             pendingEventTime = null;
             return false;
 
-        } catch (FunctionEvaluationException e) {
+        } catch (MathUserException e) {
             final Throwable cause = e.getCause();
             if ((cause != null) && (cause instanceof OrekitException)) {
                 throw (OrekitException) cause;
             }
-            throw new OrekitException(e, e.getLocalizablePattern(), e.getArguments());
+            throw new OrekitException(e, e.getGeneralPattern(), e.getArguments());
         }
 
     }
