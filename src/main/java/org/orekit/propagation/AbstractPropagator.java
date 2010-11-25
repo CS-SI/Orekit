@@ -202,6 +202,15 @@ public abstract class AbstractPropagator implements Propagator {
                 } else {
                     stepEnd = interpolator.getCurrentDate().shiftedBy(stepSize);
                 }
+                if (interpolator.isForward()) {
+                    if (stepEnd.compareTo(target) > 0) {
+                        stepEnd = target;
+                    }
+                } else {
+                    if (stepEnd.compareTo(target) < 0) {
+                        stepEnd = target;
+                    }                    
+                }
 
             }
 
