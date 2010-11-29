@@ -18,6 +18,7 @@ package org.orekit.errors;
 
 
 import java.text.MessageFormat;
+import java.util.Enumeration;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -34,15 +35,23 @@ public class OrekitMessagesTest {
 
     @Test
     public void testAllKeysPresentInPropertiesFiles() {
-        int messagesNumber = OrekitMessages.values().length;
         for (final String language : new String[] { "de", "en", "es", "fr", "gl", "it", "no" } ) {
             ResourceBundle bundle =
                 ResourceBundle.getBundle("META-INF/localization/OrekitMessages", new Locale(language));
             for (OrekitMessages message : OrekitMessages.values()) {
-                Assert.assertTrue("missing key \"" + message.name() + "\" for language \"" + language + "\"",
-                                  bundle.containsKey(message.name()));
+                final String messageKey = message.toString();
+                boolean keyPresent = false;
+                for (final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
+                    keyPresent |= messageKey.equals(keys.nextElement());
+                }
+                Assert.assertTrue("missing key \"" + message.name() + "\" for language " + language,
+                                  keyPresent);
             }
-            Assert.assertEquals(messagesNumber, bundle.keySet().size());
+            int nbKeys = 0;
+            for (final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements(); keys.nextElement()) {
+                ++nbKeys;
+            }
+            Assert.assertEquals(OrekitMessages.values().length, nbKeys);
             Assert.assertEquals(language, bundle.getLocale().getLanguage());
         }
 
