@@ -143,7 +143,6 @@ public class AttitudesSequence implements AttitudeLaw {
     }
 
     /** {@inheritDoc} */
-    @Override
     public Attitude getAttitude(final Orbit orbit) throws OrekitException {
         // delegate attitude computation to the active law
         return active.getAttitude(orbit);
@@ -185,7 +184,6 @@ public class AttitudesSequence implements AttitudeLaw {
         }
 
         /** {@inheritDoc} */
-        @Override
         public int eventOccurred(final SpacecraftState s, final boolean increasing)
             throws OrekitException {
 
@@ -199,32 +197,27 @@ public class AttitudesSequence implements AttitudeLaw {
         }
 
         /** {@inheritDoc} */
-        @Override
         public double g(final SpacecraftState s)
             throws OrekitException {
             return event.g(s);
         }
 
         /** {@inheritDoc} */
-        @Override
         public double getMaxCheckInterval() {
             return event.getMaxCheckInterval();
         }
 
         /** {@inheritDoc} */
-        @Override
         public int getMaxIterationCount() {
             return event.getMaxIterationCount();
         }
 
         /** {@inheritDoc} */
-        @Override
         public double getThreshold() {
             return event.getThreshold();
         }
 
         /** {@inheritDoc} */
-        @Override
         public SpacecraftState resetState(final SpacecraftState oldState)
             throws OrekitException {
             return event.resetState(oldState);
