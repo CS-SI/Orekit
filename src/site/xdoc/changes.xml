@@ -22,6 +22,12 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="update">
+        celestial bodies now provide both an inertially oriented body centered
+        frame and a body oriented body centered frame, the bodies managed by
+        CelestialBodyFactory use the IAU poles and prime meridian definitions
+        to build the two frames
+      </action>
       <action dev="luc" type="fix">
         fixed an error when parsing a date occurring during a leap second introduction
       </action>

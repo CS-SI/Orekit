@@ -18,22 +18,44 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Interface for celestial bodies like Sun, Moon or solar system planets.
  * @author Luc Maisonobe
  * @see CelestialBodyFactory
+ * @see IAUPole
  * @version $Revision$ $Date$
  */
 public interface CelestialBody extends Serializable, PVCoordinatesProvider {
 
-    /** Get an inertially oriented body-centered frame.
+    /** Get an inertially oriented, body centered frame.
      * <p>The frame is always bound to the body center, and its axes have a
      * fixed orientation with respect to other inertial frames.</p>
-     * @return an inertially oriented body-centered frame
+     * @return an inertially oriented body centered frame
+     * @deprecated as of 5.2 replaced by {@link #getInertiallyOrientedFrame()}
      */
+    @Deprecated
     Frame getFrame();
+
+    /** Get an inertially oriented, body centered frame.
+     * <p>The frame is always bound to the body center, and its axes have a
+     * fixed orientation with respect to other inertial frames.</p>
+     * @return an inertially oriented, body centered frame
+     * @exception OrekitException if frame cannot be retrieved
+     * @see #getBodyOrientedFrame()
+     */
+    Frame getInertiallyOrientedFrame() throws OrekitException;
+
+    /** Get a body oriented, body centered frame.
+     * <p>The frame is always bound to the body center, and its axes have a
+     * fixed orientation with respect to the celestial body.</p>
+     * @return a body oriented, body centered frame
+     * @exception OrekitException if frame cannot be retrieved
+     * @see #getInertiallyOrientedFrame()
+     */
+    Frame getBodyOrientedFrame() throws OrekitException;
 
     /** Get the attraction coefficient of the body.
      * @return attraction coefficient of the body (m<sup>3</sup>/s<sup>2</sup>)

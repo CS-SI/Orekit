@@ -201,17 +201,18 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     /** {@inheritDoc} */
     public CelestialBody loadCelestialBody(final String name) throws OrekitException {
 
-        final String frameName = name + "/EME2000";
+        final String inertialFrameName = name + "/inertial";
+        final String bodyFrameName = name + "/rotating";
         final double gm = getLoadedGravitationalCoefficient(generateType);
 
         switch (generateType) {
         case SOLAR_SYSTEM_BARYCENTER :
-            return new JPLCelestialBody(supportedNames, gm,
-                                        CelestialBodyFactory.getEarthMoonBarycenter().getFrame(),
-                                        frameName) {
+            return new JPLCelestialBody(supportedNames, gm, IAUPoleFactory.getIAUPole(generateType),
+                                        CelestialBodyFactory.getEarthMoonBarycenter().getInertiallyOrientedFrame(),
+                                        inertialFrameName, bodyFrameName) {
 
                 /** Serializable UID. */
-                private static final long serialVersionUID = -949534646302786503L;
+                private static final long serialVersionUID = -8410904683796353385L;
 
                 /** {@inheritDoc} */
                 public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
@@ -225,11 +226,11 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             };
         case EARTH_MOON :
             final double scale = 1.0 / (1.0 + getLoadedEarthMoonMassRatio());
-            return new JPLCelestialBody(supportedNames, gm,
-                                        FramesFactory.getEME2000(), frameName) {
+            return new JPLCelestialBody(supportedNames, gm, IAUPoleFactory.getIAUPole(generateType),
+                                        FramesFactory.getEME2000(), inertialFrameName, bodyFrameName) {
 
                 /** Serializable UID. */
-                private static final long serialVersionUID = -3710160379028246246L;
+                private static final long serialVersionUID = -6986513570631050939L;
 
                 /** {@inheritDoc} */
                 public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
@@ -240,33 +241,50 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 }
             };
         case EARTH :
-            return new AbstractCelestialBody(gm, FramesFactory.getEME2000()) {
+            return new CelestialBody() {
 
                 /** Serializable UID. */
-                private static final long serialVersionUID = -6542444016613134811L;
+                private static final long serialVersionUID = -2293993238579492125L;
 
                 /** {@inheritDoc} */
                 public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
                     throws OrekitException {
 
                     // specific implementation for Earth:
-                    // the Earth is always exactly at the origin of its own EME2000 frame
-                    PVCoordinates pv = PVCoordinates.ZERO;
-                    if (frame != getFrame()) {
-                        pv = getFrame().getTransformTo(frame, date).transformPVCoordinates(pv);
-                    }
-                    return pv;
+                    // the Earth is always exactly at the origin of its own inertial frame
+                    return getInertiallyOrientedFrame().getTransformTo(frame, date).transformPVCoordinates(PVCoordinates.ZERO);
 
+                }
+
+                /** {@inheritDoc} */
+                @Deprecated
+                public Frame getFrame() {
+                    return FramesFactory.getEME2000();
+                }
+
+                /** {@inheritDoc} */
+                public Frame getInertiallyOrientedFrame() {
+                    return FramesFactory.getEME2000();
+                }
+
+                /** {@inheritDoc} */
+                public Frame getBodyOrientedFrame() throws OrekitException {
+                    return FramesFactory.getITRF2005();
+                }
+
+                /** {@inheritDoc} */
+                public double getGM() {
+                    return gm;
                 }
 
             };
         case MOON :
-            return new JPLCelestialBody(supportedNames, gm,
-                                        FramesFactory.getEME2000(), frameName);
+            return new JPLCelestialBody(supportedNames, gm, IAUPoleFactory.getIAUPole(generateType),
+                                        FramesFactory.getEME2000(), inertialFrameName, bodyFrameName);
         default :
-            return new JPLCelestialBody(supportedNames, gm,
-                                        CelestialBodyFactory.getSolarSystemBarycenter().getFrame(),
-                                        frameName);
+            return new JPLCelestialBody(supportedNames, gm, IAUPoleFactory.getIAUPole(generateType),
+                                        CelestialBodyFactory.getSolarSystemBarycenter().getInertiallyOrientedFrame(),
+                                        inertialFrameName, bodyFrameName);
         }
     }
 
@@ -871,7 +889,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     private class JPLCelestialBody extends AbstractCelestialBody {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 7425624219901103158L;
+        private static final long serialVersionUID = 6900839423652963125L;
 
         /** Current Chebyshev model. */
         private PosVelChebyshev model;
@@ -882,12 +900,15 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         /** Private constructor for the singletons.
          * @param supportedNames regular expression for supported files names (may be null)
          * @param gm attraction coefficient (in m<sup>3</sup>/s<sup>2</sup>)
+         * @param iauPole IAU pole implementation
          * @param definingFrame frame in which ephemeris are defined
-         * @param frameName name to use for the body-centered frame
+         * @param inertialFrameName name to use for inertially oriented body centered frame
+         * @param bodyFrameName name to use for body oriented body centered frame
          */
         private JPLCelestialBody(final String supportedNames, final double gm,
-                                 final Frame definingFrame, final String frameName) {
-            super(gm, frameName, definingFrame);
+                                 final IAUPole iauPole, final Frame definingFrame,
+                                 final String inertialFrameName, String bodyFrameName) {
+            super(gm, iauPole, definingFrame, inertialFrameName, bodyFrameName);
             this.model         = null;
             this.definingFrame = definingFrame;
         }
