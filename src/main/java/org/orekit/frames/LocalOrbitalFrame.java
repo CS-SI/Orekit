@@ -49,7 +49,7 @@ public class LocalOrbitalFrame extends Frame {
 
     }
 
-    /** Serialiazable UID. */
+    /** Serializable UID. */
     private static final long serialVersionUID = 4815246887625815981L;
 
     /** Frame type. */
