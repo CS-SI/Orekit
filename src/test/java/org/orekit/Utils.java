@@ -26,7 +26,6 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.JPLEphemeridesLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -52,7 +51,7 @@ public class Utils {
         try {
             Utils.clearFactory(CelestialBodyFactory.class);
             CelestialBodyFactory.clearCelestialBodyLoaders();
-            Utils.clearFactory(FramesFactory.class, Frame.class);
+            Utils.clearFactory(FramesFactory.class);
             FramesFactory.clearEOP1980HistoryLoaders();
             FramesFactory.clearEOP2000HistoryLoaders();
             Utils.clearFactory(TimeScalesFactory.class, TimeScale.class);
