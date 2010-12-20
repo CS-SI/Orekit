@@ -36,7 +36,7 @@ import org.orekit.frames.FramesFactory;
  */
 public class TimeScalesFactory implements Serializable {
 
-    /** Serialiazable UID. */
+    /** Serializable UID. */
     private static final long serialVersionUID = -2063625014942931917L;
 
     /** International Atomic Time scale. */
