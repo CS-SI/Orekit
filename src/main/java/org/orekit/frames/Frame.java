@@ -54,7 +54,7 @@ import org.orekit.time.AbsoluteDate;
  */
 public class Frame implements Serializable {
 
-    /** Serialiazable UID. */
+    /** Serializable UID. */
     private static final long serialVersionUID = -6981146543760234087L;
 
     /** Parent frame (only the root frame doesn't have a parent). */
@@ -387,6 +387,36 @@ public class Frame implements Serializable {
         return LazyRootHolder.INSTANCE;
     }
 
+    /** Get a new version of the instance, frozen with respect to a reference frame.
+     * <p>
+     * Freezing a frame consist in computing its position and orientation with respect
+     * to another frame at some freezing date and fixing them so they do not depend
+     * on time anymore. This means the frozen frame is fixed with respect to the
+     * reference frame.
+     * </p>
+     * <p>
+     * One typical use of this method is to compute an inertial launch reference frame
+     * by freezing a {@link TopocentricFrame topocentric frame} at launch date
+     * with respect to an inertial frame. Another use is to freeze an equinox-related
+     * celestial frame at a reference epoch date.
+     * </p>
+     * <p>
+     * Only the frame returned by this method is frozen, the instance by itself
+     * is not affected by calling this method and still moves freely.
+     * </p>
+     * @param reference frame with respect to which the instance will be frozen
+     * @param freezingDate freezing date
+     * @param name name of the frozen frame
+     * @return a frozen version of the instance
+     * @exception OrekitException if transform between reference frame and instance
+     * cannot be computed at freezing frame
+     */
+    public Frame getFrozenFrame(final Frame reference, final AbsoluteDate freezingDate,
+                                final String name) throws OrekitException {
+        return new Frame(reference, reference.getTransformTo(this, freezingDate).freeze(),
+                         name, reference.isQuasiInertial());
+    }
+
     /** Get the unique J2000 frame.
      * <p>The J2000 frame is also called the EME2000 frame.
      * The latter denomination is preferred in Orekit.</p>
@@ -465,7 +495,19 @@ public class Frame implements Serializable {
     private static class LazyRootHolder {
 
         /** Unique instance. */
-        private static final Frame INSTANCE = new Frame("GCRF", true);
+        private static final Frame INSTANCE = new Frame("GCRF", true) {
+
+            /** Serializable UID. */
+            private static final long serialVersionUID = -2654403496396721543L;
+
+            /** Replace deserialized objects by singleton instance.
+             * @return singleton instance
+             */
+            private Object readResolve() {
+                return getRoot();
+            }
+
+        };
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
