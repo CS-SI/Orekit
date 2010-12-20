@@ -29,13 +29,13 @@ import org.orekit.utils.Constants;
  * @version $Revision$ $Date$
  * @author Luc Maisonobe
  */
-class EME2000Frame extends Frame {
+class EME2000Frame extends FactoryManagedFrame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -1045789793339869819L;
+    private static final long serialVersionUID = -5958683081464730407L;
 
     /** Obliquity of the ecliptic. */
-    private static final double EPSILON_0 = 84381.44 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double EPSILON_0 = 84381.448 * Constants.ARC_SECONDS_TO_RADIANS;
 
     /** Bias in longitude. */
     private static final double D_PSI_B = -0.041775 * Constants.ARC_SECONDS_TO_RADIANS;
@@ -47,11 +47,11 @@ class EME2000Frame extends Frame {
     private static final double ALPHA_0 = -0.0146 * Constants.ARC_SECONDS_TO_RADIANS;
 
     /** Simple constructor.
-     * @param name name of the frame
+     * @param factoryKey key of the frame within the factory
      */
-    protected EME2000Frame(final String name) {
+    protected EME2000Frame(final Predefined factoryKey) {
 
-        super(FramesFactory.getGCRF(), null, name, true);
+        super(FramesFactory.getGCRF(), null, true, factoryKey);
 
         // build the bias transform
         final Rotation r1 = new Rotation(Vector3D.PLUS_I, D_EPSILON_B);

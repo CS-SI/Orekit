@@ -47,10 +47,10 @@ import org.orekit.utils.Constants;
  * 1.3&times;10<sup>-10</sup> arcseconds.</p>
  * @version $Revision$ $Date$
  */
-class CIRF2000Frame extends Frame {
+class CIRF2000Frame extends FactoryManagedFrame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 4112885226125872560L;
+    private static final long serialVersionUID = -8378289692425977657L;
 
     // CHECKSTYLE: stop JavadocVariable check
 
@@ -170,16 +170,15 @@ class CIRF2000Frame extends Frame {
     private final double[] sNeville;
 
     /** Simple constructor.
-     * @param date the date.
-     * @param name name of the frame
+     * @param factoryKey key of the frame within the factory
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
      * @see Frame
      */
-    protected CIRF2000Frame(final AbsoluteDate date, final String name)
+    protected CIRF2000Frame(final Predefined factoryKey)
         throws OrekitException {
 
-        super(FramesFactory.getGCRF(), null , name, true);
+        super(FramesFactory.getGCRF(), null , true, factoryKey);
 
         // set up an interpolation model on 12 points with a 1/2 day step
         // this leads to an interpolation error of about 1.1e-10 arcseconds
@@ -199,7 +198,7 @@ class CIRF2000Frame extends Frame {
         sxy2Development = loadModel(S_XY2_MODEL);
 
         // everything is in place, we can now synchronize the frame
-        updateFrame(date);
+        updateFrame(AbsoluteDate.J2000_EPOCH);
 
     }
 

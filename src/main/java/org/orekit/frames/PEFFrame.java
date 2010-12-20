@@ -35,10 +35,10 @@ import org.orekit.utils.Constants;
  * @author Thierry Ceolin
  * @version $Revision$ $Date$
  */
-class PEFFrame extends Frame {
+class PEFFrame extends FactoryManagedFrame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -1424363818757228417L;
+    private static final long serialVersionUID = -7304302237325702464L;
 
     /** Radians per second of time. */
     private static final double RADIANS_PER_SECOND = MathUtils.TWO_PI / Constants.JULIAN_DAY;
@@ -282,26 +282,23 @@ class PEFFrame extends Frame {
     private final boolean applyEOPCorrection;
 
     /** Simple constructor, applying EOP corrections (here, lod).
-     * @param date the date.
-     * @param name name of the frame
+     * @param factoryKey key of the frame within the factory
      * @exception OrekitException if EOP parameters cannot be read
      */
-    protected PEFFrame(final AbsoluteDate date, final String name)
+    protected PEFFrame(final Predefined factoryKey)
         throws OrekitException {
-        this(true, date, name);
+        this(true, factoryKey);
     }
 
     /** Simple constructor.
      * @param applyEOPCorr if true, EOP corrections are applied (here, lod)
-     * @param date the current date
-     * @param name the string representation
+     * @param factoryKey key of the frame within the factory
      * @exception OrekitException if EOP parameters are desired but cannot be read
      */
-    protected PEFFrame(final boolean applyEOPCorr,
-                       final AbsoluteDate date, final String name)
+    protected PEFFrame(final boolean applyEOPCorr, final Predefined factoryKey)
         throws OrekitException {
 
-        super(FramesFactory.getTEME(applyEOPCorr), null, name, false);
+        super(FramesFactory.getTEME(applyEOPCorr), null, false, factoryKey);
 
         applyEOPCorrection = applyEOPCorr;
 
@@ -317,7 +314,7 @@ class PEFFrame extends Frame {
         depsNeville = new double[n];
 
         // everything is in place, we can now synchronize the frame
-        updateFrame(date);
+        updateFrame(AbsoluteDate.J2000_EPOCH);
 
     }
 

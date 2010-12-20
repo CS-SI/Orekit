@@ -31,10 +31,10 @@ import org.orekit.utils.Constants;
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
-class VEISFrame extends Frame {
+class VEISFrame extends FactoryManagedFrame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -6478931867252825900L;
+    private static final long serialVersionUID = 6918291423091809232L;
 
     /** Reference date. */
     private static AbsoluteDate VST_REFERENCE =
@@ -53,17 +53,16 @@ class VEISFrame extends Frame {
     private AbsoluteDate cachedDate;
 
     /** Constructor for the singleton.
-     * @param date the date.
-     * @param name name of the frame
+     * @param factoryKey key of the frame within the factory
      * @exception OrekitException if data embedded in the library cannot be read
      */
-    public VEISFrame(final AbsoluteDate date, final String name)
+    public VEISFrame(final Predefined factoryKey)
         throws OrekitException {
 
-        super(FramesFactory.getPEF(false), null, name, true);
+        super(FramesFactory.getPEF(false), null, true, factoryKey);
 
         // frame synchronization
-        updateFrame(date);
+        updateFrame(AbsoluteDate.J2000_EPOCH);
 
     }
 

@@ -41,10 +41,10 @@ import org.orekit.utils.Constants;
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
-class TEMEFrame extends Frame {
+class TEMEFrame extends FactoryManagedFrame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2301804206118748070L;
+    private static final long serialVersionUID = 6318738377160926252L;
 
     // CHECKSTYLE: stop JavadocVariable check
 
@@ -261,26 +261,23 @@ class TEMEFrame extends Frame {
     private final boolean applyEOPCorrection;
 
     /** Simple constructor, applying EOP corrections (here, nutation).
-     * @param date the date.
-     * @param name name of the frame
+     * @param factoryKey key of the frame within the factory
      * @exception OrekitException if EOP parameters cannot be read
      */
-    protected TEMEFrame(final AbsoluteDate date, final String name)
+    protected TEMEFrame(final Predefined factoryKey)
         throws OrekitException {
-        this(true, date, name);
+        this(true, factoryKey);
     }
 
     /** Simple constructor.
      * @param applyEOPCorr if true, EOP correction is applied (here, nutation)
-     * @param date the date.
-     * @param name name of the frame
+     * @param factoryKey key of the frame within the factory
      * @exception OrekitException if EOP parameters are desired but cannot be read
      */
-    protected TEMEFrame(final boolean applyEOPCorr,
-                        final AbsoluteDate date, final String name)
+    protected TEMEFrame(final boolean applyEOPCorr, final Predefined factoryKey)
         throws OrekitException {
 
-        super(FramesFactory.getMEME(applyEOPCorr), null , name, true);
+        super(FramesFactory.getMEME(applyEOPCorr), null , true, factoryKey);
 
         applyEOPCorrection = applyEOPCorr;
 
@@ -296,7 +293,7 @@ class TEMEFrame extends Frame {
         depsNeville = new double[n];
 
         // everything is in place, we can now synchronize the frame
-        updateFrame(date);
+        updateFrame(AbsoluteDate.J2000_EPOCH);
 
     }
 

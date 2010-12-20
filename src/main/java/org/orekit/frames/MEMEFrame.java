@@ -29,10 +29,10 @@ import org.orekit.utils.Constants;
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
-class MEMEFrame extends Frame {
+class MEMEFrame extends FactoryManagedFrame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2119588933116161867L;
+    private static final long serialVersionUID = 3965968487731196666L;
 
     /** 1st coefficient for ZETA precession angle. */
     private static final double ZETA_1 = 2306.2181   * Constants.ARC_SECONDS_TO_RADIANS;
@@ -65,33 +65,31 @@ class MEMEFrame extends Frame {
     private final boolean applyEOPCorrection;
 
     /** Simple constructor, applying EOP corrections (here, EME2000/GCRF bias compensation).
-     * @param date the date.
-     * @param name name of the frame
+     * @param factoryKey key of the frame within the factory
      * @exception OrekitException if EOP parameters cannot be read
      */
-    protected MEMEFrame(final AbsoluteDate date, final String name)
+    protected MEMEFrame(final Predefined factoryKey)
         throws OrekitException {
-        this(true, date, name);
+        this(true, factoryKey);
     }
 
     /** Simple constructor.
      * @param applyEOPCorr if true, EOP correction is applied (here, EME2000/GCRF bias compensation)
-     * @param date the date.
-     * @param name name of the frame
+     * @param factoryKey key of the frame within the factory
      * @exception OrekitException if EOP parameters are desired but cannot be read
      */
-    protected MEMEFrame(final boolean applyEOPCorr,
-                        final AbsoluteDate date, final String name)
+    protected MEMEFrame(final boolean applyEOPCorr, final Predefined factoryKey)
         throws OrekitException {
 
-        super(applyEOPCorr ? FramesFactory.getGCRF() : FramesFactory.getEME2000(), null , name, true);
+        super(applyEOPCorr ? FramesFactory.getGCRF() : FramesFactory.getEME2000(),
+              null , true, factoryKey);
 
         eopHistory = applyEOPCorr ? FramesFactory.getEOP1980History() : null;
 
         applyEOPCorrection = applyEOPCorr;
 
         // everything is in place, we can now synchronize the frame
-        updateFrame(date);
+        updateFrame(AbsoluteDate.J2000_EPOCH);
 
     }
 

@@ -33,10 +33,10 @@ import org.orekit.utils.Constants;
  * the earth rotation angle, its parent frame is the {@link CIRF2000Frame}</p>
  * @version $Revision$ $Date$
  */
-class TIRF2000Frame extends Frame {
+class TIRF2000Frame extends FactoryManagedFrame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 2467681437070913647L;
+    private static final long serialVersionUID = 2109614784019192664L;
 
     /** Reference date of Capitaine's Earth Rotation Angle model. */
     private static final AbsoluteDate ERA_REFERENCE =
@@ -69,32 +69,29 @@ class TIRF2000Frame extends Frame {
     private final UT1Scale ut1;
 
     /** Simple constructor, ignoring tidal effects.
-     * @param date the current date
-     * @param name the string representation
+     * @param factoryKey key of the frame within the factory
      * @exception OrekitException if nutation cannot be computed
      */
-    protected TIRF2000Frame(final AbsoluteDate date, final String name)
+    protected TIRF2000Frame(final Predefined factoryKey)
         throws OrekitException {
-        this(true, date, name);
+        this(true, factoryKey);
     }
 
     /** Simple constructor.
      * @param ignoreTidalEffects if true, tidal effects are ignored
-     * @param date the current date
-     * @param name the string representation
+     * @param factoryKey key of the frame within the factory
      * @exception OrekitException if nutation cannot be computed
      */
-    protected TIRF2000Frame(final boolean ignoreTidalEffects,
-                            final AbsoluteDate date, final String name)
+    protected TIRF2000Frame(final boolean ignoreTidalEffects, final Predefined factoryKey)
         throws OrekitException {
 
-        super(FramesFactory.getCIRF2000(), null, name, false);
+        super(FramesFactory.getCIRF2000(), null, false, factoryKey);
         tidalCorrection = ignoreTidalEffects ? null : new TidalCorrection();
         eopHistory      = FramesFactory.getEOP2000History();
         ut1             = TimeScalesFactory.getUT1();
 
         // everything is in place, we can now synchronize the frame
-        updateFrame(date);
+        updateFrame(AbsoluteDate.J2000_EPOCH);
 
     }
 
@@ -131,7 +128,7 @@ class TIRF2000Frame extends Frame {
             era  = ERA_0 + ERA_1A * tu + ERA_1B * tu;
             era -= MathUtils.TWO_PI * FastMath.floor((era + FastMath.PI) / MathUtils.TWO_PI);
 
-            // set up the transform from parent CIRF
+            // set up the transform from parent CIRF2000
             final Vector3D rotationRate = new Vector3D((ERA_1A + ERA_1B) / Constants.JULIAN_DAY, Vector3D.PLUS_K);
             setTransform(new Transform(new Rotation(Vector3D.PLUS_K, -era), rotationRate));
             cachedDate = date;
