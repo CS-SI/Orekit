@@ -27,6 +27,7 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -53,7 +54,14 @@ public class SolarBodyTest {
     public void heliocentricPV() throws OrekitException, ParseException {
         Utils.setDataRoot("regular-data");
         AbsoluteDate date = new AbsoluteDate(1969, 06, 25, TimeScalesFactory.getTDB());
-        Frame heliocentricFrame = CelestialBodyFactory.getSun().getFrame();
+        final Frame eme2000 = FramesFactory.getEME2000();
+        Frame heliocentricFrame = new Frame(eme2000, null, "heliocentric/aligned EME2000", true) {
+            private static final long serialVersionUID = 4301068133487454052L;
+            protected void updateFrame(final AbsoluteDate date) throws OrekitException {
+                PVCoordinates pv = CelestialBodyFactory.getSun().getPVCoordinates(date, eme2000);
+                setTransform(new Transform(pv.getPosition().negate(), pv.getVelocity().negate()));
+            }
+        };
         checkPV(CelestialBodyFactory.getSun(), date, heliocentricFrame, Vector3D.ZERO, Vector3D.ZERO);
         checkPV(CelestialBodyFactory.getMercury(), date, heliocentricFrame,
                 new Vector3D(0.3388866970713254, -0.16350851403469605, -0.12250815624343761),
@@ -184,15 +192,15 @@ public class SolarBodyTest {
         throws OrekitException {
 
         // set up Keplerian orbit of orbiting body around central body
-        Orbit orbit = new KeplerianOrbit(orbiting.getPVCoordinates(start, central.getFrame()),
-                                         central.getFrame(),start, central.getGM());
+        Orbit orbit = new KeplerianOrbit(orbiting.getPVCoordinates(start, central.getInertiallyOrientedFrame()),
+                                         central.getInertiallyOrientedFrame(),start, central.getGM());
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         Assert.assertEquals(a, orbit.getA(), 0.02 * a);
         double duration = FastMath.min(50 * Constants.JULIAN_DAY, 0.01 * orbit.getKeplerianPeriod());
 
         double max = 0;
         for (AbsoluteDate date = start; date.durationFrom(start) < duration; date = date.shiftedBy(duration / 100)) {
-            PVCoordinates ephemPV = orbiting.getPVCoordinates(date, central.getFrame());
+            PVCoordinates ephemPV = orbiting.getPVCoordinates(date, central.getInertiallyOrientedFrame());
             PVCoordinates keplerPV = propagator.propagate(date).getPVCoordinates();
             Vector3D error = keplerPV.getPosition().subtract(ephemPV.getPosition());
             max = FastMath.max(max, error.getNorm());
