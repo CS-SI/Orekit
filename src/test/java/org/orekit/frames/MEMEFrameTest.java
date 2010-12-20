@@ -99,7 +99,7 @@ public class MEMEFrameTest {
         PVCoordinates pvMODiau76 =
             new PVCoordinates(new Vector3D(-40576822.6385, -11502231.5013, 9738.2304),
                               new Vector3D(837.708020, -2957.480118, -0.814275));
-        checkPV(pvMODiau76, tf.transformPVCoordinates(pvJ2000iau76), 3.3e-5, 6.81e-7);
+        checkPV(pvMODiau76, tf.transformPVCoordinates(pvJ2000iau76), 3.3e-5, 6.9e-7);
 
     }
 

@@ -33,10 +33,8 @@ public class CIRF2000FrameTest {
     @Test
     public void testInterpolationAccuracy() throws OrekitException, FileNotFoundException {
 
-        CIRF2000Frame interpolatingFrame =
-            new CIRF2000Frame(AbsoluteDate.J2000_EPOCH, "");
-        CIRF2000Frame nonInterpolatingFrame =
-            new NonInterpolatingCIRF2000Frame(AbsoluteDate.J2000_EPOCH, "");
+        CIRF2000Frame interpolatingFrame = new CIRF2000Frame(Predefined.CIRF_2000);
+        CIRF2000Frame nonInterpolatingFrame = new NonInterpolatingCIRF2000Frame(Predefined.CIRF_2000);
 
         // the following time range is located around the maximal observed error
         AbsoluteDate start = new AbsoluteDate(2002, 10,  3, TimeScalesFactory.getTAI());
@@ -55,9 +53,9 @@ public class CIRF2000FrameTest {
 
     private class NonInterpolatingCIRF2000Frame extends CIRF2000Frame {
         private static final long serialVersionUID = -8187118174897725897L;
-        public NonInterpolatingCIRF2000Frame(final AbsoluteDate date, final String name)
+        public NonInterpolatingCIRF2000Frame(final Predefined factoryKey)
             throws OrekitException {
-            super(date, name);
+            super(factoryKey);
         }
         protected void setInterpolatedPoleCoordinates(final double t) {
             computePoleCoordinates(t);

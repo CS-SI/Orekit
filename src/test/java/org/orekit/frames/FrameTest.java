@@ -25,10 +25,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.FrameAncestorException;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 public class FrameTest {
@@ -137,25 +140,29 @@ public class FrameTest {
 
     @Test
     public void testH0m9() throws OrekitException {
-        AbsoluteDate h0 = new AbsoluteDate("2010-07-01T10:42:09", TimeScalesFactory.getUTC());
-        Frame eme2000   = FramesFactory.getEME2000();
-        Frame itrf      = FramesFactory.getITRF2005();
-
-        // Get transform between inertial EME2000 frame and Earth frame ITRF2005 at h0 - 9 seconds
-        AbsoluteDate h0M9 = h0.shiftedBy(-9.0);
-        Transform t = eme2000.getTransformTo(itrf, h0M9).freeze();
+        AbsoluteDate h0         = new AbsoluteDate("2010-07-01T10:42:09", TimeScalesFactory.getUTC());
+        Frame itrf              = FramesFactory.getITRF2005();
+        Frame rotatingPadFrame  = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                                            itrf),
+                                                       new GeodeticPoint(Math.toRadians(5.0),
+                                                                                              Math.toRadians(-100.0),
+                                                                                              0.0),
+                                                       "launch pad");
 
         // create a new inertially oriented frame that is aligned with ITRF2005 at h0 - 9 seconds
-        Frame launchFrame = new Frame(eme2000, t, "launch frame");
+        AbsoluteDate h0M9       = h0.shiftedBy(-9.0);
+        Frame eme2000           = FramesFactory.getEME2000();
+        Frame frozenLaunchFrame = rotatingPadFrame.getFrozenFrame(eme2000, h0M9, "launch frame");
 
         // check velocity module is unchanged
         Vector3D pEme2000 = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D vEme2000 = new Vector3D(-2194.0, -2141.0, -8.0);
         PVCoordinates pvEme2000 = new PVCoordinates(pEme2000, vEme2000);
-        PVCoordinates pvH0m9 = eme2000.getTransformTo(launchFrame, h0M9).transformPVCoordinates(pvEme2000);
+        PVCoordinates pvH0m9 = eme2000.getTransformTo(frozenLaunchFrame, h0M9).transformPVCoordinates(pvEme2000);
         Assert.assertEquals(vEme2000.getNorm(), pvH0m9.getVelocity().getNorm(), 1.0e-6);
 
-        // check this frame is fixed with respect to EME2000 whereas ITRF2005 frame is not
+        // this frame is fixed with respect to EME2000 but rotates with respect to the non-frozen one
         // the following loop should have a fixed angle a1 and an evolving angle a2
         double minA1 = Double.POSITIVE_INFINITY;
         double maxA1 = Double.NEGATIVE_INFINITY;
@@ -164,8 +171,8 @@ public class FrameTest {
         double dt;
         for (dt = 0; dt < 86164; dt += 300.0) {
             AbsoluteDate date = h0M9.shiftedBy(dt);
-            double a1 = eme2000.getTransformTo(launchFrame, date).getRotation().getAngle();
-            double a2 = eme2000.getTransformTo(itrf,        date).getRotation().getAngle();
+            double a1 = frozenLaunchFrame.getTransformTo(eme2000,          date).getRotation().getAngle();
+            double a2 = frozenLaunchFrame.getTransformTo(rotatingPadFrame, date).getRotation().getAngle();
             minA1 = FastMath.min(minA1, a1);
             maxA1 = FastMath.max(maxA1, a1);
             minA2 = FastMath.min(minA2, a2);

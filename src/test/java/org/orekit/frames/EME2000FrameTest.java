@@ -90,7 +90,7 @@ public class EME2000FrameTest {
         PVCoordinates pvEME2000EqB =
             new PVCoordinates(new Vector3D(-40588149.5481, -11462169.9118, 27146.8613),
                               new Vector3D(834.787667, -2958.305632, -1.172968));
-        checkPV(pvEME2000EqB, t.transformPVCoordinates(pvGCRFiau2000B), 1.1e-4, 5.6e-7);
+        checkPV(pvEME2000EqB, t.transformPVCoordinates(pvGCRFiau2000B), 1.1e-4, 5.5e-7);
 
     }
 

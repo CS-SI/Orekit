@@ -111,9 +111,9 @@ public class TEMEFrameTest {
         final boolean withNutationCorrection = true;
         
         TEMEFrame interpolatingFrame =
-            new TEMEFrame(withNutationCorrection, AbsoluteDate.J2000_EPOCH, "");
+            new TEMEFrame(withNutationCorrection, Predefined.TEME_WITH_EOP_CORRECTIONS);
         NonInterpolatingTEMEFrame nonInterpolatingFrame =
-            new NonInterpolatingTEMEFrame(withNutationCorrection, AbsoluteDate.J2000_EPOCH, "");
+            new NonInterpolatingTEMEFrame(withNutationCorrection, Predefined.TEME_WITH_EOP_CORRECTIONS);
 
         // the following time range is located around the maximal observed error
         AbsoluteDate start = new AbsoluteDate(2002, 11, 11, 0, 0, 0.0, TimeScalesFactory.getTAI());
@@ -138,9 +138,9 @@ public class TEMEFrameTest {
     private class NonInterpolatingTEMEFrame extends TEMEFrame {
         private static final long serialVersionUID = -7116622345154042273L;
         public NonInterpolatingTEMEFrame(final boolean ignoreNutationCorrection,
-                                         final AbsoluteDate date, final String name)
+                                         final Predefined factoryKey)
             throws OrekitException {
-            super(ignoreNutationCorrection, date, name);
+            super(ignoreNutationCorrection, factoryKey);
         }
         protected void setInterpolatedNutationElements(final double t) {
             computeNutationElements(t);
@@ -153,6 +153,14 @@ public class TEMEFrameTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
+        Vector3D t = reference.getVelocity().normalize();
+        Vector3D w = reference.getMomentum().normalize();
+        Vector3D n = Vector3D.crossProduct(w, t);
+        System.out.println("dP = " + dP.getNorm() + ", (eps = " + positionThreshold +
+                           "), dP (t, n, w) = " + Vector3D.dotProduct(dP, t) +
+                           ", " + Vector3D.dotProduct(dP, n) +
+                           ", " + Vector3D.dotProduct(dP, w) +
+                           ")"); 
         Assert.assertEquals(0, dP.getNorm(), positionThreshold);
         Assert.assertEquals(0, dV.getNorm(), velocityThreshold);
     }
