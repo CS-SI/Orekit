@@ -23,6 +23,10 @@
     <release version="5.1" date="TBD"
              description="TBD.">
       <action dev="luc" type="add">
+        added the ITRF93, ITRF97, ITRF2000 and ITRF2008 frames (previously, only
+        the ITRF2005 frame was available)
+      </action>
+      <action dev="luc" type="add">
         added the UT1, TCB and GMST time scales used in CCSDS Orbit Data Messages
       </action>
       <action dev="luc" type="add">
@@ -35,6 +39,10 @@
         fixed an error in JPL ephemerides: they are in TDB time scale
       </action>
       <action dev="luc" type="fix">
+        fixed an error in date creation/parsing for UTC dates which occur during a
+        leap second
+      </action>
+      <action dev="luc" type="fix">
         fixed UTC time scale between 1961-01-01 and 1971-12-31 ; in this time range
         the offset between UTC and TAI was piecewise linear
       </action>
@@ -45,7 +53,10 @@
         Time Code (CDS) and CCSDS Calendar Segmented Time Code (CCS)
       </action>
       <action dev="luc" type="add">
-        added a freeze method to Transform, to remove time-dependent parts
+        added a freeze method to the Frame and Transform classes, in order to build fixed
+        frames from moving ones, this is useful for example to build a launch frame
+        at launcher inertial navigation system reset time, or to build an equinox-based
+        frame at a specific epoch
       </action>
       <action dev="luc" type="fix">
         fixed an out of memory error when lots of temporary frames were created in loops

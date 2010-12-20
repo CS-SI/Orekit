@@ -23,16 +23,16 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
 
-/** International Terrestrial Reference Frame 2005.
+/** International Terrestrial Reference Frame.
  * <p> Handles pole motion effects and depends on {@link TIRF2000Frame}, its
  * parent frame.</p>
  * @author Luc Maisonobe
  * @version $Revision: 1726 $ $Date: 2008-06-20 11:18:17 +0200 (ven., 20 juin 2008) $
  */
-class ITRF2005Frame extends Frame {
+class ITRFFrame extends FactoryManagedFrame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 3691591368789020041L;
+    private static final long serialVersionUID = 7686119047589233585L;
 
     /** S' rate in radians per julian century.
      * Approximately -47 microarcsecond per julian century (Lambert and Bizouard, 2002)
@@ -43,29 +43,26 @@ class ITRF2005Frame extends Frame {
     private AbsoluteDate cachedDate;
 
     /** Simple constructor, ignoring tidal effects.
-     * @param date the current date
-     * @param name the string representation
+     * @param factoryKey key of the frame within the factory
      * @exception OrekitException if nutation cannot be computed
      */
-    protected ITRF2005Frame(final AbsoluteDate date, final String name)
+    protected ITRFFrame(final Predefined factoryKey)
         throws OrekitException {
-        this(true, date, name);
+        this(true, factoryKey);
     }
 
     /** Simple constructor.
      * @param ignoreTidalEffects if true, tidal effects are ignored
-     * @param date the current date
-     * @param name the string representation
+     * @param factoryKey key of the frame within the factory
      * @exception OrekitException if nutation cannot be computed
      */
-    protected ITRF2005Frame(final boolean ignoreTidalEffects,
-                            final AbsoluteDate date, final String name)
+    protected ITRFFrame(final boolean ignoreTidalEffects, final Predefined factoryKey)
         throws OrekitException {
 
-        super(FramesFactory.getTIRF2000(ignoreTidalEffects), null, name, false);
+        super(FramesFactory.getTIRF2000(ignoreTidalEffects), null, false, factoryKey);
 
         // everything is in place, we can now synchronize the frame
-        updateFrame(date);
+        updateFrame(AbsoluteDate.J2000_EPOCH);
 
     }
 

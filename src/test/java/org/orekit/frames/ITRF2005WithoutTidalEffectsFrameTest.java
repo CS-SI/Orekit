@@ -100,7 +100,7 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
     }
 
     @Test
-    public void testMSLIBTransformJ2OOO_TerVrai() throws OrekitException {
+    public void testMSLIBTransformJ2000_TerVrai() throws OrekitException {
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 10, 14),
                                              new TimeComponents(02, 00, 00),
@@ -110,9 +110,9 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
         // Positions
         Vector3D posTIRF =
             trans.transformPosition(new Vector3D(6500000.0, -1234567.0, 4000000.0));
-        Assert.assertEquals( 3011109.361, posTIRF.getX(), 0.39);
-        Assert.assertEquals(-5889822.669, posTIRF.getY(), 0.38);
-        Assert.assertEquals( 4002170.039, posTIRF.getZ(), 0.27);
+        Assert.assertEquals(0,  3011109.361 - posTIRF.getX(), 0.38);
+        Assert.assertEquals(0, -5889822.669 - posTIRF.getY(), 0.38);
+        Assert.assertEquals(0,  4002170.039 - posTIRF.getZ(), 0.27);
 
     }
 
@@ -162,7 +162,7 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
         Vector3D axis = axisM2h.add(axisM1h).add(axisP1h.add(axisP2h)).normalize();
         Transform finiteDiffTransform = new Transform(trans.getRotation() , new Vector3D(w ,axis));
 
-        checkPV(pvRef, finiteDiffTransform.transformPVCoordinates(pvEME2000), 0.61, 1.6e-4);
+        checkPV(pvRef, finiteDiffTransform.transformPVCoordinates(pvEME2000), 0.61, 1.1e-4);
 
     }
 
@@ -176,7 +176,7 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
                               new Vector3D(-811.1827456,-257.3799137,-3068.9508125));
         checkPV(new PVCoordinates(new Vector3D(-23830592.685,  -9747073.881,  -6779831.010),
                                   new Vector3D( 1561.9646362, -1754.3454485, -3068.8504996)),
-                                  trans.transformPVCoordinates(pvWGS), 0.14, 3.2e-5);
+                                  trans.transformPVCoordinates(pvWGS), 0.12, 2.6e-5);
 
     }
 
