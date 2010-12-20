@@ -281,7 +281,7 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
         final double sum = since.offset + elapsedDuration;
         if (Double.isInfinite(sum)) {
             offset = sum;
-            epoch  = 0;
+            epoch  = (sum < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
         } else {
             // compute sum exactly, using Møller-Knuth TwoSum algorithm without branching
             // the following statements must NOT be simplified, they rely on floating point
