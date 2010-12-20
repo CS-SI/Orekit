@@ -116,7 +116,7 @@ session 2
 |        type        |                      prerequisites                                |  duration |
 *--------------------*-------------------------------------------------------------------*-----------*
 |                    | space flight dynamics or numerical analysis background            |           |
-|  lecture           | knowledge of object-oriented principles as presented in session 1 |   2 days  |
+|  lecture           | knowledge of object-oriented principles as presented in session 1 |   3 days  |
 |  hands-on practice | basic knowledge of the Java language syntax                       |           |
 *--------------------*-------------------------------------------------------------------*-----------*
 session 3
@@ -138,13 +138,13 @@ session 3
 |                       session                           |       industry       |      academics        |  students  |
 |                                                         | commercial companies | research laboratories |            |
 *---------------------------------------------------------*----------------------*-----------------------*------------*
-|  Object oriented technology for numerical computing     |      550 \u20ac      |      300 \u20ac       | 150 \u20ac |
+|  Object oriented technology for numerical computing     |      600 \u20ac      |      300 \u20ac       | 150 \u20ac |
 |  (session 1)                                            |                      |                       |            |
 *--------------------*------------------------------------*----------------------*-----------------------*------------*
-|  Object oriented concepts and the Java language         |     2200 \u20ac      |     1000 \u20ac       | 500 \u20ac |
+|  Object oriented concepts and the Java language         |     2400 \u20ac      |     1200 \u20ac       | 600 \u20ac |
 |  (session 2)                                            |                      |                       |            |
 *--------------------*------------------------------------*----------------------*-----------------------*------------*
-|  Developing numerical applications in the Java language |     1100 \u20ac      |      600 \u20ac       | 300 \u20ac |
+|  Developing numerical applications in the Java language |     1800 \u20ac      |      900 \u20ac       | 450 \u20ac |
 | using Apache commons-math and Orekit (session 3)        |                      |                       |            |
 *--------------------*------------------------------------*----------------------*-----------------------*------------*
 prices for training sessions at CS premises
