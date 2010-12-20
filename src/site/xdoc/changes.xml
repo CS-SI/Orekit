@@ -22,6 +22,9 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix">
+        fixed an error when parsing a date occurring during a leap second introduction
+      </action>
       <action dev="luc" type="add">
         added the ITRF93, ITRF97, ITRF2000 and ITRF2008 frames (previously, only
         the ITRF2005 frame was available)

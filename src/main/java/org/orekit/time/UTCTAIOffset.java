@@ -23,7 +23,7 @@ import org.orekit.utils.Constants;
 /** Offset between {@link UTCScale UTC} and  {@link TAIScale TAI} time scales.
  * <p>The {@link UTCScale UTC} and  {@link TAIScale TAI} time scales are two
  * scales offset with respect to each other. The {@link TAIScale TAI} scale is
- * continuous whether the {@link UTCScale UTC} includes some discontinuity when
+ * continuous whereas the {@link UTCScale UTC} includes some discontinuity when
  * leap seconds are introduced by the <a href="http://www.iers.org/">International
  * Earth Rotation Service</a> (IERS).</p>
  * <p>This class represents the offset between the two scales that is
@@ -42,6 +42,9 @@ class UTCTAIOffset implements TimeStamped, Serializable {
 
     /** Leap date. */
     private final AbsoluteDate leapDate;
+
+    /** Leap date in Modified Julian Day. */
+    private final int leapDateMJD;
 
     /** Offset start of validity date. */
     private final AbsoluteDate validityStart;
@@ -69,23 +72,28 @@ class UTCTAIOffset implements TimeStamped, Serializable {
 
     /** Simple constructor for a constant model.
      * @param leapDate leap date
+     * @param leapDateMJD leap date in Modified Julian Day
      * @param leap value of the leap at offset validity start (in seconds)
      * @param offset offset in seconds (TAI minus UTC)
      */
-    public UTCTAIOffset(final AbsoluteDate leapDate, final double leap, final double offset) {
-        this(leapDate, leap, offset, 0, 0);
+    public UTCTAIOffset(final AbsoluteDate leapDate, final int leapDateMJD,
+                        final double leap, final double offset) {
+        this(leapDate, leapDateMJD, leap, offset, 0, 0);
     }
 
     /** Simple constructor for a linear model.
      * @param leapDate leap date
+     * @param leapDateMJD leap date in Modified Julian Day
      * @param leap value of the leap at offset validity start (in seconds)
      * @param offset offset in seconds (TAI minus UTC)
      * @param mjdRef reference date for the slope multiplication as Modified Julian Day
      * @param slope offset slope in seconds per UTC second (TAI minus UTC / dUTC)
      */
-    public UTCTAIOffset(final AbsoluteDate leapDate, final double leap, final double offset,
+    public UTCTAIOffset(final AbsoluteDate leapDate, final int leapDateMJD,
+                        final double leap, final double offset,
                         final int mjdRef, final double slope) {
         this.leapDate      = leapDate;
+        this.leapDateMJD   = leapDateMJD;
         this.validityStart = leapDate.shiftedBy(leap);
         this.validityEnd   = AbsoluteDate.FUTURE_INFINITY;
         this.mjdRef        = mjdRef;
@@ -105,9 +113,16 @@ class UTCTAIOffset implements TimeStamped, Serializable {
         return leapDate;
     }
 
+    /** Get the date of the start of the leap as Modified Julian Day.
+     * @return date of the start of the leap as Modified Julian Day
+     */
+    public int getMJD() {
+        return leapDateMJD;
+    }
+
     /** Get the start time of validity for this offset.
      * <p>The start of the validity of the offset is {@link #getLeap()}
-     * seconds after the start of the leap itsef.</p>
+     * seconds after the start of the leap itself.</p>
      * @return start of validity date
      * @see #getDate()
      * @see #getValidityEnd()

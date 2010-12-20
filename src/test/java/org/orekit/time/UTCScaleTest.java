@@ -141,6 +141,25 @@ public class UTCScaleTest {
         Assert.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
     }
 
+    @Test
+    public void testCreatingInLeapDate() {
+        AbsoluteDate previous = null;
+        final double step = 0.0625;
+        for (double seconds = 59.0; seconds < 61.0; seconds += step) {
+            final AbsoluteDate date = new AbsoluteDate(2008, 12, 31, 23, 59, seconds, utc);
+            if (previous != null) {
+                Assert.assertEquals(step, date.durationFrom(previous), 1.0e-12);
+            }
+            previous = date;
+        }
+        AbsoluteDate ad0 = new AbsoluteDate("2008-12-31T23:59:60", utc);
+        Assert.assertTrue(ad0.toString(utc).startsWith("2008-12-31T23:59:"));
+        AbsoluteDate ad1 = new AbsoluteDate("2008-12-31T23:59:59", utc).shiftedBy(1);
+        Assert.assertEquals(0, ad1.durationFrom(ad0), 1.0e-15);
+        Assert.assertEquals(1, new AbsoluteDate("2009-01-01T00:00:00", utc).durationFrom(ad0), 1.0e-15);
+        Assert.assertEquals(2, new AbsoluteDate("2009-01-01T00:00:01", utc).durationFrom(ad0), 1.0e-15);
+    }
+
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");

@@ -63,7 +63,7 @@ public class UTCScale implements TimeScale {
         current = 0;
 
         // set up a first entry covering the far past before first offset
-        offsets[current] = new UTCTAIOffset(AbsoluteDate.PAST_INFINITY, 0, 0);
+        offsets[current] = new UTCTAIOffset(AbsoluteDate.PAST_INFINITY, Integer.MIN_VALUE, 0, 0);
 
         // set up the linear offsets used between 1961-01-01 and 1971-12-31
         // excerpt from UTC-TAI.history file:
@@ -129,7 +129,7 @@ public class UTCScale implements TimeScale {
         final double leap              = leapEnd.durationFrom(leapStart) / (1 + normalizedSlope);
 
         previous.setValidityEnd(leapStart);
-        offsets[++current] = new UTCTAIOffset(leapStart, leap, offset, mjdRef, normalizedSlope);
+        offsets[++current] = new UTCTAIOffset(leapStart, date.getMJD(), leap, offset, mjdRef, normalizedSlope);
 
     }
 
@@ -144,20 +144,14 @@ public class UTCScale implements TimeScale {
     }
 
     /** {@inheritDoc} */
-    public synchronized double offsetFromTAI(final AbsoluteDate date) {
-        setCurrent(date);
-        return -offsets[current].getOffset(date);
+    public double offsetFromTAI(final AbsoluteDate date) {
+        return -getCurrent(date).getOffset(date);
     }
 
     /** {@inheritDoc} */
-    public synchronized double offsetToTAI(final DateComponents date,
-                                           final TimeComponents time) {
-        final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
-        double offset = 0;
-        for (int i = 0; i < 3; i++) {
-            offset = -offsetFromTAI(reference.shiftedBy(offset));
-        }
-        return offset;
+    public double offsetToTAI(final DateComponents date,
+                              final TimeComponents time) {
+        return getCurrent(date).getOffset(date, time);
     }
 
     /** {@inheritDoc} */
@@ -173,14 +167,14 @@ public class UTCScale implements TimeScale {
     /** Get the date of the first known leap second.
      * @return date of the first known leap second
      */
-    public synchronized AbsoluteDate getFirstKnownLeapSecond() {
+    public AbsoluteDate getFirstKnownLeapSecond() {
         return offsets[0].getValidityEnd();
     }
 
     /** Get the date of the last known leap second.
      * @return date of the last known leap second
      */
-    public synchronized AbsoluteDate getLastKnownLeapSecond() {
+    public AbsoluteDate getLastKnownLeapSecond() {
         return offsets[offsets.length - 1].getDate();
     }
 
@@ -188,30 +182,45 @@ public class UTCScale implements TimeScale {
      * @param date date to check
      * @return true if time is within a leap second introduction
      */
-    public synchronized boolean insideLeap(final AbsoluteDate date) {
-        setCurrent(date);
-        return date.compareTo(offsets[current].getValidityStart()) < 0;
+    public boolean insideLeap(final AbsoluteDate date) {
+        return date.compareTo(getCurrent(date).getValidityStart()) < 0;
     }
 
     /** Get the value of the previous leap.
      * @param date date to check
      * @return value of the previous leap
      */
-    public synchronized double getLeap(final AbsoluteDate date) {
-        setCurrent(date);
-        return offsets[current].getLeap();
+    public double getLeap(final AbsoluteDate date) {
+        return getCurrent(date).getLeap();
     }
 
-    /** Set the current index.
+    /** Get the offset model at some specified date.
      * @param date current date
+     * @return offset model valid at the specified date
      */
-    private synchronized void setCurrent(final AbsoluteDate date) {
-        while (date.compareTo(offsets[current].getValidityStart()) < 0) {
+    private synchronized UTCTAIOffset getCurrent(final AbsoluteDate date) {
+        while ((current > 0) && (date.compareTo(offsets[current].getValidityStart()) < 0)) {
             --current;
         }
-        while (date.compareTo(offsets[current].getValidityEnd()) >= 0) {
+        while ((current < (offsets.length - 1)) && (date.compareTo(offsets[current].getValidityEnd()) >= 0)) {
             ++current;
         }
+        return offsets[current];
+    }
+
+    /** Get the offset model at some specified date.
+     * @param date current date
+     * @return offset model valid at the specified date
+     */
+    private synchronized UTCTAIOffset getCurrent(final DateComponents date) {
+        final int mjd = date.getMJD();
+        while ((current > 0) && (mjd < offsets[current].getMJD())) {
+            --current;
+        }
+        while ((current < (offsets.length - 1)) && (mjd >= offsets[current + 1].getMJD())) {
+            ++current;
+        }
+        return offsets[current];
     }
 
 }
