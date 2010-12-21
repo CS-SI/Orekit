@@ -22,29 +22,45 @@ import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
-/** True Equator, Mean Equinox of Date Frame.
- * <p>This frame handles nutation effects according to the IAU-80 theory.</p>
- * <p>Its parent frame is the {@link MEMEFrame}.</p>
- * <p>It is sometimes called True of Date (ToD) frame.<p>
- * <p>This implementation includes a caching/interpolation feature to
- * tremendously improve efficiency. The IAU-80 theory involves lots of terms
- * (106 components for Dpsi and Deps). Recomputing all these components
- * for each point is really slow. The shortest period for these components is
- * about 5.5 days (one fifth of the moon revolution period), hence the pole
- * motion is smooth at the day or week scale. This implies that these motions can
- * be computed accurately using a few reference points per day or week and interpolated
- * between these points. This implementation uses 12 points separated by 1/2 day
- * (43200 seconds) each, the resulting maximal interpolation error on the frame is about
- * 1.3&times;10<sup>-10</sup> arcseconds.</p>
+/** Pseudo Earth Fixed Frame.
+ * <p> This frame handles the sidereal time according to IAU-82 model.</p>
+ * <p> Its parent frame is the {@link TODFrame}.</p>
+ * <p> The pole motion is not applied here.</p>
  * @author Pascal Parraud
+ * @author Thierry Ceolin
  * @version $Revision$ $Date$
  */
-class TEMEFrame extends FactoryManagedFrame {
+class GTODFrame extends FactoryManagedFrame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 6318738377160926252L;
+    private static final long serialVersionUID = -7304302237325702464L;
+
+    /** Radians per second of time. */
+    private static final double RADIANS_PER_SECOND = MathUtils.TWO_PI / Constants.JULIAN_DAY;
+
+    /** Angular velocity of the Earth, in rad/s. */
+    private static final double AVE = 7.292115146706979e-5;
+
+    /** Reference date for IAU 1982 GMST-UT1 model. */
+    private static final AbsoluteDate GMST_REFERENCE =
+        new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTAI());
+
+    /** First coefficient of IAU 1982 GMST-UT1 model. */
+    private static final double GMST_0 = 24110.54841;
+
+    /** Second coefficient of IAU 1982 GMST-UT1 model. */
+    private static final double GMST_1 = 8640184.812866;
+
+    /** Third coefficient of IAU 1982 GMST-UT1 model. */
+    private static final double GMST_2 = 0.093104;
+
+    /** Fourth coefficient of IAU 1982 GMST-UT1 model. */
+    private static final double GMST_3 = -6.2e-6;
 
     // CHECKSTYLE: stop JavadocVariable check
 
@@ -54,34 +70,38 @@ class TEMEFrame extends FactoryManagedFrame {
     private static final double MOE_2 =    -0.00059  * Constants.ARC_SECONDS_TO_RADIANS;
     private static final double MOE_3 =     0.001813 * Constants.ARC_SECONDS_TO_RADIANS;
 
+    // Coefficients for the Equation of the Equinoxes.
+    private static final double EQE_1 =     0.00264  * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double EQE_2 =     0.000063 * Constants.ARC_SECONDS_TO_RADIANS;
+
     // lunisolar nutation elements
     // Coefficients for l (Mean Anomaly of the Moon).
-    private static final double F10  = FastMath.toRadians(134.96298139);
-    private static final double F110 =    715922.633 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F10  = FastMath.toRadians(134.96340251);
+    private static final double F110 =    715923.2178    * Constants.ARC_SECONDS_TO_RADIANS;
     private static final double F111 =      1325.0;
-    private static final double F12  =        31.310 * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F13  =         0.064 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F12  =        31.87908   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F13  =         0.0516348 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // Coefficients for l' (Mean Anomaly of the Sun).
-    private static final double F20  = FastMath.toRadians(357.52772333);
-    private static final double F210 =   1292581.224 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F20  = FastMath.toRadians(357.52752910918);
+    private static final double F210 =   1292581.048     * Constants.ARC_SECONDS_TO_RADIANS;
     private static final double F211 =        99.0;
-    private static final double F22  =        -0.577 * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F23  =        -0.012 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F22  =        -0.55332   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F23  =         0.0001368 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // Coefficients for F = L (Mean Longitude of the Moon) - Omega.
-    private static final double F30  = FastMath.toRadians(93.27191028);
-    private static final double F310 =    295263.137 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F30  = FastMath.toRadians(93.27209062);
+    private static final double F310 =    295262.8477    * Constants.ARC_SECONDS_TO_RADIANS;
     private static final double F311 =      1342.0;
-    private static final double F32  =       -13.257 * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F33  =         0.011 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F32  =       -12.7512    * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F33  =        -0.0010368 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // Coefficients for D (Mean Elongation of the Moon from the Sun).
-    private static final double F40  = FastMath.toRadians(297.85036306);
-    private static final double F410 =   1105601.328 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F40  = FastMath.toRadians(297.85019547);
+    private static final double F410 =   1105601.209     * Constants.ARC_SECONDS_TO_RADIANS;
     private static final double F411 =      1236.0;
-    private static final double F42  =        -6.891 * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F43  =         0.019 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F42  =        -6.37056   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F43  =         0.0065916 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // Coefficients for Omega (Mean Longitude of the Ascending Node of the Moon).
     private static final double F50  = FastMath.toRadians(125.04452222);
@@ -227,8 +247,6 @@ class TEMEFrame extends FactoryManagedFrame {
         +0.0,  0.0,  0.0,  0.0,  0.0,  0.0
     };
 
-    /** Mean obliquity of the ecliptic. */
-    private double moe;
 
     /** "Left-central" date of the interpolation array. */
     private double tCenter;
@@ -254,30 +272,33 @@ class TEMEFrame extends FactoryManagedFrame {
     /** Neville interpolation array for deps. */
     private final double[] depsNeville;
 
-    /** Cached date to avoid useless computation. */
+    /** Mean obliquity of the ecliptic. */
+    private double moe;
+
+    /** Cached date to avoid useless calculus. */
     private AbsoluteDate cachedDate;
 
     /** Flag for EOP correction application. */
     private final boolean applyEOPCorrection;
 
-    /** Simple constructor, applying EOP corrections (here, nutation).
+    /** Simple constructor, applying EOP corrections (here, lod).
      * @param factoryKey key of the frame within the factory
      * @exception OrekitException if EOP parameters cannot be read
      */
-    protected TEMEFrame(final Predefined factoryKey)
+    protected GTODFrame(final Predefined factoryKey)
         throws OrekitException {
         this(true, factoryKey);
     }
 
     /** Simple constructor.
-     * @param applyEOPCorr if true, EOP correction is applied (here, nutation)
+     * @param applyEOPCorr if true, EOP corrections are applied (here, lod)
      * @param factoryKey key of the frame within the factory
      * @exception OrekitException if EOP parameters are desired but cannot be read
      */
-    protected TEMEFrame(final boolean applyEOPCorr, final Predefined factoryKey)
+    protected GTODFrame(final boolean applyEOPCorr, final Predefined factoryKey)
         throws OrekitException {
 
-        super(FramesFactory.getMEME(applyEOPCorr), null , true, factoryKey);
+        super(FramesFactory.getTOD(applyEOPCorr), null, false, factoryKey);
 
         applyEOPCorrection = applyEOPCorr;
 
@@ -305,7 +326,7 @@ class TEMEFrame extends FactoryManagedFrame {
     }
 
     /** Update the frame to the given date.
-     * <p>The update considers the nutation effects from IERS data.</p>
+     * <p>The update considers the earth rotation from IERS data.</p>
      * @param date new value of the date
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
@@ -326,31 +347,38 @@ class TEMEFrame extends FactoryManagedFrame {
             // compute the mean obliquity of the ecliptic
             moe = ((MOE_3 * ttc + MOE_2) * ttc + MOE_1) * ttc + MOE_0;
 
-            // get the IAU1980 corrections for the nutation parameters
-            final NutationCorrection nutCorr =
-                ((MEMEFrame) getParent()).getNutationCorrection(date);
+            final double eqe = getNewEquationOfEquinoxes(date, ttc);
 
-            final double deps = depsCurrent + nutCorr.getDdeps();
-            final double dpsi = dpsiCurrent + nutCorr.getDdpsi();
+            // offset in julian centuries from J2000 epoch (UT1 scale)
+            final double dtai = date.durationFrom(GMST_REFERENCE);
+            final double dutc = TimeScalesFactory.getUTC().offsetFromTAI(date);
+            final double dut1 = FramesFactory.getEOP1980History().getUT1MinusUTC(date);
 
-            // compute the true obliquity of the ecliptic
-            final double toe = moe + deps;
+            final double tut1 = dtai + dutc + dut1;
+            final double tt   = tut1 / Constants.JULIAN_CENTURY;
 
-            // set up the elementary rotations for nutation
-            final Rotation r1 = new Rotation(Vector3D.PLUS_I,  toe);
-            final Rotation r2 = new Rotation(Vector3D.PLUS_K,  dpsi);
-            final Rotation r3 = new Rotation(Vector3D.PLUS_I, -moe);
+            // Seconds in the day, adjusted by 12 hours because the
+            // UT1 is supplied as a Julian date beginning at noon.
+            final double sd = (tut1 + Constants.JULIAN_DAY / 2.) % Constants.JULIAN_DAY;
 
-            // complete nutation
-            final Rotation precession = r1.applyTo(r2.applyTo(r3));
+            // compute Greenwich mean sidereal time, in radians
+            final double gmst = (((GMST_3 * tt + GMST_2) * tt + GMST_1) * tt + GMST_0 + sd) *
+                                RADIANS_PER_SECOND;
 
-            // set up the transform from parent MEME
-            setTransform(new Transform(precession));
+            // compute Greenwich apparent sidereal time, in radians
+            final double gast = gmst + eqe;
+
+            // compute true angular rotation of Earth, in rad/s
+            final double lod = ((MODFrame) getParent().getParent()).getLOD(date);
+            final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
+            final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
+
+            // set up the transform from parent TOD
+            setTransform(new Transform(new Rotation(Vector3D.PLUS_K, -gast), rotationRate));
 
             cachedDate = date;
 
         }
-
     }
 
     /** Set the interpolated nutation elements.
@@ -466,4 +494,23 @@ class TEMEFrame extends FactoryManagedFrame {
 
     }
 
+    /** Get the Equation of the Equinoxes at the current date.
+     * @param  date the date
+     * @param tc offset from J2000.0 epoch in julian centuries
+     * @return Equation of the Equinoxes at the current date in radians
+     * @exception OrekitException if nutation model cannot be computed
+     */
+    private double getNewEquationOfEquinoxes(final AbsoluteDate date, final double tc)
+        throws OrekitException {
+
+        // See vallado, page 231, to adhere to the original definition (USNO circ 163),
+        // nutation corrections are not included
+
+        // Mean longitude of the ascending node of the Moon
+        final double om = ((F53 * tc + F52) * tc + F510) * tc + F50 + ((F511 * tc) % 1.0) * MathUtils.TWO_PI;
+
+        // Equation of the Equinoxes
+        return dpsiCurrent * FastMath.cos(moe) + EQE_1 * FastMath.sin(om) + EQE_2 * FastMath.sin(om + om);
+
+    }
 }

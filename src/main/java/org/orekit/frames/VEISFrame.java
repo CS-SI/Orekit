@@ -26,7 +26,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
 /** Veis 1950 Frame.
- * <p>Its parent frame is the {@link PEFFrame} without EOP correction application.<p>
+ * <p>Its parent frame is the {@link GTODFrame} without EOP correction application.<p>
  * <p>This frame is mainly provided for consistency with legacy softwares.</p>
  * @author Pascal Parraud
  * @version $Revision$ $Date$
@@ -59,7 +59,7 @@ class VEISFrame extends FactoryManagedFrame {
     public VEISFrame(final Predefined factoryKey)
         throws OrekitException {
 
-        super(FramesFactory.getPEF(false), null, true, factoryKey);
+        super(FramesFactory.getGTOD(false), null, true, factoryKey);
 
         // frame synchronization
         updateFrame(AbsoluteDate.J2000_EPOCH);
@@ -89,7 +89,7 @@ class VEISFrame extends FactoryManagedFrame {
             // compute angular rotation of Earth, in rad/s
             final Vector3D rotationRate = new Vector3D(-VSTD, Vector3D.PLUS_K);
 
-            // set up the transform from parent PEF
+            // set up the transform from parent GTOD
             setTransform(new Transform(new Rotation(Vector3D.PLUS_K, vst), rotationRate));
 
             cachedDate = date;

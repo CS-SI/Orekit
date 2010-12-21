@@ -33,7 +33,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
-public class TEMEFrameTest {
+public class TODFrameAlternateConfigurationTest {
 
     @Test
     public void testAASReferenceLEO() throws OrekitException {
@@ -46,8 +46,8 @@ public class TEMEFrameTest {
                                            new TimeComponents(07, 51, 28.386009),
                                            TimeScalesFactory.getUTC());
 
-        Transform tt = FramesFactory.getMEME(true).getTransformTo(FramesFactory.getTEME(true), t0);
-        Transform tf = FramesFactory.getMEME(false).getTransformTo(FramesFactory.getTEME(false), t0);
+        Transform tt = FramesFactory.getMOD(true).getTransformTo(FramesFactory.getTOD(true), t0);
+        Transform tf = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
 
         //TOD iau76
         PVCoordinates pvTODiau76 =
@@ -62,8 +62,8 @@ public class TEMEFrameTest {
             new PVCoordinates(new Vector3D(5094028.3745, 6127870.8164, 6380248.5164),
                               new Vector3D(-4746.263052, 786.014045, 5531.790562));
 
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.8, 1.7e-3);
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 2.3, 1.6e-3);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.8, 1.6e-3);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 2.5, 1.5e-3);
         checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 6.8e-5, 6.0e-7);
         checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76Wcorr), 0.90615, 7.4e-4);
 
@@ -81,8 +81,8 @@ public class TEMEFrameTest {
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
 
-        Transform tt = FramesFactory.getMEME(true).getTransformTo(FramesFactory.getTEME(true), t0);
-        Transform tf = FramesFactory.getMEME(false).getTransformTo(FramesFactory.getTEME(false), t0);
+        Transform tt = FramesFactory.getMOD(true).getTransformTo(FramesFactory.getTOD(true), t0);
+        Transform tf = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
 
         //TOD iau76
         PVCoordinates pvTODiau76 =
@@ -110,10 +110,10 @@ public class TEMEFrameTest {
 
         final boolean withNutationCorrection = true;
         
-        TEMEFrame interpolatingFrame =
-            new TEMEFrame(withNutationCorrection, Predefined.TEME_WITH_EOP_CORRECTIONS);
-        NonInterpolatingTEMEFrame nonInterpolatingFrame =
-            new NonInterpolatingTEMEFrame(withNutationCorrection, Predefined.TEME_WITH_EOP_CORRECTIONS);
+        TODFrame interpolatingFrame =
+            new TODFrame(withNutationCorrection, Predefined.TOD_WITH_EOP_CORRECTIONS);
+        NonInterpolatingTODFrame nonInterpolatingFrame =
+            new NonInterpolatingTODFrame(withNutationCorrection, Predefined.TOD_WITH_EOP_CORRECTIONS);
 
         // the following time range is located around the maximal observed error
         AbsoluteDate start = new AbsoluteDate(2002, 11, 11, 0, 0, 0.0, TimeScalesFactory.getTAI());
@@ -132,12 +132,12 @@ public class TEMEFrameTest {
 
     @Before
     public void setUp() {
-        Utils.setDataRoot("compressed-data");
+        Utils.setDataRoot("testpef-data");
     }
 
-    private class NonInterpolatingTEMEFrame extends TEMEFrame {
+    private class NonInterpolatingTODFrame extends TODFrame {
         private static final long serialVersionUID = -7116622345154042273L;
-        public NonInterpolatingTEMEFrame(final boolean ignoreNutationCorrection,
+        public NonInterpolatingTODFrame(final boolean ignoreNutationCorrection,
                                          final Predefined factoryKey)
             throws OrekitException {
             super(ignoreNutationCorrection, factoryKey);
@@ -156,11 +156,6 @@ public class TEMEFrameTest {
         Vector3D t = reference.getVelocity().normalize();
         Vector3D w = reference.getMomentum().normalize();
         Vector3D n = Vector3D.crossProduct(w, t);
-        System.out.println("dP = " + dP.getNorm() + ", (eps = " + positionThreshold +
-                           "), dP (t, n, w) = " + Vector3D.dotProduct(dP, t) +
-                           ", " + Vector3D.dotProduct(dP, n) +
-                           ", " + Vector3D.dotProduct(dP, w) +
-                           ")"); 
         Assert.assertEquals(0, dP.getNorm(), positionThreshold);
         Assert.assertEquals(0, dV.getNorm(), velocityThreshold);
     }

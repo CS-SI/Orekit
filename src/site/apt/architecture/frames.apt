@@ -73,14 +73,15 @@ Frames
   The <<<FramesFactory>>> class provides several predefined reference frames.
 
   The user can retrieve them using various static methods: <<<getGCRF()>>>, <<<getEME2000()>>>,
-  <<<getCIRF2000()>>>, <<<getTIRF2000()>>>, <<<getITRF2005()>>>, <<<getMEME()>>>,
-  <<<getTEME()>>>, <<<getPEF()>>> and <<<getVeis1950()>>>. One of these reference frames
+  <<<getCIRF2000()>>>, <<<getTIRF2000()>>>, <<<getITRF93()>>>, <<<getITRF97()>>>, <<<getITRF2000()>>>,
+  <<<getITRF2005()>>>, <<<getITRF2008()>>>, <<<getMOD()>>>, <<<getTOD()>>>, <<<getGTOD()>>>,
+  <<<getTEME()>>> and <<<getVeis1950()>>>. One of these reference frames
   has been arbitrarily chosen as the root of the frames tree: the <Geocentric Celestial
   Reference Frame> (GCRF) which is an inertial reference defined by IERS.
 
-  For most purposes, the recommended frames to use are ITRF 2005 for terrestrial frame and
-  GCRF for celestial frame. EME2000, TEME, Veis1950 could also be used for compatibility
-  with legacy systems.
+  For most purposes, the recommended frames to use are ITRF 20xx for terrestrial frame and
+  GCRF for celestial frame. EME2000, TOD, Veis1950 could also be used for compatibility
+  with legacy systems. TEME should be used only for TLE.
 
   There are also a number of planetary frames associated with the predefined celestial bodies.
 
@@ -105,7 +106,10 @@ Frames
   effects) is applied to define a Terrestrial Intermediate Reference Frame (TIRF) which is a
   pseudo Earth fixed frame. A last transform adds the pole motion (both observed and published
   in IERS frames and modeled effects including tidal effects) with respect to Earth crust to
-  reach the real Earth fixed frame: the International Terrestrial Reference Frame.
+  reach the real Earth fixed frame: the International Terrestrial Reference Frame. There are
+  several realizations of the ITRS, each one being a different ITRF. These realizations are
+  linked together using Helmert transformations which are very small slightly time-dependent
+  transformations.
 
   In summary, four frames are involved along this path: GCRF, CIRF, TIRF and ITRF.
 
@@ -118,16 +122,16 @@ Frames
   former reference. The EME2000 frame (which is also known as J2000) is defined using
   the mean equinox at epoch J2000.0, i.e. 2000-01-01T12:00:00 in Terrestrial Time (not
   UTC!). From this frame, applying precession evolution between J2000.0 and current date
-  defines a Mean Equator Mean Equinox frame for current date and applying nutation defines
-  a True Equator Mean Equinox frame, similar in spirit to the CIRF in the new paradigm.
-  From this, the Greenwich Apparent Sidereal Time is applied to reach a Pseudo Earth Fixed
-  frame, similar to the TIRF in the new paradigm. A final transform involving pole motion
-  leads to the ITRF. 
+  defines a Mean Of Date frame for current date and applying nutation defines
+  a True Of Date frame, similar in spirit to the CIRF in the new paradigm.
+  From this, the Greenwich Apparent Sidereal Time is applied to reach a Greenwich True
+  Of Date frame, similar to the TIRF in the new paradigm. A final transform involving pole
+  motion leads to the ITRF. 
 
-  In summary, six frames are involved along this path: GCRF, EME2000, MEME, TEME, PEF
+  In summary, six frames are involved along this path: GCRF, EME2000, MOD, TOD, GTOD
   and ITRF.
   
-  The so called Veis 1950 belongs also to this path, it is defined from the PEF by the
+  The so called Veis 1950 belongs also to this path, it is defined from the GTOD by the
   application of a modified sidereal time.
   
   This whole paradigm is deprecated by IERS. It involves additional complexity, first because
@@ -148,10 +152,10 @@ Frames
   In summary, Orekit implements the following frames:
 
   * those related to the IERS 2003 convention: GCRF, CIRF 2000, TIRF 2000 with and without
-    tidal effects, ITRF 2005 with and without tidal effects,
+    tidal effects, various ITRF with and without tidal effects,
 
-  * those related to the older IERS conventions: MEME with and without EOP correction,
-    TEME with and without EOP correction, PEF with and without EOP correction, Veis 1950.
+  * those related to the older IERS conventions: MOD with and without EOP correction,
+    TOD with and without EOP correction, GTOD with and without EOP correction, Veis 1950.
 
 **** CIO-based transformations
 
@@ -193,8 +197,8 @@ Frames
     
 [../images/pre-iers-tree.png]
 
-  The path from EME2000 to Veis1950, involving the MEME, TEME and PEF without EOP correction is
-  devoted to some legacy systems, whereas the MEME, TEME and PEF with EOP correction are for
+  The path from EME2000 to Veis1950, involving the MOD, TOD and GTOD without EOP correction is
+  devoted to some legacy systems, whereas the MOD, TOD and GTOD with EOP correction are for
   compatibility with the IERS 2003 convention. The gap between the two branches can reach a few
   meters, a rather crude accuracy for many space systems.
 
@@ -206,10 +210,12 @@ Frames
   All celestial bodies are linked to their own body-centered inertial frame, just
   like the Earth is linked to EME2000 and GCRF. Since Orekit provides implementations
   of the main solar system celestial bodies, it also provides body-centered frames
-  for these bodies. The predefined ones are the Sun, the Moon, the eight planets and
-  the Pluto dwarf planet. In addition to these real bodies, two points are supported
-  for convenience as if they were real bodies: the solar system barycenter and the
-  Earth-Moon barycenter.
+  for these bodies, one inertially oriented and one body oriented. The orientations
+  of these frames are compliant with IAU poles and prime meridians definitions. The
+  predefined frames are the Sun, the Moon, the eight planets and the Pluto dwarf planet.
+  In addition to these real bodies, two points are supported for convenience as if they
+  were real bodies: the solar system barycenter and the Earth-Moon barycenter ; in these
+  cases, the associated frames are aligned with EME2000.
 
 [../images/solar-system-frames.png]
 

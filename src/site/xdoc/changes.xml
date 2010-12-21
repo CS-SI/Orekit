@@ -23,6 +23,11 @@
     <release version="5.1" date="TBD"
              description="TBD.">
       <action dev="luc" type="update">
+        the equinox based frames have been renamed to more standard names (MOD, TOD and GTOD
+        instead of MEME, TEME and PEF). The implementation of TEME was also wrong (it was
+        really based on true equinox, not on mean equinox)
+      </action>
+      <action dev="luc" type="update">
         celestial bodies now provide both an inertially oriented body centered
         frame and a body oriented body centered frame, the bodies managed by
         CelestialBodyFactory use the IAU poles and prime meridian definitions

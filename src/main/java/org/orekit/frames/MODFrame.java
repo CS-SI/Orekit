@@ -29,7 +29,7 @@ import org.orekit.utils.Constants;
  * @author Pascal Parraud
  * @version $Revision$ $Date$
  */
-class MEMEFrame extends FactoryManagedFrame {
+class MODFrame extends FactoryManagedFrame {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 3965968487731196666L;
@@ -68,7 +68,7 @@ class MEMEFrame extends FactoryManagedFrame {
      * @param factoryKey key of the frame within the factory
      * @exception OrekitException if EOP parameters cannot be read
      */
-    protected MEMEFrame(final Predefined factoryKey)
+    protected MODFrame(final Predefined factoryKey)
         throws OrekitException {
         this(true, factoryKey);
     }
@@ -78,7 +78,7 @@ class MEMEFrame extends FactoryManagedFrame {
      * @param factoryKey key of the frame within the factory
      * @exception OrekitException if EOP parameters are desired but cannot be read
      */
-    protected MEMEFrame(final boolean applyEOPCorr, final Predefined factoryKey)
+    protected MODFrame(final boolean applyEOPCorr, final Predefined factoryKey)
         throws OrekitException {
 
         super(applyEOPCorr ? FramesFactory.getGCRF() : FramesFactory.getEME2000(),

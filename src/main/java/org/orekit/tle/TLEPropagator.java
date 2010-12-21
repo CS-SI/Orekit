@@ -211,7 +211,7 @@ public abstract class TLEPropagator implements PVCoordinatesProvider, Serializab
     /** {@inheritDoc} */
     public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        final Transform t = FramesFactory.getTEME(true).getTransformTo(frame, date);
+        final Transform t = FramesFactory.getTEME().getTransformTo(frame, date);
         return t.transformPVCoordinates(getPVCoordinates(date));
     }
 

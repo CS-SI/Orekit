@@ -47,8 +47,8 @@ import org.orekit.utils.Constants;
  * {@link #getITRF2000(boolean)}, {@link #getITRF2000()},
  * {@link #getITRF2005(boolean)}, {@link #getITRF2005()},
  * {@link #getITRF2008(boolean)}, {@link #getITRF2008()},
- * {@link #getEME2000()}, {@link #getMEME(boolean)}, {@link #getTEME(boolean)},
- * {@link #getPEF(boolean)} and {@link #getVeis1950()}).
+ * {@link #getEME2000()}, {@link #getMOD(boolean)}, {@link #getTOD(boolean)},
+ * {@link #getGTOD(boolean)}, {@link #getTEME(boolean)} and {@link #getVeis1950()}).
  * </p>
  * <h5> International Terrestrial Reference Frame 2008 </h5>
  * <p>
@@ -98,15 +98,15 @@ import org.orekit.utils.Constants;
  *                                                 |                       |                    |
  *                                                 |                       | Precession effects |
  *                                                 |                       |                    |
- *           Bias, Precession and Nutation effects |                     MEME                 MEME  (Mean Equator of Date)
+ *           Bias, Precession and Nutation effects |                      MOD                  MOD  (Mean Equator Of Date)
  *                                                 |                       |             w/o EOP corrections
  *                                                 |                       |  Nutation effects  |
  *    (Celestial Intermediate Reference Frame) CIRF2000                    |                    |
- *                                                 |                     TEME                 TEME  (True Equator of Date)
+ *                                                 |                      TOD                  TOD  (True Equator Of Date)
  *                          Earth natural rotation |                       |             w/o EOP corrections
  *                                                 |-------------          |    Sidereal Time   |
  *                                                 |            |          |                    |
- *  (Terrestrial Intermediate Reference Frame) TIRF2000     TIRF2000      PEF                  PEF  (Pseudo Earth Fixed)
+ *  (Terrestrial Intermediate Reference Frame) TIRF2000     TIRF2000     GTOD                 GTOD  (Greenwich True Of Date)
  *                                                 |    w/o tidal effects                w/o EOP corrections
  *                                     Pole motion |            |                               |
  *                                                 |            |                               |
@@ -361,18 +361,18 @@ public class FramesFactory implements Serializable {
             return getCIRF2000();
         case VEIS_1950 :
             return getVeis1950();
-        case PEF_WITHOUT_EOP_CORRECTIONS :
-            return getPEF(false);
-        case PEF_WITH_EOP_CORRECTIONS :
-            return getPEF(true);
-        case TEME_WITHOUT_EOP_CORRECTIONS :
-            return getTEME(false);
-        case TEME_WITH_EOP_CORRECTIONS :
-            return getTEME(true);
-        case MEME_WITHOUT_EOP_CORRECTIONS :
-            return getMEME(false);
-        case MEME_WITH_EOP_CORRECTIONS :
-            return getMEME(true);
+        case GTOD_WITHOUT_EOP_CORRECTIONS :
+            return getGTOD(false);
+        case GTOD_WITH_EOP_CORRECTIONS :
+            return getGTOD(true);
+        case TOD_WITHOUT_EOP_CORRECTIONS :
+            return getTOD(false);
+        case TOD_WITH_EOP_CORRECTIONS :
+            return getTOD(true);
+        case MOD_WITHOUT_EOP_CORRECTIONS :
+            return getMOD(false);
+        case MOD_WITH_EOP_CORRECTIONS :
+            return getMOD(true);
         default :
             throw OrekitException.createInternalError(null);
         }
@@ -735,7 +735,7 @@ public class FramesFactory implements Serializable {
     }
 
     /** Get the VEIS 1950 reference frame.
-     * <p>Its parent frame is the PEF frame without EOP corrections.<p>
+     * <p>Its parent frame is the GTOD frame without EOP corrections.<p>
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
      */
@@ -757,7 +757,7 @@ public class FramesFactory implements Serializable {
         }
     }
 
-    /** Get the PEF reference frame.
+    /** Get the GTOD reference frame.
      * <p>
      * The applyEOPCorr parameter is available mainly for testing purposes or for
      * consistency with legacy software that don't handle EOP correction parameters.
@@ -768,18 +768,18 @@ public class FramesFactory implements Serializable {
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
      */
-    public static FactoryManagedFrame getPEF(final boolean applyEOPCorr) throws OrekitException {
+    public static FactoryManagedFrame getGTOD(final boolean applyEOPCorr) throws OrekitException {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
             final Predefined factoryKey = applyEOPCorr ?
-                                          Predefined.PEF_WITH_EOP_CORRECTIONS :
-                                          Predefined.PEF_WITHOUT_EOP_CORRECTIONS;
+                                          Predefined.GTOD_WITH_EOP_CORRECTIONS :
+                                          Predefined.GTOD_WITHOUT_EOP_CORRECTIONS;
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new PEFFrame(applyEOPCorr, factoryKey);
+                frame = new GTODFrame(applyEOPCorr, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -788,7 +788,24 @@ public class FramesFactory implements Serializable {
         }
     }
 
-    /** Get the TEME reference frame.
+    /** Get the GTOD reference frame.
+     * <p>
+     * The applyEOPCorr parameter is available mainly for testing purposes or for
+     * consistency with legacy software that don't handle EOP correction parameters.
+     * Beware that setting this parameter to {@code false} leads to crude accuracy
+     * (order of magnitudes for errors might be above 1m in LEO and 10m in GEO).
+     * </p>
+     * @param applyEOPCorr if true, EOP corrections are applied (here, lod)
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if data embedded in the library cannot be read
+     * @deprecated as of 5.1, replaced by {@link #getGTOD(boolean)}
+     */
+    @Deprecated
+    public static FactoryManagedFrame getPEF(final boolean applyEOPCorr) throws OrekitException {
+        return getGTOD(applyEOPCorr);
+    }
+
+    /** Get the TOD reference frame.
      * <p>
      * The applyEOPCorr parameter is available mainly for testing purposes or for
      * consistency with legacy software that don't handle EOP correction parameters.
@@ -799,18 +816,18 @@ public class FramesFactory implements Serializable {
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
      */
-    public static FactoryManagedFrame getTEME(final boolean applyEOPCorr) throws OrekitException {
+    public static FactoryManagedFrame getTOD(final boolean applyEOPCorr) throws OrekitException {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
             final Predefined factoryKey = applyEOPCorr ?
-                                          Predefined.TEME_WITH_EOP_CORRECTIONS :
-                                          Predefined.TEME_WITHOUT_EOP_CORRECTIONS;
+                                          Predefined.TOD_WITH_EOP_CORRECTIONS :
+                                          Predefined.TOD_WITHOUT_EOP_CORRECTIONS;
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new TEMEFrame(applyEOPCorr, factoryKey);
+                frame = new TODFrame(applyEOPCorr, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -819,7 +836,7 @@ public class FramesFactory implements Serializable {
         }
     }
 
-    /** Get the MEME reference frame.
+    /** Get the MOD reference frame.
      * <p>
      * The applyEOPCorr parameter is available mainly for testing purposes or for
      * consistency with legacy software that don't handle EOP correction parameters.
@@ -830,18 +847,18 @@ public class FramesFactory implements Serializable {
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
      */
-    public static FactoryManagedFrame getMEME(final boolean applyEOPCorr) throws OrekitException {
+    public static FactoryManagedFrame getMOD(final boolean applyEOPCorr) throws OrekitException {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
             final Predefined factoryKey = applyEOPCorr ?
-                                          Predefined.MEME_WITH_EOP_CORRECTIONS :
-                                          Predefined.MEME_WITHOUT_EOP_CORRECTIONS;
+                                          Predefined.MOD_WITH_EOP_CORRECTIONS :
+                                          Predefined.MOD_WITHOUT_EOP_CORRECTIONS;
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new MEMEFrame(applyEOPCorr, factoryKey);
+                frame = new MODFrame(applyEOPCorr, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -850,5 +867,30 @@ public class FramesFactory implements Serializable {
         }
     }
 
+    /** Get the MOD reference frame.
+     * <p>
+     * The applyEOPCorr parameter is available mainly for testing purposes or for
+     * consistency with legacy software that don't handle EOP correction parameters.
+     * Beware that setting this parameter to {@code false} leads to crude accuracy
+     * (order of magnitudes for errors might be above 1m in LEO and 10m in GEO).
+     * </p>
+     * @param applyEOPCorr if true, EOP corrections are applied (EME2000/GCRF bias compensation)
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if data embedded in the library cannot be read
+     * @deprecated as of 5.1, replaced by {@link #getMOD(boolean)}
+     */
+    @Deprecated
+    public static FactoryManagedFrame getMEME(final boolean applyEOPCorr) throws OrekitException {
+        return getMOD(applyEOPCorr);
+    }
+
+    /** Get the TOD reference frame.
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if data embedded in the library cannot be read
+     */
+    public static FactoryManagedFrame getTEME() throws OrekitException {
+        // TODO TEME is not really TOD, TOD uses true equinox whereas TEME uses mean equinox
+        return getTOD(true);
+    }
 
 }

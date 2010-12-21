@@ -30,7 +30,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
-public class PEFFrameTest {
+public class GTODFrameTest {
 
     @Test
     public void testAASReferenceLEO() throws OrekitException {
@@ -43,28 +43,28 @@ public class PEFFrameTest {
                                            new TimeComponents(07, 51, 28.386009),
                                            TimeScalesFactory.getUTC());
 
-        // PEF iau76
-        PVCoordinates pvPEF =
+        // GTOD iau76
+        PVCoordinates pvGTOD =
            new PVCoordinates(new Vector3D(-1033475.0313, 7901305.5856, 6380344.5328),
                              new Vector3D(-3225.632747, -2872.442511, 5531.931288));
 
         // TOD iau76
-        PVCoordinates pvTEME =
+        PVCoordinates pvTOD =
             new PVCoordinates(new Vector3D(5094514.7804, 6127366.4612, 6380344.5328),
                               new Vector3D(-4746.088567, 786.077222, 5531.931288));
         
-        Transform t = FramesFactory.getTEME(true).getTransformTo(FramesFactory.getPEF(true), t0);
+        Transform t = FramesFactory.getTOD(true).getTransformTo(FramesFactory.getGTOD(true), t0);
 
-        // this test gives worse result than PEFFrameAlternateConfigurationTest because
+        // this test gives worse result than GTODFrameAlternateConfigurationTest because
         // at 2004-04-06 there is a 0.471ms difference in dut1 and a 0.077ms difference
         // in lod with the data used by Vallado to set up this test case
-        PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTEME), pvPEF);
+        PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
         Assert.assertEquals(0.283011, delta.getPosition().getNorm(), 1.0e-6);
         Assert.assertEquals(1.533846e-4, delta.getVelocity().getNorm(), 1.0e-10);
 
         // even if lod correction is ignored, results are quite the same
-        t = FramesFactory.getTEME(false).getTransformTo(FramesFactory.getPEF(false), t0);
-        delta = new PVCoordinates(t.transformPVCoordinates(pvTEME), pvPEF);
+        t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
+        delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
         Assert.assertEquals(0.283011, delta.getPosition().getNorm(), 1.0e-6);
         Assert.assertEquals(1.592465e-4, delta.getVelocity().getNorm(), 1.0e-10);
 
@@ -81,28 +81,28 @@ public class PEFFrameTest {
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
 
-        Transform t = FramesFactory.getTEME(true).getTransformTo(FramesFactory.getPEF(true), t0);
+        Transform t = FramesFactory.getTOD(true).getTransformTo(FramesFactory.getGTOD(true), t0);
 
         // TOD iau76
-        PVCoordinates pvTEME =
+        PVCoordinates pvTOD =
             new PVCoordinates(new Vector3D(-40577427.7501, -11500096.1306, 10293.2583),
                               new Vector3D(837.552338, -2957.524176, -0.928772));
 
-        //PEF iau76
-        PVCoordinates pvPEF =
+        //GTOD iau76
+        PVCoordinates pvGTOD =
             new PVCoordinates(new Vector3D(24796919.2956, -34115870.9001, 10293.2583),
                               new Vector3D(-0.979178, -1.476540, -0.928772));
 
-        // this test gives worst result than PEFFrameAlternateConfigurationTest because
+        // this test gives worst result than GTODFrameAlternateConfigurationTest because
         // at 2004-06-01 there is a 0.047ms difference in dut1 and a 0.416ms difference
         // in lod with the data used by Vallado to set up this test case
-        PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTEME), pvPEF);
+        PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
         Assert.assertEquals(0.193876, delta.getPosition().getNorm(), 1.0e-6);
         Assert.assertEquals(1.427464e-5, delta.getVelocity().getNorm(), 9.0e-12);
 
         // even if lod correction is ignored, results are quite the same
-        t = FramesFactory.getTEME(false).getTransformTo(FramesFactory.getPEF(false), t0);
-        delta = new PVCoordinates(t.transformPVCoordinates(pvTEME), pvPEF);
+        t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
+        delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
         Assert.assertEquals(0.193876, delta.getPosition().getNorm(), 5.0e-7);
         Assert.assertEquals(5.156e-7, delta.getVelocity().getNorm(), 8.0e-11);
 

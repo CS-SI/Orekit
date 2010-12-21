@@ -71,23 +71,23 @@ public enum Predefined {
     /** Veis 1950 with tidal effects. */
     VEIS_1950("VEIS1950"),
 
-    /** PEF without EOP corrections. */
-    PEF_WITHOUT_EOP_CORRECTIONS("PEF without EOP"),
+    /** GTOD without EOP corrections. */
+    GTOD_WITHOUT_EOP_CORRECTIONS("GTOD without EOP"),
 
-    /** PEF with EOP corrections. */
-    PEF_WITH_EOP_CORRECTIONS("PEF with EOP"),
+    /** GTOD with EOP corrections. */
+    GTOD_WITH_EOP_CORRECTIONS("GTOD with EOP"),
 
-    /** TEME without EOP corrections. */
-    TEME_WITHOUT_EOP_CORRECTIONS("TEME without EOP"),
+    /** TOD without EOP corrections. */
+    TOD_WITHOUT_EOP_CORRECTIONS("TOD without EOP"),
 
-    /** TEME with EOP corrections. */
-    TEME_WITH_EOP_CORRECTIONS("TEME with EOP"),
+    /** TOD with EOP corrections. */
+    TOD_WITH_EOP_CORRECTIONS("TOD with EOP"),
 
-    /** MEME without EOP corrections. */
-    MEME_WITHOUT_EOP_CORRECTIONS("MEME without EOP"),
+    /** MOD without EOP corrections. */
+    MOD_WITHOUT_EOP_CORRECTIONS("MOD without EOP"),
 
-    /** MEME with EOP corrections. */
-    MEME_WITH_EOP_CORRECTIONS("MEME with EOP");
+    /** MOD with EOP corrections. */
+    MOD_WITH_EOP_CORRECTIONS("MOD with EOP");
 
     /** Name fo the frame. */
     private final String name;
