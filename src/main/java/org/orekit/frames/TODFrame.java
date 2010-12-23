@@ -56,39 +56,39 @@ class TODFrame extends FactoryManagedFrame {
 
     // lunisolar nutation elements
     // Coefficients for l (Mean Anomaly of the Moon).
-    private static final double F10  = FastMath.toRadians(134.96298139);
-    private static final double F110 =    715922.633 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F10  = FastMath.toRadians(134.96340251);
+    private static final double F110 =    715923.2178    * Constants.ARC_SECONDS_TO_RADIANS;
     private static final double F111 =      1325.0;
-    private static final double F12  =        31.310 * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F13  =         0.064 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F12  =        31.87908   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F13  =         0.0516348 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // Coefficients for l' (Mean Anomaly of the Sun).
-    private static final double F20  = FastMath.toRadians(357.52772333);
-    private static final double F210 =   1292581.224 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F20  = FastMath.toRadians(357.52910918);
+    private static final double F210 =   1292581.048     * Constants.ARC_SECONDS_TO_RADIANS;
     private static final double F211 =        99.0;
-    private static final double F22  =        -0.577 * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F23  =        -0.012 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F22  =        -0.55332   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F23  =         0.0001368 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // Coefficients for F = L (Mean Longitude of the Moon) - Omega.
-    private static final double F30  = FastMath.toRadians(93.27191028);
-    private static final double F310 =    295263.137 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F30  = FastMath.toRadians(93.27209062);
+    private static final double F310 =    295262.8477    * Constants.ARC_SECONDS_TO_RADIANS;
     private static final double F311 =      1342.0;
-    private static final double F32  =       -13.257 * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F33  =         0.011 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F32  =       -12.7512    * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F33  =        -0.0010368 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // Coefficients for D (Mean Elongation of the Moon from the Sun).
-    private static final double F40  = FastMath.toRadians(297.85036306);
-    private static final double F410 =   1105601.328 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F40  = FastMath.toRadians(297.85019547);
+    private static final double F410 =   1105601.209     * Constants.ARC_SECONDS_TO_RADIANS;
     private static final double F411 =      1236.0;
-    private static final double F42  =        -6.891 * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F43  =         0.019 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F42  =        -6.37056   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F43  =         0.0065916 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // Coefficients for Omega (Mean Longitude of the Ascending Node of the Moon).
-    private static final double F50  = FastMath.toRadians(125.04452222);
-    private static final double F510 =   -482890.539 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F50  = FastMath.toRadians(125.0445501);
+    private static final double F510 =   -482890.2665   * Constants.ARC_SECONDS_TO_RADIANS;
     private static final double F511 =        -5.0;
-    private static final double F52  =         7.455 * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F53  =         0.008 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F52  =         7.4722   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F53  =         0.007702 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // CHECKSTYLE: resume JavadocVariable check
 
@@ -426,7 +426,7 @@ class TODFrame extends FactoryManagedFrame {
      * on a small number of reference points only.</p>
      * @param t offset from J2000.0 epoch in seconds
      */
-    protected void computeNutationElements(final double t) {
+    void computeNutationElements(final double t) {
 
         // offset in julian centuries
         final double tc =  t / Constants.JULIAN_CENTURY;

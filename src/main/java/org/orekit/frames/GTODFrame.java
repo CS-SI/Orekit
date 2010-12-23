@@ -27,7 +27,8 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
-/** Pseudo Earth Fixed Frame.
+/** Greenwich True Of Date Frame, also known as True of Date Rotating frame (TDR)
+ * or Greenwich Rotating Coordinate frame (GCR).
  * <p> This frame handles the sidereal time according to IAU-82 model.</p>
  * <p> Its parent frame is the {@link TODFrame}.</p>
  * <p> The pole motion is not applied here.</p>
@@ -83,7 +84,7 @@ class GTODFrame extends FactoryManagedFrame {
     private static final double F13  =         0.0516348 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // Coefficients for l' (Mean Anomaly of the Sun).
-    private static final double F20  = FastMath.toRadians(357.52752910918);
+    private static final double F20  = FastMath.toRadians(357.52910918);
     private static final double F210 =   1292581.048     * Constants.ARC_SECONDS_TO_RADIANS;
     private static final double F211 =        99.0;
     private static final double F22  =        -0.55332   * Constants.ARC_SECONDS_TO_RADIANS;
@@ -104,11 +105,11 @@ class GTODFrame extends FactoryManagedFrame {
     private static final double F43  =         0.0065916 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // Coefficients for Omega (Mean Longitude of the Ascending Node of the Moon).
-    private static final double F50  = FastMath.toRadians(125.04452222);
-    private static final double F510 =   -482890.539 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F50  = FastMath.toRadians(125.0445501);
+    private static final double F510 =   -482890.2665   * Constants.ARC_SECONDS_TO_RADIANS;
     private static final double F511 =        -5.0;
-    private static final double F52  =         7.455 * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F53  =         0.008 * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F52  =         7.4722   * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double F53  =         0.007702 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // CHECKSTYLE: resume JavadocVariable check
 
@@ -257,8 +258,8 @@ class GTODFrame extends FactoryManagedFrame {
     /** Nutation in longitude current. */
     private double dpsiCurrent;
 
-    /** Nutation in obliquity current. */
-    private double depsCurrent;
+//    /** Nutation in obliquity current. */
+//    private double depsCurrent;
 
     /** Nutation in longitude of reference. */
     private final double[] dpsiRef;
@@ -269,8 +270,8 @@ class GTODFrame extends FactoryManagedFrame {
     /** Neville interpolation array for dpsi. */
     private final double[] dpsiNeville;
 
-    /** Neville interpolation array for deps. */
-    private final double[] depsNeville;
+//    /** Neville interpolation array for deps. */
+//    private final double[] depsNeville;
 
     /** Mean obliquity of the ecliptic. */
     private double moe;
@@ -311,7 +312,7 @@ class GTODFrame extends FactoryManagedFrame {
         dpsiRef     = new double[n];
         depsRef     = new double[n];
         dpsiNeville = new double[n];
-        depsNeville = new double[n];
+//        depsNeville = new double[n];
 
         // everything is in place, we can now synchronize the frame
         updateFrame(AbsoluteDate.J2000_EPOCH);
@@ -395,19 +396,19 @@ class GTODFrame extends FactoryManagedFrame {
 
         // interpolate nutation elements using Neville's algorithm
         System.arraycopy(dpsiRef, 0, dpsiNeville, 0, n);
-        System.arraycopy(depsRef, 0, depsNeville, 0, n);
+//        System.arraycopy(depsRef, 0, depsNeville, 0, n);
         final double theta = (t - tCenter) / h;
         for (int j = 1; j < n; ++j) {
             for (int i = n - 1; i >= j; --i) {
                 final double c1 = (theta + nM12 - i + j) / j;
                 final double c2 = (theta + nM12 - i) / j;
                 dpsiNeville[i] = c1 * dpsiNeville[i] - c2 * dpsiNeville[i - 1];
-                depsNeville[i] = c1 * depsNeville[i] - c2 * depsNeville[i - 1];
+//                depsNeville[i] = c1 * depsNeville[i] - c2 * depsNeville[i - 1];
             }
         }
 
         dpsiCurrent = dpsiNeville[n - 1];
-        depsCurrent = depsNeville[n - 1];
+//        depsCurrent = depsNeville[n - 1];
 
     }
 
@@ -443,7 +444,7 @@ class GTODFrame extends FactoryManagedFrame {
         for (int i = iMin; i < iMax; ++i) {
             computeNutationElements(tCenter + (i - nM12) * h);
             dpsiRef[i] = dpsiCurrent;
-            depsRef[i] = depsCurrent;
+//            depsRef[i] = depsCurrent;
         }
 
     }
@@ -490,7 +491,7 @@ class GTODFrame extends FactoryManagedFrame {
 
         // Convert results from 0.1 mas units to radians. */
         dpsiCurrent = dpsi * Constants.ARC_SECONDS_TO_RADIANS * 1.e-4;
-        depsCurrent = deps * Constants.ARC_SECONDS_TO_RADIANS * 1.e-4;
+//        depsCurrent = deps * Constants.ARC_SECONDS_TO_RADIANS * 1.e-4;
 
     }
 
