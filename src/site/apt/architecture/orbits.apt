@@ -74,12 +74,14 @@ Orbits
   purposes, it is <not> always the same as the value used for propagation (but
   of course, using different values should be done with care).
 
-  Orbits also include a reference to a date and a defining frame. This allows 
-  transparent conversions to any other frames at given date, without having to 
-  externally preserve a mapping between orbits and their frame: it is already done. 
-  As an example, getting the position and velocity of a satellite given by a circular
-  orbit in a ground station frame is simply a matter of calling orbit.getPVCoordinates(stationFrame),
-  regardless of the frame in which the orbit is defined (EME2000, GCRF ...).
+  Orbits also include a reference to a date and a defining frame. Only pseudo-inertial
+  frames can be used to define orbits, as Newtonian mechanics should apply within the
+  context of the frame. Including frames allow transparent conversions to any other
+  frames at given date, without having to  externally preserve a mapping between orbits
+  and their frame: it is already done. As an example, getting the position and velocity
+  of a satellite given by a circular orbit in a ground station frame is simply a matter
+  of calling orbit.getPVCoordinates(stationFrame), regardless of the pseudo-inertial frame
+  in which the orbit is defined (EME2000, GCRF ...).
 
   Since orbits are used everywhere in space dynamics applications and since we
   have chosen to restrict them to a simple state holder, all orbit classes are
@@ -114,7 +116,7 @@ Orbits
      ** v, M or E  (rad) : respectively true anomaly, mean anomaly or eccentric anomaly.
 
   \
-  * Circular orbit, used to represent quasi circular orbit, i.e orbit with low 
+  * Circular orbit, used to represent almost circular orbit, i.e orbit with low 
   eccentricity. Its parameters are:
    
      ** a : semi-major axis (m)
@@ -130,7 +132,7 @@ Orbits
      ** \u03b1v, \u03b1M or \u03b1E (rad) : respectively (\u03c9 + v), (\u03c9 + M) or (\u03c9 + E).
 
   \
-  * Equinoctial orbit, used to represent equinoctial orbits (quasi circular orbit with quasi
+  * Equinoctial orbit, used to represent equinoctial orbits (almost circular orbit with almost
    null inclination). Its parameters are:
    
      ** a : semi-major axis (m)
