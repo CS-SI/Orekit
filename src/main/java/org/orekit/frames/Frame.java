@@ -69,20 +69,20 @@ public class Frame implements Serializable {
     /** Instance name. */
     private final String name;
 
-    /** Indicator for quasi-inertial frames. */
-    private final boolean quasiInertial;
+    /** Indicator for pseudo-inertial frames. */
+    private final boolean pseudoInertial;
 
     /** Private constructor used only for the root frame.
      * @param name name of the frame
-     * @param quasiInertial true if frame is considered quasi-inertial
+     * @param pseudoInertial true if frame is considered pseudo-inertial
      * (i.e. suitable for propagating orbit)
      */
-    private Frame(final String name, final boolean quasiInertial) {
+    private Frame(final String name, final boolean pseudoInertial) {
         parent    = null;
         transform = Transform.IDENTITY;
         commons   = new WeakHashMap<Frame, Frame>();
         this.name = name;
-        this.quasiInertial = quasiInertial;
+        this.pseudoInertial = pseudoInertial;
     }
 
     /** Build a non-inertial frame from its transform with respect to its parent.
@@ -110,12 +110,12 @@ public class Frame implements Serializable {
      * @param parent parent frame (must be non-null)
      * @param transform transform from parent frame to instance
      * @param name name of the frame
-     * @param quasiInertial true if frame is considered quasi-inertial
+     * @param pseudoInertial true if frame is considered pseudo-inertial
      * (i.e. suitable for propagating orbit)
      * @exception IllegalArgumentException if the parent frame is null
      */
     public Frame(final Frame parent, final Transform transform, final String name,
-                 final boolean quasiInertial)
+                 final boolean pseudoInertial)
         throws IllegalArgumentException {
 
         if (parent == null) {
@@ -123,7 +123,7 @@ public class Frame implements Serializable {
                                                                  name);
         }
         this.name          = name;
-        this.quasiInertial = quasiInertial;
+        this.pseudoInertial = pseudoInertial;
         this.parent        = parent;
         this.transform     = transform;
         commons            = new WeakHashMap<Frame, Frame>();
@@ -137,17 +137,32 @@ public class Frame implements Serializable {
         return this.name;
     }
 
-    /** Check if the frame is quasi-inertial.
-     * <p>Quasi-inertial frames are frames that do have a linear motion and
+    /** Check if the frame is pseudo-inertial.
+     * <p>Pseudo-inertial frames are frames that do have a linear motion and
      * either do not rotate or rotate at a very low rate resulting in
      * neglectible inertial forces. This means they are suitable for orbit
-     * definition and propagation. Frames that are <em>not</em>
-     * quasi-inertial are <em>not</em> suitable for orbit definition and
-     * propagation.</p>
-     * @return true if frame is quasi-inertial
+     * definition and propagation using Newtonian mechanics. Frames that are
+     * <em>not</em> pseudo-inertial are <em>not</em> suitable for orbit
+     * definition and propagation.</p>
+     * @return true if frame is pseudo-inertial
+     * @deprecated as of 5.1, replaced by {@link #isPseudoInertial()}
      */
+    @Deprecated
     public boolean isQuasiInertial() {
-        return quasiInertial;
+        return isPseudoInertial();
+    }
+
+    /** Check if the frame is pseudo-inertial.
+     * <p>Pseudo-inertial frames are frames that do have a linear motion and
+     * either do not rotate or rotate at a very low rate resulting in
+     * neglectible inertial forces. This means they are suitable for orbit
+     * definition and propagation using Newtonian mechanics. Frames that are
+     * <em>not</em> pseudo-inertial are <em>not</em> suitable for orbit
+     * definition and propagation.</p>
+     * @return true if frame is pseudo-inertial
+     */
+    public boolean isPseudoInertial() {
+        return pseudoInertial;
     }
 
     /** New definition of the java.util toString() method.
@@ -414,7 +429,7 @@ public class Frame implements Serializable {
     public Frame getFrozenFrame(final Frame reference, final AbsoluteDate freezingDate,
                                 final String name) throws OrekitException {
         return new Frame(reference, reference.getTransformTo(this, freezingDate).freeze(),
-                         name, reference.isQuasiInertial());
+                         name, reference.isPseudoInertial());
     }
 
     /** Get the unique J2000 frame.
