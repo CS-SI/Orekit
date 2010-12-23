@@ -80,15 +80,15 @@ public abstract class Orbit implements TimeStamped, Serializable {
     /** Default constructor.
      * Build a new instance with arbitrary default elements.
      * @param frame the frame in which the parameters are defined
-     * (<em>must</em> be a {@link Frame#isQuasiInertial quasi-inertial frame})
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m^3/s^2)
      * @exception IllegalArgumentException if frame is not a {@link
-     * Frame#isQuasiInertial quasi-inertial frame}
+     * Frame#isPseudoInertial pseudo-inertial frame}
      */
     protected Orbit(final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        ensureQuasiInertialFrame(frame);
+        ensurePseudoInertialFrame(frame);
         this.date = date;
         this.mu = mu;
         this.pvCoordinates = null;
@@ -98,32 +98,32 @@ public abstract class Orbit implements TimeStamped, Serializable {
     /** Set the orbit from cartesian parameters.
      * @param pvCoordinates the position and velocity in the inertial frame
      * @param frame the frame in which the {@link PVCoordinates} are defined
-     * (<em>must</em> be a {@link Frame#isQuasiInertial quasi-inertial frame})
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m^3/s^2)
      * @exception IllegalArgumentException if frame is not a {@link
-     * Frame#isQuasiInertial quasi-inertial frame}
+     * Frame#isPseudoInertial pseudo-inertial frame}
      */
     protected Orbit(final PVCoordinates pvCoordinates, final Frame frame,
                     final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        ensureQuasiInertialFrame(frame);
+        ensurePseudoInertialFrame(frame);
         this.date = date;
         this.mu = mu;
         this.pvCoordinates = pvCoordinates;
         this.frame = frame;
     }
 
-    /** Ensure the defining frame is a quasi-inertial frame.
+    /** Ensure the defining frame is a pseudo-inertial frame.
      * @param frame frame to check
      * @exception IllegalArgumentException if frame is not a {@link
-     * Frame#isQuasiInertial quasi-inertial frame}
+     * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    private static void ensureQuasiInertialFrame(final Frame frame)
+    private static void ensurePseudoInertialFrame(final Frame frame)
         throws IllegalArgumentException {
-        if (!frame.isQuasiInertial()) {
+        if (!frame.isPseudoInertial()) {
             throw OrekitException.createIllegalArgumentException(
-                OrekitMessages.NON_QUASI_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS,
+                OrekitMessages.NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS,
                 frame.getName());
         }
     }

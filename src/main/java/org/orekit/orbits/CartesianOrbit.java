@@ -67,11 +67,11 @@ public class CartesianOrbit extends Orbit {
     /** Constructor from cartesian parameters.
      * @param pvCoordinates the position and velocity of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined
-     * (<em>must</em> be a {@link Frame#isQuasiInertial quasi-inertial frame})
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if frame is not a {@link
-     * Frame#isQuasiInertial quasi-inertial frame}
+     * Frame#isPseudoInertial pseudo-inertial frame}
      */
     public CartesianOrbit(final PVCoordinates pvCoordinates, final Frame frame,
                           final AbsoluteDate date, final double mu)
@@ -84,7 +84,7 @@ public class CartesianOrbit extends Orbit {
      * @param op orbital parameters to copy
      */
     public CartesianOrbit(final Orbit op) {
-        super(op.getFrame(), op.getDate(), op.getMu());
+        super(op.getPVCoordinates(), op.getFrame(), op.getDate(), op.getMu());
         equinoctial = (op instanceof EquinoctialOrbit) ? (EquinoctialOrbit) op : new EquinoctialOrbit(op);
     }
 

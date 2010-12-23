@@ -106,13 +106,13 @@ public class EquinoctialOrbit extends Orbit {
      * @param type type of latitude argument, must be one of {@link #MEAN_LATITUDE_ARGUMENT},
      * {@link #ECCENTRIC_LATITUDE_ARGUMENT} or  {@link #TRUE_LATITUDE_ARGUMENT}
      * @param frame the frame in which the parameters are defined
-     * (<em>must</em> be a {@link Frame#isQuasiInertial quasi-inertial frame})
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if the longitude argument type is not
      * one of {@link #MEAN_LATITUDE_ARGUMENT}, {@link #ECCENTRIC_LATITUDE_ARGUMENT}
      * or {@link #TRUE_LATITUDE_ARGUMENT} or if frame is not a {@link
-     * Frame#isQuasiInertial quasi-inertial frame}
+     * Frame#isPseudoInertial pseudo-inertial frame}
      * @see #MEAN_LATITUDE_ARGUMENT
      * @see #ECCENTRIC_LATITUDE_ARGUMENT
      * @see #TRUE_LATITUDE_ARGUMENT
@@ -152,11 +152,11 @@ public class EquinoctialOrbit extends Orbit {
     /** Constructor from cartesian parameters.
      * @param pvCoordinates the position end velocity
      * @param frame the frame in which are defined the {@link PVCoordinates}
-     * (<em>must</em> be a {@link Frame#isQuasiInertial quasi-inertial frame})
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if frame is not a {@link
-     * Frame#isQuasiInertial quasi-inertial frame}
+     * Frame#isPseudoInertial pseudo-inertial frame}
      */
     public EquinoctialOrbit(final PVCoordinates pvCoordinates, final Frame frame,
                                  final AbsoluteDate date, final double mu)
