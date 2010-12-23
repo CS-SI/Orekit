@@ -51,7 +51,7 @@ public class VEISFrameTest {
                               new Vector3D(-4736.246465, 843.352600, 5531.931275));
 
         PVCoordinates delta0 = new PVCoordinates(t0.transformPVCoordinates(pvJ2000), pvVEIS);
-        Assert.assertEquals(0.0, delta0.getPosition().getNorm(), 6.0e-4);
+        Assert.assertEquals(0.0, delta0.getPosition().getNorm(), 9.0e-4);
         Assert.assertEquals(0.0, delta0.getVelocity().getNorm(), 3.0e-5);
 
     }

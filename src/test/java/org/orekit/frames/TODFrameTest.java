@@ -64,8 +64,8 @@ public class TODFrameTest {
 
         checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.8, 1.7e-3);
         checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 2.3, 1.6e-3);
-        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 6.8e-5, 6.0e-7);
-        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76Wcorr), 0.90615, 7.4e-4);
+        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 1.1e-3, 2.9e-7);
+        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76Wcorr), 0.91, 7.4e-4);
 
     }
 
@@ -100,7 +100,7 @@ public class TODFrameTest {
         checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.4, 7.9e-4);
         checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76Wcorr), 4.5, 2.3e-5);
 
-        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 4.6e-5, 8.8e-7);
+        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 5.2e-4, 9.1e-7);
         checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 3.5, 7.7e-4);
 
     }
@@ -153,9 +153,6 @@ public class TODFrameTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Vector3D t = reference.getVelocity().normalize();
-        Vector3D w = reference.getMomentum().normalize();
-        Vector3D n = Vector3D.crossProduct(w, t);
         Assert.assertEquals(0, dP.getNorm(), positionThreshold);
         Assert.assertEquals(0, dV.getNorm(), velocityThreshold);
     }

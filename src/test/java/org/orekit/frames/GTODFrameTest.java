@@ -59,14 +59,14 @@ public class GTODFrameTest {
         // at 2004-04-06 there is a 0.471ms difference in dut1 and a 0.077ms difference
         // in lod with the data used by Vallado to set up this test case
         PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
-        Assert.assertEquals(0.283011, delta.getPosition().getNorm(), 1.0e-6);
-        Assert.assertEquals(1.533846e-4, delta.getVelocity().getNorm(), 1.0e-10);
+        Assert.assertEquals(0.283289, delta.getPosition().getNorm(), 1.0e-6);
+        Assert.assertEquals(1.535355e-4, delta.getVelocity().getNorm(), 1.0e-10);
 
         // even if lod correction is ignored, results are quite the same
         t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
         delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
-        Assert.assertEquals(0.283011, delta.getPosition().getNorm(), 1.0e-6);
-        Assert.assertEquals(1.592465e-4, delta.getVelocity().getNorm(), 1.0e-10);
+        Assert.assertEquals(0.283289, delta.getPosition().getNorm(), 1.0e-6);
+        Assert.assertEquals(1.593972e-4, delta.getVelocity().getNorm(), 1.0e-10);
 
     }
 
@@ -97,13 +97,13 @@ public class GTODFrameTest {
         // at 2004-06-01 there is a 0.047ms difference in dut1 and a 0.416ms difference
         // in lod with the data used by Vallado to set up this test case
         PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
-        Assert.assertEquals(0.193876, delta.getPosition().getNorm(), 1.0e-6);
-        Assert.assertEquals(1.427464e-5, delta.getVelocity().getNorm(), 9.0e-12);
+        Assert.assertEquals(0.195813, delta.getPosition().getNorm(), 1.0e-6);
+        Assert.assertEquals(1.427468e-5, delta.getVelocity().getNorm(), 9.0e-12);
 
         // even if lod correction is ignored, results are quite the same
         t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
         delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
-        Assert.assertEquals(0.193876, delta.getPosition().getNorm(), 5.0e-7);
+        Assert.assertEquals(0.195813, delta.getPosition().getNorm(), 5.0e-7);
         Assert.assertEquals(5.156e-7, delta.getVelocity().getNorm(), 8.0e-11);
 
     }

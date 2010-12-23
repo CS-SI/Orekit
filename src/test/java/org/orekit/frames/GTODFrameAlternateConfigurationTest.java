@@ -54,13 +54,13 @@ public class GTODFrameAlternateConfigurationTest {
                               new Vector3D(-4746.088567, 786.077222, 5531.931288));
         
         Transform t = FramesFactory.getTOD(true).getTransformTo(FramesFactory.getGTOD(true), t0);
-        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.0091, 4.7e-6);
+        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.0094, 4.9e-6);
 
         // if lod correction is ignored, results are quite the same
         t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
         PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
-        Assert.assertEquals(9.1e-3, delta.getPosition().getNorm(), 1.0e-6);
-        Assert.assertEquals(1.4e-5, delta.getVelocity().getNorm(), 1.0e-7);
+        Assert.assertEquals(9.378e-3, delta.getPosition().getNorm(), 1.0e-6);
+        Assert.assertEquals(1.41e-5, delta.getVelocity().getNorm(), 1.0e-7);
 
     }
 
@@ -87,12 +87,12 @@ public class GTODFrameAlternateConfigurationTest {
             new PVCoordinates(new Vector3D(24796919.2956, -34115870.9001, 10293.2583),
                               new Vector3D(-0.979178, -1.476540, -0.928772));
 
-        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.049, 5.2e-7);
+        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.051, 5.2e-7);
 
         // if lod correction is ignored, results are quite the same
         t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
         PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
-        Assert.assertEquals(4.8e-2, delta.getPosition().getNorm(), 1.5e-4);
+        Assert.assertEquals(5.01e-2, delta.getPosition().getNorm(), 1.5e-4);
         Assert.assertEquals(5.2e-7, delta.getVelocity().getNorm(), 4.0e-9);
 
     }
