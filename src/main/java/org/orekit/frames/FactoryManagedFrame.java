@@ -36,13 +36,13 @@ public class FactoryManagedFrame extends Frame {
     /** Simple constructor.
      * @param parent parent frame (must be non-null)
      * @param transform transform from parent frame to instance
-     * @param quasiInertial true if frame is considered quasi-inertial
+     * @param pseudoInertial true if frame is considered pseudo-inertial
      * (i.e. suitable for propagating orbit)
      * @param factoryKey key of the frame within the factory
      */
     protected FactoryManagedFrame(final Frame parent, final Transform transform,
-                                  final boolean quasiInertial, final Predefined factoryKey) {
-        super(parent, transform, factoryKey.getName(), quasiInertial);
+                                  final boolean pseudoInertial, final Predefined factoryKey) {
+        super(parent, transform, factoryKey.getName(), pseudoInertial);
         this.factoryKey = factoryKey;
     }
 
