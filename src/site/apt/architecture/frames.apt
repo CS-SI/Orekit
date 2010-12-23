@@ -73,9 +73,9 @@ Frames
   The <<<FramesFactory>>> class provides several predefined reference frames.
 
   The user can retrieve them using various static methods: <<<getGCRF()>>>, <<<getEME2000()>>>,
-  <<<getCIRF2000()>>>, <<<getTIRF2000()>>>, <<<getITRF93()>>>, <<<getITRF97()>>>, <<<getITRF2000()>>>,
-  <<<getITRF2005()>>>, <<<getITRF2008()>>>, <<<getMOD()>>>, <<<getTOD()>>>, <<<getGTOD()>>>,
-  <<<getTEME()>>> and <<<getVeis1950()>>>. One of these reference frames
+  <<<getICRF()>>>, <<<getCIRF2000()>>>, <<<getTIRF2000()>>>, <<<getITRF93()>>>, <<<getITRF97()>>>,
+  <<<getITRF2000()>>>, <<<getITRF2005()>>>, <<<getITRF2008()>>>, <<<getMOD()>>>, <<<getTOD()>>>,
+  <<<getGTOD()>>>, <<<getTEME()>>> and <<<getVeis1950()>>>. One of these reference frames
   has been arbitrarily chosen as the root of the frames tree: the <Geocentric Celestial
   Reference Frame> (GCRF) which is an inertial reference defined by IERS.
 
@@ -92,7 +92,7 @@ Frames
   This set defines the GCRF reference frame on the celestial (i.e. inertial) side,
   the ITRF (International Terrestrial Reference Frame) on the terrestrial side and several
   intermediate frames between them. Several versions of ITRF have been defined. Orekit
-  supports the last available version at time of writing (2009), which is ITRF 2005.
+  supports the last available version at time of writing (2010), which is ITRF 2008.
 
 *** New paradigm: CIO-based transformations
 
@@ -215,7 +215,8 @@ Frames
   predefined frames are the Sun, the Moon, the eight planets and the Pluto dwarf planet.
   In addition to these real bodies, two points are supported for convenience as if they
   were real bodies: the solar system barycenter and the Earth-Moon barycenter ; in these
-  cases, the associated frames are aligned with EME2000.
+  cases, the associated frames are aligned with EME2000. One important case is the solar
+  system barycenter, as its associated frame is the ICRF.
 
 [../images/solar-system-frames.png]
 
