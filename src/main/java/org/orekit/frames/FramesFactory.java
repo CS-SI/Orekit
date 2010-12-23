@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -384,6 +385,16 @@ public class FramesFactory implements Serializable {
      */
     public static Frame getGCRF() {
         return Frame.getRoot();
+    }
+
+    /** Get the unique ICRF frame.
+     * <p>The ICRF frame is centered at solar system barycenter and aligned
+     * with EME2000.</p>
+     * @return the unique instance of the ICRF frame
+     * @exception OrekitException if solar system ephemerides cannot be loaded
+     */
+    public static Frame getICRF() throws OrekitException {
+        return CelestialBodyFactory.getSolarSystemBarycenter().getInertiallyOrientedFrame();
     }
 
     /** Get the unique EME2000 frame.
@@ -884,13 +895,33 @@ public class FramesFactory implements Serializable {
         return getMOD(applyEOPCorr);
     }
 
-    /** Get the TOD reference frame.
+    /** Get the TEME reference frame.
+     * <p>
+     * The TEME frame is used for the SGP4 model in TLE propagation. This frame has <em>no</em>
+     * official definition and there are some ambiguities about whether it should be used
+     * as "of date" or "of epoch". This frame should therefore be used <em>only</em> for
+     * TLE propagation and not for anything else, as recommended by the CCSDS Orbit Data Message
+     * blue book.
+     * </p>
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
      */
     public static FactoryManagedFrame getTEME() throws OrekitException {
-        // TODO TEME is not really TOD, TOD uses true equinox whereas TEME uses mean equinox
-        return getTOD(true);
+        synchronized (FramesFactory.class) {
+
+            // try to find an already built frame
+            final Predefined factoryKey = Predefined.TEME;
+            FactoryManagedFrame frame = FRAMES.get(factoryKey);
+
+            if (frame == null) {
+                // it's the first time we need this frame, build it and store it
+                frame = new TEMEFrame(factoryKey);
+                FRAMES.put(factoryKey, frame);
+            }
+
+            return frame;
+
+        }
     }
 
 }

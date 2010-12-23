@@ -26,6 +26,9 @@ public enum Predefined {
     /** GCRF frame.*/
     GCRF(Frame.getRoot().getName()),
 
+    /** ICRF frame.*/
+    ICRF("ICRF"),
+
     /** EME2000 frame.*/
     EME2000("EME2000"),
 
@@ -87,7 +90,10 @@ public enum Predefined {
     MOD_WITHOUT_EOP_CORRECTIONS("MOD without EOP"),
 
     /** MOD with EOP corrections. */
-    MOD_WITH_EOP_CORRECTIONS("MOD with EOP");
+    MOD_WITH_EOP_CORRECTIONS("MOD with EOP"),
+
+    /** TEME frame. */
+    TEME("TEME");
 
     /** Name fo the frame. */
     private final String name;
