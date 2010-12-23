@@ -319,7 +319,8 @@ class IAUPoleFactory {
     /** Default IAUPole implementation for barycenters.
      * <p>
      * This implementation defines directions such that the inertially oriented and body
-     * oriented frames are identical and aligned with EME2000.
+     * oriented frames are identical and aligned with EME2000. It is used for example
+     * to define the ICRF.
      * </p>
      */
     private static class EME2000Aligned implements IAUPole {
