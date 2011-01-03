@@ -48,17 +48,24 @@ public class TEMEFrameTest {
            new PVCoordinates(new Vector3D(-9060473.73569, 4658709.52502, 813686.73153),
                              new Vector3D(-2232.832783, -4110.453490, -3157.345433));
 
-        // EME2000
-        PVCoordinates pvEME2000 =
-            new PVCoordinates(new Vector3D(-9059941.3786, 4659697.2000, 813958.8875),
-                              new Vector3D(-2233.348094, -4110.136162, -3157.394074));
+        // reference position in EME2000
+        // note that Valado's book gives
+        //        PVCoordinates pvEME2000Ref =
+        //            new PVCoordinates(new Vector3D(-9059941.3786, 4659697.2000, 813958.8875),
+        //                              new Vector3D(-2233.348094, -4110.136162, -3157.394074));
+        // the values we use here are slightly different, they were computed using
+        // Vallado's C++ companion code to the book, using the teme_j2k function with
+        // all 106 nutation terms and the 2 corrections elements of the equation of the equinoxes
+        PVCoordinates pvEME2000Ref =
+            new PVCoordinates(new Vector3D(-9059941.5224999374914, 4659697.1225837596648, 813957.72947647583351),
+                              new Vector3D(-2233.3476939179299769, -4110.1362849403413335, -3157.3941963060194738));
         
         Transform t = FramesFactory.getTEME().getTransformTo(FramesFactory.getEME2000(), t0);
 
-        PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTEME), pvEME2000);
-      
-        Assert.assertEquals(0.0, delta.getPosition().getNorm(), 1.2);
-        Assert.assertEquals(0.0, delta.getVelocity().getNorm(), 4.0e-4);
+        PVCoordinates pvEME2000Computed = t.transformPVCoordinates(pvTEME);
+        PVCoordinates delta = new PVCoordinates(pvEME2000Computed, pvEME2000Ref);
+        Assert.assertEquals(0.0, delta.getPosition().getNorm(), 0.025);
+        Assert.assertEquals(0.0, delta.getVelocity().getNorm(), 1.0e-5);
 
     }
 

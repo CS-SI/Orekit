@@ -22,6 +22,7 @@ import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
 /** True Equator, Mean Equinox of Date Frame.
@@ -47,6 +48,10 @@ class TODFrame extends FactoryManagedFrame {
     private static final long serialVersionUID = 6318738377160926252L;
 
     // CHECKSTYLE: stop JavadocVariable check
+
+    // Coefficients for the Equation of the Equinoxes.
+    private static final double EQE_1 =     0.00264  * Constants.ARC_SECONDS_TO_RADIANS;
+    private static final double EQE_2 =     0.000063 * Constants.ARC_SECONDS_TO_RADIANS;
 
     // Coefficients for the Mean Obliquity of the Ecliptic.
     private static final double MOE_0 = 84381.448    * Constants.ARC_SECONDS_TO_RADIANS;
@@ -227,20 +232,17 @@ class TODFrame extends FactoryManagedFrame {
         +0.0,  0.0,  0.0,  0.0,  0.0,  0.0
     };
 
-    /** Mean obliquity of the ecliptic. */
-    private double moe;
+    /** Start date for applying Moon corrections to the equation of the equinoxes.
+     * This date corresponds to 1997-02-27T00:00:00 UTC, hence the 30s offset from TAI.
+     */
+    private static final AbsoluteDate NEW_EQE_MODEL_START =
+        new AbsoluteDate(1997, 2, 27, 0, 0, 30, TimeScalesFactory.getTAI());
 
     /** "Left-central" date of the interpolation array. */
     private double tCenter;
 
     /** Step size of the interpolation array. */
     private final double h;
-
-    /** Nutation in longitude current. */
-    private double dpsiCurrent;
-
-    /** Nutation in obliquity current. */
-    private double depsCurrent;
 
     /** Nutation in longitude of reference. */
     private final double[] dpsiRef;
@@ -315,23 +317,20 @@ class TODFrame extends FactoryManagedFrame {
         if ((cachedDate == null) || !cachedDate.equals(date)) {
 
             // offset from J2000.0 epoch
-            final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+            final double t = date.durationFrom(AbsoluteDate.J2000_EPOCH);
 
             // evaluate the nutation elements
-            setInterpolatedNutationElements(tts);
-
-            // offset from J2000 epoch in julian centuries
-            final double ttc = tts / Constants.JULIAN_CENTURY;
+            final double[] nutation = getInterpolatedNutationElements(t);
 
             // compute the mean obliquity of the ecliptic
-            moe = ((MOE_3 * ttc + MOE_2) * ttc + MOE_1) * ttc + MOE_0;
+            final double moe = getMeanObliquityOfEcliptic(t);
 
             // get the IAU1980 corrections for the nutation parameters
             final NutationCorrection nutCorr =
                 ((MODFrame) getParent()).getNutationCorrection(date);
 
-            final double deps = depsCurrent + nutCorr.getDdeps();
-            final double dpsi = dpsiCurrent + nutCorr.getDdpsi();
+            final double deps = nutation[1] + nutCorr.getDdeps();
+            final double dpsi = nutation[0] + nutCorr.getDdpsi();
 
             // compute the true obliquity of the ecliptic
             final double toe = moe + deps;
@@ -353,10 +352,63 @@ class TODFrame extends FactoryManagedFrame {
 
     }
 
+    /** Get the Equation of the Equinoxes at the current date.
+     * @param  date the date
+     * @exception OrekitException if nutation model cannot be computed
+     */
+    public double getEquationOfEquinoxes(final AbsoluteDate date)
+        throws OrekitException {
+
+        // offset from J2000 epoch in seconds
+        final double t = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+
+        // nutation in longitude
+        final double dPsi = getInterpolatedNutationElements(t) [0];
+
+        // mean obliquity of ecliptic
+        final double moe = getMeanObliquityOfEcliptic(t);
+
+        // original definition of equation of equinoxes
+        double eqe = dPsi * FastMath.cos(moe);
+
+        if (date.compareTo(NEW_EQE_MODEL_START) >= 0) {
+
+            // IAU 1994 resolution C7 added two terms to the equation of equinoxes
+            // taking effect since 1997-02-27 for continuity
+
+            // Mean longitude of the ascending node of the Moon
+            final double tc = t / Constants.JULIAN_CENTURY;
+            final double om = ((F53 * tc + F52) * tc + F510) * tc + F50 + ((F511 * tc) % 1.0) * MathUtils.TWO_PI;
+
+            // add the two correction terms
+            eqe += EQE_1 * FastMath.sin(om) + EQE_2 * FastMath.sin(om + om);
+
+        }
+
+        return eqe;
+
+    }
+
+    /** Compute the mean obliquity of the ecliptic
+     * @param t offset from J2000 epoch in seconds
+     * @return mean obliquity of ecliptic
+     */
+    private double getMeanObliquityOfEcliptic(final double t) {
+
+        // offset from J2000 epoch in julian centuries
+        final double tc = t / Constants.JULIAN_CENTURY;
+
+        // compute the mean obliquity of the ecliptic
+        return ((MOE_3 * tc + MOE_2) * tc + MOE_1) * tc + MOE_0;
+
+    }
+
     /** Set the interpolated nutation elements.
      * @param t offset from J2000.0 epoch in seconds
+     * @return interpolated nutation elements in a two elements array,
+     * with dPsi at index 0 and dEpsilon at index 1
      */
-    protected void setInterpolatedNutationElements(final double t) {
+    public double[] getInterpolatedNutationElements(final double t) {
 
         final int n    = dpsiRef.length;
         final int nM12 = (n - 1) / 2;
@@ -378,8 +430,7 @@ class TODFrame extends FactoryManagedFrame {
             }
         }
 
-        dpsiCurrent = dpsiNeville[n - 1];
-        depsCurrent = depsNeville[n - 1];
+        return new double[] { dpsiNeville[n - 1], depsNeville[n - 1] };
 
     }
 
@@ -413,9 +464,9 @@ class TODFrame extends FactoryManagedFrame {
         // compute new reference points
         tCenter = newTCenter;
         for (int i = iMin; i < iMax; ++i) {
-            computeNutationElements(tCenter + (i - nM12) * h);
-            dpsiRef[i] = dpsiCurrent;
-            depsRef[i] = depsCurrent;
+            final double[] nutation = computeNutationElements(tCenter + (i - nM12) * h);
+            dpsiRef[i] = nutation[0];
+            depsRef[i] = nutation[1];
         }
 
     }
@@ -425,8 +476,10 @@ class TODFrame extends FactoryManagedFrame {
      * It is called by the {@link #setInterpolatedNutationElements(double)}
      * on a small number of reference points only.</p>
      * @param t offset from J2000.0 epoch in seconds
+     * @return computed nutation elements in a two elements array,
+     * with dPsi at index 0 and dEpsilon at index 1
      */
-    void computeNutationElements(final double t) {
+    public double[] computeNutationElements(final double t) {
 
         // offset in julian centuries
         final double tc =  t / Constants.JULIAN_CENTURY;
@@ -461,8 +514,10 @@ class TODFrame extends FactoryManagedFrame {
         }
 
         // Convert results from 0.1 mas units to radians. */
-        dpsiCurrent = dpsi * Constants.ARC_SECONDS_TO_RADIANS * 1.e-4;
-        depsCurrent = deps * Constants.ARC_SECONDS_TO_RADIANS * 1.e-4;
+        return new double[] {
+            dpsi * Constants.ARC_SECONDS_TO_RADIANS * 1.e-4,
+            deps * Constants.ARC_SECONDS_TO_RADIANS * 1.e-4
+        };
 
     }
 
