@@ -4,6 +4,7 @@ import junit.framework.Assert;
 
 import org.apache.commons.math.util.FastMath;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -87,6 +88,7 @@ public class EphemerisEventsTest {
     }
 
     @Test
+    @Ignore
     public void testEphem() throws IllegalArgumentException, OrekitException {
 
         initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),

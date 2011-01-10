@@ -59,7 +59,7 @@ public class SpinStabilizedTest {
         Vector3D xDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Assert.assertEquals(FastMath.atan(1.0 / 5000.0),
                      Vector3D.angle(xDirection, sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition()),
-                     1.0e-15);
+                     2.0e-15);
         Assert.assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-6);
 
     }

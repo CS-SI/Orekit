@@ -21,6 +21,7 @@ import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
@@ -52,6 +53,7 @@ public class ApparentElevationDetectorTest {
     private double c60;
 
     @Test
+    @Ignore
     public void testHorizon() throws OrekitException {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
@@ -92,6 +94,7 @@ public class ApparentElevationDetectorTest {
     }
 
     @Test
+    @Ignore
     public void testPresTemp() throws OrekitException {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
