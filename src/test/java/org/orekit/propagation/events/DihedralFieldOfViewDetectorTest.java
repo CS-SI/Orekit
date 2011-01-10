@@ -38,7 +38,7 @@ public class DihedralFieldOfViewDetectorTest {
     // Reference frame = ITRF 2005
     private Frame itrf;
 
-    // Earth center pointing attitude law 
+    // Earth center pointing attitude provider 
     private BodyCenterPointing earthCenterAttitudeLaw;
 
     @Test
@@ -92,7 +92,7 @@ public class DihedralFieldOfViewDetectorTest {
             // Reference frame = ITRF 2005
             itrf = FramesFactory.getITRF2005(true);
 
-            // Create earth center pointing attitude law */
+            // Create earth center pointing attitude provider */
             earthCenterAttitudeLaw = new BodyCenterPointing(itrf);
             
         } catch (OrekitException oe) {

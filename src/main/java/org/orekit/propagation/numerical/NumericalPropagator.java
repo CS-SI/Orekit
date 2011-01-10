@@ -29,8 +29,8 @@ import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.events.EventHandler;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.orekit.attitudes.AttitudeLaw;
-import org.orekit.attitudes.InertialLaw;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
@@ -45,6 +45,8 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AdaptedEventDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.EventObserver;
+import org.orekit.propagation.events.OccurredEvent;
 import org.orekit.propagation.precomputed.IntegratedEphemeris;
 import org.orekit.propagation.sampling.AdaptedStepHandler;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -127,7 +129,7 @@ import org.orekit.utils.PVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
-public class NumericalPropagator implements Propagator {
+public class NumericalPropagator implements Propagator, EventObserver {
 
     /** Parameters types that can be used for propagation. */
     public enum PropagationParametersType {
@@ -151,8 +153,8 @@ public class NumericalPropagator implements Propagator {
 
     // CHECKSTYLE: stop VisibilityModifierCheck
 
-    /** Attitude law. */
-    private AttitudeLaw attitudeLaw;
+    /** Attitude provider. */
+    protected AttitudeProvider attitudeProvider;
 
     /** Central body attraction. */
     private NewtonianAttraction newtonianAttraction;
@@ -163,6 +165,9 @@ public class NumericalPropagator implements Propagator {
     /** Event detectors not related to force models. */
     private final List<EventDetector> detectors;
 
+    /** List for occurred events. */
+    private final List <OccurredEvent> occurredEvents;
+
     /** State vector. */
     private double[] stateVector;
 
@@ -171,6 +176,9 @@ public class NumericalPropagator implements Propagator {
 
     /** Initial state to propagate. */
     private SpacecraftState initialState;
+
+    /** Initial date. */
+    protected AbsoluteDate initialDate;
 
     /** Current state to propagate. */
     private SpacecraftState currentState;
@@ -202,7 +210,7 @@ public class NumericalPropagator implements Propagator {
     // CHECKSTYLE: resume VisibilityModifierCheck
 
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
-     * After creation, the instance is empty, i.e. the attitude law is set to an
+     * After creation, the instance is empty, i.e. the attitude provider is set to an
      * unspecified default law and there are no perturbing forces at all.
      * This means that if {@link #addForceModel addForceModel} is not
      * called after creation, the integrated orbit will follow a keplerian
@@ -211,13 +219,17 @@ public class NumericalPropagator implements Propagator {
      * @param integrator numerical integrator to use for propagation.
      */
     public NumericalPropagator(final FirstOrderIntegrator integrator) {
-        this.forceModels    = new ArrayList<ForceModel>();
-        this.detectors      = new ArrayList<EventDetector>();
-        this.startDate      = new AbsoluteDate();
-        this.currentState   = null;
-        this.adder          = null;
-        this.addStateAndEqu = new ArrayList<AdditionalStateAndEquations>();
-        this.attitudeLaw    = InertialLaw.EME2000_ALIGNED;
+        forceModels         = new ArrayList<ForceModel>();
+        detectors           = new ArrayList<EventDetector>();
+        occurredEvents      = new ArrayList<OccurredEvent>();
+        startDate           = new AbsoluteDate();
+        initialDate         = startDate;
+        currentState        = null;
+        adder               = null;
+        addStateAndEqu      = new ArrayList<AdditionalStateAndEquations>();
+        attitudeProvider    = InertialProvider.EME2000_ALIGNED;
+        stateVector         = new double[7];
+        setMu(Double.NaN);
         setIntegrator(integrator);
         setSlaveMode();
         setPropagationParametersType(PropagationParametersType.EQUINOCTIAL);
@@ -244,14 +256,23 @@ public class NumericalPropagator implements Propagator {
      * @see #setMu(double)
      */
     public double getMu() {
-        return (newtonianAttraction == null) ? Double.NaN : newtonianAttraction.getMu();
+        return newtonianAttraction.getMu();
     }
 
-    /** Set the attitude law.
-     * @param attitudeLaw attitude law
+    /** Set the attitude provider.
+     * @param attitudeProvider attitude provider
+     * @deprecated as of 5.1 replaced by {@link #setAttitudeProvider(AttitudeProvider)
      */
-    public void setAttitudeLaw(final AttitudeLaw attitudeLaw) {
-        this.attitudeLaw = attitudeLaw;
+    @Deprecated
+    public void setAttitudeLaw(final AttitudeProvider attitudeProvider) {
+        this.attitudeProvider = attitudeProvider;
+    }
+
+    /** Set the attitude provider.
+     * @param attitudeProvider attitude provider
+     */
+    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
+        this.attitudeProvider = attitudeProvider;
     }
 
     /** {@inheritDoc} */
@@ -311,6 +332,11 @@ public class NumericalPropagator implements Propagator {
     /** {@inheritDoc} */
     public int getMode() {
         return mode;
+    }
+
+    /** {@inheritDoc} */
+    public Frame getFrame() {
+        return initialState.getFrame();
     }
 
     /** {@inheritDoc}
@@ -459,14 +485,75 @@ public class NumericalPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState propagate(final AbsoluteDate finalDate)
+    public void notify(SpacecraftState s, EventDetector detector) {
+        // Add occurred event to occurred events list
+        occurredEvents.add(new OccurredEvent(s, detector));
+    }
+ 
+    
+    /** {@inheritDoc} */
+    public SpacecraftState propagate(final AbsoluteDate target)
+    throws PropagationException {
+        try {
+            if (startDate == null) {
+                startDate = getInitialState().getDate();
+            }
+            return propagate(startDate, target);
+        } catch (OrekitException oe) {
+
+            // recover a possible embedded PropagationException
+            for (Throwable t = oe; t != null; t = t.getCause()) {
+                if (t instanceof PropagationException) {
+                    throw (PropagationException) t;
+                }
+            }
+            throw new PropagationException(oe);
+
+        }
+    }
+
+    /** {@inheritDoc} */
+    public SpacecraftState propagate(final AbsoluteDate tStart, final AbsoluteDate tEnd)
+    throws PropagationException {
+        try {
+            
+            if (!tStart.equals(initialDate)) {
+                // if propagation start date is not initial date, 
+                // propagate from initial to start date without event detection
+                propagate(tStart, false);
+            }
+
+            // propagate from start date to end date with event detection
+            return propagate(tEnd, true);
+            
+        } catch (OrekitException oe) {
+
+            // recover a possible embedded PropagationException
+            for (Throwable t = oe; t != null; t = t.getCause()) {
+                if (t instanceof PropagationException) {
+                    throw (PropagationException) t;
+                }
+            }
+            throw new PropagationException(oe);
+
+        }
+    }
+           
+            
+    /** Propagation with or without event detection. 
+     * @param tEnd 
+     * @param activateHandlers */
+    private SpacecraftState propagate(final AbsoluteDate tEnd, final boolean activateHandlers)
         throws PropagationException {
         try {
+
+            // reset occurred events list
+            occurredEvents.clear();
 
             if (initialState == null) {
                 throw new PropagationException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
             }
-            if (initialState.getDate().equals(finalDate)) {
+            if (initialState.getDate().equals(tEnd)) {
                 // don't extrapolate
                 return initialState;
             }
@@ -493,11 +580,15 @@ public class NumericalPropagator implements Propagator {
             default :
                 throw OrekitException.createInternalError(null);
             }
-            mapper.setAttitudeLaw(attitudeLaw);
+            if (Double.isNaN(getMu())) {
+                setMu(initialOrbit.getMu());
+            }
+            mapper.setAttitudeProvider(attitudeProvider);
 
             // initialize mode handler
             if (modeHandler != null) {
-                modeHandler.initialize(mapper, addStateAndEqu, startDate, initialState.getFrame(), getMu());
+                modeHandler.initialize(mapper, addStateAndEqu, activateHandlers, startDate,
+                                       initialState.getFrame(), newtonianAttraction.getMu());
             }
 
             // creating state vector
@@ -512,7 +603,7 @@ public class NumericalPropagator implements Propagator {
 
             // mathematical view
             final double t0 = 0;
-            final double t1 = finalDate.durationFrom(startDate);
+            final double t1 = tEnd.durationFrom(initialDate);
 
             // Map state to array
             mapper.mapStateToArray(initialState, stateVector);
@@ -551,7 +642,7 @@ public class NumericalPropagator implements Propagator {
             }
 
             // back to space dynamics view
-            final AbsoluteDate date = startDate.shiftedBy(stopTime);
+            final AbsoluteDate date = initialDate.shiftedBy(stopTime);
 
             // get final additional state
             index = 7;
@@ -564,6 +655,7 @@ public class NumericalPropagator implements Propagator {
 
             // get final state
             initialState = mapper.mapArrayToState(stateVector, date, getMu(), initialState.getFrame());
+            startDate = date;
             return initialState;
 
         } catch (OrekitException oe) {
@@ -663,7 +755,8 @@ public class NumericalPropagator implements Propagator {
      */
     protected void setUpEventDetector(final EventDetector osf) {
         final EventHandler handler =
-            new AdaptedEventDetector(osf, mapper, startDate, getMu(), initialState.getFrame());
+            new AdaptedEventDetector(osf, this, mapper, startDate,
+                                     newtonianAttraction.getMu(), initialState.getFrame());
         integrator.addEventHandler(handler,
                                    osf.getMaxCheckInterval(),
                                    osf.getThreshold(),
@@ -712,7 +805,6 @@ public class NumericalPropagator implements Propagator {
             try {
                 // update space dynamics view
                 currentState = mapper.mapArrayToState(y, startDate.shiftedBy(t), currentState.getMu(), currentState.getFrame());
-
 
                 if (currentState.getMass() <= 0.0) {
                     throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,

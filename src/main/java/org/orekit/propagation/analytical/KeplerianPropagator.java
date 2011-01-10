@@ -16,9 +16,7 @@
  */
 package org.orekit.propagation.analytical;
 
-import org.orekit.attitudes.Attitude;
-import org.orekit.attitudes.AttitudeLaw;
-import org.orekit.attitudes.InertialLaw;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.orbits.Orbit;
@@ -36,24 +34,12 @@ public class KeplerianPropagator extends AbstractPropagator {
     /** Serializable UID. */
     private static final long serialVersionUID = 2094439036855266946L;
 
-    /** Default mass. */
-    private static final double DEFAULT_MASS = 1000.0;
-
-    /** Default attitude law. */
-    private static final AttitudeLaw DEFAULT_LAW = InertialLaw.EME2000_ALIGNED;
-
     /** Initial state. */
     private SpacecraftState initialState;
 
-    /** Attitude law. */
-    private final AttitudeLaw attitudeLaw;
-
-    /** Initial mass. */
-    private double mass;
-
     /** Build a propagator from orbit only.
      * <p>The central attraction coefficient &mu; is set to the same value used
-     * for the initial orbit definition. Mass and attitude law are set to
+     * for the initial orbit definition. Mass and attitude provider are set to
      * unspecified non-null arbitrary values.</p>
      * @param initialOrbit initial orbit
      * @exception PropagationException if initial attitude cannot be computed
@@ -64,7 +50,7 @@ public class KeplerianPropagator extends AbstractPropagator {
     }
 
     /** Build a propagator from orbit and central attraction coefficient &mu;.
-     * <p>Mass and attitude law are set to unspecified non-null arbitrary values.</p>
+     * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      * @param initialOrbit initial orbit
      * @param mu central attraction coefficient (m^3/s^2)
      * @exception PropagationException if initial attitude cannot be computed
@@ -74,91 +60,87 @@ public class KeplerianPropagator extends AbstractPropagator {
         this(initialOrbit, DEFAULT_LAW, mu, DEFAULT_MASS);
     }
 
-    /** Build a propagator from orbit and attitude law.
+    /** Build a propagator from orbit and attitude provider.
      * <p>The central attraction coefficient &mu; is set to the same value
      * used for the initial orbit definition. Mass is set to an unspecified
      * non-null arbitrary value.</p>
      * @param initialOrbit initial orbit
-     * @param attitudeLaw attitude law
+     * @param attitudeProv  attitude provider
      * @exception PropagationException if initial attitude cannot be computed
      */
     public KeplerianPropagator(final Orbit initialOrbit,
-                               final AttitudeLaw attitudeLaw)
+                               final AttitudeProvider attitudeProv)
         throws PropagationException {
-        this(initialOrbit, attitudeLaw, initialOrbit.getMu(), DEFAULT_MASS);
+        this(initialOrbit, attitudeProv, initialOrbit.getMu(), DEFAULT_MASS);
     }
 
-    /** Build a propagator from orbit, attitude law and central attraction
+    /** Build a propagator from orbit, attitude provider and central attraction
      * coefficient &mu;.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param initialOrbit initial orbit
-     * @param attitudeLaw attitude law
+     * @param attitudeProv attitude provider
      * @param mu central attraction coefficient (m^3/s^2)
      * @exception PropagationException if initial attitude cannot be computed
      */
     public KeplerianPropagator(final Orbit initialOrbit,
-                               final AttitudeLaw attitudeLaw,
+                               final AttitudeProvider attitudeProv,
                                final double mu)
         throws PropagationException {
-        this(initialOrbit, attitudeLaw, mu, DEFAULT_MASS);
+        this(initialOrbit, attitudeProv, mu, DEFAULT_MASS);
     }
 
-    /** Build propagator from orbit, attitude law, central attraction
+    /** Build propagator from orbit, attitude provider, central attraction
      * coefficient &mu; and mass.
      * @param initialOrbit initial orbit
-     * @param attitudeLaw attitude law
+     * @param attitudeProv attitude provider
      * @param mu central attraction coefficient (m^3/s^2)
      * @param mass spacecraft mass (kg)
      * @exception PropagationException if initial attitude cannot be computed
      */
-    public KeplerianPropagator(final Orbit initialOrbit, final AttitudeLaw attitudeLaw,
+    public KeplerianPropagator(final Orbit initialOrbit, final AttitudeProvider attitudeProv,
                                final double mu, final double mass)
         throws PropagationException {
+        
+        super(attitudeProv);
+        
         try {
-            this.initialState = new SpacecraftState(initialOrbit, attitudeLaw.getAttitude(initialOrbit), mass);
-            this.attitudeLaw  = attitudeLaw;
-            this.mass         = mass;
-        } catch (OrekitException oe) {
+            resetInitialState(new SpacecraftState(initialOrbit,
+                                                   getAttitudeProvider().getAttitude(initialOrbit, 
+                                                                                     initialOrbit.getDate(),
+                                                                                     initialOrbit.getFrame()),
+                                                   mass));
+         } catch (OrekitException oe) {
             throw new PropagationException(oe);
         }
-    }
-
-    /** {@inheritDoc} */
-    public SpacecraftState getInitialState() {
-        return initialState;
-    }
-
-    /** {@inheritDoc} */
-    protected SpacecraftState basicPropagate(final AbsoluteDate date)
-        throws PropagationException {
-        try {
-
-            
-            // propagate orbit
-            Orbit orbit = initialState.getOrbit();
-            do {
-                // we use a loop here to compensate for very small date shifts error
-                // that occur with long propagation time
-                orbit = orbit.shiftedBy(date.durationFrom(orbit.getDate()));
-            } while(!date.equals(orbit.getDate()));
-
-
-            // evaluation of attitude
-            final Attitude attitude = attitudeLaw.getAttitude(orbit);
-
-            return new SpacecraftState(orbit, attitude, mass);
-
-        } catch (OrekitException oe) {
-            throw new PropagationException(oe);
-        }
-
     }
 
     /** {@inheritDoc} */
     public void resetInitialState(final SpacecraftState state)
         throws PropagationException {
+        super.resetInitialState(state);
         initialState   = state;
-        mass           = state.getMass();
+    }
+
+    
+    /** {@inheritDoc} */
+    protected Orbit propagateOrbit(final AbsoluteDate date)
+        throws PropagationException {
+
+        // propagate orbit
+        Orbit orbit = initialState.getOrbit();
+        do {
+            // we use a loop here to compensate for very small date shifts error
+            // that occur with long propagation time
+            orbit = orbit.shiftedBy(date.durationFrom(orbit.getDate()));
+        } while(!date.equals(orbit.getDate()));
+
+        return orbit;
+
+    }
+
+    /** {@inheritDoc}*/
+    protected double getMass(final AbsoluteDate date) {
+        return initialState.getMass();
     }
 
 }

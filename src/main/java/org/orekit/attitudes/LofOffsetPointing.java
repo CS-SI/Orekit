@@ -24,17 +24,17 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
-import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Line;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 /**
- * This class provides a default attitude law.
+ * This class provides a default attitude provider.
 
  * <p>
- * The attitude pointing law is defined by an attitude law and
+ * The attitude pointing law is defined by an attitude provider and
  * the satellite axis vector chosen for pointing.
  * <p>
  * @author V&eacute;ronique Pommier-Maurussane
@@ -46,7 +46,7 @@ public class LofOffsetPointing extends GroundPointing {
     private static final long serialVersionUID = -713570668596014285L;
 
     /** Rotation from local orbital frame. */
-    private final AttitudeLaw attitudeLaw;
+    private final AttitudeProvider attitudeLaw;
 
     /** Body shape. */
     private final BodyShape shape;
@@ -59,7 +59,7 @@ public class LofOffsetPointing extends GroundPointing {
      * @param attLaw Attitude law
      * @param satPointingVector satellite vector defining the pointing direction
      */
-    public LofOffsetPointing(final BodyShape shape, final AttitudeLaw attLaw,
+    public LofOffsetPointing(final BodyShape shape, final AttitudeProvider attLaw,
                              final Vector3D satPointingVector) {
         super(shape.getBodyFrame());
         this.shape = shape;
@@ -69,23 +69,24 @@ public class LofOffsetPointing extends GroundPointing {
 
     /** {@inheritDoc} */
     @Override
-    public Attitude getAttitude(final Orbit orbit)
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv, final AbsoluteDate date, 
+                                final Frame frame)
         throws OrekitException {
-        return attitudeLaw.getAttitude(orbit);
+        return attitudeLaw.getAttitude(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
-    protected Vector3D getTargetPoint(final Orbit orbit, final Frame frame)
+    protected Vector3D getTargetPoint(final PVCoordinatesProvider pvProv, 
+                                      final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
-        final AbsoluteDate date = orbit.getDate();
-        final PVCoordinates pv = orbit.getPVCoordinates();
+        final PVCoordinates pv = pvProv.getPVCoordinates(date, frame);
 
         // Compute satellite state at given date in orbit frame
-        final Rotation satRot = attitudeLaw.getAttitude(orbit).getRotation();
+        final Rotation satRot = attitudeLaw.getAttitude(pvProv, date, frame).getRotation();
 
         // Compute satellite pointing axis and position/velocity in body frame
-        final Transform t = orbit.getFrame().getTransformTo(shape.getBodyFrame(), date);
+        final Transform t = frame.getTransformTo(shape.getBodyFrame(), date);
         final Vector3D pointingBodyFrame =
             t.transformVector(satRot.applyInverseTo(satPointingVector));
         final Vector3D pBodyFrame = t.transformPosition(pv.getPosition());

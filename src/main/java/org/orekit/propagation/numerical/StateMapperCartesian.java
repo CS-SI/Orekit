@@ -17,11 +17,14 @@
 package org.orekit.propagation.numerical;
 
 import org.apache.commons.math.geometry.Vector3D;
-import org.orekit.attitudes.AttitudeLaw;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -36,21 +39,19 @@ import org.orekit.utils.PVCoordinates;
 public class StateMapperCartesian implements StateMapper {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -8228988658997240720L;
+    private static final long serialVersionUID = -861228811985500665L;
 
-    /** Attitude law. */
-    private AttitudeLaw attitudeLaw;
+    /** Attitude provider. */
+    private AttitudeProvider attitudeProvider;
 
     /** Create a new instance.
      */
     public StateMapperCartesian() {
     }
 
-    /** Set the attitude law.
-     * @param attitudeLaw attitude law
-     */
-    public void setAttitudeLaw(final AttitudeLaw attitudeLaw) {
-        this.attitudeLaw = attitudeLaw;
+    /** {@inheritDoc} */
+    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
+        this.attitudeProvider = attitudeProvider;
     }
 
     /** {@inheritDoc} */
@@ -78,9 +79,12 @@ public class StateMapperCartesian implements StateMapper {
         final Vector3D       p     = new Vector3D(stateVector[0], stateVector[1], stateVector[2]);
         final Vector3D       v     = new Vector3D(stateVector[3], stateVector[4], stateVector[5]);
         final PVCoordinates  pv    = new PVCoordinates(p, v);
-        final CartesianOrbit orbit = new CartesianOrbit(pv, frame, date, mu);
+        final Orbit          orbit = new CartesianOrbit(pv, frame, date, mu);
 
-        return new SpacecraftState(orbit, attitudeLaw.getAttitude(orbit), stateVector[6]);
+        final Attitude attitude =
+            attitudeProvider.getAttitude(new KeplerianPropagator(orbit), date, frame);
+
+        return new SpacecraftState(orbit, attitude, stateVector[6]);
 
     }
 

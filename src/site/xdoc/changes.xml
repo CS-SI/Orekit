@@ -22,6 +22,17 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="v&#233;ronique" type="add" >
+        all propagators, including analytical ones or tabulated ones can now be used for
+        event detection. Of course for tabulated propagators, setting up an event that
+        would try to reset the state triggers an error when the event occurs
+      </action>
+      <action dev="v&#233;ronique" type="add" >
+        attitude can be specified either using a date only thanks to a new AttitudeLaw interface
+        or using a date, a position-velocity provider and a frame thanks to a new
+        AttitudeProvider interface, wrappers have been added to convert between the two
+        interfaces
+      </action>
       <action dev="luc" type="update">
         the notion of quasi-inertial frames has been renamed as pseudo-inertial because
         quasi-inertial has a precise relativistic meaning that is not considered here. We

@@ -21,14 +21,13 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
-import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
 
 /**
- * This class handles a celestial body pointed attitude law.
+ * This class handles a celestial body pointed attitude provider.
  * <p>The celestial body pointed law is defined by two main elements:
  * <ul>
  *   <li>a celestial body towards which some satellite axis is exactly aimed</li>
@@ -56,7 +55,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-public class CelestialBodyPointed implements AttitudeLaw {
+public class CelestialBodyPointed implements AttitudeProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 6222161082155807729L;
@@ -96,11 +95,11 @@ public class CelestialBodyPointed implements AttitudeLaw {
     }
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(final Orbit orbit)
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv, 
+                                final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
-        final AbsoluteDate  date  = orbit.getDate();
-        final PVCoordinates satPV = orbit.getPVCoordinates(celestialFrame);
+        final PVCoordinates satPV = pvProv.getPVCoordinates(date, celestialFrame);
 
         // compute celestial references at the specified date
         final PVCoordinates bodyPV    = pointedBody.getPVCoordinates(date, celestialFrame);
@@ -126,7 +125,6 @@ public class CelestialBodyPointed implements AttitudeLaw {
 
         // build transform combining rotation and instant rotation axis
         Transform transform = new Transform(celToSatRotation, celToSatRotation.applyTo(phasedRotAxisCel));
-        final Frame frame = orbit.getFrame();
         if (frame != celestialFrame) {
             // prepend transform from specified frame to celestial frame
             transform = new Transform(frame.getTransformTo(celestialFrame, date), transform);

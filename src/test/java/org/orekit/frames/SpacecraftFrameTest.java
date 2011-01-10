@@ -23,7 +23,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.attitudes.AttitudeLaw;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.NadirPointing;
 import org.orekit.attitudes.YawSteering;
 import org.orekit.bodies.BodyShape;
@@ -83,14 +83,14 @@ public class SpacecraftFrameTest {
                                             CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
                                             eme2000, iniDate, mu);
 
-            // Target pointing attitude law over satellite nadir at date with yaw compensation
+            // Target pointing attitude provider over satellite nadir at date with yaw compensation
             double ae =  6378137.0;
             double f  =  1.0 / 298.257223563;
             Frame itrf2005 = FramesFactory.getITRF2005(true);
             BodyShape earth = new OneAxisEllipsoid(ae, f, itrf2005);
             sun = CelestialBodyFactory.getSun();
 
-            AttitudeLaw attitudeLaw =
+            AttitudeProvider attitudeLaw =
                 new YawSteering(new NadirPointing(earth), sun, Vector3D.MINUS_I);
 
             // Propagator : Eckstein-Hechler analytic propagator

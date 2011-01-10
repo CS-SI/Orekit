@@ -45,7 +45,7 @@ public class InertialAttitudeTest {
 
     @Test
     public void testIsInertial() throws OrekitException {
-        InertialLaw law = new InertialLaw(new Rotation(new Vector3D(0.6, 0.48, 0.64), 0.9));
+        InertialProvider law = new InertialProvider(new Rotation(new Vector3D(0.6, 0.48, 0.64), 0.9));
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
         Attitude initial = propagator.propagate(t0).getAttitude();
         for (double t = 0; t < 10000.0; t += 100) {
@@ -58,7 +58,7 @@ public class InertialAttitudeTest {
 
     @Test
     public void testCompensateMomentum() throws OrekitException {
-        InertialLaw law = new InertialLaw(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2));
+        InertialProvider law = new InertialProvider(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2));
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
         Attitude initial = propagator.propagate(t0).getAttitude();
         for (double t = 0; t < 10000.0; t += 100) {
@@ -76,7 +76,7 @@ public class InertialAttitudeTest {
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
 
-        AttitudeLaw law = new InertialLaw(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2));
+        AttitudeProvider law = new InertialProvider(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2));
 
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),

@@ -26,6 +26,7 @@ import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /**
  * This class handles orbital parameters without date.
@@ -58,7 +59,7 @@ import org.orekit.utils.PVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public abstract class Orbit implements TimeStamped, Serializable {
+public abstract class Orbit implements TimeStamped, Serializable, PVCoordinatesProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 438733454597999578L;
@@ -242,6 +243,13 @@ public abstract class Orbit implements TimeStamped, Serializable {
         final Transform t = frame.getTransformTo(outputFrame, date);
         return t.transformPVCoordinates(pvCoordinates);
     }
+    
+    /** {@inheritDoc} */
+    public PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
+        throws OrekitException {
+        return shiftedBy(date.durationFrom(getDate())).getPVCoordinates(frame);
+    }
+
 
     /** Get the {@link PVCoordinates} in definition frame.
      * @return pvCoordinates in the definition frame

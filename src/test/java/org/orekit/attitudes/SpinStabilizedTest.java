@@ -47,14 +47,15 @@ public class SpinStabilizedTest {
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getTAI());
         double rate = 2.0 * FastMath.PI / (12 * 60);
-        AttitudeLaw bbq =
+        AttitudeProvider bbq =
             new SpinStabilized(new CelestialBodyPointed(FramesFactory.getEME2000(), sun, Vector3D.PLUS_K,
                                      Vector3D.PLUS_I, Vector3D.PLUS_K),
                                date, Vector3D.PLUS_K, rate);
         PVCoordinates pv =
             new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                               new Vector3D(0, 0, 3680.853673522056));
-        Attitude attitude = bbq.getAttitude(new KeplerianOrbit(pv, FramesFactory.getEME2000(), date, 3.986004415e14));
+        KeplerianOrbit kep = new KeplerianOrbit(pv, FramesFactory.getEME2000(), date, 3.986004415e14);
+        Attitude attitude = bbq.getAttitude(kep, date, kep.getFrame());
         Vector3D xDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Assert.assertEquals(FastMath.atan(1.0 / 5000.0),
                      Vector3D.angle(xDirection, sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition()),
@@ -70,8 +71,8 @@ public class SpinStabilizedTest {
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
         double rate = 2.0 * FastMath.PI / (12 * 60);
-        AttitudeLaw law =
-            new SpinStabilized(new InertialLaw(Rotation.IDENTITY),
+        AttitudeProvider law =
+            new SpinStabilized(new InertialProvider(Rotation.IDENTITY),
                                date, Vector3D.PLUS_K, rate);
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),

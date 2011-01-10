@@ -25,10 +25,13 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -44,10 +47,10 @@ import org.orekit.utils.PVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
-public class Ephemeris implements BoundedPropagator {
+public class Ephemeris extends AbstractPropagator implements BoundedPropagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7364933371749057468L;
+    private static final long serialVersionUID = -2876501122142490509L;
 
     /** All entries. */
     private final SortedSet<TimeStamped> data;
@@ -62,6 +65,8 @@ public class Ephemeris implements BoundedPropagator {
      * @param tabulatedStates states table
      */
     public Ephemeris(final SpacecraftState[] tabulatedStates) {
+
+        super(DEFAULT_LAW);
 
         if (tabulatedStates.length < 2) {
             throw new IllegalArgumentException("There should be at least 2 entries.");
@@ -91,8 +96,9 @@ public class Ephemeris implements BoundedPropagator {
         return data.last().getDate();
     }
 
+    @Override
     /** {@inheritDoc} */
-    public SpacecraftState propagate(final AbsoluteDate date) {
+    public SpacecraftState basicPropagate(final AbsoluteDate date) throws PropagationException {
         // Check if date is in the specified range
         if (enclosinbracketDate(date)) {
 
@@ -107,8 +113,20 @@ public class Ephemeris implements BoundedPropagator {
                                        interpolatedMass(tp, tn));
 
         }
-        // outside date range, return null
-        return null;
+
+        throw new PropagationException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE,
+                                       date, getMinDate(), getMaxDate());
+
+    }
+
+    /** {@inheritDoc} */
+    protected Orbit propagateOrbit(final AbsoluteDate date) throws PropagationException {
+        return basicPropagate(date).getOrbit();
+    }
+
+    /** {@inheritDoc} */
+    protected double getMass(final AbsoluteDate date) throws PropagationException {
+        return basicPropagate(date).getMass();
     }
 
     /** {@inheritDoc} */
@@ -213,6 +231,18 @@ public class Ephemeris implements BoundedPropagator {
         next     = (SpacecraftState) data.tailSet(date).first();
 
         return true;
+    }
+
+    /** {@inheritDoc} */
+    public void resetInitialState(SpacecraftState state)
+        throws PropagationException {
+        throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
+        
+    }
+
+    /** {@inheritDoc} */
+    public SpacecraftState getInitialState() throws PropagationException {
+        return basicPropagate(getMinDate());
     }
 
 }

@@ -26,7 +26,7 @@ import java.util.TreeSet;
 import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.FastMath;
-import org.orekit.attitudes.AttitudeLaw;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.AttitudesSequence;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -76,8 +76,8 @@ public class EarthObservation {
 
             // Attitudes sequence definition
             final AttitudesSequence attitudesSequence = new AttitudesSequence();
-            final AttitudeLaw dayObservationLaw = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
-            final AttitudeLaw nightRestingLaw   = LofOffset.LOF_ALIGNED;
+            final AttitudeProvider dayObservationLaw = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
+            final AttitudeProvider nightRestingLaw   = LofOffset.LOF_ALIGNED;
             final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
             final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
             final EventDetector dayNightEvent = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS) {
@@ -102,10 +102,10 @@ public class EarthObservation {
             attitudesSequence.addSwitchingCondition(nightRestingLaw, nightDayEvent, true, false, dayObservationLaw);
             if (dayNightEvent.g(new SpacecraftState(initialOrbit)) >= 0) {
                 // initial position is in daytime
-                attitudesSequence.resetActiveLaw(dayObservationLaw);
+                attitudesSequence.resetActiveProvider(dayObservationLaw);
             } else {
                 // initial position is in nighttime
-                attitudesSequence.resetActiveLaw(nightRestingLaw);
+                attitudesSequence.resetActiveProvider(nightRestingLaw);
             }
 
             // Propagator : consider the analytical Eckstein-Hechler model
@@ -122,7 +122,7 @@ public class EarthObservation {
                 private static final long serialVersionUID = -5740543464313002093L;
                 public void handleStep(SpacecraftState currentState, boolean isLast) throws PropagationException {
                     try {
-                    	DecimalFormatSymbols angleDegree = DecimalFormatSymbols.getInstance(Locale.US);
+                    	DecimalFormatSymbols angleDegree = new DecimalFormatSymbols(Locale.US);
                     	angleDegree.setDecimalSeparator('°');
                         DecimalFormat ad = new DecimalFormat(" 00.000;-00.000", angleDegree);
                         // the Earth position in spacecraft frame should be along spacecraft Z axis

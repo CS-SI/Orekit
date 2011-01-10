@@ -102,7 +102,7 @@ public enum OrekitMessages implements Localizable {
     SATELLITE_COLLIDED_WITH_TARGET("satellite collided with target"),
     ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND("attitude pointing law misses ground"),
     ORBIT_AND_ATTITUDE_DATES_MISMATCH("orbit date ({0}) does not match attitude date ({1})"),
-    ORBIT_AND_ATTITUDE_FRAMES_MISMATCH("orbit reference frame ({0}) does not match attitude reference frame ({1})"),
+    FRAMES_MISMATCH("frame {0} does not match frame {1}"),
     INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION("initial state not specified for orbit propagation"),
     ODE_INTEGRATOR_NOT_SET_FOR_ORBIT_PROPAGATION("ODE integrator not set for orbit propagation"),
     PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE("propagator is not in ephemeris generation mode"),
@@ -139,7 +139,8 @@ public enum OrekitMessages implements Localizable {
     CCSDS_ORBIT_DATA_MESSAGE_MISSING_POSITION("missing position in CCSDS Orbit Data Message"),
     CCSDS_ORBIT_DATA_MESSAGE_MISSING_VELOCITY("missing velocity in CCSDS Orbit Data Message"),
     CCSDS_ORBIT_DATA_MESSAGE_MISSING_ORBIT("missing orbit in CCSDS Orbit Data Message"),
-    CCSDS_ORBIT_DATA_MESSAGE_MISSING_COVARIANCE("missing covariance in CCSDS Orbit Data Message");
+    CCSDS_ORBIT_DATA_MESSAGE_MISSING_COVARIANCE("missing covariance in CCSDS Orbit Data Message"),
+    NON_RESETABLE_STATE("reset state not allowed {0}");
 
     // CHECKSTYLE: resume JavadocVariable
     // CHECKSTYLE: resume MultipleVariableDeclarations

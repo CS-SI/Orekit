@@ -55,7 +55,7 @@ public class BodyCenterPointingTest {
     // Transform from EME2000 to ITRF2005
     private Transform eme2000ToItrf;
     
-    // Earth center pointing attitude law 
+    // Earth center pointing attitude provider 
     private BodyCenterPointing earthCenterAttitudeLaw;
 
     /** Test if target is body center
@@ -64,7 +64,7 @@ public class BodyCenterPointingTest {
     public void testTarget() throws OrekitException {
         
         // Call get target method 
-        Vector3D target = earthCenterAttitudeLaw.getTargetPoint(circ, circ.getFrame());
+        Vector3D target = earthCenterAttitudeLaw.getTargetPoint(circ, date, circ.getFrame());
 
         // Check that target is body center
         double normPos = target.getNorm();
@@ -83,7 +83,7 @@ public class BodyCenterPointingTest {
         //  Pointing direction
         // ******************** 
         // Get satellite attitude rotation, i.e rotation from EME2000 frame to satellite frame
-        Rotation rotSatEME2000 = earthCenterAttitudeLaw.getAttitude(circ).getRotation();
+        Rotation rotSatEME2000 = earthCenterAttitudeLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
         
         // Transform Z axis from satellite frame to EME2000 
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);
@@ -160,7 +160,7 @@ public class BodyCenterPointingTest {
             // Transform from EME2000 to ITRF2005
             eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(itrf, date);
 
-            // Create earth center pointing attitude law */
+            // Create earth center pointing attitude provider */
             earthCenterAttitudeLaw = new BodyCenterPointing(itrf);
             
         } catch (OrekitException oe) {

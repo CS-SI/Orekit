@@ -133,7 +133,7 @@ public class TabulatedEphemerisTest {
     }
 
 
-    private void checkEphemerides(BasicPropagator eph1, BasicPropagator eph2, AbsoluteDate date,
+    private void checkEphemerides(Propagator eph1, Propagator eph2, AbsoluteDate date,
                                   double threshold, boolean expectedBelow)
         throws PropagationException {
         SpacecraftState state1 = eph1.propagate(date);

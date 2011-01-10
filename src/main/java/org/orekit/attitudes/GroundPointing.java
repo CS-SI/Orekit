@@ -21,25 +21,26 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.Orbit;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 /**
- * Base class for ground pointing attitude laws.
+ * Base class for ground pointing attitude providers.
  *
  * <p>This class is a basic model for different kind of ground pointing
- * attitude laws, such as : body center pointing, nadir pointing,
+ * attitude providers, such as : body center pointing, nadir pointing,
  * target pointing, etc...
  * </p>
  * <p>
  * The object <code>GroundPointing</code> is guaranteed to be immutable.
  * </p>
- * @see     AttitudeLaw
+ * @see     AttitudeProvider
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public abstract class GroundPointing implements AttitudeLaw {
+public abstract class GroundPointing implements AttitudeProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -1459257023765594793L;
@@ -69,7 +70,8 @@ public abstract class GroundPointing implements AttitudeLaw {
      * @throws OrekitException if some specific error occurs,
      * such as no target reached
      */
-    protected abstract Vector3D getTargetPoint(final Orbit orbit, final Frame frame)
+    protected abstract Vector3D getTargetPoint(final PVCoordinatesProvider pvProv, 
+                                               final AbsoluteDate date, final Frame frame)
         throws OrekitException;
 
     /** Compute the target point position/velocity in specified frame.
@@ -81,17 +83,18 @@ public abstract class GroundPointing implements AttitudeLaw {
      * @throws OrekitException if some specific error occurs,
      * such as no target reached
      */
-    protected PVCoordinates getTargetPV(final Orbit orbit, final Frame frame)
+    protected PVCoordinates getTargetPV(final PVCoordinatesProvider pvProv, 
+                                        final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
         // target point position in same frame as initial pv
-        final Vector3D intersectionP = getTargetPoint(orbit, frame);
+        final Vector3D intersectionP = getTargetPoint(pvProv, date, frame);
 
         // velocity of target point due to satellite and target motions
         final double h  = 0.1;
         final double scale = 1.0 / (2 * h);
-        final Vector3D intersectionM1h = getTargetPoint(orbit.shiftedBy(-h), frame);
-        final Vector3D intersectionP1h = getTargetPoint(orbit.shiftedBy( h), frame);
+        final Vector3D intersectionM1h = getTargetPoint(pvProv, date.shiftedBy(-h), frame);
+        final Vector3D intersectionP1h = getTargetPoint(pvProv, date.shiftedBy( h), frame);
         final Vector3D intersectionV   = new Vector3D(scale, intersectionP1h, -scale, intersectionM1h);
 
         return new PVCoordinates(intersectionP, intersectionV);
@@ -100,23 +103,21 @@ public abstract class GroundPointing implements AttitudeLaw {
 
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(final Orbit orbit)
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv, final AbsoluteDate date, 
+                                final Frame frame)
         throws OrekitException {
-
-        final Frame frame = orbit.getFrame();
 
         // Construction of the satellite-target position/velocity vector at t-h, t and t+h
         final double h = 0.1;
-        final Orbit oM1H          = orbit.shiftedBy(-h);
-        final PVCoordinates pvM1H = oM1H.getPVCoordinates();
-        final Vector3D deltaPM1h  = getTargetPoint(oM1H, frame).subtract(pvM1H.getPosition());
 
-        final PVCoordinates pv0   = orbit.getPVCoordinates();
-        final Vector3D deltaP0    = getTargetPoint(orbit, frame).subtract(pv0.getPosition());
+        final PVCoordinates pvM1H = pvProv.getPVCoordinates(date.shiftedBy(h), frame);
+        final Vector3D deltaPM1h  = getTargetPoint(pvProv, date.shiftedBy(-h), frame).subtract(pvM1H.getPosition());
 
-        final Orbit oP1H          = orbit.shiftedBy( h);
-        final PVCoordinates pvP1H = oP1H.getPVCoordinates();
-        final Vector3D deltaPP1h  = getTargetPoint(oP1H, frame).subtract(pvP1H.getPosition());
+        final PVCoordinates pv0   = pvProv.getPVCoordinates(date, frame);
+        final Vector3D deltaP0    = getTargetPoint(pvProv, date.shiftedBy(-h), frame).subtract(pv0.getPosition());
+
+        final PVCoordinates pvP1H = pvProv.getPVCoordinates(date.shiftedBy(h), frame);
+        final Vector3D deltaPP1h  = getTargetPoint(pvProv, date.shiftedBy(h), frame).subtract(pvP1H.getPosition());
 
         // New orekit exception if null position.
         if (deltaP0.equals(Vector3D.ZERO)) {
@@ -133,7 +134,7 @@ public abstract class GroundPointing implements AttitudeLaw {
         final Rotation rotP1h = new Rotation(deltaPP1h, pvP1H.getVelocity(), Vector3D.PLUS_K, Vector3D.PLUS_I);
         final Vector3D spin   = Attitude.estimateSpin(rotM1h, rotP1h, 2 * h);
 
-        return new Attitude(orbit.getDate(), frame, rot, spin);
+        return new Attitude(date, frame, rot, spin);
 
     }
 

@@ -303,7 +303,7 @@ public class NumericalPropagatorTest {
 
 
     @Before
-    public void setUp() {
+    public void setUp() throws OrekitException {
         Utils.setDataRoot("compressed-data");
         mu  = 3.9860047e14;
         final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);

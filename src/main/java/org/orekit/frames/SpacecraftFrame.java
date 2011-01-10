@@ -44,7 +44,7 @@ public class SpacecraftFrame extends Frame implements PVCoordinatesProvider {
      * @param name name of the frame
      */
     public SpacecraftFrame(final Propagator propagator, final String name) {
-        super(propagator.getInitialState().getFrame(), null, name, false);
+        super(propagator.getFrame(), null, name, false);
         this.propagator = propagator;
     }
 

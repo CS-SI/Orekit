@@ -19,14 +19,15 @@ package org.orekit.attitudes;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.Orbit;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /**
- * This class handles body center pointing attitude law.
+ * This class handles body center pointing attitude provider.
 
  * <p>
- * This class represents the attitude law where the satellite z axis is
+ * This class represents the attitude provider where the satellite z axis is
  * pointing to the body frame center.</p>
  * <p>
  * The object <code>BodyCenterPointing</code> is guaranteed to be immutable.
@@ -48,16 +49,17 @@ public class BodyCenterPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
-    protected Vector3D getTargetPoint(final Orbit orbit, final Frame frame)
+    protected Vector3D getTargetPoint(PVCoordinatesProvider pvProv,
+                                      AbsoluteDate date, Frame frame)
         throws OrekitException {
-        return getBodyFrame().getTransformTo(frame, orbit.getDate()).transformPosition(Vector3D.ZERO);
+        return getBodyFrame().getTransformTo(frame, date).transformPosition(Vector3D.ZERO);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected PVCoordinates getTargetPV(final Orbit orbit, final Frame frame)
+    protected PVCoordinates getTargetPV(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        return getBodyFrame().getTransformTo(frame, orbit.getDate()).transformPVCoordinates(PVCoordinates.ZERO);
+        return getBodyFrame().getTransformTo(frame, date).transformPVCoordinates(PVCoordinates.ZERO);
     }
 
 }

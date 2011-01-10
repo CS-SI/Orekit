@@ -46,7 +46,7 @@ import org.orekit.utils.PVCoordinates;
  * frame. The current attitude of the spacecraft, defined by the current
  * spacecraft state, will be used to compute the velocity direction in
  * inertial frame. A typical case for tangential maneuvers is to use a
- * {@link org.orekit.attitudes.LofOffset LOF aligned} attitude law for state propagation and a
+ * {@link org.orekit.attitudes.LofOffset LOF aligned} attitude provider for state propagation and a
  * velocity increment along the +X satellite axis.</p>
  * <p>Beware that the triggering event detector must behave properly both
  * before and after maneuver. If for example a node detector is used to trigger

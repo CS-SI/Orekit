@@ -93,29 +93,33 @@ public class DateDetectorTest {
 
     @Before
     public void setUp() {
-        Utils.setDataRoot("regular-data");
-        final double mu = 3.9860047e14;
-        final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
-        final Vector3D velocity  = new Vector3D(505.8479685, 942.7809215, 7435.922231);
-        iniDate  = new AbsoluteDate(1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
-        iniOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
-                                        FramesFactory.getEME2000(), iniDate, mu);
-        SpacecraftState initialState = new SpacecraftState(iniOrbit);
-        double[] absTolerance = {
-            0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
-        };
-        double[] relTolerance = {
-            1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
-        };
-        AdaptiveStepsizeIntegrator integrator =
-            new DormandPrince853Integrator(0.001, 1000, absTolerance, relTolerance);
-        integrator.setInitialStepSize(60);
-        propagator = new NumericalPropagator(integrator);
-        propagator.setInitialState(initialState);
-        dt = 60.;
-        maxCheck  = 10.;
-        threshold = 10.e-10;
-        evtno = 0;
+        try {
+            Utils.setDataRoot("regular-data");
+            final double mu = 3.9860047e14;
+            final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
+            final Vector3D velocity  = new Vector3D(505.8479685, 942.7809215, 7435.922231);
+            iniDate  = new AbsoluteDate(1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
+            iniOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
+                                            FramesFactory.getEME2000(), iniDate, mu);
+            SpacecraftState initialState = new SpacecraftState(iniOrbit);
+            double[] absTolerance = {
+                0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
+            };
+            double[] relTolerance = {
+                1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
+            };
+            AdaptiveStepsizeIntegrator integrator =
+                new DormandPrince853Integrator(0.001, 1000, absTolerance, relTolerance);
+            integrator.setInitialStepSize(60);
+            propagator = new NumericalPropagator(integrator);
+            propagator.setInitialState(initialState);
+            dt = 60.;
+            maxCheck  = 10.;
+            threshold = 10.e-10;
+            evtno = 0;
+        } catch (OrekitException oe) {
+            Assert.fail(oe.getLocalizedMessage());
+        }
     }
 
     @After

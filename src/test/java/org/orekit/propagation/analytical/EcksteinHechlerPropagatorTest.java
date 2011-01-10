@@ -29,11 +29,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
-import org.orekit.attitudes.AttitudeLaw;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -49,6 +50,7 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 public class EcksteinHechlerPropagatorTest {
@@ -500,9 +502,9 @@ public class EcksteinHechlerPropagatorTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(1.0e10, 1.0e-4, 1.0e-2, 0, 0, 0, KeplerianOrbit.TRUE_ANOMALY,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
-        AttitudeLaw wrongLaw = new AttitudeLaw() {
+        AttitudeProvider wrongLaw = new AttitudeProvider() {
             private static final long serialVersionUID = 5918362126173997016L;
-            public Attitude getAttitude(Orbit orbit) throws OrekitException {
+            public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) throws OrekitException {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
             }
         };

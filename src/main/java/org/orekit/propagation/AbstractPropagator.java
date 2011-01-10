@@ -16,22 +16,32 @@
  */
 package org.orekit.propagation;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.commons.math.ConvergenceException;
 import org.apache.commons.math.util.FastMath;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.events.AbstractDetector;
-import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.CombinedEventsDetectorsManager;
-import org.orekit.propagation.sampling.BasicStepInterpolator;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.EventObserver;
+import org.orekit.propagation.events.OccurredEvent;
+import org.orekit.propagation.numerical.AdditionalEquations;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.propagation.sampling.OrekitStepNormalizer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /** Common handling of {@link Propagator} methods for analytical-like propagators.
  * <p>
@@ -47,7 +57,7 @@ import org.orekit.utils.PVCoordinates;
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-public abstract class AbstractPropagator implements Propagator {
+public abstract class AbstractPropagator implements Propagator, EventObserver {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 4797122381575498520L;
@@ -64,20 +74,70 @@ public abstract class AbstractPropagator implements Propagator {
     /** Manager for events detectors. */
     private final CombinedEventsDetectorsManager eventsDetectorsManager;
 
+    /** List for occurred events. */
+    private final List <OccurredEvent> occurredEvents;
+
     /** Internal steps interpolator. */
     private final BasicStepInterpolator interpolator;
 
+    /** Start date. */
+    private AbsoluteDate startDate;
+
+    /** Provider for attitude computation. */
+    private PVCoordinatesProvider pvProvider;
+    
+    /** Attitude provider. */
+    private AttitudeProvider attitudeProv;
+
+    /** Initial state. */
+    private SpacecraftState initialState;
+
+
     /** Build a new instance.
      */
-    protected AbstractPropagator() {
-        eventsDetectorsManager = new CombinedEventsDetectorsManager();
-        interpolator = new BasicStepInterpolator(new UnboundedPropagatorView());
+    protected AbstractPropagator(final AttitudeProvider attitudeProv) {
+        eventsDetectorsManager = new CombinedEventsDetectorsManager(this);
+        occurredEvents         = new ArrayList<OccurredEvent>();
+        interpolator = new BasicStepInterpolator();
         setSlaveMode();
+        this.pvProvider = new LocalPVProvider();
+        this.attitudeProv = attitudeProv;
+    }
+    
+    /** Get attitude provider.
+     * @return attitude provider
+     */
+    public AttitudeProvider getAttitudeProvider() {
+        return attitudeProv;
+    }
+
+    /** Set attitude provider.
+     * @param attitudeProv attitude provider
+     */
+    protected void setAttitudeProvider(final AttitudeProvider attitudeProv) {
+        this.attitudeProv = attitudeProv;
+    }
+
+    /** Get PV coordinates provider.
+     * @return PV coordinates provider
+     */
+    public PVCoordinatesProvider getPvProvider() {
+        return pvProvider;
+    }
+
+    /** {@inheritDoc} */
+    public SpacecraftState getInitialState() throws OrekitException {
+        return initialState;
     }
 
     /** {@inheritDoc} */
     public int getMode() {
         return mode;
+    }
+
+    /** {@inheritDoc} */
+    public Frame getFrame() {
+        return initialState.getFrame();
     }
 
     /** {@inheritDoc} */
@@ -131,11 +191,32 @@ public abstract class AbstractPropagator implements Propagator {
 
     /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate target)
-        throws PropagationException {
+    throws PropagationException {
+        try {
+            if (startDate == null) {
+                startDate = getInitialState().getDate();
+            }
+            return propagate(startDate, target);
+        } catch (OrekitException oe) {
+
+            // recover a possible embedded PropagationException
+            for (Throwable t = oe; t != null; t = t.getCause()) {
+                if (t instanceof PropagationException) {
+                    throw (PropagationException) t;
+                }
+            }
+            throw new PropagationException(oe);
+
+        }
+    }
+
+    /** {@inheritDoc} */
+    public SpacecraftState propagate(final AbsoluteDate start, final AbsoluteDate target)
+    throws PropagationException {
         try {
 
-            // initial state
-            interpolator.storeDate(getInitialState().getDate());
+            startDate = start;
+            interpolator.storeDate(start);
             SpacecraftState state = interpolator.getInterpolatedState();
 
             // evaluate step size
@@ -215,6 +296,7 @@ public abstract class AbstractPropagator implements Propagator {
             }
 
             // return the last computed state
+            startDate = state.getDate();
             return state;
 
         } catch (OrekitException oe) {
@@ -239,9 +321,6 @@ public abstract class AbstractPropagator implements Propagator {
         return propagate(date).getPVCoordinates(frame);
     }
 
-    /** {@inheritDoc} */
-    public abstract SpacecraftState getInitialState();
-
     /** Propagate an orbit without any fancy features.
      * <p>This method is similar in spirit to the {@link #propagate} method,
      * except that it does <strong>not</strong> call any handler during
@@ -251,14 +330,73 @@ public abstract class AbstractPropagator implements Propagator {
      * @return state at specified date
      * @exception PropagationException if propagation cannot reach specified date
      */
-    protected abstract SpacecraftState basicPropagate(final AbsoluteDate date)
+     protected SpacecraftState basicPropagate(final AbsoluteDate date)
+        throws PropagationException {
+        try {
+
+            // evaluate orbit
+            final Orbit orbit = propagateOrbit(date);
+
+            // evaluate attitude
+            final Attitude attitude =
+                attitudeProv.getAttitude(pvProvider, date, orbit.getFrame());
+
+            return new SpacecraftState(orbit, attitude, getMass(date));
+
+        } catch (OrekitException oe) {
+            throw new PropagationException(oe);
+        }
+    }
+
+    /** Extrapolate an orbit up to a specific target date.
+     * @param date target date for the orbit
+     * @return extrapolated parameters
+     * @exception PropagationException if some parameters are out of bounds
+     */
+    protected abstract Orbit propagateOrbit(final AbsoluteDate date)
         throws PropagationException;
 
+    /** Get the mass.
+     * @param date target date for the orbit
+     * @return mass mass
+     * @exception PropagationException if some parameters are out of bounds
+     */
+    protected abstract double getMass(final AbsoluteDate date)
+        throws PropagationException;
+
+    /** Internal PVCoordinatesProvider for attitude computation. */
+    private class LocalPVProvider implements PVCoordinatesProvider {
+        /** {@inheritDoc} */
+        public PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
+            throws OrekitException {
+            return propagateOrbit(date).getPVCoordinates(frame);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public void resetInitialState(final SpacecraftState state)
+        throws PropagationException {
+        initialState = state;
+    }
+
+    /** {@inheritDoc} */
+    public void notify(SpacecraftState s, EventDetector detector) {
+        // Add occurred event to occurred events list
+        occurredEvents.add(new OccurredEvent(s, detector));
+    }
+    
+
+    
     /** {@link BoundedPropagator} (but not really bounded) view of the instance. */
-    private class UnboundedPropagatorView implements BoundedPropagator {
+    private class UnboundedPropagatorView 
+        extends AbstractPropagator implements BoundedPropagator {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -3340036098040553110L;
+
+        public UnboundedPropagatorView() {
+            super(AbstractPropagator.this.getAttitudeProvider());
+        }
 
         /** {@inheritDoc} */
         public AbsoluteDate getMinDate() {
@@ -271,9 +409,14 @@ public abstract class AbstractPropagator implements Propagator {
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState propagate(final AbsoluteDate target)
+        protected Orbit propagateOrbit(final AbsoluteDate target)
             throws PropagationException {
-            return basicPropagate(target);
+            return AbstractPropagator.this.propagateOrbit(target);
+        }
+
+        /** {@inheritDoc} */
+        public double getMass(final AbsoluteDate date) throws PropagationException {
+            return AbstractPropagator.this.getMass(date);
         }
 
         /** {@inheritDoc} */
@@ -282,7 +425,18 @@ public abstract class AbstractPropagator implements Propagator {
             return propagate(date).getPVCoordinates(frame);
         }
 
+        /** {@inheritDoc} */
+        public void resetInitialState(SpacecraftState state)
+            throws PropagationException {
+            AbstractPropagator.this.resetInitialState(state);
+            
+        }
 
+        /** {@inheritDoc} */
+        public SpacecraftState getInitialState() throws OrekitException {
+            return AbstractPropagator.this.getInitialState();
+        }
+        
     }
 
     /** Add an event handler for end date checking.
@@ -298,7 +452,7 @@ public abstract class AbstractPropagator implements Propagator {
     protected CombinedEventsDetectorsManager addEndDateChecker(final AbsoluteDate startDate,
                                                                final AbsoluteDate endDate,
                                                                final CombinedEventsDetectorsManager manager) {
-        final CombinedEventsDetectorsManager newManager = new CombinedEventsDetectorsManager();
+        final CombinedEventsDetectorsManager newManager = new CombinedEventsDetectorsManager(this);
         for (final EventDetector detector : manager.getEventsDetectors()) {
             newManager.addEventDetector(detector);
         }
@@ -335,6 +489,89 @@ public abstract class AbstractPropagator implements Propagator {
         /** {@inheritDoc} */
         public double g(final SpacecraftState s) {
             return s.getDate().durationFrom(endDate);
+        }
+
+    }
+
+    /** Internal class for local propagation. */
+    private class BasicStepInterpolator implements OrekitStepInterpolator {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 1585604180933740215L;
+
+        /** Previous date. */
+        private AbsoluteDate previousDate;
+
+        /** Current date. */
+        private AbsoluteDate currentDate;
+
+        /** Interpolated State. */
+        private SpacecraftState interpolatedState;
+
+        /** Forward propagation indicator. */
+        private boolean forward;
+
+        /** Build a new instance from a basic propagator.
+         */
+        public BasicStepInterpolator() {
+            previousDate     = AbsoluteDate.PAST_INFINITY;
+            currentDate      = AbsoluteDate.PAST_INFINITY;
+        }
+
+        /** {@inheritDoc} */
+        public AbsoluteDate getCurrentDate() {
+            return currentDate;
+        }
+
+        /** {@inheritDoc} */
+        public AbsoluteDate getInterpolatedDate() {
+            return interpolatedState.getDate();
+        }
+
+        /** {@inheritDoc} */
+        public SpacecraftState getInterpolatedState() throws OrekitException {
+            return interpolatedState;
+        }
+
+        /** {@inheritDoc} */
+        public double[] getInterpolatedAdditionalState(AdditionalEquations addEqu)
+            throws OrekitException {
+            throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_EQUATION);
+        }
+
+        /** {@inheritDoc} */
+        public AbsoluteDate getPreviousDate() {
+            return previousDate;
+        }
+
+        /** {@inheritDoc} */
+        public boolean isForward() {
+            return forward;
+        }
+
+        /** {@inheritDoc} */
+        public void setInterpolatedDate(final AbsoluteDate date)
+            throws PropagationException {
+            interpolatedState = basicPropagate(date);
+        }
+
+        /** Shift one step forward.
+         * Copy the current date into the previous date, hence preparing the
+         * interpolator for future calls to {@link #storeDate storeDate}
+         */
+        public void shift() {
+            previousDate = currentDate;
+        }
+
+        /** Store the current step date.
+         * @param date current date
+         * @exception PropagationException if the state cannot be propagated at specified date
+         */
+        public void storeDate(final AbsoluteDate date)
+            throws PropagationException {
+            currentDate = date;
+            forward     = currentDate.compareTo(previousDate) >= 0;
+            setInterpolatedDate(currentDate);
         }
 
     }

@@ -18,7 +18,7 @@ package org.orekit.propagation.numerical;
 
 import java.io.Serializable;
 
-import org.orekit.attitudes.AttitudeLaw;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
@@ -33,10 +33,10 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface StateMapper extends Serializable {
 
-    /** Set the attitude law.
-     * @param attitudeLaw attitude law
+    /** Set the attitude provider.
+     * @param attitudeProvider attitude provider
      */
-    void setAttitudeLaw(final AttitudeLaw attitudeLaw);
+    void setAttitudeProvider(final AttitudeProvider attitudeProvider);
 
     /** Convert spacecraft state to state array.
     * @param s spacecraft state to map
@@ -50,7 +50,7 @@ public interface StateMapper extends Serializable {
      * @param frame frame in which integration is performed
      * @return state corresponding to the flat array as a space dynamics object
      * @exception OrekitException if the attitude state cannot be determined
-     * by the attitude law
+     * by the attitude provider
      */
     SpacecraftState mapArrayToState(final double[] array, final AbsoluteDate date,
                                     final double mu, final Frame frame)

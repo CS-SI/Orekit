@@ -18,7 +18,7 @@ package org.orekit.propagation.sampling;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
-import org.orekit.propagation.BasicPropagator;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.AdditionalEquations;
 import org.orekit.time.AbsoluteDate;
@@ -31,10 +31,10 @@ import org.orekit.time.AbsoluteDate;
 public class BasicStepInterpolator implements OrekitStepInterpolator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 3616520788183383307L;
+    private static final long serialVersionUID = 7847540541046397037L;
 
     /** Underlying propagator. */
-    private final BasicPropagator propagator;
+    private final Propagator propagator;
 
     /** Previous date. */
     private AbsoluteDate previousDate;
@@ -51,7 +51,7 @@ public class BasicStepInterpolator implements OrekitStepInterpolator {
     /** Build a new instance from a basic propagator.
      * @param propagator underlying propagator to use
      */
-    public BasicStepInterpolator(final BasicPropagator propagator) {
+    public BasicStepInterpolator(final Propagator propagator) {
         this.propagator  = propagator;
         previousDate     = AbsoluteDate.PAST_INFINITY;
         currentDate      = AbsoluteDate.PAST_INFINITY;

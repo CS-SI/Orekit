@@ -70,9 +70,9 @@ public class LofOffsetTest {
 
         //  Satellite position
 
-        // Lof aligned attitude law
+        // Lof aligned attitude provider
         final LofOffset lofAlignedLaw = LofOffset.LOF_ALIGNED;
-        final Rotation lofOffsetRot = lofAlignedLaw.getAttitude(orbit).getRotation();
+        final Rotation lofOffsetRot = lofAlignedLaw.getAttitude(orbit, date, orbit.getFrame()).getRotation();
         
         // Check that 
         final Vector3D momentumEME2000 = pvSatEME2000.getMomentum();
@@ -92,7 +92,7 @@ public class LofOffsetTest {
                                    FastMath.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
                                    FramesFactory.getEME2000(), date, mu);
 
-        // Create target pointing attitude law
+        // Create target pointing attitude provider
         // ************************************  
         // Elliptic earth shape
         final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
@@ -100,12 +100,12 @@ public class LofOffsetTest {
             
         // Attitude law definition from geodetic point target 
         final TargetPointing targetLaw = new TargetPointing(geoTargetITRF2005, earthShape);
-        final Rotation targetRot = targetLaw.getAttitude(circ).getRotation();       
+        final Rotation targetRot = targetLaw.getAttitude(circ, date, circ.getFrame()).getRotation();       
         
-        // Create lof aligned attitude law
+        // Create lof aligned attitude provider
         // *******************************  
         final LofOffset lofAlignedLaw = LofOffset.LOF_ALIGNED;
-        final Rotation lofAlignedRot = lofAlignedLaw.getAttitude(circ).getRotation();
+        final Rotation lofAlignedRot = lofAlignedLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
 
         // Get rotation from LOF to target pointing attitude
         Rotation rollPitchYaw = targetRot.applyTo(lofAlignedRot.revert()).revert();
@@ -114,10 +114,10 @@ public class LofOffsetTest {
         final double pitch = angles[1];
         final double roll = angles[2];
         
-        // Create lof offset attitude law with computed roll, pitch, yaw
+        // Create lof offset attitude provider with computed roll, pitch, yaw
         // **************************************************************  
         final LofOffset lofOffsetLaw = new LofOffset(RotationOrder.ZYX, yaw, pitch, roll);
-        final Rotation lofOffsetRot = lofOffsetLaw.getAttitude(circ).getRotation();
+        final Rotation lofOffsetRot = lofOffsetLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
 
         // Compose rotations : target pointing attitudes
         final double angleCompo = targetRot.applyInverseTo(lofOffsetRot).getAngle();
@@ -137,8 +137,8 @@ public class LofOffsetTest {
        
         // Get roll, pitch, yaw angles corresponding to this pointing law
         final LofOffset lofAlignedLaw = LofOffset.LOF_ALIGNED;
-        final Rotation lofAlignedRot = lofAlignedLaw.getAttitude(orbit).getRotation();
-        final Attitude targetAttitude = targetLaw.getAttitude(orbit);
+        final Rotation lofAlignedRot = lofAlignedLaw.getAttitude(orbit, date, orbit.getFrame()).getRotation();
+        final Attitude targetAttitude = targetLaw.getAttitude(orbit, date, orbit.getFrame());
         final Rotation rollPitchYaw = targetAttitude.getRotation().applyTo(lofAlignedRot.revert()).revert();
         final double[] angles = rollPitchYaw.getAngles(RotationOrder.ZYX);
         final double yaw = angles[0];
@@ -150,7 +150,7 @@ public class LofOffsetTest {
         final LofOffsetPointing lofOffsetPtLaw = new LofOffsetPointing(earthSpheric, lofOffsetLaw, Vector3D.PLUS_K);
 
         // Check target pointed by this law : shall be the same as defined
-        final Vector3D pTargetRes = lofOffsetPtLaw.getTargetPoint(orbit, earthSpheric.getBodyFrame());
+        final Vector3D pTargetRes = lofOffsetPtLaw.getTargetPoint(orbit, date, earthSpheric.getBodyFrame());
         final GeodeticPoint targetRes = earthSpheric.transform(pTargetRes, earthSpheric.getBodyFrame(), date);
         
         Assert.assertEquals(targetDef.getLongitude(), targetRes.getLongitude(), Utils.epsilonAngle);
@@ -161,7 +161,7 @@ public class LofOffsetTest {
     @Test
     public void testSpin() throws OrekitException {
 
-        final AttitudeLaw law = new LofOffset(RotationOrder.XYX, 0.1, 0.2, 0.3);
+        final AttitudeProvider law = new LofOffset(RotationOrder.XYX, 0.1, 0.2, 0.3);
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
@@ -216,19 +216,19 @@ public class LofOffsetTest {
         double sin = FastMath.sin(alpha);
 
         // Roll
-        Attitude attitude = new LofOffset(RotationOrder.XYZ, alpha, 0.0, 0.0).getAttitude(orbit);
+        Attitude attitude = new LofOffset(RotationOrder.XYZ, alpha, 0.0, 0.0).getAttitude(orbit, date, orbit.getFrame());
         checkSatVector(orbit, attitude, Vector3D.PLUS_I,  1.0,  0.0,  0.0, 1.0e-8);
         checkSatVector(orbit, attitude, Vector3D.PLUS_J,  0.0,  cos,  sin, 1.0e-8);
         checkSatVector(orbit, attitude, Vector3D.PLUS_K,  0.0, -sin,  cos, 1.0e-8);
 
         // Pitch
-        attitude = new LofOffset(RotationOrder.XYZ, 0.0, alpha, 0.0).getAttitude(orbit);
+        attitude = new LofOffset(RotationOrder.XYZ, 0.0, alpha, 0.0).getAttitude(orbit, date, orbit.getFrame());
         checkSatVector(orbit, attitude, Vector3D.PLUS_I,  cos,  0.0, -sin, 1.0e-8);
         checkSatVector(orbit, attitude, Vector3D.PLUS_J,  0.0,  1.0,  0.0, 1.0e-8);
         checkSatVector(orbit, attitude, Vector3D.PLUS_K,  sin,  0.0,  cos, 1.0e-8);
 
         // Yaw
-        attitude = new LofOffset(RotationOrder.XYZ, 0.0, 0.0, alpha).getAttitude(orbit);
+        attitude = new LofOffset(RotationOrder.XYZ, 0.0, 0.0, alpha).getAttitude(orbit, date, orbit.getFrame());
         checkSatVector(orbit, attitude, Vector3D.PLUS_I,  cos,  sin,  0.0, 1.0e-8);
         checkSatVector(orbit, attitude, Vector3D.PLUS_J, -sin,  cos,  0.0, 1.0e-8);
         checkSatVector(orbit, attitude, Vector3D.PLUS_K,  0.0,  0.0,  1.0, 1.0e-8);
@@ -251,8 +251,8 @@ public class LofOffsetTest {
         double alpha2 = 0.456;
         double alpha3 = 0.789;
         LofOffset law = new LofOffset(order, alpha1, alpha2, alpha3);
-        Rotation offsetAtt  = law.getAttitude(orbit).getRotation();
-        Rotation alignedAtt = LofOffset.LOF_ALIGNED.getAttitude(orbit).getRotation();
+        Rotation offsetAtt  = law.getAttitude(orbit, date, orbit.getFrame()).getRotation();
+        Rotation alignedAtt = LofOffset.LOF_ALIGNED.getAttitude(orbit, date, orbit.getFrame()).getRotation();
         Rotation offsetProper = offsetAtt.applyTo(alignedAtt.revert());
         double[] angles = offsetProper.revert().getAngles(order);
         Assert.assertEquals(alpha1, angles[0], 1.0e-11);  

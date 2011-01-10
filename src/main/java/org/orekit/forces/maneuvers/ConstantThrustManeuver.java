@@ -31,7 +31,7 @@ import org.orekit.time.AbsoluteDate;
  * The current attitude of the spacecraft, defined by the current
  * spacecraft state, will be used to compute the thrust direction in
  * inertial frame. A typical case for tangential maneuvers is to use a
- * {@link org.orekit.attitudes.LofOffset LOF aligned} attitude law for state propagation and a
+ * {@link org.orekit.attitudes.LofOffset LOF aligned} attitude provider for state propagation and a
  * velocity increment along the +X satellite axis.</p>
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane

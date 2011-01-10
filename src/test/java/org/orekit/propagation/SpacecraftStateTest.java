@@ -30,7 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
-import org.orekit.attitudes.AttitudeLaw;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
@@ -85,9 +85,9 @@ public class SpacecraftStateTest {
             double residualA = aModel.value(dt) -
                                FastMath.toDegrees(Rotation.distance(shifted.getAttitude().getRotation(),
                                                                 propagated.getAttitude().getRotation()));
-            maxResidualP = FastMath.max(maxResidualP, residualP);
-            maxResidualV = FastMath.max(maxResidualV, residualV);
-            maxResidualA = FastMath.max(maxResidualA, residualA);
+            maxResidualP = FastMath.max(maxResidualP, FastMath.abs(residualP));
+            maxResidualV = FastMath.max(maxResidualV, FastMath.abs(residualV));
+            maxResidualA = FastMath.max(maxResidualA, FastMath.abs(residualA));
         }
         Assert.assertEquals(1.6,    maxResidualP, 4.0e-2);
         Assert.assertEquals(0.014,  maxResidualV, 4.0e-4);
@@ -96,7 +96,8 @@ public class SpacecraftStateTest {
 
     @Test(expected=IllegalArgumentException.class)
     public void testDatesConsistency() throws OrekitException {
-        new SpacecraftState(orbit, attitudeLaw.getAttitude(orbit.shiftedBy(10.0)));
+        new SpacecraftState(orbit, attitudeLaw.getAttitude(orbit.shiftedBy(10.0),
+                                                           orbit.getDate().shiftedBy(10.0), orbit.getFrame()));
     }
 
     @Test(expected=IllegalArgumentException.class)
@@ -177,7 +178,7 @@ public class SpacecraftStateTest {
 
     private double mass;
     private Orbit orbit;
-    private AttitudeLaw attitudeLaw;
+    private AttitudeProvider attitudeLaw;
     private Propagator propagator;
 
 }

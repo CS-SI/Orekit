@@ -20,8 +20,9 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.Orbit;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 /** This class leverages common parts for compensation modes around ground pointing attitudes.
@@ -29,16 +30,16 @@ import org.orekit.utils.PVCoordinates;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public abstract class GroundPointingWrapper extends GroundPointing implements AttitudeLawModifier {
+public abstract class GroundPointingWrapper extends GroundPointing implements AttitudeProviderModifier {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 262999520075931766L;
 
-    /** Underlying ground pointing attitude law.  */
+    /** Underlying ground pointing attitude provider.  */
     private final GroundPointing groundPointingLaw;
 
     /** Creates a new instance.
-     * @param groundPointingLaw ground pointing attitude law without compensation
+     * @param groundPointingLaw ground pointing attitude provider without compensation
      */
     public GroundPointingWrapper(final GroundPointing groundPointingLaw) {
         super(groundPointingLaw.getBodyFrame());
@@ -47,32 +48,34 @@ public abstract class GroundPointingWrapper extends GroundPointing implements At
 
     /** Get the underlying ground pointing law.
      * @return underlying ground pointing law.
-     * @see #getUnderlyingAttitudeLaw()
-     * @deprecated as of 5.1, replaced by {@link #getUnderlyingAttitudeLaw()}
+     * @see #getUnderlyingAttitudeProvider()
+     * @deprecated as of 5.1, replaced by {@link #getUnderlyingAttitudeProvider()}
      */
     @Deprecated
     public GroundPointing getGroundPointingLaw() {
         return groundPointingLaw;
     }
 
-    /** Get the underlying (ground pointing) attitude law.
-     * @return underlying attitude law, which in this case is a {@link GroundPointing} instance
+    /** Get the underlying (ground pointing) attitude provider.
+     * @return underlying attitude provider, which in this case is a {@link GroundPointing} instance
      */
-    public AttitudeLaw getUnderlyingAttitudeLaw() {
+    public AttitudeProvider getUnderlyingAttitudeProvider() {
         return groundPointingLaw;
     }
 
     /** {@inheritDoc} */
-    protected Vector3D getTargetPoint(final Orbit orbit, final Frame frame)
+    protected Vector3D getTargetPoint(final PVCoordinatesProvider pvProv, 
+                                      final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        return groundPointingLaw.getTargetPoint(orbit, frame);
+        return groundPointingLaw.getTargetPoint(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected PVCoordinates getTargetPV(final Orbit orbit, final Frame frame)
+    protected PVCoordinates getTargetPV(final PVCoordinatesProvider pvProv, 
+                                        final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        return groundPointingLaw.getTargetPV(orbit, frame);
+        return groundPointingLaw.getTargetPV(pvProv, date, frame);
     }
 
     /** Compute the base system state at given date, without compensation.
@@ -80,30 +83,32 @@ public abstract class GroundPointingWrapper extends GroundPointing implements At
      * @return satellite base attitude state, i.e without compensation.
      * @throws OrekitException if some specific error occurs
      */
-    public Attitude getBaseState(final Orbit orbit)
+    public Attitude getBaseState(final PVCoordinatesProvider pvProv, 
+                                 final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        return groundPointingLaw.getAttitude(orbit);
+        return groundPointingLaw.getAttitude(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
     @Override
-    public Attitude getAttitude(final Orbit orbit)
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv, 
+                                final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
-        // Get attitude from base attitude law
-        final Attitude base = getBaseState(orbit);
+        // Get attitude from base attitude provider
+        final Attitude base = getBaseState(pvProv, date, frame);
 
         // Get compensation
-        final Rotation compensation = getCompensation(orbit, base);
+        final Rotation compensation = getCompensation(pvProv, date, frame, base);
 
         // Compute compensation rotation rate
         final double h = 0.1;
-        final Rotation compensationM1H  = getCompensation(orbit.shiftedBy(-h), base.shiftedBy(-h));
-        final Rotation compensationP1H  = getCompensation(orbit.shiftedBy( h), base.shiftedBy( h));
+        final Rotation compensationM1H  = getCompensation(pvProv, date.shiftedBy(-h), frame, base.shiftedBy(-h));
+        final Rotation compensationP1H  = getCompensation(pvProv, date.shiftedBy( h), frame, base.shiftedBy( h));
         final Vector3D compensationRate = Attitude.estimateSpin(compensationM1H, compensationP1H, 2 * h);
 
         // Combination of base attitude, compensation and compensation rate
-        return new Attitude(orbit.getDate(), orbit.getFrame(),
+        return new Attitude(date, frame,
                             compensation.applyTo(base.getRotation()),
                             compensationRate.add(compensation.applyTo(base.getSpin())));
 
@@ -116,7 +121,9 @@ public abstract class GroundPointingWrapper extends GroundPointing implements At
      * attitude state and compensated state.
      * @throws OrekitException if some specific error occurs
      */
-    public abstract Rotation getCompensation(final Orbit orbit, final Attitude base)
+    public abstract Rotation getCompensation(final PVCoordinatesProvider pvProv, 
+                                             final AbsoluteDate date, final Frame frame, 
+                                             final Attitude base)
         throws OrekitException;
 
 }

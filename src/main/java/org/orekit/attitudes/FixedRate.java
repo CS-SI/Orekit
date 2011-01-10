@@ -17,19 +17,21 @@
 package org.orekit.attitudes;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.orbits.Orbit;
+import org.orekit.frames.Frame;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 /**
- * This class handles a simple attitude law at constant rate around a fixed axis.
- * <p>This attitude law is a simple linear extrapolation from an initial
+ * This class handles a simple attitude provider at constant rate around a fixed axis.
+ * <p>This attitude provider is a simple linear extrapolation from an initial
  * orientation, a rotation axis and a rotation rate. All this elements can be
  * specified as a simple {@link Attitude reference attitude}.</p>
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-public class FixedRate implements AttitudeLaw {
+public class FixedRate implements AttitudeProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 6874119218379303688L;
@@ -45,11 +47,12 @@ public class FixedRate implements AttitudeLaw {
     }
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(final Orbit orbit)
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv, 
+                                final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        final double timeShift = orbit.getDate().durationFrom(referenceAttitude.getDate());
+        final double timeShift = date.durationFrom(referenceAttitude.getDate());
         final Attitude shifted = referenceAttitude.shiftedBy(timeShift);
-        return shifted.withReferenceFrame(orbit.getFrame());
+        return shifted.withReferenceFrame(frame);
     }
 
     /** Get the reference attitude.

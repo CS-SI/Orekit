@@ -19,9 +19,11 @@ package org.orekit.attitudes;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.Orbit;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 /**
@@ -29,7 +31,7 @@ import org.orekit.utils.PVCoordinates;
  * with respect to a local orbital frame.
 
  * <p>
- * The attitude law is defined as a rotation offset from local orbital frame.
+ * The attitude provider is defined as a rotation offset from local orbital frame.
  * This rotation can be defined by
  * NB : Local orbital frame is defined as follows :
  * </p>
@@ -42,9 +44,9 @@ import org.orekit.utils.PVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class LofOffset implements AttitudeLaw {
+public class LofOffset implements AttitudeProvider {
 
-    /** Dummy attitude law, perfectly aligned with the LOF frame. */
+    /** Dummy attitude provider, perfectly aligned with the LOF frame. */
     public static final LofOffset LOF_ALIGNED =
         new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
 
@@ -91,11 +93,11 @@ public class LofOffset implements AttitudeLaw {
 
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(final Orbit orbit) {
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv, 
+                                final AbsoluteDate date, final Frame frame) 
+    throws OrekitException {
 
-        final PVCoordinates pv = orbit.getPVCoordinates();
-        final Frame frame = orbit.getFrame();
-
+        final PVCoordinates pv = pvProv.getPVCoordinates(date, frame);
 
         // Construction of the local orbital frame
         final Vector3D p = pv.getPosition();
@@ -106,7 +108,7 @@ public class LofOffset implements AttitudeLaw {
         final Vector3D spinAxis = new Vector3D(angularVelocity, Vector3D.MINUS_J);
 
         // Compose with offset rotation
-        return new Attitude(orbit.getDate(), frame, offset.applyTo(lofRot), offset.applyTo(spinAxis));
+        return new Attitude(date, frame, offset.applyTo(lofRot), offset.applyTo(spinAxis));
 
     }
 

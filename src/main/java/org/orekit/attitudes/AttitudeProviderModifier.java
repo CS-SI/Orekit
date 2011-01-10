@@ -17,16 +17,16 @@
 package org.orekit.attitudes;
 
 
-/** This interface represents an attitude law that modifies/wraps another underlying law.
+/** This interface represents an attitude provider that modifies/wraps another underlying provider.
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  * @since 5.1
  */
-public interface AttitudeLawModifier extends AttitudeLaw {
+public interface AttitudeProviderModifier extends AttitudeProvider {
 
-    /** Get the underlying attitude law.
-     * @return underlying attitude law
+    /** Get the underlying attitude provider.
+     * @return underlying attitude provider
      */
-    AttitudeLaw getUnderlyingAttitudeLaw();
+    AttitudeProvider getUnderlyingAttitudeProvider();
 
 }

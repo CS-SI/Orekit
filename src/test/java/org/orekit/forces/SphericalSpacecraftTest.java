@@ -21,6 +21,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
@@ -33,7 +34,7 @@ import org.orekit.time.TimeScalesFactory;
 public class SphericalSpacecraftTest {
 
     @Test
-    public void testDrag() {
+    public void testDrag() throws OrekitException {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 04, 07),
                                 TimeComponents.H00,
                                 TimeScalesFactory.getTAI());
@@ -62,7 +63,7 @@ public class SphericalSpacecraftTest {
     }
 
     @Test
-    public void testRadiationPressure() {
+    public void testRadiationPressure() throws OrekitException {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 04, 07),
                                 TimeComponents.H00,
                                 TimeScalesFactory.getTAI());

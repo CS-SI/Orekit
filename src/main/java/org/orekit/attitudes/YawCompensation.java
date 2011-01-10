@@ -20,11 +20,12 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.Orbit;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 /**
- * This class handles yaw compensation attitude law.
+ * This class handles yaw compensation attitude provider.
 
  * <p>
  * Yaw compensation is mainly used for Earth observation satellites. As a
@@ -54,14 +55,16 @@ public class YawCompensation extends GroundPointingWrapper {
     private static final long serialVersionUID = 1145977506851433023L;
 
     /** Creates a new instance.
-     * @param groundPointingLaw ground pointing attitude law without yaw compensation
+     * @param groundPointingLaw ground pointing attitude provider without yaw compensation
      */
     public YawCompensation(final GroundPointing groundPointingLaw) {
         super(groundPointingLaw);
     }
 
     /** {@inheritDoc} */
-    public Rotation getCompensation(final Orbit orbit, final Attitude base)
+    public Rotation getCompensation(final PVCoordinatesProvider pvProv, 
+                                    final AbsoluteDate date, final Frame orbitFrame, 
+                                    final Attitude base)
         throws OrekitException {
 
         // compute relative velocity of FIXED ground point with respect to satellite
@@ -72,11 +75,10 @@ public class YawCompensation extends GroundPointingWrapper {
         // So the following computation needs to recompute velocity by itself, using
         // the velocity provided by getTargetPV would be wrong!
         final Frame bodyFrame  = getBodyFrame();
-        final Frame orbitFrame = orbit.getFrame();
-        final Vector3D surfacePointLocation = ((GroundPointing) getUnderlyingAttitudeLaw()).getTargetPoint(orbit, orbitFrame);
-        final Vector3D bodySpin = bodyFrame.getTransformTo(orbitFrame, orbit.getDate()).getRotationRate().negate();
+        final Vector3D surfacePointLocation = ((GroundPointing) getUnderlyingAttitudeProvider()).getTargetPoint(pvProv, date, orbitFrame);
+        final Vector3D bodySpin = bodyFrame.getTransformTo(orbitFrame, date).getRotationRate().negate();
         final Vector3D surfacePointVelocity = Vector3D.crossProduct(bodySpin, surfacePointLocation);
-        final Vector3D satVelocity = orbit.getPVCoordinates().getVelocity();
+        final Vector3D satVelocity = pvProv.getPVCoordinates(date, orbitFrame).getVelocity();
         final Vector3D relativeVelocity = surfacePointVelocity.subtract(satVelocity);
 
         // Compensation rotation definition :
@@ -95,9 +97,10 @@ public class YawCompensation extends GroundPointingWrapper {
      * @return yaw compensation angle for orbit.
      * @throws OrekitException if some specific error occurs
      */
-    public double getYawAngle(final Orbit orbit)
+    public double getYawAngle(final PVCoordinatesProvider pvProv, 
+                              final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        return getCompensation(orbit, getBaseState(orbit)).getAngle();
+        return getCompensation(pvProv, date, frame, getBaseState(pvProv, date, frame)).getAngle();
     }
 
 }

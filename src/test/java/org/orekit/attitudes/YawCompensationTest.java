@@ -33,6 +33,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -65,19 +66,19 @@ public class YawCompensationTest {
 
         //  Attitude laws
         // **************
-        // Target pointing attitude law without yaw compensation
+        // Target pointing attitude provider without yaw compensation
         NadirPointing nadirLaw = new NadirPointing(earthShape);
  
-        // Target pointing attitude law with yaw compensation
+        // Target pointing attitude provider with yaw compensation
         YawCompensation yawCompensLaw = new YawCompensation(nadirLaw);
        
         //  Check target
         // *************
         // without yaw compensation
-        Vector3D noYawObserved = nadirLaw.getTargetPoint(circOrbit, frameITRF2005);
+        Vector3D noYawObserved = nadirLaw.getTargetPoint(circOrbit, date, frameITRF2005);
 
         // with yaw compensation
-        Vector3D yawObserved = yawCompensLaw.getTargetPoint(circOrbit, frameITRF2005);
+        Vector3D yawObserved = yawCompensLaw.getTargetPoint(circOrbit, date, frameITRF2005);
 
         // Check difference
         Vector3D observedDiff = noYawObserved.subtract(yawObserved);
@@ -93,8 +94,8 @@ public class YawCompensationTest {
 
         Frame inertFrame  = circOrbit.getFrame();
         Frame earthFrame  = earthShape.getBodyFrame();
-        AttitudeLaw law   = new YawCompensation(new NadirPointing(earthShape));
-        Attitude att0     = law.getAttitude(circOrbit);
+        AttitudeProvider law   = new YawCompensation(new NadirPointing(earthShape));
+        Attitude att0     = law.getAttitude(circOrbit, date, circOrbit.getFrame());
 
         // ground point in satellite Z direction
         Vector3D satInert = circOrbit.getPVCoordinates().getPosition();
@@ -132,10 +133,10 @@ public class YawCompensationTest {
 
         //  Attitude laws
         // **************
-        // Target pointing attitude law over satellite nadir at date, without yaw compensation
+        // Target pointing attitude provider over satellite nadir at date, without yaw compensation
         NadirPointing nadirLaw = new NadirPointing(earthShape);
  
-        // Target pointing attitude law with yaw compensation
+        // Target pointing attitude provider with yaw compensation
         YawCompensation yawCompensLaw = new YawCompensation(nadirLaw);
 
         
@@ -155,7 +156,7 @@ public class YawCompensationTest {
             extrapDate = extrapDate.shiftedBy(delta_t);
 
             // Extrapolated orbit state at date
-            SpacecraftState extrapOrbit = extrapolator.propagate(extrapDate);
+            Orbit extrapOrbit = extrapolator.propagate(extrapDate).getOrbit();
             PVCoordinates extrapPvSatEME2000 = extrapOrbit.getPVCoordinates();
             
             // Satellite latitude at date
@@ -163,7 +164,7 @@ public class YawCompensationTest {
                 earthShape.transform(extrapPvSatEME2000.getPosition(), FramesFactory.getEME2000(), extrapDate).getLatitude();
             
             // Compute yaw compensation angle -- rotations composition
-            double yawAngle = yawCompensLaw.getYawAngle(extrapOrbit.getOrbit());
+            double yawAngle = yawCompensLaw.getYawAngle(extrapOrbit, extrapDate, extrapOrbit.getFrame());
 
             // Update minimum yaw compensation angle
             if (FastMath.abs(yawAngle) <= yawMin) {
@@ -213,15 +214,15 @@ public class YawCompensationTest {
 
         //  Attitude laws
         // **************
-        // Target pointing attitude law over satellite nadir at date, without yaw compensation
+        // Target pointing attitude provider over satellite nadir at date, without yaw compensation
         NadirPointing nadirLaw = new NadirPointing(earthShape);
  
-        // Target pointing attitude law with yaw compensation
+        // Target pointing attitude provider with yaw compensation
         YawCompensation yawCompensLaw = new YawCompensation(nadirLaw);
 
         // Get attitude rotations from non yaw compensated / yaw compensated laws
-        Rotation rotNoYaw = nadirLaw.getAttitude(circOrbit).getRotation();
-        Rotation rotYaw = yawCompensLaw.getAttitude(circOrbit).getRotation();
+        Rotation rotNoYaw = nadirLaw.getAttitude(circOrbit, date, circOrbit.getFrame()).getRotation();
+        Rotation rotYaw = yawCompensLaw.getAttitude(circOrbit, date, circOrbit.getFrame()).getRotation();
             
         // Compose rotations composition
         Rotation compoRot = rotYaw.applyTo(rotNoYaw.revert());
@@ -237,8 +238,8 @@ public class YawCompensationTest {
 
         NadirPointing nadirLaw = new NadirPointing(earthShape);
         
-        // Target pointing attitude law with yaw compensation
-        AttitudeLaw law = new YawCompensation(nadirLaw);
+        // Target pointing attitude provider with yaw compensation
+        AttitudeProvider law = new YawCompensation(nadirLaw);
 
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),

@@ -21,14 +21,14 @@ import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /**
- * This class handles nadir pointing attitude law.
+ * This class handles nadir pointing attitude provider.
 
  * <p>
- * This class represents the attitude law where the satellite z axis is
+ * This class represents the attitude provider where the satellite z axis is
  * pointing to the vertical of the ground point under satellite.</p>
  * <p>
  * The object <code>NadirPointing</code> is guaranteed to be immutable.
@@ -55,11 +55,11 @@ public class NadirPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
-    protected Vector3D getTargetPoint(final Orbit orbit, final Frame frame)
+    protected Vector3D getTargetPoint(final PVCoordinatesProvider pvProv, 
+                                      final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
-        final AbsoluteDate date = orbit.getDate();
-        final Vector3D satInBodyFrame = orbit.getPVCoordinates(getBodyFrame()).getPosition();
+        final Vector3D satInBodyFrame = pvProv.getPVCoordinates(date, getBodyFrame()).getPosition();
 
         // satellite position in geodetic coordinates
         final GeodeticPoint gpSat = shape.transform(satInBodyFrame, getBodyFrame(), date);

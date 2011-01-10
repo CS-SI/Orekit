@@ -22,21 +22,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.orbits.Orbit;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinatesProvider;
 
-/** This classes manages a sequence of different attitude laws that are activated
- * in rows according to switching events.
- * <p>Only one attitude law in the sequence is in an active state. When one of
- * the switch event associated with the active law occurs, the active law becomes
- * the one specified with the event. A simple example is a law for the sun lighted part
- * of the orbit and another law for the eclipse time. When the sun lighted law is active,
- * the eclipse entry event is checked and when it occurs the eclipse law is activated.
- * When the eclipse law is active, the eclipse exit event is checked and when it occurs
- * the sun lighted law is activated again. This sequence is a simple loop.</p>
- * <p>An active attitude law may have several switch events and next law settings, leading
+/** This classes manages a sequence of different attitude providers that are activated
+ * in turn according to switching events.
+ * <p>Only one attitude provider in the sequence is in an active state. When one of
+ * the switch event associated with the active provider occurs, the active provider becomes
+ * the one specified with the event. A simple example is a provider for the sun lighted part
+ * of the orbit and another provider for the eclipse time. When the sun lighted provider is active,
+ * the eclipse entry event is checked and when it occurs the eclipse provider is activated.
+ * When the eclipse provider is active, the eclipse exit event is checked and when it occurs
+ * the sun lighted provider is activated again. This sequence is a simple loop.</p>
+ * <p>An active attitude provider may have several switch events and next provider settings, leading
  * to different activation patterns depending on which events are triggered first. An example
  * of this feature is handling switches to safe mode if some contingency condition is met, in
  * addition to the nominal switches that correspond to proper operations. Another example
@@ -44,35 +46,35 @@ import org.orekit.propagation.events.EventDetector;
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-public class AttitudesSequence implements AttitudeLaw {
+public class AttitudesSequence implements AttitudeProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 5140034224175180354L;
 
-    /** Active law. */
-    private AttitudeLaw active;
+    /** Active provider. */
+    private AttitudeProvider active;
 
     /** Switching events map. */
-    private final Map<AttitudeLaw, Collection<Switch>> switchingMap;
+    private final Map<AttitudeProvider, Collection<Switch>> switchingMap;
 
     /** Constructor for an initially empty sequence.
      */
     public AttitudesSequence() {
         active = null;
-        switchingMap = new HashMap<AttitudeLaw, Collection<Switch>>();
+        switchingMap = new HashMap<AttitudeProvider, Collection<Switch>>();
     }
 
-    /** Reset the active law.
-     * @param law law to activate
+    /** Reset the active provider.
+     * @param provider providerprovider to activate
      */
-    public void resetActiveLaw(final AttitudeLaw law) {
+    public void resetActiveProvider(final AttitudeProvider provider) {
 
-        // add the law if not already known
-        if (!switchingMap.containsKey(law)) {
-            switchingMap.put(law, new ArrayList<Switch>());
+        // add the provider if not already known
+        if (!switchingMap.containsKey(provider)) {
+            switchingMap.put(provider, new ArrayList<Switch>());
         }
 
-        active = law;
+        active = provider;
 
     }
 
@@ -80,7 +82,7 @@ public class AttitudesSequence implements AttitudeLaw {
      * <p>
      * This method must be called once before propagation, after the
      * switching conditions have been set up by calls to {@link
-     * #addSwitchingCondition(AttitudeLaw, EventDetector, boolean, boolean, AttitudeLaw)}.
+     * #addSwitchingCondition(AttitudeProvider, EventDetector, boolean, boolean, AttitudeProvider)}.
      * </p>
      * @param propagator propagator that will handle the events
      */
@@ -92,10 +94,10 @@ public class AttitudesSequence implements AttitudeLaw {
         }
     }
 
-    /** Add a switching condition between two attitude laws.
+    /** Add a switching condition between two attitude providers.
      * <p>
-     * An attitude law may have several different switch events associated to
-     * it. Depending on which event is triggered, the appropriate law is
+     * An attitude provider may have several different switch events associated to
+     * it. Depending on which event is triggered, the appropriate provider is
      * switched to.
      * </p>
      * <p>
@@ -105,22 +107,22 @@ public class AttitudesSequence implements AttitudeLaw {
      * conditions have been set up. The reason for this is that the events will
      * be wrapped before being registered.
      * </p>
-     * @param before attitude law before the switch event occurrence
-     * @param switchEvent event triggering the attitude laws switch (may be null
-     * for a law without any ending condition, in this case the after law is not
-     * referenced and may be null too)
+     * @param before attitude provider before the switch event occurrence
+     * @param switchEvent event triggering the attitude providers switch (may be null
+     * for a provider without any ending condition, in this case the after provider
+     * is not referenced and may be null too)
      * @param switchOnIncrease if true, switch is triggered on increasing event
      * @param switchOnDecrease if true, switch is triggered on decreasing event
-     * @param after attitude law to activate after the switch event occurrence
+     * @param after attitude provider to activate after the switch event occurrence
      * (used only if switchEvent is non null)
      */
-    public void addSwitchingCondition(final AttitudeLaw before,
+    public void addSwitchingCondition(final AttitudeProvider before,
                                       final EventDetector switchEvent,
                                       final boolean switchOnIncrease,
                                       final boolean switchOnDecrease,
-                                      final AttitudeLaw after) {
+                                      final AttitudeProvider after) {
 
-        // add the before law if not already known
+        // add the before provider if not already known
         if (!switchingMap.containsKey(before)) {
             switchingMap.put(before, new ArrayList<Switch>());
             if (active == null) {
@@ -130,7 +132,7 @@ public class AttitudesSequence implements AttitudeLaw {
 
         if (switchEvent != null) {
 
-            // add the after law if not already known
+            // add the after provider if not already known
             if (!switchingMap.containsKey(after)) {
                 switchingMap.put(after, new ArrayList<Switch>());
             }
@@ -143,9 +145,11 @@ public class AttitudesSequence implements AttitudeLaw {
     }
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(final Orbit orbit) throws OrekitException {
-        // delegate attitude computation to the active law
-        return active.getAttitude(orbit);
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv, 
+                                final AbsoluteDate date, final Frame frame) 
+        throws OrekitException {
+        // delegate attitude computation to the active provider
+        return active.getAttitude(pvProv, date, frame);
     }
 
     /** Switch specification. */
@@ -163,20 +167,20 @@ public class AttitudesSequence implements AttitudeLaw {
         /** Event direction triggering the switch. */
         private final boolean switchOnDecrease;
 
-        /** Next attitude law. */
-        private final AttitudeLaw next;
+        /** Next attitude provider. */
+        private final AttitudeProvider next;
 
         /** Simple constructor.
          * @param event event
          * @param switchOnIncrease if true, switch is triggered on increasing event
          * @param switchOnDecrease if true, switch is triggered on decreasing event
          * otherwise switch is triggered on decreasing event
-         * @param next next attitude law
+         * @param next next attitude provider
          */
         public Switch(final EventDetector event,
                       final boolean switchOnIncrease,
                       final boolean switchOnDecrease,
-                      final AttitudeLaw next) {
+                      final AttitudeProvider next) {
             this.event            = event;
             this.switchOnIncrease = switchOnIncrease;
             this.switchOnDecrease = switchOnDecrease;
@@ -188,7 +192,7 @@ public class AttitudesSequence implements AttitudeLaw {
             throws OrekitException {
 
             if ((increasing && switchOnIncrease) || (!increasing && switchOnDecrease)) {
-                // switch to next attitude law
+                // switch to next attitude provider
                 active = next;
             }
 

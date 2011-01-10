@@ -21,12 +21,12 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
-import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 /**
- * This class handles a spin stabilized attitude law.
+ * This class handles a spin stabilized attitude provider.
  * <p>Spin stabilized laws are handled as wrappers for an underlying
  * non-rotating law. This underlying law is typically an instance
  * of {@link CelestialBodyPointed} with the pointing axis equal to
@@ -35,13 +35,13 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class SpinStabilized implements AttitudeLawModifier {
+public class SpinStabilized implements AttitudeProviderModifier {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -7025790361794748354L;
 
-    /** Underlying non-rotating attitude law.  */
-    private final AttitudeLaw nonRotatingLaw;
+    /** Underlying non-rotating attitude provider.  */
+    private final AttitudeProvider nonRotatingLaw;
 
     /** Start date of the rotation. */
     private final AbsoluteDate start;
@@ -56,12 +56,12 @@ public class SpinStabilized implements AttitudeLawModifier {
     private final Vector3D spin;
 
     /** Creates a new instance.
-     * @param nonRotatingLaw underlying non-rotating attitude law
+     * @param nonRotatingLaw underlying non-rotating attitude provider
      * @param start start date of the rotation
      * @param axis rotation axis in satellite frame
      * @param rate spin rate in radians per seconds
      */
-    public SpinStabilized(final AttitudeLaw nonRotatingLaw,
+    public SpinStabilized(final AttitudeProvider nonRotatingLaw,
                           final AbsoluteDate start,
                           final Vector3D axis, final double rate) {
         this.nonRotatingLaw = nonRotatingLaw;
@@ -71,29 +71,27 @@ public class SpinStabilized implements AttitudeLawModifier {
         this.spin           = new Vector3D(rate / axis.getNorm(), axis);
     }
 
-    /** Get the underlying non-rotating attitude law.
-     * @return underlying non-rotating attitude law
-     * @deprecated as of 5.1, replaced by {@link #getUnderlyingAttitudeLaw()}
+    /** Get the underlying non-rotating attitude provider.
+     * @return underlying non-rotating attitude provider
+     * @deprecated as of 5.1, replaced by {@link #getUnderlyingAttitudeProvider()}
      */
     @Deprecated
-    public AttitudeLaw getNonRotatingLaw() {
+    public AttitudeProvider getNonRotatingLaw() {
         return nonRotatingLaw;
     }
 
     /** {@inheritDoc} */
-    public AttitudeLaw getUnderlyingAttitudeLaw() {
+    public AttitudeProvider getUnderlyingAttitudeProvider() {
         return nonRotatingLaw;
     }
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(final Orbit orbit)
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv, 
+                                final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
-        final AbsoluteDate date = orbit.getDate();
-        final Frame frame = orbit.getFrame();
-
         // get attitude from underlying non-rotating law
-        final Attitude base = nonRotatingLaw.getAttitude(orbit);
+        final Attitude base = nonRotatingLaw.getAttitude(pvProv, date, frame);
         final Transform baseTransform = new Transform(base.getRotation(), base.getSpin());
 
         // compute spin transform due to spin from reference to current date

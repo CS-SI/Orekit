@@ -19,7 +19,8 @@ package org.orekit.attitudes;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.orbits.Orbit;
+import org.orekit.frames.Frame;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
 
@@ -71,7 +72,7 @@ public class YawSteering extends GroundPointingWrapper {
     private final Vector3D phasingAxis;
 
     /** Creates a new instance.
-     * @param groundPointingLaw ground pointing attitude law without yaw compensation
+     * @param groundPointingLaw ground pointing attitude provider without yaw compensation
      * @param sun sun motion model
      * @param phasingAxis satellite axis that must be roughly in Sun direction
      * (if solar arrays rotation axis is Y, then this axis should be either +X or -X)
@@ -85,14 +86,16 @@ public class YawSteering extends GroundPointingWrapper {
     }
 
     /** {@inheritDoc} */
-    public Rotation getCompensation(final Orbit orbit, final Attitude base)
+    public Rotation getCompensation(final PVCoordinatesProvider pvProv, 
+                                    final AbsoluteDate date, final Frame orbitFrame, 
+                                    final Attitude base)
         throws OrekitException {
 
         // Compensation rotation definition :
         //  . Z satellite axis is unchanged
         //  . phasing axis shall be aligned to sun direction
-        final Vector3D sunPosition  = sun.getPVCoordinates(orbit.getDate(), orbit.getFrame()).getPosition();
-        final Vector3D sunDirection = sunPosition.subtract(orbit.getPVCoordinates().getPosition());
+        final Vector3D sunPosition  = sun.getPVCoordinates(date, orbitFrame).getPosition();
+        final Vector3D sunDirection = sunPosition.subtract(pvProv.getPVCoordinates(date, orbitFrame).getPosition());
         final Rotation compensation =
             new Rotation(Vector3D.PLUS_K, base.getRotation().applyTo(sunDirection),
                          Vector3D.PLUS_K, phasingAxis);

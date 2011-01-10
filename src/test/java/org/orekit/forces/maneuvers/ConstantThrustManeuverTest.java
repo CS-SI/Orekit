@@ -27,8 +27,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.attitudes.AttitudeLaw;
-import org.orekit.attitudes.InertialLaw;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
@@ -106,7 +106,7 @@ public class ConstantThrustManeuverTest {
         final double f = 420;
         final double delta = FastMath.toRadians(-7.4978);
         final double alpha = FastMath.toRadians(351);
-        final AttitudeLaw law = new InertialLaw(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+        final AttitudeProvider law = new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
 
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
@@ -115,7 +115,7 @@ public class ConstantThrustManeuverTest {
             new KeplerianOrbit(a, e, i, omega, OMEGA, lv, KeplerianOrbit.TRUE_ANOMALY,
                                FramesFactory.getEME2000(), initDate, mu);
         final SpacecraftState initialState =
-            new SpacecraftState(orbit, law.getAttitude(orbit), mass);
+            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
 
         final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
                                                        new TimeComponents(04, 15, 34.080),
@@ -134,7 +134,7 @@ public class ConstantThrustManeuverTest {
         integrator.setInitialStepSize(60);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setInitialState(initialState);
-        propagator.setAttitudeLaw(law);
+        propagator.setAttitudeProvider(law);
         propagator.addForceModel(maneuver);
         final SpacecraftState finalorb = propagator.propagate(fireDate.shiftedBy(3800));
 

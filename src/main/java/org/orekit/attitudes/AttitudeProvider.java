@@ -1,4 +1,4 @@
-/* Copyright 2010 Centre National d'Études Spatiales
+/* Copyright 2002-2010 CS Communication & Systèmes
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,24 +19,28 @@ package org.orekit.attitudes;
 import java.io.Serializable;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
-/** This interface represents an attitude law model set.
- * <p>An attitude law provides a way to compute an {@link Attitude Attitude}
- * from a date only.</p>
- * @see AttitudeProvider
+/** This interface represents an attitude provider model set.
+ * <p>An attitude provider provides a way to compute an {@link Attitude Attitude}
+ * from an date and position-velocity local provider.</p>
+ * @see AttitudeLaw
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public interface AttitudeLaw extends Serializable {
+public interface AttitudeProvider extends Serializable {
 
-    /** Compute the attitude corresponding to a date.
+    /** Compute the attitude corresponding to an orbital state.
+     * @param pvProv local position-velocity provider around current date
      * @param date current date
-     * @return attitude attitude on the specified date
+     * @param frame reference frame from which attitude is computed
+     * @return attitude attitude on the specified date and position-velocity state
      * @throws OrekitException if attitude cannot be computed
      */
-    Attitude getAttitude(AbsoluteDate date)
+    Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame)
         throws OrekitException;
 
 }

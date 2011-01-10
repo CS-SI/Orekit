@@ -26,6 +26,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
+import org.orekit.orbits.Orbit;
+import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.AdditionalStateAndEquations;
@@ -69,10 +71,10 @@ import org.orekit.utils.PVCoordinates;
  * @version $Revision:1698 $ $Date:2008-06-18 16:01:17 +0200 (mer., 18 juin 2008) $
  */
 public class IntegratedEphemeris
-    implements BoundedPropagator, ModeHandler, StepHandler {
+    extends AbstractPropagator implements BoundedPropagator, ModeHandler, StepHandler {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -7217642644695032540L;
+    private static final long serialVersionUID = -3921028924201745331L;
 
     /** Mapper between spacecraft state and simple array. */
     private StateMapper mapper;
@@ -98,17 +100,23 @@ public class IntegratedEphemeris
     /** Underlying raw mathematical model. */
     private ContinuousOutputModel model;
 
+    /** Flag for handler . */
+    private boolean activate;
+    
     /** Creates a new instance of IntegratedEphemeris which must be
      *  filled by the propagator.
      */
     public IntegratedEphemeris() {
+        super(DEFAULT_LAW);
         this.model = new ContinuousOutputModel();
     }
 
     /** {@inheritDoc} */
     public void initialize(final StateMapper mapper, final List <AdditionalStateAndEquations> addStateAndEqu,
-                           final AbsoluteDate reference, final Frame frame, final double mu) {
+                           final boolean activate, final AbsoluteDate reference,
+                           final Frame frame, final double mu) {
         this.mapper               = mapper;
+        this.activate             = activate;
         this.initializedReference = reference;
         this.initializedFrame     = frame;
         this.initializedMu        = mu;
@@ -121,7 +129,7 @@ public class IntegratedEphemeris
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState propagate(final AbsoluteDate date)
+    protected SpacecraftState basicPropagate(final AbsoluteDate date)
         throws PropagationException {
         try {
             if ((date.compareTo(minDate) < 0) || (date.compareTo(maxDate) > 0)) {
@@ -136,6 +144,17 @@ public class IntegratedEphemeris
         } catch (OrekitException oe) {
             throw new PropagationException(oe);
         }
+    }
+
+    /** {@inheritDoc} */
+    protected Orbit propagateOrbit(final AbsoluteDate date)
+        throws PropagationException {
+        return basicPropagate(date).getOrbit();
+    }
+
+    /** {@inheritDoc} */
+    protected double getMass(final AbsoluteDate date) throws PropagationException {
+        return basicPropagate(date).getMass();
     }
 
     /** {@inheritDoc} */
@@ -160,17 +179,19 @@ public class IntegratedEphemeris
 
     /** {@inheritDoc} */
     public void handleStep(final StepInterpolator interpolator, final boolean isLast) {
-        model.handleStep(interpolator, isLast);
-        if (isLast) {
-            final double tI = model.getInitialTime();
-            final double tF = model.getFinalTime();
-            startDate = initializedReference.shiftedBy(tI);
-            maxDate   = initializedReference.shiftedBy(tF);
-            if (tF < tI) {
-                minDate = maxDate;
-                maxDate = startDate;
-            } else {
-                minDate = startDate;
+        if (activate) {
+            model.handleStep(interpolator, isLast);
+            if (isLast) {
+                final double tI = model.getInitialTime();
+                final double tF = model.getFinalTime();
+                startDate = initializedReference.shiftedBy(tI);
+                maxDate   = initializedReference.shiftedBy(tF);
+                if (tF < tI) {
+                    minDate = maxDate;
+                    maxDate = startDate;
+                } else {
+                    minDate = startDate;
+                }
             }
         }
     }
@@ -183,6 +204,19 @@ public class IntegratedEphemeris
     /** {@inheritDoc} */
     public void reset() {
         model.reset();
+    }
+
+
+    /** {@inheritDoc} */
+    public void resetInitialState(SpacecraftState state)
+        throws PropagationException {
+        throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
+        
+    }
+
+    /** {@inheritDoc} */
+    public SpacecraftState getInitialState() throws OrekitException {
+        return basicPropagate(getMinDate());
     }
 
 }

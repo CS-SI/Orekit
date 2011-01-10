@@ -16,16 +16,24 @@
  */
 package org.orekit.propagation;
 
+import java.io.Serializable;
 import java.util.Collection;
 
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /** This interface provides a way to propagate an orbit at any time.
  *
  * <p>This interface is the top-level abstraction for orbit propagation.
+ * It only allows propagation to a predefined date.
  * It is implemented by analytical models which have no time limit,
  * by orbit readers based on external data files, by numerical integrators
  * using rich force models and by continuous models built after numerical
@@ -38,7 +46,13 @@ import org.orekit.propagation.sampling.OrekitStepHandler;
  * @version $Revision$ $Date$
  */
 
-public interface Propagator extends BasicPropagator {
+public interface Propagator extends PVCoordinatesProvider, Serializable {
+
+    /** Default mass. */
+    double DEFAULT_MASS = 1000.0;
+
+    /** Default attitude provider. */
+    AttitudeProvider DEFAULT_LAW = InertialProvider.EME2000_ALIGNED;
 
     /** Indicator for slave mode. */
     int SLAVE_MODE = 0;
@@ -126,8 +140,9 @@ public interface Propagator extends BasicPropagator {
 
     /** Get the propagator initial state.
      * @return initial state
+     * @exception OrekitException if state cannot be retrieved
      */
-    SpacecraftState getInitialState();
+    SpacecraftState getInitialState() throws OrekitException ;
 
     /** Reset the propagator initial state.
      * @param state new initial state to consider
@@ -155,5 +170,41 @@ public interface Propagator extends BasicPropagator {
      * @see #getEventsDetectors()
      */
     void clearEventsDetectors();
+
+    /** Get the frame in which the orbit is propagated.
+     * <p>
+     * The propagation frame is the definition frame of the initial
+     * state, so this method should be called after this state has
+     * been set, otherwise it may return null.
+     * </p>
+     * @return frame in which the orbit is propagated
+     * @see #resetInitialState(SpacecraftState)
+     */
+    Frame getFrame();
+
+    /** Propagate towards a target date.
+     * <p>Simple propagators use only the target date as the specification for
+     * computing the propagated state. More feature rich propagators can consider
+     * other information and provide different operating modes or G-stop
+     * facilities to stop at pinpointed events occurrences. In these cases, the
+     * target date is only a hint, not a mandatory objective.</p>
+     * @param target target date towards which orbit state should be propagated
+     * @return propagated state
+     * @exception PropagationException if state cannot be propagated
+     */
+    SpacecraftState propagate(AbsoluteDate target) throws PropagationException;
+
+    /** Propagate from a start date towards a target date.
+     * <p>Those propagators use a start date and a target date to
+     * compute the propagated state. For propagators using event detection mechanism,
+     * if the provided start date is different from the initial state date, a first, 
+     * simple propagation is performed, without processing any event computation.
+     * Then complete propagation is performed from start date to target date.</p>
+     * @param start start date from which orbit state should be propagated
+     * @param target target date from which orbit state should be propagated
+     * @return propagated state
+     * @exception PropagationException if state cannot be propagated
+     */
+    SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target) throws PropagationException;
 
 }

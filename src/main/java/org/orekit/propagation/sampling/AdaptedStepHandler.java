@@ -62,6 +62,9 @@ public class AdaptedStepHandler
     /** Underlying handler. */
     private final OrekitStepHandler handler;
 
+    /** Flag for handler . */
+    private boolean activate;
+    
     /** Underlying raw rawInterpolator. */
     private StepInterpolator rawInterpolator;
 
@@ -74,12 +77,14 @@ public class AdaptedStepHandler
 
     /** {@inheritDoc} */
     public void initialize(final StateMapper stateMapper, final List <AdditionalStateAndEquations> stateAndEqu,
+                           final boolean activate,
                            final AbsoluteDate reference, final Frame frame, final double mu) {
-        this.mapper                 = stateMapper;
-        this.addStateAndEqu         = stateAndEqu;
-        this.initializedReference   = reference;
-        this.initializedFrame       = frame;
-        this.initializedMu          = mu;
+        this.activate             = activate;
+        this.mapper               = stateMapper;
+        this.addStateAndEqu       = stateAndEqu;
+        this.initializedReference = reference;
+        this.initializedFrame     = frame;
+        this.initializedMu        = mu;
     }
 
     /** {@inheritDoc} */
@@ -97,7 +102,9 @@ public class AdaptedStepHandler
         throws MathUserException {
         try {
             this.rawInterpolator = interpolator;
-            handler.handleStep(this, isLast);
+            if(activate) {
+                handler.handleStep(this, isLast);
+            }
         } catch (PropagationException pe) {
             throw new MathUserException(pe, pe.getSpecifier(), pe.getParts());
         }

@@ -28,7 +28,7 @@ import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.geometry.Vector3DFormat;
 import org.apache.commons.math.util.FastMath;
-import org.orekit.attitudes.AttitudeLaw;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.AttitudesSequence;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.attitudes.SpinStabilized;
@@ -88,13 +88,13 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
 
             // Attitude laws definition
             final double settingRate = FastMath.toRadians(1.0);
-            final AttitudeLaw dayObservationLaw = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
-            final AttitudeLaw nightRestingLaw   = LofOffset.LOF_ALIGNED;
-            final AttitudeLaw transitionLaw     = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), 0, 0);
-            final AttitudeLaw rollSetUpLaw      = new SpinStabilized(nightRestingLaw, AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, settingRate);
-            final AttitudeLaw pitchSetUpLaw     = new SpinStabilized(transitionLaw, AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_J, settingRate);
-            final AttitudeLaw pitchTearDownLaw  = new SpinStabilized(dayObservationLaw, AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_J, -settingRate);
-            final AttitudeLaw rollTearDownLaw   = new SpinStabilized(transitionLaw, AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, -settingRate);
+            final AttitudeProvider dayObservationLaw = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
+            final AttitudeProvider nightRestingLaw   = LofOffset.LOF_ALIGNED;
+            final AttitudeProvider transitionLaw     = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), 0, 0);
+            final AttitudeProvider rollSetUpLaw      = new SpinStabilized(nightRestingLaw, AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, settingRate);
+            final AttitudeProvider pitchSetUpLaw     = new SpinStabilized(transitionLaw, AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_J, settingRate);
+            final AttitudeProvider pitchTearDownLaw  = new SpinStabilized(dayObservationLaw, AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_J, -settingRate);
+            final AttitudeProvider rollTearDownLaw   = new SpinStabilized(transitionLaw, AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, -settingRate);
 
             // Event detectors definition
             //---------------------------
@@ -246,11 +246,11 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
             //---------------
             if (dayNightEvent.g(new SpacecraftState(initialOrbit)) >= 0) {
                 // initial position is in daytime
-                attitudesSequence.resetActiveLaw(dayObservationLaw);
+                attitudesSequence.resetActiveProvider(dayObservationLaw);
                 System.out.println("# " + (initialDate.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " begin with day law");
             } else {
                 // initial position is in nighttime
-                attitudesSequence.resetActiveLaw(nightRestingLaw);
+                attitudesSequence.resetActiveProvider(nightRestingLaw);
                 System.out.println("# " + (initialDate.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " begin with night law");
             }
 
@@ -270,7 +270,7 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
             propagator.setMasterMode(10.0, new OrekitFixedStepHandler() {
                 private static final long serialVersionUID = -5740543464313002093L;
                 private DecimalFormat f1 = new DecimalFormat("0.0000000000000000E00",
-                                                             DecimalFormatSymbols.getInstance(Locale.US));
+                                                             new DecimalFormatSymbols(Locale.US));
                 private Vector3DFormat f2 = new Vector3DFormat(" ", " ", " ", f1);
                 private PVCoordinatesProvider sun  = CelestialBodyFactory.getSun();
                 private PVCoordinatesProvider moon = CelestialBodyFactory.getMoon();

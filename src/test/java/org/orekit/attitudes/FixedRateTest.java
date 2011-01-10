@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -44,18 +45,19 @@ public class FixedRateTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                              new TimeComponents(13, 17, 7.865),
                                              TimeScalesFactory.getUTC());
-        FixedRate law = new FixedRate(new Attitude(date, FramesFactory.getEME2000(),
+        final Frame frame = FramesFactory.getEME2000();
+        FixedRate law = new FixedRate(new Attitude(date, frame,
                                                    new Rotation(0.48, 0.64, 0.36, 0.48, false),
                                                    Vector3D.ZERO));
         PVCoordinates pv =
             new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                               new Vector3D(0, 0, 3680.853673522056));
-        Orbit orbit = new KeplerianOrbit(pv, FramesFactory.getEME2000(), date, 3.986004415e14);
-        Rotation attitude0 = law.getAttitude(orbit).getRotation();
+        Orbit orbit = new KeplerianOrbit(pv, frame, date, 3.986004415e14);
+        Rotation attitude0 = law.getAttitude(orbit, date, frame).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude0, law.getReferenceAttitude().getRotation()), 1.0e-10);
-        Rotation attitude1 = law.getAttitude(orbit.shiftedBy(10.0)).getRotation();
+        Rotation attitude1 = law.getAttitude(orbit.shiftedBy(10.0), date.shiftedBy(10.0), frame).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude1, law.getReferenceAttitude().getRotation()), 1.0e-10);
-        Rotation attitude2 = law.getAttitude(orbit.shiftedBy(20.0)).getRotation();
+        Rotation attitude2 = law.getAttitude(orbit.shiftedBy(20.0), date.shiftedBy(20.0), frame).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude2, law.getReferenceAttitude().getRotation()), 1.0e-10);
 
     }
@@ -66,21 +68,22 @@ public class FixedRateTest {
                                                    new TimeComponents(13, 17, 7.865),
                                                    TimeScalesFactory.getUTC());
         final double rate = 2 * FastMath.PI / (12 * 60);
-        FixedRate law = new FixedRate(new Attitude(date, FramesFactory.getEME2000(),
+        final Frame frame = FramesFactory.getEME2000();
+        FixedRate law = new FixedRate(new Attitude(date, frame,
                                                    new Rotation(0.48, 0.64, 0.36, 0.48, false),
                                                    new Vector3D(rate, Vector3D.PLUS_K)));
         PVCoordinates pv =
             new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                               new Vector3D(0, 0, 3680.853673522056));
         Orbit orbit = new KeplerianOrbit(pv, FramesFactory.getEME2000(), date, 3.986004415e14);
-        Rotation attitude0 = law.getAttitude(orbit).getRotation();
+        Rotation attitude0 = law.getAttitude(orbit, date, frame).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude0, law.getReferenceAttitude().getRotation()), 1.0e-10);
-        Rotation attitude1 = law.getAttitude(orbit.shiftedBy(10.0)).getRotation();
+        Rotation attitude1 = law.getAttitude(orbit.shiftedBy(10.0), date.shiftedBy(10.0), frame).getRotation();
         Assert.assertEquals(10 * rate, Rotation.distance(attitude1, law.getReferenceAttitude().getRotation()), 1.0e-10);
-        Rotation attitude2 = law.getAttitude(orbit.shiftedBy(-20.0)).getRotation();
+        Rotation attitude2 = law.getAttitude(orbit.shiftedBy(-20.0), date.shiftedBy(-20.0), frame).getRotation();
         Assert.assertEquals(20 * rate, Rotation.distance(attitude2, law.getReferenceAttitude().getRotation()), 1.0e-10);
         Assert.assertEquals(30 * rate, Rotation.distance(attitude2, attitude1), 1.0e-10);
-        Rotation attitude3 = law.getAttitude(orbit.shiftedBy(0.0)).getRotation();
+        Rotation attitude3 = law.getAttitude(orbit.shiftedBy(0.0), date, frame).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude3, law.getReferenceAttitude().getRotation()), 1.0e-10);
 
     }
@@ -93,7 +96,7 @@ public class FixedRateTest {
                                              TimeScalesFactory.getUTC());
 
         final double rate = 2 * FastMath.PI / (12 * 60);
-        AttitudeLaw law =
+        AttitudeProvider law =
             new FixedRate(new Attitude(date, FramesFactory.getEME2000(),
                                        new Rotation(0.48, 0.64, 0.36, 0.48, false),
                                        new Vector3D(rate, Vector3D.PLUS_K)));

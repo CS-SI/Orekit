@@ -21,16 +21,17 @@ import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.Orbit;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 
 /**
- * This class handles target pointing attitude law.
+ * This class handles target pointing attitude provider.
 
  * <p>
- * This class represents the attitude law where the satellite z axis is
+ * This class represents the attitude provider where the satellite z axis is
  * pointing to a ground point target.</p>
  * <p>
  * The target position is defined in a body frame specified by the user.
@@ -72,16 +73,18 @@ public class TargetPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
-    protected Vector3D getTargetPoint(final Orbit orbit, final Frame frame)
+    protected Vector3D getTargetPoint(final PVCoordinatesProvider pvProv, 
+                                      final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        return getBodyFrame().getTransformTo(frame, orbit.getDate()).transformPosition(target.getPosition());
+        return getBodyFrame().getTransformTo(frame, date).transformPosition(target.getPosition());
     }
 
     /** {@inheritDoc} */
     @Override
-    protected PVCoordinates getTargetPV(final Orbit orbit, final Frame frame)
+    protected PVCoordinates getTargetPV(final PVCoordinatesProvider pvProv, 
+                                        final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        return getBodyFrame().getTransformTo(frame, orbit.getDate()).transformPVCoordinates(target);
+        return getBodyFrame().getTransformTo(frame, date).transformPVCoordinates(target);
     }
 
 }

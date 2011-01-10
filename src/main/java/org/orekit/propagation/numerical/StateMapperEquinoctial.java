@@ -16,11 +16,13 @@
  */
 package org.orekit.propagation.numerical;
 
-import org.orekit.attitudes.AttitudeLaw;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 
 /** Implementation of the {@link StateMapper} interface for state arrays in equinoctial parameters.
@@ -34,16 +36,14 @@ import org.orekit.time.AbsoluteDate;
 public class StateMapperEquinoctial implements StateMapper {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 2882088208801391437L;
+    private static final long serialVersionUID = 3155499893820556290L;
 
-    /** Attitude law. */
-    private AttitudeLaw attitudeLaw;
+    /** Attitude provider. */
+    private AttitudeProvider attitudeProvider;
 
-    /** Set the attitude law.
-     * @param attitudeLaw attitude law
-     */
-    public void setAttitudeLaw(final AttitudeLaw attitudeLaw) {
-        this.attitudeLaw = attitudeLaw;
+    /** {@inheritDoc} */
+    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
+        this.attitudeProvider = attitudeProvider;
     }
 
     /** {@inheritDoc} */
@@ -67,7 +67,10 @@ public class StateMapperEquinoctial implements StateMapper {
                                  stateVector[4], stateVector[5], EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
                                  frame, date, mu);
 
-        return new SpacecraftState(orbit, attitudeLaw.getAttitude(orbit), stateVector[6]);
+        final Attitude attitude =
+            attitudeProvider.getAttitude(new KeplerianPropagator(orbit), date, frame);
+
+        return new SpacecraftState(orbit, attitude, stateVector[6]);
 
     }
 

@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.events;
 
+import java.io.Serializable;
+
 import org.apache.commons.math.ode.events.EventException;
 import org.apache.commons.math.ode.events.EventHandler;
 import org.orekit.errors.OrekitException;
@@ -29,17 +31,20 @@ import org.orekit.time.AbsoluteDate;
  * @author Fabien Maussion
  * @version $Revision$ $Date$
  */
-public class AdaptedEventDetector implements EventHandler {
+public class AdaptedEventDetector implements EventHandler, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2156830611432730429L;
+    private static final long serialVersionUID = 5270333983406326215L;
 
     /** Mapper between spacecraft state and simple array. */
-    private StateMapper mapper;
+    private final StateMapper mapper;
 
     /** Underlying event detector. */
     private final EventDetector detector;
 
+    /** Occurred event observer. */
+    private final EventObserver observer;
+    
     /** Reference date from which t is counted. */
     private final AbsoluteDate referenceDate;
 
@@ -51,15 +56,17 @@ public class AdaptedEventDetector implements EventHandler {
 
     /** Build a wrapped event detector.
      * @param detector event detector to wrap
+     * @param observer occurred event observer
      * @param mapper mapper between spacecraft state and simple array
      * @param referenceDate reference date from which t is counted
      * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @param integrationFrame frame in which integration is performed
      */
-    public AdaptedEventDetector(final EventDetector detector, final StateMapper mapper,
-                                final AbsoluteDate referenceDate, final double mu,
-                                final Frame integrationFrame) {
+    public AdaptedEventDetector(final EventDetector detector, final EventObserver observer,
+                                final StateMapper mapper, final AbsoluteDate referenceDate,
+                                final double mu, final Frame integrationFrame) {
         this.detector         = detector;
+        this.observer         = observer;
         this.mapper           = mapper;
         this.referenceDate    = referenceDate;
         this.mu               = mu;
@@ -81,10 +88,12 @@ public class AdaptedEventDetector implements EventHandler {
     public int eventOccurred(final double t, final double[] y, final boolean increasing)
         throws EventException {
         try {
+
             final AbsoluteDate currentDate = referenceDate.shiftedBy(t);
-            final int whatNext = detector.eventOccurred(mapper.mapArrayToState(y, currentDate, mu,
-                                                                               integrationFrame),
-                                                        increasing);
+            final SpacecraftState state = mapper.mapArrayToState(y, currentDate, mu, integrationFrame);
+            final int whatNext = detector.eventOccurred(state, increasing);
+            observer.notify(state, detector);
+            
             switch (whatNext) {
             case EventDetector.STOP :
                 return STOP;
@@ -105,15 +114,9 @@ public class AdaptedEventDetector implements EventHandler {
         throws EventException {
         try {
             final AbsoluteDate currentDate = referenceDate.shiftedBy(t);
-            final SpacecraftState newState = detector.resetState(mapper.mapArrayToState(y, currentDate, mu,
-                                                                                        integrationFrame));
-            y[0] = newState.getA();
-            y[1] = newState.getEquinoctialEx();
-            y[2] = newState.getEquinoctialEy();
-            y[3] = newState.getHx();
-            y[4] = newState.getHy();
-            y[5] = newState.getLv();
-            y[6] = newState.getMass();
+            final SpacecraftState oldState = mapper.mapArrayToState(y, currentDate, mu, integrationFrame);
+            final SpacecraftState newState = detector.resetState(oldState);
+            mapper.mapStateToArray(newState, y);
         } catch (OrekitException oe) {
             throw new EventException(oe);
         }

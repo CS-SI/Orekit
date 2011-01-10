@@ -21,25 +21,25 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
-import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 /**
- * This class handles an inertial attitude law.
+ * This class handles an inertial attitude provider.
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class InertialLaw implements AttitudeLaw {
+public class InertialProvider implements AttitudeProvider {
 
 
-    /** Dummy attitude law, perfectly aligned with the EME2000 frame. */
-    public static final InertialLaw EME2000_ALIGNED =
-        new InertialLaw(Rotation.IDENTITY);
+    /** Dummy attitude provider, perfectly aligned with the EME2000 frame. */
+    public static final InertialProvider EME2000_ALIGNED =
+        new InertialProvider(Rotation.IDENTITY);
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -7550347669304660626L;
+    private static final long serialVersionUID = -818658655669855332L;
 
     /** Fixed satellite frame. */
     private final Frame satelliteFrame;
@@ -47,16 +47,15 @@ public class InertialLaw implements AttitudeLaw {
     /** Creates new instance.
      * @param rotation rotation from EME2000 to the desired satellite frame
      */
-    public InertialLaw(final Rotation rotation) {
+    public InertialProvider(final Rotation rotation) {
         satelliteFrame =
             new Frame(FramesFactory.getEME2000(), new Transform(rotation), null, false);
     }
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(final Orbit orbit)
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv, 
+                                final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        final AbsoluteDate date = orbit.getDate();
-        final Frame frame = orbit.getFrame();
         final Transform t = frame.getTransformTo(satelliteFrame, date);
         return new Attitude(date, frame, t.getRotation(), t.getRotationRate());
     }

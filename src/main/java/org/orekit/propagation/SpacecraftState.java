@@ -75,14 +75,16 @@ public class SpacecraftState implements TimeStamped, Serializable {
     /** Build a spacecraft state from orbit only.
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
+     * @exception OrekitException if default attitude cannot be computed
      */
-    public SpacecraftState(final Orbit orbit) {
+    public SpacecraftState(final Orbit orbit) 
+        throws OrekitException {
         this.orbit    = orbit;
-        this.attitude = LofOffset.LOF_ALIGNED.getAttitude(orbit);
+        this.attitude = LofOffset.LOF_ALIGNED.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
         this.mass     = DEFAULT_MASS;
     }
 
-    /** Build a spacecraft state from orbit and attitude law.
+    /** Build a spacecraft state from orbit and attitude provider.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param orbit the orbit
      * @param attitude attitude
@@ -101,14 +103,16 @@ public class SpacecraftState implements TimeStamped, Serializable {
      * <p>Attitude law is set to an unspecified default attitude.</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
+     * @exception OrekitException if default attitude cannot be computed
      */
-    public SpacecraftState(final Orbit orbit, final double mass) {
+    public SpacecraftState(final Orbit orbit, final double mass) 
+        throws OrekitException {
         this.orbit    = orbit;
-        this.attitude = LofOffset.LOF_ALIGNED.getAttitude(orbit);
+        this.attitude = LofOffset.LOF_ALIGNED.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
         this.mass     = mass;
     }
 
-    /** Build a spacecraft state from orbit, attitude law and mass.
+    /** Build a spacecraft state from orbit, attitude provider and mass.
      * @param orbit the orbit
      * @param attitude attitude
      * @param mass the mass (kg)
@@ -138,7 +142,7 @@ public class SpacecraftState implements TimeStamped, Serializable {
         }
         if (orbit.getFrame() != attitude.getReferenceFrame()) {
             throw OrekitException.createIllegalArgumentException(
-                  OrekitMessages.ORBIT_AND_ATTITUDE_FRAMES_MISMATCH,
+                  OrekitMessages.FRAMES_MISMATCH,
                   orbit.getFrame().getName(), attitude.getReferenceFrame().getName());
         }
     }

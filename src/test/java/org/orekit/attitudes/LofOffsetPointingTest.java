@@ -70,19 +70,19 @@ public class LofOffsetPointingTest {
         //************************
         final LofOffset lofLaw = LofOffset.LOF_ALIGNED;
         final LofOffsetPointing lofPointing = new LofOffsetPointing(earthSpheric, lofLaw, Vector3D.PLUS_K);
-        final Rotation lofRot = lofPointing.getAttitude(circ).getRotation();
+        final Rotation lofRot = lofPointing.getAttitude(circ, date, circ.getFrame()).getRotation();
  
         // Compare to body center pointing law
         //*************************************
         final BodyCenterPointing centerLaw = new BodyCenterPointing(earthSpheric.getBodyFrame());
-        final Rotation centerRot = centerLaw.getAttitude(circ).getRotation();
+        final Rotation centerRot = centerLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
         final double angleBodyCenter = centerRot.applyInverseTo(lofRot).getAngle();
         Assert.assertEquals(0., angleBodyCenter, Utils.epsilonAngle);
 
         // Compare to nadir pointing law
         //*******************************
         final NadirPointing nadirLaw = new NadirPointing(earthSpheric);
-        final Rotation nadirRot = nadirLaw.getAttitude(circ).getRotation();
+        final Rotation nadirRot = nadirLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
         final double angleNadir = nadirRot.applyInverseTo(lofRot).getAngle();
         Assert.assertEquals(0., angleNadir, Utils.epsilonAngle);
 
@@ -96,13 +96,13 @@ public class LofOffsetPointingTest {
                                    FramesFactory.getEME2000(), date, mu);
         final LofOffset upsideDown = new LofOffset(RotationOrder.XYX, FastMath.PI, 0, 0);
         final LofOffsetPointing pointing = new LofOffsetPointing(earthSpheric, upsideDown, Vector3D.PLUS_K);
-        pointing.getTargetPoint(circ, circ.getFrame());
+        pointing.getTargetPoint(circ, date, circ.getFrame());
     }
 
     @Test
     public void testSpin() throws OrekitException {
 
-        final AttitudeLaw law =
+        final AttitudeProvider law =
             new LofOffsetPointing(earthSpheric,
                                   new LofOffset(RotationOrder.XYX, 0.1, 0.2, 0.3),
                                   Vector3D.PLUS_K);

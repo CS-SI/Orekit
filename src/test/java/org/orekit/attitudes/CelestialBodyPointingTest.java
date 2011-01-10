@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -41,17 +42,19 @@ public class CelestialBodyPointingTest {
     @Test
     public void testSunPointing() throws OrekitException {
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+
+        final Frame frame = FramesFactory.getEME2000();
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getTAI());
-        AttitudeLaw sunPointing =
-            new CelestialBodyPointed(FramesFactory.getEME2000(), sun, Vector3D.PLUS_K,
+        AttitudeProvider sunPointing =
+            new CelestialBodyPointed(frame, sun, Vector3D.PLUS_K,
                                      Vector3D.PLUS_I, Vector3D.PLUS_K);
         PVCoordinates pv =
             new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                               new Vector3D(0, 0, 3680.853673522056));
-        Orbit orbit = new KeplerianOrbit(pv, FramesFactory.getEME2000(), date, 3.986004415e14);
-        Attitude attitude   = sunPointing.getAttitude(orbit);
+        Orbit orbit = new KeplerianOrbit(pv, frame, date, 3.986004415e14);
+        Attitude attitude   = sunPointing.getAttitude(orbit, date, frame);
         Vector3D xDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Vector3D zDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_K);
         Assert.assertEquals(0,
@@ -62,13 +65,13 @@ public class CelestialBodyPointingTest {
         // Sun-Earth-Sat are in quadrature, with distance (Earth, Sat) == distance(Sun, Earth) / 5000
         Assert.assertEquals(FastMath.atan(1.0 / 5000.0),
                             Vector3D.angle(xDirection,
-                                           sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition()),
+                                           sun.getPVCoordinates(date, frame).getPosition()),
                                            1.0e-15);
 
         double h = 0.1;
-        Attitude aMinus = sunPointing.getAttitude(orbit.shiftedBy(-h));
-        Attitude a0     = sunPointing.getAttitude(orbit);
-        Attitude aPlus  = sunPointing.getAttitude(orbit.shiftedBy(h));
+        Attitude aMinus = sunPointing.getAttitude(orbit.shiftedBy(-h), date.shiftedBy(-h), frame);
+        Attitude a0     = sunPointing.getAttitude(orbit, date, frame);
+        Attitude aPlus  = sunPointing.getAttitude(orbit.shiftedBy(h), date.shiftedBy(h), frame);
 
         // check spin is consistent with attitude evolution
         double errorAngleMinus     = Rotation.distance(aMinus.shiftedBy(h).getRotation(),

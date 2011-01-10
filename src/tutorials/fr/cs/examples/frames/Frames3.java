@@ -95,10 +95,10 @@ public class Frames3 {
             Frame itrf2005 = FramesFactory.getITRF2005(true); // terrestrial frame at an arbitrary date
             BodyShape earth = new OneAxisEllipsoid(ae, f, itrf2005);
 
-            // Target pointing attitude law over satellite nadir at date, without yaw compensation
+            // Target pointing attitude provider over satellite nadir at date, without yaw compensation
             NadirPointing nadirLaw = new NadirPointing(earth);
      
-            // Target pointing attitude law with yaw compensation
+            // Target pointing attitude provider with yaw compensation
             PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
             YawSteering yawSteeringLaw =
                 new YawSteering(nadirLaw, sun, Vector3D.MINUS_I);
