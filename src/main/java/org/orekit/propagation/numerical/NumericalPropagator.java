@@ -494,7 +494,10 @@ public class NumericalPropagator implements Propagator, EventObserver {
     public SpacecraftState propagate(final AbsoluteDate target) throws PropagationException {
         try {
             if (startDate == null) {
-                startDate = getInitialState().getDate();
+                if (initialState == null) {
+                    throw new PropagationException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
+                }
+                startDate = initialState.getDate();
             }
             return propagate(startDate, target);
         } catch (OrekitException oe) {
@@ -514,6 +517,10 @@ public class NumericalPropagator implements Propagator, EventObserver {
     public SpacecraftState propagate(final AbsoluteDate tStart, final AbsoluteDate tEnd)
         throws PropagationException {
         try {
+
+            if (initialState == null) {
+                throw new PropagationException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
+            }
 
             if (!tStart.equals(initialState.getDate())) {
                 // if propagation start date is not initial date,
@@ -550,9 +557,6 @@ public class NumericalPropagator implements Propagator, EventObserver {
             // reset occurred events list
             occurredEvents.clear();
 
-            if (initialState == null) {
-                throw new PropagationException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
-            }
             if (initialState.getDate().equals(tEnd)) {
                 // don't extrapolate
                 return initialState;
