@@ -174,11 +174,11 @@ public class NumericalPropagator implements Propagator, EventObserver {
     /** Start date. */
     private AbsoluteDate startDate;
 
+    /** Reference date. */
+    private AbsoluteDate referenceDate;
+
     /** Initial state to propagate. */
     private SpacecraftState initialState;
-
-    /** Initial date. */
-    private AbsoluteDate initialDate;
 
     /** Current state to propagate. */
     private SpacecraftState currentState;
@@ -222,8 +222,8 @@ public class NumericalPropagator implements Propagator, EventObserver {
         forceModels         = new ArrayList<ForceModel>();
         detectors           = new ArrayList<EventDetector>();
         occurredEvents      = new ArrayList<OccurredEvent>();
-        startDate           = new AbsoluteDate();
-        initialDate         = startDate;
+        startDate           = null;
+        referenceDate       = null;
         currentState        = null;
         adder               = null;
         addStateAndEqu      = new ArrayList<AdditionalStateAndEquations>();
@@ -515,7 +515,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
         throws PropagationException {
         try {
 
-            if (!tStart.equals(initialDate)) {
+            if (!tStart.equals(initialState.getDate())) {
                 // if propagation start date is not initial date,
                 // propagate from initial to start date without event detection
                 propagate(tStart, false);
@@ -562,7 +562,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
             }
 
             // space dynamics view
-            startDate  = initialState.getDate();
+            referenceDate  = initialState.getDate();
 
             // set propagation parameters type
             Orbit initialOrbit = null;
@@ -587,7 +587,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
 
             // initialize mode handler
             if (modeHandler != null) {
-                modeHandler.initialize(mapper, addStateAndEqu, activateHandlers, startDate,
+                modeHandler.initialize(mapper, addStateAndEqu, activateHandlers, referenceDate,
                                        initialState.getFrame(), newtonianAttraction.getMu());
             }
 
@@ -603,7 +603,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
 
             // mathematical view
             final double t0 = 0;
-            final double t1 = tEnd.durationFrom(initialDate);
+            final double t1 = tEnd.durationFrom(initialState.getDate());
 
             // Map state to array
             mapper.mapStateToArray(initialState, stateVector);
@@ -642,7 +642,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
             }
 
             // back to space dynamics view
-            final AbsoluteDate date = initialDate.shiftedBy(stopTime);
+            final AbsoluteDate date = initialState.getDate().shiftedBy(stopTime);
 
             // get final additional state
             index = 7;
@@ -755,7 +755,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
      */
     protected void setUpEventDetector(final EventDetector osf) {
         final EventHandler handler =
-            new AdaptedEventDetector(osf, this, mapper, startDate,
+            new AdaptedEventDetector(osf, this, mapper, referenceDate,
                                      newtonianAttraction.getMu(), initialState.getFrame());
         integrator.addEventHandler(handler,
                                    osf.getMaxCheckInterval(),
@@ -804,7 +804,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
 
             try {
                 // update space dynamics view
-                currentState = mapper.mapArrayToState(y, startDate.shiftedBy(t), currentState.getMu(), currentState.getFrame());
+                currentState = mapper.mapArrayToState(y, referenceDate.shiftedBy(t), currentState.getMu(), currentState.getFrame());
 
                 if (currentState.getMass() <= 0.0) {
                     throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
