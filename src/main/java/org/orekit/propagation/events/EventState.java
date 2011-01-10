@@ -141,20 +141,18 @@ class EventState implements Serializable {
 
             forward = interpolator.isForward();
             final AbsoluteDate t1 = interpolator.getCurrentDate();
-            final double dt = t1.durationFrom(t0);
+            final AbsoluteDate start = (t1.compareTo(t0) > 0) ?
+                                       t0.shiftedBy(detector.getThreshold()) :
+                                       t0.shiftedBy(-detector.getThreshold());
+            final double dt = t1.durationFrom(start);
             final int    n  = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt) / detector.getMaxCheckInterval()));
             final double h  = dt / n;
 
             AbsoluteDate ta = t0;
             double ga = g0;
-            final AbsoluteDate start = (t1.compareTo(t0) > 0) ?
-                    t0.shiftedBy(detector.getThreshold()) :
-                    t0.shiftedBy(-detector.getThreshold());
             for (int i = 0; i < n; ++i) {
 
                 // evaluate detector value at the end of the substep
-                // TODO this may lead to infinite loops
-                // final AbsoluteDate tb = (i == n - 1) ? t1 : start.shiftedBy((i + 1) * h);
                 final AbsoluteDate tb = start.shiftedBy((i + 1) * h);
                 interpolator.setInterpolatedDate(tb);
                 final double gb = detector.g(interpolator.getInterpolatedState());
