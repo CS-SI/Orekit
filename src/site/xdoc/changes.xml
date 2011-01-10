@@ -28,6 +28,9 @@
         would try to reset the state triggers an error when the event occurs
       </action>
       <action dev="v&#233;ronique" type="add" >
+        propagation can now be done between two dates, regardless of the date of the initial state
+      </action>
+      <action dev="v&#233;ronique" type="add" >
         attitude can be specified either using a date only thanks to a new AttitudeLaw interface
         or using a date, a position-velocity provider and a frame thanks to a new
         AttitudeProvider interface, wrappers have been added to convert between the two
