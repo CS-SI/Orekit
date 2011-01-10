@@ -72,7 +72,7 @@ public abstract class AbstractCelestialBody implements CelestialBody {
      */
     protected AbstractCelestialBody(final String name, final double gm,
                                     final IAUPole iauPole, final Frame definingFrame,
-                                    final String inertialFrameName, String bodyFrameName) {
+                                    final String inertialFrameName, final String bodyFrameName) {
         this.name          = name;
         this.gm            = gm;
         this.iauPole       = iauPole;

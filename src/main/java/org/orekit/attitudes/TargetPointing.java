@@ -73,7 +73,7 @@ public class TargetPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
-    protected Vector3D getTargetPoint(final PVCoordinatesProvider pvProv, 
+    protected Vector3D getTargetPoint(final PVCoordinatesProvider pvProv,
                                       final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return getBodyFrame().getTransformTo(frame, date).transformPosition(target.getPosition());
@@ -81,7 +81,7 @@ public class TargetPointing extends GroundPointing {
 
     /** {@inheritDoc} */
     @Override
-    protected PVCoordinates getTargetPV(final PVCoordinatesProvider pvProv, 
+    protected PVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
                                         final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return getBodyFrame().getTransformTo(frame, date).transformPVCoordinates(target);

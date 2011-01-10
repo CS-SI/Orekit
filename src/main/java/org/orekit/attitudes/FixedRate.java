@@ -47,7 +47,7 @@ public class FixedRate implements AttitudeProvider {
     }
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(final PVCoordinatesProvider pvProv, 
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv,
                                 final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         final double timeShift = date.durationFrom(referenceAttitude.getDate());

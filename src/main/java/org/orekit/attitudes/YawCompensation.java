@@ -62,16 +62,16 @@ public class YawCompensation extends GroundPointingWrapper {
     }
 
     /** {@inheritDoc} */
-    public Rotation getCompensation(final PVCoordinatesProvider pvProv, 
-                                    final AbsoluteDate date, final Frame orbitFrame, 
+    public Rotation getCompensation(final PVCoordinatesProvider pvProv,
+                                    final AbsoluteDate date, final Frame orbitFrame,
                                     final Attitude base)
         throws OrekitException {
 
         // compute relative velocity of FIXED ground point with respect to satellite
         // beware the point considered is NOT the sliding point on central body surface
-        // as returned by getGroundPointingLaw().getTargetPV(), but the fixed point that
-        // at current time is the target, but before and after is only a body surface
-        // point with its own motion and not aligned with satellite Z axis.
+        // as returned by getUnderlyingAttitudeProvider().getTargetPV(), but the fixed
+        // point that at current time is the target, but before and after is only a body
+        // surface point with its own motion and not aligned with satellite Z axis.
         // So the following computation needs to recompute velocity by itself, using
         // the velocity provided by getTargetPV would be wrong!
         final Frame bodyFrame  = getBodyFrame();
@@ -93,11 +93,13 @@ public class YawCompensation extends GroundPointingWrapper {
     }
 
     /** Compute the yaw compensation angle at date.
-     * @param orbit orbit state
+     * @param pvProv provider for PV coordinates
+     * @param date date at which compensation is requested
+     * @param frame reference frame from which attitude is computed
      * @return yaw compensation angle for orbit.
      * @throws OrekitException if some specific error occurs
      */
-    public double getYawAngle(final PVCoordinatesProvider pvProv, 
+    public double getYawAngle(final PVCoordinatesProvider pvProv,
                               final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return getCompensation(pvProv, date, frame, getBaseState(pvProv, date, frame)).getAngle();

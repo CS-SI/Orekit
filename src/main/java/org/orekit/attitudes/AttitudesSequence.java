@@ -45,6 +45,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * is handling of maneuver mode.<p>
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
+ * @since 5.1
  */
 public class AttitudesSequence implements AttitudeProvider {
 
@@ -145,8 +146,8 @@ public class AttitudesSequence implements AttitudeProvider {
     }
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(final PVCoordinatesProvider pvProv, 
-                                final AbsoluteDate date, final Frame frame) 
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv,
+                                final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         // delegate attitude computation to the active provider
         return active.getAttitude(pvProv, date, frame);

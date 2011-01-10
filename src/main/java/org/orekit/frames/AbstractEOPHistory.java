@@ -82,7 +82,7 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
         if (prepareInterpolation(date)) {
             synchronized (this) {
                 double dutN = next.getUT1MinusUTC();
-                double dutP = previous.getUT1MinusUTC();
+                final double dutP = previous.getUT1MinusUTC();
                 if (dutN - dutP > 0.9) {
                     // there was a leap second between the two entries
                     dutN -= 1.0;

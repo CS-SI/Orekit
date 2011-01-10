@@ -86,8 +86,8 @@ public class YawSteering extends GroundPointingWrapper {
     }
 
     /** {@inheritDoc} */
-    public Rotation getCompensation(final PVCoordinatesProvider pvProv, 
-                                    final AbsoluteDate date, final Frame orbitFrame, 
+    public Rotation getCompensation(final PVCoordinatesProvider pvProv,
+                                    final AbsoluteDate date, final Frame orbitFrame,
                                     final Attitude base)
         throws OrekitException {
 

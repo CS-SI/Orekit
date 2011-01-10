@@ -55,7 +55,7 @@ public class NadirPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
-    protected Vector3D getTargetPoint(final PVCoordinatesProvider pvProv, 
+    protected Vector3D getTargetPoint(final PVCoordinatesProvider pvProv,
                                       final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 

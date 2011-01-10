@@ -205,12 +205,12 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60)
         throws PropagationException {
-        
+
         super(attitudeProv);
         this.mass = mass;
 
         try {
-            
+
             // store model coefficients
             this.referenceRadius = referenceRadius;
             this.mu  = mu;

@@ -421,15 +421,15 @@ public class Frame implements Serializable {
      * </p>
      * @param reference frame with respect to which the instance will be frozen
      * @param freezingDate freezing date
-     * @param name name of the frozen frame
+     * @param frozenName name of the frozen frame
      * @return a frozen version of the instance
      * @exception OrekitException if transform between reference frame and instance
      * cannot be computed at freezing frame
      */
     public Frame getFrozenFrame(final Frame reference, final AbsoluteDate freezingDate,
-                                final String name) throws OrekitException {
+                                final String frozenName) throws OrekitException {
         return new Frame(reference, reference.getTransformTo(this, freezingDate).freeze(),
-                         name, reference.isPseudoInertial());
+                         frozenName, reference.isPseudoInertial());
     }
 
     /** Get the unique J2000 frame.

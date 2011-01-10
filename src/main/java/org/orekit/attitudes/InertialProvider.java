@@ -53,7 +53,7 @@ public class InertialProvider implements AttitudeProvider {
     }
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(final PVCoordinatesProvider pvProv, 
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv,
                                 final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         final Transform t = frame.getTransformTo(satelliteFrame, date);

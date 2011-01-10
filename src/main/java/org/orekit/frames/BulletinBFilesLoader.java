@@ -330,7 +330,7 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
         mjdMin = Integer.MAX_VALUE;
         mjdMax = Integer.MIN_VALUE;
         boolean inFinalValuesPart = false;
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+        for (line = reader.readLine(); line != null; line = reader.readLine()) {
             lineNumber++;
             Matcher matcher = FINAL_VALUES_START.matcher(line);
             if (matcher.matches()) {

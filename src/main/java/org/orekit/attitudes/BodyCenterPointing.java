@@ -49,8 +49,8 @@ public class BodyCenterPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
-    protected Vector3D getTargetPoint(PVCoordinatesProvider pvProv,
-                                      AbsoluteDate date, Frame frame)
+    protected Vector3D getTargetPoint(final PVCoordinatesProvider pvProv,
+                                      final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return getBodyFrame().getTransformTo(frame, date).transformPosition(Vector3D.ZERO);
     }

@@ -55,10 +55,10 @@ public class CombinedEventsDetectorsManager implements Serializable {
     /** Initialization indicator. */
     private boolean initialized;
 
-    /** Simple constructor.
-     * Create an empty manager
+    /** Create an empty manager.
+     * @param observer for the occurred events
      */
-    public CombinedEventsDetectorsManager(EventObserver observer) {
+    public CombinedEventsDetectorsManager(final EventObserver observer) {
         states      = new ArrayList<EventState>();
         first       = null;
         this.observer = observer;

@@ -77,7 +77,7 @@ public class SpacecraftState implements TimeStamped, Serializable {
      * @param orbit the orbit
      * @exception OrekitException if default attitude cannot be computed
      */
-    public SpacecraftState(final Orbit orbit) 
+    public SpacecraftState(final Orbit orbit)
         throws OrekitException {
         this.orbit    = orbit;
         this.attitude = LofOffset.LOF_ALIGNED.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
@@ -105,7 +105,7 @@ public class SpacecraftState implements TimeStamped, Serializable {
      * @param mass the mass (kg)
      * @exception OrekitException if default attitude cannot be computed
      */
-    public SpacecraftState(final Orbit orbit, final double mass) 
+    public SpacecraftState(final Orbit orbit, final double mass)
         throws OrekitException {
         this.orbit    = orbit;
         this.attitude = LofOffset.LOF_ALIGNED.getAttitude(orbit, orbit.getDate(), orbit.getFrame());

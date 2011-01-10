@@ -82,7 +82,7 @@ class XMLEOPFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
         throws IOException, OrekitException {
         try {
             // set up a reader for line-oriented bulletin B files
-            XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
+            final XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
             reader.setContentHandler(new EOPContentHandler(name));
 
             // read all file, ignoring header
@@ -123,42 +123,35 @@ class XMLEOPFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
     /** Local content handler for XML EOP files. */
     private class EOPContentHandler extends DefaultHandler {
 
+        // CHECKSTYLE: stop JavadocVariable check
+
         // elements and attributes used in both daily and finals data files
-        private final String MJD_ELT           = "MJD";
-        private final String LOD_ELT           = "LOD";
-        private final String X_ELT             = "X";
-        private final String Y_ELT             = "Y";
-        private final String DPSI_ELT          = "dPsi";
-        private final String DEPSILON_ELT      = "dEpsilon";
+        private static final String MJD_ELT           = "MJD";
+        private static final String LOD_ELT           = "LOD";
+        private static final String X_ELT             = "X";
+        private static final String Y_ELT             = "Y";
+        private static final String DPSI_ELT          = "dPsi";
+        private static final String DEPSILON_ELT      = "dEpsilon";
 
         // elements and attributes specific to daily data files
-        private final String DATA_EOP_ELT      = "dataEOP";
-        private final String TIME_SERIES_ELT   = "timeSeries";
-        private final String DATE_YEAR_ELT     = "dateYear";
-        private final String DATE_MONTH_ELT    = "dateMonth";
-        private final String DATE_DAY_ELT      = "dateDay";
-        private final String POLE_ELT          = "pole";
-        private final String UT_ELT            = "UT";
-        private final String UT1_U_UTC_ELT     = "UT1_UTC";
-        private final String NUTATION_ELT      = "nutation";
-        private final String SOURCE_ATTR       = "source";
-        private final String BULLETIN_A_SOURCE = "BulletinA";
+        private static final String DATA_EOP_ELT      = "dataEOP";
+        private static final String TIME_SERIES_ELT   = "timeSeries";
+        private static final String DATE_YEAR_ELT     = "dateYear";
+        private static final String DATE_MONTH_ELT    = "dateMonth";
+        private static final String DATE_DAY_ELT      = "dateDay";
+        private static final String POLE_ELT          = "pole";
+        private static final String UT_ELT            = "UT";
+        private static final String UT1_U_UTC_ELT     = "UT1_UTC";
+        private static final String NUTATION_ELT      = "nutation";
+        private static final String SOURCE_ATTR       = "source";
+        private static final String BULLETIN_A_SOURCE = "BulletinA";
 
         // elements and attributes specific to finals data files
-        private final String FINALS_ELT        = "Finals";
-        private final String DATE_ELT          = "date";
-        private final String EOP_SET_ELT       = "EOPSet";
-        private final String BULLETIN_A_ELT    = "bulletinA";
-        private final String UT1_M_UTC_ELT     = "UT1-UTC";
-
-        /** File name. */
-        private final String name;
-
-        /** Buffer for read characters. */
-        private final StringBuffer buffer;
-
-        /** Indicator for daily data XML format or final data XML format. */
-        private DataFileContent content;
+        private static final String FINALS_ELT        = "Finals";
+        private static final String DATE_ELT          = "date";
+        private static final String EOP_SET_ELT       = "EOPSet";
+        private static final String BULLETIN_A_ELT    = "bulletinA";
+        private static final String UT1_M_UTC_ELT     = "UT1-UTC";
 
         private boolean inBulletinA;
         private int     year;
@@ -171,6 +164,17 @@ class XMLEOPFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
         private double  y;
         private double  dpsi;
         private double  deps;
+
+        // CHECKSTYLE: resume JavadocVariable check
+
+        /** File name. */
+        private final String name;
+
+        /** Buffer for read characters. */
+        private final StringBuffer buffer;
+
+        /** Indicator for daily data XML format or final data XML format. */
+        private DataFileContent content;
 
         /** Simple constructor.
          * @param name file name
@@ -188,14 +192,15 @@ class XMLEOPFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
 
         /** {@inheritDoc} */
         @Override
-        public void characters(char[] ch, int start, int length) {
+        public void characters(final char[] ch, final int start, final int length) {
             buffer.append(ch, start, length);
         }
 
         /** {@inheritDoc} */
         @Override
-        public void startElement(String uri, String localName, String qName, Attributes atts) {
-            
+        public void startElement(final String uri, final String localName,
+                                 final String qName, final Attributes atts) {
+
             // reset the buffer to empty
             buffer.delete(0, buffer.length());
 
@@ -222,7 +227,7 @@ class XMLEOPFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
          * @param qName name of the element
          * @param atts element attributes
          */
-        private void startDailyElement(String qName, Attributes atts) {
+        private void startDailyElement(final String qName, final Attributes atts) {
             if (qName.equals(TIME_SERIES_ELT)) {
                 // reset EOP data
                 resetEOPData();
@@ -238,7 +243,7 @@ class XMLEOPFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
          * @param qName name of the element
          * @param atts element attributes
          */
-        private void startFinalElement(String qName, Attributes atts) {
+        private void startFinalElement(final String qName, final Attributes atts) {
             if (qName.equals(EOP_SET_ELT)) {
                 // reset EOP data
                 resetEOPData();
@@ -265,7 +270,8 @@ class XMLEOPFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
 
         /** {@inheritDoc} */
         @Override
-        public void endElement(String uri, String localName, String qName) throws SAXException {
+        public void endElement(final String uri, final String localName, final String qName)
+            throws SAXException {
             try {
                 if (content == DataFileContent.DAILY) {
                     endDailyElement(qName);
@@ -281,12 +287,12 @@ class XMLEOPFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
          * @param qName name of the element
          * @exception OrekitException if an EOP element cannot be built
          */
-        private void endDailyElement(String qName) throws OrekitException {
+        private void endDailyElement(final String qName) throws OrekitException {
             if (qName.equals(DATE_YEAR_ELT) && (buffer.length() > 0)) {
                 year = Integer.parseInt(buffer.toString());
-            } if (qName.equals(DATE_MONTH_ELT) && (buffer.length() > 0)) {
+            } else if (qName.equals(DATE_MONTH_ELT) && (buffer.length() > 0)) {
                 month = Integer.parseInt(buffer.toString());
-            } if (qName.equals(DATE_DAY_ELT) && (buffer.length() > 0)) {
+            } else if (qName.equals(DATE_DAY_ELT) && (buffer.length() > 0)) {
                 day = Integer.parseInt(buffer.toString());
             } else if (qName.equals(MJD_ELT) && (buffer.length() > 0)) {
                 mjd = Integer.parseInt(buffer.toString());
@@ -323,7 +329,7 @@ class XMLEOPFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
          * @param qName name of the element
          * @exception OrekitException if an EOP element cannot be built
          */
-        private void endFinalElement(String qName) throws OrekitException {
+        private void endFinalElement(final String qName) throws OrekitException {
             if (qName.equals(DATE_ELT) && (buffer.length() > 0)) {
                 final String[] fields = buffer.toString().split("-");
                 if (fields.length == 3) {
@@ -381,7 +387,7 @@ class XMLEOPFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
         }
 
         /** Check if the year, month, day date and MJD date are consistent.
-         * @exception Orekit exception if dates are not consistent
+         * @exception OrekitException if dates are not consistent
          */
         private void checkDates() throws OrekitException {
             if (new DateComponents(year, month, day).getMJD() != mjd) {

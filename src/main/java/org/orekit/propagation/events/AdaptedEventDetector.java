@@ -44,7 +44,7 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
 
     /** Occurred event observer. */
     private final EventObserver observer;
-    
+
     /** Reference date from which t is counted. */
     private final AbsoluteDate referenceDate;
 
@@ -93,7 +93,7 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
             final SpacecraftState state = mapper.mapArrayToState(y, currentDate, mu, integrationFrame);
             final int whatNext = detector.eventOccurred(state, increasing);
             observer.notify(state, detector);
-            
+
             switch (whatNext) {
             case EventDetector.STOP :
                 return STOP;

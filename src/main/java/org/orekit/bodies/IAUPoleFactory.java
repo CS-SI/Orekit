@@ -31,6 +31,7 @@ import org.orekit.utils.Constants;
  *</p>
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
+ * @since 5.1
  */
 class IAUPoleFactory {
 
@@ -302,7 +303,7 @@ class IAUPoleFactory {
 
     /** Compute the interval in julian centuries from standard epoch.
      * @param date date
-     * @return interval between date and standard epoch in julian centuries 
+     * @return interval between date and standard epoch in julian centuries
      */
     private static double t(final AbsoluteDate date) {
         return date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_CENTURY;
@@ -310,7 +311,7 @@ class IAUPoleFactory {
 
     /** Compute the interval in julian days from standard epoch.
      * @param date date
-     * @return interval between date and standard epoch in julian days 
+     * @return interval between date and standard epoch in julian days
      */
     private static double d(final AbsoluteDate date) {
         return date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY;
@@ -328,12 +329,12 @@ class IAUPoleFactory {
         /** Serializable UID. */
         private static final long serialVersionUID = 4148478144525077641L;
 
-        /** {@inheritDoc }*/
+        /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
             return Vector3D.PLUS_K;
         }
 
-        /** {@inheritDoc }*/
+        /** {@inheritDoc} */
         public double getPrimeMeridianAngle(final AbsoluteDate date) {
             return 0;
         }

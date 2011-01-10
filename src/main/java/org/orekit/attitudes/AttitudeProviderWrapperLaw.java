@@ -27,22 +27,22 @@ import org.orekit.utils.PVCoordinatesProvider;
  * from an {@link AttitudeProvider AttitudeProvider} and a separate {@link PVCoordinatesProvider PVCoordinatesProvider}.</p>
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
+ * @since 5.1
  */
-public class AttitudeProviderWrapperLaw
-    implements AttitudeLaw {
+public class AttitudeProviderWrapperLaw implements AttitudeLaw {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -1690571179199811195L;
+    private static final long serialVersionUID = 5253238640617158195L;
 
     /** Position-velocity provider. */
-    PVCoordinatesProvider pvProvider;
-    
+    private final PVCoordinatesProvider pvProvider;
+
     /** Attitude provider. */
-    AttitudeProvider attProvider;
-    
+    private final AttitudeProvider attProvider;
+
     /** Reference frame from which attitude is computed. */
-    Frame referenceFrame;
-    
+    private final Frame referenceFrame;
+
     /** Create new instance.
      * @param referenceFrame reference frame from which attitude is defined
      * @param attProvider attitude provider
@@ -57,9 +57,8 @@ public class AttitudeProviderWrapperLaw
     }
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(AbsoluteDate date)
+    public Attitude getAttitude(final AbsoluteDate date)
         throws OrekitException {
-        
         return attProvider.getAttitude(pvProvider, date, referenceFrame);
     }
 

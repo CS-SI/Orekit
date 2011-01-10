@@ -100,16 +100,16 @@ public class KeplerianPropagator extends AbstractPropagator {
     public KeplerianPropagator(final Orbit initialOrbit, final AttitudeProvider attitudeProv,
                                final double mu, final double mass)
         throws PropagationException {
-        
+
         super(attitudeProv);
-        
+
         try {
             resetInitialState(new SpacecraftState(initialOrbit,
-                                                   getAttitudeProvider().getAttitude(initialOrbit, 
+                                                   getAttitudeProvider().getAttitude(initialOrbit,
                                                                                      initialOrbit.getDate(),
                                                                                      initialOrbit.getFrame()),
                                                    mass));
-         } catch (OrekitException oe) {
+        } catch (OrekitException oe) {
             throw new PropagationException(oe);
         }
     }
@@ -121,7 +121,6 @@ public class KeplerianPropagator extends AbstractPropagator {
         initialState   = state;
     }
 
-    
     /** {@inheritDoc} */
     protected Orbit propagateOrbit(final AbsoluteDate date)
         throws PropagationException {

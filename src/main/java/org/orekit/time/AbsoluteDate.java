@@ -362,11 +362,11 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
         }
 
         // time field lengths
-        int coarseTimeLength = 1 + ((preambleField & 0x0C) >>> 2);
-        int fineTimeLength   = preambleField & 0x03;
+        final int coarseTimeLength = 1 + ((preambleField & 0x0C) >>> 2);
+        final int fineTimeLength   = preambleField & 0x03;
         if (timeField.length != coarseTimeLength + fineTimeLength) {
             throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_LENGTH_TIME_FIELD,
-                                      timeField.length, coarseTimeLength + fineTimeLength);            
+                                      timeField.length, coarseTimeLength + fineTimeLength);
         }
 
         double seconds = 0;
@@ -422,15 +422,15 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
         }
 
         // time field lengths
-        int daySegmentLength = ((preambleField & 0x04) == 0x0) ? 2 : 3;
-        int subMillisecondLength = (preambleField & 0x03) << 1;
+        final int daySegmentLength = ((preambleField & 0x04) == 0x0) ? 2 : 3;
+        final int subMillisecondLength = (preambleField & 0x03) << 1;
         if (subMillisecondLength == 6) {
             throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD,
                                       formatByte(preambleField));
         }
         if (timeField.length != daySegmentLength + 4 + subMillisecondLength) {
             throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_LENGTH_TIME_FIELD,
-                                      timeField.length, daySegmentLength + 4 + subMillisecondLength);            
+                                      timeField.length, daySegmentLength + 4 + subMillisecondLength);
         }
 
 
@@ -444,18 +444,18 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
         while (i < daySegmentLength + 4) {
             milliInDay = milliInDay * 256 + toUnsigned(timeField[i++]);
         }
-        int milli   = (int) (milliInDay % 1000l);
-        int seconds = (int) ((milliInDay - milli) / 1000l);
+        final int milli   = (int) (milliInDay % 1000l);
+        final int seconds = (int) ((milliInDay - milli) / 1000l);
 
         double subMilli = 0;
         double divisor  = 1;
         while (i < timeField.length) {
             subMilli = subMilli * 256 + toUnsigned(timeField[i++]);
-            divisor *= 1000; 
+            divisor *= 1000;
         }
 
-        DateComponents date = new DateComponents(epoch, day);
-        TimeComponents time = new TimeComponents(seconds);
+        final DateComponents date = new DateComponents(epoch, day);
+        final TimeComponents time = new TimeComponents(seconds);
         return new AbsoluteDate(date, time, TimeScalesFactory.getUTC()).shiftedBy(milli * 1.0e-3 + subMilli / divisor);
 
     }
@@ -482,14 +482,14 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
         }
 
         // time field length
-        int length = 7 + (preambleField & 0x07);
+        final int length = 7 + (preambleField & 0x07);
         if (length == 14) {
             throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD,
                                       formatByte(preambleField));
         }
         if (timeField.length != length) {
             throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_LENGTH_TIME_FIELD,
-                                      timeField.length, length);            
+                                      timeField.length, length);
         }
 
         // date part in the first four bytes
@@ -525,7 +525,7 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      * @return an unsigned int value
      */
     private static int toUnsigned(final byte b) {
-        int i = (int) b;
+        final int i = (int) b;
         return (i < 0) ? 256 + i : i;
     }
 

@@ -24,7 +24,6 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -81,8 +80,7 @@ public class StateMapperCartesian implements StateMapper {
         final PVCoordinates  pv    = new PVCoordinates(p, v);
         final Orbit          orbit = new CartesianOrbit(pv, frame, date, mu);
 
-        final Attitude attitude =
-            attitudeProvider.getAttitude(new KeplerianPropagator(orbit), date, frame);
+        final Attitude attitude = attitudeProvider.getAttitude(orbit, date, frame);
 
         return new SpacecraftState(orbit, attitude, stateVector[6]);
 

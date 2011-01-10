@@ -93,9 +93,9 @@ public class LofOffset implements AttitudeProvider {
 
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(final PVCoordinatesProvider pvProv, 
-                                final AbsoluteDate date, final Frame frame) 
-    throws OrekitException {
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv,
+                                final AbsoluteDate date, final Frame frame)
+        throws OrekitException {
 
         final PVCoordinates pv = pvProv.getPVCoordinates(date, frame);
 

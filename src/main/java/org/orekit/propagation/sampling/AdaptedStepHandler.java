@@ -64,7 +64,7 @@ public class AdaptedStepHandler
 
     /** Flag for handler . */
     private boolean activate;
-    
+
     /** Underlying raw rawInterpolator. */
     private StepInterpolator rawInterpolator;
 
@@ -77,11 +77,11 @@ public class AdaptedStepHandler
 
     /** {@inheritDoc} */
     public void initialize(final StateMapper stateMapper, final List <AdditionalStateAndEquations> stateAndEqu,
-                           final boolean activate,
+                           final boolean activateHandlers,
                            final AbsoluteDate reference, final Frame frame, final double mu) {
-        this.activate             = activate;
         this.mapper               = stateMapper;
         this.addStateAndEqu       = stateAndEqu;
+        this.activate             = activateHandlers;
         this.initializedReference = reference;
         this.initializedFrame     = frame;
         this.initializedMu        = mu;
@@ -102,7 +102,7 @@ public class AdaptedStepHandler
         throws MathUserException {
         try {
             this.rawInterpolator = interpolator;
-            if(activate) {
+            if (activate) {
                 handler.handleStep(this, isLast);
             }
         } catch (PropagationException pe) {

@@ -26,6 +26,7 @@ import org.orekit.frames.EOPHistory;
  * @author Luc Maisonobe
  * @see AbsoluteDate
  * @version $Revision$ $Date$
+ * @since 5.1
  */
 public class UT1Scale implements TimeScale {
 
@@ -40,6 +41,7 @@ public class UT1Scale implements TimeScale {
 
     /** Package private constructor for the factory.
      * @param eopHistory user supplied EOP history
+     * @param utc UTC time scale
      */
     UT1Scale(final EOPHistory eopHistory, final UTCScale utc) {
         this.eopHistory = eopHistory;

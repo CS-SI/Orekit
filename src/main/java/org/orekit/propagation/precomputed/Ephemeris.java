@@ -234,10 +234,9 @@ public class Ephemeris extends AbstractPropagator implements BoundedPropagator {
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(SpacecraftState state)
+    public void resetInitialState(final SpacecraftState state)
         throws PropagationException {
         throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
-        
     }
 
     /** {@inheritDoc} */

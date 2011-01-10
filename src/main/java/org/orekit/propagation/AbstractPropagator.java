@@ -85,37 +85,38 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
 
     /** Provider for attitude computation. */
     private PVCoordinatesProvider pvProvider;
-    
+
     /** Attitude provider. */
-    private AttitudeProvider attitudeProv;
+    private AttitudeProvider attitudeProvider;
 
     /** Initial state. */
     private SpacecraftState initialState;
 
 
     /** Build a new instance.
+     * @param attitudeProvider provider for attitude computation
      */
-    protected AbstractPropagator(final AttitudeProvider attitudeProv) {
+    protected AbstractPropagator(final AttitudeProvider attitudeProvider) {
         eventsDetectorsManager = new CombinedEventsDetectorsManager(this);
         occurredEvents         = new ArrayList<OccurredEvent>();
-        interpolator = new BasicStepInterpolator();
+        interpolator           = new BasicStepInterpolator();
+        this.pvProvider        = new LocalPVProvider();
+        this.attitudeProvider  = attitudeProvider;
         setSlaveMode();
-        this.pvProvider = new LocalPVProvider();
-        this.attitudeProv = attitudeProv;
     }
-    
+
     /** Get attitude provider.
      * @return attitude provider
      */
     public AttitudeProvider getAttitudeProvider() {
-        return attitudeProv;
+        return attitudeProvider;
     }
 
     /** Set attitude provider.
-     * @param attitudeProv attitude provider
+     * @param attitudeProvider attitude provider
      */
-    protected void setAttitudeProvider(final AttitudeProvider attitudeProv) {
-        this.attitudeProv = attitudeProv;
+    protected void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
+        this.attitudeProvider = attitudeProvider;
     }
 
     /** Get PV coordinates provider.
@@ -190,8 +191,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState propagate(final AbsoluteDate target)
-    throws PropagationException {
+    public SpacecraftState propagate(final AbsoluteDate target) throws PropagationException {
         try {
             if (startDate == null) {
                 startDate = getInitialState().getDate();
@@ -212,7 +212,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
 
     /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate start, final AbsoluteDate target)
-    throws PropagationException {
+        throws PropagationException {
         try {
 
             startDate = start;
@@ -290,7 +290,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
                 } else {
                     if (stepEnd.compareTo(target) < 0) {
                         stepEnd = target;
-                    }                    
+                    }
                 }
 
             }
@@ -330,8 +330,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
      * @return state at specified date
      * @exception PropagationException if propagation cannot reach specified date
      */
-     protected SpacecraftState basicPropagate(final AbsoluteDate date)
-        throws PropagationException {
+    protected SpacecraftState basicPropagate(final AbsoluteDate date) throws PropagationException {
         try {
 
             // evaluate orbit
@@ -339,7 +338,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
 
             // evaluate attitude
             final Attitude attitude =
-                attitudeProv.getAttitude(pvProvider, date, orbit.getFrame());
+                attitudeProvider.getAttitude(pvProvider, date, orbit.getFrame());
 
             return new SpacecraftState(orbit, attitude, getMass(date));
 
@@ -367,7 +366,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
     /** Internal PVCoordinatesProvider for attitude computation. */
     private class LocalPVProvider implements PVCoordinatesProvider {
         /** {@inheritDoc} */
-        public PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
+        public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
             throws OrekitException {
             return propagateOrbit(date).getPVCoordinates(frame);
         }
@@ -380,20 +379,19 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
     }
 
     /** {@inheritDoc} */
-    public void notify(SpacecraftState s, EventDetector detector) {
+    public void notify(final SpacecraftState s, final EventDetector detector) {
         // Add occurred event to occurred events list
         occurredEvents.add(new OccurredEvent(s, detector));
     }
-    
 
-    
     /** {@link BoundedPropagator} (but not really bounded) view of the instance. */
-    private class UnboundedPropagatorView 
-        extends AbstractPropagator implements BoundedPropagator {
+    private class UnboundedPropagatorView extends AbstractPropagator implements BoundedPropagator {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -3340036098040553110L;
 
+        /** Simple constructor.
+         */
         public UnboundedPropagatorView() {
             super(AbstractPropagator.this.getAttitudeProvider());
         }
@@ -426,38 +424,38 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
         }
 
         /** {@inheritDoc} */
-        public void resetInitialState(SpacecraftState state)
+        public void resetInitialState(final SpacecraftState state)
             throws PropagationException {
             AbstractPropagator.this.resetInitialState(state);
-            
         }
 
         /** {@inheritDoc} */
         public SpacecraftState getInitialState() throws OrekitException {
             return AbstractPropagator.this.getInitialState();
         }
-        
+
     }
 
     /** Add an event handler for end date checking.
      * <p>This method can be used to simplify handling of integration end date.
      * It leverages the nominal stop condition with the exceptional stop
      * conditions.</p>
-     * @param startDate propagation start date
-     * @param endDate desired end date
+     * @param start propagation start date
+     * @param end desired end date
      * @param manager manager containing the user-defined handlers
      * @return a new manager containing all the user-defined handlers plus a
      * dedicated manager triggering a stop event at entDate
      */
-    protected CombinedEventsDetectorsManager addEndDateChecker(final AbsoluteDate startDate,
-                                                               final AbsoluteDate endDate,
+    protected CombinedEventsDetectorsManager addEndDateChecker(final AbsoluteDate start,
+                                                               final AbsoluteDate end,
                                                                final CombinedEventsDetectorsManager manager) {
         final CombinedEventsDetectorsManager newManager = new CombinedEventsDetectorsManager(this);
         for (final EventDetector detector : manager.getEventsDetectors()) {
             newManager.addEventDetector(detector);
         }
-        final double dt = endDate.durationFrom(startDate);
-        newManager.addEventDetector(new EndDateDetector(endDate, Double.POSITIVE_INFINITY, FastMath.ulp(dt)));
+        final double dt = end.durationFrom(start);
+        newManager.addEventDetector(new EndDateDetector(end, Double.POSITIVE_INFINITY,
+                                                        FastMath.ulp(dt)));
         return newManager;
     }
 
@@ -534,7 +532,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
         }
 
         /** {@inheritDoc} */
-        public double[] getInterpolatedAdditionalState(AdditionalEquations addEqu)
+        public double[] getInterpolatedAdditionalState(final AdditionalEquations addEqu)
             throws OrekitException {
             throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_EQUATION);
         }

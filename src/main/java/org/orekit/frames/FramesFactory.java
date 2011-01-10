@@ -49,7 +49,7 @@ import org.orekit.utils.Constants;
  * {@link #getITRF2005(boolean)}, {@link #getITRF2005()},
  * {@link #getITRF2008(boolean)}, {@link #getITRF2008()},
  * {@link #getEME2000()}, {@link #getMOD(boolean)}, {@link #getTOD(boolean)},
- * {@link #getGTOD(boolean)}, {@link #getTEME(boolean)} and {@link #getVeis1950()}).
+ * {@link #getGTOD(boolean)}, {@link #getTEME()} and {@link #getVeis1950()}).
  * </p>
  * <h5> International Terrestrial Reference Frame 2008 </h5>
  * <p>
@@ -446,7 +446,7 @@ public class FramesFactory implements Serializable {
         //            mm      mm       mm     10-9    mas     mas     mas
         //           -0.5    -0.9    -4.7    0.94    0.000   0.000   0.000
         //    +/-     0.2     0.2     0.2    0.03    0.008   0.008   0.008
-        //     
+        //
         //    Rates   0.3     0.0     0.0    0.00    0.000   0.000   0.000
         //    +/-     0.2     0.2     0.2    0.03    0.008   0.008   0.008
         //    Table 1: Transformation parameters at epoch 2005.0 and their rates from ITRF2008 to ITRF2005
@@ -519,7 +519,7 @@ public class FramesFactory implements Serializable {
         //             mm      mm      mm      10-9    mas     mas     mas
         //             0.1    -0.8    -5.8     0.40   0.000   0.000   0.000
         //    +/-      0.3     0.3     0.3     0.05   0.012   0.012   0.012
-        //     
+        //
         //    Rates   -0.2     0.1    -1.8     0.08   0.000   0.000   0.000
         //    +/-      0.3     0.3     0.3     0.05   0.012   0.012   0.012
         //
@@ -555,18 +555,18 @@ public class FramesFactory implements Serializable {
         // Helmert transformation between ITRF2000 and ITRF97
         // see ftp://itrf.ensg.ign.fr/pub/itrf/ITRF.TP
         //-------------------------------------------------------------------------------------
-        //SOLUTION         T1    T2    T3      D       R1      R2      R3    EPOCH   Ref. 
+        //SOLUTION         T1    T2    T3      D       R1      R2      R3    EPOCH   Ref.
         //UNITS----------> cm    cm    cm     ppb     .001"   .001"   .001"         IERS Tech.
         //                 .     .     .       .       .       .       .            Note #
         //        RATES    T1    T2    T3      D       R1      R2      R3
         //UNITS----------> cm/y  cm/y  cm/y  ppb/y  .001"/y .001"/y .001"/y
         //-------------------------------------------------------------------------------------
         //   ITRF97       0.67  0.61 -1.85    1.55    0.00    0.00    0.00   1997.0   27
-        //        rates   0.00 -0.06 -0.14    0.01    0.00    0.00    0.02     
+        //        rates   0.00 -0.06 -0.14    0.01    0.00    0.00    0.02
         //   ...
         //
         // Note : These parameters are derived from those already published in the IERS
-        // Technical Notes indicated in the table above. The transformation parameters 
+        // Technical Notes indicated in the table above. The transformation parameters
         // should be used with the standard model (1) given below and are valid at the
         // indicated epoch.
         //
@@ -576,7 +576,7 @@ public class FramesFactory implements Serializable {
         // :    :    :   :   :    :   :               : :   :
         // : ZS :    : Z :   : T3 :   : -R2   R1   D  : : Z :
         //
-        // Where X,Y,Z are the coordinates in ITRF2000 and XS,YS,ZS are the coordinates in 
+        // Where X,Y,Z are the coordinates in ITRF2000 and XS,YS,ZS are the coordinates in
         // the other frames.
         return getITRSRealization(factoryKey, getITRF2000(ignoreTidalEffects), 1997,
                                   6.7,  6.1, -18.5, 0.00, 0.00, 0.00,
@@ -608,7 +608,7 @@ public class FramesFactory implements Serializable {
         // Helmert transformation between ITRF2000 and ITRF93
         // see ftp://itrf.ensg.ign.fr/pub/itrf/ITRF.TP
         //-------------------------------------------------------------------------------------
-        //SOLUTION         T1    T2    T3      D       R1      R2      R3    EPOCH   Ref. 
+        //SOLUTION         T1    T2    T3      D       R1      R2      R3    EPOCH   Ref.
         //UNITS----------> cm    cm    cm     ppb     .001"   .001"   .001"         IERS Tech.
         //                 .     .     .       .       .       .       .            Note #
         //        RATES    T1    T2    T3      D       R1      R2      R3
@@ -616,11 +616,11 @@ public class FramesFactory implements Serializable {
         //-------------------------------------------------------------------------------------
         //   ...
         //   ITRF93       1.27  0.65 -2.09    1.95   -0.39    0.80   -1.14   1988.0   18
-        //        rates  -0.29 -0.02 -0.06    0.01   -0.11   -0.19    0.07   
+        //        rates  -0.29 -0.02 -0.06    0.01   -0.11   -0.19    0.07
         //   ...
         //
         // Note : These parameters are derived from those already published in the IERS
-        // Technical Notes indicated in the table above. The transformation parameters 
+        // Technical Notes indicated in the table above. The transformation parameters
         // should be used with the standard model (1) given below and are valid at the
         // indicated epoch.
         //
@@ -630,7 +630,7 @@ public class FramesFactory implements Serializable {
         // :    :    :   :   :    :   :               : :   :
         // : ZS :    : Z :   : T3 :   : -R2   R1   D  : : Z :
         //
-        // Where X,Y,Z are the coordinates in ITRF2000 and XS,YS,ZS are the coordinates in 
+        // Where X,Y,Z are the coordinates in ITRF2000 and XS,YS,ZS are the coordinates in
         // the other frames.
         return getITRSRealization(factoryKey, getITRF2000(ignoreTidalEffects), 1988,
                                   12.7,  6.5, -20.9, -0.39,  0.80, -1.14,

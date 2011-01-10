@@ -64,7 +64,7 @@ public abstract class GroundPointingWrapper extends GroundPointing implements At
     }
 
     /** {@inheritDoc} */
-    protected Vector3D getTargetPoint(final PVCoordinatesProvider pvProv, 
+    protected Vector3D getTargetPoint(final PVCoordinatesProvider pvProv,
                                       final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return groundPointingLaw.getTargetPoint(pvProv, date, frame);
@@ -72,18 +72,20 @@ public abstract class GroundPointingWrapper extends GroundPointing implements At
 
     /** {@inheritDoc} */
     @Override
-    protected PVCoordinates getTargetPV(final PVCoordinatesProvider pvProv, 
+    protected PVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
                                         final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return groundPointingLaw.getTargetPV(pvProv, date, frame);
     }
 
     /** Compute the base system state at given date, without compensation.
-     * @param orbit orbit state for which attitude is requested
+     * @param pvProv provider for PV coordinates
+     * @param date date at which state is requested
+     * @param frame reference frame from which attitude is computed
      * @return satellite base attitude state, i.e without compensation.
      * @throws OrekitException if some specific error occurs
      */
-    public Attitude getBaseState(final PVCoordinatesProvider pvProv, 
+    public Attitude getBaseState(final PVCoordinatesProvider pvProv,
                                  final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return groundPointingLaw.getAttitude(pvProv, date, frame);
@@ -91,7 +93,7 @@ public abstract class GroundPointingWrapper extends GroundPointing implements At
 
     /** {@inheritDoc} */
     @Override
-    public Attitude getAttitude(final PVCoordinatesProvider pvProv, 
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv,
                                 final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
@@ -115,14 +117,16 @@ public abstract class GroundPointingWrapper extends GroundPointing implements At
     }
 
     /** Compute the compensation rotation at given date.
-     * @param orbit orbit state for which compensation is requested
+     * @param pvProv provider for PV coordinates
+     * @param date date at which rotation is requested
+     * @param frame reference frame from which attitude is computed
      * @param base base satellite attitude in given frame.
      * @return compensation rotation at date, i.e rotation between non compensated
      * attitude state and compensated state.
      * @throws OrekitException if some specific error occurs
      */
-    public abstract Rotation getCompensation(final PVCoordinatesProvider pvProv, 
-                                             final AbsoluteDate date, final Frame frame, 
+    public abstract Rotation getCompensation(final PVCoordinatesProvider pvProv,
+                                             final AbsoluteDate date, final Frame frame,
                                              final Attitude base)
         throws OrekitException;
 

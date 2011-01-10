@@ -102,7 +102,7 @@ public class IntegratedEphemeris
 
     /** Flag for handler . */
     private boolean activate;
-    
+
     /** Creates a new instance of IntegratedEphemeris which must be
      *  filled by the propagator.
      */
@@ -112,11 +112,11 @@ public class IntegratedEphemeris
     }
 
     /** {@inheritDoc} */
-    public void initialize(final StateMapper mapper, final List <AdditionalStateAndEquations> addStateAndEqu,
-                           final boolean activate, final AbsoluteDate reference,
+    public void initialize(final StateMapper stateMapper, final List <AdditionalStateAndEquations> addStateAndEqu,
+                           final boolean activateHandlers, final AbsoluteDate reference,
                            final Frame frame, final double mu) {
-        this.mapper               = mapper;
-        this.activate             = activate;
+        this.mapper               = stateMapper;
+        this.activate             = activateHandlers;
         this.initializedReference = reference;
         this.initializedFrame     = frame;
         this.initializedMu        = mu;
@@ -208,10 +208,9 @@ public class IntegratedEphemeris
 
 
     /** {@inheritDoc} */
-    public void resetInitialState(SpacecraftState state)
+    public void resetInitialState(final SpacecraftState state)
         throws PropagationException {
         throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
-        
     }
 
     /** {@inheritDoc} */

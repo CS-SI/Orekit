@@ -40,8 +40,7 @@ import org.apache.commons.math.exception.util.Localizable;
  */
 public enum OrekitMessages implements Localizable {
 
-    // CHECKSTYLE: stop MultipleVariableDeclarations
-    // CHECKSTYLE: stop JavadocVariable
+    // CHECKSTYLE: stop JavadocVariable check
 
     INTERNAL_ERROR("internal error, contact maintenance at {0}"),
     ALTITUDE_BELOW_ALLOWED_THRESHOLD("altitude ({0} m) is below the {1} m allowed threshold"),
@@ -142,8 +141,7 @@ public enum OrekitMessages implements Localizable {
     CCSDS_ORBIT_DATA_MESSAGE_MISSING_COVARIANCE("missing covariance in CCSDS Orbit Data Message"),
     NON_RESETABLE_STATE("reset state not allowed {0}");
 
-    // CHECKSTYLE: resume JavadocVariable
-    // CHECKSTYLE: resume MultipleVariableDeclarations
+    // CHECKSTYLE: resume JavadocVariable check
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "META-INF/localization/OrekitMessages";
@@ -167,7 +165,7 @@ public enum OrekitMessages implements Localizable {
     /** {@inheritDoc} */
     public String getLocalizedString(final Locale locale) {
         try {
-            ResourceBundle bundle = ResourceBundle.getBundle(RESOURCE_BASE_NAME, locale);
+            final ResourceBundle bundle = ResourceBundle.getBundle(RESOURCE_BASE_NAME, locale);
             if (bundle.getLocale().getLanguage().equals(locale.getLanguage())) {
                 final String translated = bundle.getString(name());
                 if ((translated != null) &&

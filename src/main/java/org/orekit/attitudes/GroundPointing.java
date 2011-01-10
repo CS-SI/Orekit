@@ -64,26 +64,28 @@ public abstract class GroundPointing implements AttitudeProvider {
     }
 
     /** Compute the target point in specified frame.
-     * @param orbit orbit state
+     * @param pvProv provider for PV coordinates
+     * @param date date at which target point is requested
      * @param frame frame in which observed ground point should be provided
      * @return observed ground point position in specified frame
      * @throws OrekitException if some specific error occurs,
      * such as no target reached
      */
-    protected abstract Vector3D getTargetPoint(final PVCoordinatesProvider pvProv, 
+    protected abstract Vector3D getTargetPoint(final PVCoordinatesProvider pvProv,
                                                final AbsoluteDate date, final Frame frame)
         throws OrekitException;
 
     /** Compute the target point position/velocity in specified frame.
      * <p>The default implementation use a simple two points finite differences scheme,
      * it may be replaced by more accurate models in specialized implementations.</p>
-     * @param orbit orbit state
+     * @param pvProv provider for PV coordinates
+     * @param date date at which target point is requested
      * @param frame frame in which observed ground point should be provided
      * @return observed ground point position/velocity in specified frame
      * @throws OrekitException if some specific error occurs,
      * such as no target reached
      */
-    protected PVCoordinates getTargetPV(final PVCoordinatesProvider pvProv, 
+    protected PVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
                                         final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
@@ -103,7 +105,7 @@ public abstract class GroundPointing implements AttitudeProvider {
 
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(final PVCoordinatesProvider pvProv, final AbsoluteDate date, 
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv, final AbsoluteDate date,
                                 final Frame frame)
         throws OrekitException {
 

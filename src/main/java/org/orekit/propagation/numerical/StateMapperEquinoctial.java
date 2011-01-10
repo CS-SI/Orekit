@@ -22,7 +22,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 
 /** Implementation of the {@link StateMapper} interface for state arrays in equinoctial parameters.
@@ -67,8 +66,7 @@ public class StateMapperEquinoctial implements StateMapper {
                                  stateVector[4], stateVector[5], EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
                                  frame, date, mu);
 
-        final Attitude attitude =
-            attitudeProvider.getAttitude(new KeplerianPropagator(orbit), date, frame);
+        final Attitude attitude = attitudeProvider.getAttitude(orbit, date, frame);
 
         return new SpacecraftState(orbit, attitude, stateVector[6]);
 

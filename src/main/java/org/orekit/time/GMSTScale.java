@@ -27,6 +27,7 @@ import org.orekit.utils.Constants;
  * @author Luc Maisonobe
  * @see AbsoluteDate
  * @version $Revision$ $Date$
+ * @since 5.1
  */
 public class GMSTScale implements TimeScale {
 
@@ -62,7 +63,6 @@ public class GMSTScale implements TimeScale {
 
     /** Package private constructor for the factory.
      * @param ut1 Universal Time 1 scale
-     * 
      */
     GMSTScale(final UT1Scale ut1) {
         this.ut1           = ut1;

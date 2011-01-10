@@ -69,14 +69,14 @@ public class LofOffsetPointing extends GroundPointing {
 
     /** {@inheritDoc} */
     @Override
-    public Attitude getAttitude(final PVCoordinatesProvider pvProv, final AbsoluteDate date, 
-                                final Frame frame)
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv,
+                                final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return attitudeLaw.getAttitude(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
-    protected Vector3D getTargetPoint(final PVCoordinatesProvider pvProv, 
+    protected Vector3D getTargetPoint(final PVCoordinatesProvider pvProv,
                                       final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 

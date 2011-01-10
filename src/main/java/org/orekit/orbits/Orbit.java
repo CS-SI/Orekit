@@ -243,11 +243,11 @@ public abstract class Orbit implements TimeStamped, Serializable, PVCoordinatesP
         final Transform t = frame.getTransformTo(outputFrame, date);
         return t.transformPVCoordinates(pvCoordinates);
     }
-    
+
     /** {@inheritDoc} */
-    public PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
+    public PVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame otherFrame)
         throws OrekitException {
-        return shiftedBy(date.durationFrom(getDate())).getPVCoordinates(frame);
+        return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
     }
 
 

@@ -28,13 +28,10 @@ package org.orekit.time;
 public class TCBScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -3705249003333693710L;
+    private static final long serialVersionUID = -4556356728251703L;
 
     /** LG rate. */
-    private static double LB_RATE = 1.550505e-8;
-
-    /** Barycentric dynamic time scale. */
-    private final TDBScale tdb;
+    private static final double LB_RATE = 1.550505e-8;
 
     /** Reference date for TCB.
      * <p>The reference date is such that the four following instants are equal:</p>
@@ -47,6 +44,9 @@ public class TCBScale implements TimeScale {
      */
     private static final AbsoluteDate REFERENCE_DATE =
         new AbsoluteDate(1977, 01, 01, TimeScalesFactory.getTAI());
+
+    /** Barycentric dynamic time scale. */
+    private final TDBScale tdb;
 
     /** Package private constructor for the factory.
      * @param tdb Barycentric dynamic time scale

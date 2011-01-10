@@ -29,7 +29,7 @@ import org.orekit.utils.Constants;
  *
  * <p>The Helmert transformation is mainly used to convert between various
  * realizations of geodetic frames, for example in the ITRF family.</p>
- * 
+ *
  * <p>The original Helmert transformation is a 14 parameters transform that
  * includes translation, velocity, rotation, rotation rate and scale factor.
  * The scale factor is useful for coordinates near Earth surface, but it
@@ -40,6 +40,7 @@ import org.orekit.utils.Constants;
  *
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
+ * @since 5.1
  */
 public class HelmertTransformation implements Serializable {
 

@@ -198,7 +198,11 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
     }
 
-    /** {@inheritDoc} */
+    /** Load celestial body.
+     * @param name name of the celestial body
+     * @return loaded celestial body
+     * @throws OrekitException if the body cannot be loaded
+     */
     public CelestialBody loadCelestialBody(final String name) throws OrekitException {
 
         final String inertialFrameName = name + "/inertial";
@@ -913,7 +917,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
          */
         private JPLCelestialBody(final String supportedNames, final String name, final double gm,
                                  final IAUPole iauPole, final Frame definingFrame,
-                                 final String inertialFrameName, String bodyFrameName) {
+                                 final String inertialFrameName, final String bodyFrameName) {
             super(name, gm, iauPole, definingFrame, inertialFrameName, bodyFrameName);
             this.model         = null;
             this.definingFrame = definingFrame;

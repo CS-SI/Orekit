@@ -56,7 +56,7 @@ class EventState implements Serializable {
 
     /** Occurred event observer. */
     private EventObserver observer;
-    
+
     /** Time at the beginning of the step. */
     private AbsoluteDate t0;
 

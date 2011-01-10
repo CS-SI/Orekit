@@ -95,7 +95,7 @@ public class CelestialBodyPointed implements AttitudeProvider {
     }
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(final PVCoordinatesProvider pvProv, 
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv,
                                 final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 

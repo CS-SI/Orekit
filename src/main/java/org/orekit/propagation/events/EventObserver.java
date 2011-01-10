@@ -1,4 +1,4 @@
-/* Copyright 2002-2010 CS Communication & Systèmes
+/* Copyright 2010 Centre National d'Études Spatiales
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,22 +21,24 @@ import java.io.Serializable;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 
-/** This interface represents an occurred events observer.
+/** This interface represents an observer for occurred events.
  *
- * <p>During propagation, event detector can trigger events, though the 
- * EventState#eventOccurred(SpacecraftState, boolean) method. This event observer
- * allows to observe when events are triggered, and store them in a list handled by 
- * propagators.
+ * <p>During propagation, various event detectors can trigger events, through the
+ * {@link EventDetector#eventOccurred(SpacecraftState, boolean) eventOccurred} method.
+ * Each event type has its specific implementation of the {@link
+ * EventDetector#eventOccurred(SpacecraftState, boolean) eventOccurred} method.
+ * This observer allows to be notified when events are triggered, with the unique
+ * {@link #notify(SpacecraftState, EventDetector) notify} method being used for all events.
+ * </p>
  *
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision$ $Date$
+ * @since 5.1
  */
-
-
 public interface EventObserver extends Serializable {
-    
+
     /** Notify that an event has occurred.
-     * This method allows to add an occurred event to the occurred events 
+     * This method allows to add an occurred event to the occurred events
      * list handled by the propagator.
      * @param s the current state information: date, kinematics, attitude
      * @param detector the event detector that triggered the event

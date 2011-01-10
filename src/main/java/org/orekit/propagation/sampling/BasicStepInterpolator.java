@@ -24,7 +24,7 @@ import org.orekit.propagation.numerical.AdditionalEquations;
 import org.orekit.time.AbsoluteDate;
 
 /** Implementation of the {@link OrekitStepInterpolator} interface based
- * on a {@link BasicPropagator}.
+ * on a {@link Propagator}.
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */

@@ -354,6 +354,7 @@ class TODFrame extends FactoryManagedFrame {
 
     /** Get the Equation of the Equinoxes at the current date.
      * @param  date the date
+     * @return euqation of the equinoxes
      * @exception OrekitException if nutation model cannot be computed
      */
     public double getEquationOfEquinoxes(final AbsoluteDate date)
@@ -389,7 +390,7 @@ class TODFrame extends FactoryManagedFrame {
 
     }
 
-    /** Compute the mean obliquity of the ecliptic
+    /** Compute the mean obliquity of the ecliptic.
      * @param t offset from J2000 epoch in seconds
      * @return mean obliquity of ecliptic
      */
@@ -430,7 +431,9 @@ class TODFrame extends FactoryManagedFrame {
             }
         }
 
-        return new double[] { dpsiNeville[n - 1], depsNeville[n - 1] };
+        return new double[] {
+            dpsiNeville[n - 1], depsNeville[n - 1]
+        };
 
     }
 

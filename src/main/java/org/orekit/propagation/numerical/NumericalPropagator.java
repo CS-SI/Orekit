@@ -178,7 +178,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
     private SpacecraftState initialState;
 
     /** Initial date. */
-    protected AbsoluteDate initialDate;
+    private AbsoluteDate initialDate;
 
     /** Current state to propagate. */
     private SpacecraftState currentState;
@@ -260,12 +260,12 @@ public class NumericalPropagator implements Propagator, EventObserver {
     }
 
     /** Set the attitude provider.
-     * @param attitudeProvider attitude provider
-     * @deprecated as of 5.1 replaced by {@link #setAttitudeProvider(AttitudeProvider)
+     * @param provider attitude provider
+     * @deprecated as of 5.1 replaced by {@link #setAttitudeProvider(AttitudeProvider)}
      */
     @Deprecated
-    public void setAttitudeLaw(final AttitudeProvider attitudeProvider) {
-        this.attitudeProvider = attitudeProvider;
+    public void setAttitudeLaw(final AttitudeProvider provider) {
+        this.attitudeProvider = provider;
     }
 
     /** Set the attitude provider.
@@ -485,15 +485,13 @@ public class NumericalPropagator implements Propagator, EventObserver {
     }
 
     /** {@inheritDoc} */
-    public void notify(SpacecraftState s, EventDetector detector) {
+    public void notify(final SpacecraftState s, final EventDetector detector) {
         // Add occurred event to occurred events list
         occurredEvents.add(new OccurredEvent(s, detector));
     }
- 
-    
+
     /** {@inheritDoc} */
-    public SpacecraftState propagate(final AbsoluteDate target)
-    throws PropagationException {
+    public SpacecraftState propagate(final AbsoluteDate target) throws PropagationException {
         try {
             if (startDate == null) {
                 startDate = getInitialState().getDate();
@@ -514,18 +512,18 @@ public class NumericalPropagator implements Propagator, EventObserver {
 
     /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate tStart, final AbsoluteDate tEnd)
-    throws PropagationException {
+        throws PropagationException {
         try {
-            
+
             if (!tStart.equals(initialDate)) {
-                // if propagation start date is not initial date, 
+                // if propagation start date is not initial date,
                 // propagate from initial to start date without event detection
                 propagate(tStart, false);
             }
 
             // propagate from start date to end date with event detection
             return propagate(tEnd, true);
-            
+
         } catch (OrekitException oe) {
 
             // recover a possible embedded PropagationException
@@ -538,11 +536,13 @@ public class NumericalPropagator implements Propagator, EventObserver {
 
         }
     }
-           
-            
-    /** Propagation with or without event detection. 
-     * @param tEnd 
-     * @param activateHandlers */
+
+    /** Propagation with or without event detection.
+     * @param tEnd target date to which orbit should be propagated
+     * @param activateHandlers if true, step and event handlers should be activated
+     * @return state at end of propagation
+     * @exception PropagationException if orbit cannot be propagated
+     */
     private SpacecraftState propagate(final AbsoluteDate tEnd, final boolean activateHandlers)
         throws PropagationException {
         try {

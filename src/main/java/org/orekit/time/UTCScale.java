@@ -110,14 +110,14 @@ public class UTCScale implements TimeScale {
      * @param offset offset at reference date in seconds (TAI minus UTC)
      * @param slope offset slope in seconds per UTC day (TAI minus UTC / dUTC)
      */
-    private void addOffsetModel(final DateComponents date, final int mjdRef,
-                                final double offset, final double slope) {
+    private synchronized void addOffsetModel(final DateComponents date, final int mjdRef,
+                                             final double offset, final double slope) {
 
         final TimeScale tai = TimeScalesFactory.getTAI();
 
         // start of the leap
         final UTCTAIOffset previous    = offsets[current];
-        double previousOffset          = previous.getOffset(date, TimeComponents.H00);
+        final double previousOffset    = previous.getOffset(date, TimeComponents.H00);
         final AbsoluteDate leapStart   = new AbsoluteDate(date, tai).shiftedBy(previousOffset);
 
         // end of the leap

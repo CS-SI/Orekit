@@ -40,67 +40,67 @@ import org.orekit.time.TimeStamped;
  * @see     GroundPointing
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
+ * @since 5.1
  */
 public class DiscreteAttitudeLaw implements AttitudeLaw {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -3122873481236995517L;
+    private static final long serialVersionUID = 3254886991302296757L;
 
     /** Attitude ephemeris array. */
-    SortedSet<TimeStamped> attSortedEphem;
+    private final SortedSet<TimeStamped> attSortedEphem;
 
     /** Previous EOP entry. */
-    protected Attitude prevAtt;
+    private Attitude prevAtt;
 
     /** Next EOP entry. */
-    protected Attitude nextAtt;
+    private Attitude nextAtt;
 
     /** Offset from previous date. */
-    protected double dtP;
+    private double dtP;
 
     /** Offset to next date. */
-    protected double dtN;
+    private double dtN;
 
 
     /** Creates new instance.
-     * @param bodyFrame Body frame
+     * @param attitudeEphem attitude ephemeris
      */
     public DiscreteAttitudeLaw(final Collection<Attitude> attitudeEphem) {
-        TreeSet<TimeStamped> attSortedEphem = new TreeSet<TimeStamped>(new ChronologicalComparator());
+        attSortedEphem = new TreeSet<TimeStamped>(new ChronologicalComparator());
         attSortedEphem.addAll(attitudeEphem);
-        this.attSortedEphem = attSortedEphem;
     }
 
-    /**{@inheritDoc} */
+    /** {@inheritDoc} */
     public Attitude getAttitude(final AbsoluteDate date)
         throws OrekitException {
 
         if (prepareInterpolation(date)) {
-            
-            // Recompute next attitude rotation is reference frame has changed 
+
+            // Recompute next attitude rotation is reference frame has changed
             // (spin is ignored and will be recomputed later)
-            Rotation nextRot = nextAtt.getRotation();
-            Transform tPrevToNext = prevAtt.getReferenceFrame().getTransformTo(nextAtt.getReferenceFrame(), date);
-            Rotation nextRotRe = nextRot.applyTo(tPrevToNext.getRotation());
+            final Rotation nextRot = nextAtt.getRotation();
+            final Transform tPrevToNext = prevAtt.getReferenceFrame().getTransformTo(nextAtt.getReferenceFrame(), date);
+            final Rotation nextRotRe = nextRot.applyTo(tPrevToNext.getRotation());
 
             final AbsoluteDate nextDate = nextAtt.getDate();
-            final AbsoluteDate prevDate = prevAtt.getDate();       
+            final AbsoluteDate prevDate = prevAtt.getDate();
             final double dt = date.durationFrom(prevDate);
-            final double dtTot = nextDate.durationFrom(prevDate);                
+            final double dtTot = nextDate.durationFrom(prevDate);
 
             // Computation of the interpolated rotation
             final Rotation prevRot = prevAtt.getRotation();
 
-            Rotation evol = nextRotRe.applyTo(prevRot.revert());
-            Vector3D axis = evol.getAxis();
-            double ang = evol.getAngle();
-            double omega = ang / dtTot;
-            double interpolatedAngle = dt*omega;
-            Rotation complementaryRot = new Rotation(axis, interpolatedAngle);
-            Rotation rot = complementaryRot.applyTo(prevRot);
+            final Rotation evol = nextRotRe.applyTo(prevRot.revert());
+            final Vector3D axis = evol.getAxis();
+            final double ang = evol.getAngle();
+            final double omega = ang / dtTot;
+            final double interpolatedAngle = dt * omega;
+            final Rotation complementaryRot = new Rotation(axis, interpolatedAngle);
+            final Rotation rot = complementaryRot.applyTo(prevRot);
 
             // Computation of the interpolated spin
-            Vector3D spin = new Vector3D(omega, axis);
+            final Vector3D spin = new Vector3D(omega, axis);
 
             return new Attitude(date, prevAtt.getReferenceFrame(), rot, spin);
 
@@ -113,7 +113,7 @@ public class DiscreteAttitudeLaw implements AttitudeLaw {
      * @param  date target date
      * @return true if there are entries bracketing the target date
      */
-    protected synchronized boolean prepareInterpolation(final AbsoluteDate date) {
+    protected boolean prepareInterpolation(final AbsoluteDate date) {
 
         // compute offsets assuming the current selection brackets the date
         dtP = (prevAtt == null) ? -1.0 : date.durationFrom(prevAtt.getDate());
@@ -157,6 +157,4 @@ public class DiscreteAttitudeLaw implements AttitudeLaw {
         }
     }
 
- 
-    
 }
