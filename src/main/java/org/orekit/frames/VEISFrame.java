@@ -50,7 +50,7 @@ class VEISFrame extends FactoryManagedFrame {
     private static final double VSTD = 7.292115146705209e-5;
 
     /** Cached date to avoid useless calculus. */
-    private AbsoluteDate cachedDate;
+    private transient AbsoluteDate cachedDate;
 
     /** Constructor for the singleton.
      * @param factoryKey key of the frame within the factory

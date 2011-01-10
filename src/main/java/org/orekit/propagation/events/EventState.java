@@ -148,7 +148,9 @@ class EventState implements Serializable {
             for (int i = 0; i < n; ++i) {
 
                 // evaluate detector value at the end of the substep
-                final AbsoluteDate tb = (i == n - 1) ? t1 : start.shiftedBy((i + 1) * h);
+                // TODO this may lead to infinite loops
+                // final AbsoluteDate tb = (i == n - 1) ? t1 : start.shiftedBy((i + 1) * h);
+                final AbsoluteDate tb = start.shiftedBy((i + 1) * h);
                 interpolator.setInterpolatedDate(tb);
                 final double gb = detector.g(interpolator.getInterpolatedState());
 
@@ -195,7 +197,7 @@ class EventState implements Serializable {
                         }
                     }
 
-                    final double dtRoot = (dtA <= dtB) ? solver.solve(f, dtA, dtB) : solver.solve(f, dtB, dtA);
+                    final double dtRoot = (dtA <= dtB) ? solver.solve(1000, f, dtA, dtB) : solver.solve(1000, f, dtB, dtA);
                     final AbsoluteDate root = t0.shiftedBy(dtRoot);
 
                     if ((previousEventTime != null) &&

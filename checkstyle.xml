@@ -11,16 +11,15 @@
         <module name="FallThrough"/>
         <module name="FinalLocalVariable"/>
         <module name="FinalParameters"/>
-        <module name="GenericIllegalRegexp">
-            <property name="format" value="\s$"/>
-            <property name="message" value="spurious spaces at end of line"/>
+        <module name="Regexp">
+            <property name="format" value="[ \t]+$"/>
+            <property name="illegalPattern" value="true"/>
+            <property name="message" value="Trailing whitespace"/>
         </module>
-        <module name="GenericIllegalRegexp">
+        <module name="Regexp">
             <property name="format" value="System\.out\.println"/>
-            <property name="message" value="forbidden print to standard output"/>
-        </module>
-        <module name="RegexpHeader">
-          <property name="headerFile" value="license-header.txt" />
+            <property name="illegalPattern" value="true"/>
+            <property name="ignoreComments" value="true"/>
         </module>
         <module name="HiddenField">
             <property name="ignoreConstructorParameter" value="true"/>
@@ -55,7 +54,6 @@
         </module>
         <module name="RedundantModifier"/>
         <module name="StringLiteralEquality"/>
-        <module name="TabCharacter"/>
         <module name="TodoComment"/>
         <module name="UnnecessaryParentheses"/>
         <module name="UnusedImports"/>
@@ -74,6 +72,10 @@
         </module>
         <module name="FileContentsHolder"/>
     </module>
+    <module name="RegexpHeader">
+      <property name="headerFile" value="license-header.txt" />
+    </module>
+    <module name="FileTabCharacter"/>
     <module name="NewlineAtEndOfFile"/>
     <module name="SuppressionCommentFilter">
         <property name="offCommentFormat" value="CHECKSTYLE\: stop JavadocVariable check"/>

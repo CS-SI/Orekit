@@ -18,11 +18,10 @@ package org.orekit.propagation.events;
 
 import org.apache.commons.math.ode.events.EventException;
 import org.apache.commons.math.ode.events.EventHandler;
-import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.numerical.StateMapper;
 import org.orekit.time.AbsoluteDate;
 
 /** Adapt an {@link org.orekit.propagation.events.EventDetector}
@@ -34,6 +33,9 @@ public class AdaptedEventDetector implements EventHandler {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -2156830611432730429L;
+
+    /** Mapper between spacecraft state and simple array. */
+    private StateMapper mapper;
 
     /** Underlying event detector. */
     private final EventDetector detector;
@@ -47,31 +49,29 @@ public class AdaptedEventDetector implements EventHandler {
     /** integrationFrame frame in which integration is performed. */
     private final Frame integrationFrame;
 
-    /** attitudeLaw spacecraft attitude law. */
-    private final AttitudeLaw attitudeLaw;
-
     /** Build a wrapped event detector.
      * @param detector event detector to wrap
+     * @param mapper mapper between spacecraft state and simple array
      * @param referenceDate reference date from which t is counted
      * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @param integrationFrame frame in which integration is performed
-     * @param attitudeLaw spacecraft attitude law
      */
-    public AdaptedEventDetector(final EventDetector detector,
+    public AdaptedEventDetector(final EventDetector detector, final StateMapper mapper,
                                 final AbsoluteDate referenceDate, final double mu,
-                                final Frame integrationFrame, final AttitudeLaw attitudeLaw) {
+                                final Frame integrationFrame) {
         this.detector         = detector;
+        this.mapper           = mapper;
         this.referenceDate    = referenceDate;
         this.mu               = mu;
         this.integrationFrame = integrationFrame;
-        this.attitudeLaw      = attitudeLaw;
     }
 
     /** {@inheritDoc} */
     public double g(final double t, final double[] y)
         throws EventException {
         try {
-            return detector.g(mapState(t, y));
+            final AbsoluteDate currentDate = referenceDate.shiftedBy(t);
+            return detector.g(mapper.mapArrayToState(y, currentDate, mu, integrationFrame));
         } catch (OrekitException oe) {
             throw new EventException(oe);
         }
@@ -81,7 +81,10 @@ public class AdaptedEventDetector implements EventHandler {
     public int eventOccurred(final double t, final double[] y, final boolean increasing)
         throws EventException {
         try {
-            final int whatNext = detector.eventOccurred(mapState(t, y), increasing);
+            final AbsoluteDate currentDate = referenceDate.shiftedBy(t);
+            final int whatNext = detector.eventOccurred(mapper.mapArrayToState(y, currentDate, mu,
+                                                                               integrationFrame),
+                                                        increasing);
             switch (whatNext) {
             case EventDetector.STOP :
                 return STOP;
@@ -101,7 +104,9 @@ public class AdaptedEventDetector implements EventHandler {
     public void resetState(final double t, final double[] y)
         throws EventException {
         try {
-            final SpacecraftState newState = detector.resetState(mapState(t, y));
+            final AbsoluteDate currentDate = referenceDate.shiftedBy(t);
+            final SpacecraftState newState = detector.resetState(mapper.mapArrayToState(y, currentDate, mu,
+                                                                                        integrationFrame));
             y[0] = newState.getA();
             y[1] = newState.getEquinoctialEx();
             y[2] = newState.getEquinoctialEy();
@@ -112,28 +117,6 @@ public class AdaptedEventDetector implements EventHandler {
         } catch (OrekitException oe) {
             throw new EventException(oe);
         }
-    }
-
-    /** Convert state array to space dynamics objects
-     * ({@link org.orekit.time.AbsoluteDate AbsoluteDate} and
-     * ({@link org.orekit.orbits.Orbit OrbitalParameters}).
-     * @param t integration time (s)
-     * @param y state as a flat array
-     * @return state corresponding to the flat array as a space dynamics object
-     * @exception OrekitException if attitude law cannot provide state
-     */
-    private SpacecraftState mapState(final double t, final double [] y)
-        throws OrekitException {
-
-        // update space dynamics view
-        final AbsoluteDate currentDate = referenceDate.shiftedBy(t);
-        final EquinoctialOrbit currentOrbit =
-            new EquinoctialOrbit(y[0], y[1], y[2], y[3], y[4], y[5],
-                                 EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
-                                 integrationFrame, currentDate, mu);
-
-        return new SpacecraftState(currentOrbit, attitudeLaw.getAttitude(currentOrbit), y[6]);
-
     }
 
 }

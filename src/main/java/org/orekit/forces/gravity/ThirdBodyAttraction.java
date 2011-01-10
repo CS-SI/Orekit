@@ -20,6 +20,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.AbstractParameterizable;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -32,13 +33,16 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class ThirdBodyAttraction implements ForceModel {
+public class ThirdBodyAttraction extends AbstractParameterizable implements ForceModel {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 9017402538195695004L;
+    private static final long serialVersionUID = -1703641239448217284L;
 
     /** The body to consider. */
     private final CelestialBody body;
+
+    /** Local value for body attraction coefficient. */
+    private double gm;
 
     /** Simple constructor.
      * @param body the third body to consider
@@ -46,7 +50,9 @@ public class ThirdBodyAttraction implements ForceModel {
      * {@link org.orekit.bodies.CelestialBodyFactory#getMoon()})
      */
     public ThirdBodyAttraction(final CelestialBody body) {
+        super(body.getName() + " attraction coefficient");
         this.body = body;
+        this.gm   = body.getGM();
     }
 
     /** {@inheritDoc} */
@@ -61,8 +67,8 @@ public class ThirdBodyAttraction implements ForceModel {
 
         // compute relative acceleration
         final Vector3D gamma =
-            new Vector3D(body.getGM() * FastMath.pow(r2Sat, -1.5), satToBody,
-                        -body.getGM() * FastMath.pow(r2Central, -1.5), centralToBody);
+            new Vector3D(gm * FastMath.pow(r2Sat, -1.5), satToBody,
+                        -gm * FastMath.pow(r2Central, -1.5), centralToBody);
 
         // add contribution to the ODE second member
         adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
@@ -72,6 +78,20 @@ public class ThirdBodyAttraction implements ForceModel {
     /** {@inheritDoc} */
     public EventDetector[] getEventsDetectors() {
         return new EventDetector[0];
+    }
+
+    /** {@inheritDoc} */
+    public double getParameter(final String name)
+        throws IllegalArgumentException {
+        complainIfNotSupported(name);
+        return gm;
+    }
+
+    /** {@inheritDoc} */
+    public void setParameter(final String name, final double value)
+        throws IllegalArgumentException {
+        complainIfNotSupported(name);
+        gm = value;
     }
 
 }

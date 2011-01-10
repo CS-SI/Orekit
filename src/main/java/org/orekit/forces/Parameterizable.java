@@ -16,6 +16,7 @@
  */
 package org.orekit.forces;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 /** This interface enables to process partial derivatives
@@ -25,12 +26,23 @@ import java.util.Collection;
  * @version $Revision$ $Date$
  */
 
-public interface Parameterizable {
+public interface Parameterizable extends Serializable {
 
     /** Get the names of the supported parameters for partial derivatives processing.
      * @return parameters names
+     * @see #isSupported(String)
      */
     Collection<String> getParametersNames();
+
+    /** Check if a parameter is supported.
+     * <p>
+     * Supported parameters are the ones that are listed in {@link #getParametersNames()}
+     * </p>
+     * @param name parameter name to check
+     * @return true if the parameter is supported
+     * @see #getParametersNames()
+     */
+    boolean isSupported(String name);
 
     /** Get parameter value from its name.
      * @param name parameter name

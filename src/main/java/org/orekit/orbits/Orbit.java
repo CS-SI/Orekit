@@ -18,9 +18,7 @@ package org.orekit.orbits;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -63,7 +61,7 @@ import org.orekit.utils.PVCoordinates;
 public abstract class Orbit implements TimeStamped, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -5391613859481554640L;
+    private static final long serialVersionUID = 438733454597999578L;
 
     /** Frame in which are defined the orbital parameters. */
     private final Frame frame;
@@ -136,6 +134,7 @@ public abstract class Orbit implements TimeStamped, Serializable {
     }
 
     /** Get the semi-major axis.
+     * <p>Note that the semi-major axis is considered negative for hyperbolic orbits.</p>
      * @return semi-major axis (m)
      */
     public abstract double getA();
@@ -197,11 +196,11 @@ public abstract class Orbit implements TimeStamped, Serializable {
     /** Get the keplerian period.
      * <p>The keplerian period is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return keplerian period in seconds
+     * @return keplerian period in seconds, or positive infinity for hyperbolic orbits
      */
     public double getKeplerianPeriod() {
         final double a = getA();
-        return MathUtils.TWO_PI * a * FastMath.sqrt(a / mu);
+        return (a < 0) ? Double.POSITIVE_INFINITY : 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu);
     }
 
     /** Get the keplerian mean motion.
@@ -210,8 +209,8 @@ public abstract class Orbit implements TimeStamped, Serializable {
      * @return keplerian mean motion in radians per second
      */
     public double getKeplerianMeanMotion() {
-        final double a = getA();
-        return FastMath.sqrt(mu / a) / a;
+        final double absA = FastMath.abs(getA());
+        return FastMath.sqrt(mu / absA) / absA;
     }
 
     /** Get the date of orbital parameters.
@@ -221,7 +220,7 @@ public abstract class Orbit implements TimeStamped, Serializable {
         return date;
     }
 
-    /** Get the {@link PVCoordinates}.
+    /** Get the {@link PVCoordinates} in a specified frame.
      * @param outputFrame frame in which the position/velocity coordinates shall be computed
      * @return pvCoordinates in the specified output frame
      * @exception OrekitException if transformation between frames cannot be computed
@@ -230,7 +229,7 @@ public abstract class Orbit implements TimeStamped, Serializable {
     public PVCoordinates getPVCoordinates(final Frame outputFrame)
         throws OrekitException {
         if (pvCoordinates == null) {
-            initPVCoordinates();
+            pvCoordinates = initPVCoordinates();
         }
 
         // If output frame requested is the same as definition frame,
@@ -250,65 +249,15 @@ public abstract class Orbit implements TimeStamped, Serializable {
      */
     public PVCoordinates getPVCoordinates() {
         if (pvCoordinates == null) {
-            initPVCoordinates();
+            pvCoordinates = initPVCoordinates();
         }
         return pvCoordinates;
     }
 
-    /** Initialize the position/velocity coordinates.
+    /** Compute the position/velocity coordinates from the canonical parameters.
+     * @return computed position/velocity coordinates
      */
-    private void initPVCoordinates() {
-
-        // get equinoctial parameters
-        final double a  = getA();
-        final double ex = getEquinoctialEx();
-        final double ey = getEquinoctialEy();
-        final double hx = getHx();
-        final double hy = getHy();
-        final double lE = getLE();
-
-        // inclination-related intermediate parameters
-        final double hx2   = hx * hx;
-        final double hy2   = hy * hy;
-        final double factH = 1. / (1 + hx2 + hy2);
-
-        // reference axes defining the orbital plane
-        final double ux = (1 + hx2 - hy2) * factH;
-        final double uy =  2 * hx * hy * factH;
-        final double uz = -2 * hy * factH;
-
-        final double vx = uy;
-        final double vy = (1 - hx2 + hy2) * factH;
-        final double vz =  2 * hx * factH;
-
-        // eccentricity-related intermediate parameters
-        final double exey = ex * ey;
-        final double ex2  = ex * ex;
-        final double ey2  = ey * ey;
-        final double e2   = ex2 + ey2;
-        final double eta  = 1 + FastMath.sqrt(1 - e2);
-        final double beta = 1. / eta;
-
-        // eccentric latitude argument
-        final double cLe    = FastMath.cos(lE);
-        final double sLe    = FastMath.sin(lE);
-        final double exCeyS = ex * cLe + ey * sLe;
-
-        // coordinates of position and velocity in the orbital plane
-        final double x      = a * ((1 - beta * ey2) * cLe + beta * exey * sLe - ex);
-        final double y      = a * ((1 - beta * ex2) * sLe + beta * exey * cLe - ey);
-
-        final double factor = FastMath.sqrt(mu / a) / (1 - exCeyS);
-        final double xdot   = factor * (-sLe + beta * ey * exCeyS);
-        final double ydot   = factor * ( cLe - beta * ex * exCeyS);
-
-        final Vector3D position =
-            new Vector3D(x * ux + y * vx, x * uy + y * vy, x * uz + y * vz);
-        final Vector3D velocity =
-            new Vector3D(xdot * ux + ydot * vx, xdot * uy + ydot * vy, xdot * uz + ydot * vz);
-        pvCoordinates = new PVCoordinates(position, velocity);
-
-    }
+    protected abstract PVCoordinates initPVCoordinates();
 
     /** Get a time-shifted orbit.
      * <p>

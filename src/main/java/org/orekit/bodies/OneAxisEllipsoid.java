@@ -77,7 +77,7 @@ public class OneAxisEllipsoid implements BodyShape {
     /** Simple constructor.
      * <p>The following table provides conventional parameters for global Earth models:</p>
      * <table border="1" cellpadding="5">
-     * <tr bgcolor="#ccccff"><font size="+3"><th>model</th><th>a<sub>e</sub> (m)</th><th>f</th></font></tr>
+     * <tr bgcolor="#ccccff"><th>model</th><th>a<sub>e</sub> (m)</th><th>f</th></tr>
      * <tr><td bgcolor="#eeeeff">GRS 80</td><td>6378137.0</td><td>1.0 / 298.257222101</td></tr>
      * <tr><td bgcolor="#eeeeff">WGS84</td><td>6378137.0</td><td>1.0 / 298.257223563</td></tr>
      * </table>

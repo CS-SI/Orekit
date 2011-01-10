@@ -17,8 +17,11 @@
 package org.orekit.forces;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.radiation.RadiationSensitive;
+import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.propagation.SpacecraftState;
 
 /** This class represents the features of a simplified spacecraft.
@@ -129,7 +132,41 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
 
     /** Set kP value. */
     private void setKP() {
-        kP = crossSection * (1 + 4 * (1.0 - absorptionCoeff) * (1.0 - specularReflectionCoeff) / 9);
+        kP = crossSection * (1 + 4 * (1.0 - absorptionCoeff) * (1.0 - specularReflectionCoeff) / 9.0);
+    }
+
+    /** Computes kP derivative with respect to absorption coefficient.
+     * @return kP derivative with respect to absorption coefficient*/
+    private double computeDKPDCa() {
+        return -4 * crossSection * (1.0 - specularReflectionCoeff) / 9;
+    }
+
+    /** Computes kP derivative with respect to reflection coefficient.
+     * @return kP derivative with respect to reflection coefficient*/
+    private double computeDKPDCr() {
+        return -4 * crossSection * (1.0 - absorptionCoeff) / 9;
+    }
+
+    /** {@inheritDoc} */
+    public void addDAccDParam(final Vector3D acceleration, final String paramName, final double[] dAccdParam)
+        throws OrekitException {
+
+        final double coefficient;
+        if (paramName.equals(SolarRadiationPressure.ABSORPTION_COEFFICIENT)) {
+            coefficient = computeDKPDCa() / kP;
+        } else if (paramName.equals(SolarRadiationPressure.REFLECTION_COEFFICIENT)) {
+            coefficient = computeDKPDCr() / kP;
+        } else {
+            throw OrekitException.createIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_1_2,
+                                                                 paramName,
+                                                                 SolarRadiationPressure.ABSORPTION_COEFFICIENT,
+                                                                 SolarRadiationPressure.REFLECTION_COEFFICIENT);
+        }
+
+        dAccdParam[0] += coefficient * acceleration.getX();
+        dAccdParam[1] += coefficient * acceleration.getY();
+        dAccdParam[2] += coefficient * acceleration.getZ();
+
     }
 
 }

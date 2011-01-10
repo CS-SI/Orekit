@@ -16,7 +16,9 @@
  */
 package org.orekit.propagation.numerical;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -26,16 +28,18 @@ import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.events.EventHandler;
-import org.apache.commons.math.ode.sampling.DummyStepHandler;
-import org.orekit.attitudes.Attitude;
+import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.attitudes.InertialLaw;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -125,49 +129,75 @@ import org.orekit.utils.PVCoordinates;
  */
 public class NumericalPropagator implements Propagator {
 
+    /** Parameters types that can be used for propagation. */
+    public enum PropagationParametersType {
+
+        /** Type for propagation in cartesian parameters. */
+        CARTESIAN,
+
+        /** Type for propagation in equinoctial parameters. */
+        EQUINOCTIAL
+
+    }
+
     /** Serializable UID. */
     private static final long serialVersionUID = -2385169798425713766L;
+
+    /** Absolute vectorial error field name. */
+    private static final String ABSOLUTE_TOLERANCE = "vecAbsoluteTolerance";
+
+    /** Relative vectorial error field name. */
+    private static final String RELATIVE_TOLERANCE = "vecRelativeTolerance";
 
     // CHECKSTYLE: stop VisibilityModifierCheck
 
     /** Attitude law. */
-    protected AttitudeLaw attitudeLaw;
+    private AttitudeLaw attitudeLaw;
 
-    /** Central body gravitational constant. */
-    protected double mu;
+    /** Central body attraction. */
+    private NewtonianAttraction newtonianAttraction;
 
-    /** Force models used during the extrapolation of the Orbit. */
-    protected final List<ForceModel> forceModels;
+    /** Force models used during the extrapolation of the Orbit, without jacobians. */
+    private final List<ForceModel> forceModels;
 
     /** Event detectors not related to force models. */
-    protected final List<EventDetector> detectors;
+    private final List<EventDetector> detectors;
 
     /** State vector. */
-    protected final double[] stateVector;
+    private double[] stateVector;
 
     /** Start date. */
-    protected AbsoluteDate startDate;
+    private AbsoluteDate startDate;
 
     /** Initial state to propagate. */
-    protected SpacecraftState initialState;
+    private SpacecraftState initialState;
 
     /** Current state to propagate. */
-    protected SpacecraftState currentState;
+    private SpacecraftState currentState;
 
     /** Integrator selected by the user for the orbital extrapolation process. */
-    protected transient FirstOrderIntegrator integrator;
+    private transient FirstOrderIntegrator integrator;
 
     /** Counter for differential equations calls. */
-    protected int calls;
+    private int calls;
 
     /** Gauss equations handler. */
-    protected TimeDerivativesEquations adder;
+    private TimeDerivativesEquations adder;
+
+    /** Mapper between spacecraft state and simple array. */
+    private StateMapper mapper;
 
     /** Propagator mode handler. */
-    protected ModeHandler modeHandler;
+    private ModeHandler modeHandler;
 
     /** Current mode. */
-    protected int mode;
+    private int mode;
+
+    /** Propagation parameters type. */
+    private PropagationParametersType type;
+
+    /** Additional equations. */
+    private List<AdditionalStateAndEquations> addStateAndEqu;
 
     // CHECKSTYLE: resume VisibilityModifierCheck
 
@@ -176,20 +206,21 @@ public class NumericalPropagator implements Propagator {
      * unspecified default law and there are no perturbing forces at all.
      * This means that if {@link #addForceModel addForceModel} is not
      * called after creation, the integrated orbit will follow a keplerian
-     * evolution only.
+     * evolution only. The default parameter type for propagation is {@link
+     * PropagationParametersType#EQUINOCTIAL}.
      * @param integrator numerical integrator to use for propagation.
      */
     public NumericalPropagator(final FirstOrderIntegrator integrator) {
-        this.mu           = Double.NaN;
-        this.forceModels  = new ArrayList<ForceModel>();
-        this.detectors    = new ArrayList<EventDetector>();
-        this.startDate    = new AbsoluteDate();
-        this.currentState = null;
-        this.adder        = null;
-        this.attitudeLaw  = InertialLaw.EME2000_ALIGNED;
-        this.stateVector  = new double[7];
+        this.forceModels    = new ArrayList<ForceModel>();
+        this.detectors      = new ArrayList<EventDetector>();
+        this.startDate      = new AbsoluteDate();
+        this.currentState   = null;
+        this.adder          = null;
+        this.addStateAndEqu = new ArrayList<AdditionalStateAndEquations>();
+        this.attitudeLaw    = InertialLaw.EME2000_ALIGNED;
         setIntegrator(integrator);
         setSlaveMode();
+        setPropagationParametersType(PropagationParametersType.EQUINOCTIAL);
     }
 
     /** Set the integrator.
@@ -200,20 +231,20 @@ public class NumericalPropagator implements Propagator {
     }
 
     /** Set the central attraction coefficient &mu;.
-     * @param mu central attraction coefficient (m^3/s^2)
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @see #getMu()
      * @see #addForceModel(ForceModel)
      */
     public void setMu(final double mu) {
-        this.mu = mu;
+        newtonianAttraction = new NewtonianAttraction(mu);
     }
 
     /** Get the central attraction coefficient &mu;.
-     * @return mu central attraction coefficient (m^3/s^2)
+     * @return mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @see #setMu(double)
      */
     public double getMu() {
-        return mu;
+        return (newtonianAttraction == null) ? Double.NaN : newtonianAttraction.getMu();
     }
 
     /** Set the attitude law.
@@ -239,10 +270,6 @@ public class NumericalPropagator implements Propagator {
     }
 
     /** Add a force model to the global perturbation model.
-     * <p>If the force models is associated to discrete events, these
-     * events will be handled automatically, they must <strong>not</strong>
-     * be added using the {@link #addEventDetector(EventDetector) addEventDetector}
-     * method.</p>
      * <p>If this method is not called at all, the integrated orbit will follow
      * a keplerian evolution only.</p>
      * @param model perturbing {@link ForceModel} to add
@@ -263,6 +290,24 @@ public class NumericalPropagator implements Propagator {
         forceModels.clear();
     }
 
+    /** Get perturbing force models list.
+     * @return list of perturbing force models
+     * @see #addForceModel(ForceModel)
+     * @see #getNewtonianAttractionForceModel()
+     */
+    public List<ForceModel> getForceModels() {
+        return forceModels;
+    }
+
+    /** Get the Newtonian attraction from the central body force model.
+     * @return Newtonian attraction force model
+     * @see #setMu(double)
+     * @see #getForceModels()
+     */
+    public NewtonianAttraction getNewtonianAttractionForceModel() {
+        return newtonianAttraction;
+    }
+
     /** {@inheritDoc} */
     public int getMode() {
         return mode;
@@ -277,7 +322,6 @@ public class NumericalPropagator implements Propagator {
      */
     public void setSlaveMode() {
         integrator.clearStepHandlers();
-        integrator.addStepHandler(DummyStepHandler.getInstance());
         modeHandler = null;
         mode = SLAVE_MODE;
     }
@@ -287,7 +331,7 @@ public class NumericalPropagator implements Propagator {
      * of the underlying integrator set up in the {@link
      * #NumericalPropagator(FirstOrderIntegrator) constructor} or the {@link
      * #setIntegrator(FirstOrderIntegrator) setIntegrator} method. So if a specific
-     * step handler is needed, it should be added after this method has been callled.</p>
+     * step handler is needed, it should be added after this method has been called.</p>
      */
     public void setMasterMode(final double h, final OrekitFixedStepHandler handler) {
         setMasterMode(new OrekitStepNormalizer(h, handler));
@@ -318,9 +362,23 @@ public class NumericalPropagator implements Propagator {
     public void setEphemerisMode() {
         integrator.clearStepHandlers();
         final IntegratedEphemeris ephemeris = new IntegratedEphemeris();
-        integrator.addStepHandler(ephemeris);
         modeHandler = ephemeris;
+        integrator.addStepHandler(ephemeris);
         mode = EPHEMERIS_GENERATION_MODE;
+    }
+
+    /** Set propagation parameter type.
+     * @param propagationType parameters type to use for propagation
+     */
+    public void setPropagationParametersType(final PropagationParametersType propagationType) {
+        this.type = propagationType;
+    }
+
+    /** Get propagation parameter type.
+     * @return parameters type used for propagation
+     */
+    public PropagationParametersType getPropagationParametersType() {
+        return type;
     }
 
     /** {@inheritDoc} */
@@ -347,10 +405,57 @@ public class NumericalPropagator implements Propagator {
 
     /** {@inheritDoc} */
     public void resetInitialState(final SpacecraftState state) {
-        if (Double.isNaN(mu)) {
-            mu = state.getMu();
+        if (newtonianAttraction == null) {
+            setMu(state.getMu());
         }
         this.initialState = state;
+    }
+
+    /** Select additional state and equations pair in the list.
+     * @param  addEqu Additional equations used as a reference for selection
+     * @return additional state and equations pair
+     * @throws OrekitException if additional equation is unknown */
+    private AdditionalStateAndEquations selectStateAndEquations(final AdditionalEquations addEqu)
+        throws OrekitException {
+        for (AdditionalStateAndEquations stateAndEqu : addStateAndEqu) {
+            if (stateAndEqu.getAdditionalEquations() == addEqu) {
+                return stateAndEqu;
+            }
+        }
+        throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_EQUATION);
+    }
+
+    /** Add a set of user-specified equations to be integrated along with the orbit propagation.
+     * @param addEqu additional equations
+     * @see #setInitialAdditionalState(double[], AdditionalEquations)
+     * @see #getCurrentAdditionalState(AdditionalEquations)
+     */
+    public void addAdditionalEquations(final AdditionalEquations addEqu) {
+        addStateAndEqu.add(new AdditionalStateAndEquations(addEqu));
+    }
+
+    /** Set initial additional state.
+     * @param addState additional state
+     * @param addEqu additional equations used as a reference for selection
+     * @throws OrekitException if additional equation is unknown
+     * @see #addAdditionalEquations(AdditionalEquations)
+     * @see #getCurrentAdditionalState(AdditionalEquations)
+     */
+    public void setInitialAdditionalState(final double[] addState, final AdditionalEquations addEqu)
+        throws OrekitException {
+        selectStateAndEquations(addEqu).setAdditionalState(addState);
+    }
+
+    /** Get current additional state.
+     * @param addEqu additional equations used as a reference for selection
+     * @return current additional state
+     * @throws OrekitException if additional equation is unknown
+     * @see #addAdditionalEquations(AdditionalEquations)
+     * @see #setInitialAdditionalState(double[], AdditionalEquations)
+     */
+    public double[] getCurrentAdditionalState(final AdditionalEquations addEqu)
+        throws OrekitException  {
+        return selectStateAndEquations(addEqu).getAdditionalState();
     }
 
     /** {@inheritDoc} */
@@ -371,17 +476,35 @@ public class NumericalPropagator implements Propagator {
 
             // space dynamics view
             startDate  = initialState.getDate();
+
+            // set propagation parameters type
+            Orbit initialOrbit = null;
+            switch (type) {
+            case CARTESIAN :
+                initialOrbit = new CartesianOrbit(initialState.getOrbit());
+                adder = new TimeDerivativesEquationsCartesian((CartesianOrbit) initialOrbit);
+                mapper = new StateMapperCartesian();
+                break;
+            case EQUINOCTIAL :
+                initialOrbit = new EquinoctialOrbit(initialState.getOrbit());
+                adder = new TimeDerivativesEquationsEquinoctial((EquinoctialOrbit) initialOrbit);
+                mapper = new StateMapperEquinoctial();
+                break;
+            default :
+                throw OrekitException.createInternalError(null);
+            }
+            mapper.setAttitudeLaw(attitudeLaw);
+
+            // initialize mode handler
             if (modeHandler != null) {
-                modeHandler.initialize(startDate, initialState.getFrame(), mu, attitudeLaw);
+                modeHandler.initialize(mapper, addStateAndEqu, startDate, initialState.getFrame(), getMu());
             }
 
-            final EquinoctialOrbit initialOrbit =
-                new EquinoctialOrbit(initialState.getOrbit());
+            // creating state vector
+            this.stateVector  = new double[computeDimension()];
 
             currentState =
                 new SpacecraftState(initialOrbit, initialState.getAttitude(), initialState.getMass());
-
-            adder = new TimeDerivativesEquations(initialOrbit);
 
             if (initialState.getMass() <= 0.0) {
                 throw new IllegalArgumentException("Mass is null or negative");
@@ -392,13 +515,14 @@ public class NumericalPropagator implements Propagator {
             final double t1 = finalDate.durationFrom(startDate);
 
             // Map state to array
-            stateVector[0] = initialOrbit.getA();
-            stateVector[1] = initialOrbit.getEquinoctialEx();
-            stateVector[2] = initialOrbit.getEquinoctialEy();
-            stateVector[3] = initialOrbit.getHx();
-            stateVector[4] = initialOrbit.getHy();
-            stateVector[5] = initialOrbit.getLv();
-            stateVector[6] = initialState.getMass();
+            mapper.mapStateToArray(initialState, stateVector);
+            int index = 7;
+            for (final AdditionalStateAndEquations stateAndEqu : addStateAndEqu) {
+                final double[] addState = stateAndEqu.getAdditionalState();
+                System.arraycopy(addState, 0, stateVector, index, addState.length);
+                // Incrementing index
+                index += addState.length;
+            }
 
             integrator.clearEventHandlers();
 
@@ -418,17 +542,28 @@ public class NumericalPropagator implements Propagator {
             }
 
             // mathematical integration
+            if (!addStateAndEqu.isEmpty()) {
+                expandToleranceArray();
+            }
             final double stopTime = integrator.integrate(new DifferentialEquations(), t0, stateVector, t1, stateVector);
+            if (!addStateAndEqu.isEmpty()) {
+                resetToleranceArray();
+            }
 
             // back to space dynamics view
             final AbsoluteDate date = startDate.shiftedBy(stopTime);
 
-            final EquinoctialOrbit orbit =
-                new EquinoctialOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
-                                     stateVector[4], stateVector[5], EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
-                                     initialOrbit.getFrame(), date, mu);
+            // get final additional state
+            index = 7;
+            for (final AdditionalStateAndEquations stateAndEqu : addStateAndEqu) {
+                final double[] addState = stateAndEqu.getAdditionalState();
+                System.arraycopy(stateVector, index, addState, 0, addState.length);
+                // Incrementing index
+                index += addState.length;
+            }
 
-            resetInitialState(new SpacecraftState(orbit, attitudeLaw.getAttitude(orbit), stateVector[6]));
+            // get final state
+            initialState = mapper.mapArrayToState(stateVector, date, getMu(), initialState.getFrame());
             return initialState;
 
         } catch (OrekitException oe) {
@@ -458,6 +593,56 @@ public class NumericalPropagator implements Propagator {
         }
     }
 
+    /** Expand integrator tolerance array to fit compound state vector.
+     */
+    private void expandToleranceArray() {
+        if (integrator instanceof AdaptiveStepsizeIntegrator) {
+            final int n = computeDimension();
+            resizeArray(integrator, ABSOLUTE_TOLERANCE, n, Double.POSITIVE_INFINITY);
+            resizeArray(integrator, RELATIVE_TOLERANCE, n, 0.0);
+        }
+    }
+
+    /** Reset integrator tolerance array to original size.
+     */
+    private void resetToleranceArray() {
+        if (integrator instanceof AdaptiveStepsizeIntegrator) {
+            final int n = stateVector.length;
+            resizeArray(integrator, ABSOLUTE_TOLERANCE, n, Double.POSITIVE_INFINITY);
+            resizeArray(integrator, RELATIVE_TOLERANCE, n, 0.0);
+        }
+    }
+
+    /** Resize object internal array.
+     * @param instance instance concerned
+     * @param fieldName field name
+     * @param newSize new array size
+     * @param filler value to use to fill uninitialized elements of the new array
+     */
+    private void resizeArray(final Object instance, final String fieldName,
+                             final int newSize, final double filler) {
+        try {
+            final Field arrayField = AdaptiveStepsizeIntegrator.class.getDeclaredField(fieldName);
+            arrayField.setAccessible(true);
+            final double[] originalArray = (double[]) arrayField.get(instance);
+            final int originalSize = originalArray.length;
+            final double[] resizedArray = new double[newSize];
+            if (newSize > originalSize) {
+                // expand array
+                System.arraycopy(originalArray, 0, resizedArray, 0, originalSize);
+                Arrays.fill(resizedArray, originalSize, newSize, filler);
+            } else {
+                // shrink array
+                System.arraycopy(originalArray, 0, resizedArray, 0, newSize);
+            }
+            arrayField.set(instance, resizedArray);
+        } catch (NoSuchFieldException nsfe) {
+            throw OrekitException.createInternalError(nsfe);
+        } catch (IllegalAccessException iae) {
+            throw OrekitException.createInternalError(iae);
+        }
+    }
+
     /** {@inheritDoc} */
     public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
@@ -478,12 +663,30 @@ public class NumericalPropagator implements Propagator {
      */
     protected void setUpEventDetector(final EventDetector osf) {
         final EventHandler handler =
-            new AdaptedEventDetector(osf, startDate, mu,
-                                     initialState.getFrame(), attitudeLaw);
+            new AdaptedEventDetector(osf, mapper, startDate, getMu(), initialState.getFrame());
         integrator.addEventHandler(handler,
                                    osf.getMaxCheckInterval(),
                                    osf.getThreshold(),
                                    osf.getMaxIterationCount());
+    }
+
+    /** Get state vector dimension without additional parameters.
+     * @return state vector dimension without additional parameters.
+     */
+    public int getBasicDimension() {
+        return 7;
+
+    }
+    /** Compute complete state vector dimension.
+     * @return state vector dimension
+     */
+    private int computeDimension() {
+        int sum = getBasicDimension();
+        for (final AdditionalStateAndEquations stateAndEqu : addStateAndEqu) {
+            sum += stateAndEqu.getAdditionalState().length;
+        }
+        return sum;
+
     }
 
     /** Internal class for differential equations representation. */
@@ -499,7 +702,7 @@ public class NumericalPropagator implements Propagator {
 
         /** {@inheritDoc} */
         public int getDimension() {
-            return 7;
+            return computeDimension();
         }
 
         /** {@inheritDoc} */
@@ -508,14 +711,15 @@ public class NumericalPropagator implements Propagator {
 
             try {
                 // update space dynamics view
-                currentState = mapState(t, y, startDate, currentState.getFrame());
+                currentState = mapper.mapArrayToState(y, startDate.shiftedBy(t), currentState.getMu(), currentState.getFrame());
+
 
                 if (currentState.getMass() <= 0.0) {
                     throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
                                                    currentState.getMass());
                 }
                 // initialize derivatives
-                adder.initDerivatives(yDot, (EquinoctialOrbit) currentState.getOrbit());
+                adder.initDerivatives(yDot, currentState.getOrbit());
 
                 // compute the contributions of all perturbing forces
                 for (final ForceModel forceModel : forceModels) {
@@ -523,7 +727,26 @@ public class NumericalPropagator implements Propagator {
                 }
 
                 // finalize derivatives by adding the Kepler contribution
-                adder.addKeplerContribution();
+                newtonianAttraction.addContribution(currentState, adder);
+
+                // Add contribution for additional state
+                int index = 7;
+                for (final AdditionalStateAndEquations stateAndEqu : addStateAndEqu) {
+                    final double[] p    = stateAndEqu.getAdditionalState();
+                    final double[] pDot = stateAndEqu.getAdditionalStateDot();
+
+                    // update current additional state
+                    System.arraycopy(y, index, p, 0, p.length);
+
+                    // compute additional derivatives
+                    stateAndEqu.getAdditionalEquations().computeDerivatives(currentState, adder, p, pDot);
+
+                    // update each additional state contribution in global array
+                    System.arraycopy(pDot, 0, yDot, index, p.length);
+
+                    // incrementing index
+                    index += p.length;
+                }
 
                 // increment calls counter
                 ++calls;
@@ -534,31 +757,8 @@ public class NumericalPropagator implements Propagator {
 
         }
 
-        /** Convert state array to space dynamics objects (AbsoluteDate and OrbitalParameters).
-         * @param t integration time (s)
-         * @param y state as a flat array
-         * @param referenceDate reference date from which t is counted
-         * @param frame frame in which integration is performed
-         * @return state corresponding to the flat array as a space dynamics object
-         * @exception OrekitException if the attitude state cannot be determined
-         * by the attitude law
-         */
-        private SpacecraftState mapState(final double t, final double [] y,
-                                         final AbsoluteDate referenceDate, final Frame frame)
-            throws OrekitException {
-
-            // convert raw mathematical data to space dynamics objects
-            final AbsoluteDate date = referenceDate.shiftedBy(t);
-            final EquinoctialOrbit orbit =
-                new EquinoctialOrbit(y[0], y[1], y[2], y[3], y[4], y[5],
-                                     EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
-                                     frame, date, mu);
-            final Attitude attitude = attitudeLaw.getAttitude(orbit);
-
-            return new SpacecraftState(orbit, attitude, y[6]);
-
-        }
-
     }
 
 }
+
+

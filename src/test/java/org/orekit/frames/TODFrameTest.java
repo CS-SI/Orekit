@@ -46,7 +46,7 @@ public class TODFrameTest {
             double previousEQE = currentEQE;
             currentEQE = tod.getEquationOfEquinoxes(d);
             if (!Double.isNaN(previousEQE)) {
-                double deltaMicroAS = 3.6e9 * Math.toDegrees(currentEQE - previousEQE);
+                double deltaMicroAS = 3.6e9 * FastMath.toDegrees(currentEQE - previousEQE);
                 if ((dt - h) * dt > 0) {
                     // away from switch date, equation of equinox should decrease at
                     // about 1.06 micro arcsecond per second

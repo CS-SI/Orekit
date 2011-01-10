@@ -17,18 +17,20 @@
 package org.orekit.propagation.sampling;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
-import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.numerical.AdditionalEquations;
+import org.orekit.propagation.numerical.AdditionalStateAndEquations;
 import org.orekit.propagation.numerical.ModeHandler;
+import org.orekit.propagation.numerical.StateMapper;
 import org.orekit.time.AbsoluteDate;
 
 /** Adapt an {@link org.orekit.propagation.sampling.OrekitStepHandler}
@@ -42,6 +44,12 @@ public class AdaptedStepHandler
     /** Serializable UID. */
     private static final long serialVersionUID = -8067262257341902186L;
 
+    /** Mapper between spacecraft state and simple array. */
+    private StateMapper mapper;
+
+    /** Additional state and equations list. */
+    private List <AdditionalStateAndEquations> addStateAndEqu;
+
     /** Reference date. */
     private AbsoluteDate initializedReference;
 
@@ -50,9 +58,6 @@ public class AdaptedStepHandler
 
     /** Central body attraction coefficient. */
     private double initializedMu;
-
-    /** Attitude law. */
-    private AttitudeLaw initializedAttitudeLaw;
 
     /** Underlying handler. */
     private final OrekitStepHandler handler;
@@ -68,11 +73,12 @@ public class AdaptedStepHandler
     }
 
     /** {@inheritDoc} */
-    public void initialize(final AbsoluteDate reference, final Frame frame,
-                           final double mu, final AttitudeLaw attitudeLaw) {
+    public void initialize(final StateMapper stateMapper, final List <AdditionalStateAndEquations> stateAndEqu,
+                           final AbsoluteDate reference, final Frame frame, final double mu) {
+        this.mapper                 = stateMapper;
+        this.addStateAndEqu         = stateAndEqu;
         this.initializedReference   = reference;
         this.initializedFrame       = frame;
-        this.initializedAttitudeLaw = attitudeLaw;
         this.initializedMu          = mu;
     }
 
@@ -144,14 +150,44 @@ public class AdaptedStepHandler
         try {
             final double[] y = rawInterpolator.getInterpolatedState();
             final AbsoluteDate interpolatedDate = initializedReference.shiftedBy(rawInterpolator.getInterpolatedTime());
-            final Orbit orbit =
-                new EquinoctialOrbit(y[0], y[1], y[2], y[3], y[4], y[5],
-                                     EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
-                                     initializedFrame, interpolatedDate, initializedMu);
-            return new SpacecraftState(orbit, initializedAttitudeLaw.getAttitude(orbit), y[6]);
+            return mapper.mapArrayToState(y, interpolatedDate, initializedMu, initializedFrame);
         } catch (MathUserException mue) {
             throw new PropagationException(mue, mue.getGeneralPattern(), mue.getArguments());
         }
+    }
+
+    /** Get the interpolated additional state corresponding to the additional equations.
+     * @param addEqu additional equation used as a reference for selection
+     * @return interpolated additional state at the current interpolation date
+     * @exception OrekitException if state cannot be interpolated or converted
+     * @see #getInterpolatedDate()
+     * @see #setInterpolatedDate(AbsoluteDate)
+     */
+    public double[] getInterpolatedAdditionalState(final AdditionalEquations addEqu)
+        throws OrekitException {
+        try {
+
+            // propagate the whole state vector
+            final double[] y = rawInterpolator.getInterpolatedState();
+
+            // get portion of additional state to update
+            int index = 7;
+            for (final AdditionalStateAndEquations stateAndEqu : addStateAndEqu) {
+                if (stateAndEqu.getAdditionalEquations() == addEqu) {
+                    final double[] state = stateAndEqu.getAdditionalState();
+                    System.arraycopy(y, index, state, 0, state.length);
+                    return state;
+                }
+                // incrementing index
+                index += stateAndEqu.getAdditionalState().length;
+            }
+
+            throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_EQUATION);
+
+        } catch (MathUserException mue) {
+            throw new PropagationException(mue, mue.getGeneralPattern(), mue.getArguments());
+        }
+
     }
 
     /** Check is integration direction is forward in date.

@@ -133,7 +133,7 @@
   	<dependency>
   		<groupId>junit</groupId>
   		<artifactId>junit</artifactId>
-  		<version>4.4</version>
+  		<version>4.8.1</version>
   		<type>jar</type>
   		<scope>test</scope>
   		<optional>false</optional>
@@ -144,7 +144,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.2-beta-4</version>
+        <version>2.2-beta-5</version>
         <configuration>
           <descriptors>
             <descriptor>src/main/assembly/source-assembly.xml</descriptor>
@@ -155,7 +155,7 @@
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
-        <version>2.0.1</version>
+        <version>2.1.0</version>
         <extensions>true</extensions>
         <configuration>
           <instructions>
@@ -181,7 +181,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.0.2</version>
+        <version>2.3.1</version>
         <configuration>
           <source>1.5</source>
           <target>1.5</target>
@@ -190,7 +190,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-site-plugin</artifactId>
-        <version>2.0.1</version>
+        <version>2.1.1</version>
         <configuration>
           <inputEncoding>UTF-8</inputEncoding>
           <outputEncoding>UTF-8</outputEncoding>
@@ -199,12 +199,12 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>cobertura-maven-plugin</artifactId>
-        <version>2.3</version>
+        <version>2.4</version>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
-        <version>2.1</version>
+        <version>2.3.1</version>
         <configuration>
           <threshold>Normal</threshold>
           <effort>Default</effort>
@@ -214,22 +214,22 @@
        <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.4.3</version>
+        <version>2.5</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>2.3</version>
+        <version>2.5</version>
         <configuration>
           <encoding>UTF-8</encoding>
-          <configLocation>checkstyle.xml</configLocation>
+          <configLocation>${basedir}/checkstyle.xml</configLocation>
           <enableRulesSummary>false</enableRulesSummary>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-changes-plugin</artifactId>
-        <version>2.1</version>
+        <version>2.3</version>
         <configuration>
           <xmlPath>${basedir}/src/site/xdoc/changes.xml</xmlPath>
         </configuration>
@@ -244,7 +244,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jxr-plugin</artifactId>
-        <version>2.1</version>
+        <version>2.2</version>
         <configuration>
           <outputEncoding>UTF-8</outputEncoding>
           <linkJavadoc>false</linkJavadoc>
@@ -253,7 +253,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.6</version>
+        <version>2.7</version>
         <configuration>
           <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
           <links>
@@ -283,7 +283,7 @@
            <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>2.1</version>
+            <version>2.1.2</version>
             <executions>
               <execution>
                 <id>create-source-jar</id>

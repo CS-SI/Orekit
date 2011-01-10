@@ -16,6 +16,12 @@
  */
 package org.orekit.orbits;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
@@ -164,6 +170,76 @@ public class CartesianParametersTest {
             Assert.assertTrue(FastMath.abs(Vector3D.dotProduct(position, momentum)) < Utils.epsilonTest);
             // test of orthogonality between velocity and momentum
             Assert.assertTrue(FastMath.abs(Vector3D.dotProduct(velocity, momentum)) < Utils.epsilonTest);
+        }
+    }
+
+    @Test
+    public void testSerialization()
+      throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
+        CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        Assert.assertEquals(42255170.003, orbit.getA(), 1.0e-3);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(orbit);
+
+        Assert.assertTrue(bos.size () >  1400);
+        Assert.assertTrue(bos.size () <  1500);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        CartesianOrbit deserialized  = (CartesianOrbit) ois.readObject();
+        Vector3D dp = orbit.getPVCoordinates().getPosition().subtract(deserialized.getPVCoordinates().getPosition());
+        Vector3D dv = orbit.getPVCoordinates().getVelocity().subtract(deserialized.getPVCoordinates().getVelocity());
+        Assert.assertEquals(0.0, dp.getNorm(), 1.0e-10);
+        Assert.assertEquals(0.0, dv.getNorm(), 1.0e-10);
+
+    }
+
+    @Test
+    public void testShiftElliptic() {
+        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
+        CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        testShift(orbit, new KeplerianOrbit(orbit), 1.0e-13);
+    }
+
+    @Test
+    public void testShiftCircular() {
+        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        Vector3D velocity = new Vector3D(FastMath.sqrt(mu / position.getNorm()), position.orthogonal());
+        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
+        CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        testShift(orbit, new CircularOrbit(orbit), 1.0e-15);
+    }
+
+    @Test
+    public void testShiftHyperbolic() {
+        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        Vector3D velocity = new Vector3D(3 * FastMath.sqrt(mu / position.getNorm()), position.orthogonal());
+        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
+        CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        testShift(orbit, new KeplerianOrbit(orbit), 1.0e-15);
+    }
+
+    private void testShift(CartesianOrbit tested, Orbit reference, double threshold) {
+        for (double dt = - 1000; dt < 1000; dt += 10.0) {
+
+            PVCoordinates pvTested    = tested.shiftedBy(dt).getPVCoordinates();
+            Vector3D      pTested     = pvTested.getPosition();
+            Vector3D      vTested     = pvTested.getVelocity();
+
+            PVCoordinates pvReference = reference.shiftedBy(dt).getPVCoordinates();
+            Vector3D      pReference  = pvReference.getPosition();
+            Vector3D      vReference  = pvReference.getVelocity();
+
+            Assert.assertEquals(0, pTested.subtract(pReference).getNorm(), threshold * pReference.getNorm());
+            Assert.assertEquals(0, vTested.subtract(vReference).getNorm(), threshold * vReference.getNorm());
+
         }
     }
 

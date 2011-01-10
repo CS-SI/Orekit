@@ -140,7 +140,7 @@ public class LofOffsetPointingTest {
                                                    sPlus.getAttitude().getRotation(),
                                                    2 * h);
         Assert.assertTrue(spin0.getNorm() > 1.0e-3);
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 4.0e-11);
+        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-10);
 
     }
 

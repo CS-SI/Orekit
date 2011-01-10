@@ -37,7 +37,7 @@ public class SpacecraftFrame extends Frame implements PVCoordinatesProvider {
     private final Propagator propagator;
 
     /** Cached date to avoid useless computation. */
-    private AbsoluteDate cachedDate;
+    private transient AbsoluteDate cachedDate;
 
     /** Simple constructor.
      * @param propagator orbit/attitude propagator computing spacecraft state evolution

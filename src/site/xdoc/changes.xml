@@ -153,6 +153,33 @@
         fixed an error in FramesFactory when getting ITRF2005 and TIRF2000 frames:
         ignoreTidalEffects was handled wrong.
       </action>
+      <action dev="luc" type="update" >
+        removed serialization of some cached data in frames
+      </action>
+      <action dev="luc" type="fix" >
+        fixed deserialization problems of frame singletons, they were not unique any more
+      </action>
+      <action dev="v&#233;ronique" type="add" >
+        numerical propagation can now be done either using equinoctial parameters or
+        cartesian parameters, thus allowing propagation of any kind of trajectories,
+        including hyperbolic orbits used for interplanetary missions or atmospheric
+        re-entry trajectories
+      </action>
+      <action dev="v&#233;ronique" type="update" >
+        completely revamped the partial derivatives matrices computation using the additional
+        equations mechanism
+      </action>
+      <action dev="v&#233;ronique" type="add" >
+        added a mechanism to integrate user-supplied additional equations alongside with
+        orbital parameters during numerical propagation
+      </action>
+      <action dev="luc" type="update">
+        use A. W. Odell and R. H. Gooding (1986) fast and robust solver for Kepler equation
+      </action>
+      <action dev="luc" type="add">
+        keplerian and cartesian orbits now support hyperbolic orbits (i.e. eccentricity greater
+        than 1, and in this case negative semi major axis by convention)
+      </action>
       <action dev="luc" type="fix">
         fixed an error in LofOffset attitude mode: the computed attitude was reversed
         with respect to the specification

@@ -16,20 +16,18 @@
  */
 package org.orekit.forces.radiation;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.ForceModelWithJacobians;
+import org.orekit.forces.AbstractParameterizable;
+import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.numerical.AccelerationJacobiansProvider;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
-import org.orekit.propagation.numerical.TimeDerivativesEquationsWithJacobians;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -42,18 +40,18 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Pascal Parraud
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class SolarRadiationPressure implements ForceModelWithJacobians {
+public class SolarRadiationPressure extends AbstractParameterizable implements ForceModel, AccelerationJacobiansProvider {
 
-    /** Parameter name for absorption coefficient enabling jacobian processing. */
-    public static final String ABSORPTION_COEFFICIENT = "ABSORPTION COEFFICIENT";
+    /** Parameter name for absorption coefficient. */
+    public static final String ABSORPTION_COEFFICIENT = "absorption coefficient";
 
-    /** Parameter name for specular reflection coefficient enabling jacobian processing. */
-    public static final String REFLECTION_COEFFICIENT = "REFLECTION COEFFICIENT";
+    /** Parameter name for reflection coefficient. */
+    public static final String REFLECTION_COEFFICIENT = "reflection coefficient";
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 8874297900604482921L;
+    private static final long serialVersionUID = -4510170320082379419L;
 
-    /** Sun radius (m). */
+     /** Sun radius (m). */
     private static final double SUN_RADIUS = 6.95e8;
 
     /** Reference flux normalized for a 1m distance (N). */
@@ -67,9 +65,6 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
 
     /** Spacecraft. */
     private final RadiationSensitive spacecraft;
-
-    /** List of the parameters names. */
-    private final ArrayList<String> parametersNames = new ArrayList<String>();
 
     /** Simple constructor with default reference values.
      * <p>When this constructor is used, the reference values are:</p>
@@ -102,30 +97,49 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
                                   final PVCoordinatesProvider sun,
                                   final double equatorialRadius,
                                   final RadiationSensitive spacecraft) {
+        super(ABSORPTION_COEFFICIENT, REFLECTION_COEFFICIENT);
         this.kRef  = pRef * dRef * dRef;
         this.sun   = sun;
         this.equatorialRadius = equatorialRadius;
         this.spacecraft = spacecraft;
-        this.parametersNames.add(ABSORPTION_COEFFICIENT);
-        this.parametersNames.add(REFLECTION_COEFFICIENT);
+    }
+
+    /** Compute radiation coefficient.
+     * @param s spacecraft state
+     * @return coefficient for acceleration computation
+     * @exception OrekitException if position cannot be computed
+     */
+    private double computeRawP (final SpacecraftState s) throws OrekitException {
+        final AbsoluteDate date     = s.getDate();
+        final Frame        frame    = s.getFrame();
+        final Vector3D     position = s.getPVCoordinates().getPosition();
+
+        final Vector3D satSunVector = getSatSunVector(s);
+        final double r2             = satSunVector.getNormSq();
+        return kRef * getLightningRatio(position, frame, date) / r2;
+    }
+
+    /** Compute radiation acceleration.
+     * @param s spacecraft state
+     * @return acceleration
+     * @exception OrekitException if position cannot be computed
+     */
+    private Vector3D computeAcceleration(final SpacecraftState s) throws OrekitException {
+
+        final Vector3D satSunVector = getSatSunVector(s);
+        final double r2             = satSunVector.getNormSq();
+
+        final double rawP = computeRawP(s);
+        // raw radiation pressure
+        return spacecraft.radiationPressureAcceleration(s, new Vector3D(-rawP / FastMath.sqrt(r2), satSunVector));
     }
 
     /** {@inheritDoc} */
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
         throws OrekitException {
 
-        final AbsoluteDate date     = s.getDate();
-        final Frame        frame    = s.getFrame();
-        final Vector3D     position = s.getPVCoordinates().getPosition();
-
-        // raw radiation pressure
-        final Vector3D satSunVector = getSatSunVector(s);
-        final double r2             = satSunVector.getNormSq();
-        final double rawP           = kRef * getLightningRatio(position, frame, date) / r2;
-        final Vector3D flux         = new Vector3D(-rawP / FastMath.sqrt(r2), satSunVector);
-
         // provide the perturbing acceleration to the derivatives adder
-        adder.addAcceleration(spacecraft.radiationPressureAcceleration(s, flux), frame);
+        adder.addAcceleration(computeAcceleration(s), s.getFrame());
 
     }
 
@@ -185,12 +199,8 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
                 alpha2 * FastMath.sqrt(alphaEarth * alphaEarth - alpha2 * alpha2);
 
             result = (P1 - P2) / (FastMath.PI * alphaSun * alphaSun);
-
-
         }
-
         return result;
-
     }
 
     /** Compute sat-Sun vector in spacecraft state frame.
@@ -213,37 +223,69 @@ public class SolarRadiationPressure implements ForceModelWithJacobians {
     }
 
     /** {@inheritDoc} */
-    public void addContributionWithJacobians(final SpacecraftState s,
-                                             final TimeDerivativesEquationsWithJacobians adder)
+    public void addDAccDState(final SpacecraftState s,
+                              final double[][] dAccdPos, final double[][] dAccdVel, final double[] dAccdM)
         throws OrekitException {
+
+        final Vector3D satSunVector = getSatSunVector(s);
+        final double r2             = satSunVector.getNormSq();
+        final double rawP           = computeRawP(s);
+        final Vector3D acceleration = spacecraft.radiationPressureAcceleration(s, new Vector3D(-rawP / FastMath.sqrt(r2), satSunVector));
+
+        final double x2 = satSunVector.getX() * satSunVector.getX();
+        final double y2 = satSunVector.getY() * satSunVector.getY();
+        final double z2 = satSunVector.getZ() * satSunVector.getZ();
+        final double xy = satSunVector.getX() * satSunVector.getY();
+        final double yz = satSunVector.getY() * satSunVector.getZ();
+        final double zx = satSunVector.getZ() * satSunVector.getX();
+        final double prefix = Vector3D.dotProduct(acceleration, satSunVector) / (r2 * r2);
+
+        // jacobian with respect to position
+        dAccdPos[0][0] += prefix * (2 * x2 - y2 - z2);
+        dAccdPos[0][1] += prefix * 3 * xy;
+        dAccdPos[0][2] += prefix * 3 * zx;
+        dAccdPos[1][0] += prefix * 3 * xy;
+        dAccdPos[1][1] += prefix * (2 * y2 - z2 - x2);
+        dAccdPos[1][2] += prefix * 3 * yz;
+        dAccdPos[2][0] += prefix * 3 * zx;
+        dAccdPos[2][1] += prefix * 3 * yz;
+        dAccdPos[2][2] += prefix * (2 * z2 - x2 - y2);
+
+        // jacobian with respect to velocity is null
+
+        if (dAccdM != null) {
+            // jacobian with respect to mass
+            dAccdM[0] -= acceleration.getX() / s.getMass();
+            dAccdM[1] -= acceleration.getY() / s.getMass();
+            dAccdM[2] -= acceleration.getZ() / s.getMass();
+        }
+
     }
 
     /** {@inheritDoc} */
-    public Collection<String> getParametersNames() {
-        return parametersNames;
+    public void addDAccDParam(final SpacecraftState s, final String paramName, final double[] dAccdParam)
+        throws OrekitException {
+        spacecraft.addDAccDParam(computeAcceleration(s), paramName, dAccdParam);
     }
 
     /** {@inheritDoc} */
     public double getParameter(final String name)
         throws IllegalArgumentException {
-        if (name.matches(ABSORPTION_COEFFICIENT)) {
+        complainIfNotSupported(name);
+        if (name.equals(ABSORPTION_COEFFICIENT)) {
             return spacecraft.getAbsorptionCoefficient();
-        } else if (name.matches(REFLECTION_COEFFICIENT)) {
-            return spacecraft.getReflectionCoefficient();
-        } else {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.UNKNOWN_PARAMETER, name);
         }
+        return spacecraft.getReflectionCoefficient();
     }
 
     /** {@inheritDoc} */
     public void setParameter(final String name, final double value)
         throws IllegalArgumentException {
-        if (name.matches(ABSORPTION_COEFFICIENT)) {
+        complainIfNotSupported(name);
+        if (name.equals(ABSORPTION_COEFFICIENT)) {
             spacecraft.setAbsorptionCoefficient(value);
-        } else if (name.matches(REFLECTION_COEFFICIENT)) {
-            spacecraft.setReflectionCoefficient(value);
         } else {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.UNKNOWN_PARAMETER, name);
+            spacecraft.setReflectionCoefficient(value);
         }
     }
 

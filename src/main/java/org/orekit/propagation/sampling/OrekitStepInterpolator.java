@@ -21,6 +21,7 @@ import java.io.Serializable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.numerical.AdditionalEquations;
 import org.orekit.time.AbsoluteDate;
 
 /** This interface is a space-dynamics aware step interpolator.
@@ -72,6 +73,15 @@ public interface OrekitStepInterpolator extends Serializable {
      * @see #setInterpolatedDate(AbsoluteDate)
      */
     SpacecraftState getInterpolatedState() throws OrekitException;
+
+    /** Get the interpolated additional state corresponding to the additional equations.
+     * @param addEqu additional equation used as a reference for selection
+     * @return interpolated additional state at the current interpolation date
+     * @exception OrekitException if state cannot be interpolated or converted
+     * @see #getInterpolatedDate()
+     * @see #setInterpolatedDate(AbsoluteDate)
+     */
+    double[] getInterpolatedAdditionalState(AdditionalEquations addEqu) throws OrekitException;
 
     /** Check is integration direction is forward in date.
      * @return true if integration is forward in date

@@ -16,8 +16,6 @@
  */
 package org.orekit.forces;
 
-import java.io.Serializable;
-
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -53,7 +51,7 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
-public interface ForceModel extends Serializable {
+public interface ForceModel extends Parameterizable {
 
     /** Compute the contribution of the force model to the perturbing
      * acceleration.

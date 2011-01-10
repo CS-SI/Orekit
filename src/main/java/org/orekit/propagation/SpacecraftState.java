@@ -160,9 +160,9 @@ public class SpacecraftState implements TimeStamped, Serializable {
      * that these results may be different for other orbits.
      * </p>
      * <table border="1" cellpadding="5">
-     * <tr bgcolor="#ccccff"><font size="+3"><th>interpolation time (s)</th>
+     * <tr bgcolor="#ccccff"><th>interpolation time (s)</th>
      * <th>position error (m)</th><th>velocity error (m/s)</th>
-     * <th>attitude error (&deg;)</th></font></tr>
+     * <th>attitude error (&deg;)</th></tr>
      * <tr><td bgcolor="#eeeeff"> 60</td><td>  20</td><td>1</td><td>0.001</td></tr>
      * <tr><td bgcolor="#eeeeff">120</td><td> 100</td><td>2</td><td>0.002</td></tr>
      * <tr><td bgcolor="#eeeeff">300</td><td> 600</td><td>4</td><td>0.005</td></tr>

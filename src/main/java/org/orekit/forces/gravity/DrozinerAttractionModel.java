@@ -20,6 +20,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.forces.AbstractParameterizable;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -39,10 +40,10 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 
-public class DrozinerAttractionModel implements ForceModel {
+public class DrozinerAttractionModel extends AbstractParameterizable implements ForceModel {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 9117000158528461356L;
+    private static final long serialVersionUID = -6897768625006106349L;
 
     /** Reference equatorial radius of the potential. */
     private final double equatorialRadius;
@@ -79,6 +80,7 @@ public class DrozinerAttractionModel implements ForceModel {
                                    final double[][] C, final double[][] S)
         throws IllegalArgumentException {
 
+        super("central attraction coefficient");
         this.centralBodyFrame = centralBodyFrame;
         this.equatorialRadius = equatorialRadius;
         this.mu = mu;
@@ -272,6 +274,20 @@ public class DrozinerAttractionModel implements ForceModel {
     /** {@inheritDoc} */
     public EventDetector[] getEventsDetectors() {
         return new EventDetector[0];
+    }
+
+    /** {@inheritDoc} */
+    public double getParameter(final String name)
+        throws IllegalArgumentException {
+        complainIfNotSupported(name);
+        return mu;
+    }
+
+    /** {@inheritDoc} */
+    public void setParameter(final String name, final double value)
+        throws IllegalArgumentException {
+        complainIfNotSupported(name);
+        mu = value;
     }
 
 }

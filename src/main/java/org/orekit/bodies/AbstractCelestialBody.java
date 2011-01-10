@@ -44,6 +44,9 @@ public abstract class AbstractCelestialBody implements CelestialBody {
     /** Serializable UID. */
     private static final long serialVersionUID = 6769512376971866660L;
 
+    /** Name of the body. */
+    private final String name;
+
     /** Attraction coefficient of the body (m<sup>3</sup>/s<sup>2</sup>). */
     private final double gm;
 
@@ -60,20 +63,27 @@ public abstract class AbstractCelestialBody implements CelestialBody {
     private final Frame bodyFrame;
 
     /** Build an instance and the underlying frame.
+     * @param name name of the body
      * @param gm attraction coefficient (in m<sup>3</sup>/s<sup>2</sup>)
      * @param iauPole IAU pole implementation
      * @param definingFrame frame in which celestial body coordinates are defined
      * @param inertialFrameName name to use for inertially oriented body centered frame
      * @param bodyFrameName name to use for body oriented body centered frame
      */
-    protected AbstractCelestialBody(final double gm, final IAUPole iauPole,
-                                    final Frame definingFrame,
+    protected AbstractCelestialBody(final String name, final double gm,
+                                    final IAUPole iauPole, final Frame definingFrame,
                                     final String inertialFrameName, String bodyFrameName) {
+        this.name          = name;
         this.gm            = gm;
         this.iauPole       = iauPole;
         this.definingFrame = definingFrame;
         this.inertialFrame = new InertiallyOrientedFrame(inertialFrameName);
         this.bodyFrame     = new BodyOrientedFrame(bodyFrameName);
+    }
+
+    /** {@inheritDoc} */
+    public String getName() {
+        return name;
     }
 
     /** {@inheritDoc} */

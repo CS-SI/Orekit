@@ -18,6 +18,7 @@ package org.orekit.forces.maneuvers;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.AbstractParameterizable;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
@@ -37,10 +38,16 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class ConstantThrustManeuver implements ForceModel {
+public class ConstantThrustManeuver extends AbstractParameterizable implements ForceModel {
 
     /** Reference gravity acceleration constant (m/s<sup>2</sup>). */
     public static final double G0 = 9.80665;
+
+    /** Parameter name for thrust. */
+    private static final String THRUST = "thrust";
+
+    /** Parameter name for flow rate. */
+    private static final String FLOW_RATE = "flow rate";
 
     /** Serializable UID. */
     private static final long serialVersionUID = 5349622732741384211L;
@@ -55,10 +62,10 @@ public class ConstantThrustManeuver implements ForceModel {
     private final AbsoluteDate endDate;
 
     /** Engine thrust. */
-    private final double thrust;
+    private double thrust;
 
     /** Engine flow-rate. */
-    private final double flowRate;
+    private double flowRate;
 
     /** Direction of the acceleration in satellite frame. */
     private final Vector3D direction;
@@ -75,6 +82,7 @@ public class ConstantThrustManeuver implements ForceModel {
                                   final double thrust, final double isp,
                                   final Vector3D direction) {
 
+        super(THRUST, FLOW_RATE);
         if (duration >= 0) {
             this.startDate = date;
             this.endDate   = date.shiftedBy(duration);
@@ -113,6 +121,27 @@ public class ConstantThrustManeuver implements ForceModel {
         return new EventDetector[] {
             new FiringStartDetector(), new FiringStopDetector()
         };
+    }
+
+    /** {@inheritDoc} */
+    public double getParameter(final String name)
+        throws IllegalArgumentException {
+        complainIfNotSupported(name);
+        if (name.equals(THRUST)) {
+            return thrust;
+        }
+        return flowRate;
+    }
+
+    /** {@inheritDoc} */
+    public void setParameter(final String name, final double value)
+        throws IllegalArgumentException {
+        complainIfNotSupported(name);
+        if (name.equals(THRUST)) {
+            thrust = value;
+        } else {
+            flowRate = value;
+        }
     }
 
     /** Detector for start of maneuver. */

@@ -63,11 +63,40 @@
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
 
-  <!-- The following equality test is intentional and needed for semantic purposes -->
+  <!-- The following equality tests are intentional and needed for semantic purposes -->
   <Match>
     <Class name="org.orekit.time.TimeComponents" />
     <Method name="equals" params="java.lang.Object" returns="boolean" />
     <Bug pattern="FE_FLOATING_POINT_EQUALITY" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.orbits.KeplerianOrbit"/>
+    <Method name ="eMeSinE" params="double" returns="double" />
+    <Bug pattern="FE_FLOATING_POINT_EQUALITY" />
+  </Match>
+
+  <!-- The following internal representation exposure are intentional,
+       They are used to pass data back and forth between classes
+    -->
+  <Match>
+    <Class name="org.orekit.propagation.numerical.AdditionalStateAndEquations"/>
+    <Method name ="getAdditionalState" params="" returns="double[]" />
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.propagation.numerical.AdditionalStateAndEquations"/>
+    <Method name ="getAdditionalStateDot" params="" returns="double[]" />
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.propagation.numerical.TimeDerivativesEquationsCartesian"/>
+    <Method name ="initDerivatives" params="double[],org.orekit.orbits.Orbit" returns="void" />
+    <Bug pattern="EI_EXPOSE_REP2" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.propagation.numerical.TimeDerivativesEquationsEquinoctial"/>
+    <Method name ="initDerivatives" params="double[],org.orekit.orbits.Orbit" returns="void" />
+    <Bug pattern="EI_EXPOSE_REP2" />
   </Match>
 
 </FindBugsFilter>

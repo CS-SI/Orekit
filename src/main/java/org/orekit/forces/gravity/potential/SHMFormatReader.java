@@ -68,7 +68,8 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
         boolean okSHM    = false;
         boolean okCoeffs = false;
         String line = r.readLine();
-        if ("FIRST ".equals(line.substring(0, 6)) &&
+        if ((line != null) &&
+            "FIRST ".equals(line.substring(0, 6)) &&
             "SHM    ".equals(line.substring(49, 56))) {
             for (line = r.readLine(); line != null; line = r.readLine()) {
                 if (line.length() >= 6) {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2010 CS Communication & Systèmes
+/* Copyright 2010 Centre National d'Études Spatiales
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,8 @@
  */
 package org.orekit.propagation.numerical;
 
-import org.orekit.attitudes.AttitudeLaw;
+import java.util.List;
+
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
@@ -27,11 +28,13 @@ import org.orekit.time.AbsoluteDate;
 public interface ModeHandler {
 
     /** Initialize the mode handler.
+     * @param  mapper mapper between spacecraft state and simple array
+     * @param addStateAndEqu list of additional state and equations
      * @param reference reference date
      * @param frame reference frame
      * @param mu central body attraction coefficient
-     * @param attitudeLaw attitude law
      */
-    void initialize(AbsoluteDate reference, Frame frame, double mu, AttitudeLaw attitudeLaw);
+    void initialize(StateMapper mapper, List <AdditionalStateAndEquations> addStateAndEqu,
+                    AbsoluteDate reference, Frame frame, double mu);
 
 }

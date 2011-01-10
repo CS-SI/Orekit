@@ -78,7 +78,7 @@ public class CircularOrbit
     public static final int TRUE_LONGITUDE_ARGUMENT = 2;
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -5031200932453701026L;
+    private static final long serialVersionUID = 5042463409964008691L;
 
     /** Semi-major axis (m). */
     private final double a;
@@ -133,10 +133,10 @@ public class CircularOrbit
 
         switch (type) {
         case MEAN_LONGITUDE_ARGUMENT :
-            this.alphaV = computeAlphaM(alpha);
+            this.alphaV = eccentricToTrue(meanToEccentric(alpha));
             break;
         case ECCENTRIC_LONGITUDE_ARGUMENT :
-            this.alphaV = computeAlphaE(alpha);
+            this.alphaV = eccentricToTrue(alpha);
             break;
         case TRUE_LONGITUDE_ARGUMENT :
             this.alphaV = alpha;
@@ -171,6 +171,12 @@ public class CircularOrbit
         final double r  = pvP.getNorm();
         final double V2 = pvV.getNormSq();
         final double rV2OnMu = r * V2 / mu;
+
+        if (rV2OnMu > 2) {
+            throw OrekitException.createIllegalArgumentException(
+                  OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, getClass().getName());
+        }
+
         a = r / (2 - rV2OnMu);
 
         // compute inclination
@@ -188,10 +194,11 @@ public class CircularOrbit
         final double sinRaan = FastMath.sin(raan);
         final double cosI    = FastMath.cos(i);
         final double sinI    = FastMath.sin(i);
-        final Vector3D rVec  = new Vector3D(cosRaan, FastMath.sin(raan), 0);
-        final Vector3D sVec  = new Vector3D(-cosI * sinRaan, cosI * cosRaan, sinI);
-        final double x2      = Vector3D.dotProduct(pvP, rVec) / a;
-        final double y2      = Vector3D.dotProduct(pvP, sVec) / a;
+        final double xP      = pvP.getX();
+        final double yP      = pvP.getY();
+        final double zP      = pvP.getZ();
+        final double x2      = (xP * cosRaan + yP * sinRaan) / a;
+        final double y2      = ((yP * cosRaan - xP * sinRaan) * cosI + zP * sinI) / a;
 
         // compute eccentricity vector
         final double eSE    = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(mu * a);
@@ -206,7 +213,7 @@ public class CircularOrbit
 
         // compute longitude argument
         final double beta = 1 / (1 + FastMath.sqrt(1 - ex * ex - ey * ey));
-        alphaV = computeAlphaE(FastMath.atan2(y2 + ey + eSE * beta * ex, x2 + ex - eSE * beta * ey));
+        alphaV = eccentricToTrue(FastMath.atan2(y2 + ey + eSE * beta * ex, x2 + ex - eSE * beta * ey));
     }
 
     /** Constructor from any kind of orbital parameters.
@@ -293,11 +300,11 @@ public class CircularOrbit
                                       (epsilon + 1 + ex * cosAlphaV + ey * sinAlphaV));
     }
 
-    /** Computes the eccentric longitude argument.
+    /** Computes the true longitude argument from the eccentric longitude argument.
      * @param alphaE = E + &omega; eccentric longitude argument (rad)
      * @return the true longitude argument.
      */
-    private double computeAlphaE(final double alphaE) {
+    private double eccentricToTrue(final double alphaE) {
         final double epsilon   = FastMath.sqrt(1 - ex * ex - ey * ey);
         final double cosAlphaE = FastMath.cos(alphaE);
         final double sinAlphaE = FastMath.sin(alphaE);
@@ -313,23 +320,23 @@ public class CircularOrbit
         return alphaE - ex * FastMath.sin(alphaE) + ey * FastMath.cos(alphaE);
     }
 
-    /** Computes the mean longitude argument.
+    /** Computes the eccentric longitude argument from the mean longitude argument.
      * @param alphaM = M + &omega;  mean longitude argument (rad)
-     * @return the true longitude argument.
+     * @return the eccentric longitude argument.
      */
-    private double computeAlphaM(final double alphaM) {
-        // Generalization of Kepler equation to equinoctial parameters
+    private double meanToEccentric(final double alphaM) {
+        // Generalization of Kepler equation to circular parameters
         // with alphaE = PA + E and
         //      alphaM = PA + M = alphaE - ex.sin(alphaE) + ey.cos(alphaE)
-        double alphaE = alphaM;
-        double shift = 0.0;
+        double alphaE        = alphaM;
+        double shift         = 0.0;
         double alphaEMalphaM = 0.0;
-        double cosLE = FastMath.cos(alphaE);
-        double sinLE = FastMath.sin(alphaE);
-        int iter = 0;
+        double cosAlphaE     = FastMath.cos(alphaE);
+        double sinAlphaE     = FastMath.sin(alphaE);
+        int    iter          = 0;
         do {
-            final double f2 = ex * sinLE - ey * cosLE;
-            final double f1 = 1.0 - ex * cosLE - ey * sinLE;
+            final double f2 = ex * sinAlphaE - ey * cosAlphaE;
+            final double f1 = 1.0 - ex * cosAlphaE - ey * sinAlphaE;
             final double f0 = alphaEMalphaM - f2;
 
             final double f12 = 2.0 * f1;
@@ -337,12 +344,12 @@ public class CircularOrbit
 
             alphaEMalphaM -= shift;
             alphaE         = alphaM + alphaEMalphaM;
-            cosLE          = FastMath.cos(alphaE);
-            sinLE          = FastMath.sin(alphaE);
+            cosAlphaE      = FastMath.cos(alphaE);
+            sinAlphaE      = FastMath.sin(alphaE);
 
         } while ((++iter < 50) && (FastMath.abs(shift) > 1.0e-12));
 
-        return computeAlphaE(alphaE); // which set the alphaV parameter
+        return alphaE;
 
     }
 
@@ -386,6 +393,59 @@ public class CircularOrbit
      */
     public double getLM() {
         return getAlphaM() + raan;
+    }
+
+    /** {@inheritDoc} */
+    protected PVCoordinates initPVCoordinates() {
+
+        // get equinoctial parameters
+        final double equEx = getEquinoctialEx();
+        final double equEy = getEquinoctialEy();
+        final double hx = getHx();
+        final double hy = getHy();
+        final double lE = getLE();
+
+        // inclination-related intermediate parameters
+        final double hx2   = hx * hx;
+        final double hy2   = hy * hy;
+        final double factH = 1. / (1 + hx2 + hy2);
+
+        // reference axes defining the orbital plane
+        final double ux = (1 + hx2 - hy2) * factH;
+        final double uy =  2 * hx * hy * factH;
+        final double uz = -2 * hy * factH;
+
+        final double vx = uy;
+        final double vy = (1 - hx2 + hy2) * factH;
+        final double vz =  2 * hx * factH;
+
+        // eccentricity-related intermediate parameters
+        final double exey = equEx * equEy;
+        final double ex2  = equEx * equEx;
+        final double ey2  = equEy * equEy;
+        final double e2   = ex2 + ey2;
+        final double eta  = 1 + FastMath.sqrt(1 - e2);
+        final double beta = 1. / eta;
+
+        // eccentric latitude argument
+        final double cLe    = FastMath.cos(lE);
+        final double sLe    = FastMath.sin(lE);
+        final double exCeyS = equEx * cLe + equEy * sLe;
+
+        // coordinates of position and velocity in the orbital plane
+        final double x      = a * ((1 - beta * ey2) * cLe + beta * exey * sLe - equEx);
+        final double y      = a * ((1 - beta * ex2) * sLe + beta * exey * cLe - equEy);
+
+        final double factor = FastMath.sqrt(getMu() / a) / (1 - exCeyS);
+        final double xdot   = factor * (-sLe + beta * equEy * exCeyS);
+        final double ydot   = factor * ( cLe - beta * equEx * exCeyS);
+
+        final Vector3D position =
+            new Vector3D(x * ux + y * vx, x * uy + y * vy, x * uz + y * vz);
+        final Vector3D velocity =
+            new Vector3D(xdot * ux + ydot * vx, xdot * uy + ydot * vy, xdot * uz + ydot * vz);
+        return new PVCoordinates(position, velocity);
+
     }
 
     /** {@inheritDoc} */

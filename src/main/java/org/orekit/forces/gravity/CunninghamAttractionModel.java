@@ -21,6 +21,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.forces.AbstractParameterizable;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -42,10 +43,10 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 
-public class CunninghamAttractionModel implements ForceModel {
+public class CunninghamAttractionModel extends AbstractParameterizable implements ForceModel {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 2609845747545125479L;
+    private static final long serialVersionUID = 759122284106467933L;
 
     /** Equatorial radius of the Central Body. */
     private final double equatorialRadius;
@@ -81,6 +82,7 @@ public class CunninghamAttractionModel implements ForceModel {
                                      final double equatorialRadius, final double mu,
                                      final double[][] C, final double[][] S)
         throws IllegalArgumentException {
+        super("central attraction coefficient");
 
         this.bodyFrame = centralBodyFrame;
         this.equatorialRadius = equatorialRadius;
@@ -373,6 +375,20 @@ public class CunninghamAttractionModel implements ForceModel {
     /** {@inheritDoc} */
     public EventDetector[] getEventsDetectors() {
         return new EventDetector[0];
+    }
+
+    /** {@inheritDoc} */
+    public double getParameter(final String name)
+        throws IllegalArgumentException {
+        complainIfNotSupported(name);
+        return mu;
+    }
+
+    /** {@inheritDoc} */
+    public void setParameter(final String name, final double value)
+        throws IllegalArgumentException {
+        complainIfNotSupported(name);
+        mu = value;
     }
 
 }

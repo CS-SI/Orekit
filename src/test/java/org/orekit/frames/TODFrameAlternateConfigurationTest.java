@@ -142,8 +142,8 @@ public class TODFrameAlternateConfigurationTest {
             throws OrekitException {
             super(ignoreNutationCorrection, factoryKey);
         }
-        protected void setInterpolatedNutationElements(final double t) {
-            computeNutationElements(t);
+        public double[] getInterpolatedNutationElements(final double t) {
+            return computeNutationElements(t);
         }
     }
 

@@ -248,7 +248,7 @@ public class AbsoluteDateTest {
     public void testCCSDSUnsegmented() throws OrekitException {
 
         AbsoluteDate reference = new AbsoluteDate("2002-05-23T12:34:56.789", TimeScalesFactory.getUTC());
-        double lsb = Math.pow(2.0, -24);
+        double lsb = FastMath.pow(2.0, -24);
 
         byte[] timeCCSDSEpoch = new byte[] { 0x53, 0x7F, 0x40, -0x70, -0x37, -0x05, -0x19 };
         for (int preamble = 0x00; preamble < 0x100; ++preamble) {

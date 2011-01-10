@@ -22,12 +22,11 @@ import java.util.Collection;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.ForceModelWithJacobians;
+import org.orekit.forces.Parameterizable;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
-import org.orekit.propagation.numerical.TimeDerivativesEquationsWithJacobians;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -47,22 +46,26 @@ import org.orekit.time.AbsoluteDate;
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 
-public class DragForce implements ForceModelWithJacobians {
+public class DragForce implements Parameterizable {
 
     /** Parameter name for drag coefficient enabling jacobian processing. */
     public static final String DRAG_COEFFICIENT = "DRAG COEFFICIENT";
 
+    /** List of the parameters names. */
+    private static final ArrayList<String> PARAMETERS_NAMES;
+    static {
+        PARAMETERS_NAMES = new ArrayList<String>();
+        PARAMETERS_NAMES.add(DRAG_COEFFICIENT);
+    }
+
     /** Serializable UID. */
-    private static final long serialVersionUID = 2574653656986559955L;
+    private static final long serialVersionUID = 5386256916056674950L;
 
     /** Atmospheric model. */
     private final Atmosphere atmosphere;
 
     /** Spacecraft. */
     private final DragSensitive spacecraft;
-
-    /** List of the parameters names. */
-    private final ArrayList<String> parametersNames = new ArrayList<String>();
 
     /** Simple constructor.
      * @param atmosphere atmospheric model
@@ -71,7 +74,6 @@ public class DragForce implements ForceModelWithJacobians {
     public DragForce(final Atmosphere atmosphere, final DragSensitive spacecraft) {
         this.atmosphere = atmosphere;
         this.spacecraft = spacecraft;
-        this.parametersNames.add(DRAG_COEFFICIENT);
     }
 
     /** Compute the contribution of the drag to the perturbing acceleration.
@@ -104,14 +106,13 @@ public class DragForce implements ForceModelWithJacobians {
     }
 
     /** {@inheritDoc} */
-    public void addContributionWithJacobians(final SpacecraftState s,
-                                             final TimeDerivativesEquationsWithJacobians adder)
-        throws OrekitException {
+    public Collection<String> getParametersNames() {
+        return PARAMETERS_NAMES;
     }
 
     /** {@inheritDoc} */
-    public Collection<String> getParametersNames() {
-        return parametersNames;
+    public boolean isSupported(final String name) {
+        return name.equals(DRAG_COEFFICIENT);
     }
 
     /** {@inheritDoc} */

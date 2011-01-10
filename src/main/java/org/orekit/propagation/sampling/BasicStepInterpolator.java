@@ -20,6 +20,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.propagation.BasicPropagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.numerical.AdditionalEquations;
 import org.orekit.time.AbsoluteDate;
 
 /** Implementation of the {@link OrekitStepInterpolator} interface based
@@ -87,6 +88,13 @@ public class BasicStepInterpolator implements OrekitStepInterpolator {
         interpolatedState = propagator.propagate(date);
     }
 
+    /** {@inheritDoc} */
+    public double[] getInterpolatedAdditionalState(final AdditionalEquations addEqu)
+        throws OrekitException {
+        // This should never happen
+        throw OrekitException.createInternalError(null);
+    }
+
     /** Shift one step forward.
      * Copy the current date into the previous date, hence preparing the
      * interpolator for future calls to {@link #storeDate storeDate}
@@ -105,5 +113,6 @@ public class BasicStepInterpolator implements OrekitStepInterpolator {
         forward     = currentDate.compareTo(previousDate) >= 0;
         setInterpolatedDate(currentDate);
     }
+
 
 }

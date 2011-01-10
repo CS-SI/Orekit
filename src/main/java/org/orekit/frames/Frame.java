@@ -64,7 +64,7 @@ public class Frame implements Serializable {
     private Transform transform;
 
     /** Map of deepest frames commons with other frames. */
-    private final WeakHashMap<Frame, Frame> commons;
+    private final transient WeakHashMap<Frame, Frame> commons;
 
     /** Instance name. */
     private final String name;

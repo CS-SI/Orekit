@@ -64,4 +64,13 @@ public interface RadiationSensitive extends Serializable {
      */
     double getReflectionCoefficient();
 
+    /** Compute acceleration derivatives with respect to additional parameters.
+     * @param acceleration spacecraft acceleration
+     * @param paramName name of the parameter with respect to which derivatives are required
+     * @param dAccdParam acceleration derivatives with respect to additional parameters
+     * @exception OrekitException if derivatives cannot be computed
+     */
+    void addDAccDParam(Vector3D acceleration,  String paramName, double[] dAccdParam)
+        throws OrekitException;
+
 }

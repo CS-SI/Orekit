@@ -16,19 +16,21 @@
  */
 package org.orekit.propagation.precomputed;
 
+import java.util.List;
+
 import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.ode.ContinuousOutputModel;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
-import org.orekit.attitudes.AttitudeLaw;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.numerical.AdditionalStateAndEquations;
 import org.orekit.propagation.numerical.ModeHandler;
+import org.orekit.propagation.numerical.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -70,7 +72,10 @@ public class IntegratedEphemeris
     implements BoundedPropagator, ModeHandler, StepHandler {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 3997196481383054719L;
+    private static final long serialVersionUID = -7217642644695032540L;
+
+    /** Mapper between spacecraft state and simple array. */
+    private StateMapper mapper;
 
     /** Reference date. */
     private AbsoluteDate initializedReference;
@@ -80,9 +85,6 @@ public class IntegratedEphemeris
 
     /** Central body gravitational constant. */
     private double initializedMu;
-
-    /** Attitude law. */
-    private AttitudeLaw initializedAttitudeLaw;
 
     /** Start date of the integration (can be min or max). */
     private AbsoluteDate startDate;
@@ -104,13 +106,12 @@ public class IntegratedEphemeris
     }
 
     /** {@inheritDoc} */
-    public void initialize(final AbsoluteDate reference,
-                           final Frame frame, final double mu,
-                           final AttitudeLaw attitudeLaw) {
-        this.initializedReference   = reference;
-        this.initializedFrame       = frame;
-        this.initializedMu          = mu;
-        this.initializedAttitudeLaw = attitudeLaw;
+    public void initialize(final StateMapper mapper, final List <AdditionalStateAndEquations> addStateAndEqu,
+                           final AbsoluteDate reference, final Frame frame, final double mu) {
+        this.mapper               = mapper;
+        this.initializedReference = reference;
+        this.initializedFrame     = frame;
+        this.initializedMu        = mu;
 
         // dates will be set when last step is handled
         startDate        = null;
@@ -128,18 +129,12 @@ public class IntegratedEphemeris
                                                date, minDate, maxDate);
             }
             model.setInterpolatedTime(date.durationFrom(startDate));
-            final double[] state = model.getInterpolatedState();
-
-            final EquinoctialOrbit eq =
-                new EquinoctialOrbit(state[0], state[1], state[2],
-                                     state[3], state[4], state[5], 2, initializedFrame, date, initializedMu);
-            final double mass = state[6];
-
-            return new SpacecraftState(eq, initializedAttitudeLaw.getAttitude(eq), mass);
-        } catch (OrekitException oe) {
-            throw new PropagationException(oe);
+            return mapper.mapArrayToState(model.getInterpolatedState(), date,
+                                          initializedMu, initializedFrame);
         } catch (MathUserException mue) {
             throw new PropagationException(mue, mue.getGeneralPattern(), mue.getArguments());
+        } catch (OrekitException oe) {
+            throw new PropagationException(oe);
         }
     }
 
@@ -164,13 +159,14 @@ public class IntegratedEphemeris
     }
 
     /** {@inheritDoc} */
-    public void handleStep(final StepInterpolator interpolator,
-                           final boolean isLast) {
+    public void handleStep(final StepInterpolator interpolator, final boolean isLast) {
         model.handleStep(interpolator, isLast);
         if (isLast) {
-            startDate = initializedReference.shiftedBy(model.getInitialTime());
-            maxDate   = initializedReference.shiftedBy(model.getFinalTime());
-            if (maxDate.durationFrom(startDate) < 0) {
+            final double tI = model.getInitialTime();
+            final double tF = model.getFinalTime();
+            startDate = initializedReference.shiftedBy(tI);
+            maxDate   = initializedReference.shiftedBy(tF);
+            if (tF < tI) {
                 minDate = maxDate;
                 maxDate = startDate;
             } else {

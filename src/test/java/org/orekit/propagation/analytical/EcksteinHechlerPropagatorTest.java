@@ -488,7 +488,7 @@ public class EcksteinHechlerPropagatorTest {
     @Test(expected = PropagationException.class)
     public void hyperbolic() throws PropagationException {
         KeplerianOrbit hyperbolic =
-            new KeplerianOrbit(1.0e10, 2, 0, 0, 0, 0, KeplerianOrbit.TRUE_ANOMALY,
+            new KeplerianOrbit(-1.0e10, 2, 0, 0, 0, 0, KeplerianOrbit.TRUE_ANOMALY,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(hyperbolic, ae, mu, c20, c30, c40, c50, c60);

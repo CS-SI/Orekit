@@ -207,7 +207,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
         switch (generateType) {
         case SOLAR_SYSTEM_BARYCENTER :
-            return new JPLCelestialBody(supportedNames, gm, IAUPoleFactory.getIAUPole(generateType),
+            return new JPLCelestialBody(supportedNames, name, gm, IAUPoleFactory.getIAUPole(generateType),
                                         CelestialBodyFactory.getEarthMoonBarycenter().getInertiallyOrientedFrame(),
                                         inertialFrameName, bodyFrameName) {
 
@@ -226,7 +226,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             };
         case EARTH_MOON :
             final double scale = 1.0 / (1.0 + getLoadedEarthMoonMassRatio());
-            return new JPLCelestialBody(supportedNames, gm, IAUPoleFactory.getIAUPole(generateType),
+            return new JPLCelestialBody(supportedNames, name, gm, IAUPoleFactory.getIAUPole(generateType),
                                         FramesFactory.getEME2000(), inertialFrameName, bodyFrameName) {
 
                 /** Serializable UID. */
@@ -273,16 +273,21 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 }
 
                 /** {@inheritDoc} */
+                public String getName() {
+                    return name;
+                }
+
+                /** {@inheritDoc} */
                 public double getGM() {
                     return gm;
                 }
 
             };
         case MOON :
-            return new JPLCelestialBody(supportedNames, gm, IAUPoleFactory.getIAUPole(generateType),
+            return new JPLCelestialBody(supportedNames, name, gm, IAUPoleFactory.getIAUPole(generateType),
                                         FramesFactory.getEME2000(), inertialFrameName, bodyFrameName);
         default :
-            return new JPLCelestialBody(supportedNames, gm, IAUPoleFactory.getIAUPole(generateType),
+            return new JPLCelestialBody(supportedNames, name, gm, IAUPoleFactory.getIAUPole(generateType),
                                         CelestialBodyFactory.getSolarSystemBarycenter().getInertiallyOrientedFrame(),
                                         inertialFrameName, bodyFrameName);
         }
@@ -899,16 +904,17 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
         /** Private constructor for the singletons.
          * @param supportedNames regular expression for supported files names (may be null)
+         * @param name name of the body
          * @param gm attraction coefficient (in m<sup>3</sup>/s<sup>2</sup>)
          * @param iauPole IAU pole implementation
          * @param definingFrame frame in which ephemeris are defined
          * @param inertialFrameName name to use for inertially oriented body centered frame
          * @param bodyFrameName name to use for body oriented body centered frame
          */
-        private JPLCelestialBody(final String supportedNames, final double gm,
+        private JPLCelestialBody(final String supportedNames, final String name, final double gm,
                                  final IAUPole iauPole, final Frame definingFrame,
                                  final String inertialFrameName, String bodyFrameName) {
-            super(gm, iauPole, definingFrame, inertialFrameName, bodyFrameName);
+            super(name, gm, iauPole, definingFrame, inertialFrameName, bodyFrameName);
             this.model         = null;
             this.definingFrame = definingFrame;
         }

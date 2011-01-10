@@ -75,9 +75,9 @@ public class LofOffset implements AttitudeLaw {
      *   // note the call to revert in the following statement
      *   double[] angles = offsetProper.revert().getAngles(order);
      *
-     *   System.out.println(alpha1 + " == " + angles[0]);  
-     *   System.out.println(alpha2 + " == " + angles[1]);  
-     *   System.out.println(alpha3 + " == " + angles[2]);  
+     *   System.out.println(alpha1 + " == " + angles[0]);
+     *   System.out.println(alpha2 + " == " + angles[1]);
+     *   System.out.println(alpha3 + " == " + angles[2]);
      * </pre>
      * @param order order of rotations to use for (alpha1, alpha2, alpha3) composition
      * @param alpha1 angle of the first elementary rotation

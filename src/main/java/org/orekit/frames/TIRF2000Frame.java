@@ -54,7 +54,7 @@ class TIRF2000Frame extends FactoryManagedFrame {
     private static final double ERA_1B = ERA_1A * 0.00273781191135448;
 
     /** Cached date to avoid useless calculus. */
-    private AbsoluteDate cachedDate;
+    private transient AbsoluteDate cachedDate;
 
     /** Earth Rotation Angle, in radians. */
     private double era;

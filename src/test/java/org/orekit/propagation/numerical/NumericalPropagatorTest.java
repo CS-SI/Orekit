@@ -16,7 +16,10 @@
  */
 package org.orekit.propagation.numerical;
 
-import org.apache.commons.math.exception.util.DummyLocalizable;
+import java.io.IOException;
+import java.text.ParseException;
+
+import org.apache.commons.math.exception.util.LocalizedFormats;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
@@ -26,16 +29,23 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.numerical.NumericalPropagator.PropagationParametersType;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -97,6 +107,26 @@ public class NumericalPropagatorTest {
 
     }
 
+    @Test
+    public void testCartesian() throws OrekitException {
+
+        // Propagation of the initial at t + dt
+        final double dt = 3200;
+        propagator.setPropagationParametersType(NumericalPropagator.PropagationParametersType.CARTESIAN);
+        final PVCoordinates finalState = 
+            propagator.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
+        final Vector3D pFin = finalState.getPosition();
+        final Vector3D vFin = finalState.getVelocity();
+
+        // Check results
+        final PVCoordinates reference = initialState.shiftedBy(dt).getPVCoordinates();
+        final Vector3D pRef = reference.getPosition();
+        final Vector3D vRef = reference.getVelocity();
+        Assert.assertEquals(0, pRef.subtract(pFin).getNorm(), 0.4);
+        Assert.assertEquals(0, vRef.subtract(vFin).getNorm(), 0.0002);
+
+    }
+
     @Test(expected=OrekitException.class)
     public void testException() throws OrekitException {
         propagator.setMasterMode(new OrekitStepHandler() {
@@ -109,7 +139,7 @@ public class NumericalPropagatorTest {
                     Assert.assertTrue(interpolator.getInterpolatedDate().compareTo(previousCall) < 0);
                 }
                 if (--countDown == 0) {
-                    throw new PropagationException((Throwable) null, new DummyLocalizable("dummy error"));
+                    throw new PropagationException(LocalizedFormats.SIMPLE_MESSAGE, "dummy error");
                 }
             }
             public boolean requiresDenseOutput() {
@@ -211,8 +241,70 @@ public class NumericalPropagatorTest {
         this.gotHere = gotHere;
     }
 
+    @Test
+    public void testEventDetectionBug() throws OrekitException, IOException, ParseException {
+
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate initialDate = new AbsoluteDate(2005, 1, 1, 0, 0, 0.0, utc);
+        double duration = 100000.;
+        AbsoluteDate endDate = new AbsoluteDate(initialDate,duration);
+
+        // Initialization of the frame EME2000
+        Frame EME2000 = FramesFactory.getEME2000();
+
+
+        // Initial orbit            
+        double a = 35786000. + 6378137.0;
+        double e = 0.70;
+        double rApogee = a*(1+e);
+        double vApogee = FastMath.sqrt(mu*(1-e)/(a*(1+e)));
+        Orbit geo = new CartesianOrbit(new PVCoordinates(new Vector3D(rApogee, 0., 0.), 
+                                                         new Vector3D(0., vApogee, 0.)), EME2000, 
+                                                         initialDate, mu);
+
+
+        duration = geo.getKeplerianPeriod();
+        endDate = new AbsoluteDate(initialDate, duration);
+
+        // Numerical Integration
+        final double minStep  = 0.001;
+        final double maxStep  = 1000;
+        final double initStep = 60;
+        final double[] absTolerance = {
+            0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001};
+        final double[] relTolerance = {
+            1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7};
+
+        AdaptiveStepsizeIntegrator integrator =
+            new DormandPrince853Integrator(minStep, maxStep, absTolerance, relTolerance);
+        integrator.setInitialStepSize(initStep);
+
+        // Numerical propagator based on the integrator
+        propagator = new NumericalPropagator(integrator);
+        double mass = 1000.;
+        SpacecraftState initialState = new SpacecraftState(geo, mass);
+        propagator.setInitialState(initialState);
+        propagator.setPropagationParametersType(PropagationParametersType.CARTESIAN);
+
+
+        // Set the events Detectors
+        ApsideDetector event1 = new ApsideDetector(geo);
+        propagator.addEventDetector(event1);
+
+        // Set the propagation mode
+        propagator.setSlaveMode();          
+
+        // Propagate
+        SpacecraftState finalState = propagator.propagate(endDate);
+
+        // we should stop long before endDate
+        Assert.assertTrue(endDate.durationFrom(finalState.getDate()) > 40000.0);
+    }
+
+
     @Before
     public void setUp() {
+        Utils.setDataRoot("compressed-data");
         mu  = 3.9860047e14;
         final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
         final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);

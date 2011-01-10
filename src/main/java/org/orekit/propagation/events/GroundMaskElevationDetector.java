@@ -38,14 +38,14 @@ import org.orekit.propagation.SpacecraftState;
  *  azimuth values, second row with elevation values, as in the following snippet:
  *  <pre>
  *    double [][] mask = {
- *                        {FastMathMath.toRadians(0),   FastMath.toRadians(10)},
- *                        {FastMathMath.toRadians(45),  FastMath.toRadians(8)},
- *                        {FastMathMath.toRadians(90),  FastMath.toRadians(6)},
- *                        {FastMathMath.toRadians(135), FastMath.toRadians(4)},
- *                        {FastMathMath.toRadians(180), FastMath.toRadians(5)},
- *                        {FastMathMath.toRadians(225), FastMath.toRadians(6)},
- *                        {FastMathMath.toRadians(270), FastMath.toRadians(8)},
- *                        {FastMathMath.toRadians(315), FastMath.toRadians(9)}
+ *                        {FastMathFastMath.toRadians(0),   FastMath.toRadians(10)},
+ *                        {FastMathFastMath.toRadians(45),  FastMath.toRadians(8)},
+ *                        {FastMathFastMath.toRadians(90),  FastMath.toRadians(6)},
+ *                        {FastMathFastMath.toRadians(135), FastMath.toRadians(4)},
+ *                        {FastMathFastMath.toRadians(180), FastMath.toRadians(5)},
+ *                        {FastMathFastMath.toRadians(225), FastMath.toRadians(6)},
+ *                        {FastMathFastMath.toRadians(270), FastMath.toRadians(8)},
+ *                        {FastMathFastMath.toRadians(315), FastMath.toRadians(9)}
  *                       };
  *  </pre>
  * </p>

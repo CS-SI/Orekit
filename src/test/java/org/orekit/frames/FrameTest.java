@@ -145,8 +145,8 @@ public class FrameTest {
         Frame rotatingPadFrame  = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                             Constants.WGS84_EARTH_FLATTENING,
                                                                             itrf),
-                                                       new GeodeticPoint(Math.toRadians(5.0),
-                                                                                              Math.toRadians(-100.0),
+                                                       new GeodeticPoint(FastMath.toRadians(5.0),
+                                                                                              FastMath.toRadians(-100.0),
                                                                                               0.0),
                                                        "launch pad");
 

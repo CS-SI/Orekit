@@ -490,4 +490,11 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         return dragCoeff;
     }
 
+    /** {@inheritDoc} */
+    public void addDAccDParam(final Vector3D acceleration, final String paramName, final double[] dAccdParam)
+        throws OrekitException {
+        // TODO: not supported yet
+        throw OrekitException.createInternalError(null);
+    }
+
 }

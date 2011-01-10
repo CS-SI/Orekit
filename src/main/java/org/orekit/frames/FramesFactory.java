@@ -149,7 +149,7 @@ public class FramesFactory implements Serializable {
     private static final long serialVersionUID = 1720647682459923909L;
 
     /** Predefined frames. */
-    private static Map<Predefined, FactoryManagedFrame> FRAMES =
+    private static transient Map<Predefined, FactoryManagedFrame> FRAMES =
         new WeakHashMap<Predefined, FactoryManagedFrame>();
 
     /** EOP 1980 loaders. */

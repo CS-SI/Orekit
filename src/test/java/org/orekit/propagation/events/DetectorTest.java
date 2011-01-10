@@ -33,6 +33,7 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 public class DetectorTest {
@@ -98,6 +99,7 @@ public class DetectorTest {
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
+        mu = Constants.EIGEN5C_EARTH_MU;
     }
 
 }
