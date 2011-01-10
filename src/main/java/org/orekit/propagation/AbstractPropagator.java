@@ -215,7 +215,6 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
         throws PropagationException {
         try {
 
-            startDate = start;
             interpolator.storeDate(start);
             SpacecraftState state = interpolator.getInterpolatedState();
 
@@ -231,7 +230,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
                 stepSize = target.durationFrom(interpolator.getCurrentDate());
             }
             final CombinedEventsDetectorsManager manager =
-                addEndDateChecker(getInitialState().getDate(), target, eventsDetectorsManager);
+                addEndDateChecker(start, target, eventsDetectorsManager);
 
             // iterate over the propagation range
             AbsoluteDate stepEnd = interpolator.getCurrentDate().shiftedBy(stepSize);
