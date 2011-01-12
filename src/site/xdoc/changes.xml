@@ -22,6 +22,10 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix">
+        TLEPropagator now implements the Propagator interface, and hence can benefit from all
+        events detection and mode handling features (fixes features request #4)
+      </action>
       <action dev="v&#233;ronique" type="add" >
         all propagators, including analytical ones or tabulated ones can now be used for
         event detection. Of course for tabulated propagators, setting up an event that

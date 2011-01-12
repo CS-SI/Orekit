@@ -105,6 +105,13 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
         setSlaveMode();
     }
 
+    /** Set a start date.
+     * @param startDate start date
+     */
+    protected void setStartDate(final AbsoluteDate startDate) {
+        this.startDate = startDate;
+    }
+
     /** Get attitude provider.
      * @return attitude provider
      */

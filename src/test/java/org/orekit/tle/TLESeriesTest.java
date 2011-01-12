@@ -27,6 +27,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.FramesFactory;
+import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -111,10 +113,11 @@ public class TLESeriesTest {
         PolynomialFunction errorModel =
             new PolynomialFunction(new double[] { -135.98, 0.010186, 1.3115e-06 });
 
-        TLEPropagator propagator = TLEPropagator.selectExtrapolator(series.getFirst());
+        Propagator propagator = TLEPropagator.selectExtrapolator(series.getFirst());
         for (double dt = 0; dt < 3 * Constants.JULIAN_DAY; dt += 600) {
             AbsoluteDate date = t0.shiftedBy(dt);
-            PVCoordinates delta = new PVCoordinates(propagator.getPVCoordinates(date), series.getPVCoordinates(date));
+            PVCoordinates delta = new PVCoordinates(propagator.getPVCoordinates(date, FramesFactory.getTEME()),
+                                                    series.getPVCoordinates(date));
             Assert.assertEquals(errorModel.value(dt), delta.getPosition().getNorm(), 1500.0);
         }
 

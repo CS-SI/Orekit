@@ -21,14 +21,18 @@ import java.io.Serializable;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.Frame;
+import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Transform;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.propagation.AbstractPropagator;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.PVCoordinatesProvider;
 
 
 /** This class provides elements to propagate TLE's.
@@ -57,10 +61,16 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @see TLE
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public abstract class TLEPropagator implements PVCoordinatesProvider, Serializable {
+public abstract class TLEPropagator extends AbstractPropagator implements Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 6389584529961457799L;
+
+    /** Earth gravity coefficient in m<sup>3</sup>/s<sup>2</sup>. */
+    private static final double MU =
+        TLEConstants.XKE * TLEConstants.XKE *
+        TLEConstants.EARTH_RADIUS * TLEConstants.EARTH_RADIUS * TLEConstants.EARTH_RADIUS *
+        (1000 * 1000 * 1000) / (60 * 60);
 
     // CHECKSTYLE: stop VisibilityModifierCheck
 
@@ -158,12 +168,33 @@ public abstract class TLEPropagator implements PVCoordinatesProvider, Serializab
 
     // CHECKSTYLE: resume VisibilityModifierCheck
 
+    /** Spacecraft mass (kg). */
+    private final double mass;
+
     /** Protected constructor for derived classes.
+     * <p>
+     * The attitude provider will be set to {@link Propagator#DEFAULT_LAW}.
+     * </p>
      * @param initialTLE the unique TLE to propagate
      * @exception OrekitException if some specific error occurs
      */
     protected TLEPropagator(final TLE initialTLE) throws OrekitException {
+        this(initialTLE, DEFAULT_LAW, DEFAULT_MASS);
+    }
+
+    /** Protected constructor for derived classes.
+     * @param initialTLE the unique TLE to propagate
+     * @param attitudeProvider provider for attitude computation
+     * @param mass spacecraft mass (kg)
+     * @exception OrekitException if some specific error occurs
+     */
+    protected TLEPropagator(final TLE initialTLE, final AttitudeProvider attitudeProvider,
+                            final double mass)
+        throws OrekitException {
+        super(attitudeProvider);
+        setStartDate(initialTLE.getDate());
         tle = initialTLE;
+        this.mass = mass;
         initializeCommons();
         sxpInitialize();
     }
@@ -206,13 +237,6 @@ public abstract class TLEPropagator implements PVCoordinatesProvider, Serializab
 
         // Compute PV with previous calculated parameters
         return computePVCoordinates();
-    }
-
-    /** {@inheritDoc} */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
-        final Transform t = FramesFactory.getTEME().getTransformTo(frame, date);
-        return t.transformPVCoordinates(getPVCoordinates(date));
     }
 
     /** Computation of the first commons parameters.
@@ -441,5 +465,25 @@ public abstract class TLEPropagator implements PVCoordinatesProvider, Serializab
      * @exception OrekitException if current state cannot be propagated
      */
     protected abstract void sxpPropagate(double t) throws OrekitException;
+
+    /** {@inheritDoc} */
+    public void resetInitialState(final SpacecraftState state)
+        throws PropagationException {
+        throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
+    }
+
+    /** {@inheritDoc} */
+    protected double getMass(final AbsoluteDate date) {
+        return mass;
+    }
+
+    /** {@inheritDoc} */
+    protected Orbit propagateOrbit(final AbsoluteDate date) throws PropagationException {
+        try {
+            return new CartesianOrbit(getPVCoordinates(date), FramesFactory.getTEME(), date, MU);
+        } catch (OrekitException oe) {
+            throw new PropagationException(oe);
+        }
+    }
 
 }
