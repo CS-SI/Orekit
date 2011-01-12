@@ -45,7 +45,7 @@ class TEMEFrame extends FactoryManagedFrame {
     protected TEMEFrame(final Predefined factoryKey)
         throws OrekitException {
 
-        super(FramesFactory.getTOD(false), null, false, factoryKey);
+        super(FramesFactory.getTOD(false), null, true, factoryKey);
 
         // everything is in place, we can now synchronize the frame
         updateFrame(AbsoluteDate.J2000_EPOCH);
