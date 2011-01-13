@@ -1,4 +1,4 @@
-/* Copyright 2002-2010 CS Communication & Systèmes
+/* Copyright 2002-2011 CS Communication & Systèmes
  * Licensed to CS Communication & Syst�mes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
