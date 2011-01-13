@@ -25,6 +25,6 @@ compile-time/run-time dependency:
 
 test-time dependency:
 
-  - JUnit from Erich Gamma and Kent Beck
+  - JUnit 4 from Erich Gamma and Kent Beck
     http://www.junit.org/
     released under the Common Public License Version 1.0
