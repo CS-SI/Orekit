@@ -4,7 +4,6 @@ import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
@@ -43,7 +42,6 @@ public class CircularFieldOfViewDetectorTest {
     private BodyCenterPointing earthCenterAttitudeLaw;
 
     @Test
-    @Ignore
     public void testCircularFielOfView() throws OrekitException {
 
         // Definition of initial conditions with position and velocity

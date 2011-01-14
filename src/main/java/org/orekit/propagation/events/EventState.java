@@ -141,7 +141,11 @@ class EventState implements Serializable {
 
             forward = interpolator.isForward();
             final AbsoluteDate t1 = interpolator.getCurrentDate();
-            final AbsoluteDate start = (t1.compareTo(t0) > 0) ?
+            if (FastMath.abs(t1.durationFrom(t0)) <= detector.getThreshold()) {
+                // we cannot do anything on such a small step, just accept it
+                return false;
+            }
+            final AbsoluteDate start = forward ?
                                        t0.shiftedBy(detector.getThreshold()) :
                                        t0.shiftedBy(-detector.getThreshold());
             final double dt = t1.durationFrom(start);
@@ -181,7 +185,7 @@ class EventState implements Serializable {
 
                     double dtA = ta.durationFrom(t0);
                     final double dtB = tb.durationFrom(t0);
-                    if (ga * gb > 0) {
+                    if (ga * gb >= 0) {
                         // this is a corner case:
                         // - there was an event near ta,
                         // - there is another event between ta and tb
