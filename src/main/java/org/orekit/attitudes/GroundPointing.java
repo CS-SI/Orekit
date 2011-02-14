@@ -112,14 +112,16 @@ public abstract class GroundPointing implements AttitudeProvider {
         // Construction of the satellite-target position/velocity vector at t-h, t and t+h
         final double h = 0.1;
 
-        final PVCoordinates pvM1H = pvProv.getPVCoordinates(date.shiftedBy(h), frame);
-        final Vector3D deltaPM1h  = getTargetPoint(pvProv, date.shiftedBy(-h), frame).subtract(pvM1H.getPosition());
+        final AbsoluteDate dateM1H = date.shiftedBy(-h);
+        final PVCoordinates pvM1H  = pvProv.getPVCoordinates(dateM1H, frame);
+        final Vector3D deltaPM1h   = getTargetPoint(pvProv, dateM1H, frame).subtract(pvM1H.getPosition());
 
-        final PVCoordinates pv0   = pvProv.getPVCoordinates(date, frame);
-        final Vector3D deltaP0    = getTargetPoint(pvProv, date.shiftedBy(-h), frame).subtract(pv0.getPosition());
+        final PVCoordinates pv0    = pvProv.getPVCoordinates(date, frame);
+        final Vector3D deltaP0     = getTargetPoint(pvProv, date, frame).subtract(pv0.getPosition());
 
-        final PVCoordinates pvP1H = pvProv.getPVCoordinates(date.shiftedBy(h), frame);
-        final Vector3D deltaPP1h  = getTargetPoint(pvProv, date.shiftedBy(h), frame).subtract(pvP1H.getPosition());
+        final AbsoluteDate dateP1H = date.shiftedBy(h);
+        final PVCoordinates pvP1H  = pvProv.getPVCoordinates(dateP1H, frame);
+        final Vector3D deltaPP1h   = getTargetPoint(pvProv, dateP1H, frame).subtract(pvP1H.getPosition());
 
         // New orekit exception if null position.
         if (deltaP0.equals(Vector3D.ZERO)) {
