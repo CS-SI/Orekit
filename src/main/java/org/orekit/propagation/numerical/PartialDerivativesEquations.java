@@ -83,6 +83,12 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     private transient double[]   dAccdParam;
 
     /** Simple constructor.
+     * <p>
+     * Upon construction, this set of equations is <em>automatically</em> added to
+     * the propagator by calling its {@link
+     * NumericalPropagator#addAdditionalEquations(AdditionalEquations)} method. So
+     * there is no need to call this method explicitly for these equations.
+     * </p>
      * @param propagator the propagator that will handle the orbit propagation
      */
     public PartialDerivativesEquations(final NumericalPropagator propagator) {
@@ -95,6 +101,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         hPos  = Double.NaN;
         hVel  = Double.NaN;
         hM = Double.NaN;
+        propagator.addAdditionalEquations(this);
     }
 
     /** Get the names of the available parameters in the propagator.
