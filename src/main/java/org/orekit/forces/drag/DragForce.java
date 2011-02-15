@@ -22,6 +22,7 @@ import java.util.Collection;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.forces.ForceModel;
 import org.orekit.forces.Parameterizable;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
@@ -46,7 +47,7 @@ import org.orekit.time.AbsoluteDate;
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 
-public class DragForce implements Parameterizable {
+public class DragForce implements ForceModel, Parameterizable {
 
     /** Parameter name for drag coefficient enabling jacobian processing. */
     public static final String DRAG_COEFFICIENT = "DRAG COEFFICIENT";
