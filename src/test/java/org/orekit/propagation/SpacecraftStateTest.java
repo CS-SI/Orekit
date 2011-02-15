@@ -55,20 +55,20 @@ public class SpacecraftStateTest {
         // polynomial models for interpolation error in position, velocity and attitude
         // these models grow as follows
         //   interpolation time (s)    position error (m)   velocity error (m/s)  attitude error (°)
-        //           60                       20                    1                  0.001
-        //          120                      100                    2                  0.002
-        //          300                      600                    4                  0.005
-        //          600                     2000                    6                  0.008
-        //          900                     4000                    6                  0.010
-        // the expected maximal residuals with respect to these models are about 1.6m, 1.4cm/s and 1.6e-4°
+        //           60                       20                    1                  0.00007
+        //          120                      100                    2                  0.00025
+        //          300                      600                    4                  0.00125
+        //          600                     2000                    6                  0.0028
+        //          900                     4000                    6                  0.0075
+        // the expected maximal residuals with respect to these models are about 4m, 4cm/s and 7.0e-5°
         PolynomialFunction pModel = new PolynomialFunction(new double[] {
-            1.0956959601968066, -0.09688149720219452, 0.007737405158470629, -3.2724867778992773e-6
+            1.0861222899572454, -0.09715781161843842, 0.007738813180913936, -3.273915351103342E-6
         });
         PolynomialFunction vModel = new PolynomialFunction(new double[] {
-            -0.027225206270228786, 0.015684157425606932, -1.0261552212623246e-5, 5.20598059288169e-10
+            -0.02580749589147073, 0.015669287539738435, -1.0221727893509467E-5, 4.903886053117456E-10
         });
         PolynomialFunction aModel = new PolynomialFunction(new double[] {
-            -1.7504437924285588e-4, 2.1388130994378013e-5, -1.3397843704372905e-8, 2.96320042273176e-12
+            2.367656161750781E-5, -9.04040437097894E-7, 2.7648633804186084E-8, -3.862811467792131E-11, -3.465934294894873E-15, 2.7789684889607137E-17
         });
 
         AbsoluteDate centerDate = orbit.getDate().shiftedBy(100.0);
@@ -89,9 +89,9 @@ public class SpacecraftStateTest {
             maxResidualV = FastMath.max(maxResidualV, FastMath.abs(residualV));
             maxResidualA = FastMath.max(maxResidualA, FastMath.abs(residualA));
         }
-        Assert.assertEquals(1.6,    maxResidualP, 4.0e-2);
-        Assert.assertEquals(0.014,  maxResidualV, 4.0e-4);
-        Assert.assertEquals(1.6e-4, maxResidualA, 4.0e-6);
+        Assert.assertEquals(4.0,    maxResidualP, 0.2);
+        Assert.assertEquals(0.04,   maxResidualV, 0.01);
+        Assert.assertEquals(7.0e-5, maxResidualA, 0.3e-5);
     }
 
     @Test(expected=IllegalArgumentException.class)

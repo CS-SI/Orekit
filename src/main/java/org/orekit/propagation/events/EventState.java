@@ -181,7 +181,7 @@ class EventState implements Serializable {
 
                     double dtA = ta.durationFrom(t0);
                     final double dtB = tb.durationFrom(t0);
-                    if (ga * gb > 0) {
+                    if (ga * gb >= 0) {
                         // this is a corner case:
                         // - there was an event near ta,
                         // - there is another event between ta and tb

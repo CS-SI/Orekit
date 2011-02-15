@@ -18,7 +18,12 @@ package org.orekit.propagation;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.commons.math.ConvergenceException;
 import org.apache.commons.math.util.FastMath;
@@ -29,10 +34,9 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.events.AbstractDetector;
-import org.orekit.propagation.events.CombinedEventsDetectorsManager;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventObserver;
+import org.orekit.propagation.events.EventState;
 import org.orekit.propagation.events.OccurredEvent;
 import org.orekit.propagation.numerical.AdditionalEquations;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -71,8 +75,11 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
     /** Step handler. */
     private OrekitStepHandler stepHandler;
 
-    /** Manager for events detectors. */
-    private final CombinedEventsDetectorsManager eventsDetectorsManager;
+    /** Event steps. */
+    private final Collection<EventState> eventsStates;
+
+    /** Initialization indicator of events states. */
+    private boolean statesInitialized;
 
     /** List for occurred events. */
     private final List <OccurredEvent> occurredEvents;
@@ -92,12 +99,16 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
     /** Initial state. */
     private SpacecraftState initialState;
 
+    /** Indicator for last step. */
+    private boolean isLastStep;
+
 
     /** Build a new instance.
      * @param attitudeProvider provider for attitude computation
      */
     protected AbstractPropagator(final AttitudeProvider attitudeProvider) {
-        eventsDetectorsManager = new CombinedEventsDetectorsManager(this);
+        eventsStates           = new ArrayList<EventState>();
+        statesInitialized      = false;
         occurredEvents         = new ArrayList<OccurredEvent>();
         interpolator           = new BasicStepInterpolator();
         this.pvProvider        = new LocalPVProvider();
@@ -184,17 +195,21 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
 
     /** {@inheritDoc} */
     public void addEventDetector(final EventDetector detector) {
-        eventsDetectorsManager.addEventDetector(detector);
+        eventsStates.add(new EventState(detector, this));
     }
 
     /** {@inheritDoc} */
     public Collection<EventDetector> getEventsDetectors() {
-        return eventsDetectorsManager.getEventsDetectors();
+        final List<EventDetector> list = new ArrayList<EventDetector>();
+        for (final EventState state : eventsStates) {
+            list.add(state.getEventDetector());
+        }
+        return Collections.unmodifiableCollection(list);
     }
 
     /** {@inheritDoc} */
     public void clearEventsDetectors() {
-        eventsDetectorsManager.clearEventsDetectors();
+        eventsStates.clear();
     }
 
     /** {@inheritDoc} */
@@ -222,6 +237,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
         throws PropagationException {
         try {
 
+            final double epsilon = FastMath.ulp(target.durationFrom(start));
             interpolator.storeDate(start);
             SpacecraftState state = interpolator.getInterpolatedState();
 
@@ -236,70 +252,20 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
             } else {
                 stepSize = target.durationFrom(interpolator.getCurrentDate());
             }
-            final CombinedEventsDetectorsManager manager =
-                addEndDateChecker(start, target, eventsDetectorsManager);
 
             // iterate over the propagation range
-            AbsoluteDate stepEnd = interpolator.getCurrentDate().shiftedBy(stepSize);
-            for (boolean lastStep = false; !lastStep;) {
+            statesInitialized = false;
+            isLastStep = false;
+            do {
 
+                // go ahead one step size
                 interpolator.shift();
-                boolean needUpdate = false;
+                interpolator.storeDate(interpolator.getCurrentDate().shiftedBy(stepSize));
 
-                // attempt to perform one step, with the current step size
-                // (this may loop if some discrete event is triggered)
-                for (boolean loop = true; loop;) {
+                // accept the step, trigger events and step handlers
+                state = acceptStep(target, epsilon);
 
-                    // go ahead one step size
-                    interpolator.storeDate(stepEnd);
-
-                    // check discrete events
-                    if (manager.evaluateStep(interpolator)) {
-                        needUpdate = true;
-                        stepEnd = manager.getEventTime();
-                    } else {
-                        loop = false;
-                    }
-
-                }
-
-                // handle the accepted step
-                state = interpolator.getInterpolatedState();
-                manager.stepAccepted(state);
-                if (manager.stop()) {
-                    lastStep = true;
-                } else {
-                    lastStep = stepEnd.compareTo(target) >= 0;
-                }
-                if (stepHandler != null) {
-                    stepHandler.handleStep(interpolator, lastStep);
-                }
-
-                // let the events detectors reset the state if needed
-                final SpacecraftState newState = manager.reset(state);
-                if (newState != state) {
-                    resetInitialState(newState);
-                    state = newState;
-                }
-
-                if (needUpdate) {
-                    // an event detector has reduced the step
-                    // we need to adapt step size for next iteration
-                    stepEnd = interpolator.getPreviousDate().shiftedBy(stepSize);
-                } else {
-                    stepEnd = interpolator.getCurrentDate().shiftedBy(stepSize);
-                }
-                if (interpolator.isForward()) {
-                    if (stepEnd.compareTo(target) > 0) {
-                        stepEnd = target;
-                    }
-                } else {
-                    if (stepEnd.compareTo(target) < 0) {
-                        stepEnd = target;
-                    }
-                }
-
-            }
+            } while (!isLastStep);
 
             // return the last computed state
             startDate = state.getDate();
@@ -319,6 +285,122 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
         } catch (ConvergenceException ce) {
             throw new PropagationException(ce, ce.getGeneralPattern(), ce.getArguments());
         }
+    }
+
+    /** Accept a step, triggering events and step handlers.
+     * @param target final propagation time
+     * @param epsilon threshold for end date detection
+     * @return state at the end of the step
+     * @exception OrekitException if the switching function cannot be evaluated
+     * @exception ConvergenceException if an event cannot be located
+     */
+    protected SpacecraftState acceptStep(final AbsoluteDate target, final double epsilon)
+        throws OrekitException, ConvergenceException {
+
+        AbsoluteDate previousT      = interpolator.getGlobalPreviousDate();
+        final AbsoluteDate currentT = interpolator.getGlobalCurrentDate();
+
+        // initialize the events states if needed
+        if (! statesInitialized) {
+
+            // initialize the events states
+            final AbsoluteDate t0 = interpolator.getPreviousDate();
+            interpolator.setInterpolatedDate(t0);
+            final SpacecraftState y = interpolator.getInterpolatedState();
+            for (final EventState state : eventsStates) {
+                state.reinitializeBegin(y);
+            }
+
+            statesInitialized = true;
+
+        }
+
+        // search for next events that may occur during the step
+        final int orderingSign = interpolator.isForward() ? +1 : -1;
+        SortedSet<EventState> occuringEvents = new TreeSet<EventState>(new Comparator<EventState>() {
+
+            /** {@inheritDoc} */
+            public int compare(EventState es0, EventState es1) {
+                return orderingSign * es0.getEventTime().compareTo(es1.getEventTime());
+            }
+
+        });
+
+
+        for (final EventState state : eventsStates) {
+            if (state.evaluateStep(interpolator)) {
+                // the event occurs during the current step
+                occuringEvents.add(state);
+            }
+        }
+
+        while (!occuringEvents.isEmpty()) {
+
+            // handle the chronologically first event
+            final Iterator<EventState> iterator = occuringEvents.iterator();
+            final EventState currentEvent = iterator.next();
+            iterator.remove();
+
+            // restrict the interpolator to the first part of the step, up to the event
+            final AbsoluteDate eventT = currentEvent.getEventTime();
+            interpolator.setSoftPreviousDate(previousT);
+            interpolator.setSoftCurrentDate(eventT);
+
+            // trigger the event
+            interpolator.setInterpolatedDate(eventT);
+            final SpacecraftState eventY = interpolator.getInterpolatedState();
+            currentEvent.stepAccepted(eventY);
+            isLastStep = currentEvent.stop();
+
+            // handle the first part of the step, up to the event
+            if (stepHandler != null) {
+                stepHandler.handleStep(interpolator, isLastStep);
+            }
+
+            if (isLastStep) {
+                // the event asked to stop integration
+                return eventY;
+            }
+
+            final SpacecraftState resetState = currentEvent.reset(eventY);
+            if (resetState != null) {
+                resetInitialState(resetState);
+                return resetState;
+            }
+
+            // prepare handling of the remaining part of the step
+            previousT = eventT;
+            interpolator.setSoftPreviousDate(eventT);
+            interpolator.setSoftCurrentDate(currentT);
+
+            // check if the same event occurs again in the remaining part of the step
+            if (currentEvent.evaluateStep(interpolator)) {
+                // the event occurs during the current step
+                occuringEvents.add(currentEvent);
+            }
+
+        }
+
+        interpolator.setInterpolatedDate(currentT);
+        final SpacecraftState currentY = interpolator.getInterpolatedState();
+        for (final EventState state : eventsStates) {
+            state.stepAccepted(currentY);
+            isLastStep = isLastStep || state.stop();
+        }
+        final double remaining = target.durationFrom(currentT);
+        if (interpolator.isForward()) {
+            isLastStep = isLastStep || (remaining <  epsilon);
+        } else {
+            isLastStep = isLastStep || (remaining > -epsilon);            
+        }
+
+        // handle the remaining part of the step, after all events if any
+        if (stepHandler != null) {
+            stepHandler.handleStep(interpolator, isLastStep);
+        }
+
+        return currentY;
+
     }
 
     /** {@inheritDoc} */
@@ -442,72 +524,23 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
 
     }
 
-    /** Add an event handler for end date checking.
-     * <p>This method can be used to simplify handling of integration end date.
-     * It leverages the nominal stop condition with the exceptional stop
-     * conditions.</p>
-     * @param start propagation start date
-     * @param end desired end date
-     * @param manager manager containing the user-defined handlers
-     * @return a new manager containing all the user-defined handlers plus a
-     * dedicated manager triggering a stop event at entDate
-     */
-    protected CombinedEventsDetectorsManager addEndDateChecker(final AbsoluteDate start,
-                                                               final AbsoluteDate end,
-                                                               final CombinedEventsDetectorsManager manager) {
-        final CombinedEventsDetectorsManager newManager = new CombinedEventsDetectorsManager(this);
-        for (final EventDetector detector : manager.getEventsDetectors()) {
-            newManager.addEventDetector(detector);
-        }
-        final double dt = end.durationFrom(start);
-        newManager.addEventDetector(new EndDateDetector(end, Double.POSITIVE_INFINITY,
-                                                        FastMath.ulp(dt)));
-        return newManager;
-    }
-
-    /** Specialized event handler to stop integration. */
-    private static class EndDateDetector extends AbstractDetector {
-
-        /** Serializable version identifier. */
-        private static final long serialVersionUID = -7950598937797923427L;
-
-        /** Desired end date. */
-        private final AbsoluteDate endDate;
-
-        /** Build an instance.
-         * @param endDate desired end date
-         * @param maxCheck maximal check interval
-         * @param threshold convergence threshold
-         */
-        public EndDateDetector(final AbsoluteDate endDate,
-                               final double maxCheck, final double threshold) {
-            super(maxCheck, threshold);
-            this.endDate = endDate;
-        }
-
-        /** {@inheritDoc} */
-        public int eventOccurred(final SpacecraftState s, final boolean increasing) {
-            return STOP;
-        }
-
-        /** {@inheritDoc} */
-        public double g(final SpacecraftState s) {
-            return s.getDate().durationFrom(endDate);
-        }
-
-    }
-
     /** Internal class for local propagation. */
     private class BasicStepInterpolator implements OrekitStepInterpolator {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 1585604180933740215L;
+        private static final long serialVersionUID = 26269718303505539L;
 
-        /** Previous date. */
-        private AbsoluteDate previousDate;
+        /** Global previous date. */
+        private AbsoluteDate globalPreviousDate;
 
-        /** Current date. */
-        private AbsoluteDate currentDate;
+        /** Global current date. */
+        private AbsoluteDate globalCurrentDate;
+
+        /** Soft previous date. */
+        private AbsoluteDate softPreviousDate;
+
+        /** Soft current date. */
+        private AbsoluteDate softCurrentDate;
 
         /** Interpolated State. */
         private SpacecraftState interpolatedState;
@@ -518,13 +551,57 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
         /** Build a new instance from a basic propagator.
          */
         public BasicStepInterpolator() {
-            previousDate     = AbsoluteDate.PAST_INFINITY;
-            currentDate      = AbsoluteDate.PAST_INFINITY;
+            globalPreviousDate = AbsoluteDate.PAST_INFINITY;
+            globalCurrentDate  = AbsoluteDate.PAST_INFINITY;
+            softPreviousDate   = AbsoluteDate.PAST_INFINITY;
+            softCurrentDate    = AbsoluteDate.PAST_INFINITY;
+        }
+
+        /** Restrict step range to a limited part of the global step.
+         * <p>
+         * This method can be used to restrict a step and make it appear
+         * as if the original step was smaller. Calling this method
+         * <em>only</em> changes the value returned by {@link #getPreviousDate()},
+         * it does not change any other property
+         * </p>
+         * @param softPreviousDate start of the restricted step
+         */
+        public void setSoftPreviousDate(final AbsoluteDate softPreviousDate) {
+            this.softPreviousDate = softPreviousDate;
+        }
+
+        /** Restrict step range to a limited part of the global step.
+         * <p>
+         * This method can be used to restrict a step and make it appear
+         * as if the original step was smaller. Calling this method
+         * <em>only</em> changes the value returned by {@link #getCurrentDate()},
+         * it does not change any other property
+         * </p>
+         * @param softCurrentDate end of the restricted step
+         */
+        public void setSoftCurrentDate(final AbsoluteDate softCurrentDate) {
+            this.softCurrentDate  = softCurrentDate;
+        }
+
+        /**
+         * Get the previous global grid point time.
+         * @return previous global grid point time
+         */
+        public AbsoluteDate getGlobalPreviousDate() {
+          return globalPreviousDate;
+        }
+
+        /**
+         * Get the current global grid point time.
+         * @return current global grid point time
+         */
+        public AbsoluteDate getGlobalCurrentDate() {
+          return globalCurrentDate;
         }
 
         /** {@inheritDoc} */
         public AbsoluteDate getCurrentDate() {
-            return currentDate;
+            return softCurrentDate;
         }
 
         /** {@inheritDoc} */
@@ -545,7 +622,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
 
         /** {@inheritDoc} */
         public AbsoluteDate getPreviousDate() {
-            return previousDate;
+            return softPreviousDate;
         }
 
         /** {@inheritDoc} */
@@ -564,7 +641,9 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
          * interpolator for future calls to {@link #storeDate storeDate}
          */
         public void shift() {
-            previousDate = currentDate;
+            globalPreviousDate = globalCurrentDate;
+            softPreviousDate   = globalPreviousDate;
+            softCurrentDate    = globalCurrentDate;
         }
 
         /** Store the current step date.
@@ -573,9 +652,10 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
          */
         public void storeDate(final AbsoluteDate date)
             throws PropagationException {
-            currentDate = date;
-            forward     = currentDate.compareTo(previousDate) >= 0;
-            setInterpolatedDate(currentDate);
+            globalCurrentDate = date;
+            softCurrentDate   = globalCurrentDate;
+            forward     = globalCurrentDate.compareTo(globalPreviousDate) >= 0;
+            setInterpolatedDate(globalCurrentDate);
         }
 
     }

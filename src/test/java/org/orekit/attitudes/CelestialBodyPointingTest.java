@@ -51,7 +51,7 @@ public class CelestialBodyPointingTest {
             new CelestialBodyPointed(frame, sun, Vector3D.PLUS_K,
                                      Vector3D.PLUS_I, Vector3D.PLUS_K);
         PVCoordinates pv =
-            new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
+            new PVCoordinates(new Vector3D(28812595.32120171334, 5948437.45881852374, 0.0),
                               new Vector3D(0, 0, 3680.853673522056));
         Orbit orbit = new KeplerianOrbit(pv, frame, date, 3.986004415e14);
         Attitude attitude   = sunPointing.getAttitude(orbit, date, frame);

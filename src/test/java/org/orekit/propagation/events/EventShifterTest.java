@@ -24,7 +24,6 @@ import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -51,7 +50,6 @@ public class EventShifterTest {
     private double earthRadius = 6400000.;
 
     @Test
-    @Ignore
     public void testNegNeg() throws OrekitException {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
@@ -69,7 +67,6 @@ public class EventShifterTest {
     }
 
     @Test
-    @Ignore
     public void testNegPos() throws OrekitException {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
@@ -87,7 +84,6 @@ public class EventShifterTest {
     }
 
     @Test
-    @Ignore
     public void testPosNeg() throws OrekitException {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
@@ -105,7 +101,6 @@ public class EventShifterTest {
     }
 
     @Test
-    @Ignore
     public void testPosPos() throws OrekitException {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
@@ -123,7 +118,6 @@ public class EventShifterTest {
     }
 
     @Test
-    @Ignore
     public void testIncreasingError() throws OrekitException {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 2.0e-9));
         propagator.addEventDetector(new EventShifter(createRawDetector("-10s increasing", "-10s decreasing", 2.0e-3),

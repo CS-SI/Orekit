@@ -97,7 +97,7 @@ import org.orekit.utils.PVCoordinates;
  * setting for Low Earth Orbit propagation:</p>
  * <pre>
  * final double minStep  = 0.001;
- * final double maxStep  = 1000;
+ * final double maxStep  = 500;
  * final double initStep = 60;
  * final double[] absTolerance = {
  *     0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001

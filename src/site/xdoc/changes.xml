@@ -26,6 +26,14 @@
         TLEPropagator now implements the Propagator interface, and hence can benefit from all
         events detection and mode handling features (fixes features request #4)
       </action>
+      <action dev="luc" type="update">
+        improved events detection robustness, by decoupling events handling from adaptive step
+        sizes in numerical integrators and  (fix contributed to Apache Commons Math) and from
+        classical propagation in analytical and tabulated propagators. This implies the events
+        will NOT reduce integration step sizes anymore, thus also increasing speed and in corner
+        cases reducing local precision at event occurrence, reducing max step size is often
+        sufficient to compensate for this drawback
+      </action>
       <action dev="v&#233;ronique" type="add" >
         all propagators, including analytical ones or tabulated ones can now be used for
         event detection. Of course for tabulated propagators, setting up an event that
