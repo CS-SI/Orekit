@@ -19,10 +19,9 @@ package org.orekit.propagation.events;
 import java.io.Serializable;
 
 import org.apache.commons.math.ConvergenceException;
+import org.apache.commons.math.FunctionEvaluationException;
 import org.apache.commons.math.analysis.UnivariateRealFunction;
 import org.apache.commons.math.analysis.solvers.BrentSolver;
-import org.apache.commons.math.analysis.solvers.UnivariateRealSolver;
-import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
@@ -46,10 +45,10 @@ import org.orekit.time.AbsoluteDate;
  *
  * @version $Revision$ $Date$
  */
-class EventState implements Serializable {
+public class EventState implements Serializable {
 
     /** Serializable version identifier. */
-    private static final long serialVersionUID = 7498385558553820471L;
+    private static final long serialVersionUID = 4489391420715269318L;
 
     /** Event detector. */
     private EventDetector detector;
@@ -139,11 +138,15 @@ class EventState implements Serializable {
 
         try {
 
+            final double convergence    = detector.getThreshold();
+            final int maxIterationcount = detector.getMaxIterationCount();
             forward = interpolator.isForward();
             final AbsoluteDate t1 = interpolator.getCurrentDate();
-            final AbsoluteDate start = (t1.compareTo(t0) > 0) ?
-                                       t0.shiftedBy(detector.getThreshold()) :
-                                       t0.shiftedBy(-detector.getThreshold());
+            if (FastMath.abs(t1.durationFrom(t0)) < convergence) {
+                // we cannot do anything on such a small step, don't trigger any events
+                return false;
+            }
+            final AbsoluteDate start = forward ? t0.shiftedBy(convergence) : t0.shiftedBy(-convergence);
             final double dt = t1.durationFrom(start);
             final int    n  = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt) / detector.getMaxCheckInterval()));
             final double h  = dt / n;
@@ -165,23 +168,20 @@ class EventState implements Serializable {
                     increasing = gb >= ga;
 
                     final UnivariateRealFunction f = new UnivariateRealFunction() {
-                        private static final long serialVersionUID = 642356050167522213L;
-                        public double value(final double t) throws MathUserException {
+                        public double value(final double t) throws FunctionEvaluationException {
                             try {
-                                final AbsoluteDate date = t0.shiftedBy(t);
-                                interpolator.setInterpolatedDate(date);
+                                interpolator.setInterpolatedDate(t0.shiftedBy(t));
                                 return detector.g(interpolator.getInterpolatedState());
-                            } catch (OrekitException e) {
-                                throw new MathUserException(e, e.getSpecifier(), e.getParts());
+                            } catch (OrekitException oe) {
+                                throw new FunctionEvaluationException(oe, t);
                             }
                         }
                     };
-                    final UnivariateRealSolver solver = new BrentSolver(detector.getMaxIterationCount(),
-                                                                        detector.getThreshold());
+                    final BrentSolver solver = new BrentSolver(convergence);
 
                     double dtA = ta.durationFrom(t0);
                     final double dtB = tb.durationFrom(t0);
-                    if (ga * gb >= 0) {
+                    if (ga * gb > 0) {
                         // this is a corner case:
                         // - there was an event near ta,
                         // - there is another event between ta and tb
@@ -189,7 +189,7 @@ class EventState implements Serializable {
                         // this implies that the real sign of ga is the same as gb, so we need to slightly
                         // shift ta to make sure ga and gb get opposite signs and the solver won't complain
                         // about bracketing
-                        final double epsilon = (forward ? 0.25 : -0.25) * detector.getThreshold();
+                        final double epsilon = (forward ? 0.25 : -0.25) * convergence;
                         for (int k = 0; (k < 4) && (ga * gb > 0); ++k) {
                             dtA += epsilon;
                             ga = f.value(dtA);
@@ -200,27 +200,20 @@ class EventState implements Serializable {
                         }
                     }
 
-                    final double dtRoot = (dtA <= dtB) ? solver.solve(1000, f, dtA, dtB) : solver.solve(1000, f, dtB, dtA);
+                    final double dtRoot = (dtA <= dtB) ?
+                                          solver.solve(maxIterationcount, f, dtA, dtB) :
+                                          solver.solve(maxIterationcount, f, dtB, dtA);
                     final AbsoluteDate root = t0.shiftedBy(dtRoot);
 
                     if ((previousEventTime != null) &&
-                        (FastMath.abs(root.durationFrom(ta)) <= detector.getThreshold()) &&
-                        (FastMath.abs(root.durationFrom(previousEventTime)) <= detector.getThreshold())) {
+                        (FastMath.abs(root.durationFrom(ta)) <= convergence) &&
+                        (FastMath.abs(root.durationFrom(previousEventTime)) <= convergence)) {
                             // we have either found nothing or found (again ?) a past event, we simply ignore it
                         ta = tb;
                         ga = gb;
                     } else if ((previousEventTime == null) ||
-                               (FastMath.abs(previousEventTime.durationFrom(root)) > detector.getThreshold())) {
+                               (FastMath.abs(previousEventTime.durationFrom(root)) > convergence)) {
                         pendingEventTime = root;
-                        if (pendingEvent && (FastMath.abs(t1.durationFrom(pendingEventTime)) <= detector.getThreshold())) {
-                            // we were already waiting for this event which was
-                            // found during a previous call for a step that was
-                            // rejected, this step must now be accepted since it
-                            // properly ends exactly at the event occurrence
-                            return false;
-                        }
-                        // either we were not waiting for the event or it has
-                        // moved in such a way the step cannot be accepted
                         pendingEvent = true;
                         return true;
                     } else {
@@ -242,12 +235,12 @@ class EventState implements Serializable {
             pendingEventTime = null;
             return false;
 
-        } catch (MathUserException e) {
-            final Throwable cause = e.getCause();
+        } catch (FunctionEvaluationException fee) {
+            final Throwable cause = fee.getCause();
             if ((cause != null) && (cause instanceof OrekitException)) {
                 throw (OrekitException) cause;
             }
-            throw new OrekitException(e, e.getGeneralPattern(), e.getArguments());
+            throw new OrekitException(fee, fee.getGeneralPattern(), fee.getArguments());
         }
 
     }
@@ -294,7 +287,7 @@ class EventState implements Serializable {
 
     /** Let the event detector reset the state if it wants.
      * @param oldState value of the state vector at the beginning of the next step
-     * @return new state (oldState of no reset is needed)
+     * @return new state (null if no reset is needed)
      * @exception OrekitException if the state cannot be reset by the event
      * detector
      */
@@ -302,12 +295,12 @@ class EventState implements Serializable {
         throws OrekitException {
 
         if (!pendingEvent) {
-            return oldState;
+            return null;
         }
 
         final SpacecraftState newState =
             (nextAction == EventDetector.RESET_STATE) ?
-            detector.resetState(oldState) : oldState;
+            detector.resetState(oldState) : null;
         pendingEvent      = false;
         pendingEventTime  = null;
 
