@@ -89,22 +89,27 @@ public class EarthObservation_day_night_switch_with_fixed_transitions {
             //-------------------------
 
             // Mode : day
-            final AttitudeProvider dayObservationLaw = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
+            final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(),
+                                                                     RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
 
             // Mode : night
-            final AttitudeProvider nightRestingLaw   = LofOffset.LOF_ALIGNED;
+            final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame());
 
             // Mode : day-night rdv 1
-            final AttitudeProvider dayNightRdV1Law = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(20), 0);
+            final AttitudeProvider dayNightRdV1Law = new LofOffset(initialOrbit.getFrame(),
+                                                                   RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(20), 0);
 
             // Mode : day-night rdv 2
-            final AttitudeProvider dayNightRdV2Law = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), 0, 0);
+            final AttitudeProvider dayNightRdV2Law = new LofOffset(initialOrbit.getFrame(),
+                                                                   RotationOrder.XYZ, FastMath.toRadians(20), 0, 0);
 
             // Mode : night-day rdv 1
-            final AttitudeProvider nightDayRdV1Law = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), 0, 0);
+            final AttitudeProvider nightDayRdV1Law = new LofOffset(initialOrbit.getFrame(),
+                                                                   RotationOrder.XYZ, FastMath.toRadians(20), 0, 0);
 
             // Mode : night-day rdv 2
-            final AttitudeProvider nightDayRdV2Law = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(20), 0);
+            final AttitudeProvider nightDayRdV2Law = new LofOffset(initialOrbit.getFrame(),
+                                                                   RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(20), 0);
 
             // Event detectors definition
             //---------------------------

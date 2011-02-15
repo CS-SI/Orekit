@@ -58,10 +58,6 @@ public class EclipseDetectorTest {
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate), 1.0e-3);
 
-//        System.out.println(" Ini date : " + iniDate.getDate());
-//        System.out.println(" End date : " + finalState.getDate());
-//        System.out.println(" Duration : " + finalState.getDate().durationFrom(iniDate));
-
     }
 
     @Test

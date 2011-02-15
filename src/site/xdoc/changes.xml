@@ -36,9 +36,12 @@
       </action>
       <action dev="v&#233;ronique" type="add" >
         attitude can be specified either using a date only thanks to a new AttitudeLaw interface
-        or using a date, a position-velocity provider and a frame thanks to a new
-        AttitudeProvider interface, wrappers have been added to convert between the two
-        interfaces
+        or using a date, a position-velocity provider and a frame (which can be any frame) thanks
+        to a new AttitudeProvider interface, wrappers have been added to convert between the two
+        interfaces. A side effect of this change is that LofOffset constructor now needs a reference
+        to an inertial reference frame, otherwise the attitude woud be wrong if a non-inertial frame
+        were passed to getAttitude, due to velocity composition (the computed LOF would not really
+        be a LOF)
       </action>
       <action dev="luc" type="update">
         the notion of quasi-inertial frames has been renamed as pseudo-inertial because

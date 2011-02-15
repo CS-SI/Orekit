@@ -54,7 +54,8 @@ public class ImpulseManeuverTest {
         final double mu = initialOrbit.getMu();
         final double vApo = FastMath.sqrt(mu * (1 - e) / (a * (1 + e)));
         double dv = 0.99 * FastMath.tan(i) * vApo;
-        KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, LofOffset.LOF_ALIGNED);
+        KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit,
+                                                                 new LofOffset(initialOrbit.getFrame()));
         propagator.addEventDetector(new ImpulseManeuver(new NodeDetector(initialOrbit, FramesFactory.getEME2000()),
                                                         new Vector3D(dv, Vector3D.PLUS_J), 400.0));
         SpacecraftState propagated = propagator.propagate(initialOrbit.getDate().shiftedBy(8000));

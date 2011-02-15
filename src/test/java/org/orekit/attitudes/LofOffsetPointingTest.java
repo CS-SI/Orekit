@@ -68,7 +68,7 @@ public class LofOffsetPointingTest {
 
         // Create lof aligned law
         //************************
-        final LofOffset lofLaw = LofOffset.LOF_ALIGNED;
+        final LofOffset lofLaw = new LofOffset(circ.getFrame());
         final LofOffsetPointing lofPointing = new LofOffsetPointing(earthSpheric, lofLaw, Vector3D.PLUS_K);
         final Rotation lofRot = lofPointing.getAttitude(circ, date, circ.getFrame()).getRotation();
  
@@ -94,18 +94,13 @@ public class LofOffsetPointingTest {
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
                                    FastMath.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
                                    FramesFactory.getEME2000(), date, mu);
-        final LofOffset upsideDown = new LofOffset(RotationOrder.XYX, FastMath.PI, 0, 0);
+        final LofOffset upsideDown = new LofOffset(circ.getFrame(), RotationOrder.XYX, FastMath.PI, 0, 0);
         final LofOffsetPointing pointing = new LofOffsetPointing(earthSpheric, upsideDown, Vector3D.PLUS_K);
         pointing.getTargetPoint(circ, date, circ.getFrame());
     }
 
     @Test
     public void testSpin() throws OrekitException {
-
-        final AttitudeProvider law =
-            new LofOffsetPointing(earthSpheric,
-                                  new LofOffset(RotationOrder.XYX, 0.1, 0.2, 0.3),
-                                  Vector3D.PLUS_K);
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
@@ -115,6 +110,11 @@ public class LofOffsetPointingTest {
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
                               FastMath.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
                               FramesFactory.getEME2000(), date, 3.986004415e14);
+
+        final AttitudeProvider law =
+            new LofOffsetPointing(earthSpheric,
+                                  new LofOffset(orbit.getFrame(), RotationOrder.XYX, 0.1, 0.2, 0.3),
+                                  Vector3D.PLUS_K);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);
 

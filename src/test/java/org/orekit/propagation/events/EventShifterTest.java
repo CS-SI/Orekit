@@ -51,6 +51,7 @@ public class EventShifterTest {
     private double earthRadius = 6400000.;
 
     @Test
+    @Ignore
     public void testNegNeg() throws OrekitException {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),

@@ -20,7 +20,9 @@ import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.RotationOrder;
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -32,7 +34,6 @@ import org.orekit.utils.PVCoordinatesProvider;
 
  * <p>
  * The attitude provider is defined as a rotation offset from local orbital frame.
- * This rotation can be defined by
  * NB : Local orbital frame is defined as follows :
  * </p>
  * <ul>
@@ -46,15 +47,26 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class LofOffset implements AttitudeProvider {
 
-    /** Dummy attitude provider, perfectly aligned with the LOF frame. */
-    public static final LofOffset LOF_ALIGNED =
-        new LofOffset(RotationOrder.ZYX, 0., 0., 0.);
-
     /** Serializable UID. */
     private static final long serialVersionUID = -713570668596014285L;
 
     /** Rotation from local orbital frame.  */
     private final Rotation offset;
+
+    /** Inertial frame with respect to which orbit should be computed. */
+    private final Frame inertialFrame;
+
+    /** Create a LOF-aligned attitude.
+     * <p>
+     * Calling this constructor is equivalent to call
+     * {@code LofOffset(inertialFrame, RotationOrder.XYZ, 0, 0, 0)}
+     * </p>
+     * @param inertialFrame inertial frame with respect to which orbit should be computed
+     * @exception OrekitException if inertialFrame is not a pseudo-inertial frame
+     */
+    public LofOffset(final Frame inertialFrame) throws OrekitException {
+        this(inertialFrame, RotationOrder.XYZ, 0, 0, 0);
+    }
 
     /** Creates new instance.
      * <p>
@@ -81,14 +93,22 @@ public class LofOffset implements AttitudeProvider {
      *   System.out.println(alpha2 + " == " + angles[1]);
      *   System.out.println(alpha3 + " == " + angles[2]);
      * </pre>
+     * @param inertialFrame inertial frame with respect to which orbit should be computed
      * @param order order of rotations to use for (alpha1, alpha2, alpha3) composition
      * @param alpha1 angle of the first elementary rotation
      * @param alpha2 angle of the second elementary rotation
      * @param alpha3 angle of the third elementary rotation
+     * @exception OrekitException if inertialFrame is not a pseudo-inertial frame
      */
-    public LofOffset(final RotationOrder order, final double alpha1,
-                     final double alpha2, final double alpha3) {
+    public LofOffset(final Frame inertialFrame,
+                     final RotationOrder order, final double alpha1,
+                     final double alpha2, final double alpha3) throws OrekitException {
         this.offset = new Rotation(order, alpha1, alpha2, alpha3).revert();
+        if (!inertialFrame.isPseudoInertial()) {
+            throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS,
+                                      inertialFrame.getName());
+        }
+        this.inertialFrame = inertialFrame;
     }
 
 
@@ -97,11 +117,13 @@ public class LofOffset implements AttitudeProvider {
                                 final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
-        final PVCoordinates pv = pvProv.getPVCoordinates(date, frame);
+        final PVCoordinates pv = pvProv.getPVCoordinates(date, inertialFrame);
+        final Transform t = inertialFrame.getTransformTo(frame, date);
 
         // Construction of the local orbital frame
-        final Vector3D p = pv.getPosition();
-        final Vector3D momentum = pv.getMomentum();
+        final Vector3D p = t.transformPosition(pv.getPosition());
+        final Vector3D v = t.transformVector(pv.getVelocity()); // beware NOT to apply velocity composition
+        final Vector3D momentum = Vector3D.crossProduct(p, v);
         final double angularVelocity = momentum.getNorm() / p.getNormSq();
 
         final Rotation lofRot = new Rotation(p, momentum, Vector3D.MINUS_K, Vector3D.MINUS_J);

@@ -76,8 +76,9 @@ public class EarthObservation {
 
             // Attitudes sequence definition
             final AttitudesSequence attitudesSequence = new AttitudesSequence();
-            final AttitudeProvider dayObservationLaw = new LofOffset(RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
-            final AttitudeProvider nightRestingLaw   = LofOffset.LOF_ALIGNED;
+            final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(),
+                                                                     RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
+            final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame());
             final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
             final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
             final EventDetector dayNightEvent = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS) {

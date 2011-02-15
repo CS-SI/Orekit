@@ -246,8 +246,8 @@ public class TargetPointingTest {
         
         // Check that the line contains earth center
         double distance = pointingLine.distance(earthShape.transform(geoTarget));
-        
-        Assert.assertTrue(distance < 1.e-7);
+
+        Assert.assertEquals(0, distance, 1.e-7);
     }
 
     /** Test the difference between pointing over two longitudes separated by 5°

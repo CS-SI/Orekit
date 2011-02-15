@@ -245,7 +245,9 @@ public class BoxAndSolarArraySpacecraftTest {
                                    FastMath.toRadians(10.0), CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
                                    FramesFactory.getEME2000(), date, mu);
         propagator =
-            new EcksteinHechlerPropagator(circ, LofOffset.LOF_ALIGNED, ae, mu, c20, c30, c40, c50, c60);
+            new EcksteinHechlerPropagator(circ,
+                                          new LofOffset(circ.getFrame()),
+                                          ae, mu, c20, c30, c40, c50, c60);
         } catch (OrekitException oe) {
             Assert.fail(oe.getLocalizedMessage());
         }
