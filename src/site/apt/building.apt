@@ -17,9 +17,7 @@ Building Orekit
   
   All these tools are Java based and can run on many different operating
   systems, including Unix, GNU/Linux, Windows and Mac OS X. Some GNU/Linux
-  distributions provide these tools in their packages repositories (for
-  exemple Debian Lenny provides all of them but Debian Etch does not
-  provide maven 2).
+  distributions provide these tools in their packages repositories.
 
 * Building with Maven 2
 
