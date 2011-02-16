@@ -452,11 +452,22 @@ public class NumericalPropagator implements Propagator, EventObserver {
     }
 
     /** Add a set of user-specified equations to be integrated along with the orbit propagation.
+     * <p>
+     * Each set of additional equations can only be registered once. There is a
+     * protection in this method preventing the same set of equations from being
+     * added several times.
+     * </p>
      * @param addEqu additional equations
      * @see #setInitialAdditionalState(double[], AdditionalEquations)
      * @see #getCurrentAdditionalState(AdditionalEquations)
      */
     public void addAdditionalEquations(final AdditionalEquations addEqu) {
+        for (AdditionalStateAndEquations stateAndEqu : addStateAndEqu) {
+            if (stateAndEqu.getAdditionalEquations() == addEqu) {
+                // this set of equations is already registered, don't register it again
+                return;
+            }
+        }
         addStateAndEqu.add(new AdditionalStateAndEquations(addEqu));
     }
 
