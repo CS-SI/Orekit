@@ -301,7 +301,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
         final AbsoluteDate currentT = interpolator.getGlobalCurrentDate();
 
         // initialize the events states if needed
-        if (! statesInitialized) {
+        if (!statesInitialized) {
 
             // initialize the events states
             final AbsoluteDate t0 = interpolator.getPreviousDate();
@@ -317,14 +317,15 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
 
         // search for next events that may occur during the step
         final int orderingSign = interpolator.isForward() ? +1 : -1;
-        SortedSet<EventState> occuringEvents = new TreeSet<EventState>(new Comparator<EventState>() {
+        final SortedSet<EventState> occuringEvents =
+            new TreeSet<EventState>(new Comparator<EventState>() {
 
-            /** {@inheritDoc} */
-            public int compare(EventState es0, EventState es1) {
-                return orderingSign * es0.getEventTime().compareTo(es1.getEventTime());
-            }
+                /** {@inheritDoc} */
+                public int compare(final EventState es0, final EventState es1) {
+                    return orderingSign * es0.getEventTime().compareTo(es1.getEventTime());
+                }
 
-        });
+            });
 
 
         for (final EventState state : eventsStates) {
@@ -391,7 +392,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
         if (interpolator.isForward()) {
             isLastStep = isLastStep || (remaining <  epsilon);
         } else {
-            isLastStep = isLastStep || (remaining > -epsilon);            
+            isLastStep = isLastStep || (remaining > -epsilon);
         }
 
         // handle the remaining part of the step, after all events if any
@@ -588,7 +589,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
          * @return previous global grid point time
          */
         public AbsoluteDate getGlobalPreviousDate() {
-          return globalPreviousDate;
+            return globalPreviousDate;
         }
 
         /**
@@ -596,7 +597,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
          * @return current global grid point time
          */
         public AbsoluteDate getGlobalCurrentDate() {
-          return globalCurrentDate;
+            return globalCurrentDate;
         }
 
         /** {@inheritDoc} */

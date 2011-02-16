@@ -31,25 +31,22 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class AttitudeLawWrapperProvider implements AttitudeProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -5959598401777708386L;
+    private static final long serialVersionUID = 6258333274105840419L;
 
     /** Attitude provider. */
-    AttitudeLaw attLaw;
-       
+    private final AttitudeLaw attLaw;
+
     /** Create new instance.
-     * @param referenceFrame reference frame from which attitude is defined
-     * @param attProvider attitude provider
-     * @param pvProvider position-velocity provider
-    */
+     * @param attLaw wrapped attitude law
+     */
     public AttitudeLawWrapperProvider(final AttitudeLaw attLaw) {
-        this.attLaw = attLaw; 
+        this.attLaw = attLaw;
     }
 
-    /** @inherit */
-    public Attitude getAttitude(PVCoordinatesProvider pvProv,
-                                AbsoluteDate date, Frame frame)
+    /** {@inheritDoc} */
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv,
+                                final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-
         return attLaw.getAttitude(date);
     }
 

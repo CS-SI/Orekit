@@ -29,7 +29,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -173,7 +172,8 @@ public abstract class TLEPropagator extends AbstractPropagator implements Serial
 
     /** Protected constructor for derived classes.
      * <p>
-     * The attitude provider will be set to {@link Propagator#DEFAULT_LAW}.
+     * The attitude provider will be set to {@link
+     * org.orekit.propagation.Propagator#DEFAULT_LAW}.
      * </p>
      * @param initialTLE the unique TLE to propagate
      * @exception OrekitException if some specific error occurs
