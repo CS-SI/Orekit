@@ -116,8 +116,8 @@ Configuration
 [./images/data-handling.png]
 
   When some data is read in Orekit (say JPL DE405 or DE406 ephemerides which are needed by
-  the <<<SolarSystemBody>>> class), an implementation of the <<<DataLoader>>> interface is used.
-  In this case, it will be <<<JPLEphemeridesLoader>>>. This implementation knows the type
+  the <<<CelestialBodyFactory>>> class), an implementation of the <<<DataLoader>>> interface is used.
+  By default, it will be <<<JPLEphemeridesLoader>>> (this can be customized). This implementation knows the type
   of files it can handle based on their names (unxp1950.405, unxp2000.405 ...). It also
   knows the file format and what to do with the data. The data loader does not know where
   the data is and does not open the file itself.
@@ -129,9 +129,9 @@ Configuration
   data loader if it supports the file according to its name. If the data loader supports it,
   then the provider will fetch the data from the storage medium and feed the loader with it.
 
-  Which data loader to use is straigthforward. The <<<SolarSystemBody>>> class for example
+  Which data loader to use is straigthforward. The <<<CelestialBodyFactory>>> class for example
   can only handle JPL ephemerides so only one data loader can be used. It is hardcoded in
-  the <<<SolarSystemBody>>> class. Which data provider to use is customizable. The singleton
+  the <<<CelestialBodyFactory>>> class as the default loader. Which data provider to use is customizable. The singleton
   class <<<DataProvidersManager>>> manages all the providers that should be used for
   data loading. The manager will typically be configured at application initialization time,
   depending on the use case and perhaps configuration data (environment variables, java
@@ -230,10 +230,10 @@ Configuration
 * Quick setup using default data
 
   For convenience, a zip file containing some default data is available for
-  download on orekit site: {{http://www.orekit.org/downloads/orekit-data.zip}}. Setting the
+  download on orekit forge: {{https://www.orekit.org/forge/projects/orekit/files}}. Setting the
   <orekit.data.path> property to the location of this file on a local computer is enough to
   use Orekit efficiently. This zip archive contains Earth OrientationParameters from 1962
-  to 2008 (both IAU-1980 and IAU-2000), JPL DE 406 ephemerides from 1962 to 2029 and UTC
+  to 2010 (both IAU-1980 and IAU-2000), JPL DE 406 ephemerides from 1962 to 2029 and UTC
   TAI history from 1972-01-01 to 2009-12-31 and the Eigen 05C gravity field.
 
 * Supported data types
