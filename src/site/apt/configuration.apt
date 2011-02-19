@@ -280,9 +280,9 @@ Configuration
 |         finals.*.xml[.gz]       | IERS standard and |         Earth Orientation Parameters         |   {{http://data.iers.org/products/12/1386/output/54458/finals.daily.xml}}   |
 |                                 |     daily EOP     |     (daily and final data) model IAU 1980    |     {{http://data.iers.org/products/7/1378/output/54351/finals.all.xml}}    |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
-|       unx(m/p)####.405[.gz]     |   DE 405 binary   |        JPL DE 405 planets ephemerides        |             {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/unix/de405}}           |
+|       unx(m/p)####.405[.gz]     |   DE 405 binary   |        JPL DE 405 planets ephemerides        |             {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/SunOS/de405}}          |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
-|       unx(m/p)####.406[.gz]     |   DE 406 binary   |        JPL DE 406 planets ephemerides        |             {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/unix/de406}}           |
+|       unx(m/p)####.406[.gz]     |   DE 406 binary   |        JPL DE 406 planets ephemerides        |             {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/SunOS/de406}}          |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
 |         g###_eigen_*_coef       |     SHM format    |        Eigen gravity field (old format)      |     {{http://op.gfz-potsdam.de/grace/results/main_RESULTS.html#gravity}}    |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
