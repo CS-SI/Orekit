@@ -19,7 +19,7 @@ package org.orekit.propagation.sampling;
 import java.io.Serializable;
 import java.util.List;
 
-import org.apache.commons.math.exception.MathUserException;
+import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.orekit.errors.OrekitException;
@@ -99,14 +99,14 @@ public class AdaptedStepHandler
 
     /** {@inheritDoc} */
     public void handleStep(final StepInterpolator interpolator, final boolean isLast)
-        throws MathUserException {
+        throws DerivativeException {
         try {
             this.rawInterpolator = interpolator;
             if (activate) {
                 handler.handleStep(this, isLast);
             }
         } catch (PropagationException pe) {
-            throw new MathUserException(pe, pe.getSpecifier(), pe.getParts());
+            throw new DerivativeException(pe.getSpecifier(), pe.getParts());
         }
     }
 
@@ -158,8 +158,8 @@ public class AdaptedStepHandler
             final double[] y = rawInterpolator.getInterpolatedState();
             final AbsoluteDate interpolatedDate = initializedReference.shiftedBy(rawInterpolator.getInterpolatedTime());
             return mapper.mapArrayToState(y, interpolatedDate, initializedMu, initializedFrame);
-        } catch (MathUserException mue) {
-            throw new PropagationException(mue, mue.getGeneralPattern(), mue.getArguments());
+        } catch (DerivativeException de) {
+            throw new PropagationException(de, de.getGeneralPattern(), de.getArguments());
         }
     }
 
@@ -191,8 +191,8 @@ public class AdaptedStepHandler
 
             throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_EQUATION);
 
-        } catch (MathUserException mue) {
-            throw new PropagationException(mue, mue.getGeneralPattern(), mue.getArguments());
+        } catch (DerivativeException de) {
+            throw new PropagationException(de, de.getGeneralPattern(), de.getArguments());
         }
 
     }

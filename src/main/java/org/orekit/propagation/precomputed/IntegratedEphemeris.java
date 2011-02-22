@@ -18,8 +18,8 @@ package org.orekit.propagation.precomputed;
 
 import java.util.List;
 
-import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.ode.ContinuousOutputModel;
+import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.orekit.errors.OrekitException;
@@ -139,8 +139,8 @@ public class IntegratedEphemeris
             model.setInterpolatedTime(date.durationFrom(startDate));
             return mapper.mapArrayToState(model.getInterpolatedState(), date,
                                           initializedMu, initializedFrame);
-        } catch (MathUserException mue) {
-            throw new PropagationException(mue, mue.getGeneralPattern(), mue.getArguments());
+        } catch (DerivativeException de) {
+            throw new PropagationException(de, de.getGeneralPattern(), de.getArguments());
         } catch (OrekitException oe) {
             throw new PropagationException(oe);
         }
@@ -178,7 +178,8 @@ public class IntegratedEphemeris
     }
 
     /** {@inheritDoc} */
-    public void handleStep(final StepInterpolator interpolator, final boolean isLast) {
+    public void handleStep(final StepInterpolator interpolator, final boolean isLast)
+        throws DerivativeException {
         if (activate) {
             model.handleStep(interpolator, isLast);
             if (isLast) {
