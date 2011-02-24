@@ -73,6 +73,14 @@ public class DateTimeComponentsTest {
     }
 
     @Test
+    public void testMonth() {
+        Assert.assertEquals(new DateTimeComponents(2011, 2, 23),
+                            new DateTimeComponents(2011, Month.FEBRUARY, 23));
+        Assert.assertEquals(new DateTimeComponents(2011, 2, 23, 1, 2, 3.4),
+                            new DateTimeComponents(2011, Month.FEBRUARY, 23, 1, 2, 3.4));
+    }
+
+    @Test
     public void testParse() {
         String s = "2000-01-02T03:04:05.000";
         Assert.assertEquals(s, DateTimeComponents.parseDateTime(s).toString());

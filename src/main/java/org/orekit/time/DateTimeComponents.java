@@ -69,6 +69,24 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
     }
 
     /** Build an instance from raw level components.
+     * @param year year number (may be 0 or negative for BC years)
+     * @param month month enumerate
+     * @param day day number from 1 to 31
+     * @param hour hour number from 0 to 23
+     * @param minute minute number from 0 to 59
+     * @param second second number from 0.0 to 60.0 (excluded)
+     * @exception IllegalArgumentException if inconsistent arguments
+     * are given (parameters out of range, february 29 for non-leap years,
+     * dates during the gregorian leap in 1582 ...)
+     */
+    public DateTimeComponents(final int year, final Month month, final int day,
+                              final int hour, final int minute, final double second)
+        throws IllegalArgumentException {
+        this.date = new DateComponents(year, month, day);
+        this.time = new TimeComponents(hour, minute, second);
+    }
+
+    /** Build an instance from raw level components.
      * <p>The hour is set to 00:00:00.000.</p>
      * @param year year number (may be 0 or negative for BC years)
      * @param month month number from 1 to 12
@@ -78,6 +96,21 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * dates during the gregorian leap in 1582 ...)
      */
     public DateTimeComponents(final int year, final int month, final int day)
+        throws IllegalArgumentException {
+        this.date = new DateComponents(year, month, day);
+        this.time = TimeComponents.H00;
+    }
+
+    /** Build an instance from raw level components.
+     * <p>The hour is set to 00:00:00.000.</p>
+     * @param year year number (may be 0 or negative for BC years)
+     * @param month month enumerate
+     * @param day day number from 1 to 31
+     * @exception IllegalArgumentException if inconsistent arguments
+     * are given (parameters out of range, february 29 for non-leap years,
+     * dates during the gregorian leap in 1582 ...)
+     */
+    public DateTimeComponents(final int year, final Month month, final int day)
         throws IllegalArgumentException {
         this.date = new DateComponents(year, month, day);
         this.time = TimeComponents.H00;

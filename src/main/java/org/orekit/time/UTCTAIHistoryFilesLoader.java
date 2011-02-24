@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
@@ -54,9 +52,6 @@ class UTCTAIHistoryFilesLoader implements UTCTAILoader {
     /** Last line pattern pattern. */
     private Pattern lastPattern;
 
-    /** Months map. */
-    private Map<String, Integer> monthsMap;
-
     /** Time scales offsets. */
     private SortedMap<DateComponents, Integer> entries;
 
@@ -72,11 +67,27 @@ class UTCTAIHistoryFilesLoader implements UTCTAILoader {
         //  ...
         // 2006  Jan.  1.-                  33s
         // we ignore the non-constant and non integer offsets before 1972-01-01
-        final String start       = "^";
-        final String yearField   = "\\p{Blank}*((?:\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit})|(?:    ))";
-        final String monthField  = "\\p{Blank}+(\\p{Upper}\\p{Lower}+)\\.?";
-        final String dayField    = "\\p{Blank}+([ 0-9]+)\\.?";
+        final String start = "^";
+
+        // year group
+        final String yearField = "\\p{Blank}*((?:\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit})|(?:    ))";
+
+        // second group: month as a three letters capitalized abbreviation
+        final StringBuilder builder = new StringBuilder("\\p{Blank}+(");
+        for (final Month month : Month.values()) {
+            builder.append(month.getCapitalizedAbbreviation());
+            builder.append('|');
+        }
+        builder.delete(builder.length() - 1, builder.length());
+        builder.append(")\\.");
+        final String monthField = builder.toString();
+
+        // day group
+        final String dayField = "\\p{Blank}+([ 0-9]+)\\.?";
+
+        // offset group
         final String offsetField = "\\p{Blank}+(\\p{Digit}+)s";
+
         final String separator   = "\\p{Blank}*-\\p{Blank}+";
         final String finalBlanks = "\\p{Blank}*$";
         regularPattern = Pattern.compile(start + yearField + monthField + dayField +
@@ -84,14 +95,6 @@ class UTCTAIHistoryFilesLoader implements UTCTAILoader {
                                          offsetField + finalBlanks);
         lastPattern    = Pattern.compile(start + yearField + monthField + dayField +
                                          separator + offsetField + finalBlanks);
-        monthsMap = new HashMap<String, Integer>(12);
-        final String[] months = {
-            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-        };
-        for (int i = 0; i < months.length; ++i) {
-            monthsMap.put(months[i], i + 1);
-        }
 
         entries = new TreeMap<DateComponents, Integer>();
 
@@ -175,12 +178,8 @@ class UTCTAIHistoryFilesLoader implements UTCTAILoader {
                             previousYear = matcher.group(4);
                         }
                     }
-                    final Integer month = monthsMap.get(matcher.group(2));
-                    if (month == null) {
-                        throw new NumberFormatException();
-                    }
                     final DateComponents leapDay = new DateComponents(Integer.parseInt(year.trim()),
-                                                                      month.intValue(),
+                                                                      Month.parseMonth(matcher.group(2)),
                                                                       Integer.parseInt(matcher.group(3).trim()));
 
                     final Integer offset = Integer.valueOf(matcher.group(matcher.groupCount()));

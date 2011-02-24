@@ -30,6 +30,7 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateComponents;
+import org.orekit.time.Month;
 import org.orekit.utils.Constants;
 
 /** Loader for bulletin B files.
@@ -162,7 +163,14 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
         // 2009   8   4   55047 -0.1233  0.0013  15.04106720014    0.00000000023
         // 2009   8   5   55048  0.0119  0.0013  15.04106717660    0.00000000023
         // 2009   8   6   55049  0.1914  0.0013  15.04106714535    0.00000000023
-        final String monthNameField      = "^\\p{Blank}*\\p{Upper}\\p{Upper}\\p{Upper}";
+        final StringBuilder builder = new StringBuilder("^\\p{Blank}+(?:");
+        for (final Month month : Month.values()) {
+            builder.append(month.getUpperCaseAbbreviation());
+            builder.append('|');
+        }
+        builder.delete(builder.length() - 1, builder.length());
+        builder.append(")");
+        final String monthNameField      = builder.toString();
         final String ignoredIntegerField = "\\p{Blank}*(?:\\p{Digit})+";
         final String storedIntegerField  = "\\p{Blank}*(\\p{Digit}+)";
         final String mjdField            = "\\p{Blank}+(\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit})";

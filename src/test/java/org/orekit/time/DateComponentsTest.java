@@ -209,6 +209,14 @@ public class DateComponentsTest {
     }
 
     @Test
+    public void testMonth() {
+        Assert.assertEquals(-51546, new DateComponents(1858, Month.NOVEMBER, 15).getJ2000Day());
+        Assert.assertEquals(-51546, new DateComponents(1858, Month.parseMonth("Nov"), 15).getJ2000Day());
+        Assert.assertEquals(Month.NOVEMBER, DateComponents.MODIFIED_JULIAN_EPOCH.getMonthEnum());
+        Assert.assertEquals(Month.JANUARY, DateComponents.J2000_EPOCH.getMonthEnum());
+    }
+
+    @Test
     public void testISO8601Examples() {
         Assert.assertEquals(-5377, DateComponents.parseDate("19850412").getJ2000Day());
         Assert.assertEquals(-5377, DateComponents.parseDate("1985-04-12").getJ2000Day());

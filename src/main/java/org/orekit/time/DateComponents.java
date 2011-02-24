@@ -161,6 +161,19 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
     }
 
+    /** Build a date from its components.
+     * @param year year number (may be 0 or negative for BC years)
+     * @param month month enumerate
+     * @param day day number from 1 to 31
+     * @exception IllegalArgumentException if inconsistent arguments
+     * are given (parameters out of range, february 29 for non-leap years,
+     * dates during the gregorian leap in 1582 ...)
+     */
+    public DateComponents(final int year, final Month month, final int day)
+        throws IllegalArgumentException {
+        this(year, month.getNumber(), day);
+    }
+
     /** Build a date from a year and day number.
      * @param year year number (may be 0 or negative for BC years)
      * @param dayNumber day number in the year from 1 to 366
@@ -315,6 +328,13 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
      */
     public int getMonth() {
         return month;
+    }
+
+    /** Get the month as an enumerate.
+     * @return month as an enumerate
+     */
+    public Month getMonthEnum() {
+        return Month.getMonth(month);
     }
 
     /** Get the day.

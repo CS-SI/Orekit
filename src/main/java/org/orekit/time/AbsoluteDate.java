@@ -225,6 +225,23 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
     }
 
     /** Build an instance from a location in a {@link TimeScale time scale}.
+     * @param year year number (may be 0 or negative for BC years)
+     * @param month month enumerate
+     * @param day day number from 1 to 31
+     * @param hour hour number from 0 to 23
+     * @param minute minute number from 0 to 59
+     * @param second second number from 0.0 to 60.0 (excluded)
+     * @param timeScale time scale
+     * @exception IllegalArgumentException if inconsistent arguments
+     * are given (parameters out of range)
+     */
+    public AbsoluteDate(final int year, final Month month, final int day,
+                        final int hour, final int minute, final double second,
+                        final TimeScale timeScale) throws IllegalArgumentException {
+        this(new DateComponents(year, month, day), new TimeComponents(hour, minute, second), timeScale);
+    }
+
+    /** Build an instance from a location in a {@link TimeScale time scale}.
      * <p>The hour is set to 00:00:00.000.</p>
      * @param date date location in the time scale
      * @param timeScale time scale
@@ -246,6 +263,20 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      * are given (parameters out of range)
      */
     public AbsoluteDate(final int year, final int month, final int day,
+                        final TimeScale timeScale) throws IllegalArgumentException {
+        this(new DateComponents(year, month, day), TimeComponents.H00, timeScale);
+    }
+
+    /** Build an instance from a location in a {@link TimeScale time scale}.
+     * <p>The hour is set to 00:00:00.000.</p>
+     * @param year year number (may be 0 or negative for BC years)
+     * @param month month enumerate
+     * @param day day number from 1 to 31
+     * @param timeScale time scale
+     * @exception IllegalArgumentException if inconsistent arguments
+     * are given (parameters out of range)
+     */
+    public AbsoluteDate(final int year, final Month month, final int day,
                         final TimeScale timeScale) throws IllegalArgumentException {
         this(new DateComponents(year, month, day), TimeComponents.H00, timeScale);
     }

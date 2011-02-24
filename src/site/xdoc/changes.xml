@@ -99,6 +99,10 @@
         the offset between UTC and TAI was piecewise linear
       </action>
       <action dev="luc" type="add">
+        added an enumerate for specifying months in dates and for simplifying parsing
+        of some data files
+      </action>
+      <action dev="luc" type="add">
         completed support for CCSDS Time Code Format (CCSDS 301.0-B-3) ; now in addition
         to ASCII Calendar Segmented Time Code which has been supported for a while,
         Orekit also supports CCSDS Unsegmented Time Code (CUC), CCSDS Day Segmented

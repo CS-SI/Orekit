@@ -245,6 +245,15 @@ public class AbsoluteDateTest {
     }
 
     @Test
+    public void testMonth() throws OrekitException {
+        TimeScale utc = TimeScalesFactory.getUTC();
+        Assert.assertEquals(new AbsoluteDate(2011, 2, 23, utc),
+                            new AbsoluteDate(2011, Month.FEBRUARY, 23, utc));
+        Assert.assertEquals(new AbsoluteDate(2011, 2, 23, 1, 2, 3.4, utc),
+                            new AbsoluteDate(2011, Month.FEBRUARY, 23, 1, 2, 3.4, utc));
+    }
+
+    @Test
     public void testCCSDSUnsegmented() throws OrekitException {
 
         AbsoluteDate reference = new AbsoluteDate("2002-05-23T12:34:56.789", TimeScalesFactory.getUTC());
