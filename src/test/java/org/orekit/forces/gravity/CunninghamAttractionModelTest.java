@@ -20,7 +20,6 @@ package org.orekit.forces.gravity;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 
-import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.IntegratorException;
@@ -61,7 +60,7 @@ public class CunninghamAttractionModelTest {
     @Test
     public void testHelioSynchronous()
     throws ParseException, FileNotFoundException,
-    OrekitException, MathUserException, IntegratorException {
+    OrekitException, IntegratorException {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
@@ -130,7 +129,7 @@ public class CunninghamAttractionModelTest {
     @Test
     public void testEcksteinHechlerReference()
         throws ParseException, FileNotFoundException,
-               OrekitException, MathUserException, IntegratorException {
+               OrekitException, IntegratorException {
 
         //  Definition of initial conditions with position and velocity
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
@@ -211,7 +210,7 @@ public class CunninghamAttractionModelTest {
     // test the difference with the Cunningham model
     @Test
     public void testZonalWithDrozinerReference()
-    throws OrekitException, MathUserException, IntegratorException, ParseException {
+    throws OrekitException, IntegratorException, ParseException {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
                                              new TimeComponents(13, 59, 27.816),
