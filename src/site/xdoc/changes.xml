@@ -22,6 +22,9 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add" due-to="Bruno Revelin">
+        Added support for the Marshall Solar Activity Future Estimation files
+      </action>
       <action dev="luc" type="fix">
         TLEPropagator now implements the Propagator interface, and hence can benefit from all
         events detection and mode handling features (fixes features request #4)

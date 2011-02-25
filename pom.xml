@@ -81,6 +81,14 @@
         <role>developer</role>
       </roles>
     </developer>
+    <developer>
+      <name>Bruno Revelin</name>
+      <id>bruno</id>
+      <email>Bruno.Revelin at c-s dot fr</email>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
   </developers>
 
   <contributors>

@@ -1,0 +1,7 @@
+  TABLE 3 ESTIMATES OF 13-MONTH SMOOTH SOLAR ACTIVITY FOR
+               BALANCE OF CYCLE 24 CYCLE 25 AND BEGINNING OF CYCLE 26
+
+    TIME         10.7 CM SOLAR FLUX   (F10.7)      GEOMAGNETIC INDEX   (Ap)
+                         PERCENTILE                    PERCENTILE
+                  95.0%       50%      5.0%     95.0%       50%      5.0% 
+

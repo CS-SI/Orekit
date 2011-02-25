@@ -18,6 +18,7 @@ package org.orekit.forces.drag;
 
 import java.io.Serializable;
 
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -25,7 +26,7 @@ import org.orekit.time.AbsoluteDate;
  *
  * This model needs mean and instantaneous solar flux and geomagnetic incides to
  * compute the local density. Mean solar flux is (for the moment) represented by
- * the F10.7 indices. Instantaneous flux can be setted to the mean value if the
+ * the F10.7 indices. Instantaneous flux can be set to the mean value if the
  * data is not available. Geomagnetic acivity is represented by the Kp indice,
  * which goes from 1 (very low activity) to 9 (high activity).
  * <p>
@@ -53,27 +54,31 @@ public interface DTM2000InputParameters extends Serializable {
     /** Get the value of the instantaneous solar flux.
      * @param date the current date
      * @return the instantaneous solar flux
+     * @exception OrekitException if the date is out of range of available data
      */
-    double getInstantFlux(AbsoluteDate date);
+    double getInstantFlux(AbsoluteDate date) throws OrekitException;
 
     /** Get the value of the mean solar flux.
      * @param date the current date
      * @return the mean solar flux
+     * @exception OrekitException if the date is out of range of available data
      */
-    double getMeanFlux(AbsoluteDate date);
+    double getMeanFlux(AbsoluteDate date) throws OrekitException;
 
-    /** Get the value of the 3H geomagnetic index.
-     * With a delay of 3 hr at pole to 6 hr at equator using:
+    /** Get the value of the 3 hours geomagnetic index.
+     * With a delay of 3 hours at pole to 6 hours at equator using:
      * delay=6-abs(lat)*0.033 (lat in deg.)
      * @param date the current date
      * @return the 3H geomagnetic index
+     * @exception OrekitException if the date is out of range of available data
      */
-    double getThreeHourlyKP(AbsoluteDate date);
+    double getThreeHourlyKP(AbsoluteDate date) throws OrekitException;
 
     /** Get the last 24H mean geomagnetic index.
      * @param date the current date
      * @return the 24H geomagnetic index
+     * @exception OrekitException if the date is out of range of available data
      */
-    double get24HoursKp(AbsoluteDate date);
+    double get24HoursKp(AbsoluteDate date) throws OrekitException;
 
 }

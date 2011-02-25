@@ -1,0 +1,23 @@
+  TABLE 3 ESTIMATES OF 13-MONTH SMOOTH SOLAR ACTIVITY FOR
+               BALANCE OF CYCLE 24 CYCLE 25 AND BEGINNING OF CYCLE 26
+
+    TIME         10.7 CM SOLAR FLUX   (F10.7)      GEOMAGNETIC INDEX   (Ap)
+                         PERCENTILE                    PERCENTILE
+                  95.0%       50%      5.0%     95.0%       50%      5.0% 
+
+ 2010.5003   JUL    83.4      81.3      78.7       6.4       5.9       5.2
+ 2010.5837   AUG    87.3      83.4      78.5       7.0       6.1       4.9
+ 2010.6670   SEP    90.8      85.5      79.4       7.8       6.2       4.7
+ 2010.7503   OCT    94.2      87.6      80.4       9.1       6.4       4.9
+ 2010.8337   NOV    99.0      89.8      80.8       9.7       6.6       5.2
+ 2010.9170   DEC   104.9      92.1      81.4      10.1       6.9       5.0
+ 2011.0003   JAN   110.3      94.4      81.8      10.5       7.1       5.2
+ 2011.0837   FEB   116.0      96.8      81.3      11.3       7.7       5.9
+ 2011.1670   MAR   122.5      99.2      80.7      12.5       8.5       6.2
+ 2011.2503   APR   129.3     101.7      79.5      13.5       9.1       6.5
+ 2011.3337   MAY   135.3     104.3      79.8      14.4       9.6       6.9
+ 
+ 
+ 
+   --- this is an extra non-empty line, it should trigger an exception at load time ---
+ 
