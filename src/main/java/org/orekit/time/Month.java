@@ -68,19 +68,19 @@ public enum Month {
     DECEMBER(12);
 
     /** Parsing map. */
-    private static final Map<String, Month> stringsMap = new HashMap<String, Month>();
+    private static final Map<String, Month> STRINGS_MAP = new HashMap<String, Month>();
     static {
         for (final Month month : values()) {
-            stringsMap.put(month.getLowerCaseName(),         month);
-            stringsMap.put(month.getLowerCaseAbbreviation(), month);
+            STRINGS_MAP.put(month.getLowerCaseName(),         month);
+            STRINGS_MAP.put(month.getLowerCaseAbbreviation(), month);
         }
     }
 
     /** Numbers map. */
-    private static final Map<Integer, Month> numbersMap = new HashMap<Integer, Month>();
+    private static final Map<Integer, Month> NUMBERS_MAP = new HashMap<Integer, Month>();
     static {
         for (final Month month : values()) {
-            numbersMap.put(month.getNumber(), month);
+            NUMBERS_MAP.put(month.getNumber(), month);
         }
     }
 
@@ -175,7 +175,7 @@ public enum Month {
      */
     public static Month parseMonth(final String s) {
         final String normalizedString = s.trim().toLowerCase();
-        final Month month = stringsMap.get(normalizedString);
+        final Month month = STRINGS_MAP.get(normalizedString);
         if (month == null) {
             try {
                 return getMonth(Integer.parseInt(normalizedString));
@@ -192,7 +192,7 @@ public enum Month {
      * @exception IllegalArgumentException if the string does not correspond to a month
      */
     public static Month getMonth(final int number) {
-        final Month month = numbersMap.get(number);
+        final Month month = NUMBERS_MAP.get(number);
         if (month == null) {
             throw OrekitException.createIllegalArgumentException(OrekitMessages.UNKNOWN_MONTH, number);
         }

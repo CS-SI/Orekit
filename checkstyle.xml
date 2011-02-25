@@ -37,9 +37,6 @@
             <property name="allowMissingPropertyJavadoc" value="true"/>
         </module>
         <module name="JavadocStyle"/>
-        <module name="JavadocType">
-            <property name="versionFormat" value="\$Revision.*\$ \$Date.*\$"/>
-        </module>
         <module name="JavadocVariable"/>
         <module name="MissingSwitchDefault"/>
         <module name="ModifierOrder"/>
