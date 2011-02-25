@@ -60,6 +60,9 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     /** Reference epoch for CCSDS Time Code Format (CCSDS 301.0-B-3): 1958-01-01. */
     public static final DateComponents CCSDS_EPOCH;
 
+    /** Reference epoch for Galileo System Time: 1999-08-22. */
+    public static final DateComponents GALILEO_EPOCH;
+
     /** Reference epoch for GPS weeks: 1980-01-06. */
     public static final DateComponents GPS_EPOCH;
 
@@ -112,6 +115,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         MODIFIED_JULIAN_EPOCH = new DateComponents(1858, 11, 17);
         FIFTIES_EPOCH         = new DateComponents(1950, 1, 1);
         CCSDS_EPOCH           = new DateComponents(1958, 1, 1);
+        GALILEO_EPOCH         = new DateComponents(1999, 8, 22);
         GPS_EPOCH             = new DateComponents(1980, 1, 6);
         J2000_EPOCH           = new DateComponents(2000, 1, 1);
         JAVA_EPOCH            = new DateComponents(1970, 1, 1);

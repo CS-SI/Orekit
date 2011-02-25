@@ -76,7 +76,8 @@ import org.orekit.utils.Constants;
  * A few reference epochs which are commonly used in space systems have been defined. These
  * epochs can be used as the basis for offset computation. The supported epochs are:
  * {@link #JULIAN_EPOCH}, {@link #MODIFIED_JULIAN_EPOCH}, {@link #FIFTIES_EPOCH},
- * {@link #CCSDS_EPOCH}, {@link #GPS_EPOCH}, {@link #J2000_EPOCH}, {@link #JAVA_EPOCH}.
+ * {@link #CCSDS_EPOCH}, {@link #GALILEO_EPOCH}, {@link #GPS_EPOCH}, {@link #J2000_EPOCH},
+ * {@link #JAVA_EPOCH}.
  * In addition to these reference epochs, two other constants are defined for convenience:
  * {@link #PAST_INFINITY} and {@link #FUTURE_INFINITY}, which can be used either as dummy
  * dates when a date is not yet initialized, or for initialization of loops searching for
@@ -115,6 +116,11 @@ public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Seri
      * 1958-01-01T00:00:00 International Atomic Time (<em>not</em> UTC). */
     public static final AbsoluteDate CCSDS_EPOCH =
         new AbsoluteDate(DateComponents.CCSDS_EPOCH, TimeComponents.H00, TimeScalesFactory.getTAI());
+
+    /** Reference epoch for Galileo System Time: 1999-08-22T00:00:00 UTC. */
+    public static final AbsoluteDate GALILEO_EPOCH =
+        new AbsoluteDate(DateComponents.GALILEO_EPOCH, new TimeComponents(0, 0, 32),
+                         TimeScalesFactory.getTAI());
 
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 GPS time. */
     public static final AbsoluteDate GPS_EPOCH =

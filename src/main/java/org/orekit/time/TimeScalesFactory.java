@@ -51,6 +51,9 @@ public class TimeScalesFactory implements Serializable {
     /** Terrestrial Time scale. */
     private static TTScale tt = null;
 
+    /** Galileo System Time scale. */
+    private static GalileoScale gst = null;
+
     /** Global Positioning System scale. */
     private static GPSScale gps = null;
 
@@ -203,6 +206,21 @@ public class TimeScalesFactory implements Serializable {
             }
 
             return tt;
+
+        }
+    }
+
+    /** Get the Galileo System Time scale.
+     * @return Galileo System Time scale
+     */
+    public static GalileoScale getGST() {
+        synchronized (TimeScalesFactory.class) {
+
+            if (gst == null) {
+                gst = new GalileoScale();
+            }
+
+            return gst;
 
         }
     }

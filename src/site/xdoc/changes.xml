@@ -82,6 +82,9 @@
         added a getPoint method to TopocentricFrame
       </action>
       <action dev="luc" type="add">
+        added the Galileo System Time Scales and the Galileo start epoch.
+      </action>
+      <action dev="luc" type="add">
         added the UT1, TCB and GMST time scales used in CCSDS Orbit Data Messages
       </action>
       <action dev="luc" type="fix">
