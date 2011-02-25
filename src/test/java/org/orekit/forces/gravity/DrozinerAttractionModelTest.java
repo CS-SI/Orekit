@@ -60,7 +60,7 @@ public class DrozinerAttractionModelTest {
     // rough test to determine if J2 alone creates heliosynchronism
     @Test
     public void testHelioSynchronous()
-    throws ParseException, FileNotFoundException, OrekitException, IntegratorException {
+        throws ParseException, FileNotFoundException, OrekitException, IntegratorException {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
@@ -126,7 +126,7 @@ public class DrozinerAttractionModelTest {
     // test the difference with the analytical extrapolator Eckstein Hechler
     @Test
     public void testEcksteinHechlerReference()
-    throws ParseException, FileNotFoundException, OrekitException, IntegratorException {
+        throws ParseException, FileNotFoundException, OrekitException, IntegratorException {
 
         //  Definition of initial conditions with position and velocity
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
