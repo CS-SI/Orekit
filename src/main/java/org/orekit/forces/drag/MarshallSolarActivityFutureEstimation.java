@@ -237,25 +237,21 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
     }
 
     /** {@inheritDoc} */
-    @Override
     public AbsoluteDate getMinDate() {
         return firstDate;
     }
 
     /** {@inheritDoc} */
-    @Override
     public AbsoluteDate getMaxDate() {
         return lastDate;
     }
 
     /** {@inheritDoc} */
-    @Override
     public double getInstantFlux(final AbsoluteDate date) throws OrekitException {
         return getMeanFlux(date);
     }
 
     /** {@inheritDoc} */
-    @Override
     public double getMeanFlux(final AbsoluteDate date) throws OrekitException {
 
         // get the neighboring dates
@@ -275,7 +271,6 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
     }
 
     /** {@inheritDoc} */
-    @Override
     public double getThreeHourlyKP(final AbsoluteDate date) throws OrekitException {
         return get24HoursKp(date);
     }
@@ -330,7 +325,6 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
      * @return the 24H geomagnetic index
      * @exception OrekitException if the date is out of range of available data
      */
-    @Override
     public double get24HoursKp(final AbsoluteDate date) throws OrekitException {
 
         // get the neighboring dates
@@ -426,7 +420,6 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
     }
 
     /** {@inheritDoc} */
-    @Override
     public void loadData(final InputStream input, final String name)
         throws IOException, ParseException, OrekitException {
 
@@ -526,7 +519,6 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
     }
 
     /** {@inheritDoc} */
-    @Override
     public boolean stillAcceptsData() {
         return true;
     }
