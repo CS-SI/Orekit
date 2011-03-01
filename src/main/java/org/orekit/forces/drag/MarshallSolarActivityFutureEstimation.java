@@ -136,12 +136,9 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
 
     /** Simple constructor.
      * <p>
-     * The original file names used by NASA Marshall space center are of
-     * the form: Dec2010F10.txt or Oct1999F10.TXT. There was one exception
-     * for the July 2004 file, which was named July2004F10.txt instead of
-     * the expected Jul2004F10.txt. So a recommended regular expression
-     * for the supported name that work with all published files except
-     * July 2004 is:
+     * The original file names used by NASA Marshall space center are of the
+     * form: Dec2010F10.txt or Oct1999F10.TXT. So a recommended regular
+     * expression for the supported name that work with all published files is:
      * "(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}F10\\.(?:txt|TXT)"
      * </p>
      * @param supportedNames regular expression for supported files names
