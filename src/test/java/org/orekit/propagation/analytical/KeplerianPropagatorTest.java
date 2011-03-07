@@ -525,6 +525,27 @@ public class KeplerianPropagatorTest {
         Assert.assertTrue(Double.isInfinite(ephemeris.getMaxDate().durationFrom(AbsoluteDate.J2000_EPOCH)));
     }
 
+    @Test
+    public void testIssue14() throws OrekitException {
+        AbsoluteDate initialDate = AbsoluteDate.J2000_EPOCH;
+        final KeplerianOrbit initialOrbit =
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+                               FramesFactory.getEME2000(), initialDate, 3.986004415e14);
+        KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
+
+        propagator.setEphemerisMode();
+        propagator.propagate(initialDate.shiftedBy(initialOrbit.getKeplerianPeriod()));
+        PVCoordinates pv1 = propagator.getPVCoordinates(initialDate, FramesFactory.getEME2000());
+
+        propagator.setEphemerisMode();
+        propagator.propagate(initialDate.shiftedBy(initialOrbit.getKeplerianPeriod()));
+        PVCoordinates pv2 = propagator.getGeneratedEphemeris().getPVCoordinates(initialDate, FramesFactory.getEME2000());
+
+        Assert.assertEquals(0.0, pv1.getPosition().subtract(pv2.getPosition()).getNorm(), 1.0e-15);
+        Assert.assertEquals(0.0, pv1.getVelocity().subtract(pv2.getVelocity()).getNorm(), 1.0e-15);
+                           
+    }
+
     private static double tangLEmLv(double Lv,double ex,double ey){
         // tan ((LE - Lv) /2)) =
         return (ey*FastMath.cos(Lv) - ex*FastMath.sin(Lv)) /
