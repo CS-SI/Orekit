@@ -29,6 +29,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -104,7 +105,7 @@ public class FixedRateTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
+                              FastMath.toRadians(30.), PositionAngle.MEAN, 
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);

@@ -33,6 +33,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -80,8 +81,7 @@ public class SpacecraftFrameTest {
                                        TimeScalesFactory.getUTC());
             eme2000 = FramesFactory.getEME2000();
             Orbit orbit = new CircularOrbit(a, ex, ey, i, raan, alfa,
-                                            CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
-                                            eme2000, iniDate, mu);
+                                            PositionAngle.MEAN, eme2000, iniDate, mu);
 
             // Target pointing attitude provider over satellite nadir at date with yaw compensation
             double ae =  6378137.0;

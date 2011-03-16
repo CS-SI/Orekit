@@ -30,6 +30,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CircularOrbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -150,7 +151,7 @@ public class BodyCenterPointingTest {
             final double raan = 270.;
             circ =
                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(raan),
-                                       FastMath.toRadians(5.300 - raan), CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
+                                       FastMath.toRadians(5.300 - raan), PositionAngle.MEAN,
                                        FramesFactory.getEME2000(), date, mu);
             
             

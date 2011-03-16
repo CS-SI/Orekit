@@ -28,6 +28,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.NodeDetector;
@@ -42,8 +43,7 @@ public class ImpulseManeuverTest {
     public void testInclinationManeuver() throws OrekitException {
         final Orbit initialOrbit =
             new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0,
-                               KeplerianOrbit.MEAN_ANOMALY,
-                               FramesFactory.getEME2000(),
+                               PositionAngle.MEAN, FramesFactory.getEME2000(),
                                new AbsoluteDate(new DateComponents(2008, 06, 23),
                                                 new TimeComponents(14, 18, 37),
                                                 TimeScalesFactory.getUTC()),

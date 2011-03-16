@@ -23,6 +23,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -66,8 +67,7 @@ public class SlaveMode {
             double mu =  3.986004415e+14;
 
             // Orbit construction as Keplerian
-            Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM,
-                                                    KeplerianOrbit.MEAN_ANOMALY,
+            Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN,
                                                     inertialFrame, initialDate, mu);
 
             // Simple extrapolation with Keplerian motion

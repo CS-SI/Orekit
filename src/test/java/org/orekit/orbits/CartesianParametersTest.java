@@ -151,7 +151,7 @@ public class CartesianParametersTest {
 
         for (double lv = 0; lv <= 2 * FastMath.PI; lv += 2 * FastMath.PI/100.) {
             p = new EquinoctialOrbit(p.getA(), p.getEquinoctialEx(), p.getEquinoctialEy(),
-                                          p.getHx(), p.getHy(), lv, 2, p.getFrame(), date, mu);
+                                          p.getHx(), p.getHy(), lv, PositionAngle.TRUE, p.getFrame(), date, mu);
             position = p.getPVCoordinates().getPosition();
 
             // test if the norm of the position is in the range [perigee radius, apogee radius]

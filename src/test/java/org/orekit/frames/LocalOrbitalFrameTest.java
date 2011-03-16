@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -35,7 +36,7 @@ public class LocalOrbitalFrameTest {
         
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
-                                                6.2, KeplerianOrbit.TRUE_ANOMALY, 
+                                                6.2, PositionAngle.TRUE, 
                                                 FramesFactory.getGCRF(), initDate,
                                                 3.986004415e14);
         Propagator propagator = new KeplerianPropagator(initialOrbit);
@@ -73,7 +74,7 @@ public class LocalOrbitalFrameTest {
         
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
-                                                6.2, KeplerianOrbit.TRUE_ANOMALY, 
+                                                6.2, PositionAngle.TRUE, 
                                                 FramesFactory.getGCRF(), initDate,
                                                 3.986004415e14);
         Propagator propagator = new KeplerianPropagator(initialOrbit);

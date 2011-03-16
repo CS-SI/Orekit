@@ -35,6 +35,7 @@ import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -56,7 +57,7 @@ public class SolarRadiationPressureTest {
                                              TimeScalesFactory.getUTC());
         Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
                                            FastMath.tan(0.001745329)*FastMath.cos(2*FastMath.PI/3), FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
-                                           0.1, 2, FramesFactory.getEME2000(), date, mu);
+                                           0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth =
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
@@ -106,7 +107,7 @@ public class SolarRadiationPressureTest {
         Orbit orbit = new EquinoctialOrbit(42164000,10e-3,10e-3,
                                            FastMath.tan(0.001745329)*FastMath.cos(2*FastMath.PI/3),
                                            FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
-                                           0.1, 2, FramesFactory.getEME2000(), date, mu);
+                                           0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
         final double period = orbit.getKeplerianPeriod();
         Assert.assertEquals(86164, period, 1);
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();

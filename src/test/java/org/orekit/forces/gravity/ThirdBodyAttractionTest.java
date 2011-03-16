@@ -28,6 +28,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -50,7 +51,7 @@ public class ThirdBodyAttractionTest {
         Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
                                            FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
                                            FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3),
-                                           0.1, 2, FramesFactory.getEME2000(), date, mu);
+                                           0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
         double period = 2 * FastMath.PI * orbit.getA() * FastMath.sqrt(orbit.getA() / orbit.getMu());
 
         // set up propagator
@@ -87,7 +88,7 @@ public class ThirdBodyAttractionTest {
             new EquinoctialOrbit(42164000,10e-3,10e-3,
                                       FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
                                       FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3),
-                                      0.1, 2, FramesFactory.getEME2000(), date, mu);
+                                      0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
         double period = 2 * FastMath.PI * orbit.getA() * FastMath.sqrt(orbit.getA() / orbit.getMu());
 
         // set up propagator

@@ -21,6 +21,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -63,7 +64,7 @@ public class StateMapperEquinoctial implements StateMapper {
                                            final double mu, final Frame frame) throws OrekitException {
         final EquinoctialOrbit orbit =
             new EquinoctialOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
-                                 stateVector[4], stateVector[5], EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
+                                 stateVector[4], stateVector[5], PositionAngle.TRUE,
                                  frame, date, mu);
 
         final Attitude attitude = attitudeProvider.getAttitude(orbit, date, frame);

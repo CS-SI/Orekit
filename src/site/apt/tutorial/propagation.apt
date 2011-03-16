@@ -66,8 +66,7 @@ double lM = 0;                       // mean anomaly
   of the library architecture documentation.
 
 +---------------------
-Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM,
-                                        KeplerianOrbit.MEAN_ANOMALY,
+Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN,
                                         inertialFrame, initialDate, mu);
 +---------------------
 
@@ -212,8 +211,7 @@ double i = Math.toRadians(7);       // inclination
 double omega = Math.toRadians(180); // perigee argument
 double raan = Math.toRadians(261);  // right ascention of ascending node
 double lM = 0;                      // mean anomaly
-Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM,
-                                        KeplerianOrbit.MEAN_ANOMALY, 
+Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN, 
                                         inertialFrame, initialDate, mu);
 // Initial state definition
 SpacecraftState initialState = new SpacecraftState(initialOrbit);
@@ -247,8 +245,8 @@ NumericalPropagator propagator = new NumericalPropagator(integrator);
 
 +---------------------
 Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame
-double ae  =  6378137.;                      // equatorial radius in meter
-double c20 = -1.08262631303e-3;              // J2 potential coefficient
+double ae  =  6378137.;                       // equatorial radius in meter
+double c20 = -1.08262631303e-3;               // J2 potential coefficient
 
 // potential coefficients arrays (only J2 is considered here)
 double[][] c = new double[3][1];
@@ -414,8 +412,7 @@ double i = Math.toRadians(7);       // inclination
 double omega = Math.toRadians(180); // perigee argument
 double raan = Math.toRadians(261);  // right ascention of ascending node
 double lM = 0;                      // mean anomaly
-Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM,
-                                        KeplerianOrbit.MEAN_ANOMALY, 
+Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN, 
                                         inertialFrame, initialDate, mu);
 // Initial state definition
 SpacecraftState initialState = new SpacecraftState(initialOrbit);

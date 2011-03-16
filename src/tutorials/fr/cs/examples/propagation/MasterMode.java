@@ -27,6 +27,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -70,8 +71,7 @@ public class MasterMode {
             double omega = FastMath.toRadians(180); // perigee argument
             double raan = FastMath.toRadians(261); // right ascention of ascending node
             double lM = 0; // mean anomaly
-            Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM,
-                                                    KeplerianOrbit.MEAN_ANOMALY, 
+            Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN, 
                                                     inertialFrame, initialDate, mu);
 
             // Initial state definition

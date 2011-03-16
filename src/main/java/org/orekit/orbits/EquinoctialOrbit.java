@@ -66,13 +66,22 @@ import org.orekit.utils.PVCoordinates;
  */
 public class EquinoctialOrbit extends Orbit {
 
-    /** Identifier for mean latitude argument. */
+    /** Identifier for mean longitude argument.
+     * @deprecated as of 5.1 replaced by {@link PositionAngle}
+     */
+    @Deprecated
     public static final int MEAN_LATITUDE_ARGUMENT = 0;
 
-    /** Identifier for eccentric latitude argument. */
+    /** Identifier for eccentric longitude argument.
+     * @deprecated as of 5.1 replaced by {@link PositionAngle}
+     */
+    @Deprecated
     public static final int ECCENTRIC_LATITUDE_ARGUMENT = 1;
 
-    /** Identifier for true latitude argument. */
+    /** Identifier for true longitude argument.
+     * @deprecated as of 5.1 replaced by {@link PositionAngle}
+     */
+    @Deprecated
     public static final int TRUE_LATITUDE_ARGUMENT = 2;
 
     /** Serializable UID. */
@@ -93,7 +102,7 @@ public class EquinoctialOrbit extends Orbit {
     /** Second component of the inclination vector. */
     private final double hy;
 
-    /** True latitude argument (rad). */
+    /** True longitude argument (rad). */
     private final double lv;
 
     /** Creates a new instance.
@@ -102,8 +111,49 @@ public class EquinoctialOrbit extends Orbit {
      * @param ey e sin(&omega; + &Omega;), second component of eccentricity vector
      * @param hx tan(i/2) cos(&Omega;), first component of inclination vector
      * @param hy tan(i/2) sin(&Omega;), second component of inclination vector
-     * @param l  (M or E or v) + &omega; + &Omega;, mean, eccentric or true latitude argument (rad)
-     * @param type type of latitude argument, must be one of {@link #MEAN_LATITUDE_ARGUMENT},
+     * @param l  (M or E or v) + &omega; + &Omega;, mean, eccentric or true longitude argument (rad)
+     * @param type type of longitude argument, must be one of {@link #MEAN_LATITUDE_ARGUMENT},
+     * {@link #ECCENTRIC_LATITUDE_ARGUMENT} or  {@link #TRUE_LATITUDE_ARGUMENT}
+     * @param frame the frame in which the parameters are defined
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     */
+    public EquinoctialOrbit(final double a, final double ex, final double ey,
+                            final double hx, final double hy,
+                            final double l, final PositionAngle type,
+                            final Frame frame, final AbsoluteDate date, final double mu) {
+        super(frame, date, mu);
+        this.a  =  a;
+        this.ex = ex;
+        this.ey = ey;
+        this.hx = hx;
+        this.hy = hy;
+
+        switch (type) {
+        case MEAN :
+            this.lv = eccentricToTrue(meanToEccentric(l));
+            break;
+        case ECCENTRIC :
+            this.lv = eccentricToTrue(l);
+            break;
+        case TRUE :
+            this.lv = l;
+            break;
+        default :
+            throw OrekitException.createInternalError(null);
+        }
+
+    }
+
+    /** Creates a new instance.
+     * @param a  semi-major axis (m)
+     * @param ex e cos(&omega; + &Omega;), first component of eccentricity vector
+     * @param ey e sin(&omega; + &Omega;), second component of eccentricity vector
+     * @param hx tan(i/2) cos(&Omega;), first component of inclination vector
+     * @param hy tan(i/2) sin(&Omega;), second component of inclination vector
+     * @param l  (M or E or v) + &omega; + &Omega;, mean, eccentric or true longitude argument (rad)
+     * @param type type of longitude argument, must be one of {@link #MEAN_LATITUDE_ARGUMENT},
      * {@link #ECCENTRIC_LATITUDE_ARGUMENT} or  {@link #TRUE_LATITUDE_ARGUMENT}
      * @param frame the frame in which the parameters are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
@@ -116,7 +166,10 @@ public class EquinoctialOrbit extends Orbit {
      * @see #MEAN_LATITUDE_ARGUMENT
      * @see #ECCENTRIC_LATITUDE_ARGUMENT
      * @see #TRUE_LATITUDE_ARGUMENT
+     * @deprecated as of 5.1 replaced by {@link #EquinoctialOrbit(double, double, double,
+     * double, double, double, PositionAngle, Frame, AbsoluteDate, double)
      */
+    @Deprecated
     public EquinoctialOrbit(final double a, final double ex, final double ey,
                             final double hx, final double hy,
                             final double l, final int type,
@@ -181,7 +234,7 @@ public class EquinoctialOrbit extends Orbit {
         hx = -d * w.getY();
         hy =  d * w.getX();
 
-        // compute true latitude argument
+        // compute true longitude argument
         final double cLv = (pvP.getX() - d * pvP.getZ() * w.getX()) / r;
         final double sLv = (pvP.getY() - d * pvP.getZ() * w.getY()) / r;
         lv = FastMath.atan2(sLv, cLv);
@@ -249,15 +302,25 @@ public class EquinoctialOrbit extends Orbit {
         return hy;
     }
 
-    /** Get the true latitude argument.
-     * @return v + &omega; + &Omega; true latitude argument (rad)
+    /** Get the longitude argument.
+     * @param type type of the angle
+     * @return longitude argument (rad)
+     */
+    public double getL(PositionAngle type) {
+        return (type == PositionAngle.MEAN) ? getLM() :
+                                              ((type == PositionAngle.ECCENTRIC) ? getLE() :
+                                                                                   getLv());
+    }
+
+    /** Get the true longitude argument.
+     * @return v + &omega; + &Omega; true longitude argument (rad)
      */
     public double getLv() {
         return lv;
     }
 
-    /** Get the eccentric latitude argument.
-     * @return E + &omega; + &Omega; eccentric latitude argument (rad)
+    /** Get the eccentric longitude argument.
+     * @return E + &omega; + &Omega; eccentric longitude argument (rad)
      */
     public double getLE() {
         final double epsilon = FastMath.sqrt(1 - ex * ex - ey * ey);
@@ -268,9 +331,9 @@ public class EquinoctialOrbit extends Orbit {
         return lv + 2 * FastMath.atan(num / den);
     }
 
-    /** Computes the true latitude argument from the eccentric latitude argument.
-     * @param lE = E + &omega; + &Omega; eccentric latitude argument (rad)
-     * @return the true latitude argument
+    /** Computes the true longitude argument from the eccentric longitude argument.
+     * @param lE = E + &omega; + &Omega; eccentric longitude argument (rad)
+     * @return the true longitude argument
      */
     private double eccentricToTrue(final double lE) {
         final double epsilon = FastMath.sqrt(1 - ex * ex - ey * ey);
@@ -281,17 +344,17 @@ public class EquinoctialOrbit extends Orbit {
         return lE + 2 * FastMath.atan(num / den);
     }
 
-    /** Get the mean latitude argument.
-     * @return M + &omega; + &Omega; mean latitude argument (rad)
+    /** Get the mean longitude argument.
+     * @return M + &omega; + &Omega; mean longitude argument (rad)
      */
     public double getLM() {
         final double lE = getLE();
         return lE - ex * FastMath.sin(lE) + ey * FastMath.cos(lE);
     }
 
-    /** Computes the eccentric latitude argument from the mean latitude argument.
-     * @param lM = M + &omega; + &Omega; mean latitude argument (rad)
-     * @return the eccentric latitude argument
+    /** Computes the eccentric longitude argument from the mean longitude argument.
+     * @param lM = M + &omega; + &Omega; mean longitude argument (rad)
+     * @return the eccentric longitude argument
      */
     private double meanToEccentric(final double lM) {
         // Generalization of Kepler equation to equinoctial parameters
@@ -364,7 +427,7 @@ public class EquinoctialOrbit extends Orbit {
         final double eta  = 1 + FastMath.sqrt(1 - e2);
         final double beta = 1. / eta;
 
-        // eccentric latitude argument
+        // eccentric longitude argument
         final double cLe    = FastMath.cos(lE);
         final double sLe    = FastMath.sin(lE);
         final double exCeyS = ex * cLe + ey * sLe;
@@ -389,7 +452,7 @@ public class EquinoctialOrbit extends Orbit {
     public EquinoctialOrbit shiftedBy(final double dt) {
         return new EquinoctialOrbit(a, ex, ey, hx, hy,
                                     getLM() + getKeplerianMeanMotion() * dt,
-                                    MEAN_LATITUDE_ARGUMENT, getFrame(),
+                                    PositionAngle.MEAN, getFrame(),
                                     getDate().shiftedBy(dt), getMu());
     }
 

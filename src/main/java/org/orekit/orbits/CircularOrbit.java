@@ -40,7 +40,7 @@ import org.orekit.utils.PVCoordinates;
  *     <li>&alpha;<sub>v</sub> = v + &omega;</li>
  *   </ul>
  * where &Omega; stands for the Right Ascension of the Ascending Node and
- * &alpha;<sub>v</sub> stands for the true longitude argument
+ * &alpha;<sub>v</sub> stands for the true latitude argument
  * </p>
  * <p>
  * The conversion equations from and to keplerian elements given above hold only
@@ -68,17 +68,26 @@ import org.orekit.utils.PVCoordinates;
 public class CircularOrbit
     extends Orbit {
 
-    /** Identifier for mean longitude argument. */
+    /** Identifier for mean latitude argument.
+     * @deprecated as of 5.1 replaced by {@link PositionAngle}
+     */
+    @Deprecated
     public static final int MEAN_LONGITUDE_ARGUMENT = 0;
 
-    /** Identifier for eccentric longitude argument. */
+    /** Identifier for eccentric latitude argument.
+     * @deprecated as of 5.1 replaced by {@link PositionAngle}
+     */
+    @Deprecated
     public static final int ECCENTRIC_LONGITUDE_ARGUMENT = 1;
 
-    /** Identifier for true longitude argument. */
+    /** Identifier for true latitude argument.
+     * @deprecated as of 5.1 replaced by {@link PositionAngle}
+     */
+    @Deprecated
     public static final int TRUE_LONGITUDE_ARGUMENT = 2;
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 5042463409964008691L;
+    private static final long serialVersionUID = 5565190329070485158L;
 
     /** Semi-major axis (m). */
     private final double a;
@@ -95,7 +104,7 @@ public class CircularOrbit
     /** Right Ascension of Ascending Node (rad). */
     private final double raan;
 
-    /** True longitude argument (rad). */
+    /** True latitude argument (rad). */
     private final double alphaV;
 
     /** Creates a new instance.
@@ -104,21 +113,65 @@ public class CircularOrbit
      * @param ey e sin(&omega;), second component of circular eccentricity vector
      * @param i inclination (rad)
      * @param raan right ascension of ascending node (&Omega;, rad)
-     * @param alpha  an + &omega;, mean, eccentric or true longitude argument (rad)
-     * @param type type of longitude argument, must be one of {@link #MEAN_LONGITUDE_ARGUMENT},
+     * @param alpha  an + &omega;, mean, eccentric or true latitude argument (rad)
+     * @param type type of latitude argument
+     * @param frame the frame in which are defined the parameters
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     */
+    public CircularOrbit(final double a, final double ex, final double ey,
+                         final double i, final double raan,
+                         final double alpha, final PositionAngle type,
+                         final Frame frame, final AbsoluteDate date, final double mu)
+        throws IllegalArgumentException {
+        super(frame, date, mu);
+        this.a    =  a;
+        this.ex   = ex;
+        this.ey   = ey;
+        this.i    = i;
+        this.raan = raan;
+
+        switch (type) {
+        case MEAN :
+            this.alphaV = eccentricToTrue(meanToEccentric(alpha));
+            break;
+        case ECCENTRIC :
+            this.alphaV = eccentricToTrue(alpha);
+            break;
+        case TRUE :
+            this.alphaV = alpha;
+            break;
+        default :
+            throw OrekitException.createInternalError(null);
+        }
+
+    }
+
+    /** Creates a new instance.
+     * @param a  semi-major axis (m)
+     * @param ex e cos(&omega;), first component of circular eccentricity vector
+     * @param ey e sin(&omega;), second component of circular eccentricity vector
+     * @param i inclination (rad)
+     * @param raan right ascension of ascending node (&Omega;, rad)
+     * @param alpha  an + &omega;, mean, eccentric or true latitude argument (rad)
+     * @param type type of latitude argument, must be one of {@link #MEAN_LONGITUDE_ARGUMENT},
      * {@link #ECCENTRIC_LONGITUDE_ARGUMENT} or  {@link #TRUE_LONGITUDE_ARGUMENT}
      * @param frame the frame in which are defined the parameters
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     * @exception IllegalArgumentException if the longitude argument type is not
+     * @exception IllegalArgumentException if the latitude argument type is not
      * one of {@link #MEAN_LONGITUDE_ARGUMENT}, {@link #ECCENTRIC_LONGITUDE_ARGUMENT}
      * or {@link #TRUE_LONGITUDE_ARGUMENT} or if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      * @see #MEAN_LONGITUDE_ARGUMENT
      * @see #ECCENTRIC_LONGITUDE_ARGUMENT
      * @see #TRUE_LONGITUDE_ARGUMENT
+     * @deprecated as of 5.1 replaced by {@link #CircularOrbit(double, double, double,
+     * double, double, double, PositionAngle, Frame, AbsoluteDate, double)
      */
+    @Deprecated
     public CircularOrbit(final double a, final double ex, final double ey,
                          final double i, final double raan,
                          final double alpha, final int type,
@@ -211,7 +264,7 @@ public class CircularOrbit
         ex = a2OnR2 * (f * x2 + g * y2);
         ey = a2OnR2 * (f * y2 - g * x2);
 
-        // compute longitude argument
+        // compute latitude argument
         final double beta = 1 / (1 + FastMath.sqrt(1 - ex * ex - ey * ey));
         alphaV = eccentricToTrue(FastMath.atan2(y2 + ey + eSE * beta * ex, x2 + ex - eSE * beta * ey));
     }
@@ -282,15 +335,25 @@ public class CircularOrbit
         return  FastMath.sin(raan) * FastMath.tan(i / 2);
     }
 
-    /** Get the true longitude argument.
-     * @return v + &omega; true longitude argument (rad)
+    /** Get the true latitude argument.
+     * @return v + &omega; true latitude argument (rad)
      */
     public double getAlphaV() {
         return alphaV;
     }
 
-    /** Get the eccentric longitude argument.
-     * @return E + &omega; eccentric longitude argument (rad)
+    /** Get the latitude argument.
+     * @param type type of the angle
+     * @return latitude argument (rad)
+     */
+    public double getAlpha(PositionAngle type) {
+        return (type == PositionAngle.MEAN) ? getAlphaM() :
+                                              ((type == PositionAngle.ECCENTRIC) ? getAlphaE() :
+                                                                                   getAlphaV());
+    }
+
+    /** Get the eccentric latitude argument.
+     * @return E + &omega; eccentric latitude argument (rad)
      */
     public double getAlphaE() {
         final double epsilon   = FastMath.sqrt(1 - ex * ex - ey * ey);
@@ -300,9 +363,9 @@ public class CircularOrbit
                                       (epsilon + 1 + ex * cosAlphaV + ey * sinAlphaV));
     }
 
-    /** Computes the true longitude argument from the eccentric longitude argument.
-     * @param alphaE = E + &omega; eccentric longitude argument (rad)
-     * @return the true longitude argument.
+    /** Computes the true latitude argument from the eccentric latitude argument.
+     * @param alphaE = E + &omega; eccentric latitude argument (rad)
+     * @return the true latitude argument.
      */
     private double eccentricToTrue(final double alphaE) {
         final double epsilon   = FastMath.sqrt(1 - ex * ex - ey * ey);
@@ -312,17 +375,17 @@ public class CircularOrbit
                                       (epsilon + 1 - ex * cosAlphaE - ey * sinAlphaE));
     }
 
-    /** Get the mean longitude argument.
-     * @return M + &omega; mean longitude argument (rad)
+    /** Get the mean latitude argument.
+     * @return M + &omega; mean latitude argument (rad)
      */
     public double getAlphaM() {
         final double alphaE = getAlphaE();
         return alphaE - ex * FastMath.sin(alphaE) + ey * FastMath.cos(alphaE);
     }
 
-    /** Computes the eccentric longitude argument from the mean longitude argument.
-     * @param alphaM = M + &omega;  mean longitude argument (rad)
-     * @return the eccentric longitude argument.
+    /** Computes the eccentric latitude argument from the mean latitude argument.
+     * @param alphaM = M + &omega;  mean latitude argument (rad)
+     * @return the eccentric latitude argument.
      */
     private double meanToEccentric(final double alphaM) {
         // Generalization of Kepler equation to circular parameters
@@ -452,7 +515,7 @@ public class CircularOrbit
     public CircularOrbit shiftedBy(final double dt) {
         return new CircularOrbit(a, ex, ey, i, raan,
                                  getAlphaM() + getKeplerianMeanMotion() * dt,
-                                 MEAN_LONGITUDE_ARGUMENT, getFrame(),
+                                 PositionAngle.MEAN, getFrame(),
                                  getDate().shiftedBy(dt), getMu());
     }
 

@@ -31,6 +31,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
@@ -154,9 +155,8 @@ public class Ephemeris extends AbstractPropagator implements BoundedPropagator {
         final double hy = cN * previous.getHy() + cP * next.getHy();
         final double lv = cN * previous.getLv() + cP * MathUtils.normalizeAngle(next.getLv(), previous.getLv());
 
-        return new EquinoctialOrbit(a, ex, ey, hx, hy, lv,
-                                         EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
-                                         previous.getFrame(), date, previous.getMu());
+        return new EquinoctialOrbit(a, ex, ey, hx, hy, lv, PositionAngle.TRUE,
+                                    previous.getFrame(), date, previous.getMu());
 
     }
 

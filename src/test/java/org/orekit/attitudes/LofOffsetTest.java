@@ -35,6 +35,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -89,7 +90,7 @@ public class LofOffsetTest {
         //  Satellite position
         final CircularOrbit circ =
            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                   FastMath.toRadians(5.300), PositionAngle.MEAN, 
                                    FramesFactory.getEME2000(), date, mu);
 
         // Create target pointing attitude provider
@@ -169,7 +170,7 @@ public class LofOffsetTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
+                              FastMath.toRadians(30.), PositionAngle.MEAN, 
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);
@@ -208,7 +209,7 @@ public class LofOffsetTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-8, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(0.), KeplerianOrbit.MEAN_ANOMALY, 
+                              FastMath.toRadians(0.), PositionAngle.MEAN, 
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         double alpha = 0.1;
@@ -243,7 +244,7 @@ public class LofOffsetTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), KeplerianOrbit.MEAN_ANOMALY, 
+                              FastMath.toRadians(30.), PositionAngle.MEAN, 
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         RotationOrder order = RotationOrder.ZXY;
@@ -297,7 +298,7 @@ public class LofOffsetTest {
             //  Satellite position
             orbit =
                 new CircularOrbit(7178000.0, 0.5e-8, -0.5e-8, FastMath.toRadians(50.), FastMath.toRadians(150.),
-                                       FastMath.toRadians(5.300), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                       FastMath.toRadians(5.300), PositionAngle.MEAN, 
                                        FramesFactory.getEME2000(), date, mu);
             pvSatEME2000 = orbit.getPVCoordinates();
 

@@ -39,6 +39,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AltitudeDetector;
@@ -103,7 +104,7 @@ public class KeplerianPropagatorTest {
         //-----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
-                                                6.2, KeplerianOrbit.TRUE_ANOMALY, 
+                                                6.2, PositionAngle.TRUE, 
                                                 FramesFactory.getEME2000(), initDate, mu);
 
         // Extrapolator definition
@@ -232,7 +233,7 @@ public class KeplerianPropagatorTest {
         //-----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
-                                                6.2, KeplerianOrbit.TRUE_ANOMALY, 
+                                                6.2, PositionAngle.TRUE, 
                                                 FramesFactory.getEME2000(), initDate, mu);
 
         // Extrapolator definition
@@ -318,7 +319,7 @@ public class KeplerianPropagatorTest {
     @Test(expected = PropagationException.class)
     public void wrongAttitude() throws PropagationException {
         KeplerianOrbit orbit =
-            new KeplerianOrbit(1.0e10, 1.0e-4, 1.0e-2, 0, 0, 0, KeplerianOrbit.TRUE_ANOMALY,
+            new KeplerianOrbit(1.0e10, 1.0e-4, 1.0e-2, 0, 0, 0, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         AttitudeProvider wrongLaw = new AttitudeProvider() {
             private static final long serialVersionUID = 5918362126173997016L;
@@ -333,7 +334,7 @@ public class KeplerianPropagatorTest {
     @Test(expected = PropagationException.class)
     public void testException() throws PropagationException {
         final KeplerianOrbit orbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         propagator.setMasterMode(new OrekitStepHandler() {
@@ -358,7 +359,7 @@ public class KeplerianPropagatorTest {
     @Test
     public void ascendingNode() throws OrekitException {
         final KeplerianOrbit orbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         propagator.addEventDetector(new NodeDetector(orbit, FramesFactory.getITRF2005()));
@@ -374,7 +375,7 @@ public class KeplerianPropagatorTest {
     @Test
     public void stopAtTargetDate() throws OrekitException {
         final KeplerianOrbit orbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         propagator.addEventDetector(new NodeDetector(orbit, FramesFactory.getITRF2005()) {
@@ -391,7 +392,7 @@ public class KeplerianPropagatorTest {
     @Test
     public void perigee() throws OrekitException {
         final KeplerianOrbit orbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         propagator.addEventDetector(new ApsideDetector(orbit));
@@ -406,7 +407,7 @@ public class KeplerianPropagatorTest {
     @Test
     public void altitude() throws OrekitException {
         final KeplerianOrbit orbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         BodyShape bodyShape =
@@ -428,7 +429,7 @@ public class KeplerianPropagatorTest {
     @Test
     public void date() throws OrekitException {
         final KeplerianOrbit orbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         final AbsoluteDate stopDate = AbsoluteDate.J2000_EPOCH.shiftedBy(500.0);
@@ -441,7 +442,7 @@ public class KeplerianPropagatorTest {
     @Test
     public void setting() throws OrekitException {
         final KeplerianOrbit orbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         final OneAxisEllipsoid earthShape =
@@ -464,7 +465,7 @@ public class KeplerianPropagatorTest {
     @Test
     public void fixedStep() throws OrekitException {
         final KeplerianOrbit orbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         final double step = 100.0;
@@ -486,7 +487,7 @@ public class KeplerianPropagatorTest {
     @Test
     public void variableStep() throws OrekitException {
         final KeplerianOrbit orbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         final double step = orbit.getKeplerianPeriod() / 100;
@@ -513,7 +514,7 @@ public class KeplerianPropagatorTest {
     @Test
     public void ephemeris() throws OrekitException {
         final KeplerianOrbit orbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         propagator.setEphemerisMode();
@@ -529,7 +530,7 @@ public class KeplerianPropagatorTest {
     public void testIssue14() throws OrekitException {
         AbsoluteDate initialDate = AbsoluteDate.J2000_EPOCH;
         final KeplerianOrbit initialOrbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, KeplerianOrbit.TRUE_ANOMALY,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), initialDate, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
 

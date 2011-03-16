@@ -22,6 +22,11 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="update" >
+        Replaced the integers parameters used in orbit constructors (MEAN_ANOMALY, ECCENTRIC_ANOMALY ...)
+        by a new PositionAngle enumerate for better value safety. The old public constants and the
+        corresponding constructors are still available but are deprecated
+      </action>
       <action dev="luc" type="fix" >
         Fixed ephemeris generation in numerical propagation. After getEphemeris has been
         called,  later calls to the numerical propagator did reset the already computed

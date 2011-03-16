@@ -24,6 +24,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -307,7 +308,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
                                      mean.getI()          + deltaI,
                                      mean.getRightAscensionOfAscendingNode() + deltaRAAN,
                                      mean.getAlphaM()     + deltaAlphaM,
-                                     CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
+                                     PositionAngle.MEAN,
                                      mean.getFrame(),
                                      mean.getDate(), mean.getMu());
 
@@ -496,7 +497,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
         return new CircularOrbit(mean.getA() * (1.0 + rda), exm + rdex, eym + rdey,
                                  xim + rdxi, MathUtils.normalizeAngle(omm + rdom, FastMath.PI),
                                  MathUtils.normalizeAngle(xlm + rdxl, FastMath.PI),
-                                 CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
+                                 PositionAngle.MEAN,
                                  mean.getFrame(), date, mean.getMu());
 
     }

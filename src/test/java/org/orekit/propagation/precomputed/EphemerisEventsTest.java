@@ -11,6 +11,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -46,8 +47,7 @@ public class EphemerisEventsTest {
 
         double deltaT = finalDate.durationFrom(initDate);
 
-        Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA,
-                                            lv, KeplerianOrbit.TRUE_ANOMALY, 
+        Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE, 
                                             FramesFactory.getEME2000(), initDate, mu);
 
         int nbIntervals = 720;

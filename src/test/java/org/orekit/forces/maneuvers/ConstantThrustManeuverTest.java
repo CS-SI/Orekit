@@ -34,6 +34,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -112,7 +113,7 @@ public class ConstantThrustManeuverTest {
                                                        new TimeComponents(23, 30, 00.000),
                                                        TimeScalesFactory.getUTC());
         final Orbit orbit =
-            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, KeplerianOrbit.TRUE_ANOMALY,
+            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), initDate, mu);
         final SpacecraftState initialState =
             new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);

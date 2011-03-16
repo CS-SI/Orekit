@@ -28,6 +28,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -189,7 +190,7 @@ public class OneAxisEllipsoidTest {
         final double mu = 3.9860047e14;
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., FastMath.toRadians(90.), FastMath.toRadians(60.),
-                                   FastMath.toRadians(90.), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                   FastMath.toRadians(90.), PositionAngle.MEAN, 
                                    FramesFactory.getEME2000(), date, mu);
       
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
@@ -231,7 +232,7 @@ public class OneAxisEllipsoidTest {
         // ********************************
         circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., FastMath.toRadians(1.e-4), FastMath.toRadians(0.),
-                                   FastMath.toRadians(0.), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                   FastMath.toRadians(0.), PositionAngle.MEAN, 
                                    FramesFactory.getEME2000(), date, mu);
       
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
@@ -277,7 +278,7 @@ public class OneAxisEllipsoidTest {
         // *************************
         circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., FastMath.toRadians(50.), FastMath.toRadians(0.),
-                                   FastMath.toRadians(90.), CircularOrbit.MEAN_LONGITUDE_ARGUMENT, 
+                                   FastMath.toRadians(90.), PositionAngle.MEAN, 
                                    FramesFactory.getEME2000(), date, mu);
         
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B

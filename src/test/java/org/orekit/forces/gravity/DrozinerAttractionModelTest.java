@@ -42,6 +42,7 @@ import org.orekit.frames.Transform;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -76,8 +77,7 @@ public class DrozinerAttractionModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                                       0, KeplerianOrbit.MEAN_ANOMALY,
-                                                       poleAligned, date, mu);
+                                         0, PositionAngle.MEAN, poleAligned, date, mu);
         
         propagator.addForceModel(new DrozinerAttractionModel(ITRF2005, 6378136.460, mu,
                                                              new double[][] { { 0.0 }, { 0.0 }, { c20 } },
@@ -214,8 +214,7 @@ public class DrozinerAttractionModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                                       0, KeplerianOrbit.MEAN_ANOMALY,
-                                                       FramesFactory.getEME2000(), date, mu);
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(100));
         propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, ae, mu, C, S));
         propagator.setInitialState(new SpacecraftState(orbit));

@@ -40,6 +40,46 @@ public class EquinoctialParametersTest {
     private double mu;
 
     @Test
+    @Deprecated
+    public void testOldConstructors() {
+
+        double ix = 1.200e-04;
+        double iy = -1.16e-04;
+        double inc = 2 * FastMath.asin(FastMath.sqrt((ix * ix + iy * iy) / 4.));
+        double hx = FastMath.tan(inc / 2.) * ix / (2 * FastMath.sin(inc / 2.));
+        double hy = FastMath.tan(inc / 2.) * iy / (2 * FastMath.sin(inc / 2.));
+
+        int inexistantType = 17;
+        int[] types = {
+            EquinoctialOrbit.MEAN_LATITUDE_ARGUMENT,
+            EquinoctialOrbit.ECCENTRIC_LATITUDE_ARGUMENT,
+            EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
+            inexistantType
+        };
+
+        for (int type : types) {
+            try {
+
+                EquinoctialOrbit equi =
+                    new EquinoctialOrbit(42166.712, 0.5, -0.5, hx, hy,
+                                              5.300, PositionAngle.MEAN, 
+                                              FramesFactory.getEME2000(), date, mu);
+
+                PVCoordinates pvCoordinates = equi.getPVCoordinates();
+                KeplerianOrbit param = new KeplerianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+                Assert.assertEquals(param.getA(),  equi.getA(), Utils.epsilonTest * equi.getA());
+                Assert.assertEquals(param.getEquinoctialEx(), equi.getEquinoctialEx(), Utils.epsilonE * FastMath.abs(equi.getE()));
+                Assert.assertEquals(param.getEquinoctialEy(), equi.getEquinoctialEy(), Utils.epsilonE * FastMath.abs(equi.getE()));
+                Assert.assertEquals(param.getHx(), equi.getHx(), Utils.epsilonAngle * FastMath.abs(equi.getI()));
+                Assert.assertEquals(param.getHy(), equi.getHy(), Utils.epsilonAngle * FastMath.abs(equi.getI()));
+                Assert.assertEquals(MathUtils.normalizeAngle(param.getLv(),equi.getLv()), equi.getLv(), Utils.epsilonAngle * FastMath.abs(equi.getLv()));
+            } catch (IllegalArgumentException iae) {
+                Assert.assertEquals(inexistantType, type);
+            }
+        }
+    }
+
+    @Test
     public void testEquinoctialToEquinoctialEll() {
 
         double ix = 1.200e-04;
@@ -51,7 +91,7 @@ public class EquinoctialParametersTest {
         // elliptic orbit
         EquinoctialOrbit equi =
             new EquinoctialOrbit(42166.712, 0.5, -0.5, hx, hy,
-                                      5.300, EquinoctialOrbit.MEAN_LATITUDE_ARGUMENT, 
+                                      5.300, PositionAngle.MEAN, 
                                       FramesFactory.getEME2000(), date, mu);
         Vector3D pos = equi.getPVCoordinates().getPosition();
         Vector3D vit = equi.getPVCoordinates().getVelocity();
@@ -85,7 +125,7 @@ public class EquinoctialParametersTest {
         // circular orbit
         EquinoctialOrbit equiCir =
             new EquinoctialOrbit(42166.712, 0.1e-10, -0.1e-10, hx, hy,
-                                      5.300, EquinoctialOrbit.MEAN_LATITUDE_ARGUMENT, 
+                                      5.300, PositionAngle.MEAN, 
                                       FramesFactory.getEME2000(), date, mu);
         Vector3D posCir = equiCir.getPVCoordinates().getPosition();
         Vector3D vitCir = equiCir.getPVCoordinates().getVelocity();
@@ -120,7 +160,7 @@ public class EquinoctialParametersTest {
 
         EquinoctialOrbit equi =
             new EquinoctialOrbit(42166.712, -7.900e-06, 1.100e-04, hx, hy,
-                                      5.300, EquinoctialOrbit.MEAN_LATITUDE_ARGUMENT, 
+                                      5.300, PositionAngle.MEAN, 
                                       FramesFactory.getEME2000(), date, mu);
         Vector3D pos = equi.getPVCoordinates().getPosition();
         Vector3D vit = equi.getPVCoordinates().getVelocity();
@@ -156,7 +196,7 @@ public class EquinoctialParametersTest {
 
         EquinoctialOrbit equi =
             new EquinoctialOrbit(42166.712, -7.900e-6, 1.100e-4, hx, hy,
-                                      5.300, EquinoctialOrbit.MEAN_LATITUDE_ARGUMENT, 
+                                      5.300, PositionAngle.MEAN, 
                                       FramesFactory.getEME2000(), date, mu);
         KeplerianOrbit kep = new KeplerianOrbit(equi);
 
@@ -197,33 +237,28 @@ public class EquinoctialParametersTest {
         double lE = 2 * FastMath.atan(eRatio * FastMath.tan((lv - paPraan) / 2)) + paPraan;
         double lM = lE - e * FastMath.sin(lE - paPraan);
 
-//      p.setLv(lv);
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
-                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , 2, 
+                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , PositionAngle.TRUE, 
                                       p.getFrame(), p.getDate(), p.getMu());
         Assert.assertEquals(p.getLv(), lv, Utils.epsilonAngle * FastMath.abs(lv));
         Assert.assertEquals(p.getLE(), lE, Utils.epsilonAngle * FastMath.abs(lE));
         Assert.assertEquals(p.getLM(), lM, Utils.epsilonAngle * FastMath.abs(lM));
-//      p.setLv(0);
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
-                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , 2, 
+                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , PositionAngle.TRUE, 
                                       p.getFrame(), p.getDate(), p.getMu());
 
-//      p.setLE(lE);
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
-                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , lE , 1, 
+                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , lE , PositionAngle.ECCENTRIC, 
                                       p.getFrame(), p.getDate(), p.getMu());
         Assert.assertEquals(p.getLv(), lv, Utils.epsilonAngle * FastMath.abs(lv));
         Assert.assertEquals(p.getLE(), lE, Utils.epsilonAngle * FastMath.abs(lE));
         Assert.assertEquals(p.getLM(), lM, Utils.epsilonAngle * FastMath.abs(lM));
-//      p.setLv(0);
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
-                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , 2, 
+                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , PositionAngle.TRUE, 
                                       p.getFrame(), p.getDate(), p.getMu());
 
-//      p.setLM(lM);
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
-                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , lM , 0, 
+                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , lM , PositionAngle.MEAN, 
                                       p.getFrame(), p.getDate(), p.getMu());
         Assert.assertEquals(p.getLv(), lv, Utils.epsilonAngle * FastMath.abs(lv));
         Assert.assertEquals(p.getLE(), lE, Utils.epsilonAngle * FastMath.abs(lE));
@@ -231,39 +266,34 @@ public class EquinoctialParametersTest {
 
         // circular orbit
         p = new EquinoctialOrbit(p.getA() ,0 ,
-                                      0, p.getHx(), p.getHy() , p.getLv() , 2, 
+                                      0, p.getHx(), p.getHy() , p.getLv() , PositionAngle.TRUE, 
                                       p.getFrame(), p.getDate(), p.getMu());
 
         lE = lv;
         lM = lE;
 
-//      p.setLv(lv);
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
-                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , 2, 
+                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , PositionAngle.TRUE, 
                                       p.getFrame(), p.getDate(), p.getMu());
         Assert.assertEquals(p.getLv(), lv, Utils.epsilonAngle * FastMath.abs(lv));
         Assert.assertEquals(p.getLE(), lE, Utils.epsilonAngle * FastMath.abs(lE));
         Assert.assertEquals(p.getLM(), lM, Utils.epsilonAngle * FastMath.abs(lM));
-//      p.setLv(0);
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
-                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , 2, 
+                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , PositionAngle.TRUE, 
                                       p.getFrame(), p.getDate(), p.getMu());
 
-//      p.setLE(lE);
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
-                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , lE , 1, 
+                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , lE , PositionAngle.ECCENTRIC, 
                                       p.getFrame(), p.getDate(), p.getMu());
         Assert.assertEquals(p.getLv(), lv, Utils.epsilonAngle * FastMath.abs(lv));
         Assert.assertEquals(p.getLE(), lE, Utils.epsilonAngle * FastMath.abs(lE));
         Assert.assertEquals(p.getLM(), lM, Utils.epsilonAngle * FastMath.abs(lM));
-//      p.setLv(0);
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
-                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , 2, 
+                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , 0 , PositionAngle.TRUE, 
                                       p.getFrame(), p.getDate(), p.getMu());
 
-//      p.setLM(lM);
         p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
-                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , lM , 0, p.getFrame(), p.getDate(), p.getMu());
+                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , lM , PositionAngle.MEAN, p.getFrame(), p.getDate(), p.getMu());
         Assert.assertEquals(p.getLv(), lv, Utils.epsilonAngle * FastMath.abs(lv));
         Assert.assertEquals(p.getLE(), lE, Utils.epsilonAngle * FastMath.abs(lE));
         Assert.assertEquals(p.getLM(), lM, Utils.epsilonAngle * FastMath.abs(lM));
@@ -275,7 +305,7 @@ public class EquinoctialParametersTest {
         // elliptic and non equatorial (i retrograde) orbit
         EquinoctialOrbit p =
             new EquinoctialOrbit(42166.712, 0.5, -0.5, 1.200, 2.1,
-                                      0.67, EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT, 
+                                      0.67, PositionAngle.TRUE, 
                                       FramesFactory.getEME2000(), date, mu);
 
         double ex = p.getEquinoctialEx();
@@ -297,7 +327,7 @@ public class EquinoctialParametersTest {
         // circular and equatorial orbit
         EquinoctialOrbit pCirEqua =
             new EquinoctialOrbit(42166.712, 0.1e-8, 0.1e-8, 0.1e-8, 0.1e-8,
-                                      0.67, EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT, 
+                                      0.67, PositionAngle.TRUE, 
                                       FramesFactory.getEME2000(), date, mu);
 
         ex = pCirEqua.getEquinoctialEx();
@@ -324,7 +354,7 @@ public class EquinoctialParametersTest {
         // elliptic and non equatorial (i retrograde) orbit
         EquinoctialOrbit p =
             new EquinoctialOrbit(42166.712, 0.5, -0.5, 1.200, 2.1,
-                                      0.67, EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT, 
+                                      0.67, PositionAngle.TRUE, 
                                       FramesFactory.getEME2000(), date, mu);
 
         Vector3D position = p.getPVCoordinates().getPosition();
@@ -335,9 +365,8 @@ public class EquinoctialParametersTest {
         double perigeeRadius = p.getA() * (1 - p.getE());
 
         for (double lv = 0; lv <= 2 * FastMath.PI; lv += 2 * FastMath.PI / 100.) {
-//          p.setLv(lv);
             p = new EquinoctialOrbit(p.getA() ,p.getEquinoctialEx(),
-                                          p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , 2, 
+                                          p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , PositionAngle.TRUE, 
                                           p.getFrame(), p.getDate(), p.getMu());
             position = p.getPVCoordinates().getPosition();
 
@@ -363,7 +392,7 @@ public class EquinoctialParametersTest {
         // circular and equatorial orbit
         EquinoctialOrbit pCirEqua =
             new EquinoctialOrbit(42166.712, 0.1e-8, 0.1e-8, 0.1e-8, 0.1e-8,
-                                      0.67, EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT, 
+                                      0.67, PositionAngle.TRUE, 
                                       FramesFactory.getEME2000(), date, mu);
 
         position = pCirEqua.getPVCoordinates().getPosition();
@@ -378,9 +407,8 @@ public class EquinoctialParametersTest {
                      * apogeeRadius);
 
         for (double lv = 0; lv <= 2 * FastMath.PI; lv += 2 * FastMath.PI / 100.) {
-//          pCirEqua.setLv(lv);
             pCirEqua = new EquinoctialOrbit(pCirEqua.getA() ,pCirEqua.getEquinoctialEx(),
-                                                 pCirEqua.getEquinoctialEy() , pCirEqua.getHx(), pCirEqua.getHy() , lv , 2, 
+                                                 pCirEqua.getEquinoctialEy() , pCirEqua.getHx(), pCirEqua.getHy() , lv , PositionAngle.TRUE, 
                                                  pCirEqua.getFrame(), p.getDate(), p.getMu());
             position = pCirEqua.getPVCoordinates().getPosition();
 

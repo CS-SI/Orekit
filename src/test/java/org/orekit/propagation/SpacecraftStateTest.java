@@ -37,6 +37,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -155,9 +156,8 @@ public class SpacecraftStateTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                  TimeComponents.H00,
                                                  TimeScalesFactory.getUTC());
-        orbit = new KeplerianOrbit(a, e, i, omega, OMEGA,
-                                            lv, KeplerianOrbit.TRUE_ANOMALY, 
-                                            FramesFactory.getEME2000(), date, mu);
+        orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE, 
+                                   FramesFactory.getEME2000(), date, mu);
         attitudeLaw = new BodyCenterPointing(FramesFactory.getITRF2005());
         propagator =
             new EcksteinHechlerPropagator(orbit, attitudeLaw, mass,

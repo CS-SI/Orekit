@@ -37,6 +37,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.SpacecraftFrame;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -80,8 +81,7 @@ public class Frames3 {
             Orbit orbit = new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4,
                                             FastMath.toRadians(50.),
                                             FastMath.toRadians(220.),
-                                            FastMath.toRadians(5.300),
-                                            CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
+                                            FastMath.toRadians(5.300), PositionAngle.MEAN,
                                             eme2000,
                                             initialDate,
                                             mu);
