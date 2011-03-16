@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -453,12 +454,17 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
         throws PropagationException;
 
     /** Internal PVCoordinatesProvider for attitude computation. */
-    private class LocalPVProvider implements PVCoordinatesProvider {
+    private class LocalPVProvider implements PVCoordinatesProvider, Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = -5121444553818793467L;
+
         /** {@inheritDoc} */
         public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
             throws OrekitException {
             return propagateOrbit(date).getPVCoordinates(frame);
         }
+
     }
 
     /** {@inheritDoc} */
