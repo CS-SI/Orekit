@@ -151,10 +151,8 @@ public class NumericalPropagator implements Propagator, EventObserver {
     /** Relative vectorial error field name. */
     private static final String RELATIVE_TOLERANCE = "vecRelativeTolerance";
 
-    // CHECKSTYLE: stop VisibilityModifierCheck
-
     /** Attitude provider. */
-    protected AttitudeProvider attitudeProvider;
+    private AttitudeProvider attitudeProvider;
 
     /** Central body attraction. */
     private NewtonianAttraction newtonianAttraction;
@@ -206,8 +204,6 @@ public class NumericalPropagator implements Propagator, EventObserver {
 
     /** Additional equations. */
     private List<AdditionalStateAndEquations> addStateAndEqu;
-
-    // CHECKSTYLE: resume VisibilityModifierCheck
 
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude provider is set to an
@@ -387,7 +383,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
      */
     public void setEphemerisMode() {
         integrator.clearStepHandlers();
-        final IntegratedEphemeris ephemeris = new IntegratedEphemeris();
+        final EphemerisModeHandler ephemeris = new EphemerisModeHandler();
         modeHandler = ephemeris;
         integrator.addStepHandler(ephemeris);
         mode = EPHEMERIS_GENERATION_MODE;
@@ -413,7 +409,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
         if (mode != EPHEMERIS_GENERATION_MODE) {
             throw OrekitException.createIllegalStateException(OrekitMessages.PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE);
         }
-        return (IntegratedEphemeris) modeHandler;
+        return ((EphemerisModeHandler) modeHandler).getEphemeris();
     }
 
     /** {@inheritDoc} */
@@ -601,6 +597,14 @@ public class NumericalPropagator implements Propagator, EventObserver {
             mapper.setAttitudeProvider(attitudeProvider);
 
             // initialize mode handler
+            switch (mode) {
+            case MASTER_MODE:
+                break;
+            case EPHEMERIS_GENERATION_MODE:
+                break;
+            default: // this should be slave mode
+                break;
+            }
             if (modeHandler != null) {
                 modeHandler.initialize(mapper, addStateAndEqu, activateHandlers, referenceDate,
                                        initialState.getFrame(), newtonianAttraction.getMu());

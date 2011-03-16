@@ -16,12 +16,8 @@
  */
 package org.orekit.propagation.precomputed;
 
-import java.util.List;
-
 import org.apache.commons.math.ode.ContinuousOutputModel;
 import org.apache.commons.math.ode.DerivativeException;
-import org.apache.commons.math.ode.sampling.StepHandler;
-import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
@@ -30,8 +26,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.AdditionalStateAndEquations;
-import org.orekit.propagation.numerical.ModeHandler;
 import org.orekit.propagation.numerical.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -71,61 +65,50 @@ import org.orekit.utils.PVCoordinates;
  * @version $Revision:1698 $ $Date:2008-06-18 16:01:17 +0200 (mer., 18 juin 2008) $
  */
 public class IntegratedEphemeris
-    extends AbstractPropagator implements BoundedPropagator, ModeHandler, StepHandler {
+    extends AbstractPropagator implements BoundedPropagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -3921028924201745331L;
+    private static final long serialVersionUID = -5009587563342612582L;
 
     /** Mapper between spacecraft state and simple array. */
-    private StateMapper mapper;
-
-    /** Reference date. */
-    private AbsoluteDate initializedReference;
+    private final StateMapper mapper;
 
     /** Frame. */
-    private Frame initializedFrame;
+    private final Frame frame;
 
     /** Central body gravitational constant. */
-    private double initializedMu;
+    private final double mu;
 
     /** Start date of the integration (can be min or max). */
-    private AbsoluteDate startDate;
+    private final AbsoluteDate startDate;
 
     /** First date of the range. */
-    private AbsoluteDate minDate;
+    private final AbsoluteDate minDate;
 
     /** Last date of the range. */
-    private AbsoluteDate maxDate;
+    private final AbsoluteDate maxDate;
 
     /** Underlying raw mathematical model. */
     private ContinuousOutputModel model;
 
-    /** Flag for handler . */
-    private boolean activate;
-
     /** Creates a new instance of IntegratedEphemeris which must be
-     *  filled by the propagator.
+     * @param mapper mapper between spacecraft state and simple array
+     * @param reference reference date
+     * @param frame reference frame
+     * @param mu central body attraction coefficient
      */
-    public IntegratedEphemeris() {
+    public IntegratedEphemeris(final AbsoluteDate startDate,
+                               final AbsoluteDate minDate, final AbsoluteDate maxDate,
+                               final StateMapper mapper, ContinuousOutputModel model,
+                               final Frame frame, final double mu) {
         super(DEFAULT_LAW);
-        this.model = new ContinuousOutputModel();
-    }
-
-    /** {@inheritDoc} */
-    public void initialize(final StateMapper stateMapper, final List <AdditionalStateAndEquations> addStateAndEqu,
-                           final boolean activateHandlers, final AbsoluteDate reference,
-                           final Frame frame, final double mu) {
-        this.mapper               = stateMapper;
-        this.activate             = activateHandlers;
-        this.initializedReference = reference;
-        this.initializedFrame     = frame;
-        this.initializedMu        = mu;
-
-        // dates will be set when last step is handled
-        startDate        = null;
-        minDate          = null;
-        maxDate          = null;
-
+        this.startDate = startDate;
+        this.minDate   = minDate;
+        this.maxDate   = maxDate;
+        this.mapper    = mapper;
+        this.model     = model;
+        this.frame     = frame;
+        this.mu        = mu;
     }
 
     /** {@inheritDoc} */
@@ -137,8 +120,7 @@ public class IntegratedEphemeris
                                                date, minDate, maxDate);
             }
             model.setInterpolatedTime(date.durationFrom(startDate));
-            return mapper.mapArrayToState(model.getInterpolatedState(), date,
-                                          initializedMu, initializedFrame);
+            return mapper.mapArrayToState(model.getInterpolatedState(), date, mu, frame);
         } catch (DerivativeException de) {
             throw new PropagationException(de, de.getGeneralPattern(), de.getArguments());
         } catch (OrekitException oe) {
@@ -176,37 +158,6 @@ public class IntegratedEphemeris
     public AbsoluteDate getMaxDate() {
         return maxDate;
     }
-
-    /** {@inheritDoc} */
-    public void handleStep(final StepInterpolator interpolator, final boolean isLast)
-        throws DerivativeException {
-        if (activate) {
-            model.handleStep(interpolator, isLast);
-            if (isLast) {
-                final double tI = model.getInitialTime();
-                final double tF = model.getFinalTime();
-                startDate = initializedReference.shiftedBy(tI);
-                maxDate   = initializedReference.shiftedBy(tF);
-                if (tF < tI) {
-                    minDate = maxDate;
-                    maxDate = startDate;
-                } else {
-                    minDate = startDate;
-                }
-            }
-        }
-    }
-
-    /** {@inheritDoc} */
-    public boolean requiresDenseOutput() {
-        return model.requiresDenseOutput();
-    }
-
-    /** {@inheritDoc} */
-    public void reset() {
-        model.reset();
-    }
-
 
     /** {@inheritDoc} */
     public void resetInitialState(final SpacecraftState state)

@@ -22,6 +22,11 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix" >
+        Fixed ephemeris generation in numerical propagation. After getEphemeris has been
+        called,  later calls to the numerical propagator did reset the already computed
+        and returned ephemeris (fixes bug #14)
+      </action>
       <action dev="luc" type="add" due-to="Bruno Revelin">
         Added support for the Marshall Solar Activity Future Estimation files
       </action>

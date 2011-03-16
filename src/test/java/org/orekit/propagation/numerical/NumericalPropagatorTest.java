@@ -37,6 +37,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
@@ -301,6 +302,36 @@ public class NumericalPropagatorTest {
         Assert.assertTrue(endDate.durationFrom(finalState.getDate()) > 40000.0);
     }
 
+    @Test
+    public void testEphemerisGenerationIssue14() throws OrekitException, IOException {
+
+        // Propagation of the initial at t + dt
+        final double dt = 3200;
+        propagator.getInitialState();
+
+        propagator.setPropagationParametersType(NumericalPropagator.PropagationParametersType.CARTESIAN);
+        propagator.setEphemerisMode();
+        propagator.propagate(initDate.shiftedBy(dt));
+        final BoundedPropagator ephemeris1 = propagator.getGeneratedEphemeris();
+        Assert.assertEquals(initDate, ephemeris1.getMinDate());
+        Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
+
+        propagator.getPVCoordinates(initDate.shiftedBy( 2 * dt), FramesFactory.getEME2000());
+        propagator.getPVCoordinates(initDate.shiftedBy(-2 * dt), FramesFactory.getEME2000());
+
+        // the new propagations should not have changed ephemeris1
+        Assert.assertEquals(initDate, ephemeris1.getMinDate());
+        Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
+
+        final BoundedPropagator ephemeris2 = propagator.getGeneratedEphemeris();
+        Assert.assertEquals(initDate.shiftedBy(-2 * dt), ephemeris2.getMinDate());
+        Assert.assertEquals(initDate.shiftedBy( 2 * dt), ephemeris2.getMaxDate());
+
+        // generating ephemeris2 should not have changed ephemeris1
+        Assert.assertEquals(initDate, ephemeris1.getMinDate());
+        Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
+
+    }
 
     @Before
     public void setUp() throws OrekitException {
