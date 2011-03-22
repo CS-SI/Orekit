@@ -456,6 +456,167 @@ public class EquinoctialOrbit extends Orbit {
                                     getDate().shiftedBy(dt), getMu());
     }
 
+    /** {@inheritDoc} */
+    protected double[][] computeJacobianMeanWrtCartesian() {
+
+        final double[][] jacobian = new double[6][6];
+
+        // compute various intermediate parameters
+        final Vector3D position = getPVCoordinates().getPosition();
+        final Vector3D velocity = getPVCoordinates().getVelocity();
+        final double r2         = position.getNormSq();
+        final double r          = FastMath.sqrt(r2);
+        final double r3         = r * r2;
+
+        final double mu         = getMu();
+        final double sqrtMuA    = FastMath.sqrt(a * mu);
+        final double a2         = a * a;
+
+        final double e2         = ex * ex + ey * ey;
+        final double oMe2       = 1 - e2;
+        final double epsilon    = FastMath.sqrt(oMe2);
+        final double beta       = 1 / (1 + epsilon);
+        final double ratio      = epsilon * beta;
+
+        final double hx2        = hx * hx;
+        final double hy2        = hy * hy;
+        final double hxhy       = hx * hy;
+
+        // precomputing equinoctial frame unit vectors (f,g,w)
+        final Vector3D f  = new Vector3D(1 - hy2 + hx2, 2 * hxhy, -2 * hy).normalize();
+        final Vector3D g  = new Vector3D(2 * hxhy, 1 + hy2 - hx2, 2 * hx).normalize();
+        final Vector3D w  = Vector3D.crossProduct(position, velocity).normalize();
+
+        // coordinates of the spacecraft in the equinoctial frame
+        final double x    = Vector3D.dotProduct(position, f);
+        final double y    = Vector3D.dotProduct(position, g);
+        final double xDot = Vector3D.dotProduct(velocity, f);
+        final double yDot = Vector3D.dotProduct(velocity, g);
+
+        // drDot / dEx = dXDot / dEx * f + dYDot / dEx * g
+        final double c1 = a / (sqrtMuA * epsilon);
+        final double c2 = a * sqrtMuA * beta / r3;
+        final double c3 = sqrtMuA / (r3 * epsilon);
+        final Vector3D drDotSdEx = new Vector3D( c1 * xDot * yDot - c2 * ey * x - c3 * x * y, f,
+                                                -c1 * xDot * xDot - c2 * ey * y + c3 * x * x, g);
+
+        // drDot / dEy = dXDot / dEy * f + dYDot / dEy * g
+        final Vector3D drDotSdEy = new Vector3D( c1 * yDot * yDot + c2 * ex * x - c3 * y * y, f,
+                                                -c1 * xDot * yDot + c2 * ex * y + c3 * x * y, g);
+
+        // da
+        final Vector3D vectorAR = new Vector3D(2 * a2 / r3, position);
+        final Vector3D vectorARDot = new Vector3D(2 * a2 / mu, velocity);
+        fillHalfRow(1, vectorAR,    jacobian[0], 0);
+        fillHalfRow(1, vectorARDot, jacobian[0], 3);
+
+        // dEx
+        final double d1 = -a * ratio / r3;
+        final double d2 = (hy * xDot - hx * yDot) / (sqrtMuA * epsilon);
+        final double d3 = (hx * y - hy * x) / sqrtMuA;
+        final Vector3D vectorExRDot =
+            new Vector3D((2 * x * yDot - xDot * y) / mu, g, -y * yDot / mu, f, -ey * d3 / epsilon, w);
+        fillHalfRow(ex * d1, position, -ey * d2, w, epsilon / sqrtMuA, drDotSdEy, jacobian[1], 0);
+        fillHalfRow(1, vectorExRDot, jacobian[1], 3);
+
+        // dEy
+        final Vector3D vectorEyRDot =
+            new Vector3D((2 * xDot * y - x * yDot) / mu, f, -x * xDot / mu, g, ex * d3 / epsilon, w);
+        fillHalfRow(ey * d1, position, ex * d2, w, -epsilon / sqrtMuA, drDotSdEx, jacobian[2], 0);
+        fillHalfRow(1, vectorEyRDot, jacobian[2], 3);
+
+        // dHx
+        final double h = (1 + hx2 + hy2) / (2 * sqrtMuA * epsilon);
+        fillHalfRow(-h * xDot, w, jacobian[3], 0);
+        fillHalfRow( h * x,    w, jacobian[3], 3);
+
+       // dHy
+        fillHalfRow(-h * yDot, w, jacobian[4], 0);
+        fillHalfRow( h * y,    w, jacobian[4], 3);
+
+        // dLambdaM
+        final double l = -ratio / sqrtMuA;
+        fillHalfRow(-1 / sqrtMuA, velocity, d2, w, l * ex, drDotSdEx, l * ey, drDotSdEy, jacobian[5], 0);
+        fillHalfRow(-2 / sqrtMuA, position, ex * beta, vectorEyRDot, -ey * beta, vectorExRDot, d3, w, jacobian[5], 3);
+
+        return jacobian;
+
+    }
+
+    /** {@inheritDoc} */
+    protected double[][] computeJacobianEccentricWrtCartesian() {
+
+        // start by computing the Jacobian with mean angle
+        final double[][] jacobian = computeJacobianMeanWrtCartesian();
+
+        // Differentiating the Kepler equation lM = lE - ex sin lE + ey cos lE leads to:
+        // dlM = (1 - ex cos lE - ey sin lE) dE - sin lE dex + cos lE dey
+        // which is inverted and rewritten as:
+        // dlE = a/r dlM + sin lE a/r dex - cos lE a/r dey
+        final double le    = getLE();
+        final double cosLe = FastMath.cos(le);
+        final double sinLe = FastMath.sin(le);
+        final double aOr   = 1 / (1 - ex * cosLe - ey * sinLe);
+
+        // update longitude row
+        final double[] rowEx = jacobian[1];
+        final double[] rowEy = jacobian[2];
+        final double[] rowL  = jacobian[5];
+        for (int j = 0; j < 6; ++j) {
+            rowL[j] = aOr * (rowL[j] + sinLe * rowEx[j] - cosLe * rowEy[j]);
+        }
+
+        return jacobian;
+
+    }
+
+    /** {@inheritDoc} */
+    protected double[][] computeJacobianTrueWrtCartesian() {
+
+        // start by computing the Jacobian with eccentric angle
+        final double[][] jacobian = computeJacobianEccentricWrtCartesian();
+
+        // Differentiating the eccentric longitude equation
+        // tan((lV - lE)/2) = [ex sin lE - ey cos lE] / [sqrt(1-ex^2-ey^2) + 1 - ex cos lE - ey sin lE]
+        // leads to
+        // cT (dlV - dlE) = cE dlE + cX dex + cY dey
+        // with
+        // cT = [d^2 + (ex sin lE - ey cos lE)^2] / 2
+        // d  = 1 + sqrt(1-ex^2-ey^2) - ex cos lE - ey sin lE
+        // cE = (ex cos lE + ey sin lE) (sqrt(1-ex^2-ey^2) + 1) - ex^2 - ey^2
+        // cX =  sin lE (sqrt(1-ex^2-ey^2) + 1) - ey + ex (ex sin lE - ey cos lE) / sqrt(1-ex^2-ey^2)
+        // cY = -cos lE (sqrt(1-ex^2-ey^2) + 1) + ex + ey (ex sin lE - ey cos lE) / sqrt(1-ex^2-ey^2)
+        // which can be solved to find the differential of the true longitude
+        // dlV = (cT + cE) / cT dlE + cX / cT deX + cY / cT deX
+        final double le        = getLE();
+        final double cosLe     = FastMath.cos(le);
+        final double sinLe     = FastMath.sin(le);
+        final double eSinE     = ex * sinLe - ey * cosLe;
+        final double ecosE     = ex * cosLe + ey * sinLe;
+        final double e2        = ex * ex + ey * ey;
+        final double epsilon   = FastMath.sqrt(1 - e2);
+        final double onePeps   = 1 + epsilon;
+        final double d         = onePeps - ecosE;
+        final double cT        = (d * d + eSinE * eSinE) / 2;
+        final double cE        = ecosE * onePeps - e2;
+        final double cX        = ex * eSinE / epsilon - ey + sinLe * onePeps;
+        final double cY        = ey * eSinE / epsilon + ex - cosLe * onePeps;
+        final double factorLe  = (cT + cE) / cT;
+        final double factorEx  = cX / cT;
+        final double factorEy  = cY / cT;
+
+        // update longitude row
+        final double[] rowEx = jacobian[1];
+        final double[] rowEy = jacobian[2];
+        final double[] rowL = jacobian[5];
+        for (int j = 0; j < 6; ++j) {
+            rowL[j] = factorLe * rowL[j] + factorEx * rowEx[j] + factorEy * rowEy[j];
+        }
+
+        return jacobian;
+
+    }
+
     /**  Returns a string representation of this equinoctial parameters object.
      * @return a string representation of this object
      */

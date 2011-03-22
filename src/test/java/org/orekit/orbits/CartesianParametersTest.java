@@ -30,6 +30,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -253,6 +254,26 @@ public class CartesianParametersTest {
         new CartesianOrbit(pvCoordinates,
                            new Frame(FramesFactory.getEME2000(), Transform.IDENTITY, "non-inertial", false),
                            date, mu);
+    }
+
+    @Test
+    public void testJacobianReference() throws OrekitException {
+
+        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
+        CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+
+        double[][] jacobian = new double[6][6];
+        orbit.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+
+        for (int i = 0; i < jacobian.length; i++) {
+            double[] row    = jacobian[i];
+            for (int j = 0; j < row.length; j++) {
+                Assert.assertEquals((i == j) ? 1 : 0, row[j], 1.0e-15);
+            }
+        }
+
     }
 
     @Before

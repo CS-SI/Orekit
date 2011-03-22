@@ -24,10 +24,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -506,8 +508,208 @@ public class KeplerianParametersTest {
 
     }
 
+    @Test
+    public void testJacobianReference() throws OrekitException {
+
+        AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        double mu =  3.986004415e+14;
+        KeplerianOrbit orbKep = new KeplerianOrbit(7000000.0, 0.01, FastMath.toRadians(80.), FastMath.toRadians(80.), FastMath.toRadians(20.),
+                                          FastMath.toRadians(40.), PositionAngle.MEAN,
+                                          FramesFactory.getEME2000(), dateTca, mu);
+
+        // the following reference values have been computed using the free software
+        // version 6.2 of the MSLIB fortran library by the following program:
+        //        program kep_jacobian
+        //
+        //        use mslib
+        //        implicit none
+        //
+        //        integer, parameter :: nb = 11
+        //        integer :: i,j
+        //        type(tm_code_retour)      ::  code_retour
+        //
+        //        real(pm_reel), parameter :: mu= 3.986004415e+14_pm_reel
+        //        real(pm_reel),dimension(3)::vit_car,pos_car
+        //        type(tm_orb_kep)::kep
+        //        real(pm_reel), dimension(6,6)::jacob
+        //        real(pm_reel)::norme
+        //
+        //        kep%a=7000000_pm_reel
+        //        kep%e=0.01_pm_reel
+        //        kep%i=80_pm_reel*pm_deg_rad
+        //        kep%pom=80_pm_reel*pm_deg_rad
+        //        kep%gom=20_pm_reel*pm_deg_rad
+        //        kep%M=40_pm_reel*pm_deg_rad
+        //
+        //        call mv_kep_car(mu,kep,pos_car,vit_car,code_retour)
+        //        write(*,*)code_retour%valeur
+        //        write(*,1000)pos_car,vit_car
+        //
+        //
+        //        call mu_norme(pos_car,norme,code_retour)
+        //        write(*,*)norme
+        //
+        //        call mv_car_kep (mu, pos_car, vit_car, kep, code_retour, jacob)
+        //        write(*,*)code_retour%valeur
+        //
+        //        write(*,*)"kep = ", kep%a, kep%e, kep%i*pm_rad_deg,&
+        //                            kep%pom*pm_rad_deg, kep%gom*pm_rad_deg, kep%M*pm_rad_deg
+        //
+        //        do i = 1,6
+        //           write(*,*) " ",(jacob(i,j),j=1,6)
+        //        end do
+        //
+        //        1000 format (6(f24.15,1x))
+        //        end program kep_jacobian
+        Vector3D pRef = new Vector3D(-3691555.569874833337963, -240330.253992714860942, 5879700.285850423388183);
+        Vector3D vRef = new Vector3D(-5936.229884450408463, -2871.067660163344044, -3786.209549192726627);
+        double[][] jRef = {
+            { -1.0792090588217809,       -7.02594292049818631E-002,  1.7189029642216496,       -1459.4829009393857,       -705.88138246206040,       -930.87838644776593       },
+            { -1.31195762636625214E-007, -3.90087231593959271E-008,  4.65917592901869866E-008, -2.02467187867647177E-004, -7.89767994436215424E-005, -2.81639203329454407E-005 },
+            {  4.18334478744371316E-008, -1.14936453412947957E-007,  2.15670500707930151E-008, -2.26450325965329431E-005,  6.22167157217876380E-005, -1.16745469637130306E-005 },
+            {  3.52735168061691945E-006,  3.82555734454450974E-006,  1.34715077236557634E-005, -8.06586262922115264E-003, -6.13725651685311825E-003, -1.71765290503914092E-002 },
+            {  2.48948022169790885E-008, -6.83979069529389238E-008,  1.28344057971888544E-008,  3.86597661353874888E-005, -1.06216834498373629E-004,  1.99308724078785540E-005 },
+            { -3.41911705254704525E-006, -3.75913623359912437E-006, -1.34013845492518465E-005,  8.19851888816422458E-003,  6.16449264680494959E-003,  1.69495878276556648E-002 }
+        };
+
+        PVCoordinates pv = orbKep.getPVCoordinates();
+        Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm(), 1.0e-15 * pRef.getNorm());
+        Assert.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm(), 1.0e-16 * vRef.getNorm());
+
+        double[][] jacobian = new double[6][6];
+        orbKep.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+
+        for (int i = 0; i < jacobian.length; i++) {
+            double[] row    = jacobian[i];
+            double[] rowRef = jRef[i];
+            for (int j = 0; j < row.length; j++) {
+                Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 2.0e-12);
+            }
+        }
+
+    }
+
+    @Test
+    public void testJacobianFinitedifferences() throws OrekitException {
+
+        AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        double mu =  3.986004415e+14;
+        KeplerianOrbit orbKep = new KeplerianOrbit(7000000.0, 0.01, FastMath.toRadians(80.), FastMath.toRadians(80.), FastMath.toRadians(20.),
+                                          FastMath.toRadians(40.), PositionAngle.MEAN,
+                                          FramesFactory.getEME2000(), dateTca, mu);
+
+        for (PositionAngle type : PositionAngle.values()) {
+            double hP = 2.0;
+            double[][] finiteDiffJacobian = finiteDifferencesJacobian(type, orbKep, hP);
+            double[][] jacobian = new double[6][6];
+            orbKep.getJacobianWrtCartesian(type, jacobian);
+
+            for (int i = 0; i < jacobian.length; i++) {
+                double[] row    = jacobian[i];
+                double[] rowRef = finiteDiffJacobian[i];
+                for (int j = 0; j < row.length; j++) {
+                    Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 2.0e-7);
+                }
+            }
+        }
+
+    }
+
+    private double[][] finiteDifferencesJacobian(PositionAngle type, KeplerianOrbit orbit, double hP)
+        throws OrekitException {
+        double[][] jacobian = new double[6][6];
+        for (int i = 0; i < 6; ++i) {
+            fillColumn(type, i, orbit, hP, jacobian);
+        }
+        return jacobian;
+    }
+
+    private void fillColumn(PositionAngle type, int i, KeplerianOrbit orbit, double hP, double[][] jacobian) {
+
+        // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
+        // we use this to compute a velocity step size from the position step size
+        Vector3D p = orbit.getPVCoordinates().getPosition();
+        Vector3D v = orbit.getPVCoordinates().getVelocity();
+        double hV = orbit.getMu() * hP / (v.getNorm() * p.getNormSq());
+
+        double h;
+        Vector3D dP = Vector3D.ZERO;
+        Vector3D dV = Vector3D.ZERO;
+        switch (i) {
+        case 0:
+            h = hP;
+            dP = new Vector3D(hP, 0, 0);
+            break;
+        case 1:
+            h = hP;
+            dP = new Vector3D(0, hP, 0);
+            break;
+        case 2:
+            h = hP;
+            dP = new Vector3D(0, 0, hP);
+            break;
+        case 3:
+            h = hV;
+            dV = new Vector3D(hV, 0, 0);
+            break;
+        case 4:
+            h = hV;
+            dV = new Vector3D(0, hV, 0);
+            break;
+        default:
+            h = hV;
+            dV = new Vector3D(0, 0, hV);
+            break;
+        }
+
+        KeplerianOrbit oM4h = new KeplerianOrbit(new PVCoordinates(new Vector3D(1, p, -4, dP), new Vector3D(1, v, -4, dV)),
+                                                 orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        KeplerianOrbit oM3h = new KeplerianOrbit(new PVCoordinates(new Vector3D(1, p, -3, dP), new Vector3D(1, v, -3, dV)),
+                                                 orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        KeplerianOrbit oM2h = new KeplerianOrbit(new PVCoordinates(new Vector3D(1, p, -2, dP), new Vector3D(1, v, -2, dV)),
+                                                 orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        KeplerianOrbit oM1h = new KeplerianOrbit(new PVCoordinates(new Vector3D(1, p, -1, dP), new Vector3D(1, v, -1, dV)),
+                                                 orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        KeplerianOrbit oP1h = new KeplerianOrbit(new PVCoordinates(new Vector3D(1, p, +1, dP), new Vector3D(1, v, +1, dV)),
+                                                 orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        KeplerianOrbit oP2h = new KeplerianOrbit(new PVCoordinates(new Vector3D(1, p, +2, dP), new Vector3D(1, v, +2, dV)),
+                                                 orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        KeplerianOrbit oP3h = new KeplerianOrbit(new PVCoordinates(new Vector3D(1, p, +3, dP), new Vector3D(1, v, +3, dV)),
+                                                 orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        KeplerianOrbit oP4h = new KeplerianOrbit(new PVCoordinates(new Vector3D(1, p, +4, dP), new Vector3D(1, v, +4, dV)),
+                                                 orbit.getFrame(), orbit.getDate(), orbit.getMu());
+
+        jacobian[0][i] = (-3 * (oP4h.getA()                             - oM4h.getA()) +
+                          32 * (oP3h.getA()                             - oM3h.getA()) -
+                         168 * (oP2h.getA()                             - oM2h.getA()) +
+                         672 * (oP1h.getA()                             - oM1h.getA())) / (840 * h);
+        jacobian[1][i] = (-3 * (oP4h.getE()                             - oM4h.getE()) +
+                          32 * (oP3h.getE()                             - oM3h.getE()) -
+                         168 * (oP2h.getE()                             - oM2h.getE()) +
+                         672 * (oP1h.getE()                             - oM1h.getE())) / (840 * h);
+        jacobian[2][i] = (-3 * (oP4h.getI()                             - oM4h.getI()) +
+                          32 * (oP3h.getI()                             - oM3h.getI()) -
+                         168 * (oP2h.getI()                             - oM2h.getI()) +
+                         672 * (oP1h.getI()                             - oM1h.getI())) / (840 * h);
+        jacobian[3][i] = (-3 * (oP4h.getPerigeeArgument()               - oM4h.getPerigeeArgument()) +
+                          32 * (oP3h.getPerigeeArgument()               - oM3h.getPerigeeArgument()) -
+                         168 * (oP2h.getPerigeeArgument()               - oM2h.getPerigeeArgument()) +
+                         672 * (oP1h.getPerigeeArgument()               - oM1h.getPerigeeArgument())) / (840 * h);
+        jacobian[4][i] = (-3 * (oP4h.getRightAscensionOfAscendingNode() - oM4h.getRightAscensionOfAscendingNode()) +
+                          32 * (oP3h.getRightAscensionOfAscendingNode() - oM3h.getRightAscensionOfAscendingNode()) -
+                         168 * (oP2h.getRightAscensionOfAscendingNode() - oM2h.getRightAscensionOfAscendingNode()) +
+                         672 * (oP1h.getRightAscensionOfAscendingNode() - oM1h.getRightAscensionOfAscendingNode())) / (840 * h);
+        jacobian[5][i] = (-3 * (oP4h.getAnomaly(type)                   - oM4h.getAnomaly(type)) +
+                          32 * (oP3h.getAnomaly(type)                   - oM3h.getAnomaly(type)) -
+                         168 * (oP2h.getAnomaly(type)                   - oM2h.getAnomaly(type)) +
+                         672 * (oP1h.getAnomaly(type)                   - oM1h.getAnomaly(type))) / (840 * h);
+
+    }
+
     @Before
     public void setUp() {
+
+        Utils.setDataRoot("regular-data");
 
         // Computation date
         date = AbsoluteDate.J2000_EPOCH;

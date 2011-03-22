@@ -39,11 +39,23 @@ public interface StateMapper extends Serializable {
     void setAttitudeProvider(final AttitudeProvider attitudeProvider);
 
     /** Convert spacecraft state to state array.
-    * @param s spacecraft state to map
-    * @param stateVector flat array into which the state vector should be mapped */
+     * <p>
+     * Note that all implementations of this method <em>must</em> be consistent with the
+     * implementation of the {@link org.orekit.orbits.Orbit#getJacobianWrtCartesian(
+     * org.orekit.orbits.PositionAngle, double[][]) Orbit.getJacobianWrtCartesian}
+     * method for the corresponding orbit type in terms of parameters order and meaning.
+     * </p>
+     * @param s spacecraft state to map
+     * @param stateVector flat array into which the state vector should be mapped */
     void mapStateToArray(SpacecraftState s, double[] stateVector);
 
      /** Convert state array to space dynamics objects (AbsoluteDate and OrbitalParameters).
+     * <p>
+     * Note that all implementations of this method <em>must</em> be consistent with the
+     * implementation of the {@link org.orekit.orbits.Orbit#getJacobianWrtCartesian(
+     * org.orekit.orbits.PositionAngle, double[][]) Orbit.getJacobianWrtCartesian}
+     * method for the corresponding orbit type in terms of parameters order and meaning.
+     * </p>
      * @param array state as a flat array
      * @param date integration date
      * @param mu central attraction coefficient used for propagation (m<sup>3</sup>/s<sup>2</sup>)

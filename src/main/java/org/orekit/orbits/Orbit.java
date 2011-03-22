@@ -18,6 +18,11 @@ package org.orekit.orbits;
 
 import java.io.Serializable;
 
+import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.linear.DecompositionSolver;
+import org.apache.commons.math.linear.MatrixUtils;
+import org.apache.commons.math.linear.QRDecompositionImpl;
+import org.apache.commons.math.linear.RealMatrix;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -39,7 +44,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * interpolation equations.</p>
 
  * <p>
- * For user convenience, both the cartesian and the equinoctial elements
+ * For user convenience, both the Cartesian and the equinoctial elements
  * are provided by this class, regardless of the canonical representation
  * implemented in the derived class (which may be classical keplerian
  * elements for example).
@@ -76,6 +81,24 @@ public abstract class Orbit implements TimeStamped, Serializable, PVCoordinatesP
     /** Computed PVCoordinates. */
     private PVCoordinates pvCoordinates;
 
+    /** Jacobian of the orbital parameters with mean angle with respect to the Cartesian coordinates. */
+    private transient double[][] jacobianMeanWrtCartesian;
+
+    /** Jacobian of the Cartesian coordinates with respect to the orbital parameters with mean angle. */
+    private transient double[][] jacobianWrtParametersMean;
+
+    /** Jacobian of the orbital parameters with eccentric angle with respect to the Cartesian coordinates. */
+    private transient double[][] jacobianEccentricWrtCartesian;
+
+    /** Jacobian of the Cartesian coordinates with respect to the orbital parameters with eccentric angle. */
+    private transient double[][] jacobianWrtParametersEccentric;
+
+    /** Jacobian of the orbital parameters with true angle with respect to the Cartesian coordinates. */
+    private transient double[][] jacobianTrueWrtCartesian;
+
+    /** Jacobian of the Cartesian coordinates with respect to the orbital parameters with true angle. */
+    private transient double[][] jacobianWrtParametersTrue;
+
     /** Default constructor.
      * Build a new instance with arbitrary default elements.
      * @param frame the frame in which the parameters are defined
@@ -88,13 +111,19 @@ public abstract class Orbit implements TimeStamped, Serializable, PVCoordinatesP
     protected Orbit(final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         ensurePseudoInertialFrame(frame);
-        this.date = date;
-        this.mu = mu;
-        this.pvCoordinates = null;
-        this.frame =  frame;
+        this.date                      = date;
+        this.mu                        = mu;
+        this.pvCoordinates             = null;
+        this.frame                     = frame;
+        jacobianMeanWrtCartesian       = null;
+        jacobianWrtParametersMean      = null;
+        jacobianEccentricWrtCartesian  = null;
+        jacobianWrtParametersEccentric = null;
+        jacobianTrueWrtCartesian       = null;
+        jacobianWrtParametersTrue      = null;
     }
 
-    /** Set the orbit from cartesian parameters.
+    /** Set the orbit from Cartesian parameters.
      * @param pvCoordinates the position and velocity in the inertial frame
      * @param frame the frame in which the {@link PVCoordinates} are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
@@ -282,5 +311,265 @@ public abstract class Orbit implements TimeStamped, Serializable, PVCoordinatesP
      * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
      */
     public abstract Orbit shiftedBy(final double dt);
+
+    /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
+     * <p>
+     * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
+     * respect to Cartesian coordinate j. This means each row correspond to one orbital parameter
+     * whereas columns 0 to 5 correspond to the Cartesian coordinates x, y, z, xDot, yDot and zDot.
+     * </p>
+     * @param type type of the position angle to use
+     * @param jacobian placeholder 6x6 matrix to be filled with the Jacobian
+     */
+    public void getJacobianWrtCartesian(final PositionAngle type, final double[][] jacobian) {
+
+        final double[][] cachedJacobian;
+        synchronized (this) {
+            switch (type) {
+            case MEAN :
+                if (jacobianMeanWrtCartesian == null) {
+                    // first call, we need to compute the jacobian and cache it
+                    jacobianMeanWrtCartesian = computeJacobianMeanWrtCartesian();
+                }
+                cachedJacobian = jacobianMeanWrtCartesian;
+                break;
+            case ECCENTRIC :
+                if (jacobianEccentricWrtCartesian == null) {
+                    // first call, we need to compute the jacobian and cache it
+                    jacobianEccentricWrtCartesian = computeJacobianEccentricWrtCartesian();
+                }
+                cachedJacobian = jacobianEccentricWrtCartesian;
+                break;
+            case TRUE :
+                if (jacobianTrueWrtCartesian == null) {
+                    // first call, we need to compute the jacobian and cache it
+                    jacobianTrueWrtCartesian = computeJacobianTrueWrtCartesian();
+                }
+                cachedJacobian = jacobianTrueWrtCartesian;
+                break;
+            default :
+                throw OrekitException.createInternalError(null);
+            }
+        }
+
+        // fill the user provided array
+        for (int i = 0; i < cachedJacobian.length; ++i) {
+            System.arraycopy(cachedJacobian[i], 0, jacobian[i], 0, cachedJacobian[i].length);
+        }
+
+    }
+
+    /** Compute the Jacobian of the Cartesian parameters with respect to the orbital parameters.
+     * <p>
+     * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
+     * respect to Cartesian coordinate j. This means each row correspond to one orbital parameter
+     * whereas columns 0 to 5 correspond to the Cartesian coordinates x, y, z, xDot, yDot and zDot.
+     * </p>
+     * @param type type of the position angle to use
+     * @param jacobian placeholder 6x6 matrix to be filled with the Jacobian
+     */
+    public void getJacobianWrtParameters(final PositionAngle type, final double[][] jacobian) {
+
+        final double[][] cachedJacobian;
+        synchronized (this) {
+            switch (type) {
+            case MEAN :
+                if (jacobianWrtParametersMean == null) {
+                    // first call, we need to compute the jacobian and cache it
+                    jacobianWrtParametersMean = createInverseJacobian(type);
+                }
+                cachedJacobian = jacobianWrtParametersMean;
+                break;
+            case ECCENTRIC :
+                if (jacobianWrtParametersEccentric == null) {
+                    // first call, we need to compute the jacobian and cache it
+                    jacobianWrtParametersEccentric = createInverseJacobian(type);
+                }
+                cachedJacobian = jacobianWrtParametersEccentric;
+                break;
+            case TRUE :
+                if (jacobianWrtParametersTrue == null) {
+                    // first call, we need to compute the jacobian and cache it
+                    jacobianWrtParametersTrue = createInverseJacobian(type);
+                }
+                cachedJacobian = jacobianWrtParametersTrue;
+                break;
+            default :
+                throw OrekitException.createInternalError(null);
+            }
+        }
+
+        // fill the user-provided array
+        for (int i = 0; i < cachedJacobian.length; ++i) {
+            System.arraycopy(cachedJacobian[i], 0, jacobian[i], 0, cachedJacobian[i].length);
+        }
+
+    }
+
+    /** Create an inverse Jacobian.
+     * @param type type of the position angle to use
+     * @return inverse Jacobian
+     */
+    private double[][] createInverseJacobian(final PositionAngle type) {
+
+        // get the direct Jacobian
+        final double[][] directJacobian = new double[6][6];
+        getJacobianWrtCartesian(type, directJacobian);
+
+        // invert the direct Jacobian
+        final RealMatrix matrix = MatrixUtils.createRealMatrix(directJacobian);
+        final DecompositionSolver solver = new QRDecompositionImpl(matrix).getSolver();
+        return solver.getInverse().getData();
+
+    }
+
+    /** Compute the Jacobian of the orbital parameters with mean angle with respect to the Cartesian parameters.
+     * <p>
+     * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
+     * respect to Cartesian coordinate j. This means each row correspond to one orbital parameter
+     * whereas columns 0 to 5 correspond to the Cartesian coordinates x, y, z, xDot, yDot and zDot.
+     * </p>
+     * @return 6x6 Jacobian matrix
+     * @see #computeJacobianEccentricWrtCartesian()
+     * @see #computeJacobianTrueWrtCartesian()
+     */
+    protected abstract double[][] computeJacobianMeanWrtCartesian();
+
+    /** Compute the Jacobian of the orbital parameters with eccentric angle with respect to the Cartesian parameters.
+     * <p>
+     * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
+     * respect to Cartesian coordinate j. This means each row correspond to one orbital parameter
+     * whereas columns 0 to 5 correspond to the Cartesian coordinates x, y, z, xDot, yDot and zDot.
+     * </p>
+     * @return 6x6 Jacobian matrix
+     * @see #computeJacobianMeanWrtCartesian()
+     * @see #computeJacobianTrueWrtCartesian()
+     */
+    protected abstract double[][] computeJacobianEccentricWrtCartesian();
+
+    /** Compute the Jacobian of the orbital parameters with true angle with respect to the Cartesian parameters.
+     * <p>
+     * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
+     * respect to Cartesian coordinate j. This means each row correspond to one orbital parameter
+     * whereas columns 0 to 5 correspond to the Cartesian coordinates x, y, z, xDot, yDot and zDot.
+     * </p>
+     * @return 6x6 Jacobian matrix
+     * @see #computeJacobianMeanWrtCartesian()
+     * @see #computeJacobianEccentricWrtCartesian()
+     */
+    protected abstract double[][] computeJacobianTrueWrtCartesian();
+
+    /** Fill a Jacobian half row with a single vector.
+     * @param a coefficient of the vector
+     * @param v vector
+     * @param row Jacobian matrix row
+     * @param j index of the first element to set (row[j], row[j+1] and row[j+2] will all be set)
+     */
+    protected static void fillHalfRow(final double a, final Vector3D v, final double[] row, final int j) {
+        row[j]     = a * v.getX();
+        row[j + 1] = a * v.getY();
+        row[j + 2] = a * v.getZ();
+    }
+
+    /** Fill a Jacobian half row with a linear combination of vectors.
+     * @param a1 coefficient of the first vector
+     * @param v1 first vector
+     * @param a2 coefficient of the second vector
+     * @param v2 second vector
+     * @param row Jacobian matrix row
+     * @param j index of the first element to set (row[j], row[j+1] and row[j+2] will all be set)
+     */
+    protected static void fillHalfRow(final double a1, final Vector3D v1, final double a2, final Vector3D v2,
+                                      final double[] row, final int j) {
+        row[j]     = a1 * v1.getX() + a2 * v2.getX();
+        row[j + 1] = a1 * v1.getY() + a2 * v2.getY();
+        row[j + 2] = a1 * v1.getZ() + a2 * v2.getZ();
+    }
+
+    /** Fill a Jacobian half row with a linear combination of vectors.
+     * @param a1 coefficient of the first vector
+     * @param v1 first vector
+     * @param a2 coefficient of the second vector
+     * @param v2 second vector
+     * @param a3 coefficient of the third vector
+     * @param v3 third vector
+     * @param row Jacobian matrix row
+     * @param j index of the first element to set (row[j], row[j+1] and row[j+2] will all be set)
+     */
+    protected static void fillHalfRow(final double a1, final Vector3D v1, final double a2, final Vector3D v2,
+                                      final double a3, final Vector3D v3,
+                                      final double[] row, final int j) {
+        row[j]     = a1 * v1.getX() + a2 * v2.getX() + a3 * v3.getX();
+        row[j + 1] = a1 * v1.getY() + a2 * v2.getY() + a3 * v3.getY();
+        row[j + 2] = a1 * v1.getZ() + a2 * v2.getZ() + a3 * v3.getZ();
+    }
+
+    /** Fill a Jacobian half row with a linear combination of vectors.
+     * @param a1 coefficient of the first vector
+     * @param v1 first vector
+     * @param a2 coefficient of the second vector
+     * @param v2 second vector
+     * @param a3 coefficient of the third vector
+     * @param v3 third vector
+     * @param a4 coefficient of the fourth vector
+     * @param v4 fourth vector
+     * @param row Jacobian matrix row
+     * @param j index of the first element to set (row[j], row[j+1] and row[j+2] will all be set)
+     */
+    protected static void fillHalfRow(final double a1, final Vector3D v1, final double a2, final Vector3D v2,
+                                      final double a3, final Vector3D v3, final double a4, final Vector3D v4,
+                                      final double[] row, final int j) {
+        row[j]     = a1 * v1.getX() + a2 * v2.getX() + a3 * v3.getX() + a4 * v4.getX();
+        row[j + 1] = a1 * v1.getY() + a2 * v2.getY() + a3 * v3.getY() + a4 * v4.getY();
+        row[j + 2] = a1 * v1.getZ() + a2 * v2.getZ() + a3 * v3.getZ() + a4 * v4.getZ();
+    }
+
+    /** Fill a Jacobian half row with a linear combination of vectors.
+     * @param a1 coefficient of the first vector
+     * @param v1 first vector
+     * @param a2 coefficient of the second vector
+     * @param v2 second vector
+     * @param a3 coefficient of the third vector
+     * @param v3 third vector
+     * @param a4 coefficient of the fourth vector
+     * @param v4 fourth vector
+     * @param a5 coefficient of the fifth vector
+     * @param v5 fifth vector
+     * @param row Jacobian matrix row
+     * @param j index of the first element to set (row[j], row[j+1] and row[j+2] will all be set)
+     */
+    protected static void fillHalfRow(final double a1, final Vector3D v1, final double a2, final Vector3D v2,
+                                      final double a3, final Vector3D v3, final double a4, final Vector3D v4,
+                                      final double a5, final Vector3D v5,
+                                      final double[] row, final int j) {
+        row[j]     = a1 * v1.getX() + a2 * v2.getX() + a3 * v3.getX() + a4 * v4.getX() + a5 * v5.getX();
+        row[j + 1] = a1 * v1.getY() + a2 * v2.getY() + a3 * v3.getY() + a4 * v4.getY() + a5 * v5.getY();
+        row[j + 2] = a1 * v1.getZ() + a2 * v2.getZ() + a3 * v3.getZ() + a4 * v4.getZ() + a5 * v5.getZ();
+    }
+
+    /** Fill a Jacobian half row with a linear combination of vectors.
+     * @param a1 coefficient of the first vector
+     * @param v1 first vector
+     * @param a2 coefficient of the second vector
+     * @param v2 second vector
+     * @param a3 coefficient of the third vector
+     * @param v3 third vector
+     * @param a4 coefficient of the fourth vector
+     * @param v4 fourth vector
+     * @param a5 coefficient of the fifth vector
+     * @param v5 fifth vector
+     * @param a6 coefficient of the sixth vector
+     * @param v6 sixth vector
+     * @param a7 coefficient of the seventh vector
+     * @param j index of the first element to set (row[j], row[j+1] and row[j+2] will all be set)
+     */
+    protected static void fillHalfRow(final double a1, final Vector3D v1, final double a2, final Vector3D v2,
+                                      final double a3, final Vector3D v3, final double a4, final Vector3D v4,
+                                      final double a5, final Vector3D v5, final double a6, final Vector3D v6,
+                                      final double[] row, final int j) {
+        row[j]     = a1 * v1.getX() + a2 * v2.getX() + a3 * v3.getX() + a4 * v4.getX() + a5 * v5.getX() + a6 * v6.getX();
+        row[j + 1] = a1 * v1.getY() + a2 * v2.getY() + a3 * v3.getY() + a4 * v4.getY() + a5 * v5.getY() + a6 * v6.getY();
+        row[j + 2] = a1 * v1.getZ() + a2 * v2.getZ() + a3 * v3.getZ() + a4 * v4.getZ() + a5 * v5.getZ() + a6 * v6.getZ();
+    }
 
 }

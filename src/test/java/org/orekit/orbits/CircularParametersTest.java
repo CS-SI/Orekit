@@ -24,10 +24,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -509,8 +511,208 @@ public class CircularParametersTest {
                           date, mu);
     }
 
+    @Test
+    public void testJacobianReference() throws OrekitException {
+
+        AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        double mu =  3.986004415e+14;
+        CircularOrbit orbCir = new CircularOrbit(7000000.0, 0.01, -0.02, 1.2, 2.1,
+                                                 0.7, PositionAngle.MEAN,
+                                                 FramesFactory.getEME2000(), dateTca, mu);
+
+        // the following reference values have been computed using the free software
+        // version 6.2 of the MSLIB fortran library by the following program:
+        //        program cir_jacobian
+        //
+        //        use mslib
+        //        implicit none
+        //
+        //        integer, parameter :: nb = 11
+        //        integer :: i,j
+        //        type(tm_code_retour)      ::  code_retour
+        //
+        //        real(pm_reel), parameter :: mu= 3.986004415e+14_pm_reel
+        //        real(pm_reel),dimension(3)::vit_car,pos_car
+        //        type(tm_orb_cir)::cir
+        //        real(pm_reel), dimension(6,6)::jacob
+        //        real(pm_reel)::norme
+        //
+        //
+        //        cir%a=7000000_pm_reel
+        //        cir%ex=0.01_pm_reel
+        //        cir%ey=-0.02_pm_reel
+        //        cir%i=1.2_pm_reel
+        //        cir%gom=2.1_pm_reel
+        //        cir%pso_M=0.7_pm_reel
+        //
+        //        call mv_cir_car(mu,cir,pos_car,vit_car,code_retour)
+        //        write(*,*)code_retour%valeur
+        //        write(*,1000)pos_car,vit_car
+        //
+        //
+        //        call mu_norme(pos_car,norme,code_retour)
+        //        write(*,*)norme
+        //
+        //        call mv_car_cir (mu, pos_car, vit_car, cir, code_retour, jacob)
+        //        write(*,*)code_retour%valeur
+        //
+        //        write(*,*)"circular = ", cir%a, cir%ex, cir%ey, cir%i, cir%gom, cir%pso_M
+        //
+        //        do i = 1,6
+        //           write(*,*) " ",(jacob(i,j),j=1,6)
+        //        end do
+        //
+        //        1000 format (6(f24.15,1x))
+        //        end program cir_jacobian
+        Vector3D pRef = new Vector3D(-4106905.105389204807580, 3603162.539798960555345, 4439730.167038885876536);
+        Vector3D vRef = new Vector3D(740.132407342422994, -5308.773280141396754, 5250.338353483879473);
+        double[][] jRef = {
+            { -1.1535467596325562,        1.0120556393573172,        1.2470306024626943,        181.96913090864561,       -1305.2162699469984,        1290.8494448855752      },
+            { -5.07367368325471104E-008, -1.27870567070456834E-008,  1.31544531338558113E-007, -3.09332106417043592E-005, -9.60781276304445404E-005,  1.91506964883791605E-004 },
+            { -6.59428471712402018E-008,  1.24561703203882533E-007, -1.41907027322388158E-008,  7.63442601186485441E-005, -1.77446722746170009E-004,  5.99464401287846734E-005 },
+            {  7.55079920652274275E-008,  4.41606835295069131E-008,  3.40079310688458225E-008,  7.89724635377817962E-005,  4.61868720707717372E-005,  3.55682891687782599E-005 },
+            { -9.20788748896973282E-008, -5.38521280004949642E-008, -4.14712660805579618E-008,  7.78626692360739821E-005,  4.55378113077967091E-005,  3.50684505810897702E-005 },
+            {  1.85082436324531617E-008,  1.20506219457886855E-007, -8.31277842285972640E-008,  1.27364008345789645E-004, -1.54770720974742483E-004, -1.78589436862677754E-004 }
+        };
+
+        PVCoordinates pv = orbCir.getPVCoordinates();
+        Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm(), 3.0e-16 * pRef.getNorm());
+        Assert.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm(), 2.0e-16 * vRef.getNorm());
+
+        double[][] jacobian = new double[6][6];
+        orbCir.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+
+        for (int i = 0; i < jacobian.length; i++) {
+            double[] row    = jacobian[i];
+            double[] rowRef = jRef[i];
+            for (int j = 0; j < row.length; j++) {
+                Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 5.0e-15);
+            }
+        }
+
+    }
+
+    @Test
+    public void testJacobianFinitedifferences() throws OrekitException {
+
+        AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        double mu =  3.986004415e+14;
+        CircularOrbit orbCir = new CircularOrbit(7000000.0, 0.01, -0.02, 1.2, 2.1,
+                                                 0.7, PositionAngle.MEAN,
+                                                 FramesFactory.getEME2000(), dateTca, mu);
+
+        for (PositionAngle type : PositionAngle.values()) {
+            double hP = 2.0;
+            double[][] finiteDiffJacobian = finiteDifferencesJacobian(type, orbCir, hP);
+            double[][] jacobian = new double[6][6];
+            orbCir.getJacobianWrtCartesian(type, jacobian);
+
+            for (int i = 0; i < jacobian.length; i++) {
+                double[] row    = jacobian[i];
+                double[] rowRef = finiteDiffJacobian[i];
+                for (int j = 0; j < row.length; j++) {
+                    Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 8.0e-9);
+                }
+            }
+        }
+
+    }
+
+    private double[][] finiteDifferencesJacobian(PositionAngle type, CircularOrbit orbit, double hP)
+        throws OrekitException {
+        double[][] jacobian = new double[6][6];
+        for (int i = 0; i < 6; ++i) {
+            fillColumn(type, i, orbit, hP, jacobian);
+        }
+        return jacobian;
+    }
+
+    private void fillColumn(PositionAngle type, int i, CircularOrbit orbit, double hP, double[][] jacobian) {
+
+        // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
+        // we use this to compute a velocity step size from the position step size
+        Vector3D p = orbit.getPVCoordinates().getPosition();
+        Vector3D v = orbit.getPVCoordinates().getVelocity();
+        double hV = orbit.getMu() * hP / (v.getNorm() * p.getNormSq());
+
+        double h;
+        Vector3D dP = Vector3D.ZERO;
+        Vector3D dV = Vector3D.ZERO;
+        switch (i) {
+        case 0:
+            h = hP;
+            dP = new Vector3D(hP, 0, 0);
+            break;
+        case 1:
+            h = hP;
+            dP = new Vector3D(0, hP, 0);
+            break;
+        case 2:
+            h = hP;
+            dP = new Vector3D(0, 0, hP);
+            break;
+        case 3:
+            h = hV;
+            dV = new Vector3D(hV, 0, 0);
+            break;
+        case 4:
+            h = hV;
+            dV = new Vector3D(0, hV, 0);
+            break;
+        default:
+            h = hV;
+            dV = new Vector3D(0, 0, hV);
+            break;
+        }
+
+        CircularOrbit oM4h = new CircularOrbit(new PVCoordinates(new Vector3D(1, p, -4, dP), new Vector3D(1, v, -4, dV)),
+                                               orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        CircularOrbit oM3h = new CircularOrbit(new PVCoordinates(new Vector3D(1, p, -3, dP), new Vector3D(1, v, -3, dV)),
+                                               orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        CircularOrbit oM2h = new CircularOrbit(new PVCoordinates(new Vector3D(1, p, -2, dP), new Vector3D(1, v, -2, dV)),
+                                               orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        CircularOrbit oM1h = new CircularOrbit(new PVCoordinates(new Vector3D(1, p, -1, dP), new Vector3D(1, v, -1, dV)),
+                                               orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        CircularOrbit oP1h = new CircularOrbit(new PVCoordinates(new Vector3D(1, p, +1, dP), new Vector3D(1, v, +1, dV)),
+                                               orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        CircularOrbit oP2h = new CircularOrbit(new PVCoordinates(new Vector3D(1, p, +2, dP), new Vector3D(1, v, +2, dV)),
+                                               orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        CircularOrbit oP3h = new CircularOrbit(new PVCoordinates(new Vector3D(1, p, +3, dP), new Vector3D(1, v, +3, dV)),
+                                               orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        CircularOrbit oP4h = new CircularOrbit(new PVCoordinates(new Vector3D(1, p, +4, dP), new Vector3D(1, v, +4, dV)),
+                                               orbit.getFrame(), orbit.getDate(), orbit.getMu());
+
+        jacobian[0][i] = (-3 * (oP4h.getA()                             - oM4h.getA()) +
+                          32 * (oP3h.getA()                             - oM3h.getA()) -
+                         168 * (oP2h.getA()                             - oM2h.getA()) +
+                         672 * (oP1h.getA()                             - oM1h.getA())) / (840 * h);
+        jacobian[1][i] = (-3 * (oP4h.getCircularEx()                    - oM4h.getCircularEx()) +
+                          32 * (oP3h.getCircularEx()                    - oM3h.getCircularEx()) -
+                         168 * (oP2h.getCircularEx()                    - oM2h.getCircularEx()) +
+                         672 * (oP1h.getCircularEx()                    - oM1h.getCircularEx())) / (840 * h);
+        jacobian[2][i] = (-3 * (oP4h.getCircularEy()                    - oM4h.getCircularEy()) +
+                          32 * (oP3h.getCircularEy()                    - oM3h.getCircularEy()) -
+                         168 * (oP2h.getCircularEy()                    - oM2h.getCircularEy()) +
+                         672 * (oP1h.getCircularEy()                    - oM1h.getCircularEy())) / (840 * h);
+        jacobian[3][i] = (-3 * (oP4h.getI()                             - oM4h.getI()) +
+                          32 * (oP3h.getI()                             - oM3h.getI()) -
+                         168 * (oP2h.getI()                             - oM2h.getI()) +
+                         672 * (oP1h.getI()                             - oM1h.getI())) / (840 * h);
+        jacobian[4][i] = (-3 * (oP4h.getRightAscensionOfAscendingNode() - oM4h.getRightAscensionOfAscendingNode()) +
+                          32 * (oP3h.getRightAscensionOfAscendingNode() - oM3h.getRightAscensionOfAscendingNode()) -
+                         168 * (oP2h.getRightAscensionOfAscendingNode() - oM2h.getRightAscensionOfAscendingNode()) +
+                         672 * (oP1h.getRightAscensionOfAscendingNode() - oM1h.getRightAscensionOfAscendingNode())) / (840 * h);
+        jacobian[5][i] = (-3 * (oP4h.getAlpha(type)                     - oM4h.getAlpha(type)) +
+                          32 * (oP3h.getAlpha(type)                     - oM3h.getAlpha(type)) -
+                         168 * (oP2h.getAlpha(type)                     - oM2h.getAlpha(type)) +
+                         672 * (oP1h.getAlpha(type)                     - oM1h.getAlpha(type))) / (840 * h);
+
+    }
+
     @Before
     public void setUp() {
+
+        Utils.setDataRoot("regular-data");
 
         // Computation date
         date = AbsoluteDate.J2000_EPOCH;

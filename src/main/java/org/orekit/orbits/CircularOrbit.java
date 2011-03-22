@@ -519,6 +519,208 @@ public class CircularOrbit
                                  getDate().shiftedBy(dt), getMu());
     }
 
+    /** {@inheritDoc} */
+    protected double[][] computeJacobianMeanWrtCartesian() {
+
+        final double[][] jacobian = new double[6][6];
+
+        // compute various intermediate parameters
+        final PVCoordinates pvc = getPVCoordinates();
+        final Vector3D position = pvc.getPosition();
+        final Vector3D velocity = pvc.getVelocity();
+
+        final double x          = position.getX();
+        final double y          = position.getY();
+        final double z          = position.getZ();
+        final double vx         = velocity.getX();
+        final double vy         = velocity.getY();
+        final double vz         = velocity.getZ();
+        final double pv         = Vector3D.dotProduct(position, velocity);
+        final double r2         = position.getNormSq();
+        final double r          = FastMath.sqrt(r2);
+        final double v2         = velocity.getNormSq();
+
+        final double mu         = getMu();
+        final double oOsqrtMuA  = 1 / FastMath.sqrt(mu * a);
+        final double rOa        = r / a;
+        final double aOr        = a / r;
+        final double aOr2       = a / r2;
+        final double a2         = a * a;
+
+        final double ex2        = ex * ex;
+        final double ey2        = ey * ey;
+        final double e2         = ex2 + ey2;
+        final double epsilon    = FastMath.sqrt(1 - e2);
+        final double beta       = 1 / (1 + epsilon);
+
+        final double eCosE      = 1 - rOa;
+        final double eSinE      = pv * oOsqrtMuA;
+
+        final double cosI       = FastMath.cos(i);
+        final double sinI       = FastMath.sin(i);
+        final double cosRaan    = FastMath.cos(raan);
+        final double sinRaan    = FastMath.sin(raan);
+
+        // da
+        fillHalfRow(2 * aOr * aOr2, position, jacobian[0], 0);
+        fillHalfRow(2 * a2 / mu, velocity, jacobian[0], 3);
+
+        // differentials of the normalized momentum
+        final Vector3D danP = new Vector3D(v2, position, -pv, velocity);
+        final Vector3D danV = new Vector3D(r2, velocity, -pv, position);
+        final double recip  = 1 / pvc.getMomentum().getNorm();
+        final double recip2 = recip * recip;
+        final Vector3D dwXP = new Vector3D(recip, new Vector3D(  0,  vz, -vy), -recip2 * sinRaan * sinI, danP);
+        final Vector3D dwYP = new Vector3D(recip, new Vector3D(-vz,   0,  vx),  recip2 * cosRaan * sinI, danP);
+        final Vector3D dwZP = new Vector3D(recip, new Vector3D( vy, -vx,   0), -recip2 * cosI,           danP);
+        final Vector3D dwXV = new Vector3D(recip, new Vector3D(  0,  -z,   y), -recip2 * sinRaan * sinI, danV);
+        final Vector3D dwYV = new Vector3D(recip, new Vector3D(  z,   0,  -x),  recip2 * cosRaan * sinI, danV);
+        final Vector3D dwZV = new Vector3D(recip, new Vector3D( -y,   x,   0), -recip2 * cosI,           danV);
+
+        // di
+        fillHalfRow(sinRaan * cosI, dwXP, -cosRaan * cosI, dwYP, -sinI, dwZP, jacobian[3], 0);
+        fillHalfRow(sinRaan * cosI, dwXV, -cosRaan * cosI, dwYV, -sinI, dwZV, jacobian[3], 3);
+
+        // dRaan
+        fillHalfRow(sinRaan / sinI, dwYP, cosRaan / sinI, dwXP, jacobian[4], 0);
+        fillHalfRow(sinRaan / sinI, dwYV, cosRaan / sinI, dwXV, jacobian[4], 3);
+
+        // orbital frame: (p, q, w) p along ascending node, w along momentum
+        // the coordinates of the spacecraft in this frame are: (u, v, 0)
+        final double u     =  x * cosRaan + y * sinRaan;
+        final double cv    = -x * sinRaan + y * cosRaan;
+        final double v     = cv * cosI + z * sinI;
+
+        // du
+        final Vector3D duP = new Vector3D(cv * cosRaan / sinI, dwXP,
+                                          cv * sinRaan / sinI, dwYP,
+                                          1, new Vector3D(cosRaan, sinRaan, 0));
+        final Vector3D duV = new Vector3D(cv * cosRaan / sinI, dwXV,
+                                          cv * sinRaan / sinI, dwYV);
+
+        // dv
+        final Vector3D dvP = new Vector3D(-u * cosRaan * cosI / sinI + sinRaan * z, dwXP,
+                                          -u * sinRaan * cosI / sinI - cosRaan * z, dwYP,
+                                          cv, dwZP,
+                                          1, new Vector3D(-sinRaan * cosI, cosRaan * cosI, sinI));
+        final Vector3D dvV = new Vector3D(-u * cosRaan * cosI / sinI + sinRaan * z, dwXV,
+                                          -u * sinRaan * cosI / sinI - cosRaan * z, dwYV,
+                                          cv, dwZV);
+
+        final Vector3D dc1P = new Vector3D(aOr2 * (2 * eSinE * eSinE + 1 - eCosE) / r2, position,
+                                            -2 * aOr2 * eSinE * oOsqrtMuA, velocity);
+        final Vector3D dc1V = new Vector3D(-2 * aOr2 * eSinE * oOsqrtMuA, position,
+                                            2 / mu, velocity);
+        final Vector3D dc2P = new Vector3D(aOr2 * eSinE * (eSinE * eSinE - (1 - e2)) / (r2 * epsilon), position,
+                                            aOr2 * (1 - e2 - eSinE * eSinE) * oOsqrtMuA / epsilon, velocity);
+        final Vector3D dc2V = new Vector3D(aOr2 * (1 - e2 - eSinE * eSinE) * oOsqrtMuA / epsilon, position,
+                                            eSinE / (mu * epsilon), velocity);
+
+        final double cof1   = aOr2 * (eCosE - e2);
+        final double cof2   = aOr2 * epsilon * eSinE;
+        final Vector3D dexP = new Vector3D(u, dc1P,  v, dc2P, cof1, duP,  cof2, dvP);
+        final Vector3D dexV = new Vector3D(u, dc1V,  v, dc2V, cof1, duV,  cof2, dvV);
+        final Vector3D deyP = new Vector3D(v, dc1P, -u, dc2P, cof1, dvP, -cof2, duP);
+        final Vector3D deyV = new Vector3D(v, dc1V, -u, dc2V, cof1, dvV, -cof2, duV);
+        fillHalfRow(1, dexP, jacobian[1], 0);
+        fillHalfRow(1, dexV, jacobian[1], 3);
+        fillHalfRow(1, deyP, jacobian[2], 0);
+        fillHalfRow(1, deyV, jacobian[2], 3);
+
+        final double cle = u / a + ex - eSinE * beta * ey;
+        final double sle = v / a + ey + eSinE * beta * ex;
+        final double m1  = beta * eCosE;
+        final double m2  = 1 - m1 * eCosE;
+        final double m3  = (u * ey - v * ex) + eSinE * beta * (u * ex + v * ey);
+        final double m4  = -sle + cle * eSinE * beta;
+        final double m5  = cle + sle * eSinE * beta;
+        fillHalfRow((2 * m3 / r + aOr * eSinE + m1 * eSinE * (1 + m1 - (1 + aOr) * m2) / epsilon) / r2, position, 
+                    (m1 * m2 / epsilon - 1) * oOsqrtMuA, velocity,
+                    m4, dexP, m5, deyP, -sle / a, duP, cle / a, dvP,
+                    jacobian[5], 0);
+        fillHalfRow((m1 * m2 / epsilon - 1) * oOsqrtMuA, position,
+                    (2 * m3 + eSinE * a + m1 * eSinE * r * (eCosE * beta * 2 - aOr * m2) / epsilon) / mu, velocity,
+                    m4, dexV, m5, deyV, -sle / a, duV, cle / a, dvV,
+                    jacobian[5], 3);
+
+        return jacobian;
+
+    }
+
+    /** {@inheritDoc} */
+    protected double[][] computeJacobianEccentricWrtCartesian() {
+
+        // start by computing the Jacobian with mean angle
+        final double[][] jacobian = computeJacobianMeanWrtCartesian();
+
+        // Differentiating the Kepler equation aM = aE - ex sin aE + ey cos aE leads to:
+        // daM = (1 - ex cos aE - ey sin aE) dE - sin aE dex + cos aE dey
+        // which is inverted and rewritten as:
+        // daE = a/r daM + sin aE a/r dex - cos aE a/r dey
+        final double alphaE = getAlphaE();
+        final double cosAe  = FastMath.cos(alphaE);
+        final double sinAe  = FastMath.sin(alphaE);
+        final double aOr    = 1 / (1 - ex * cosAe - ey * sinAe);
+
+        // update longitude row
+        final double[] rowEx = jacobian[1];
+        final double[] rowEy = jacobian[2];
+        final double[] rowL  = jacobian[5];
+        for (int j = 0; j < 6; ++j) {
+            rowL[j] = aOr * (rowL[j] + sinAe * rowEx[j] - cosAe * rowEy[j]);
+        }
+
+        return jacobian;
+
+    }
+
+    /** {@inheritDoc} */
+    protected double[][] computeJacobianTrueWrtCartesian() {
+
+        // start by computing the Jacobian with eccentric angle
+        final double[][] jacobian = computeJacobianEccentricWrtCartesian();
+
+        // Differentiating the eccentric latitude equation
+        // tan((aV - aE)/2) = [ex sin aE - ey cos aE] / [sqrt(1-ex^2-ey^2) + 1 - ex cos aE - ey sin aE]
+        // leads to
+        // cT (daV - daE) = cE daE + cX dex + cY dey
+        // with
+        // cT = [d^2 + (ex sin aE - ey cos aE)^2] / 2
+        // d  = 1 + sqrt(1-ex^2-ey^2) - ex cos aE - ey sin aE
+        // cE = (ex cos aE + ey sin aE) (sqrt(1-ex^2-ey^2) + 1) - ex^2 - ey^2
+        // cX =  sin aE (sqrt(1-ex^2-ey^2) + 1) - ey + ex (ex sin aE - ey cos aE) / sqrt(1-ex^2-ey^2)
+        // cY = -cos aE (sqrt(1-ex^2-ey^2) + 1) + ex + ey (ex sin aE - ey cos aE) / sqrt(1-ex^2-ey^2)
+        // which can be solved to find the differential of the true latitude
+        // daV = (cT + cE) / cT daE + cX / cT deX + cY / cT deX
+        final double alphaE    = getAlphaE();
+        final double cosAe     = FastMath.cos(alphaE);
+        final double sinAe     = FastMath.sin(alphaE);
+        final double eSinE     = ex * sinAe - ey * cosAe;
+        final double ecosE     = ex * cosAe + ey * sinAe;
+        final double e2        = ex * ex + ey * ey;
+        final double epsilon   = FastMath.sqrt(1 - e2);
+        final double onePeps   = 1 + epsilon;
+        final double d         = onePeps - ecosE;
+        final double cT        = (d * d + eSinE * eSinE) / 2;
+        final double cE        = ecosE * onePeps - e2;
+        final double cX        = ex * eSinE / epsilon - ey + sinAe * onePeps;
+        final double cY        = ey * eSinE / epsilon + ex - cosAe * onePeps;
+        final double factorLe  = (cT + cE) / cT;
+        final double factorEx  = cX / cT;
+        final double factorEy  = cY / cT;
+
+        // update latitude row
+        final double[] rowEx = jacobian[1];
+        final double[] rowEy = jacobian[2];
+        final double[] rowA = jacobian[5];
+        for (int j = 0; j < 6; ++j) {
+            rowA[j] = factorLe * rowA[j] + factorEx * rowEx[j] + factorEy * rowEy[j];
+        }
+
+        return jacobian;
+
+    }
+
     /**  Returns a string representation of this Orbit object.
      * @return a string representation of this object
      */

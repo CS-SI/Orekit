@@ -665,6 +665,240 @@ public class KeplerianOrbit extends Orbit {
                                   PositionAngle.MEAN, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 
+    /** {@inheritDoc} */
+    protected double[][] computeJacobianMeanWrtCartesian() {
+        if (a > 0) {
+            return computeJacobianMeanWrtCartesianElliptical();
+        } else {
+            return computeJacobianMeanWrtCartesianHyperbolic();
+        }
+    }
+
+    /** Compute the Jacobian of the orbital parameters with respect to the cartesian parameters.
+     * <p>
+     * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
+     * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
+     * yDot for j=4, zDot for j=5).
+     * </p>
+     * <p>
+     * The order and meaning of the rows for all implementations of this method <em>must</em>
+     * be consistent with the mapping done in implementations of the {@link
+     * org.orekit.propagation.numerical.StateMapper StateMapper} interface. This typically
+     * implies that for orbits types which have a notion of mean/eccentric/true angle, the
+     * corresponding row of the Jacobian is the last one and corresponds to the partial
+     * derivatives of the <em>true</em> angle.
+     * </p>
+     * @return 6x6 Jacobian matrix
+     */
+    private double[][] computeJacobianMeanWrtCartesianElliptical() {
+
+        final double[][] jacobian = new double[6][6];
+
+        // compute various intermediate parameters
+        final PVCoordinates pvc = getPVCoordinates();
+        final Vector3D position = pvc.getPosition();
+        final Vector3D velocity = pvc.getVelocity();
+        final Vector3D momentum = pvc.getMomentum();
+        final double v2         = velocity.getNormSq();
+        final double r2         = position.getNormSq();
+        final double r          = FastMath.sqrt(r2);
+        final double r3         = r * r2;
+
+        final double px         = position.getX();
+        final double py         = position.getY();
+        final double pz         = position.getZ();
+        final double vx         = velocity.getX();
+        final double vy         = velocity.getY();
+        final double vz         = velocity.getZ();
+        final double mx         = momentum.getX();
+        final double my         = momentum.getY();
+        final double mz         = momentum.getZ();
+
+        final double mu         = getMu();
+        final double sqrtMuA    = FastMath.sqrt(a * mu);
+        final double sqrtAoMu   = FastMath.sqrt(a / mu);
+        final double a2         = a * a;
+        final double twoA       = 2 * a;
+        final double rOnA       = r / a;
+
+        final double oMe2       = 1 - e * e;
+        final double epsilon    = FastMath.sqrt(oMe2);
+        final double sqrtRec    = 1 / epsilon;
+
+        final double cosI       = FastMath.cos(i);
+        final double sinI       = FastMath.sin(i);
+        final double cosPA      = FastMath.cos(pa);
+        final double sinPA      = FastMath.sin(pa);
+
+        final double pv         = Vector3D.dotProduct(position, velocity);
+        final double cosE       = (a - r) / (a * e);
+        final double sinE       = pv / (e * sqrtMuA);
+
+        // da
+        final Vector3D vectorAR = new Vector3D(2 * a2 / r3, position);
+        final Vector3D vectorARDot = velocity.scalarMultiply(2 * a2 / mu);
+        fillHalfRow(1, vectorAR,    jacobian[0], 0);
+        fillHalfRow(1, vectorARDot, jacobian[0], 3);
+
+        // de
+        final double factorER3 = pv / twoA;
+        final Vector3D vectorER   = new Vector3D(cosE * v2 / (r * mu), position,
+                                                 sinE / sqrtMuA, velocity,
+                                                 -factorER3 * sinE / sqrtMuA, vectorAR);
+        final Vector3D vectorERDot = new Vector3D(sinE / sqrtMuA, position,
+                                                  cosE * 2 * r / mu, velocity,
+                                                  -factorER3 * sinE / sqrtMuA, vectorARDot);
+        fillHalfRow(1, vectorER,    jacobian[1], 0);
+        fillHalfRow(1, vectorERDot, jacobian[1], 3);
+
+        // dE / dr (Eccentric anomaly)
+        final double coefE = cosE / (e * sqrtMuA);
+        final Vector3D  vectorEAnR =
+            new Vector3D(-sinE * v2 / (e * r * mu), position, coefE, velocity,
+                         -factorER3 * coefE, vectorAR);
+
+        // dE / drDot
+        final Vector3D  vectorEAnRDot =
+            new Vector3D(-sinE * 2 * r / (e * mu), velocity, coefE, position,
+                         -factorER3 * coefE, vectorARDot);
+
+        // precomputing some more factors
+        final double s1 = -sinE * pz / r - cosE * vz * sqrtAoMu;
+        final double s2 = -cosE * pz / r3;
+        final double s3 = -sinE * vz / (2 * sqrtMuA);
+        final double t1 = sqrtRec * (cosE * pz / r - sinE * vz * sqrtAoMu);
+        final double t2 = sqrtRec * (-sinE * pz / r3);
+        final double t3 = sqrtRec * (cosE - e) * vz / (2 * sqrtMuA);
+        final double t4 = sqrtRec * (e * sinI * cosPA * sqrtRec - vz * sqrtAoMu);
+        final Vector3D s = new Vector3D(cosE / r, Vector3D.PLUS_K,
+                                        s1,       vectorEAnR,
+                                        s2,       position,
+                                        s3,       vectorAR);
+        final Vector3D sDot = new Vector3D(-sinE * sqrtAoMu, Vector3D.PLUS_K,
+                                           s1,               vectorEAnRDot,
+                                           s3,               vectorARDot);
+        final Vector3D t =
+            new Vector3D(sqrtRec * sinE / r, Vector3D.PLUS_K).add(new Vector3D(t1, vectorEAnR,
+                                                                               t2, position,
+                                                                               t3, vectorAR,
+                                                                               t4, vectorER));
+        final Vector3D tDot = new Vector3D(sqrtRec * (cosE - e) * sqrtAoMu, Vector3D.PLUS_K,
+                                           t1,                              vectorEAnRDot,
+                                           t3,                              vectorARDot,
+                                           t4,                              vectorERDot);
+
+        // di
+        final double factorI1 = -sinI * sqrtRec / sqrtMuA;
+        final double i1 =  factorI1;
+        final double i2 = -factorI1 * mz / twoA;
+        final double i3 =  factorI1 * mz * e / oMe2;
+        final double i4 = cosI * sinPA;
+        final double i5 = cosI * cosPA;
+        fillHalfRow(i1, new Vector3D(vy, -vx, 0), i2, vectorAR, i3, vectorER, i4, s, i5, t,
+                    jacobian[2], 0);
+        fillHalfRow(i1, new Vector3D(-py, px, 0), i2, vectorARDot, i3, vectorERDot, i4, sDot, i5, tDot,
+                    jacobian[2], 3);
+
+        // dpa
+        fillHalfRow(cosPA / sinI, s,    -sinPA / sinI, t,    jacobian[3], 0);
+        fillHalfRow(cosPA / sinI, sDot, -sinPA / sinI, tDot, jacobian[3], 3);
+
+        // dRaan
+        final double factorRaanR = 1 / (mu * a * oMe2 * sinI * sinI);
+        fillHalfRow(-factorRaanR * my, new Vector3D(  0, vz, -vy),
+                     factorRaanR * mx, new Vector3D(-vz,  0,  vx),
+                     jacobian[4], 0);
+        fillHalfRow(-factorRaanR * my, new Vector3D( 0, -pz,  py),
+                     factorRaanR * mx, new Vector3D(pz,   0, -px),
+                     jacobian[4], 3);
+
+        // dM
+        fillHalfRow(rOnA, vectorEAnR,    -sinE, vectorER,    jacobian[5], 0);
+        fillHalfRow(rOnA, vectorEAnRDot, -sinE, vectorERDot, jacobian[5], 3);
+
+        return jacobian;
+
+    }
+
+    /** {inheritDoc} */
+    public double[][] computeJacobianEccentricWrtCartesian() {
+
+        // start by computing the Jacobian with mean angle
+        final double[][] jacobian = computeJacobianMeanWrtCartesian();
+
+        // Differentiating the Kepler equation M = E - e sin E leads to:
+        // dM = (1 - e cos E) dE - sin E de
+        // which is inverted and rewritten as:
+        // dE = a/r dM + sin E a/r de
+        final double eccentricAnomaly = getEccentricAnomaly();
+        final double cosE             = FastMath.cos(eccentricAnomaly);
+        final double sinE             = FastMath.sin(eccentricAnomaly);
+        final double aOr              = 1/ (1 - e * cosE);
+
+        // update anomaly row
+        final double[] eRow           = jacobian[1];
+        final double[] anomalyRow     = jacobian[5];
+        for (int j = 0; j < anomalyRow.length; ++j) {
+            anomalyRow[j] = aOr * (anomalyRow[j] + sinE * eRow[j]);
+        }
+
+        return jacobian;
+
+    }
+
+    /** {inheritDoc} */
+    public double[][] computeJacobianTrueWrtCartesian() {
+
+        // start by computing the Jacobian with eccentric angle
+        final double[][] jacobian = computeJacobianEccentricWrtCartesian();
+
+        // Differentiating the eccentric anomaly equation sin E = sqrt(1-e^2) sin v / (1 + e cos v)
+        // and using cos E = (e + cos v) / (1 + e cos v) to get rid of cos E leads to:
+        // dE = [sqrt (1 - e^2) / (1 + e cos v)] dv - [sin E / ((1 - e^2) * (1 + e cos v))] de
+        // which is inverted and rewritten as:
+        // dv = sqrt (1 - e^2) a/r dE + [sin E / sqrt (1 - e^2)] a/r de
+        final double e2               = e * e;
+        final double oMe2             = 1 - e2;
+        final double epsilon          = FastMath.sqrt(oMe2);
+        final double eccentricAnomaly = getEccentricAnomaly();
+        final double cosE             = FastMath.cos(eccentricAnomaly);
+        final double sinE             = FastMath.sin(eccentricAnomaly);
+        final double aOr              = 1 / (1 - e * cosE);
+        final double aFactor          = epsilon * aOr;
+        final double eFactor          = sinE * aOr / epsilon;
+
+        // update anomaly row
+        final double[] eRow           = jacobian[1];
+        final double[] anomalyRow     = jacobian[5];
+        for (int j = 0; j < anomalyRow.length; ++j) {
+            anomalyRow[j] = aFactor * anomalyRow[j] + eFactor * eRow[j];
+        }
+
+        return jacobian;
+
+    }
+
+    /** Compute the Jacobian of the orbital parameters with respect to the cartesian parameters.
+     * <p>
+     * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
+     * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
+     * yDot for j=4, zDot for j=5).
+     * </p>
+     * <p>
+     * The order and meaning of the rows for all implementations of this method <em>must</em>
+     * be consistent with the mapping done in implementations of the {@link
+     * org.orekit.propagation.numerical.StateMapper StateMapper} interface. This typically
+     * implies that for orbits types which have a notion of mean/eccentric/true angle, the
+     * corresponding row of the Jacobian is the last one and corresponds to the partial
+     * derivatives of the <em>true</em> angle.
+     * </p>
+     * @return 6x6 Jacobian matrix
+     */
+    private double[][] computeJacobianMeanWrtCartesianHyperbolic() {
+        // TODO implement the hyperbolic case
+        throw OrekitException.createInternalError(null);
+    }
+
     /**  Returns a string representation of this keplerian parameters object.
      * @return a string representation of this object
      */
@@ -675,7 +909,7 @@ public class KeplerianOrbit extends Orbit {
                                   append("; i: ").append(FastMath.toDegrees(i)).
                                   append("; pa: ").append(FastMath.toDegrees(pa)).
                                   append("; raan: ").append(FastMath.toDegrees(raan)).
-                                  append("; lv: ").append(FastMath.toDegrees(v)).
+                                  append("; v: ").append(FastMath.toDegrees(v)).
                                   append(";}").toString();
     }
 

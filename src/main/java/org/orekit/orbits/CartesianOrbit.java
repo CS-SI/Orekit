@@ -374,6 +374,33 @@ public class CartesianOrbit extends Orbit {
 
     }
 
+    /** {@inheritDoc} */
+    protected double[][] computeJacobianMeanWrtCartesian() {
+        return build6x6Identity();
+    }
+
+    /** {@inheritDoc} */
+    protected double[][] computeJacobianEccentricWrtCartesian() {
+        return build6x6Identity();
+    }
+
+    /** {@inheritDoc} */
+    protected double[][] computeJacobianTrueWrtCartesian() {
+        return build6x6Identity();
+    }
+
+    /** Build a 6x6 identity matrix.
+     * @return 6x6 identity matrix
+     */
+    private double[][] build6x6Identity() {
+        // build the identity matrix
+        final double[][] jacobian = new double[6][6];
+        for (int i = 0; i < jacobian.length; ++i) {
+            jacobian[i][i] = 1;
+        }
+        return jacobian;
+    }
+
     /**  Returns a string representation of this Orbit object.
      * @return a string representation of this object
      */

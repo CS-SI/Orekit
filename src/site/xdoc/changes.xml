@@ -22,6 +22,10 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add" >
+        Added Jacobians between orbital parameters and Cartesian parameters for all orbits
+        types, all angles types (mean, eccentric, true) and in both directions
+      </action>
       <action dev="luc" type="update" >
         Replaced the integers parameters used in orbit constructors (MEAN_ANOMALY, ECCENTRIC_ANOMALY ...)
         by a new PositionAngle enumerate for better value safety. The old public constants and the

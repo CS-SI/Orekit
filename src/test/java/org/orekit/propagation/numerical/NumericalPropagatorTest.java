@@ -350,7 +350,7 @@ public class NumericalPropagatorTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeIntegrator integrator =
-            new DormandPrince853Integrator(0.001, 500, absTolerance, relTolerance);
+            new DormandPrince853Integrator(0.001, 200, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
         propagator = new NumericalPropagator(integrator);
         propagator.setInitialState(initialState);

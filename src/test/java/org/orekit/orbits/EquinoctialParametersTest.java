@@ -24,10 +24,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -472,8 +474,233 @@ public class EquinoctialParametersTest {
                              date, mu);
     }
 
+    @Test
+    public void testJacobianReference() throws OrekitException {
+
+        AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        double mu =  3.986004415e+14;
+        EquinoctialOrbit orbEqu = new EquinoctialOrbit(7000000.0, 0.01, -0.02, 1.2, 2.1,
+                                          FastMath.toRadians(40.), PositionAngle.MEAN,
+                                          FramesFactory.getEME2000(), dateTca, mu);
+
+        // the following reference values have been computed using the free software
+        // version 6.2 of the MSLIB fortran library by the following program:
+        //         program equ_jacobian
+        // 
+        //         use mslib
+        //         implicit none
+        // 
+        //         integer, parameter :: nb = 11
+        //         integer :: i,j
+        //         type(tm_code_retour)      ::  code_retour
+        // 
+        //         real(pm_reel), parameter :: mu= 3.986004415e+14_pm_reel
+        //         real(pm_reel),dimension(3)::vit_car,pos_car
+        //         type(tm_orb_cir_equa)::cir_equa
+        //         real(pm_reel), dimension(6,6)::jacob
+        //         real(pm_reel)::norme,hx,hy,f,dix,diy
+        //         intrinsic sqrt
+        // 
+        //         cir_equa%a=7000000_pm_reel
+        //         cir_equa%ex=0.01_pm_reel
+        //         cir_equa%ey=-0.02_pm_reel
+        // 
+        //         ! mslib cir-equ parameters use ix = 2 sin(i/2) cos(gom) and iy = 2 sin(i/2) sin(gom)
+        //         ! equinoctial parameters use hx = tan(i/2) cos(gom) and hy = tan(i/2) sin(gom)
+        //         ! the conversions between these parameters and their differentials can be computed
+        //         ! from the ratio f = 2cos(i/2) which can be found either from (ix, iy) or (hx, hy):
+        //         !   f = sqrt(4 - ix^2 - iy^2) =  2 / sqrt(1 + hx^2 + hy^2)
+        //         !  hx = ix / f,  hy = iy / f
+        //         !  ix = hx * f, iy = hy *f
+        //         ! dhx = ((1 + hx^2) / f) dix + (hx hy / f) diy, dhy = (hx hy / f) dix + ((1 + hy^2) /f) diy
+        //         ! dix = ((1 - ix^2 / 4) f dhx - (ix iy / 4) f dhy, diy = -(ix iy / 4) f dhx + (1 - iy^2 / 4) f dhy
+        //         hx=1.2_pm_reel
+        //         hy=2.1_pm_reel
+        //         f=2_pm_reel/sqrt(1+hx*hx+hy*hy)
+        //         cir_equa%ix=hx*f
+        //         cir_equa%iy=hy*f
+        // 
+        //         cir_equa%pso_M=40_pm_reel*pm_deg_rad
+        // 
+        //         call mv_cir_equa_car(mu,cir_equa,pos_car,vit_car,code_retour)
+        //         write(*,*)code_retour%valeur
+        //         write(*,1000)pos_car,vit_car
+        // 
+        // 
+        //         call mu_norme(pos_car,norme,code_retour)
+        //         write(*,*)norme
+        // 
+        //         call mv_car_cir_equa (mu, pos_car, vit_car, cir_equa, code_retour, jacob)
+        //         write(*,*)code_retour%valeur
+        // 
+        //         f=sqrt(4_pm_reel-cir_equa%ix*cir_equa%ix-cir_equa%iy*cir_equa%iy)
+        //         hx=cir_equa%ix/f
+        //         hy=cir_equa%iy/f
+        //         write(*,*)"ix = ", cir_equa%ix, ", iy = ", cir_equa%iy
+        //         write(*,*)"equinoctial = ", cir_equa%a, cir_equa%ex, cir_equa%ey, hx, hy, cir_equa%pso_M*pm_rad_deg
+        // 
+        //         do j = 1,6
+        //           dix=jacob(4,j)
+        //           diy=jacob(5,j)
+        //           jacob(4,j)=((1_pm_reel+hx*hx)*dix+(hx*hy)*diy)/f
+        //           jacob(5,j)=((hx*hy)*dix+(1_pm_reel+hy*hy)*diy)/f
+        //         end do
+        // 
+        //         do i = 1,6
+        //            write(*,*) " ",(jacob(i,j),j=1,6)
+        //         end do
+        // 
+        //         1000 format (6(f24.15,1x))
+        //         end program equ_jacobian
+        Vector3D pRef = new Vector3D(2004367.298657628707588, 6575317.978060320019722, -1518024.843913963763043);
+        Vector3D vRef = new Vector3D(5574.048661495634406, -368.839015744295409, 5009.529487849066754);
+        double[][] jRef = {
+            {  0.56305379787310628,        1.8470954710993663,      -0.42643364527246025,        1370.4369387322224,       -90.682848736736688 ,       1231.6441195141242      },
+            {  9.52434720041122055E-008,  9.49704503778007296E-008,  4.46607520107935678E-008,  1.69704446323098610E-004,  7.05603505855828105E-005,  1.14825140460141970E-004 },
+            { -5.41784097802642701E-008,  9.54903765833015538E-008, -8.95815777332234450E-008,  1.01864980963344096E-004, -1.03194262242761416E-004,  1.40668700715197768E-004 },
+            {  1.96680305426455816E-007, -1.12388745957974467E-007, -2.27118924123407353E-007,  2.06472886488132167E-004, -1.17984506564646906E-004, -2.38427023682723818E-004 },
+            { -2.24382495052235118E-007,  1.28218568601277626E-007,  2.59108357381747656E-007,  1.89034327703662092E-004, -1.08019615830663994E-004, -2.18289640324466583E-004 },
+            { -3.04001022071876804E-007,  1.22214683774559989E-007,  1.35141804810132761E-007, -1.34034616931480536E-004, -2.14283975204169379E-004,  1.29018773893081404E-004 }
+        };
+
+        PVCoordinates pv = orbEqu.getPVCoordinates();
+        Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm(), 2.0e-16 * pRef.getNorm());
+        Assert.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm(), 2.0e-16 * vRef.getNorm());
+
+        double[][] jacobian = new double[6][6];
+        orbEqu.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+
+        for (int i = 0; i < jacobian.length; i++) {
+            double[] row    = jacobian[i];
+            double[] rowRef = jRef[i];
+            for (int j = 0; j < row.length; j++) {
+                Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 4.0e-15);
+            }
+        }
+
+    }
+
+    @Test
+    public void testJacobianFinitedifferences() throws OrekitException {
+
+        AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        double mu =  3.986004415e+14;
+        EquinoctialOrbit orbEqu = new EquinoctialOrbit(7000000.0, 0.01, -0.02, 1.2, 2.1,
+                                                       FastMath.toRadians(40.), PositionAngle.MEAN,
+                                                       FramesFactory.getEME2000(), dateTca, mu);
+
+        for (PositionAngle type : PositionAngle.values()) {
+            double hP = 2.0;
+            double[][] finiteDiffJacobian = finiteDifferencesJacobian(type, orbEqu, hP);
+            double[][] jacobian = new double[6][6];
+            orbEqu.getJacobianWrtCartesian(type, jacobian);
+
+            for (int i = 0; i < jacobian.length; i++) {
+                double[] row    = jacobian[i];
+                double[] rowRef = finiteDiffJacobian[i];
+                for (int j = 0; j < row.length; j++) {
+                    Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 4.0e-9);
+                }
+            }
+        }
+
+    }
+
+    private double[][] finiteDifferencesJacobian(PositionAngle type, EquinoctialOrbit orbit, double hP)
+        throws OrekitException {
+        double[][] jacobian = new double[6][6];
+        for (int i = 0; i < 6; ++i) {
+            fillColumn(type, i, orbit, hP, jacobian);
+        }
+        return jacobian;
+    }
+
+    private void fillColumn(PositionAngle type, int i, EquinoctialOrbit orbit, double hP, double[][] jacobian) {
+
+        // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
+        // we use this to compute a velocity step size from the position step size
+        Vector3D p = orbit.getPVCoordinates().getPosition();
+        Vector3D v = orbit.getPVCoordinates().getVelocity();
+        double hV = orbit.getMu() * hP / (v.getNorm() * p.getNormSq());
+
+        double h;
+        Vector3D dP = Vector3D.ZERO;
+        Vector3D dV = Vector3D.ZERO;
+        switch (i) {
+        case 0:
+            h = hP;
+            dP = new Vector3D(hP, 0, 0);
+            break;
+        case 1:
+            h = hP;
+            dP = new Vector3D(0, hP, 0);
+            break;
+        case 2:
+            h = hP;
+            dP = new Vector3D(0, 0, hP);
+            break;
+        case 3:
+            h = hV;
+            dV = new Vector3D(hV, 0, 0);
+            break;
+        case 4:
+            h = hV;
+            dV = new Vector3D(0, hV, 0);
+            break;
+        default:
+            h = hV;
+            dV = new Vector3D(0, 0, hV);
+            break;
+        }
+
+        EquinoctialOrbit oM4h = new EquinoctialOrbit(new PVCoordinates(new Vector3D(1, p, -4, dP), new Vector3D(1, v, -4, dV)),
+                                                     orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        EquinoctialOrbit oM3h = new EquinoctialOrbit(new PVCoordinates(new Vector3D(1, p, -3, dP), new Vector3D(1, v, -3, dV)),
+                                                     orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        EquinoctialOrbit oM2h = new EquinoctialOrbit(new PVCoordinates(new Vector3D(1, p, -2, dP), new Vector3D(1, v, -2, dV)),
+                                                     orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        EquinoctialOrbit oM1h = new EquinoctialOrbit(new PVCoordinates(new Vector3D(1, p, -1, dP), new Vector3D(1, v, -1, dV)),
+                                                     orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        EquinoctialOrbit oP1h = new EquinoctialOrbit(new PVCoordinates(new Vector3D(1, p, +1, dP), new Vector3D(1, v, +1, dV)),
+                                                     orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        EquinoctialOrbit oP2h = new EquinoctialOrbit(new PVCoordinates(new Vector3D(1, p, +2, dP), new Vector3D(1, v, +2, dV)),
+                                                     orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        EquinoctialOrbit oP3h = new EquinoctialOrbit(new PVCoordinates(new Vector3D(1, p, +3, dP), new Vector3D(1, v, +3, dV)),
+                                                     orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        EquinoctialOrbit oP4h = new EquinoctialOrbit(new PVCoordinates(new Vector3D(1, p, +4, dP), new Vector3D(1, v, +4, dV)),
+                                                     orbit.getFrame(), orbit.getDate(), orbit.getMu());
+
+        jacobian[0][i] = (-3 * (oP4h.getA()             - oM4h.getA()) +
+                          32 * (oP3h.getA()             - oM3h.getA()) -
+                         168 * (oP2h.getA()             - oM2h.getA()) +
+                         672 * (oP1h.getA()             - oM1h.getA())) / (840 * h);
+        jacobian[1][i] = (-3 * (oP4h.getEquinoctialEx() - oM4h.getEquinoctialEx()) +
+                          32 * (oP3h.getEquinoctialEx() - oM3h.getEquinoctialEx()) -
+                         168 * (oP2h.getEquinoctialEx() - oM2h.getEquinoctialEx()) +
+                         672 * (oP1h.getEquinoctialEx() - oM1h.getEquinoctialEx())) / (840 * h);
+        jacobian[2][i] = (-3 * (oP4h.getEquinoctialEy() - oM4h.getEquinoctialEy()) +
+                          32 * (oP3h.getEquinoctialEy() - oM3h.getEquinoctialEy()) -
+                         168 * (oP2h.getEquinoctialEy() - oM2h.getEquinoctialEy()) +
+                         672 * (oP1h.getEquinoctialEy() - oM1h.getEquinoctialEy())) / (840 * h);
+        jacobian[3][i] = (-3 * (oP4h.getHx()            - oM4h.getHx()) +
+                          32 * (oP3h.getHx()            - oM3h.getHx()) -
+                         168 * (oP2h.getHx()            - oM2h.getHx()) +
+                         672 * (oP1h.getHx()            - oM1h.getHx())) / (840 * h);
+        jacobian[4][i] = (-3 * (oP4h.getHy()            - oM4h.getHy()) +
+                          32 * (oP3h.getHy()            - oM3h.getHy()) -
+                         168 * (oP2h.getHy()            - oM2h.getHy()) +
+                         672 * (oP1h.getHy()            - oM1h.getHy())) / (840 * h);
+        jacobian[5][i] = (-3 * (oP4h.getL(type)         - oM4h.getL(type)) +
+                          32 * (oP3h.getL(type)         - oM3h.getL(type)) -
+                         168 * (oP2h.getL(type)         - oM2h.getL(type)) +
+                         672 * (oP1h.getL(type)         - oM1h.getL(type))) / (840 * h);
+
+    }
+
     @Before
     public void setUp() {
+
+        Utils.setDataRoot("regular-data");
 
         // Computation date
         date = AbsoluteDate.J2000_EPOCH;

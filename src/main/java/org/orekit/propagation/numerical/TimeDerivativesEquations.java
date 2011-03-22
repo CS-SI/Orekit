@@ -63,6 +63,12 @@ import org.orekit.orbits.Orbit;
  *   </li>
  * </ul>
  * </p>
+ * <p>
+ * Note that all classes extending this abstract class <em>must</em> be consistent with the
+ * implementation of the {@link org.orekit.orbits.Orbit#getJacobianWrtCartesian(
+ * org.orekit.orbits.PositionAngle, double[][]) Orbit.getJacobianWrtCartesian}
+ * method for the corresponding orbit type in terms of parameters order and meaning.
+ * </p>
  * @see org.orekit.orbits.Orbit
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @author Luc Maisonobe
