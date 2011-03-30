@@ -22,6 +22,10 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix" >
+        Fixed Jacobianizer so it can handle force models that do change the spacecraft mass,
+        like ConstantThrustManeuver (fixes bug #18)
+      </action>
       <action dev="luc" type="add" >
         Added Jacobians between orbital parameters and Cartesian parameters for all orbits
         types, all angles types (mean, eccentric, true) and in both directions

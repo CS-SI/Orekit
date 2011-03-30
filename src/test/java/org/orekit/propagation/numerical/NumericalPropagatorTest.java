@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.text.ParseException;
 
 import org.apache.commons.math.exception.util.LocalizedFormats;
+import org.apache.commons.math.geometry.Rotation;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
@@ -30,13 +31,18 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
+import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.ApsideDetector;
@@ -45,6 +51,8 @@ import org.orekit.propagation.numerical.NumericalPropagator.PropagationParameter
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
@@ -330,6 +338,73 @@ public class NumericalPropagatorTest {
         // generating ephemeris2 should not have changed ephemeris1
         Assert.assertEquals(initDate, ephemeris1.getMinDate());
         Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
+
+    }
+
+    @Test
+    public void testJacobianIssue18() throws OrekitException {
+
+        // Body mu
+        final double mu = 3.9860047e14;
+
+        final double isp = 318;
+        final double mass = 2500;
+        final double a = 24396159;
+        final double e = 0.72831215;
+        final double i = FastMath.toRadians(7);
+        final double omega = FastMath.toRadians(180);
+        final double OMEGA = FastMath.toRadians(261);
+        final double lv = 0;
+
+        final double duration = 3653.99;
+        final double f = 420;
+        final double delta = FastMath.toRadians(-7.4978);
+        final double alpha = FastMath.toRadians(351);
+        final AttitudeProvider law = new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                                       new TimeComponents(23, 30, 00.000),
+                                                       TimeScalesFactory.getUTC());
+        final Orbit orbit =
+            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+                               FramesFactory.getEME2000(), initDate, mu);
+        final SpacecraftState initialState =
+            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
+
+        final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
+                                                       new TimeComponents(04, 15, 34.080),
+                                                       TimeScalesFactory.getUTC());
+        final ConstantThrustManeuver maneuver =
+            new ConstantThrustManeuver(fireDate, duration, f, isp, Vector3D.PLUS_I);
+
+        double[] absTolerance = {
+            0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
+        };
+        double[] relTolerance = {
+            1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
+        };
+        AdaptiveStepsizeIntegrator integrator =
+            new DormandPrince853Integrator(0.001, 1000, absTolerance, relTolerance);
+        integrator.setInitialStepSize(60);
+        final NumericalPropagator propagator = new NumericalPropagator(integrator);
+
+
+
+
+        propagator.setInitialState(initialState);
+        propagator.setAttitudeProvider(law);
+        propagator.addForceModel(maneuver);
+
+
+
+        propagator.setPropagationParametersType(NumericalPropagator.PropagationParametersType.CARTESIAN);
+        PartialDerivativesEquations PDE = new PartialDerivativesEquations(propagator);
+        PDE.selectParamAndStep("thrust", Double.NaN);
+        PDE.setInitialJacobians(7, 1);
+
+        final AbsoluteDate finalDate = fireDate.shiftedBy(3800);
+        final SpacecraftState finalorb = propagator.propagate(finalDate);
+        Assert.assertEquals(0, finalDate.durationFrom(finalorb.getDate()), 1.0e-11);
 
     }
 

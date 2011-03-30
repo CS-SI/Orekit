@@ -208,7 +208,7 @@ class Jacobianizer implements AccelerationJacobiansProvider {
     private static class AccelerationRetriever extends TimeDerivativesEquations {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -2794923839784176080L;
+        private static final long serialVersionUID = 6410400549499020323L;
 
         /** Stored acceleration. */
         private final double[] acceleration;
@@ -246,10 +246,15 @@ class Jacobianizer implements AccelerationJacobiansProvider {
 
         /** {@inheritDoc} */
         void initDerivatives(final double[] yDot, final Orbit currentOrbit) {
+
+            // in fact, we won't really use this field from the base class
+            storedYDot      = yDot;
+
             acceleration[0] = 0;
             acceleration[1] = 0;
             acceleration[2] = 0;
-            this.orbit = currentOrbit;
+            this.orbit      = currentOrbit;
+
         }
 
         /** {@inheritDoc} */
@@ -275,6 +280,12 @@ class Jacobianizer implements AccelerationJacobiansProvider {
             final Transform t = frame.getTransformTo(orbit.getFrame(), orbit.getDate());
             final Vector3D gammInRefFrame = t.transformVector(gamma);
             addXYZAcceleration(gammInRefFrame.getX(), gammInRefFrame.getY(), gammInRefFrame.getZ());
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void addMassDerivative(final double q) {
+            // we don't compute (yet) the mass part of the Jacobian, we just ignore this
         }
 
     }
