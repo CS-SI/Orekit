@@ -47,7 +47,6 @@ import org.orekit.propagation.events.AdaptedEventDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventObserver;
 import org.orekit.propagation.events.OccurredEvent;
-import org.orekit.propagation.precomputed.IntegratedEphemeris;
 import org.orekit.propagation.sampling.AdaptedStepHandler;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
@@ -119,7 +118,7 @@ import org.orekit.utils.PVCoordinates;
  * @see ForceModel
  * @see OrekitStepHandler
  * @see OrekitFixedStepHandler
- * @see IntegratedEphemeris
+ * @see org.orekit.propagation.precomputed.IntegratedEphemeris
  * @see TimeDerivativesEquations
  *
  * @author Mathieu Rom&eacute;ro
@@ -194,7 +193,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
     private StateMapper mapper;
 
     /** Propagator mode handler. */
-    private ModeHandler modeHandler;
+    private transient ModeHandler modeHandler;
 
     /** Current mode. */
     private int mode;

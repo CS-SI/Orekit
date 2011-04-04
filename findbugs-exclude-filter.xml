@@ -13,6 +13,7 @@
       <Class name="~.*\.ConstantThrustManeuver\$\w+Switch$" />
       <Class name="~.*\.SolarRadiationPressure\$\w+Switch$" />
       <Class name="~.*\.NumericalPropagator\$MappingSwitchingFunction$" />
+      <Class name="~.*\.AbstractPropagator\$LocalPVProvider$" />
     </Or>
     <Bug pattern="SE_INNER_CLASS" />
   </Match>

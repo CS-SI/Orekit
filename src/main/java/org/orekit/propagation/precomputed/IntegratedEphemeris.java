@@ -73,8 +73,8 @@ public class IntegratedEphemeris
     /** Mapper between spacecraft state and simple array. */
     private final StateMapper mapper;
 
-    /** Frame. */
-    private final Frame frame;
+    /** Reference frame. */
+    private final Frame referenceFrame;
 
     /** Central body gravitational constant. */
     private final double mu;
@@ -91,24 +91,27 @@ public class IntegratedEphemeris
     /** Underlying raw mathematical model. */
     private ContinuousOutputModel model;
 
-    /** Creates a new instance of IntegratedEphemeris which must be
+    /** Creates a new instance of IntegratedEphemeris.
+     * @param startDate Start date of the integration (can be minDate or maxDate)
+     * @param minDate first date of the range
+     * @param maxDate last date of the range
      * @param mapper mapper between spacecraft state and simple array
-     * @param reference reference date
-     * @param frame reference frame
+     * @param model underlying raw mathematical model
+     * @param referenceFrame reference referenceFrame
      * @param mu central body attraction coefficient
      */
     public IntegratedEphemeris(final AbsoluteDate startDate,
                                final AbsoluteDate minDate, final AbsoluteDate maxDate,
-                               final StateMapper mapper, ContinuousOutputModel model,
-                               final Frame frame, final double mu) {
+                               final StateMapper mapper, final ContinuousOutputModel model,
+                               final Frame referenceFrame, final double mu) {
         super(DEFAULT_LAW);
-        this.startDate = startDate;
-        this.minDate   = minDate;
-        this.maxDate   = maxDate;
-        this.mapper    = mapper;
-        this.model     = model;
-        this.frame     = frame;
-        this.mu        = mu;
+        this.startDate      = startDate;
+        this.minDate        = minDate;
+        this.maxDate        = maxDate;
+        this.mapper         = mapper;
+        this.model          = model;
+        this.referenceFrame = referenceFrame;
+        this.mu             = mu;
     }
 
     /** {@inheritDoc} */
@@ -120,7 +123,7 @@ public class IntegratedEphemeris
                                                date, minDate, maxDate);
             }
             model.setInterpolatedTime(date.durationFrom(startDate));
-            return mapper.mapArrayToState(model.getInterpolatedState(), date, mu, frame);
+            return mapper.mapArrayToState(model.getInterpolatedState(), date, mu, referenceFrame);
         } catch (DerivativeException de) {
             throw new PropagationException(de, de.getGeneralPattern(), de.getArguments());
         } catch (OrekitException oe) {

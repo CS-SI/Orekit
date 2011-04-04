@@ -102,7 +102,7 @@ class EphemerisModeHandler implements ModeHandler, StepHandler {
                 final double tI = model.getInitialTime();
                 final double tF = model.getFinalTime();
                 final AbsoluteDate startDate = initializedReference.shiftedBy(tI);
-                final AbsoluteDate minDate ;
+                final AbsoluteDate minDate;
                 final AbsoluteDate maxDate;
                 if (tF < tI) {
                     minDate = initializedReference.shiftedBy(tF);
