@@ -509,7 +509,7 @@ public class KeplerianParametersTest {
     }
 
     @Test
-    public void testJacobianReference() throws OrekitException {
+    public void testJacobianReferenceEllipse() throws OrekitException {
 
         AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
@@ -590,7 +590,7 @@ public class KeplerianParametersTest {
     }
 
     @Test
-    public void testJacobianFinitedifferences() throws OrekitException {
+    public void testJacobianFinitedifferencesEllipse() throws OrekitException {
 
         AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
@@ -609,6 +609,115 @@ public class KeplerianParametersTest {
                 double[] rowRef = finiteDiffJacobian[i];
                 for (int j = 0; j < row.length; j++) {
                     Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 2.0e-7);
+                }
+            }
+        }
+
+    }
+
+    @Test
+    public void testJacobianReferenceHyperbola() throws OrekitException {
+
+        AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        double mu =  3.986004415e+14;
+        KeplerianOrbit orbKep = new KeplerianOrbit(-7000000.0, 1.2, FastMath.toRadians(80.), FastMath.toRadians(80.), FastMath.toRadians(20.),
+                                          FastMath.toRadians(40.), PositionAngle.MEAN,
+                                          FramesFactory.getEME2000(), dateTca, mu);
+
+        // the following reference values have been computed using the free software
+        // version 6.2 of the MSLIB fortran library by the following program:
+        //        program kep_hyperb_jacobian
+        //
+        //        use mslib
+        //        implicit none
+        //
+        //        integer, parameter :: nb = 11
+        //        integer :: i,j
+        //        type(tm_code_retour)      ::  code_retour
+        //
+        //        real(pm_reel), parameter :: mu= 3.986004415e+14_pm_reel
+        //        real(pm_reel),dimension(3)::vit_car,pos_car
+        //        type(tm_orb_kep)::kep
+        //        real(pm_reel), dimension(6,6)::jacob
+        //        real(pm_reel)::norme
+        //
+        //        kep%a=7000000_pm_reel
+        //        kep%e=1.2_pm_reel
+        //        kep%i=80_pm_reel*pm_deg_rad
+        //        kep%pom=80_pm_reel*pm_deg_rad
+        //        kep%gom=20_pm_reel*pm_deg_rad
+        //        kep%M=40_pm_reel*pm_deg_rad
+        //
+        //        call mv_kep_car(mu,kep,pos_car,vit_car,code_retour)
+        //        write(*,*)code_retour%valeur
+        //        write(*,1000)pos_car,vit_car
+        //
+        //
+        //        call mu_norme(pos_car,norme,code_retour)
+        //        write(*,*)norme
+        //
+        //        call mv_car_kep (mu, pos_car, vit_car, kep, code_retour, jacob)
+        //        write(*,*)code_retour%valeur
+        //
+        //        write(*,*)"kep = ", kep%a, kep%e, kep%i*pm_rad_deg,&
+        //                            kep%pom*pm_rad_deg, kep%gom*pm_rad_deg, kep%M*pm_rad_deg
+        //
+        //        ! convert the sign of da row since mslib uses a > 0 for all orbits
+        //        ! whereas we use a < 0 for hyperbolic orbits
+        //        write(*,*) " ",(-jacob(1,j),j=1,6)
+        //        do i = 2,6
+        //           write(*,*) " ",(jacob(i,j),j=1,6)
+        //        end do
+        //
+        //        1000 format (6(f24.15,1x))
+        //        end program kep_hyperb_jacobian
+        Vector3D pRef = new Vector3D(-7654711.206549182534218, -3460171.872979687992483, -3592374.514463655184954);
+        Vector3D vRef = new Vector3D(   -7886.368091820805603,    -4359.739012331759113,    -7937.060044548694350);
+        double[][] jRef = {
+            {  -0.98364725131848019,      -0.44463970750901238,      -0.46162803814668391,       -1938.9443476028839,       -1071.8864775981751,       -1951.4074832397598      },
+            {  -1.10548813242982574E-007, -2.52906747183730431E-008,  7.96500937398593591E-008, -9.70479823470940108E-006, -2.93209076428001017E-005, -1.37434463892791042E-004 },
+            {   8.55737680891616672E-008, -2.35111995522618220E-007,  4.41171797903162743E-008, -8.05235180390949802E-005,  2.21236547547460423E-004, -4.15135455876865407E-005 },
+            {  -1.52641427784095578E-007,  1.10250447958827901E-008,  1.21265251605359894E-007,  7.63347077200903542E-005, -3.54738331412232378E-005, -2.31400737283033359E-004 },
+            {   7.86711766048035274E-008, -2.16147281283624453E-007,  4.05585791077187359E-008, -3.56071805267582894E-005,  9.78299244677127374E-005, -1.83571253224293247E-005 },
+            {  -2.41488884881911384E-007, -1.00119615610276537E-007, -6.51494225096757969E-008, -2.43295075073248163E-004, -1.43273725071890463E-004, -2.91625510452094873E-004 }
+        };
+
+        PVCoordinates pv = orbKep.getPVCoordinates();
+        Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm(), 5.0e-16 * pRef.getNorm());
+        Assert.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm(), 2.0e-16 * vRef.getNorm());
+
+        double[][] jacobian = new double[6][6];
+        orbKep.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+
+        for (int i = 0; i < jacobian.length; i++) {
+            double[] row    = jacobian[i];
+            double[] rowRef = jRef[i];
+            for (int j = 0; j < row.length; j++) {
+                Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 4.0e-15);
+            }
+        }
+
+    }
+
+    @Test
+    public void testJacobianFinitedifferencesHyperbola() throws OrekitException {
+
+        AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        double mu =  3.986004415e+14;
+        KeplerianOrbit orbKep = new KeplerianOrbit(-7000000.0, 1.2, FastMath.toRadians(80.), FastMath.toRadians(80.), FastMath.toRadians(20.),
+                                                   FastMath.toRadians(40.), PositionAngle.MEAN,
+                                                   FramesFactory.getEME2000(), dateTca, mu);
+
+        for (PositionAngle type : PositionAngle.values()) {
+            double hP = 2.0;
+            double[][] finiteDiffJacobian = finiteDifferencesJacobian(type, orbKep, hP);
+            double[][] jacobian = new double[6][6];
+            orbKep.getJacobianWrtCartesian(type, jacobian);
+            for (int i = 0; i < jacobian.length; i++) {
+                double[] row    = jacobian[i];
+                double[] rowRef = finiteDiffJacobian[i];
+                for (int j = 0; j < row.length; j++) {
+                    Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 2.0e-8);
                 }
             }
         }

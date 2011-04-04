@@ -560,7 +560,7 @@ public abstract class Orbit implements TimeStamped, Serializable, PVCoordinatesP
      * @param v5 fifth vector
      * @param a6 coefficient of the sixth vector
      * @param v6 sixth vector
-     * @param a7 coefficient of the seventh vector
+     * @param row Jacobian matrix row
      * @param j index of the first element to set (row[j], row[j+1] and row[j+2] will all be set)
      */
     protected static void fillHalfRow(final double a1, final Vector3D v1, final double a2, final Vector3D v2,

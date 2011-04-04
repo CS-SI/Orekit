@@ -306,7 +306,7 @@ public class EquinoctialOrbit extends Orbit {
      * @param type type of the angle
      * @return longitude argument (rad)
      */
-    public double getL(PositionAngle type) {
+    public double getL(final PositionAngle type) {
         return (type == PositionAngle.MEAN) ? getLM() :
                                               ((type == PositionAngle.ECCENTRIC) ? getLE() :
                                                                                    getLv());

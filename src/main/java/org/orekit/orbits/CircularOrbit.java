@@ -119,6 +119,8 @@ public class CircularOrbit
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @exception IllegalArgumentException if frame is not a {@link
+     * Frame#isPseudoInertial pseudo-inertial frame}
      */
     public CircularOrbit(final double a, final double ex, final double ey,
                          final double i, final double raan,
@@ -170,6 +172,8 @@ public class CircularOrbit
      * @see #TRUE_LONGITUDE_ARGUMENT
      * @deprecated as of 5.1 replaced by {@link #CircularOrbit(double, double, double,
      * double, double, double, PositionAngle, Frame, AbsoluteDate, double)
+     * @exception IllegalArgumentException if frame is not a {@link
+     * Frame#isPseudoInertial pseudo-inertial frame}
      */
     @Deprecated
     public CircularOrbit(final double a, final double ex, final double ey,
@@ -346,7 +350,7 @@ public class CircularOrbit
      * @param type type of the angle
      * @return latitude argument (rad)
      */
-    public double getAlpha(PositionAngle type) {
+    public double getAlpha(final PositionAngle type) {
         return (type == PositionAngle.MEAN) ? getAlphaM() :
                                               ((type == PositionAngle.ECCENTRIC) ? getAlphaE() :
                                                                                    getAlphaV());
@@ -634,7 +638,7 @@ public class CircularOrbit
         final double m3  = (u * ey - v * ex) + eSinE * beta * (u * ex + v * ey);
         final double m4  = -sle + cle * eSinE * beta;
         final double m5  = cle + sle * eSinE * beta;
-        fillHalfRow((2 * m3 / r + aOr * eSinE + m1 * eSinE * (1 + m1 - (1 + aOr) * m2) / epsilon) / r2, position, 
+        fillHalfRow((2 * m3 / r + aOr * eSinE + m1 * eSinE * (1 + m1 - (1 + aOr) * m2) / epsilon) / r2, position,
                     (m1 * m2 / epsilon - 1) * oOsqrtMuA, velocity,
                     m4, dexP, m5, deyP, -sle / a, duP, cle / a, dvP,
                     jacobian[5], 0);
