@@ -42,7 +42,7 @@ import org.orekit.time.AbsoluteDate;
  * the detector should trigger an event or not during the proposed
  * step (and hence the step should be reduced to ensure the event
  * occurs at a bound rather than inside the step).</p>
- *
+ * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
 public class EventState implements Serializable {
@@ -140,7 +140,12 @@ public class EventState implements Serializable {
 
             final double convergence    = detector.getThreshold();
             final int maxIterationcount = detector.getMaxIterationCount();
-            forward = interpolator.isForward();
+            if (forward ^ interpolator.isForward()) {
+                forward = !forward;
+                pendingEvent      = false;
+                pendingEventTime  = null;
+                previousEventTime = null;
+            }
             final AbsoluteDate t1 = interpolator.getCurrentDate();
             if (FastMath.abs(t1.durationFrom(t0)) < convergence) {
                 // we cannot do anything on such a small step, don't trigger any events
