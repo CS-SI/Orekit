@@ -22,6 +22,9 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="pascal" type="add" >
+        Added alternative default name for ICGEM files
+      </action>
       <action dev="pascal" type="fix" >
         Fixed EventState reset on propagation direction change (fixes bug #19)
       </action>
