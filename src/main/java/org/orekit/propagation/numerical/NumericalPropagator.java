@@ -433,13 +433,14 @@ public class NumericalPropagator implements Propagator, EventObserver {
     }
 
     /** Select additional state and equations pair in the list.
-     * @param  addEqu Additional equations used as a reference for selection
+     * @param  name name of the additional equations to select
      * @return additional state and equations pair
-     * @throws OrekitException if additional equation is unknown */
-    private AdditionalStateAndEquations selectStateAndEquations(final AdditionalEquations addEqu)
+     * @throws OrekitException if additional equation is unknown
+     */
+    private AdditionalStateAndEquations selectStateAndEquations(final String name)
         throws OrekitException {
         for (AdditionalStateAndEquations stateAndEqu : addStateAndEqu) {
-            if (stateAndEqu.getAdditionalEquations() == addEqu) {
+            if (stateAndEqu.getAdditionalEquations().getName().equals(name)) {
                 return stateAndEqu;
             }
         }
@@ -447,47 +448,44 @@ public class NumericalPropagator implements Propagator, EventObserver {
     }
 
     /** Add a set of user-specified equations to be integrated along with the orbit propagation.
-     * <p>
-     * Each set of additional equations can only be registered once. There is a
-     * protection in this method preventing the same set of equations from being
-     * added several times.
-     * </p>
      * @param addEqu additional equations
-     * @see #setInitialAdditionalState(double[], AdditionalEquations)
-     * @see #getCurrentAdditionalState(AdditionalEquations)
+     * @see #setInitialAdditionalState(String, double[])
+     * @see #getCurrentAdditionalState(String)
+     * @exception OrekitException if a set of equations with the same name is already present
      */
-    public void addAdditionalEquations(final AdditionalEquations addEqu) {
+    public void addAdditionalEquations(final AdditionalEquations addEqu)
+        throws OrekitException {
         for (AdditionalStateAndEquations stateAndEqu : addStateAndEqu) {
-            if (stateAndEqu.getAdditionalEquations() == addEqu) {
+            if (stateAndEqu.getAdditionalEquations().getName().equals(addEqu.getName())) {
                 // this set of equations is already registered, don't register it again
-                return;
+                throw new OrekitException(OrekitMessages.ADDITIONAL_EQUATIONS_NAME_ALREADY_IN_USE, addEqu.getName());
             }
         }
         addStateAndEqu.add(new AdditionalStateAndEquations(addEqu));
     }
 
     /** Set initial additional state.
+     * @param name name of the additional equations whose initial state is set
      * @param addState additional state
-     * @param addEqu additional equations used as a reference for selection
      * @throws OrekitException if additional equation is unknown
      * @see #addAdditionalEquations(AdditionalEquations)
-     * @see #getCurrentAdditionalState(AdditionalEquations)
+     * @see #getCurrentAdditionalState(String)
      */
-    public void setInitialAdditionalState(final double[] addState, final AdditionalEquations addEqu)
+    public void setInitialAdditionalState(final String name, final double[] addState)
         throws OrekitException {
-        selectStateAndEquations(addEqu).setAdditionalState(addState);
+        selectStateAndEquations(name).setAdditionalState(addState);
     }
 
     /** Get current additional state.
-     * @param addEqu additional equations used as a reference for selection
+     * @param name name of the additional equations whose initial state is set
      * @return current additional state
      * @throws OrekitException if additional equation is unknown
      * @see #addAdditionalEquations(AdditionalEquations)
-     * @see #setInitialAdditionalState(double[], AdditionalEquations)
+     * @see #setInitialAdditionalState(String, double[])
      */
-    public double[] getCurrentAdditionalState(final AdditionalEquations addEqu)
+    public double[] getCurrentAdditionalState(final String name)
         throws OrekitException  {
-        return selectStateAndEquations(addEqu).getAdditionalState();
+        return selectStateAndEquations(name).getAdditionalState();
     }
 
     /** {@inheritDoc} */

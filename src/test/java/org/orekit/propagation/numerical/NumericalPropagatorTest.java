@@ -398,7 +398,7 @@ public class NumericalPropagatorTest {
 
 
         propagator.setPropagationParametersType(NumericalPropagator.PropagationParametersType.CARTESIAN);
-        PartialDerivativesEquations PDE = new PartialDerivativesEquations(propagator);
+        PartialDerivativesEquations PDE = new PartialDerivativesEquations("derivatives", propagator);
         PDE.selectParamAndStep("thrust", Double.NaN);
         PDE.setInitialJacobians(7, 1);
 

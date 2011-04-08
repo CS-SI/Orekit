@@ -141,7 +141,9 @@ public enum OrekitMessages implements Localizable {
     CCSDS_ORBIT_DATA_MESSAGE_MISSING_VELOCITY("missing velocity in CCSDS Orbit Data Message"),
     CCSDS_ORBIT_DATA_MESSAGE_MISSING_ORBIT("missing orbit in CCSDS Orbit Data Message"),
     CCSDS_ORBIT_DATA_MESSAGE_MISSING_COVARIANCE("missing covariance in CCSDS Orbit Data Message"),
+    ADDITIONAL_EQUATIONS_NAME_ALREADY_IN_USE("name \"{0}\" is already used additional equations"),
     NON_RESETABLE_STATE("reset state not allowed {0}");
+    
 
     // CHECKSTYLE: resume JavadocVariable check
 

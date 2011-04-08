@@ -51,6 +51,9 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     /** List of parameters selected for jacobians computation. */
     private List<ParameterConfiguration> selectedParameters;
 
+    /** Name. */
+    private String name;
+
     /** State vector dimension without additional parameters
      * (either 6 or 7 depending on mass derivatives being included or not). */
     private int stateDim;
@@ -89,9 +92,13 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * NumericalPropagator#addAdditionalEquations(AdditionalEquations)} method. So
      * there is no need to call this method explicitly for these equations.
      * </p>
+     * @param name name of the partial derivatives equations
      * @param propagator the propagator that will handle the orbit propagation
+     * @exception OrekitException if a set of equations with the same name is already present
      */
-    public PartialDerivativesEquations(final NumericalPropagator propagator) {
+    public PartialDerivativesEquations(final String name, final NumericalPropagator propagator)
+        throws OrekitException {
+        this.name = name;
         jacobiansProviders = new ArrayList<AccelerationJacobiansProvider>();
         dirty = true;
         this.propagator = propagator;
@@ -102,6 +109,11 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         hVel  = Double.NaN;
         hM = Double.NaN;
         propagator.addAdditionalEquations(this);
+    }
+
+    /** {@inheritDoc} */
+    public String getName() {
+        return name;
     }
 
     /** Get the names of the available parameters in the propagator.
@@ -227,7 +239,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         }
 
         // set value in propagator
-        propagator.setInitialAdditionalState(p, this);
+        propagator.setInitialAdditionalState(name, p);
 
     }
 
@@ -241,7 +253,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         throws OrekitException {
 
         // get current state from propagator
-        final double[] p = propagator.getCurrentAdditionalState(this);
+        final double[] p = propagator.getCurrentAdditionalState(name);
 
         int index = 0;
         for (int i = 0; i < stateDim; i++) {

@@ -56,6 +56,11 @@ import org.orekit.propagation.SpacecraftState;
  */
 public interface AdditionalEquations extends Serializable {
 
+    /** Get the name of the equations.
+     * @return name of the equations
+     */
+    String getName();
+
     /** Compute the derivatives related to the additional parameters.
      * @param s current state information: date, kinematics, attitude
      * @param adder object where the contribution of the additional parameters
