@@ -118,7 +118,7 @@ public enum OrekitMessages implements Localizable {
     UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH("unexpected two elevation values: {0} and {1}, for one azimuth: {2}"),
     UNKNOWN_PARAMETER("unknown parameter {0}"),
     UNSUPPORTED_PARAMETER_1_2("unsupported parameter name {0}: supported names {1}, {2}"),
-    UNKNOWN_ADDITIONAL_EQUATION("unknown additional equation"),
+    UNKNOWN_ADDITIONAL_EQUATION("unknown additional equation \"{0}\""),
     UNKNOWN_MONTH("unknown month \"{0}\""),
     PARTIAL_DERIVATIVES_ONLY_IN_CARTESIAN("partial derivatives can be propagated only in cartesian parameters type"),
     STATE_JACOBIAN_NEITHER_6X6_NOR_7X7("state jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix"),
@@ -141,7 +141,7 @@ public enum OrekitMessages implements Localizable {
     CCSDS_ORBIT_DATA_MESSAGE_MISSING_VELOCITY("missing velocity in CCSDS Orbit Data Message"),
     CCSDS_ORBIT_DATA_MESSAGE_MISSING_ORBIT("missing orbit in CCSDS Orbit Data Message"),
     CCSDS_ORBIT_DATA_MESSAGE_MISSING_COVARIANCE("missing covariance in CCSDS Orbit Data Message"),
-    ADDITIONAL_EQUATIONS_NAME_ALREADY_IN_USE("name \"{0}\" is already used additional equations"),
+    ADDITIONAL_STATE_NAME_ALREADY_IN_USE("name \"{0}\" is already used for an additional state"),
     NON_RESETABLE_STATE("reset state not allowed {0}");
     
 

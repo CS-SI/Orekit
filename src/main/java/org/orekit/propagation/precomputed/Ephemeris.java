@@ -32,7 +32,7 @@ import org.orekit.frames.Transform;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.AbstractPropagator;
+import org.orekit.propagation.AnalyticalPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -48,7 +48,7 @@ import org.orekit.utils.PVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
-public class Ephemeris extends AbstractPropagator implements BoundedPropagator {
+public class Ephemeris extends AnalyticalPropagator implements BoundedPropagator {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -2876501122142490509L;

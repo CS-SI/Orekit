@@ -16,23 +16,28 @@
  */
 package org.orekit.propagation.numerical;
 
+import java.io.Serializable;
 
-/** This class is a container for additional state parameters and their associated evolution equation.
+
+/** This class is a container for additional state parameters and the name of their associated evolution equation.
 *
 * <p>
 * This object is a container allowing the propagator to keep constant consistency between additional
 * states and the corresponding equations. It allows to set additional state values, get current
-* additional state value and by reference on the associated additional equations.
+* additional state value and by reference on the associated additional state name.
 * </p>
 * @see NumericalPropagator
 * @see AdditionalEquations
 * @author Luc Maisonobe
 * @version $Revision: 3409 $ $Date: 2010-06-10 15:42:04 +0200 (jeu., 10 juin 2010) $
 */
-public class AdditionalStateAndEquations {
+public class AdditionalStateData implements Serializable {
 
-    /** Additional equations. */
-    private AdditionalEquations addEquations;
+    /** Serializable UID. */
+    private static final long serialVersionUID = 5993627266168523777L;
+
+    /** Additional state name. */
+    private String name;
 
     /** Current additional state. */
     private double[] addState;
@@ -40,17 +45,24 @@ public class AdditionalStateAndEquations {
     /** Current additional state derivatives. */
     private double[] addStateDot;
 
-    /** Create a new instance of AdditionalStateAndEquations, based on additional equations definition.
-     * @param addEqu additional equations.
+    /** Simple constructor.
+     * @param name additional state name.
      */
-    public AdditionalStateAndEquations(final AdditionalEquations addEqu) {
-        this.addEquations = addEqu;
+    public AdditionalStateData(final String name) {
+        this.name = name;
+    }
+
+    /** Get the name of the additional state name.
+     * @return additional state name
+     */
+    public String getName() {
+        return name;
     }
 
     /** Get a reference to the current value of the additional state.
      * <p>The array returned is a true reference to the state array, so it may be used
      * to store data into it.</>
-     * @return a reference current value of the addditional state.
+     * @return a reference current value of the additional state.
      */
     public double[] getAdditionalState() {
         return addState;
@@ -59,24 +71,17 @@ public class AdditionalStateAndEquations {
     /** Get a reference to the current value of the additional state derivatives.
      * <p>The array returned is a true reference to the state array, so it may be used
      * to store data into it.</>
-     * @return a reference current value of the addditional state derivatives.
+     * @return a reference current value of the additional state derivatives.
      */
     public double[] getAdditionalStateDot() {
         return addStateDot;
-    }
-
-    /** Gets the instance of additional equations.
-     * @return current value of the additional equations.
-     */
-    public AdditionalEquations getAdditionalEquations() {
-        return addEquations;
     }
 
     /** Sets a value to additional state.
      * @param state additional state value.
      */
     public void setAdditionalState(final double[] state) {
-        this.addState = state.clone();
+        this.addState    = state.clone();
         this.addStateDot = new double[state.length];
     }
 }

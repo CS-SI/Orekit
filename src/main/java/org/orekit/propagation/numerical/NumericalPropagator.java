@@ -90,10 +90,12 @@ import org.orekit.utils.PVCoordinates;
  * configuration parameters. Typical configuration parameters for adaptive stepsize integrators
  * are the min, max and perhaps start step size as well as the absolute and/or relative errors
  * thresholds. The state that is seen by the integrator is a simple seven elements double array.
- * The six first elements are the {@link EquinoctialOrbit equinoxial orbit parameters} (a, e<sub>x</sub>,
- * e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, l<sub>v</sub>) in meters and radians, and
- * the last element is the mass in kilograms. The following code snippet shows a typical
- * setting for Low Earth Orbit propagation:</p>
+ * The six first elements are eithr the {@link EquinoctialOrbit equinoctial orbit parameters}
+ * (a, e<sub>x</sub>, e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, l<sub>v</sub>) in meters
+ * and radians or {@link CartesianOrbit cartesian orbit parameters} in meters and meters per
+ * second depending on the propagator configuration, and the last element is the mass in
+ * kilograms. The following code snippet shows a typical setting for Low Earth Orbit
+ * propagation in equinoctial parameters:</p>
  * <pre>
  * final double minStep  = 0.001;
  * final double maxStep  = 500;
@@ -201,8 +203,8 @@ public class NumericalPropagator implements Propagator, EventObserver {
     /** Propagation parameters type. */
     private PropagationParametersType type;
 
-    /** Additional equations. */
-    private List<AdditionalStateAndEquations> addStateAndEqu;
+    /** Additional equations and associated data. */
+    private List<AdditionalEquationsAndData> addEquationsAndData;
 
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude provider is set to an
@@ -221,7 +223,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
         referenceDate       = null;
         currentState        = null;
         adder               = null;
-        addStateAndEqu      = new ArrayList<AdditionalStateAndEquations>();
+        addEquationsAndData      = new ArrayList<AdditionalEquationsAndData>();
         attitudeProvider    = InertialProvider.EME2000_ALIGNED;
         stateVector         = new double[7];
         setMu(Double.NaN);
@@ -437,10 +439,10 @@ public class NumericalPropagator implements Propagator, EventObserver {
      * @return additional state and equations pair
      * @throws OrekitException if additional equation is unknown
      */
-    private AdditionalStateAndEquations selectStateAndEquations(final String name)
+    private AdditionalEquationsAndData selectStateAndEquations(final String name)
         throws OrekitException {
-        for (AdditionalStateAndEquations stateAndEqu : addStateAndEqu) {
-            if (stateAndEqu.getAdditionalEquations().getName().equals(name)) {
+        for (AdditionalEquationsAndData stateAndEqu : addEquationsAndData) {
+            if (stateAndEqu.getEquations().getName().equals(name)) {
                 return stateAndEqu;
             }
         }
@@ -455,13 +457,18 @@ public class NumericalPropagator implements Propagator, EventObserver {
      */
     public void addAdditionalEquations(final AdditionalEquations addEqu)
         throws OrekitException {
-        for (AdditionalStateAndEquations stateAndEqu : addStateAndEqu) {
-            if (stateAndEqu.getAdditionalEquations().getName().equals(addEqu.getName())) {
-                // this set of equations is already registered, don't register it again
-                throw new OrekitException(OrekitMessages.ADDITIONAL_EQUATIONS_NAME_ALREADY_IN_USE, addEqu.getName());
+
+        // check if the name is already used
+        for (final AdditionalEquationsAndData stateAndEqu : addEquationsAndData) {
+            if (stateAndEqu.getEquations().getName().equals(addEqu.getName())) {
+                // this set of equations is already registered, complain
+                throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE, addEqu.getName());
             }
         }
-        addStateAndEqu.add(new AdditionalStateAndEquations(addEqu));
+
+        // this is really a new set of equations, add it
+        addEquationsAndData.add(new AdditionalEquationsAndData(addEqu));
+
     }
 
     /** Set initial additional state.
@@ -473,11 +480,11 @@ public class NumericalPropagator implements Propagator, EventObserver {
      */
     public void setInitialAdditionalState(final String name, final double[] addState)
         throws OrekitException {
-        selectStateAndEquations(name).setAdditionalState(addState);
+        selectStateAndEquations(name).getData().setAdditionalState(addState);
     }
 
     /** Get current additional state.
-     * @param name name of the additional equations whose initial state is set
+     * @param name name of the additional equations whose current state is requested
      * @return current additional state
      * @throws OrekitException if additional equation is unknown
      * @see #addAdditionalEquations(AdditionalEquations)
@@ -485,7 +492,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
      */
     public double[] getCurrentAdditionalState(final String name)
         throws OrekitException  {
-        return selectStateAndEquations(name).getAdditionalState();
+        return selectStateAndEquations(name).getData().getAdditionalState();
     }
 
     /** {@inheritDoc} */
@@ -603,7 +610,11 @@ public class NumericalPropagator implements Propagator, EventObserver {
                 break;
             }
             if (modeHandler != null) {
-                modeHandler.initialize(mapper, addStateAndEqu, activateHandlers, referenceDate,
+                List<AdditionalStateData> stateData = new ArrayList<AdditionalStateData>(addEquationsAndData.size());
+                for (final AdditionalEquationsAndData equationsAndData : addEquationsAndData) {
+                    stateData.add(equationsAndData.getData());
+                }
+                modeHandler.initialize(mapper, stateData, activateHandlers, referenceDate,
                                        initialState.getFrame(), newtonianAttraction.getMu());
             }
 
@@ -624,8 +635,8 @@ public class NumericalPropagator implements Propagator, EventObserver {
             // Map state to array
             mapper.mapStateToArray(initialState, stateVector);
             int index = 7;
-            for (final AdditionalStateAndEquations stateAndEqu : addStateAndEqu) {
-                final double[] addState = stateAndEqu.getAdditionalState();
+            for (final AdditionalEquationsAndData stateAndEqu : addEquationsAndData) {
+                final double[] addState = stateAndEqu.getData().getAdditionalState();
                 System.arraycopy(addState, 0, stateVector, index, addState.length);
                 // Incrementing index
                 index += addState.length;
@@ -649,11 +660,11 @@ public class NumericalPropagator implements Propagator, EventObserver {
             }
 
             // mathematical integration
-            if (!addStateAndEqu.isEmpty()) {
+            if (!addEquationsAndData.isEmpty()) {
                 expandToleranceArray();
             }
             final double stopTime = integrator.integrate(new DifferentialEquations(), t0, stateVector, t1, stateVector);
-            if (!addStateAndEqu.isEmpty()) {
+            if (!addEquationsAndData.isEmpty()) {
                 resetToleranceArray();
             }
 
@@ -662,8 +673,8 @@ public class NumericalPropagator implements Propagator, EventObserver {
 
             // get final additional state
             index = 7;
-            for (final AdditionalStateAndEquations stateAndEqu : addStateAndEqu) {
-                final double[] addState = stateAndEqu.getAdditionalState();
+            for (final AdditionalEquationsAndData stateAndEqu : addEquationsAndData) {
+                final double[] addState = stateAndEqu.getData().getAdditionalState();
                 System.arraycopy(stateVector, index, addState, 0, addState.length);
                 // Incrementing index
                 index += addState.length;
@@ -791,8 +802,8 @@ public class NumericalPropagator implements Propagator, EventObserver {
      */
     private int computeDimension() {
         int sum = getBasicDimension();
-        for (final AdditionalStateAndEquations stateAndEqu : addStateAndEqu) {
-            sum += stateAndEqu.getAdditionalState().length;
+        for (final AdditionalEquationsAndData stateAndEqu : addEquationsAndData) {
+            sum += stateAndEqu.getData().getAdditionalState().length;
         }
         return sum;
 
@@ -839,15 +850,15 @@ public class NumericalPropagator implements Propagator, EventObserver {
 
                 // Add contribution for additional state
                 int index = 7;
-                for (final AdditionalStateAndEquations stateAndEqu : addStateAndEqu) {
-                    final double[] p    = stateAndEqu.getAdditionalState();
-                    final double[] pDot = stateAndEqu.getAdditionalStateDot();
+                for (final AdditionalEquationsAndData stateAndEqu : addEquationsAndData) {
+                    final double[] p    = stateAndEqu.getData().getAdditionalState();
+                    final double[] pDot = stateAndEqu.getData().getAdditionalStateDot();
 
                     // update current additional state
                     System.arraycopy(y, index, p, 0, p.length);
 
                     // compute additional derivatives
-                    stateAndEqu.getAdditionalEquations().computeDerivatives(currentState, adder, p, pDot);
+                    stateAndEqu.getEquations().computeDerivatives(currentState, adder, p, pDot);
 
                     // update each additional state contribution in global array
                     System.arraycopy(pDot, 0, yDot, index, p.length);
@@ -867,6 +878,38 @@ public class NumericalPropagator implements Propagator, EventObserver {
 
     }
 
+    /** Internal class for additional equations and state data management. */
+    private static class AdditionalEquationsAndData {
+
+        /** Additional equations. */
+        private final AdditionalEquations equations;
+
+        /** Additional state and derivatives data. */
+        private final AdditionalStateData data;
+
+        /** Simple constructor.
+         * @param equations additional equations
+         */
+        public AdditionalEquationsAndData(final AdditionalEquations equations) {
+            this.equations = equations;
+            data = new AdditionalStateData(equations.getName());
+        }
+
+        /** Get the additional equations.
+         * @return additional equations
+         */
+        public AdditionalEquations getEquations() {
+            return equations;
+        }
+
+        /** Get the additional state.
+         * @return additional state
+         */
+        public AdditionalStateData getData() {
+            return data;
+        }
+
+    }
 }
 
 

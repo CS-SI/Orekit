@@ -28,7 +28,7 @@ import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.AbstractPropagator;
+import org.orekit.propagation.AnalyticalPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -60,7 +60,7 @@ import org.orekit.utils.PVCoordinates;
  * @see TLE
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public abstract class TLEPropagator extends AbstractPropagator implements Serializable {
+public abstract class TLEPropagator extends AnalyticalPropagator implements Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 6389584529961457799L;

@@ -22,6 +22,15 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add" >
+        Added a way to propagate additional state along with orbit in analytical
+        propagators, as an analytical counterpart to the additional equations that
+        can be integrated by numerical propagators
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed missing partial derivatives data in ephemerides produced by a numerical
+        propagator despite it was set up to computed them (fixes bug #16)
+      </action>
       <action dev="pascal" type="fix" >
         Fixed EventState reset on propagation direction change (fixes bug #19)
       </action>

@@ -29,13 +29,13 @@ public interface ModeHandler {
 
     /** Initialize the mode handler.
      * @param  mapper mapper between spacecraft state and simple array
-     * @param addStateAndEqu list of additional state and equations
+     * @param additionalStateData list of additional state data
      * @param activateHandlers if handlers shall be active
      * @param reference reference date
      * @param frame reference frame
      * @param mu central body attraction coefficient
      */
-    void initialize(StateMapper mapper, List <AdditionalStateAndEquations> addStateAndEqu,
+    void initialize(StateMapper mapper, List <AdditionalStateData> additionalStateData,
                     boolean activateHandlers, AbsoluteDate reference, Frame frame, double mu);
 
 }

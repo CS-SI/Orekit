@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.precomputed;
 
+import java.util.List;
+
 import org.apache.commons.math.ode.ContinuousOutputModel;
 import org.apache.commons.math.ode.DerivativeException;
 import org.orekit.errors.OrekitException;
@@ -23,9 +25,11 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.AbstractPropagator;
+import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AnalyticalPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.numerical.AdditionalStateData;
 import org.orekit.propagation.numerical.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -65,10 +69,10 @@ import org.orekit.utils.PVCoordinates;
  * @version $Revision:1698 $ $Date:2008-06-18 16:01:17 +0200 (mer., 18 juin 2008) $
  */
 public class IntegratedEphemeris
-    extends AbstractPropagator implements BoundedPropagator {
+    extends AnalyticalPropagator implements BoundedPropagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -5009587563342612582L;
+    private static final long serialVersionUID = -6944126760551100145L;
 
     /** Mapper between spacecraft state and simple array. */
     private final StateMapper mapper;
@@ -96,15 +100,21 @@ public class IntegratedEphemeris
      * @param minDate first date of the range
      * @param maxDate last date of the range
      * @param mapper mapper between spacecraft state and simple array
+     * @param providers list of additional state providers
      * @param model underlying raw mathematical model
      * @param referenceFrame reference referenceFrame
      * @param mu central body attraction coefficient
+     * @exception OrekitException if several providers have the same name
      */
     public IntegratedEphemeris(final AbsoluteDate startDate,
                                final AbsoluteDate minDate, final AbsoluteDate maxDate,
-                               final StateMapper mapper, final ContinuousOutputModel model,
-                               final Frame referenceFrame, final double mu) {
+                               final StateMapper mapper, final List<AdditionalStateData> stateData,
+                               final ContinuousOutputModel model,
+                               final Frame referenceFrame, final double mu)
+        throws OrekitException {
+
         super(DEFAULT_LAW);
+
         this.startDate      = startDate;
         this.minDate        = minDate;
         this.maxDate        = maxDate;
@@ -112,17 +122,46 @@ public class IntegratedEphemeris
         this.model          = model;
         this.referenceFrame = referenceFrame;
         this.mu             = mu;
+
+        // set up providers to map the final elements of the model array to additional states
+        int index = 7;
+        for (final AdditionalStateData data : stateData) {
+            final int length = data.getAdditionalState().length;
+            addAdditionalStateProvider(new LocalProvider(data.getName(), index, length));
+            index += length;
+        }
+
+    }
+
+    /** Set up the model at some interpolation date.
+     * @param date desired interpolation date
+     * @exception PropagationException if specifed date is outside
+     * of supported range
+     */
+    private void setInterpolationDate(final AbsoluteDate date)
+        throws PropagationException {
+
+        if (date.equals(startDate.shiftedBy(model.getInterpolatedTime()))) {
+            // the current model date is already the desired one
+            return;
+        }
+
+        if ((date.compareTo(minDate) < 0) || (date.compareTo(maxDate) > 0)) {
+            // date is outside of supported range
+            throw new PropagationException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE,
+                                           date, minDate, maxDate);
+        }
+
+        // reset interpolation model to the desired date
+        model.setInterpolatedTime(date.durationFrom(startDate));
+
     }
 
     /** {@inheritDoc} */
     protected SpacecraftState basicPropagate(final AbsoluteDate date)
         throws PropagationException {
         try {
-            if ((date.compareTo(minDate) < 0) || (date.compareTo(maxDate) > 0)) {
-                throw new PropagationException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE,
-                                               date, minDate, maxDate);
-            }
-            model.setInterpolatedTime(date.durationFrom(startDate));
+            setInterpolationDate(date);
             return mapper.mapArrayToState(model.getInterpolatedState(), date, mu, referenceFrame);
         } catch (DerivativeException de) {
             throw new PropagationException(de, de.getGeneralPattern(), de.getArguments());
@@ -171,6 +210,57 @@ public class IntegratedEphemeris
     /** {@inheritDoc} */
     public SpacecraftState getInitialState() throws OrekitException {
         return basicPropagate(getMinDate());
+    }
+
+    /** Local provider for additional state data. */
+    private class LocalProvider implements AdditionalStateProvider {
+
+        /** Name of the additional state. */
+        private final String name;
+
+        /** Index of the first element in the global integrated array. */
+        private final int startIndex;
+
+        /** Length of the additional state array. */
+        private final int length;
+
+        /** Simple constructor.
+         * @param name name of the additional state
+         * @param startIndex index of the first element in the global integrated array
+         * @param length length of the additional state array
+         */
+        public LocalProvider(final String name, final int startIndex, final int length) {
+            this.name       = name;
+            this.startIndex = startIndex;
+            this.length     = length;
+        }
+
+        /** {@inheritDoc} */
+        public String getName() {
+            return name;
+        }
+
+        /** {@inheritDoc} */
+        public double[] getAdditionalState(SpacecraftState state)
+            throws OrekitException {
+            try {
+
+                // set the model date
+                setInterpolationDate(state.getDate());
+
+                // extract the part of the interpolated array corresponding to the additional state
+                final double[] additionalState = new double[length];
+                System.arraycopy(model.getInterpolatedState(), startIndex, additionalState, 0, length);
+
+                return additionalState;
+
+            } catch (DerivativeException de) {
+                throw new PropagationException(de, de.getGeneralPattern(), de.getArguments());
+            } catch (OrekitException oe) {
+                throw new PropagationException(oe);
+            }
+        }
+
     }
 
 }

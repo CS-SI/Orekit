@@ -20,7 +20,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.AdditionalEquations;
 import org.orekit.time.AbsoluteDate;
 
 /** Implementation of the {@link OrekitStepInterpolator} interface based
@@ -89,7 +88,7 @@ public class BasicStepInterpolator implements OrekitStepInterpolator {
     }
 
     /** {@inheritDoc} */
-    public double[] getInterpolatedAdditionalState(final AdditionalEquations addEqu)
+    public double[] getInterpolatedAdditionalState(final String name)
         throws OrekitException {
         // This should never happen
         throw OrekitException.createInternalError(null);

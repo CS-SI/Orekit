@@ -22,6 +22,7 @@ import org.apache.commons.math.ode.ContinuousOutputModel;
 import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.precomputed.IntegratedEphemeris;
@@ -45,6 +46,9 @@ class EphemerisModeHandler implements ModeHandler, StepHandler {
 
     /** Mapper between spacecraft state and simple array. */
     private StateMapper mapper;
+
+    /** List of additional state data. */
+    private List<AdditionalStateData> stateData;
 
     /** Reference date. */
     private AbsoluteDate initializedReference;
@@ -71,10 +75,11 @@ class EphemerisModeHandler implements ModeHandler, StepHandler {
     }
 
     /** {@inheritDoc} */
-    public void initialize(final StateMapper stateMapper, final List <AdditionalStateAndEquations> addStateAndEqu,
+    public void initialize(final StateMapper stateMapper, final List <AdditionalStateData> additionalStateData,
                            final boolean activateHandlers, final AbsoluteDate reference,
                            final Frame frame, final double mu) {
         this.mapper               = stateMapper;
+        this.stateData            = additionalStateData;
         this.activate             = activateHandlers;
         this.initializedReference = reference;
         this.initializedFrame     = frame;
@@ -96,24 +101,34 @@ class EphemerisModeHandler implements ModeHandler, StepHandler {
     /** {@inheritDoc} */
     public void handleStep(final StepInterpolator interpolator, final boolean isLast)
         throws DerivativeException {
-        if (activate) {
-            model.handleStep(interpolator, isLast);
-            if (isLast) {
-                final double tI = model.getInitialTime();
-                final double tF = model.getFinalTime();
-                final AbsoluteDate startDate = initializedReference.shiftedBy(tI);
-                final AbsoluteDate minDate;
-                final AbsoluteDate maxDate;
-                if (tF < tI) {
-                    minDate = initializedReference.shiftedBy(tF);
-                    maxDate = startDate;
-                } else {
-                    minDate = startDate;
-                    maxDate = initializedReference.shiftedBy(tF);
+        try {
+            if (activate) {
+                model.handleStep(interpolator, isLast);
+                if (isLast) {
+
+                    // set up the boundary dates
+                    final double tI = model.getInitialTime();
+                    final double tF = model.getFinalTime();
+                    final AbsoluteDate startDate = initializedReference.shiftedBy(tI);
+                    final AbsoluteDate minDate;
+                    final AbsoluteDate maxDate;
+                    if (tF < tI) {
+                        minDate = initializedReference.shiftedBy(tF);
+                        maxDate = startDate;
+                    } else {
+                        minDate = startDate;
+                        maxDate = initializedReference.shiftedBy(tF);
+                    }
+
+                    // create the ephemeris
+                    ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
+                                                        mapper, stateData, model,
+                                                        initializedFrame, initializedMu);
+
                 }
-                ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate, mapper, model,
-                                                    initializedFrame, initializedMu);
             }
+        } catch (OrekitException oe) {
+            throw new DerivativeException(oe);
         }
     }
 

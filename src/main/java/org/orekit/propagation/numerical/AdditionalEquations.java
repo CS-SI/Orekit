@@ -50,18 +50,25 @@ import org.orekit.propagation.SpacecraftState;
  * additional parameters have no influence at all on the spacecraft state, this adder can
  * simply be ignored.
  * </p>
+ * <p>
+ * This interface is the numerical (read not already integrated) counterpart of
+ * the {@link org.orekit.propagation.AdditionalStateProvider} interface.
+ * It allows to append various additional state parameters to any {@link
+ * NumericalPropagator numerical propagator}.
+ * </p>
  * @see NumericalPropagator
+ * @see org.orekit.propagation.AdditionalStateProvider
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
 public interface AdditionalEquations extends Serializable {
 
-    /** Get the name of the equations.
-     * @return name of the equations
+    /** Get the name of the additional state.
+     * @return name of the additional state
      */
     String getName();
 
-    /** Compute the derivatives related to the additional parameters.
+    /** Compute the derivatives related to the additional state parameters.
      * @param s current state information: date, kinematics, attitude
      * @param adder object where the contribution of the additional parameters
      * p to the orbit evolution (accelerations, mass time-derivative) should be added

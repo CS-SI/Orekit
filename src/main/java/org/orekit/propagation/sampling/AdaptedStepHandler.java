@@ -27,8 +27,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.AdditionalEquations;
-import org.orekit.propagation.numerical.AdditionalStateAndEquations;
+import org.orekit.propagation.numerical.AdditionalStateData;
 import org.orekit.propagation.numerical.ModeHandler;
 import org.orekit.propagation.numerical.StateMapper;
 import org.orekit.time.AbsoluteDate;
@@ -47,8 +46,8 @@ public class AdaptedStepHandler
     /** Mapper between spacecraft state and simple array. */
     private StateMapper mapper;
 
-    /** Additional state and equations list. */
-    private List <AdditionalStateAndEquations> addStateAndEqu;
+    /** Additional state data list. */
+    private List <AdditionalStateData> addStateData;
 
     /** Reference date. */
     private AbsoluteDate initializedReference;
@@ -76,11 +75,11 @@ public class AdaptedStepHandler
     }
 
     /** {@inheritDoc} */
-    public void initialize(final StateMapper stateMapper, final List <AdditionalStateAndEquations> stateAndEqu,
+    public void initialize(final StateMapper stateMapper, final List <AdditionalStateData> addStateData,
                            final boolean activateHandlers,
                            final AbsoluteDate reference, final Frame frame, final double mu) {
         this.mapper               = stateMapper;
-        this.addStateAndEqu       = stateAndEqu;
+        this.addStateData         = addStateData;
         this.activate             = activateHandlers;
         this.initializedReference = reference;
         this.initializedFrame     = frame;
@@ -163,14 +162,8 @@ public class AdaptedStepHandler
         }
     }
 
-    /** Get the interpolated additional state corresponding to the additional equations.
-     * @param addEqu additional equation used as a reference for selection
-     * @return interpolated additional state at the current interpolation date
-     * @exception OrekitException if state cannot be interpolated or converted
-     * @see #getInterpolatedDate()
-     * @see #setInterpolatedDate(AbsoluteDate)
-     */
-    public double[] getInterpolatedAdditionalState(final AdditionalEquations addEqu)
+    /** {@inheritDoc} */
+    public double[] getInterpolatedAdditionalState(final String name)
         throws OrekitException {
         try {
 
@@ -179,14 +172,14 @@ public class AdaptedStepHandler
 
             // get portion of additional state to update
             int index = 7;
-            for (final AdditionalStateAndEquations stateAndEqu : addStateAndEqu) {
-                if (stateAndEqu.getAdditionalEquations() == addEqu) {
-                    final double[] state = stateAndEqu.getAdditionalState();
+            for (final AdditionalStateData stateData : addStateData) {
+                if (stateData.getName().equals(name)) {
+                    final double[] state = stateData.getAdditionalState();
                     System.arraycopy(y, index, state, 0, state.length);
                     return state;
                 }
                 // incrementing index
-                index += stateAndEqu.getAdditionalState().length;
+                index += stateData.getAdditionalState().length;
             }
 
             throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_EQUATION);

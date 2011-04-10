@@ -21,8 +21,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -39,7 +41,6 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventObserver;
 import org.orekit.propagation.events.EventState;
 import org.orekit.propagation.events.OccurredEvent;
-import org.orekit.propagation.numerical.AdditionalEquations;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -48,7 +49,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-/** Common handling of {@link Propagator} methods for analytical-like propagators.
+/** Common handling of {@link Propagator} methods for analytical propagators.
  * <p>
  * This abstract class allows to provide easily the full set of {@link Propagator}
  * methods, including all propagation modes support and discrete events support
@@ -62,10 +63,10 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-public abstract class AbstractPropagator implements Propagator, EventObserver {
+public abstract class AnalyticalPropagator implements Propagator, EventObserver {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 4797122381575498520L;
+    private static final long serialVersionUID = 2434402795728927604L;
 
     /** Propagation mode. */
     private int mode;
@@ -83,7 +84,10 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
     private boolean statesInitialized;
 
     /** List for occurred events. */
-    private final List <OccurredEvent> occurredEvents;
+    private final List<OccurredEvent> occurredEvents;
+
+    /** Additional state providers. */
+    private final List<AdditionalStateProvider> additionalStateProviders;
 
     /** Internal steps interpolator. */
     private final BasicStepInterpolator interpolator;
@@ -107,13 +111,14 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
     /** Build a new instance.
      * @param attitudeProvider provider for attitude computation
      */
-    protected AbstractPropagator(final AttitudeProvider attitudeProvider) {
-        eventsStates           = new ArrayList<EventState>();
-        statesInitialized      = false;
-        occurredEvents         = new ArrayList<OccurredEvent>();
-        interpolator           = new BasicStepInterpolator();
-        this.pvProvider        = new LocalPVProvider();
-        this.attitudeProvider  = attitudeProvider;
+    protected AnalyticalPropagator(final AttitudeProvider attitudeProvider) {
+        eventsStates             = new ArrayList<EventState>();
+        statesInitialized        = false;
+        occurredEvents           = new ArrayList<OccurredEvent>();
+        additionalStateProviders = new ArrayList<AdditionalStateProvider>();
+        interpolator             = new BasicStepInterpolator();
+        this.pvProvider          = new LocalPVProvider();
+        this.attitudeProvider    = attitudeProvider;
         setSlaveMode();
     }
 
@@ -211,6 +216,27 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
     /** {@inheritDoc} */
     public void clearEventsDetectors() {
         eventsStates.clear();
+    }
+
+    /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
+     * @param additionalStateProvider provider for additional state
+     * @exception OrekitException if an additional state with the same name is already present
+     */
+    public void addAdditionalStateProvider(final AdditionalStateProvider additionalStateProvider)
+        throws OrekitException {
+
+        // check if the name is already used
+        for (final AdditionalStateProvider provider : additionalStateProviders) {
+            if (provider.getName().equals(additionalStateProvider.getName())) {
+                // this additional state is already registered, complain
+                throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
+                                          additionalStateProvider.getName());
+            }
+        }
+
+        // this is really a new name, add it
+        additionalStateProviders.add(additionalStateProvider);
+
     }
 
     /** {@inheritDoc} */
@@ -480,7 +506,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
     }
 
     /** {@link BoundedPropagator} (but not really bounded) view of the instance. */
-    private class UnboundedPropagatorView extends AbstractPropagator implements BoundedPropagator {
+    private class UnboundedPropagatorView extends AnalyticalPropagator implements BoundedPropagator {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -3340036098040553110L;
@@ -488,7 +514,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
         /** Simple constructor.
          */
         public UnboundedPropagatorView() {
-            super(AbstractPropagator.this.getAttitudeProvider());
+            super(AnalyticalPropagator.this.getAttitudeProvider());
         }
 
         /** {@inheritDoc} */
@@ -504,12 +530,12 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
         /** {@inheritDoc} */
         protected Orbit propagateOrbit(final AbsoluteDate target)
             throws PropagationException {
-            return AbstractPropagator.this.propagateOrbit(target);
+            return AnalyticalPropagator.this.propagateOrbit(target);
         }
 
         /** {@inheritDoc} */
         public double getMass(final AbsoluteDate date) throws PropagationException {
-            return AbstractPropagator.this.getMass(date);
+            return AnalyticalPropagator.this.getMass(date);
         }
 
         /** {@inheritDoc} */
@@ -521,12 +547,12 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
         /** {@inheritDoc} */
         public void resetInitialState(final SpacecraftState state)
             throws PropagationException {
-            AbstractPropagator.this.resetInitialState(state);
+            AnalyticalPropagator.this.resetInitialState(state);
         }
 
         /** {@inheritDoc} */
         public SpacecraftState getInitialState() throws OrekitException {
-            return AbstractPropagator.this.getInitialState();
+            return AnalyticalPropagator.this.getInitialState();
         }
 
     }
@@ -549,8 +575,11 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
         /** Soft current date. */
         private AbsoluteDate softCurrentDate;
 
-        /** Interpolated State. */
+        /** Interpolated state. */
         private SpacecraftState interpolatedState;
+
+        /** Additional states. */
+        private Map<String, double[]> additionalStates;
 
         /** Forward propagation indicator. */
         private boolean forward;
@@ -562,6 +591,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
             globalCurrentDate  = AbsoluteDate.PAST_INFINITY;
             softPreviousDate   = AbsoluteDate.PAST_INFINITY;
             softCurrentDate    = AbsoluteDate.PAST_INFINITY;
+            additionalStates   = new HashMap<String, double[]>();
         }
 
         /** Restrict step range to a limited part of the global step.
@@ -622,9 +652,13 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
         }
 
         /** {@inheritDoc} */
-        public double[] getInterpolatedAdditionalState(final AdditionalEquations addEqu)
+        public double[] getInterpolatedAdditionalState(final String name)
             throws OrekitException {
-            throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_EQUATION);
+            final double[] state = additionalStates.get(name);
+            if (state == null) {
+                throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_EQUATION, name);
+            }
+            return state;
         }
 
         /** {@inheritDoc} */
@@ -640,7 +674,23 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
         /** {@inheritDoc} */
         public void setInterpolatedDate(final AbsoluteDate date)
             throws PropagationException {
-            interpolatedState = basicPropagate(date);
+            try {
+
+                // compute the raw spacecraft state
+                interpolatedState = basicPropagate(date);
+
+                // compute additional states
+                additionalStates.clear();
+                for (final AdditionalStateProvider provider : additionalStateProviders) {
+                    additionalStates.put(provider.getName(), provider.getAdditionalState(interpolatedState));
+                }
+
+            } catch (PropagationException pe) {
+                // simply re-throw this exception which has the required type
+            } catch (OrekitException oe) {
+                // wrap other exceptions
+                throw new PropagationException(oe);
+            }
         }
 
         /** Shift one step forward.

@@ -25,7 +25,7 @@ import org.orekit.errors.PropagationException;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.AbstractPropagator;
+import org.orekit.propagation.AnalyticalPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -40,7 +40,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Guylaine Prat
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
-public class EcksteinHechlerPropagator extends AbstractPropagator {
+public class EcksteinHechlerPropagator extends AnalyticalPropagator {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 1268374325750125229L;
