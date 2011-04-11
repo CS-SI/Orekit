@@ -30,6 +30,8 @@
       <action dev="luc" type="fix" >
         Fixed missing partial derivatives data in ephemerides produced by a numerical
         propagator despite it was set up to computed them (fixes bug #16)
+      <action dev="pascal" type="add" >
+        Added alternative default name for ICGEM files
       </action>
       <action dev="pascal" type="fix" >
         Fixed EventState reset on propagation direction change (fixes bug #19)

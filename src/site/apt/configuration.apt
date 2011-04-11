@@ -261,11 +261,11 @@ Configuration
 |       UTC-TAI.history[.gz]      |    IERS history   |       leap seconds introduction history      |           {{http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history}}         |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
 |    bulletinb_IAU2000.###[.gz]   |  IERS bulletin B  |     monthly Earth Orientation Parameters     |             {{http://hpiers.obspm.fr/eoppc/bul/bulb/}}                      |
-|              or                 |                   |                model IAU 2000                |                                                                             |
+|             <or>                |                   |                model IAU 2000                |                                                                             |
 |  bulletinb_IAU2000-###.txt[.gz] |                   |                                              | {{http://www.iers.org/nn_11252/IERS/EN/DataProducts/EarthOrientationData/__Function/generischeTabelle__ID18.html}} |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
 |        bulletinb.###[.gz]       |  IERS bulletin B  |     monthly Earth Orientation Parameters     |             {{http://hpiers.obspm.fr/eoppc/bul/bulb/}}                      |
-|              or                 |                   |                model IAU 1980                |           {{http://hpiers.obspm.fr/eoppc/bul/bulb_new/}}                    |
+|             <or>                |                   |                model IAU 1980                |           {{http://hpiers.obspm.fr/eoppc/bul/bulb_new/}}                    |
 |      bulletinb-###.txt[.gz]     |                   |                                              | {{http://www.iers.org/nn_11252/IERS/EN/DataProducts/EarthOrientationData/__Function/generischeTabelle__ID15.html}} |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
 |      eopc04_IAU2000.##[.gz]     |  IERS EOP 05 C04  |     yearly Earth Orientation Parameters      |             {{http://hpiers.obspm.fr/eoppc/eop/eopc04_05/}}                 |
@@ -284,11 +284,11 @@ Configuration
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
 |       unx(m/p)####.406[.gz]     |   DE 406 binary   |        JPL DE 406 planets ephemerides        |             {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/SunOS/de406}}          |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
-|         g###_eigen_*_coef       |     SHM format    |        Eigen gravity field (old format)      |     {{http://op.gfz-potsdam.de/grace/results/main_RESULTS.html#gravity}}    |
+|            eigen_*_coef         |     SHM format    |        Eigen gravity field (old format)      |     {{http://op.gfz-potsdam.de/grace/results/main_RESULTS.html#gravity}}    |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
-|                                 |                   |              gravity fields from             |                                                                             |
-|               *.gfc             |   ICGEM format    | International Centre for Global Earth Models |             {{http://icgem.gfz-potsdam.de/ICGEM/modelstab.html}}            |
-|                                 |                   |                    (ICGEM)                   |                                                                             |
+|               *.gfc             |                   |              gravity fields from             |                                                                             |
+|               <or>              |   ICGEM format    | International Centre for Global Earth Models |             {{http://icgem.gfz-potsdam.de/ICGEM/modelstab.html}}            |
+|         g###_eigen_*_coef       |                   |                    (ICGEM)                   |                                                                             |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
 |            egm##_to#*           |     EGM format    |             EGM gravity field                |             {{ftp://cddis.gsfc.nasa.gov/pub/egm96/general_info}}            |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*

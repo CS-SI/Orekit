@@ -34,7 +34,7 @@ import org.orekit.errors.OrekitMessages;
 public class GravityFieldFactory {
 
     /** Default regular expression for ICGEM files. */
-    public static final String ICGEM_FILENAME = "^.*\\.gfc$";
+    public static final String ICGEM_FILENAME = "^(.*\\.gfc)|(g(\\d)+_eigen[-_](\\w)+_coef)$";
 
     /** Default regular expression for SHM files. */
     public static final String SHM_FILENAME = "^eigen[-_](\\w)+_coef$";
