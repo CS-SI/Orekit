@@ -17,6 +17,9 @@
 package org.orekit.propagation.precomputed;
 
 import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.linear.Array2DRowRealMatrix;
+import org.apache.commons.math.linear.MatrixUtils;
+import org.apache.commons.math.linear.RealMatrix;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.Assert;
@@ -28,6 +31,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.JacobiansMapper;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -91,12 +95,14 @@ public class IntegratedEphemerisTest {
         final PartialDerivativesEquations derivatives =
             new PartialDerivativesEquations(eqName, numericalPropagator);
         derivatives.setInitialJacobians(6, 0);
+        final JacobiansMapper mapper = derivatives.getMapper();
         numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
         numericalPropagator.propagate(initialOrbit.getDate().shiftedBy(3600.0));
         BoundedPropagator ephemeris = numericalPropagator.getGeneratedEphemeris();
         ephemeris.setMasterMode(new OrekitStepHandler() {
             
             private static final long serialVersionUID = -5825020344303732268L;
+            private final Array2DRowRealMatrix dYdY0 = new Array2DRowRealMatrix(6, 6);
 
             public void reset() {
             }
@@ -108,8 +114,13 @@ public class IntegratedEphemerisTest {
             public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
             throws PropagationException {
                 try {
-                    double[] z = interpolator.getInterpolatedAdditionalState(eqName);
-                    Assert.assertEquals(36, z.length);
+                    double[] p = interpolator.getInterpolatedAdditionalState(eqName);
+                    Assert.assertEquals(mapper.getAdditionalStateDimension(), p.length);
+                    mapper.getStateJacobian(p, dYdY0.getDataRef());
+                    mapper.getParametersJacobian(p, null); // no parameters, this is a no-op and should work
+                    RealMatrix deltaId = dYdY0.subtract(MatrixUtils.createRealIdentityMatrix(6));
+                    Assert.assertTrue(deltaId.getNorm() >  100);
+                    Assert.assertTrue(deltaId.getNorm() < 3100);
                 } catch (OrekitException oe) {
                     throw new PropagationException(oe);
                 }

@@ -223,7 +223,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
         referenceDate       = null;
         currentState        = null;
         adder               = null;
-        addEquationsAndData      = new ArrayList<AdditionalEquationsAndData>();
+        addEquationsAndData = new ArrayList<AdditionalEquationsAndData>();
         attitudeProvider    = InertialProvider.EME2000_ALIGNED;
         stateVector         = new double[7];
         setMu(Double.NaN);
@@ -481,18 +481,6 @@ public class NumericalPropagator implements Propagator, EventObserver {
     public void setInitialAdditionalState(final String name, final double[] addState)
         throws OrekitException {
         selectStateAndEquations(name).getData().setAdditionalState(addState);
-    }
-
-    /** Get current additional state.
-     * @param name name of the additional equations whose current state is requested
-     * @return current additional state
-     * @throws OrekitException if additional equation is unknown
-     * @see #addAdditionalEquations(AdditionalEquations)
-     * @see #setInitialAdditionalState(String, double[])
-     */
-    public double[] getCurrentAdditionalState(final String name)
-        throws OrekitException  {
-        return selectStateAndEquations(name).getData().getAdditionalState();
     }
 
     /** {@inheritDoc} */

@@ -25,6 +25,7 @@ import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
+import org.orekit.propagation.JacobiansMapper;
 import org.orekit.propagation.SpacecraftState;
 
 /** Set of {@link AdditionalEquations additional equations} computing the partial derivatives
@@ -40,15 +41,15 @@ import org.orekit.propagation.SpacecraftState;
 public class PartialDerivativesEquations implements AdditionalEquations {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 8373349999733456541L;
+    private static final long serialVersionUID = -556926704905099805L;
 
-    /** Selected parameters for jacobian computation. */
+    /** Selected parameters for Jacobian computation. */
     private NumericalPropagator propagator;
 
     /** Jacobians providers. */
     private final List<AccelerationJacobiansProvider> jacobiansProviders;
 
-    /** List of parameters selected for jacobians computation. */
+    /** List of parameters selected for Jacobians computation. */
     private List<ParameterConfiguration> selectedParameters;
 
     /** Name. */
@@ -132,10 +133,10 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         return available;
     }
 
-    /** Select the parameters to consider for jacobian processing.
+    /** Select the parameters to consider for Jacobian processing.
      * <p>Parameters names have to be consistent with some
      * {@link ForceModel} added elsewhere.</p>
-     * @param parameters parameters to consider for jacobian processing
+     * @param parameters parameters to consider for Jacobian processing
      * @see NumericalPropagator#addForceModel(ForceModel)
      * @see #setInitialJacobians(double[][], double[][])
      * @see ForceModel
@@ -147,14 +148,16 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         for (String param : parameters) {
             selectedParameters.add(new ParameterConfiguration(param, Double.NaN));
         }
+
         dirty = true;
+
     }
 
-    /** Select the parameters to consider for jacobian processing.
+    /** Select the parameters to consider for Jacobian processing.
      * <p>Parameters names have to be consistent with some
      * {@link ForceModel} added elsewhere.</p>
-     * @param parameter parameter to consider for jacobian processing
-     * @param hP step to use for computing jacobian column with respect to the specified parameter
+     * @param parameter parameter to consider for Jacobian processing
+     * @param hP step to use for computing Jacobian column with respect to the specified parameter
      * @see NumericalPropagator#addForceModel(ForceModel)
      * @see #setInitialJacobians(double[][], double[][])
      * @see ForceModel
@@ -176,7 +179,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         this.hM   = hMass;
     }
 
-    /** Set the initial value of the jacobian with respect to state and parameter.
+    /** Set the initial value of the Jacobian with respect to state and parameter.
      * <p>
      * This method is equivalent to call {@link #setInitialJacobians(double[][], double[][])}
      * with dYdY0 set to the identity matrix and dYdP set to a zero matrix.
@@ -198,10 +201,10 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         setInitialJacobians(dYdY0, dYdP);
     }
 
-    /** Set the initial value of the jacobian with respect to state and parameter.
-     * @param dYdY0 initial jacobian w.r to state (may be either 6x6 for orbit only
+    /** Set the initial value of the Jacobian with respect to state and parameter.
+     * @param dYdY0 initial Jacobian w.r to state (may be either 6x6 for orbit only
      * or 7x7 for orbit and mass)
-     * @param dYdP initial jacobian w.r to parameter (may be null if no parameters are selected)
+     * @param dYdP initial Jacobian w.r to parameter (may be null if no parameters are selected)
      * @exception OrekitException if the partial equation has not been registered in
      * the propagator or if matrices dimensions are incorrect
      * @see #selectedParameters
@@ -223,51 +226,23 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
         paramDim = (dYdP == null) ? 0 : dYdP[0].length;
 
-        // store the matrices in row major order as a single dimension array
-        final double[] p = new double[stateDim * (stateDim + paramDim)];
-        int index = 0;
-        for (final double[] row : dYdY0) {
-            System.arraycopy(row, 0, p, index, stateDim);
-            index += stateDim;
-        }
-
-        if (dYdP != null) {
-            for (final double[] row : dYdP) {
-                System.arraycopy(row, 0, p, index, paramDim);
-                index += paramDim;
-            }
-        }
+        // store the matrices as a single dimension array
+        final JacobiansMapper mapper = getMapper();
+        final double[] p = new double[mapper.getAdditionalStateDimension()];
+        mapper.setStateJacobian(dYdY0, p);
+        mapper.setParametersJacobian(dYdP, p);
 
         // set value in propagator
         propagator.setInitialAdditionalState(name, p);
 
     }
 
-    /** Get the initial value of the jacobian with respect to state and parameter.
-     * @param dYdY0 current jacobian w.r to state.
-     * @param dYdP current jacobian w.r to parameter (may be null if no parameters are selected)
-     * @exception OrekitException if the partial equation has not been registered in
-     * the propagator
+    /** Get a mapper between two-dimensional Jacobians and one-dimensional additional state.
+     * @return a mapper between two-dimensional Jacobians and one-dimensional additional state
+     * @see org.orekit.propagation.sampling.OrekitStepInterpolator#getInterpolatedAdditionalState(String)
      */
-    public void getCurrentJacobians(final double[][] dYdY0, final double[][] dYdP)
-        throws OrekitException {
-
-        // get current state from propagator
-        final double[] p = propagator.getCurrentAdditionalState(name);
-
-        int index = 0;
-        for (int i = 0; i < stateDim; i++) {
-            System.arraycopy(p, index, dYdY0[i], 0, stateDim);
-            index += stateDim;
-        }
-
-        if (paramDim != 0) {
-            for (int i = 0; i < stateDim; i++) {
-                System.arraycopy(p, index, dYdP[i], 0, paramDim);
-                index += paramDim;
-            }
-        }
-
+    public JacobiansMapper getMapper() {
+        return new JacobiansMapper(stateDim, paramDim);
     }
 
     /** {@inheritDoc} */
@@ -291,24 +266,24 @@ public class PartialDerivativesEquations implements AdditionalEquations {
                 hM = factor * s.getMass();
             }
 
-             // set up jacobians providers
+             // set up Jacobians providers
             jacobiansProviders.clear();
             for (final ForceModel model : propagator.getForceModels()) {
                 if (model instanceof AccelerationJacobiansProvider) {
 
-                    // the force model already provides the jacobians by itself
+                    // the force model already provides the Jacobians by itself
                     jacobiansProviders.add((AccelerationJacobiansProvider) model);
 
                 } else {
 
-                    // wrap the force model to compute the jacobians by finite differences
+                    // wrap the force model to compute the Jacobians by finite differences
                     jacobiansProviders.add(new Jacobianizer(model, selectedParameters, hPos, hVel, hM));
 
                 }
             }
             jacobiansProviders.add(propagator.getNewtonianAttractionForceModel());
 
-            // check all parameters are handled by at least one jacobian provider
+            // check all parameters are handled by at least one Jacobian provider
             for (final ParameterConfiguration param : selectedParameters) {
                 final String name = param.getParameterName();
                 boolean found = false;
@@ -352,7 +327,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             jacobProv.addDAccDState(s, dAccdPos, dAccdVel, dAccdM);
         }
 
-        // the variational equations of the complete state jacobian matrix have the
+        // the variational equations of the complete state Jacobian matrix have the
         // following form for 7x7, i.e. when mass partial derivatives are also considered
         // (when mass is not considered, only the A, B, D and E matrices are used along
         // with their derivatives):
@@ -417,7 +392,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             Arrays.fill(dAccdParam, 0.0);
             provider.addDAccDParam(s, param.getParameterName(), dAccdParam);
 
-            // the variational equations of the parameters jacobian matrix are computed
+            // the variational equations of the parameters Jacobian matrix are computed
             // one column at a time, they have the following form:
             // [      ]   [                ] [                ] [              ]   [   ]   [                  ]
             // [ Jdot ]   [  dVel/dPos = 0 ] [ dVel/dVel = Id ] [  dVel/dm = 0 ]   [ J ]   [  dVel/dParam = 0 ]
