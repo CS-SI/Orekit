@@ -130,6 +130,12 @@
     </license>
   </licenses>
 
+  <scm>
+    <connection>scm:git:http://www.orekit.org/git/orekit</connection>
+    <developerConnection>scm:git:ssh://git@www.orekit.org/orekit.git</developerConnection>
+    <url>https://www.orekit.org/forge/projects/orekit/repository</url>
+  </scm>
+
   <dependencies>
   	<dependency>
   		<groupId>org.apache.commons</groupId>
