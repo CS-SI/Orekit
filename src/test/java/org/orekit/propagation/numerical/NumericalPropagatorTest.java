@@ -35,6 +35,10 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
+import org.orekit.forces.ForceModel;
+import org.orekit.forces.gravity.CunninghamAttractionModel;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -131,8 +135,52 @@ public class NumericalPropagatorTest {
         final PVCoordinates reference = initialState.shiftedBy(dt).getPVCoordinates();
         final Vector3D pRef = reference.getPosition();
         final Vector3D vRef = reference.getVelocity();
-        Assert.assertEquals(0, pRef.subtract(pFin).getNorm(), 0.4);
-        Assert.assertEquals(0, vRef.subtract(vFin).getNorm(), 0.0002);
+        Assert.assertEquals(0, pRef.subtract(pFin).getNorm(), 2e-4);
+        Assert.assertEquals(0, vRef.subtract(vFin).getNorm(), 7e-8);
+
+    }
+
+    @Test
+    public void testPropagationTypes() throws OrekitException, ParseException, IOException {
+
+        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
+        ForceModel gravityField =
+            new CunninghamAttractionModel(FramesFactory.getITRF2005(), 6378136.460, mu,
+                                          provider.getC(5, 5, true), provider.getS(5, 5, true));
+        propagator.addForceModel(gravityField);
+
+        // Propagation of the initial at t + dt
+        final PVCoordinates pv = initialState.getPVCoordinates();
+        final double dP = 0.001;
+        final double dV = initialState.getMu() * dP /
+                          (pv.getPosition().getNormSq() * pv.getVelocity().getNorm());
+
+        final PVCoordinates pvc =
+            propagateInType(dP, NumericalPropagator.PropagationParametersType.CARTESIAN);
+        final PVCoordinates pvk =
+            propagateInType(dP, NumericalPropagator.PropagationParametersType.KEPLERIAN);
+        final PVCoordinates pve =
+            propagateInType(dP, NumericalPropagator.PropagationParametersType.EQUINOCTIAL);
+
+        Assert.assertEquals(0, pvc.getPosition().subtract(pve.getPosition()).getNorm() / dP, 5);
+        Assert.assertEquals(0, pvc.getVelocity().subtract(pve.getVelocity()).getNorm() / dV, 2);
+        Assert.assertEquals(0, pvk.getPosition().subtract(pve.getPosition()).getNorm() / dP, 0.04);
+        Assert.assertEquals(0, pvk.getVelocity().subtract(pve.getVelocity()).getNorm() / dV, 0.03);
+
+    }
+
+    private PVCoordinates propagateInType(double dP, NumericalPropagator.PropagationParametersType type)
+        throws PropagationException {
+
+        final double dt = 3200;
+        final double minStep = 0.001;
+        final double maxStep = 1000;
+
+        double[][] tol = NumericalPropagator.tolerances(dP, initialState.getOrbit(), type);
+        propagator.setIntegrator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
+        propagator.setPropagationParametersType(type);
+        propagator.setInitialState(initialState);
+        return propagator.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
 
     }
 
@@ -410,7 +458,7 @@ public class NumericalPropagatorTest {
 
     @Before
     public void setUp() throws OrekitException {
-        Utils.setDataRoot("compressed-data");
+        Utils.setDataRoot("regular-data:potential/shm-format");
         mu  = 3.9860047e14;
         final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
         final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);

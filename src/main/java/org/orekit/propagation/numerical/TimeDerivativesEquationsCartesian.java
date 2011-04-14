@@ -27,29 +27,30 @@ import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 
-/** Implementation of the {@link TimeDerivativesEquations} interface for state arrays in cartesian coordinates
-*
-* <p>It implements Gauss equations for cartesian parameters. This implementation is specialized
-* for state vectors that have the following form:
-*   <pre>
-*     y[0] = x
-*     y[1] = y
-*     y[2] = z
-*     y[3] = v<sub>x</sub>
-*     y[4] = v<sub>y</sub>
-*     y[5] = v<sub>z</sub>
-*     y[6] = mass
-*   </pre>
-* where the six first parameters stands for the cartesian parameters and the 7<sup>th</sup>
-* for the mass (kg) at the current time.
-* </p>
-* @see org.orekit.orbits.CartesianOrbit
-* @see org.orekit.propagation.numerical.NumericalPropagator
-* @author Luc Maisonobe
-* @author Fabien Maussion
-* @author V&eacute;ronique Pommier-Maurussane
-* @version $Revision$ $Date$
-*/
+/** Implementation of the {@link TimeDerivativesEquations} interface for state arrays in
+ * {@link CartesianOrbit artesian parameters}.
+ *
+ * <p>It implements Gauss equations for Cartesian parameters. This implementation is specialized
+ * for state vectors that have the following form:
+ *   <pre>
+ *     y[0] = x
+ *     y[1] = y
+ *     y[2] = z
+ *     y[3] = v<sub>x</sub>
+ *     y[4] = v<sub>y</sub>
+ *     y[5] = v<sub>z</sub>
+ *     y[6] = mass
+ *   </pre>
+ * where the six first parameters stands for the Cartesian parameters and the 7<sup>th</sup>
+ * for the mass (kg) at the current time.
+ * </p>
+ * @see org.orekit.orbits.CartesianOrbit
+ * @see org.orekit.propagation.numerical.NumericalPropagator
+ * @author Luc Maisonobe
+ * @author Fabien Maussion
+ * @author V&eacute;ronique Pommier-Maurussane
+ * @version $Revision$ $Date$
+ */
 public class TimeDerivativesEquationsCartesian extends TimeDerivativesEquations {
 
     /** Serializable UID. */

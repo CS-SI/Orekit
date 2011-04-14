@@ -29,6 +29,7 @@ import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.events.EventHandler;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
@@ -39,7 +40,9 @@ import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -90,9 +93,10 @@ import org.orekit.utils.PVCoordinates;
  * configuration parameters. Typical configuration parameters for adaptive stepsize integrators
  * are the min, max and perhaps start step size as well as the absolute and/or relative errors
  * thresholds. The state that is seen by the integrator is a simple seven elements double array.
- * The six first elements are eithr the {@link EquinoctialOrbit equinoctial orbit parameters}
+ * The six first elements are either the {@link EquinoctialOrbit equinoctial orbit parameters}
  * (a, e<sub>x</sub>, e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, l<sub>v</sub>) in meters
- * and radians or {@link CartesianOrbit cartesian orbit parameters} in meters and meters per
+ * and radians, the {@link KeplerianOrbit Keplerian orbit parameters} (a, e, i, &omega;, &Omega;, v)
+ * in meters and radians or {@link CartesianOrbit cartesian orbit parameters} in meters and meters per
  * second depending on the propagator configuration, and the last element is the mass in
  * kilograms. The following code snippet shows a typical setting for Low Earth Orbit
  * propagation in equinoctial parameters:</p>
@@ -135,10 +139,13 @@ public class NumericalPropagator implements Propagator, EventObserver {
     /** Parameters types that can be used for propagation. */
     public enum PropagationParametersType {
 
-        /** Type for propagation in cartesian parameters. */
+        /** Type for propagation in {@link CartesianOrbit Cartesian parameters}. */
         CARTESIAN,
 
-        /** Type for propagation in equinoctial parameters. */
+        /** Type for propagation in {@link KeplerianOrbit Keplerian parameters}. */
+        KEPLERIAN,
+
+        /** Type for propagation in {@link EquinoctialOrbit equinoctial parameters}. */
         EQUINOCTIAL
 
     }
@@ -575,6 +582,11 @@ public class NumericalPropagator implements Propagator, EventObserver {
                 adder = new TimeDerivativesEquationsCartesian((CartesianOrbit) initialOrbit);
                 mapper = new StateMapperCartesian();
                 break;
+            case KEPLERIAN :
+                initialOrbit = new KeplerianOrbit(initialState.getOrbit());
+                adder = new TimeDerivativesEquationsKeplerian((KeplerianOrbit) initialOrbit);
+                mapper = new StateMapperKeplerian();
+                break;
             case EQUINOCTIAL :
                 initialOrbit = new EquinoctialOrbit(initialState.getOrbit());
                 adder = new TimeDerivativesEquationsEquinoctial((EquinoctialOrbit) initialOrbit);
@@ -898,6 +910,80 @@ public class NumericalPropagator implements Propagator, EventObserver {
         }
 
     }
+
+    /** Estimate tolerance vectors for integrators.
+     * <p>
+     * The errors are estimated from partial derivatives properties of orbits,
+     * starting from a scalar position error specified by the user.
+     * Considering the energy conservation equation V = sqrt(mu (2/r - 1/a)),
+     * we get at constant energy (i.e. on a Keplerian trajectory):
+     * <pre>
+     * V<sup>2</sup> r |dV| = mu |dr|
+     * </pre>
+     * So we deduce a scalar velocity error consistent with the position error.
+     * From here, we apply orbits Jacobians matrices to get consistent errors
+     * on orbital parameters.
+     * </p>
+     * <p>
+     * The tolerances are only <em>orders of magnitude</em>, and integrator tolerances
+     * are only local estimates, not global ones. So some care must be taken when using
+     * these tolerances. Setting 1mm as a position error does NOT mean the tolerances
+     * will guarantee a 1mm error position after several orbits integration.
+     * </p>
+     * @param dP user specified position error
+     * @param orbit reference orbit
+     * @param type propagation type for the meaning of the tolerance vectors elements
+     * @return a two rows array, row 0 being the absolute tolerance error and row 1
+     * being the relative tolerance error
+     */
+    public static double[][] tolerances(final double dP,
+                                        final Orbit orbit, final PropagationParametersType type) {
+
+        // estimate the scalar velocity error
+        final PVCoordinates pv = orbit.getPVCoordinates();
+        final double r2 = pv.getPosition().getNormSq();
+        final double v  = pv.getVelocity().getNorm();
+        final double dV = orbit.getMu() * dP / (v * r2);
+
+        final double[] absTol = new double[7];
+        final double[] relTol = new double[7];
+
+        // we set the mass tolerance arbitrarily to 1.0e-6 kg, as mass evolves linearly
+        // with trust, this often has no influence at all on propagation
+        absTol[6] = 1.0e-6;
+
+        if (type == PropagationParametersType.CARTESIAN) {
+            absTol[0] = dP;
+            absTol[1] = dP;
+            absTol[2] = dP;
+            absTol[3] = dV;
+            absTol[4] = dV;
+            absTol[5] = dV;
+        } else {
+
+            final Orbit converted = (type == PropagationParametersType.KEPLERIAN) ?
+                                    new KeplerianOrbit(orbit) : new EquinoctialOrbit(orbit);
+
+            final double[][] jacobian = new double[6][6];
+            converted.getJacobianWrtCartesian(PositionAngle.TRUE, jacobian);
+            for (int i = 0; i < 6; ++i) {
+                final double[] row = jacobian[i];
+                absTol[i] = FastMath.abs(row[0]) * dP +
+                            FastMath.abs(row[1]) * dP +
+                            FastMath.abs(row[2]) * dP +
+                            FastMath.abs(row[3]) * dV +
+                            FastMath.abs(row[4]) * dV +
+                            FastMath.abs(row[5]) * dV;
+            }
+
+        }
+
+        Arrays.fill(relTol, dP / FastMath.sqrt(r2));
+
+        return new double[][] { absTol, relTol };
+
+    }
+
 }
 
 

@@ -233,8 +233,8 @@
         fixed deserialization problems of frame singletons, they were not unique any more
       </action>
       <action dev="v&#233;ronique" type="add" >
-        numerical propagation can now be done either using equinoctial parameters or
-        cartesian parameters, thus allowing propagation of any kind of trajectories,
+        numerical propagation can now be done either using equinoctial parameters, Keplerian
+        parameters or Cartesian parameters, thus allowing propagation of any kind of trajectories,
         including hyperbolic orbits used for interplanetary missions or atmospheric
         re-entry trajectories
       </action>

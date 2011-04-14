@@ -21,42 +21,41 @@ import java.util.Arrays;
 import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
-import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.utils.PVCoordinates;
 
 /** Implementation of the {@link TimeDerivativesEquations} interface for state arrays in
- * {@link EquinoctialOrbit equinoctial parameters}.
+ * {@link KeplerianOrbit Keplerian parameters}.
  *
- * <p>It implements Gauss equations for equinoctial parameters. This implementation is specialized for
+ * <p>It implements Gauss equations for Keplerian parameters. This implementation is specialized for
  * state vectors that have the following form:
  *   <pre>
  *     y[0] = a
- *     y[1] = e<sub>x</sub>
- *     y[2] = e<sub>y</sub>
- *     y[3] = h<sub>x</sub>
- *     y[4] = h<sub>y</sub>
- *     y[5] = l<sub>v</sub>
+ *     y[1] = e
+ *     y[2] = i
+ *     y[3] = &omega;
+ *     y[4] = &Omega;
+ *     y[5] = v
  *     y[6] = mass
  *   </pre>
- * where the six first parameters stands for the equinoctial parameters and the 7<sup>th</sup>
+ * where the six first parameters stands for the Keplerian parameters and the 7<sup>th</sup>
  * for the mass (kg) at the current time.
  * </p>
- * @see org.orekit.orbits.EquinoctialOrbit
+ * @see org.orekit.orbits.KeplerianOrbit
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @author Luc Maisonobe
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
-public class TimeDerivativesEquationsEquinoctial extends TimeDerivativesEquations {
+public class TimeDerivativesEquationsKeplerian extends TimeDerivativesEquations {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -7676218190057010433L;
+    private static final long serialVersionUID = -4177983430003341393L;
 
     /** First vector of the (q, s, w) local orbital frame. */
     private Vector3D lofQ;
@@ -77,19 +76,19 @@ public class TimeDerivativesEquationsEquinoctial extends TimeDerivativesEquation
 
     /** Multiplicative coefficients for the perturbing accelerations along lofT. */
     private double aT;
-    private double exT;
-    private double eyT;
+    private double eT;
+    private double paT;
+    private double vT;
 
     /** Multiplicative coefficients for the perturbing accelerations along lofN. */
-    private double exN;
-    private double eyN;
+    private double eN;
+    private double paN;
+    private double vN;
 
     /** Multiplicative coefficients for the perturbing accelerations along lofW. */
-    private double eyW;
-    private double exW;
-    private double hxW;
-    private double hyW;
-    private double lvW;
+    private double iW;
+    private double paW;
+    private double raanW;
 
     // CHECKSTYLE: resume JavadocVariable check
 
@@ -97,12 +96,12 @@ public class TimeDerivativesEquationsEquinoctial extends TimeDerivativesEquation
     private double lvKepler;
 
     /** Orbital parameters. */
-    private EquinoctialOrbit storedParameters;
+    private KeplerianOrbit storedParameters;
 
     /** Create a new instance.
      * @param orbit current orbit parameters
      */
-    public TimeDerivativesEquationsEquinoctial(final EquinoctialOrbit orbit) {
+    public TimeDerivativesEquationsKeplerian(final KeplerianOrbit orbit) {
         this.storedParameters = orbit;
         lofQ = Vector3D.ZERO;
         lofS = Vector3D.ZERO;
@@ -135,7 +134,7 @@ public class TimeDerivativesEquationsEquinoctial extends TimeDerivativesEquation
         throws PropagationException {
 
 
-        storedParameters = (EquinoctialOrbit) orbit;
+        storedParameters = (KeplerianOrbit) orbit;
         updateOrbitalFrames();
 
         // store derivatives array reference
@@ -145,63 +144,49 @@ public class TimeDerivativesEquationsEquinoctial extends TimeDerivativesEquation
         Arrays.fill(storedYDot, 0.0);
 
         // intermediate variables
-        final double ex  = storedParameters.getEquinoctialEx();
-        final double ey  = storedParameters.getEquinoctialEy();
-        final double ex2 = ex * ex;
-        final double ey2 = ey * ey;
-        final double e2  = ex2 + ey2;
-        final double e   = FastMath.sqrt(e2);
-        if (e >= 1) {
-            throw new PropagationException(OrekitMessages.ORBIT_BECOMES_HYPERBOLIC_UNABLE_TO_PROPAGATE_FURTHER, e);
-        }
-
-        // intermediate variables
-        final double oMe2        = (1 - e) * (1 + e);
+        final double e           = storedParameters.getE();
+        final double e2          = e * e;
+        final double oMe2        = 1 - e2;
         final double epsilon     = FastMath.sqrt(oMe2);
         final double a           = storedParameters.getA();
         final double mu          = orbit.getMu();
         final double na          = FastMath.sqrt(mu / a);
         final double n           = na / a;
-        final double lv          = storedParameters.getLv();
-        final double cLv         = FastMath.cos(lv);
-        final double sLv         = FastMath.sin(lv);
-        final double excLv       = ex * cLv;
-        final double eysLv       = ey * sLv;
-        final double excLvPeysLv = excLv + eysLv;
-        final double ksi         = 1 + excLvPeysLv;
-        final double nu          = ex * sLv - ey * cLv;
-        final double sqrt        = FastMath.sqrt(ksi * ksi + nu * nu);
-        final double hx          = storedParameters.getHx();
-        final double hy          = storedParameters.getHy();
-        final double h2          = hx * hx  + hy * hy;
-        final double oPh2        = 1 + h2;
-        final double hxsLvMhycLv = hx * sLv - hy * cLv;
+        final double trueAnomaly = storedParameters.getTrueAnomaly();
+        final double cosV        = FastMath.cos(trueAnomaly);
+        final double sinV        = FastMath.sin(trueAnomaly);
+        final double ksi         = 1 + e * cosV;
+        final double u           = storedParameters.getPerigeeArgument() + trueAnomaly;
+        final double cosU        = FastMath.cos(u);
+        final double sinU        = FastMath.sin(u);
+        final double i           = storedParameters.getI();
+        final double cosI        = FastMath.cos(i);
+        final double sinI        = FastMath.sin(i);
+        final double ePcosV      = e + cosV;
+        final double vOnNA       = FastMath.sqrt((1 + e * (ePcosV + cosV)) / oMe2);
+        final double r           = a * oMe2 / ksi;
+        final double v           = vOnNA * na;
+        final double dvde        = (1 + ksi) * sinV / oMe2;
 
-        final double epsilonOnNA        = epsilon / na;
-        final double epsilonOnNAKsi     = epsilonOnNA / ksi;
-        final double epsilonOnNAKsiSqrt = epsilonOnNAKsi / sqrt;
-        final double tOnEpsilonN        = 2 / (n * epsilon);
-        final double tEpsilonOnNASqrt   = 2 * epsilonOnNA / sqrt;
-        final double epsilonOnNAKsit    = epsilonOnNA / (2 * ksi);
+        // coefficients along T
+        aT  = 2 * vOnNA / n;
+        eT  = 2 * ePcosV / v;
+        paT = 2 * sinV / (v * e);
+        vT  = -2 * sinV * ksi * ksi * (1 + e2 / ksi) / (e * oMe2 * v) + dvde * eT;
+
+        // coefficients along N
+        eN  = -r * sinV / (v * a);
+        paN =  (2 * e + (1 + e2) * cosV) / (v * e * ksi);
+        vN = -oMe2 * ksi * cosV / (e * oMe2 * v) + dvde * eN;
+
+        // coefficients along W
+        final double f = r / (na * a * epsilon);
+        iW    =  f * cosU;
+        raanW = f * sinU / sinI;
+        paW   = -raanW * cosI;
 
         // Kepler natural evolution without the mu part
         lvKepler = n * ksi * ksi / (FastMath.sqrt(mu) * oMe2 * epsilon);
-
-        // coefficients along T
-        aT  = tOnEpsilonN * sqrt;
-        exT = tEpsilonOnNASqrt * (ex + cLv);
-        eyT = tEpsilonOnNASqrt * (ey + sLv);
-
-        // coefficients along N
-        exN = -epsilonOnNAKsiSqrt * (2 * ey * ksi + oMe2 * sLv);
-        eyN =  epsilonOnNAKsiSqrt * (2 * ex * ksi + oMe2 * cLv);
-
-        // coefficients along W
-        lvW =  epsilonOnNAKsi * hxsLvMhycLv;
-        exW = -ey * lvW;
-        eyW =  ex * lvW;
-        hxW =  epsilonOnNAKsit * oPh2 * cLv;
-        hyW =  epsilonOnNAKsit * oPh2 * sLv;
 
     }
 
@@ -217,12 +202,12 @@ public class TimeDerivativesEquationsEquinoctial extends TimeDerivativesEquation
      * @param w acceleration along the W axis (m/s<sup>2</sup>)
      */
     private void addTNWAcceleration(final double t, final double n, final double w) {
-        storedYDot[0] += aT  * t;
-        storedYDot[1] += exT * t + exN * n + exW * w;
-        storedYDot[2] += eyT * t + eyN * n + eyW * w;
-        storedYDot[3] += hxW * w;
-        storedYDot[4] += hyW * w;
-        storedYDot[5] += lvW * w;
+        storedYDot[0] += aT * t;
+        storedYDot[1] += eT * t + eN * n;
+        storedYDot[2] += iW * w;
+        storedYDot[3] += paT * t + paN * n + paW * w;
+        storedYDot[4] += raanW * w;
+        storedYDot[5] += vT * t + vN * n;
     }
 
 
