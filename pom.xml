@@ -130,6 +130,40 @@
     </license>
   </licenses>
 
+  <scm>
+    <connection>scm:git:http://www.orekit.org/git/orekit</connection>
+    <developerConnection>scm:git:ssh://git@www.orekit.org/orekit.git</developerConnection>
+    <url>https://www.orekit.org/forge/projects/orekit/repository</url>
+  </scm>
+
+  <issueManagement>
+      <system>Redmine</system>
+      <url>https://www.orekit.org/forge/projects/orekit/issues</url>
+  </issueManagement>
+
+  <mailingLists>
+    <mailingList>
+      <name>Orekit announces mailing list</name>
+      <subscribe>https://www.orekit.org/wws/subscribe/orekit-announces</subscribe>
+      <unsubscribe>https://www.orekit.org/wws/signoff/orekit-announces</unsubscribe>
+      <archive>https://www.orekit.org/wws/arc/orekit-announces</archive>
+    </mailingList>
+    <mailingList>
+      <name>Orekit users mailing list</name>
+      <subscribe>https://www.orekit.org/wws/subscribe/orekit-users</subscribe>
+      <unsubscribe>https://www.orekit.org/wws/signoff/orekit-users</unsubscribe>
+      <post>orekit-users@orekit.org</post>
+      <archive>https://www.orekit.org/wws/arc/orekit-users</archive>
+    </mailingList>
+    <mailingList>
+      <name>Orekit developers mailing list</name>
+      <subscribe>https://www.orekit.org/wws/subscribe/orekit-developers</subscribe>
+      <unsubscribe>https://www.orekit.org/wws/signoff/orekit-developers</unsubscribe>
+      <post>orekit-developers@orekit.org</post>
+      <archive>https://www.orekit.org/wws/arc/orekit-developers</archive>
+    </mailingList>
+  </mailingLists>
+
   <dependencies>
   	<dependency>
   		<groupId>org.apache.commons</groupId>
