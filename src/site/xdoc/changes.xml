@@ -260,6 +260,14 @@
         This might lead to select an inappropriate data provider.
       </action>
     </release>
+    <release version="5.0.1" date="2011-04-15"
+             description="version 5.0.1 is a minor release of Orekit without any functional changes.
+             The differences with respect to 5.0 are only related to packaging and deployement to
+             maven central. There are NO bug fixes and NO evolutions.">
+      <action dev="luc" type="update">
+        updated packaging to allow deployment to maven central.
+      </action>
+    </release>
     <release version="5.0" date="2010-05-06"
              description="version 5.0 is a major release of Orekit. It introduces several new
              features and bug fixes. Some slight incompatibilities with respect to previous
