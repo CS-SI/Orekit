@@ -58,19 +58,13 @@ public class TimeDerivativesEquationsEquinoctial extends TimeDerivativesEquation
     /** Serializable UID. */
     private static final long serialVersionUID = -7676218190057010433L;
 
-    /** First vector of the (q, s, w) local orbital frame. */
-    private Vector3D lofQ;
-
-    /** Second vector of the (q, s, w) local orbital frame. */
-    private Vector3D lofS;
-
     /** First vector of the (t, n, w) local orbital frame. */
     private Vector3D lofT;
 
     /** Second vector of the (t, n, w) local orbital frame. */
     private Vector3D lofN;
 
-    /** Third vector of both the (q, s, w) and (t, n, w) local orbital frames. */
+    /** Third vector of the (t, n, w) local orbital frames. */
     private Vector3D lofW;
 
     // CHECKSTYLE: stop JavadocVariable check
@@ -104,8 +98,6 @@ public class TimeDerivativesEquationsEquinoctial extends TimeDerivativesEquation
      */
     public TimeDerivativesEquationsEquinoctial(final EquinoctialOrbit orbit) {
         this.storedParameters = orbit;
-        lofQ = Vector3D.ZERO;
-        lofS = Vector3D.ZERO;
         lofT = Vector3D.ZERO;
         lofN = Vector3D.ZERO;
         lofW = Vector3D.ZERO;
@@ -117,14 +109,8 @@ public class TimeDerivativesEquationsEquinoctial extends TimeDerivativesEquation
         // get the position/velocity vectors
         final PVCoordinates pvCoordinates = storedParameters.getPVCoordinates();
 
-        // compute orbital plane normal vector
-        lofW = pvCoordinates.getMomentum().normalize();
-
-        // compute (q, s, w) local orbital frame
-        lofQ = pvCoordinates.getPosition().normalize();
-        lofS = Vector3D.crossProduct(lofW, lofQ);
-
         // compute (t, n, w) local orbital frame
+        lofW = pvCoordinates.getMomentum().normalize();
         lofT = pvCoordinates.getVelocity().normalize();
         lofN = Vector3D.crossProduct(lofW, lofT);
     }
@@ -239,43 +225,8 @@ public class TimeDerivativesEquationsEquinoctial extends TimeDerivativesEquation
         final Transform t = frame.getTransformTo(storedParameters.getFrame(),
                                                  storedParameters.getDate());
         final Vector3D gammInRefFrame = t.transformVector(gamma);
-        addTNWAcceleration(Vector3D.dotProduct(gammInRefFrame, lofT),
-                           Vector3D.dotProduct(gammInRefFrame, lofN),
-                           Vector3D.dotProduct(gammInRefFrame, lofW));
+        addXYZAcceleration(gammInRefFrame.getX(), gammInRefFrame.getY(), gammInRefFrame.getZ());
     }
 
-
-    /** Get the first vector of the (q, s, w) local orbital frame.
-     * @return first vector of the (q, s, w) local orbital frame */
-    public Vector3D getQ() {
-        return lofQ;
-    }
-
-    /** Get the second vector of the (q, s, w) local orbital frame.
-     * @return second vector of the (q, s, w) local orbital frame */
-    public Vector3D getS() {
-        return lofS;
-    }
-
-    /** Get the first vector of the (t, n, w) local orbital frame.
-     * @return first vector of the (t, n, w) local orbital frame */
-    public Vector3D getT() {
-        return lofT;
-    }
-
-    /** Get the second vector of the (t, n, w) local orbital frame.
-     * @return second vector of the (t, n, w) local orbital frame */
-    public Vector3D getN() {
-        return lofN;
-    }
-
-    /** Get the third vector of both the (q, s, w) and (t, n, w) local orbital
-     * frames.
-     * @return third vector of both the (q, s, w) and (t, n, w) local orbital
-     * frames
-     */
-    public Vector3D getW() {
-        return lofW;
-    }
 
 }

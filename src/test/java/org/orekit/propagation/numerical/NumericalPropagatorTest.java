@@ -141,7 +141,7 @@ public class NumericalPropagatorTest {
     }
 
     @Test
-    public void testPropagationTypes() throws OrekitException, ParseException, IOException {
+    public void testPropagationTypesElliptical() throws OrekitException, ParseException, IOException {
 
         PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
         ForceModel gravityField =
@@ -156,11 +156,11 @@ public class NumericalPropagatorTest {
                           (pv.getPosition().getNormSq() * pv.getVelocity().getNorm());
 
         final PVCoordinates pvc =
-            propagateInType(dP, NumericalPropagator.PropagationParametersType.CARTESIAN);
+            propagateInType(initialState, dP, NumericalPropagator.PropagationParametersType.CARTESIAN);
         final PVCoordinates pvk =
-            propagateInType(dP, NumericalPropagator.PropagationParametersType.KEPLERIAN);
+            propagateInType(initialState, dP, NumericalPropagator.PropagationParametersType.KEPLERIAN);
         final PVCoordinates pve =
-            propagateInType(dP, NumericalPropagator.PropagationParametersType.EQUINOCTIAL);
+            propagateInType(initialState, dP, NumericalPropagator.PropagationParametersType.EQUINOCTIAL);
 
         Assert.assertEquals(0, pvc.getPosition().subtract(pve.getPosition()).getNorm() / dP, 5);
         Assert.assertEquals(0, pvc.getVelocity().subtract(pve.getVelocity()).getNorm() / dV, 2);
@@ -169,18 +169,50 @@ public class NumericalPropagatorTest {
 
     }
 
-    private PVCoordinates propagateInType(double dP, NumericalPropagator.PropagationParametersType type)
+    @Test
+    public void testPropagationTypesHyperbolic() throws OrekitException, ParseException, IOException {
+
+        SpacecraftState state =
+            new SpacecraftState(new KeplerianOrbit(-10000000.0, 2.5, 0.3, 0, 0, 0.0,
+                                                   PositionAngle.TRUE,
+                                                   FramesFactory.getEME2000(), initDate,
+                                                   mu));
+
+        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
+        ForceModel gravityField =
+            new CunninghamAttractionModel(FramesFactory.getITRF2005(), 6378136.460, mu,
+                                          provider.getC(5, 5, true), provider.getS(5, 5, true));
+        propagator.addForceModel(gravityField);
+
+        // Propagation of the initial at t + dt
+        final PVCoordinates pv = state.getPVCoordinates();
+        final double dP = 0.001;
+        final double dV = state.getMu() * dP /
+                          (pv.getPosition().getNormSq() * pv.getVelocity().getNorm());
+
+        final PVCoordinates pvc =
+            propagateInType(state, dP, NumericalPropagator.PropagationParametersType.CARTESIAN);
+        final PVCoordinates pvk =
+            propagateInType(state, dP, NumericalPropagator.PropagationParametersType.KEPLERIAN);
+
+        Assert.assertEquals(0, pvc.getPosition().subtract(pvk.getPosition()).getNorm() / dP, 0.3);
+        Assert.assertEquals(0, pvc.getVelocity().subtract(pvk.getVelocity()).getNorm() / dV, 0.4);
+
+    }
+
+    private PVCoordinates propagateInType(SpacecraftState state, double dP,
+                                          NumericalPropagator.PropagationParametersType type)
         throws PropagationException {
 
         final double dt = 3200;
         final double minStep = 0.001;
         final double maxStep = 1000;
 
-        double[][] tol = NumericalPropagator.tolerances(dP, initialState.getOrbit(), type);
+        double[][] tol = NumericalPropagator.tolerances(dP, state.getOrbit(), type);
         propagator.setIntegrator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
         propagator.setPropagationParametersType(type);
-        propagator.setInitialState(initialState);
-        return propagator.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
+        propagator.setInitialState(state);
+        return propagator.propagate(state.getDate().shiftedBy(dt)).getPVCoordinates();
 
     }
 
