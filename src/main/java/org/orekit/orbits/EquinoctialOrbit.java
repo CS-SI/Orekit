@@ -267,6 +267,11 @@ public class EquinoctialOrbit extends Orbit {
         lv = op.getLv();
     }
 
+    /** {@inheritDoc} */
+    public OrbitType getType() {
+        return OrbitType.EQUINOCTIAL;
+    }
+
     /** Get the semi-major axis.
      * @return semi-major axis (m)
      */

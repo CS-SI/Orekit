@@ -315,6 +315,11 @@ public class KeplerianOrbit extends Orbit {
         this(op.getPVCoordinates(), op.getFrame(), op.getDate(), op.getMu());
     }
 
+    /** {@inheritDoc} */
+    public OrbitType getType() {
+        return OrbitType.KEPLERIAN;
+    }
+
     /** Get the semi-major axis.
      * @return semi-major axis (m)
      */

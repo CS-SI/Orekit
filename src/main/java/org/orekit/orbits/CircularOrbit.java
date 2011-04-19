@@ -290,6 +290,11 @@ public class CircularOrbit
         this.alphaV = op.getLv() - raan;
     }
 
+    /** {@inheritDoc} */
+    public OrbitType getType() {
+        return OrbitType.CIRCULAR;
+    }
+
     /** Get the semi-major axis.
      * @return semi-major axis (m)
      */

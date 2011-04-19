@@ -28,6 +28,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 /** Implementation of the {@link StateMapper} interface for state arrays in cartesian coordinates.
+ * <p>
+ * Instances of this class are guaranteed to be immutable
+ * </p>
  *
  * @see org.orekit.propagation.SpacecraftState
  * @see org.orekit.propagation.numerical.NumericalPropagator
@@ -38,18 +41,15 @@ import org.orekit.utils.PVCoordinates;
 public class StateMapperCartesian implements StateMapper {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -861228811985500665L;
+    private static final long serialVersionUID = -574716819944759999L;
 
     /** Attitude provider. */
-    private AttitudeProvider attitudeProvider;
+    private final AttitudeProvider attitudeProvider;
 
     /** Create a new instance.
+     * @param attitudeProvider attitude provider
      */
-    public StateMapperCartesian() {
-    }
-
-    /** {@inheritDoc} */
-    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
+    public StateMapperCartesian(final AttitudeProvider attitudeProvider) {
         this.attitudeProvider = attitudeProvider;
     }
 
@@ -75,10 +75,9 @@ public class StateMapperCartesian implements StateMapper {
                                            final double mu, final Frame frame)
         throws OrekitException {
 
-        final Vector3D       p     = new Vector3D(stateVector[0], stateVector[1], stateVector[2]);
-        final Vector3D       v     = new Vector3D(stateVector[3], stateVector[4], stateVector[5]);
-        final PVCoordinates  pv    = new PVCoordinates(p, v);
-        final Orbit          orbit = new CartesianOrbit(pv, frame, date, mu);
+        final Vector3D p     = new Vector3D(stateVector[0], stateVector[1], stateVector[2]);
+        final Vector3D v     = new Vector3D(stateVector[3], stateVector[4], stateVector[5]);
+        final Orbit    orbit = new CartesianOrbit(new PVCoordinates(p, v), frame, date, mu);
 
         final Attitude attitude = attitudeProvider.getAttitude(orbit, date, frame);
 

@@ -4,13 +4,13 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
-/** Implementation of the {@link StateMapper} interface for state arrays in Keplerian parameters.
+/** Implementation of the {@link StateMapper} interface for state arrays in circular parameters.
  * <p>
  * Instances of this class are guaranteed to be immutable
  * </p>
@@ -20,10 +20,10 @@ import org.orekit.time.AbsoluteDate;
  * @see TimeDerivativesEquationsKeplerian
  * @author Luc Maisonobe
  */
-public class StateMapperKeplerian implements StateMapper {
+public class StateMapperCircular implements StateMapper {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7999740018635724872L;
+    private static final long serialVersionUID = -8601058172096831979L;
 
     /** Position angle type. */
     private final PositionAngle type;
@@ -35,7 +35,7 @@ public class StateMapperKeplerian implements StateMapper {
      * @param type position angle type
      * @param attitudeProvider attitude provider
      */
-    public StateMapperKeplerian(final PositionAngle type, final AttitudeProvider provider) {
+    public StateMapperCircular(final PositionAngle type, final AttitudeProvider provider) {
         this.type             = type;
         this.attitudeProvider = provider;
     }
@@ -43,15 +43,15 @@ public class StateMapperKeplerian implements StateMapper {
     /** {@inheritDoc} */
     public void mapStateToArray(final SpacecraftState s, final double[] stateVector) {
 
-        final KeplerianOrbit keplerianOrbit =
-            (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(s.getOrbit());
+        final CircularOrbit circularOrbit =
+            (CircularOrbit) OrbitType.CIRCULAR.convertType(s.getOrbit());
 
-        stateVector[0] = keplerianOrbit.getA();
-        stateVector[1] = keplerianOrbit.getE();
-        stateVector[2] = keplerianOrbit.getI();
-        stateVector[3] = keplerianOrbit.getPerigeeArgument();
-        stateVector[4] = keplerianOrbit.getRightAscensionOfAscendingNode();
-        stateVector[5] = keplerianOrbit.getAnomaly(type);
+        stateVector[0] = circularOrbit.getA();
+        stateVector[1] = circularOrbit.getCircularEx();
+        stateVector[2] = circularOrbit.getCircularEy();
+        stateVector[3] = circularOrbit.getI();
+        stateVector[4] = circularOrbit.getRightAscensionOfAscendingNode();
+        stateVector[5] = circularOrbit.getAlpha(type);
         stateVector[6] = s.getMass();
 
     }
@@ -59,10 +59,10 @@ public class StateMapperKeplerian implements StateMapper {
     /** {@inheritDoc} */
     public SpacecraftState mapArrayToState(final double[] stateVector, final AbsoluteDate date,
                                            final double mu, final Frame frame) throws OrekitException {
-        final KeplerianOrbit orbit =
-            new KeplerianOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
-                               stateVector[4], stateVector[5], type,
-                               frame, date, mu);
+        final CircularOrbit orbit =
+            new CircularOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
+                              stateVector[4], stateVector[5], type,
+                              frame, date, mu);
 
         final Attitude attitude = attitudeProvider.getAttitude(orbit, date, frame);
 

@@ -18,7 +18,6 @@ package org.orekit.propagation.numerical;
 
 import java.io.Serializable;
 
-import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
@@ -32,11 +31,6 @@ import org.orekit.time.AbsoluteDate;
  * @version $Revision$ $Date$
  */
 public interface StateMapper extends Serializable {
-
-    /** Set the attitude provider.
-     * @param attitudeProvider attitude provider
-     */
-    void setAttitudeProvider(final AttitudeProvider attitudeProvider);
 
     /** Convert spacecraft state to state array.
      * <p>

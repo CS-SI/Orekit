@@ -25,6 +25,7 @@ import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.JacobiansMapper;
 import org.orekit.propagation.SpacecraftState;
 
@@ -254,7 +255,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         // Lazy initialization
         if (dirty) {
 
-            if (propagator.getPropagationParametersType() != NumericalPropagator.PropagationParametersType.CARTESIAN) {
+            if (propagator.getPropagationOrbitType() != OrbitType.CARTESIAN) {
                 throw new OrekitException(OrekitMessages.PARTIAL_DERIVATIVES_ONLY_IN_CARTESIAN);
             }
 

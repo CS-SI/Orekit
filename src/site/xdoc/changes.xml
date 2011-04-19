@@ -233,10 +233,12 @@
         fixed deserialization problems of frame singletons, they were not unique any more
       </action>
       <action dev="v&#233;ronique" type="add" >
-        numerical propagation can now be done either using equinoctial parameters, Keplerian
-        parameters or Cartesian parameters, thus allowing propagation of any kind of trajectories,
-        including hyperbolic orbits used for interplanetary missions or atmospheric
-        re-entry trajectories
+        numerical propagation can now be done either using Cartesian parameters, circular
+        parameters, equinoctial parameters, or Keplerian parameters (elliptical or hyperbolic)
+        and using mean, eccentric or true position angles for the parameters where it is relevant.
+        So there are now 10 possible configurations for state vector. This allows propagation
+        of any kind of trajectories, including hyperbolic orbits used for interplanetary missions,
+        or atmospheric re-entry trajectories
       </action>
       <action dev="v&#233;ronique" type="update" >
         completely revamped the partial derivatives matrices computation using the additional

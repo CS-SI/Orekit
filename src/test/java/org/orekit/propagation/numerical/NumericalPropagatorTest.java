@@ -47,11 +47,11 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.numerical.NumericalPropagator.PropagationParametersType;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -125,7 +125,7 @@ public class NumericalPropagatorTest {
 
         // Propagation of the initial at t + dt
         final double dt = 3200;
-        propagator.setPropagationParametersType(NumericalPropagator.PropagationParametersType.CARTESIAN);
+        propagator.setPropagationOrbitType(OrbitType.CARTESIAN);
         final PVCoordinates finalState = 
             propagator.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
         final Vector3D pFin = finalState.getPosition();
@@ -155,17 +155,45 @@ public class NumericalPropagatorTest {
         final double dV = initialState.getMu() * dP /
                           (pv.getPosition().getNormSq() * pv.getVelocity().getNorm());
 
-        final PVCoordinates pvc =
-            propagateInType(initialState, dP, NumericalPropagator.PropagationParametersType.CARTESIAN);
-        final PVCoordinates pvk =
-            propagateInType(initialState, dP, NumericalPropagator.PropagationParametersType.KEPLERIAN);
-        final PVCoordinates pve =
-            propagateInType(initialState, dP, NumericalPropagator.PropagationParametersType.EQUINOCTIAL);
+        final PVCoordinates pvcM = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngle.MEAN);
+        final PVCoordinates pviM = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngle.MEAN);
+        final PVCoordinates pveM = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngle.MEAN);
+        final PVCoordinates pvkM = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngle.MEAN);
 
-        Assert.assertEquals(0, pvc.getPosition().subtract(pve.getPosition()).getNorm() / dP, 5);
-        Assert.assertEquals(0, pvc.getVelocity().subtract(pve.getVelocity()).getNorm() / dV, 2);
-        Assert.assertEquals(0, pvk.getPosition().subtract(pve.getPosition()).getNorm() / dP, 0.04);
-        Assert.assertEquals(0, pvk.getVelocity().subtract(pve.getVelocity()).getNorm() / dV, 0.03);
+        final PVCoordinates pvcE = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngle.ECCENTRIC);
+        final PVCoordinates pviE = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngle.ECCENTRIC);
+        final PVCoordinates pveE = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC);
+        final PVCoordinates pvkE = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngle.ECCENTRIC);
+
+        final PVCoordinates pvcT = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngle.TRUE);
+        final PVCoordinates pviT = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngle.TRUE);
+        final PVCoordinates pveT = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE);
+        final PVCoordinates pvkT = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngle.TRUE);
+
+        Assert.assertEquals(0, pvcM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 5);
+        Assert.assertEquals(0, pvcM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 2);
+        Assert.assertEquals(0, pviM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 2);
+        Assert.assertEquals(0, pviM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.7);
+        Assert.assertEquals(0, pvkM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.4);
+        Assert.assertEquals(0, pvkM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.09);
+        Assert.assertEquals(0, pveM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.4);
+        Assert.assertEquals(0, pveM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.08);
+
+        Assert.assertEquals(0, pvcE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 5);
+        Assert.assertEquals(0, pvcE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 2);
+        Assert.assertEquals(0, pviE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 2);
+        Assert.assertEquals(0, pviE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.7);
+        Assert.assertEquals(0, pvkE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.3);
+        Assert.assertEquals(0, pvkE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.09);
+        Assert.assertEquals(0, pveE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.7);
+        Assert.assertEquals(0, pveE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.4);
+
+        Assert.assertEquals(0, pvcT.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 5);
+        Assert.assertEquals(0, pvcT.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 2);
+        Assert.assertEquals(0, pviT.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 2);
+        Assert.assertEquals(0, pviT.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.7);
+        Assert.assertEquals(0, pvkT.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.04);
+        Assert.assertEquals(0, pvkT.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.03);
 
     }
 
@@ -190,18 +218,32 @@ public class NumericalPropagatorTest {
         final double dV = state.getMu() * dP /
                           (pv.getPosition().getNormSq() * pv.getVelocity().getNorm());
 
-        final PVCoordinates pvc =
-            propagateInType(state, dP, NumericalPropagator.PropagationParametersType.CARTESIAN);
-        final PVCoordinates pvk =
-            propagateInType(state, dP, NumericalPropagator.PropagationParametersType.KEPLERIAN);
+        final PVCoordinates pvcM = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngle.MEAN);
+        final PVCoordinates pvkM = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngle.MEAN);
 
-        Assert.assertEquals(0, pvc.getPosition().subtract(pvk.getPosition()).getNorm() / dP, 0.3);
-        Assert.assertEquals(0, pvc.getVelocity().subtract(pvk.getVelocity()).getNorm() / dV, 0.4);
+        final PVCoordinates pvcE = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngle.ECCENTRIC);
+        final PVCoordinates pvkE = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC);
+
+        final PVCoordinates pvcT = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngle.TRUE);
+        final PVCoordinates pvkT = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngle.TRUE);
+
+        Assert.assertEquals(0, pvcM.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.3);
+        Assert.assertEquals(0, pvcM.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.4);
+        Assert.assertEquals(0, pvkM.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.09);
+        Assert.assertEquals(0, pvkM.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.2);
+
+        Assert.assertEquals(0, pvcE.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.3);
+        Assert.assertEquals(0, pvcE.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.4);
+        Assert.assertEquals(0, pvkE.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.04);
+        Assert.assertEquals(0, pvkE.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.05);
+
+        Assert.assertEquals(0, pvcT.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.3);
+        Assert.assertEquals(0, pvcT.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.4);
 
     }
 
     private PVCoordinates propagateInType(SpacecraftState state, double dP,
-                                          NumericalPropagator.PropagationParametersType type)
+                                          OrbitType type, PositionAngle angle)
         throws PropagationException {
 
         final double dt = 3200;
@@ -210,7 +252,8 @@ public class NumericalPropagatorTest {
 
         double[][] tol = NumericalPropagator.tolerances(dP, state.getOrbit(), type);
         propagator.setIntegrator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
-        propagator.setPropagationParametersType(type);
+        propagator.setPropagationOrbitType(type);
+        propagator.setPositionAngleType(angle);
         propagator.setInitialState(state);
         return propagator.propagate(state.getDate().shiftedBy(dt)).getPVCoordinates();
 
@@ -373,7 +416,7 @@ public class NumericalPropagatorTest {
         double mass = 1000.;
         SpacecraftState initialState = new SpacecraftState(geo, mass);
         propagator.setInitialState(initialState);
-        propagator.setPropagationParametersType(PropagationParametersType.CARTESIAN);
+        propagator.setPropagationOrbitType(OrbitType.CARTESIAN);
 
 
         // Set the events Detectors
@@ -397,7 +440,7 @@ public class NumericalPropagatorTest {
         final double dt = 3200;
         propagator.getInitialState();
 
-        propagator.setPropagationParametersType(NumericalPropagator.PropagationParametersType.CARTESIAN);
+        propagator.setPropagationOrbitType(OrbitType.CARTESIAN);
         propagator.setEphemerisMode();
         propagator.propagate(initDate.shiftedBy(dt));
         final BoundedPropagator ephemeris1 = propagator.getGeneratedEphemeris();
@@ -477,7 +520,7 @@ public class NumericalPropagatorTest {
 
 
 
-        propagator.setPropagationParametersType(NumericalPropagator.PropagationParametersType.CARTESIAN);
+        propagator.setPropagationOrbitType(OrbitType.CARTESIAN);
         PartialDerivativesEquations PDE = new PartialDerivativesEquations("derivatives", propagator);
         PDE.selectParamAndStep("thrust", Double.NaN);
         PDE.setInitialJacobians(7, 1);

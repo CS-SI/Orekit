@@ -97,6 +97,11 @@ public class CartesianOrbit extends Orbit {
         }
     }
 
+    /** {@inheritDoc} */
+    public OrbitType getType() {
+        return OrbitType.CARTESIAN;
+    }
+
     /** Lazy evaluation of equinoctial parameters. */
     private void initEquinoctial() {
         if (equinoctial == null) {

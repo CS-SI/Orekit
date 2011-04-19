@@ -41,9 +41,11 @@ import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
@@ -76,6 +78,14 @@ import org.orekit.utils.PVCoordinates;
  *   <li>the central attraction coefficient ({@link #setMu(double)})</li>
  *   <li>the various force models ({@link #addForceModel(ForceModel)},
  *   {@link #removeForceModels()})</li>
+ *   <li>the {@link OrbitType type} of orbital parameters to be used for propagation
+ *   ({@link #setPropagationOrbitType(OrbitType)}),
+ *   <li>the {@link PositionAngle type} of position angle to be used in orbital parameters
+ *   to be used for propagation where it is relevant ({@link
+ *   #setPositionAngleType(PositionAngle)}),
+ *   <li>whether {@link AdditionalEquations additional equations} (for example {@link
+ *   PartialDerivativesEquations Jacobians}) should be propagated along with orbital state
+ *   ({@link #addAdditionalEquations(AdditionalEquations)}),
  *   <li>the discrete events that should be triggered during propagation
  *   ({@link #addEventDetector(EventDetector)},
  *   {@link #clearEventsDetectors()})</li>
@@ -84,42 +94,49 @@ import org.orekit.utils.PVCoordinates;
  *   #setMasterMode(OrekitStepHandler)}, {@link #setEphemerisMode()}, {@link
  *   #getGeneratedEphemeris()})</li>
  * </ul>
- * <p>From these configuration parameters, only the initial state is mandatory. If the
- * central attraction coefficient is not explicitly specified, the one used to define
- * the initial orbit will be used. However, specifying only the initial state and
- * perhaps the central attraction coefficient would mean the propagator would use only
- * keplerian forces. In this case, the simpler {@link
+ * <p>From these configuration parameters, only the initial state is mandatory. The default
+ * propagation settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
+ * {@link PositionAngle#TRUE true} longitude argument. If the central attraction coefficient
+ * is not explicitly specified, the one used to define the initial orbit will be used.
+ * However, specifying only the initial state and perhaps the central attraction coefficient
+ * would mean the propagator would use only keplerian forces. In this case, the simpler {@link
  * org.orekit.propagation.analytical.KeplerianPropagator KeplerianPropagator} class would
- * perhaps be more effective. The propagator is only in one mode at a time.</p>
+ * perhaps be more effective.</p>
  * <p>The underlying numerical integrator set up in the constructor may also have its own
  * configuration parameters. Typical configuration parameters for adaptive stepsize integrators
  * are the min, max and perhaps start step size as well as the absolute and/or relative errors
- * thresholds. The state that is seen by the integrator is a simple seven elements double array.
- * The six first elements are either the {@link EquinoctialOrbit equinoctial orbit parameters}
- * (a, e<sub>x</sub>, e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, l<sub>v</sub>) in meters
- * and radians, the {@link KeplerianOrbit Keplerian orbit parameters} (a, e, i, &omega;, &Omega;, v)
- * in meters and radians or {@link CartesianOrbit cartesian orbit parameters} in meters and meters per
- * second depending on the propagator configuration, and the last element is the mass in
- * kilograms. The following code snippet shows a typical setting for Low Earth Orbit
- * propagation in equinoctial parameters:</p>
+ * thresholds.</p>
+ * <p>The state that is seen by the integrator is a simple seven elements double array.
+ * The six first elements are either:
+ * <ul>
+ *   <li>the {@link EquinoctialOrbit equinoctial orbit parameters} (a, e<sub>x</sub>,
+ *   e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, &lambda;<sub>M</sub> or &lambda;<sub>E</sub>
+ *   or &lambda;<sub>v</sub>) in meters and radians,</li>
+ *   <li>the {@link KeplerianOrbit Keplerian orbit parameters} (a, e, i, &omega;, &Omega;,
+ *   M or E or v) in meters and radians,</li>
+ *   <li>the {@link Circular circular orbit parameters} (a, e<sub>x</sub>, e<sub>y</sub>, i,
+ *   &Omega;, &alpha;<sub>M</sub> or &alpha;<sub>E</sub> or &alpha;<sub>v</sub>) in meters
+ *   and radians,</li>
+ *   <li>the {@link CartesianOrbit Cartesian orbit parameters} (x, y, z, v<sub>x</sub>,
+ *   v<sub>y</sub>, v<sub>z</sub>) in meters and meters per seconds.
+ * </ul>
+ * The last element is the mass in kilograms.
+ * </p>
+ * <p>The following code snippet shows a typical setting for Low Earth Orbit propagation in
+ * equinoctial parameters and true longitude argument:</p>
  * <pre>
+ * final double dP       = 0.001;
  * final double minStep  = 0.001;
  * final double maxStep  = 500;
  * final double initStep = 60;
- * final double[] absTolerance = {
- *     0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
- * };
- * final double[] relTolerance = {
- *     1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
- * };
- * AdaptiveStepsizeIntegrator integrator =
- *     new DormandPrince853Integrator(minStep, maxStep, absTolerance, relTolerance);
+ * final double[][] tolerance = NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
+ * AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tolerance[0], tolerance[1]);
  * integrator.setInitialStepSize(initStep);
  * propagator = new NumericalPropagator(integrator);
  * </pre>
  * <p>The same propagator can be reused for several orbit extrapolations, by resetting
  * the initial state without modifying the other configuration parameters. However, the
- * same instance cannot be used simultaneously by different threads, the class is not
+ * same instance cannot be used simultaneously by different threads, the class is <em>not</em>
  * thread-safe.</p>
 
  * @see SpacecraftState
@@ -137,20 +154,6 @@ import org.orekit.utils.PVCoordinates;
  * @version $Revision$ $Date$
  */
 public class NumericalPropagator implements Propagator, EventObserver {
-
-    /** Parameters types that can be used for propagation. */
-    public enum PropagationParametersType {
-
-        /** Type for propagation in {@link CartesianOrbit Cartesian parameters}. */
-        CARTESIAN,
-
-        /** Type for propagation in {@link KeplerianOrbit Keplerian parameters}. */
-        KEPLERIAN,
-
-        /** Type for propagation in {@link EquinoctialOrbit equinoctial parameters}. */
-        EQUINOCTIAL
-
-    }
 
     /** Serializable UID. */
     private static final long serialVersionUID = -2385169798425713766L;
@@ -206,8 +209,8 @@ public class NumericalPropagator implements Propagator, EventObserver {
     /** Current mode. */
     private int mode;
 
-    /** Propagation parameters type. */
-    private PropagationParametersType parametersType;
+    /** Propagation orbit type. */
+    private OrbitType orbitType;
 
     /** Position angle type. */
     private PositionAngle angleType;
@@ -220,9 +223,9 @@ public class NumericalPropagator implements Propagator, EventObserver {
      * unspecified default law and there are no perturbing forces at all.
      * This means that if {@link #addForceModel addForceModel} is not
      * called after creation, the integrated orbit will follow a keplerian
-     * evolution only. The defaults are {@link PropagationParametersType#EQUINOCTIAL}
-     * for {@link #setPropagationParametersType(PropagationParametersType) propagation
-     * parameters type} and {@link PositionAngle#TRUE} for {@link
+     * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
+     * for {@link #setPropagationOrbitType(OrbitType) propagation
+     * orbit type} and {@link PositionAngle#TRUE} for {@link
      * #setPositionAngleType(PositionAngle) position angle type}.
      * @param integrator numerical integrator to use for propagation.
      */
@@ -239,7 +242,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
         setMu(Double.NaN);
         setIntegrator(integrator);
         setSlaveMode();
-        setPropagationParametersType(PropagationParametersType.EQUINOCTIAL);
+        setPropagationOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.TRUE);
     }
 
@@ -401,26 +404,26 @@ public class NumericalPropagator implements Propagator, EventObserver {
         mode = EPHEMERIS_GENERATION_MODE;
     }
 
-    /** Set propagation parameter type.
-     * @param propagationType parameters type to use for propagation
+    /** Set propagation orbit type.
+     * @param orbitType orbit type to use for propagation
      */
-    public void setPropagationParametersType(final PropagationParametersType propagationType) {
-        this.parametersType = propagationType;
+    public void setPropagationOrbitType(final OrbitType orbitType) {
+        this.orbitType = orbitType;
     }
 
     /** Get propagation parameter type.
-     * @return parameters type used for propagation
+     * @return orbit type used for propagation
      */
-    public PropagationParametersType getPropagationParametersType() {
-        return parametersType;
+    public OrbitType getPropagationOrbitType() {
+        return orbitType;
     }
 
     /** Set position angle type.
      * <p>
      * The position parameter type is meaningful only if {@link
-     * #getPropagationParametersType() propagation parameters}
+     * #getPropagationOrbitType() propagation orbit type}
      * support it. As an example, it is not meaningful for propagation
-     * in {@link PropagationParametersType#CARTESIAN Cartesian} parameters.
+     * in {@link OrbitType#CARTESIAN Cartesian} parameters.
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
@@ -598,20 +601,24 @@ public class NumericalPropagator implements Propagator, EventObserver {
             // space dynamics view
             referenceDate  = initialState.getDate();
 
-            // set propagation parameters type
+            // set propagation orbit type
             Orbit initialOrbit = null;
-            switch (parametersType) {
+            switch (orbitType) {
             case CARTESIAN :
                 initialOrbit = new CartesianOrbit(initialState.getOrbit());
-                mapper = new StateMapperCartesian();
+                mapper = new StateMapperCartesian(attitudeProvider);
                 break;
-            case KEPLERIAN :
-                initialOrbit = new KeplerianOrbit(initialState.getOrbit());
-                mapper = new StateMapperKeplerian();
+            case CIRCULAR :
+                initialOrbit = new CircularOrbit(initialState.getOrbit());
+                mapper = new StateMapperCircular(angleType, attitudeProvider);
                 break;
             case EQUINOCTIAL :
                 initialOrbit = new EquinoctialOrbit(initialState.getOrbit());
-                mapper = new StateMapperEquinoctial();
+                mapper = new StateMapperEquinoctial(angleType, attitudeProvider);
+                break;
+            case KEPLERIAN :
+                initialOrbit = new KeplerianOrbit(initialState.getOrbit());
+                mapper = new StateMapperKeplerian(angleType, attitudeProvider);
                 break;
             default :
                 throw OrekitException.createInternalError(null);
@@ -619,7 +626,6 @@ public class NumericalPropagator implements Propagator, EventObserver {
             if (Double.isNaN(getMu())) {
                 setMu(initialOrbit.getMu());
             }
-            mapper.setAttitudeProvider(attitudeProvider);
 
             // initialize mode handler
             switch (mode) {
@@ -1000,8 +1006,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
      */
-    public static double[][] tolerances(final double dP,
-                                        final Orbit orbit, final PropagationParametersType type) {
+    public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type) {
 
         // estimate the scalar velocity error
         final PVCoordinates pv = orbit.getPVCoordinates();
@@ -1016,7 +1021,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
         // with trust, this often has no influence at all on propagation
         absTol[6] = 1.0e-6;
 
-        if (type == PropagationParametersType.CARTESIAN) {
+        if (type == OrbitType.CARTESIAN) {
             absTol[0] = dP;
             absTol[1] = dP;
             absTol[2] = dP;
@@ -1025,11 +1030,11 @@ public class NumericalPropagator implements Propagator, EventObserver {
             absTol[5] = dV;
         } else {
 
-            final Orbit converted = (type == PropagationParametersType.KEPLERIAN) ?
-                                    new KeplerianOrbit(orbit) : new EquinoctialOrbit(orbit);
-
+            // convert the orbit to the desired type
             final double[][] jacobian = new double[6][6];
+            final Orbit converted = type.convertType(orbit);
             converted.getJacobianWrtCartesian(PositionAngle.TRUE, jacobian);
+
             for (int i = 0; i < 6; ++i) {
                 final double[] row = jacobian[i];
                 absTol[i] = FastMath.abs(row[0]) * dP +

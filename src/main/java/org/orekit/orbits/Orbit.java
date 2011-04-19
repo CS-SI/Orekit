@@ -142,6 +142,11 @@ public abstract class Orbit implements TimeStamped, Serializable, PVCoordinatesP
         this.frame = frame;
     }
 
+    /** Get the orbit type.
+     * @return orbit type
+     */
+    public abstract OrbitType getType();
+
     /** Ensure the defining frame is a pseudo-inertial frame.
      * @param frame frame to check
      * @exception IllegalArgumentException if frame is not a {@link

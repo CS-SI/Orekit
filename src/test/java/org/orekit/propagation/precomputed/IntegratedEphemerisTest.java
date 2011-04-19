@@ -30,6 +30,7 @@ import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.JacobiansMapper;
 import org.orekit.propagation.SpacecraftState;
@@ -91,7 +92,7 @@ public class IntegratedEphemerisTest {
 
         final String eqName = "derivatives";
         numericalPropagator.setEphemerisMode();
-        numericalPropagator.setPropagationParametersType(NumericalPropagator.PropagationParametersType.CARTESIAN);
+        numericalPropagator.setPropagationOrbitType(OrbitType.CARTESIAN);
         final PartialDerivativesEquations derivatives =
             new PartialDerivativesEquations(eqName, numericalPropagator);
         derivatives.setInitialJacobians(6, 0);

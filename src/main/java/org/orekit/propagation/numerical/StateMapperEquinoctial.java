@@ -21,40 +21,54 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 /** Implementation of the {@link StateMapper} interface for state arrays in equinoctial parameters.
-*
-* @see org.orekit.propagation.SpacecraftState
-* @see org.orekit.propagation.numerical.NumericalPropagator
-* @see TimeDerivativesEquationsEquinoctial
-* @author V&eacute;ronique Pommier-Maurussane
-* @version $Revision$ $Date$
-*/
+ * <p>
+ * Instances of this class are guaranteed to be immutable
+ * </p>
+ *
+ * @see org.orekit.propagation.SpacecraftState
+ * @see org.orekit.propagation.numerical.NumericalPropagator
+ * @see TimeDerivativesEquationsEquinoctial
+ * @author V&eacute;ronique Pommier-Maurussane
+ * @version $Revision$ $Date$
+ */
 public class StateMapperEquinoctial implements StateMapper {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 3155499893820556290L;
+    private static final long serialVersionUID = 8314804815914578370L;
+
+    /** Position angle type. */
+    private final PositionAngle type;
 
     /** Attitude provider. */
-    private AttitudeProvider attitudeProvider;
+    private final AttitudeProvider attitudeProvider;
 
-    /** {@inheritDoc} */
-    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
-        this.attitudeProvider = attitudeProvider;
+    /** Create a new instance.
+     * @param type position angle type
+     * @param attitudeProvider attitude provider
+     */
+    public StateMapperEquinoctial(final PositionAngle type, final AttitudeProvider provider) {
+        this.type             = type;
+        this.attitudeProvider = provider;
     }
 
     /** {@inheritDoc} */
     public void mapStateToArray(final SpacecraftState s, final double[] stateVector) {
 
-        stateVector[0] = s.getA();
-        stateVector[1] = s.getEquinoctialEx();
-        stateVector[2] = s.getEquinoctialEy();
-        stateVector[3] = s.getHx();
-        stateVector[4] = s.getHy();
-        stateVector[5] = s.getLv();
+        final EquinoctialOrbit equinoctialOrbit =
+            (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(s.getOrbit());
+
+        stateVector[0] = equinoctialOrbit.getA();
+        stateVector[1] = equinoctialOrbit.getEquinoctialEx();
+        stateVector[2] = equinoctialOrbit.getEquinoctialEy();
+        stateVector[3] = equinoctialOrbit.getHx();
+        stateVector[4] = equinoctialOrbit.getHy();
+        stateVector[5] = equinoctialOrbit.getL(type);
         stateVector[6] = s.getMass();
 
     }
@@ -64,7 +78,7 @@ public class StateMapperEquinoctial implements StateMapper {
                                            final double mu, final Frame frame) throws OrekitException {
         final EquinoctialOrbit orbit =
             new EquinoctialOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
-                                 stateVector[4], stateVector[5], PositionAngle.TRUE,
+                                 stateVector[4], stateVector[5], type,
                                  frame, date, mu);
 
         final Attitude attitude = attitudeProvider.getAttitude(orbit, date, frame);
